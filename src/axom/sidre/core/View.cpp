@@ -423,7 +423,7 @@ View* View::apply(TypeID type, IndexType num_elems,
  *
  *************************************************************************
  */
-View* View::apply(TypeID type, int ndims, IndexType* shape)
+View* View::apply(TypeID type, int ndims, const IndexType* shape)
 {
   if ( type == NO_TYPE_ID || ndims < 1 || shape == nullptr )
   {
@@ -894,7 +894,7 @@ void View::describe(TypeID type, IndexType num_elems)
  *
  *************************************************************************
  */
-void View::describe(TypeID type, int ndims, IndexType* shape)
+void View::describe(TypeID type, int ndims, const IndexType* shape)
 {
   IndexType num_elems = 0;
   if (ndims > 0)
@@ -946,7 +946,7 @@ void View::describeShape()
  *
  *************************************************************************
  */
-void View::describeShape(int ndims, IndexType* shape)
+void View::describeShape(int ndims, const IndexType* shape)
 {
   m_shape.clear();
   for (int i=0 ; i < ndims ; i++)

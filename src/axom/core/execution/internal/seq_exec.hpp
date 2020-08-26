@@ -52,6 +52,7 @@ struct execution_space< SEQ_EXEC >
 
   static constexpr bool async() noexcept { return false; };
   static constexpr bool valid() noexcept { return true; };
+  static constexpr bool onDevice() noexcept { return false; };
   static constexpr char* name() noexcept { return (char*)"[SEQ_EXEC]"; };
   static int allocatorID() noexcept
   {

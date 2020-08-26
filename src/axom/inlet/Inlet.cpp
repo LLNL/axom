@@ -27,7 +27,7 @@ namespace inlet
 std::shared_ptr<Table> Inlet::addTable(const std::string& name,
                                        const std::string& description)
 {
-  return std::make_shared<Table>(name, description, m_reader, m_sidreRootGroup, m_docEnabled);
+  return m_globalTable->addTable(name, description);
 }
 
 std::shared_ptr<Field> Inlet::addBool(const std::string& name,
@@ -61,7 +61,8 @@ std::shared_ptr<Field> Inlet::addString(const std::string& name,
 
 axom::sidre::View* Inlet::baseGet(const std::string& name)
 {
-  SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr, "Inlet's Sidre Datastore Group not set");
+  SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
+                  "[Inlet] Inlet's Sidre Datastore Group not set");
 
   // All data hangs under the group's name
   if (!m_sidreRootGroup->hasGroup(name))
@@ -92,7 +93,7 @@ bool Inlet::get(const std::string& name, bool& value)
   // There is no boolean type in conduit/sidre so we use int8
   if (valueView->getTypeID() != axom::sidre::INT8_ID)
   {
-    std::string msg = fmt::format("Boolean named '{0}' was asked for"
+    std::string msg = fmt::format("[Inlet] Boolean named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
     SLIC_WARNING(msg);
@@ -103,8 +104,8 @@ bool Inlet::get(const std::string& name, bool& value)
   int8 intValue = valueView->getScalar();
   if (intValue < 0 || intValue > 1)
   {
-    std::string msg = fmt::format("Invalid integer value stored in boolean"
-                                  " value named {0}",
+    std::string msg = fmt::format("[Inlet] Invalid integer value stored in "
+                                  " boolean value named {0}",
                                   name);
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);    
@@ -125,7 +126,7 @@ bool Inlet::get(const std::string& name, double& value)
 
   if (valueView->getTypeID() != axom::sidre::DOUBLE_ID)
   {
-    std::string msg = fmt::format("Double named '{0}' was asked for"
+    std::string msg = fmt::format("[Inlet] Double named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
     SLIC_WARNING(msg);
@@ -147,7 +148,7 @@ bool Inlet::get(const std::string& name, int& value)
 
   if (valueView->getTypeID() != axom::sidre::INT_ID)
   {
-    std::string msg = fmt::format("Integer named '{0}' was asked for"
+    std::string msg = fmt::format("[Inlet] Integer named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
     SLIC_WARNING(msg);
@@ -169,7 +170,7 @@ bool Inlet::get(const std::string& name, std::string& value)
 
   if (valueView->getTypeID() != axom::sidre::CHAR8_STR_ID)
   {
-    std::string msg = fmt::format("String named '{0}' was asked for"
+    std::string msg = fmt::format("[Inlet] String named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
     SLIC_WARNING(msg);
@@ -199,35 +200,55 @@ void Inlet::writeDoc() {
 bool Inlet::verify() {
   bool verifySuccess = true;
   verifyRecursive(m_sidreRootGroup, verifySuccess);
+
+  if (!m_globalTable->verify()) {
+    verifySuccess = false;
+  }
+
   return verifySuccess;
 }
 
 void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess) {
-  SLIC_ASSERT_MSG(sidreGroup, "Root was nullptr");
+  SLIC_ASSERT_MSG(sidreGroup, "[Inlet] Root was nullptr");
   if (sidreGroup == m_sidreRootGroup && sidreGroup->hasView("warningFlag")) {
     verifySuccess = false;
   }
 
+  // Checking if the current Group corresponds to a Table.
   if (sidreGroup->hasView("required")) {
-    int8 required = sidreGroup->getView("required")->getData();
-    if (required && !sidreGroup->hasView("value")) {
-      std::string msg = fmt::format("Inlet: {0}: Required field not specified", 
-                                    sidreGroup->getPathName());
-      SLIC_WARNING(msg);
-      setWarningFlag(m_sidreRootGroup);
-      verifySuccess = false;
+    if (sidreGroup->hasView("InletType")
+       && strcmp(sidreGroup->getView("InletType")->getString(), "Table") == 0) {
+      int8 required = sidreGroup->getView("required")->getData();
+      if (required && sidreGroup->getNumGroups() == 0) {
+        std::string msg = fmt::format("[Inlet] Required Table not "
+                                      "specified: {0}", 
+                                      sidreGroup->getPathName());
+        SLIC_WARNING(msg);
+        verifySuccess = false;
+      }
+    } else {
+      int8 required = sidreGroup->getView("required")->getData();
+      if (required && !sidreGroup->hasView("value")) {
+        std::string msg = fmt::format("[Inlet] Required Field not "
+                                      "specified: {0}", 
+                                      sidreGroup->getPathName());
+        SLIC_WARNING(msg);
+        verifySuccess = false;
+      }
     }
   }
   if (sidreGroup->hasView("value") && !verifyValue(sidreGroup)) {
     verifySuccess = false;
-    std::string msg = fmt::format("Inlet: {0}: Value did not meet range/valid "
-                                  "value(s) constraints", sidreGroup->getPathName());
+    std::string msg = fmt::format("[Inlet] Value did not meet range/valid "
+                                  "value(s) constraints: {0}",
+                                  sidreGroup->getPathName());
     SLIC_WARNING(msg);
   }
   if (sidreGroup->hasView("defaultValue") && !verifyDefaultValue(sidreGroup)) {
     verifySuccess = false;
-    std::string msg = fmt::format("Inlet: {0}: Default value did not meet range/valid "
-                                  "value(s) constraints", sidreGroup->getPathName());
+    std::string msg = fmt::format("[Inlet] Default value did not meet range/valid "
+                                  "value(s) constraints: {0}",
+                                  sidreGroup->getPathName());
     SLIC_WARNING(msg);
   }
   
@@ -327,8 +348,6 @@ bool Inlet::searchValidValues(axom::sidre::Group* sidreGroup, std::string value)
   }
   return false;
 }
-
-
 
 } // end namespace inlet
 } // end namespace axom

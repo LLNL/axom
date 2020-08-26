@@ -51,7 +51,10 @@ TEST( spin_spatial_octree, spatial_octree_point_location)
 
   for(int i=0 ; i< octree.maxInternalLevel() ; ++i)
   {
+    EXPECT_EQ(0, octree.getOctreeLevel(i+1).numLeafBlocks());
     octree.refineLeaf( leafBlock );
+    EXPECT_EQ(1<<DIM, octree.getOctreeLevel(i+1).numLeafBlocks());
+
     leafBlock = octree.findLeafBlock(queryPt);
     EXPECT_TRUE( octree.isLeaf(leafBlock));
 
@@ -60,7 +63,7 @@ TEST( spin_spatial_octree, spatial_octree_point_location)
     EXPECT_TRUE( bb.contains(leafBB));
 
     SLIC_INFO(
-      "Query pt: "
+      "Level " << i << " -- Query pt: "
       << queryPt
       <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was not")
       <<" contained in bounding box " << leafBB

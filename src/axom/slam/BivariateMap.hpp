@@ -81,7 +81,7 @@ template<
   typename DataType,
   typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
   >
-class BivariateMap : public MapBase, public StridePolicy
+class BivariateMap : public MapBase<typename SetType::PositionType>, public StridePolicy
 {
 public:
   using SetPosition = typename SetType::PositionType;

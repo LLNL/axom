@@ -138,7 +138,7 @@ packages:
       python: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
     buildable: False
   py-shroud:
-    version: [0.11.0]
+    version: [0.12.2]
     paths:
       py-shroud: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
     buildable: False

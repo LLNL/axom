@@ -35,6 +35,37 @@
 #define AXOM_HOST
 #endif
 
+/*
+ * \def AXOM_STRINGIFY
+ *
+ * \brief Helper Macro to specify strings inside pragmas.
+ */
+#define AXOM_STRINGIFY(x) AXOM_DO_STRINGIFY(x)
+#define AXOM_DO_STRINGIFY(x) #x
+
+/*
+ * \def AXOM_PRAGMA
+ *
+ * \brief Macro used to specify pragma directive
+ */
+#ifdef _WIN32
+#define AXOM_PRAGMA(x) __pragma(x)
+#else
+#define AXOM_PRAGMA(x) _Pragma(AXOM_STRINGIFY(x))
+#endif
+
+/*
+ * \def AXOM_SUPPRESS_HD_WARN
+ *
+ * \brief Macro used to silence __host__ __device__ compiler warnings
+ *  when calling __host__ function from __host__ __device__ function.
+ */
+#if defined(__CUDACC__)
+#define AXOM_SUPPRESS_HD_WARN AXOM_PRAGMA(nv_exec_check_disable)
+#else
+#define AXOM_SUPPRESS_HD_WARN
+#endif
+
 /*!
  * \def AXOM_LAMBDA
  *

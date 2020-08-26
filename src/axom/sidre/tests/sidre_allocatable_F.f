@@ -35,7 +35,7 @@ contains
 
     call set_case_name("external_allocatable_int")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     allocate(iarray(10))
@@ -88,7 +88,7 @@ contains
 
     call set_case_name("external_allocatable_int_3d")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     allocate(iarray(2,3,4))
@@ -147,7 +147,7 @@ contains
 
     call set_case_name("external_static_int")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     do i=1,10
@@ -186,7 +186,7 @@ contains
 
     call set_case_name("external_allocatable_double")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     allocate(darray(10))
@@ -235,7 +235,7 @@ contains
     extents_in(2) = 3
     extents_in(3) = 4
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     view = root%create_view_and_allocate("iarray", SIDRE_INT_ID, 3, extents_in)

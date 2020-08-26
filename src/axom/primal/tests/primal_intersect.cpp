@@ -5,6 +5,8 @@
 
 #include "gtest/gtest.h"
 
+#include "fmt/fmt.hpp"
+
 #include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
@@ -63,7 +65,8 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
                         const primal::Triangle< double, DIM > & b,
                         const std::string & whattest,
                         const bool includeBdry,
-                        const bool testtrue)
+                        const bool testtrue,
+                        double EPS = 1E-8)
 {
   SCOPED_TRACE(whattest + (includeBdry ?
                            " (including boundary)" :
@@ -76,7 +79,9 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      if(primal::intersect(roll(a, i), roll(b, j),includeBdry) != testtrue)
+      auto t1 = roll(a, i);
+      auto t2 = roll(b, j);
+      if(primal::intersect(t1, t2,includeBdry, EPS) != testtrue)
       {
         ++numFailures;
       }
@@ -90,7 +95,9 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      if(primal::intersect(roll(ap, i), roll(bp, j),includeBdry) != testtrue)
+      auto t1 = roll(ap, i);
+      auto t2 = roll(bp, j);
+      if(primal::intersect(t1, t2, includeBdry, EPS) != testtrue)
       {
         ++numFailures;
       }
@@ -103,7 +110,9 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      if(primal::intersect(roll(b, i), roll(a, j),includeBdry) != testtrue)
+      auto t1 = roll(b, i);
+      auto t2 = roll(a, j);
+      if(primal::intersect(t1, t2, includeBdry, EPS) != testtrue)
       {
         ++numFailures;
       }
@@ -114,7 +123,9 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      if(primal::intersect(roll(bp, i), roll(ap, j),includeBdry) != testtrue)
+      auto t1 = roll(bp, i);
+      auto t2 = roll(ap, j);
+      if(primal::intersect(t1, t2, includeBdry, EPS) != testtrue)
       {
         ++numFailures;
       }
@@ -409,6 +420,70 @@ TEST( primal_intersect, triangle_aabb_intersection_fromData2 )
   SLIC_INFO(
     "Testing point bounding box: " << box4 << " against triangle " << tri );
   EXPECT_TRUE( primal::intersect(tri, box4));
+
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
+}
+
+
+TEST( primal_intersect, 2D_triangle_triangle_intersection_barycentric )
+{
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
+
+  using Triangle2 = primal::Triangle< double,2 >;
+  using Point2 = primal::Point< double,2 >;
+  using Bary = primal::Point<double,3>;
+
+  // Test several 2D triangle-triangle intersection cases
+  // All cases are expected to intersect since one point is inside the triangle
+  const bool expectIntersect = true;
+
+  Triangle2 triA( Point2::make_point(0,0),
+                  Point2::make_point(1,0),
+                  Point2::make_point(1,1) );
+
+  // Set first point to center of triA
+  Point2 p0 = triA.baryToPhysical( Bary::make_point(1./3., 1./3., 1./3.) );
+
+  // Create some points based on barycentric coords
+  std::vector<Bary> bary;
+
+  // Add some barycentric coordinates w.r.t. the input triangle
+  for(double x : {-0.2, -0.1, 0.0, 0.1, 0.2})
+  {
+    for(int j = -6 ; j <= 6 ; ++j)
+    {
+      Bary b;
+      b[0] = x;
+      b[1] = (1.-j/3.) - x/2.;
+      b[2] =     j/3.  - x/2.;
+
+      EXPECT_NEAR( 1., b[0] + b[1] + b[2], 1E-8); // check that they sum to one
+      bary.push_back( b );
+    }
+
+  }
+
+  bool includeBdry = true;
+
+  int sz = bary.size();
+  for(int i=0 ; i< sz-1 ; ++i)
+  {
+    for(int j=i ; j<sz ; ++j)
+    {
+      Triangle2 triB ( p0,
+                       triA.baryToPhysical(bary[i]),
+                       triA.baryToPhysical(bary[j]));
+
+      if(!triB.degenerate())
+      {
+        std::string str = fmt::format(
+          "Tri2D-Tri2D from barycenters. b1:{}, b2:{}", bary[i], bary[j]);
+        permuteCornersTest(triA, triB, str, !includeBdry, expectIntersect);
+        permuteCornersTest(triA, triB, str, includeBdry, expectIntersect);
+      }
+
+    }
+  }
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
@@ -954,9 +1029,138 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
     permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
   }
 
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg = "From Axom github issue #152";
+    Point3 vdata[] = { Point3::make_point(76.648,  54.6752, 15.0012),
+                       Point3::make_point(76.648,  54.6752, 14.5542),
+                       Point3::make_point(76.582,  54.6752, 14.7879),
+                       Point3::make_point(76.6252, 54.6752, 14.892),
+                       Point3::make_point(76.5617, 54.6752, 14.7929) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    // Output some debugging information about this configuration
+    // (change logging level to Debug to see these messages)
+    SLIC_DEBUG("Triangle 1: " << tri3d_1);
+    SLIC_DEBUG("Triangle 2: " << tri3d_2);
+
+    for(int i=0 ; i<3 ; ++i)
+    {
+      SLIC_DEBUG("t1 " << i << "\n\t-- distance " << tri3d_1[i] << " to tri2: "
+                       << std::setprecision(17)
+                       << sqrt( primal::squared_distance( tri3d_1[i],
+                                                    tri3d_2 ) )
+                       << "\n\t-- closest point: "
+                       << primal::closest_point(tri3d_1[i], tri3d_2));
+    }
+
+    for(int i=0 ; i<3 ; ++i)
+    {
+      SLIC_DEBUG("t2 " << i << "\n\t-- distance " << tri3d_2[i] << " to tri1: "
+                       << std::setprecision(17)
+                       << sqrt( primal::squared_distance( tri3d_2[i], tri3d_1) )
+                       << "\n\t-- closest point: "
+                       << primal::closest_point(tri3d_2[i], tri3d_1));
+    }
+
+    const bool expectIntersect = true;
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, expectIntersect);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, expectIntersect);
+  }
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg = "From Axom github issue #152 (simplified)";
+    Point3 vdata[] = { Point3::make_point( 0.066,  0,  0.2133),
+                       Point3::make_point( 0.066,  0, -0.2337),
+                       Point3::make_point( 0,      0,  0),
+                       Point3::make_point( 0.0432, 0,  0.1041),
+                       Point3::make_point(-0.0203, 0,  0.005) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+
+    const bool expectIntersect = true;
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, expectIntersect);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, expectIntersect);
+  }
+
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg =
+      "From Axom github issue #152 (simplified 2) -- one point inside other triangle";
+    Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
+                       Point3::make_point( 1,   0, -0.5 ),
+                       Point3::make_point( 0,   0,  0  ),
+                       Point3::make_point( 0.5, 0,  0.1),
+                       Point3::make_point(-0.1, 0, -0.2) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg =
+      "From Axom github issue #152 (simplified 3) -- one point inside other triangle";
+    Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
+                       Point3::make_point( 1,   0, -0.5 ),
+                       Point3::make_point( 0,   0,  0  ),
+                       Point3::make_point( 0.5, 0,  0.1),
+                       Point3::make_point(-0.1, 0,  0.05) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }
+
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg =
+      "From Axom github issue #152 (simplified 4) -- one point inside other triangle";
+    Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
+                       Point3::make_point( 1,   0, -0.5 ),
+                       Point3::make_point( 0,   0,  0  ),
+                       Point3::make_point( 0.5, 0,  0.1),
+                       Point3::make_point(-0.1, 0,  0.06) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg =
+      "From Axom github issue #152 (simplified 5) -- one point inside other triangle";
+    Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
+                       Point3::make_point( 1,   0, -0.5 ),
+                       Point3::make_point( 0,   0,  0  ),
+                       Point3::make_point( 0.5, 0,  0.1),
+                       Point3::make_point(-0.1, 0,  0.04) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }
+
+  // Revert logging level to Warning
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
-
 
 TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 {

@@ -3,9 +3,10 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-// usage : ./inlet_document_generation_example --enableDocs --deck lua_file.lua 
+// usage : ./inlet_documentation_generation_example --enableDocs --fil lua_file.lua 
 
 #include "axom/inlet.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
 #include "CLI11/CLI11.hpp"
 #include <iostream>
@@ -137,19 +138,23 @@ void checkValues(std::shared_ptr<Inlet> inlet) {
 
   // Verify that contents of Inlet meet the requirements of the specified schema
   if (inlet->verify()) {
-    std::cout << "Inlet verify successful" << std::endl;
+    SLIC_INFO("Inlet verify successful.");
   } else {
-    std::cout << "Inlet verify failed" << std::endl;
+    SLIC_INFO("Inlet verify failed.");
   }
 }
 
 int main(int argc, char** argv) {
+  // Inlet requires a SLIC logger to be initialized to output runtime information
+  // This is a generic basic SLIC logger
+  axom::slic::UnitTestLogger logger;
+
   CLI::App app {"Basic example of Axom's Inlet component"};
   bool docsEnabled{false};
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");
 
   std::string inputFileName;
-  auto opt = app.add_option("--deck", inputFileName, "Path to input deck file");
+  auto opt = app.add_option("--file", inputFileName, "Path to input file");
   opt->check(CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);
@@ -160,8 +165,11 @@ int main(int argc, char** argv) {
   auto lr = std::make_shared<LuaReader>();
   lr->parseFile(inputFileName);
   auto inlet = std::make_shared<Inlet>(lr, ds.getRoot(), docsEnabled);
+
+  // _inlet_documentation_generation_start
   auto docWriter = std::make_shared<SphinxDocWriter>("example_doc.rst", inlet->sidreGroup());
   inlet->registerDocWriter(docWriter);
+  // _inlet_documentation_generation_end
 
   defineSchema(inlet);
   checkValues(inlet);
@@ -170,7 +178,7 @@ int main(int argc, char** argv) {
   inlet->writeDoc();
 
   if (docsEnabled) {
-    std::cout << "Documentation was written to example_doc.rst" << std::endl;
+    SLIC_INFO("Documentation was written to example_doc.rst\n");
   }
 
   return 0;

@@ -594,7 +594,7 @@ TEST(inlet_Inlet, mixLevelTables)
   auto inlet = std::make_shared<axom::inlet::Inlet>(luaReader, dataStore.getRoot());
 
   //
-  // Define input deck schema
+  // Define input file schema
   //
 
   // fields that are expected to not be present in above string
@@ -619,7 +619,7 @@ TEST(inlet_Inlet, mixLevelTables)
   inlet->addInt("thermal_solver/solver/steps", "steps");
 
   //
-  //  Verify values found in input deck
+  //  Verify values found in input file
   //
   bool found = false;
   std::string strVal;
@@ -1058,8 +1058,182 @@ TEST(inlet_Inlet_verify, verifyValidStringValues) {
   field = inlet1->addString("NewTable/field5");
   field->validValues(strs)->defaultValue("zyx");
   EXPECT_FALSE(inlet1->verify());
+}
 
+TEST(inlet_verify, verifyFieldLambda) {
+  std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto field1 = inlet->addBool("field1");
+  auto field2 = inlet->addString("field2");
+  auto field3 = inlet->addString("NewTable/field3");
+
+  field2->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("field2", str);
+    return (str.size() >= 1 && str[0] == 'a');
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  field3->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("NewTable/field3", str);
+    return (str.size() >= 1 && str[0] == 'a');
+  });
+  EXPECT_FALSE(inlet->verify());
+}
+
+TEST(inlet_verify, verifyTableLambda1) {
+  std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto field1 = inlet->addBool("field1");
+  auto field2 = inlet->addString("field2");
+  auto table1 = inlet->addTable("NewTable");
+  auto field3 = table1->addString("field3");
+
+  field2->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("field2", str);
+    return (str.size() >= 1 && str[0] == 'a');
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  field3->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("NewTable/field3", str);
+    return (str.size() >= 1 && str[0] == 'x');
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  EXPECT_TRUE(table1->hasField("field3"));
+
+  table1->registerVerifier([&]() -> bool {
+    return table1->hasField("field3");
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  table1->registerVerifier([&]() -> bool {
+    return table1->hasField("field22");
+  });
+  EXPECT_FALSE(inlet->verify());
+}
+
+TEST(inlet_verify, verifyTableLambda2) {
+  std::string testString = "thermal_solver={}\n"
+                            "thermal_solver.order = 2\n"
+                            "thermal_solver.timestepper = 'quasistatic'\n"
+                            "solid_solver={}\n"
+                            "solid_solver.order = 3\n"
+                            "solid_solver.timestepper = 'BackwardEuler'\n"
+                            "material={}\n"
+                            "material.attribute = 1\n"
+                            "material.thermalview = 'isotropic'\n"
+                            "material.solidview = 'hyperelastic'";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  auto thermalOrder = inlet->addInt("thermal_solver/order");
+  auto thermalTimeStep = inlet->addString("thermal_solver/timestepper");
+  auto solidOrder = inlet->addInt("solid_solver/order");
+  auto soldTimestep = inlet->addString("solid_solver/timestepper");
+  auto attrib = inlet->addInt("material/attribute");
+  auto globalTable = inlet->getGlobalTable();
+  auto material = globalTable->getTable("material");
+
+  globalTable->registerVerifier([&]() -> bool {
+    bool verifySuccess = true;
+    if (globalTable->hasTable("thermal_solver") && 
+        !material->hasField("thermalview")) {
+      verifySuccess = false;
+    }
+    if (globalTable->hasTable("solid_solver") && 
+        !material->hasField("solidview")) {
+      verifySuccess = false;
+    }
+    return verifySuccess;
+  });
   
+  EXPECT_FALSE(inlet->verify());
+
+  auto thermalView = inlet->addString("material/thermalview");
+  auto solidView = inlet->addString("material/solidview");
+
+  EXPECT_TRUE(material->hasField("solidview"));
+  EXPECT_TRUE(material->hasField("thermalview"));
+
+  EXPECT_TRUE(inlet->verify());
+
+  auto thing = inlet->addTable("test");
+  auto thing2 = thing->addTable("test2");
+  auto thing5 = thing2->addTable("test3/test4/test5");
+ 
+  EXPECT_EQ(globalTable->getTable("test")->name(), "test");
+  EXPECT_EQ(thing->getTable("test2")->name(), "test/test2");
+  EXPECT_EQ(thing2->getTable("test3/test4/test5")->name(), "test/test2/test3/test4/test5");
+}
+
+TEST(inlet_verify, requiredTable) {
+  std::string testString = "thermal_solver={}\n"
+                            "thermal_solver.order = 2\n"
+                            "thermal_solver.timestepper = 'quasistatic'\n"
+                            "solid_solver={}\n"
+                            "solid_solver.order = 3\n"
+                            "solid_solver.timestepper = 'BackwardEuler'\n"
+                            "material={}\n"
+                            "material.attribute = 1\n"
+                            "material.thermalview = 'isotropic'\n"
+                            "material.solidview = 'hyperelastic'";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  auto material = inlet->addTable("material");
+  material->required(true);
+  
+  EXPECT_FALSE(inlet->verify());
+
+  auto thermalView = inlet->addString("material/thermalview");
+  auto solidView = inlet->addString("material/solidview");
+
+  EXPECT_TRUE(inlet->hasField("material/thermalview"));
+  EXPECT_TRUE(inlet->hasField("material/solidview"));
+
+  EXPECT_TRUE(inlet->verify());
+}
+
+TEST(inlet_verify, verifyTableLambda3) {
+  std::string testString = "dimensions = 2; vector = { x = 1; y = 2; z = 3; }";
+  DataStore ds;
+  auto myInlet = createBasicInlet(&ds, testString);
+  myInlet->addInt("dimensions")->required(true);
+  auto v = myInlet->addTable("vector")->required(true);
+  v->addInt("x");
+
+  v->registerVerifier([&]() -> bool {
+    int dim;
+    myInlet->get("dimensions", dim);
+    int value;  // field value doesnt matter just that it is present in input file
+    bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
+    bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
+    bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
+    if(dim == 1 && x_present) {
+      return true;
+    }
+    else if(dim == 2 && x_present && y_present) {
+      return true;
+    }
+    else if(dim == 3 && x_present && y_present && z_present) {
+      return true;
+    }
+    return false;
+  });
+
+  EXPECT_FALSE(myInlet->verify());
+
+  v->addInt("y");
+  v->addInt("z");
+
+  EXPECT_TRUE(myInlet->verify());
 }
 
 //------------------------------------------------------------------------------

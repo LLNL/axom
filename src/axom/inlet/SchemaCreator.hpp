@@ -46,14 +46,14 @@ class SchemaCreator
 public:
   /*!
    *****************************************************************************
-   * \brief Add a Table to the input deck schema.
+   * \brief Add a Table to the input file schema.
    *
-   * Adds a Table to the input deck schema. Tables hold a varying amount Fields
+   * Adds a Table to the input file schema. Tables hold a varying amount Fields
    * defined by the user.  By default, it is not required unless marked with
    * Table::required(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Table
@@ -64,14 +64,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Boolean Field to the input deck schema.
+   * \brief Add a Boolean Field to the input file schema.
    *
-   * Adds a Boolean Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Boolean Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -82,14 +82,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Double Field to the input deck schema.
+   * \brief Add a Double Field to the input file schema.
    *
-   * Adds a Double Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Double Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -100,14 +100,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Integer Field to the input deck schema.
+   * \brief Add a Integer Field to the input file schema.
    *
-   * Adds a Integer Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Integer Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -118,14 +118,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a String Field to the input deck schema.
+   * \brief Add a String Field to the input file schema.
    *
-   * Adds a String Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a String Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Field

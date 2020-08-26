@@ -46,15 +46,15 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Parses the given input deck.
+   * \brief Parses the given input file.
    *
-   * This performs any setup work and parses the given input deck.
+   * This performs any setup work and parses the given input file.
    * It is required that this is called before using the Reader and overrides
    * any state that was previously there.
    *
-   * \param [in] filePath The Input deck to be read
+   * \param [in] filePath The Input file to be read
    *
-   * \return true if the input deck was able to be parsed
+   * \return true if the input file was able to be parsed
    *****************************************************************************
    */
   virtual bool parseFile(const std::string& filePath) = 0;
@@ -67,7 +67,7 @@ public:
    * It is required that this is called before using the Reader and overrides
    * any state that was previously there.
    *
-   * \param [in] inputString The Input deck to be read
+   * \param [in] inputString The Input file to be read
    *
    * \return true if the string was able to be parsed
    *****************************************************************************
@@ -76,60 +76,60 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Return a boolean out of the input deck
+   * \brief Return a boolean out of the input file
    *
    * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input deck.
+   * to what is in the input file.
    *
    * \param [in] id The identifier to the bool that will be retrieved
    * \param [out] value The value of the bool that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the deck
+   * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
   virtual bool getBool(const std::string& id, bool& value) = 0;
 
   /*!
    *****************************************************************************
-   * \brief Return a double out of the input deck
+   * \brief Return a double out of the input file
    *
    * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input deck.
+   * to what is in the input file.
    *
    * \param [in]  id    The identifier to the double that will be retrieved
    * \param [out] value The value of the double that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the deck
+   * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
   virtual bool getDouble(const std::string& id, double& value) = 0;
 
   /*!
    *****************************************************************************
-   * \brief Return a int out of the input deck
+   * \brief Return a int out of the input file
    *
    * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input deck.
+   * to what is in the input file.
    *
    * \param [in]  id    The identifier to the int that will be retrieved
    * \param [out] value The value of the int that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the deck
+   * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
   virtual bool getInt(const std::string& id, int& value) = 0;
 
   /*!
    *****************************************************************************
-   * \brief Return a string out of the input deck
+   * \brief Return a string out of the input file
    *
    * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input deck.
+   * to what is in the input file.
    *
    * \param [in]  id    The identifier to the string that will be retrieved
    * \param [out] value The value of the string that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the deck
+   * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
   virtual bool getString(const std::string& id, std::string& value) = 0;

@@ -65,6 +65,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <map>
 #include <iomanip>
 
 // _read_stl_typedefs_start
@@ -87,10 +88,12 @@ enum RuntimePolicy { seq = 0,
 
 struct Input
 {
-  static const std::set<RuntimePolicy> s_validPolicies;
+  static const std::set<std::string> s_validMethods;
+  static const std::map<std::string, RuntimePolicy> s_validPolicies;
 
   std::string stlInput {""};
   std::string vtkOutput {""};
+  std::string method {"uniform"};
   RuntimePolicy policy {seq};
 
   int resolution {0};
@@ -111,43 +114,58 @@ private:
   void fixOutfilePath();
 };
 
-const std::set<RuntimePolicy> Input::s_validPolicies({
-    seq
+const std::set<std::string> Input::s_validMethods({
+  "bvh",
+  "uniform",
+  "naive"
+});
+
+const std::map<std::string, RuntimePolicy> Input::s_validPolicies({
+  {"seq", seq}
   #ifdef AXOM_USE_RAJA
-    , raja_seq
+  , {"raja_seq", raja_seq}
     #ifdef AXOM_USE_OPENMP
-    , raja_omp
+  , {"raja_omp", raja_omp}
     #endif
     #ifdef AXOM_USE_CUDA
-    , raja_cuda
+  , {"raja_cuda", raja_cuda}
     #endif
   #endif
 });
 
 void Input::parse(int argc, char** argv, CLI::App& app)
 {
+  app.add_option("-m, --method", method,
+                 "Method to use. \n"
+                 "Set to \'bvh\' to use the bounding volume hierarchy spatial index.\n"
+                 "Set to \'naive\' to use the naive algorithm (without a spatial index).\n"
+                 "Set to \'uniform\' to use the uniform grid spatial index.")
+  ->capture_default_str()
+  ->check(CLI::IsMember {Input::s_validMethods});
+
   app.add_option("-r,--resolution", resolution,
-                 "Resolution of uniform grid. \n"
-                 "Set to 1 to run the naive algorithm (without a spatial index). \n"
-                 "Set to less than 1 to use the spatial index with a resolution \n"
-                 "of the cube root of the number of triangles.")
+                 "With \'-m uniform\', set resolution of uniform grid. \n"
+                 "Set to less than 1 to use the uniform grid spatial index\n"
+                 "with a resolution of the cube root of the number of\n"
+                 "triangles.")
   ->capture_default_str();
 
   app.add_option("-p, --policy", policy,
-                 "With \'-r 1\', set runtime policy. \n"
-                 "Set to 0 to use the sequential algorithm (w/o RAJA). \n"
+                 "With \'-m bvh\' or \'-m naive\', set runtime policy. \n"
+                 "Set to \'seq\' or 0 to use the sequential algorithm "
+                 "(w/o RAJA). \n"
   #ifdef AXOM_USE_RAJA
-                 "Set to 1 to use the RAJA sequential policy. \n"
+                 "Set to \'raja_seq\' or 1 to use the RAJA sequential policy.\n"
     #ifdef AXOM_USE_OPENMP
-                 "Set to 2 to use the RAJA OpenMP policy. \n"
+                 "Set to \'raja_omp\' or 2 to use the RAJA OpenMP policy. \n"
     #endif
     #ifdef AXOM_USE_CUDA
-                 "Set to 3 to use the RAJA CUDA policy."
+                 "Set to \'raja_cuda\' or 3 to use the RAJA CUDA policy."
     #endif
   #endif
-  )
+                 )
   ->capture_default_str()
-  ->check(CLI::IsMember{Input::s_validPolicies});
+  ->transform(CLI::CheckedTransformer(Input::s_validPolicies));
 
   app.add_option("-i,--infile", stlInput,"The STL input file")
   ->required()
@@ -174,7 +192,7 @@ void Input::parse(int argc, char** argv, CLI::App& app)
                "Increase logging verbosity.")
   ->capture_default_str();
 
-  app.get_formatter()->column_width(35);
+  app.get_formatter()->column_width(76);
 
   // Could throw an exception
   app.parse(argc, argv);
@@ -185,15 +203,22 @@ void Input::parse(int argc, char** argv, CLI::App& app)
   // Output parsed information
   SLIC_INFO (
     "Using parameter values: "
-    <<"\n  resolution = " << resolution
-    << (resolution < 1 ? " (use cube root of triangle count)" : "")
-    << (resolution == 1 ? " (use naive algorithm)" : "")
-    << (resolution == 1 ? "\n  policy = " : "")
-    << (resolution == 1 ? std::to_string(policy) : "")
-    << (resolution == 1 && policy == seq ? " (use sequential policy)" : "")
-    << (resolution == 1 && policy == raja_seq ? " (use RAJA sequential policy)" : "")
-    << (resolution == 1 && policy == raja_omp ? " (use RAJA OpenMP policy)" : "")
-    << (resolution == 1 && policy == raja_cuda ? " (use RAJA CUDA policy)" : "")
+    << "\n  method = " << method
+    << (method == "uniform" ? " (use uniform grid)" : "")
+    << (method == "naive" ? " (use naive algorithm)" : "")
+    << (method == "bvh" ? " (use bounding volume hierarchy)" : "")
+    << (method == "uniform" ? 
+       "\n  resolution = " + std::to_string(resolution) : "")
+    << (method == "naive" || method == "bvh" ? "\n  policy = " : "")
+    << (method == "naive" || method == "bvh" ? std::to_string(policy) : "")
+    << ((method == "naive" || method == "bvh") &&
+        policy == seq ? " (use sequential policy)" : "")
+    << ((method == "naive" || method == "bvh") &&
+        policy == raja_seq ? " (use RAJA sequential policy)" : "")
+    << ((method == "naive" || method == "bvh") &&
+        policy == raja_omp ? " (use RAJA OpenMP policy)" : "")
+    << ((method == "naive" || method == "bvh") &&
+        policy == raja_cuda ? " (use RAJA CUDA policy)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
     <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
     <<"\n  intersection tolerance = " <<  intersectionThreshold
@@ -239,7 +264,8 @@ AXOM_HOST_DEVICE bool checkTT(Triangle3& t1, Triangle3& t2, double EPS);
 
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
-  std::vector<int> & degenerate);
+  std::vector<int> & degenerate,
+  double EPS);
 
 void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
@@ -344,10 +370,11 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   double EPS)
 {
   SLIC_INFO("Running naive intersection algorithm "
-    << " in execution Space: "
-    << axom::execution_space< ExecSpace >::name());
+            << " in execution Space: "
+            << axom::execution_space< ExecSpace >::name());
 
   // Get allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
   int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
@@ -356,10 +383,10 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   const int ncells = surface_mesh->getNumberOfCells();
   SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
 
-  Triangle3 * tris = axom::allocate <Triangle3> (ncells);
+  Triangle3* tris = axom::allocate <Triangle3> (ncells);
 
   // Get each triangle in the mesh and check for degeneracies
-  for (int i = 0; i < ncells ; i++)
+  for (int i = 0 ; i < ncells ; i++)
   {
     tris[i] = getMeshTriangle(i, surface_mesh);
     if (tris[i].degenerate())
@@ -372,17 +399,19 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   RAJA::RangeSegment col_range(0, ncells);
 
   using KERNEL_POL =
-    typename axom::mint::internal::structured_exec< ExecSpace >::loop2d_policy;
+          typename axom::mint::internal::structured_exec< ExecSpace >::
+          loop2d_policy;
   using REDUCE_POL =
-    typename axom::execution_space< ExecSpace >::reduce_policy;
+          typename axom::execution_space< ExecSpace >::reduce_policy;
   using ATOMIC_POL =
-    typename axom::execution_space< ExecSpace >::atomic_policy;
+          typename axom::execution_space< ExecSpace >::atomic_policy;
 
   RAJA::ReduceSum< REDUCE_POL, int > numIntersect(0);
 
   // Compute the number of intersections
   RAJA::kernel<KERNEL_POL>( RAJA::make_tuple(col_range, row_range),
-    AXOM_LAMBDA(int col, int row) {
+                            AXOM_LAMBDA(int col, int row)
+  {
     if (row > col)
     {
       if (checkTT (tris[row], tris[col], EPS))
@@ -393,15 +422,16 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   });
 
   // Allocation to hold intersection pairs and counter to know where to store
-  int * intersections =
+  int* intersections =
     axom::allocate <int> (numIntersect.get() * 2);
-  int * counter = axom::allocate <int> (1);
+  int* counter = axom::allocate <int> (1);
 
   counter[0] = 0;
 
   // RAJA loop to populate with intersections
   RAJA::kernel<KERNEL_POL>( RAJA::make_tuple(col_range, row_range),
-    AXOM_LAMBDA(int col, int row) {
+                            AXOM_LAMBDA(int col, int row)
+  {
     if (row > col)
     {
       if (checkTT (tris[row], tris[col], EPS))
@@ -423,6 +453,8 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   axom::deallocate(tris);
   axom::deallocate(intersections);
   axom::deallocate(counter);
+
+  axom::setDefaultAllocator( current_allocator );
 
   return retval;
 }
@@ -600,7 +632,7 @@ int main( int argc, char** argv )
     // _check_repair_intersections_containers_end
 
     axom::utilities::Timer timer(true);
-    if (params.resolution == 1)
+    if (params.method == "naive")
     {
       switch (params.policy)
       {
@@ -630,11 +662,47 @@ int main( int argc, char** argv )
         SLIC_ERROR("Unhandled runtime policy case " << params.policy );
         break;
      }
-    }
+    } // end of if method == 'naive'
+    else if (params.method == "bvh")
+    {
+      switch (params.policy)
+      {
+      case seq:
+        collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate, params.intersectionThreshold);
+        break;
+  #ifdef AXOM_USE_RAJA
+      case raja_seq:
+        quest::findTriMeshIntersectionsBVH< seq_exec, double >(surface_mesh,
+                                                               collisions,
+                                                               degenerate,
+                                                               params.intersectionThreshold);
+        break;
+    #ifdef AXOM_USE_OPENMP
+      case raja_omp:
+        quest::findTriMeshIntersectionsBVH< omp_exec, double >(surface_mesh,
+                                                               collisions,
+                                                               degenerate,
+                                                               params.intersectionThreshold);
+        break;
+    #endif
+    #ifdef AXOM_USE_CUDA
+      case raja_cuda:
+        quest::findTriMeshIntersectionsBVH< cuda_exec, double >(surface_mesh,
+                                                                collisions,
+                                                                degenerate,
+                                                                params.intersectionThreshold);
+        break;
+    #endif
+  #endif // AXOM_USE_RAJA
+      default:
+        SLIC_ERROR("Unhandled runtime policy case " << params.policy );
+        break;
+      }
+    } // end of if method == 'bvh'
     else
     {
       // _check_repair_intersections_start
-      // Use a spatial index
+      // Use a uniform grid spatial index
       quest::findTriMeshIntersections(surface_mesh,
                                       collisions,
                                       degenerate,

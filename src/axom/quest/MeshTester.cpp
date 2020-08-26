@@ -6,39 +6,17 @@
 // Axom includes
 #include "axom/quest/MeshTester.hpp"
 
-#include "axom/core.hpp"
-#include "axom/primal.hpp"
-#include "axom/spin.hpp"
-#include "axom/mint.hpp"
-
-// C++ includes
-#include <cmath>
-#include <algorithm>
-#include <vector>
-#include <unordered_map>
-#include <functional> // for std::hash
-
 namespace axom
 {
 namespace quest
 {
 
-using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
-using Triangle3 = primal::Triangle<double, 3>;
-
-using Point3 = primal::Point<double, 3>;
-using SpatialBoundingBox = primal::BoundingBox<double, 3>;
-using UniformGrid3 = spin::UniformGrid<int, 3>;
-using Vector3 = primal::Vector<double, 3>;
-using Segment3 = primal::Segment<double, 3>;
-
-
-inline SpatialBoundingBox compute_bounds( UMesh* mesh)
+inline detail::SpatialBoundingBox compute_bounds( detail::UMesh* mesh)
 {
   SLIC_ASSERT( mesh != nullptr );
 
-  SpatialBoundingBox meshBB;
-  Point3 pt;
+  detail::SpatialBoundingBox meshBB;
+  detail::Point3 pt;
 
   const double* x = mesh->getCoordinateArray( mint::X_COORDINATE );
   const double* y = mesh->getCoordinateArray( mint::Y_COORDINATE );
@@ -62,41 +40,6 @@ inline SpatialBoundingBox compute_bounds( UMesh* mesh)
   return meshBB;
 }
 
-inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
-{
-  SpatialBoundingBox triBB;
-  triBB.addPoint(tri[0]);
-  triBB.addPoint(tri[1]);
-  triBB.addPoint(tri[2]);
-
-  SLIC_ASSERT( triBB.isValid() );
-
-  return triBB;
-}
-
-inline Triangle3 getMeshTriangle(axom::IndexType i, UMesh* surface_mesh)
-{
-  SLIC_ASSERT( surface_mesh->getNumberOfCellNodes( i ) == 3);
-
-  Triangle3 tri;
-
-  const axom::IndexType* triCell = surface_mesh->getCellNodeIDs( i );
-
-  const double* x = surface_mesh->getCoordinateArray( mint::X_COORDINATE );
-  const double* y = surface_mesh->getCoordinateArray( mint::Y_COORDINATE );
-  const double* z = surface_mesh->getCoordinateArray( mint::Z_COORDINATE );
-
-  for ( int n=0 ; n < 3 ; ++n )
-  {
-    const axom::IndexType nodeIdx = triCell[ n ];
-    tri[ n ][ 0 ] = x[ nodeIdx ];
-    tri[ n ][ 1 ] = y[ nodeIdx ];
-    tri[ n ][ 2 ] = z[ nodeIdx ];
-  }
-
-  return tri;
-}
-
 inline bool areTriangleIndicesDistinct( axom::IndexType* indices)
 {
   SLIC_ASSERT(indices != nullptr);
@@ -107,22 +50,22 @@ inline bool areTriangleIndicesDistinct( axom::IndexType* indices)
 }
 
 /* Find and report self-intersections and degenerate triangles
- * in a triangle surface mesh. */
+ * in a triangle surface mesh using a Uniform Grid. */
 void findTriMeshIntersections(
-  UMesh* surface_mesh,
+  detail::UMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution,
   double intersectionThreshold)
 {
-  Triangle3 t1{};
-  Triangle3 t2{};
+  detail::Triangle3 t1{};
+  detail::Triangle3 t2{};
   SLIC_INFO("Running mesh_tester with UniformGrid index");
 
   // Create a bounding box around mesh to find the minimum point
-  SpatialBoundingBox meshBB = compute_bounds(surface_mesh);
-  const Point3 & minBBPt = meshBB.getMin();
-  const Point3 & maxBBPt = meshBB.getMax();
+  detail::SpatialBoundingBox meshBB = compute_bounds(surface_mesh);
+  const detail::Point3 & minBBPt = meshBB.getMin();
+  const detail::Point3 & maxBBPt = meshBB.getMax();
 
   const int ncells = surface_mesh->getNumberOfCells();
 
@@ -136,7 +79,7 @@ void findTriMeshIntersections(
   {spatialIndexResolution, spatialIndexResolution, spatialIndexResolution};
 
   SLIC_INFO("Building UniformGrid index...");
-  UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
+  detail::UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
   std::vector<int> nondegenerateIndices;
   nondegenerateIndices.reserve(ncells);
 
@@ -152,7 +95,7 @@ void findTriMeshIntersections(
     {
       nondegenerateIndices.push_back(i);
 
-      SpatialBoundingBox triBB = compute_bounds(t1);
+      detail::SpatialBoundingBox triBB = compute_bounding_box(t1);
       ugrid.insert(triBB, i);
     }
   }
@@ -170,7 +113,7 @@ void findTriMeshIntersections(
   {
     // Retrieve the triangle at *idx and construct a bounding box around it
     t1 = getMeshTriangle(*idx, surface_mesh);
-    SpatialBoundingBox triBB2 = compute_bounds(t1);
+    detail::SpatialBoundingBox triBB2 = compute_bounding_box(t1);
 
     // Get a list of all triangles in bins this triangle will touch,
     // whose indices are greater than this triangle's index
@@ -208,9 +151,8 @@ void findTriMeshIntersections(
   }
 }
 
-
 /* Check a surface mesh for holes using its face relation. */
-WatertightStatus isSurfaceMeshWatertight( UMesh* surface_mesh )
+WatertightStatus isSurfaceMeshWatertight( detail::UMesh* surface_mesh )
 {
   // Make sure the mesh is reasonable
   SLIC_ASSERT_MSG(surface_mesh != nullptr,
@@ -288,7 +230,7 @@ WatertightStatus isSurfaceMeshWatertight( UMesh* surface_mesh )
 
 
 /* Weld vertices of a triangle mesh that are closer than \a eps  */
-void weldTriMeshVertices(UMesh** surface_mesh,double eps)
+void weldTriMeshVertices(detail::UMesh** surface_mesh,double eps)
 {
   // Note: Use 64-bit index to accomodate small values of epsilon
   using IdxType = axom::int64;
@@ -335,9 +277,9 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
     "surface_mesh must be a valid pointer to a pointer to a triangle mesh");
 
   int const DIM = 3;
-  UMesh* oldMesh = *surface_mesh;
+  detail::UMesh* oldMesh = *surface_mesh;
 
-  SpatialBoundingBox meshBB = compute_bounds(oldMesh).expand(eps);
+  detail::SpatialBoundingBox meshBB = compute_bounds(oldMesh).expand(eps);
 
   // Run the algorithm twice -- on the original grid and a translated grid
   std::vector<double> offsets;
@@ -347,11 +289,12 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
       it != offsets.end() ; ++it)
   {
     // We will build up a new triangle mesh with the welded indices
-    UMesh* newMesh = new UMesh(DIM, mint::TRIANGLE);
+    detail::UMesh* newMesh = new detail::UMesh(DIM, mint::TRIANGLE);
 
     // Set up the lattice for quantizing points to an integer lattice
-    Point3 origin(meshBB.getMin().array() - Point3(*it).array() );
-    Lattice3 lattice( origin, Point3(eps));
+    detail::Point3 origin(meshBB.getMin().array() - 
+                          detail::Point3(*it).array() );
+    Lattice3 lattice( origin, detail::Point3(eps));
 
     // First, find unique indices for the welded vertices
     const int numVerts = oldMesh->getNumberOfNodes();
@@ -363,7 +306,7 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
     std::vector<int> vertex_remap; // stores the new vertex indices
     vertex_remap.resize(numVerts); // for each old vertex
 
-    Point3 vert;
+    detail::Point3 vert;
     const double* x = oldMesh->getCoordinateArray( mint::X_COORDINATE );
     const double* y = oldMesh->getCoordinateArray( mint::Y_COORDINATE );
     const double* z = oldMesh->getCoordinateArray( mint::Z_COORDINATE );

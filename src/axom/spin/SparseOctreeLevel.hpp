@@ -96,7 +96,7 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
                                  primal::Point<CoordType,DIM> >
 {
   using GridPt = primal::Point<CoordType,DIM>;
-  using PointRepresenationType = GridPt;
+  using PointRepresentationType = GridPt;
   using PointHashType = PointHash<CoordType>;
 
   AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
@@ -114,7 +114,7 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
    *  \note This is a pass through function
    *        since the representation and grid point types are the same
    */
-  static const PointRepresenationType& convertPoint(const GridPt& pt)
+  static const PointRepresentationType& convertPoint(const GridPt& pt)
   {
     return pt;          // simple pass through function
   }
