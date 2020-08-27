@@ -11,21 +11,23 @@
 # Register the sol library for parsing lua
 #------------------------------------------------------------------------------
 
-blt_add_library(NAME    sol
-                HEADERS sol/sol.hpp)
+if (LUA_FOUND)
+  blt_add_library(NAME    sol
+                  HEADERS sol/sol.hpp)
 
-target_include_directories(sol SYSTEM INTERFACE
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+  target_include_directories(sol SYSTEM INTERFACE
+              $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
-install(TARGETS              sol
-        EXPORT               axom-targets
-        INCLUDES DESTINATION include)
-install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sol
-        DESTINATION include )
-install(EXPORT axom-targets DESTINATION lib/cmake)
+  install(TARGETS              sol
+          EXPORT               axom-targets
+          INCLUDES DESTINATION include)
+  install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sol
+          DESTINATION include )
+  install(EXPORT axom-targets DESTINATION lib/cmake)
 
-set(SOL_FOUND TRUE CACHE INTERNAL "")
-mark_as_advanced(SOL_FOUND)
+  set(SOL_FOUND TRUE CACHE INTERNAL "")
+  mark_as_advanced(SOL_FOUND)
+endif()
 
 #------------------------------------------------------------------------------
 # Register the built-in CLI11 library for command line option parsing
