@@ -368,7 +368,7 @@ void reorder(int32* indices, T*& array, int32 size, int allocatorID)
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace  >
-void sort_mcodes( uint32*& mcodes, int32 size, int32* iter, int allocatorID )
+void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 {
   AXOM_PERF_MARK_FUNCTION( "sort_mcodes" );
 
@@ -639,7 +639,7 @@ void build_radix_tree(const FloatType* boxes,
   // original positions of the sorted morton codes.
   // allows us to gather / sort other arrays.
   get_mcodes<ExecSpace>(radix_tree.m_leaf_aabbs, size, bounds, radix_tree.m_mcodes);
-  sort_mcodes<ExecSpace>(radix_tree.m_mcodes, size, radix_tree.m_leafs, allocatorID);
+  sort_mcodes<ExecSpace>(radix_tree.m_mcodes, size, radix_tree.m_leafs);
 
   reorder<ExecSpace>(radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size, allocatorID);
 
