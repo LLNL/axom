@@ -11,7 +11,7 @@
 # Register the sol library for parsing lua
 #------------------------------------------------------------------------------
 
-blt_add_library(NAME sol
+blt_add_library(NAME    sol
                 HEADERS sol/sol.hpp)
 
 target_include_directories(sol SYSTEM INTERFACE

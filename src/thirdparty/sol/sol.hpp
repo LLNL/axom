@@ -72,6 +72,12 @@
 
 // start axom change
 #define SOL_CXX17_FEATURES 0
+extern "C" {
+  #include "lua.h"
+  #include "lualib.h"
+  #include "lauxlib.h"
+}
+
 // end axom change
 
 #if defined(SOL_CXX17_FEATURES) && SOL_CXX17_FEATURES

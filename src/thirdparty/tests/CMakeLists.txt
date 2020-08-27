@@ -160,6 +160,22 @@ if (SPARSEHASH_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
+# Smoke test for SOL third party library
+#------------------------------------------------------------------------------
+
+if (SOL_FOUND)
+    blt_add_executable(
+        NAME       sol_smoke_test
+        SOURCES    sol_smoke.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON sol lua gtest
+        FOLDER     axom/thirdparty/tests )
+
+    blt_add_test(NAME    sol_smoke
+                 COMMAND sol_smoke_test)
+endif()
+
+#------------------------------------------------------------------------------
 # Add compiler flag tests.
 #
 # Test whether custom compiler flags actually work as expected on all compilers.
