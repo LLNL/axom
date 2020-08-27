@@ -20,7 +20,7 @@ public:
      *
      * \return the format of the shape
      */
-    std::string const &getFormat() const {
+    const std::string &getFormat() const {
         return m_format;
     }
 
@@ -36,7 +36,7 @@ public:
      *
      * \return the path to the geometry file
      */
-    std::string const &getPath() const {
+    const std::string &getPath() const {
         return m_path;
     }
 

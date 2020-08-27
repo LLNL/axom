@@ -29,7 +29,7 @@ using conduit::Node;
  * \return a vector of converted values
  */
 template<typename Converter>
-auto convertList(Node const &listToConvert, Converter converter)
+auto convertList(const Node &listToConvert, Converter converter)
 -> std::vector<decltype(converter(listToConvert.child(0)))> {
     std::vector<decltype(converter(listToConvert.child(0)))> converted;
     auto childIter = listToConvert.children();
@@ -46,7 +46,7 @@ auto convertList(Node const &listToConvert, Converter converter)
  * \param listNode the node that represents the list
  * \return  the node as a string vector
  */
-std::vector<std::string> toStringList(Node const &listNode) {
+std::vector<std::string> toStringList(const Node &listNode) {
     return convertList(listNode, std::mem_fn(&Node::as_string));
 }
 
@@ -56,7 +56,7 @@ std::vector<std::string> toStringList(Node const &listNode) {
  * \param geometryNode the node describing the geometry
  * \return the geometry description for the shape
  */
-Geometry getGeometry(Node const &geometryNode) {
+Geometry getGeometry(const Node &geometryNode) {
     Geometry geometry;
     geometry.setFormat(geometryNode["format"].as_string());
     geometry.setPath(geometryNode["path"].as_string());
@@ -69,7 +69,7 @@ Geometry getGeometry(Node const &geometryNode) {
  * \param shapeNode the shape as a conduit node
  * \return the shape as a Shape object
  */
-Shape convertToShape(Node const &shapeNode) {
+Shape convertToShape(const Node &shapeNode) {
     Shape shape;
     shape.setName(shapeNode["name"].as_string());
     shape.setMaterial(shapeNode["material"].as_string());

@@ -23,7 +23,7 @@ public:
      * Get the name of this shape.
      * \return the shape's name
      */
-    std::string const &getName() const {
+    const std::string &getName() const {
         return m_name;
     }
 
@@ -37,7 +37,7 @@ public:
      * Get the material this shape is made of.
      * \return the shape's material.
      */
-    std::string const &getMaterial() const {
+    const std::string &getMaterial() const {
         return m_material;
     }
 
@@ -57,7 +57,7 @@ public:
      * cannot be replaced.
      */
     void setMaterialsReplaced(
-            std::vector<std::string> const & materialsReplaced);
+            const std::vector<std::string> &materialsReplaced);
 
     /**
      * Set the list of materials which cannot be replaced. By default, all
@@ -69,7 +69,7 @@ public:
      * can be replaced.
      */
     void setMaterialsNotReplaced(
-            std::vector<std::string> const & materialsNotReplaced);
+            const std::vector<std::string> &materialsNotReplaced);
 
     /**
      * Check whether this shape can replace the given material (within the
@@ -85,7 +85,7 @@ public:
      *
      * \return the shape's geometry
      */
-    Geometry const &getGeometry() const {
+    const Geometry &getGeometry() const {
         return m_geometry;
     }
 

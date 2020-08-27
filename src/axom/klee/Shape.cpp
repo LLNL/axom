@@ -12,9 +12,6 @@ namespace axom { namespace klee {
 
 namespace {
 
-// TODO: is there already a standard way to do this in axom? Is there a TPL
-// already in use that does this? If not, is there a standard place to put
-// utility functions like this?
 /**
  * Check whether a given container contains a value
  *
@@ -24,8 +21,8 @@ namespace {
  * \return whether the container contains the value
  */
 template <typename Container>
-bool contains(Container const &container,
-        typename Container::value_type const &value) {
+bool contains(const Container &container,
+        const  typename Container::value_type &value) {
     using std::begin;
     using std::end;
     auto endIter = end(container);
@@ -34,7 +31,7 @@ bool contains(Container const &container,
 }
 
 void Shape::setMaterialsReplaced(
-        std::vector<std::string> const &materialsReplaced) {
+        const  std::vector<std::string> &materialsReplaced) {
     if (!m_materialsNotReplaced.empty()) {
         throw std::logic_error("Can't set list of materials to replace "
                                "when materials to not replace have already "
@@ -44,7 +41,7 @@ void Shape::setMaterialsReplaced(
 }
 
 void Shape::setMaterialsNotReplaced(
-        std::vector<std::string> const &materialsNotReplaced) {
+        const std::vector<std::string> &materialsNotReplaced) {
     if (!m_materialsReplaced.empty()) {
         throw std::logic_error("Can't set list of materials to not replace "
                                "when materials to replace have already "
@@ -53,7 +50,7 @@ void Shape::setMaterialsNotReplaced(
     m_materialsNotReplaced = materialsNotReplaced;
 }
 
-bool Shape::replaces(std::string const &material) const {
+bool Shape::replaces(const std::string &material) const {
     if (!m_materialsReplaced.empty()) {
         return contains(m_materialsReplaced, material);
     } else if (!m_materialsNotReplaced.empty()) {

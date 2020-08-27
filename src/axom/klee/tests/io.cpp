@@ -11,7 +11,7 @@
 
 namespace axom { namespace klee { namespace {
 
-ShapeSet readShapeSetFromString(std::string const &input) {
+ShapeSet readShapeSetFromString(const std::string &input) {
     std::istringstream istream(input);
     return readShapeSet(istream);
 }
