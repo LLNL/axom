@@ -41,18 +41,8 @@ class LuaReader : public Reader
 {
 public:
   LuaReader() {
-    lua.open_libraries(sol::lib::base);
+    m_lua.open_libraries(sol::lib::base);
   }
-
-  /*!
-   *****************************************************************************
-   * \brief Destructor for the LuaReader.
-   *
-   * This performs any cleanup work the Reader needs to do before going
-   * away.
-   *****************************************************************************
-   */
-  ~LuaReader();
 
   /*!
    *****************************************************************************
@@ -146,27 +136,9 @@ public:
   bool getString(const std::string& id, std::string& value);
 
 private:
-
-  /*!
-   *****************************************************************************
-   * \brief Move the Lua state to the given Lua variable id
-   *
-   * This performs any necessary retrieval and mapping from the given fully
-   * qualified Sidre path name to what is in the input deck.
-   *
-   * \param [in] id The path name to the bool that will be retrieved
-   *
-   * \return true if Lua variable was found and Lua state was moved to
-   * variable
-   *****************************************************************************
-   */
-  bool findVariable(const std::string& id);
-
   template<typename T>
   bool getValue(const std::string& id, T& value);
-
-  sol::state lua;
-  lua_State* m_luaState;
+  sol::state m_lua;
 };
 
 } // end namespace inlet

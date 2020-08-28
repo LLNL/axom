@@ -17,23 +17,17 @@
 
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
+#include "axom/inlet/inlet_utils.hpp"
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
+
+#define SOL_ALL_SAFETIES_ON 1
 
 namespace axom
 {
 namespace inlet
 {
-
-LuaReader::~LuaReader()
-{
-  // if (m_luaState)
-  // {
-  //   lua_close(m_luaState);
-  // }
-}
-
 
 bool LuaReader::parseFile(const std::string& filePath)
 {
@@ -44,24 +38,12 @@ bool LuaReader::parseFile(const std::string& filePath)
     return false;
   }
 
-  m_luaState = luaL_newstate();
-  if (luaL_loadfile(m_luaState, filePath.c_str()) ||
-      lua_pcall(m_luaState, 0, 0, 0))
-  {
-    SLIC_WARNING(fmt::format(
-                   "Inlet: Given Lua input deck could not be loaded: {0}",
-                   filePath));
-    m_luaState = nullptr;
-    return false;
+  auto script = m_lua.script_file(filePath);
+  if (!script.valid()) {
+    SLIC_WARNING(fmt::format("Inlet: Given Lua input deck does not exist: {0}",
+                             filePath));
   }
-
-  // script = lua.load_file(filePath);
-  lua.script_file(filePath);
-  // std::ifstream ifs(filePath);
-  // std::string content(std::istreambuf_iterator<char>(ifs),
-  //                     std::istreambuf_iterator<char>());
-  // lua.script(content);
-  return true;
+  return script.valid();
 }
 
 
@@ -72,154 +54,62 @@ bool LuaReader::parseString(const std::string& luaString)
     SLIC_WARNING("Inlet: Given an empty Lua string to parse.");
     return false;
   }
-
-  m_luaState = luaL_newstate();
-  if (luaL_loadstring(m_luaState, luaString.c_str()) ||
-      lua_pcall(m_luaState, 0, 0, 0))
-  {
-    SLIC_WARNING(fmt::format("Inlet: Given Lua string could not be loaded: {0}",
-                             luaString));
-    m_luaState = nullptr;
-    return false;
-  }
-
-  // script = lua.load(luaString);
-  lua.script(luaString);
-
+  m_lua.script(luaString);
   return true;
 }
 
 // TODO allow alternate delimiter at sidre level
 #define SCOPE_DELIMITER '/'
 
-bool LuaReader::findVariable(const std::string& id)
-{
-  if (!m_luaState)
-  {
-    SLIC_WARNING(
-      "Lua state is not initialized. Call LuaReader::parseString or LuaReader::parseFile first!");
-    return false;
-  }
-
-  std::string temp_id = id;
-  //TODO: support multiple roots?
-  if (axom::utilities::string::startsWith(temp_id, SCOPE_DELIMITER))
-  {
-    temp_id.erase(0, 1);
-  }
-
-  if (axom::utilities::string::endsWith(id, SCOPE_DELIMITER))
-  {
-    SLIC_WARNING(fmt::format("Variable cannot end with scope delimiter: {0}",
-                             id));
-    return false;
-  }
-
-  bool atGlobalScope = true;
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, temp_id, SCOPE_DELIMITER);
-
-  // Clear the lua stack because we always call with fully qualified names
-  lua_settop(m_luaState, 0);
-  for (std::string token : tokens)
-  {
-    if(atGlobalScope)
-    {
-      lua_getglobal(m_luaState, token.c_str());
-    }
-    else
-    {
-      lua_getfield(m_luaState, -1, token.c_str());
-    }
-    if(lua_isnil(m_luaState, -1))
-    {
-      // variable not found
-      return false;
-    }
-    atGlobalScope = false;
-  }
-
-  return true;
-}
-
-
 bool LuaReader::getBool(const std::string& id, bool& value)
 {
-  // if (!findVariable(id))
-  // {
-  //   return false;
-  // }
-  // std::vector<std::string> tokens;
-  // axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
-  // if (tokens.size() == 1) {
-  //   value = lua[id];
-  // } else {
-  //   auto t = lua[tokens[0]];
-  //   for (size_t i = 1; i < tokens.size()-1; i++) {
-  //     t = t[tokens[i]];
-  //   }
-  //   value = t[tokens.back()];
-  // }
- 
-  // // value = (bool)lua_toboolean(m_luaState, -1);
-  // return true;
   return getValue(id, value);
 }
 
 
 bool LuaReader::getDouble(const std::string& id, double& value)
 {
-  // if (!findVariable(id))
-  // {
-  //   return false;
-  // }
-  // value = (double)lua_tonumber(m_luaState, -1);
-  // return true;
   return getValue(id, value);
 }
 
 
 bool LuaReader::getInt(const std::string& id, int& value)
 {
-  if (!findVariable(id))
-  {
-    return false;
-  }
-  value = (int)lua_tonumber(m_luaState, -1);
-  return true;
-  // return getValue(id, value);
+  return getValue(id, value);
 }
 
 
 bool LuaReader::getString(const std::string& id, std::string& value)
 {
-  if (!findVariable(id))
-  {
-    return false;
-  }
-  value = std::string(lua_tostring(m_luaState, -1));
-  return true;
-  // return getValue(id, value);
+  return getValue(id, value);
 }
 
 template <typename T>
 bool LuaReader::getValue(const std::string& id, T& value) {
-  if (!findVariable(id))
-  {
-    return false;
-  }
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
-  if (tokens.size() == 1) {
-    value = lua[id];
-  } else {
-    auto t = lua[tokens[0]];
-    for (size_t i = 1; i < tokens.size()-1; i++) {
-      t = t[tokens[i]];
-    }
-    value = t[tokens.back()];
+  if (tokens.size() == 1 && m_lua[id].valid()) {
+    value = m_lua[id];
+    return true;
   }
-  return true;
+  
+  if (!m_lua[tokens[0]].valid()) {
+    return false;
+  }
+  sol::table t = m_lua[tokens[0]];
+  for (size_t i = 1; i < tokens.size()-1; i++) {
+    if (t[tokens[i]].valid()) {
+      t = t[tokens[i]];
+    } else {
+      return false;
+    }
+  }
+  if (t[tokens.back()].valid()) {
+    value = t[tokens.back()];
+    return true;
+  }
+  
+  return false;
 }
 
 } // end namespace inlet

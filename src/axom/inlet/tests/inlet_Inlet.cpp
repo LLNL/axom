@@ -576,9 +576,7 @@ TEST(inlet_Inlet, mixLevelTables)
   // level with nested tables with non-nested values
 
   axom::sidre::DataStore dataStore;
-  auto luaReader = std::make_shared<axom::inlet::LuaReader>();
-  luaReader->parseString(
-    "thermal_solver={"
+  std::string input =  "thermal_solver={"
     "   u0 = { type = 'function', func = 'BoundaryTemperature'},"
     "   kappa = { type = 'constant', constant = 0.5},"
     "   solver = {"
@@ -589,10 +587,10 @@ TEST(inlet_Inlet, mixLevelTables)
     "     dt = 1.0,"
     "     steps = 1 "
     "   }"
-    "}");
-
-  auto inlet = std::make_shared<axom::inlet::Inlet>(luaReader, dataStore.getRoot());
-
+    "}";
+  
+  auto inlet = createBasicInlet(&dataStore, input);
+  
   //
   // Define input deck schema
   //
