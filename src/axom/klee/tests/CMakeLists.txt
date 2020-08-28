@@ -11,8 +11,8 @@
 #
 
 set(gtest_klee_tests
-        io.cpp
-        shape.cpp
+        klee_io.cpp
+        klee_shape.cpp
    )
 
 #
@@ -25,7 +25,7 @@ foreach(test ${gtest_klee_tests})
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON klee gtest
                         FOLDER      axom/klee/tests )
-    blt_add_test( NAME klee_${test_name}
+    blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )
 endforeach()
 

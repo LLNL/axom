@@ -10,14 +10,14 @@ axom_component_requires(NAME       Klee
 #------------------------------------------------------------------------------
 set(klee_headers
         Geometry.hpp
-        io.hpp
+        IO.hpp
         Shape.hpp
         ShapeSet.hpp
     )
 
 set(klee_sources
         Geometry.cpp
-        io.cpp
+        IO.cpp
         Shape.cpp
         ShapeSet.cpp
     )

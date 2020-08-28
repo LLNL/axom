@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/klee/io.hpp"
+#include "axom/klee/IO.hpp"
 
 #include <functional>
 #include <iterator>
