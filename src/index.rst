@@ -179,15 +179,15 @@ LLNL-CODE-741217
    :caption: Component User Guides
 
    Core (Widely useful utilities) <axom/core/docs/sphinx/index>
-   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
-   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
-   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
-   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
-   Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
-   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
+   Inlet (Input decks) <axom/inlet/docs/sphinx/inlet_root>
+   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/lumberjack_root>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
-   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
+   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
+   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
+   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
+   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
+   Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
 
 .. toctree::
    :hidden:
