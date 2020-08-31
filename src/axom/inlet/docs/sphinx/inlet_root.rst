@@ -9,9 +9,8 @@ provides an easy way to read, store, and access input files for computer
 simulations in a variety of input languages.
 
 
-.. raw:: html
-
-    <h3>Introduction</h3>
+Introduction
+------------
 
 Inlet provides an easy and extensible way to handle input files for simulation code.
 We provide Lua functionality but any language can be used via an inherited Reader class.
@@ -20,9 +19,8 @@ That data is then read via a Reader class into the Sidre Datastore.  You can the
 that the input file met your criteria and use that information later in your code.
 
 
-.. raw:: html
-
-    <h3>Requirements</h3>
+Requirements
+------------
 
 * Sidre - Inlet stores all data from the input file in the Sidre DataStore
 * (Optional) Lua - Inlet provides a Lua reader class that assists in Lua input files
@@ -32,10 +30,8 @@ that the input file met your criteria and use that information later in your cod
 
    quick_start
 
-.. raw:: html
-
-    <h3>Additional links</h3>
-
+Additional links
+----------------
 
 * `API documentation <../../../../doxygen/html/lumberjacktop.html>`_
 * `Axom main docs <../../../../index.html>`_
