@@ -36,15 +36,11 @@ include and compiler define:
     #endif
 
 
+`API documentation <../../../../doxygen/html/lumberjacktop.html>`_
+
 .. toctree::
    :maxdepth: 2
 
    quick_start
    core_concepts
    lumberjack_classes
-
-Additional links
-----------------
-
-* `API documentation <../../../../doxygen/html/lumberjacktop.html>`_
-* `Axom main docs <../../../../index.html>`_
