@@ -7,7 +7,7 @@
  *  \brief This example code is a demonstration of the Axom Core utilites.
  */
 
- /* This example code contains snippets used in the Primal Sphinx documentation.
+ /* This example code contains snippets used in the Core Sphinx documentation.
   * They begin and end with comments such as
   *
   * timer_start
