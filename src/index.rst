@@ -60,10 +60,10 @@ Documentation
      - :doc:`User Guide <axom/core/docs/sphinx/index>`
      - `Source documentation <doxygen/html/coretop.html>`_
    * - Inlet
-     - :doc:`User Guide <axom/inlet/docs/sphinx/index>`
+     - :doc:`User Guide <axom/inlet/docs/sphinx/inlet_root>`
      - `Source documentation <doxygen/html/inlettop.html>`_
    * - Lumberjack
-     - :doc:`User Guide <axom/lumberjack/docs/sphinx/index>`
+     - :doc:`User Guide <axom/lumberjack/docs/sphinx/lumberjack_root>`
      - `Source documentation <doxygen/html/lumberjacktop.html>`_
    * - Mint
      - :doc:`User Guide <axom/mint/docs/sphinx/index>`
