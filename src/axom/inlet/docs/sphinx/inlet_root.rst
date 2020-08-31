@@ -25,13 +25,11 @@ Requirements
 * Sidre - Inlet stores all data from the input file in the Sidre DataStore
 * (Optional) Lua - Inlet provides a Lua reader class that assists in Lua input files
 
+
+`API documentation <../../../../doxygen/html/lumberjacktop.html>`_
+
 .. toctree::
    :maxdepth: 2
 
    quick_start
 
-Additional links
-----------------
-
-* `API documentation <../../../../doxygen/html/lumberjacktop.html>`_
-* `Axom main docs <../../../../index.html>`_
