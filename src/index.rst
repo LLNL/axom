@@ -57,7 +57,7 @@ Documentation
    :align: center
 
    * - Core
-     -
+     - :doc:`User Guide <axom/core/docs/sphinx/index>`
      - `Source documentation <doxygen/html/coretop.html>`_
    * - Inlet
      - :doc:`User Guide <axom/inlet/docs/sphinx/index>`
@@ -178,6 +178,7 @@ LLNL-CODE-741217
    :maxdepth: 1
    :caption: Component User Guides
 
+   Core (Widely useful utilities) <axom/core/docs/sphinx/index>
    Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
    Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
    Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
