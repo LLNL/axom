@@ -70,7 +70,7 @@ public:
 
 
   using BitsetType = slam::BitSet;
-  using BinBitMap = slam::Map<slam::Set<>, BitsetType>;
+  using BinBitMap = slam::Map<slam::Set<IndexType,IndexType>, BitsetType>;
 
   /*!
    * \brief Default constructor for an ImplicitGrid
@@ -178,7 +178,7 @@ public:
     // ensure that resolution in each dimension is at least one
     for(int i=0 ; i< NDIMS ; ++i)
     {
-      m_gridRes[i] = axom::utilities::max( m_gridRes[i], 1);
+      m_gridRes[i] = axom::utilities::max( m_gridRes[i], IndexType(1));
     }
 
     // Setup lattice
@@ -190,7 +190,7 @@ public:
     for(int i=0 ; i<NDIMS ; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i], BitsetType(m_elementSet.size()));
+      m_binData[i] = BinBitMap(&m_bins[i], BitsetType(numElts));
     }
 
     // Set the expansion factor for each element to a small fraction of the

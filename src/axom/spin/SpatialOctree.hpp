@@ -57,7 +57,7 @@ public:
     const SpaceVector bbRange = m_boundingBox.range();
     for(int lev = 0 ; lev < this->m_levels.size() ; ++lev)
     {
-      m_deltaLevelMap[lev] = bbRange / static_cast<double>(1<<lev);
+      m_deltaLevelMap[lev] = bbRange / static_cast<double>(CoordType(1)<<lev);
 
       for(int dim=0 ; dim < DIM ; ++dim)
         m_invDeltaLevelMap[lev][dim] = 1./m_deltaLevelMap[lev][dim];
@@ -134,9 +134,9 @@ public:
 
     // Perform binary search on levels to find the leaf block containing the
     // point
-    int minLev = 0;
-    int maxLev = this->maxLeafLevel();
-    int lev = (startingLevel == -1) ? maxLev >> 1 : startingLevel;
+    CoordType minLev = 0;
+    CoordType maxLev = this->maxLeafLevel();
+    CoordType lev = (startingLevel == -1) ? maxLev >> 1 : startingLevel;
 
     while(minLev <= maxLev)
     {

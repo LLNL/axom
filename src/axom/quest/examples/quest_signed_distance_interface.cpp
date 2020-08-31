@@ -293,7 +293,7 @@ void generate_uniform_box_mesh( mint::UniformMesh*& mesh, Arguments& args)
     auto bbox = primal::BoundingBox<double,3>(lowerPoint, upperPoint);
     SLIC_INFO( "bounding box " << bbox );
     
-    const primal::Point<int,3> bdims(args.box_dims.data(), 3);
+    const primal::Point<axom::IndexType,3> bdims(args.box_dims.data(), 3);
     SLIC_INFO( "constructing Uniform Mesh of resolution " << bdims );
   }
 

@@ -281,7 +281,7 @@ UniformGrid< T, NDIMS >::UniformGrid(const double* lower_bound,
 
   // set up the lattice for point conversions
   m_lattice = rectangular_lattice_from_bounding_box(
-    m_boundingBox, primal::NumericArray< T,NDIMS >(m_resolution));
+    m_boundingBox, primal::NumericArray< int,NDIMS >(m_resolution));
 }
 
 template < typename T, int NDIMS >
@@ -295,7 +295,7 @@ UniformGrid< T, NDIMS >::UniformGrid(const BoxType & bbox, const int* res)
 
   // set up the bounding box and lattice for point conversions
   m_lattice = rectangular_lattice_from_bounding_box(
-    m_boundingBox, primal::NumericArray< T,NDIMS >(m_resolution));
+    m_boundingBox, primal::NumericArray< int,NDIMS >(m_resolution));
 }
 
 template < typename T, int NDIMS >

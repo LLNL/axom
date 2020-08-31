@@ -53,7 +53,7 @@ template<
   typename SuperMapType,
   typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
   >
-class SubMap : public MapBase, public StridePolicy
+class SubMap : public MapBase<typename SetType::PositionType>, public StridePolicy
 {
 private:
   using SetPosition = typename SetType::PositionType;
@@ -279,7 +279,7 @@ public:
     }
     else
     {
-      int map_size = ((const MapBase*)m_superMap_constptr)->size();
+      int map_size = ((const MapBase<SetPosition>*)m_superMap_constptr)->size();
       //Check all indices is inside the SuperMap range
       for (int i = 0 ; i < m_subsetIdx.size() ; i++)
       {

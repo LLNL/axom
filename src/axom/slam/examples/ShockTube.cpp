@@ -156,7 +156,7 @@ public:
 
 
 // Define explicit instances of local (key/value) datastore for int and double
-using IntsRegistry = slam::FieldRegistry<BaseSet, int>;
+using IntsRegistry = slam::FieldRegistry<BaseSet, BaseSet::ElementType>;
 using RealsRegistry = slam::FieldRegistry<BaseSet, double>;
 using IntField = IntsRegistry::MapType;
 using RealField = RealsRegistry::MapType;
@@ -658,7 +658,7 @@ int main(void)
   int dumpInterval   = intsRegistry.getScalar("numCyclesPerDump");
 
   // use the & operation when you want to update the param directly
-  int& currCycle = intsRegistry.getScalar("cycle");
+  auto& currCycle = intsRegistry.getScalar("cycle");
   for (currCycle = 0 ; currCycle<numTotalCycles ; ++currCycle)
   {
     if( currCycle % dumpInterval == 0)
