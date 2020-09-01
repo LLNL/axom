@@ -135,9 +135,16 @@ public:
    */
   bool getString(const std::string& id, std::string& value);
 
+  bool getIntMap(const std::string& id, std::unordered_map<int, int>& values);
+  bool getDoubleMap(const std::string& id, std::unordered_map<int, double>& values);
+  bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values);
+  bool getStringMap(const std::string& id, std::unordered_map<int, std::string>& values);
 private:
   template<typename T>
   bool getValue(const std::string& id, T& value);
+
+  template <typename T>
+  bool getMap(const std::string& id, std::unordered_map<int, T>& values, sol::type type);
   sol::state m_lua;
 };
 

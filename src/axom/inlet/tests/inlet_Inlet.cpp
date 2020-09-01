@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include <iostream>
 
@@ -590,7 +591,7 @@ TEST(inlet_Inlet, mixLevelTables)
     "}";
   
   auto inlet = createBasicInlet(&dataStore, input);
-  
+
   //
   // Define input deck schema
   //
@@ -1234,6 +1235,35 @@ TEST(inlet_verify, verifyTableLambda3) {
   EXPECT_TRUE(myInlet->verify());
 }
 
+TEST(lua_Arrays, basicArrays) {
+  std::string testString = "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = 2.4, [33] = 'hello', [200] = 'bye' }";
+  LuaReader lr;
+  lr.parseString(testString);
+
+  std::unordered_map<int,int> ints;
+  bool found = lr.getIntMap("luaArray", ints);
+  EXPECT_TRUE(found);
+  std::unordered_map<int,int> expectedInts{{1,4},{2,5},{3,6},{12,2}};
+  EXPECT_EQ(expectedInts, ints);
+
+  std::unordered_map<int, double> doubles;
+  found = lr.getDoubleMap("luaArray", doubles);
+  EXPECT_TRUE(found);
+  std::unordered_map<int,double> expectedDoubles{{1,4},{2,5},{3,6},{12,2.4}};
+  EXPECT_EQ(expectedDoubles, doubles);
+
+  std::unordered_map<int, bool> bools;
+  found = lr.getBoolMap("luaArray", bools);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, bool> expectedBools{{4, true}, {8,false}};
+  EXPECT_EQ(expectedBools, bools);
+
+  std::unordered_map<int, std::string> strs;
+  found = lr.getStringMap("luaArray", strs);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, std::string> expectedStrs{{33, "hello"}, {200, "bye"}};
+  EXPECT_EQ(expectedStrs, strs);
+}
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

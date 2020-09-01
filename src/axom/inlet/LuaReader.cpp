@@ -84,6 +84,22 @@ bool LuaReader::getString(const std::string& id, std::string& value)
   return getValue(id, value);
 }
 
+bool LuaReader::getIntMap(const std::string& id, std::unordered_map<int, int>& values) {
+  return getMap(id, values, sol::type::number);
+}
+
+bool LuaReader::getDoubleMap(const std::string& id, std::unordered_map<int, double>& values) {
+  return getMap(id, values, sol::type::number);
+}
+
+bool LuaReader::getBoolMap(const std::string& id, std::unordered_map<int, bool>& values) {
+  return getMap(id, values, sol::type::boolean);
+}
+ 
+bool LuaReader::getStringMap(const std::string& id, std::unordered_map<int, std::string>& values) {
+  return getMap(id, values, sol::type::string);
+}
+
 template <typename T>
 bool LuaReader::getValue(const std::string& id, T& value) {
   std::vector<std::string> tokens;
@@ -110,6 +126,34 @@ bool LuaReader::getValue(const std::string& id, T& value) {
   }
   
   return false;
+}
+
+template <typename T>
+bool LuaReader::getMap(const std::string& id, std::unordered_map<int, T>& values, sol::type type) {
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+
+  if (tokens.empty() || !m_lua[tokens[0]].valid()) {
+    return false;
+  }
+  sol::table t = m_lua[tokens[0]];
+  for (size_t i = 1; i < tokens.size(); i++) {
+    if (t[tokens[i]].valid()) {
+      t = t[tokens[i]];
+    } else {
+      return false;
+    }
+  }
+
+  auto it = t.cbegin();
+  while (it != t.cend()) {
+    if ((*it).first.get_type() == sol::type::number 
+        && (*it).second.get_type() == type) {
+      values[(*it).first.as<int>()] = (*it).second.as<T>();
+    } 
+    ++it;
+  }
+  return true;
 }
 
 } // end namespace inlet
