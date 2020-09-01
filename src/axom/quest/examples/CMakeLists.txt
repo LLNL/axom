@@ -21,6 +21,14 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
+    blt_add_executable(
+        NAME        quest_containment_driver_klee_ex
+        SOURCES     containment_driver_klee.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} fmt cli11 klee
+        FOLDER      axom/quest/examples
+        )
+
 ## Quest interface examples
 
 blt_add_executable(
