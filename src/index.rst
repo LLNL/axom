@@ -175,6 +175,7 @@ LLNL-CODE-741217
 
 .. toctree::
    :hidden:
+   :titlesonly:
    :maxdepth: 1
    :caption: Component User Guides
 
