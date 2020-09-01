@@ -89,6 +89,9 @@ inline T matrix_infty_norm( const Matrix< T >& A )
   T norm = -1.0;
   for (IndexType i=0 ; i < numRows ; ++i)
   {
+    // The lines bracketed by rowsum_start and rowsum_end (prepended with
+    // an underscore) are used in the Sphinx documentation of Matrix.
+    // _rowsum_start
     IndexType p = 0;
     IndexType N = 0;
     const T* row = A.getRow( i, p, N );
@@ -98,6 +101,7 @@ inline T matrix_infty_norm( const Matrix< T >& A )
     {
       row_sum += utilities::abs( row[ j ] );
     } // END for all columns
+    // _rowsum_end
 
     norm = ( row_sum > norm ) ? row_sum : norm;
   } // END for all rows
