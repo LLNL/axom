@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/sidre/core/sidre.hpp"
-#include "axom/sidre/datacollection/MFEMSidreDataCollection.hpp"
+#include "axom/sidre/core/MFEMSidreDataCollection.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::MFEMSidreDataCollection;

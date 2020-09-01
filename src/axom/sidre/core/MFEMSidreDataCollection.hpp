@@ -28,8 +28,6 @@ namespace sidre
     LLNL's axom project that run problems at extreme scales.
 
     For more information, see:
-    - Sidre component of LLNL's axom project (to be open-sourced),
-       http://goo.gl/cZyJdn
     - LLNL conduit/blueprint library, https://github.com/LLNL/conduit
     - HDF5 library, https://support.hdfgroup.org/HDF5
 

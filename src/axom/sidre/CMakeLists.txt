@@ -96,8 +96,8 @@ if (ENABLE_FORTRAN)
 endif()
 
 if (MFEM_FOUND)
-    list(APPEND sidre_headers datacollection/MFEMSidreDataCollection.hpp)
-    list(APPEND sidre_sources datacollection/MFEMSidreDataCollection.cpp)
+    list(APPEND sidre_headers core/MFEMSidreDataCollection.hpp)
+    list(APPEND sidre_sources core/MFEMSidreDataCollection.cpp)
 endif()
 
 #------------------------------------------------------------------------------
