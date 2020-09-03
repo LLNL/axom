@@ -15,6 +15,7 @@
 #define INLET_READER_HPP
 
 #include <string>
+#include <unordered_map>
 
 namespace axom
 {
@@ -134,6 +135,10 @@ public:
    */
   virtual bool getString(const std::string& id, std::string& value) = 0;
 
+  virtual bool getIntMap(const std::string& id, std::unordered_map<int, int>& values) = 0;
+  virtual bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values) = 0;
+  virtual bool getDoubleMap(const std::string& id, std::unordered_map<int, double>& values) = 0;
+  virtual bool getStringMap(const std::string& id, std::unordered_map<int, std::string>& values) = 0;
 };
 
 } // end namespace inlet

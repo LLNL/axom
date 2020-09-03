@@ -1235,7 +1235,7 @@ TEST(inlet_verify, verifyTableLambda3) {
   EXPECT_TRUE(myInlet->verify());
 }
 
-TEST(lua_Arrays, basicArrays) {
+TEST(lua_Arrays, basicArraysInLua) {
   std::string testString = "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = 2.4, [33] = 'hello', [200] = 'bye' }";
   LuaReader lr;
   lr.parseString(testString);
@@ -1264,6 +1264,71 @@ TEST(lua_Arrays, basicArrays) {
   std::unordered_map<int, std::string> expectedStrs{{33, "hello"}, {200, "bye"}};
   EXPECT_EQ(expectedStrs, strs);
 }
+
+TEST(lua_Arrays, intInletArrays) {
+  DataStore ds;
+  std::string testString = "luaArrays = { arr1 = { [1] = 4, [2] = 5, [3] = 6 , [12] = 2.4}, arr2 = {[4] = true, [8] = false}, arr3 = {[33] = 'hello', [2] = 'bye'}, arr4 = { [12] = 2.4 } }";
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
+
+  auto group = inlet->getGlobalTable()->sidreGroup()->getGroup("luaArrays/arr1/_inlet_array");
+  auto idx = group->getGroup("1");
+  EXPECT_TRUE(idx);
+  int val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 4);
+
+  idx = group->getGroup("12");
+  EXPECT_TRUE(idx);
+  val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 2);
+
+  idx = group->getGroup("2");
+  EXPECT_TRUE(idx);
+  val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 5);
+
+  idx = group->getGroup("3");
+  EXPECT_TRUE(idx);
+  val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 6);
+
+  inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
+  group = inlet->getTable("luaArrays/arr2/_inlet_array")->sidreGroup();
+
+  idx = group->getGroup("4");
+  EXPECT_TRUE(idx);
+  int8_t boolVal = idx->getView("value")->getScalar();
+  EXPECT_EQ(boolVal, 1);
+
+  idx = group->getGroup("8");
+  EXPECT_TRUE(idx);
+  boolVal = idx->getView("value")->getScalar();
+  EXPECT_EQ(boolVal, 0);
+
+  inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
+  group = inlet->getTable("luaArrays/arr3/_inlet_array")->sidreGroup();
+
+  idx = group->getGroup("33");
+  EXPECT_TRUE(idx);
+  std::string str = idx->getView("value")->getString();
+  EXPECT_EQ(str, "hello");
+
+  idx = group->getGroup("2");
+  EXPECT_TRUE(idx);
+  str = idx->getView("value")->getString();
+  EXPECT_EQ(str, "bye");
+
+  inlet->getGlobalTable()->addDoubleArray("luaArrays/arr4");
+  group = inlet->getTable("luaArrays/arr4/_inlet_array")->sidreGroup();
+
+  idx = group->getGroup("12");
+  EXPECT_TRUE(idx);
+  double doubleVal = idx->getView("value")->getScalar();
+  EXPECT_EQ(doubleVal, 2.4);
+
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
