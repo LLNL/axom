@@ -1,0 +1,32 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+.rzgenie_template:
+  tags:
+    - slurm
+    - rzgenie
+  variables:
+    LLNL_SLURM_SCHEDULER_PARAMETERS: "--nodes=1 --exclusive -p pdebug"
+
+
+stages:
+  - build
+
+# Gitlab cleans things between build stages. I've tried playing around
+# with the "artifacts" feature, but it doesn't always seem to work right.
+# Given the probably short-lived nature of this CI system, I'm not going
+# to put more effort into getting this right for now. -- Esteban
+build_rzgenie:
+  extends:
+    - .rzgenie_template
+  stage: build
+  script:
+    - python scripts/uberenv/uberenv.py --prefix /usr/workspace/${GITLAB_USER_LOGIN}/axom_TPL --spec +debug+devtools%clang --spack-config-dir scripts/uberenv/spack_configs/toss_3_x86_64_ib/
+    - ./config-build.py -hc rzgenie-toss_3_x86_64_ib-clang@10.0.0.cmake
+    - cd build-rzgenie-toss_3_x86_64_ib-clang@10.0.0-debug
+    - make -j
+    - GTEST_OUTPUT="xml:./" make test
+  artifacts:
+    when: always
+    paths:
+      - "build*/axom/**/tests/*_test.xml"

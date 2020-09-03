@@ -776,6 +776,8 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/core \
                          @PROJECT_SOURCE_DIR@/axom/core/utilities \
                          @PROJECT_SOURCE_DIR@/axom/core/numerics \
+                         @PROJECT_SOURCE_DIR@/axom/klee \
+                         @PROJECT_SOURCE_DIR@/axom/klee/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/inlet \
                          @PROJECT_SOURCE_DIR@/axom/inlet/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/lumberjack \
