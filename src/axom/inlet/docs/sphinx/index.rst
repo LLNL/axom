@@ -1,13 +1,20 @@
 
-Inlet User Documentation
-=============================
+Inlet User Guide
+================
 
-.. note:: Inlet, and this documentation, is under heavy development.
+.. note:: Inlet, and this guide, is under heavy development.
 
 Inlet, named because it provides a place of entry, is a C++ library that
 provides an easy way to read, store, and access input files for computer
 simulations in a variety of input languages.
 
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here:
+
+`API documentation <../../../../doxygen/html/inlettop.html>`_
 
 Introduction
 ------------
@@ -25,8 +32,6 @@ Requirements
 * Sidre - Inlet stores all data from the input file in the Sidre DataStore
 * (Optional) Lua - Inlet provides a Lua reader class that assists in Lua input files
 
-
-`API documentation <../../../../doxygen/html/inlettop.html>`_
 
 .. toctree::
    :caption: Contents

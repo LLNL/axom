@@ -1,10 +1,18 @@
 
-Lumberjack User Documentation
-=============================
+Lumberjack User Guide
+=====================
 
 Lumberjack, named because it cuts down logs, is a C++ library that
 provides scalable logging while reducing the amount of messages
 written out the screen or file system.
+
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here:
+
+`API documentation <../../../../doxygen/html/lumberjacktop.html>`_
 
 
 Introduction
@@ -35,8 +43,6 @@ include and compiler define:
         // Lumberjack code
     #endif
 
-
-`API documentation <../../../../doxygen/html/lumberjacktop.html>`_
 
 .. toctree::
    :caption: Contents

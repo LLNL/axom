@@ -3,8 +3,8 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Spin User Documentation
-========================
+Spin User Guide
+===============
 
 The Spin component of Axom provides several index data structures to accelerate
 spatial queries.  The Morton code classes relate each point in a region of
@@ -14,7 +14,14 @@ and ImplicitGrid classes build one-level indexes of non-intersecting bins, while
 the BVHTree and SpatialOctree classes build nesting hierarchies of bounding
 boxes indexing a region of interest.
 
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here:
+
 `API documentation <../../../../doxygen/html/spintop.html>`_
+
 
 .. toctree::
    :titlesonly:

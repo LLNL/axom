@@ -3,12 +3,20 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-================
 Slic User Guide
-================
+===============
 
 Slic provides a *light-weight*, *modular* and *extensible* logging
 infrastructure that simplifies logging application messages.
+
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here:
+
+`API documentation <../../../../doxygen/html/slictop.html>`_
+
 
 Key Features
 ------------
