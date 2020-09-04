@@ -16,7 +16,7 @@ architectures.
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/mintjacktop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/minttop.html>`_
 
 
 Key Features
