@@ -223,8 +223,9 @@ inline T* reallocate(T* pointer, std::size_t n) noexcept
 
   pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
 
-#elif defined(AXOM_USE_UMPIRE) && (UMPIRE_VERSION_MAJOR >= 2) && \
-  (UMPIRE_VERSION_MINOR >= 1)
+#elif defined(AXOM_USE_UMPIRE) && \
+      ( (UMPIRE_VERSION_MAJOR == 2) && (UMPIRE_VERSION_MINOR >= 1) ) || \
+      (UMPIRE_VERSION_MAJOR > 2 )
 
   // Umpire 2.1.0 and above handles reallocate(0) natively
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
