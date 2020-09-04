@@ -25,9 +25,7 @@ applications.
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here:
-
-`API documentation <../../../../doxygen/html/sidretop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/sidretop.html>`_
 
 
 Introduction

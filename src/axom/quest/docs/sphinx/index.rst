@@ -39,9 +39,7 @@ on a ``mint::Mesh``.
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here:
-
-`API documentation <../../../../doxygen/html/questtop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/questtop.html>`_
 
 
 .. toctree::

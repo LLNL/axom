@@ -10,9 +10,7 @@ written out the screen or file system.
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here:
-
-`API documentation <../../../../doxygen/html/lumberjacktop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/lumberjacktop.html>`_
 
 
 Introduction

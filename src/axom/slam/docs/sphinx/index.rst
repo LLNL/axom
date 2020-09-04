@@ -13,9 +13,7 @@ building blocks for distributed-memory mesh data structures in HPC simulation co
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here:
-
-`API documentation <../../../../doxygen/html/slamtop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/slamtop.html>`_
 
 
 Introduction

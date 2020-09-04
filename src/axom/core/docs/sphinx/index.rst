@@ -25,9 +25,7 @@ Axom Slic for output.
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here:
-
-`API documentation <../../../../doxygen/html/coretop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/coretop.html>`_
 
 
 .. toctree::

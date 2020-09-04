@@ -18,9 +18,7 @@ boxes indexing a region of interest.
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here:
-
-`API documentation <../../../../doxygen/html/spintop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/spintop.html>`_
 
 
 .. toctree::

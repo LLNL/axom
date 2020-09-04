@@ -13,9 +13,7 @@ infrastructure that simplifies logging application messages.
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here:
-
-`API documentation <../../../../doxygen/html/slictop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/slictop.html>`_
 
 
 Key Features

@@ -12,9 +12,8 @@ simulations in a variety of input languages.
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here:
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/inlettop.html>`_
 
-`API documentation <../../../../doxygen/html/inlettop.html>`_
 
 Introduction
 ------------

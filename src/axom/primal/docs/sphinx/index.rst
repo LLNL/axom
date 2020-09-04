@@ -20,9 +20,7 @@ for more details).
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here:
-
-`API documentation <../../../../doxygen/html/primaltop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/primaltop.html>`_
 
 
 .. toctree::
