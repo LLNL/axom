@@ -39,6 +39,7 @@ include and compiler define:
 `API documentation <../../../../doxygen/html/lumberjacktop.html>`_
 
 .. toctree::
+   :caption: Contents
    :titlesonly:
    :maxdepth: 2
 

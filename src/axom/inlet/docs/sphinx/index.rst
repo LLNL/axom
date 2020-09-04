@@ -29,6 +29,7 @@ Requirements
 `API documentation <../../../../doxygen/html/inlettop.html>`_
 
 .. toctree::
+   :caption: Contents
    :titlesonly:
    :maxdepth: 2
 
