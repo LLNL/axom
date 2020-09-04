@@ -180,8 +180,8 @@ LLNL-CODE-741217
    :caption: Component User Guides
 
    Core (Widely useful utilities) <axom/core/docs/sphinx/index>
-   Inlet (Input decks) <axom/inlet/docs/sphinx/inlet_root>
-   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/lumberjack_root>
+   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
+   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/ndex>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
    Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>

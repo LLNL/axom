@@ -21,9 +21,12 @@ container classes.
 The Core library is used by the rest of Axom, so Core does not use macros from
 Axom Slic for output.
 
-**Contents:**
+`API documentation <../../../../doxygen/html/coretop.html>`_
+
 
 .. toctree::
+   :caption: Contents
+   :titlesonly:
    :maxdepth: 1
 
    core_numerics

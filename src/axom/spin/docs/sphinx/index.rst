@@ -14,7 +14,10 @@ and ImplicitGrid classes build one-level indexes of non-intersecting bins, while
 the BVHTree and SpatialOctree classes build nesting hierarchies of bounding
 boxes indexing a region of interest.
 
+`API documentation <../../../../doxygen/html/spintop.html>`_
+
 .. toctree::
+   :titlesonly:
    :maxdepth: 2
    :caption: Helper classes, single-level indexes
 
@@ -23,6 +26,7 @@ boxes indexing a region of interest.
    implicitgrid
 
 .. toctree::
+   :titlesonly:
    :maxdepth: 2
    :caption: Tree-structure indexes
 
