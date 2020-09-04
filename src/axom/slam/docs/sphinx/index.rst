@@ -3,12 +3,17 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-=======================
-Slam User Documentation
-=======================
+Slam User Guide
+===============
 
 Axom's Set-theoretic Lightweight API for Meshes (SLAM) component provides high performance
 building blocks for distributed-memory mesh data structures in HPC simulation codes.
+
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here:
 
 `API documentation <../../../../doxygen/html/slamtop.html>`_
 

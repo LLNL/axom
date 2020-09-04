@@ -3,8 +3,8 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Sidre User Documentation
-=========================
+Sidre User Guide
+================
 
 The Sidre (Simulation data repository) component of Axom provides tools to
 centralize data management in HPC applications: data description, allocation, 
@@ -20,6 +20,12 @@ placement to run efficiently. Related capabilities in existing codes were
 typically developed independently for each code with little regard to sharing. 
 In contrast, Sidre is designed from inception to be shared by different 
 applications.
+
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here:
 
 `API documentation <../../../../doxygen/html/sidretop.html>`_
 

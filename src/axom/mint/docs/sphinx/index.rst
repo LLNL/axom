@@ -3,15 +3,23 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-================
 Mint User Guide
-================
+===============
 
 Mint provides a *comprehensive mesh data model* and a mesh-aware, fine-grain,
 parallel execution model that underpins the development of
 computational tools and numerical discretization methods. Thereby, enable
 implementations that are born *parallel* and *portable* to new and emerging
 architectures.
+
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here:
+
+`API documentation <../../../../doxygen/html/mintjacktop.html>`_
+
 
 Key Features
 ------------
@@ -36,6 +44,7 @@ Key Features
   enabling the implementation of computational kernels that are born parallel
   and portable across different processor architectures.
 
+
 Requirements
 ------------
 
@@ -52,6 +61,7 @@ the following third-party libraries is provided:
 
 For further information on how to build the `Axom Toolkit <../../../../index.html>`_ using these
 third-party libraries, consult the `Axom Quick Start Guide <../../../../docs/sphinx/quickstart_guide/index.html>`_.
+
 
 About this Guide
 ----------------
