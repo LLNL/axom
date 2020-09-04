@@ -26,7 +26,7 @@ Requirements
 * (Optional) Lua - Inlet provides a Lua reader class that assists in Lua input files
 
 
-`API documentation <../../../../doxygen/html/lumberjacktop.html>`_
+`API documentation <../../../../doxygen/html/inlettop.html>`_
 
 .. toctree::
    :titlesonly:

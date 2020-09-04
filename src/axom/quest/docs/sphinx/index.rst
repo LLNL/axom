@@ -35,7 +35,10 @@ on a ``mint::Mesh``.
       locations and regions, find all neighbors of each point in a different
       region
 
+`API documentation <../../../../doxygen/html/questtop.html>`_
+
 .. toctree::
+   :titlesonly:
    :maxdepth: 2
    :hidden:
 

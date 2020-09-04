@@ -17,6 +17,7 @@ representative overloads of each of the Primal operators (see the
 for more details).
 
 .. toctree::
+   :titlesonly:
    :maxdepth: 2
 
    primitive

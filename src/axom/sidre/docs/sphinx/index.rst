@@ -21,6 +21,9 @@ typically developed independently for each code with little regard to sharing.
 In contrast, Sidre is designed from inception to be shared by different 
 applications.
 
+`API documentation <../../../../doxygen/html/sidretop.html>`_
+
+
 Introduction
 -------------
 
@@ -83,9 +86,9 @@ Support for these enhancements and others will be added based on application
 needs and use cases.
 
 
-**Contents:**
-
 .. toctree::
+   :caption: Contents
+   :titlesonly:
    :maxdepth: 2
 
    first_example
