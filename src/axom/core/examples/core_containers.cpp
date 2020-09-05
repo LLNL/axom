@@ -18,6 +18,7 @@
 
 // Axom includes
 #include "axom/core/Array.hpp"
+#include "axom/core/Macros.hpp"
 #include "axom/core/memory_management.hpp"
 
 #ifdef WIN32
@@ -136,7 +137,7 @@ void demoArrayBasic()
   // _extbuffer_end
 }
 
-int main()
+int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
   demoArrayBasic();
   return 0;

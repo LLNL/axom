@@ -17,6 +17,7 @@
   */
 
 // Axom includes
+#include "axom/core/Macros.hpp"
 #include "axom/core/numerics/eigen_solve.hpp"
 #include "axom/core/numerics/jacobi_eigensolve.hpp"
 #include "axom/core/numerics/linear_solve.hpp"
@@ -276,7 +277,7 @@ void demoMatrix()
   // _solve_end
 }
 
-int main()
+int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
   // _timer_start
   axom::utilities::Timer t;
@@ -291,6 +292,6 @@ int main()
   std::cout << "The tests took " << t.elapsedTimeInMilliSec() << " ms."
             << std::endl;
   // _timer_end
-
+  
   return 0;
 }
