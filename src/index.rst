@@ -169,14 +169,12 @@ LLNL-CODE-741217
 
 .. toctree::
    :hidden:
-   :maxdepth: 1
 
    docs/sphinx/quickstart_guide/index
 
 .. toctree::
    :hidden:
    :titlesonly:
-   :maxdepth: 1
    :caption: Component User Guides
 
    Core (Widely useful utilities) <axom/core/docs/sphinx/index>
@@ -192,7 +190,6 @@ LLNL-CODE-741217
 
 .. toctree::
    :hidden:
-   :maxdepth: 1
    :caption: Developer Resources
 
    docs/sphinx/dev_guide/index
