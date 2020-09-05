@@ -92,7 +92,6 @@ needs and use cases.
 
 .. toctree::
    :caption: Contents
-   :titlesonly:
    :maxdepth: 2
 
    first_example
