@@ -85,7 +85,7 @@ or by sending e-mail to the Axom Developers mailing list at axom-dev@llnl.gov.
 
 .. toctree::
    :caption: Contents
-   :maxdepth: 3
+   :maxdepth: 4
 
    sections/getting_started.rst
    sections/preliminary_concepts.rst
