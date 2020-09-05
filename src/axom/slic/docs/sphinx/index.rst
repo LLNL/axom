@@ -63,9 +63,9 @@ by `creating a new issue on Github <https://github.com/LLNL/axom/issues>`_
 or by sending e-mail to the Axom Developers mailing list at axom-dev@llnl.gov.
 
 .. toctree::
+   :caption: Contents
    :maxdepth: 3
    :titlesonly:
-   :hidden:
 
    sections/getting_started.rst
    sections/architecture.rst
