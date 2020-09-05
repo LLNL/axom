@@ -44,7 +44,6 @@ Doxygen generated API documentation can be found here: `API documentation <../..
 
 .. toctree::
    :caption: Contents
-   :titlesonly:
    :maxdepth: 2
 
    read_mesh

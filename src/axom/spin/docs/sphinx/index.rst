@@ -22,7 +22,6 @@ Doxygen generated API documentation can be found here: `API documentation <../..
 
 
 .. toctree::
-   :titlesonly:
    :maxdepth: 2
    :caption: Helper classes, single-level indexes
 
@@ -31,7 +30,6 @@ Doxygen generated API documentation can be found here: `API documentation <../..
    implicitgrid
 
 .. toctree::
-   :titlesonly:
    :maxdepth: 2
    :caption: Tree-structure indexes
 
