@@ -61,6 +61,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Transitioned Axom's code formatting tool from `Uncrustify` to [clang-format].
+  Axom's clang-format rules depend on clang 10.
 - Modified the command line interface for `mesh_tester` utility. Interface
   now uses a *-m, --method* option to select the spatial index, and *-p, policy*
   option now accepts a string or integer value.
@@ -400,3 +402,4 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
 [Umpire]: https://github.com/LLNL/Umpire
+[clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
