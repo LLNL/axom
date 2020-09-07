@@ -4,6 +4,7 @@ Aesha Parekh <aeshabparekh@gmail.com>           Aesha Parekh <29237123+aeshapar@
 Arlie Capps <capps2@llnl.gov>                   Arlie Capps <capps2@cab669.llnl.gov>
 Arlie Capps <capps2@llnl.gov>                   Arlie Capps <capps2@cab689.llnl.gov>
 Arlie Capps <capps2@llnl.gov>                   Arlie Capps <48997041+agcapps@users.noreply.github.com>
+Arlie Capps <capps2@llnl.gov>                   Arlie Capps <agcapps@ucdavis.edu>
 Austin Stromme <stromme1@llnl.gov>              Austin James Stromme <stromme1@llnl.gov>
 Austin Stromme <stromme1@llnl.gov>              Austin James Stromme <stromme1@cab689.llnl.gov>
 Austin Stromme <stromme1@llnl.gov>              Austin James Stromme <stromme1@cab669.llnl.gov>
@@ -11,7 +12,8 @@ Benjamin Curtice Corbett <corbett5@llnl.gov>    Benjamin Curtice Corbett <corbet
 Benjamin Curtice Corbett <corbett5@llnl.gov>    Ben Corbett <corbett5@llnl.gov>
 Benjamin Curtice Corbett <corbett5@llnl.gov>    Benjamin Corbett <corbett5@llnl.gov>
 Benjamin Curtice Corbett <corbett5@llnl.gov>    Ben Corbett <32752943+corbett5@users.noreply.github.com>
-Brian Han <han12@llnl.gov>                      Brian Manh Hien Han <han12@rzansel19.coral.llnl.gov>
+Brian Manh Hien Han <han12@llnl.gov>            Brian Han <han12@llnl.gov>          
+Brian Manh Hien Han <han12@llnl.gov>            Brian Manh Hien Han <han12@rzansel19.coral.llnl.gov>
 Chris White <white238@llnl.gov>                 Christopher A. White <white238@llnl.gov>
 Cyrus D. Harrison <harrison37@llnl.gov>         Cyrus Harrison <cyrush@llnl.gov>
 Cyrus D. Harrison <harrison37@llnl.gov>         Cyrus Harrison <harrison37@llnl.gov>
@@ -20,6 +22,7 @@ Evan Taylor Desantola <desantola1@llnl.gov>     Evan Taylor DeSantola <desantola
 George Zagaris <zagaris2@llnl.gov>              George Zagaris <george.zagaris@gmail.com>
 Kenneth Weiss <weiss27@llnl.gov>                Kenneth Weiss <kweiss@llnl.gov>
 Kenneth Weiss <weiss27@llnl.gov>                Kenny Weiss <kennyweiss@users.noreply.github.com>
+Kenneth Weiss <weiss27@llnl.gov>                Kenny Weiss <kenny@kennyweiss.com>
 Keith Edward Healy <healy22@llnl.gov>           keithhealy <50376825+keithhealy@users.noreply.github.com>
 Keith Edward Healy <healy22@llnl.gov>           Keith Edward Healy <healy22@borax5.llnl.gov>
 Lee A. Taylor <taylor16@llnl.gov>               Lee A. Taylor <taylor@cab688.llnl.gov>
@@ -49,5 +52,6 @@ Axom Shared User <axom-dev@llnl.gov>            Aaron Black <atk@cab687.llnl.gov
 Axom Shared User <axom-dev@llnl.gov>            Richard D. Hornung <atk@rzalastor2.llnl.gov>
 Axom Shared User <axom-dev@llnl.gov>            Richard D. Hornung <atk@cab687.llnl.gov>
 
-uncrustify-robot <axom-dev@llnl.gov>            uncrustify-robot <asctoolkit-dev@llnl.gov>
+format-robot <axom-dev@llnl.gov>                uncrustify-robot <axom-dev@llnl.gov>
+format-robot <axom-dev@llnl.gov>                uncrustify-robot <asctoolkit-dev@llnl.gov>
 shroud-robot <axom-dev@llnl.gov>                shroud-robot <asctoolkit-dev@llnl.gov>
