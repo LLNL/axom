@@ -16,13 +16,13 @@
 
 #include "typesSidre.h"
 #ifdef __cplusplus
-#include <cstddef>
-#include <cstdint>
-#include "axom/sidre/core/SidreTypes.hpp"
+  #include <cstddef>
+  #include <cstdint>
+  #include "axom/sidre/core/SidreTypes.hpp"
 #else
-#include <stdbool.h>
-#include <stddef.h>
-#include "axom/sidre/interface/SidreTypes.h"
+  #include <stdbool.h>
+  #include <stddef.h>
+  #include "axom/sidre/interface/SidreTypes.h"
 #endif
 
 // splicer begin class.DataStore.CXX_declarations
@@ -39,8 +39,7 @@ SIDRE_DataStore* SIDRE_DataStore_new(SIDRE_DataStore* SHC_rv);
 
 void SIDRE_DataStore_delete(SIDRE_DataStore* self);
 
-SIDRE_Group* SIDRE_DataStore_get_root(SIDRE_DataStore* self,
-                                      SIDRE_Group* SHC_rv);
+SIDRE_Group* SIDRE_DataStore_get_root(SIDRE_DataStore* self, SIDRE_Group* SHC_rv);
 
 size_t SIDRE_DataStore_get_num_buffers(const SIDRE_DataStore* self);
 

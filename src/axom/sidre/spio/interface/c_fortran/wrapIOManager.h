@@ -19,7 +19,7 @@
 #include "mpi.h"
 #include "typesSPIO.h"
 #ifndef __cplusplus
-#include <stdbool.h>
+  #include <stdbool.h>
 #endif
 
 // splicer begin class.IOManager.CXX_declarations
@@ -32,31 +32,43 @@ extern "C" {
 // splicer begin class.IOManager.C_declarations
 // splicer end class.IOManager.C_declarations
 
-SPIO_IOManager* SPIO_IOManager_ctor_default(MPI_Fint com,
-                                            SPIO_IOManager* SHC_rv);
+SPIO_IOManager* SPIO_IOManager_ctor_default(MPI_Fint com, SPIO_IOManager* SHC_rv);
 
-SPIO_IOManager* SPIO_IOManager_ctor_usescr(MPI_Fint com, bool use_scr,
+SPIO_IOManager* SPIO_IOManager_ctor_usescr(MPI_Fint com,
+                                           bool use_scr,
                                            SPIO_IOManager* SHC_rv);
 
 void SPIO_IOManager_delete(SPIO_IOManager* self);
 
-void SPIO_IOManager_write_0(SPIO_IOManager* self, SIDRE_Group* group,
-                            int num_files, const char* file_string,
+void SPIO_IOManager_write_0(SPIO_IOManager* self,
+                            SIDRE_Group* group,
+                            int num_files,
+                            const char* file_string,
                             const char* protocol);
 
-void SPIO_IOManager_write_0_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
-                                      int num_files, const char* file_string,
-                                      int Lfile_string, const char* protocol,
+void SPIO_IOManager_write_0_bufferify(SPIO_IOManager* self,
+                                      SIDRE_Group* group,
+                                      int num_files,
+                                      const char* file_string,
+                                      int Lfile_string,
+                                      const char* protocol,
                                       int Lprotocol);
 
-void SPIO_IOManager_write_1(SPIO_IOManager* self, SIDRE_Group* group,
-                            int num_files, const char* file_string,
-                            const char* protocol, const char* tree_pattern);
+void SPIO_IOManager_write_1(SPIO_IOManager* self,
+                            SIDRE_Group* group,
+                            int num_files,
+                            const char* file_string,
+                            const char* protocol,
+                            const char* tree_pattern);
 
-void SPIO_IOManager_write_1_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
-                                      int num_files, const char* file_string,
-                                      int Lfile_string, const char* protocol,
-                                      int Lprotocol, const char* tree_pattern,
+void SPIO_IOManager_write_1_bufferify(SPIO_IOManager* self,
+                                      SIDRE_Group* group,
+                                      int num_files,
+                                      const char* file_string,
+                                      int Lfile_string,
+                                      const char* protocol,
+                                      int Lprotocol,
+                                      const char* tree_pattern,
                                       int Ltree_pattern);
 
 void SPIO_IOManager_write_group_to_root_file(SPIO_IOManager* self,
@@ -69,52 +81,82 @@ void SPIO_IOManager_write_group_to_root_file_bufferify(SPIO_IOManager* self,
                                                        int Lfile_name);
 
 void SPIO_IOManager_write_blueprint_index_to_root_file(SPIO_IOManager* self,
-                                                       SIDRE_DataStore* datastore, const char* domain_path, const char* file_name,
+                                                       SIDRE_DataStore* datastore,
+                                                       const char* domain_path,
+                                                       const char* file_name,
                                                        const char* mesh_path);
 
 void SPIO_IOManager_write_blueprint_index_to_root_file_bufferify(
-  SPIO_IOManager* self, SIDRE_DataStore* datastore, const char* domain_path,
-  int Ldomain_path, const char* file_name, int Lfile_name,
-  const char* mesh_path, int Lmesh_path);
+  SPIO_IOManager* self,
+  SIDRE_DataStore* datastore,
+  const char* domain_path,
+  int Ldomain_path,
+  const char* file_name,
+  int Lfile_name,
+  const char* mesh_path,
+  int Lmesh_path);
 
-void SPIO_IOManager_read_0(SPIO_IOManager* self, SIDRE_Group* group,
-                           const char* file_string, const char* protocol);
+void SPIO_IOManager_read_0(SPIO_IOManager* self,
+                           SIDRE_Group* group,
+                           const char* file_string,
+                           const char* protocol);
 
-void SPIO_IOManager_read_0_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
-                                     const char* file_string, int Lfile_string,
-                                     const char* protocol, int Lprotocol);
+void SPIO_IOManager_read_0_bufferify(SPIO_IOManager* self,
+                                     SIDRE_Group* group,
+                                     const char* file_string,
+                                     int Lfile_string,
+                                     const char* protocol,
+                                     int Lprotocol);
 
-void SPIO_IOManager_read_1(SPIO_IOManager* self, SIDRE_Group* group,
-                           const char* file_string, const char* protocol,
+void SPIO_IOManager_read_1(SPIO_IOManager* self,
+                           SIDRE_Group* group,
+                           const char* file_string,
+                           const char* protocol,
                            bool preserve_contents);
 
-void SPIO_IOManager_read_1_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
-                                     const char* file_string, int Lfile_string,
-                                     const char* protocol, int Lprotocol,
+void SPIO_IOManager_read_1_bufferify(SPIO_IOManager* self,
+                                     SIDRE_Group* group,
+                                     const char* file_string,
+                                     int Lfile_string,
+                                     const char* protocol,
+                                     int Lprotocol,
                                      bool preserve_contents);
 
-void SPIO_IOManager_read_2(SPIO_IOManager* self, SIDRE_Group* group,
+void SPIO_IOManager_read_2(SPIO_IOManager* self,
+                           SIDRE_Group* group,
                            const char* root_file);
 
-void SPIO_IOManager_read_2_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
-                                     const char* root_file, int Lroot_file);
+void SPIO_IOManager_read_2_bufferify(SPIO_IOManager* self,
+                                     SIDRE_Group* group,
+                                     const char* root_file,
+                                     int Lroot_file);
 
-void SPIO_IOManager_read_3(SPIO_IOManager* self, SIDRE_Group* group,
-                           const char* root_file, bool preserve_contents);
+void SPIO_IOManager_read_3(SPIO_IOManager* self,
+                           SIDRE_Group* group,
+                           const char* root_file,
+                           bool preserve_contents);
 
-void SPIO_IOManager_read_3_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
-                                     const char* root_file, int Lroot_file,
+void SPIO_IOManager_read_3_bufferify(SPIO_IOManager* self,
+                                     SIDRE_Group* group,
+                                     const char* root_file,
+                                     int Lroot_file,
                                      bool preserve_contents);
 
-void SPIO_IOManager_read_4(SPIO_IOManager* self, SIDRE_Group* group,
-                           const char* root_file, bool preserve_contents,
+void SPIO_IOManager_read_4(SPIO_IOManager* self,
+                           SIDRE_Group* group,
+                           const char* root_file,
+                           bool preserve_contents,
                            bool use_scr);
 
-void SPIO_IOManager_read_4_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
-                                     const char* root_file, int Lroot_file,
-                                     bool preserve_contents, bool use_scr);
+void SPIO_IOManager_read_4_bufferify(SPIO_IOManager* self,
+                                     SIDRE_Group* group,
+                                     const char* root_file,
+                                     int Lroot_file,
+                                     bool preserve_contents,
+                                     bool use_scr);
 
-void SPIO_IOManager_load_external_data(SPIO_IOManager* self, SIDRE_Group* group,
+void SPIO_IOManager_load_external_data(SPIO_IOManager* self,
+                                       SIDRE_Group* group,
                                        const char* root_file);
 
 void SPIO_IOManager_load_external_data_bufferify(SPIO_IOManager* self,

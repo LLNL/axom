@@ -86,8 +86,7 @@ size_t SIDRE_Buffer_get_bytes_per_element(const SIDRE_Buffer* self)
   // splicer end class.Buffer.method.get_bytes_per_element
 }
 
-void SIDRE_Buffer_describe(SIDRE_Buffer* self, int type,
-                           SIDRE_IndexType num_elems)
+void SIDRE_Buffer_describe(SIDRE_Buffer* self, int type, SIDRE_IndexType num_elems)
 {
   axom::sidre::Buffer* SH_this = static_cast<axom::sidre::Buffer*>(self->addr);
   // splicer begin class.Buffer.method.describe
@@ -104,7 +103,8 @@ void SIDRE_Buffer_allocate_existing(SIDRE_Buffer* self)
   // splicer end class.Buffer.method.allocate_existing
 }
 
-void SIDRE_Buffer_allocate_from_type(SIDRE_Buffer* self, int type,
+void SIDRE_Buffer_allocate_from_type(SIDRE_Buffer* self,
+                                     int type,
                                      SIDRE_IndexType num_elems)
 {
   axom::sidre::Buffer* SH_this = static_cast<axom::sidre::Buffer*>(self->addr);

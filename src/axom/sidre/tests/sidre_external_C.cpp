@@ -23,10 +23,10 @@ TEST(C_sidre_external, create_external_view)
 
   const int len = 11;
 
-  int* idata = (int*) malloc(sizeof(int) * len);
-  double* ddata = (double*) malloc(sizeof(double) * len);
+  int* idata = (int*)malloc(sizeof(int) * len);
+  double* ddata = (double*)malloc(sizeof(double) * len);
 
-  for (int ii = 0 ; ii < len ; ++ii)
+  for(int ii = 0; ii < len; ++ii)
   {
     idata[ii] = ii;
     ddata[ii] = idata[ii] * 2.0;
@@ -43,14 +43,14 @@ TEST(C_sidre_external, create_external_view)
   SIDRE_View_print(iview);
   SIDRE_View_print(dview);
 
-  int* idata_chk = (int*) SIDRE_View_get_void_ptr(iview);
-  for (int ii = 0 ; ii < len ; ++ii)
+  int* idata_chk = (int*)SIDRE_View_get_void_ptr(iview);
+  for(int ii = 0; ii < len; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double* ddata_chk = (double*) SIDRE_View_get_void_ptr(dview);
-  for (int ii = 0 ; ii < len ; ++ii)
+  double* ddata_chk = (double*)SIDRE_View_get_void_ptr(dview);
+  for(int ii = 0; ii < len; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
   }
