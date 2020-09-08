@@ -16,7 +16,7 @@
 
 #include "typesSLIC.h"
 #ifndef __cplusplus
-#include <stdbool.h>
+  #include <stdbool.h>
 #endif
 
 // splicer begin CXX_declarations
@@ -73,11 +73,18 @@ void SLIC_disable_abort_on_warning(void);
 
 bool SLIC_is_abort_on_warnings_enabled(void);
 
-void SLIC_log_message(int level, const char* message, const char* fileName,
-                      int line, bool filter);
+void SLIC_log_message(int level,
+                      const char* message,
+                      const char* fileName,
+                      int line,
+                      bool filter);
 
-void SLIC_log_message_bufferify(int level, const char* message, int Lmessage,
-                                const char* fileName, int LfileName, int line,
+void SLIC_log_message_bufferify(int level,
+                                const char* message,
+                                int Lmessage,
+                                const char* fileName,
+                                int LfileName,
+                                int line,
                                 bool filter);
 
 void SLIC_finalize(void);

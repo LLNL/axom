@@ -23,39 +23,38 @@ using axom::slic::UnitTestLogger;
 
 namespace
 {
-
 static const bool IS_VALID = true;
 static const bool SHOULD_PRINT = false;
 
 void printMsg(std::string const& str, bool override = false)
 {
-  if(SHOULD_PRINT || override)
-    std::cout<< str << std::endl;
+  if(SHOULD_PRINT || override) std::cout << str << std::endl;
 }
 
 struct AssertCtor
 {
-  AssertCtor() { SLIC_WARNING_IF(IS_VALID,"Testing warning in .ctor"); }
+  AssertCtor() { SLIC_WARNING_IF(IS_VALID, "Testing warning in .ctor"); }
 };
 
 struct AssertMethod
 {
-  void foo() { SLIC_WARNING_IF(IS_VALID,"Testing warning in class method"); }
+  void foo() { SLIC_WARNING_IF(IS_VALID, "Testing warning in class method"); }
 };
 
 struct AssertDtor
 {
-  ~AssertDtor() { SLIC_WARNING_IF(IS_VALID,"Testing warning in .dtor"); }
+  ~AssertDtor() { SLIC_WARNING_IF(IS_VALID, "Testing warning in .dtor"); }
 };
-
 
 class SetFixtureC : public ::benchmark::Fixture
 {
 public:
-  SetFixtureC() {
-    SLIC_WARNING_IF(IS_VALID,"Testing warning in .ctor");
+  SetFixtureC()
+  {
+    SLIC_WARNING_IF(IS_VALID, "Testing warning in .ctor");
     printMsg(
-      "*** Note: the slic log is not printed for SetFixtureC/assertCtor since it is called before slic::initialize() ***",
+      "*** Note: the slic log is not printed for SetFixtureC/assertCtor since "
+      "it is called before slic::initialize() ***",
       true);
   }
 };
@@ -63,22 +62,24 @@ public:
 class SetFixtureS : public ::benchmark::Fixture
 {
 public:
-  void SetUp() {SLIC_WARNING_IF(IS_VALID,"Testing warning in setup"); }
+  void SetUp() { SLIC_WARNING_IF(IS_VALID, "Testing warning in setup"); }
 };
 
 class SetFixtureT : public ::benchmark::Fixture
 {
 public:
-  void TearDown() {SLIC_WARNING_IF(IS_VALID,"Testing warning in teardown"); }
+  void TearDown() { SLIC_WARNING_IF(IS_VALID, "Testing warning in teardown"); }
 };
 
 class SetFixtureD : public ::benchmark::Fixture
 {
 public:
-  ~SetFixtureD() {
-    SLIC_WARNING_IF(IS_VALID,"Testing warning in .dtor");
+  ~SetFixtureD()
+  {
+    SLIC_WARNING_IF(IS_VALID, "Testing warning in .dtor");
     printMsg(
-      "*** Note: the slic log is not printed for SetFixtureD/assertDtor since it is called after slic::finalize() ***",
+      "*** Note: the slic log is not printed for SetFixtureD/assertDtor since "
+      "it is called after slic::finalize() ***",
       true);
   }
 };
@@ -92,37 +93,36 @@ public:
   ~SetFixtureOutput() { printMsg("  fixure ~.dtor"); }
 };
 
-static void BM_AssertBefore(benchmark::State& state) {
+static void BM_AssertBefore(benchmark::State& state)
+{
   SLIC_WARNING_IF(IS_VALID, "Testing warning before running benchmark");
-  while(state.KeepRunning())
-    benchmark::DoNotOptimize(0);
+  while(state.KeepRunning()) benchmark::DoNotOptimize(0);
 }
 
-static void BM_AssertAfter(benchmark::State& state) {
-  while(state.KeepRunning())
-    benchmark::DoNotOptimize(0);
+static void BM_AssertAfter(benchmark::State& state)
+{
+  while(state.KeepRunning()) benchmark::DoNotOptimize(0);
   SLIC_WARNING_IF(IS_VALID, "Testing warning after running benchmark");
 }
 
-static void BM_CallAssertCtorBefore(benchmark::State& state) {
+static void BM_CallAssertCtorBefore(benchmark::State& state)
+{
   AssertCtor();
-  while(state.KeepRunning())
-    benchmark::DoNotOptimize(0);
+  while(state.KeepRunning()) benchmark::DoNotOptimize(0);
 }
 
-static void BM_CallAssertDtorBefore(benchmark::State& state) {
+static void BM_CallAssertDtorBefore(benchmark::State& state)
+{
   AssertDtor();
-  while(state.KeepRunning())
-    benchmark::DoNotOptimize(0);
+  while(state.KeepRunning()) benchmark::DoNotOptimize(0);
 }
 
-static void BM_CallAssertDtorDuring(benchmark::State& state) {
-  while(state.KeepRunning())
-    AssertDtor();
+static void BM_CallAssertDtorDuring(benchmark::State& state)
+{
+  while(state.KeepRunning()) AssertDtor();
 }
 
-}
-
+}  // namespace
 
 BENCHMARK(BM_AssertBefore);
 BENCHMARK(BM_AssertAfter);
@@ -130,7 +130,7 @@ BENCHMARK(BM_CallAssertCtorBefore);
 BENCHMARK(BM_CallAssertDtorBefore);
 BENCHMARK(BM_CallAssertDtorDuring);
 
-BENCHMARK_F(SetFixtureC, assertCtor )(benchmark::State& state)
+BENCHMARK_F(SetFixtureC, assertCtor)(benchmark::State& state)
 {
   while(state.KeepRunning())
   {
@@ -165,7 +165,8 @@ BENCHMARK_F(SetFixtureD, assertDtor)(benchmark::State& state)
 // this.
 BENCHMARK_F(SetFixtureOutput, process1)(benchmark::State& state)
 {
-  printMsg("   P1 (before)"); while(state.KeepRunning())
+  printMsg("   P1 (before)");
+  while(state.KeepRunning())
   {
     benchmark::DoNotOptimize(0);
   }
@@ -173,24 +174,21 @@ BENCHMARK_F(SetFixtureOutput, process1)(benchmark::State& state)
 }
 BENCHMARK_F(SetFixtureOutput, process2)(benchmark::State& state)
 {
-  printMsg("   P2 (before)"); while(state.KeepRunning())
+  printMsg("   P2 (before)");
+  while(state.KeepRunning())
   {
     benchmark::DoNotOptimize(0);
   }
   printMsg("   P2 (after)");
 }
 
-
-
 int main(int argc, char* argv[])
 {
   printMsg("at start of main");
 
-
   printMsg(" Before init logger");
   axom::slic::UnitTestLogger logger;  // create & initialize test logger,
   printMsg(" After init logger");
-
 
   printMsg(" Before init benchmark");
 
