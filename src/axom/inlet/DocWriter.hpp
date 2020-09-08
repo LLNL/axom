@@ -23,8 +23,7 @@
 namespace axom
 {
 namespace inlet
-{ 
-
+{
 /*!
  *******************************************************************************
  * \class DocWriter
@@ -38,7 +37,8 @@ namespace inlet
  * \see SphinxDocWriter
  *******************************************************************************
  */
-class DocWriter {
+class DocWriter
+{
 public:
   /*!
    *****************************************************************************
@@ -52,7 +52,7 @@ public:
   virtual void writeDocumentation() = 0;
 };
 
-}
-}
+}  // namespace inlet
+}  // namespace axom
 
 #endif

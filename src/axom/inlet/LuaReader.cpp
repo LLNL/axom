@@ -23,32 +23,30 @@ namespace axom
 {
 namespace inlet
 {
-
 LuaReader::~LuaReader()
 {
-  if (m_luaState)
+  if(m_luaState)
   {
     lua_close(m_luaState);
   }
 }
 
-
 bool LuaReader::parseFile(const std::string& filePath)
 {
-  if (!axom::utilities::filesystem::pathExists(filePath))
+  if(!axom::utilities::filesystem::pathExists(filePath))
   {
-    SLIC_WARNING(fmt::format("Inlet: Given Lua input file does not exist: {0}",
-                             filePath));
+    SLIC_WARNING(
+      fmt::format("Inlet: Given Lua input file does not exist: {0}", filePath));
     return false;
   }
 
   m_luaState = luaL_newstate();
-  if (luaL_loadfile(m_luaState, filePath.c_str()) ||
-      lua_pcall(m_luaState, 0, 0, 0))
+  if(luaL_loadfile(m_luaState, filePath.c_str()) ||
+     lua_pcall(m_luaState, 0, 0, 0))
   {
-    SLIC_WARNING(fmt::format(
-                   "Inlet: Given Lua input file could not be loaded: {0}",
-                   filePath));
+    SLIC_WARNING(
+      fmt::format("Inlet: Given Lua input file could not be loaded: {0}",
+                  filePath));
     m_luaState = nullptr;
     return false;
   }
@@ -56,18 +54,17 @@ bool LuaReader::parseFile(const std::string& filePath)
   return true;
 }
 
-
 bool LuaReader::parseString(const std::string& luaString)
 {
-  if (luaString.empty())
+  if(luaString.empty())
   {
     SLIC_WARNING("Inlet: Given an empty Lua string to parse.");
     return false;
   }
 
   m_luaState = luaL_newstate();
-  if (luaL_loadstring(m_luaState, luaString.c_str()) ||
-      lua_pcall(m_luaState, 0, 0, 0))
+  if(luaL_loadstring(m_luaState, luaString.c_str()) ||
+     lua_pcall(m_luaState, 0, 0, 0))
   {
     SLIC_WARNING(fmt::format("Inlet: Given Lua string could not be loaded: {0}",
                              luaString));
@@ -83,25 +80,27 @@ bool LuaReader::parseString(const std::string& luaString)
 
 bool LuaReader::findVariable(const std::string& id)
 {
-  if (!m_luaState)
+  if(!m_luaState)
   {
-    SLIC_WARNING("[Inlet] Lua state is not initialized. "
-                 "Call LuaReader::parseString or LuaReader::parseFile first!");
+    SLIC_WARNING(
+      "[Inlet] Lua state is not initialized. "
+      "Call LuaReader::parseString or LuaReader::parseFile first!");
     return false;
   }
 
   std::string temp_id = id;
   //TODO: support multiple roots?
-  if (axom::utilities::string::startsWith(temp_id, SCOPE_DELIMITER))
+  if(axom::utilities::string::startsWith(temp_id, SCOPE_DELIMITER))
   {
     temp_id.erase(0, 1);
   }
 
-  if (axom::utilities::string::endsWith(id, SCOPE_DELIMITER))
+  if(axom::utilities::string::endsWith(id, SCOPE_DELIMITER))
   {
-    SLIC_WARNING(fmt::format("[Inlet] Variable cannot end with scope "
-                             "delimiter: {0}",
-                             id));
+    SLIC_WARNING(
+      fmt::format("[Inlet] Variable cannot end with scope "
+                  "delimiter: {0}",
+                  id));
     return false;
   }
 
@@ -111,7 +110,7 @@ bool LuaReader::findVariable(const std::string& id)
 
   // Clear the lua stack because we always call with fully qualified names
   lua_settop(m_luaState, 0);
-  for (std::string token : tokens)
+  for(std::string token : tokens)
   {
     if(atGlobalScope)
     {
@@ -132,10 +131,9 @@ bool LuaReader::findVariable(const std::string& id)
   return true;
 }
 
-
 bool LuaReader::getBool(const std::string& id, bool& value)
 {
-  if (!findVariable(id))
+  if(!findVariable(id))
   {
     return false;
   }
@@ -143,10 +141,9 @@ bool LuaReader::getBool(const std::string& id, bool& value)
   return true;
 }
 
-
 bool LuaReader::getDouble(const std::string& id, double& value)
 {
-  if (!findVariable(id))
+  if(!findVariable(id))
   {
     return false;
   }
@@ -154,10 +151,9 @@ bool LuaReader::getDouble(const std::string& id, double& value)
   return true;
 }
 
-
 bool LuaReader::getInt(const std::string& id, int& value)
 {
-  if (!findVariable(id))
+  if(!findVariable(id))
   {
     return false;
   }
@@ -165,10 +161,9 @@ bool LuaReader::getInt(const std::string& id, int& value)
   return true;
 }
 
-
 bool LuaReader::getString(const std::string& id, std::string& value)
 {
-  if (!findVariable(id))
+  if(!findVariable(id))
   {
     return false;
   }
@@ -176,5 +171,5 @@ bool LuaReader::getString(const std::string& id, std::string& value)
   return true;
 }
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom

@@ -24,7 +24,6 @@ namespace axom
 {
 namespace inlet
 {
-
 class Table;
 
 /*!
@@ -135,7 +134,7 @@ public:
                                    const std::string& description);
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif

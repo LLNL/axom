@@ -28,7 +28,6 @@ TEST(inlet_LuaReader_getBool, getTopLevelBools)
   EXPECT_EQ(value, false);
 }
 
-
 TEST(inlet_LuaReader_getBool, getInsideBools)
 {
   axom::inlet::LuaReader lr;
@@ -46,7 +45,6 @@ TEST(inlet_LuaReader_getBool, getInsideBools)
   EXPECT_EQ(retValue, true);
   EXPECT_EQ(value, true);
 }
-
 
 TEST(inlet_LuaReader_getString, getTopLevelStrings)
 {
@@ -66,7 +64,6 @@ TEST(inlet_LuaReader_getString, getTopLevelStrings)
   EXPECT_EQ(retValue, true);
   EXPECT_EQ(value, "TesT StrInG");
 }
-
 
 TEST(inlet_LuaReader_getString, getInsideStrings)
 {
@@ -88,12 +85,10 @@ TEST(inlet_LuaReader_getString, getInsideStrings)
   EXPECT_EQ(value, "TesT StrInG");
 }
 
-
 TEST(inlet_LuaReader, mixLevelTables)
 {
   axom::inlet::LuaReader lr;
-  lr.parseString(
-    "t = { innerT = { foo = 1 }, anotherInnerT = {baz = 3}}");
+  lr.parseString("t = { innerT = { foo = 1 }, anotherInnerT = {baz = 3}}");
 
   bool retValue;
   int value;
@@ -113,7 +108,6 @@ TEST(inlet_LuaReader, mixLevelTables)
   EXPECT_EQ(retValue, true);
   EXPECT_EQ(value, 3);
 }
-
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
