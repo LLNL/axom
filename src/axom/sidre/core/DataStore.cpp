@@ -22,6 +22,9 @@
 #include "Group.hpp"
 #include "Attribute.hpp"
 
+#ifdef AXOM_USE_MPI
+#include "conduit_blueprint_mpi.hpp"
+#endif
 
 namespace axom
 {
@@ -581,7 +584,11 @@ bool DataStore::generateBlueprintIndex(const std::string& domain_path,
 
   bool success = false;
   conduit::Node info;
+#ifdef AXOM_USE_MPI
+  if (conduit::blueprint::mpi::verify("mesh", mesh_node, info, MPI_COMM_WORLD))
+#else
   if (conduit::blueprint::verify("mesh", mesh_node, info))
+#endif
   {
 
     conduit::Node index;
