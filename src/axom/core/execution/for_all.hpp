@@ -12,12 +12,11 @@
 #include "axom/core/Types.hpp"                     /* for axom::IndexType */
 
 // C/C++ includes
-#include <type_traits> // for std::is_same()
-#include <utility>     // for std::forward()
+#include <type_traits>  // for std::is_same()
+#include <utility>      // for std::forward()
 
 namespace axom
 {
-
 /// \name Generic Loop Traversal Functions
 /// @{
 
@@ -48,29 +47,29 @@ namespace axom
  * \endcode
  *
  */
-template < typename ExecSpace, typename KernelType >
-inline void for_all( const IndexType& begin, const IndexType& end,
-                     KernelType&& kernel ) noexcept
+template <typename ExecSpace, typename KernelType>
+inline void for_all(const IndexType& begin,
+                    const IndexType& end,
+                    KernelType&& kernel) noexcept
 {
-  AXOM_STATIC_ASSERT( execution_space< ExecSpace >::valid() );
+  AXOM_STATIC_ASSERT(execution_space<ExecSpace>::valid());
 
 #ifdef AXOM_USE_RAJA
 
-  using loop_exec = typename execution_space< ExecSpace >::loop_policy;
-  RAJA::forall< loop_exec >( RAJA::RangeSegment( begin, end ),
-                             std::forward< KernelType >( kernel ) );
+  using loop_exec = typename execution_space<ExecSpace>::loop_policy;
+  RAJA::forall<loop_exec>(RAJA::RangeSegment(begin, end),
+                          std::forward<KernelType>(kernel));
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecSpace, SEQ_EXEC >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-  for ( IndexType i=begin ; i < end ; ++i )
+  constexpr bool is_serial = std::is_same<ExecSpace, SEQ_EXEC>::value;
+  AXOM_STATIC_ASSERT(is_serial);
+  for(IndexType i = begin; i < end; ++i)
   {
-    kernel( i );
+    kernel(i);
   }
 
 #endif
-
 }
 
 /*!
@@ -98,11 +97,11 @@ inline void for_all( const IndexType& begin, const IndexType& end,
  * \endcode
  *
  */
-template < typename ExecSpace, typename KernelType >
-inline void for_all( const IndexType& N, KernelType&& kernel ) noexcept
+template <typename ExecSpace, typename KernelType>
+inline void for_all(const IndexType& N, KernelType&& kernel) noexcept
 {
-  AXOM_STATIC_ASSERT( execution_space< ExecSpace >::valid() );
-  for_all< ExecSpace >( 0, N, std::forward< KernelType >( kernel ) );
+  AXOM_STATIC_ASSERT(execution_space<ExecSpace>::valid());
+  for_all<ExecSpace>(0, N, std::forward<KernelType>(kernel));
 }
 
 /// @}

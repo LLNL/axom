@@ -31,14 +31,8 @@ extern "C" {
 //
 // The result must be an argument because some compilers (Intel)
 // cannot return type(C_PTR)
-void sidre_c_loc(void* addr, void** out)
-{
-  *out = addr;
-}
-void sidre_c_loc_(void* addr, void** out)
-{
-  *out = addr;
-}
+void sidre_c_loc(void* addr, void** out) { *out = addr; }
+void sidre_c_loc_(void* addr, void** out) { *out = addr; }
 
 // splicer end C_definitions
 
@@ -53,14 +47,14 @@ bool SIDRE_name_is_valid(const char* name)
 void SIDRE_SHROUD_memory_destructor(SIDRE_SHROUD_capsule_data* cap)
 {
   void* ptr = cap->addr;
-  switch (cap->idtor)
+  switch(cap->idtor)
   {
-  case 0:     // --none--
+  case 0:  // --none--
   {
     // Nothing to delete
     break;
   }
-  case 1:     // axom::sidre::DataStore
+  case 1:  // axom::sidre::DataStore
   {
     axom::sidre::DataStore* cxx_ptr =
       reinterpret_cast<axom::sidre::DataStore*>(ptr);
@@ -74,7 +68,7 @@ void SIDRE_SHROUD_memory_destructor(SIDRE_SHROUD_capsule_data* cap)
   }
   }
   cap->addr = nullptr;
-  cap->idtor = 0;    // avoid deleting again
+  cap->idtor = 0;  // avoid deleting again
 }
 
 }  // extern "C"

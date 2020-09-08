@@ -24,7 +24,6 @@ namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class Field
@@ -54,10 +53,15 @@ public:
    * generation is enabled for Input file this Field instance belongs to.
    *****************************************************************************
    */
-  Field(axom::sidre::Group* sidreGroup, axom::sidre::Group* root,
+  Field(axom::sidre::Group* sidreGroup,
+        axom::sidre::Group* root,
         axom::sidre::DataTypeId type = axom::sidre::DataTypeId::NO_TYPE_ID,
-        bool docEnabled = true) : m_sidreGroup(sidreGroup), m_sidreRootGroup(root),
-        m_type(type), m_docEnabled(docEnabled) {}
+        bool docEnabled = true)
+    : m_sidreGroup(sidreGroup)
+    , m_sidreRootGroup(root)
+    , m_type(type)
+    , m_docEnabled(docEnabled)
+  { }
 
   /*!
    *****************************************************************************
@@ -110,7 +114,7 @@ public:
   */
   std::shared_ptr<Field> defaultValue(const std::string& value);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Set the default value of this Field.
    *
@@ -284,7 +288,6 @@ public:
   std::string name();
 
 private:
-
   /*!
    *****************************************************************************
    * \brief Set the valid values for this Field.
@@ -293,8 +296,8 @@ private:
    *
    * \return Shared pointer to this Field instance
    *****************************************************************************
-  */  
-  template <typename T> 
+  */
+  template <typename T>
   void setScalarValidValues(std::vector<T> set);
 
   /*!
@@ -310,9 +313,9 @@ private:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  template<typename T>
+  template <typename T>
   void setRange(T startVal, T endVal);
-  
+
   /*!
    *****************************************************************************
    * \brief Set the default value of this Field.
@@ -324,7 +327,7 @@ private:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  template<typename T>
+  template <typename T>
   void setDefaultValue(T value);
 
   // This Field's sidre group
@@ -335,7 +338,7 @@ private:
   std::function<bool()> m_verifier;
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif

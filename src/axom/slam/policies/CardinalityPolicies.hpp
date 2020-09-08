@@ -56,50 +56,43 @@ namespace axom
 {
 namespace slam
 {
-
 namespace policies
 {
-
-template<
-  typename ElementType = int,
-  typename StridePolicy = RuntimeStride<ElementType> >
+template <typename ElementType = int, typename StridePolicy = RuntimeStride<ElementType>>
 struct ConstantCardinality
 {
   using BeginsSizePolicy = RuntimeSize<ElementType>;
   using BeginsOffsetPolicy = ZeroOffset<ElementType>;
   using BeginsStridePolicy = StridePolicy;
-  using BeginsIndirectionPolicy = NoIndirection<ElementType,ElementType>;
+  using BeginsIndirectionPolicy = NoIndirection<ElementType, ElementType>;
 
   // runtime size (fromSet.size()), striding from template parameter, no offset
-  using BeginsSet = OrderedSet<ElementType, ElementType,
-                               BeginsSizePolicy,
-                               BeginsOffsetPolicy,
-                               BeginsStridePolicy >;
+  using BeginsSet =
+    OrderedSet<ElementType, ElementType, BeginsSizePolicy, BeginsOffsetPolicy, BeginsStridePolicy>;
 
   // The cardinality of each relational operator is determined by the
   // StridePolicy of the relation
   using RelationalOperatorSizeType =
-          typename StrideToSize<BeginsStridePolicy,
-                                ElementType,
-                                BeginsStridePolicy::DEFAULT_VALUE>::SizeType;
+    typename StrideToSize<BeginsStridePolicy,
+                          ElementType,
+                          BeginsStridePolicy::DEFAULT_VALUE>::SizeType;
 
-
-  ConstantCardinality() : m_begins() {}
-  ConstantCardinality(BeginsSet begins) : m_begins(begins) {}
+  ConstantCardinality() : m_begins() { }
+  ConstantCardinality(BeginsSet begins) : m_begins(begins) { }
   ConstantCardinality(ElementType fromSetSize)
   {
     m_begins = BeginsSet(fromSetSize);
   }
 
   ConstantCardinality(ElementType fromSetSize,
-                      typename BeginsSet::SetBuilder& builder )
+                      typename BeginsSet::SetBuilder& builder)
   {
     // needs a size and a stride (when runtime)
     builder.size(fromSetSize);
     m_begins = builder;
   }
 
-  const ElementType size(ElementType AXOM_NOT_USED(fromPos) ) const
+  const ElementType size(ElementType AXOM_NOT_USED(fromPos)) const
   {
     return m_begins.stride();
   }
@@ -111,31 +104,23 @@ struct ConstantCardinality
 
   void bindBeginOffsets(ElementType fromSetSize, ElementType stride)
   {
-    m_begins = typename BeginsSet::SetBuilder()
-               .size(fromSetSize)
-               .stride(stride);
+    m_begins = typename BeginsSet::SetBuilder().size(fromSetSize).stride(stride);
   }
 
-  ElementType totalSize() const
-  {
-    return m_begins.stride() * m_begins.size();
-  }
+  ElementType totalSize() const { return m_begins.stride() * m_begins.size(); }
 
-  template<typename FromSetType>
+  template <typename FromSetType>
   bool isValid(const FromSetType* fromSet,
                bool AXOM_NOT_USED(vertboseOutput) = false) const
   {
     return m_begins.size() == fromSet->size();
   }
 
-
   BeginsSet m_begins;
 };
 
-template<
-  typename ElementType = int,
-  typename IndirectionPolicy = STLVectorIndirection<ElementType, ElementType>
-  >
+template <typename ElementType = int,
+          typename IndirectionPolicy = STLVectorIndirection<ElementType, ElementType>>
 struct VariableCardinality
 {
   using BeginsSizePolicy = RuntimeSize<ElementType>;
@@ -144,21 +129,21 @@ struct VariableCardinality
   using BeginsIndirectionPolicy = IndirectionPolicy;
 
   // runtime size (fromSet.size()), striding from template parameter, no offset
-  using BeginsSet = OrderedSet<ElementType,ElementType,
+  using BeginsSet = OrderedSet<ElementType,
+                               ElementType,
                                BeginsSizePolicy,
                                BeginsOffsetPolicy,
                                BeginsStridePolicy,
                                IndirectionPolicy>;
 
-
   // The cardinality of each relational operator is determined by the
   // StridePolicy of the relation
   using RelationalOperatorSizeType = BeginsSizePolicy;
 
-  using IndirectionBufferType=typename IndirectionPolicy::IndirectionBufferType;
+  using IndirectionBufferType = typename IndirectionPolicy::IndirectionBufferType;
 
-  VariableCardinality() : m_begins() {}
-  VariableCardinality(BeginsSet begins) : m_begins(begins) {}
+  VariableCardinality() : m_begins() { }
+  VariableCardinality(BeginsSet begins) : m_begins(begins) { }
   VariableCardinality(ElementType fromSetSize,
                       typename BeginsSet::SetBuilder& builder)
   {
@@ -168,9 +153,7 @@ struct VariableCardinality
 
   void bindBeginOffsets(ElementType fromSetSize, IndirectionBufferType* data)
   {
-    m_begins = typename BeginsSet::SetBuilder()
-               .size(fromSetSize + 1)
-               .data(data);
+    m_begins = typename BeginsSet::SetBuilder().size(fromSetSize + 1).data(data);
   }
 
   const ElementType size(ElementType fromPos) const
@@ -185,27 +168,25 @@ struct VariableCardinality
 
   ElementType totalSize() const
   {
-    return m_begins.empty()
-           ? ElementType()
-           : offset(m_begins.size() - 1);
+    return m_begins.empty() ? ElementType() : offset(m_begins.size() - 1);
   }
 
-  template<typename FromSetType>
+  template <typename FromSetType>
   bool isValid(const FromSetType* fromSet, bool verboseOutput = false) const
   {
-    return m_begins.size() == (fromSet->size() + 1)
-           && static_cast<IndirectionPolicy>(m_begins).isValid(
-      m_begins.size(), m_begins.offset(), m_begins.stride(), verboseOutput);
+    return m_begins.size() == (fromSet->size() + 1) &&
+      static_cast<IndirectionPolicy>(m_begins).isValid(m_begins.size(),
+                                                       m_begins.offset(),
+                                                       m_begins.stride(),
+                                                       verboseOutput);
   }
-
 
   BeginsSet m_begins;
 };
 
-} // end namespace policies
+}  // end namespace policies
 
-} // end namespace slam
-} // end namespace axom
+}  // end namespace slam
+}  // end namespace axom
 
-
-#endif // SLAM_POLICIES_CARDINALITY_H_
+#endif  // SLAM_POLICIES_CARDINALITY_H_

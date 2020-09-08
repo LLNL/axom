@@ -37,37 +37,33 @@
 #include <cstdlib>
 
 using axom::sidre::Buffer;
-using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::View;
-using axom::sidre::TypeID;
+using axom::sidre::Group;
 using axom::sidre::IndexType;
+using axom::sidre::TypeID;
+using axom::sidre::View;
 
 using namespace conduit;
 
-#define UPWIND   0
+#define UPWIND 0
 #define DOWNWIND 1
 
 const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
 
-
-void CreateScalarIntViewAndSetVal( Group* const grp,
-                                   const std::string& name, int32 const value )
+void CreateScalarIntViewAndSetVal(Group* const grp,
+                                  const std::string& name,
+                                  int32 const value)
 {
   grp->createViewScalar(name, value);
 }
 
-
-void CreateScalarFloatBufferViewAndSetVal( Group* const grp,
-                                           const std::string& name,
-                                           float64 const value )
+void CreateScalarFloatBufferViewAndSetVal(Group* const grp,
+                                          const std::string& name,
+                                          float64 const value)
 {
   grp->createViewScalar(name, value);
 }
-
-
-
 
 /**************************************************************************
  * Subroutine:  GetUserInput
@@ -90,10 +86,9 @@ void GetUserInput(Group* const prob)
     numFaces = numElems - 1;
 
     // create buffer and view, and set value
-    CreateScalarIntViewAndSetVal( prob, "numElems", numElems );
+    CreateScalarIntViewAndSetVal(prob, "numElems", numElems);
 
-    CreateScalarIntViewAndSetVal( prob, "numFaces", numFaces );
-
+    CreateScalarIntViewAndSetVal(prob, "numFaces", numFaces);
   }
 
   /********************/
@@ -107,25 +102,23 @@ void GetUserInput(Group* const prob)
     scanf("%lf", &cfl);
 #endif
 
-    while (pratio < 0.0 || pratio > 1.0)
+    while(pratio < 0.0 || pratio > 1.0)
     {
       //printf("What pressure ratio would you like (0 <= x <= 1)? ");
       //scanf("%lf", &pratio);
       pratio = 0.5;
     }
 
-    while (dratio < 0.0 || dratio > 1.0)
+    while(dratio < 0.0 || dratio > 1.0)
     {
       //printf("What density ratio would you like (0 <= x <= 1)? ");
       //scanf("%lf", &dratio);
       dratio = 0.5;
     }
 
-    CreateScalarFloatBufferViewAndSetVal( prob, "pressureRatio", pratio );
+    CreateScalarFloatBufferViewAndSetVal(prob, "pressureRatio", pratio);
 
-    CreateScalarFloatBufferViewAndSetVal( prob, "densityRatio", dratio );
-
-
+    CreateScalarFloatBufferViewAndSetVal(prob, "densityRatio", dratio);
   }
 
   /********************/
@@ -135,21 +128,20 @@ void GetUserInput(Group* const prob)
     int numUltraDumps, numCyclesPerDump;
 
     //printf("How many Ultra dumps would you like? ");
-//    scanf("%d", &numUltraDumps);
+    //    scanf("%d", &numUltraDumps);
     numUltraDumps = 10;
 
     //printf("How many cycles per Ultra dump would you like? ");
-//    scanf("%d", &numCyclesPerDump);
+    //    scanf("%d", &numCyclesPerDump);
     numCyclesPerDump = 10;
 
-    CreateScalarIntViewAndSetVal( prob, "numUltraDumps", numUltraDumps );
+    CreateScalarIntViewAndSetVal(prob, "numUltraDumps", numUltraDumps);
 
-    CreateScalarIntViewAndSetVal( prob, "numCyclesPerDump", numCyclesPerDump );
+    CreateScalarIntViewAndSetVal(prob, "numCyclesPerDump", numCyclesPerDump);
 
-    CreateScalarIntViewAndSetVal( prob, "numTotalCycles",
-                                  numUltraDumps * numCyclesPerDump );
-
-
+    CreateScalarIntViewAndSetVal(prob,
+                                 "numTotalCycles",
+                                 numUltraDumps * numCyclesPerDump);
   }
 
   return;
@@ -194,24 +186,22 @@ void CreateShockTubeMesh(Group* const prob)
   /* set up some important views */
 
   //inflow[0] = 0; /* identify inflow elements */
-//  elem->viewCreate("inflow", new IndexSet(1, inflow));
+  //  elem->viewCreate("inflow", new IndexSet(1, inflow));
   elem->createGroup("inflow");
 
   //outflow[0] = numElems - 1; /* identify outflow elements */
-//  elem->viewCreate("outflow", new IndexSet(1, outflow));
+  //  elem->viewCreate("outflow", new IndexSet(1, outflow));
   elem->createGroup("outflow");
 
-
-
   int32 numTubeElems = numElems - 2;
-  Group* const tube = elem->createGroup("tube"); //->SetDataShape(DataStoreNS::DataShape(numTubeElems));
+  Group* const tube = elem->createGroup(
+    "tube");  //->SetDataShape(DataStoreNS::DataShape(numTubeElems));
 
-  int32* const mapToElems = tube->createViewAndAllocate("mapToElems", DataType::int32(
-                                                          numTubeElems))->
-                            getData();
+  int32* const mapToElems =
+    tube->createViewAndAllocate("mapToElems", DataType::int32(numTubeElems))
+      ->getData();
 
-
-  for ( int k = 0u ; k < numTubeElems ; ++k)
+  for(int k = 0u; k < numTubeElems; ++k)
   {
     mapToElems[k] = k + 1;
   }
@@ -220,22 +210,23 @@ void CreateShockTubeMesh(Group* const prob)
 
   /* Each face connects to two elements */
 
-  int32* const faceToElem = face->createViewAndAllocate("faceToElem", DataType::int32(
-                                                          2*
-                                                          numFaces))->getData();
+  int32* const faceToElem =
+    face->createViewAndAllocate("faceToElem", DataType::int32(2 * numFaces))
+      ->getData();
 
-  for (i = 0 ; i < numFaces ; ++i)
+  for(i = 0; i < numFaces; ++i)
   {
     faceToElem[i * 2 + UPWIND] = i;
     faceToElem[i * 2 + DOWNWIND] = i + 1;
   }
 
-  /* Each element connects to two faces */ //
-//  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
-  int32* elemToFace = tube->createViewAndAllocate("elemToFace", DataType::int32(
-                                                    2*numElems))->getData();
+  /* Each element connects to two faces */  //
+  //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
+  int32* elemToFace =
+    tube->createViewAndAllocate("elemToFace", DataType::int32(2 * numElems))
+      ->getData();
 
-  for (i = 0 ; i < numElems ; ++i)
+  for(i = 0; i < numElems; ++i)
   {
     elemToFace[i * 2 + UPWIND] = i; /* same map as above by coincidence */
     elemToFace[i * 2 + DOWNWIND] = i + 1;
@@ -265,15 +256,14 @@ void InitializeShockTube(Group* const prob)
   float64* const mass =
     elem->createViewAndAllocate("mass", DataType::float64(numElems))->getData();
 
+  float64* const momentum =
+    elem->createViewAndAllocate("momentum", DataType::float64(numElems))->getData();
 
-  float64* const momentum = elem->createViewAndAllocate("momentum", DataType::float64(
-                                                          numElems))->getData();
+  float64* const energy =
+    elem->createViewAndAllocate("energy", DataType::float64(numElems))->getData();
 
-  float64* const energy = elem->createViewAndAllocate("energy", DataType::float64(
-                                                        numElems))->getData();
-
-  float64* const pressure = elem->createViewAndAllocate("pressure", DataType::float64(
-                                                          numElems))->getData();
+  float64* const pressure =
+    elem->createViewAndAllocate("pressure", DataType::float64(numElems))->getData();
 
   /* Create face centered quantities */
 
@@ -281,7 +271,7 @@ void InitializeShockTube(Group* const prob)
   face->createViewAndAllocate("F1", DataType::float64(numFaces));
   face->createViewAndAllocate("F2", DataType::float64(numFaces));
 
-//  face->fieldCreateReal("F", 3); /* mv, mv^2+P, and v(E+P) */
+  //  face->fieldCreateReal("F", 3); /* mv, mv^2+P, and v(E+P) */
 
   /* Fill left half with high pressure, right half with low pressure */
   int startTube = 0;
@@ -295,7 +285,7 @@ void InitializeShockTube(Group* const prob)
   double energyInitial = pressureInitial / (gammaa - 1.0);
 
   /* Initialize zonal quantities*/
-  for (i = startTube ; i < midTube ; ++i)
+  for(i = startTube; i < midTube; ++i)
   {
     mass[i] = massInitial;
     momentum[i] = momentumInitial;
@@ -311,7 +301,7 @@ void InitializeShockTube(Group* const prob)
   pressureInitial *= pratio;
   energyInitial = pressureInitial / (gammaa - 1.0);
 
-  for (i = midTube ; i < endTube ; ++i)
+  for(i = midTube; i < endTube; ++i)
   {
     mass[i] = massInitial;
     momentum[i] = momentumInitial;
@@ -321,15 +311,12 @@ void InitializeShockTube(Group* const prob)
 
   /* Create needed time info */
 
-  CreateScalarFloatBufferViewAndSetVal( prob, "time", 0.0 );
-  CreateScalarIntViewAndSetVal( prob, "cycle", 0 );
+  CreateScalarFloatBufferViewAndSetVal(prob, "time", 0.0);
+  CreateScalarIntViewAndSetVal(prob, "cycle", 0);
 
-  CreateScalarFloatBufferViewAndSetVal( prob, "dx",
-                                        (1.0 / ((double) endTube)) );
+  CreateScalarFloatBufferViewAndSetVal(prob, "dx", (1.0 / ((double)endTube)));
   double dx = prob->getView("dx")->getData();
-  CreateScalarFloatBufferViewAndSetVal( prob, "dt", 0.4 * dx );
-
-
+  CreateScalarFloatBufferViewAndSetVal(prob, "dt", 0.4 * dx);
 
   return;
 }
@@ -350,7 +337,7 @@ void ComputeFaceInfo(Group* const prob)
 {
   int i;
   Group* const face = prob->getGroup("face");
-//  Relation &faceToElem = *face->relation("faceToElem");
+  //  Relation &faceToElem = *face->relation("faceToElem");
   int32 const* const faceToElem = face->getView("faceToElem")->getData();
 
   float64* const F0 = face->getView("F0")->getData();
@@ -363,18 +350,18 @@ void ComputeFaceInfo(Group* const prob)
   float64* const momentum = elem->getView("momentum")->getData();
   float64* const energy = elem->getView("energy")->getData();
 
-  for (i = 0 ; i < numFaces ; ++i)
+  for(i = 0; i < numFaces; ++i)
   {
     /* each face has an upwind and downwind element. */
-    int upWind = faceToElem[i * 2 + UPWIND]; /* upwind element */
+    int upWind = faceToElem[i * 2 + UPWIND];     /* upwind element */
     int downWind = faceToElem[i * 2 + DOWNWIND]; /* downwind element */
 
     /* calculate face centered quantities */
     double massf = 0.5 * (mass[upWind] + mass[downWind]);
     double momentumf = 0.5 * (momentum[upWind] + momentum[downWind]);
     double energyf = 0.5 * (energy[upWind] + energy[downWind]);
-    double pressuref = (gammaa - 1.0) *
-                       (energyf - 0.5 * momentumf * momentumf / massf);
+    double pressuref =
+      (gammaa - 1.0) * (energyf - 0.5 * momentumf * momentumf / massf);
     double c = sqrt(gammaa * pressuref / massf);
     double v = momentumf / massf;
     double ev;
@@ -405,8 +392,7 @@ void ComputeFaceInfo(Group* const prob)
     massf = mass[contributor];
     momentumf = momentum[contributor];
     energyf = energy[contributor];
-    pressuref = (gammaa - 1.0) *
-                (energyf - 0.5 * momentumf * momentumf / massf);
+    pressuref = (gammaa - 1.0) * (energyf - 0.5 * momentumf * momentumf / massf);
     ev = 0.5 * (v + c);
     cLocal = sqrt(gammaa * pressuref / massf);
 
@@ -418,8 +404,7 @@ void ComputeFaceInfo(Group* const prob)
     massf = mass[contributor];
     momentumf = momentum[contributor];
     energyf = energy[contributor];
-    pressuref = (gammaa - 1.0) *
-                (energyf - 0.5 * momentumf * momentumf / massf);
+    pressuref = (gammaa - 1.0) * (energyf - 0.5 * momentumf * momentumf / massf);
     ev = 0.5 * (v - c);
     cLocal = sqrt(gammaa * pressuref / massf);
 
@@ -454,10 +439,10 @@ void UpdateElemInfo(Group* const prob)
   Group* const tube = elem->getGroup("tube");
   int32* const elemToFace = tube->getView("elemToFace")->getData();
 
-//  Relation &elemToFace = *tube->relation("elemToFace");
+  //  Relation &elemToFace = *tube->relation("elemToFace");
   int numTubeElems = tube->getView("mapToElems")->getNumElements();
 
-//  int *is = tube->map();
+  //  int *is = tube->map();
   int32* const is = tube->getView("mapToElems")->getData();
 
   /* The element update is calculated as the flux between faces */
@@ -470,22 +455,21 @@ void UpdateElemInfo(Group* const prob)
   double const dt = prob->getView("dt")->getData();
   float64& time = *prob->getView("time")->getData<float64*>();
 
-  for (i = 0 ; i < numTubeElems ; ++i)
+  for(i = 0; i < numTubeElems; ++i)
   {
     /* recalculate elements in the shocktube, don't touch inflow/outflow */
     int elemIdx = is[i];
 
     /* each element inside the tube has an upwind and downwind face */
-    int upWind = elemToFace[i * 2 + UPWIND]; /* upwind face */
+    int upWind = elemToFace[i * 2 + UPWIND];     /* upwind face */
     int downWind = elemToFace[i * 2 + DOWNWIND]; /* downwind face */
 
     mass[elemIdx] -= gammaaInverse * (F0[downWind] - F0[upWind]) * dt / dx;
     momentum[elemIdx] -= gammaaInverse * (F1[downWind] - F1[upWind]) * dt / dx;
     energy[elemIdx] -= gammaaInverse * (F2[downWind] - F2[upWind]) * dt / dx;
     pressure[elemIdx] = (gammaa - 1.0) *
-                        (energy[elemIdx] - 0.5 * momentum[elemIdx] *
-                         momentum[elemIdx] /
-                         mass[elemIdx]);
+      (energy[elemIdx] -
+       0.5 * momentum[elemIdx] * momentum[elemIdx] / mass[elemIdx]);
   }
 
   /* update the time */
@@ -498,86 +482,78 @@ void UpdateElemInfo(Group* const prob)
 #include <string.h>
 #include <ctype.h>
 
-
-void DumpUltra( Group* const prob)
+void DumpUltra(Group* const prob)
 {
 #if 1
   FILE* fp;
   char fname[100];
   char* tail;
 
-//   VHashTraverse_t content ;
+  //   VHashTraverse_t content ;
 
-  strcpy(fname, "problem" );
+  strcpy(fname, "problem");
 
   /* Skip past the junk */
-  for (tail=fname ; isalpha(*tail) ; ++tail)
+  for(tail = fname; isalpha(*tail); ++tail)
     ;
 
   sprintf(tail, "_%04d.ult", prob->getView("cycle")->getData<int>());
 
-  if ((fp = fopen(fname, "w")) == NULL)
+  if((fp = fopen(fname, "w")) == NULL)
   {
     printf("Could not open file %s. Aborting.\n", fname);
-    exit (-1);
+    exit(-1);
   }
 
   fprintf(fp, "# Ultra Plot File\n");
-  fprintf(fp, "# Problem: %s\n", "problem" );
+  fprintf(fp, "# Problem: %s\n", "problem");
 
-
-  for(IndexType i=0 ; i<prob->getNumViews() ; i++)
+  for(IndexType i = 0; i < prob->getNumViews(); i++)
   {
     View* const view = prob->getView(i);
     const int length = view->getNumElements();
     const std::string& name = view->getName();
-    if( length <= 1 )
+    if(length <= 1)
     {
-      if( view->getTypeID() == axom::sidre::INT32_ID )
+      if(view->getTypeID() == axom::sidre::INT32_ID)
       {
-        fprintf(fp, "# %s = %d\n",
-                name.c_str(),
-                view->getData<int>());
+        fprintf(fp, "# %s = %d\n", name.c_str(), view->getData<int>());
       }
-      else if( view->getTypeID() == axom::sidre::FLOAT64_ID )
+      else if(view->getTypeID() == axom::sidre::FLOAT64_ID)
       {
-        fprintf(fp, "# %s = %f\n",
-                name.c_str(),
-                view->getData<double>());
+        fprintf(fp, "# %s = %f\n", name.c_str(), view->getData<double>());
       }
     }
   }
 
-
   Group* const elem = prob->getGroup("elem");
 
-  for(IndexType i=0 ; i<elem->getNumViews() ; i++)
+  for(IndexType i = 0; i < elem->getNumViews(); i++)
   {
     View* const view = elem->getView(i);
     const int length = view->getNumElements();
     const std::string& name = view->getName();
-    fprintf(fp, "# %s\n", name.c_str() );
+    fprintf(fp, "# %s\n", name.c_str());
 
-    if( view->getTypeID() == axom::sidre::INT32_ID )
+    if(view->getTypeID() == axom::sidre::INT32_ID)
     {
       int32 const* const data = view->getData();
-      for ( int j=0 ; j<length ; ++j)
+      for(int j = 0; j < length; ++j)
       {
-        fprintf(fp, "%f %f\n", (double) j, (double) data[j]);
+        fprintf(fp, "%f %f\n", (double)j, (double)data[j]);
       }
       fprintf(fp, "\n");
     }
-    else if( view->getTypeID() == axom::sidre::FLOAT64_ID )
+    else if(view->getTypeID() == axom::sidre::FLOAT64_ID)
     {
       float64 const* const data = view->getData();
-      for ( int j=0 ; j<length ; ++j)
+      for(int j = 0; j < length; ++j)
       {
-        fprintf(fp, "%f %f\n", (double) j, (double) data[j]);
+        fprintf(fp, "%f %f\n", (double)j, (double)data[j]);
       }
       fprintf(fp, "\n");
     }
   }
-
 
   fclose(fp);
 #endif
@@ -614,11 +590,11 @@ int main(void)
 
   std::cout << "Starting problem run." << std::endl;
 
-  for (*currCycle = 0 ; *currCycle < numTotalCycles ; ++(*currCycle) )
+  for(*currCycle = 0; *currCycle < numTotalCycles; ++(*currCycle))
   {
     std::cout << " cycle " << *currCycle << std::endl;
     /* dump the ultra file, based on the user chosen attribute mask */
-    if ( (*currCycle) % dumpInterval == 0)
+    if((*currCycle) % dumpInterval == 0)
     {
       DumpUltra(prob);
     }

@@ -24,13 +24,12 @@
 /// @}
 
 // C/C++ includes
-#include <string> // For STL string
+#include <string>  // For STL string
 
 namespace axom
 {
 namespace slic
 {
-
 /*!
  * \class LogStream
  *
@@ -43,7 +42,6 @@ namespace slic
  */
 class LogStream
 {
-
 public:
   LogStream();
   virtual ~LogStream();
@@ -96,13 +94,12 @@ public:
    *   <li> MSG_IGNORE_LINE </li>
    * </ul>
    */
-  virtual void append( message::Level msgLevel,
-                       const std::string& message,
-                       const std::string& tagName,
-                       const std::string& fileName,
-                       int line,
-                       bool filter_duplicates
-                       ) = 0;
+  virtual void append(message::Level msgLevel,
+                      const std::string& message,
+                      const std::string& tagName,
+                      const std::string& fileName,
+                      int line,
+                      bool filter_duplicates) = 0;
 
   /*!
    * \brief Flushes the log stream. It's a NO-OP by default.
@@ -111,7 +108,7 @@ public:
    *  in a distributed MPI environment, where the flush is a collective
    *  operation intended for a synchronization checkpoint.
    */
-  virtual void flush() { };
+  virtual void flush() {};
 
   /*!
    * \brief Pushes messages incrementally up the log stream. NO-OP by default.
@@ -121,10 +118,9 @@ public:
    *  the push is a collective operation intended for a incrementally advancing
    *  messages through the log stream.
    */
-  virtual void push() { };
+  virtual void push() {};
 
 protected:
-
   /*!
    * \brief Returns the formatted message as a single string.
    * \param [in] msgLevel the level of the given message.
@@ -137,21 +133,20 @@ protected:
    * \return str the formatted message string.
    * \post str != "".
    */
-  std::string getFormatedMessage( const std::string& msgLevel,
-                                  const std::string& message,
-                                  const std::string& tagName,
-                                  const std::string& rank,
-                                  const std::string& fileName,
-                                  int line );
+  std::string getFormatedMessage(const std::string& msgLevel,
+                                 const std::string& message,
+                                 const std::string& tagName,
+                                 const std::string& rank,
+                                 const std::string& fileName,
+                                 int line);
 
   /*!
    * \brief Returns a time-stamp.
    * \return str a textual representation of the current time.
    */
-  std::string getTimeStamp( );
+  std::string getTimeStamp();
 
 private:
-
   std::string m_formatString;
 
   /*!
@@ -160,10 +155,10 @@ private:
    * \param [in] key the key in the message that will be replace.
    * \param [in] value the value to replace it with.
    */
-  void replaceKey( std::string& msg,
-                   const std::string& key,
-                   const std::string& value,
-                   std::size_t pos=std::string::npos );
+  void replaceKey(std::string& msg,
+                  const std::string& key,
+                  const std::string& value,
+                  std::size_t pos = std::string::npos);
 
   DISABLE_COPY_AND_ASSIGNMENT(LogStream);
   DISABLE_MOVE_AND_ASSIGNMENT(LogStream);

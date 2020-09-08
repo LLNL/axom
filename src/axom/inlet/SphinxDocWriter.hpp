@@ -25,8 +25,7 @@
 namespace axom
 {
 namespace inlet
-{ 
-
+{
 /*!
  *******************************************************************************
  * \class SphinxDocWriter
@@ -37,8 +36,9 @@ namespace inlet
  * \see DocWriter
  *******************************************************************************
  */
-class SphinxDocWriter : public DocWriter {
-public: 
+class SphinxDocWriter : public DocWriter
+{
+public:
   /*!
   *******************************************************************************
   * \brief A constructor for SphinxDocWriter.
@@ -50,7 +50,8 @@ public:
   *
   *******************************************************************************
   */
-  SphinxDocWriter(const std::string& fileName, axom::sidre::Group* sidreRootGroup);
+  SphinxDocWriter(const std::string& fileName,
+                  axom::sidre::Group* sidreRootGroup);
 
   /*!
   *******************************************************************************
@@ -116,7 +117,7 @@ private:
    *
    *****************************************************************************
    */
-  void writeTable(const std::string& title, 
+  void writeTable(const std::string& title,
                   const std::vector<std::vector<std::string>>& rstTable);
 
   /*!
@@ -138,7 +139,8 @@ private:
   *
   *******************************************************************************
   */
-  struct TableData {
+  struct TableData
+  {
     /*!
     *******************************************************************************
     * \brief A constructor for the TableData struct
@@ -147,9 +149,13 @@ private:
     *
     *******************************************************************************
     */
-    TableData() {
-      rstTable = {{"Field Name", "Description", "Default Value", 
-                             "Range/Valid Values", "Required"}};
+    TableData()
+    {
+      rstTable = {{"Field Name",
+                   "Description",
+                   "Default Value",
+                   "Range/Valid Values",
+                   "Required"}};
     }
 
     std::string tableName;
@@ -157,7 +163,7 @@ private:
     std::vector<std::vector<std::string>> rstTable;
   };
 
-/*!
+  /*!
   *******************************************************************************
   * \brief Extracts Field information from the given Sidre Group and stores it
   * to be written later.
@@ -172,7 +178,7 @@ private:
   */
   void extractFieldMetadata(axom::sidre::Group* sidreGroup);
 
-/*!
+  /*!
   *******************************************************************************
   * \brief Gets default value information from the given Sidre View and returns
   * it as a string.
@@ -220,7 +226,6 @@ private:
   */
   std::string getValidStringValues(axom::sidre::Group* sidreGroup);
 
-
   axom::sidre::Group* m_sidreRootGroup;
   std::ofstream m_outFile;
   std::ostringstream m_oss;
@@ -230,7 +235,7 @@ private:
   std::string m_fileName;
 };
 
-}
-}
+}  // namespace inlet
+}  // namespace axom
 
 #endif

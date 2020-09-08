@@ -6,17 +6,16 @@
 #ifndef MINT_UNIFORMMESH_HPP_
 #define MINT_UNIFORMMESH_HPP_
 
-#include "axom/core/StackArray.hpp"       // for StackArray
-#include "axom/mint/config.hpp"                // for IndexType, int64
-#include "axom/mint/mesh/StructuredMesh.hpp"   // for StructuredMesh
+#include "axom/core/StackArray.hpp"           // for StackArray
+#include "axom/mint/config.hpp"               // for IndexType, int64
+#include "axom/mint/mesh/StructuredMesh.hpp"  // for StructuredMesh
 
-#include "axom/slic/interface/slic.hpp"        // for SLIC macros
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 namespace axom
 {
 namespace mint
 {
-
 /*!
  * \class UniformMesh
  *
@@ -63,14 +62,13 @@ namespace mint
 class UniformMesh : public StructuredMesh
 {
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
   UniformMesh() = delete;
 
-/// \name Native Constructors
-/// @{
+  /// \name Native Constructors
+  /// @{
 
   /*!
    * \brief Constructs a uniform mesh within a specified rectangular region,
@@ -93,14 +91,17 @@ public:
    * \post getSpacing() != nullptr
    * \post getOrigin()[ i ] == lower_bound[ i ] \f$ \forall i \f$
    */
-  UniformMesh( const double* lower_bound, const double* upper_bound,
-               IndexType Ni, IndexType Nj=-1, IndexType Nk=-1 );
-/// @}
+  UniformMesh(const double* lower_bound,
+              const double* upper_bound,
+              IndexType Ni,
+              IndexType Nj = -1,
+              IndexType Nk = -1);
+  /// @}
 
 #ifdef AXOM_MINT_USE_SIDRE
 
-/// \name Sidre Constructors
-/// @{
+  /// \name Sidre Constructors
+  /// @{
 
   /*!
    * \brief Creates a uniform mesh instance from the given Sidre group that
@@ -125,7 +126,7 @@ public:
    * \pre blueprint::isValidRootGroup( group )
    * \post hasSidreGroup() == true
    */
-  explicit UniformMesh( sidre::Group* group, const std::string& topo="" );
+  explicit UniformMesh(sidre::Group* group, const std::string& topo = "");
 
   /*!
    * \brief Constructs a uniform mesh object, on an empty Sidre group, that
@@ -166,38 +167,38 @@ public:
    * \post hasSidreGroup() == true
    */
   /// @{
-  UniformMesh( sidre::Group* group,
-               const std::string& topo,
-               const std::string& coordset,
-               const double* lower_bound,
-               const double* upper_bound,
-               IndexType Ni,
-               IndexType Nj=-1,
-               IndexType Nk=-1 );
+  UniformMesh(sidre::Group* group,
+              const std::string& topo,
+              const std::string& coordset,
+              const double* lower_bound,
+              const double* upper_bound,
+              IndexType Ni,
+              IndexType Nj = -1,
+              IndexType Nk = -1);
 
-  UniformMesh( sidre::Group* group,
-               const double* lower_bound,
-               const double* upper_bound,
-               IndexType Ni,
-               IndexType Nj=-1,
-               IndexType Nk=-1 ) :
-    UniformMesh( group, "", "", lower_bound, upper_bound, Ni, Nj, Nk )
-  {}
-  /// @}
+  UniformMesh(sidre::Group* group,
+              const double* lower_bound,
+              const double* upper_bound,
+              IndexType Ni,
+              IndexType Nj = -1,
+              IndexType Nk = -1)
+    : UniformMesh(group, "", "", lower_bound, upper_bound, Ni, Nj, Nk)
+  { }
+    /// @}
 
 /// @}
 #endif
 
-/// \name Virtual methods
-/// @{
+  /// \name Virtual methods
+  /// @{
 
   /*!
    * \brief Destructor.
    */
   virtual ~UniformMesh() { }
 
-/// \name Nodes
-/// @{
+  /// \name Nodes
+  /// @{
 
   /*!
    * \brief Copy the coordinates of the given node into the provided buffer.
@@ -212,7 +213,7 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != nullptr
    */
-  virtual void getNode( IndexType nodeID, double* node ) const final override;
+  virtual void getNode(IndexType nodeID, double* node) const final override;
 
   /*!
    * \brief Return a pointer to the nodal positions in the specified dimension.
@@ -220,44 +221,41 @@ public:
    */
   /// @{
 
-  virtual double* getCoordinateArray( int AXOM_NOT_USED(dim) ) final override
+  virtual double* getCoordinateArray(int AXOM_NOT_USED(dim)) final override
   {
-    SLIC_ERROR( "getCoordinateArray() is not supported for UniformMesh" );
+    SLIC_ERROR("getCoordinateArray() is not supported for UniformMesh");
     return nullptr;
   }
 
-  virtual
-  const double* getCoordinateArray(int AXOM_NOT_USED(dim)) const final override
+  virtual const double* getCoordinateArray(int AXOM_NOT_USED(dim)) const final override
   {
-    SLIC_ERROR("getCoordinateArray() is not supported for UniformMesh" );
+    SLIC_ERROR("getCoordinateArray() is not supported for UniformMesh");
     return nullptr;
   }
 
   /// @}
 
-/// @}
+  /// @}
 
-/// @}
+  /// @}
 
-/// \name Attribute Querying Methods
-/// @{
+  /// \name Attribute Querying Methods
+  /// @{
 
   /*!
    * \brief Returns a const pointer to origin of the Uniform Mesh
    * \return origin pointer to the buffer storing the coordinates of the origin
    * \post origin != nullptr
    */
-  const StackArray<double, 3> & getOrigin( ) const
-  { return m_origin; }
+  const StackArray<double, 3>& getOrigin() const { return m_origin; }
 
   /*!
    * \brief Returns a const pointer to spacing of the Uniform Mesh.
    * \return h user-supplied buffer to store the spacing of the mesh.
    */
-  const StackArray<double, 3> & getSpacing( ) const
-  { return m_h; }
+  const StackArray<double, 3>& getSpacing() const { return m_h; }
 
-/// @}
+  /// @}
 
   /*!
    * \brief Evaluates the physical coordinate of a node along a given diction.
@@ -270,27 +268,25 @@ public:
    * \pre i >= 0 && i < getNumberNodeAlongDim( direction )
    * \pre direction >= 0 && direction < getDimension()
    */
-  inline double evaluateCoordinate( IndexType i, int direction ) const
+  inline double evaluateCoordinate(IndexType i, int direction) const
   {
-    SLIC_ASSERT( direction >=0 && direction < getDimension() );
-    SLIC_ASSERT( i >= 0 && i < getNodeResolution( direction ) );
+    SLIC_ASSERT(direction >= 0 && direction < getDimension());
+    SLIC_ASSERT(i >= 0 && i < getNodeResolution(direction));
 
-    const double* x0 = getOrigin( );
-    const double* h  = getSpacing( );
-    return x0[ direction ] + i * h[ direction ];
+    const double* x0 = getOrigin();
+    const double* h = getSpacing();
+    return x0[direction] + i * h[direction];
   }
 
 private:
+  void setSpacingAndOrigin(const double* lo, const double* hi);
 
-  void setSpacingAndOrigin( const double* lo, const double* hi );
-
-  StackArray<double, 3> m_origin = {{ 0.0, 0.0, 0.0 }};
-  StackArray<double, 3> m_h      = {{ 1.0, 1.0, 1.0 }};
+  StackArray<double, 3> m_origin = {{0.0, 0.0, 0.0}};
+  StackArray<double, 3> m_h = {{1.0, 1.0, 1.0}};
 
   DISABLE_COPY_AND_ASSIGNMENT(UniformMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(UniformMesh);
 };
-
 
 } /* namespace mint */
 } /* namespace axom */

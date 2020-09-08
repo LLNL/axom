@@ -6,10 +6,10 @@
 #ifndef AXOM_SPIN_BVH_TRAVERSE_HPP_
 #define AXOM_SPIN_BVH_TRAVERSE_HPP_
 
-#include "axom/config.hpp"      // compile-time definitions
-#include "axom/core/Macros.hpp" // for AXOM_HOST_DEVICE
-#include "axom/core/Types.hpp"  // for axom types
-#include "axom/slic.hpp"        // for SLIC macros
+#include "axom/config.hpp"       // compile-time definitions
+#include "axom/core/Macros.hpp"  // for AXOM_HOST_DEVICE
+#include "axom/core/Types.hpp"   // for axom types
+#include "axom/slic.hpp"         // for SLIC macros
 
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 
@@ -21,17 +21,13 @@ namespace internal
 {
 namespace linear_bvh
 {
-
 /*!
  * \brief Checks if the node corresponding to the given node ID is a leaf node.
  * \param [in] nodeIdx index of the BVH node in query.
  * \return status true if the node is a leaf node, otherwise, false.
  */
 AXOM_HOST_DEVICE
-inline bool leaf_node( const int32& nodeIdx )
-{
-  return ( nodeIdx < 0 );
-}
+inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
 
 /*!
  * \brief Generic BVH traversal routine.
@@ -56,46 +52,44 @@ inline bool leaf_node( const int32& nodeIdx )
  *
  * \see TraversalPredicates for the collection of defined predicates.
  */
-template< typename FloatType,
+template <typename FloatType,
           typename PrimitiveType,
           typename InLeftCheck,
           typename InRightCheck,
-          typename LeafAction >
-AXOM_HOST_DEVICE
-inline void bvh_traverse( const vec4_t< FloatType >* inner_nodes,
-                          const int32* leaf_nodes,
-                          const PrimitiveType& p,
-                          InLeftCheck&& L,
-                          InRightCheck&& R,
-                          LeafAction&& A )
+          typename LeafAction>
+AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
+                                          const int32* leaf_nodes,
+                                          const PrimitiveType& p,
+                                          InLeftCheck&& L,
+                                          InRightCheck&& R,
+                                          LeafAction&& A)
 {
-  using VecType = vec4_t< FloatType >;
+  using VecType = vec4_t<FloatType>;
 
   // setup stack
   constexpr int32 ISIZE = sizeof(int32);
   constexpr int32 STACK_SIZE = 64;
   constexpr int32 BARRIER = -2000000000;
-  int32 todo[ STACK_SIZE ];
-  int32 stackptr   = 0;
-  todo[ stackptr ] = BARRIER;
+  int32 todo[STACK_SIZE];
+  int32 stackptr = 0;
+  todo[stackptr] = BARRIER;
 
-  int32 current_node      = 0;
-  while ( current_node != BARRIER )
+  int32 current_node = 0;
+  while(current_node != BARRIER)
   {
-
-    if ( !leaf_node( current_node ) )
+    if(!leaf_node(current_node))
     {
-      const VecType first4  = inner_nodes[current_node + 0];
+      const VecType first4 = inner_nodes[current_node + 0];
       const VecType second4 = inner_nodes[current_node + 1];
-      const VecType third4  = inner_nodes[current_node + 2];
+      const VecType third4 = inner_nodes[current_node + 2];
 
-      const bool in_left  = L( p, first4, second4 );
-      const bool in_right = R( p, second4, third4 );
+      const bool in_left = L(p, first4, second4);
+      const bool in_right = R(p, second4, third4);
 
-      if ( !in_left && !in_right )
+      if(!in_left && !in_right)
       {
         // pop the stack and continue
-        current_node = todo[ stackptr ];
+        current_node = todo[stackptr];
         stackptr--;
       }
       else
@@ -110,7 +104,7 @@ inline void bvh_traverse( const vec4_t< FloatType >* inner_nodes,
 
         current_node = (in_left) ? l_child : r_child;
 
-        if (in_left && in_right)
+        if(in_left && in_right)
         {
           stackptr++;
           todo[stackptr] = r_child;
@@ -119,30 +113,27 @@ inline void bvh_traverse( const vec4_t< FloatType >* inner_nodes,
           // from the point to the center of the aabb
         }
 
-      } // END else
+      }  // END else
 
-    } // END if
+    }  // END if
     else
     {
       // compute leaf index
-      current_node = -current_node - 1; // swap the neg address
+      current_node = -current_node - 1;  // swap the neg address
 
       // execute leaf action
-      A( current_node, leaf_nodes );
+      A(current_node, leaf_nodes);
 
       current_node = todo[stackptr];
       stackptr--;
-    } // END else
+    }  // END else
 
-  } // END while
-
+  }  // END while
 }
 
 } /* namespace linear_bvh */
 } /* namespace internal */
 } /* namespace spin */
 } /* namespace axom */
-
-
 
 #endif /* AXOM_SPIN_BVH_TRAVERSE_HPP_ */

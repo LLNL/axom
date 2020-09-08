@@ -20,7 +20,6 @@ namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class Reader
@@ -42,7 +41,7 @@ public:
    * \brief Virtual destructor.
    *****************************************************************************
    */
-  virtual ~Reader(){};
+  virtual ~Reader() {};
 
   /*!
    *****************************************************************************
@@ -133,10 +132,9 @@ public:
    *****************************************************************************
    */
   virtual bool getString(const std::string& id, std::string& value) = 0;
-
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif

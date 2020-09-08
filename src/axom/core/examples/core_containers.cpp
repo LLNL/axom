@@ -7,7 +7,7 @@
  *  \brief This example code is a demonstration of the Axom Core containers.
  */
 
- /* This example code contains snippets used in the Core Sphinx documentation.
+/* This example code contains snippets used in the Core Sphinx documentation.
   * They begin and end with comments such as
   *
   * timer_start
@@ -16,47 +16,52 @@
   * each prepended with an underscore.
   */
 
-
 // Axom includes
 #include "axom/core/Array.hpp"
 #include "axom/core/memory_management.hpp"
 
 #ifdef WIN32
-#include "windows.h"
+  #include "windows.h"
 void sleep(int numSeconds)
 {
   int numMilliSecs = numSeconds * 1000;
   Sleep(numMilliSecs);
 }
 #else
-#include <unistd.h> // for sleep()
+  #include <unistd.h>  // for sleep()
 #endif
 
 // C/C++ includes
 #include <iostream>
 #include <vector>
 
-void showArray(axom::Array<int> &a, const char* name)
+void showArray(axom::Array<int>& a, const char* name)
 {
   std::cout << "Array " << name << " = [";
-  for (int i = 0; i < a.size(); ++i)
+  for(int i = 0; i < a.size(); ++i)
   {
-    if (i > 0) { std::cout << ", "; }
+    if(i > 0)
+    {
+      std::cout << ", ";
+    }
     std::cout << a[i];
   }
   std::cout << "]" << std::endl;
 }
 
-void showTupleArray(axom::Array<int> &a, const char* name)
+void showTupleArray(axom::Array<int>& a, const char* name)
 {
-  std::cout << "Array " << name << " with " << a.size() << " " <<
-    a.numComponents() << "-tuples = [" << std::endl;
-  for (int i = 0; i < a.size(); ++i)
+  std::cout << "Array " << name << " with " << a.size() << " "
+            << a.numComponents() << "-tuples = [" << std::endl;
+  for(int i = 0; i < a.size(); ++i)
   {
-    std::cout << "  ["; 
-    for (int j = 0; j < a.numComponents(); ++j)
+    std::cout << "  [";
+    for(int j = 0; j < a.numComponents(); ++j)
     {
-      if (j > 0) { std::cout << ", "; }
+      if(j > 0)
+      {
+        std::cout << ", ";
+      }
       std::cout << a(i, j);
     }
     std::cout << "]" << std::endl;
@@ -68,12 +73,12 @@ void demoArrayBasic()
 {
   // _arraybasic_start
   // Here is an Array of ints with length three.
-  axom::Array< int > a(3);
+  axom::Array<int> a(3);
   std::cout << "Length of a = " << a.size() << std::endl;
   a[0] = 2;
   a[1] = 5;
   a[2] = 11;
-  
+
   // An Array increases in size if a value is appended.
   a.append(4);
   std::cout << "After appending a value, a's length = " << a.size() << std::endl;
@@ -89,7 +94,7 @@ void demoArrayBasic()
 
   // _arraytuple_start
   // Here is an Array of ints, containing two triples.
-  axom::Array< int > b(2, 3);
+  axom::Array<int> b(2, 3);
   // Set tuple 0 to (1, 4, 2).
   b(0, 0) = 1;
   b(0, 1) = 4;
@@ -116,7 +121,7 @@ void demoArrayBasic()
   int* pa = a.getData();
   // An Array can be constructed with a pointer to an external buffer.
   // Here's an Array interpreting the memory pointed to by pa as three 2-tuples.
-  axom::Array< int > c(pa, 3, 2);
+  axom::Array<int> c(pa, 3, 2);
 
   showTupleArray(c, "c");
 
@@ -125,13 +130,10 @@ void demoArrayBasic()
   c(1, 1) = 9;
 
   std::cout << "Arrays a and c use the same memory, a's internal buffer."
-    << std::endl;
+            << std::endl;
   showArray(a, "a");
   showTupleArray(c, "c");
   // _extbuffer_end
 }
 
-int main(int argc, char** argv)
-{
-  demoArrayBasic();
-}
+int main(int argc, char** argv) { demoArrayBasic(); }

@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 /**
  * \file convert_sidre_protocol.cpp
  * \brief This file contains a utility to convert a Sidre datastore
@@ -33,10 +32,9 @@
 
 #include "CLI11/CLI11.hpp"
 
-#include <limits>       // for numeric_limits<int>
-#include <cstdlib>      // for atoi
-#include <sstream>      // for stringstream
-
+#include <limits>   // for numeric_limits<int>
+#include <cstdlib>  // for atoi
+#include <sstream>  // for stringstream
 
 namespace sidre = axom::sidre;
 namespace slam = axom::slam;
@@ -47,7 +45,7 @@ using ElemType = sidre::IndexType;
 
 using SzPol = slam::policies::RuntimeSize<PosType>;
 using OffPol = slam::policies::ZeroOffset<PosType>;
-using StrPol= slam::policies::RuntimeStride<PosType>;
+using StrPol = slam::policies::RuntimeStride<PosType>;
 using ViewSet = slam::OrderedSet<PosType, ElemType, SzPol, OffPol, StrPol>;
 
 void setupLogging();
@@ -68,7 +66,7 @@ struct CommandLineArguments
     , m_outputName("")
     , m_protocol("json")
     , m_numStripElts(-1)
-  {}
+  { }
 
   void parse(int argc, char** argv, CLI::App& app);
 
@@ -77,23 +75,18 @@ struct CommandLineArguments
   /**  Returns the maximum allowed elements in a view of the output datastore */
   int maxEltsPerView() const
   {
-    return shouldStripData()
-           ? m_numStripElts
-           : std::numeric_limits<int>::max();
+    return shouldStripData() ? m_numStripElts : std::numeric_limits<int>::max();
   }
 };
 
-const std::set<std::string> CommandLineArguments::s_validProtocols({
-  "json",
-  "sidre_hdf5",
-  "sidre_conduit_json",
-  "sidre_json",
-  "conduit_hdf5",
-  "conduit_bin",
-  "conduit_json"
-});
-
-
+const std::set<std::string> CommandLineArguments::s_validProtocols(
+  {"json",
+   "sidre_hdf5",
+   "sidre_conduit_json",
+   "sidre_json",
+   "conduit_hdf5",
+   "conduit_bin",
+   "conduit_json"});
 
 /** Terminates execution */
 void quitProgram(int exitCode = 0)
@@ -103,32 +96,39 @@ void quitProgram(int exitCode = 0)
   exit(exitCode);
 }
 
-
 /** Parse the command line arguments */
 void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
 {
-  app.add_option("-i,--input", m_inputName,
-                 "Filename of input sidre-hdf5 datastore")
-  ->required()
-  ->check(CLI::ExistingFile);
+  app
+    .add_option("-i,--input",
+                m_inputName,
+                "Filename of input sidre-hdf5 datastore")
+    ->required()
+    ->check(CLI::ExistingFile);
 
-  app.add_option("-o,--output", m_outputName,
-                 "Filename of output datastore (without extension)")
-  ->required();
+  app
+    .add_option("-o,--output",
+                m_outputName,
+                "Filename of output datastore (without extension)")
+    ->required();
 
-  app.add_option("-p,--protocol", m_protocol,
-                 "Desired protocol for output datastore")
-  ->capture_default_str()
-  ->check(CLI::IsMember {CommandLineArguments::s_validProtocols});
+  app
+    .add_option("-p,--protocol",
+                m_protocol,
+                "Desired protocol for output datastore")
+    ->capture_default_str()
+    ->check(CLI::IsMember {CommandLineArguments::s_validProtocols});
 
-  app.add_option("-s,--strip", m_numStripElts,
-                 "If provided, output arrays will be stripped to first N entries")
-  ->check(CLI::PositiveNumber);
+  app
+    .add_option(
+      "-s,--strip",
+      m_numStripElts,
+      "If provided, output arrays will be stripped to first N entries")
+    ->check(CLI::PositiveNumber);
 
   bool verboseOutput = false;
-  app.add_flag("-v,--verbose", verboseOutput,
-               "Sets output to verbose")
-  ->capture_default_str();
+  app.add_flag("-v,--verbose", verboseOutput, "Sets output to verbose")
+    ->capture_default_str();
 
   app.get_formatter()->column_width(35);
 
@@ -140,7 +140,6 @@ void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
     slic::setLoggingMsgLevel(slic::message::Debug);
   }
 }
-
 
 /**
  * \brief Allocate storage for external data of the input datastore
@@ -157,30 +156,27 @@ void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
 void allocateExternalData(sidre::Group* grp, std::vector<void*>& extPtrs)
 {
   // for each view
-  for(auto idx =  grp->getFirstValidViewIndex() ;
-      sidre::indexIsValid(idx) ;
-      idx = grp->getNextValidViewIndex(idx) )
+  for(auto idx = grp->getFirstValidViewIndex(); sidre::indexIsValid(idx);
+      idx = grp->getNextValidViewIndex(idx))
   {
     sidre::View* view = grp->getView(idx);
     if(view->isExternal())
     {
-      SLIC_DEBUG("External view "
-                 << view->getPathName()
-                 << " has " << view->getNumElements() << " elements "
-                 << "(" << view->getTotalBytes() << " bytes).");
+      SLIC_DEBUG("External view " << view->getPathName() << " has "
+                                  << view->getNumElements() << " elements "
+                                  << "(" << view->getTotalBytes() << " bytes).");
 
       const int idx = extPtrs.size();
       const int sz = view->getTotalBytes();
       extPtrs.push_back(new char[sz]);
       std::memset(extPtrs[idx], 0, sz);
-      view->setExternalDataPtr( extPtrs[ idx ]);
+      view->setExternalDataPtr(extPtrs[idx]);
     }
   }
 
   // for each group
-  for(auto idx =  grp->getFirstValidGroupIndex() ;
-      sidre::indexIsValid(idx) ;
-      idx = grp->getNextValidGroupIndex(idx) )
+  for(auto idx = grp->getFirstValidGroupIndex(); sidre::indexIsValid(idx);
+      idx = grp->getNextValidGroupIndex(idx))
   {
     allocateExternalData(grp->getGroup(idx), extPtrs);
   }
@@ -200,7 +196,7 @@ void allocateExternalData(sidre::Group* grp, std::vector<void*>& extPtrs)
  * \param view The array view on which we are operating
  * \param origSize The size of the original array
  */
-template<typename sidre_type>
+template <typename sidre_type>
 void modifyFinalValuesImpl(sidre::View* view, int origSize)
 {
   sidre_type* arr = view->getData();
@@ -208,55 +204,55 @@ void modifyFinalValuesImpl(sidre::View* view, int origSize)
 
   // Uses a Slam set to help manage the indirection to the view data
   // Note: offset is zero since getData() already accounts for the offset
-  ViewSet viewInds = ViewSet::SetBuilder()
-                     .size(sz)
-                     .stride(view->getStride());
+  ViewSet viewInds = ViewSet::SetBuilder().size(sz).stride(view->getStride());
 
-  #ifdef AXOM_DEBUG
+#ifdef AXOM_DEBUG
   {
     fmt::memory_buffer out;
-    for(auto i : viewInds.positions() )
+    for(auto i : viewInds.positions())
     {
-      fmt::format_to(out,"\n\ti: {0}; index: {1}; arr[{1}] = {2}",
-                     i, viewInds[i], arr[ viewInds[i] ] );
+      fmt::format_to(out,
+                     "\n\ti: {0}; index: {1}; arr[{1}] = {2}",
+                     i,
+                     viewInds[i],
+                     arr[viewInds[i]]);
     }
-    SLIC_DEBUG( "Before truncation" << fmt::to_string(out) );
+    SLIC_DEBUG("Before truncation" << fmt::to_string(out));
   }
-  #endif
+#endif
 
   // Create a new buffer for copied data
   auto* ds = view->getOwningGroup()->getDataStore();
   auto type = view->getTypeID();
-  auto newSz = sz+3;
+  auto newSz = sz + 3;
   auto* buff = ds->createBuffer(type, newSz)->allocate();
 
   // Explicitly set the first two elements and copy elements over
   sidre_type* newArr = buff->getData();
 
-  newArr[ 0 ] = static_cast<sidre_type>(origSize);
-  newArr[ 1 ] = static_cast<sidre_type>(sz);
-  newArr[ 2 ] = std::numeric_limits<sidre_type>::quiet_NaN();
-  for(auto i : viewInds.positions() )
+  newArr[0] = static_cast<sidre_type>(origSize);
+  newArr[1] = static_cast<sidre_type>(sz);
+  newArr[2] = std::numeric_limits<sidre_type>::quiet_NaN();
+  for(auto i : viewInds.positions())
   {
-    newArr[ i+3 ] = arr[ viewInds[i] ];
+    newArr[i + 3] = arr[viewInds[i]];
   }
 
   // Update view's buffer to the new data
   view->detachBuffer();
   view->attachBuffer(type, newSz, buff);
 
-  #ifdef AXOM_DEBUG
+#ifdef AXOM_DEBUG
   {
     fmt::memory_buffer out;
-    for(auto i : ViewSet(newSz).positions() )
+    for(auto i : ViewSet(newSz).positions())
     {
-      fmt::format_to(out,"\n\ti: {0}; arr[{0}] = {1}",i, newArr[ i ] );
+      fmt::format_to(out, "\n\ti: {0}; arr[{0}] = {1}", i, newArr[i]);
     }
-    SLIC_DEBUG( "After truncation" << fmt::to_string(out) );
+    SLIC_DEBUG("After truncation" << fmt::to_string(out));
   }
-  #endif
+#endif
 }
-
 
 void modifyFinalValues(sidre::View* view, int origSize)
 {
@@ -312,9 +308,8 @@ void modifyFinalValues(sidre::View* view, int origSize)
 void truncateBulkData(sidre::Group* grp, int maxSize)
 {
   // Add two to maxSize
-  for(auto idx =  grp->getFirstValidViewIndex() ;
-      sidre::indexIsValid(idx) ;
-      idx = grp->getNextValidViewIndex(idx) )
+  for(auto idx = grp->getFirstValidViewIndex(); sidre::indexIsValid(idx);
+      idx = grp->getNextValidViewIndex(idx))
   {
     sidre::View* view = grp->getView(idx);
     bool isArray = view->hasBuffer() || view->isExternal();
@@ -328,13 +323,13 @@ void truncateBulkData(sidre::Group* grp, int maxSize)
       {
         const int viewStride = view->getStride();
         const int viewOffset = view->getOffset();
-        view->apply(newSize,viewOffset, viewStride);
+        view->apply(newSize, viewOffset, viewStride);
       }
       // external
       else if(view->isExternal() && numOrigElts > newSize)
       {
         void* dataPtr = view->getVoidPtr();
-        view->setExternalDataPtr(view->getTypeID(),newSize, dataPtr);
+        view->setExternalDataPtr(view->getTypeID(), newSize, dataPtr);
       }
 
       modifyFinalValues(view, numOrigElts);
@@ -342,9 +337,8 @@ void truncateBulkData(sidre::Group* grp, int maxSize)
   }
 
   // for each group
-  for(auto idx =  grp->getFirstValidGroupIndex() ;
-      sidre::indexIsValid(idx) ;
-      idx = grp->getNextValidGroupIndex(idx) )
+  for(auto idx = grp->getFirstValidGroupIndex(); sidre::indexIsValid(idx);
+      idx = grp->getNextValidGroupIndex(idx))
   {
     truncateBulkData(grp->getGroup(idx), maxSize);
   }
@@ -366,7 +360,7 @@ void setupLogging()
   std::stringstream wefFmt;
   wefFmt << "\n***********************************\n"
          << rankStr << "[<LEVEL> in line <LINE> of file <FILE>]\n"
-         <<"MESSAGE=<MESSAGE>\n"
+         << "MESSAGE=<MESSAGE>\n"
          << "***********************************\n";
   std::string wefFormatStr = wefFmt.str();
 
@@ -378,30 +372,28 @@ void setupLogging()
 
 #ifdef AXOM_USE_LUMBERJACK
   const int ranksLimit = 16;
-  wefStream = new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD,
-                                          ranksLimit, wefFormatStr );
-  diStream =  new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD,
-                                          ranksLimit, diFormatStr );
+  wefStream = new slic::LumberjackStream(&std::cout,
+                                         MPI_COMM_WORLD,
+                                         ranksLimit,
+                                         wefFormatStr);
+  diStream =
+    new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, ranksLimit, diFormatStr);
 #else
-  wefStream = new slic::GenericOutputStream( &std::cout, wefFormatStr );
-  diStream = new slic::GenericOutputStream( &std::cout, diFormatStr );
+  wefStream = new slic::GenericOutputStream(&std::cout, wefFormatStr);
+  diStream = new slic::GenericOutputStream(&std::cout, diFormatStr);
 #endif
 
   slic::addStreamToMsgLevel(wefStream, slic::message::Error);
   slic::addStreamToMsgLevel(wefStream, slic::message::Warning);
-  slic::addStreamToMsgLevel(diStream,  slic::message::Info);
-  slic::addStreamToMsgLevel(diStream,  slic::message::Debug);
+  slic::addStreamToMsgLevel(diStream, slic::message::Info);
+  slic::addStreamToMsgLevel(diStream, slic::message::Debug);
 
   // the following is helpful for debugging
   // slic::debug::checksAreErrors = true;
 }
 
 /** Finalizes logging and flushes streams */
-void teardownLogging()
-{
-  slic::finalize();
-}
-
+void teardownLogging() { slic::finalize(); }
 
 int main(int argc, char* argv[])
 {
@@ -420,10 +412,10 @@ int main(int argc, char* argv[])
   {
     args.parse(argc, argv, app);
   }
-  catch (const CLI::ParseError &e)
+  catch(const CLI::ParseError& e)
   {
     int retval = -1;
-    if(my_rank==0)
+    if(my_rank == 0)
     {
       retval = app.exit(e);
     }
@@ -457,7 +449,7 @@ int main(int argc, char* argv[])
     // Add a string view to the datastore to indicate that we modified the data
     std::stringstream sstr;
     sstr << "This datastore was created by axom's 'convert_sidre_protocol' "
-         << "utility with option '--strip " << numElts <<"'. "
+         << "utility with option '--strip " << numElts << "'. "
          << "To simplify debugging, the bulk data in this datastore has been "
          << "truncated to have at most " << numElts << " original values "
          << "per array. Three values have been prepended to each array: "
@@ -473,13 +465,12 @@ int main(int argc, char* argv[])
             << args.m_outputName);
   manager.write(ds.getRoot(), num_files, args.m_outputName, args.m_protocol);
 
-
   // Free up memory associated with external data
-  for(std::vector<void*>::iterator it = externalDataPointers.begin() ;
-      it != externalDataPointers.end() ;
+  for(std::vector<void*>::iterator it = externalDataPointers.begin();
+      it != externalDataPointers.end();
       ++it)
   {
-    delete [] static_cast<char*>(*it);
+    delete[] static_cast<char*>(*it);
     *it = nullptr;
   }
 

@@ -11,16 +11,18 @@ namespace utilities
 {
 namespace string
 {
-
-void split(std::vector<std::string>& tokens, const std::string& str, const char delimiter)
+void split(std::vector<std::string>& tokens,
+           const std::string& str,
+           const char delimiter)
 {
   std::string token;
   std::istringstream tokenStream(str);
-  while (std::getline(tokenStream, token, delimiter)) {
+  while(std::getline(tokenStream, token, delimiter))
+  {
     tokens.push_back(token);
   }
 }
 
-} // end namespace string
-} // end namespace utilities
-} // end namespace axom
+}  // end namespace string
+}  // end namespace utilities
+}  // end namespace axom

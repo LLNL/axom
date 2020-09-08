@@ -13,13 +13,14 @@
 #include <iostream>
 #include <cstdlib>
 
-
 int main()
 {
-  int* result;          // Note: variable not allocated or initialized
+  int* result;  // Note: variable not allocated or initialized
 
-  if( rand()%2 == 0 )
+  if(rand() % 2 == 0)
+  {
     *result = 5;
+  }
 
   return 0;
 }

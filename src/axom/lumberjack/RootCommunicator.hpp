@@ -25,7 +25,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *******************************************************************************
  * \class RootCommunicator
@@ -129,6 +128,7 @@ public:
    *****************************************************************************
    */
   bool isOutputNode();
+
 private:
   MPI_Comm m_mpiComm;
   int m_mpiCommRank;
@@ -136,7 +136,7 @@ private:
   int m_ranksLimit;
 };
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

@@ -10,7 +10,6 @@
 #ifndef TYPESQUEST_H
 #define TYPESQUEST_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,8 +17,8 @@ extern "C" {
 // helper capsule_data_helper
 struct s_QUEST_SHROUD_capsule_data
 {
-  void* addr;       /* address of C++ memory */
-  int idtor;        /* index of destructor */
+  void* addr; /* address of C++ memory */
+  int idtor;  /* index of destructor */
 };
 typedef struct s_QUEST_SHROUD_capsule_data QUEST_SHROUD_capsule_data;
 

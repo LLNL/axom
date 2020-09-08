@@ -9,26 +9,25 @@
 #include "axom/mint/mesh/Field.hpp"
 
 // axom includes
-#include "axom/core/Macros.hpp" // for axom Macros
-#include "axom/core/Types.hpp"  // for axom types
-#include "axom/core/Array.hpp"  // for Array
+#include "axom/core/Macros.hpp"  // for axom Macros
+#include "axom/core/Types.hpp"   // for axom types
+#include "axom/core/Array.hpp"   // for Array
 
 #include "axom/mint/config.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-#include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre/core/sidre.hpp"
 #endif
 
 #include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
-#include <string>   // for C++ string
+#include <string>  // for C++ string
 
 namespace axom
 {
 namespace mint
 {
-
 /*!
  * \class FieldVariable
  *
@@ -92,18 +91,17 @@ namespace mint
  * \see mint::FieldData
  * \see sidre::View
  */
-template < typename T >
+template <typename T>
 class FieldVariable : public Field
 {
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
-  FieldVariable( ) = delete;
+  FieldVariable() = delete;
 
-/// \name Native Storage Field Variable Constructor
-/// @{
+  /// \name Native Storage Field Variable Constructor
+  /// @{
 
   /*!
    * \brief Creates a FieldVariable instance with the given name,
@@ -122,15 +120,15 @@ public:
    * \pre num_tuples >= 0
    * \pre num_components >= 1
    */
-  FieldVariable( const std::string& name,
-                 IndexType num_tuples,
-                 IndexType num_components=1,
-                 IndexType capacity=USE_DEFAULT );
+  FieldVariable(const std::string& name,
+                IndexType num_tuples,
+                IndexType num_components = 1,
+                IndexType capacity = USE_DEFAULT);
 
-/// @}
+  /// @}
 
-/// \name External Storage FieldVariable Constructors
-/// @{
+  /// \name External Storage FieldVariable Constructors
+  /// @{
 
   /*!
    * \brief Creates a FieldVariable that points to a supplied external buffer.
@@ -153,16 +151,16 @@ public:
    * \pre num_components >= 1
    * \pre data != nullptr
    */
-  FieldVariable( const std::string& name,
-                 T* data,
-                 IndexType num_tuples,
-                 IndexType num_components=1,
-                 IndexType capacity=USE_DEFAULT );
+  FieldVariable(const std::string& name,
+                T* data,
+                IndexType num_tuples,
+                IndexType num_components = 1,
+                IndexType capacity = USE_DEFAULT);
 
-/// @}
+  /// @}
 
-/// \name Sidre FieldVariable Constructors
-/// @{
+  /// \name Sidre FieldVariable Constructors
+  /// @{
 
 #ifdef AXOM_MINT_USE_SIDRE
 
@@ -181,7 +179,7 @@ public:
    *
    * \see sidre::View
    */
-  FieldVariable( const std::string& name, sidre::View* field_view );
+  FieldVariable(const std::string& name, sidre::View* field_view);
 
   /*!
    * \brief Creates a FieldVariable with the given name, number of tuples and
@@ -208,22 +206,22 @@ public:
    *
    * \see sidre::View
    */
-  FieldVariable( const std::string& name,
-                 sidre::View* field_view,
-                 IndexType num_tuples,
-                 IndexType num_components=1,
-                 IndexType capacity=USE_DEFAULT );
+  FieldVariable(const std::string& name,
+                sidre::View* field_view,
+                IndexType num_tuples,
+                IndexType num_components = 1,
+                IndexType capacity = USE_DEFAULT);
 #endif
 
-/// @}
+  /// @}
 
-/// \name Virtual Methods
-/// @{
+  /// \name Virtual Methods
+  /// @{
 
   /*!
    * \brief Destructor.
    */
-  virtual ~FieldVariable( ) { delete m_field; }
+  virtual ~FieldVariable() { delete m_field; }
 
   /*!
    * \brief Returns the number of tuples of this FieldVariable instance.
@@ -231,8 +229,10 @@ public:
    * \post N >= 0
    * \see Field::getNumTuples()
    */
-  virtual IndexType getNumTuples( ) const final override
-  { return m_field->size(); }
+  virtual IndexType getNumTuples() const final override
+  {
+    return m_field->size();
+  }
 
   /*!
    * \brief Return the number of components per tuple.
@@ -240,8 +240,10 @@ public:
    * \post N >= 1
    * \see Field::getNumComponents()
    */
-  virtual IndexType getNumComponents( ) const final override
-  { return m_field->numComponents(); };
+  virtual IndexType getNumComponents() const final override
+  {
+    return m_field->numComponents();
+  };
 
   /*!
    * \brief Returns the total number of tuples this instance can hold.
@@ -249,8 +251,10 @@ public:
    * \post N >= this->getNumTuples()
    * \see Field::getCapacity()
    */
-  virtual IndexType getCapacity( ) const final override
-  { return m_field->capacity(); };
+  virtual IndexType getCapacity() const final override
+  {
+    return m_field->capacity();
+  };
 
   /*!
    * \brief Resizes the Field such that it can store the given number of tuples.
@@ -258,8 +262,10 @@ public:
    * \note Reallocation is done only if the new size exceeds the capacity.
    * \see Field::resize()
    */
-  virtual void resize( IndexType newNumTuples ) final override
-  { m_field->resize( newNumTuples ); }
+  virtual void resize(IndexType newNumTuples) final override
+  {
+    m_field->resize(newNumTuples);
+  }
 
   /*!
    * \brief Inserts n_tuples with the default value at the given position.
@@ -270,8 +276,10 @@ public:
    * \note The values at pos and above are shifted up and the new tuples
    *  have the default values.
    */
-  virtual void emplace( IndexType pos, IndexType num_tuples ) final override
-  { m_field->emplace( num_tuples, pos ); }
+  virtual void emplace(IndexType pos, IndexType num_tuples) final override
+  {
+    m_field->emplace(num_tuples, pos);
+  }
 
   /*!
    * \brief Increase the Field capacity to hold the given number of tuples.
@@ -279,47 +287,53 @@ public:
    * \note if newCapacity < getCapacity() this method returns immediately.
    * \see Field::reserve()
    */
-  virtual void reserve( IndexType newCapacity ) final override
-  { m_field->reserve( newCapacity ); }
+  virtual void reserve(IndexType newCapacity) final override
+  {
+    m_field->reserve(newCapacity);
+  }
 
   /*!
    * \brief Shrinks the field capacity to be equal to the number of tuples.
    * \post getCapacity()==getNumTuple()
    * \see Field::shrink()
    */
-  virtual void shrink( ) final override
-  { m_field->shrink(); }
+  virtual void shrink() final override { m_field->shrink(); }
 
   /*!
    * \brief Return the resize ratio of this field.
    */
   virtual double getResizeRatio() const final override
-  { return m_field->getResizeRatio(); }
+  {
+    return m_field->getResizeRatio();
+  }
 
   /*!
    * \brief Set the resize ratio of this field.
    * \param [in] ratio the new resize ratio.
    * \post getResizeRatio() == ratio
    */
-  virtual void setResizeRatio( double ratio ) final override
-  { m_field->setResizeRatio( ratio ); }
+  virtual void setResizeRatio(double ratio) final override
+  {
+    m_field->setResizeRatio(ratio);
+  }
 
   /*!
    * \brief Return true iff the field is stored in an external buffer.
    */
   virtual bool isExternal() const final override
-  { return m_field->isExternal(); }
+  {
+    return m_field->isExternal();
+  }
 
   /*!
    * \brief Return true iff the field is stored in sidre.
    */
-  virtual bool isInSidre() const final override
-  { return m_field->isInSidre(); }
+  virtual bool isInSidre() const final override { return m_field->isInSidre(); }
 
-/// @}
+  /// @}
 
-/// \name Data Access Methods
-/// @{
+  /// \name Data Access Methods
+  /// @{
 
   /*!
    * \brief Returns pointer to the FieldVariable data.
@@ -328,19 +342,16 @@ public:
    */
   /// @{
 
-  inline T* getFieldVariablePtr( )
-  { return m_field->getData(); }
+  inline T* getFieldVariablePtr() { return m_field->getData(); }
 
-  inline const T* getFieldVariablePtr() const
-  { return m_field->getData(); }
+  inline const T* getFieldVariablePtr() const { return m_field->getData(); }
 
   /// @}
 
-/// @}
+  /// @}
 
 private:
-
-  Array< T >* m_field;
+  Array<T>* m_field;
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldVariable);
   DISABLE_MOVE_AND_ASSIGNMENT(FieldVariable);
@@ -350,59 +361,57 @@ private:
 //                FieldVariable IMPLEMENTATION
 //------------------------------------------------------------------------------
 
-template < typename T >
-FieldVariable< T >::FieldVariable( const std::string& name,
-                                   IndexType num_tuples,
-                                   IndexType num_components,
-                                   IndexType capacity ) :
-  Field( name, field_traits< T >::type() )
+template <typename T>
+FieldVariable<T>::FieldVariable(const std::string& name,
+                                IndexType num_tuples,
+                                IndexType num_components,
+                                IndexType capacity)
+  : Field(name, field_traits<T>::type())
 {
-  m_field = new Array< T >( num_tuples, num_components, capacity );
-  SLIC_ASSERT( m_field != nullptr );
-  SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );
+  m_field = new Array<T>(num_tuples, num_components, capacity);
+  SLIC_ASSERT(m_field != nullptr);
+  SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-FieldVariable< T >::FieldVariable( const std::string& name,
-                                   T* data,
-                                   IndexType num_tuples,
-                                   IndexType num_components,
-                                   IndexType capacity ) :
-  Field( name, field_traits< T >::type() )
+template <typename T>
+FieldVariable<T>::FieldVariable(const std::string& name,
+                                T* data,
+                                IndexType num_tuples,
+                                IndexType num_components,
+                                IndexType capacity)
+  : Field(name, field_traits<T>::type())
 {
-  m_field = new Array< T >( data, num_tuples, num_components, capacity );
-  SLIC_ASSERT( m_field != nullptr );
-  SLIC_ASSERT( m_field->isExternal()==true );
-  SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );
+  m_field = new Array<T>(data, num_tuples, num_components, capacity);
+  SLIC_ASSERT(m_field != nullptr);
+  SLIC_ASSERT(m_field->isExternal() == true);
+  SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
 
 #ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
-template < typename T >
-FieldVariable< T >::FieldVariable( const std::string& name,
-                                   sidre::View* field_view ) :
-  Field( name, field_traits< T >::type() )
+template <typename T>
+FieldVariable<T>::FieldVariable(const std::string& name, sidre::View* field_view)
+  : Field(name, field_traits<T>::type())
 {
-  m_field = new sidre::Array< T >( field_view );
-  SLIC_ASSERT( m_field != nullptr );
-  SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );
+  m_field = new sidre::Array<T>(field_view);
+  SLIC_ASSERT(m_field != nullptr);
+  SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-FieldVariable< T >::FieldVariable( const std::string& name,
-                                   sidre::View* field_view,
-                                   IndexType num_tuples,
-                                   IndexType num_components,
-                                   IndexType capacity ) :
-  Field( name, field_traits< T >::type() )
+template <typename T>
+FieldVariable<T>::FieldVariable(const std::string& name,
+                                sidre::View* field_view,
+                                IndexType num_tuples,
+                                IndexType num_components,
+                                IndexType capacity)
+  : Field(name, field_traits<T>::type())
 {
-  m_field = new sidre::Array< T >( field_view, num_tuples,
-                                   num_components, capacity );
-  SLIC_ASSERT( m_field != nullptr );
-  SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );
+  m_field = new sidre::Array<T>(field_view, num_tuples, num_components, capacity);
+  SLIC_ASSERT(m_field != nullptr);
+  SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
 
 #endif

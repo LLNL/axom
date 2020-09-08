@@ -7,13 +7,12 @@
 #define MINT_CURVILINEARMESH_HPP_
 
 #include "axom/mint/mesh/StructuredMesh.hpp"  // base class
-#include "axom/mint/config.hpp"          // for compile-time definitions
+#include "axom/mint/config.hpp"               // for compile-time definitions
 
 namespace axom
 {
 namespace mint
 {
-
 // Forward Declarations
 class MeshCoordinates;
 
@@ -65,14 +64,13 @@ class MeshCoordinates;
 class CurvilinearMesh : public StructuredMesh
 {
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
   CurvilinearMesh() = delete;
 
-/// \name Native Constructors
-/// @{
+  /// \name Native Constructors
+  /// @{
 
   /*!
    * \brief Constructs a CurvilinearMesh with the given dimensions.
@@ -90,11 +88,11 @@ public:
    * \post hasSidreGroup() == false
    * \post isExternal() == false
    */
-  CurvilinearMesh( IndexType Ni, IndexType Nj=-1, IndexType Nk=-1  );
-/// @}
+  CurvilinearMesh(IndexType Ni, IndexType Nj = -1, IndexType Nk = -1);
+  /// @}
 
-/// \name External Constructors
-/// @{
+  /// \name External Constructors
+  /// @{
 
   /*!
    * \brief Constructs a CurvilinearMesh instance given the supplied, external
@@ -119,14 +117,18 @@ public:
    * \post hasSidreGroup() == false.
    * \post isExternal() == true
    */
-  CurvilinearMesh( IndexType Ni, double* x, IndexType Nj=-1, double* y=nullptr,
-                   IndexType Nk=-1, double* z=nullptr );
-/// @}
+  CurvilinearMesh(IndexType Ni,
+                  double* x,
+                  IndexType Nj = -1,
+                  double* y = nullptr,
+                  IndexType Nk = -1,
+                  double* z = nullptr);
+  /// @}
 
 #ifdef AXOM_MINT_USE_SIDRE
 
-/// \name Sidre Constructors
-/// @{
+  /// \name Sidre Constructors
+  /// @{
 
   /*!
    * \brief Create a curvilinear mesh instance from the given Sidre group that
@@ -154,7 +156,7 @@ public:
    * \post isExternal() == false
    */
   /// @{
-  explicit CurvilinearMesh( sidre::Group* group, const std::string& topo="" );
+  explicit CurvilinearMesh(sidre::Group* group, const std::string& topo = "");
   /// @}
 
   /*!
@@ -187,25 +189,27 @@ public:
    */
   /// @{
 
-  CurvilinearMesh( sidre::Group* group,
-                   const std::string& topo,
-                   const std::string& coordset,
-                   IndexType Ni,
-                   IndexType Nj=-1,
-                   IndexType Nk=-1  );
+  CurvilinearMesh(sidre::Group* group,
+                  const std::string& topo,
+                  const std::string& coordset,
+                  IndexType Ni,
+                  IndexType Nj = -1,
+                  IndexType Nk = -1);
 
-  CurvilinearMesh( sidre::Group* group, IndexType Ni, IndexType Nj=-1,
-                   IndexType Nk=-1 ) :
-    CurvilinearMesh( group, "", "", Ni, Nj, Nk )
-  {}
+  CurvilinearMesh(sidre::Group* group,
+                  IndexType Ni,
+                  IndexType Nj = -1,
+                  IndexType Nk = -1)
+    : CurvilinearMesh(group, "", "", Ni, Nj, Nk)
+  { }
 
-  /// @}
+    /// @}
 
 /// @}
 #endif
 
-/// \name Virtual methods
-/// @{
+  /// \name Virtual methods
+  /// @{
 
   /*!
    * \brief Destructor.
@@ -217,10 +221,12 @@ public:
    * \return status true iff external coordinate arrays were supplied.
    */
   virtual bool isExternal() const final override
-  { return m_coordinates->isExternal(); }
+  {
+    return m_coordinates->isExternal();
+  }
 
-/// \name Nodes
-/// @{
+  /// \name Nodes
+  /// @{
 
   /*!
    * \brief Copy the coordinates of the given node into the provided buffer.
@@ -232,8 +238,10 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != nullptr
    */
-  virtual void getNode( IndexType nodeID, double* coords ) const final override
-  { m_coordinates->getCoordinates( nodeID, coords ); }
+  virtual void getNode(IndexType nodeID, double* coords) const final override
+  {
+    m_coordinates->getCoordinates(nodeID, coords);
+  }
 
   /*!
    * \brief Returns pointer to the requested mesh coordinate buffer.
@@ -248,20 +256,23 @@ public:
    */
   /// @{
 
-  virtual double* getCoordinateArray( int dim ) final override
-  { return m_coordinates->getCoordinateArray( dim ); }
+  virtual double* getCoordinateArray(int dim) final override
+  {
+    return m_coordinates->getCoordinateArray(dim);
+  }
 
-  virtual const double* getCoordinateArray( int dim ) const final override
-  { return m_coordinates->getCoordinateArray( dim ); }
+  virtual const double* getCoordinateArray(int dim) const final override
+  {
+    return m_coordinates->getCoordinateArray(dim);
+  }
 
   /// @}
 
-/// @}
+  /// @}
 
-/// @}
+  /// @}
 
 private:
-
   /*!
    * \brief Initializes the CurvilinearMesh
    * \note Helper method to be called from a constructor.
@@ -270,8 +281,8 @@ private:
 
   MeshCoordinates* m_coordinates;
 
-  DISABLE_COPY_AND_ASSIGNMENT( CurvilinearMesh );
-  DISABLE_MOVE_AND_ASSIGNMENT( CurvilinearMesh );
+  DISABLE_COPY_AND_ASSIGNMENT(CurvilinearMesh);
+  DISABLE_MOVE_AND_ASSIGNMENT(CurvilinearMesh);
 };
 
 } /* namespace mint */

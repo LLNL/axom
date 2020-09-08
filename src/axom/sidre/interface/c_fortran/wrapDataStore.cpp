@@ -41,8 +41,7 @@ void SIDRE_DataStore_delete(SIDRE_DataStore* self)
   // splicer end class.DataStore.method.delete
 }
 
-SIDRE_Group* SIDRE_DataStore_get_root(SIDRE_DataStore* self,
-                                      SIDRE_Group* SHC_rv)
+SIDRE_Group* SIDRE_DataStore_get_root(SIDRE_DataStore* self, SIDRE_Group* SHC_rv)
 {
   axom::sidre::DataStore* SH_this =
     static_cast<axom::sidre::DataStore*>(self->addr);
@@ -73,7 +72,7 @@ SIDRE_Buffer* SIDRE_DataStore_get_buffer(SIDRE_DataStore* self,
   // splicer begin class.DataStore.method.get_buffer
   axom::sidre::Buffer* SHCXX_rv = SH_this->getBuffer(idx);
   // C_error_pattern
-  if (SHCXX_rv == nullptr)
+  if(SHCXX_rv == nullptr)
   {
     SHC_rv->addr = NULL;
     SHC_rv->idtor = 0;
@@ -110,7 +109,7 @@ SIDRE_Buffer* SIDRE_DataStore_create_buffer_from_type(SIDRE_DataStore* self,
   axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
   axom::sidre::Buffer* SHCXX_rv = SH_this->createBuffer(SHCXX_type, num_elems);
   // C_error_pattern
-  if (SHCXX_rv == nullptr)
+  if(SHCXX_rv == nullptr)
   {
     SHC_rv->addr = NULL;
     SHC_rv->idtor = 0;
@@ -146,7 +145,8 @@ bool SIDRE_DataStore_generate_blueprint_index(SIDRE_DataStore* self,
   const std::string SHCXX_index_path(index_path);
   bool SHC_rv = SH_this->generateBlueprintIndex(SHCXX_domain_path,
                                                 SHCXX_mesh_name,
-                                                SHCXX_index_path, num_domains);
+                                                SHCXX_index_path,
+                                                num_domains);
   return SHC_rv;
   // splicer end class.DataStore.method.generate_blueprint_index
 }
@@ -168,7 +168,8 @@ bool SIDRE_DataStore_generate_blueprint_index_bufferify(SIDRE_DataStore* self,
   const std::string SHCXX_index_path(index_path, Lindex_path);
   bool SHC_rv = SH_this->generateBlueprintIndex(SHCXX_domain_path,
                                                 SHCXX_mesh_name,
-                                                SHCXX_index_path, num_domains);
+                                                SHCXX_index_path,
+                                                num_domains);
   return SHC_rv;
   // splicer end class.DataStore.method.generate_blueprint_index_bufferify
 }
