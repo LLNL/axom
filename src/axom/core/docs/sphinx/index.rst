@@ -3,8 +3,8 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Axom Core User Documentation
-============================
+Axom Core User Guide
+====================
 
 The Axom Core library provides fundamental data structures and operations used
 throughout the rest of Axom.  Different compilers and platforms support these
@@ -21,9 +21,15 @@ container classes.
 The Core library is used by the rest of Axom, so Core does not use macros from
 Axom Slic for output.
 
-**Contents:**
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/coretop.html>`_
+
 
 .. toctree::
+   :caption: Contents
    :maxdepth: 1
 
    core_numerics

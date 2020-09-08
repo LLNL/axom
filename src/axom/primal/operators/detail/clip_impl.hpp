@@ -23,15 +23,10 @@ namespace axom
 {
 namespace primal
 {
-
 namespace detail
 {
-
 /*! Returns true when index is even */
-inline bool isEven(int index)
-{
-  return (index & 1)==0;
-}
+inline bool isEven(int index) { return (index & 1) == 0; }
 
 /*!
  * \brief Specialized point plane classifier for axis aligned planes
@@ -54,22 +49,22 @@ inline bool isEven(int index)
  *         corresponding plane associated with index.
  * \see OrientedPlane enum
  */
-template < typename T, int NDIMS >
-int classifyPointAxisPlane(const Point< T, NDIMS >& pt, int index, T val,
+template <typename T, int NDIMS>
+int classifyPointAxisPlane(const Point<T, NDIMS>& pt,
+                           int index,
+                           T val,
                            const double eps = 1e-8)
 {
   // Note: we are exploiting the fact that the planes are axis aligned
   // So the dot product is +/- the given coordinate.
   // In general, we would need to call distance(pt, plane) here
-  T dist = isEven(index)
-           ? val - pt[ index/2 ]
-           : pt[ index/2 ] - val;
+  T dist = isEven(index) ? val - pt[index / 2] : pt[index / 2] - val;
 
-  if (dist > eps)
+  if(dist > eps)
   {
     return ON_POSITIVE_SIDE;
   }
-  if (dist < -eps)
+  if(dist < -eps)
   {
     return ON_NEGATIVE_SIDE;
   }
@@ -88,23 +83,24 @@ int classifyPointAxisPlane(const Point< T, NDIMS >& pt, int index, T val,
  *
  * \see classifyPointAxisPlane for description of how index maps to coordinates.
  */
-template < typename T, int NDIMS >
-Point< T,NDIMS > findIntersectionPoint(const Point< T, NDIMS >& a,
-                                       const Point< T, NDIMS >& b, int index,
-                                       T val)
+template <typename T, int NDIMS>
+Point<T, NDIMS> findIntersectionPoint(const Point<T, NDIMS>& a,
+                                      const Point<T, NDIMS>& b,
+                                      int index,
+                                      T val)
 {
-  typedef Point< T,NDIMS > PointType;
+  typedef Point<T, NDIMS> PointType;
 
   // Need to find a parameter t for the point pt, such that,
   // * 0 <= t <= 1
   // * pt = a + t * (b-a)
   // * pt[ index/2]  == val
 
-  T t = (val - a[ index /2 ]) / (b[index/2]- a[index/2]);
+  T t = (val - a[index / 2]) / (b[index / 2] - a[index / 2]);
   SLIC_ASSERT(0. <= t && t <= 1.);
 
-  PointType ret = PointType(a.array() + t * (b.array()-a.array()) );
-  SLIC_ASSERT( classifyPointAxisPlane( ret, index, val) == ON_BOUNDARY);
+  PointType ret = PointType(a.array() + t * (b.array() - a.array()));
+  SLIC_ASSERT(classifyPointAxisPlane(ret, index, val) == ON_BOUNDARY);
 
   return ret;
 }
@@ -127,45 +123,47 @@ Point< T,NDIMS > findIntersectionPoint(const Point< T, NDIMS >& a,
  *       We are only keeping the "back" polygon, w.r.t. that algorithm.
  * \see classifyPointAxisPlane for description of how index maps to coordinates.
  */
-template < typename T, int NDIMS >
-void clipAxisPlane(const Polygon< T,NDIMS >* prevPoly,
-                   Polygon< T,NDIMS >* currentPoly, int index, T val)
+template <typename T, int NDIMS>
+void clipAxisPlane(const Polygon<T, NDIMS>* prevPoly,
+                   Polygon<T, NDIMS>* currentPoly,
+                   int index,
+                   T val)
 {
-  typedef Point< T,NDIMS > PointType;
+  typedef Point<T, NDIMS> PointType;
 
   currentPoly->clear();
   int numVerts = prevPoly->numVertices();
 
-  if (numVerts == 0)
+  if(numVerts == 0)
   {
     return;
   }
 
   // Initialize point a with the last vertex of the polygon
-  const PointType* a = &(*prevPoly)[numVerts-1];
+  const PointType* a = &(*prevPoly)[numVerts - 1];
   int aSide = classifyPointAxisPlane(*a, index, val);
 
-  for (int i=0 ; i< numVerts ; ++i)
+  for(int i = 0; i < numVerts; ++i)
   {
     const PointType* b = &(*prevPoly)[i];
     int bSide = classifyPointAxisPlane(*b, index, val);
 
-    switch (bSide)
+    switch(bSide)
     {
     case ON_POSITIVE_SIDE:
-      if (aSide == ON_NEGATIVE_SIDE)
+      if(aSide == ON_NEGATIVE_SIDE)
       {
         currentPoly->addVertex(findIntersectionPoint(*a, *b, index, val));
       }
       break;
     case ON_BOUNDARY:
-      if (aSide == ON_NEGATIVE_SIDE)
+      if(aSide == ON_NEGATIVE_SIDE)
       {
         currentPoly->addVertex(*b);
       }
       break;
     case ON_NEGATIVE_SIDE:
-      switch (aSide)
+      switch(aSide)
       {
       case ON_POSITIVE_SIDE:
         currentPoly->addVertex(findIntersectionPoint(*a, *b, index, val));
@@ -186,11 +184,10 @@ void clipAxisPlane(const Polygon< T,NDIMS >* prevPoly,
     a = b;
     aSide = bSide;
   }
-
 }
 
-} // namespace detail
-} // namespace primal
-} // namespace axom
+}  // namespace detail
+}  // namespace primal
+}  // namespace axom
 
-#endif // PRIMAL_CLIPPING_IMPL_HPP_
+#endif  // PRIMAL_CLIPPING_IMPL_HPP_

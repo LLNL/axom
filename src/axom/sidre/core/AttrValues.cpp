@@ -26,7 +26,6 @@ namespace axom
 {
 namespace sidre
 {
-
 /*
  *************************************************************************
  *
@@ -34,14 +33,14 @@ namespace sidre
  *
  *************************************************************************
  */
-bool AttrValues::hasValue( const Attribute* attr ) const
+bool AttrValues::hasValue(const Attribute* attr) const
 {
-  if (attr == nullptr)
+  if(attr == nullptr)
   {
     return false;
   }
 
-  if (m_values == nullptr)
+  if(m_values == nullptr)
   {
     // No attributes have been set in this View.
     return false;
@@ -49,15 +48,15 @@ bool AttrValues::hasValue( const Attribute* attr ) const
 
   IndexType iattr = attr->getIndex();
 
-  if ((size_t) iattr >= m_values->size())
+  if((size_t)iattr >= m_values->size())
   {
     // This attribute has not been set for this View.
     return false;
   }
 
-  Node & value = (*m_values)[iattr];
+  Node& value = (*m_values)[iattr];
 
-  if (isEmpty(value))
+  if(isEmpty(value))
   {
     return false;
   }
@@ -75,14 +74,14 @@ bool AttrValues::hasValue( const Attribute* attr ) const
  *
  *************************************************************************
  */
-bool AttrValues::setToDefault( const Attribute* attr )
+bool AttrValues::setToDefault(const Attribute* attr)
 {
-  if (attr == nullptr)
+  if(attr == nullptr)
   {
     return false;
   }
 
-  if (m_values == nullptr)
+  if(m_values == nullptr)
   {
     // No attributes have been set in this View, already default.
     return true;
@@ -90,13 +89,13 @@ bool AttrValues::setToDefault( const Attribute* attr )
 
   IndexType iattr = attr->getIndex();
 
-  if ((size_t) iattr >= m_values->size())
+  if((size_t)iattr >= m_values->size())
   {
     // This attribute has not been set for this View, already default.
     return true;
   }
 
-  Node & value = (*m_values)[iattr];
+  Node& value = (*m_values)[iattr];
   value.reset();
 
   return true;
@@ -113,16 +112,16 @@ bool AttrValues::setToDefault( const Attribute* attr )
  */
 bool AttrValues::createNode(IndexType iattr)
 {
-  if (m_values == nullptr)
+  if(m_values == nullptr)
   {
-    m_values = new(std::nothrow) Values( );
+    m_values = new(std::nothrow) Values();
   }
 
-  if ((size_t) iattr >= m_values->size())
+  if((size_t)iattr >= m_values->size())
   {
     // Create all attributes up to iattr, push back empty Nodes
     m_values->reserve(iattr + 1);
-    for(int n=m_values->size() ; n < iattr + 1 ; ++n)
+    for(int n = m_values->size(); n < iattr + 1; ++n)
     {
       m_values->push_back(Node());
     }
@@ -138,9 +137,9 @@ bool AttrValues::createNode(IndexType iattr)
  *
  *************************************************************************
  */
-Node::ConstValue AttrValues::getScalar( const Attribute* attr ) const
+Node::ConstValue AttrValues::getScalar(const Attribute* attr) const
 {
-  const Node & node = getValueNodeRef(attr);
+  const Node& node = getValueNodeRef(attr);
   return node.value();
 }
 
@@ -153,25 +152,23 @@ Node::ConstValue AttrValues::getScalar( const Attribute* attr ) const
  *
  *************************************************************************
  */
-const char* AttrValues::getString( const Attribute* attr ) const
+const char* AttrValues::getString(const Attribute* attr) const
 {
-  if (attr == nullptr)
+  if(attr == nullptr)
   {
     return nullptr;
   }
 
-  if (attr->getTypeID() != CHAR8_STR_ID)
+  if(attr->getTypeID() != CHAR8_STR_ID)
   {
     SLIC_CHECK_MSG(attr->getTypeID() == CHAR8_STR_ID,
                    "getString: Called on attribute '"
-                   << attr->getName()
-                   << "' which is type "
-                   << DataType::id_to_name(attr->getTypeID())
-                   << ".");
+                     << attr->getName() << "' which is type "
+                     << DataType::id_to_name(attr->getTypeID()) << ".");
     return nullptr;
   }
 
-  const Node & node = getValueNodeRef(attr);
+  const Node& node = getValueNodeRef(attr);
   return node.as_char8_str();
 }
 
@@ -182,14 +179,14 @@ const char* AttrValues::getString( const Attribute* attr ) const
  *
  *************************************************************************
  */
-const Node & AttrValues::getValueNodeRef( const Attribute* attr ) const
+const Node& AttrValues::getValueNodeRef(const Attribute* attr) const
 {
-  if (attr == nullptr)
+  if(attr == nullptr)
   {
     return getEmptyNodeRef();
   }
 
-  if (m_values == nullptr)
+  if(m_values == nullptr)
   {
     // No attributes have been set in this View;
     return attr->getDefaultNodeRef();
@@ -197,15 +194,15 @@ const Node & AttrValues::getValueNodeRef( const Attribute* attr ) const
 
   IndexType iattr = attr->getIndex();
 
-  if ((size_t) iattr >= m_values->size())
+  if((size_t)iattr >= m_values->size())
   {
     // This attribute has not been set for this View
     return attr->getDefaultNodeRef();
   }
 
-  Node & value = (*m_values)[iattr];
+  Node& value = (*m_values)[iattr];
 
-  if (isEmpty(value))
+  if(isEmpty(value))
   {
     return attr->getDefaultNodeRef();
   }
@@ -223,17 +220,17 @@ const Node & AttrValues::getValueNodeRef( const Attribute* attr ) const
  */
 IndexType AttrValues::getFirstValidAttrValueIndex() const
 {
-  if (m_values == nullptr)
+  if(m_values == nullptr)
   {
     // No attributes have been set in this View.
     return InvalidIndex;
   }
 
-  for(size_t iattr = 0 ; iattr < m_values->size() ; ++iattr)
+  for(size_t iattr = 0; iattr < m_values->size(); ++iattr)
   {
     // Find first, non-empty attribute.
-    Node & value = (*m_values)[iattr];
-    if (!isEmpty(value))
+    Node& value = (*m_values)[iattr];
+    if(!isEmpty(value))
     {
       return iattr;
     }
@@ -255,19 +252,17 @@ IndexType AttrValues::getFirstValidAttrValueIndex() const
  */
 IndexType AttrValues::getNextValidAttrValueIndex(IndexType idx) const
 {
-  if (idx == InvalidIndex)
+  if(idx == InvalidIndex)
   {
     return InvalidIndex;
   }
 
   idx++;
-  while ( static_cast<unsigned>(idx) < m_values->size() &&
-          isEmpty((*m_values)[idx]))
+  while(static_cast<unsigned>(idx) < m_values->size() && isEmpty((*m_values)[idx]))
   {
     idx++;
   }
-  return ( (static_cast<unsigned>(idx) <
-            m_values->size()) ? idx : InvalidIndex );
+  return ((static_cast<unsigned>(idx) < m_values->size()) ? idx : InvalidIndex);
 }
 
 /*
@@ -277,9 +272,7 @@ IndexType AttrValues::getNextValidAttrValueIndex(IndexType idx) const
  *
  *************************************************************************
  */
-AttrValues::AttrValues() :
-  m_values(nullptr)
-{}
+AttrValues::AttrValues() : m_values(nullptr) { }
 
 /*
  *************************************************************************

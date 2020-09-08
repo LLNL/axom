@@ -16,7 +16,7 @@
 
 #include "typesSidre.h"
 #ifndef __cplusplus
-#include <stdbool.h>
+  #include <stdbool.h>
 #endif
 
 // splicer begin CXX_declarations

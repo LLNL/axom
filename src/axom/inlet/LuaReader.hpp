@@ -17,16 +17,15 @@
 #include "axom/inlet/Reader.hpp"
 
 extern "C" {
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 }
 
 namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class LuaReader
@@ -141,7 +140,6 @@ public:
   bool getString(const std::string& id, std::string& value);
 
 private:
-
   /*!
    *****************************************************************************
    * \brief Move the Lua state to the given Lua variable id
@@ -160,7 +158,7 @@ private:
   lua_State* m_luaState;
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif

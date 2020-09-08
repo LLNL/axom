@@ -29,5 +29,5 @@ TEST(fmt_smoke, basic_use)
   // Test printf-style formatting.
   // It should produce two significant digits -- i.e. 1.23
   std::string fltFormat = fmt::sprintf("%.2f", 1.234567);
-  EXPECT_EQ( "1.23", fltFormat);
+  EXPECT_EQ("1.23", fltFormat);
 }

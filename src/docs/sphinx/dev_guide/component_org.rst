@@ -170,10 +170,10 @@ The top-level component directory contains a `CMakeLists.txt`, e.g.,
 
 
 
-.. note:: Each Axom component should use the common uncrustify
-          configuration file defined for the project at src/uncrustify.cfg. 
+.. note:: Each Axom component should use the common `clang-format`
+          configuration file defined for the project at ``src/.clang-format``. 
           The file is used to define source code formatting options that are
-          applied when the *uncrustify* tool is run on the code.
+          applied when the *clang-format* tool is run on the code.
 
 
 Component src directory

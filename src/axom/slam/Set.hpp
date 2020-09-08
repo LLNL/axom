@@ -24,8 +24,6 @@ namespace axom
 {
 namespace slam
 {
-
-
 /**
  * \class Set
  *
@@ -71,9 +69,8 @@ namespace slam
  *
  * The interface is for constant access to the elements.
  */
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
 class Set
 {
 public:
@@ -82,8 +79,7 @@ public:
 
 public:
   // Set () {}
-  virtual ~Set () = default;
-
+  virtual ~Set() = default;
 
   /**
    * \brief Random access to the entities of the set
@@ -98,31 +94,31 @@ public:
    *       Are we planning to handle indexes that are intentionally out of range
    *       (e.g. to indicate a problem, or a missing element etc..)?
    */
-  virtual ElementType at(PositionType) const  = 0;
+  virtual ElementType at(PositionType) const = 0;
 
   /**
    * \brief Get the number of entities in the set
    * \return The number of entities in the set.
    */
-  virtual PositionType  size() const      = 0;
+  virtual PositionType size() const = 0;
 
   /**
    * \brief Determines if the Set is a Subset of another set.
    * \return true if the set is a subset of another set, otherwise false.
    */
-  virtual bool          isSubset() const       = 0;
+  virtual bool isSubset() const = 0;
 
   /**
    * \brief Checks whether the set is valid.
    * \return true if the underlying indices are valid, false otherwise.
    */
-  virtual bool          isValid(bool verboseOutput = false)  const    = 0;
+  virtual bool isValid(bool verboseOutput = false) const = 0;
 
   /**
    * \brief Checks if there are any elements in the set -- equivalent to:
    * set.size() == 0
    */
-  virtual bool          empty() const = 0;
+  virtual bool empty() const = 0;
 
 #if 0
   /**
@@ -138,7 +134,6 @@ public:
   void                  reset(size_type) { throw NotImplementedException(); }
 #endif
 
-
 private:
   /**
    * \brief Utility function to verify that the given SetPosition is in a valid
@@ -147,31 +142,28 @@ private:
   virtual void verifyPosition(PositionType) const = 0;
 };
 
-
-
 /**
  * \brief General equality operator for two sets.
  * \details Two sets are considered equal if they have the same number of
  * elements and their ordered indices agree.
  */
-template<typename P1, typename E1, typename P2, typename E2>
-inline bool operator==(const Set<P1,E1>& set1, const Set<P2, E2>& set2)
+template <typename P1, typename E1, typename P2, typename E2>
+inline bool operator==(const Set<P1, E1>& set1, const Set<P2, E2>& set2)
 {
-  using PosType = typename std::common_type<P1,P2>::type;
+  using PosType = typename std::common_type<P1, P2>::type;
   using ElemType = typename std::common_type<E1, E2>::type;
 
   PosType const numElts = set1.size();
 
   // Sets are different if they have a different size
-  if(set2.size() != numElts)
-    return false;
+  if(set2.size() != numElts) return false;
 
   // Otherwise, compare the indices element wise
-  for(PosType pos = PosType() ; pos < numElts ; ++pos)
+  for(PosType pos = PosType(); pos < numElts; ++pos)
   {
     auto&& e1 = static_cast<ElemType&&>(set1.at(static_cast<P1>(pos)));
     auto&& e2 = static_cast<ElemType&&>(set2.at(static_cast<P2>(pos)));
-    if (e1 != e2)
+    if(e1 != e2)
     {
       return false;
     }
@@ -181,14 +173,13 @@ inline bool operator==(const Set<P1,E1>& set1, const Set<P2, E2>& set2)
 /**
  * \brief Set inequality operator
  */
-template<typename P1, typename E1, typename P2, typename E2>
-inline bool operator!=(const Set<P1,E1>& set1, const Set<P2, E2>& set2)
+template <typename P1, typename E1, typename P2, typename E2>
+inline bool operator!=(const Set<P1, E1>& set1, const Set<P2, E2>& set2)
 {
   return !(set1 == set2);
 }
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_SET_H_
+#endif  //  SLAM_SET_H_

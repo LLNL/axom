@@ -23,7 +23,6 @@ namespace axom
 {
 namespace slam
 {
-
 // Forward declare the BitSet class and some operator functions
 
 class BitSet;
@@ -39,7 +38,7 @@ class BitSet;
  *
  * \pre lhs.size() == rhs.size()
  */
-BitSet operator|(const BitSet & lhs, const BitSet & rhs);
+BitSet operator|(const BitSet& lhs, const BitSet& rhs);
 
 /**
  * \brief Intersection operator for two bit sets.
@@ -52,7 +51,7 @@ BitSet operator|(const BitSet & lhs, const BitSet & rhs);
  *
  * \pre lhs.size() == rhs.size()
  */
-BitSet operator&(const BitSet & lhs, const BitSet & rhs);
+BitSet operator&(const BitSet& lhs, const BitSet& rhs);
 
 /**
  * \brief Exclusive or (xor) operator for two bit sets.
@@ -65,7 +64,7 @@ BitSet operator&(const BitSet & lhs, const BitSet & rhs);
  *
  * \pre lhs.size() == rhs.size()
  */
-BitSet operator^(const BitSet & lhs, const BitSet & rhs);
+BitSet operator^(const BitSet& lhs, const BitSet& rhs);
 
 /**
  * \brief Set difference operator for two bit sets.
@@ -78,7 +77,7 @@ BitSet operator^(const BitSet & lhs, const BitSet & rhs);
  *
  * \pre lhs.size() == rhs.size()
  */
-BitSet operator-(const BitSet & lhs, const BitSet & rhs);
+BitSet operator-(const BitSet& lhs, const BitSet& rhs);
 
 /**
  * \class BitSet
@@ -118,7 +117,6 @@ public:
   static const Index npos;
 
 private:
-
   enum
   {
     BITS_PER_WORD = internal::BitTraits<Word>::BITS_PER_WORD,
@@ -126,7 +124,6 @@ private:
   };
 
 public:
-
   /**
    * \brief BitSet class constructor
    *
@@ -137,32 +134,28 @@ public:
    */
   explicit BitSet(int numBits = 0)
   {
-    SLIC_ASSERT_MSG(numBits >= 0,
-                    "slam::BitSet must be initialized with a non-zero number of bits");
+    SLIC_ASSERT_MSG(
+      numBits >= 0,
+      "slam::BitSet must be initialized with a non-zero number of bits");
 
     m_numBits = axom::utilities::max(numBits, 0);
-    m_numWords = (m_numBits == 0)
-                 ? 1
-                 : 1 + (m_numBits - 1) / BITS_PER_WORD;
+    m_numWords = (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BITS_PER_WORD;
 
     m_data = ArrayType(m_numWords);
   }
 
   /** \brief Copy constructor for BitSet class */
-  BitSet(const BitSet& other) :
-    m_data(other.m_data),
-    m_numBits(other.m_numBits),
-    m_numWords(other.m_numWords)
-  {}
+  BitSet(const BitSet& other)
+    : m_data(other.m_data)
+    , m_numBits(other.m_numBits)
+    , m_numWords(other.m_numWords)
+  { }
 
   /** \brief Equality operator for two bitsets */
-  bool operator==(const BitSet & other) const;
+  bool operator==(const BitSet& other) const;
 
   /** \brief Inequality operator for two bitsets */
-  bool operator!=(const BitSet & other) const
-  {
-    return !(operator==(other));
-  }
+  bool operator!=(const BitSet& other) const { return !(operator==(other)); }
 
 public:
   /// \name Bitset bitwise assignment operators
@@ -171,7 +164,7 @@ public:
   /** \brief Assignment operator for BitSet class */
   BitSet& operator=(const BitSet& other)
   {
-    if (this != &other)
+    if(this != &other)
     {
       m_data = other.m_data;
       m_numBits = other.m_numBits;
@@ -303,14 +296,14 @@ public:
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
-  void set(Index idx)   { getWord(idx) |= mask(idx);  }
+  void set(Index idx) { getWord(idx) |= mask(idx); }
 
   /**
    * \brief Toggles bit at index \a idx
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
-  void flip(Index idx)  { getWord(idx) ^= mask(idx);  }
+  void flip(Index idx) { getWord(idx) ^= mask(idx); }
 
   /**
    * \brief Tests the bit at index \a idx
@@ -318,10 +311,7 @@ public:
    * \return True if bit \idx is set, false otherwise
    * \pre \a idx must be between 0 and bitset.size()
    */
-  bool test(Index idx)  const
-  {
-    return (getWord(idx) & mask(idx)) != Word(0);
-  }
+  bool test(Index idx) const { return (getWord(idx) & mask(idx)) != Word(0); }
 
   /// @}
 private:
@@ -334,8 +324,7 @@ private:
    */
   Word& getWord(Index idx, bool checkIndexValid = true)
   {
-    if(checkIndexValid)
-      checkValidIndex(idx);
+    if(checkIndexValid) checkValidIndex(idx);
 
     const Index wIdx = idx / BITS_PER_WORD;
     return m_data[wIdx];
@@ -347,8 +336,7 @@ private:
    */
   const Word& getWord(Index idx, bool checkIndexValid = true) const
   {
-    if (checkIndexValid)
-      checkValidIndex(idx);
+    if(checkIndexValid) checkValidIndex(idx);
 
     const Index wIdx = idx / BITS_PER_WORD;
     return m_data[wIdx];
@@ -372,10 +360,7 @@ private:
    * This function is only valid when isLasteWordFull() is false
    * \sa isLastWordFull()
    */
-  Word lastWordMask() const
-  {
-    return mask(m_numBits ) - 1;
-  }
+  Word lastWordMask() const { return mask(m_numBits) - 1; }
 
   /**
    * \brief Checks if index \idx corresponds to a valid index
@@ -385,11 +370,9 @@ private:
   void checkValidIndex(Index idx) const
   {
     AXOM_DEBUG_VAR(idx);
-    SLIC_ASSERT_MSG(
-      idx >= 0 && idx < m_numBits,
-      "slam::Bitset attempted to out of range bit "
-      << idx << ". Valid range is [0, " << m_numBits << ")."
-      );
+    SLIC_ASSERT_MSG(idx >= 0 && idx < m_numBits,
+                    "slam::Bitset attempted to out of range bit "
+                      << idx << ". Valid range is [0, " << m_numBits << ").");
   }
 
   /**
@@ -401,7 +384,7 @@ private:
    */
   bool isLastWordFull() const
   {
-    const int lg = (1 << (LG_BITS_PER_WORD))-1;
+    const int lg = (1 << (LG_BITS_PER_WORD)) - 1;
     return (m_numBits & lg) == 0;
   }
 
@@ -412,9 +395,7 @@ private:
   int m_numWords;
 };
 
+}  // end namespace slam
+}  // end namespace axom
 
-
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_BITSET_H_
+#endif  //  SLAM_BITSET_H_

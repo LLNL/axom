@@ -1,15 +1,20 @@
 
-Lumberjack User Documentation
-=============================
+Lumberjack User Guide
+=====================
 
 Lumberjack, named because it cuts down logs, is a C++ library that
 provides scalable logging while reducing the amount of messages
 written out the screen or file system.
 
 
-.. raw:: html
+API Documentation
+-----------------
 
-    <h3>Introduction</h3>
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/lumberjacktop.html>`_
+
+
+Introduction
+------------
 
 Lumberjack was created to provide scalable logging with a simple programming
 model while allowing developers to customize its behavior. It is named Lumberjack
@@ -17,16 +22,14 @@ because it cuts down logs. It uses MPI and a scalable binary tree reduction
 scheme to combine duplicate messages and limit output to only the root node.
 
 
-.. raw:: html
-
-    <h3>Requirements</h3>
+Requirements
+------------
 
 * MPI - MPI is fundamental to Lumberjack and without MPI, Lumberjack is not useful.
 
 
-.. raw:: html
-
-    <h3>Code Guarding</h3>
+Code Guarding
+-------------
 
 You tell if Axom was built with Lumberjack enabled by using the following
 include and compiler define:
@@ -39,22 +42,10 @@ include and compiler define:
     #endif
 
 
-.. raw:: html
-
-    <h3>Contents</h3>
-
-
 .. toctree::
+   :caption: Contents
    :maxdepth: 2
 
    quick_start
    core_concepts
    lumberjack_classes
-
-.. raw:: html
-
-    <h3>Additional links</h3>
-
-
-* `API documentation <../../../../doxygen/html/lumberjacktop.html>`_
-* `Axom main docs <../../../../index.html>`_

@@ -17,25 +17,22 @@
 
 extern "C" {
 
-
 // helper ShroudStrCopy
 // Copy src into dest, blank fill to ndest characters
 // Truncate if dest is too short.
 // dest will not be NULL terminated.
 static void ShroudStrCopy(char* dest, int ndest, const char* src, int nsrc)
 {
-  if (src == NULL)
+  if(src == NULL)
   {
-    std::memset(dest,' ',ndest);  // convert NULL pointer to blank filled string
+    std::memset(dest, ' ', ndest);  // convert NULL pointer to blank filled string
   }
   else
   {
-    if (nsrc < 0)
-      nsrc = std::strlen(src);
+    if(nsrc < 0) nsrc = std::strlen(src);
     int nm = nsrc < ndest ? nsrc : ndest;
-    std::memcpy(dest,src,nm);
-    if(ndest > nm)
-      std::memset(dest+nm,' ',ndest-nm);               // blank fill
+    std::memcpy(dest, src, nm);
+    if(ndest > nm) std::memset(dest + nm, ' ', ndest - nm);  // blank fill
   }
 }
 // splicer begin C_definitions
@@ -94,7 +91,7 @@ void SLIC_get_active_logger_name_bufferify(char* name, int Nname)
 {
   // splicer begin function.get_active_logger_name_bufferify
   std::string SHCXX_rv = axom::slic::getActiveLoggerName();
-  if (SHCXX_rv.empty())
+  if(SHCXX_rv.empty())
   {
     ShroudStrCopy(name, Nname, nullptr, 0);
   }
@@ -181,21 +178,27 @@ bool SLIC_is_abort_on_warnings_enabled(void)
   // splicer end function.is_abort_on_warnings_enabled
 }
 
-void SLIC_log_message(int level, const char* message, const char* fileName,
-                      int line, bool filter)
+void SLIC_log_message(int level,
+                      const char* message,
+                      const char* fileName,
+                      int line,
+                      bool filter)
 {
   // splicer begin function.log_message
   axom::slic::message::Level SHCXX_level =
     static_cast<axom::slic::message::Level>(level);
   const std::string SHCXX_message(message);
   const std::string SHCXX_fileName(fileName);
-  axom::slic::logMessage(SHCXX_level, SHCXX_message, SHCXX_fileName, line,
-                         filter);
+  axom::slic::logMessage(SHCXX_level, SHCXX_message, SHCXX_fileName, line, filter);
   // splicer end function.log_message
 }
 
-void SLIC_log_message_bufferify(int level, const char* message, int Lmessage,
-                                const char* fileName, int LfileName, int line,
+void SLIC_log_message_bufferify(int level,
+                                const char* message,
+                                int Lmessage,
+                                const char* fileName,
+                                int LfileName,
+                                int line,
                                 bool filter)
 {
   // splicer begin function.log_message_bufferify
@@ -203,8 +206,7 @@ void SLIC_log_message_bufferify(int level, const char* message, int Lmessage,
     static_cast<axom::slic::message::Level>(level);
   const std::string SHCXX_message(message, Lmessage);
   const std::string SHCXX_fileName(fileName, LfileName);
-  axom::slic::logMessage(SHCXX_level, SHCXX_message, SHCXX_fileName, line,
-                         filter);
+  axom::slic::logMessage(SHCXX_level, SHCXX_message, SHCXX_fileName, line, filter);
   // splicer end function.log_message_bufferify
 }
 
@@ -219,7 +221,7 @@ void SLIC_finalize(void)
 void SLIC_SHROUD_memory_destructor(SLIC_SHROUD_capsule_data* cap)
 {
   cap->addr = nullptr;
-  cap->idtor = 0;    // avoid deleting again
+  cap->idtor = 0;  // avoid deleting again
 }
 
 }  // extern "C"

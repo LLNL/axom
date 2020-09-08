@@ -30,44 +30,43 @@ namespace primal
 {
 namespace detail
 {
-
 //---------------------------- FUNCTION DECLARATIONS ---------------------------
 
-using Vector3 = primal::Vector< double, 3 >;
-using Point3 = primal::Point< double, 3 >;
-using Triangle3 = primal::Triangle< double, 3 >;
-using Triangle2 = primal::Triangle< double, 2 >;
-using Point2 = primal::Point< double, 2 >;
+using Vector3 = primal::Vector<double, 3>;
+using Point3 = primal::Point<double, 3>;
+using Triangle3 = primal::Triangle<double, 3>;
+using Triangle2 = primal::Triangle<double, 2>;
+using Point2 = primal::Point<double, 2>;
 
 AXOM_HOST_DEVICE
-bool isGt(double x, double y, double EPS=1E-12);
+bool isGt(double x, double y, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
-bool isLt(double x, double y, double EPS=1E-12);
+bool isLt(double x, double y, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
-bool isLeq(double x, double y, double EPS=1E-12);
+bool isLeq(double x, double y, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
-bool isLpeq(double x, double y, bool includeEqual = false, double EPS=1E-12);
+bool isLpeq(double x, double y, bool includeEqual = false, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
-bool isGeq(double x, double y, double EPS=1E-12);
+bool isGeq(double x, double y, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
-bool isGpeq(double x, double y, bool includeEqual = false, double EPS=1E-12);
+bool isGpeq(double x, double y, bool includeEqual = false, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
-bool nonzeroSignMatch(double x, double y, double z, double EPS=1E-12);
+bool nonzeroSignMatch(double x, double y, double z, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
-bool twoZeros(double x, double y, double z, double EPS=1E-12);
+bool twoZeros(double x, double y, double z, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
-bool oneZeroOthersMatch(double x, double y, double z, double EPS=1E-12);
+bool oneZeroOthersMatch(double x, double y, double z, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
-int  countZeros(double x, double y, double z, double EPS=1E-12);
+int countZeros(double x, double y, double z, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
 double twoDcross(const Point2& A, const Point2& B, const Point2& C);
@@ -97,16 +96,16 @@ bool intersectPermuted2DTriangles(const Point2& p1,
  * of t2 lies in the positive or negative half-space defined by t1.
  */
 AXOM_HOST_DEVICE
-bool intersectOnePermutedTriangle(const Point3 &p1,
-                                  const Point3 &q1,
-                                  const Point3 &r1,
-                                  const Point3 &p2,
-                                  const Point3 &q2,
-                                  const Point3 &r2,
+bool intersectOnePermutedTriangle(const Point3& p1,
+                                  const Point3& q1,
+                                  const Point3& r1,
+                                  const Point3& p2,
+                                  const Point3& q2,
+                                  const Point3& r2,
                                   double dp2,
                                   double dq2,
                                   double dr2,
-                                  Vector3 &normal,
+                                  Vector3& normal,
                                   bool includeBoundary,
                                   double EPS);
 
@@ -169,21 +168,18 @@ bool TriangleIntersection2D(const Triangle2& t1,
  * Olivier Devillers and Phillipe Guigue, Faster Triangle-Triangle Intersection
  * Tests, RR-4488, INRIA (2002).  https://hal.inria.fr/inria-00072100/
  */
-template < typename T >
-AXOM_HOST_DEVICE
-bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
-                            const Triangle< T, 3 >& t2,
-                            bool includeBoundary,
-                            double EPS)
+template <typename T>
+AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
+                                            const Triangle<T, 3>& t2,
+                                            bool includeBoundary,
+                                            double EPS)
 {
-  typedef primal::Vector< T, 3 > Vector3;
+  typedef primal::Vector<T, 3> Vector3;
 
-  SLIC_CHECK_MSG(
-    !t1.degenerate(),
-    "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
-  SLIC_CHECK_MSG(
-    !t2.degenerate(),
-    "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
+  SLIC_CHECK_MSG(!t1.degenerate(),
+                 "\n\n WARNING \n\n Triangle " << t1 << " is degenerate");
+  SLIC_CHECK_MSG(!t2.degenerate(),
+                 "\n\n WARNING \n\n Triangle " << t2 << " is degenerate");
 
   // Step 1: Check if all the vertices of triangle 1 lie on the same side of
   // the plane created by triangle 2:
@@ -191,18 +187,17 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
   // Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
   //                                           Vector3(t2[2], t2[1]));
   Vector3 t2Normal = t2.normal().unitVector();
-  double dp1 = (Vector3(t2[2],t1[0])).dot(t2Normal);
-  double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
-  double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
+  double dp1 = (Vector3(t2[2], t1[0])).dot(t2Normal);
+  double dq1 = (Vector3(t2[2], t1[1])).dot(t2Normal);
+  double dr1 = (Vector3(t2[2], t1[2])).dot(t2Normal);
 
-  if (nonzeroSignMatch(dp1, dq1, dr1, EPS))
+  if(nonzeroSignMatch(dp1, dq1, dr1, EPS))
   {
     return false;
   }
 
-  if (!includeBoundary &&
-      (twoZeros(dp1, dq1, dr1, EPS) ||
-       oneZeroOthersMatch(dp1, dq1, dr1, EPS)))
+  if(!includeBoundary &&
+     (twoZeros(dp1, dq1, dr1, EPS) || oneZeroOthersMatch(dp1, dq1, dr1, EPS)))
   {
     return false;
   }
@@ -213,18 +208,17 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
   // Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
   //                                           Vector3(t1[0], t1[2]));
   Vector3 t1Normal = t1.normal().unitVector();
-  double dp2 = (Vector3(t1[2],t2[0])).dot(t1Normal);
-  double dq2 = (Vector3(t1[2],t2[1])).dot(t1Normal);
-  double dr2 = (Vector3(t1[2],t2[2])).dot(t1Normal);
+  double dp2 = (Vector3(t1[2], t2[0])).dot(t1Normal);
+  double dq2 = (Vector3(t1[2], t2[1])).dot(t1Normal);
+  double dr2 = (Vector3(t1[2], t2[2])).dot(t1Normal);
 
-  if (nonzeroSignMatch(dp2, dq2, dr2, EPS))
+  if(nonzeroSignMatch(dp2, dq2, dr2, EPS))
   {
     return false;
   }
 
-  if (!includeBoundary &&
-      (twoZeros(dp2, dq2, dr2, EPS) ||
-       oneZeroOthersMatch(dp2, dq2, dr2, EPS)))
+  if(!includeBoundary &&
+     (twoZeros(dp2, dq2, dr2, EPS) || oneZeroOthersMatch(dp2, dq2, dr2, EPS)))
   {
     return false;
   }
@@ -247,116 +241,217 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
   // compare the signs to create a convenient permutation of the vertices
   // of triangle 1
 
-  if (isGt(dp1, 0.0, EPS))
+  if(isGt(dp1, 0.0, EPS))
   {
-    if (isGt(dq1, 0.0, EPS))
+    if(isGt(dq1, 0.0, EPS))
     {
-      return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
-                                          t2[0], t2[2], t2[1],
-                                          dp2, dr2, dq2, t1Normal,
-                                          includeBoundary, EPS);
+      return intersectOnePermutedTriangle(t1[2],
+                                          t1[0],
+                                          t1[1],
+                                          t2[0],
+                                          t2[2],
+                                          t2[1],
+                                          dp2,
+                                          dr2,
+                                          dq2,
+                                          t1Normal,
+                                          includeBoundary,
+                                          EPS);
     }
-    else if (isGt(dr1, 0.0, EPS))
+    else if(isGt(dr1, 0.0, EPS))
     {
-      return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
-                                          t2[0], t2[2], t2[1],
-                                          dp2, dr2, dq2, t1Normal,
-                                          includeBoundary, EPS);
+      return intersectOnePermutedTriangle(t1[1],
+                                          t1[2],
+                                          t1[0],
+                                          t2[0],
+                                          t2[2],
+                                          t2[1],
+                                          dp2,
+                                          dr2,
+                                          dq2,
+                                          t1Normal,
+                                          includeBoundary,
+                                          EPS);
     }
     else
     {
-      return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
-                                          t2[0], t2[1], t2[2],
-                                          dp2, dq2, dr2, t1Normal,
-                                          includeBoundary, EPS);
+      return intersectOnePermutedTriangle(t1[0],
+                                          t1[1],
+                                          t1[2],
+                                          t2[0],
+                                          t2[1],
+                                          t2[2],
+                                          dp2,
+                                          dq2,
+                                          dr2,
+                                          t1Normal,
+                                          includeBoundary,
+                                          EPS);
     }
   }
-  else if (isLt(dp1, 0.0, EPS))
+  else if(isLt(dp1, 0.0, EPS))
   {
-    if (isLt(dq1, 0.0, EPS))
+    if(isLt(dq1, 0.0, EPS))
     {
-      return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
-                                          t2[0], t2[1], t2[2],
-                                          dp2, dq2, dr2, t1Normal,
-                                          includeBoundary, EPS);
+      return intersectOnePermutedTriangle(t1[2],
+                                          t1[0],
+                                          t1[1],
+                                          t2[0],
+                                          t2[1],
+                                          t2[2],
+                                          dp2,
+                                          dq2,
+                                          dr2,
+                                          t1Normal,
+                                          includeBoundary,
+                                          EPS);
     }
-    else if (isLt(dr1, 0.0, EPS))
+    else if(isLt(dr1, 0.0, EPS))
     {
-      return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
-                                          t2[0], t2[1], t2[2],
-                                          dp2, dq2, dr2, t1Normal,
-                                          includeBoundary, EPS);
+      return intersectOnePermutedTriangle(t1[1],
+                                          t1[2],
+                                          t1[0],
+                                          t2[0],
+                                          t2[1],
+                                          t2[2],
+                                          dp2,
+                                          dq2,
+                                          dr2,
+                                          t1Normal,
+                                          includeBoundary,
+                                          EPS);
     }
     else
     {
-      return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
-                                          t2[0], t2[2], t2[1],
-                                          dp2, dr2, dq2, t1Normal,
-                                          includeBoundary, EPS);
+      return intersectOnePermutedTriangle(t1[0],
+                                          t1[1],
+                                          t1[2],
+                                          t2[0],
+                                          t2[2],
+                                          t2[1],
+                                          dp2,
+                                          dr2,
+                                          dq2,
+                                          t1Normal,
+                                          includeBoundary,
+                                          EPS);
     }
   }
-  else   //dp1 ~= 0
+  else  //dp1 ~= 0
   {
-    if (isLt(dq1, 0.0, EPS))
+    if(isLt(dq1, 0.0, EPS))
     {
-      if (isGeq(dr1, 0.0, EPS))
+      if(isGeq(dr1, 0.0, EPS))
       {
-        return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
-                                            t2[0], t2[2], t2[1],
-                                            dp2, dr2, dq2, t1Normal,
-                                            includeBoundary, EPS);
+        return intersectOnePermutedTriangle(t1[1],
+                                            t1[2],
+                                            t1[0],
+                                            t2[0],
+                                            t2[2],
+                                            t2[1],
+                                            dp2,
+                                            dr2,
+                                            dq2,
+                                            t1Normal,
+                                            includeBoundary,
+                                            EPS);
       }
       else
       {
-        return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
-                                            t2[0], t2[1], t2[2],
-                                            dp2, dq2, dr2, t1Normal,
-                                            includeBoundary, EPS);
+        return intersectOnePermutedTriangle(t1[0],
+                                            t1[1],
+                                            t1[2],
+                                            t2[0],
+                                            t2[1],
+                                            t2[2],
+                                            dp2,
+                                            dq2,
+                                            dr2,
+                                            t1Normal,
+                                            includeBoundary,
+                                            EPS);
       }
     }
-    else if (isGt(dq1, 0.0, EPS))
+    else if(isGt(dq1, 0.0, EPS))
     {
-      if (isGt(dr1, 0.0, EPS))
+      if(isGt(dr1, 0.0, EPS))
       {
-        return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
-                                            t2[0], t2[2], t2[1],
-                                            dp2, dr2, dq2, t1Normal,
-                                            includeBoundary, EPS);
+        return intersectOnePermutedTriangle(t1[0],
+                                            t1[1],
+                                            t1[2],
+                                            t2[0],
+                                            t2[2],
+                                            t2[1],
+                                            dp2,
+                                            dr2,
+                                            dq2,
+                                            t1Normal,
+                                            includeBoundary,
+                                            EPS);
       }
       else
       {
-        return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
-                                            t2[0], t2[1], t2[2],
-                                            dp2, dq2, dr2, t1Normal,
-                                            includeBoundary, EPS);
+        return intersectOnePermutedTriangle(t1[1],
+                                            t1[2],
+                                            t1[0],
+                                            t2[0],
+                                            t2[1],
+                                            t2[2],
+                                            dp2,
+                                            dq2,
+                                            dr2,
+                                            t1Normal,
+                                            includeBoundary,
+                                            EPS);
       }
     }
     else
     {
-      if (isGt(dr1, 0.0, EPS))
+      if(isGt(dr1, 0.0, EPS))
       {
-        return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
-                                            t2[0], t2[1], t2[2],
-                                            dp2, dq2, dr2, t1Normal,
-                                            includeBoundary, EPS);
+        return intersectOnePermutedTriangle(t1[2],
+                                            t1[0],
+                                            t1[1],
+                                            t2[0],
+                                            t2[1],
+                                            t2[2],
+                                            dp2,
+                                            dq2,
+                                            dr2,
+                                            t1Normal,
+                                            includeBoundary,
+                                            EPS);
       }
-      else if (isLt(dr1, 0.0, EPS))
+      else if(isLt(dr1, 0.0, EPS))
       {
-        return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
-                                            t2[0], t2[2], t2[1],
-                                            dp2, dr2, dq2, t1Normal,
-                                            includeBoundary, EPS);
+        return intersectOnePermutedTriangle(t1[2],
+                                            t1[0],
+                                            t1[1],
+                                            t2[0],
+                                            t2[2],
+                                            t2[1],
+                                            dp2,
+                                            dr2,
+                                            dq2,
+                                            t1Normal,
+                                            includeBoundary,
+                                            EPS);
       }
       else
       {
-        return intersectCoplanar3DTriangles(t1[0], t1[1], t1[2],
-                                            t2[0], t2[1], t2[2], t1Normal,
-                                            includeBoundary, EPS);
+        return intersectCoplanar3DTriangles(t1[0],
+                                            t1[1],
+                                            t1[2],
+                                            t2[0],
+                                            t2[1],
+                                            t2[2],
+                                            t1Normal,
+                                            includeBoundary,
+                                            EPS);
       }
     }
   }
 }
-
 
 /*!
  * \brief Tests for general 3D triangle-triangle intersection.
@@ -394,10 +489,9 @@ inline bool intersectTwoPermutedTriangles(const Point3& p1,
      p2q2, and p2r2.  We check if these two intervals overlap:
    */
   const bool bdr = includeBoundary;
-  /* *INDENT-OFF* */
-  return isLpeq(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0, bdr, EPS)
-      && isLpeq(Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal()), 0.0, bdr, EPS);
-  /* *INDENT-ON* */
+
+  return isLpeq(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0, bdr, EPS) &&
+    isLpeq(Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal()), 0.0, bdr, EPS);
 }
 
 /*! @} */
@@ -411,18 +505,16 @@ inline bool intersectTwoPermutedTriangles(const Point3& p1,
  * vertex intersecting any part of another triangle causes a return value of
  * true.  This is consistent with the paper.
  */
-template < typename T >
-bool intersect_tri2D_tri2D(const primal::Triangle< T, 2 >& t1,
-                           const primal::Triangle< T, 2 >& t2,
+template <typename T>
+bool intersect_tri2D_tri2D(const primal::Triangle<T, 2>& t1,
+                           const primal::Triangle<T, 2>& t2,
                            bool includeBoundary,
                            double EPS)
 {
-  SLIC_CHECK_MSG(
-    !t1.degenerate(),
-    "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
-  SLIC_CHECK_MSG(
-    !t2.degenerate(),
-    "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
+  SLIC_CHECK_MSG(!t1.degenerate(),
+                 "\n\n WARNING \n\n Triangle " << t1 << " is degenerate");
+  SLIC_CHECK_MSG(!t2.degenerate(),
+                 "\n\n WARNING \n\n Triangle " << t2 << " is degenerate");
 
   return TriangleIntersection2D(t1, t2, includeBoundary, EPS);
 }
@@ -468,7 +560,7 @@ inline bool checkVertex(const Point2& p1,
  */
 inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 {
-  return  (((A[0]-C[0])*(B[1]-C[1])-(A[1]-C[1])*(B[0]-C[0])));
+  return (((A[0] - C[0]) * (B[1] - C[1]) - (A[1] - C[1]) * (B[0] - C[0])));
 }
 
 /*!
@@ -490,10 +582,7 @@ inline bool isLt(double x, double y, double EPS)
 /*!
  * \brief Checks if x <= y, within a specified tolerance.
  */
-inline bool isLeq(double x, double y, double EPS)
-{
-  return !(isGt(x,y,EPS));
-}
+inline bool isLeq(double x, double y, double EPS) { return !(isGt(x, y, EPS)); }
 
 /*!
  * \brief Checks if x < y, or possibly x == y, within a specified tolerance.
@@ -506,7 +595,7 @@ inline bool isLeq(double x, double y, double EPS)
  */
 inline bool isLpeq(double x, double y, bool includeEqual, double EPS)
 {
-  if (includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
+  if(includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
   {
     return true;
   }
@@ -517,10 +606,7 @@ inline bool isLpeq(double x, double y, bool includeEqual, double EPS)
 /*!
  * \brief Checks if x >= y, within a specified tolerance.
  */
-inline bool isGeq(double x, double y, double EPS)
-{
-  return !(isLt(x,y,EPS));
-}
+inline bool isGeq(double x, double y, double EPS) { return !(isLt(x, y, EPS)); }
 
 /*!
  * \brief Checks if x > y, or possibly x == y, within a specified tolerance.
@@ -533,7 +619,7 @@ inline bool isGeq(double x, double y, double EPS)
  */
 inline bool isGpeq(double x, double y, bool includeEqual, double EPS)
 {
-  if (includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
+  if(includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
   {
     return true;
   }
@@ -547,10 +633,10 @@ inline bool isGpeq(double x, double y, bool includeEqual, double EPS)
 inline bool nonzeroSignMatch(double x, double y, double z, double EPS)
 {
   return !(axom::utilities::isNearlyEqual(x, 0., EPS)) &&
-         !(axom::utilities::isNearlyEqual(y, 0., EPS)) &&
-         !(axom::utilities::isNearlyEqual(z, 0., EPS)) &&
-         (0 < x) - (x < 0) == (0 < y) - (y < 0) &&
-         (0 < x) - (x < 0) == (0 < z) - (z < 0);
+    !(axom::utilities::isNearlyEqual(y, 0., EPS)) &&
+    !(axom::utilities::isNearlyEqual(z, 0., EPS)) &&
+    (0 < x) - (x < 0) == (0 < y) - (y < 0) &&
+    (0 < x) - (x < 0) == (0 < z) - (z < 0);
 }
 
 /*!
@@ -568,9 +654,9 @@ inline bool oneZeroOthersMatch(double x, double y, double z, double EPS)
 {
   namespace util = axom::utilities;
   return countZeros(x, y, z, EPS) == 1 &&
-         ((util::isNearlyEqual(x, 0.0, EPS) && isGt(y*z, 0.0, EPS)) ||
-          (util::isNearlyEqual(y, 0.0,EPS) && isGt(z*x, 0.0, EPS)) ||
-          (util::isNearlyEqual(z, 0.0, EPS) && isGt(x*y, 0.0, EPS)) );
+    ((util::isNearlyEqual(x, 0.0, EPS) && isGt(y * z, 0.0, EPS)) ||
+     (util::isNearlyEqual(y, 0.0, EPS) && isGt(z * x, 0.0, EPS)) ||
+     (util::isNearlyEqual(z, 0.0, EPS) && isGt(x * y, 0.0, EPS)));
 }
 
 /*!
@@ -579,8 +665,8 @@ inline bool oneZeroOthersMatch(double x, double y, double z, double EPS)
 inline int countZeros(double x, double y, double z, double EPS)
 {
   return (int)axom::utilities::isNearlyEqual(x, 0.0, EPS) +
-         (int)axom::utilities::isNearlyEqual(y, 0.0, EPS) +
-         (int)axom::utilities::isNearlyEqual(z, 0.0, EPS);
+    (int)axom::utilities::isNearlyEqual(y, 0.0, EPS) +
+    (int)axom::utilities::isNearlyEqual(z, 0.0, EPS);
 }
 
 /*! @} */
@@ -594,63 +680,63 @@ inline int countZeros(double x, double y, double z, double EPS)
  * Real Time Collision Detection by Christer Ericson.
  * WIP: More test cases for this
  */
-template < typename T, int DIM >
-bool intersect_seg_bbox( const primal::Segment< T,DIM > & S,
-                         const primal::BoundingBox< T,DIM > & bb,
-                         primal::Point< T,DIM > & ip)
+template <typename T, int DIM>
+bool intersect_seg_bbox(const primal::Segment<T, DIM>& S,
+                        const primal::BoundingBox<T, DIM>& bb,
+                        primal::Point<T, DIM>& ip)
 {
-  T tmin = std::numeric_limits< T >::min();
-  primal::Vector< T,DIM > direction(S.source(), S.target());
+  T tmin = std::numeric_limits<T>::min();
+  primal::Vector<T, DIM> direction(S.source(), S.target());
   T tmax = direction.norm();
-  primal::Ray< T,DIM > R(S.source(), direction);
+  primal::Ray<T, DIM> R(S.source(), direction);
 
   // These operations constrain the parameter specifying ray-slab intersection
   // points to exclude points not within the segment.
-  tmin = static_cast< T >(0);
-  tmax = static_cast< T >(1);
+  tmin = static_cast<T>(0);
+  tmax = static_cast<T>(1);
 
-  for (int i=0 ; i<DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
-    if (axom::utilities::isNearlyEqual(R.direction()[i],
-                                       std::numeric_limits< T >::min(),
-                                       1.0e-9 ))
+    if(axom::utilities::isNearlyEqual(R.direction()[i],
+                                      std::numeric_limits<T>::min(),
+                                      1.0e-9))
     {
-      T pointDim =  R.origin()[i];
-      if ((pointDim<bb.getMin()[i]) || (pointDim>bb.getMax()[i]))
+      T pointDim = R.origin()[i];
+      if((pointDim < bb.getMin()[i]) || (pointDim > bb.getMax()[i]))
       {
         return false;
       }
     }
     else
     {
-      T ood = (static_cast< T >(1.0)) / (R.direction()[i]);
-      T t1 = ((bb.getMin()[i]- R.origin()[i])*ood);
-      T t2 = ((bb.getMax()[i]- R.origin()[i])*ood);
+      T ood = (static_cast<T>(1.0)) / (R.direction()[i]);
+      T t1 = ((bb.getMin()[i] - R.origin()[i]) * ood);
+      T t2 = ((bb.getMax()[i] - R.origin()[i]) * ood);
 
-      if (t1>t2)
+      if(t1 > t2)
       {
-        std::swap(t1,t2);
+        std::swap(t1, t2);
       }
 
       tmin = axom::utilities::max(tmin, t1);
       tmax = axom::utilities::min(tmax, t2);
 
-      if (tmin > tmax)
+      if(tmin > tmax)
       {
         return false;
       }
     }
   }
 
-  for (int i=0 ; i< DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
-    ip.data()[i] = R.origin()[i] + R.direction()[i]*tmin;
+    ip.data()[i] = R.origin()[i] + R.direction()[i] * tmin;
   }
 
   return true;
 }
 
-typedef primal::Vector< double, 3 > Vector3;
+typedef primal::Vector<double, 3> Vector3;
 /*!
  * \brief Helper function to find disjoint projections for the AABB-triangle
  * test
@@ -672,9 +758,9 @@ bool crossEdgesDisjoint(double d0, double d1, double r);
  * \param [in] bb user-supplied axis aligned bounding box.
  * \return true iff tri intersects with bb, otherwise, false.
  */
-template < typename T >
-bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
-                         const primal::BoundingBox< T, 3 >& bb)
+template <typename T>
+bool intersect_tri_bbox(const primal::Triangle<T, 3>& tri,
+                        const primal::BoundingBox<T, 3>& bb)
 {
   // Note: Algorithm is derived from the one presented in chapter 5.2.9 of
   //   Real Time Collision Detection book by Christer Ericson
@@ -688,22 +774,22 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
   //           1 test for the triangle face normal
   // We use early termination if we find a separating axis between the shapes
 
-  typedef typename BoundingBox< T,3 >::PointType PointType;
-  typedef typename BoundingBox< T,3 >::VectorType VectorType;
+  typedef typename BoundingBox<T, 3>::PointType PointType;
+  typedef typename BoundingBox<T, 3>::VectorType VectorType;
 
   // Extent: vector center to max corner of BB
   VectorType e = 0.5 * bb.range();
 
   // Make the AABB center the origin by moving the triangle vertices
   PointType center(bb.getMin().array() + e.array());
-  VectorType v[3] = { VectorType(center, tri[0]),
-                      VectorType(center, tri[1]),
-                      VectorType(center, tri[2]) };
+  VectorType v[3] = {VectorType(center, tri[0]),
+                     VectorType(center, tri[1]),
+                     VectorType(center, tri[2])};
 
   // Create the edge vectors of the triangle
-  VectorType f[3] = { v[1] - v[0], v[2] - v[1],  v[0] - v[2] };
+  VectorType f[3] = {v[1] - v[0], v[2] - v[1], v[0] - v[2]};
 
-/* *INDENT-OFF* */
+  /* clang-format off */
 
   // Test cross products of edges between triangle edge vectors f and cube normals (9 tests)
   // -- using separating axis theorem on the cross product of edges of triangle and face normals of AABB
@@ -724,26 +810,25 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
   {
     return false;
   }
-/* *INDENT-ON* */
+  /* clang-format on */
 
 #undef XEDGE_R
 #undef XEDEG_S
 
   /// Test face normals of bounding box (3 tests)
-  if ( intervalsDisjoint(v[0][0], v[1][0], v[2][0], e[0]) ||
-       intervalsDisjoint(v[0][1], v[1][1], v[2][1], e[1]) ||
-       intervalsDisjoint(v[0][2], v[1][2], v[2][2], e[2]) )
+  if(intervalsDisjoint(v[0][0], v[1][0], v[2][0], e[0]) ||
+     intervalsDisjoint(v[0][1], v[1][1], v[2][1], e[1]) ||
+     intervalsDisjoint(v[0][2], v[1][2], v[2][2], e[2]))
   {
     return false;
   }
 
   /// Final test -- face normal of triangle's plane
-  VectorType planeNormal  = VectorType::cross_product(f[0],f[1]);
-  double planeDist    = planeNormal.dot(tri[0]);
+  VectorType planeNormal = VectorType::cross_product(f[0], f[1]);
+  double planeDist = planeNormal.dot(tri[0]);
 
-  double r = e[0]* std::abs( planeNormal[0]) +
-             e[1]* std::abs( planeNormal[1]) +
-             e[2]* std::abs( planeNormal[2]);
+  double r = e[0] * std::abs(planeNormal[0]) + e[1] * std::abs(planeNormal[1]) +
+    e[2] * std::abs(planeNormal[2]);
   double s = planeNormal.dot(center) - planeDist;
 
   return std::abs(s) <= r;
@@ -756,8 +841,8 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
  */
 inline bool crossEdgesDisjoint(double d0, double d1, double r)
 {
-  return axom::utilities::max( -axom::utilities::max(d0,d1),
-                               axom::utilities::min(d0,d1) ) > r;
+  return axom::utilities::max(-axom::utilities::max(d0, d1),
+                              axom::utilities::min(d0, d1)) > r;
 }
 
 /*! @} */
@@ -794,9 +879,11 @@ inline bool crossEdgesDisjoint(double d0, double d1, double r)
  * Intersection," Journal of Computer Graphics Techniques (JCGT), vol. 2,
  * no. 1, 65–82, 2013  http://jcgt.org/published/0002/01/05/
  */
-template < typename T >
-bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R,
-                       T& t, Point< double, 3 > & p)
+template <typename T>
+bool intersect_tri_ray(const Triangle<T, 3>& tri,
+                       const Ray<T, 3>& R,
+                       T& t,
+                       Point<double, 3>& p)
 {
   // Ray origins inside of the triangle are considered a miss.
   // This is a good thing, as pointed out by Matt Larsen in January 2017,
@@ -810,42 +897,42 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R,
   // I (Arlie Capps, Jan. 2017) don't understand the motivation at this
   // point, but I'll accept this for now.
 
-  typedef NumericArray< T,3 > NumArray;
+  typedef NumericArray<T, 3> NumArray;
   const T zero = T();
 
   //find out dimension where ray direction is maximal
-  int kx,ky,kz;
+  int kx, ky, kz;
 
-  NumArray r = primal::abs(R.direction().array() );
+  NumArray r = primal::abs(R.direction().array());
 
   //z-direction largest
-  if ((r[2]>=r[0]) && (r[2] >= r[1]))
+  if((r[2] >= r[0]) && (r[2] >= r[1]))
   {
-    kz=2;
+    kz = 2;
   }
   //y direction largest
-  else if ((r[1] >= r[0]) && (r[1] >= r[2]))
+  else if((r[1] >= r[0]) && (r[1] >= r[2]))
   {
-    kz=1;
+    kz = 1;
   }
   //x direction largest
   else
   {
-    kz=0;
+    kz = 0;
   }
 
   //assign other dimensions of the ray
-  kx = (kz+1) % 3;
-  ky = (kz+2) % 3;
+  kx = (kz + 1) % 3;
+  ky = (kz + 2) % 3;
 
   //if necessary swap  ky and kx to preserve triangle winding
-  if (R.direction()[kz] < zero)
+  if(R.direction()[kz] < zero)
   {
     axom::utilities::swap(kx, ky);
   }
 
   //calculate shear constants
-  NumericArray< T,3 > shear(1.0f/R.direction()[kz], 3);
+  NumericArray<T, 3> shear(1.0f / R.direction()[kz], 3);
   shear[0] *= R.direction()[kx];
   shear[1] *= R.direction()[ky];
 
@@ -855,23 +942,23 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R,
   NumArray C = tri[2].array() - R.origin().array();
 
   //shear and scale the vertices
-  const T Ax = A[kx] - shear[0]*A[kz];
-  const T Ay = A[ky] - shear[1]*A[kz];
-  const T Bx = B[kx] - shear[0]*B[kz];
-  const T By = B[ky] - shear[1]*B[kz];
-  const T Cx = C[kx] - shear[0]*C[kz];
-  const T Cy = C[ky] - shear[1]*C[kz];
+  const T Ax = A[kx] - shear[0] * A[kz];
+  const T Ay = A[ky] - shear[1] * A[kz];
+  const T Bx = B[kx] - shear[0] * B[kz];
+  const T By = B[ky] - shear[1] * B[kz];
+  const T Cx = C[kx] - shear[0] * C[kz];
+  const T Cy = C[ky] - shear[1] * C[kz];
 
   //scaled barycentric coordinates
-  p[0] = Cx*By - Cy*Bx;
-  p[1] = Ax*Cy - Ay*Cx;
-  p[2] = Bx*Ay - By*Ax;
+  p[0] = Cx * By - Cy * Bx;
+  p[1] = Ax * Cy - Ay * Cx;
+  p[2] = Bx * Ay - By * Ax;
   const T& U = p[0];
   const T& V = p[1];
   const T& W = p[2];
 
   //edge testing
-  if ( (U< zero || V< zero || W< zero) && (U>zero || V>zero || W>zero))
+  if((U < zero || V < zero || W < zero) && (U > zero || V > zero || W > zero))
   {
     return false;
   }
@@ -879,21 +966,22 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R,
   //calculate determinant
   const T det = U + V + W;
 
-  if (det == zero)
+  if(det == zero)
   {
     return false;
   }
 
   //calculate scaled z-coordinates of the vertices and use them to calculate hit
   // distance
-  const T Az = shear[2]*A[kz];
-  const T Bz = shear[2]*B[kz];
-  const T Cz = shear[2]*C[kz];
-  t = (U*Az + V*Bz +W*Cz);  // save the parameter of the intersection w.r.t. ray
-                            // R
+  const T Az = shear[2] * A[kz];
+  const T Bz = shear[2] * B[kz];
+  const T Cz = shear[2] * C[kz];
+  t = (U * Az + V * Bz +
+       W * Cz);  // save the parameter of the intersection w.r.t. ray
+                 // R
 
   //make sure hit is in correct direction
-  if ( (( t < zero) && !(det < zero)) || ((det < zero) && !(t < zero) ) )
+  if(((t < zero) && !(det < zero)) || ((det < zero) && !(t < zero)))
   {
     return false;
   }
@@ -915,22 +1003,24 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R,
  *
  * This routine uses intersect_tri_ray(), which see.
  */
-template < typename T >
-bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
-                           T& t, Point< double, 3 > & p)
+template <typename T>
+bool intersect_tri_segment(const Triangle<T, 3>& tri,
+                           const Segment<T, 3>& S,
+                           T& t,
+                           Point<double, 3>& p)
 {
-  typedef Vector< T,3 > Vector3;
-  Ray< T,3 > r(S.source(), Vector3(S.source(), S.target()));
+  typedef Vector<T, 3> Vector3;
+  Ray<T, 3> r(S.source(), Vector3(S.source(), S.target()));
 
   //Ray-triangle intersection does not check endpoints, so we explicitly check
   // here
-  if ( tri.checkInTriangle(S.source() ) )
+  if(tri.checkInTriangle(S.source()))
   {
     t = 0;
     p = tri.physToBarycentric(S.source());
     return true;
   }
-  if ( tri.checkInTriangle(S.target()))
+  if(tri.checkInTriangle(S.target()))
   {
     t = 1;
     p = tri.physToBarycentric(S.target());
@@ -945,9 +1035,9 @@ bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
   // correspond
   // to points on the segment.
   // Note: if intersect_tri_ray() is true, t must be greater than zero
-  if ( intersect_tri_ray(tri, r, t, p) )
+  if(intersect_tri_ray(tri, r, t, p))
   {
-    t = t / static_cast< T >( S.length() );
+    t = t / static_cast<T>(S.length());
     return t <= 1;
   }
   return false;
@@ -959,9 +1049,9 @@ bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
  * \param [in] b2 A 1D OrientedBoundingBox
  * \return true iff b1 intersects with b2, otherwise, false.
  */
-template < typename T >
-bool intersect_obb1D_obb1D(const OrientedBoundingBox< T, 1 > &b1,
-                           const OrientedBoundingBox< T, 1 > &b2)
+template <typename T>
+bool intersect_obb1D_obb1D(const OrientedBoundingBox<T, 1>& b1,
+                           const OrientedBoundingBox<T, 1>& b2)
 {
   T c1 = b1.getCentroid()[0];
   T c2 = b2.getCentroid()[0];
@@ -969,11 +1059,11 @@ bool intersect_obb1D_obb1D(const OrientedBoundingBox< T, 1 > &b1,
   T e1 = b1.getExtents()[0];
   T e2 = b2.getExtents()[0];
 
-  if (c1 + e1 > c2 - e2)
+  if(c1 + e1 > c2 - e2)
   {
     return true;
   }
-  if (c2 + e2 > c1 - e1)
+  if(c2 + e2 > c1 - e1)
   {
     return true;
   }
@@ -987,36 +1077,36 @@ bool intersect_obb1D_obb1D(const OrientedBoundingBox< T, 1 > &b1,
  * \param [in] b2 A 2D OrientedBoundingBox
  * \return true iff b1 intersects with b2, otherwise, false.
  */
-template < typename T >
-bool intersect_obb2D_obb2D(const OrientedBoundingBox< T, 2 > &b1,
-                           const OrientedBoundingBox< T, 2 > &b2)
+template <typename T>
+bool intersect_obb2D_obb2D(const OrientedBoundingBox<T, 2>& b1,
+                           const OrientedBoundingBox<T, 2>& b2)
 {
-  Vector< T, 2 > c1(b1.getCentroid());
-  Vector< T, 2 > c2(b2.getCentroid());
+  Vector<T, 2> c1(b1.getCentroid());
+  Vector<T, 2> c2(b2.getCentroid());
 
-  Vector< T, 2 > e1 = b1.getExtents();
-  Vector< T, 2 > e2 = b2.getExtents();
+  Vector<T, 2> e1 = b1.getExtents();
+  Vector<T, 2> e2 = b2.getExtents();
 
-  const Vector< T, 2 >* u1 = b1.getAxes();
-  const Vector< T, 2 >* u2 = b2.getAxes();
+  const Vector<T, 2>* u1 = b1.getAxes();
+  const Vector<T, 2>* u2 = b2.getAxes();
 
-  Vector< T, 2 > d = c2 - c1;
+  Vector<T, 2> d = c2 - c1;
 
-  for (int i = 0 ; i < 2 ; ++i)
+  for(int i = 0; i < 2; ++i)
   {
-    if (utilities::abs< T >(d.dot(u1[i])) > e1[i]
-        + utilities::abs< T >((e2[0]*u2[0]).dot(u1[i]))
-        + utilities::abs< T >((e2[1]*u2[1]).dot(u1[i])))
+    if(utilities::abs<T>(d.dot(u1[i])) > e1[i] +
+         utilities::abs<T>((e2[0] * u2[0]).dot(u1[i])) +
+         utilities::abs<T>((e2[1] * u2[1]).dot(u1[i])))
     {
       return false;
     }
   }
 
-  for (int i = 0 ; i < 2 ; ++i)
+  for(int i = 0; i < 2; ++i)
   {
-    if (utilities::abs< T >(d.dot(u2[i])) > e2[i]
-        + utilities::abs< T >((e1[0]*u1[0]).dot(u2[i]))
-        + utilities::abs< T >((e1[1]*u1[1]).dot(u2[i])))
+    if(utilities::abs<T>(d.dot(u2[i])) > e2[i] +
+         utilities::abs<T>((e1[0] * u1[0]).dot(u2[i])) +
+         utilities::abs<T>((e1[1] * u1[1]).dot(u2[i])))
     {
       return false;
     }
@@ -1032,61 +1122,61 @@ bool intersect_obb2D_obb2D(const OrientedBoundingBox< T, 2 > &b1,
  * \param [in] EPS error tolerance for intersection
  * \return true iff b1 intersects with b2, otherwise, false.
  */
-template < typename T >
-bool intersect_obb3D_obb3D(const OrientedBoundingBox< T, 3 > &b1,
-                           const OrientedBoundingBox< T, 3 > &b2, double EPS)
+template <typename T>
+bool intersect_obb3D_obb3D(const OrientedBoundingBox<T, 3>& b1,
+                           const OrientedBoundingBox<T, 3>& b2,
+                           double EPS)
 {
-  Vector< T, 3 > d = Vector< T, 3 >(b1.getCentroid())
-                     - Vector< T, 3 >(b2.getCentroid());
+  Vector<T, 3> d =
+    Vector<T, 3>(b1.getCentroid()) - Vector<T, 3>(b2.getCentroid());
 
-  Vector< T, 3 > e1 = b1.getExtents();
-  Vector< T, 3 > e2 = b2.getExtents();
+  Vector<T, 3> e1 = b1.getExtents();
+  Vector<T, 3> e2 = b2.getExtents();
 
-  const Vector< T, 3 >* u1 = b1.getAxes();
-  const Vector< T, 3 >* u2 = b2.getAxes();
+  const Vector<T, 3>* u1 = b1.getAxes();
+  const Vector<T, 3>* u2 = b2.getAxes();
 
   // compute r and r^T here:
-  Vector< T, 3 > r[3];
-  Vector< T, 3 > rt[3];
-  for (int i = 0 ; i < 3 ; ++i)
+  Vector<T, 3> r[3];
+  Vector<T, 3> rt[3];
+  for(int i = 0; i < 3; ++i)
   {
-    for (int j = 0 ; j < 3 ; ++j)
+    for(int j = 0; j < 3; ++j)
     {
-      r[i][j] = utilities::abs< T >(u1[i].dot(u2[j]));
-      rt[i][j] = utilities::abs< T >(u1[j].dot(u2[i]));
+      r[i][j] = utilities::abs<T>(u1[i].dot(u2[j]));
+      rt[i][j] = utilities::abs<T>(u1[j].dot(u2[i]));
     }
   }
 
   // check for separating planes parallel to faces
-  for (int i = 0 ; i < 3 ; ++i)
+  for(int i = 0; i < 3; ++i)
   {
-    if (utilities::abs< T >(d.dot(u1[i])) > e1[i] + e2.dot(r[i]) + EPS)
+    if(utilities::abs<T>(d.dot(u1[i])) > e1[i] + e2.dot(r[i]) + EPS)
     {
       return false;
     }
   }
 
-  for (int i = 0 ; i < 3 ; ++i)
+  for(int i = 0; i < 3; ++i)
   {
-    if (utilities::abs< T >(d.dot(u2[i])) > e2[i] + e1.dot(rt[i]) + EPS)
+    if(utilities::abs<T>(d.dot(u2[i])) > e2[i] + e1.dot(rt[i]) + EPS)
     {
       return false;
     }
   }
 
   // check for separating planes with normals parallel to cross product of edges
-  for (int i = 0 ; i < 3 ; ++i)
+  for(int i = 0; i < 3; ++i)
   {
-    for (int j = 0 ; j < 3 ; ++j)
+    for(int j = 0; j < 3; ++j)
     {
-      T left = utilities::abs< T >(d.dot(u1[(i + 2) % 3])*r[(i + 1) % 3][j]
-                                   - (d.dot(u1[(i + 1) % 3])*
-                                      r[(i + 2) % 3][j]));
-      T right = (e1[(i + 1) % 3]*r[(i + 2) % 3][j]
-                 + e1[(i + 2) % 3]*r[(i + 1) % 3][j]);
-      right += (e2[(i + 1) % 3]*r[i][(j + 2) % 3]
-                + e2[(i + 2) % 3]*r[i][(j + 1) % 3]);
-      if (left > right + EPS)
+      T left = utilities::abs<T>(d.dot(u1[(i + 2) % 3]) * r[(i + 1) % 3][j] -
+                                 (d.dot(u1[(i + 1) % 3]) * r[(i + 2) % 3][j]));
+      T right = (e1[(i + 1) % 3] * r[(i + 2) % 3][j] +
+                 e1[(i + 2) % 3] * r[(i + 1) % 3][j]);
+      right += (e2[(i + 1) % 3] * r[i][(j + 2) % 3] +
+                e2[(i + 2) % 3] * r[i][(j + 1) % 3]);
+      if(left > right + EPS)
       {
         return false;
       }
@@ -1101,4 +1191,4 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox< T, 3 > &b1,
 } /* end namespace primal */
 } /* end namespace axom */
 
-#endif // PRIMAL_INTERSECT_IMPL_HPP_
+#endif  // PRIMAL_INTERSECT_IMPL_HPP_

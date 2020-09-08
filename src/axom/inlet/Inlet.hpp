@@ -33,7 +33,6 @@ namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class Inlet
@@ -62,11 +61,14 @@ public:
    *****************************************************************************
    */
   Inlet(std::shared_ptr<Reader> reader,
-        axom::sidre::Group* sidreRootGroup, bool docEnabled = true) :
-    m_reader(reader),
-    m_sidreRootGroup(sidreRootGroup),
-    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled)),
-    m_docEnabled(docEnabled) {}
+        axom::sidre::Group* sidreRootGroup,
+        bool docEnabled = true)
+    : m_reader(reader)
+    , m_sidreRootGroup(sidreRootGroup)
+    , m_globalTable(
+        std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled))
+    , m_docEnabled(docEnabled)
+  { }
 
   virtual ~Inlet() = default;
 
@@ -293,16 +295,14 @@ public:
    *
    *****************************************************************************
    */
-  bool verify(); 
+  bool verify();
 
   /*!
    *****************************************************************************
    * \return The global Table.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getGlobalTable() {
-    return m_globalTable;
-  }
+  std::shared_ptr<Table> getGlobalTable() { return m_globalTable; }
 
   /*!
    *****************************************************************************
@@ -314,7 +314,8 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTable(const std::string& name) {
+  std::shared_ptr<Table> getTable(const std::string& name)
+  {
     return m_globalTable->getTable(name);
   }
 
@@ -328,7 +329,8 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getField(const std::string& name) {
+  std::shared_ptr<Field> getField(const std::string& name)
+  {
     return m_globalTable->getField(name);
   }
 
@@ -339,7 +341,8 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Table.
    *****************************************************************************
    */
-  bool hasTable(const std::string& name) {
+  bool hasTable(const std::string& name)
+  {
     return m_globalTable->hasTable(name);
   }
 
@@ -350,7 +353,8 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Field.
    *****************************************************************************
    */
-  bool hasField(const std::string& name) {
+  bool hasField(const std::string& name)
+  {
     return m_globalTable->hasField(name);
   }
 
@@ -402,7 +406,7 @@ private:
    */
   bool verifyDefaultValue(axom::sidre::Group* sidreGroup);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Checks if the given value is within the range.
    * 
@@ -451,7 +455,7 @@ private:
    *****************************************************************************
    */
   bool searchValidValues(axom::sidre::Group* sidreGroup, double value);
-  
+
   /*!
    *****************************************************************************
    * \brief Checks if the given value is found in the list of valid values.
@@ -475,7 +479,7 @@ private:
   bool m_docEnabled;
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif
