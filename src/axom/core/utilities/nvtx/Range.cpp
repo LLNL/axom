@@ -13,45 +13,38 @@
 
 // CUDA NVTX includes
 #ifdef AXOM_USE_CUDA
-#include <cuda.h>
-#include <nvToolsExt.h>
-#include <nvToolsExtCuda.h>
+  #include <cuda.h>
+  #include <nvToolsExt.h>
+  #include <nvToolsExtCuda.h>
 #endif
 
 namespace axom
 {
 namespace nvtx
 {
-
-
-Range::Range( const std::string& name ) :
-  m_name( name ),
-  m_active( false )
+Range::Range(const std::string& name) : m_name(name), m_active(false)
 {
-  assert( !m_name.empty() );
+  assert(!m_name.empty());
   start();
-  assert( m_active );
+  assert(m_active);
 }
 
 //------------------------------------------------------------------------------
-Range::~Range()
-{
-  stop();
-}
+Range::~Range() { stop(); }
 
 //------------------------------------------------------------------------------
 void Range::start()
 {
-  assert( !m_active );
+  assert(!m_active);
 
 #ifdef AXOM_USE_CUDA
   nvtxEventAttributes_t eventAttrib = {0};
-  eventAttrib.version       = NVTX_VERSION;
-  eventAttrib.size          = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
-  eventAttrib.category      = nvtx::get_category();
-  eventAttrib.colorType     = NVTX_COLOR_ARGB;
-  eventAttrib.color         = static_cast< uint32_t>( nvtx::get_color() );
-  eventAttrib.messageType   = NVTX_MESSAGE_TYPE_ASCII;
+  eventAttrib.version = NVTX_VERSION;
+  eventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
+  eventAttrib.category = nvtx::get_category();
+  eventAttrib.colorType = NVTX_COLOR_ARGB;
+  eventAttrib.color = static_cast<uint32_t>(nvtx::get_color());
+  eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;
   eventAttrib.message.ascii = m_name.c_str();
 
   nvtxRangePushEx(&eventAttrib);
@@ -63,7 +56,7 @@ void Range::start()
 //------------------------------------------------------------------------------
 void Range::stop()
 {
-  if ( m_active )
+  if(m_active)
   {
 #ifdef AXOM_USE_CUDA
     nvtxRangePop();

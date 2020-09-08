@@ -14,13 +14,11 @@ namespace utilities
 {
 namespace filesystem
 {
-
 /*!
  * \brief Returns the current working directory within the file system
  * \return path of cwd if found, else, returns "./"
  */
 std::string getCWD();
-
 
 /*!
  * \brief Changes the current working directory within the file system
@@ -57,7 +55,6 @@ std::string joinPath(const std::string& fileDir,
                      const std::string& fileName,
                      const std::string& separator = "/");
 
-
 /*!
  * \brief Make directories for a given path string
  *
@@ -84,10 +81,10 @@ int makeDirsForPath(const std::string& path);
  * string will be "abc/def/ghi".  If the path string is "file.txt", the
  * output dir string will be "" (the empty string).
  */
-void getDirName( std::string& dir, const std::string& path);
+void getDirName(std::string& dir, const std::string& path);
 
-} // end namespace filesystem
-} // end namespace utilities
-} // end namespace axom
+}  // end namespace filesystem
+}  // end namespace utilities
+}  // end namespace axom
 
-#endif //  COMMON_FILE_UTILITIES_H_
+#endif  //  COMMON_FILE_UTILITIES_H_
