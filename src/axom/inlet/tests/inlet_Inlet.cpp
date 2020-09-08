@@ -1265,7 +1265,7 @@ TEST(lua_Arrays, basicArraysInLua) {
   EXPECT_EQ(expectedStrs, strs);
 }
 
-TEST(lua_Arrays, intInletArrays) {
+TEST(lua_Arrays, inletArrays) {
   DataStore ds;
   std::string testString = "luaArrays = { arr1 = { [1] = 4, [2] = 5, [3] = 6 , [12] = 2.4}, arr2 = {[4] = true, [8] = false}, arr3 = {[33] = 'hello', [2] = 'bye'}, arr4 = { [12] = 2.4 } }";
   auto inlet = createBasicInlet(&ds, testString);
@@ -1326,7 +1326,6 @@ TEST(lua_Arrays, intInletArrays) {
   EXPECT_TRUE(idx);
   double doubleVal = idx->getView("value")->getScalar();
   EXPECT_EQ(doubleVal, 2.4);
-
 }
 
 //------------------------------------------------------------------------------

@@ -40,7 +40,7 @@ bool LuaReader::parseFile(const std::string& filePath)
 
   auto script = m_lua.script_file(filePath);
   if (!script.valid()) {
-    SLIC_WARNING(fmt::format("Inlet: Given Lua input deck does not exist: {0}",
+    SLIC_WARNING(fmt::format("Inlet: Given Lua input deck is invalid: {0}",
                              filePath));
   }
   return script.valid();
@@ -147,6 +147,7 @@ bool LuaReader::getMap(const std::string& id, std::unordered_map<int, T>& values
 
   auto it = t.cbegin();
   while (it != t.cend()) {
+    // Gets only indexed items in the table.
     if ((*it).first.get_type() == sol::type::number 
         && (*it).second.get_type() == type) {
       values[(*it).first.as<int>()] = (*it).second.as<T>();
