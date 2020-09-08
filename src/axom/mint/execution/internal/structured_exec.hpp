@@ -10,9 +10,8 @@
 
 // RAJA includes
 #ifdef AXOM_USE_RAJA
-#include "RAJA/RAJA.hpp"
+  #include "RAJA/RAJA.hpp"
 #endif
-
 
 namespace axom
 {
@@ -20,8 +19,7 @@ namespace mint
 {
 namespace internal
 {
-
-template < typename ExecSpace >
+template <typename ExecSpace>
 struct structured_exec
 {
   using loop2d_policy = void;
@@ -29,8 +27,8 @@ struct structured_exec
 };
 
 //--------------------------------------------------------| SEQ_EXEC |----------
-template < >
-struct structured_exec< SEQ_EXEC >
+template <>
+struct structured_exec<SEQ_EXEC>
 {
 #ifdef AXOM_USE_RAJA
   /* clang-format off */
@@ -51,7 +49,7 @@ struct structured_exec< SEQ_EXEC >
       > // END j
     > // END k
   >; // END kernel
-  /* clang-format on */
+    /* clang-format on */
 
 #else
   using loop2d_policy = void;
@@ -61,8 +59,8 @@ struct structured_exec< SEQ_EXEC >
 
 //--------------------------------------------------------| OMP_EXEC |----------
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-template < >
-struct structured_exec< OMP_EXEC >
+template <>
+struct structured_exec<OMP_EXEC>
 {
   /* clang-format off */
 
@@ -88,22 +86,22 @@ struct structured_exec< OMP_EXEC >
 };
 #endif
 
-// CUDA Kernel settings: 
-// 
+// CUDA Kernel settings:
+//
 // CudaKernel launches 256 threads total
 // - In 2D, the launch configuration is 16 x 16
 // - In 3D, the launch configuration is 8 x 8 x 4
 constexpr int CUDA_KERNEL_FIXED_SIZE = 256;
 constexpr int TILE_SIZE_2D = 16;
-constexpr int TILE_SIZE_X  = 8;
-constexpr int TILE_SIZE_Y  = 8;
-constexpr int TILE_SIZE_Z  = 4;
+constexpr int TILE_SIZE_X = 8;
+constexpr int TILE_SIZE_Y = 8;
+constexpr int TILE_SIZE_Z = 4;
 
 //--------------------------------------------------------| CUDA_EXEC |---------
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
 
-template < int BLOCK_SIZE >
-struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
+template <int BLOCK_SIZE>
+struct structured_exec<CUDA_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
 {
   /* clang-format off */
 
@@ -140,11 +138,10 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
   >;
 
   /* clang-format on */
-
 };
 
-template < int BLOCK_SIZE >
-struct structured_exec< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
+template <int BLOCK_SIZE>
+struct structured_exec<CUDA_EXEC<BLOCK_SIZE, ASYNC>>
 {
   /* clang-format off */
 
