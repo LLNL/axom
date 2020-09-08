@@ -1063,7 +1063,6 @@ bool View::isApplyValid() const
   case BUFFER:
     rv =
       0 <= getTotalBytes() && getTotalBytes() <= m_data_buffer->getTotalBytes();
-    ;
     SLIC_CHECK_MSG(
       0 <= getTotalBytes(),
       SIDRE_VIEW_LOG_PREPEND << "Apply is not valid on data with zero length.");
