@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef SLAM_POLICY_TRAITS_H_
 #define SLAM_POLICY_TRAITS_H_
 
@@ -22,11 +21,10 @@ namespace slam
 {
 namespace policies
 {
-
 /**
  * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
  */
-template<typename StridePolicyType, typename IntType, int VAL = 1>
+template <typename StridePolicyType, typename IntType, int VAL = 1>
 struct StrideToSize
 {
   using SizeType = CompileTimeSize<IntType, VAL>;
@@ -35,8 +33,8 @@ struct StrideToSize
 /**
  * \brief Specialization of StrideToSize trait for a RuntimeStride
  */
-template<typename IntType>
-struct StrideToSize < RuntimeStride<IntType>, IntType >
+template <typename IntType>
+struct StrideToSize<RuntimeStride<IntType>, IntType>
 {
   using SizeType = RuntimeSize<IntType>;
 };
@@ -44,8 +42,8 @@ struct StrideToSize < RuntimeStride<IntType>, IntType >
 /**
  * \brief Specialization of StrideToSize trait for a CompileTimeStride
  */
-template<typename IntType, int VAL>
-struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
+template <typename IntType, int VAL>
+struct StrideToSize<CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL>
 {
   using SizeType = CompileTimeSize<IntType, IntType(VAL)>;
 };
@@ -53,15 +51,14 @@ struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
 /**
  * \brief Specialization of StrideToSize trait for a StrideOne type
  */
-template<typename IntType>
-struct StrideToSize< StrideOne<IntType>, IntType >
+template <typename IntType>
+struct StrideToSize<StrideOne<IntType>, IntType>
 {
-  using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE >;
+  using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE>;
 };
 
+}  // end namespace policies
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace policies
-} // end namespace slam
-} // end namespace axom
-
-#endif // SLAM_POLICY_TRAITS_H_
+#endif  // SLAM_POLICY_TRAITS_H_
