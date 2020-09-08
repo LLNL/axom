@@ -270,20 +270,24 @@ void CreateShockTubeMesh(ShockTubeMesh* mesh)
   // construct the element subsets
   ShockTubeMesh::PositionType numElems = mesh->elems.size();
   using ElemSubsetBuilder = ShockTubeMesh::ElemSubset::SetBuilder;
-  mesh->inFlowElems = ElemSubsetBuilder().range(0, 1).parent(&mesh->elems);
-  mesh->tubeElems =
-    ElemSubsetBuilder().range(1, numElems - 1).parent(&mesh->elems);
-  mesh->outFlowElems =
-    ElemSubsetBuilder().range(numElems - 1, numElems).parent(&mesh->elems);
+  mesh->inFlowElems = ElemSubsetBuilder()  //
+                        .range(0, 1)       //
+                        .parent(&mesh->elems);
+  mesh->tubeElems = ElemSubsetBuilder()        //
+                      .range(1, numElems - 1)  //
+                      .parent(&mesh->elems);
+  mesh->outFlowElems = ElemSubsetBuilder()               //
+                         .range(numElems - 1, numElems)  //
+                         .parent(&mesh->elems);
 
   // ------------ Generate the Relations
 
-  // TODO: Need to define DynamicConstantRelation -- which will allow modifying
-  // the relation elements
-  // TODO: Need to define ImplicitConstantRelation -- since the relations are
-  // actually implicit
-  //       -- no storage should be necessary for regular grid neighbors
-  //       For now, we use explicitly storage for the relation data...
+  // TODO: Need to define DynamicConstantRelation
+  //       which will allow modifying the relation elements
+  // TODO: Need to define ImplicitConstantRelation
+  //       since the relations are actually implicit
+  //       no storage should be necessary for regular grid neighbors
+  //       For now, we use explicitly storage for the relation data.
 
   using IndexVec = ShockTubeMesh::IndexVec;
 
@@ -554,7 +558,9 @@ void dumpData(ShockTubeMesh const& mesh)
 
   using ElemSubsetBuilder = ShockTubeMesh::ElemSubset::SetBuilder;
   ShockTubeMesh::ElemSubset begSet, endSet;
-  begSet = ElemSubsetBuilder().parent(&mesh.elems).size(maxDumpPerSide);
+  begSet = ElemSubsetBuilder()     //
+             .parent(&mesh.elems)  //
+             .size(maxDumpPerSide);
   endSet = ElemSubsetBuilder()
              .parent(&mesh.elems)
              .size(maxDumpPerSide)

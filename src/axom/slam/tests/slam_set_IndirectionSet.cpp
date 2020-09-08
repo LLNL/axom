@@ -313,7 +313,9 @@ TYPED_TEST(IndirectionSetTester, equality)
   EXPECT_NE(bufPtr[1], bufPtr[2]);
 
   // Initialize the first set
-  SetType s0(typename SetType::SetBuilder().size(MAX_SET_SIZE).data(bufPtr[0]));
+  SetType s0(typename SetType::SetBuilder()  //
+               .size(MAX_SET_SIZE)           //
+               .data(bufPtr[0]));
 
   EXPECT_TRUE(s0.isValid());
 
@@ -321,14 +323,18 @@ TYPED_TEST(IndirectionSetTester, equality)
   EXPECT_EQ(s0, s0);
 
   // Test equality against a set with the same array
-  SetType s0_b(typename SetType::SetBuilder().size(MAX_SET_SIZE).data(s0.data()));
+  SetType s0_b(typename SetType::SetBuilder()  //
+                 .size(MAX_SET_SIZE)           //
+                 .data(s0.data()));
   EXPECT_TRUE(s0_b.isValid());
   EXPECT_EQ(s0, s0_b);
   EXPECT_EQ(s0.data(), s0_b.data());
 
   // Test equality against a set with a different array (same values)
 
-  SetType s1(typename SetType::SetBuilder().size(MAX_SET_SIZE).data(bufPtr[1]));
+  SetType s1(typename SetType::SetBuilder()  //
+               .size(MAX_SET_SIZE)           //
+               .data(bufPtr[1]));
   EXPECT_TRUE(s1.isValid());
   EXPECT_EQ(s0, s1);
   EXPECT_EQ(s1, s0);
@@ -338,8 +344,9 @@ TYPED_TEST(IndirectionSetTester, equality)
   EXPECT_NE(s0, s1);
 
   // Test against a smaller set
-  SetType s2(
-    typename SetType::SetBuilder().size(MAX_SET_SIZE / 2).data(bufPtr[2]));
+  SetType s2(typename SetType::SetBuilder()  //
+               .size(MAX_SET_SIZE / 2)       //
+               .data(bufPtr[2]));
   EXPECT_TRUE(s2.isValid());
   EXPECT_NE(s0, s2);
   EXPECT_NE(s1, s2);
@@ -361,7 +368,9 @@ TYPED_TEST(IndirectionSetTester, out_of_bounds)
   BufferType* bufPtr = nullptr;
   this->getDataBuffer(bufPtr);
 
-  SetType s(typename SetType::SetBuilder().size(MAX_SET_SIZE).data(bufPtr));
+  SetType s(typename SetType::SetBuilder()  //
+              .size(MAX_SET_SIZE)           //
+              .data(bufPtr));
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode,
@@ -391,9 +400,13 @@ TEST(slam_set_indirectionset, compare_array_and_vector)
   PosSet ps(SZ);
 
   // Create vector and array sets without initializing their elements
-  VecSet vs(VecSet::SetBuilder().size(SZ).data(&vVals));
+  VecSet vs(VecSet::SetBuilder()  //
+              .size(SZ)           //
+              .data(&vVals));
 
-  ArrSet as(ArrSet::SetBuilder().size(SZ).data(aVals.data()));
+  ArrSet as(ArrSet::SetBuilder()  //
+              .size(SZ)           //
+              .data(aVals.data()));
 
   EXPECT_NE(vs, ps);
   EXPECT_NE(as, ps);
@@ -445,9 +458,11 @@ TEST(slam_set_indirectionset, negative_stride)
   const bool bVerbose = false;
 
   // Setup the VectorIndirectionSet and test basic functionality
-  VecSet vSet(
-    VecSet::SetBuilder().size(setSize).offset(setOffset).stride(setStride).data(
-      &intVec));
+  VecSet vSet(VecSet::SetBuilder()  //
+                .size(setSize)      //
+                .offset(setOffset)  //
+                .stride(setStride)  //
+                .data(&intVec));
   {
     EXPECT_TRUE(vSet.isValid());
     EXPECT_FALSE(vSet.empty());
@@ -503,9 +518,11 @@ TEST(slam_set_indirectionset, negative_stride)
   }
 
   // Setup the VectorIndirectionSet and test basic functionality
-  ArrSet aSet(
-    ArrSet::SetBuilder().size(setSize).offset(setOffset).stride(setStride).data(
-      intVec.data()));
+  ArrSet aSet(ArrSet::SetBuilder()  //
+                .size(setSize)      //
+                .offset(setOffset)  //
+                .stride(setStride)  //
+                .data(intVec.data()));
   {
     EXPECT_TRUE(aSet.isValid());
     EXPECT_FALSE(aSet.empty());

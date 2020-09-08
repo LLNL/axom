@@ -272,12 +272,10 @@ TEST(slam_relation_static_constant, construct_relation)
   RangeSetType toSet(TOSET_SIZE);
 
   StaticConstantRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);  // init the
-                                                                  // begins
-                                                                  // set
-  incrementingRel.bindIndices(relIndices.size(), &relIndices);    // init the
-                                                                  // relation
-                                                                  // indices set
+  // intialize the begins set
+  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);
+  // initialize the relation indices set
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
   EXPECT_TRUE(incrementingRel.isValid(true));
 
@@ -354,11 +352,10 @@ TEST(slam_relation_static_constant, out_of_bounds_initialized)
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
 
   StaticConstantRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);  // init the
-                                                                  // begins set
-  incrementingRel.bindIndices(relIndices.size(), &relIndices);    // init the
-                                                                  // relation
-                                                                  // indices set
+  // initialize the begins set
+  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);
+  // intialize the relation indices set
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode,
@@ -420,9 +417,10 @@ TEST(slam_relation_static_constant, runtime_stride_STLIndirection)
     RelationBuilder()
       .fromSet(&fromSet)
       .toSet(&toSet)
-      .begins(RelationBuilder::BeginsSetBuilder().stride(ELEM_STRIDE))
-      .indices(RelationBuilder::IndicesSetBuilder()
-                 .size(relIndices.size())
+      .begins(RelationBuilder::BeginsSetBuilder()  //
+                .stride(ELEM_STRIDE))
+      .indices(RelationBuilder::IndicesSetBuilder()  //
+                 .size(relIndices.size())            //
                  .data(&relIndices));
   EXPECT_TRUE(builderRel.isValid(true));
 
@@ -546,9 +544,11 @@ TEST(slam_relation_static_constant, compileTime_stride_ArrayIndirection)
     RelationBuilder()
       .fromSet(&fromSet)
       .toSet(&toSet)
-      .begins(RelationBuilder::BeginsSetBuilder().stride(ELEM_STRIDE))
-      .indices(
-        RelationBuilder::IndicesSetBuilder().size(relIndices.size()).data(data));
+      .begins(RelationBuilder::BeginsSetBuilder()  //
+                .stride(ELEM_STRIDE))
+      .indices(RelationBuilder::IndicesSetBuilder()  //
+                 .size(relIndices.size())            //
+                 .data(data));
   EXPECT_TRUE(builderRel.isValid(true));
 
   // Test traversal of the relation data
@@ -566,8 +566,9 @@ TEST(slam_relation_static_constant, compileTime_stride_ArrayIndirection)
       .toSet(&toSet)
       //  .begins( RelationBuilder::BeginsSetBuilder()
       //          .stride(ELEM_STRIDE))
-      .indices(
-        RelationBuilder::IndicesSetBuilder().size(relIndices.size()).data(data));
+      .indices(RelationBuilder::IndicesSetBuilder()  //
+                 .size(relIndices.size())            //
+                 .data(data));
   EXPECT_TRUE(builderRel_implicitStride.isValid(true));
 
   // Test traversal of the relation data

@@ -127,8 +127,10 @@ bool constructAndTestSubMap()
     SLIC_INFO("\nCreating Subset 2");
     std::vector<PositionType> subset_indices_data(submapSize);
     for(int i = 0; i < submapSize; i++) subset_indices_data[i] = i * 2;
-    OrderedSetType subset_indices =
-      OrderedSetType::SetBuilder().size(5).offset(0).data(&subset_indices_data);
+    OrderedSetType subset_indices = OrderedSetType::SetBuilder()  //
+                                      .size(5)                    //
+                                      .offset(0)                  //
+                                      .data(&subset_indices_data);
 
     SubMapType ssm(&m, subset_indices);
 

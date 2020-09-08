@@ -70,7 +70,9 @@ int main(int, char**)
   HandleSet::IndirectionBufferType vecHandle(sz);
 
   // Create a set of handles
-  HandleSet hSet = HandleSet::SetBuilder().size(sz).data(&vecHandle);
+  HandleSet hSet = HandleSet::SetBuilder()  //
+                     .size(sz)              //
+                     .data(&vecHandle);
 
   // Add handles with (somewhat) arbitrary IDs to the set
   for(auto i : hSet.positions())

@@ -101,8 +101,7 @@ void generateIncrementingRelations(VecType* begins, VecType* indices)
 }
 
 /**
- * \brief Traverses the relation's entities using the double subscript access
- *  API
+ * \brief Traverses the relation's entities using the double subscript access API
  *
  * \note Assumes that the relation data has been set
  * using the generateIncrementingRelations() function
@@ -290,10 +289,11 @@ TEST(slam_static_variable_relation, construct_builder)
     RelationBuilder()
       .fromSet(&fromSet)
       .toSet(&toSet)
-      .begins(
-        RelationBuilder::BeginsSetBuilder().size(offsets.size()).data(&offsets))
-      .indices(RelationBuilder::IndicesSetBuilder()
-                 .size(relIndices.size())
+      .begins(RelationBuilder::BeginsSetBuilder()  //
+                .size(offsets.size())              //
+                .data(&offsets))
+      .indices(RelationBuilder::IndicesSetBuilder()  //
+                 .size(relIndices.size())            //
                  .data(&relIndices));
   EXPECT_TRUE(relation.isValid(true));
 

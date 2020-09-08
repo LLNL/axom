@@ -116,7 +116,9 @@ TEST(slam_range_set, set_builder)
   EXPECT_EQ(range, s2.size());
   EXPECT_EQ(lowerIndex, s2.offset());
 
-  SetType s2_b(SetBuilder().size(range).offset(lowerIndex));
+  SetType s2_b(SetBuilder()    //
+                 .size(range)  //
+                 .offset(lowerIndex));
   EXPECT_TRUE(s2_b.isValid(true));
   EXPECT_EQ(range, s2_b.size());
   EXPECT_EQ(lowerIndex, s2_b.offset());
@@ -129,7 +131,9 @@ TEST(slam_range_set, set_builder)
   EXPECT_EQ(range, s3.size());
   EXPECT_EQ(-upperIndex, s3.offset());
 
-  SetType s3_b(SetBuilder().size(range).offset(-upperIndex));
+  SetType s3_b(SetBuilder()    //
+                 .size(range)  //
+                 .offset(-upperIndex));
   EXPECT_TRUE(s3_b.isValid(true));
   EXPECT_EQ(range, s3_b.size());
   EXPECT_EQ(-upperIndex, s3_b.offset());
@@ -368,10 +372,12 @@ TEST(slam_generic_range_set, concrete_parent_set)
 
   SLIC_INFO("Generating a parent set, and a subset and checking validity");
   ParentType parentSet(ParentType::SetBuilder().size(MAX_SIZE));
-  GenericRangeSet childSet(
-    SetBuilder().range(lowerIndex, upperIndex).parent(&parentSet));
+  GenericRangeSet childSet(SetBuilder()                      //
+                             .range(lowerIndex, upperIndex)  //
+                             .parent(&parentSet));
 
-  SetType nonChildSet(SetType::SetBuilder().range(lowerIndex, upperIndex));
+  SetType nonChildSet(SetType::SetBuilder()  //
+                        .range(lowerIndex, upperIndex));
 
   EXPECT_TRUE(parentSet.isValid(true));
   EXPECT_TRUE(childSet.isValid(true));

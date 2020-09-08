@@ -163,13 +163,10 @@ public:
   ZoneSet zones;
 
   /// Relations in the mesh
-  ZoneToNodeRelation zoneToNodeRelation;  // storage for relation_(3,0) --
-                                          // zones -> nodes
-  NodeToZoneRelation nodeToZoneRelation;  // storage for relation_(0,3) --
-                                          // nodes -> zones
+  ZoneToNodeRelation zoneToNodeRelation;  // storage for relation_(3,0): zones -> nodes
+  NodeToZoneRelation nodeToZoneRelation;  // storage for relation_(0,3): nodes -> zones
 
-  /// Maps (fields) defined on the mesh -- nodal and zonal positions and scalar
-  // fields
+  /// Maps (fields) defined on the mesh -- nodal and zonal positions and scalar fields
   NodalPositions nodePosition;
   ZonalPositions zonePosition;
   ZoneField zoneField;
