@@ -48,10 +48,11 @@ TEST(numerics_linear_solve, linear_solve2x2)
 {
   const int N = 2;
   numerics::Matrix<double> A(N, N);
-  A(0, 0) = 2;
-  A(0, 1) = 1;
-  A(1, 0) = 3;
-  A(1, 1) = 4;
+
+  // clang-format off
+  A(0, 0) = 2; A(0, 1) = 1;
+  A(1, 0) = 3; A(1, 1) = 4;
+  // clang-format on
 
   double b[2] = {1, 14};
   double x[2];
@@ -68,15 +69,12 @@ TEST(numerics_linear_solve, linear_solve3x3)
 {
   const int N = 3;
   numerics::Matrix<double> A(N, N);
-  A(0, 0) = 4;
-  A(0, 1) = 5;
-  A(0, 2) = -2;
-  A(1, 0) = 7;
-  A(1, 1) = -1;
-  A(1, 2) = 2;
-  A(2, 0) = 3;
-  A(2, 1) = 1;
-  A(2, 2) = 4;
+
+  // clang-format off
+  A(0, 0) = 4; A(0, 1) = 5; A(0, 2) =-2;
+  A(1, 0) = 7; A(1, 1) =-1; A(1, 2) = 2;
+  A(2, 0) = 3; A(2, 1) = 1; A(2, 2) = 4;
+  // clang-format on
 
   double b[3] = {-14, 42, 28};
   double x[3];

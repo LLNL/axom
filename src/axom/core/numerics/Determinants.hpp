@@ -15,6 +15,7 @@ namespace axom
 {
 namespace numerics
 {
+// clang-format off
 /// \name Matrix Operators
 /// @{
 
@@ -27,8 +28,9 @@ namespace numerics
  * \return det the determinant of the 2X2 matrix
  */
 template <typename real>
-inline AXOM_HOST_DEVICE real
-determinant(const real& a00, const real& a01, const real& a10, const real& a11)
+inline AXOM_HOST_DEVICE 
+real determinant(const real& a00, const real& a01,
+                 const real& a10, const real& a11)
 {
   const real det = a00 * a11 - a10 * a01;
   return det;
@@ -48,15 +50,9 @@ determinant(const real& a00, const real& a01, const real& a10, const real& a11)
  * \return det the determinant of the 3x3 matrix.
  */
 template <typename real>
-inline real determinant(const real& a00,
-                        const real& a01,
-                        const real& a02,
-                        const real& a10,
-                        const real& a11,
-                        const real& a12,
-                        const real& a20,
-                        const real& a21,
-                        const real& a22)
+inline real determinant(const real& a00,  const real& a01,  const real& a02,
+                        const real& a10,  const real& a11,  const real& a12,
+                        const real& a20,  const real& a21,  const real& a22)
 {
   const real m01 = a00 * a11 - a10 * a01;
   const real m02 = a00 * a21 - a20 * a01;
@@ -87,22 +83,11 @@ inline real determinant(const real& a00,
  * \return det the determinant of the 4x4 matrix
  */
 template <typename real>
-inline real determinant(const real& a00,
-                        const real& a01,
-                        const real& a02,
-                        const real& a03,
-                        const real& a10,
-                        const real& a11,
-                        const real& a12,
-                        const real& a13,
-                        const real& a20,
-                        const real& a21,
-                        const real& a22,
-                        const real& a23,
-                        const real& a30,
-                        const real& a31,
-                        const real& a32,
-                        const real& a33)
+inline real determinant(
+  const real& a00, const real& a01, const real& a02, const real& a03,
+  const real& a10, const real& a11, const real& a12, const real& a13,
+  const real& a20, const real& a21, const real& a22, const real& a23,
+  const real& a30, const real& a31, const real& a32, const real& a33)
 {
   const real m01 = a10 * a01 - a00 * a11;
   const real m02 = a20 * a01 - a00 * a21;
@@ -144,38 +129,27 @@ real determinant(const Matrix<real>& A)
   }
   else if(N == 2)
   {
-    det = determinant(A(0, 0), A(0, 1), A(1, 0), A(1, 1));
+
+    det = determinant(A(0,0), A(0,1),
+                      A(1,0), A(1,1));
+
   }
   else if(N == 3)
   {
-    det = determinant(A(0, 0),
-                      A(0, 1),
-                      A(0, 2),
-                      A(1, 0),
-                      A(1, 1),
-                      A(1, 2),
-                      A(2, 0),
-                      A(2, 1),
-                      A(2, 2));
+
+    det = determinant(A(0,0), A(0,1), A(0,2),
+                      A(1,0), A(1,1), A(1,2),
+                      A(2,0), A(2,1), A(2,2));
+
   }
   else if(N == 4)
   {
-    det = determinant(A(0, 0),
-                      A(0, 1),
-                      A(0, 2),
-                      A(0, 3),
-                      A(1, 0),
-                      A(1, 1),
-                      A(1, 2),
-                      A(1, 3),
-                      A(2, 0),
-                      A(2, 1),
-                      A(2, 2),
-                      A(2, 3),
-                      A(3, 0),
-                      A(3, 1),
-                      A(3, 2),
-                      A(3, 3));
+
+    det = determinant(A(0,0), A(0,1), A(0,2), A(0,3),
+                      A(1,0), A(1,1), A(1,2), A(1,3),
+                      A(2,0), A(2,1), A(2,2), A(2,3),
+                      A(3,0), A(3,1), A(3,2), A(3,3));
+
   }
   else
   {
@@ -204,8 +178,8 @@ real determinant(const Matrix<real>& A)
 
   return (det);
 }
-
 /// @}
+// clang-format on
 
 } /* namespace numerics */
 } /* namespace axom */

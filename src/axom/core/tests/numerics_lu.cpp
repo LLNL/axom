@@ -43,15 +43,11 @@ TEST(numerics_lu, lu_decompose)
 
   // initial matrix
   numerics::Matrix<double> A(N, N);
-  A(0, 0) = 1;
-  A(0, 1) = (-2);
-  A(0, 2) = 3;
-  A(1, 0) = 2;
-  A(1, 1) = (-5);
-  A(1, 2) = 12;
-  A(2, 0) = 0;
-  A(2, 1) = 2;
-  A(2, 2) = (-10);
+  // clang-format off
+  A(0, 0) = 1; A(0, 1) = -2; A(0, 2) =  3;
+  A(1, 0) = 2; A(1, 1) = -5; A(1, 2) = 12;
+  A(2, 0) = 0; A(2, 1) =  2; A(2, 2) =-10;
+  // clang-format on
 
   // decompose matrix
   numerics::Matrix<double> A_decomposed = A;
@@ -94,15 +90,12 @@ TEST(numerics_lu, lu_solve)
 
   // initial matrix
   numerics::Matrix<double> A(N, N);
-  A(0, 0) = 1;
-  A(0, 1) = 2;
-  A(0, 2) = 4;
-  A(1, 0) = 3;
-  A(1, 1) = 8;
-  A(1, 2) = 14;
-  A(2, 0) = 2;
-  A(2, 1) = 6;
-  A(2, 2) = 13;
+
+  // clang-format off
+  A(0, 0) = 1; A(0, 1) = 2; A(0, 2) =  4;
+  A(1, 0) = 3; A(1, 1) = 8; A(1, 2) = 14;
+  A(2, 0) = 2; A(2, 1) = 6; A(2, 2) = 13;
+  // clang-format on
 
   double b[3] = {3, 13, 4};
   double x[3];

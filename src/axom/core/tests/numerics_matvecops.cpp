@@ -257,17 +257,14 @@ TEST(numerics_matvecops, matrix_norm)
   constexpr double EXPECTED_FROBENIOUS_NORM = 14.387494569938159;
 
   // STEP 0: construct test matrix
+  // clang-format off
   double data[9 /* 3 x 3 */] = {
-    -3,
-    2,
-    0,  // column 1
-    5,
-    6,
-    2,  // column 2
-    7,
-    4,
-    8  // column 3
+    -3, 2, 0,     // column 1
+     5, 6, 2,     // column 2
+     7, 4, 8      // column 3
   };
+  // clang-format on
+
   numerics::Matrix<double> A(N, N, data, ZERO_COPY);
 
   // STEP 1: test p1-norm
