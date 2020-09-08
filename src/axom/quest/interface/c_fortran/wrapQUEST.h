@@ -15,11 +15,11 @@
 #define WRAPQUEST_H
 
 #ifdef AXOM_USE_MPI
-#include "mpi.h"
+  #include "mpi.h"
 #endif
 #include "typesQUEST.h"
 #ifndef __cplusplus
-#include <stdbool.h>
+  #include <stdbool.h>
 #endif
 
 // splicer begin CXX_declarations
@@ -37,7 +37,8 @@ int QUEST_inout_init_mpi(const char* fileName, MPI_Fint comm);
 #endif
 
 #ifdef AXOM_USE_MPI
-int QUEST_inout_init_mpi_bufferify(const char* fileName, int LfileName,
+int QUEST_inout_init_mpi_bufferify(const char* fileName,
+                                   int LfileName,
                                    MPI_Fint comm);
 #endif
 
@@ -74,7 +75,8 @@ int QUEST_signed_distance_init_mpi(const char* file, MPI_Fint comm);
 #endif
 
 #ifdef AXOM_USE_MPI
-int QUEST_signed_distance_init_mpi_bufferify(const char* file, int Lfile,
+int QUEST_signed_distance_init_mpi_bufferify(const char* file,
+                                             int Lfile,
                                              MPI_Fint comm);
 #endif
 
