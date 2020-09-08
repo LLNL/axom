@@ -12,11 +12,7 @@
 
 #include <iostream>
 
-void foo(int param)
-{
-  std::cout << "Hello " << std::endl;
-}
-
+void foo(int param) { std::cout << "Hello " << std::endl; }
 
 int main()
 {
