@@ -2,8 +2,6 @@
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-#include "axom/config.hpp"
-#include <cassert>                          // for assert()
 
 /*!
  *
@@ -15,6 +13,9 @@
 
 #ifndef AXOM_MACROS_HPP_
 #define AXOM_MACROS_HPP_
+
+#include "axom/config.hpp"
+#include <cassert>                          // for assert()
 
 /*!
  * \def AXOM_DEVICE

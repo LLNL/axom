@@ -41,6 +41,7 @@
 // RAJA policies
 #include "axom/mint/execution/internal/structured_exec.hpp"
 
+// clang-format off
 #if defined (AXOM_USE_RAJA)
   using seq_exec = axom::SEQ_EXEC;
 
@@ -57,11 +58,13 @@
     using cuda_exec = seq_exec;
   #endif
 #endif
+// clang-format on
 
 #include "CLI11/CLI11.hpp"
 
 // C/C++ includes
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -114,6 +117,7 @@ private:
   void fixOutfilePath();
 };
 
+// clang-format off
 const std::set<std::string> Input::s_validMethods({
   "bvh",
   "uniform",
@@ -132,6 +136,7 @@ const std::map<std::string, RuntimePolicy> Input::s_validPolicies({
     #endif
   #endif
 });
+// clang-format on
 
 void Input::parse(int argc, char** argv, CLI::App& app)
 {
@@ -150,20 +155,21 @@ void Input::parse(int argc, char** argv, CLI::App& app)
                  "triangles.")
   ->capture_default_str();
 
-  app.add_option("-p, --policy", policy,
-                 "With \'-m bvh\' or \'-m naive\', set runtime policy. \n"
-                 "Set to \'seq\' or 0 to use the sequential algorithm "
-                 "(w/o RAJA). \n"
+  std::stringstream pol_sstr;
+  pol_sstr << "With \'-m bvh\' or \'-m naive\', set runtime policy. \n"
+           << "Set to \'seq\' or 0 to use the sequential algorithm "
+           << "(w/o RAJA).";
   #ifdef AXOM_USE_RAJA
-                 "Set to \'raja_seq\' or 1 to use the RAJA sequential policy.\n"
+  pol_sstr << "\nSet to \'raja_seq\' or 1 to use the RAJA sequential policy.";
     #ifdef AXOM_USE_OPENMP
-                 "Set to \'raja_omp\' or 2 to use the RAJA OpenMP policy. \n"
+  pol_sstr << "\nSet to \'raja_omp\' or 2 to use the RAJA OpenMP policy.";
     #endif
     #ifdef AXOM_USE_CUDA
-                 "Set to \'raja_cuda\' or 3 to use the RAJA CUDA policy."
+  pol_sstr << "\nSet to \'raja_cuda\' or 3 to use the RAJA CUDA policy.";
     #endif
   #endif
-                 )
+
+  app.add_option("-p, --policy", policy, pol_sstr.str())
   ->capture_default_str()
   ->transform(CLI::CheckedTransformer(Input::s_validPolicies));
 
@@ -295,7 +301,7 @@ bool checkTT(Triangle3& t1, Triangle3& t2, double EPS)
   if (t2.degenerate())
     return false;
 
-  const bool includeBoundaries = false; // only check for internal intersections
+  const bool includeBoundaries = false; // only check internal intersections
   if (primal::intersect(t1, t2, includeBoundaries, EPS))
   {
     return true;

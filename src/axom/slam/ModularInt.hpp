@@ -206,6 +206,7 @@ private:
     if(m_val < 0)
       m_val += sz;
         #else // MODINT_MODLESS
+        
               // this version assumes that we are usually only adding
               // small offsets to avoid the div
 //            if(m_val >= 0)
