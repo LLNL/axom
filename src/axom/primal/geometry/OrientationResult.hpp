@@ -17,18 +17,17 @@ namespace axom
 {
 namespace primal
 {
-
 /*!
  * \brief Enumerates possible return values for orientation tests.
  */
 enum OrientationResult
 {
-  ON_BOUNDARY,       /*!< primitive is on the boundary of a primitive      */
-  ON_POSITIVE_SIDE,  /*!< primitive is on the positive side of a primitive */
-  ON_NEGATIVE_SIDE   /*!< primitive is on the negative side of a primitive */
+  ON_BOUNDARY,      /*!< primitive is on the boundary of a primitive      */
+  ON_POSITIVE_SIDE, /*!< primitive is on the positive side of a primitive */
+  ON_NEGATIVE_SIDE  /*!< primitive is on the negative side of a primitive */
 };
 
-}
-}
+}  // namespace primal
+}  // namespace axom
 
 #endif /* PRIMAL_ORIENTATIONRESULT_HPP_ */
