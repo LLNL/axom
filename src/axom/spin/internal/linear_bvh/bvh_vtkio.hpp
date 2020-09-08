@@ -17,17 +17,16 @@ namespace internal
 {
 namespace linear_bvh
 {
-
 //------------------------------------------------------------------------------
-template < typename FloatType >
-void write_box2d( const FloatType& xmin,
-                  const FloatType& ymin,
-                  const FloatType& xmax,
-                  const FloatType& ymax,
-                  int32& numPoints,
-                  int32& numBins,
-                  std::ostringstream& nodes,
-                  std::ostringstream& cells  )
+template <typename FloatType>
+void write_box2d(const FloatType& xmin,
+                 const FloatType& ymin,
+                 const FloatType& xmax,
+                 const FloatType& ymax,
+                 int32& numPoints,
+                 int32& numBins,
+                 std::ostringstream& nodes,
+                 std::ostringstream& cells)
 {
   nodes << xmin << " " << ymin << " 0.0\n";
   nodes << xmax << " " << ymin << " 0.0\n";
@@ -37,28 +36,28 @@ void write_box2d( const FloatType& xmin,
   constexpr int32 NUM_NODES = 4;
   int32 offset = numPoints;
   cells << NUM_NODES << " ";
-  for ( int32 i=0 ; i < NUM_NODES ; ++i )
+  for(int32 i = 0; i < NUM_NODES; ++i)
   {
     cells << (offset + i) << " ";
   }
   cells << "\n";
 
-  numBins   += 1;
+  numBins += 1;
   numPoints += NUM_NODES;
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType >
-void write_box3d( const FloatType& xmin,
-                  const FloatType& ymin,
-                  const FloatType& zmin,
-                  const FloatType& xmax,
-                  const FloatType& ymax,
-                  const FloatType& zmax,
-                  int32& numPoints,
-                  int32& numBins,
-                  std::ostringstream& nodes,
-                  std::ostringstream& cells  )
+template <typename FloatType>
+void write_box3d(const FloatType& xmin,
+                 const FloatType& ymin,
+                 const FloatType& zmin,
+                 const FloatType& xmax,
+                 const FloatType& ymax,
+                 const FloatType& zmax,
+                 int32& numPoints,
+                 int32& numBins,
+                 std::ostringstream& nodes,
+                 std::ostringstream& cells)
 {
   nodes << xmin << " " << ymin << " " << zmin << std::endl;
   nodes << xmax << " " << ymin << " " << zmin << std::endl;
@@ -73,170 +72,169 @@ void write_box3d( const FloatType& xmin,
   constexpr int32 NUM_NODES = 8;
   int32 offset = numPoints;
   cells << NUM_NODES << " ";
-  for ( int32 i=0 ; i < NUM_NODES ; ++i )
+  for(int32 i = 0; i < NUM_NODES; ++i)
   {
     cells << (offset + i) << " ";
   }
   cells << "\n";
 
-  numBins   += 1;
+  numBins += 1;
   numPoints += NUM_NODES;
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType, int NDIMS >
-void write_leftbox( const vec4_t< FloatType >& first,
-                    const vec4_t< FloatType >& second,
-                    int32& numPoints,
-                    int32& numBins,
-                    std::ostringstream& nodes,
-                    std::ostringstream& cells  )
+template <typename FloatType, int NDIMS>
+void write_leftbox(const vec4_t<FloatType>& first,
+                   const vec4_t<FloatType>& second,
+                   int32& numPoints,
+                   int32& numBins,
+                   std::ostringstream& nodes,
+                   std::ostringstream& cells)
 {
-  const FloatType& xmin = first[ 0 ];
-  const FloatType& ymin = first[ 1 ];
+  const FloatType& xmin = first[0];
+  const FloatType& ymin = first[1];
 
-  const FloatType& xmax = first[ 3 ];
-  const FloatType& ymax = second[ 0 ];
+  const FloatType& xmax = first[3];
+  const FloatType& ymax = second[0];
 
-  if ( NDIMS== 2 )
+  if(NDIMS == 2)
   {
-    write_box2d( xmin, ymin, xmax, ymax,
-                 numPoints, numBins, nodes, cells );
+    write_box2d(xmin, ymin, xmax, ymax, numPoints, numBins, nodes, cells);
   }
   else
   {
-    const FloatType& zmin = first[ 2 ];
-    const FloatType& zmax = second[ 2 ];
+    const FloatType& zmin = first[2];
+    const FloatType& zmax = second[2];
 
-    write_box3d( xmin, ymin, zmin,
-                 xmax, ymax, zmax,
-                 numPoints, numBins, nodes, cells );
+    write_box3d(xmin, ymin, zmin, xmax, ymax, zmax, numPoints, numBins, nodes, cells);
   }
-
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType, int NDIMS >
-void write_righbox( const vec4_t< FloatType >& second,
-                    const vec4_t< FloatType >& third,
-                    int32& numPoints,
-                    int32& numBins,
-                    std::ostringstream& nodes,
-                    std::ostringstream& cells  )
+template <typename FloatType, int NDIMS>
+void write_righbox(const vec4_t<FloatType>& second,
+                   const vec4_t<FloatType>& third,
+                   int32& numPoints,
+                   int32& numBins,
+                   std::ostringstream& nodes,
+                   std::ostringstream& cells)
 {
-  const FloatType& xmin = second[ 2 ];
-  const FloatType& ymin = second[ 3 ];
+  const FloatType& xmin = second[2];
+  const FloatType& ymin = second[3];
 
-  const FloatType& xmax = third[ 1 ];
-  const FloatType& ymax = third[ 2 ];
+  const FloatType& xmax = third[1];
+  const FloatType& ymax = third[2];
 
-  if ( NDIMS== 2 )
+  if(NDIMS == 2)
   {
-    write_box2d( xmin, ymin, xmax, ymax,
-                 numPoints, numBins, nodes, cells );
+    write_box2d(xmin, ymin, xmax, ymax, numPoints, numBins, nodes, cells);
   }
   else
   {
-    const FloatType& zmin = third[ 0 ];
-    const FloatType& zmax = third[ 3 ];
+    const FloatType& zmin = third[0];
+    const FloatType& zmax = third[3];
 
-    write_box3d( xmin, ymin, zmin,
-                 xmax, ymax, zmax,
-                 numPoints, numBins, nodes, cells );
+    write_box3d(xmin, ymin, zmin, xmax, ymax, zmax, numPoints, numBins, nodes, cells);
   }
-
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType >
-void write_root( const AABB< FloatType, 2 >& root,
-                 int32& numPoints,
-                 int32& numBins,
-                 std::ostringstream& nodes,
-                 std::ostringstream& cells,
-                 std::ostringstream& levels )
+template <typename FloatType>
+void write_root(const AABB<FloatType, 2>& root,
+                int32& numPoints,
+                int32& numBins,
+                std::ostringstream& nodes,
+                std::ostringstream& cells,
+                std::ostringstream& levels)
 {
-
-  write_box2d( root.m_x.min(), root.m_y.min(),
-               root.m_x.max(), root.m_y.max(),
-               numPoints,
-               numBins,
-               nodes,
-               cells  );
-  levels << "0\n";
-
-}
-
-//------------------------------------------------------------------------------
-template < typename FloatType >
-void write_root( const AABB< FloatType, 3 >& root,
-                 int32& numPoints,
-                 int32& numBins,
-                 std::ostringstream& nodes,
-                 std::ostringstream& cells,
-                 std::ostringstream& levels )
-{
-
-  write_box3d( root.m_x.min(), root.m_y.min(), root.m_z.min(),
-               root.m_x.max(), root.m_y.max(), root.m_z.max(),
-               numPoints,
-               numBins,
-               nodes,
-               cells  );
+  write_box2d(root.m_x.min(),
+              root.m_y.min(),
+              root.m_x.max(),
+              root.m_y.max(),
+              numPoints,
+              numBins,
+              nodes,
+              cells);
   levels << "0\n";
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType, int NDIMS  >
-void write_recursive( vec4_t< FloatType >* inner_nodes,
-                      int32 current_node,
-                      int32 level,
-                      int32& numPoints,
-                      int32& numBins,
-                      std::ostringstream& nodes,
-                      std::ostringstream& cells,
-                      std::ostringstream& levels )
+template <typename FloatType>
+void write_root(const AABB<FloatType, 3>& root,
+                int32& numPoints,
+                int32& numBins,
+                std::ostringstream& nodes,
+                std::ostringstream& cells,
+                std::ostringstream& levels)
+{
+  write_box3d(root.m_x.min(),
+              root.m_y.min(),
+              root.m_z.min(),
+              root.m_x.max(),
+              root.m_y.max(),
+              root.m_z.max(),
+              numPoints,
+              numBins,
+              nodes,
+              cells);
+  levels << "0\n";
+}
+
+//------------------------------------------------------------------------------
+template <typename FloatType, int NDIMS>
+void write_recursive(vec4_t<FloatType>* inner_nodes,
+                     int32 current_node,
+                     int32 level,
+                     int32& numPoints,
+                     int32& numBins,
+                     std::ostringstream& nodes,
+                     std::ostringstream& cells,
+                     std::ostringstream& levels)
 {
   // STEP 0: get the flat BVH layout
-  const vec4_t< FloatType > first4  = inner_nodes[current_node + 0];
-  const vec4_t< FloatType > second4 = inner_nodes[current_node + 1];
-  const vec4_t< FloatType > third4  = inner_nodes[current_node + 2];
+  const vec4_t<FloatType> first4 = inner_nodes[current_node + 0];
+  const vec4_t<FloatType> second4 = inner_nodes[current_node + 1];
+  const vec4_t<FloatType> third4 = inner_nodes[current_node + 2];
 
   // STEP 1: extract children information
   int32 l_child;
   int32 r_child;
   constexpr int32 isize = sizeof(int32);
-  vec4_t< FloatType > children = inner_nodes[current_node + 3];
-  memcpy(&l_child,&children[0],isize);
-  memcpy(&r_child,&children[1],isize);
+  vec4_t<FloatType> children = inner_nodes[current_node + 3];
+  memcpy(&l_child, &children[0], isize);
+  memcpy(&r_child, &children[1], isize);
 
-  write_leftbox< FloatType, NDIMS >( first4, second4, numPoints, numBins,
-                                     nodes, cells );
+  write_leftbox<FloatType, NDIMS>(first4, second4, numPoints, numBins, nodes, cells);
   levels << level << std::endl;
-  write_righbox< FloatType, NDIMS >( second4, third4, numPoints, numBins,
-                                     nodes, cells );
+  write_righbox<FloatType, NDIMS>(second4, third4, numPoints, numBins, nodes, cells);
   levels << level << std::endl;
 
   // STEP 2: check left
-  if ( l_child > -1 )
+  if(l_child > -1)
   {
-    write_recursive< FloatType, NDIMS >(
-      inner_nodes, l_child, level+1, numPoints, numBins,
-      nodes, cells, levels );
-
+    write_recursive<FloatType, NDIMS>(inner_nodes,
+                                      l_child,
+                                      level + 1,
+                                      numPoints,
+                                      numBins,
+                                      nodes,
+                                      cells,
+                                      levels);
   }
 
   // STEP 3: check right
-  if ( r_child > -1 )
+  if(r_child > -1)
   {
-    write_recursive< FloatType, NDIMS >(
-      inner_nodes, r_child, level+1, numPoints, numBins,
-      nodes, cells, levels );
-
+    write_recursive<FloatType, NDIMS>(inner_nodes,
+                                      r_child,
+                                      level + 1,
+                                      numPoints,
+                                      numBins,
+                                      nodes,
+                                      cells,
+                                      levels);
   }
-
 }
-
 
 } /* namespace linear_bvh */
 } /* namespace internal */

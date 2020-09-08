@@ -13,8 +13,6 @@ namespace axom
 {
 namespace spin
 {
-
-
 /**
  * \class
  * \brief Helper class to handle subindexing of block data within octree
@@ -28,15 +26,17 @@ namespace spin
  * and its offset index is obtained by interleaving the least significant
  * bit of its coordinates.
  */
-template<typename GridPt, typename MortonIndexType>
+template <typename GridPt, typename MortonIndexType>
 struct Brood
 {
-
-  enum { DIM = GridPt::DIMENSION,
-         BROOD_BITMASK = (1 << DIM) -1};
+  enum
+  {
+    DIM = GridPt::DIMENSION,
+    BROOD_BITMASK = (1 << DIM) - 1
+  };
 
   using MortonizerType =
-          spin::Mortonizer<typename GridPt::CoordType, MortonIndexType, DIM>;
+    spin::Mortonizer<typename GridPt::CoordType, MortonIndexType, DIM>;
 
   /**
    * \brief Constructor for a brood offset relative to the given grid point pt
@@ -64,18 +64,16 @@ struct Brood
    */
   static GridPt reconstructGridPt(MortonIndexType morton, int offset)
   {
-    return
-      static_cast< GridPt >(
-          MortonizerType::demortonize(
-              static_cast< MortonIndexType >( (morton<<DIM)+offset) ) );
+    return static_cast<GridPt>(MortonizerType::demortonize(
+      static_cast<MortonIndexType>((morton << DIM) + offset)));
   }
+
 private:
-  MortonIndexType m_broodIdx;           /** MortonIndex of the base point of all
+  MortonIndexType m_broodIdx; /** MortonIndex of the base point of all
                                            blocks within the brood */
-  int m_offset;                         /** Index of the block within the brood.
+  int m_offset;               /** Index of the block within the brood.
                                            Value is in [0, 2^DIM) */
 };
-
 
 /**
  * \class
@@ -89,22 +87,20 @@ private:
  *
  *  \see Brood
  */
-template<typename GridPt>
+template <typename GridPt>
 struct Brood<GridPt, GridPt>
 {
-
   /**
    * \brief Constructor for a brood offset relative to the given grid point pt
    *
    * \param [in] pt The grid point within the octree level
    */
-  Brood(const GridPt& pt)
-    : m_broodPt( pt.array() /2), m_offset(0)
+  Brood(const GridPt& pt) : m_broodPt(pt.array() / 2), m_offset(0)
   {
-    for(int i=0 ; i< GridPt::DIMENSION ; ++i)
+    for(int i = 0; i < GridPt::DIMENSION; ++i)
     {
-      m_offset |= (pt[i]& 1) << i;         // interleave the least significant
-                                           // bits
+      m_offset |= (pt[i] & 1) << i;  // interleave the least significant
+                                     // bits
     }
   }
 
@@ -119,21 +115,19 @@ struct Brood<GridPt, GridPt>
   {
     // shift and add offset to each coordinate
     GridPt retPt;
-    for(int i=0 ; i< GridPt::DIMENSION ; ++i)
-      retPt[i] = (pt[i]<<1) + ( offset & (1 << i) ? 1 : 0);
+    for(int i = 0; i < GridPt::DIMENSION; ++i)
+      retPt[i] = (pt[i] << 1) + (offset & (1 << i) ? 1 : 0);
 
     return retPt;
   }
 
 private:
-  GridPt m_broodPt;        /** Base point of all blocks within the brood */
-  int m_offset;            /** Index of the block within the brood. Value is in
+  GridPt m_broodPt; /** Base point of all blocks within the brood */
+  int m_offset;     /** Index of the block within the brood. Value is in
                               [0, 2^DIM) */
 };
 
+}  // end namespace spin
+}  // end namespace axom
 
-
-} // end namespace spin
-} // end namespace axom
-
-#endif // SPIN_BROOD__HPP_
+#endif  // SPIN_BROOD__HPP_
