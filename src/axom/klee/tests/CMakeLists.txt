@@ -13,6 +13,7 @@
 set(gtest_klee_tests
         klee_io.cpp
         klee_shape.cpp
+        klee_shape_set.cpp
    )
 
 #
