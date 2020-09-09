@@ -11,6 +11,16 @@
 // RAJA includes
 #ifdef AXOM_USE_RAJA
   #include "RAJA/RAJA.hpp"
+
+  // NOTE: add RAJA alias for older versions of RAJA prior to RAJA-v0.12.0
+  #if (RAJA_VERSION_MAJOR==0) && (RAJA_VERSION_MINOR < 12)
+    namespace RAJA
+    {
+      template < int SIZE >
+      using tile_fixed = ::RAJA::statement::tile_fixed< SIZE >;
+    } // namespace RAJA
+  #endif
+
 #endif
 
 namespace axom
@@ -99,6 +109,7 @@ constexpr int TILE_SIZE_Z = 4;
 
 //--------------------------------------------------------| CUDA_EXEC |---------
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+
 
 template <int BLOCK_SIZE>
 struct structured_exec<CUDA_EXEC<BLOCK_SIZE, SYNCHRONOUS>>

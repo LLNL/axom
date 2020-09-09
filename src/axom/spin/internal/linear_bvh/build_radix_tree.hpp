@@ -6,6 +6,8 @@
 #ifndef AXOM_SPIN_BUILD_RADIX_TREE_H_
 #define AXOM_SPIN_BUILD_RADIX_TREE_H_
 
+#include "axom/config.hpp" // for axom compile-time definitions
+
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 
@@ -367,6 +369,8 @@ void reorder(int32* indices, T*& array, int32 size, int allocatorID)
 }
 
 //------------------------------------------------------------------------------
+#if (RAJA_VERSION_MAJOR > 0) || ( (RAJA_VERSION_MAJOR==0) && (RAJA_VERSION_MINOR >= 12) ) 
+
 template < typename ExecSpace  >
 void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 {
@@ -380,6 +384,32 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
   );
 
 }
+
+#else
+
+// fall back to std::stable_sort
+template < typename ExecSpace  >
+void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
+{
+  AXOM_PERF_MARK_FUNCTION( "sort_mcodes" );
+
+  array_counting<ExecSpace>(iter, size, 0, 1);
+  
+  AXOM_PERF_MARK_SECTION(
+    "cpu_sort",
+
+    std::stable_sort(iter,
+                     iter + size,
+                     [=](int32 i1, int32 i2) { return mcodes[i1] < mcodes[i2]; });
+
+  );
+
+  const int allocID = axom::execution_space<ExecSpace>::allocatorID();
+  reorder<ExecSpace>(iter, mcodes, size, allocID);
+
+}
+
+#endif /* RAJA version 0.12.0 and above */
 
 //------------------------------------------------------------------------------
 template < typename IntType, typename MCType >
