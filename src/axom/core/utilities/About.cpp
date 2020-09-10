@@ -50,6 +50,10 @@ void about(std::ostream &oss)
 
   comps.push_back("core");
 
+#ifdef AXOM_USE_INLET
+  comps.push_back("inlet");
+#endif
+
 #ifdef AXOM_USE_MINT
   comps.push_back("mint");
 #endif
@@ -104,6 +108,10 @@ void about(std::ostream &oss)
   libs.push_back("hdf5");
 #endif
 
+#ifdef AXOM_USE_LUA
+  libs.push_back("lua");
+#endif
+
 #ifdef AXOM_USE_MFEM
   libs.push_back("mfem");
 #endif
@@ -136,7 +144,10 @@ void about(std::ostream &oss)
 std::string getVersion()
 {
   std::ostringstream oss;
-  oss << AXOM_VERSION_FULL << "-" << AXOM_VERSION_EXTRA;
+  oss << AXOM_VERSION_FULL;
+#ifdef AXOM_VERSION_EXTRA
+  oss << "-" << AXOM_VERSION_EXTRA;
+#endif
   return oss.str();
 }
 

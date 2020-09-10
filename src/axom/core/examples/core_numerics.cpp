@@ -276,7 +276,7 @@ void demoMatrix()
   // _solve_end
 }
 
-int main(int argc, char** argv)
+int main()
 {
   // _timer_start
   axom::utilities::Timer t;
@@ -291,4 +291,6 @@ int main(int argc, char** argv)
   std::cout << "The tests took " << t.elapsedTimeInMilliSec() << " ms."
             << std::endl;
   // _timer_end
+
+  return 0;
 }
