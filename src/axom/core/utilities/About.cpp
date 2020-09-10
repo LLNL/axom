@@ -50,6 +50,10 @@ void about(std::ostream &oss)
 
   comps.push_back("core");
 
+#ifdef AXOM_USE_INLET
+  comps.push_back("inlet");
+#endif
+
 #ifdef AXOM_USE_MINT
   comps.push_back("mint");
 #endif
@@ -102,6 +106,10 @@ void about(std::ostream &oss)
 
 #ifdef AXOM_USE_HDF5
   libs.push_back("hdf5");
+#endif
+
+#ifdef AXOM_USE_LUA
+  libs.push_back("lua");
 #endif
 
 #ifdef AXOM_USE_MFEM
