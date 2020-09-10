@@ -144,7 +144,10 @@ void about(std::ostream &oss)
 std::string getVersion()
 {
   std::ostringstream oss;
-  oss << AXOM_VERSION_FULL << "-" << AXOM_VERSION_EXTRA;
+  oss << AXOM_VERSION_FULL;
+#ifdef AXOM_VERSION_EXTRA
+  oss << "-" << AXOM_VERSION_EXTRA;
+#endif
   return oss.str();
 }
 
