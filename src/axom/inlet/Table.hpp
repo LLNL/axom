@@ -189,6 +189,51 @@ public:
    */
   std::shared_ptr<Table> addStringArray(const std::string& name,
                                         const std::string& description="");
+  
+   /*!
+   *****************************************************************************
+   * \brief Get a boolean array represented as an unordered map from the input deck
+   *
+   * \param [in] name Name of the array
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getBoolArray(std::unordered_map<int,bool>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get a int array represented as an unordered map from the input deck
+   *
+   * \param [in] name Name of the array
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getIntArray(std::unordered_map<int,int>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get a double array represented as an unordered map from the input deck
+   *
+   * \param [in] name Name of the array
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getDoubleArray(std::unordered_map<int,double>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get a string array represented as an unordered map from the input deck
+   *
+   * \param [in] name Name of the array
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getStringArray(std::unordered_map<int,std::string>& map);
+  
   /*!
    *****************************************************************************
    * \brief Add a Boolean Field to the input deck schema.

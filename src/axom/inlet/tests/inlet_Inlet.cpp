@@ -1328,6 +1328,38 @@ TEST(lua_Arrays, inletArrays) {
   EXPECT_EQ(doubleVal, 2.4);
 }
 
+TEST(lua_Arrays, getArray) {
+  DataStore ds;
+  std::string testString = "luaArrays = { arr1 = { [1] = 4}, arr2 = {[4] = true, [8] = false}, arr3 = {[33] = 'hello', [2] = 'bye'}, arr4 = { [12] = 2.4 } }";
+  auto inlet = createBasicInlet(&ds, testString);
+
+  std::unordered_map<int, bool> boolMap;
+  std::unordered_map<int, int> intMap;
+  std::unordered_map<int, double> doubleMap;
+  std::unordered_map<int, std::string> strMap;
+  auto arr1 = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
+  auto arr2 = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
+  auto arr3 = inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
+  auto arr4 = inlet->getGlobalTable()->addDoubleArray("luaArrays/arr4");
+
+  std::unordered_map<int,int> expectedInts{{1,4}};
+  std::unordered_map<int,bool> expectedBools{{4,true}, {8, false}};
+  std::unordered_map<int,double> expectedDoubles{{12,2.4}};
+  std::unordered_map<int,std::string> expectedStrs{{33,"hello"}, {2, "bye"}};
+
+  EXPECT_TRUE(arr1->getIntArray(intMap));
+  EXPECT_EQ(intMap, expectedInts);
+
+  EXPECT_TRUE(arr2->getBoolArray(boolMap));
+  EXPECT_EQ(boolMap, expectedBools);
+
+  EXPECT_TRUE(arr3->getStringArray(strMap));
+  EXPECT_EQ(strMap, expectedStrs);
+  
+  EXPECT_TRUE(arr4->getDoubleArray(doubleMap));
+  EXPECT_EQ(doubleMap, expectedDoubles);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

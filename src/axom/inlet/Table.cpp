@@ -110,6 +110,38 @@ std::shared_ptr<Table> Table::addStringArray(const std::string& name,
   return table;
 }
 
+bool Table::getBoolArray(std::unordered_map<int,bool>& map) {
+  size_t found = m_name.find("/_inlet_array");
+  if (found != std::string::npos) {
+    return m_reader->getBoolMap(m_name.substr(0, found), map);
+  }
+  return false;
+}
+
+bool Table::getIntArray(std::unordered_map<int,int>& map) {
+  size_t found = m_name.find("_inlet_array");
+  if (found != std::string::npos) {
+    return m_reader->getIntMap(m_name.substr(0, found), map);
+  }
+  return false;
+}
+
+bool Table::getDoubleArray(std::unordered_map<int,double>& map) {
+  size_t found = m_name.find("_inlet_array");
+  if (found != std::string::npos) {
+    return m_reader->getDoubleMap(m_name.substr(0, found), map);
+  }
+  return false;
+}
+
+bool Table::getStringArray(std::unordered_map<int,std::string>& map) {
+  size_t found = m_name.find("_inlet_array");
+  if (found != std::string::npos) {
+    return m_reader->getStringMap(m_name.substr(0, found), map);
+  }
+  return false;
+}
+
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
                                             const std::string& description)
 {
@@ -351,7 +383,6 @@ std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName) {
   }
   return nullptr;
 }
-
 
 std::shared_ptr<Field> Table::getFieldInternal(const std::string& fieldName) {
   size_t found = fieldName.find_last_of("/");

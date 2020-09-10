@@ -130,6 +130,7 @@ bool LuaReader::getValue(const std::string& id, T& value) {
 
 template <typename T>
 bool LuaReader::getMap(const std::string& id, std::unordered_map<int, T>& values, sol::type type) {
+  values.clear();
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
 
