@@ -122,7 +122,9 @@ public:
     , SubsettingPolicyType(oset)
   {}
 
+  OrderedSet & operator=(const OrderedSet& oset) = default;
 
+  OrderedSet & operator=(OrderedSet&& oset) = default;
 
 public:
 
