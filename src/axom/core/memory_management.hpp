@@ -256,18 +256,24 @@ inline void copy(void* dst, void* src, std::size_t numbytes) noexcept
   auto dstStrategy = rm.getAllocator("HOST").getAllocationStrategy();
   auto srcStrategy = dstStrategy;
 
+  using AllocationRecord = umpire::util::AllocationRecord;
+  AllocationRecord* dstRecord = nullptr;
+  AllocationRecord* srcRecord = nullptr;
+
   if(rm.hasAllocator(dst))
   {
-    dstStrategy = rm.findAllocationRecord(dst)->strategy;
+    dstRecord   = const_cast<AllocationRecord*>(rm.findAllocationRecord(dst));
+    dstStrategy = dstRecord->strategy;
   }
 
   if(rm.hasAllocator(src))
   {
-    srcStrategy = rm.findAllocationRecord(src)->strategy;
+    srcRecord   = const_cast<AllocationRecord*>(rm.findAllocationRecord(src));
+    srcStrategy = srcRecord->strategy;
   }
 
   auto op = op_registry.find("COPY", srcStrategy, dstStrategy);
-  op->transform(src, &dst, nullptr, nullptr, numbytes);
+  op->transform(src, &dst, srcRecord, dstRecord, numbytes);
 #else
   std::memcpy(dst, src, numbytes);
 #endif
