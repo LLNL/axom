@@ -1235,7 +1235,8 @@ TEST(inlet_verify, verifyTableLambda3) {
   EXPECT_TRUE(myInlet->verify());
 }
 
-TEST(lua_Arrays, basicArraysInLua) {
+// Checks that LuaReader parses array information as expected 
+TEST(inletArrays, luaReaderArrayFunctions) {
   std::string testString = "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = 2.4, [33] = 'hello', [200] = 'bye' }";
   LuaReader lr;
   lr.parseString(testString);
@@ -1265,7 +1266,8 @@ TEST(lua_Arrays, basicArraysInLua) {
   EXPECT_EQ(expectedStrs, strs);
 }
 
-TEST(lua_Arrays, inletArrays) {
+// Checks the underlying Sidre representation of the arrays added from Lua
+TEST(inletArrays, inletArraysInSidre) {
   DataStore ds;
   std::string testString = "luaArrays = { arr1 = { [1] = 4, [2] = 5, [3] = 6 , [12] = 2.4}, arr2 = {[4] = true, [8] = false}, arr3 = {[33] = 'hello', [2] = 'bye'}, arr4 = { [12] = 2.4 } }";
   auto inlet = createBasicInlet(&ds, testString);
@@ -1328,7 +1330,8 @@ TEST(lua_Arrays, inletArrays) {
   EXPECT_EQ(doubleVal, 2.4);
 }
 
-TEST(lua_Arrays, getArray) {
+// Checks all of the Table::getArray functions
+TEST(inletArrays, getArray) {
   DataStore ds;
   std::string testString = "luaArrays = { arr1 = { [1] = 4}, arr2 = {[4] = true, [8] = false}, arr3 = {[33] = 'hello', [2] = 'bye'}, arr4 = { [12] = 2.4 } }";
   auto inlet = createBasicInlet(&ds, testString);

@@ -3,11 +3,18 @@
 
 #include "axom/inlet.hpp"
 
-void example() {
+int main() {
   auto lr = std::make_shared<axom::inlet::LuaReader>();
+
+  // Parse example input file
   lr->parseString("values = { [1] = 'start', [2] = 'stop', [3] = 'pause' }");
+
   axom::sidre::DataStore ds;
+
+  // Initialize Inlet
   auto inlet = std::make_shared<axom::inlet::Inlet>(lr, ds.getRoot());
+
+  // Register the verifier, which will verify the array values
   auto vals = inlet->getGlobalTable()->addStringArray("values");
   vals->registerVerifier([&]() -> bool {
     std::unordered_map<int,std::string> map;
@@ -21,8 +28,4 @@ void example() {
   inlet->verify() ? std::cout << "Verification passed\n"
                   : std::cout << "Verification failed\n";
 
-}
-
-int main() {
-  example();
 }

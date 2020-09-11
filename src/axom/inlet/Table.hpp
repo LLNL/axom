@@ -194,7 +194,7 @@ public:
    *****************************************************************************
    * \brief Get a boolean array represented as an unordered map from the input deck
    *
-   * \param [in] name Name of the array
+   * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
@@ -205,7 +205,7 @@ public:
    *****************************************************************************
    * \brief Get a int array represented as an unordered map from the input deck
    *
-   * \param [in] name Name of the array
+   * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
@@ -216,7 +216,7 @@ public:
    *****************************************************************************
    * \brief Get a double array represented as an unordered map from the input deck
    *
-   * \param [in] name Name of the array
+   * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
@@ -227,13 +227,13 @@ public:
    *****************************************************************************
    * \brief Get a string array represented as an unordered map from the input deck
    *
-   * \param [in] name Name of the array
+   * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
    */
   bool getStringArray(std::unordered_map<int,std::string>& map);
-  
+
   /*!
    *****************************************************************************
    * \brief Add a Boolean Field to the input deck schema.

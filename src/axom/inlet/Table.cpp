@@ -111,35 +111,23 @@ std::shared_ptr<Table> Table::addStringArray(const std::string& name,
 }
 
 bool Table::getBoolArray(std::unordered_map<int,bool>& map) {
-  size_t found = m_name.find("/_inlet_array");
-  if (found != std::string::npos) {
-    return m_reader->getBoolMap(m_name.substr(0, found), map);
-  }
-  return false;
+  return axom::utilities::string::endsWith(m_name, "_inlet_array")
+         && m_reader->getBoolMap(m_name.substr(0, m_name.size()-12), map);
 }
 
 bool Table::getIntArray(std::unordered_map<int,int>& map) {
-  size_t found = m_name.find("_inlet_array");
-  if (found != std::string::npos) {
-    return m_reader->getIntMap(m_name.substr(0, found), map);
-  }
-  return false;
+  return axom::utilities::string::endsWith(m_name, "_inlet_array")
+         && m_reader->getIntMap(m_name.substr(0, m_name.size()-12), map);
 }
 
 bool Table::getDoubleArray(std::unordered_map<int,double>& map) {
-  size_t found = m_name.find("_inlet_array");
-  if (found != std::string::npos) {
-    return m_reader->getDoubleMap(m_name.substr(0, found), map);
-  }
-  return false;
+  return axom::utilities::string::endsWith(m_name, "_inlet_array")
+         && m_reader->getDoubleMap(m_name.substr(0, m_name.size()-12), map);
 }
 
 bool Table::getStringArray(std::unordered_map<int,std::string>& map) {
-  size_t found = m_name.find("_inlet_array");
-  if (found != std::string::npos) {
-    return m_reader->getStringMap(m_name.substr(0, found), map);
-  }
-  return false;
+  return axom::utilities::string::endsWith(m_name, "_inlet_array")
+         && m_reader->getStringMap(m_name.substr(0, m_name.size()-12), map);
 }
 
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
