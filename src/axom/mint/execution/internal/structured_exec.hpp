@@ -12,8 +12,8 @@
 #ifdef AXOM_USE_RAJA
   #include "RAJA/RAJA.hpp"
 
-  // NOTE: add RAJA alias for older versions of RAJA prior to RAJA-v0.12.0
-  #if (RAJA_VERSION_MAJOR==0) && (RAJA_VERSION_MINOR < 12)
+  // NOTE: add RAJA alias for older versions of RAJA prior to RAJA-v0.11.0
+  #if (RAJA_VERSION_MAJOR==0) && (RAJA_VERSION_MINOR < 11)
     namespace RAJA
     {
       template < int SIZE >
