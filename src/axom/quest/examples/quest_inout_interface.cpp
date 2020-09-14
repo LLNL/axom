@@ -45,17 +45,16 @@ typedef std::vector<PointType> CoordsVec;
  * \param [in] bbox The bounding box for the query points
  * \param [in] numPoints The number of points to generate
  */
-void generateQueryPoints(CoordsVec& queryPoints, BoxType const& bbox,
-                         int numPoints)
+void generateQueryPoints(CoordsVec& queryPoints, BoxType const& bbox, int numPoints)
 {
   queryPoints.clear();
   queryPoints.reserve(numPoints);
-  for(int i=0 ; i< numPoints ; ++i)
+  for(int i = 0; i < numPoints; ++i)
   {
     double x = axom::utilities::random_real(bbox.getMin()[0], bbox.getMax()[0]);
     double y = axom::utilities::random_real(bbox.getMin()[1], bbox.getMax()[1]);
     double z = axom::utilities::random_real(bbox.getMin()[2], bbox.getMax()[2]);
-    queryPoints.push_back( PointType::make_point(x,y,z));
+    queryPoints.push_back(PointType::make_point(x, y, z));
   }
 }
 
@@ -66,7 +65,7 @@ void initializeLogger()
 {
   // Initialize Logger
   slic::initialize();
-  slic::setLoggingMsgLevel( axom::slic::message::Info );
+  slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   slic::LogStream* logStream;
 
@@ -74,20 +73,17 @@ void initializeLogger()
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
   #ifdef AXOM_USE_LUMBERJACK
   const int RLIMIT = 8;
-  logStream =
-    new slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
+  logStream = new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
   #else
-  logStream =
-    new slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, fmt);
+  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
   #endif
 #else
   std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
   logStream = new slic::GenericOutputStream(&std::cout, fmt);
-#endif // AXOM_USE_MPI
+#endif  // AXOM_USE_MPI
 
-  slic::addStreamToAllMsgLevels( logStream );
+  slic::addStreamToAllMsgLevels(logStream);
 }
-
 
 /*!
  * \brief Utility function to finalize the logger
@@ -127,11 +123,11 @@ void cleanAbort()
  *
  * \endverbatim
  */
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
   // -- Initialize MPI
 #ifdef AXOM_USE_MPI
-  MPI_Init( &argc, &argv );
+  MPI_Init(&argc, &argv);
 #endif
 
   // -- Initialize logger
@@ -140,11 +136,11 @@ int main( int argc, char** argv )
   // -- Parse command line options
   if(argc != 2)
   {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     SLIC_WARNING("Usage: [mpirun -np N] ./quest_inout_interface_ex <stl_file>");
-  #else
+#else
     SLIC_WARNING("Usage: ./quest_inout_interface_ex <stl_file>");
-  #endif
+#endif
     cleanAbort();
   }
 
@@ -163,7 +159,7 @@ int main( int argc, char** argv )
     cleanAbort();
   }
 
-  rc = quest::inout_set_vertex_weld_threshold( weldThresh );
+  rc = quest::inout_set_vertex_weld_threshold(weldThresh);
   if(rc != quest::QUEST_INOUT_SUCCESS)
   {
     cleanAbort();
@@ -175,12 +171,12 @@ int main( int argc, char** argv )
   SLIC_INFO("Initializing quest_inout...");
   timer.start();
   {
-    // _quest_inout_interface_init_start
-    #ifdef AXOM_USE_MPI
-    rc = quest::inout_init( fileName, MPI_COMM_WORLD);
-    #else
-    rc = quest::inout_init( fileName);
-    #endif
+// _quest_inout_interface_init_start
+#ifdef AXOM_USE_MPI
+    rc = quest::inout_init(fileName, MPI_COMM_WORLD);
+#else
+    rc = quest::inout_init(fileName);
+#endif
     // _quest_inout_interface_init_end
   }
   timer.stop();
@@ -192,7 +188,6 @@ int main( int argc, char** argv )
   {
     SLIC_INFO("  initialization took " << timer.elapsed() << " seconds.");
   }
-
 
   // -- Query mesh bounding box and center of mass
   double bbMin[3], bbMax[3], cMass[3];
@@ -215,16 +210,15 @@ int main( int argc, char** argv )
   }
 
   BoxType bbox = BoxType(PointType(bbMin), PointType(bbMax));
-  SLIC_INFO("Mesh bounding box: " << bbox );
-  SLIC_INFO("Mesh center of mass: " << PointType(cMass) );
-
+  SLIC_INFO("Mesh bounding box: " << bbox);
+  SLIC_INFO("Mesh center of mass: " << PointType(cMass));
 
   // -- Generate query points
   CoordsVec queryPoints;
   generateQueryPoints(queryPoints, bbox, npoints);
 
   // -- Run the queries
-  int numInside=0;
+  int numInside = 0;
   SLIC_INFO("Querying mesh with " << npoints << " query points...");
   timer.start();
   for(auto& pt : queryPoints)
@@ -234,7 +228,7 @@ int main( int argc, char** argv )
     const double y = pt[1];
     const double z = pt[2];
 
-    const bool ins = quest::inout_evaluate(x,y,z);
+    const bool ins = quest::inout_evaluate(x, y, z);
     numInside += ins ? 1 : 0;
     // _quest_inout_interface_test_end
   }
@@ -244,13 +238,13 @@ int main( int argc, char** argv )
   {
     SLIC_INFO("  queries took " << timer.elapsed() << " seconds.");
 
-    const double rate =  queryPoints.size() / timer.elapsed();
-    SLIC_INFO("  query rate: " <<  rate  << " queries per second.");
+    const double rate = queryPoints.size() / timer.elapsed();
+    SLIC_INFO("  query rate: " << rate << " queries per second.");
 
     const double intPercent =
-       (100 * numInside) / static_cast< double >( queryPoints.size() );
-    SLIC_INFO("  " << numInside << " of " << queryPoints.size()
-                   << " (" << intPercent << "%) "
+      (100 * numInside) / static_cast<double>(queryPoints.size());
+    SLIC_INFO("  " << numInside << " of " << queryPoints.size() << " ("
+                   << intPercent << "%) "
                    << " of the query points were contained in the surface.");
   }
 

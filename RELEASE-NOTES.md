@@ -10,6 +10,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Exposed the tolerance parameter `EPS` that is used to determine intersections between
+  triangles in `primal:intersect()` as an optional final parameter.
+- Added BVH spatial index option to the `mesh_tester` utility for calculating
+  triangle-triangle intersection.
+- Added `axom::execution_space< ExecSpace >::onDevice()` to check if execution
+  space is on device.
+- Added Axom macro `AXOM_SUPPRESS_HD_WARN` to silence host device compiler
+  warnings.
 - Added option to quest's `SignedDistance` class and C API to toggle whether
   the distance query computes the sign.
 - Added a `batched` option to quest's signed distance query example application.
@@ -55,6 +63,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Transitioned Axom's code formatting tool from `Uncrustify` to [clang-format].
+  Axom's clang-format rules depend on clang 10.
+- Modified the command line interface for `mesh_tester` utility. Interface
+  now uses a *-m, --method* option to select the spatial index, and *-p, policy*
+  option now accepts a string or integer value.
 - Renamed the `AXOM_USE_MPI3`option to `AXOM_ENABLE_MPI3` for consistency.
 - Renamed the `AXOM_USE_CUB` option to `AXOM_ENABLE_CUB` for consistency.
 - Modified the API for the BVH to accomodate different query types. The queries are now
@@ -67,8 +80,17 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fortran API in slic module. `axom::slic::message` Level enums are changed
   from  *enum-name_enumerator* to *namespace_enumerator*.
   ex. `level_error` is now `message_error`.
+- Fortran derived-type constructors are now generic functions named afer the derived type.
+  `datastore_new` is now `SidreDataStore`
+  `iomanager_new` is now `IOManager`
 
 ### Fixed
+- Spin's octrees can now be used with 64-bit indexes. This allows octrees 
+  with up to 64 levels of resolution when using a 64-bit index type.
+- Resolved issue with `AXOM_USE_64BIT_INDEXTYPE` configurations. Axom can once again
+  be configured with 64-bit index types.
+- Fixed a triangle-triangle intersection case in primal that produced inconsistent results
+  depending on the order of the triangle's vertices.
 - Fixed issue in the parallel construction of the BVH on GPUs, due to incoherent
   L1 cache that could result in some data corruption in the BVH. The code now
   calls ``__threadfence_system()`` after the parent is computed and stored back
@@ -382,3 +404,4 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
 [Umpire]: https://github.com/LLNL/Umpire
+[clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html

@@ -10,7 +10,6 @@
 #include "lumberjack_BinaryCommunicator.hpp"
 #include "lumberjack_RootCommunicator.hpp"
 
-
 int main(int argc, char* argv[])
 {
   int result = 0;

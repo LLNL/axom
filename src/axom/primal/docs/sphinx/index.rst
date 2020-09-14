@@ -1,6 +1,6 @@
 
-Primal User Documentation
-=========================
+Primal User Guide
+=================
 
 Primal is a component of Axom that provides efficient and general purpose
 algorithms and data structures for computational geometry.  Primal provides:
@@ -16,7 +16,15 @@ representative overloads of each of the Primal operators (see the
 `API documentation <../../../../doxygen/html/primaltop.html>`_ 
 for more details).
 
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/primaltop.html>`_
+
+
 .. toctree::
+   :caption: Contents
    :maxdepth: 2
 
    primitive

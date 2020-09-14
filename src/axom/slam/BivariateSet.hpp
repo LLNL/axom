@@ -22,7 +22,6 @@ namespace axom
 {
 namespace slam
 {
-
 /**
  * \class BivariateSet
  *
@@ -69,29 +68,26 @@ namespace slam
  *
  */
 
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
 class BivariateSet
 {
 public:
-
   using PositionType = PosType;
   using ElementType = ElemType;
-  using SetType = Set<PositionType,ElementType>;
-  using OrderedSetType = OrderedSet<
-          PositionType,
-          ElementType,
-          policies::RuntimeSize<PositionType>,
-          policies::RuntimeOffset<PositionType>,
-          policies::StrideOne<PositionType>,
-          policies::STLVectorIndirection<PositionType, ElementType> >;
+  using SetType = Set<PositionType, ElementType>;
+  using OrderedSetType =
+    OrderedSet<PositionType,
+               ElementType,
+               policies::RuntimeSize<PositionType>,
+               policies::RuntimeOffset<PositionType>,
+               policies::StrideOne<PositionType>,
+               policies::STLVectorIndirection<PositionType, ElementType>>;
 
   static const PositionType INVALID_POS = PositionType(-1);
-  static const NullSet<PosType,ElemType> s_nullSet;
+  static const NullSet<PosType, ElemType> s_nullSet;
 
 public:
-
   /**
    * \brief Constructor taking pointers to the two sets that defines the range
    *        of the indices of the BivariateSet.
@@ -99,9 +95,9 @@ public:
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
    */
-  BivariateSet(const SetType* set1 = &s_nullSet,
-               const SetType* set2 = &s_nullSet)
-    : m_set1(set1), m_set2(set2)
+  BivariateSet(const SetType* set1 = &s_nullSet, const SetType* set2 = &s_nullSet)
+    : m_set1(set1)
+    , m_set2(set2)
   { }
 
   /**
@@ -154,7 +150,7 @@ public:
    *
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual PositionType size(PositionType pos1) const = 0; //size of a row
+  virtual PositionType size(PositionType pos1) const = 0;  //size of a row
 
   /** \brief Size of the first set.   */
   PositionType firstSetSize() const { return m_set1 ? m_set1->size() : 0; }
@@ -180,10 +176,9 @@ public:
 
   virtual bool isValid(bool verboseOutput = false) const
   {
-
-    if (m_set1 == nullptr || m_set2 == nullptr)
+    if(m_set1 == nullptr || m_set2 == nullptr)
     {
-      if (verboseOutput)
+      if(verboseOutput)
       {
         std::cout << "\n*** BivariateSet is not valid:\n"
                   << "\t* Set pointers should not be null.\n"
@@ -201,25 +196,19 @@ protected:
   const SetType* m_set2;
 };
 
-
-
-
 /**
  * \class NullBivariateSet
  *
  * \brief A Null BivariateSet class. Same as the NullSet for Set class.
  */
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType
-  >
-class NullBivariateSet : public BivariateSet<PosType,ElemType>
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
+class NullBivariateSet : public BivariateSet<PosType, ElemType>
 {
 public:
   using PositionType = PosType;
   using ElementType = ElemType;
-  using OrderedSetType =
-          typename BivariateSet<PosType,ElemType>::OrderedSetType;
+  using OrderedSetType = typename BivariateSet<PosType, ElemType>::OrderedSetType;
 
 public:
   NullBivariateSet() = default;
@@ -231,8 +220,7 @@ public:
     return PositionType();
   }
 
-  PositionType findElementFlatIndex(PositionType s1,
-                                    PositionType s2) const override
+  PositionType findElementFlatIndex(PositionType s1, PositionType s2) const override
   {
     verifyPosition(s1, s2);
     return PositionType();
@@ -243,20 +231,11 @@ public:
     return findElementFlatIndex(s1, 0);
   }
 
-  ElementType at(PositionType) const override
-  {
-    return PositionType();
-  }
+  ElementType at(PositionType) const override { return PositionType(); }
 
-  PositionType size() const override
-  {
-    return PositionType();
-  }
+  PositionType size() const override { return PositionType(); }
 
-  PositionType size(PositionType) const override
-  {
-    return PositionType();
-  }
+  PositionType size(PositionType) const override { return PositionType(); }
 
   const OrderedSetType getElements(PositionType) const override
   {
@@ -268,19 +247,17 @@ private:
   void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos1),
                       PositionType AXOM_DEBUG_PARAM(pos2)) const override
   {
-    SLIC_ASSERT_MSG(
-      false,
-      "Subscripting on NullSet is never valid."
-      << "\n\tAttempted to access item at index "
-      << pos1 << "," << pos2 << ".");
+    SLIC_ASSERT_MSG(false,
+                    "Subscripting on NullSet is never valid."
+                      << "\n\tAttempted to access item at index " << pos1 << ","
+                      << pos2 << ".");
   }
 };
 
-template<typename PosType, typename ElemType>
-const NullSet<PosType,ElemType> BivariateSet<PosType,ElemType>::s_nullSet;
+template <typename PosType, typename ElemType>
+const NullSet<PosType, ElemType> BivariateSet<PosType, ElemType>::s_nullSet;
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_BIVARIATE_SET_H_
+#endif  //  SLAM_BIVARIATE_SET_H_

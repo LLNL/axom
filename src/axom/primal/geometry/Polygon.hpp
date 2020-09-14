@@ -17,20 +17,19 @@
 #include "axom/primal/geometry/NumericArray.hpp"
 
 #include <vector>
-#include <ostream> // for std::ostream
+#include <ostream>  // for std::ostream
 
 namespace axom
 {
 namespace primal
 {
-
 // Forward declare the templated classes and operator functions
-template < typename T, int NDIMS >
+template <typename T, int NDIMS>
 class Polygon;
 
 /*! \brief Overloaded output operator for polygons */
-template < typename T,int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Polygon< T,NDIMS > & poly);
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly);
 
 /*!
  * \class Polygon
@@ -41,20 +40,20 @@ std::ostream& operator<<(std::ostream & os, const Polygon< T,NDIMS > & poly);
  * \note The polygon vertices should be ordered in a counter clockwise
  *       orientation with respect to the polygon's desired normal vector
  */
-template < typename T,int NDIMS >
+template <typename T, int NDIMS>
 class Polygon
 {
 public:
-  typedef Point< T,NDIMS >  PointType;
-  typedef Vector< T,NDIMS > VectorType;
-  typedef NumericArray< T,NDIMS > NumArrayType;
+  typedef Point<T, NDIMS> PointType;
+  typedef Vector<T, NDIMS> VectorType;
+  typedef NumericArray<T, NDIMS> NumArrayType;
 
 private:
-  typedef std::vector< PointType > Coords;
+  typedef std::vector<PointType> Coords;
 
 public:
   /*! Default constructor for an empty polygon   */
-  Polygon() {}
+  Polygon() { }
 
   /*!
    * \brief Constructor for an empty polygon that reserves space for
@@ -71,19 +70,13 @@ public:
   }
 
   /*! Return the number of vertices in the polygon */
-  int numVertices() const { return static_cast< int >( m_vertices.size() ); }
+  int numVertices() const { return static_cast<int>(m_vertices.size()); }
 
   /*! Appends a vertex to the list of vertices */
-  void addVertex(const PointType& pt)
-  {
-    m_vertices.push_back(pt);
-  }
+  void addVertex(const PointType& pt) { m_vertices.push_back(pt); }
 
   /*! Clears the list of vertices */
-  void clear()
-  {
-    m_vertices.clear();
-  }
+  void clear() { m_vertices.clear(); }
 
   /*! Retrieves the vertex at index idx */
   PointType& operator[](int idx) { return m_vertices[idx]; }
@@ -104,7 +97,7 @@ public:
 
     NumArrayType sum;
 
-    for (int i=0 ; i< numVertices() ; ++i)
+    for(int i = 0; i < numVertices(); ++i)
     {
       sum += m_vertices[i].array();
     }
@@ -123,16 +116,16 @@ public:
   {
     const int sz = numVertices();
 
-    os <<"{" << sz <<"-gon:";
-    for (int i=0 ; i< sz-1 ; ++i)
+    os << "{" << sz << "-gon:";
+    for(int i = 0; i < sz - 1; ++i)
     {
       os << m_vertices[i] << ",";
     }
-    if (sz >= 2)
+    if(sz >= 2)
     {
-      os<<m_vertices[sz-1];
+      os << m_vertices[sz - 1];
     }
-    os<< "}";
+    os << "}";
 
     return os;
   }
@@ -143,10 +136,7 @@ public:
    * Initial check is that the polygon has three or more vertices
    * \return True, if the polygon is valid, False otherwise
    */
-  bool isValid() const
-  {
-    return m_vertices.size() >= 3;
-  }
+  bool isValid() const { return m_vertices.size() >= 3; }
 
 private:
   Coords m_vertices;
@@ -155,14 +145,14 @@ private:
 //------------------------------------------------------------------------------
 /// Free functions implementing Polygon's operators
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Polygon< T,NDIMS > & poly)
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly)
 {
   poly.print(os);
   return os;
 }
 
-} // namespace primal
-} // namespace axom
+}  // namespace primal
+}  // namespace axom
 
-#endif // PRIMAL_POLYGON_HPP_
+#endif  // PRIMAL_POLYGON_HPP_

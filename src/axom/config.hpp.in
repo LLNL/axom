@@ -65,6 +65,7 @@
 #cmakedefine AXOM_USE_CUDA
 #cmakedefine AXOM_USE_FMT
 #cmakedefine AXOM_USE_HDF5
+#cmakedefine AXOM_USE_LUA
 #cmakedefine AXOM_USE_MFEM
 #cmakedefine AXOM_USE_MPI
 #cmakedefine AXOM_USE_MPIF_HEADER
@@ -88,8 +89,9 @@
 
 
 /*
- * Compiler defines for the toolkit components
+ * Compiler defines for Axom components
  */
+#cmakedefine AXOM_USE_INLET
 #cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_LUMBERJACK
 #cmakedefine AXOM_USE_PRIMAL

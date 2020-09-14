@@ -15,22 +15,20 @@
 #include <string>
 #include <iostream>
 
-
 using axom::sidre::Buffer;
-using axom::sidre::Group;
-using axom::sidre::View;
 using axom::sidre::DataStore;
+using axom::sidre::Group;
+using axom::sidre::indexIsValid;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
-using axom::sidre::indexIsValid;
 using axom::sidre::InvalidName;
 using axom::sidre::nameIsValid;
+using axom::sidre::View;
 
 //------------------------------------------------------------------------------
 
 namespace
 {
-
 const axom::sidre::TypeID DOUBLE_ID = axom::sidre::DOUBLE_ID;
 const axom::sidre::TypeID INT32_ID = axom::sidre::INT32_ID;
 
@@ -44,11 +42,11 @@ const axom::sidre::TypeID INT32_ID = axom::sidre::INT32_ID;
  *
  * The value of element idx will be initVal + ( idx / intDiv) * scaleFac
  */
-template<typename T>
-void setData(T* data, int size, T initVal=T(0), int intDiv=1, T scaleFac=T(1))
+template <typename T>
+void setData(T* data, int size, T initVal = T(0), int intDiv = 1, T scaleFac = T(1))
 {
-  for(int i=0 ; i< size ; ++i)
-    data[i] = initVal + ((i+1) / intDiv) * scaleFac;
+  for(int i = 0; i < size; ++i)
+    data[i] = initVal + ((i + 1) / intDiv) * scaleFac;
 }
 
 /**
@@ -57,10 +55,10 @@ void setData(T* data, int size, T initVal=T(0), int intDiv=1, T scaleFac=T(1))
  * \param rootNode The root node of the layout
  * \param rootGroup The root group of the datastore
  */
-template<typename T>
-void checkPointersAndData(const std::string& path
-                          , axom::sidre::Node& rootNode
-                          , axom::sidre::Group* rootGroup)
+template <typename T>
+void checkPointersAndData(const std::string& path,
+                          axom::sidre::Node& rootNode,
+                          axom::sidre::Group* rootGroup)
 {
   axom::sidre::Node& node = rootNode[path];
   T* nD = static_cast<T*>(node.element_ptr(0));
@@ -71,29 +69,24 @@ void checkPointersAndData(const std::string& path
   T* vD = view->getData<T*>();
   EXPECT_TRUE(nullptr != vD);
 
-  EXPECT_EQ(nD, vD)
-    << "Error when comparing pointer address between "
-    << "conduit native layout and Sidre View "
-    << "for path " << path
-    <<".\n\t Conduit address: " << nD
-    <<"\n\t Datastore view address: " << vD;
+  EXPECT_EQ(nD, vD) << "Error when comparing pointer address between "
+                    << "conduit native layout and Sidre View "
+                    << "for path " << path << ".\n\t Conduit address: " << nD
+                    << "\n\t Datastore view address: " << vD;
 
-  EXPECT_EQ(*nD, *vD)
-    << "Error when comparing values between "
-    << "conduit native layout and Sidre View "
-    << "for path " << path
-    <<".\n\t Conduit value: " << *nD
-    <<"\n\t View value: " << *vD;
+  EXPECT_EQ(*nD, *vD) << "Error when comparing values between "
+                      << "conduit native layout and Sidre View "
+                      << "for path " << path << ".\n\t Conduit value: " << *nD
+                      << "\n\t View value: " << *vD;
 }
 
 /**
  * \brief Template specialization of checkPointersAndData for scalar views
  *        containing strings
  */
-template<>
-void checkPointersAndData<std::string>(const std::string& path
-                                       , axom::sidre::Node& rootNode
-                                       ,
+template <>
+void checkPointersAndData<std::string>(const std::string& path,
+                                       axom::sidre::Node& rootNode,
                                        axom::sidre::Group* rootGroup)
 {
   axom::sidre::Node& node = rootNode[path];
@@ -105,20 +98,16 @@ void checkPointersAndData<std::string>(const std::string& path
 
   std::string vD(view->getString());
 
-  EXPECT_EQ(nD, vD)
-    << "Error when comparing strings between "
-    << "conduit native layout and Sidre View "
-    << "for path " << path
-    <<".\n\t Conduit string: " << nD
-    <<"\n\t Datastore view string: " << vD;
-
+  EXPECT_EQ(nD, vD) << "Error when comparing strings between "
+                    << "conduit native layout and Sidre View "
+                    << "for path " << path << ".\n\t Conduit string: " << nD
+                    << "\n\t Datastore view string: " << vD;
 }
-}
+}  // namespace
 
-
-TEST(sidre_native_layout,empty_layout)
+TEST(sidre_native_layout, empty_layout)
 {
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
 
   SLIC_INFO("Testing sidre_layout function on empty datastore");
 
@@ -133,7 +122,6 @@ TEST(sidre_native_layout,empty_layout)
 
   SLIC_INFO("****** done ******");
 
-
   if(ds != nullptr)
   {
     delete ds;
@@ -141,21 +129,20 @@ TEST(sidre_native_layout,empty_layout)
   }
 }
 
-TEST(sidre_native_layout,generate_native_layout)
+TEST(sidre_native_layout, generate_native_layout)
 {
   /// Allocate and initialize two external arrays
   // The REAL_BUF has 10 copies of each integer
   const int EXT_REAL_BUF_SIZE = 20;
   double* extRealPtr = new double[EXT_REAL_BUF_SIZE];
-  setData(extRealPtr, EXT_REAL_BUF_SIZE, 0., 1, 1/10.);
+  setData(extRealPtr, EXT_REAL_BUF_SIZE, 0., 1, 1 / 10.);
 
   // The INT_BUF is a decreasing sequence
   const int EXT_INT_BUF_SIZE = 5;
   int* extIntPtr = new int[EXT_INT_BUF_SIZE];
   setData(extIntPtr, EXT_INT_BUF_SIZE, EXT_INT_BUF_SIZE, 1, -1);
 
-
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
   // Setup a buffer that will have two views
@@ -164,15 +151,16 @@ TEST(sidre_native_layout,generate_native_layout)
   setData<double>(realBuf->getData(), REAL_BUF_SIZE, 0., 10, 1.);
 
   // create the views using the path syntax
-  root->createView("Ga/Va")->attachBuffer(realBuf)->apply(50,0);
+  root->createView("Ga/Va")->attachBuffer(realBuf)->apply(50, 0);
   root->createView("Ga/Vb")->attachBuffer(realBuf)->apply(20, 50);
 
-  root->createView("Ga/Gc/Ve",DOUBLE_ID, 10)->allocate();
-  root->createView("Ga/Gc/Vf")->setExternalDataPtr(DOUBLE_ID, EXT_REAL_BUF_SIZE,
-                                                   extRealPtr);
+  root->createView("Ga/Gc/Ve", DOUBLE_ID, 10)->allocate();
+  root->createView("Ga/Gc/Vf")
+    ->setExternalDataPtr(DOUBLE_ID, EXT_REAL_BUF_SIZE, extRealPtr);
 
-  root->createView("Gb/Vc",INT32_ID, 10)->allocate();
-  root->createView("Gb/Vd")->setExternalDataPtr(INT32_ID, EXT_INT_BUF_SIZE,
+  root->createView("Gb/Vc", INT32_ID, 10)->allocate();
+  root->createView("Gb/Vd")->setExternalDataPtr(INT32_ID,
+                                                EXT_INT_BUF_SIZE,
                                                 extIntPtr);
 
   // Set some data in the attached buffers so we can distinguish in our tests
@@ -200,8 +188,6 @@ TEST(sidre_native_layout,generate_native_layout)
   checkPointersAndData<int>("Gb/Vd", node, root);
   SLIC_INFO("done.");
 
-
-
   /// Clean up memory
   if(extRealPtr != nullptr)
   {
@@ -221,15 +207,13 @@ TEST(sidre_native_layout,generate_native_layout)
   }
 }
 
-
-TEST(sidre_native_layout,native_layout_with_scalars)
+TEST(sidre_native_layout, native_layout_with_scalars)
 {
-
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
-  root->createView("Garray/Vdbl20",DOUBLE_ID, 20)->allocate();
-  root->createView("Garray/Vint10",INT32_ID, 10)->allocate();
+  root->createView("Garray/Vdbl20", DOUBLE_ID, 20)->allocate();
+  root->createView("Garray/Vint10", INT32_ID, 10)->allocate();
 
   // Set some data in the attached buffers so we can distinguish in our tests
   setData<double>(root->getView("Garray/Vdbl20")->getData(), 20, 0., 1, 1.1);
@@ -238,7 +222,6 @@ TEST(sidre_native_layout,native_layout_with_scalars)
   root->createView("Gscalar/Vint")->setScalar(1);
   root->createView("Gscalar/Vdbl")->setScalar(2.);
   root->createView("Gscalar/Vstr")->setString("Hello");
-
 
   SLIC_INFO("****** Visual diagnostics ******");
   SLIC_INFO("Printing datastore::info():");
@@ -251,8 +234,7 @@ TEST(sidre_native_layout,native_layout_with_scalars)
   //node.save("nativeLayoutTest.conduit");
 
   SLIC_INFO("done.");
-  SLIC_CHECK_MSG(false,"Some message");
-
+  SLIC_CHECK_MSG(false, "Some message");
 
   SLIC_INFO("*** Checking that addresses and first elements match.");
   checkPointersAndData<double>("Garray/Vdbl20", node, root);
@@ -268,15 +250,14 @@ TEST(sidre_native_layout,native_layout_with_scalars)
   }
 }
 
-
 //------------------------------------------------------------------------------
-TEST(sidre_native_layout,export_import_conduit)
+TEST(sidre_native_layout, export_import_conduit)
 {
   // Checks that we can import an exported conduit tree into a separate
   // datastore using Group::createNativeLayout() and Group::importConduitTree()
 
   // Tests with non-zero- and with zero-sized arrays
-  for( int SZ : {10, 0})
+  for(int SZ : {10, 0})
   {
     SLIC_INFO("Checking export/import from conduit with array of size " << SZ);
 
@@ -289,22 +270,19 @@ TEST(sidre_native_layout,export_import_conduit)
     std::string viewName = "array_view";
 
     // Simple lambda to return the expected value at an index
-    auto expValue = AXOM_HOST_LAMBDA(int i)
-    {
-      return SZ-i;
-    };
+    auto expValue = AXOM_HOST_LAMBDA(int i) { return SZ - i; };
 
     // Create datastore with an array view and export to conduit node
     {
       // Create views and groups
       auto* root = ds1.getRoot();
-      auto* grp  = root->createGroup(grpName);
+      auto* grp = root->createGroup(grpName);
       auto* view = grp->createViewAndAllocate(viewName, INT32_ID, SZ);
 
       // initialize the data
       int* sidre_data = view->getData();
       EXPECT_NE(nullptr, sidre_data);
-      for(int i=0 ; i<SZ ; ++i)
+      for(int i = 0; i < SZ; ++i)
       {
         sidre_data[i] = expValue(i);
       }
@@ -320,7 +298,7 @@ TEST(sidre_native_layout,export_import_conduit)
 
       conduit_data = node1[grpName][viewName].as_int_ptr();
       EXPECT_NE(nullptr, conduit_data);
-      for(int i=0 ; i<SZ ; ++i)
+      for(int i = 0; i < SZ; ++i)
       {
         EXPECT_EQ(conduit_data[i], sidre_data[i]);
       }
@@ -357,14 +335,14 @@ TEST(sidre_native_layout,export_import_conduit)
       // compare data
       int* sidre_data = view->getData();
       EXPECT_NE(nullptr, sidre_data);
-      for(int i=0 ; i<SZ ; ++i)
+      for(int i = 0; i < SZ; ++i)
       {
         EXPECT_EQ(conduit_data[i], sidre_data[i]);
       }
 
       // confirm that this is a distinct copy of the first data store's data
       auto* otherView = ds1.getRoot()->getGroup(grpName)->getView(viewName);
-      EXPECT_NE(sidre_data, otherView->getData<int*>() );
+      EXPECT_NE(sidre_data, otherView->getData<int*>());
 
       // Convert to conduit layout and compare data
       success = root->createNativeLayout(node2);
@@ -372,7 +350,7 @@ TEST(sidre_native_layout,export_import_conduit)
 
       conduit_data = node2[grpName][viewName].as_int_ptr();
       EXPECT_NE(nullptr, conduit_data);
-      for(int i=0 ; i<SZ ; ++i)
+      for(int i = 0; i < SZ; ++i)
       {
         EXPECT_EQ(conduit_data[i], sidre_data[i]);
       }
@@ -395,7 +373,7 @@ TEST(sidre_native_layout,export_import_conduit)
       int* arr2 = node2[grpName][viewName].as_int_ptr();
       EXPECT_NE(nullptr, arr2);
 
-      for(int i=0 ; i<SZ ; ++i)
+      for(int i = 0; i < SZ; ++i)
       {
         EXPECT_EQ(arr1[i], arr2[i]);
         EXPECT_EQ(expValue(i), arr2[i]);
@@ -404,7 +382,7 @@ TEST(sidre_native_layout,export_import_conduit)
   }
 }
 
-TEST(sidre_native_layout,import_conduit_and_verify_protocol)
+TEST(sidre_native_layout, import_conduit_and_verify_protocol)
 {
   // This tests is similar to the 'export_import_conduit' test above,
   // but uses conduit's blueprint_verify on the result
@@ -419,33 +397,33 @@ TEST(sidre_native_layout,import_conduit_and_verify_protocol)
     SLIC_INFO("Checking export of blueprint protocol for 'mcarray' with "
               << NCOMP << " components, each of size " << SZ);
 
-    axom::sidre::DataStore ds1,ds2;
-    conduit::Node node1,node2;
+    axom::sidre::DataStore ds1, ds2;
+    conduit::Node node1, node2;
 
     // Simple lambda to get/check expected value at index (i,j)
     auto expValue = AXOM_HOST_LAMBDA(int i, int j)
     {
-      return j*SZ + (SZ-i);
+      return j * SZ + (SZ - i);
     };
     // Simple lambda to get the name of the i^th component group
     auto viewName = AXOM_HOST_LAMBDA(int j)
     {
-      return std::string(1,'a' + j);                 // i.e. 'a', 'b', 'c', ...
+      return std::string(1, 'a' + j);  // i.e. 'a', 'b', 'c', ...
     };
 
     // Initialize datastore, export to conduit and verify 'mcarray
     {
       auto* root = ds1.getRoot();
-      auto* grp  = root->createGroup(grpName);
-      for(int j=0 ; j<NCOMP ; ++j)
+      auto* grp = root->createGroup(grpName);
+      for(int j = 0; j < NCOMP; ++j)
       {
         auto* view = grp->createViewAndAllocate(viewName(j), INT32_ID, SZ);
 
         int* sidre_data = view->getData();
         EXPECT_NE(nullptr, sidre_data);
-        for(int i=0 ; i<SZ ; ++i)
+        for(int i = 0; i < SZ; ++i)
         {
-          sidre_data[i] = expValue(i,j);
+          sidre_data[i] = expValue(i, j);
         }
       }
 
@@ -453,17 +431,16 @@ TEST(sidre_native_layout,import_conduit_and_verify_protocol)
       bool success = root->createNativeLayout(node1);
       EXPECT_TRUE(success);
 
-      std::cout<<"Conduit native layout of datastore after exporting: \n";
+      std::cout << "Conduit native layout of datastore after exporting: \n";
       node1.print();
       std::cout << std::endl;
 
       // Call blueprint::verify to check that it complies with 'mcarray' schema
       conduit::Node info;
-      bool verified =
-        conduit::blueprint::verify("mcarray", node1[grpName], info);
+      bool verified = conduit::blueprint::verify("mcarray", node1[grpName], info);
       EXPECT_TRUE(verified);
 
-      std::cout<<"Blueprint verify info for 'mcarray' protocol on node 1: \n";
+      std::cout << "Blueprint verify info for 'mcarray' protocol on node 1: \n";
       info.print();
       std::cout << std::endl;
     }
@@ -479,17 +456,16 @@ TEST(sidre_native_layout,import_conduit_and_verify_protocol)
       success = root->createNativeLayout(node2);
       EXPECT_TRUE(success);
 
-      std::cout<<"Conduit layout after export-import-export from Sidre: \n";
+      std::cout << "Conduit layout after export-import-export from Sidre: \n";
       node2.print();
       std::cout << std::endl;
 
       // verify the mcarray protocol
       conduit::Node info;
-      bool verified =
-        conduit::blueprint::verify("mcarray", node2[grpName], info);
+      bool verified = conduit::blueprint::verify("mcarray", node2[grpName], info);
       EXPECT_TRUE(verified);
 
-      std::cout<<"Blueprint verify info for 'mcarray' protocol on node2: \n";
+      std::cout << "Blueprint verify info for 'mcarray' protocol on node2: \n";
       info.print();
       std::cout << std::endl;
     }
@@ -502,7 +478,7 @@ TEST(sidre_native_layout,import_conduit_and_verify_protocol)
 
       // Check the data in the final conduit node
       conduit::Node& mcarr = node2[grpName];
-      for(int j=0 ; j< NCOMP ; ++j)
+      for(int j = 0; j < NCOMP; ++j)
       {
         std::string name = viewName(j);
 
@@ -512,9 +488,9 @@ TEST(sidre_native_layout,import_conduit_and_verify_protocol)
         int* arr = mcarr[name].as_int_ptr();
         EXPECT_NE(nullptr, arr);
 
-        for(int i=0 ; i<SZ ; ++i)
+        for(int i = 0; i < SZ; ++i)
         {
-          EXPECT_EQ( expValue(i,j), arr[i]);
+          EXPECT_EQ(expValue(i, j), arr[i]);
         }
       }
     }
@@ -538,10 +514,15 @@ TEST(sidre_native_layout, basic_demo_compare)
   // we use int64 and float64 b/c those types persist even with
   // json or yaml output
 
-  axom::int64     sidre_vals_1[5] = {0,1,2,3,4};
-  axom::float64   sidre_vals_2[6] = { 1.0, 2.0,
-                                      1.0, 2.0,
-                                      1.0, 2.0,};
+  axom::int64 sidre_vals_1[5] = {0, 1, 2, 3, 4};
+  axom::float64 sidre_vals_2[6] = {
+    1.0,
+    2.0,
+    1.0,
+    2.0,
+    1.0,
+    2.0,
+  };
 
   Group* group1 = root->createGroup("my_scalars");
   // two scalars
@@ -555,19 +536,19 @@ TEST(sidre_native_layout, basic_demo_compare)
 
   // one basic array
   Group* group3 = root->createGroup("my_arrays");
-  View* a5_view = group3->createViewAndAllocate("a5_i64",
-                                                 axom::sidre::DataType::int64(5));
+  View* a5_view =
+    group3->createViewAndAllocate("a5_i64", axom::sidre::DataType::int64(5));
 
   axom::int64* a5_view_ptr = a5_view->getData();
 
-  for(int i=0; i < 5; i++)
+  for(int i = 0; i < 5; i++)
   {
-      a5_view_ptr[i] = sidre_vals_1[i];
+    a5_view_ptr[i] = sidre_vals_1[i];
   }
-  
+
   // one external array
-  group3->createView("a5_i64_ext",
-           conduit::DataType::int64(5))->setExternalDataPtr(sidre_vals_1);
+  group3->createView("a5_i64_ext", conduit::DataType::int64(5))
+    ->setExternalDataPtr(sidre_vals_1);
 
   // change val to make sure this is reflected as external
   sidre_vals_1[4] = -5;
@@ -578,19 +559,17 @@ TEST(sidre_native_layout, basic_demo_compare)
 
   conduit::float64* buff_ptr = buff->getData();
 
-  for(int i=0; i < 6; i++)
+  for(int i = 0; i < 6; i++)
   {
     buff_ptr[i] = sidre_vals_2[i];
   }
 
-  View *v1 = group3->createView("b_v1");
-  View *v2 = group3->createView("b_v2");
+  View* v1 = group3->createView("b_v1");
+  View* v2 = group3->createView("b_v2");
 
   // with these settings, bv1 should have 1.0 as all vals
   v1->attachBuffer(buff);
-  v1->apply(conduit::DataType::float64(3,
-                                       0,
-                                       2 * sizeof(conduit::float64)));
+  v1->apply(conduit::DataType::float64(3, 0, 2 * sizeof(conduit::float64)));
 
   // with these settings, bv2 should have 2.0 as all vals
   v2->attachBuffer(buff);
@@ -608,7 +587,7 @@ TEST(sidre_native_layout, basic_demo_compare)
   protocols.push_back("sidre_json");
   protocols.push_back("sidre_conduit_json");
 
-  for (size_t i = 0 ; i < protocols.size() ; ++i)
+  for(size_t i = 0; i < protocols.size(); ++i)
   {
     SLIC_INFO("Testing protocol: " << protocols[i]);
     const std::string file_path = "texample_sidre_basic_ds_demo." + protocols[i];
@@ -625,22 +604,24 @@ TEST(sidre_native_layout, basic_demo_compare)
   // create an equiv conduit tree for testing
   //
 
-  axom::int64    conduit_vals_1[5] = {0,1,2,3,4};
-  axom::float64  conduit_vals_2[6] = { 1.0, 2.0,
-                                       1.0, 2.0,
-                                       1.0, 2.0,};
+  axom::int64 conduit_vals_1[5] = {0, 1, 2, 3, 4};
+  axom::float64 conduit_vals_2[6] = {
+    1.0,
+    2.0,
+    1.0,
+    2.0,
+    1.0,
+    2.0,
+  };
 
   axom::sidre::Node n;
   n["my_scalars/i64"].set_int64(1);
   n["my_scalars/f64"].set_float64(10.0);
   n["my_strings/s0"] = "s0 string";
   n["my_strings/s1"] = "s1 string";
-  n["my_arrays/a5_i64"].set(conduit_vals_1,5);
-  n["my_arrays/a5_i64_ext"].set_external(conduit_vals_1,5);
-  n["my_arrays/b_v1"].set(conduit_vals_2,
-                          3,
-                          0,
-                          2 * sizeof(conduit::float64));
+  n["my_arrays/a5_i64"].set(conduit_vals_1, 5);
+  n["my_arrays/a5_i64_ext"].set_external(conduit_vals_1, 5);
+  n["my_arrays/b_v1"].set(conduit_vals_2, 3, 0, 2 * sizeof(conduit::float64));
   n["my_arrays/b_v2"].set(conduit_vals_2,
                           3,
                           sizeof(conduit::float64),
@@ -652,14 +633,12 @@ TEST(sidre_native_layout, basic_demo_compare)
   n.print();
 
   axom::sidre::Node n_info;
-  EXPECT_FALSE(n.diff(n_sidre,n_info));
-  
+  EXPECT_FALSE(n.diff(n_sidre, n_info));
+
   //
   // TODO: When using newer conduit that has relay support for sidre i/o
   //       test round trip with relay here.
-
 }
-
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -674,7 +653,7 @@ int main(int argc, char* argv[])
 
   UnitTestLogger logger;  // create & initialize test logger, finalized when
                           // exiting main scope
-  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel(axom::slic::message::Debug);
 
   result = RUN_ALL_TESTS();
 

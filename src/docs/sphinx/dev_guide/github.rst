@@ -245,7 +245,7 @@ Step 2 -- Do development work
        contain closely related work, it is easier to refer back to 
        specific changes you make when the need arises (as it 
        inevitably will!). For example, if you regularly run your
-       code through a formatting tool (we use *uncrustify* on the Axom 
+       code through a formatting tool (we use *clang-format* on the Axom 
        project), it is preferable to commit other content changes first
        and then commit formatting changes in a separate commit. That 
        way, you can distinguish substance from cosmetic changes easily 

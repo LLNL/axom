@@ -51,41 +51,41 @@ Documentation
 =============
 
   * :doc:`Quickstart Guide <docs/sphinx/quickstart_guide/index>`
-  *  `Source documentation <doxygen/html/index.html>`_
+  *  `Source documentation <doxygen/html/index.html>`__
 
 .. list-table::
    :align: center
 
    * - Core
-     -
-     - `Source documentation <doxygen/html/coretop.html>`_
+     - :doc:`User Guide <axom/core/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/coretop.html>`__
    * - Inlet
      - :doc:`User Guide <axom/inlet/docs/sphinx/index>`
-     - `Source documentation <doxygen/html/inlettop.html>`_
+     - `Source documentation <doxygen/html/inlettop.html>`__
    * - Lumberjack
      - :doc:`User Guide <axom/lumberjack/docs/sphinx/index>`
-     - `Source documentation <doxygen/html/lumberjacktop.html>`_
+     - `Source documentation <doxygen/html/lumberjacktop.html>`__
    * - Mint
      - :doc:`User Guide <axom/mint/docs/sphinx/index>`
-     - `Source documentation <doxygen/html/minttop.html>`_
+     - `Source documentation <doxygen/html/minttop.html>`__
    * - Primal
      - :doc:`User Guide <axom/primal/docs/sphinx/index>`
-     - `Source documentation <doxygen/html/primaltop.html>`_
+     - `Source documentation <doxygen/html/primaltop.html>`__
    * - Quest
      - :doc:`User Guide <axom/quest/docs/sphinx/index>`
-     - `Source documentation <doxygen/html/questtop.html>`_
+     - `Source documentation <doxygen/html/questtop.html>`__
    * - Sidre
      - :doc:`User Guide <axom/sidre/docs/sphinx/index>`
-     - `Source documentation <doxygen/html/sidretop.html>`_
+     - `Source documentation <doxygen/html/sidretop.html>`__
    * - Slam
      - :doc:`User Guide <axom/slam/docs/sphinx/index>`
-     - `Source documentation <doxygen/html/slamtop.html>`_
+     - `Source documentation <doxygen/html/slamtop.html>`__
    * - Slic
      - :doc:`User Guide <axom/slic/docs/sphinx/index>`
-     - `Source documentation <doxygen/html/slictop.html>`_
+     - `Source documentation <doxygen/html/slictop.html>`__
    * - Spin
      - :doc:`User Guide <axom/spin/docs/sphinx/index>`
-     - `Source documentation <doxygen/html/spintop.html>`_
+     - `Source documentation <doxygen/html/spintop.html>`__
 
 
 ============================
@@ -169,28 +169,27 @@ LLNL-CODE-741217
 
 .. toctree::
    :hidden:
-   :maxdepth: 1
 
    docs/sphinx/quickstart_guide/index
 
 .. toctree::
    :hidden:
-   :maxdepth: 1
+   :titlesonly:
    :caption: Component User Guides
 
-   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
+   Core (Widely useful utilities) <axom/core/docs/sphinx/index>
+   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
    Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
-   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
-   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
-   Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
-   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
-   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
+   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
+   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
+   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
+   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
+   Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
 
 .. toctree::
    :hidden:
-   :maxdepth: 1
    :caption: Developer Resources
 
    docs/sphinx/dev_guide/index

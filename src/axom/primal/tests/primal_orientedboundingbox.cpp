@@ -15,39 +15,38 @@
 
 using namespace axom;
 
-TEST( primal_OBBox, obb_default_constructor)
+TEST(primal_OBBox, obb_default_constructor)
 {
   static const int DIM = 2;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
   QOBBox bbox;
-  EXPECT_FALSE( bbox.isValid() ) <<
-    "Default constructed bounding box is invalid";
-  EXPECT_FALSE( bbox.contains( QPoint() ))
+  EXPECT_FALSE(bbox.isValid()) << "Default constructed bounding box is invalid";
+  EXPECT_FALSE(bbox.contains(QPoint()))
     << "Default constructed bounding box should not contain any points";
-  EXPECT_FALSE( bbox.contains( QPoint(1000) ))
+  EXPECT_FALSE(bbox.contains(QPoint(1000)))
     << "Default constructed bounding box should not contain any points";
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_ctor_from_singlePt)
+TEST(primal_OBBox, obb_ctor_from_singlePt)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
   }
-  QVector e;  // zero extents
+  QVector e;      // zero extents
   QPoint pt2(2);  // (2,2,2)
 
   QOBBox obbox1(pt1);
@@ -56,16 +55,15 @@ TEST( primal_OBBox, obb_ctor_from_singlePt)
   EXPECT_TRUE(obbox1.contains(pt1));
   EXPECT_FALSE(obbox1.contains(pt2));
   EXPECT_TRUE(obbox1.getCentroid() == pt1)
-    <<"OBBox only has a single point, so bbox1.getCentroid()==pt1";
+    << "OBBox only has a single point, so bbox1.getCentroid()==pt1";
   const QVector* u_in = obbox1.getAxes();
 
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     EXPECT_TRUE(u_in[i] == u[i]);
   }
 
-  EXPECT_TRUE(obbox1.getExtents() == e)
-    << "Extents should be 0";
+  EXPECT_TRUE(obbox1.getExtents() == e) << "Extents should be 0";
 
   QOBBox obbox2(pt2);
 
@@ -73,36 +71,34 @@ TEST( primal_OBBox, obb_ctor_from_singlePt)
   EXPECT_TRUE(obbox2.contains(pt2));
   EXPECT_FALSE(obbox2.contains(pt1));
   EXPECT_TRUE(obbox2.getCentroid() == pt2)
-    <<"OBBox only has a single point, so obbox2.getCentroid()==pt2";
+    << "OBBox only has a single point, so obbox2.getCentroid()==pt2";
   u_in = obbox2.getAxes();
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     EXPECT_TRUE(u_in[i] == u[i]);
   }
-  EXPECT_TRUE(e == obbox2.getExtents())
-    << "Extents should be 0";
-
+  EXPECT_TRUE(e == obbox2.getExtents()) << "Extents should be 0";
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_ctor_from_data)
+TEST(primal_OBBox, obb_ctor_from_data)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
   }
-  QVector e(1.);  //extents
+  QVector e(1.);    //extents
   QPoint pt2(0.5);  // (.5,.5,.5)
-  QPoint pt3(2);  // (2,2,2)
+  QPoint pt3(2);    // (2,2,2)
 
   QOBBox obbox1(pt1, u, e);
 
@@ -114,7 +110,7 @@ TEST( primal_OBBox, obb_ctor_from_data)
 
   // check settings
   const QVector* u_in = obbox1.getAxes();
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     EXPECT_TRUE(u_in[i] == u[i]);
   }
@@ -123,24 +119,24 @@ TEST( primal_OBBox, obb_ctor_from_data)
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_test_clear )
+TEST(primal_OBBox, obb_test_clear)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
   }
-  QVector e(1.);  //extents
+  QVector e(1.);    //extents
   QPoint pt2(0.5);  // (.5,.5,.5)
-  QPoint pt3(2);  // (2,2,2)
+  QPoint pt3(2);    // (2,2,2)
 
   QOBBox obbox1(pt1, u, e);
 
@@ -154,17 +150,17 @@ TEST( primal_OBBox, obb_test_clear )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_test_vertices )
+TEST(primal_OBBox, obb_test_vertices)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
@@ -172,19 +168,19 @@ TEST( primal_OBBox, obb_test_vertices )
   QVector e(1.);  //extents
 
   QOBBox obbox1(pt1, u, e);
-  std::vector< QPoint > l = obbox1.vertices();
+  std::vector<QPoint> l = obbox1.vertices();
 
-  primal::NumericArray< CoordType, DIM > v;
+  primal::NumericArray<CoordType, DIM> v;
 
-  for (int i = 0 ; i < 2 ; i++)
+  for(int i = 0; i < 2; i++)
   {
-    v[0] = 1. - 2.*i;
-    for (int j = 0 ; j < 2 ; j++)
+    v[0] = 1. - 2. * i;
+    for(int j = 0; j < 2; j++)
     {
-      v[1] = 1. - 2.*j;
-      for (int k = 0 ; k < 2 ; k++)
+      v[1] = 1. - 2. * j;
+      for(int k = 0; k < 2; k++)
       {
-        v[2] = 1. - 2.*k;
+        v[2] = 1. - 2. * k;
         EXPECT_TRUE(std::find(l.begin(), l.end(), QPoint(v)) != l.end());
       }
     }
@@ -192,17 +188,17 @@ TEST( primal_OBBox, obb_test_vertices )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_test_add_point )
+TEST(primal_OBBox, obb_test_add_point)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
@@ -223,7 +219,7 @@ TEST( primal_OBBox, obb_test_add_point )
 
   QVector e2 = obbox2.getExtents();
 
-  for (int i = 0 ; i < 3 ; i++)
+  for(int i = 0; i < 3; i++)
   {
     EXPECT_EQ(e2[i], 10.);
   }
@@ -242,17 +238,17 @@ TEST( primal_OBBox, obb_test_add_point )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_test_add_box )
+TEST(primal_OBBox, obb_test_add_box)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
@@ -281,24 +277,24 @@ TEST( primal_OBBox, obb_test_add_box )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_test_expand )
+TEST(primal_OBBox, obb_test_expand)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
   }
-  QVector e(1.);  //extents
+  QVector e(1.);    //extents
   QPoint pt2(0.5);  // (.5,.5,.5)
-  QPoint pt3(2);  // (2,2,2)
+  QPoint pt3(2);    // (2,2,2)
 
   QOBBox obbox1(pt1, u, e);
 
@@ -307,7 +303,7 @@ TEST( primal_OBBox, obb_test_expand )
   EXPECT_TRUE(e == obbox1.getExtents());
   const QVector* u_in = obbox1.getAxes();
 
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     EXPECT_TRUE(u_in[i] == u[i]);
   }
@@ -316,31 +312,31 @@ TEST( primal_OBBox, obb_test_expand )
   EXPECT_TRUE(pt1 == obbox1.getCentroid());
   EXPECT_TRUE(newE == obbox1.getExtents());
 
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     EXPECT_TRUE(u_in[i] == u[i]);
   }
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_test_scale )
+TEST(primal_OBBox, obb_test_scale)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
   }
-  QVector e(1.);  //extents
+  QVector e(1.);    //extents
   QPoint pt2(0.5);  // (.5,.5,.5)
-  QPoint pt3(2);  // (2,2,2)
+  QPoint pt3(2);    // (2,2,2)
 
   QOBBox obbox1(pt1, u, e);
   QOBBox obbox2(pt1, u, e);
@@ -373,24 +369,24 @@ TEST( primal_OBBox, obb_test_scale )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_test_shift )
+TEST(primal_OBBox, obb_test_shift)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
   }
-  QVector e(1.);  //extents
+  QVector e(1.);    //extents
   QPoint pt2(0.5);  // (.5,.5,.5)
-  QPoint pt3(2);  // (2,2,2)
+  QPoint pt3(2);    // (2,2,2)
   QVector disp = QVector(2.);
 
   QOBBox obbox1(pt1, u, e);
@@ -403,25 +399,25 @@ TEST( primal_OBBox, obb_test_shift )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_copy_and_assignment )
+TEST(primal_OBBox, obb_copy_and_assignment)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
   }
 
-  QVector e(1.);  //extents
+  QVector e(1.);    //extents
   QPoint pt2(0.5);  // (.5,.5,.5)
-  QPoint pt3(2);  // (2,2,2)
+  QPoint pt3(2);    // (2,2,2)
   QVector disp = QVector(2.);
 
   QOBBox obbox1(pt1, u, e);
@@ -436,7 +432,7 @@ TEST( primal_OBBox, obb_copy_and_assignment )
   EXPECT_TRUE(obbox2 == obbox3);
 
   const QVector* u_in = obbox2.getAxes();
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     EXPECT_TRUE(u_in[i] == u[i]);
   }
@@ -450,18 +446,18 @@ TEST( primal_OBBox, obb_copy_and_assignment )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_contains_obb )
+TEST(primal_OBBox, obb_contains_obb)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
   QVector u_o[DIM];
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
@@ -491,18 +487,18 @@ TEST( primal_OBBox, obb_contains_obb )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_to_local )
+TEST(primal_OBBox, obb_to_local)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
   QVector u_o[DIM];
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
@@ -529,7 +525,7 @@ TEST( primal_OBBox, obb_to_local )
   obbox1.shift(-vec1);
 
   // now pt2's local coords are (20., 20., 20.)
-  EXPECT_EQ(2.*vec1, obbox1.toLocal(pt2));
+  EXPECT_EQ(2. * vec1, obbox1.toLocal(pt2));
 
   QOBBox obbox2(pt1, u_o, e);
 
@@ -541,21 +537,20 @@ TEST( primal_OBBox, obb_to_local )
   EXPECT_EQ(vec2[0], 0.);
   EXPECT_TRUE(((vec2[1] - 14.142) < 0.1) && ((14.142 - vec2[1]) < 0.1));
   EXPECT_TRUE(((vec2[2] - 10.) < 0.1) && ((10. - vec2[2]) < 0.1));
-
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_OBBox, obb_bisect )
+TEST(primal_OBBox, obb_bisect)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
@@ -578,17 +573,17 @@ TEST( primal_OBBox, obb_bisect )
   EXPECT_TRUE(obbox2 == obbox3);
 }
 
-TEST( primal_OBBox, obb_test_furthest_point )
+TEST(primal_OBBox, obb_test_furthest_point)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::Vector< CoordType, DIM > QVector;
-  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVector;
+  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
 
-  QPoint pt1;  // origin
+  QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0 ; i < DIM ; i++)
+  for(int i = 0; i < DIM; i++)
   {
     u[i] = QVector();
     u[i][i] = 1.;
@@ -616,9 +611,9 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
 #ifdef ORIENTEDBOUNDINGBOX_TESTER_SHOULD_SEED
-  std::srand( std::time(0) );
+  std::srand(std::time(0));
 #else
-  std::srand( 105 );
+  std::srand(105);
 #endif
 
   int result = RUN_ALL_TESTS();

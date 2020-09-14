@@ -119,7 +119,6 @@ namespace axom
 {
 namespace sidre
 {
-
 /*!
  *************************************************************************
  *
@@ -131,12 +130,11 @@ namespace sidre
  *
  *************************************************************************
  */
-template< typename TYPE >
+template <typename TYPE>
 class ItemCollection
 {
 public:
-
-  virtual ~ItemCollection() {}
+  virtual ~ItemCollection() { }
 
   //
   // Default compiler-generated ctor, dtor, copy ctor, and copy assignment
@@ -189,7 +187,6 @@ public:
   virtual void removeAllItems() = 0;
 
 private:
-
 };
 
 } /* end namespace sidre */

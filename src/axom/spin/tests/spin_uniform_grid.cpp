@@ -12,7 +12,7 @@
 #include "axom/spin/UniformGrid.hpp"
 
 //-----------------------------------------------------------------------------
-TEST( spin_uniform_grid, array_constructor)
+TEST(spin_uniform_grid, array_constructor)
 {
   const int DIM = 3;
 
@@ -21,41 +21,39 @@ TEST( spin_uniform_grid, array_constructor)
   const int resolution = 4;
   int res[DIM] = {resolution, resolution, resolution};
 
-  axom::spin::UniformGrid< int, DIM > valid(p_min, p_max, res);
-  EXPECT_EQ(valid.getNumBins(),  resolution * resolution * resolution);
+  axom::spin::UniformGrid<int, DIM> valid(p_min, p_max, res);
+  EXPECT_EQ(valid.getNumBins(), resolution * resolution * resolution);
   EXPECT_TRUE(valid.isBinEmpty(0));
-
 }
 
-TEST( spin_uniform_grid, bbox_constructor)
+TEST(spin_uniform_grid, bbox_constructor)
 {
   const int DIM = 3;
   using CoordType = double;
-  using QPoint = axom::primal::Point< CoordType, DIM >;
+  using QPoint = axom::primal::Point<CoordType, DIM>;
 
   QPoint pmax = QPoint::make_point(4, 2, 3);
   QPoint pmin = QPoint::make_point(6, 8, 6);
   int res[DIM] = {2, 3, 4};
 
-  axom::primal::BoundingBox< double, DIM > theBbox(pmin, pmax);
-  axom::spin::UniformGrid< int, DIM > valid(theBbox, res);
-  EXPECT_EQ(valid.getNumBins(),  res[0] * res[1] * res[2]);
+  axom::primal::BoundingBox<double, DIM> theBbox(pmin, pmax);
+  axom::spin::UniformGrid<int, DIM> valid(theBbox, res);
+  EXPECT_EQ(valid.getNumBins(), res[0] * res[1] * res[2]);
   EXPECT_TRUE(valid.isBinEmpty(0));
-
 }
 
-TEST( spin_uniform_grid, indexing)
+TEST(spin_uniform_grid, indexing)
 {
   const int DIM = 3;
   using CoordType = double;
-  using QPoint = axom::primal::Point< CoordType, DIM >;
+  using QPoint = axom::primal::Point<CoordType, DIM>;
 
   double p_max[DIM] = {100, 100, 100};
   double p_min[DIM] = {0, 0, 0};
   const int resolution = 100;
   int res[DIM] = {resolution, resolution, resolution};
 
-  axom::spin::UniformGrid< int, DIM > valid(p_min, p_max, res);
+  axom::spin::UniformGrid<int, DIM> valid(p_min, p_max, res);
 
   // valid has 100 bins in each dimension, and each bin has a
   // width of 1.0.  The bins are laid out in row-major order.
@@ -63,22 +61,22 @@ TEST( spin_uniform_grid, indexing)
   // an increment in the y-dimension increases the bin by 100, and an
   // increment in the z-dimension increases the bin by 100*100 = 10000.
 
-  QPoint pt1 = QPoint::make_point(1.5,0,0);
+  QPoint pt1 = QPoint::make_point(1.5, 0, 0);
   int expectedBin = 1;  // The 0th z-slab, the 0th y-row, the 1st x-bin
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt1));
 
-  QPoint pt2 = QPoint::make_point(0,1.5,0);
+  QPoint pt2 = QPoint::make_point(0, 1.5, 0);
   expectedBin = 100;  // The 0th z-slab, the 1st y-row, the 0th x-bin
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt2));
 
   QPoint pt3 = QPoint::make_point(99.5, 0, 99.5);
   // The (0-based) 99th z-slab, the 0th y-row, the 99th x-bin:
-  expectedBin = 99*100*100 + 0 + 99;
+  expectedBin = 99 * 100 * 100 + 0 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt3));
 
   QPoint pt4 = QPoint::make_point(16.1, 99.6, 89.2);
   // The 89th z-slab, the 99th y-row, the 16th x-bin:
-  expectedBin = 89*100*100 + 99*100 + 16;
+  expectedBin = 89 * 100 * 100 + 99 * 100 + 16;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt4));
 
   // This is a set of upper-boundary cases.
@@ -90,44 +88,44 @@ TEST( spin_uniform_grid, indexing)
 
   // The max point, in the top-most bucket.
   QPoint pt5 = QPoint::make_point(100., 100., 100.);
-  expectedBin = 99*100*100 + 99*100 + 99;
+  expectedBin = 99 * 100 * 100 + 99 * 100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt5));
 
   // A point on the max-x plane
   QPoint pt6 = QPoint::make_point(100., 55.5, 62.2);
-  expectedBin = 62*100*100 + 55*100 + 99;
+  expectedBin = 62 * 100 * 100 + 55 * 100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt6));
   // A point on the max-y plane
   QPoint pt7 = QPoint::make_point(81.4, 100., 2.1);
-  expectedBin = 2*100*100 + 99*100 + 81;
+  expectedBin = 2 * 100 * 100 + 99 * 100 + 81;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt7));
   // A point on the max-z plane
   QPoint pt8 = QPoint::make_point(45.6, 1.8, 100.);
-  expectedBin = 99*100*100 + 1*100 + 45;
+  expectedBin = 99 * 100 * 100 + 1 * 100 + 45;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt8));
   // A point on the max-xy edge
   QPoint pt9 = QPoint::make_point(100., 100., 62.2);
-  expectedBin = 62*100*100 + 99*100 + 99;
+  expectedBin = 62 * 100 * 100 + 99 * 100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt9));
   // A point on the max-yz edge
   QPoint pt10 = QPoint::make_point(81.4, 100., 100.);
-  expectedBin = 99*100*100 + 99*100 + 81;
+  expectedBin = 99 * 100 * 100 + 99 * 100 + 81;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt10));
   // A point on the max-xz edge
   QPoint pt11 = QPoint::make_point(100., 1.8, 100.);
-  expectedBin = 99*100*100 + 1*100 + 99;
+  expectedBin = 99 * 100 * 100 + 1 * 100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt11));
 
   // Now go outside the grid, and get some invalid ones.
 
   QPoint pt12 = QPoint::make_point(12.5, 100.1, 0);
   // Above 100 is over the fence.
-  expectedBin = axom::spin::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
+  expectedBin = axom::spin::UniformGrid<int, DIM>::INVALID_BIN_INDEX;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt12));
 
   QPoint pt13 = QPoint::make_point(-0.5, 12, 54.3);
   // Below 0 is over (under?) the fence.
-  expectedBin = axom::spin::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
+  expectedBin = axom::spin::UniformGrid<int, DIM>::INVALID_BIN_INDEX;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt13));
 }
 
@@ -135,27 +133,26 @@ TEST( spin_uniform_grid, indexing)
 // to track the count of objects in each bin.
 
 // Verify the count in each bin against the map maintained "by hand".
-template < typename T, int NDIMS >
-void checkBinCounts(axom::spin::UniformGrid< T, NDIMS > & v,
-                    std::map< int, int > & bincounts)
+template <typename T, int NDIMS>
+void checkBinCounts(axom::spin::UniformGrid<T, NDIMS>& v,
+                    std::map<int, int>& bincounts)
 {
   int bcount = v.getNumBins();
-  for (int i = 0 ; i < bcount ; ++i)
+  for(int i = 0; i < bcount; ++i)
   {
-    bool binAgrees =
-      (bincounts.count(i) < 1 && v.isBinEmpty(i)) ||
+    bool binAgrees = (bincounts.count(i) < 1 && v.isBinEmpty(i)) ||
       (bincounts[i] == ((int)v.getBinContents(i).size()));
-    EXPECT_TRUE(binAgrees) << "Difference at bin " << i << ": v has " <<
-      v.getBinContents(i).size() << " and bincounts has " <<
-    (((int)bincounts.count(i)) < 1 ? 0 : bincounts[i]);
+    EXPECT_TRUE(binAgrees) << "Difference at bin " << i << ": v has "
+                           << v.getBinContents(i).size() << " and bincounts has "
+                           << (((int)bincounts.count(i)) < 1 ? 0 : bincounts[i]);
   }
 }
 
 // Increment the count for a bin
-void incr(std::map< int, int > & m, int idx)
+void incr(std::map<int, int>& m, int idx)
 {
   int dat = 0;
-  if (m.count(idx) > 0)
+  if(m.count(idx) > 0)
   {
     dat = m[idx];
   }
@@ -163,26 +160,23 @@ void incr(std::map< int, int > & m, int idx)
 }
 
 // Zero out the count for a bin
-void zero(std::map< int, int > & m, int idx)
-{
-  m.erase(idx);
-}
+void zero(std::map<int, int>& m, int idx) { m.erase(idx); }
 
 TEST(spin_uniform_grid, add_stuff_3D)
 {
   const int DIM = 3;
   using CoordType = double;
-  using QPoint = axom::primal::Point< CoordType, DIM >;
-  using QBBox = axom::primal::BoundingBox< CoordType, DIM >;
+  using QPoint = axom::primal::Point<CoordType, DIM>;
+  using QBBox = axom::primal::BoundingBox<CoordType, DIM>;
 
   double origin[DIM] = {0, 0, 0};
   const int mpt = 6;
   double maxpoint[DIM] = {mpt, mpt, mpt};
   const int resolution = 6;
   int res[DIM] = {resolution, resolution, resolution};
-  axom::spin::UniformGrid< int, DIM > valid(origin, maxpoint, res);
+  axom::spin::UniformGrid<int, DIM> valid(origin, maxpoint, res);
 
-  std::map< int, int > check;
+  std::map<int, int> check;
 
   QPoint pt1 = QPoint::make_point(2.5, 2.5, 2.5);
   QBBox bbox1(pt1);
@@ -195,8 +189,8 @@ TEST(spin_uniform_grid, add_stuff_3D)
   }
 
   // Add a point with a bounding box overlapping the first one
-  QPoint pt2 = QPoint::make_point(2.1,2.1,2.1);
-  QPoint pt3 = QPoint::make_point(4.2,2.9,2.1);
+  QPoint pt2 = QPoint::make_point(2.1, 2.1, 2.1);
+  QPoint pt3 = QPoint::make_point(4.2, 2.9, 2.1);
   QBBox bbox2(pt2, pt3);
   valid.insert(bbox2, 2);
   incr(check, valid.getBinIndex(pt2));
@@ -212,9 +206,9 @@ TEST(spin_uniform_grid, add_stuff_3D)
   QPoint pt5 = QPoint::make_point(3.1, 9.0, 2.8);
   QBBox bbox3(pt4, pt5);
   valid.insert(bbox3, 4);
-  for (int k = 0 ; k < 3 ; ++k)
+  for(int k = 0; k < 3; ++k)
   {
-    for (int i = 2 ; i < 4 ; ++i)
+    for(int i = 2; i < 4; ++i)
     {
       incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, 5.5, k + 0.5)));
     }
@@ -239,7 +233,7 @@ TEST(spin_uniform_grid, add_stuff_3D)
   QPoint pt9 = QPoint::make_point(7, 6.2, 6.1);
   QBBox bbox5(pt8, pt9);
   valid.insert(bbox5, 8);
-  for (int i = 0 ; i < valid.getNumBins() ; ++i)
+  for(int i = 0; i < valid.getNumBins(); ++i)
   {
     incr(check, i);
   }
@@ -253,20 +247,20 @@ TEST(spin_uniform_grid, delete_stuff_3D)
 {
   const int DIM = 3;
   using CoordType = double;
-  using QPoint = axom::primal::Point< CoordType, DIM >;
-  using QBBox = axom::primal::BoundingBox< CoordType, DIM >;
+  using QPoint = axom::primal::Point<CoordType, DIM>;
+  using QBBox = axom::primal::BoundingBox<CoordType, DIM>;
 
   double origin[DIM] = {0, 0, 0};
   const int mpt = 6;
   double maxpoint[DIM] = {mpt, mpt, mpt};
   const int resolution = 6;
   int res[DIM] = {resolution, resolution, resolution};
-  axom::spin::UniformGrid< int, DIM > valid(origin, maxpoint, res);
+  axom::spin::UniformGrid<int, DIM> valid(origin, maxpoint, res);
 
-  std::map< int, int > check;
+  std::map<int, int> check;
 
   // Insert something small (one bin), then clear its bin
-  QPoint pt1 = QPoint::make_point(1.1,1.1,1.1);
+  QPoint pt1 = QPoint::make_point(1.1, 1.1, 1.1);
   QBBox bbox1(pt1);
   valid.insert(bbox1, 1);
   int index = valid.getBinIndex(pt1);
@@ -285,11 +279,11 @@ TEST(spin_uniform_grid, delete_stuff_3D)
   QPoint pt3 = QPoint::make_point(1.9, 2.3, 7.1);
   QBBox bbox2(pt2, pt3);
   valid.insert(bbox2, 2);
-  for (int k = 0 ; k < 6 ; ++k)
+  for(int k = 0; k < 6; ++k)
   {
-    for (int j = 0 ; j < 3 ; ++j)
+    for(int j = 0; j < 3; ++j)
     {
-      for (int i = 0 ; i < 2 ; ++i)
+      for(int i = 0; i < 2; ++i)
       {
         incr(check,
              valid.getBinIndex(QPoint::make_point(i + 0.5, j + 0.5, k + 0.5)));
@@ -315,7 +309,7 @@ TEST(spin_uniform_grid, delete_stuff_3D)
   }
   {
     SCOPED_TRACE("Try clearing the invalid bin");
-    valid.clear(axom::spin::UniformGrid< int, DIM >::INVALID_BIN_INDEX);
+    valid.clear(axom::spin::UniformGrid<int, DIM>::INVALID_BIN_INDEX);
     checkBinCounts(valid, check);
   }
 }
@@ -324,17 +318,17 @@ TEST(spin_uniform_grid, add_stuff_2D)
 {
   const int DIM = 2;
   using CoordType = double;
-  using QPoint = axom::primal::Point< CoordType, DIM >;
-  using QBBox = axom::primal::BoundingBox< CoordType, DIM >;
+  using QPoint = axom::primal::Point<CoordType, DIM>;
+  using QBBox = axom::primal::BoundingBox<CoordType, DIM>;
 
   double origin[DIM] = {0, 0};
   const int mpt = 6;
   double maxpoint[DIM] = {mpt, mpt};
   const int resolution = 6;
   int res[DIM] = {resolution, resolution};
-  axom::spin::UniformGrid< int, DIM > valid(origin, maxpoint, res);
+  axom::spin::UniformGrid<int, DIM> valid(origin, maxpoint, res);
 
-  std::map< int, int > check;
+  std::map<int, int> check;
 
   QPoint pt1 = QPoint::make_point(2.5, 2.5);
   QBBox bbox1(pt1);
@@ -347,8 +341,8 @@ TEST(spin_uniform_grid, add_stuff_2D)
   }
 
   // Add a point with a bounding box overlapping the first one
-  QPoint pt2 = QPoint::make_point(2.1,2.1);
-  QPoint pt3 = QPoint::make_point(4.2,2.9);
+  QPoint pt2 = QPoint::make_point(2.1, 2.1);
+  QPoint pt3 = QPoint::make_point(4.2, 2.9);
   QBBox bbox2(pt2, pt3);
   valid.insert(bbox2, 2);
   incr(check, valid.getBinIndex(pt2));
@@ -364,7 +358,7 @@ TEST(spin_uniform_grid, add_stuff_2D)
   QPoint pt5 = QPoint::make_point(3.1, 9.0);
   QBBox bbox3(pt4, pt5);
   valid.insert(bbox3, 4);
-  for (int i = 2 ; i < 4 ; ++i)
+  for(int i = 2; i < 4; ++i)
   {
     incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, 5.5)));
   }
@@ -388,7 +382,7 @@ TEST(spin_uniform_grid, add_stuff_2D)
   QPoint pt9 = QPoint::make_point(7, 6.2);
   QBBox bbox5(pt8, pt9);
   valid.insert(bbox5, 8);
-  for (int i = 0 ; i < valid.getNumBins() ; ++i)
+  for(int i = 0; i < valid.getNumBins(); ++i)
   {
     incr(check, i);
   }
@@ -402,17 +396,17 @@ TEST(spin_uniform_grid, delete_stuff_2D)
 {
   const int DIM = 2;
   using CoordType = double;
-  using QPoint = axom::primal::Point< CoordType, DIM >;
-  using QBBox = axom::primal::BoundingBox< CoordType, DIM >;
+  using QPoint = axom::primal::Point<CoordType, DIM>;
+  using QBBox = axom::primal::BoundingBox<CoordType, DIM>;
 
   double origin[DIM] = {0, 0};
   const int mpt = 6;
   double maxpoint[DIM] = {mpt, mpt};
   const int resolution = 6;
   int res[DIM] = {resolution, resolution};
-  axom::spin::UniformGrid< int, DIM > valid(origin, maxpoint, res);
+  axom::spin::UniformGrid<int, DIM> valid(origin, maxpoint, res);
 
-  std::map< int, int > check;
+  std::map<int, int> check;
 
   // Insert something small (one bin), then clear its bin
   QPoint pt1 = QPoint::make_point(1.1, 1.1);
@@ -434,9 +428,9 @@ TEST(spin_uniform_grid, delete_stuff_2D)
   QPoint pt3 = QPoint::make_point(1.9, 2.3);
   QBBox bbox2(pt2, pt3);
   valid.insert(bbox2, 2);
-  for (int j = 0 ; j < 3 ; ++j)
+  for(int j = 0; j < 3; ++j)
   {
-    for (int i = 0 ; i < 2 ; ++i)
+    for(int i = 0; i < 2; ++i)
     {
       incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, j + 0.5)));
     }
@@ -460,7 +454,7 @@ TEST(spin_uniform_grid, delete_stuff_2D)
   }
   {
     SCOPED_TRACE("Try clearing the invalid bin");
-    valid.clear(axom::spin::UniformGrid< int, DIM >::INVALID_BIN_INDEX);
+    valid.clear(axom::spin::UniformGrid<int, DIM>::INVALID_BIN_INDEX);
     checkBinCounts(valid, check);
   }
 }

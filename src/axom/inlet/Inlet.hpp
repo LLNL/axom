@@ -33,13 +33,12 @@ namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class Inlet
  *
  * \brief This class is the main access point for all Inlet operations from
- *        from defining the schema of the users input deck to getting the values
+ *        from defining the schema of the users input file to getting the values
  *        out of the Sidre DataStore.
  *
  * \see Table Field
@@ -55,18 +54,21 @@ public:
    * Creates an Inlet class that can then be used with the given Reader and will
    * store data under the given Sidre Group.
    *
-   * \param [in] reader Shared pointer to the input deck Reader class.
+   * \param [in] reader Shared pointer to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether documentation generation
    * is enabled. This also toggles the storing of documentation-specific information.
    *****************************************************************************
    */
   Inlet(std::shared_ptr<Reader> reader,
-        axom::sidre::Group* sidreRootGroup, bool docEnabled = true) :
-    m_reader(reader),
-    m_sidreRootGroup(sidreRootGroup),
-    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled)),
-    m_docEnabled(docEnabled) {}
+        axom::sidre::Group* sidreRootGroup,
+        bool docEnabled = true)
+    : m_reader(reader)
+    , m_sidreRootGroup(sidreRootGroup)
+    , m_globalTable(
+        std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled))
+    , m_docEnabled(docEnabled)
+  { }
 
   virtual ~Inlet() = default;
 
@@ -74,7 +76,7 @@ public:
    *****************************************************************************
    * \brief Returns the shared pointer to the Reader class.
    *
-   * Provides access to the Reader class that is used to access the input deck.
+   * Provides access to the Reader class that is used to access the input file.
    *
    * \return Shared pointer to this instances' Reader class
    *****************************************************************************
@@ -94,19 +96,19 @@ public:
   axom::sidre::Group* sidreGroup() { return m_sidreRootGroup; };
 
   //
-  // Functions that define the input deck schema
+  // Functions that define the input file schema
   //
 
   /*!
    *****************************************************************************
-   * \brief Add a Table to the input deck schema.
+   * \brief Add a Table to the input file schema.
    *
-   * Adds a Table to the input deck schema. Tables hold a varying amount Fields
+   * Adds a Table to the input file schema. Tables hold a varying amount Fields
    * defined by the user.  By default, it is not required unless marked with
    * Table::required(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Table
@@ -117,14 +119,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Boolean Field to the input deck schema.
+   * \brief Add a Boolean Field to the input file schema.
    *
-   * Adds a Boolean Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Boolean Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -135,14 +137,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Double Field to the input deck schema.
+   * \brief Add a Double Field to the input file schema.
    *
-   * Adds a Double Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Double Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -153,14 +155,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Integer Field to the input deck schema.
+   * \brief Add a Integer Field to the input file schema.
    *
-   * Adds a Integer Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Integer Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -171,14 +173,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a String Field to the input deck schema.
+   * \brief Add a String Field to the input file schema.
    *
-   * Adds a String Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a String Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Field
@@ -196,7 +198,7 @@ public:
    * \brief Gets a Boolean value out of the Datastore.
    *
    * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input deck and will be indicted by the return
+   * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -212,7 +214,7 @@ public:
    * \brief Gets a Double value out of the Datastore.
    *
    * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input deck and will be indicted by the return
+   * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -228,7 +230,7 @@ public:
    * \brief Gets a Integer value out of the Datastore.
    *
    * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input deck and will be indicted by the return
+   * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -244,7 +246,7 @@ public:
    * \brief Gets a String value out of the Datastore.
    *
    * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input deck and will be indicted by the return
+   * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -270,9 +272,9 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Writes input deck documentation.
+   * \brief Writes input file documentation.
    *
-   * This writes the input deck's documentation through the registered DocWriter.
+   * This writes the input file's documentation through the registered DocWriter.
    *
    *****************************************************************************
    */
@@ -293,16 +295,14 @@ public:
    *
    *****************************************************************************
    */
-  bool verify(); 
+  bool verify();
 
   /*!
    *****************************************************************************
    * \return The global Table.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getGlobalTable() {
-    return m_globalTable;
-  }
+  std::shared_ptr<Table> getGlobalTable() { return m_globalTable; }
 
   /*!
    *****************************************************************************
@@ -314,7 +314,8 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTable(const std::string& name) {
+  std::shared_ptr<Table> getTable(const std::string& name)
+  {
     return m_globalTable->getTable(name);
   }
 
@@ -328,7 +329,8 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getField(const std::string& name) {
+  std::shared_ptr<Field> getField(const std::string& name)
+  {
     return m_globalTable->getField(name);
   }
 
@@ -339,7 +341,8 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Table.
    *****************************************************************************
    */
-  bool hasTable(const std::string& name) {
+  bool hasTable(const std::string& name)
+  {
     return m_globalTable->hasTable(name);
   }
 
@@ -350,7 +353,8 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Field.
    *****************************************************************************
    */
-  bool hasField(const std::string& name) {
+  bool hasField(const std::string& name)
+  {
     return m_globalTable->hasField(name);
   }
 
@@ -402,7 +406,7 @@ private:
    */
   bool verifyDefaultValue(axom::sidre::Group* sidreGroup);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Checks if the given value is within the range.
    * 
@@ -451,7 +455,7 @@ private:
    *****************************************************************************
    */
   bool searchValidValues(axom::sidre::Group* sidreGroup, double value);
-  
+
   /*!
    *****************************************************************************
    * \brief Checks if the given value is found in the list of valid values.
@@ -475,7 +479,7 @@ private:
   bool m_docEnabled;
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif

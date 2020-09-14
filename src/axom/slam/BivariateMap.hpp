@@ -24,8 +24,6 @@ namespace axom
 {
 namespace slam
 {
-
-
 /**
  * \class BivariateMap
  * \brief A Map for BivariateSet. It associates a constant number of values to
@@ -76,12 +74,11 @@ namespace slam
  * \see BivariateSet, SubMap
  */
 
-template<
-  typename SetType,
-  typename DataType,
-  typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
-  >
-class BivariateMap : public MapBase, public StridePolicy
+template <typename SetType,
+          typename DataType,
+          typename StridePolicy = policies::StrideOne<typename SetType::PositionType>>
+class BivariateMap : public MapBase<typename SetType::PositionType>,
+                     public StridePolicy
 {
 public:
   using SetPosition = typename SetType::PositionType;
@@ -100,7 +97,6 @@ private:
   static const NullBivariateSet<SetPosition, SetElement> s_nullBiSet;
 
 public:
-
   /**
    * \brief Constructor for a BivariateMap
    *
@@ -121,8 +117,7 @@ public:
     , m_set(bSet)
     , m_rangeSet(0, bSet->size())
     , m_map(&m_rangeSet, defaultValue, stride)
-  {}
-
+  { }
 
   /// \name BivariateMap value access functions
   /// @{
@@ -140,10 +135,7 @@ public:
   {
     return m_map[setIndex];
   }
-  DataType& operator[](SetPosition setIndex)
-  {
-    return m_map[setIndex];
-  }
+  DataType& operator[](SetPosition setIndex) { return m_map[setIndex]; }
 
 private:
   //template for both const / non-const SubMap creator, given the firstIdx and
@@ -151,11 +143,10 @@ private:
   template <class constOrNonConstMap>
   SubMapType makeSubMap(SetPosition firstIdx, constOrNonConstMap* map_ptr) const
   {
-    SLIC_ASSERT_MSG(
-      firstIdx >= 0 && firstIdx < firstSetSize(),
-      "Attempted to access elements with first set index "
-      << firstIdx << ", but BivairateMap's first set has size "
-      << firstSetSize());
+    SLIC_ASSERT_MSG(firstIdx >= 0 && firstIdx < firstSetSize(),
+                    "Attempted to access elements with first set index "
+                      << firstIdx << ", but BivairateMap's first set has size "
+                      << firstSetSize());
 
     SetPosition start_idx = m_set->findElementFlatIndex(firstIdx);
     SetPosition size = m_set->size(firstIdx);
@@ -169,14 +160,12 @@ public:
    *        first set index
    * \pre 0 <= firstIdx < size(firstIdx)
    */
-  const SubMapType operator() (SetPosition firstIdx) const
+  const SubMapType operator()(SetPosition firstIdx) const
   {
     return makeSubMap<const BivariateMapType>(firstIdx, this);
-
-
   }
 
-  SubMapType operator() (SetPosition firstIdx)
+  SubMapType operator()(SetPosition firstIdx)
   {
     return makeSubMap<BivariateMapType>(firstIdx, this);
   }
@@ -189,16 +178,17 @@ public:
    * \pre `0 <= s2 < size(s1)`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType& operator() (SetPosition s1, SetPosition s2,
-                              SetPosition comp = 0) const
+  const DataType& operator()(SetPosition s1,
+                             SetPosition s2,
+                             SetPosition comp = 0) const
   {
     return m_map(m_set->findElementFlatIndex(s1, s2), comp);
   }
 
-  DataType & operator() (SetPosition s1, SetPosition s2, SetPosition comp = 0)
+  DataType& operator()(SetPosition s1, SetPosition s2, SetPosition comp = 0)
   {
     const BivariateMap& constMe = *this;
-    return const_cast<DataType&>(constMe(s1,s2,comp));
+    return const_cast<DataType&>(constMe(s1, s2, comp));
   }
 
   /**
@@ -214,11 +204,10 @@ public:
    * \warning For sparse BivariateSet type, this function may have to do a
    *          linear search and can be slow.
    */
-  const DataType* findValue(SetPosition s1, SetPosition s2,
-                            SetPosition comp = 0) const
+  const DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0) const
   {
     SetPosition i = m_set->findElementFlatIndex(s1, s2);
-    if (i == BivariateSetType::INVALID_POS)
+    if(i == BivariateSetType::INVALID_POS)
     {
       //the BivariateSet does not contain this index pair
       return nullptr;
@@ -233,7 +222,6 @@ public:
   }
 
   /// @}
-
 
   /// \name BivariateMap index access functions
   /// @{
@@ -272,7 +260,6 @@ public:
 
   /// @}
 
-
   /**
    * \class BivariateMapIterator
    * \brief An iterator type for a BivariateMap, iterating via its
@@ -284,10 +271,10 @@ public:
    * second sparse index (secondSparseIdx). The advance() function is
    * implemented to update those three additional indices.
    */
-  class BivariateMapIterator :
-    public IteratorBase<BivariateMapIterator, SetPosition>
+  class BivariateMapIterator
+    : public IteratorBase<BivariateMapIterator, SetPosition>
   {
-private:
+  private:
     using iterator_category = std::random_access_iterator_tag;
     using value_type = DataType;
     using difference_type = SetPosition;
@@ -296,17 +283,20 @@ private:
     using IterBase::m_pos;
     using iter = BivariateMapIterator;
 
-public:
+  public:
     using PositionType = SetPosition;
     const PositionType INVALID_POS = -2;
 
-public:
+  public:
     /**
      * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
      */
     BivariateMapIterator(BivariateMap* sMap, PositionType pos)
-      : IterBase(pos), m_map(sMap), firstIdx(INVALID_POS),
-      secondIdx(INVALID_POS), secondSparseIdx(INVALID_POS)
+      : IterBase(pos)
+      , m_map(sMap)
+      , firstIdx(INVALID_POS)
+      , secondIdx(INVALID_POS)
+      , secondSparseIdx(INVALID_POS)
     {
       find_indices(pos);
     }
@@ -322,26 +312,20 @@ public:
      *        multiple components, this will return the first component.
      *        To access the other components, use iter(comp)
      */
-    DataType & operator*()
-    {
-      return (*m_map)(firstIdx, secondIdx, 0);
-    }
+    DataType& operator*() { return (*m_map)(firstIdx, secondIdx, 0); }
 
     /**
      * \brief Returns the iterator's value at the specified component.
      *        Returns the first component if comp_idx is not specified.
      * \param comp_idx  (Optional) Zero-based index of the component.
      */
-    DataType & operator()(PositionType comp_idx = 0)
+    DataType& operator()(PositionType comp_idx = 0)
     {
       return (*m_map)(firstIdx, secondIdx, comp_idx);
     }
 
     /** \brief Returns the first component value after n increments.  */
-    DataType & operator[](PositionType n)
-    {
-      return *(this->operator+(n));
-    }
+    DataType& operator[](PositionType n) { return *(this->operator+(n)); }
 
     /**
      * \brief Return the value at the iterator's position. Same as operator()
@@ -354,36 +338,30 @@ public:
     /**
      * \brief return the current iterator's first index into the BivariateSet
      */
-    PositionType firstIndex()
-    {
-      return firstIdx;
-    }
+    PositionType firstIndex() { return firstIdx; }
 
     /**
      * \brief return the current iterator's second index (DenseIndex)
      *        into the BivariateSet
      */
-    PositionType secondIndex()
-    {
-      return m_map->set()->at(m_pos);
-    }
+    PositionType secondIndex() { return m_map->set()->at(m_pos); }
 
     /** \brief Returns the number of components per element in the map. */
     PositionType numComp() const { return m_map->numComp(); }
 
-private:
+  private:
     /** Given the ElementFlatIndex, search for and update the other indices.
      *  This function does not depend on the three indices to be correct. */
     void find_indices(PositionType pos)
     {
-      if (pos < 0 || pos > m_map->totalSize())
+      if(pos < 0 || pos > m_map->totalSize())
       {
         firstIdx = INVALID_POS;
         secondIdx = INVALID_POS;
         secondSparseIdx = INVALID_POS;
         return;
       }
-      else if (pos == m_map->totalSize())
+      else if(pos == m_map->totalSize())
       {
         firstIdx = m_map->firstSetSize();
         secondIdx = 0;
@@ -393,7 +371,7 @@ private:
 
       firstIdx = 0;
       PositionType beginIdx = 0;
-      while (beginIdx + m_map->set()->size(firstIdx) <= pos)
+      while(beginIdx + m_map->set()->size(firstIdx) <= pos)
       {
         beginIdx += m_map->set()->size(firstIdx);
         firstIdx++;
@@ -411,9 +389,9 @@ private:
     void advance_helper(PositionType n, PositionType idx1, PositionType idx2)
     {
       const BivariateSetType* set = m_map->set();
-      if (idx2 + n < 0)
+      if(idx2 + n < 0)
         advance_helper(n + (idx2 + 1), idx1 - 1, set->size(idx1 - 1) - 1);
-      else if (idx2 + n >= set->size(idx1))
+      else if(idx2 + n >= set->size(idx1))
         advance_helper(n - (set->size(idx1) - idx2), idx1 + 1, 0);
       else
       {
@@ -423,7 +401,7 @@ private:
       }
     }
 
-protected:
+  protected:
     /** Implementation of advance() as required by IteratorBase.
      *  It updates the three other indices as well. */
     void advance(PositionType n)
@@ -431,17 +409,17 @@ protected:
       m_pos += n;
       PositionType size = m_map->totalSize();
 
-      if (firstIdx == INVALID_POS)
-      { //iterator was in an invalid position. search for the indices.
+      if(firstIdx == INVALID_POS)
+      {  //iterator was in an invalid position. search for the indices.
         find_indices(m_pos);
       }
-      else if (m_pos == size)
+      else if(m_pos == size)
       {
         firstIdx = m_map->firstSetSize();
         secondIdx = 0;
         secondSparseIdx = 0;
       }
-      else if (m_pos < 0 || m_pos > size)
+      else if(m_pos < 0 || m_pos > size)
       {
         firstIdx = INVALID_POS;
         secondIdx = INVALID_POS;
@@ -453,7 +431,7 @@ protected:
       }
     }
 
-private:
+  private:
     BivariateMap* m_map;
     PositionType firstIdx;
     PositionType secondIdx;
@@ -469,19 +447,15 @@ public:
   SubMapIterator begin(int i) { return (*this)(i).begin(); }
   SubMapIterator end(int i) { return (*this)(i).end(); }
 
-
 public:
   const BivariateSetType* set() const { return m_set; }
   const MapType* getMap() const { return &m_map; }
   MapType* getMap() { return &m_map; }
 
-
-  virtual bool        isValid(bool verboseOutput = false) const override
+  virtual bool isValid(bool verboseOutput = false) const override
   {
     return m_set->isValid(verboseOutput) && m_map.isValid(verboseOutput);
   }
-
-
 
   /// \name BivariateMap cardinality functions
   /// @{
@@ -502,8 +476,6 @@ public:
 
   /// @}
 
-
-
   /**
    * \brief Given a DataType array of size `totalSize()*numComp()`, copy
    *        the data into the BivariateMap storage.
@@ -512,7 +484,7 @@ public:
    */
   void copy(DataType* data_arr)
   {
-    for (int i = 0 ; i < m_map.size() * StridePolicy::stride() ; i++)
+    for(int i = 0; i < m_map.size() * StridePolicy::stride(); i++)
       m_map[i] = data_arr[i];
   }
 
@@ -524,28 +496,26 @@ private:
   }
 
   /** \brief Check the given ElementFlatIndex is valid.  */
-  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos) ) const override
+  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos)) const override
   {
-    SLIC_ASSERT_MSG(
-      pos >= 0 && pos < SetPosition(m_map.size()),
-      "Attempted to access element "
-      << pos << " but BivairateMap's data has size " << m_map.size());
+    SLIC_ASSERT_MSG(pos >= 0 && pos < SetPosition(m_map.size()),
+                    "Attempted to access element "
+                      << pos << " but BivairateMap's data has size "
+                      << m_map.size());
   }
 
 private:
   const BivariateSetType* m_set;
-  RangeSet<> m_rangeSet; //for the map... since BivariateSet isn't a slam::Set
+  RangeSet<> m_rangeSet;  //for the map... since BivariateSet isn't a slam::Set
   MapType m_map;
 
-}; //end BivariateMap
+};  //end BivariateMap
 
-template<typename SetType, typename  DataType, typename StridePolicy>
-NullBivariateSet<typename SetType::PositionType, typename SetType::ElementType>
-const BivariateMap<SetType, DataType, StridePolicy>::s_nullBiSet;
+template <typename SetType, typename DataType, typename StridePolicy>
+NullBivariateSet<typename SetType::PositionType, typename SetType::ElementType> const
+  BivariateMap<SetType, DataType, StridePolicy>::s_nullBiSet;
 
-} // end namespace slam
-} // end namespace axom
+}  // end namespace slam
+}  // end namespace axom
 
-
-
-#endif // SLAM_BIVARIATE_MAP_HPP_
+#endif  // SLAM_BIVARIATE_MAP_HPP_

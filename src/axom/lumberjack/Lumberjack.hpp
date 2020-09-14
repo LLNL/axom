@@ -28,7 +28,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *******************************************************************************
  * \class Lumberjack
@@ -189,8 +188,11 @@ public:
    * \param [in] tag The tag of where the Message originated.
    *****************************************************************************
    */
-  void queueMessage(const std::string& text, const std::string& fileName,
-                    const int lineNumber, int level, const std::string& tag);
+  void queueMessage(const std::string& text,
+                    const std::string& fileName,
+                    const int lineNumber,
+                    int level,
+                    const std::string& tag);
 
   /*!
    *****************************************************************************
@@ -226,6 +228,7 @@ public:
    *****************************************************************************
    */
   bool isOutputNode();
+
 private:
   /*!
    *****************************************************************************
@@ -241,7 +244,7 @@ private:
   std::vector<Message*> m_messages;
 };
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

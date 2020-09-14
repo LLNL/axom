@@ -45,51 +45,47 @@ static const int SET_SIZE = 10;
 
 /// Utility function to initialize a set for the test data
 /// Specialized for each set type
-template<typename S, typename E> S generateSet(std::vector<E>& vec, int size);
+template <typename S, typename E>
+S generateSet(std::vector<E>& vec, int size);
 
 /// Specialization of \a generateSet for \a PositionSet
-template<>
+template <>
 PositionSet generateSet(std::vector<SetElement>&, int size)
 {
-  return PositionSet( size );
+  return PositionSet(size);
 }
 
 /// Specialization of \a generateSet for \a RangeSet
-template<>
+template <>
 RangeSet generateSet(std::vector<SetElement>&, int size)
 {
   auto lower = 10;
   auto upper = lower + size;
 
-  return RangeSet( lower, upper );
+  return RangeSet(lower, upper);
 }
 
 /// Specialization of \a generateSet for \a VectorSet
-template<>
+template <>
 VectorSet generateSet(std::vector<SetElement>& vec, int size)
 {
-  return VectorSet( VectorSet::SetBuilder()
-                    .size( size )
-                    .data( &vec) );
+  return VectorSet(VectorSet::SetBuilder().size(size).data(&vec));
 }
 
 /// Specialization of \a generateSet for \a ArraySet
-template<>
+template <>
 ArraySet generateSet(std::vector<SetElement>& vec, int size)
 {
-  return ArraySet( ArraySet::SetBuilder()
-                   .size( size )
-                   .data( vec.data() ) );
+  return ArraySet(ArraySet::SetBuilder().size(size).data(vec.data()));
 }
 
-} // end anonymous namespace
-
+}  // end anonymous namespace
 
 /**
  * Simple test class for iterators on ordered sets
  * Templated on a Set type (see MyTypes alias below)
  */
-template<typename TheSet>
+template <typename TheSet>
 class OrderedSetIteratorTester : public ::testing::Test
 {
 public:
@@ -104,9 +100,9 @@ public:
     // The values don't really matter for this test.
     mVec = std::vector<ElemType>(SET_SIZE);
 
-    for(int i=0 ; i < SET_SIZE ; ++i)
+    for(int i = 0; i < SET_SIZE; ++i)
     {
-      mVec[i] = (SET_SIZE)/2 - i;
+      mVec[i] = (SET_SIZE) / 2 - i;
     }
 
     // generate the set using specialized functions (defined above)
@@ -121,16 +117,10 @@ private:
 };
 
 // Tests several types of sets
-using MyTypes = ::testing::Types<
-        PositionSet,
-        RangeSet,
-        VectorSet,
-        ArraySet
-        >;
+using MyTypes = ::testing::Types<PositionSet, RangeSet, VectorSet, ArraySet>;
 TYPED_TEST_SUITE(OrderedSetIteratorTester, MyTypes);
 
-
-TYPED_TEST(OrderedSetIteratorTester,basic_operations)
+TYPED_TEST(OrderedSetIteratorTester, basic_operations)
 {
   using SetType = typename TestFixture::SetType;
   using iterator = typename SetType::iterator;
@@ -150,7 +140,7 @@ TYPED_TEST(OrderedSetIteratorTester,basic_operations)
     iterator it1 = set.begin();
     iterator it2 = set.begin();
     EXPECT_EQ(it1, it2);
-    EXPECT_TRUE( it1 == it2 );
+    EXPECT_TRUE(it1 == it2);
 
     EXPECT_EQ(*it1, *it2);
   }
@@ -174,25 +164,25 @@ TYPED_TEST(OrderedSetIteratorTester,basic_operations)
     EXPECT_EQ(it1, it2);
 
     // post-increment
-    EXPECT_EQ(it1,   it2++);
-    EXPECT_NE(it1,   it2);
-    EXPECT_EQ(it1+1, it2);
+    EXPECT_EQ(it1, it2++);
+    EXPECT_NE(it1, it2);
+    EXPECT_EQ(it1 + 1, it2);
 
     // post-decrement
     it2 = it1;
-    EXPECT_EQ(it1,   it2--);
-    EXPECT_NE(it1,   it2);
-    EXPECT_EQ(it1-1, it2);
+    EXPECT_EQ(it1, it2--);
+    EXPECT_NE(it1, it2);
+    EXPECT_EQ(it1 - 1, it2);
 
     // pre-increment
     it2 = it1;
     EXPECT_NE(it1, ++it2);
-    EXPECT_EQ(it1+1, it2);
+    EXPECT_EQ(it1 + 1, it2);
 
     // pre-decrement
     it2 = it1;
     EXPECT_NE(it1, --it2);
-    EXPECT_EQ(it1-1, it2);
+    EXPECT_EQ(it1 - 1, it2);
 
     // pre- and post- differ
     it2 = it1;
@@ -221,19 +211,17 @@ TYPED_TEST(OrderedSetIteratorTester,basic_operations)
 
     EXPECT_EQ(*it2, it2[0]);
 
-    EXPECT_NE(it1,   it2);
-    EXPECT_EQ(it1+2, it2  );
-    EXPECT_EQ(it1,    it2-2);
+    EXPECT_NE(it1, it2);
+    EXPECT_EQ(it1 + 2, it2);
+    EXPECT_EQ(it1, it2 - 2);
 
     EXPECT_EQ(it1[2], *it2);
-    EXPECT_EQ(*it1,   it2[-2]);
+    EXPECT_EQ(*it1, it2[-2]);
     EXPECT_EQ(it1[1], it2[-1]);
   }
-
 }
 
-
-TYPED_TEST(OrderedSetIteratorTester,const_set)
+TYPED_TEST(OrderedSetIteratorTester, const_set)
 {
   using SetType = typename TestFixture::SetType;
 
@@ -255,11 +243,11 @@ TYPED_TEST(OrderedSetIteratorTester,const_set)
     typename SetType::const_iterator b2 = set.begin();
     typename SetType::const_iterator e1 = set.end();
 
-    EXPECT_EQ(b1,b2);
-    EXPECT_EQ(b2,b1);
+    EXPECT_EQ(b1, b2);
+    EXPECT_EQ(b2, b1);
 
-    EXPECT_NE(b1,e1);
-    EXPECT_NE(e1,b1);
+    EXPECT_NE(b1, e1);
+    EXPECT_NE(e1, b1);
   }
 
   // apply some simple operators
@@ -268,24 +256,23 @@ TYPED_TEST(OrderedSetIteratorTester,const_set)
     auto b2 = set.begin();
     auto e1 = set.end();
 
-    EXPECT_EQ(b1,b2);
-    EXPECT_EQ(b2,b1);
+    EXPECT_EQ(b1, b2);
+    EXPECT_EQ(b2, b1);
 
-    EXPECT_NE(b1,e1);
-    EXPECT_NE(e1,b1);
+    EXPECT_NE(b1, e1);
+    EXPECT_NE(e1, b1);
 
     EXPECT_EQ(*b1, *b2);
     EXPECT_EQ(b1[1], b2[1]);
 
-    EXPECT_NE(b1+1, b2);
+    EXPECT_NE(b1 + 1, b2);
 
     b2++;
-    EXPECT_EQ(b1+1, b2);
+    EXPECT_EQ(b1 + 1, b2);
   }
-
 }
 
-TYPED_TEST(OrderedSetIteratorTester,equality_const_and_non_const)
+TYPED_TEST(OrderedSetIteratorTester, equality_const_and_non_const)
 {
   using SetType = typename TestFixture::SetType;
   using iterator = typename SetType::iterator;
@@ -299,11 +286,11 @@ TYPED_TEST(OrderedSetIteratorTester,equality_const_and_non_const)
     iterator b2 = set.begin();
     iterator e1 = set.end();
 
-    EXPECT_EQ(b1,b2);
-    EXPECT_EQ(b2,b1);
+    EXPECT_EQ(b1, b2);
+    EXPECT_EQ(b2, b1);
 
-    EXPECT_NE(b1,e1);
-    EXPECT_NE(e1,b1);
+    EXPECT_NE(b1, e1);
+    EXPECT_NE(e1, b1);
   }
 
   // check equality of const iterators
@@ -312,11 +299,11 @@ TYPED_TEST(OrderedSetIteratorTester,equality_const_and_non_const)
     const_iterator b2 = set.begin();
     const_iterator e1 = set.end();
 
-    EXPECT_EQ(b1,b2);
-    EXPECT_EQ(b2,b1);
+    EXPECT_EQ(b1, b2);
+    EXPECT_EQ(b2, b1);
 
-    EXPECT_NE(b1,e1);
-    EXPECT_NE(e1,b1);
+    EXPECT_NE(b1, e1);
+    EXPECT_NE(e1, b1);
   }
 
   // mix const and non-const iterators to non-const set
@@ -327,20 +314,19 @@ TYPED_TEST(OrderedSetIteratorTester,equality_const_and_non_const)
     const_iterator b2 = set.begin();
     const_iterator b3 = set.begin();
 
-    EXPECT_EQ(b1,b2);
-    EXPECT_EQ(b2,b1);
-    EXPECT_EQ(b2,b3);
+    EXPECT_EQ(b1, b2);
+    EXPECT_EQ(b2, b1);
+    EXPECT_EQ(b2, b3);
 
-    EXPECT_NE(b1,e1);
-    EXPECT_NE(e1,b1);
+    EXPECT_NE(b1, e1);
+    EXPECT_NE(e1, b1);
 
-    EXPECT_NE(b2,e1);
-    EXPECT_NE(e1,b2);
+    EXPECT_NE(b2, e1);
+    EXPECT_NE(e1, b2);
   }
 }
 
-
-TEST(slam_set_iterator,modify_with_iterators)
+TEST(slam_set_iterator, modify_with_iterators)
 {
   using SetType = VectorSet;
   using PositionType = typename SetType::PositionType;
@@ -362,7 +348,7 @@ TEST(slam_set_iterator,modify_with_iterators)
   // set1's values will be incrementing integers
   {
     int counter = 0;
-    for( auto& el : set1)
+    for(auto& el : set1)
     {
       el = counter++;  // set values using element reference
     }
@@ -371,11 +357,9 @@ TEST(slam_set_iterator,modify_with_iterators)
   // set2's values will be incrementing ints
   // but will use the previous element's value, accessed by iterator
   {
-    for(auto it = set2.begin() ; it != set2.end() ; ++it)
+    for(auto it = set2.begin(); it != set2.end(); ++it)
     {
-      *it = (it.index() == 0)
-            ? 0
-            : it[-1] + 1;
+      *it = (it.index() == 0) ? 0 : it[-1] + 1;
     }
   }
 
@@ -383,7 +367,7 @@ TEST(slam_set_iterator,modify_with_iterators)
   //   set2[i] = 2 N - i,  where N is the set size
   {
     const auto sz = set3.size();
-    for(auto it = set3.begin() ; it != set3.end() ; ++it)
+    for(auto it = set3.begin(); it != set3.end(); ++it)
     {
       // Get the element index using the iterator distance function
       PositionType pos = it - set3.begin();
@@ -396,25 +380,25 @@ TEST(slam_set_iterator,modify_with_iterators)
   {
     SLIC_INFO("set 1 := {0,1,2,..., n-1},"
               << " where n is the set's size (" << set1.size() << ")");
-    for(auto& el : set1 )
+    for(auto& el : set1)
     {
-      SLIC_INFO( el );
+      SLIC_INFO(el);
     }
 
     SLIC_INFO("set 2 := {0,1,2,..., n-1},"
               << " where n is the set's size (" << set2.size() << ")");
-    for(auto& el : set2 )
+    for(auto& el : set2)
     {
-      SLIC_INFO( el );
+      SLIC_INFO(el);
     }
 
     SLIC_INFO("set 3 := { 2n -i }, "
               << " where n is the set's size (" << set3.size() << ")"
               << " and i is the element index");
 
-    for(auto& el : set3 )
+    for(auto& el : set3)
     {
-      SLIC_INFO( el );
+      SLIC_INFO(el);
     }
   }
 
@@ -422,10 +406,10 @@ TEST(slam_set_iterator,modify_with_iterators)
   {
     const_iterator it1 = set1.begin();
     const_iterator it2 = set2.begin();
-    for(auto p : set1.positions() )
+    for(auto p : set1.positions())
     {
-      EXPECT_EQ( p, it1[p]);
-      EXPECT_EQ( *it1, *it2);
+      EXPECT_EQ(p, it1[p]);
+      EXPECT_EQ(*it1, *it2);
     }
   }
 
@@ -433,7 +417,7 @@ TEST(slam_set_iterator,modify_with_iterators)
   {
     const auto sz = set3.size();
 
-    for(const_iterator it = set3.begin() ; it != set3.end() ; ++it)
+    for(const_iterator it = set3.begin(); it != set3.end(); ++it)
     {
       auto pos = it.index();
       ElementType exp = 2 * sz - pos;
@@ -441,9 +425,7 @@ TEST(slam_set_iterator,modify_with_iterators)
       EXPECT_EQ(exp, *it);
     }
   }
-
 }
-
 
 //----------------------------------------------------------------------
 
@@ -456,7 +438,7 @@ int main(int argc, char* argv[])
 #endif
 
   axom::slic::UnitTestLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
+  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();
 

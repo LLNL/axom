@@ -6,16 +6,15 @@
 #ifndef MINT_PARTICLEMESH_HPP_
 #define MINT_PARTICLEMESH_HPP_
 
-#include "axom/core/Macros.hpp"   // for axom macros
+#include "axom/core/Macros.hpp"  // for axom macros
 
-#include "axom/mint/config.hpp"   // for mint compile-time definitions
-#include "axom/mint/mesh/Mesh.hpp"     // for mint::Mesh base class
+#include "axom/mint/config.hpp"     // for mint compile-time definitions
+#include "axom/mint/mesh/Mesh.hpp"  // for mint::Mesh base class
 
-#include "axom/slic/interface/slic.hpp"     // for slic Macros
+#include "axom/slic/interface/slic.hpp"  // for slic Macros
 
 namespace axom
 {
-
 // Sidre Forward Declarations
 namespace sidre
 {
@@ -24,7 +23,6 @@ class Group;
 
 namespace mint
 {
-
 // Mint Forward Declarations
 class MeshCoordinates;
 
@@ -70,16 +68,14 @@ class MeshCoordinates;
  */
 class ParticleMesh : public Mesh
 {
-
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
-  ParticleMesh( ) = delete;
+  ParticleMesh() = delete;
 
-/// \name Native Storage Constructors
-/// @{
+  /// \name Native Storage Constructors
+  /// @{
 
   /*!
    * \brief Constructs a ParticleMesh instance of specified dimension that
@@ -96,14 +92,14 @@ public:
    * \post getNumParticles() <= capacity()
    * \post hasSidreGroup() == false
    */
-  ParticleMesh( int dimension,
-                IndexType numParticles,
-                IndexType capacity=USE_DEFAULT );
+  ParticleMesh(int dimension,
+               IndexType numParticles,
+               IndexType capacity = USE_DEFAULT);
 
-/// @}
+  /// @}
 
-/// \name External Storage Constructors
-/// @{
+  /// \name External Storage Constructors
+  /// @{
 
   /*!
    * \brief Creates a ParticleMesh instance that points to the supplied external
@@ -131,16 +127,16 @@ public:
    * \post 1 <= getDimension() <= 3
    * \post getNumParticles() == numParticles
    */
-  ParticleMesh( IndexType numParticles,
-                double* x,
-                double* y=nullptr,
-                double* z=nullptr    );
+  ParticleMesh(IndexType numParticles,
+               double* x,
+               double* y = nullptr,
+               double* z = nullptr);
 
-/// @}
+  /// @}
 
 #ifdef AXOM_MINT_USE_SIDRE
-/// \name Sidre Storage Constructors
-/// @{
+  /// \name Sidre Storage Constructors
+  /// @{
 
   /*!
    * \brief Creates a ParticleMesh instance from a given Sidre group that holds
@@ -166,7 +162,7 @@ public:
    * \pre blueprint::isValidRootGroup( group )
    * \post hasSidreGroup() == true
    */
-  explicit ParticleMesh( sidre::Group* group, const std::string& topo="" );
+  explicit ParticleMesh(sidre::Group* group, const std::string& topo = "");
 
   /*!
    * \brief Creates a ParticleMesh object on an empty Sidre group.
@@ -194,58 +190,63 @@ public:
    */
   /// @{
 
-  ParticleMesh( int dimension,
-                IndexType numParticles,
-                sidre::Group* group,
-                const std::string& topo,
-                const std::string& coordset,
-                IndexType capacity=USE_DEFAULT );
+  ParticleMesh(int dimension,
+               IndexType numParticles,
+               sidre::Group* group,
+               const std::string& topo,
+               const std::string& coordset,
+               IndexType capacity = USE_DEFAULT);
 
-  ParticleMesh( int dimension,
-                IndexType numParticles,
-                sidre::Group* group,
-                IndexType capacity=USE_DEFAULT );
-  /// @}
+  ParticleMesh(int dimension,
+               IndexType numParticles,
+               sidre::Group* group,
+               IndexType capacity = USE_DEFAULT);
+    /// @}
 
-/// @}
+    /// @}
 
-#endif  /* AXOM_MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
-/// \name Virtual methods
-/// @{
+  /// \name Virtual methods
+  /// @{
 
   /*!
    * \brief Destructor.
    */
   virtual ~ParticleMesh();
 
-/// \name Cells
-/// @{
+  /// \name Cells
+  /// @{
 
   /*!
    * \brief Return the number of cells in the mesh.
    */
   virtual IndexType getNumberOfCells() const final override
-  { return getNumberOfNodes(); }
+  {
+    return getNumberOfNodes();
+  }
 
   /*!
    * \brief Return the capacity for cells.
    */
   virtual IndexType getCellCapacity() const final override
-  { return getNodeCapacity(); }
+  {
+    return getNodeCapacity();
+  }
 
-  virtual
-  IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) = 0 )
-  const final override
-  { return 1; }
+  virtual IndexType getNumberOfCellNodes(
+    IndexType AXOM_NOT_USED(cellID) = 0) const final override
+  {
+    return 1;
+  }
 
-  virtual
-  CellType getCellType( IndexType AXOM_NOT_USED(cellID)=0 ) const final override
-  { return VERTEX; }
+  virtual CellType getCellType(IndexType AXOM_NOT_USED(cellID) = 0) const final override
+  {
+    return VERTEX;
+  }
 
-  virtual
-  IndexType getCellNodeIDs( IndexType cellID,
-                            IndexType* cell ) const final override;
+  virtual IndexType getCellNodeIDs(IndexType cellID,
+                                   IndexType* cell) const final override;
 
   /*!
    * \brief Return the number of faces associated with the given cell. For the
@@ -253,9 +254,11 @@ public:
    *
    * \param [in] cellID the ID of the cell in question.
    */
-  virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID)=0 )
-  const final override
-  { return 0; }
+  virtual IndexType getNumberOfCellFaces(
+    IndexType AXOM_NOT_USED(cellID) = 0) const final override
+  {
+    return 0;
+  }
 
   /*!
    * \brief Populates the given buffer with the IDs of the faces of the given
@@ -266,30 +269,33 @@ public:
    * \param [out] faces buffer to populate with the face IDs. Must be of length
    *  at least getNumberOfCellFaces( cellID ).
    */
-  virtual IndexType getCellFaceIDs( IndexType AXOM_NOT_USED(cellID),
-                                    IndexType* AXOM_NOT_USED(faces) )
-  const final override
-  { 
-    SLIC_ERROR( "ParticleMesh does not implement this method." );
+  virtual IndexType getCellFaceIDs(IndexType AXOM_NOT_USED(cellID),
+                                   IndexType* AXOM_NOT_USED(faces)) const final override
+  {
+    SLIC_ERROR("ParticleMesh does not implement this method.");
     return 0;
   }
 
-/// @}
+  /// @}
 
-/// \name Nodes
-/// @{
+  /// \name Nodes
+  /// @{
 
   /*!
    * \brief Return the number of nodes in the mesh.
    */
   virtual IndexType getNumberOfNodes() const final override
-  { return m_positions->numNodes(); }
+  {
+    return m_positions->numNodes();
+  }
 
   /*!
    * \brief Return the capacity for nodes.
    */
   virtual IndexType getNodeCapacity() const final override
-  { return m_positions->capacity(); }
+  {
+    return m_positions->capacity();
+  }
 
   /*!
    * \brief Copy the coordinates of the given node into the provided buffer.
@@ -301,8 +307,10 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != nullptr
    */
-  virtual void getNode( IndexType nodeID, double* node ) const final override
-  { m_positions->getCoordinates( nodeID, node ); }
+  virtual void getNode(IndexType nodeID, double* node) const final override
+  {
+    m_positions->getCoordinates(nodeID, node);
+  }
 
   /*!
    * \brief Returns pointer to the particle positions in the specified dimension
@@ -315,24 +323,27 @@ public:
    */
   /// @{
 
-  virtual double* getCoordinateArray( int dim ) final override
-  { return m_positions->getCoordinateArray( dim ); }
+  virtual double* getCoordinateArray(int dim) final override
+  {
+    return m_positions->getCoordinateArray(dim);
+  }
 
-  virtual const double* getCoordinateArray( int dim ) const final override
-  { return m_positions->getCoordinateArray( dim ); }
+  virtual const double* getCoordinateArray(int dim) const final override
+  {
+    return m_positions->getCoordinateArray(dim);
+  }
 
   /// @}
 
-/// @}
+  /// @}
 
-/// \name Faces
-/// @{
+  /// \name Faces
+  /// @{
 
   /*!
    * \brief Return the number of faces in the mesh.
    */
-  virtual IndexType getNumberOfFaces() const final override
-  { return 0; }
+  virtual IndexType getNumberOfFaces() const final override { return 0; }
 
   /*!
    * \brief Return the type of the given face.
@@ -341,10 +352,9 @@ public:
    * 
    * \note The particle mesh does not have any faces so this call errors out.
    */
-  virtual CellType getFaceType( IndexType AXOM_NOT_USED(faceID) ) 
-  const final override
-  { 
-    SLIC_ERROR( "ParticleMesh does not implement this method." );
+  virtual CellType getFaceType(IndexType AXOM_NOT_USED(faceID)) const final override
+  {
+    SLIC_ERROR("ParticleMesh does not implement this method.");
     return UNDEFINED_CELL;
   }
 
@@ -355,10 +365,10 @@ public:
    * 
    * \note The particle mesh does not have any faces so this call errors out.
    */
-  virtual IndexType
-  getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID) ) const final override
-  { 
-    SLIC_ERROR( "ParticleMesh does not implement this method." );
+  virtual IndexType getNumberOfFaceNodes(
+    IndexType AXOM_NOT_USED(faceID)) const final override
+  {
+    SLIC_ERROR("ParticleMesh does not implement this method.");
     return -1;
   }
 
@@ -375,11 +385,10 @@ public:
    * 
    * \note The particle mesh does not have any faces so this call errors out.
    */
-  virtual IndexType getFaceNodeIDs( IndexType AXOM_NOT_USED(faceID),
-                                    IndexType* AXOM_NOT_USED(nodes) ) const
-  final override
-  { 
-    SLIC_ERROR( "ParticleMesh does not implement this method." );
+  virtual IndexType getFaceNodeIDs(IndexType AXOM_NOT_USED(faceID),
+                                   IndexType* AXOM_NOT_USED(nodes)) const final override
+  {
+    SLIC_ERROR("ParticleMesh does not implement this method.");
     return -1;
   }
 
@@ -393,66 +402,64 @@ public:
    *
    * \note The particle mesh does not have any faces so this call errors out.
    */
-  virtual void getFaceCellIDs( IndexType AXOM_NOT_USED(faceID),
-                               IndexType& AXOM_NOT_USED(cellIDOne),
-                               IndexType& AXOM_NOT_USED(cellIDTwo) ) const
-  final override
+  virtual void getFaceCellIDs(IndexType AXOM_NOT_USED(faceID),
+                              IndexType& AXOM_NOT_USED(cellIDOne),
+                              IndexType& AXOM_NOT_USED(cellIDTwo)) const final override
   {
-    SLIC_ERROR( "ParticleMesh does not implement this method." );
+    SLIC_ERROR("ParticleMesh does not implement this method.");
   }
 
-/// @}
+  /// @}
 
-/// \name Edges
-/// @{
+  /// \name Edges
+  /// @{
 
   /*!
    * \brief Return the number of edges in the mesh.
    */
-  virtual IndexType getNumberOfEdges() const final override
-  { return 0; }
+  virtual IndexType getNumberOfEdges() const final override { return 0; }
 
   /*!
    * \brief Return the capacity for edges.
    */
-  virtual IndexType getEdgeCapacity() const final override
-  { return 0; }
+  virtual IndexType getEdgeCapacity() const final override { return 0; }
 
-/// @}
+  /// @}
 
   /*!
    * \brief Return true iff particle positions are stored in external arrays.
    * \return status true iff the particle positions point to external buffers.
    */
   virtual bool isExternal() const final override
-  { return m_positions->isExternal(); }
+  {
+    return m_positions->isExternal();
+  }
 
-/// @}
+  /// @}
 
-/// \name Attribute get/set Methods
-/// @{
+  /// \name Attribute get/set Methods
+  /// @{
 
-/// \name Nodes
-/// @{
+  /// \name Nodes
+  /// @{
 
   /*!
    * \brief Return the node resize ratio.
    */
-  double getNodeResizeRatio() const
-  { return m_positions->getResizeRatio(); }
+  double getNodeResizeRatio() const { return m_positions->getResizeRatio(); }
 
   /*!
    * \brief Increase the number of particles this ParticleMesh instance can hold
    * \param [in] newSize the number of particles this instance will now hold
    * \post getNumParticles() == newSize
    */
-  void resize( IndexType newSize );
+  void resize(IndexType newSize);
 
   /*!
    * \brief Increase the max particle capacity of this ParticleMesh instance
    * \param [in] newCapacity
    */
-  void reserve( IndexType newCapacity );
+  void reserve(IndexType newCapacity);
 
   /*!
    * \brief Shrinks the max particle capacity to the actual number of particles.
@@ -462,22 +469,20 @@ public:
    */
   void shrink();
 
-/// @}
+  /// @}
 
   /*!
    * \brief Return true iff the mesh holds no particles.
    */
-  bool empty() const
-  { return m_positions->empty(); }
+  bool empty() const { return m_positions->empty(); }
 
   /*!
    * \brief Return true iff the particle positions are stored in sidre.
    */
-  bool isInSidre() const
-  { return m_positions->isInSidre(); }
+  bool isInSidre() const { return m_positions->isInSidre(); }
 
-/// \name Data Access Methods
-/// @{
+  /// \name Data Access Methods
+  /// @{
 
   /*!
    * \brief Appends a new particle to the ParticleMesh
@@ -490,16 +495,15 @@ public:
    */
   /// @{
 
-  void append( double x );
-  void append( double x, double y );
-  void append( double x, double y, double z );
+  void append(double x);
+  void append(double x, double y);
+  void append(double x, double y, double z);
 
   /// @}
 
-/// @}
+  /// @}
 
 private:
-
   /*!
    * \brief Helper method to initialize a ParticleMesh instance.
    * \note Called from the constructor.
@@ -523,77 +527,75 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline IndexType ParticleMesh::getCellNodeIDs( IndexType cellID,
-                                               IndexType* cell ) const
+inline IndexType ParticleMesh::getCellNodeIDs(IndexType cellID,
+                                              IndexType* cell) const
 {
-  SLIC_ASSERT( cell != nullptr );
-  SLIC_ASSERT( 0 <= cellID && cellID <= getNumberOfCells() );
+  SLIC_ASSERT(cell != nullptr);
+  SLIC_ASSERT(0 <= cellID && cellID <= getNumberOfCells());
   cell[0] = cellID;
   return 1;
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::append( double x )
+inline void ParticleMesh::append(double x)
 {
-  SLIC_ASSERT( m_positions != nullptr );
-  SLIC_ERROR_IF( m_ndims != 1,
-                 "ParticleMesh::append(x) is only valid in 1-D" );
+  SLIC_ASSERT(m_positions != nullptr);
+  SLIC_ERROR_IF(m_ndims != 1, "ParticleMesh::append(x) is only valid in 1-D");
 
-  m_positions->append( x );
-  m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
+  m_positions->append(x);
+  m_mesh_fields[NODE_CENTERED]->resize(m_positions->numNodes());
 
-  SLIC_ASSERT( checkConsistency() );
+  SLIC_ASSERT(checkConsistency());
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::append( double x, double y )
+inline void ParticleMesh::append(double x, double y)
 {
-  SLIC_ASSERT( m_positions != nullptr );
-  SLIC_ERROR_IF( m_ndims != 2,
-                 "ParticleMesh::append(x,y) is only valid in 2-D" );
+  SLIC_ASSERT(m_positions != nullptr);
+  SLIC_ERROR_IF(m_ndims != 2, "ParticleMesh::append(x,y) is only valid in 2-D");
 
-  m_positions->append( x, y );
-  m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
+  m_positions->append(x, y);
+  m_mesh_fields[NODE_CENTERED]->resize(m_positions->numNodes());
 
-  SLIC_ASSERT( checkConsistency() );
+  SLIC_ASSERT(checkConsistency());
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::append( double x, double y, double z )
+inline void ParticleMesh::append(double x, double y, double z)
 {
-  SLIC_ASSERT( m_positions != nullptr );
-  SLIC_ERROR_IF( m_ndims != 3,
-                 "ParticleMesh::append(x,y,z) is only valid in 3-D" );
+  SLIC_ASSERT(m_positions != nullptr);
+  SLIC_ERROR_IF(m_ndims != 3,
+                "ParticleMesh::append(x,y,z) is only valid in 3-D");
 
-  m_positions->append( x, y, z );
-  m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
+  m_positions->append(x, y, z);
+  m_mesh_fields[NODE_CENTERED]->resize(m_positions->numNodes());
 
-  SLIC_ASSERT( checkConsistency() );
+  SLIC_ASSERT(checkConsistency());
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::resize( IndexType newSize )
+inline void ParticleMesh::resize(IndexType newSize)
 {
-  SLIC_ASSERT( m_positions != nullptr );
-  m_positions->resize( newSize );
-  m_mesh_fields[ NODE_CENTERED ]->resize( newSize );
-  SLIC_ASSERT( checkConsistency() );
+  SLIC_ASSERT(m_positions != nullptr);
+  m_positions->resize(newSize);
+  m_mesh_fields[NODE_CENTERED]->resize(newSize);
+  SLIC_ASSERT(checkConsistency());
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::reserve( IndexType newCapacity )
+inline void ParticleMesh::reserve(IndexType newCapacity)
 {
-  SLIC_ASSERT( m_positions != nullptr );
-  m_positions->reserve( newCapacity );
-  m_mesh_fields[ NODE_CENTERED ]->reserve( newCapacity );
+  SLIC_ASSERT(m_positions != nullptr);
+  m_positions->reserve(newCapacity);
+  m_mesh_fields[NODE_CENTERED]->reserve(newCapacity);
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::shrink( )
+inline void ParticleMesh::shrink()
 {
-  SLIC_ASSERT( m_positions != nullptr );
+  SLIC_ASSERT(m_positions != nullptr);
   m_positions->shrink();
-  m_mesh_fields[ NODE_CENTERED ]->shrink( );
+  m_mesh_fields[NODE_CENTERED]->shrink();
 }
 
 } /* namespace mint */

@@ -20,7 +20,6 @@ namespace axom
 {
 namespace quest
 {
-
 /*!
  * \class STLReader
  *
@@ -33,7 +32,6 @@ namespace quest
 class STLReader
 {
 public:
-
   /*!
    * \brief Constructor.
    */
@@ -48,7 +46,7 @@ public:
    * \brief Sets the name of the file to read.
    * \param [in] fileName the name of the file to read.
    */
-  void setFileName( const std::string& fileName ) { m_fileName = fileName; };
+  void setFileName(const std::string& fileName) { m_fileName = fileName; };
 
   /*!
    * \brief Returns the number of nodes of the surface mesh.
@@ -79,7 +77,7 @@ public:
    * \param [in,out] mesh pointer to the unstructured mesh.
    * \pre mesh != nullptr.
    */
-  void getMesh( mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh );
+  void getMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh);
 
 private:
   /*!
@@ -116,12 +114,11 @@ protected:
   std::vector<double> m_nodes;
 
 private:
-
   DISABLE_COPY_AND_ASSIGNMENT(STLReader);
   DISABLE_MOVE_AND_ASSIGNMENT(STLReader);
 };
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom
 
 #endif /* QUEST_STLREADER_HPP_ */

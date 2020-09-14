@@ -31,10 +31,10 @@ namespace inlet
 
 bool LuaReader::parseFile(const std::string& filePath)
 {
-  if (!axom::utilities::filesystem::pathExists(filePath))
+  if(!axom::utilities::filesystem::pathExists(filePath))
   {
-    SLIC_WARNING(fmt::format("Inlet: Given Lua input deck does not exist: {0}",
-                             filePath));
+    SLIC_WARNING(
+      fmt::format("Inlet: Given Lua input file does not exist: {0}", filePath));
     return false;
   }
 
@@ -46,10 +46,9 @@ bool LuaReader::parseFile(const std::string& filePath)
   return script.valid();
 }
 
-
 bool LuaReader::parseString(const std::string& luaString)
 {
-  if (luaString.empty())
+  if(luaString.empty())
   {
     SLIC_WARNING("Inlet: Given an empty Lua string to parse.");
     return false;
@@ -158,5 +157,5 @@ bool LuaReader::getMap(const std::string& id, std::unordered_map<int, T>& values
   return true;
 }
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom

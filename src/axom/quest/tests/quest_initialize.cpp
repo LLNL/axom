@@ -18,12 +18,11 @@ namespace mint = axom::mint;
 namespace quest = axom::quest;
 
 // Test initializing quest inout from a preloaded mesh
-TEST( quest_initialize, inout_pointer_initialize )
+TEST(quest_initialize, inout_pointer_initialize)
 {
   int rc = quest::QUEST_INOUT_SUCCESS;
 
-  mint::Mesh* input_mesh =
-    axom::quest::utilities::make_tetrahedron_mesh();
+  mint::Mesh* input_mesh = axom::quest::utilities::make_tetrahedron_mesh();
 
   // Note: the following call updates the input_mesh pointer
 #ifdef AXOM_USE_MPI
@@ -45,14 +44,12 @@ TEST( quest_initialize, inout_pointer_initialize )
   delete input_mesh;
 }
 
-
 // Test initializing quest signed_distance from a preloaded mesh
-TEST( quest_initialize, signed_distance_pointer_initialize )
+TEST(quest_initialize, signed_distance_pointer_initialize)
 {
   int rc = 0;
 
-  mint::Mesh* input_mesh =
-    axom::quest::utilities::make_tetrahedron_mesh();
+  mint::Mesh* input_mesh = axom::quest::utilities::make_tetrahedron_mesh();
 
 #ifdef AXOM_USE_MPI
   rc = quest::signed_distance_init(input_mesh, MPI_COMM_WORLD);
@@ -72,11 +69,11 @@ TEST( quest_initialize, signed_distance_pointer_initialize )
   delete input_mesh;
 }
 
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
 #ifdef AXOM_USE_MPI
   // Initialize MPI
-  MPI_Init( &argc, &argv );
+  MPI_Init(&argc, &argv);
 #endif
 
   ::testing::InitGoogleTest(&argc, argv);

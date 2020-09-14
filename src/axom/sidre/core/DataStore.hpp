@@ -33,10 +33,10 @@ namespace axom
 {
 namespace sidre
 {
-
 class Buffer;
 class Group;
-template <typename TYPE> class MapCollection;
+template <typename TYPE>
+class MapCollection;
 
 /*!
  * \class DataStore
@@ -52,7 +52,6 @@ template <typename TYPE> class MapCollection;
 class DataStore
 {
 public:
-
   /*!
    * \brief Default ctor initializes DataStore object and creates a root Group.
    *
@@ -70,21 +69,15 @@ public:
   /*!
    * \brief Return pointer to the root Group.
    */
-  Group* getRoot()
-  {
-    return m_RootGroup;
-  };
+  Group* getRoot() { return m_RootGroup; };
 
   /*!
    * \brief Return pointer to the root Group.
    */
-  const Group* getRoot() const
-  {
-    return m_RootGroup;
-  };
+  const Group* getRoot() const { return m_RootGroup; };
 
-//@{
-//!  @name Methods to query, access, create, and destroy Buffers.
+  //@{
+  //!  @name Methods to query, access, create, and destroy Buffers.
 
   /*!
    * \brief Return number of Buffers in the DataStore.
@@ -99,17 +92,17 @@ public:
    * \brief Return true if DataStore owns a Buffer with given index;
    *        else false.
    */
-  bool hasBuffer( IndexType idx ) const
+  bool hasBuffer(IndexType idx) const
   {
-    return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
-             m_data_buffers[static_cast<unsigned>(idx)] != nullptr );
+    return (0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
+            m_data_buffers[static_cast<unsigned>(idx)] != nullptr);
   }
 
   /*!
    * \brief Return (non-const) pointer to Buffer object with the given
    *        index, or nullptr if none exists.
    */
-  Buffer* getBuffer( IndexType idx ) const;
+  Buffer* getBuffer(IndexType idx) const;
 
   /*!
    * \brief Create an undescribed Buffer object and return a pointer to it.
@@ -130,7 +123,7 @@ public:
    *        The Buffer object is assigned a unique index when created and the
    *        Buffer object is owned by the DataStore object.
    */
-  Buffer* createBuffer( TypeID type, IndexType num_elems );
+  Buffer* createBuffer(TypeID type, IndexType num_elems);
 
   /*!
    * \brief Remove Buffer from the DataStore and destroy it and
@@ -139,7 +132,7 @@ public:
    *        Note that Buffer destruction detaches it from all Views to
    *        which it is attached.
    */
-  void destroyBuffer( Buffer* buff );
+  void destroyBuffer(Buffer* buff);
 
   /*!
    * \brief Remove Buffer with given index from the DataStore and
@@ -148,7 +141,7 @@ public:
    *        Note that Buffer destruction detaches it from all Views to
    *        which it is attached.
    */
-  void destroyBuffer( IndexType idx );
+  void destroyBuffer(IndexType idx);
 
   /*!
    * \brief Remove all Buffers from the DataStore and destroy them
@@ -159,23 +152,23 @@ public:
    */
   void destroyAllBuffers();
 
-//@}
+  //@}
 
-//@{
-//!  @name Methods for iterating over Buffers in the DataStore.
-//!
-//! Using these methods, a code can get the first Buffer index and each
-//! succeeding index.  This allows Buffer iteration using the same
-//! constructs in C++, C, and Fortran.  Example:
-//!
-//!      for (sidre::IndexType idx = ds->getFirstValidBufferIndex();
-//!           sidre::indexIsValid(idx);
-//!           idx = ds->getNextValidBufferIndex(idx))
-//!      {
-//!          Buffer * buf = ds->getBuffer(idx);
-//!
-//!          /// code here using buf
-//!      }
+  //@{
+  //!  @name Methods for iterating over Buffers in the DataStore.
+  //!
+  //! Using these methods, a code can get the first Buffer index and each
+  //! succeeding index.  This allows Buffer iteration using the same
+  //! constructs in C++, C, and Fortran.  Example:
+  //!
+  //!      for (sidre::IndexType idx = ds->getFirstValidBufferIndex();
+  //!           sidre::indexIsValid(idx);
+  //!           idx = ds->getNextValidBufferIndex(idx))
+  //!      {
+  //!          Buffer * buf = ds->getBuffer(idx);
+  //!
+  //!          /// code here using buf
+  //!      }
 
   /*!
    * \brief Return first valid Buffer index.
@@ -195,10 +188,10 @@ public:
    */
   IndexType getNextValidBufferIndex(IndexType idx) const;
 
-//@}
+  //@}
 
-//@{
-//!  @name Methods to query, access, create, and destroy Attributes.
+  //@{
+  //!  @name Methods to query, access, create, and destroy Attributes.
 
   /*!
    * \brief Return number of Attributes in the DataStore.
@@ -211,12 +204,12 @@ public:
    *        The Attribute object is assigned a unique index when created and the
    *        Attribute object is owned by the DataStore object.
    */
-  template<typename ScalarType>
-  Attribute* createAttributeScalar( const std::string & name,
-                                    ScalarType default_value)
+  template <typename ScalarType>
+  Attribute* createAttributeScalar(const std::string& name,
+                                   ScalarType default_value)
   {
     Attribute* new_attribute = createAttributeEmpty(name);
-    if ( new_attribute != nullptr )
+    if(new_attribute != nullptr)
     {
       new_attribute->setDefaultScalar(default_value);
     }
@@ -229,11 +222,11 @@ public:
    *        The Attribute object is assigned a unique index when created and the
    *        Attribute object is owned by the DataStore object.
    */
-  Attribute* createAttributeString( const std::string & name,
-                                    const std::string & default_value)
+  Attribute* createAttributeString(const std::string& name,
+                                   const std::string& default_value)
   {
     Attribute* new_attribute = createAttributeEmpty(name);
-    if ( new_attribute != nullptr )
+    if(new_attribute != nullptr)
     {
       new_attribute->setDefaultString(default_value);
     }
@@ -243,13 +236,13 @@ public:
   /*!
    * \brief Return true if DataStore has created attribute name; else false.
    */
-  bool hasAttribute( const std::string& name ) const;
+  bool hasAttribute(const std::string& name) const;
 
   /*!
    * \brief Return true if DataStore has created attribute with index; else
    * false.
    */
-  bool hasAttribute( IndexType idx ) const;
+  bool hasAttribute(IndexType idx) const;
 
   /*!
    * \brief Remove Attribute from the DataStore and destroy it and
@@ -258,7 +251,7 @@ public:
    * \note Destruction of an Attribute detaches it from all Views to
    *       which it is attached.
    */
-  void destroyAttribute( const std::string & name );
+  void destroyAttribute(const std::string& name);
 
   /*!
    * \brief Remove Attribute with given index from the DataStore and
@@ -267,7 +260,7 @@ public:
    * \note Destruction of an Attribute detaches it from all Views to
    *       which it is attached.
    */
-  void destroyAttribute( IndexType idx );
+  void destroyAttribute(IndexType idx);
 
   /*!
    * \brief Remove Attribute from the DataStore and destroy it and
@@ -276,7 +269,7 @@ public:
    * \note Destruction of an Attribute detaches it from all Views to
    *       which it is attached.
    */
-  void destroyAttribute( Attribute* attr );
+  void destroyAttribute(Attribute* attr);
 
   /*!
    * \brief Remove all Attributes from the DataStore and destroy them
@@ -287,38 +280,38 @@ public:
    */
   void destroyAllAttributes();
 
-//@}
+  //@}
 
-//@{
-//!  @name Attribute access methods.
+  //@{
+  //!  @name Attribute access methods.
 
   /*!
    * \brief Return pointer to non-const Attribute with given index.
    *
    * If no such Attribute exists, nullptr is returned.
    */
-  Attribute* getAttribute( IndexType idx );
+  Attribute* getAttribute(IndexType idx);
 
   /*!
    * \brief Return pointer to const Attribute with given index.
    *
    * If no such Attribute exists, nullptr is returned.
    */
-  const Attribute* getAttribute( IndexType idx ) const;
+  const Attribute* getAttribute(IndexType idx) const;
 
   /*!
    * \brief Return pointer to non-const Attribute with given name.
    *
    * If no such Attribute exists, nullptr is returned.
    */
-  Attribute* getAttribute( const std::string& name );
+  Attribute* getAttribute(const std::string& name);
 
   /*!
    * \brief Return pointer to const Attribute with given name.
    *
    * If no such Attribute exists, nullptr is returned.
    */
-  const Attribute* getAttribute( const std::string& name ) const;
+  const Attribute* getAttribute(const std::string& name) const;
 
   /*!
    * \brief Copy Attribute and default value to Conduit node.
@@ -331,23 +324,23 @@ public:
    */
   void loadAttributeLayout(Node& node);
 
-//@}
+  //@}
 
-//@{
-//!  @name Methods for iterating over Attributes in the DataStore.
-//!
-//! Using these methods, a code can get the first Attribute index and each
-//! succeeding index.  This allows Attribute iteration using the same
-//! constructs in C++, C, and Fortran.  Example:
-//!
-//!      for (sidre::IndexType idx = ds->getFirstValidAttributeIndex();
-//!           sidre::indexIsValid(idx);
-//!           idx = ds->getNextValidAttributeIndex(idx))
-//!      {
-//!          Attribute * attr = ds->getAttribute(idx);
-//!
-//!          /// code here using attr
-//!      }
+  //@{
+  //!  @name Methods for iterating over Attributes in the DataStore.
+  //!
+  //! Using these methods, a code can get the first Attribute index and each
+  //! succeeding index.  This allows Attribute iteration using the same
+  //! constructs in C++, C, and Fortran.  Example:
+  //!
+  //!      for (sidre::IndexType idx = ds->getFirstValidAttributeIndex();
+  //!           sidre::indexIsValid(idx);
+  //!           idx = ds->getNextValidAttributeIndex(idx))
+  //!      {
+  //!          Attribute * attr = ds->getAttribute(idx);
+  //!
+  //!          /// code here using attr
+  //!      }
 
   /*!
    * \brief Return first valid Attribute index in DataStore object
@@ -371,7 +364,7 @@ public:
    */
   IndexType getNextValidAttributeIndex(IndexType idx) const;
 
-//@}
+  //@}
 
   /*!
    * \brief Generate a Conduit Blueprint index based on a mesh in stored in
@@ -400,8 +393,7 @@ public:
                               const std::string& index_path,
                               int num_domains);
 
-//----------------
-
+  //----------------
 
   /*!
    * \brief Print JSON description of the DataStore Group hierarchy (starting
@@ -419,17 +411,17 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(DataStore);
   DISABLE_MOVE_AND_ASSIGNMENT(DataStore);
 
-//@{
-//!  @name Private View declaration methods.
-//!        (callable only by Group and View methods).
+  //@{
+  //!  @name Private View declaration methods.
+  //!        (callable only by Group and View methods).
 
   /*!
    * \brief Create an Attribute and insert it into the DataStore.
    *        The attribute will be untyped.
    */
-  Attribute* createAttributeEmpty(const std::string & name);
+  Attribute* createAttributeEmpty(const std::string& name);
 
-//@}
+  //@}
 
   /// Root Group, created when DataStore object is created.
   Group* m_RootGroup;
@@ -438,7 +430,7 @@ private:
   std::vector<Buffer*> m_data_buffers;
 
   /// Collection of unused unique Buffer indices (they can be recycled).
-  std::stack< IndexType > m_free_buffer_ids;
+  std::stack<IndexType> m_free_buffer_ids;
 
   ///////////////////////////////////////////////////////////////////
   //
@@ -451,7 +443,6 @@ private:
   /// Flag indicating whether SLIC logging environment was initialized in ctor.
   bool m_need_to_finalize_slic;
 };
-
 
 } /* end namespace sidre */
 } /* end namespace axom */

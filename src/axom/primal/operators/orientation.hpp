@@ -28,7 +28,6 @@ namespace axom
 {
 namespace primal
 {
-
 /*!
  * \brief Computes the orientation of the given point, p, with respect to a
  *  supplied oriented triangle.
@@ -45,23 +44,23 @@ namespace primal
  *  <li> ON_NEGATIVE_SIDE, when the point lies in the negative half-space </li>
  * </ul>
  */
-template < typename T >
-inline
-int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
+template <typename T>
+inline int orientation(const Point<T, 3>& p, const Triangle<T, 3>& tri)
 {
-
+  // clang-format off
   double det = numerics::determinant( tri[0][0], tri[0][1], tri[0][2], 1.0,
                                       tri[1][0], tri[1][1], tri[1][2], 1.0,
                                       tri[2][0], tri[2][1], tri[2][2], 1.0,
                                       p[0],      p[1],      p[2], 1.0  );
+  // clang-format on
 
   int orient = -1;
 
-  if ( axom::utilities::isNearlyEqual( det, 0.0, 1.0e-9 ) )
+  if(axom::utilities::isNearlyEqual(det, 0.0, 1.0e-9))
   {
     orient = ON_BOUNDARY;
   }
-  else if ( det < 0.0f )
+  else if(det < 0.0f)
   {
     // outside
     orient = ON_POSITIVE_SIDE;
@@ -94,22 +93,23 @@ int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
  *  </li>
  * </ul>
  */
-template < typename T >
-inline
-int orientation( const Point< T,2 >& p, const Segment< T,2 >& seg )
+template <typename T>
+inline int orientation(const Point<T, 2>& p, const Segment<T, 2>& seg)
 {
+  // clang-format off
   double det = numerics::determinant( seg.source()[0], seg.source()[1], 1.0,
                                       seg.target()[0], seg.target()[1], 1.0,
                                       p[0],            p[1], 1.0  );
+  // clang-format on
 
   int orient = -1;
 
-  if ( axom::utilities::isNearlyEqual( det, 0.0 ) )
+  if(axom::utilities::isNearlyEqual(det, 0.0))
   {
     // collinear
     orient = ON_BOUNDARY;
   }
-  else if ( det < 0.0f )
+  else if(det < 0.0f)
   {
     // outside, clockwise, to the right
     orient = ON_POSITIVE_SIDE;

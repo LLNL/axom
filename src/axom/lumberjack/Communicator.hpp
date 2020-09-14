@@ -24,7 +24,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *******************************************************************************
  * \class Communicator
@@ -47,7 +46,7 @@ public:
    * \brief Virtual destructor.
    *****************************************************************************
    */
-  virtual ~Communicator(){};
+  virtual ~Communicator() {};
 
   /*!
    *****************************************************************************
@@ -145,7 +144,7 @@ public:
   virtual bool isOutputNode() = 0;
 };
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

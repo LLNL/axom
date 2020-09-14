@@ -8,21 +8,19 @@
 #include "axom/core/utilities/Utilities.hpp"  // isLittleEndian()/swapEndian()
 
 // Mint includes
-#include "axom/mint/mesh/CellTypes.hpp"       // for mint::Triangle
+#include "axom/mint/mesh/CellTypes.hpp"  // for mint::Triangle
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"            // for SLIC macros
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 // C/C++ includes
-#include <fstream>   // for ifstream
-
+#include <fstream>  // for ifstream
 
 namespace
 {
-const std::size_t BINARY_HEADER_SIZE = 80;      // bytes
-const std::size_t BINARY_TRI_SIZE = 50;         // bytes
-}
-
+const std::size_t BINARY_HEADER_SIZE = 80;  // bytes
+const std::size_t BINARY_TRI_SIZE = 50;     // bytes
+}  // namespace
 
 //------------------------------------------------------------------------------
 //      STLReader Implementation
@@ -31,18 +29,10 @@ namespace axom
 {
 namespace quest
 {
-
-STLReader::STLReader() :
-  m_fileName(""),
-  m_num_nodes(0),
-  m_num_faces(0)
-{}
+STLReader::STLReader() : m_fileName(""), m_num_nodes(0), m_num_faces(0) { }
 
 //------------------------------------------------------------------------------
-STLReader::~STLReader()
-{
-  this->clear();
-}
+STLReader::~STLReader() { this->clear(); }
 
 //------------------------------------------------------------------------------
 void STLReader::clear()
@@ -61,30 +51,28 @@ bool STLReader::isAsciiFormat() const
   //    followed by the triangle data (BINARY_TRI_SIZE == 50 bytes per triangle)
 
   // Open the file
-  std::ifstream ifs( m_fileName.c_str(), std::ios::in| std::ios::binary);
+  std::ifstream ifs(m_fileName.c_str(), std::ios::in | std::ios::binary);
 
-  if ( !ifs.is_open() )
+  if(!ifs.is_open())
   {
     /* short-circuit */
-    SLIC_WARNING( "Cannot open the provided STL file [" << m_fileName << "]" );
+    SLIC_WARNING("Cannot open the provided STL file [" << m_fileName << "]");
     return false;
   }
 
   // Find out the file size
   ifs.seekg(0, ifs.end);
-  axom::int32 fileSize = static_cast< axom::int32>(ifs.tellg());
+  axom::int32 fileSize = static_cast<axom::int32>(ifs.tellg());
 
-  const int totalHeaderSize =
-    (BINARY_HEADER_SIZE + sizeof( axom::int32 ) );
-  if(fileSize < totalHeaderSize)
-    return true;
+  const int totalHeaderSize = (BINARY_HEADER_SIZE + sizeof(axom::int32));
+  if(fileSize < totalHeaderSize) return true;
 
   // Find the number of triangles (if the file were binary)
   int numTris = 0;
   ifs.seekg(BINARY_HEADER_SIZE, ifs.beg);
-  ifs.read( (char*)&numTris, sizeof( axom::int32));
+  ifs.read((char*)&numTris, sizeof(axom::int32));
 
-  if ( !utilities::isLittleEndian() )
+  if(!utilities::isLittleEndian())
   {
     numTris = utilities::swapEndian(numTris);
   }
@@ -100,16 +88,16 @@ bool STLReader::isAsciiFormat() const
 //------------------------------------------------------------------------------
 int STLReader::readAsciiSTL()
 {
-  std::ifstream ifs( m_fileName.c_str());
+  std::ifstream ifs(m_fileName.c_str());
 
-  if ( !ifs.is_open() )
+  if(!ifs.is_open())
   {
-    SLIC_WARNING( "Cannot open the provided STL file [" << m_fileName << "]" );
-    return ( -1 );
+    SLIC_WARNING("Cannot open the provided STL file [" << m_fileName << "]");
+    return (-1);
   }
 
   std::string junk;
-  double x,y,z;
+  double x, y, z;
 
   // In an STL  file, we only care about the vertex positions
   // Vertices are strings of the form: "vertex v_x v_y v_z"
@@ -118,11 +106,9 @@ int STLReader::readAsciiSTL()
     do
     {
       ifs >> junk;
-    }
-    while( ifs.good() && junk != "vertex");
+    } while(ifs.good() && junk != "vertex");
 
-    if(ifs.fail())
-      break;
+    if(ifs.fail()) break;
 
     ifs >> x >> y >> z;
     m_nodes.push_back(x);
@@ -131,11 +117,11 @@ int STLReader::readAsciiSTL()
   }
 
   // Set the number of nodes and faces
-  m_num_nodes = static_cast< axom::IndexType >( m_nodes.size() ) / 3;
+  m_num_nodes = static_cast<axom::IndexType>(m_nodes.size()) / 3;
   m_num_faces = m_num_nodes / 3;
 
   ifs.close();
-  return ( 0 );
+  return (0);
 }
 
 //------------------------------------------------------------------------------
@@ -163,116 +149,107 @@ int STLReader::readBinarySTL()
   bool const isLittleEndian = axom::utilities::isLittleEndian();
 
   // Open binary file, skip the header
-  std::ifstream ifs( m_fileName.c_str(), std::ios::in| std::ios::binary);
-  if ( !ifs.is_open() )
+  std::ifstream ifs(m_fileName.c_str(), std::ios::in | std::ios::binary);
+  if(!ifs.is_open())
   {
-    SLIC_WARNING( "Cannot open the provided STL file [" << m_fileName << "]" );
-    return ( -1 );
+    SLIC_WARNING("Cannot open the provided STL file [" << m_fileName << "]");
+    return (-1);
   }
 
   ifs.seekg(BINARY_HEADER_SIZE);
 
   // read the num faces and reserve room for the vertex positions
-  ifs.read( (char*)&m_num_faces, sizeof( axom::int32 ) );
+  ifs.read((char*)&m_num_faces, sizeof(axom::int32));
 
-  if ( !isLittleEndian )
+  if(!isLittleEndian)
   {
     m_num_faces = utilities::swapEndian(m_num_faces);
   }
 
   m_num_nodes = m_num_faces * 3;
-  m_nodes.reserve( m_num_nodes * 3);
+  m_nodes.reserve(m_num_nodes * 3);
 
   // Read the triangles. Cast to doubles and ignore normals and attributes
-  for( axom::IndexType i=0 ; i < m_num_faces ; ++i)
+  for(axom::IndexType i = 0; i < m_num_faces; ++i)
   {
-    ifs.read( (char*)tri.raw, BINARY_TRI_SIZE);
+    ifs.read((char*)tri.raw, BINARY_TRI_SIZE);
 
-    for(int j=0 ; j<9 ; ++j)
+    for(int j = 0; j < 9; ++j)
     {
-      float coord = isLittleEndian ?
-                    tri.data.vert[ j ] :
-                    utilities::swapEndian( tri.data.vert[ j ] );
+      float coord = isLittleEndian ? tri.data.vert[j]
+                                   : utilities::swapEndian(tri.data.vert[j]);
 
-      m_nodes.push_back( static_cast<double>( coord) );
+      m_nodes.push_back(static_cast<double>(coord));
     }
   }
 
-  ifs.close( );
+  ifs.close();
 
-  return ( 0 );
-
+  return (0);
 }
-
 
 //------------------------------------------------------------------------------
 int STLReader::read()
 {
-  if ( m_fileName.empty() )
+  if(m_fileName.empty())
   {
-    return ( -1 );
+    return (-1);
   }
 
   // Clear internal data, check the format and load the data
   this->clear();
 
-  int rc = ( isAsciiFormat() ) ? readAsciiSTL() : readBinarySTL();
-  return ( rc );
+  int rc = (isAsciiFormat()) ? readAsciiSTL() : readBinarySTL();
+  return (rc);
 }
 
 //------------------------------------------------------------------------------
-void STLReader::getMesh(
-  axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh )
+void STLReader::getMesh(axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh)
 {
   /* Sanity checks */
-  SLIC_ERROR_IF( mesh == nullptr,
-                 "supplied mesh is null!" );
-  SLIC_ERROR_IF(
-    static_cast< axom::IndexType >(m_nodes.size()) != 3*m_num_nodes,
-    "nodes vector size doesn't match expected size!" );
-  SLIC_ERROR_IF( mesh->getDimension() != 3,
-                 "STL reader expects a 3D mesh!" );
-  SLIC_ERROR_IF( mesh->getCellType() != mint::TRIANGLE,
-                 "STL reader expects a triangle mesh!" );
+  SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
+  SLIC_ERROR_IF(static_cast<axom::IndexType>(m_nodes.size()) != 3 * m_num_nodes,
+                "nodes vector size doesn't match expected size!");
+  SLIC_ERROR_IF(mesh->getDimension() != 3, "STL reader expects a 3D mesh!");
+  SLIC_ERROR_IF(mesh->getCellType() != mint::TRIANGLE,
+                "STL reader expects a triangle mesh!");
 
   // pre-allocate space to store the mesh
-  if ( !mesh->isExternal() )
+  if(!mesh->isExternal())
   {
-    mesh->resize( m_num_nodes, m_num_faces );
+    mesh->resize(m_num_nodes, m_num_faces);
   }
 
   SLIC_ERROR_IF(
     mesh->getNumberOfNodes() != m_num_nodes,
-    "mesh number of nodes does not match the number of nodes in the STL file!" );
+    "mesh number of nodes does not match the number of nodes in the STL file!");
   SLIC_ERROR_IF(
     mesh->getNumberOfCells() != m_num_faces,
-    "mesh number of cells does not match number of triangles in the STL file!" );
+    "mesh number of cells does not match number of triangles in the STL file!");
 
-
-  double* x = mesh->getCoordinateArray( mint::X_COORDINATE );
-  double* y = mesh->getCoordinateArray( mint::Y_COORDINATE );
-  double* z = mesh->getCoordinateArray( mint::Z_COORDINATE );
+  double* x = mesh->getCoordinateArray(mint::X_COORDINATE);
+  double* y = mesh->getCoordinateArray(mint::Y_COORDINATE);
+  double* z = mesh->getCoordinateArray(mint::Z_COORDINATE);
 
   // Load the vertices into the mesh
-  for ( axom::IndexType i=0 ; i < m_num_nodes ; ++i )
+  for(axom::IndexType i = 0; i < m_num_nodes; ++i)
   {
-    const axom::IndexType offset = i*3;
-    x[ i ] = m_nodes[ offset     ];
-    y[ i ] = m_nodes[ offset + 1 ];
-    z[ i ] = m_nodes[ offset + 2 ];
+    const axom::IndexType offset = i * 3;
+    x[i] = m_nodes[offset];
+    y[i] = m_nodes[offset + 1];
+    z[i] = m_nodes[offset + 2];
   }
 
   // Load the triangles.  Note that the indices are implicitly defined.
   axom::IndexType* conn = mesh->getCellNodesArray();
-  for ( axom::IndexType i=0 ; i < m_num_faces ; ++i )
+  for(axom::IndexType i = 0; i < m_num_faces; ++i)
   {
-    const axom::IndexType offset = i*3;
-    conn[ offset   ] = offset;
-    conn[ offset+1 ] = offset+1;
-    conn[ offset+2 ] = offset+2;
+    const axom::IndexType offset = i * 3;
+    conn[offset] = offset;
+    conn[offset + 1] = offset + 1;
+    conn[offset + 2] = offset + 2;
   }
-
 }
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom

@@ -15,12 +15,10 @@ namespace axom
 {
 namespace quest
 {
-
 enum SearchStatus
 {
   NEIGHBOR_NOT_FOUND = -1
 };
-
 
 /// \name Nearest Neighbor query
 /// @{
@@ -50,13 +48,18 @@ enum SearchStatus
  * savings over a brute-force all-to-all algorithm, but the query's run time
  * is dependent on the point distribution.
  */
-void all_nearest_neighbors(const double* x, const double* y, const double* z,
-                           const int* region, int n, double limit,
-                           int* neighbor, double* sqdistance);
+void all_nearest_neighbors(const double* x,
+                           const double* y,
+                           const double* z,
+                           const int* region,
+                           int n,
+                           double limit,
+                           int* neighbor,
+                           double* sqdistance);
 
 /// @}
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom
 
 #endif  // ALL_NEAREST_NEIGHBORS_HPP_

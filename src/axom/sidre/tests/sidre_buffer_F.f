@@ -18,7 +18,7 @@ contains
 
     call set_case_name("create_buffers")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     dbuff_0 = ds%create_buffer()
     dbuff_1 = ds%create_buffer()
@@ -49,7 +49,7 @@ contains
     
     call set_case_name("alloc_buffer_for_int_array")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     dbuff = ds%create_buffer()
 
     call dbuff%allocate(SIDRE_INT_ID, elem_count)
@@ -87,7 +87,7 @@ contains
 
     call set_case_name("init_buffer_for_int_array")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     dbuff = ds%create_buffer()
 
     call dbuff%allocate(SIDRE_INT_ID, elem_count)
@@ -127,7 +127,7 @@ contains
 
     call set_case_name("realloc_buffer")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     dbuff = ds%create_buffer()
 

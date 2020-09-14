@@ -6,7 +6,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 # Axom components
 
 * @subpage coretop provides shared utility functionality to all components.
-* @subpage inlettop provides input deck functionality.
+* @subpage inlettop provides input file functionality.
 * @subpage lumberjacktop provides logging aggregation and filtering capability.
 * @subpage minttop provides a comprehensive mesh data model.
 * @subpage primaltop provides an API for geometric primitives and computational geometry tests.

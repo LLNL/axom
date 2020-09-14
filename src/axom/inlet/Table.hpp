@@ -30,13 +30,12 @@ namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class Table
  *
  * \brief Provides functions to help define how individual Table and Field
- *        variables in an input deck are expected to behave.  It also holds the
+ *        variables in an input file are expected to behave.  It also holds the
  *        Sidre Group to the individual Table.
  *
  * \see Inlet Field
@@ -53,54 +52,55 @@ public:
    * data already read and stored in the given Sidre Group. This creates
    * the necessary Sidre Group's and views to store the given name and description.
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
-   * \param [in] reader Shared pointer to the input deck Reader class.
+   * \param [in] reader Shared pointer to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether or not documentation
-   * generation is enabled for Input Deck this Table instance belongs to.
+   * generation is enabled for input feck this Table instance belongs to.
    *****************************************************************************
    */
   Table(const std::string& name,
         const std::string& description,
         std::shared_ptr<Reader> reader,
         axom::sidre::Group* sidreRootGroup,
-        bool docEnabled = true) : 
-    m_name(name),
-    m_reader(reader),
-    m_sidreRootGroup(sidreRootGroup),
-    m_docEnabled(docEnabled)
-    {
-      SLIC_ASSERT_MSG(m_reader, "Inlet's Reader class not valid");
-      SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr, "Inlet's Sidre Datastore class not set");
+        bool docEnabled = true)
+    : m_name(name)
+    , m_reader(reader)
+    , m_sidreRootGroup(sidreRootGroup)
+    , m_docEnabled(docEnabled)
+  {
+    SLIC_ASSERT_MSG(m_reader, "Inlet's Reader class not valid");
+    SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
+                    "Inlet's Sidre Datastore class not set");
 
-      if (m_name == "")
+    if(m_name == "")
+    {
+      m_sidreGroup = m_sidreRootGroup;
+    }
+    else
+    {
+      if(!m_sidreRootGroup->hasGroup(name))
       {
-        m_sidreGroup = m_sidreRootGroup;
+        m_sidreGroup = m_sidreRootGroup->createGroup(name);
+        m_sidreGroup->createViewString("InletType", "Table");
       }
       else
       {
-        if (!m_sidreRootGroup->hasGroup(name))
-        {
-          m_sidreGroup = m_sidreRootGroup->createGroup(name);
-          m_sidreGroup->createViewString("InletType", "Table");
-        }
-        else
-        {
-          m_sidreGroup = m_sidreRootGroup->getGroup(name);
-        }
-      }
-
-      if(description != "")
-      {
-        if (m_sidreGroup->hasView("description"))
-        {
-          //TODO: warn user?
-          m_sidreGroup->destroyViewAndData("description");
-        }
-        m_sidreGroup->createViewString("description", description);
+        m_sidreGroup = m_sidreRootGroup->getGroup(name);
       }
     }
+
+    if(description != "")
+    {
+      if(m_sidreGroup->hasView("description"))
+      {
+        //TODO: warn user?
+        m_sidreGroup->destroyViewAndData("description");
+      }
+      m_sidreGroup->createViewString("description", description);
+    }
+  }
 
   virtual ~Table() = default;
 
@@ -117,26 +117,26 @@ public:
   axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
 
   //
-  // Functions that define the input deck schema
+  // Functions that define the input file schema
   //
 
   /*!
    *****************************************************************************
-   * \brief Add a Table to the input deck schema.
+   * \brief Add a Table to the input file schema.
    *
-   * Adds a Table to the input deck schema. Tables hold a varying amount Fields
+   * Adds a Table to the input file schema. Tables hold a varying amount Fields
    * defined by the user.  By default, it is not required unless marked with
    * Table::required(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Table
    *****************************************************************************
    */
   std::shared_ptr<Table> addTable(const std::string& name,
-                                  const std::string& description="");
+                                  const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -238,78 +238,78 @@ public:
    *****************************************************************************
    * \brief Add a Boolean Field to the input deck schema.
    *
-   * Adds a Boolean Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Boolean Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description=""){
+                                 const std::string& description = ""){
     return addBoolHelper(name, description);                              
   }
 
   /*!
    *****************************************************************************
-   * \brief Add a Double Field to the input deck schema.
+   * \brief Add a Double Field to the input file schema.
    *
-   * Adds a Double Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Double Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description="") {
+                                   const std::string& description = "") {
     return addDoubleHelper(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Add a Integer Field to the input deck schema.
+   * \brief Add a Integer Field to the input file schema.
    *
-   * Adds a Integer Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Integer Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description="") {
+                                const std::string& description = "") {
     return addIntHelper(name, description);
   }
   /*!
    *****************************************************************************
-   * \brief Add a String Field to the input deck schema.
+   * \brief Add a String Field to the input file schema.
    *
-   * Adds a String Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a String Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description="") {
+                                   const std::string& description = "") {
     return addStringHelper(name, description);                                
   }
 
@@ -317,7 +317,7 @@ public:
    *****************************************************************************
    * \brief Set the required status of this Table.
    *
-   * Set whether this Table is required, or not, to be in the input deck.
+   * Set whether this Table is required, or not, to be in the input file.
    * The default behavior is to not be required.
    *
    * \param [in] isRequired Boolean value of whether Table is required
@@ -331,7 +331,7 @@ public:
    *****************************************************************************
    * \brief Return the required status of this Table.
    *
-   * Return that this Table is required, or not, to be in the input deck.
+   * Return that this Table is required, or not, to be in the input file.
    * The default behavior is to not be required.
    *
    * \return Boolean value of whether this Table is required
@@ -349,7 +349,7 @@ public:
   */
   std::shared_ptr<Table> registerVerifier(std::function<bool()> lambda);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief This will be called by Inlet::verify to verify the contents of this
    *  Table and all child Tables/Fields of this Table.
@@ -366,7 +366,7 @@ public:
    */
   bool hasTable(const std::string& tableName);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Return whether a Field with the given name is present in this Table's
    *  subtree.
@@ -375,7 +375,6 @@ public:
    *****************************************************************************
    */
   bool hasField(const std::string& fieldName);
- 
 
   /*!
    *****************************************************************************
@@ -412,7 +411,7 @@ public:
    */
   std::shared_ptr<Table> getTable(const std::string& tableName);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Retrieves the matching Field.
    * 
@@ -446,7 +445,7 @@ private:
    *****************************************************************************
    */
   axom::sidre::Group* createSidreGroup(const std::string& name,
-                                   const std::string& description);
+                                       const std::string& description);
 
   /*!
    *****************************************************************************
@@ -462,8 +461,8 @@ private:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> addField(axom::sidre::Group* sidreGroup, 
-                                  axom::sidre::DataTypeId type, 
+  std::shared_ptr<Field> addField(axom::sidre::Group* sidreGroup,
+                                  axom::sidre::DataTypeId type,
                                   const std::string& fullName,
                                   const std::string& name);
 
@@ -501,7 +500,7 @@ private:
    */
   bool hasChildTable(const std::string& tableName);
 
-    /*!
+  /*!
    *****************************************************************************
    * \brief This is an internal helper. It return whether this Table has a child 
    * Field with the given name.
@@ -523,7 +522,7 @@ private:
   std::function<bool()> m_verifier;
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif
