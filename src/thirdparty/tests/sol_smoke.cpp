@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 #include <iostream>
 
 #include "sol/sol.hpp"
@@ -17,5 +22,5 @@ TEST(sol_smoke, basic_use)
   EXPECT_TRUE(some_bool);
 
   double some_double = lua["table1"]["table2"]["some_double"];
-  EXPECT_EQ(some_double, 3.0);
+  EXPECT_NEAR(some_double, 3.0, 0.1);
 }

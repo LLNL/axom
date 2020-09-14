@@ -11,7 +11,7 @@
 # Register the sol library for parsing lua
 #------------------------------------------------------------------------------
 
-if (LUA_FOUND)
+if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
   blt_add_library(NAME    sol
                   HEADERS sol/sol.hpp)
 

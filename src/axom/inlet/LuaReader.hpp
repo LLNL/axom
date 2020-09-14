@@ -140,9 +140,11 @@ public:
   bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values);
   bool getStringMap(const std::string& id, std::unordered_map<int, std::string>& values);
 private:
+  // Expect this to be called for only Inlet-supported types.
   template<typename T>
   bool getValue(const std::string& id, T& value);
 
+  // Expect this to be called for only Inlet-supported types.
   template <typename T>
   bool getMap(const std::string& id, std::unordered_map<int, T>& values, sol::type type);
   sol::state m_lua;

@@ -1,8 +1,12 @@
-#include <iostream>
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
+#include <iostream>
 #include "axom/inlet.hpp"
 
-void example() {
+int main() {
   auto lr = std::make_shared<axom::inlet::LuaReader>();
   lr->parseString("dimensions = 2; vector = { x = 1; y = 2; z = 3; }");
   axom::sidre::DataStore ds;
@@ -43,9 +47,5 @@ void example() {
   // both x and y to match the 2 dimensions
   myInlet->verify() ? std::cout << "Verification was successful\n" 
                     : std::cout << "Verification was unsuccessful\n";
-
-}
-
-int main() {
-  example();
+  return 0;
 }

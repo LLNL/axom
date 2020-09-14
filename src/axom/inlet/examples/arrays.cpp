@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 #include <iostream>
 #include <unordered_map>
 
@@ -27,5 +32,5 @@ int main() {
   // We expect verfication to pass since values array has 3 elements
   inlet->verify() ? std::cout << "Verification passed\n"
                   : std::cout << "Verification failed\n";
-
+  return 0;
 }
