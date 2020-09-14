@@ -40,8 +40,7 @@ blt_list_append(TO inlet_sources ELEMENTS LuaReader.cpp IF LUA_FOUND)
 #------------------------------------------------------------------------------
 set(inlet_depends core slic sidre fmt)
 
-blt_list_append(TO inlet_depends ELEMENTS lua IF LUA_FOUND)
-blt_list_append(TO inlet_depends ELEMENTS sol IF SOL_FOUND)
+blt_list_append(TO inlet_depends ELEMENTS sol lua IF SOL_FOUND)
 
 blt_add_library( NAME        inlet
                  SOURCES     ${inlet_sources}

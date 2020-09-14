@@ -25,12 +25,35 @@ int main() {
     std::unordered_map<int,std::string> map;
     if (!vals->getStringArray(map)) {
       std::cout << "Error: Array not found\n";
+    } 
+    bool startFound = false;
+    bool stopFound = false;
+    for (auto p : map) {
+      if (p.second == "start") {
+        startFound = true;
+        std::cout << "Found start at index " << p.first << std::endl;
+      } else if (p.second == "stop") {
+        stopFound = true;
+        std::cout << "Found stop at index " << p.first << std::endl;
+      }
     }
-    return map.size() == 3;
+    return startFound && stopFound;
   });
 
   // We expect verfication to pass since values array has 3 elements
   inlet->verify() ? std::cout << "Verification passed\n"
                   : std::cout << "Verification failed\n";
+
+  // Print contents of map
+  std::unordered_map<int,std::string> map;
+  if (!vals->getStringArray(map)) {
+    std::cout << "\nError: Array not found\n";
+  } else {
+    std::cout << "\nMap Contents:\n";
+    for (auto p : map) {
+      std::cout << p.first << " " << p.second << std::endl;
+    }
+  }
+
   return 0;
 }
