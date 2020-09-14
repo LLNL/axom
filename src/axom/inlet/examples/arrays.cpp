@@ -25,6 +25,11 @@ int main() {
     std::unordered_map<int,std::string> map;
     if (!vals->getStringArray(map)) {
       std::cout << "Error: Array not found\n";
+    } else {
+      std::cout << "Map Contents:\n";
+      for (auto p : map) {
+        std::cout << p.first << " " << p.second << std::endl;
+      }
     }
     return map.size() == 3;
   });
