@@ -35,9 +35,11 @@ class Vec
 public:
   T m_data[S];
 
-  //
-  //  No contructors so this is a POD type
-  //
+  Vec() = default;
+
+  Vec(const Vec &) = default;
+
+  Vec(Vec &&) = default;
 
   inline AXOM_HOST_DEVICE bool operator==(const Vec<T,S> &other) const
   {
