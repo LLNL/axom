@@ -10,7 +10,7 @@
 # Specify list of examples
 #------------------------------------------------------------------------------
 
-if (LUA_FOUND)
+if (SOL_FOUND)
     blt_add_executable( NAME       inlet_array_example 
                         SOURCES    arrays.cpp
                         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
