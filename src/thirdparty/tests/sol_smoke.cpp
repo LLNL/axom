@@ -11,12 +11,13 @@
 TEST(sol_smoke, basic_use)
 {
   sol::state lua;
-  lua.script("table1={"
-             " table2={"
-             " some_bool = true,"
-             " some_double = 3.0 "
-             " }"
-             "}");
+  lua.script(
+    "table1={"
+    "  table2={"
+    "    some_bool = true,"
+    "    some_double = 3.0 "
+    "  }"
+    "}");
 
   bool some_bool = lua["table1"]["table2"]["some_bool"];
   EXPECT_TRUE(some_bool);

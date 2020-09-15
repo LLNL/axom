@@ -134,7 +134,7 @@ public:
    */
   virtual bool getString(const std::string& id, std::string& value) = 0;
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Get an index-integer mapping for the given array
    *
@@ -147,9 +147,10 @@ public:
    * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
-  virtual bool getIntMap(const std::string& id, std::unordered_map<int, int>& values) = 0;
+  virtual bool getIntMap(const std::string& id,
+                         std::unordered_map<int, int>& values) = 0;
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Get an index-bool mapping for the given array
    *
@@ -162,9 +163,10 @@ public:
    * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
-  virtual bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values) = 0;
+  virtual bool getBoolMap(const std::string& id,
+                          std::unordered_map<int, bool>& values) = 0;
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Get an index-double mapping for the given array
    *
@@ -177,9 +179,10 @@ public:
    * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
-  virtual bool getDoubleMap(const std::string& id, std::unordered_map<int, double>& values) = 0;
+  virtual bool getDoubleMap(const std::string& id,
+                            std::unordered_map<int, double>& values) = 0;
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Get an index-string mapping for the given Lua array
    *
@@ -192,7 +195,8 @@ public:
    * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
-  virtual bool getStringMap(const std::string& id, std::unordered_map<int, std::string>& values) = 0;
+  virtual bool getStringMap(const std::string& id,
+                            std::unordered_map<int, std::string>& values) = 0;
 };
 
 }  // end namespace inlet
