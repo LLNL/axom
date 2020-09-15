@@ -61,7 +61,7 @@ void demoFileSystemAndString(const char* argv0)
   int matchcount = 0;
   std::string prefix {"ax"};
   std::string suffix {"exe"};
-  for(int i = 0; i < cmp.size(); ++i)
+  for(std::size_t i = 0; i < cmp.size(); ++i)
   {
     if(string::startsWith(cmp[i], prefix) || string::endsWith(cmp[i], suffix))
     {
@@ -119,11 +119,21 @@ int main(int argc, char** argv)
 
   t.start();
 
-  demoFileSystemAndString(argv[0]);
+  if(argc == 1)
+  {
+    std::cerr << "Error: not path given on command line" << std::endl;
+    return 1;
+  }
+  else
+  {
+    demoFileSystemAndString(argv[0]);
+  }
 
   t.stop();
 
   std::cout << "The tests took " << t.elapsedTimeInMilliSec() << " ms."
             << std::endl;
   // _timer_end
+
+  return 0;
 }
