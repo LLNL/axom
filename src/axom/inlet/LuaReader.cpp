@@ -22,8 +22,6 @@
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
 
-#define SOL_ALL_SAFETIES_ON 1
-
 namespace axom
 {
 namespace inlet

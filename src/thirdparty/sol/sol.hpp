@@ -72,6 +72,8 @@
 
 // start axom change
 #define SOL_CXX17_FEATURES 0
+#define SOL_ALL_SAFETIES_ON 1
+
 extern "C" {
   #include "lua.h"
   #include "lualib.h"

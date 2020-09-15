@@ -39,10 +39,6 @@ namespace inlet
 class LuaReader : public Reader
 {
 public:
-  LuaReader() {
-    m_lua.open_libraries(sol::lib::base);
-  }
-
   /*!
    *****************************************************************************
    * \brief Parses the given input file.
