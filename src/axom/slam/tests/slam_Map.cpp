@@ -14,6 +14,8 @@
 
 #include "axom/slic.hpp"
 
+#include "axom/core/utilities/Utilities.hpp"
+
 #include "axom/slam/Utilities.hpp"
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/Map.hpp"
@@ -175,7 +177,8 @@ void constructAndTestMapWithStride(int stride)
   {
     for(auto idx2 = 0; idx2 < stride; ++idx2)
     {
-      EXPECT_EQ(m(idx, idx2), static_cast<T>(idx * multFac + idx2 * multFac2));
+      EXPECT_DOUBLE_EQ(m(idx, idx2),
+                       static_cast<T>(idx * multFac + idx2 * multFac2));
     }
   }
 
@@ -345,8 +348,8 @@ void constructAndTestMapIteratorWithStride(int stride)
       EXPECT_EQ(*iter, static_cast<double>(idx * multFac));
       for(auto idx2 = 0; idx2 < iter.numComp(); ++idx2)
       {
-        EXPECT_EQ(iter(idx2),
-                  static_cast<double>(idx * multFac + idx2 * multFac2));
+        EXPECT_DOUBLE_EQ(static_cast<double>(idx * multFac + idx2 * multFac2),
+                         iter(idx2));
       }
       idx++;
     }

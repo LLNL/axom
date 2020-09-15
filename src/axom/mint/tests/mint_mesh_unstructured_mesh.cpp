@@ -234,7 +234,7 @@ void check_fields(const Mesh* mesh, int assoc, bool newValues = false)
   {
     for(IndexType j = 0; j < num_components; ++j)
     {
-      EXPECT_EQ(data[i * num_components + j], fieldValue(i, j));
+      EXPECT_DOUBLE_EQ(data[i * num_components + j], fieldValue(i, j));
     }
   }
 }

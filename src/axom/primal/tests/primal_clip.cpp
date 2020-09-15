@@ -65,7 +65,12 @@ TEST(primal_clip, simple_clip)
     PolygonType poly = axom::primal::clip(tri, bbox);
     EXPECT_EQ(4, poly.numVertices());
 
-    EXPECT_EQ(PointType(.5), poly.centroid());
+    PointType expected(.5);
+    PointType value = poly.centroid();
+    for(int i = 0; i < value.dimension(); i++)
+    {
+      EXPECT_DOUBLE_EQ(expected[i], value[i]);
+    }
 
     SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
                                           << " is polygon" << poly);

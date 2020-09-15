@@ -951,9 +951,24 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri,
   p[0] = Cx * By - Cy * Bx;
   p[1] = Ax * Cy - Ay * Cx;
   p[2] = Bx * Ay - By * Ax;
-  const T& U = p[0];
-  const T& V = p[1];
-  const T& W = p[2];
+  T& U = p[0];
+  T& V = p[1];
+  T& W = p[2];
+
+  if(axom::utilities::isNearlyEqual(U, zero, 1E-12))
+  {
+    U = 0.0;
+  }
+
+  if(axom::utilities::isNearlyEqual(V, zero, 1E-12))
+  {
+    V = 0.0;
+  }
+
+  if(axom::utilities::isNearlyEqual(W, zero, 1E-12))
+  {
+    W = 0.0;
+  }
 
   //edge testing
   if((U < zero || V < zero || W < zero) && (U > zero || V > zero || W > zero))
