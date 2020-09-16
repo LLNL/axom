@@ -70,18 +70,6 @@
 #endif // C++17 features macro
 #endif // C++17 features check
 
-// start axom change
-#define SOL_CXX17_FEATURES 0
-#define SOL_ALL_SAFETIES_ON 1
-
-extern "C" {
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-}
-
-// end axom change
-
 #if defined(SOL_CXX17_FEATURES) && SOL_CXX17_FEATURES
 #if defined(__cpp_noexcept_function_type) || ((defined(_MSC_VER) && _MSC_VER > 1911) && (defined(_MSVC_LANG) && ((_MSVC_LANG >= 201403L))))
 #ifndef SOL_NOEXCEPT_FUNCTION_TYPE
