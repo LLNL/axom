@@ -120,6 +120,10 @@ void about(std::ostream &oss)
   libs.push_back("mpi");
 #endif
 
+#ifdef AXOM_USE_SOL
+  libs.push_back("sol");
+#endif
+
 #ifdef AXOM_USE_SPARSEHASH
   libs.push_back("sparsehash");
 #endif

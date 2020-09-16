@@ -140,7 +140,103 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Boolean Field to the input file schema.
+   * \brief Add an array of Boolean Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addBoolArray(const std::string& name,
+                                      const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Integer Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addIntArray(const std::string& name,
+                                     const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Double Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addDoubleArray(const std::string& name,
+                                        const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of String Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addStringArray(const std::string& name,
+                                        const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Get a boolean array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getBoolArray(std::unordered_map<int, bool>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get a int array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getIntArray(std::unordered_map<int, int>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get a double array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getDoubleArray(std::unordered_map<int, double>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get a string array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getStringArray(std::unordered_map<int, std::string>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Add a Boolean Field to the input deck schema.
    *
    * Adds a Boolean Field to the input file schema. It may or may not be required
    * to be present in the input file. This creates the Sidre Group class with the
@@ -154,7 +250,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description = "");
+                                 const std::string& description = "")
+  {
+    return addBoolHelper(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -172,7 +271,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description = "");
+                                   const std::string& description = "")
+  {
+    return addDoubleHelper(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -190,8 +292,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description = "");
-
+                                const std::string& description = "")
+  {
+    return addIntHelper(name, description);
+  }
   /*!
    *****************************************************************************
    * \brief Add a String Field to the input file schema.
@@ -208,7 +312,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description = "");
+                                   const std::string& description = "")
+  {
+    return addStringHelper(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -321,6 +428,22 @@ public:
   std::shared_ptr<Field> getField(const std::string& fieldName);
 
 private:
+  std::shared_ptr<Field> addBoolHelper(const std::string& name,
+                                       const std::string& description = "",
+                                       bool forArray = false,
+                                       bool num = 0);
+  std::shared_ptr<Field> addIntHelper(const std::string& name,
+                                      const std::string& description = "",
+                                      bool forArray = false,
+                                      int num = 0);
+  std::shared_ptr<Field> addDoubleHelper(const std::string& name,
+                                         const std::string& description = "",
+                                         bool forArray = false,
+                                         double num = 0);
+  std::shared_ptr<Field> addStringHelper(const std::string& name,
+                                         const std::string& description = "",
+                                         bool forArray = false,
+                                         const std::string& str = "");
   /*!
    *****************************************************************************
    * \brief Creates the basic Sidre Group for this Table and stores the given

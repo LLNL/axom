@@ -15,6 +15,7 @@
 #define INLET_READER_HPP
 
 #include <string>
+#include <unordered_map>
 
 namespace axom
 {
@@ -132,6 +133,70 @@ public:
    *****************************************************************************
    */
   virtual bool getString(const std::string& id, std::string& value) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get an index-integer mapping for the given array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the ints that were retrieved
+   *
+   * \return true if the array was able to be retrieved from the file
+   *****************************************************************************
+   */
+  virtual bool getIntMap(const std::string& id,
+                         std::unordered_map<int, int>& values) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get an index-bool mapping for the given array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the bools that were retrieved
+   *
+   * \return true if the array was able to be retrieved from the file
+   *****************************************************************************
+   */
+  virtual bool getBoolMap(const std::string& id,
+                          std::unordered_map<int, bool>& values) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get an index-double mapping for the given array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the doubles that were retrieved
+   *
+   * \return true if the array was able to be retrieved from the file
+   *****************************************************************************
+   */
+  virtual bool getDoubleMap(const std::string& id,
+                            std::unordered_map<int, double>& values) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get an index-string mapping for the given Lua array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the strings that were retrieved
+   *
+   * \return true if the array was able to be retrieved from the file
+   *****************************************************************************
+   */
+  virtual bool getStringMap(const std::string& id,
+                            std::unordered_map<int, std::string>& values) = 0;
 };
 
 }  // end namespace inlet

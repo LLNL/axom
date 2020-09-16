@@ -7,6 +7,31 @@
 # We have tests here that make sure they link and can be used.
 #------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+# Register the sol library for parsing lua
+#------------------------------------------------------------------------------
+
+if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
+  blt_add_library(NAME    sol
+                  HEADERS sol/sol.hpp)
+
+  target_include_directories(sol SYSTEM INTERFACE
+              $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+
+  install(TARGETS              sol
+          EXPORT               axom-targets
+          INCLUDES DESTINATION include)
+  install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sol
+          DESTINATION include )
+  install(EXPORT axom-targets DESTINATION lib/cmake)
+
+  set(SOL_FOUND TRUE CACHE INTERNAL "")
+else()
+  set(SOL_FOUND FALSE CACHE INTERNAL "")
+endif()
+mark_as_advanced(SOL_FOUND)
+
+message(STATUS "SOL Enabled: ${SOL_FOUND}")
 
 #------------------------------------------------------------------------------
 # Register the built-in CLI11 library for command line option parsing

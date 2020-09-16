@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include <iostream>
-
 #include "axom/inlet.hpp"
 #include "axom/slic/core/UnitTestLogger.hpp"
 
