@@ -55,8 +55,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   candidate BVH bins that intersect each bounding box.
 - Added an `axom-config.cmake` file to axom's installation to streamline incorporating axom
   into user applications. See `<axom-install>/examples/axom` for example usages.
-- Added a new built-in TPL, Sol, for a fast, simple C++ and Lua Binding 
-  (automatically enabled when LUA_DIR is found)
+- Added a new built-in TPL, Sol (https://github.com/ThePhD/sol2), for fast and 
+  simple C++ and Lua Binding (automatically enabled when LUA_DIR is found). 
+  The version of Sol used in this release is v2.20.6, which requires C++14. 
 
 ### Removed
 
