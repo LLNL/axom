@@ -32,8 +32,8 @@ set(inlet_sources
     SphinxDocWriter.cpp 
     inlet_utils.cpp )
 
-blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF LUA_FOUND)
-blt_list_append(TO inlet_sources ELEMENTS LuaReader.cpp IF LUA_FOUND)
+blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF SOL_FOUND)
+blt_list_append(TO inlet_sources ELEMENTS LuaReader.cpp IF SOL_FOUND)
 
 #------------------------------------------------------------------------------
 # Make/Install the library

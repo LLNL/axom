@@ -580,7 +580,8 @@ TEST(inlet_Inlet, mixLevelTables)
   // level with nested tables with non-nested values
 
   axom::sidre::DataStore dataStore;
-  std::string input =  "thermal_solver={"
+  std::string input =
+    "thermal_solver={"
     "   u0 = { type = 'function', func = 'BoundaryTemperature'},"
     "   kappa = { type = 'constant', constant = 0.5},"
     "   solver = {"
@@ -592,7 +593,7 @@ TEST(inlet_Inlet, mixLevelTables)
     "     steps = 1 "
     "   }"
     "}";
-  
+
   auto inlet = createBasicInlet(&dataStore, input);
 
   //
@@ -1293,46 +1294,59 @@ TEST(inlet_verify, verifyTableLambda3)
   EXPECT_TRUE(myInlet->verify());
 }
 
-// Checks that LuaReader parses array information as expected 
-TEST(inletArrays, luaReaderArrayFunctions) {
-  std::string testString = "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = 2.4, [33] = 'hello', [200] = 'bye' }";
+// Checks that LuaReader parses array information as expected
+TEST(inletArrays, luaReaderArrayFunctions)
+{
+  std::string testString =
+    "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = "
+    "2.4, [33] = 'hello', [200] = 'bye' }";
   LuaReader lr;
   lr.parseString(testString);
 
-  std::unordered_map<int,int> ints;
+  std::unordered_map<int, int> ints;
   bool found = lr.getIntMap("luaArray", ints);
   EXPECT_TRUE(found);
-  std::unordered_map<int,int> expectedInts{{1,4},{2,5},{3,6},{12,2}};
+  std::unordered_map<int, int> expectedInts {{1, 4}, {2, 5}, {3, 6}, {12, 2}};
   EXPECT_EQ(expectedInts, ints);
 
   std::unordered_map<int, double> doubles;
   found = lr.getDoubleMap("luaArray", doubles);
   EXPECT_TRUE(found);
-  std::unordered_map<int,double> expectedDoubles{{1,4},{2,5},{3,6},{12,2.4}};
+  std::unordered_map<int, double> expectedDoubles {{1, 4},
+                                                   {2, 5},
+                                                   {3, 6},
+                                                   {12, 2.4}};
   EXPECT_EQ(expectedDoubles, doubles);
 
   std::unordered_map<int, bool> bools;
   found = lr.getBoolMap("luaArray", bools);
   EXPECT_TRUE(found);
-  std::unordered_map<int, bool> expectedBools{{4, true}, {8,false}};
+  std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
   EXPECT_EQ(expectedBools, bools);
 
   std::unordered_map<int, std::string> strs;
   found = lr.getStringMap("luaArray", strs);
   EXPECT_TRUE(found);
-  std::unordered_map<int, std::string> expectedStrs{{33, "hello"}, {200, "bye"}};
+  std::unordered_map<int, std::string> expectedStrs {{33, "hello"},
+                                                     {200, "bye"}};
   EXPECT_EQ(expectedStrs, strs);
 }
 
 // Checks the underlying Sidre representation of the arrays added from Lua
-TEST(inletArrays, inletArraysInSidre) {
+TEST(inletArrays, inletArraysInSidre)
+{
   DataStore ds;
-  std::string testString = "luaArrays = { arr1 = { [1] = 4, [2] = 5, [3] = 6 , [12] = 2.4}, arr2 = {[4] = true, [8] = false}, arr3 = {[33] = 'hello', [2] = 'bye'}, arr4 = { [12] = 2.4 } }";
+  std::string testString =
+    "luaArrays = { arr1 = { [1] = 4, [2] = 5, [3] = 6 , [12] = 2.4}, "
+    "              arr2 = { [4] = true, [8] = false}, "
+    "              arr3 = { [33] = 'hello', [2] = 'bye'}, "
+    "              arr4 = { [12] = 2.4 } }";
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
 
-  auto group = inlet->getGlobalTable()->sidreGroup()->getGroup("luaArrays/arr1/_inlet_array");
+  auto group = inlet->getGlobalTable()->sidreGroup()->getGroup(
+    "luaArrays/arr1/_inlet_array");
   auto idx = group->getGroup("1");
   EXPECT_TRUE(idx);
   int val = idx->getView("value")->getScalar();
@@ -1389,9 +1403,14 @@ TEST(inletArrays, inletArraysInSidre) {
 }
 
 // Checks all of the Table::getArray functions
-TEST(inletArrays, getArray) {
+TEST(inletArrays, getArray)
+{
   DataStore ds;
-  std::string testString = "luaArrays = { arr1 = { [1] = 4}, arr2 = {[4] = true, [8] = false}, arr3 = {[33] = 'hello', [2] = 'bye'}, arr4 = { [12] = 2.4 } }";
+  std::string testString =
+    "luaArrays = { arr1 = { [1] = 4}, "
+    "              arr2 = {[4] = true, [8] = false}, "
+    "              arr3 = {[33] = 'hello', [2] = 'bye'}, "
+    "              arr4 = { [12] = 2.4 } }";
   auto inlet = createBasicInlet(&ds, testString);
 
   std::unordered_map<int, bool> boolMap;
@@ -1403,10 +1422,10 @@ TEST(inletArrays, getArray) {
   auto arr3 = inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
   auto arr4 = inlet->getGlobalTable()->addDoubleArray("luaArrays/arr4");
 
-  std::unordered_map<int,int> expectedInts{{1,4}};
-  std::unordered_map<int,bool> expectedBools{{4,true}, {8, false}};
-  std::unordered_map<int,double> expectedDoubles{{12,2.4}};
-  std::unordered_map<int,std::string> expectedStrs{{33,"hello"}, {2, "bye"}};
+  std::unordered_map<int, int> expectedInts {{1, 4}};
+  std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
+  std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
+  std::unordered_map<int, std::string> expectedStrs {{33, "hello"}, {2, "bye"}};
 
   EXPECT_TRUE(arr1->getIntArray(intMap));
   EXPECT_EQ(intMap, expectedInts);
@@ -1416,7 +1435,7 @@ TEST(inletArrays, getArray) {
 
   EXPECT_TRUE(arr3->getStringArray(strMap));
   EXPECT_EQ(strMap, expectedStrs);
-  
+
   EXPECT_TRUE(arr4->getDoubleArray(doubleMap));
   EXPECT_EQ(doubleMap, expectedDoubles);
 }

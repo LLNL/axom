@@ -149,7 +149,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addBoolArray(const std::string& name,
-                                      const std::string& description="");
+                                      const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -162,7 +162,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addIntArray(const std::string& name,
-                                     const std::string& description="");
+                                     const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -175,7 +175,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addDoubleArray(const std::string& name,
-                                        const std::string& description="");
+                                        const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -188,9 +188,9 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addStringArray(const std::string& name,
-                                        const std::string& description="");
-  
-   /*!
+                                        const std::string& description = "");
+
+  /*!
    *****************************************************************************
    * \brief Get a boolean array represented as an unordered map from the input deck
    *
@@ -199,7 +199,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getBoolArray(std::unordered_map<int,bool>& map);
+  bool getBoolArray(std::unordered_map<int, bool>& map);
 
   /*!
    *****************************************************************************
@@ -210,7 +210,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getIntArray(std::unordered_map<int,int>& map);
+  bool getIntArray(std::unordered_map<int, int>& map);
 
   /*!
    *****************************************************************************
@@ -221,7 +221,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getDoubleArray(std::unordered_map<int,double>& map);
+  bool getDoubleArray(std::unordered_map<int, double>& map);
 
   /*!
    *****************************************************************************
@@ -232,7 +232,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getStringArray(std::unordered_map<int,std::string>& map);
+  bool getStringArray(std::unordered_map<int, std::string>& map);
 
   /*!
    *****************************************************************************
@@ -250,8 +250,9 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description = ""){
-    return addBoolHelper(name, description);                              
+                                 const std::string& description = "")
+  {
+    return addBoolHelper(name, description);
   }
 
   /*!
@@ -270,7 +271,8 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description = "") {
+                                   const std::string& description = "")
+  {
     return addDoubleHelper(name, description);
   }
 
@@ -290,7 +292,8 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description = "") {
+                                const std::string& description = "")
+  {
     return addIntHelper(name, description);
   }
   /*!
@@ -309,8 +312,9 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description = "") {
-    return addStringHelper(name, description);                                
+                                   const std::string& description = "")
+  {
+    return addStringHelper(name, description);
   }
 
   /*!
@@ -425,17 +429,21 @@ public:
 
 private:
   std::shared_ptr<Field> addBoolHelper(const std::string& name,
-                                       const std::string& description="",
-                                       bool forArray = false, bool num = 0);
+                                       const std::string& description = "",
+                                       bool forArray = false,
+                                       bool num = 0);
   std::shared_ptr<Field> addIntHelper(const std::string& name,
-                                      const std::string& description="",
-                                      bool forArray = false, int num = 0);
+                                      const std::string& description = "",
+                                      bool forArray = false,
+                                      int num = 0);
   std::shared_ptr<Field> addDoubleHelper(const std::string& name,
-                                         const std::string& description="",
-                                         bool forArray = false, double num = 0);
+                                         const std::string& description = "",
+                                         bool forArray = false,
+                                         double num = 0);
   std::shared_ptr<Field> addStringHelper(const std::string& name,
-                                         const std::string& description="",
-                                         bool forArray=false, const std::string& str="");
+                                         const std::string& description = "",
+                                         bool forArray = false,
+                                         const std::string& str = "");
   /*!
    *****************************************************************************
    * \brief Creates the basic Sidre Group for this Table and stores the given

@@ -26,8 +26,12 @@ if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
   install(EXPORT axom-targets DESTINATION lib/cmake)
 
   set(SOL_FOUND TRUE CACHE INTERNAL "")
-  mark_as_advanced(SOL_FOUND)
+else()
+  set(SOL_FOUND FALSE CACHE INTERNAL "")
 endif()
+mark_as_advanced(SOL_FOUND)
+
+message(STATUS "SOL Enabled: ${SOL_FOUND}")
 
 #------------------------------------------------------------------------------
 # Register the built-in CLI11 library for command line option parsing

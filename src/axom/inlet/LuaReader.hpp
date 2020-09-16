@@ -145,7 +145,7 @@ public:
    */
   bool getIntMap(const std::string& id, std::unordered_map<int, int>& values);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Get an index-double mapping for the given Lua array
    *
@@ -158,9 +158,10 @@ public:
    * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
-  bool getDoubleMap(const std::string& id, std::unordered_map<int, double>& values);
+  bool getDoubleMap(const std::string& id,
+                    std::unordered_map<int, double>& values);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Get an index-bool mapping for the given Lua array
    *
@@ -175,7 +176,7 @@ public:
    */
   bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Get an index-string mapping for the given Lua array
    *
@@ -188,15 +189,19 @@ public:
    * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
-  bool getStringMap(const std::string& id, std::unordered_map<int, std::string>& values);
+  bool getStringMap(const std::string& id,
+                    std::unordered_map<int, std::string>& values);
+
 private:
   // Expect this to be called for only Inlet-supported types.
-  template<typename T>
+  template <typename T>
   bool getValue(const std::string& id, T& value);
 
   // Expect this to be called for only Inlet-supported types.
   template <typename T>
-  bool getMap(const std::string& id, std::unordered_map<int, T>& values, sol::type type);
+  bool getMap(const std::string& id,
+              std::unordered_map<int, T>& values,
+              sol::type type);
   sol::state m_lua;
 };
 

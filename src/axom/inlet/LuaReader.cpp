@@ -11,7 +11,7 @@
  *******************************************************************************
  */
 
-# include <fstream>
+#include <fstream>
 
 #include "axom/inlet/LuaReader.hpp"
 
@@ -26,7 +26,6 @@ namespace axom
 {
 namespace inlet
 {
-
 bool LuaReader::parseFile(const std::string& filePath)
 {
   if(!axom::utilities::filesystem::pathExists(filePath))
@@ -37,9 +36,10 @@ bool LuaReader::parseFile(const std::string& filePath)
   }
 
   auto script = m_lua.script_file(filePath);
-  if (!script.valid()) {
-    SLIC_WARNING(fmt::format("Inlet: Given Lua input deck is invalid: {0}",
-                             filePath));
+  if(!script.valid())
+  {
+    SLIC_WARNING(
+      fmt::format("Inlet: Given Lua input deck is invalid: {0}", filePath));
   }
   return script.valid();
 }
@@ -63,93 +63,116 @@ bool LuaReader::getBool(const std::string& id, bool& value)
   return getValue(id, value);
 }
 
-
 bool LuaReader::getDouble(const std::string& id, double& value)
 {
   return getValue(id, value);
 }
-
 
 bool LuaReader::getInt(const std::string& id, int& value)
 {
   return getValue(id, value);
 }
 
-
 bool LuaReader::getString(const std::string& id, std::string& value)
 {
   return getValue(id, value);
 }
 
-bool LuaReader::getIntMap(const std::string& id, std::unordered_map<int, int>& values) {
+bool LuaReader::getIntMap(const std::string& id,
+                          std::unordered_map<int, int>& values)
+{
   return getMap(id, values, sol::type::number);
 }
 
-bool LuaReader::getDoubleMap(const std::string& id, std::unordered_map<int, double>& values) {
+bool LuaReader::getDoubleMap(const std::string& id,
+                             std::unordered_map<int, double>& values)
+{
   return getMap(id, values, sol::type::number);
 }
 
-bool LuaReader::getBoolMap(const std::string& id, std::unordered_map<int, bool>& values) {
+bool LuaReader::getBoolMap(const std::string& id,
+                           std::unordered_map<int, bool>& values)
+{
   return getMap(id, values, sol::type::boolean);
 }
- 
-bool LuaReader::getStringMap(const std::string& id, std::unordered_map<int, std::string>& values) {
+
+bool LuaReader::getStringMap(const std::string& id,
+                             std::unordered_map<int, std::string>& values)
+{
   return getMap(id, values, sol::type::string);
 }
 
 template <typename T>
-bool LuaReader::getValue(const std::string& id, T& value) {
+bool LuaReader::getValue(const std::string& id, T& value)
+{
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
-  if (tokens.size() == 1 && m_lua[id].valid()) {
+  if(tokens.size() == 1 && m_lua[id].valid())
+  {
     value = m_lua[id];
     return true;
   }
-  
-  if (!m_lua[tokens[0]].valid()) {
+
+  if(!m_lua[tokens[0]].valid())
+  {
     return false;
   }
   sol::table t = m_lua[tokens[0]];
-  for (size_t i = 1; i < tokens.size()-1; i++) {
-    if (t[tokens[i]].valid()) {
+  for(size_t i = 1; i < tokens.size() - 1; i++)
+  {
+    if(t[tokens[i]].valid())
+    {
       t = t[tokens[i]];
-    } else {
+    }
+    else
+    {
       return false;
     }
   }
-  if (t[tokens.back()].valid()) {
+  if(t[tokens.back()].valid())
+  {
     value = t[tokens.back()];
     return true;
   }
-  
+
   return false;
 }
 
 template <typename T>
-bool LuaReader::getMap(const std::string& id, std::unordered_map<int, T>& values, sol::type type) {
+bool LuaReader::getMap(const std::string& id,
+                       std::unordered_map<int, T>& values,
+                       sol::type type)
+{
   values.clear();
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
 
-  if (tokens.empty() || !m_lua[tokens[0]].valid()) {
+  if(tokens.empty() || !m_lua[tokens[0]].valid())
+  {
     return false;
   }
   sol::table t = m_lua[tokens[0]];
-  for (size_t i = 1; i < tokens.size(); i++) {
-    if (t[tokens[i]].valid()) {
+  for(size_t i = 1; i < tokens.size(); i++)
+  {
+    if(t[tokens[i]].valid())
+    {
       t = t[tokens[i]];
-    } else {
+    }
+    else
+    {
       return false;
     }
   }
 
   auto it = t.cbegin();
-  while (it != t.cend()) {
+  while(it != t.cend())
+  {
     // Gets only indexed items in the table.
-    if ((*it).first.get_type() == sol::type::number 
-        && (*it).second.get_type() == type) {
+    if((*it).first.get_type() == sol::type::number &&
+       (*it).second.get_type() == type)
+    {
       values[(*it).first.as<int>()] = (*it).second.as<T>();
-    } 
+    }
     ++it;
   }
   return true;

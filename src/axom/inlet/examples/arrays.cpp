@@ -8,7 +8,8 @@
 
 #include "axom/inlet.hpp"
 
-int main() {
+int main()
+{
   auto lr = std::make_shared<axom::inlet::LuaReader>();
 
   // Parse example input file
@@ -22,17 +23,22 @@ int main() {
   // Register the verifier, which will verify the array values
   auto vals = inlet->getGlobalTable()->addStringArray("values");
   vals->registerVerifier([&]() -> bool {
-    std::unordered_map<int,std::string> map;
-    if (!vals->getStringArray(map)) {
+    std::unordered_map<int, std::string> map;
+    if(!vals->getStringArray(map))
+    {
       std::cout << "Error: Array not found\n";
-    } 
+    }
     bool startFound = false;
     bool stopFound = false;
-    for (auto p : map) {
-      if (p.second == "start") {
+    for(auto p : map)
+    {
+      if(p.second == "start")
+      {
         startFound = true;
         std::cout << "Found start at index " << p.first << std::endl;
-      } else if (p.second == "stop") {
+      }
+      else if(p.second == "stop")
+      {
         stopFound = true;
         std::cout << "Found stop at index " << p.first << std::endl;
       }
@@ -45,12 +51,16 @@ int main() {
                   : std::cout << "Verification failed\n";
 
   // Print contents of map
-  std::unordered_map<int,std::string> map;
-  if (!vals->getStringArray(map)) {
+  std::unordered_map<int, std::string> map;
+  if(!vals->getStringArray(map))
+  {
     std::cout << "\nError: Array not found\n";
-  } else {
+  }
+  else
+  {
     std::cout << "\nMap Contents:\n";
-    for (auto p : map) {
+    for(auto p : map)
+    {
       std::cout << p.first << " " << p.second << std::endl;
     }
   }
