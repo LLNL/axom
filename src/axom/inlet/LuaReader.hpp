@@ -202,6 +202,7 @@ private:
   bool getMap(const std::string& id,
               std::unordered_map<int, T>& values,
               sol::type type);
+  
   sol::state m_lua;
 };
 
