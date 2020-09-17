@@ -55,9 +55,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   candidate BVH bins that intersect each bounding box.
 - Added an `axom-config.cmake` file to axom's installation to streamline incorporating axom
   into user applications. See `<axom-install>/examples/axom` for example usages.
-- Added a new built-in TPL, Sol (https://github.com/ThePhD/sol2), for fast and 
-  simple C++ and Lua Binding (automatically enabled when LUA_DIR is found). 
-  The version of Sol used in this release is v2.20.6, which requires C++14. 
+- Added [Sol] as a built-in TPL for fast and simple `C++` and `Lua` binding.
+  Sol is automatically enabled when `LUA_DIR` is found. 
+  The version of Sol used in this release is `v2.20.6`, which requires `C++14`.
 
 ### Removed
 
@@ -86,6 +86,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `iomanager_new` is now `IOManager`
 
 ### Fixed
+- Fixed a bug in `primal::intersect(Segment, BoundingBox)` and added regression tests.
 - Spin's octrees can now be used with 64-bit indexes. This allows octrees 
   with up to 64 levels of resolution when using a 64-bit index type.
 - Resolved issue with `AXOM_USE_64BIT_INDEXTYPE` configurations. Axom can once again
@@ -406,3 +407,4 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
 [Umpire]: https://github.com/LLNL/Umpire
 [clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+[Sol]: https://github.com/ThePhD/sol2
