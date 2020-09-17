@@ -685,15 +685,13 @@ bool intersect_seg_bbox(const primal::Segment<T, DIM>& S,
                         const primal::BoundingBox<T, DIM>& bb,
                         primal::Point<T, DIM>& ip)
 {
-  T tmin = std::numeric_limits<T>::min();
   primal::Vector<T, DIM> direction(S.source(), S.target());
-  T tmax = direction.norm();
   primal::Ray<T, DIM> R(S.source(), direction);
 
   // These operations constrain the parameter specifying ray-slab intersection
   // points to exclude points not within the segment.
-  tmin = static_cast<T>(0);
-  tmax = static_cast<T>(1);
+  T tmin = static_cast<T>(0);
+  T tmax = static_cast<T>(direction.norm());
 
   for(int i = 0; i < DIM; i++)
   {
