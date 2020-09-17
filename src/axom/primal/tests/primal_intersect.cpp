@@ -1438,11 +1438,10 @@ TEST(primal_intersect, segment_aabb_2d_intersection)
   using BoxType = primal::BoundingBox<double, DIM>;
 
   // Helper lambda for printing out intersection details
-  auto print_details = AXOM_LAMBDA(bool expected,
-                                   const BoxType& b,
-                                   const SegmentType& s,
-                                   const PointType& p)
-  {
+  auto print_details = [=](bool expected,
+                           const BoxType& b,
+                           const SegmentType& s,
+                           const PointType& p) {
     if(expected)
     {
       SLIC_INFO("Found intersection between box " << b << " and line segment "
@@ -1507,11 +1506,10 @@ TEST(primal_intersect, segment_aabb_3d_intersection)
   using BoxType = primal::BoundingBox<double, DIM>;
 
   // Helper lambda for printing out intersection details
-  auto print_details = AXOM_LAMBDA(bool expected,
-                                   const BoxType& b,
-                                   const SegmentType& s,
-                                   const PointType& p)
-  {
+  auto print_details = [=](bool expected,
+                           const BoxType& b,
+                           const SegmentType& s,
+                           const PointType& p) {
     if(expected)
     {
       SLIC_INFO("Found intersection between box " << b << " and line segment "
