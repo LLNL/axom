@@ -1430,6 +1430,145 @@ void testTriSegBothEnds(const primal::Triangle<double, DIM>& tri,
   }
 }
 
+TEST(primal_intersect, segment_aabb_2d_intersection)
+{
+  constexpr int DIM = 2;
+  using PointType = primal::Point<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
+  using BoxType = primal::BoundingBox<double, DIM>;
+
+  // Helper lambda for printing out intersection details
+  auto print_details = AXOM_LAMBDA(bool expected,
+                                   const BoxType& b,
+                                   const SegmentType& s,
+                                   const PointType& p)
+  {
+    if(expected)
+    {
+      SLIC_INFO("Found intersection between box " << b << " and line segment "
+                                                  << s << " at point " << p);
+    }
+    else
+    {
+      SLIC_INFO("No expected intersection between box "
+                << b << " and line segment " << s);
+    }
+  };
+
+  // Simple intersection
+  {
+    BoxType box(PointType::make_point(3, 3), PointType::make_point(5, 5));
+    SegmentType seg(PointType::make_point(3.25, 0),
+                    PointType::make_point(4.75, 6));
+    PointType ipt;
+
+    EXPECT_TRUE(primal::intersect(seg, box, ipt));
+    print_details(true, box, seg, ipt);
+  }
+
+  // Reverse of first case
+  {
+    BoxType box(PointType::make_point(3, 3), PointType::make_point(5, 5));
+    SegmentType seg(PointType::make_point(4.75, 6),
+                    PointType::make_point(3.25, 0));
+    PointType ipt;
+
+    EXPECT_TRUE(primal::intersect(seg, box, ipt));
+    print_details(true, box, seg, ipt);
+  }
+
+  // No intersection
+  {
+    BoxType box(PointType::make_point(3, 3), PointType::make_point(5, 5));
+    SegmentType seg(PointType::make_point(-3.25, 0),
+                    PointType::make_point(-4.75, 6));
+    PointType ipt;
+
+    EXPECT_FALSE(primal::intersect(seg, box, ipt));
+    print_details(false, box, seg, ipt);
+  }
+
+  // Grazing intersection
+  {
+    BoxType box(PointType::make_point(3, 3), PointType::make_point(5, 5));
+    SegmentType seg(PointType::make_point(3, 4), PointType::make_point(3, 6));
+    PointType ipt;
+
+    EXPECT_TRUE(primal::intersect(seg, box, ipt));
+    print_details(true, box, seg, ipt);
+  }
+}
+
+TEST(primal_intersect, segment_aabb_3d_intersection)
+{
+  constexpr int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
+  using BoxType = primal::BoundingBox<double, DIM>;
+
+  // Helper lambda for printing out intersection details
+  auto print_details = AXOM_LAMBDA(bool expected,
+                                   const BoxType& b,
+                                   const SegmentType& s,
+                                   const PointType& p)
+  {
+    if(expected)
+    {
+      SLIC_INFO("Found intersection between box " << b << " and line segment "
+                                                  << s << " at point " << p);
+    }
+    else
+    {
+      SLIC_INFO("No expected intersection between box "
+                << b << " and line segment " << s);
+    }
+  };
+
+  // Simple intersection
+  {
+    BoxType box(PointType::make_point(3, 3, 3), PointType::make_point(5, 5, 5));
+    SegmentType seg(PointType::make_point(3.25, 0, 4),
+                    PointType::make_point(4.75, 6, 4));
+    PointType ipt;
+
+    EXPECT_TRUE(primal::intersect(seg, box, ipt));
+    print_details(true, box, seg, ipt);
+  }
+
+  // Reverse of first case
+  {
+    BoxType box(PointType::make_point(3, 3, 3), PointType::make_point(5, 5, 5));
+    SegmentType seg(PointType::make_point(4.75, 6, 4),
+                    PointType::make_point(3.25, 0, 4));
+    PointType ipt;
+
+    EXPECT_TRUE(primal::intersect(seg, box, ipt));
+    print_details(true, box, seg, ipt);
+  }
+
+  // No intersection
+  {
+    BoxType box(PointType::make_point(3, 3, 3), PointType::make_point(5, 5, 5));
+    SegmentType seg(PointType::make_point(-3.25, 0, 2),
+                    PointType::make_point(-4.75, 6, -2));
+    PointType ipt;
+
+    EXPECT_FALSE(primal::intersect(seg, box, ipt));
+    print_details(false, box, seg, ipt);
+  }
+
+  // Grazing intersection
+  {
+    BoxType box(PointType::make_point(3, 3, 3), PointType::make_point(5, 5, 5));
+    SegmentType seg(PointType::make_point(3, 4, 3),
+                    PointType::make_point(3, 6, 3));
+    PointType ipt;
+
+    EXPECT_TRUE(primal::intersect(seg, box, ipt));
+    print_details(true, box, seg, ipt);
+  }
+}
+
 TEST(primal_intersect, triangle_segment_intersection)
 {
   const int DIM = 3;
