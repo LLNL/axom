@@ -21,11 +21,8 @@
 
 namespace axom
 {
-#ifdef AXOM_USE_UMPIRE
-const int DEFAULT_ALLOCATOR_ID =
-  umpire::ResourceManager::getInstance().getAllocator("HOST").getId();
-#else
-constexpr int DEFAULT_ALLOCATOR_ID = 0;
+#ifndef AXOM_USE_UMPIRE
+  constexpr int DEFAULT_ALLOCATOR_ID = 0;
 #endif
 
 constexpr int INVALID_ALLOCATOR_ID = -1;
