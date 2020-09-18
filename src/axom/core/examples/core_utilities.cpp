@@ -105,7 +105,7 @@ void demoFileSystemAndString(const char* argv0)
 }
 // _fs_string_end
 
-int main(int AXOM_NOT_USED(argc), char** argv )
+int main(int argc, char** argv )
 {
   // _about_start
   std::cout << "Here is a message telling you about Axom." << std::endl;
