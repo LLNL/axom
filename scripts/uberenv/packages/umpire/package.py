@@ -47,6 +47,7 @@ class Umpire(CMakePackage, CudaPackage):
     variant('openmp', default=False, description='Build with OpenMP support')
     variant('deviceconst', default=False,
             description='Enables support for constant device memory')
+    variant('examples', default=False, description='Build Umpire Examples')
     variant('tests', default='none', values=('none', 'basic', 'benchmarks'),
             multi=False, description='Tests to run')
 
@@ -97,5 +98,8 @@ class Umpire(CMakePackage, CudaPackage):
 
         options.append('-DENABLE_TESTS={0}'.format(
             'Off' if 'tests=none' in spec else 'On'))
+
+        options.append('-DENABLE_EXAMPLES={0}'.format(
+            'On' if '+examples' in spec else 'Off'))
 
         return options
