@@ -21,9 +21,6 @@
 
 namespace axom
 {
-#ifndef AXOM_USE_UMPIRE
-  constexpr int DEFAULT_ALLOCATOR_ID = 0;
-#endif
 
 constexpr int INVALID_ALLOCATOR_ID = -1;
 
@@ -48,8 +45,10 @@ inline int getUmpireResourceAllocatorID(
 #endif
 
 /*!
- * \brief Sets the default memory space to use. Default is set to HOST
- * \param [in] allocatorID ID of the allocator to use.
+ * \brief Sets the default memory allocator to use.
+ * \param [in] allocatorID ID of the Umpire allocator to use.
+ * 
+ * \note This function has no effect when Axom is not compiled with Umpire.
  */
 inline void setDefaultAllocator(int allocatorID)
 {
@@ -63,20 +62,16 @@ inline void setDefaultAllocator(int allocatorID)
 }
 
 /*!
- * \brief Returns the current default memory space used.
- * \note If Umpire is used, the corresponding umpire allocator can be retrieved
- * by:
- *  <code>
- *    umpire::Allocator alloc =
- * umpire::ResourceManager::getInstance().getAllocator( allocID );
- *  </code>
+ * \brief Returns the ID of the current default allocator.
+ * \return ID the ID of the current default allocator.
+ * \post ID != INVALID_ALLOCATOR_ID
  */
 inline int getDefaultAllocatorID()
 {
 #ifdef AXOM_USE_UMPIRE
   return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
 #else
-  return axom::DEFAULT_ALLOCATOR_ID;
+  return 0;
 #endif
 }
 
@@ -84,14 +79,13 @@ inline int getDefaultAllocatorID()
  * \brief Allocates a chunk of memory of type T.
  *
  * \param [in] n the number of elements to allocate.
- * \param [in] allocator the Umpire allocator to use
- *(optional)
+ * \param [in] allocID the Umpire allocator to use (optional)
  *
  * \tparam T the type of pointer returned.
  *
- * \note By default allocate() will use the current default memory space. The
- *  caller may explicitly specify the memory space to use by specifying the
- *  second, optional argument, or change the default memory space by calling
+ * \note By default allocate() will use the current default allocator. The
+ *  caller may explicitly specify a different allocator to use by supplying the
+ *  second, optional argument, or change the default allocator by calling
  *  axom::setDefaultAllocator().
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
@@ -243,6 +237,7 @@ inline T* reallocate(T* pointer, std::size_t n) noexcept
   return pointer;
 }
 
+//------------------------------------------------------------------------------
 inline void copy(void* dst, void* src, std::size_t numbytes) noexcept
 {
 #ifdef AXOM_USE_UMPIRE
