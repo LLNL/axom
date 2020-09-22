@@ -1659,6 +1659,9 @@ TEST(sidre_datastore,destroy_buffer)
 //------------------------------------------------------------------------------
 TEST(sidre_view,value_from_uninited_view)
 {
+  // Note: This is the test that relies on re-writing conduit error handlers
+  DataStore::wireConduitMessageHandlersToSLIC();
+
   DataStore ds;
   View* view = ds.getRoot()->createView("empty");
 
@@ -1680,6 +1683,8 @@ TEST(sidre_view,value_from_uninited_view)
   int dval = view->getData();
   EXPECT_EQ(dval,0);
 
+  // restore conduit default errors
+  DataStore::restoreConduitDefaultMessageHandlers();
 }
 
 #ifdef AXOM_USE_UMPIRE

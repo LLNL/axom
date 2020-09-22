@@ -104,12 +104,6 @@ DataStore::DataStore()
     m_need_to_finalize_slic = true;
   }
 
-  // Provide SLIC error handler function to Conduit to log
-  // internal Conduit errors.
-  conduit::utils::set_error_handler( DataStoreConduitErrorHandler );
-  conduit::utils::set_warning_handler( DataStoreConduitWarningHandler );
-  conduit::utils::set_info_handler( DataStoreConduitInfoHandler );
-
   m_RootGroup = new Group("", this);
   m_RootGroup->m_parent = m_RootGroup;
 };
@@ -134,6 +128,40 @@ DataStore::~DataStore()
   {
     axom::slic::finalize();
   }
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Rewire Conduit Message Handlers to SLIC.
+ *  ... Not the best function name, but its is descriptive :-) 
+ *
+ *************************************************************************
+ */
+void DataStore::wireConduitMessageHandlersToSLIC()
+{
+  // Provide SLIC message handler functions to Conduit to log
+  // internal Conduit info, warning, error messages.
+  conduit::utils::set_error_handler( DataStoreConduitErrorHandler );
+  conduit::utils::set_warning_handler( DataStoreConduitWarningHandler );
+  conduit::utils::set_info_handler( DataStoreConduitInfoHandler );
+}
+
+/*
+ *************************************************************************
+ *
+ * Restore Conduit Message Handlers to Conduit Defaults.
+ *  ... Not the best function name, but its is descriptive :-) 
+ *
+ *************************************************************************
+ */
+void DataStore::restoreConduitDefaultMessageHandlers()
+{
+  // restore default handlers
+  conduit::utils::set_info_handler(conduit::utils::default_info_handler);
+  conduit::utils::set_warning_handler(conduit::utils::default_warning_handler);
+  conduit::utils::set_error_handler(conduit::utils::default_error_handler);
 }
 
 
