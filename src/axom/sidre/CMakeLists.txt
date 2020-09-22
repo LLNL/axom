@@ -95,7 +95,7 @@ if (ENABLE_FORTRAN)
     endif()
 endif()
 
-if (MFEM_FOUND AND ENABLE_MFEM_SIDRE_DATACOLLECTION)
+if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     list(APPEND sidre_headers core/MFEMSidreDataCollection.hpp)
     list(APPEND sidre_sources core/MFEMSidreDataCollection.cpp)
 endif()

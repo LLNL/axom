@@ -28,7 +28,7 @@ set(gtest_sidre_tests
    sidre_array.cpp
    )
 
-blt_list_append(TO gtest_sidre_tests ELEMENTS mfem_sidre_datacollection.cpp IF ENABLE_MFEM_SIDRE_DATACOLLECTION )
+blt_list_append(TO gtest_sidre_tests ELEMENTS mfem_sidre_datacollection.cpp IF AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION )
 
 set(gtest_sidre_C_tests
    sidre_smoke_C.cpp
