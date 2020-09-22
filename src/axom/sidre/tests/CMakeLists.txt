@@ -11,7 +11,6 @@
 #------------------------------------------------------------------------------
 
 set(gtest_sidre_tests
-   mfem_sidre_datacollection.cpp
    sidre_smoke.cpp
    sidre_buffer.cpp
    sidre_buffer_unit.cpp
