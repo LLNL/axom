@@ -250,14 +250,55 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
 
   // calculate some constants
   constexpr double ONE_OVER_4 = 1.f / 4.f;
-  constexpr int ndims = 2;
-  constexpr int stride = 2 * ndims;
+  constexpr int NDIMS = 2;
+  constexpr int STRIDE = 2 * NDIMS;
 
-  EXPECT_EQ(ndims, mesh->getDimension());
+  EXPECT_EQ(NDIMS, mesh->getDimension());
 
   // allocate output arrays
   const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * stride);
+  aabbs = axom::allocate<FloatType>(ncells * STRIDE);
+
+#ifdef __ibmxl__
+
+  /* workaround for IBM XL compiler */
+  constexpr int NUM_NODES_PER_CELL = 4;
+  for(IndexType icell = 0; icell < ncells; ++icell)
+  {
+    spin::internal::linear_bvh::Range<FloatType> xrange;
+    spin::internal::linear_bvh::Range<FloatType> yrange;
+
+    IndexType nodeIDs[NUM_NODES_PER_CELL];
+    const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
+    EXPECT_EQ(numNodesPerCell, NUM_NODES_PER_CELL);
+
+    FloatType xsum = 0.0;
+    FloatType ysum = 0.0;
+    for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
+    {
+      const IndexType& nodeIdx = nodeIDs[inode];
+
+      double coords[NDIMS];
+      mesh->getNode(nodeIdx, coords);
+
+      xsum += coords[mint::X_COORDINATE];
+      ysum += coords[mint::Y_COORDINATE];
+
+      xrange.include(coords[mint::X_COORDINATE]);
+      yrange.include(coords[mint::Y_COORDINATE]);
+    }  // END for all cell nodes
+
+    xc[icell] = xsum * ONE_OVER_4;
+    yc[icell] = ysum * ONE_OVER_4;
+
+    const IndexType offset = icell * STRIDE;
+    aabbs[offset] = xrange.min();
+    aabbs[offset + 1] = yrange.min();
+    aabbs[offset + 2] = xrange.max();
+    aabbs[offset + 3] = yrange.max();
+  }  // END for all cells
+
+#else
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells<exec_policy, xargs::coords>(
@@ -265,11 +306,11 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<double> xrange;
-      spin::internal::linear_bvh::Range<double> yrange;
+      spin::internal::linear_bvh::Range<FloatType> xrange;
+      spin::internal::linear_bvh::Range<FloatType> yrange;
 
-      double xsum = 0.0;
-      double ysum = 0.0;
+      FloatType xsum = 0.0;
+      FloatType ysum = 0.0;
 
       for(IndexType inode = 0; inode < 4; ++inode)
       {
@@ -283,12 +324,15 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
 
       xc[cellIdx] = xsum * ONE_OVER_4;
       yc[cellIdx] = ysum * ONE_OVER_4;
-      const IndexType offset = cellIdx * stride;
+
+      const IndexType offset = cellIdx * STRIDE;
       aabbs[offset] = xrange.min();
       aabbs[offset + 1] = yrange.min();
       aabbs[offset + 2] = xrange.max();
       aabbs[offset + 3] = yrange.max();
     });
+
+#endif  // __ibmxl__
 
   // post-condition sanity checks
   EXPECT_TRUE(aabbs != nullptr);
@@ -335,14 +379,62 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
 
   // calculate some constants
   constexpr double ONE_OVER_8 = 1.f / 8.f;
-  constexpr int ndims = 3;
-  constexpr int stride = 2 * ndims;
+  constexpr int NDIMS = 3;
+  constexpr int STRIDE = 2 * NDIMS;
 
-  EXPECT_EQ(ndims, mesh->getDimension());
+  EXPECT_EQ(NDIMS, mesh->getDimension());
 
   // allocate output arrays
   const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * stride);
+  aabbs = axom::allocate<FloatType>(ncells * STRIDE);
+
+#ifdef __ibmxl__
+
+  /* workaround for IBM XL compiler */
+  constexpr int NUM_NODES_PER_CELL = 8;
+  for(IndexType icell = 0; icell < ncells; ++icell)
+  {
+    spin::internal::linear_bvh::Range<FloatType> xrange;
+    spin::internal::linear_bvh::Range<FloatType> yrange;
+    spin::internal::linear_bvh::Range<FloatType> zrange;
+
+    IndexType nodeIDs[NUM_NODES_PER_CELL];
+    const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
+    EXPECT_EQ(numNodesPerCell, NUM_NODES_PER_CELL);
+
+    FloatType xsum = 0.0;
+    FloatType ysum = 0.0;
+    FloatType zsum = 0.0;
+    for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
+    {
+      const IndexType& nodeIdx = nodeIDs[inode];
+
+      double coords[NDIMS];
+      mesh->getNode(nodeIdx, coords);
+
+      xsum += coords[mint::X_COORDINATE];
+      ysum += coords[mint::Y_COORDINATE];
+      zsum += coords[mint::Z_COORDINATE];
+
+      xrange.include(coords[mint::X_COORDINATE]);
+      yrange.include(coords[mint::Y_COORDINATE]);
+      zrange.include(coords[mint::Z_COORDINATE]);
+    }  // END for all cell nodes
+
+    xc[icell] = xsum * ONE_OVER_8;
+    yc[icell] = ysum * ONE_OVER_8;
+    zc[icell] = zsum * ONE_OVER_8;
+
+    const IndexType offset = icell * STRIDE;
+    aabbs[offset] = xrange.min();
+    aabbs[offset + 1] = yrange.min();
+    aabbs[offset + 2] = zrange.min();
+    aabbs[offset + 3] = xrange.max();
+    aabbs[offset + 4] = yrange.max();
+    aabbs[offset + 5] = zrange.max();
+  }  // END for all cells
+
+#else
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells<exec_policy, xargs::coords>(
@@ -350,13 +442,13 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<double> xrange;
-      spin::internal::linear_bvh::Range<double> yrange;
-      spin::internal::linear_bvh::Range<double> zrange;
+      spin::internal::linear_bvh::Range<FloatType> xrange;
+      spin::internal::linear_bvh::Range<FloatType> yrange;
+      spin::internal::linear_bvh::Range<FloatType> zrange;
 
-      double xsum = 0.0;
-      double ysum = 0.0;
-      double zsum = 0.0;
+      FloatType xsum = 0.0;
+      FloatType ysum = 0.0;
+      FloatType zsum = 0.0;
 
       for(IndexType inode = 0; inode < 8; ++inode)
       {
@@ -374,7 +466,7 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
       yc[cellIdx] = ysum * ONE_OVER_8;
       zc[cellIdx] = zsum * ONE_OVER_8;
 
-      const IndexType offset = cellIdx * stride;
+      const IndexType offset = cellIdx * STRIDE;
       aabbs[offset] = xrange.min();
       aabbs[offset + 1] = yrange.min();
       aabbs[offset + 2] = zrange.min();
@@ -382,6 +474,8 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
       aabbs[offset + 4] = yrange.max();
       aabbs[offset + 5] = zrange.max();
     });
+
+#endif  // __ibmxl__
 
   // post-condition sanity checks
   EXPECT_TRUE(aabbs != nullptr);
