@@ -137,7 +137,7 @@ void demoArrayBasic()
   // _extbuffer_end
 }
 
-int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
+int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
 {
   demoArrayBasic();
   return 0;

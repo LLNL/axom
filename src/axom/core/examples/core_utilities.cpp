@@ -62,7 +62,7 @@ void demoFileSystemAndString(const char* argv0)
   int matchcount = 0;
   std::string prefix {"ax"};
   std::string suffix {"exe"};
-  const int N = static_cast< int >( cmp.size() );
+  const int N = static_cast<int>(cmp.size());
   for(int i = 0; i < N; ++i)
   {
     if(string::startsWith(cmp[i], prefix) || string::endsWith(cmp[i], suffix))
@@ -105,7 +105,7 @@ void demoFileSystemAndString(const char* argv0)
 }
 // _fs_string_end
 
-int main(int argc, char** argv )
+int main(int argc, char** argv)
 {
   // _about_start
   std::cout << "Here is a message telling you about Axom." << std::endl;
@@ -136,6 +136,6 @@ int main(int argc, char** argv )
   std::cout << "The tests took " << t.elapsedTimeInMilliSec() << " ms."
             << std::endl;
   // _timer_end
-  
+
   return 0;
 }

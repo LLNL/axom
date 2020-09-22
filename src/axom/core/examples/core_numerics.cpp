@@ -277,7 +277,7 @@ void demoMatrix()
   // _solve_end
 }
 
-int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
+int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
 {
   // _timer_start
   axom::utilities::Timer t;
@@ -292,6 +292,6 @@ int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   std::cout << "The tests took " << t.elapsedTimeInMilliSec() << " ms."
             << std::endl;
   // _timer_end
-  
+
   return 0;
 }

@@ -6,7 +6,7 @@
 #ifndef AXOM_SPIN_BUILD_RADIX_TREE_H_
 #define AXOM_SPIN_BUILD_RADIX_TREE_H_
 
-#include "axom/config.hpp" // for axom compile-time definitions
+#include "axom/config.hpp"  // for axom compile-time definitions
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
@@ -369,32 +369,32 @@ void reorder(int32* indices, T*& array, int32 size, int allocatorID)
 }
 
 //------------------------------------------------------------------------------
-#if (RAJA_VERSION_MAJOR > 0) || ( (RAJA_VERSION_MAJOR==0) && (RAJA_VERSION_MINOR >= 12) ) 
+#if(RAJA_VERSION_MAJOR > 0) || \
+  ((RAJA_VERSION_MAJOR == 0) && (RAJA_VERSION_MINOR >= 12))
 
-template < typename ExecSpace  >
+template <typename ExecSpace>
 void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 {
-  AXOM_PERF_MARK_FUNCTION( "sort_mcodes" );
+  AXOM_PERF_MARK_FUNCTION("sort_mcodes");
 
   array_counting<ExecSpace>(iter, size, 0, 1);
 
-  AXOM_PERF_MARK_SECTION( "raja_stable_sort",
-    using EXEC_POL = typename axom::execution_space< ExecSpace >::loop_policy;
-    RAJA::stable_sort_pairs< EXEC_POL >( mcodes, mcodes+size, iter );
-  );
-
+  AXOM_PERF_MARK_SECTION(
+    "raja_stable_sort",
+    using EXEC_POL = typename axom::execution_space<ExecSpace>::loop_policy;
+    RAJA::stable_sort_pairs<EXEC_POL>(mcodes, mcodes + size, iter););
 }
 
 #else
 
 // fall back to std::stable_sort
-template < typename ExecSpace  >
+template <typename ExecSpace>
 void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 {
-  AXOM_PERF_MARK_FUNCTION( "sort_mcodes" );
+  AXOM_PERF_MARK_FUNCTION("sort_mcodes");
 
   array_counting<ExecSpace>(iter, size, 0, 1);
-  
+
   AXOM_PERF_MARK_SECTION(
     "cpu_sort",
 
@@ -406,17 +406,16 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 
   const int allocID = axom::execution_space<ExecSpace>::allocatorID();
   reorder<ExecSpace>(iter, mcodes, size, allocID);
-
 }
 
 #endif /* RAJA version 0.12.0 and above */
 
 //------------------------------------------------------------------------------
-template < typename IntType, typename MCType >
-AXOM_HOST_DEVICE IntType delta( const IntType &a,
-                                const IntType &b,
-                                const IntType &inner_size,
-                                const MCType* mcodes )
+template <typename IntType, typename MCType>
+AXOM_HOST_DEVICE IntType delta(const IntType& a,
+                               const IntType& b,
+                               const IntType& inner_size,
+                               const MCType* mcodes)
 {
   bool tie = false;
   bool out_of_range = (b < 0 || b > inner_size);
