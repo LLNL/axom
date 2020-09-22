@@ -13,26 +13,22 @@
 #include "Group.hpp"
 #include "View.hpp"
 
-#include "axom/core/Types.hpp" // for axom types
+#include "axom/core/Types.hpp"  // for axom types
 
 namespace axom
 {
 namespace sidre
 {
-
 /*!
  * \brief Helper function. If allocatorID is a valid umpire allocator ID then
  *  return it. Otherwise return the ID of the default allocator.
  */
-int getValidAllocatorID( int allocID )
+int getValidAllocatorID(int allocID)
 {
-#ifdef AXOM_USE_UMPIRE
-  if ( allocID == INVALID_ALLOCATOR_ID )
+  if(allocID == INVALID_ALLOCATOR_ID)
   {
-    allocID = getDefaultAllocator().getId();
+    allocID = getDefaultAllocatorID();
   }
-#endif
-
   return allocID;
 }
 
@@ -45,7 +41,7 @@ int getValidAllocatorID( int allocID )
  */
 Buffer* Buffer::describe(TypeID type, IndexType num_elems)
 {
-  if ( isAllocated() || num_elems < 0 )
+  if(isAllocated() || num_elems < 0)
   {
     SLIC_CHECK_MSG(!isAllocated(), "Cannot describe an allocated Buffer");
     SLIC_CHECK_MSG(num_elems >= 0, "Must describe Buffer with num elems >= 0");
@@ -53,7 +49,7 @@ Buffer* Buffer::describe(TypeID type, IndexType num_elems)
   }
 
   DataType& dtype = const_cast<DataType&>(m_node.dtype());
-  dtype.set( dtype.default_dtype(type) );
+  dtype.set(dtype.default_dtype(type));
   dtype.set_number_of_elements(num_elems);
 
   return this;
@@ -70,7 +66,7 @@ Buffer* Buffer::allocate(int allocID)
 {
   allocID = getValidAllocatorID(allocID);
 
-  if ( !isDescribed() || isAllocated() )
+  if(!isDescribed() || isAllocated())
   {
     SLIC_CHECK_MSG(isDescribed(), "Buffer is not described, cannot allocate.");
     SLIC_CHECK_MSG(!isAllocated(), "Buffer is already allocated.");
@@ -78,15 +74,14 @@ Buffer* Buffer::allocate(int allocID)
     return this;
   }
 
-  void* data = allocateBytes( getTotalBytes(), allocID );
+  void* data = allocateBytes(getTotalBytes(), allocID);
 
-  SLIC_CHECK_MSG( getTotalBytes() == 0 || data != nullptr,
-                  "Buffer failed to allocate memory of size " <<
-                  getTotalBytes() );
+  SLIC_CHECK_MSG(getTotalBytes() == 0 || data != nullptr,
+                 "Buffer failed to allocate memory of size " << getTotalBytes());
 
-  if (data != nullptr)
+  if(data != nullptr)
   {
-    m_node.set_external( DataType( m_node.dtype() ), data );
+    m_node.set_external(DataType(m_node.dtype()), data);
   }
   return this;
 }
@@ -102,7 +97,7 @@ Buffer* Buffer::allocate(TypeID type, IndexType num_elems, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
 
-  if (isAllocated())
+  if(isAllocated())
   {
     SLIC_CHECK_MSG(!isAllocated(), "Buffer is already allocated.");
 
@@ -123,16 +118,16 @@ Buffer* Buffer::allocate(TypeID type, IndexType num_elems, int allocID)
  *
  *************************************************************************
  */
-Buffer* Buffer::reallocate( IndexType num_elems)
+Buffer* Buffer::reallocate(IndexType num_elems)
 {
-  if (!isDescribed())
+  if(!isDescribed())
   {
     SLIC_CHECK_MSG(!isDescribed(),
                    "Can't re-allocate Buffer with no type description.");
     return this;
   }
 
-  if ( num_elems < 0 )
+  if(num_elems < 0)
   {
     SLIC_CHECK_MSG(num_elems >= 0,
                    "Cannot re-allocate with number of elements < 0");
@@ -141,13 +136,13 @@ Buffer* Buffer::reallocate( IndexType num_elems)
 
   void* old_data_ptr = getVoidPtr();
 
-  DataType dtype( m_node.dtype() );
-  dtype.set_number_of_elements( num_elems );
+  DataType dtype(m_node.dtype());
+  dtype.set_number_of_elements(num_elems);
   IndexType new_size = dtype.strided_bytes();
-  void* new_data_ptr = axom::reallocate(static_cast<axom::uint8*>(old_data_ptr),
-                                        new_size);
+  void* new_data_ptr =
+    axom::reallocate(static_cast<axom::uint8*>(old_data_ptr), new_size);
 
-  if ( num_elems == 0 || new_data_ptr != nullptr )
+  if(num_elems == 0 || new_data_ptr != nullptr)
   {
     m_node.reset();
     m_node.set_external(dtype, new_data_ptr);
@@ -170,16 +165,16 @@ Buffer* Buffer::reallocate( IndexType num_elems)
  */
 Buffer* Buffer::deallocate()
 {
-  if (!isAllocated())
+  if(!isAllocated())
   {
     return this;
   }
 
   releaseBytes(getVoidPtr());
-  m_node.set_external( DataType( m_node.dtype() ), nullptr );
+  m_node.set_external(DataType(m_node.dtype()), nullptr);
 
   std::set<View*>::iterator vit = m_views.begin();
-  for ( ; vit != m_views.end() ; ++vit)
+  for(; vit != m_views.end(); ++vit)
   {
     (*vit)->unapply();
   }
@@ -197,20 +192,19 @@ Buffer* Buffer::deallocate()
  */
 Buffer* Buffer::copyBytesIntoBuffer(void* src, IndexType nbytes)
 {
-  if ( src == nullptr || nbytes < 0 || nbytes > getTotalBytes() )
+  if(src == nullptr || nbytes < 0 || nbytes > getTotalBytes())
   {
     SLIC_CHECK_MSG(src != nullptr,
                    "Cannot copy data into Buffer from null pointer.");
     SLIC_CHECK_MSG(nbytes >= 0, "Cannot copy < 0 bytes of data into Buffer.");
-    SLIC_CHECK_MSG(
-      nbytes <= getTotalBytes(),
-      "Unable to copy " << nbytes << " bytes of data into Buffer with " <<
-      getTotalBytes() << " bytes allocated.");
+    SLIC_CHECK_MSG(nbytes <= getTotalBytes(),
+                   "Unable to copy " << nbytes << " bytes of data into Buffer with "
+                                     << getTotalBytes() << " bytes allocated.");
 
     return this;
   }
 
-  copy( getVoidPtr(), src, nbytes );
+  copy(getVoidPtr(), src, nbytes);
 
   return this;
 }
@@ -222,7 +216,7 @@ Buffer* Buffer::copyBytesIntoBuffer(void* src, IndexType nbytes)
  *
  *************************************************************************
  */
-void Buffer::copyToConduitNode(Node &n) const
+void Buffer::copyToConduitNode(Node& n) const
 {
   n["index"].set(m_index);
   n["value"].set(m_node.to_json());
@@ -235,10 +229,7 @@ void Buffer::copyToConduitNode(Node &n) const
  *
  *************************************************************************
  */
-void Buffer::print() const
-{
-  print(std::cout);
-}
+void Buffer::print() const { print(std::cout); }
 
 /*
  *************************************************************************
@@ -254,7 +245,6 @@ void Buffer::print(std::ostream& os) const
   n.to_json_stream(os);
 }
 
-
 /*
  *************************************************************************
  *
@@ -262,20 +252,20 @@ void Buffer::print(std::ostream& os) const
  *
  *************************************************************************
  */
-void Buffer::exportTo( conduit::Node& data_holder)
+void Buffer::exportTo(conduit::Node& data_holder)
 {
   data_holder["id"] = m_index;
 
-  if ( isDescribed() )
+  if(isDescribed())
   {
     data_holder["schema"] = m_node.schema().to_json();
   }
 
   // If Buffer is allocated, export it's node's data
-  if ( isAllocated() )
+  if(isAllocated())
   {
     // Do this instead of using the node copy constructor ( keep it zero-copy ).
-    data_holder["data"].set_external( m_node.schema(), getVoidPtr() );
+    data_holder["data"].set_external(m_node.schema(), getVoidPtr());
 
     // TODO - Ask Cyrus why he had following way previously.  Are we creating a
     // default dtype
@@ -286,7 +276,6 @@ void Buffer::exportTo( conduit::Node& data_holder)
   }
 }
 
-
 /*
  *************************************************************************
  *
@@ -294,27 +283,26 @@ void Buffer::exportTo( conduit::Node& data_holder)
  *
  *************************************************************************
  */
-void Buffer::importFrom( conduit::Node& buffer_holder)
+void Buffer::importFrom(conduit::Node& buffer_holder)
 {
-  if (buffer_holder.has_path("schema"))
+  if(buffer_holder.has_path("schema"))
   {
-    Schema schema( buffer_holder["schema"].as_string() );
-    TypeID type = static_cast<TypeID>( schema.dtype().id() );
+    Schema schema(buffer_holder["schema"].as_string());
+    TypeID type = static_cast<TypeID>(schema.dtype().id());
     IndexType num_elems = schema.dtype().number_of_elements();
     describe(type, num_elems);
   }
 
   // If Buffer was allocated, the conduit node will have the entry "data".
   // Allocate and copy in that data.
-  if (buffer_holder.has_path("data"))
+  if(buffer_holder.has_path("data"))
   {
     allocate();
     conduit::Node& buffer_data_holder = buffer_holder["data"];
     copyBytesIntoBuffer(buffer_data_holder.element_ptr(0),
-                        buffer_data_holder.total_strided_bytes() );
+                        buffer_data_holder.total_strided_bytes());
   }
 }
-
 
 /*
  *************************************************************************
@@ -323,11 +311,7 @@ void Buffer::importFrom( conduit::Node& buffer_holder)
  *
  *************************************************************************
  */
-Buffer::Buffer( IndexType uid )
-  : m_index(uid),
-  m_views(),
-  m_node()
-{}
+Buffer::Buffer(IndexType uid) : m_index(uid), m_views(), m_node() { }
 
 /*
  *************************************************************************
@@ -336,14 +320,13 @@ Buffer::Buffer( IndexType uid )
  *
  *************************************************************************
  */
-Buffer::Buffer(const Buffer& source )
-  : m_index(source.m_index),
-  m_views(source.m_views),
-  m_node(source.m_node)
+Buffer::Buffer(const Buffer& source)
+  : m_index(source.m_index)
+  , m_views(source.m_views)
+  , m_node(source.m_node)
 {
-// disallow?
+  // disallow?
 }
-
 
 /*
  *************************************************************************
@@ -352,10 +335,7 @@ Buffer::Buffer(const Buffer& source )
  *
  *************************************************************************
  */
-Buffer::~Buffer()
-{
-  releaseBytes(getVoidPtr());
-}
+Buffer::~Buffer() { releaseBytes(getVoidPtr()); }
 
 /*
  *************************************************************************
@@ -364,13 +344,13 @@ Buffer::~Buffer()
  *
  *************************************************************************
  */
-void Buffer::attachToView( View* view )
+void Buffer::attachToView(View* view)
 {
   SLIC_ASSERT(view->m_data_buffer == this);
 
-  if (view->m_data_buffer == this)
+  if(view->m_data_buffer == this)
   {
-    m_views.insert( view );
+    m_views.insert(view);
   }
 }
 
@@ -381,12 +361,12 @@ void Buffer::attachToView( View* view )
  *
  *************************************************************************
  */
-void Buffer::detachFromView( View* view )
+void Buffer::detachFromView(View* view)
 {
   SLIC_ASSERT(view->m_data_buffer == this);
   SLIC_ASSERT(m_views.count(view) > 0);
 
-  if (view->m_data_buffer == this && m_views.count(view) > 0)
+  if(view->m_data_buffer == this && m_views.count(view) > 0)
   {
     m_views.erase(view);
     view->setBufferViewToEmpty();
@@ -403,7 +383,7 @@ void Buffer::detachFromView( View* view )
 void Buffer::detachFromAllViews()
 {
   std::set<View*>::iterator vit = m_views.begin();
-  for ( ; vit != m_views.end() ; ++vit)
+  for(; vit != m_views.end(); ++vit)
   {
     (*vit)->setBufferViewToEmpty();
   }
@@ -422,11 +402,7 @@ void Buffer::detachFromAllViews()
 void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
-#ifdef AXOM_USE_UMPIRE
-  return axom::allocate<axom::int8>(num_bytes, getAllocator(allocID));
-#else
-  return axom::allocate<axom::int8>(num_bytes);
-#endif
+  return axom::allocate<axom::int8>(num_bytes, allocID);
 }
 
 /*
@@ -436,7 +412,7 @@ void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
  *
  *************************************************************************
  */
-void Buffer::releaseBytes( void* ptr)
+void Buffer::releaseBytes(void* ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
   axom::int8* ptr_copy = static_cast<axom::int8*>(ptr);

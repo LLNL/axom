@@ -6,26 +6,26 @@
 #ifndef MINT_EXECUTION_INTERFACE_HPP_
 #define MINT_EXECUTION_INTERFACE_HPP_
 
-#include "axom/config.hpp"                         // compile-time definitions
-#include "axom/core/Macros.hpp"                    // for AXOM_STATIC_ASSERT
-#include "axom/core/execution/execution_space.hpp" // for execution_space traits
+#include "axom/config.hpp"                          // compile-time definitions
+#include "axom/core/Macros.hpp"                     // for AXOM_STATIC_ASSERT
+#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
 
 #include "axom/mint/execution/xargs.hpp"                   // for xargs
 #include "axom/mint/execution/internal/for_all_cells.hpp"  // for_all_cells()
 #include "axom/mint/execution/internal/for_all_nodes.hpp"  // for_all_nodes()
 #include "axom/mint/execution/internal/for_all_faces.hpp"  // for_all_faces()
 
-#include "axom/mint/mesh/Mesh.hpp"                         // for  mint::Mesh
+#include "axom/mint/mesh/Mesh.hpp"  // for  mint::Mesh
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"                    // for SLIC macros
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 #ifdef AXOM_USE_RAJA
-#include "RAJA/RAJA.hpp"
+  #include "RAJA/RAJA.hpp"
 #endif
 
 // C/C++ includes
-#include <type_traits> // for std::is_same
+#include <type_traits>  // for std::is_same
 
 /*!
  * \file
@@ -84,7 +84,6 @@ namespace axom
 {
 namespace mint
 {
-
 /// \name Mesh Node Traversal Functions
 /// @{
 
@@ -134,40 +133,39 @@ namespace mint
  * \see xargs.hpp
  */
 /// @{
-template < typename ExecPolicy, typename ArgType = xargs::index,
-           typename MeshType,
-           typename KernelType >
-inline void for_all_nodes( const MeshType* m, KernelType&& kernel )
+template <typename ExecPolicy, typename ArgType = xargs::index, typename MeshType, typename KernelType>
+inline void for_all_nodes(const MeshType* m, KernelType&& kernel)
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
-  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+  AXOM_STATIC_ASSERT(execution_space<ExecPolicy>::valid());
+  AXOM_STATIC_ASSERT(xargs_traits<ArgType>::valid());
 
   constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
-  AXOM_STATIC_ASSERT( valid_mesh_type );
+  AXOM_STATIC_ASSERT(valid_mesh_type);
 
   // run-time sanity checks
-  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT(m != nullptr);
 
   // dispatch
-  internal::for_all_nodes_impl< ExecPolicy >(
-      ArgType(),  *m, std::forward< KernelType >( kernel ) );
+  internal::for_all_nodes_impl<ExecPolicy>(ArgType(),
+                                           *m,
+                                           std::forward<KernelType>(kernel));
 }
 
-template < typename ExecPolicy, typename ArgType = xargs::index,
-           typename KernelType >
-inline void for_all_nodes( const Mesh* m, KernelType&& kernel )
+template <typename ExecPolicy, typename ArgType = xargs::index, typename KernelType>
+inline void for_all_nodes(const Mesh* m, KernelType&& kernel)
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
-  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+  AXOM_STATIC_ASSERT(execution_space<ExecPolicy>::valid());
+  AXOM_STATIC_ASSERT(xargs_traits<ArgType>::valid());
 
   // run-time sanity checks
-  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT(m != nullptr);
 
   //dispatch
-  internal::for_all_nodes< ExecPolicy >(
-      ArgType(), *m, std::forward< KernelType >( kernel ) );
+  internal::for_all_nodes<ExecPolicy>(ArgType(),
+                                      *m,
+                                      std::forward<KernelType>(kernel));
 }
 
 /// @}
@@ -229,40 +227,39 @@ inline void for_all_nodes( const Mesh* m, KernelType&& kernel )
  */
 /// @{
 
-template < typename ExecPolicy, typename ArgType = xargs::index,
-           typename MeshType,
-           typename KernelType >
-inline void for_all_cells( const MeshType* m, KernelType&& kernel )
+template <typename ExecPolicy, typename ArgType = xargs::index, typename MeshType, typename KernelType>
+inline void for_all_cells(const MeshType* m, KernelType&& kernel)
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
-  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+  AXOM_STATIC_ASSERT(execution_space<ExecPolicy>::valid());
+  AXOM_STATIC_ASSERT(xargs_traits<ArgType>::valid());
 
   constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
-  AXOM_STATIC_ASSERT( valid_mesh_type );
+  AXOM_STATIC_ASSERT(valid_mesh_type);
 
   // run-time sanity checks
-  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT(m != nullptr);
 
   // dispatch
-  internal::for_all_cells_impl< ExecPolicy >(
-      ArgType(), *m, std::forward< KernelType >( kernel ) );
+  internal::for_all_cells_impl<ExecPolicy>(ArgType(),
+                                           *m,
+                                           std::forward<KernelType>(kernel));
 }
 
-template < typename ExecPolicy, typename ArgType = xargs::index,
-           typename KernelType >
-inline void for_all_cells( const Mesh* m, KernelType&& kernel )
+template <typename ExecPolicy, typename ArgType = xargs::index, typename KernelType>
+inline void for_all_cells(const Mesh* m, KernelType&& kernel)
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
-  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+  AXOM_STATIC_ASSERT(execution_space<ExecPolicy>::valid());
+  AXOM_STATIC_ASSERT(xargs_traits<ArgType>::valid());
 
   // run-time sanity checks
-  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT(m != nullptr);
 
   //dispatch
-  internal::for_all_cells< ExecPolicy >(
-      ArgType(), *m, std::forward< KernelType >( kernel ) );
+  internal::for_all_cells<ExecPolicy>(ArgType(),
+                                      *m,
+                                      std::forward<KernelType>(kernel));
 }
 
 /// @}
@@ -319,46 +316,45 @@ inline void for_all_cells( const Mesh* m, KernelType&& kernel )
  */
 /// @{
 
-template < typename ExecPolicy, typename ArgType = xargs::index,
-           typename MeshType,
-           typename KernelType >
-inline void for_all_faces( const MeshType* m, KernelType&& kernel )
+template <typename ExecPolicy, typename ArgType = xargs::index, typename MeshType, typename KernelType>
+inline void for_all_faces(const MeshType* m, KernelType&& kernel)
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
-  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+  AXOM_STATIC_ASSERT(execution_space<ExecPolicy>::valid());
+  AXOM_STATIC_ASSERT(xargs_traits<ArgType>::valid());
 
   constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
-  AXOM_STATIC_ASSERT( valid_mesh_type );
+  AXOM_STATIC_ASSERT(valid_mesh_type);
 
   // run-time sanity checks
-  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT(m != nullptr);
 
   // dispatch
-  internal::for_all_faces_impl< ExecPolicy >(
-      ArgType(), *m, std::forward< KernelType >( kernel ) );
+  internal::for_all_faces_impl<ExecPolicy>(ArgType(),
+                                           *m,
+                                           std::forward<KernelType>(kernel));
 }
 
-template < typename ExecPolicy, typename ArgType = xargs::index,
-           typename KernelType >
-inline void for_all_faces( const Mesh* m, KernelType&& kernel )
+template <typename ExecPolicy, typename ArgType = xargs::index, typename KernelType>
+inline void for_all_faces(const Mesh* m, KernelType&& kernel)
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
-  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+  AXOM_STATIC_ASSERT(execution_space<ExecPolicy>::valid());
+  AXOM_STATIC_ASSERT(xargs_traits<ArgType>::valid());
 
   // run-time sanity checks
-  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT(m != nullptr);
 
   //dispatch
-  internal::for_all_faces< ExecPolicy >(
-      ArgType(), *m, std::forward< KernelType >( kernel ) );
+  internal::for_all_faces<ExecPolicy>(ArgType(),
+                                      *m,
+                                      std::forward<KernelType>(kernel));
 }
 
 /// @}
 
 /// @}
 
-}
-}
+}  // namespace mint
+}  // namespace axom
 #endif /* MINT_EXECUTION_INTERFACE_HPP_ */

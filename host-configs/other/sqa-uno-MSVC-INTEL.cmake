@@ -30,11 +30,11 @@
 ### Setup Axom components
 
 # Disable Sidre until we can successfully link to HDF5 and Conduit on Windows
-set(ENABLE_SIDRE OFF CACHE BOOL "")
+set(AXOM_ENABLE_SIDRE OFF CACHE BOOL "")
 #set(HDF5_DIR    ... CACHE PATH "")
 #set(CONDUIT_DIR ... CACHE PATH "")
 
-# Disable Fortran since Visual Studio is not generating modules for our component Fortan interfaces
+# Disable Fortran since Visual Studio is not generating modules for our component Fortran interfaces
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 set(ENABLE_DOCS    OFF CACHE BOOL "")
 

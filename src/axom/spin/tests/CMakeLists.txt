@@ -26,7 +26,7 @@ set( spin_depends
      fmt
     )
 
-blt_list_append( TO spin_depends ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO spin_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO spin_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO spin_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO spin_depends ELEMENTS cuda IF ${ENABLE_CUDA} )

@@ -29,7 +29,6 @@ namespace axom
 {
 namespace sidre
 {
-
 /*
  *************************************************************************
  *
@@ -37,10 +36,10 @@ namespace sidre
  *
  *************************************************************************
  */
-Attribute::Attribute( const std::string& name) :
-  m_name(name),
-  m_index(InvalidIndex)
-{}
+Attribute::Attribute(const std::string& name)
+  : m_name(name)
+  , m_index(InvalidIndex)
+{ }
 
 /*
  *************************************************************************
@@ -49,8 +48,7 @@ Attribute::Attribute( const std::string& name) :
  *
  *************************************************************************
  */
-Attribute::~Attribute()
-{}
+Attribute::~Attribute() { }
 
 } /* end namespace sidre */
 } /* end namespace axom */

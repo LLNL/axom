@@ -7,31 +7,29 @@
 #define MINT_FIELDDATA_HPP_
 
 // Axom includes
-#include "axom/core/Macros.hpp"        // for Axom macros
-#include "axom/core/Array.hpp"         // for Array
+#include "axom/core/Macros.hpp"  // for Axom macros
+#include "axom/core/Array.hpp"   // for Array
 
 #ifdef AXOM_MINT_USE_SIDRE
-#include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre/core/sidre.hpp"
 #endif
 
 // Mint includes
-#include "axom/mint/config.hpp"           // for mint compile time definitions
-#include "axom/mint/mesh/Field.hpp"            // for mint::Field definition
-#include "axom/mint/mesh/FieldVariable.hpp"    // for mint::FieldVariable
-#include "axom/mint/mesh/FieldAssociation.hpp" // for mint::FieldAssociation
+#include "axom/mint/config.hpp"      // for mint compile time definitions
+#include "axom/mint/mesh/Field.hpp"  // for mint::Field definition
+#include "axom/mint/mesh/FieldVariable.hpp"     // for mint::FieldVariable
+#include "axom/mint/mesh/FieldAssociation.hpp"  // for mint::FieldAssociation
 
 // C/C++ includes
-#include <iterator>               // for std::advance
-#include <string>                 // for std::string
-#include <map>                    // for std::map
-#include <vector>                 // for std::vector
+#include <iterator>  // for std::advance
+#include <string>    // for std::string
+#include <map>       // for std::map
+#include <vector>    // for std::vector
 
 namespace axom
 {
-
 namespace mint
 {
-
 /*!
  * \class FieldData
  *
@@ -62,14 +60,13 @@ namespace mint
 class FieldData
 {
 public:
-
-/// \name Constructors
-/// @{
+  /// \name Constructors
+  /// @{
 
   /*!
    * \brief Default constructor. Disabled.
    */
-  FieldData( ) = delete;
+  FieldData() = delete;
 
   /*!
    * \brief Creates an empty FieldData instance with the specified mesh
@@ -89,7 +86,7 @@ public:
    * \post this->hasSidreGroup() == false
    * \post this->getNumFields() == 0
    */
-  explicit FieldData( int association );
+  explicit FieldData(int association);
 
 #ifdef AXOM_MINT_USE_SIDRE
   /*!
@@ -123,50 +120,48 @@ public:
    * \post this->getAssociation() == association
    * \post this->hasSidreGroup() == true
    */
-  FieldData( int association, sidre::Group* field_group,
-             const std::string& topo );
+  FieldData(int association, sidre::Group* field_group, const std::string& topo);
 #endif
 
-/// @}
+  /// @}
 
   /*!
    * \brief Destructor.
    */
   ~FieldData() { clear(); }
 
-/// \name Attribute get/set Methods
-/// @{
+  /// \name Attribute get/set Methods
+  /// @{
 
   /*!
    * \brief Returns the mesh topology association of fields in this container.
    * \return association the field association.
    * \see FieldAssociation.hpp
    */
-  inline int getAssociation() const
-  { return m_association; }
+  inline int getAssociation() const { return m_association; }
 
   /*!
    * \brief Checks if this FieldData instance is empty.
    * \return status true if empty, else, false.
    */
-  inline bool empty() const
-  { return ( m_fields.empty() ); }
+  inline bool empty() const { return (m_fields.empty()); }
 
   /*!
    * \brief Returns the number of fields of this FieldData instance.
    * \return N the number of fields in this instance.
    * \post N == 0 \iff this->empty() == true.
    */
-  inline int getNumFields() const
-  { return static_cast< int >( m_fields.size() ); }
+  inline int getNumFields() const { return static_cast<int>(m_fields.size()); }
 
   /*!
    * \brief Checks if the field with the given name exists.
    * \param [in] name the name of the field to check.
    * \return status true if the field exists, else, false.
    */
-  inline bool hasField( const std::string& name ) const
-  { return ( m_fields.find( name ) != m_fields.end() ); }
+  inline bool hasField(const std::string& name) const
+  {
+    return (m_fields.find(name) != m_fields.end());
+  }
 
   /*!
    * \brief Checks if a Sidre Group is associated with this FieldData instance.
@@ -177,13 +172,12 @@ public:
   /*!
    *  \brief Return the resize ratio of this FieldData.
    */
-  inline double getResizeRatio() const
-  { return m_resize_ratio; }
+  inline double getResizeRatio() const { return m_resize_ratio; }
 
-/// @}
+  /// @}
 
-/// \name Methods acting on a single field
-/// @{
+  /// \name Methods acting on a single field
+  /// @{
 
   /*!
    * \brief Creates a new field with the given name consisting of the specified
@@ -216,11 +210,12 @@ public:
    * \post ptr != nullptr
    *
    */
-  template < typename T >
-  inline T* createField( const std::string& name, IndexType num_tuples,
-                         IndexType num_components=1,
-                         IndexType capacity=USE_DEFAULT,
-                         bool storeInSidre=true );
+  template <typename T>
+  inline T* createField(const std::string& name,
+                        IndexType num_tuples,
+                        IndexType num_components = 1,
+                        IndexType capacity = USE_DEFAULT,
+                        bool storeInSidre = true);
 
   /*!
    * \brief Creates a new field which will use the supplied external buffer as
@@ -253,11 +248,12 @@ public:
    * \post ptr != nullptr
    * \post ptr == data
    */
-  template < typename T >
-  inline T* createField( const std::string& name,
-                         T* data, IndexType num_tuples,
-                         IndexType num_components=1,
-                         IndexType capacity=USE_DEFAULT );
+  template <typename T>
+  inline T* createField(const std::string& name,
+                        T* data,
+                        IndexType num_tuples,
+                        IndexType num_components = 1,
+                        IndexType capacity = USE_DEFAULT);
 
   /*!
    * \brief Removes the field with the given name.
@@ -268,7 +264,7 @@ public:
    * \pre hasField( name ) == true
    *
    */
-  void removeField( const std::string& name );
+  void removeField(const std::string& name);
 
   /*!
    * \brief Removes the ith field from the container.
@@ -277,7 +273,7 @@ public:
    *
    * \pre i >= 0 && i < getNumFields()
    */
-  void removeField( int i );
+  void removeField(int i);
 
   /*!
    * \brief Returns the ith field of this FieldData instance.
@@ -290,19 +286,19 @@ public:
    */
   /// @{
 
-  inline Field* getField( int i )
+  inline Field* getField(int i)
   {
     const FieldData* const_this = this;
-    return const_cast< Field* >( const_this->getField( i ) );
+    return const_cast<Field*>(const_this->getField(i));
   }
 
-  inline const Field* getField( int i ) const
+  inline const Field* getField(int i) const
   {
-    SLIC_ASSERT( i < static_cast< int >( m_fields.size() ) );
-    std::map< std::string, Field*>::const_iterator it = m_fields.begin( );
-    std::advance( it, i );
-    SLIC_ASSERT( it != m_fields.end() );
-    SLIC_ASSERT( it->second != nullptr );
+    SLIC_ASSERT(i < static_cast<int>(m_fields.size()));
+    std::map<std::string, Field*>::const_iterator it = m_fields.begin();
+    std::advance(it, i);
+    SLIC_ASSERT(it != m_fields.end());
+    SLIC_ASSERT(it->second != nullptr);
     return it->second;
   }
 
@@ -318,22 +314,22 @@ public:
    */
   /// @{
 
-  inline Field* getField( const std::string& name )
+  inline Field* getField(const std::string& name)
   {
     const FieldData* const_this = this;
-    return const_cast< Field* >( const_this->getField( name ) );
+    return const_cast<Field*>(const_this->getField(name));
   }
 
-  inline const Field* getField( const std::string& name ) const
+  inline const Field* getField(const std::string& name) const
   {
-    std::map< std::string, Field*>::const_iterator it = m_fields.find( name );
-    if ( it == m_fields.end() )
+    std::map<std::string, Field*>::const_iterator it = m_fields.find(name);
+    if(it == m_fields.end())
     {
       return nullptr;
     }
     else
     {
-      SLIC_ASSERT( it->second != nullptr );
+      SLIC_ASSERT(it->second != nullptr);
       return it->second;
     }
   }
@@ -353,16 +349,16 @@ public:
    * \post ptr != nullptr
    */
   /// @{
-  template < typename T >
-  inline T* getFieldPtr( const std::string& name );
+  template <typename T>
+  inline T* getFieldPtr(const std::string& name);
 
-  template < typename T >
-  inline T* getFieldPtr( const std::string& name, IndexType& num_tuples );
+  template <typename T>
+  inline T* getFieldPtr(const std::string& name, IndexType& num_tuples);
 
-  template < typename T >
-  inline T* getFieldPtr( const std::string& name,
-                         IndexType& num_tuples,
-                         IndexType& num_components );
+  template <typename T>
+  inline T* getFieldPtr(const std::string& name,
+                        IndexType& num_tuples,
+                        IndexType& num_components);
   /// @}
 
   /*!
@@ -379,23 +375,23 @@ public:
    * \post ptr != nullptr
    */
   /// @{
-  template < typename T >
-  inline const T* getFieldPtr( const std::string& name ) const;
+  template <typename T>
+  inline const T* getFieldPtr(const std::string& name) const;
 
-  template < typename T >
-  inline const T* getFieldPtr( const std::string& name,
-                               IndexType& num_tuples ) const;
+  template <typename T>
+  inline const T* getFieldPtr(const std::string& name,
+                              IndexType& num_tuples) const;
 
-  template < typename T >
-  inline const T* getFieldPtr( const std::string& name,
-                               IndexType& num_tuples,
-                               IndexType& num_components ) const;
+  template <typename T>
+  inline const T* getFieldPtr(const std::string& name,
+                              IndexType& num_tuples,
+                              IndexType& num_components) const;
   /// @}
 
-/// @}
+  /// @}
 
-/// \name Methods acting on all fields
-/// @{
+  /// \name Methods acting on all fields
+  /// @{
 
   /*!
    * \brief Changes the num-tuples of all fields in this FieldData instance.
@@ -408,7 +404,7 @@ public:
    *
    * \see FieldVariable
    */
-  void resize( IndexType newNumTuples );
+  void resize(IndexType newNumTuples);
 
   /*!
    * \brief Inserts n_tuples with the default value at the given position.
@@ -421,7 +417,7 @@ public:
    *
    * \see FieldVariable
    */
-  void emplace( IndexType pos, IndexType n_tuples );
+  void emplace(IndexType pos, IndexType n_tuples);
 
   /*!
    * \brief Changes the tuple capacity of all fields in this FieldData instance.
@@ -434,7 +430,7 @@ public:
    *
    * \see FieldVariable
    */
-  void reserve( IndexType newCapacity );
+  void reserve(IndexType newCapacity);
 
   /*!
    * \brief Shrinks the tuple capacity of all fields in this FieldData instance
@@ -447,7 +443,7 @@ public:
   /*!
    *  \brief Set the resize ratio of this FieldData and all associated Fields.
    */
-  void setResizeRatio( double ratio );
+  void setResizeRatio(double ratio);
 
   /*
    * \brief Return true iff all fields have the given number of tuples, all
@@ -457,15 +453,15 @@ public:
    * \param [in] num_tuples the expected number of tuples for each field.
    * \param [in] capacity the expected capacity of the non-external fields.
    */
-  bool checkConsistency( IndexType num_tuples, IndexType capacity ) const;
+  bool checkConsistency(IndexType num_tuples, IndexType capacity) const;
 
-/// @}
+  /// @}
 
 private:
   static constexpr int INVALID_FIELD_INDEX = -1;
 
-/// \name Private helper methods
-/// @{
+  /// \name Private helper methods
+  /// @{
 
   /*!
    * \brief Deletes all fields associated with this FieldData instance.
@@ -497,13 +493,13 @@ private:
    * \pre i >= 0 && i < m_fields.size()
    * \pre m_fields[ i ]  != nullptr
    */
-  void removeFieldAt( int i );
+  void removeFieldAt(int i);
 
-/// @}
+  /// @}
 
   int m_association;
   double m_resize_ratio;
-  std::map< std::string, Field* > m_fields;
+  std::map<std::string, Field*> m_fields;
 
 #ifdef AXOM_MINT_USE_SIDRE
   sidre::Group* m_fields_group;
@@ -514,18 +510,17 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(FieldData);
 };
 
-
 //------------------------------------------------------------------------------
 //  IMPLEMENTATION OF TEMPLATE & IN-LINE METHODS
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline std::string FieldData::getAssociationName( )
+inline std::string FieldData::getAssociationName()
 {
   // TODO: note, currently edge/face data are not supported by the blueprint
 
   std::string name = "";
-  switch ( m_association )
+  switch(m_association)
   {
   case NODE_CENTERED:
     name = "vertex";
@@ -540,154 +535,156 @@ inline std::string FieldData::getAssociationName( )
     name = "face";
     break;
   default:
-    SLIC_ERROR( "undefined field association [" << m_association << "]" );
-  } // END switch
+    SLIC_ERROR("undefined field association [" << m_association << "]");
+  }  // END switch
 
-  return ( name );
+  return (name);
 }
 
 //------------------------------------------------------------------------------
-inline bool FieldData::hasSidreGroup( ) const
+inline bool FieldData::hasSidreGroup() const
 {
 #ifdef AXOM_MINT_USE_SIDRE
-  return ( m_fields_group != nullptr );
+  return (m_fields_group != nullptr);
 #else
   return false;
 #endif
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* FieldData::getFieldPtr( const std::string& name )
+template <typename T>
+inline T* FieldData::getFieldPtr(const std::string& name)
 {
-  IndexType num_tuples     = 0;
+  IndexType num_tuples = 0;
   IndexType num_components = 0;
-  return ( getFieldPtr< T >( name, num_tuples, num_components) );
+  return (getFieldPtr<T>(name, num_tuples, num_components));
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* FieldData::getFieldPtr( const std::string& name,
-                                  IndexType& num_tuples )
+template <typename T>
+inline T* FieldData::getFieldPtr(const std::string& name, IndexType& num_tuples)
 {
   IndexType num_components = 0;
-  return ( getFieldPtr< T >( name, num_tuples, num_components) );
+  return (getFieldPtr<T>(name, num_tuples, num_components));
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* FieldData::getFieldPtr( const std::string& name,
-                                  IndexType& num_tuples,
-                                  IndexType& num_components )
+template <typename T>
+inline T* FieldData::getFieldPtr(const std::string& name,
+                                 IndexType& num_tuples,
+                                 IndexType& num_components)
 {
   const FieldData* const_this = this;
-  return const_cast< T* >( const_this->getFieldPtr< T >( name, num_tuples,
-                                                         num_components ) );
+  return const_cast<T*>(
+    const_this->getFieldPtr<T>(name, num_tuples, num_components));
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline const T* FieldData::getFieldPtr( const std::string& name ) const
+template <typename T>
+inline const T* FieldData::getFieldPtr(const std::string& name) const
 {
-  IndexType num_tuples     = 0;
+  IndexType num_tuples = 0;
   IndexType num_components = 0;
-  return ( getFieldPtr< T >( name, num_tuples, num_components ) );
+  return (getFieldPtr<T>(name, num_tuples, num_components));
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline const T* FieldData::getFieldPtr( const std::string& name,
-                                        IndexType& num_tuples ) const
+template <typename T>
+inline const T* FieldData::getFieldPtr(const std::string& name,
+                                       IndexType& num_tuples) const
 {
   IndexType num_components = 0;
-  return ( getFieldPtr< T >( name, num_tuples, num_components ) );
+  return (getFieldPtr<T>(name, num_tuples, num_components));
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline const T* FieldData::getFieldPtr( const std::string& name,
-                                        IndexType& num_tuples,
-                                        IndexType& num_components ) const
+template <typename T>
+inline const T* FieldData::getFieldPtr(const std::string& name,
+                                       IndexType& num_tuples,
+                                       IndexType& num_components) const
 {
-  SLIC_ERROR_IF( !hasField(name), "field [" << name << "] does not exist!" );
+  SLIC_ERROR_IF(!hasField(name), "field [" << name << "] does not exist!");
 
-  const mint::Field* f = getField( name );
-  SLIC_ASSERT( f != nullptr );
+  const mint::Field* f = getField(name);
+  SLIC_ASSERT(f != nullptr);
 
-  num_tuples     = f->getNumTuples();
-  num_components = f->getNumComponents( );
-  SLIC_ASSERT( num_components >= 1 );
+  num_tuples = f->getNumTuples();
+  num_components = f->getNumComponents();
+  SLIC_ASSERT(num_components >= 1);
 
-  return mint::Field::getDataPtr< T >( f );
+  return mint::Field::getDataPtr<T>(f);
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
-                                  IndexType num_components, IndexType capacity,
-                                  bool storeInSidre )
+template <typename T>
+inline T* FieldData::createField(const std::string& name,
+                                 IndexType num_tuples,
+                                 IndexType num_components,
+                                 IndexType capacity,
+                                 bool storeInSidre)
 {
-  SLIC_ERROR_IF( hasField( name ), "Field [" << name << "] already exists!");
+  SLIC_ERROR_IF(hasField(name), "Field [" << name << "] already exists!");
 
-  if ( capacity == USE_DEFAULT )
+  if(capacity == USE_DEFAULT)
   {
     capacity = num_tuples;
   }
 
   mint::Field* newField = nullptr;
   // create the field on sidre
-  if ( hasSidreGroup() && storeInSidre )
+  if(hasSidreGroup() && storeInSidre)
   {
 #ifdef AXOM_MINT_USE_SIDRE
 
-    SLIC_ERROR_IF( m_fields_group->hasGroup( name ),
-                   "Field [" << name << "] already exists in the Sidre tree!" );
+    SLIC_ERROR_IF(m_fields_group->hasGroup(name),
+                  "Field [" << name << "] already exists in the Sidre tree!");
 
-    sidre::Group* field = m_fields_group->createGroup( name );
-    field->createView( "association" )->setString( getAssociationName() );
-    field->createView( "volume_dependent" )->setString( "true" );
+    sidre::Group* field = m_fields_group->createGroup(name);
+    field->createView("association")->setString(getAssociationName());
+    field->createView("volume_dependent")->setString("true");
 
     // TODO: how should we bind this to the topology?
-    field->createView( "topology" )->setString( m_topology );
+    field->createView("topology")->setString(m_topology);
 
-    sidre::View* values = field->createView( "values" );
-    newField = new mint::FieldVariable< T >( name, values, num_tuples,
-                                             num_components, capacity );
+    sidre::View* values = field->createView("values");
+    newField =
+      new mint::FieldVariable<T>(name, values, num_tuples, num_components, capacity);
 #endif
-  } // END if
+  }  // END if
   else
   {
-    newField = new mint::FieldVariable< T >( name, num_tuples, num_components,
-                                             capacity );
-  } // END else
+    newField =
+      new mint::FieldVariable<T>(name, num_tuples, num_components, capacity);
+  }  // END else
 
-  SLIC_ASSERT( newField != nullptr );
-  newField->setResizeRatio( m_resize_ratio );
-  m_fields[ name ] = newField;
+  SLIC_ASSERT(newField != nullptr);
+  newField->setResizeRatio(m_resize_ratio);
+  m_fields[name] = newField;
 
-  return ( mint::Field::getDataPtr< T >( newField ) );
+  return (mint::Field::getDataPtr<T>(newField));
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* FieldData::createField( const std::string& name, T* data,
-                                  IndexType num_tuples,
-                                  IndexType num_components,
-                                  IndexType capacity )
+template <typename T>
+inline T* FieldData::createField(const std::string& name,
+                                 T* data,
+                                 IndexType num_tuples,
+                                 IndexType num_components,
+                                 IndexType capacity)
 {
-  SLIC_ERROR_IF( data==nullptr, "supplied buffer is NULL" );
-  SLIC_ERROR_IF( hasField( name ), "Field [" << name << "] already exists!" );
+  SLIC_ERROR_IF(data == nullptr, "supplied buffer is NULL");
+  SLIC_ERROR_IF(hasField(name), "Field [" << name << "] already exists!");
 
-  if ( capacity == USE_DEFAULT )
+  if(capacity == USE_DEFAULT)
   {
     capacity = num_tuples;
   }
 
-  Field* field =  new mint::FieldVariable< T >( name, data, num_tuples,
-                                                num_components, capacity );
-  m_fields[ name ] = field;
+  Field* field =
+    new mint::FieldVariable<T>(name, data, num_tuples, num_components, capacity);
+  m_fields[name] = field;
 
-  return ( mint::Field::getDataPtr< T >( field ) );
+  return (mint::Field::getDataPtr<T>(field));
 }
 
 } /* namespace mint */

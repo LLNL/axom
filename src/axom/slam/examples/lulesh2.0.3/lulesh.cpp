@@ -2852,8 +2852,8 @@ int main(int argc, char *argv[])
   using namespace slamLulesh;
 
   Domain *locDom;
-  Int_t numRanks;
-  Int_t myRank;
+  int numRanks;
+  int myRank;
   struct cmdLineOpts opts;
 
 #ifdef AXOM_USE_MPI

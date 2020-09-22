@@ -44,13 +44,17 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
        BVH.hpp
 
        ## internal
+       internal/linear_bvh/BVHData.hpp
+       internal/linear_bvh/BVH_impl.hpp
+       internal/linear_bvh/QueryAccessor.hpp
+       internal/linear_bvh/RadixTree.hpp
+       internal/linear_bvh/TraversalPredicates.hpp
        internal/linear_bvh/aabb.hpp
        internal/linear_bvh/build_radix_tree.hpp
+       internal/linear_bvh/bvh_traverse.hpp
        internal/linear_bvh/bvh_vtkio.hpp
-       internal/linear_bvh/BVHData.hpp
        internal/linear_bvh/emit_bvh.hpp
        internal/linear_bvh/math.hpp
-       internal/linear_bvh/RadixTree.hpp
        internal/linear_bvh/range.hpp
        internal/linear_bvh/vec.hpp
 
@@ -65,7 +69,7 @@ set( spin_depends_on
      core slic primal slam )
 
 blt_list_append( TO spin_depends_on ELEMENTS sparsehash IF ${SPARSEHASH_FOUND} )
-blt_list_append( TO spin_depends_on ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO spin_depends_on ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO spin_depends_on ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO spin_depends_on ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO spin_depends_on ELEMENTS cuda IF ${ENABLE_CUDA} )

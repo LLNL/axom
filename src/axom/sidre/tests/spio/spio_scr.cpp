@@ -10,17 +10,17 @@
 #include "mpi.h"
 
 #ifdef AXOM_USE_SCR
-#include "scr.h"
+  #include "scr.h"
 #endif
 
 #include "axom/sidre/spio/IOManager.hpp"
 #include "axom/sidre/core/sidre.hpp"
 #include "conduit_relay.hpp"
 
-using axom::sidre::IOManager;
-using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
+using axom::sidre::Group;
+using axom::sidre::IOManager;
 using axom::sidre::View;
 
 #ifdef AXOM_USE_SCR
@@ -52,13 +52,13 @@ TEST(spio_scr, spio_scr_writeread)
 
   Group* ga = flds->createGroup("a");
   Group* gb = flds2->createGroup("b");
-  ga->createViewScalar<int>("i0", 101*my_rank);
+  ga->createViewScalar<int>("i0", 101 * my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
   int* i1_vals = gb->getView("i1")->getData();
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i = 0; i < 10; i++)
   {
-    i1_vals[i] = (i+10) * (404-my_rank-i);
+    i1_vals[i] = (i + 10) * (404 - my_rank - i);
   }
 
   /*
@@ -115,7 +115,7 @@ TEST(spio_scr, spio_scr_writeread)
   int* i1_orig = view_i1_orig->getData();
   int* i1_restored = view_i1_restored->getData();
 
-  for (int i = 0 ; i < num_elems ; ++i)
+  for(int i = 0; i < num_elems; ++i)
   {
     EXPECT_EQ(i1_orig[i], i1_restored[i]);
   }

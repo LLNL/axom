@@ -7,6 +7,7 @@
 #define AXOM_SLIC_MACROS_HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/Macros.hpp"  // for AXOM_HOST_DEVICE macros
 
 /*!
  * \file slic_macros.hpp
@@ -28,12 +29,13 @@
  * \endcode
  *
  */
-#define SLIC_ERROR( msg )                                                     \
-  do {                                                                        \
-    std::ostringstream oss;                                                   \
-    oss << msg;                                                               \
-    axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);               \
-  } while ( axom::slic::detail::false_value )
+#define SLIC_ERROR(msg)                                           \
+  do                                                              \
+  {                                                               \
+    std::ostringstream __oss;                                     \
+    __oss << msg;                                                 \
+    axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
+  } while(axom::slic::detail::false_value)
 
 /*!
  * \def SLIC_ERROR_IF( EXP, msg )
@@ -49,14 +51,16 @@
  * \endcode
  *
  */
-#define SLIC_ERROR_IF( EXP, msg )                                             \
-  do {                                                                        \
-    if ( EXP ) {                                                              \
-      std::ostringstream oss;                                                 \
-      oss << msg;                                                             \
-      axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);               \
-    }                                                                         \
-  } while ( axom::slic::detail::false_value )
+#define SLIC_ERROR_IF(EXP, msg)                                     \
+  do                                                                \
+  {                                                                 \
+    if(EXP)                                                         \
+    {                                                               \
+      std::ostringstream __oss;                                     \
+      __oss << msg;                                                 \
+      axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
+    }                                                               \
+  } while(axom::slic::detail::false_value)
 
 /// @}
 
@@ -75,12 +79,13 @@
  * \endcode
  *
  */
-#define SLIC_WARNING( msg )                                                   \
-  do {                                                                        \
-    std::ostringstream oss;                                                   \
-    oss << msg;                                                               \
-    axom::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );             \
-  } while ( axom::slic::detail::false_value )
+#define SLIC_WARNING(msg)                                           \
+  do                                                                \
+  {                                                                 \
+    std::ostringstream __oss;                                       \
+    __oss << msg;                                                   \
+    axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
+  } while(axom::slic::detail::false_value)
 
 /*!
  * \def SLIC_WARNING_IF( EXP, msg )
@@ -95,24 +100,27 @@
  * \endcode
  *
  */
-#define SLIC_WARNING_IF( EXP, msg )                                           \
-  do {                                                                        \
-    if ( EXP ) {                                                              \
-      std::ostringstream oss;                                                 \
-      oss << msg;                                                             \
-      axom::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );            \
-    }                                                                         \
-  } while ( axom::slic::detail::false_value )
+#define SLIC_WARNING_IF(EXP, msg)                                     \
+  do                                                                  \
+  {                                                                   \
+    if(EXP)                                                           \
+    {                                                                 \
+      std::ostringstream __oss;                                       \
+      __oss << msg;                                                   \
+      axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
+    }                                                                 \
+  } while(axom::slic::detail::false_value)
 
 /// @}
 
-#ifdef AXOM_DEBUG
+// Use complete debug macros when not on device
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
 
-//-----------------------------------------------------------------------------
-/// \name ASSERT MACROS
-/// @{
+  //-----------------------------------------------------------------------------
+  /// \name ASSERT MACROS
+  /// @{
 
-/*!
+  /*!
  * \def SLIC_ASSERT( EXP )
  * \brief Asserts that a given expression is true. If the expression is not true
  *  an error will be logged and the application will be aborted.
@@ -126,16 +134,18 @@
  * \endcode
  *
  */
-#define SLIC_ASSERT( EXP )                                                    \
-  do {                                                                        \
-    if ( !(EXP) ) {                                                           \
-      std::ostringstream oss;                                                 \
-      oss << "Failed Assert: " << # EXP << std::ends;                         \
-      axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
-    }                                                                         \
-  } while ( axom::slic::detail::false_value )
+  #define SLIC_ASSERT(EXP)                                            \
+    do                                                                \
+    {                                                                 \
+      if(!(EXP))                                                      \
+      {                                                               \
+        std::ostringstream __oss;                                     \
+        __oss << "Failed Assert: " << #EXP << std::ends;              \
+        axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
+      }                                                               \
+    } while(axom::slic::detail::false_value)
 
-/*!
+  /*!
  * \def SLIC_ASSERT_MSG( EXP, msg )
  * \brief Same as SLIC_ASSERT, but with a custom error message.
  * \param [in] EXP user-supplied boolean expression.
@@ -150,22 +160,24 @@
  * \endcode
  *
  */
-#define SLIC_ASSERT_MSG( EXP, msg )                                           \
-  do {                                                                        \
-    if ( !(EXP) ) {                                                           \
-      std::ostringstream oss;                                                 \
-      oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;     \
-      axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
-    }                                                                         \
-  } while ( axom::slic::detail::false_value )
+  #define SLIC_ASSERT_MSG(EXP, msg)                                          \
+    do                                                                       \
+    {                                                                        \
+      if(!(EXP))                                                             \
+      {                                                                      \
+        std::ostringstream __oss;                                            \
+        __oss << "Failed Assert: " << #EXP << std::endl << msg << std::ends; \
+        axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);        \
+      }                                                                      \
+    } while(axom::slic::detail::false_value)
 
-/// @}
+  /// @}
 
-//-----------------------------------------------------------------------------
-/// \name DEBUG MACROS
-/// @{
+  //-----------------------------------------------------------------------------
+  /// \name DEBUG MACROS
+  /// @{
 
-/*!
+  /*!
  * \def SLIC_CHECK( EXP )
  * \brief Checks that a given expression is true. If the expression is not true
  *  a warning is logged, but, in contrast to the similar SLIC_ASSERT macro the
@@ -179,21 +191,25 @@
  * \endcode
  *
  */
-#define SLIC_CHECK( EXP )                                                     \
-  do {                                                                        \
-    if ( !(EXP) ) {                                                           \
-      std::ostringstream oss;                                                 \
-      oss << "Failed Check: " << # EXP << std::ends;                          \
-      if (axom::slic::debug::checksAreErrors) {                               \
-        axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);           \
-      }                                                                       \
-      else {                                                                  \
-        axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
-      }                                                                       \
-    }                                                                         \
-  } while ( axom::slic::detail::false_value )
+  #define SLIC_CHECK(EXP)                                                 \
+    do                                                                    \
+    {                                                                     \
+      if(!(EXP))                                                          \
+      {                                                                   \
+        std::ostringstream __oss;                                         \
+        __oss << "Failed Check: " << #EXP << std::ends;                   \
+        if(axom::slic::debug::checksAreErrors)                            \
+        {                                                                 \
+          axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);   \
+        }                                                                 \
+        else                                                              \
+        {                                                                 \
+          axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
+        }                                                                 \
+      }                                                                   \
+    } while(axom::slic::detail::false_value)
 
-/*!
+  /*!
  * \def SLIC_CHECK_MSG( EXP, msg )
  * \brief Same as SLIC_CHECK, but with a custom error message.
  * \param [in] EXP user-supplied boolean expression.
@@ -207,28 +223,40 @@
  * \endcode
  *
  */
-#define SLIC_CHECK_MSG( EXP, msg )                                            \
-  do {                                                                        \
-    if ( !(EXP) ) {                                                           \
-      std::ostringstream oss;                                                 \
-      oss << "Failed Check: " << # EXP << std::endl << msg <<  std::ends;     \
-      if (axom::slic::debug::checksAreErrors) {                               \
-        axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);           \
-      }                                                                       \
-      else {                                                                  \
-        axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
-      }                                                                       \
-    }                                                                         \
-  } while ( axom::slic::detail::false_value )
+  #define SLIC_CHECK_MSG(EXP, msg)                                          \
+    do                                                                      \
+    {                                                                       \
+      if(!(EXP))                                                            \
+      {                                                                     \
+        std::ostringstream __oss;                                           \
+        __oss << "Failed Check: " << #EXP << std::endl << msg << std::ends; \
+        if(axom::slic::debug::checksAreErrors)                              \
+        {                                                                   \
+          axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);     \
+        }                                                                   \
+        else                                                                \
+        {                                                                   \
+          axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__);   \
+        }                                                                   \
+      }                                                                     \
+    } while(axom::slic::detail::false_value)
 
 /// @}
 
-#else // turn off debug macros and asserts
+// Use assert when on device
+#elif defined(AXOM_DEBUG) && defined(AXOM_DEVICE_CODE)
 
-#define SLIC_ASSERT( ignore_EXP ) ( (void)0 )
-#define SLIC_ASSERT_MSG( ignore_EXP, ignore_msg ) ( (void)0 )
-#define SLIC_CHECK( ignore_EXP ) ( (void)0 )
-#define SLIC_CHECK_MSG( ignore_EXP, ignore_msg ) ( (void)0 )
+  #define SLIC_ASSERT(EXP) assert(EXP)
+  #define SLIC_ASSERT_MSG(EXP, msg) assert(EXP)
+  #define SLIC_CHECK(EXP) assert(EXP)
+  #define SLIC_CHECK_MSG(EXP, msg) assert(EXP)
+
+#else  // turn off debug macros and asserts
+
+  #define SLIC_ASSERT(ignore_EXP) ((void)0)
+  #define SLIC_ASSERT_MSG(ignore_EXP, ignore_msg) ((void)0)
+  #define SLIC_CHECK(ignore_EXP) ((void)0)
+  #define SLIC_CHECK_MSG(ignore_EXP, ignore_msg) ((void)0)
 
 #endif /* END ifdef AXOM_DEBUG */
 
@@ -244,15 +272,16 @@
  * \endcode
  *
  */
-#define SLIC_INFO( msg )                                                      \
-  do {                                                                        \
-    std::ostringstream oss;                                                   \
-    oss << msg;                                                               \
-    axom::slic::logMessage(axom::slic::message::Info                          \
-                           , oss.str()                                        \
-                           ,__FILE__                                          \
-                           , __LINE__ );                                      \
-  } while ( axom::slic::detail::false_value )
+#define SLIC_INFO(msg)                                \
+  do                                                  \
+  {                                                   \
+    std::ostringstream __oss;                         \
+    __oss << msg;                                     \
+    axom::slic::logMessage(axom::slic::message::Info, \
+                           __oss.str(),               \
+                           __FILE__,                  \
+                           __LINE__);                 \
+  } while(axom::slic::detail::false_value)
 
 /*!
  * \def SLIC_INFO_IF( EXP, msg )
@@ -267,21 +296,23 @@
  * \endcode
  *
  */
-#define SLIC_INFO_IF( EXP, msg )                                           \
-  do {                                                                        \
-    if ( EXP ) {                                                              \
-      std::ostringstream oss;                                                 \
-      oss << msg;                                                             \
-      axom::slic::logMessage(axom::slic::message::Info                        \
-                             , oss.str()                                      \
-                             ,__FILE__                                        \
-                             , __LINE__ );                                    \
-    }                                                                         \
-  } while ( axom::slic::detail::false_value )
+#define SLIC_INFO_IF(EXP, msg)                          \
+  do                                                    \
+  {                                                     \
+    if(EXP)                                             \
+    {                                                   \
+      std::ostringstream __oss;                         \
+      __oss << msg;                                     \
+      axom::slic::logMessage(axom::slic::message::Info, \
+                             __oss.str(),               \
+                             __FILE__,                  \
+                             __LINE__);                 \
+    }                                                   \
+  } while(axom::slic::detail::false_value)
 
 #ifdef AXOM_DEBUG
 
-/*!
+  /*!
  * \def SLIC_DEBUG( msg )
  * \brief Logs a Debug message.
  * \param [in] msg user-supplied message
@@ -293,17 +324,18 @@
  * \endcode
  *
  */
-#define SLIC_DEBUG( msg )                                                     \
-  do {                                                                        \
-    std::ostringstream oss;                                                   \
-    oss << msg;                                                               \
-    axom::slic::logMessage(axom::slic::message::Debug                         \
-                           , oss.str()                                        \
-                           ,__FILE__                                          \
-                           , __LINE__ );                                      \
-  } while ( axom::slic::detail::false_value )
+  #define SLIC_DEBUG(msg)                                \
+    do                                                   \
+    {                                                    \
+      std::ostringstream __oss;                          \
+      __oss << msg;                                      \
+      axom::slic::logMessage(axom::slic::message::Debug, \
+                             __oss.str(),                \
+                             __FILE__,                   \
+                             __LINE__);                  \
+    } while(axom::slic::detail::false_value)
 
-/*!
+  /*!
  * \def SLIC_DEBUG_IF( EXP, msg )
  * \brief Logs an Debug message iff EXP is true
  * \param [in] EXP user-supplied boolean expression.
@@ -316,25 +348,26 @@
  * \endcode
  *
  */
-#define SLIC_DEBUG_IF( EXP, msg )                                             \
-  do {                                                                        \
-    if ( EXP ) {                                                              \
-      std::ostringstream oss;                                                 \
-      oss << msg;                                                             \
-      axom::slic::logMessage(axom::slic::message::Debug                       \
-                             , oss.str()                                      \
-                             ,__FILE__                                        \
-                             , __LINE__ );                                    \
-    }                                                                         \
-  } while ( axom::slic::detail::false_value )
+  #define SLIC_DEBUG_IF(EXP, msg)                          \
+    do                                                     \
+    {                                                      \
+      if(EXP)                                              \
+      {                                                    \
+        std::ostringstream __oss;                          \
+        __oss << msg;                                      \
+        axom::slic::logMessage(axom::slic::message::Debug, \
+                               __oss.str(),                \
+                               __FILE__,                   \
+                               __LINE__);                  \
+      }                                                    \
+    } while(axom::slic::detail::false_value)
 
-#else // turn off debug macros
+#else  // turn off debug macros
 
-#define SLIC_DEBUG( ignore_EXP ) ( (void)0 )
-#define SLIC_DEBUG_IF( ignore_EXP, ignore_msg ) ( (void)0 )
+  #define SLIC_DEBUG(ignore_EXP) ((void)0)
+  #define SLIC_DEBUG_IF(ignore_EXP, ignore_msg) ((void)0)
 
 #endif
-
 
 namespace axom
 {
@@ -342,7 +375,6 @@ namespace slic
 {
 namespace detail
 {
-
 /*!
  * \brief Variable of a type that evaluates as false.
  *
@@ -350,7 +382,10 @@ namespace detail
  */
 struct FalseType
 {
-  FalseType() {}
+  AXOM_HOST_DEVICE
+  FalseType() { }
+
+  AXOM_HOST_DEVICE
   inline operator bool() const { return false; }
 };
 

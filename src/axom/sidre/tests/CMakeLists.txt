@@ -78,6 +78,7 @@ endforeach()
 # Add gtest C tests
 #------------------------------------------------------------------------------
 if (ENABLE_FORTRAN)
+    # Sidre's C API is only built to provide a Fortran interface.
     foreach(test ${gtest_sidre_C_tests})
         get_filename_component( test_name ${test} NAME_WE )
         blt_add_executable( NAME ${test_name}_test

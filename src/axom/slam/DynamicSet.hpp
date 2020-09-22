@@ -19,8 +19,6 @@ namespace axom
 {
 namespace slam
 {
-
-
 /**
  * \class DynamicSet
  * \brief A Set class that supports dynamically adding and removing set items
@@ -47,19 +45,16 @@ namespace slam
  * \endcode
  */
 
-template<
-  typename PosType       = slam::DefaultPositionType,
-  typename ElemType      = slam::DefaultElementType,
-  typename SizePolicy    = policies::DynamicRuntimeSize<PosType>,
-  typename OffsetPolicy  = policies::ZeroOffset<PosType>,
-  typename StridePolicy  = policies::StrideOne<PosType> >
-class DynamicSet
-  : public Set<PosType,ElemType>
-  , SizePolicy
-  , OffsetPolicy
-  , StridePolicy
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType,
+          typename SizePolicy = policies::DynamicRuntimeSize<PosType>,
+          typename OffsetPolicy = policies::ZeroOffset<PosType>,
+          typename StridePolicy = policies::StrideOne<PosType>>
+class DynamicSet : public Set<PosType, ElemType>,
+                   SizePolicy,
+                   OffsetPolicy,
+                   StridePolicy
 {
-
 public:
   using PositionType = PosType;
   using ElementType = PosType;
@@ -80,10 +75,10 @@ public:
    *
    * \note The set entries will be initialized such that set[i] = i
    */
-  DynamicSet(PositionType size = SizePolicyType::DEFAULT_VALUE) :
-    SizePolicy(size)
+  DynamicSet(PositionType size = SizePolicyType::DEFAULT_VALUE)
+    : SizePolicy(size)
   {
-    fill_array_default( size );
+    fill_array_default(size);
   };
 
   /**
@@ -91,16 +86,15 @@ public:
    *
    * \note The set entries will be initialized such that set[i] = i
    */
-  DynamicSet(const SetBuilder & builder) :
-    SizePolicy(builder.m_size),
-    OffsetPolicy(builder.m_offset),
-    StridePolicy(builder.m_stride)
+  DynamicSet(const SetBuilder& builder)
+    : SizePolicy(builder.m_size)
+    , OffsetPolicy(builder.m_offset)
+    , StridePolicy(builder.m_stride)
   {
-    fill_array_default( builder.m_size.size() );
+    fill_array_default(builder.m_size.size());
   }
 
   //~DynamicSet();
-
 
 public:
   /**
@@ -114,7 +108,7 @@ public:
     /** \brief Set the size of the DynamicSet using SizePolicy */
     SetBuilder& size(PositionType sz)
     {
-      m_size   = SizePolicy(sz);
+      m_size = SizePolicy(sz);
       return *this;
     }
 
@@ -132,7 +126,7 @@ public:
       return *this;
     }
 
-private:
+  private:
     SizePolicy m_size;
     OffsetPolicy m_offset;
     StridePolicy m_stride;
@@ -147,10 +141,7 @@ public:
    *
    * \pre pos must be between 0 and size()
    */
-  ElementType at(PositionType pos) const
-  {
-    return operator[](pos);
-  };
+  ElementType at(PositionType pos) const { return operator[](pos); };
 
   /**
    * \brief Access the element at position \a pos
@@ -175,10 +166,10 @@ public:
   };
 
   /** \brief Returns a reference to the underlying set data */
-  SetVectorType & data(){ return m_data; }
+  SetVectorType& data() { return m_data; }
 
   /** \brief Returns a const reference to the underlying set data */
-  const SetVectorType & data() const { return m_data; }
+  const SetVectorType& data() const { return m_data; }
 
   /**
    * \brief Given a value, find the index of the first entry containing it
@@ -189,10 +180,9 @@ public:
    */
   IndexType findIndex(ElementType e)
   {
-    for(unsigned int i=0 ; i<m_data.size() ; ++i)
+    for(unsigned int i = 0; i < m_data.size(); ++i)
     {
-      if( m_data[i] == e)
-        return i;
+      if(m_data[i] == e) return i;
     }
     return INVALID_ENTRY;
   };
@@ -212,9 +202,8 @@ public:
    */
   PositionType size() const
   {
-    return m_data.size();
+    return static_cast<PositionType>(m_data.size());
   };
-
 
   /** \brief Uses \a SizePolicy::empty() to determine if the set is empty */
   bool empty() const { return SizePolicy::empty(); };
@@ -230,7 +219,7 @@ public:
     PositionType nvalid = 0;
 
     const int sz = static_cast<int>(m_data.size());
-    for( int i=0 ; i< sz ; ++i)
+    for(int i = 0; i < sz; ++i)
     {
       nvalid += (m_data[i] != INVALID_ENTRY) ? 1 : 0;
     }
@@ -254,9 +243,8 @@ public:
    */
   bool isValidEntry(IndexType i) const
   {
-    return i >= 0
-           && i < static_cast<IndexType>(m_data.size())
-           && m_data[i] != INVALID_ENTRY;
+    return i >= 0 && i < static_cast<IndexType>(m_data.size()) &&
+      m_data[i] != INVALID_ENTRY;
   };
 
   /**
@@ -265,17 +253,16 @@ public:
    * A DynamicSet is valid if each of its policies claim it to be valid.
    * This includes its \a SizePolicy, \a OffsetPolicy and \a StridePolicy
    */
-  bool isValid(bool verboseOutput = false)  const
+  bool isValid(bool verboseOutput = false) const
   {
-    bool bValid =  SizePolicy::isValid(verboseOutput)
-                  && OffsetPolicy::isValid(verboseOutput)
-                  && StridePolicy::isValid(verboseOutput);
+    bool bValid = SizePolicy::isValid(verboseOutput) &&
+      OffsetPolicy::isValid(verboseOutput) &&
+      StridePolicy::isValid(verboseOutput);
 
     return bValid;
   };
 
   /// @}
-
 
 public:
   /// \name Functions that modify the set cardinality
@@ -284,9 +271,7 @@ public:
   /**
    * \brief Insert an entry at the end of the set with value = ( size()-1 )
    */
-  IndexType insert(){
-    return insert(m_data.size());
-  }
+  IndexType insert() { return insert(static_cast<IndexType>(m_data.size())); }
 
   /**
    * \brief Insert an entry at the end of the set with the given value.
@@ -295,7 +280,7 @@ public:
   IndexType insert(ElementType val)
   {
     m_data.push_back(val);
-    return m_data.size()-1;
+    return static_cast<IndexType>(m_data.size() - 1);
   };
 
   /**
@@ -317,21 +302,21 @@ public:
 
 private:
   /** \brief Debug check that the index \a pos is not out-of-range */
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos) ) const
+  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos)) const
   {
     SLIC_ASSERT_MSG(
-      (pos >= 0) && (pos < static_cast<PositionType>(m_data.size() ) ),
+      (pos >= 0) && (pos < static_cast<PositionType>(m_data.size())),
       "SLAM::DynamicSet -- requested out-of-range element at position "
-      << pos << ", but set only has " << m_data.size() << " elements." );
+        << pos << ", but set only has " << m_data.size() << " elements.");
   };
 
   /** Fill each entry of the set such that its value is equal to its index. */
   void fill_array_default(PositionType size)
   {
-    if(size<0) return;
+    if(size < 0) return;
 
     m_data.resize(size);
-    for(int i=0 ; i<size ; ++i)
+    for(int i = 0; i < size; ++i)
     {
       m_data[i] = i;
     }
@@ -339,11 +324,9 @@ private:
 
 private:
   SetVectorType m_data;
-
 };
 
-
-} // end namespace slam
-} // end namespace axom
+}  // end namespace slam
+}  // end namespace axom
 
 #endif

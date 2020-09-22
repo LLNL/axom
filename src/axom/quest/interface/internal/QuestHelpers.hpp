@@ -7,18 +7,17 @@
 #define QUEST_HELPERS_HPP_
 
 // Axom includes
-#include "axom/config.hpp"           // for compile-time definitions
+#include "axom/config.hpp"  // for compile-time definitions
 
 // Mint includes
-#include "axom/mint/mesh/Mesh.hpp"             // for mint::Mesh
+#include "axom/mint/mesh/Mesh.hpp"  // for mint::Mesh
 
 // Quest includes
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 #include "axom/quest/stl/STLReader.hpp"
 
-
 // C/C++ includes
-#include <string> // for C++ string
+#include <string>  // for C++ string
 
 /*!
  * \file
@@ -31,8 +30,7 @@ namespace quest
 {
 namespace internal
 {
-
-constexpr int READ_FAILED  = -1;
+constexpr int READ_FAILED = -1;
 constexpr int READ_SUCCESS = 0;
 
 /// \name MPI Helper/Wrapper Methods
@@ -44,13 +42,13 @@ constexpr int READ_SUCCESS = 0;
  * \param [in] window handle to the MPI window.
  * \note All buffers attached to the window are also deallocated.
  */
-void mpi_win_free( MPI_Win* window );
+void mpi_win_free(MPI_Win* window);
 
 /*!
  * \brief Deallocates the specified MPI communicator object.
  * \param [in] comm handle to the MPI communicator object.
  */
-void mpi_comm_free( MPI_Comm* comm );
+void mpi_comm_free(MPI_Comm* comm);
 
 /*!
  * \brief Reads the mesh on rank 0 and exchanges the mesh metadata, i.e., the
@@ -66,10 +64,10 @@ void mpi_comm_free( MPI_Comm* comm );
  * \pre global_comm != MPI_COMM_NULL
  * \pre mesh_metadata != nullptr
  */
-int read_and_exchange_mesh_metadata( int global_rank_id,
-                                     MPI_Comm global_comm,
-                                     quest::STLReader& reader,
-                                     axom::IndexType mesh_metadata[ 2 ] );
+int read_and_exchange_mesh_metadata(int global_rank_id,
+                                    MPI_Comm global_comm,
+                                    quest::STLReader& reader,
+                                    axom::IndexType mesh_metadata[2]);
 
 #endif /* AXOM_USE_MPI */
 
@@ -109,12 +107,12 @@ int read_and_exchange_mesh_metadata( int global_rank_id,
  * \post intra_node_comm != MPI_COMM_NULL
  * \post inter_node_comm != MPI_COMM_NULL
  */
-void create_communicators( MPI_Comm global_comm,
-                           MPI_Comm& intra_node_comm,
-                           MPI_Comm& inter_node_comm,
-                           int& global_rank_id,
-                           int& local_rank_id,
-                           int& intercom_rank_id );
+void create_communicators(MPI_Comm global_comm,
+                          MPI_Comm& intra_node_comm,
+                          MPI_Comm& inter_node_comm,
+                          int& global_rank_id,
+                          int& local_rank_id,
+                          int& intercom_rank_id);
 #endif
 
 #if defined(AXOM_USE_MPI) && defined(AXOM_USE_MPI3)
@@ -149,19 +147,18 @@ void create_communicators( MPI_Comm global_comm,
  * \post mesh_buffer != nullptr
  * \post shared_window != MPI_WIN_NULL
  */
-MPI_Aint allocate_shared_buffer( int local_rank_id,
-                                 MPI_Comm intra_node_comm,
-                                 const axom::IndexType mesh_metadata[ 2 ],
-                                 double*& x,
-                                 double*& y,
-                                 double*& z,
-                                 axom::IndexType*& conn,
-                                 unsigned char*& mesh_buffer,
-                                 MPI_Win& shared_window );
+MPI_Aint allocate_shared_buffer(int local_rank_id,
+                                MPI_Comm intra_node_comm,
+                                const axom::IndexType mesh_metadata[2],
+                                double*& x,
+                                double*& y,
+                                double*& z,
+                                axom::IndexType*& conn,
+                                unsigned char*& mesh_buffer,
+                                MPI_Win& shared_window);
 #endif
 
 /// @}
-
 
 /// \name Mesh I/O methods
 /// @{
@@ -198,14 +195,13 @@ MPI_Aint allocate_shared_buffer( int local_rank_id,
  * \post intra_node_comm != MPI_COMM_NULL
  * \post shared_window != MPI_WIN_NULL
  */
-int read_mesh_shared( const std::string& file,
-                      MPI_Comm global_comm,
-                      unsigned char*& mesh_buffer,
-                      mint::Mesh*& m,
-                      MPI_Comm& intra_node_comm,
-                      MPI_Win& shared_window );
+int read_mesh_shared(const std::string& file,
+                     MPI_Comm global_comm,
+                     unsigned char*& mesh_buffer,
+                     mint::Mesh*& m,
+                     MPI_Comm& intra_node_comm,
+                     MPI_Win& shared_window);
 #endif
-
 
 /*!
  * \brief Reads in the surface mesh from the specified file.
@@ -233,9 +229,9 @@ int read_mesh_shared( const std::string& file,
  * \see STLReader
  * \see PSTLReader
  */
-int read_mesh( const std::string& file,
-               mint::Mesh*& m,
-               MPI_Comm comm=MPI_COMM_SELF );
+int read_mesh(const std::string& file,
+              mint::Mesh*& m,
+              MPI_Comm comm = MPI_COMM_SELF);
 
 /// @}
 
@@ -255,7 +251,7 @@ int read_mesh( const std::string& file,
  * \pre hi & lo must point to buffers that are at least N long, where N
  *  corresponds to the mesh dimension.
  */
-void compute_mesh_bounds( const mint::Mesh* mesh, double* lo, double* hi );
+void compute_mesh_bounds(const mint::Mesh* mesh, double* lo, double* hi);
 /// @}
 
 /// \name Logger Initialize/Finalize Methods
@@ -281,10 +277,10 @@ void compute_mesh_bounds( const mint::Mesh* mesh, double* lo, double* hi );
  *
  *  \see logger_finalize
  */
-void logger_init( bool& isInitialized,
-                  bool& mustFinalize,
-                  bool verbose,
-                  MPI_Comm comm );
+void logger_init(bool& isInitialized,
+                 bool& mustFinalize,
+                 bool verbose,
+                 MPI_Comm comm);
 
 /*!
  * \brief Finalizes the Slic logger (if needed)
@@ -294,7 +290,7 @@ void logger_init( bool& isInitialized,
  *
  * \see logger_init
  */
-void logger_finalize( bool mustFinalize );
+void logger_finalize(bool mustFinalize);
 /// @}
 
 } /* end namespace internal */

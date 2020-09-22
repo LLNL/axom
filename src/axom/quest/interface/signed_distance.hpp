@@ -10,10 +10,10 @@
 #include "axom/config.hpp"  // for compile-time definitions
 
 // Quest includes
-#include "axom/quest/interface/internal/mpicomm_wrapper.hpp" // MPI_COMM_SELF
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"  // MPI_COMM_SELF
 
 // C/C++ includes
-#include <string>   // for std::string
+#include <string>  // for std::string
 
 /*!
  * \file
@@ -76,7 +76,6 @@
 
 namespace axom
 {
-
 // Forward Mint declarations
 namespace mint
 {
@@ -85,7 +84,6 @@ class Mesh;
 
 namespace quest
 {
-
 /// \name Signed Distance Query Initialization Methods
 /// @{
 
@@ -108,8 +106,7 @@ namespace quest
  * \pre signed_distance_initialized() == false
  * \post signed_distance_initialized() == true
  */
-int signed_distance_init( const std::string& file,
-                          MPI_Comm comm=MPI_COMM_SELF );
+int signed_distance_init(const std::string& file, MPI_Comm comm = MPI_COMM_SELF);
 
 /*!
  * \brief Initializes the Signed Distance Query with the given surface mesh
@@ -129,13 +126,13 @@ int signed_distance_init( const std::string& file,
  *
  * \see mint::Mesh
  */
-int signed_distance_init( const mint::Mesh* m, MPI_Comm comm=MPI_COMM_SELF );
+int signed_distance_init(const mint::Mesh* m, MPI_Comm comm = MPI_COMM_SELF);
 
 /*!
  * \brief Checks if the Signed Distance Query has been initialized
  * \return status true if initialized, else, false.
  */
-bool signed_distance_initialized( );
+bool signed_distance_initialized();
 
 /// @}
 
@@ -149,7 +146,7 @@ bool signed_distance_initialized( );
  * \warning The Signed Distance function is currently supported in 3D
  * \note Options must be set before initializing the Signed Distance Query.
  */
-void signed_distance_set_dimension( int dim );
+void signed_distance_set_dimension(int dim);
 
 /*!
  * \brief Indicates whether the input to the signed distance consists of a
@@ -173,7 +170,15 @@ void signed_distance_set_dimension( int dim );
  *  a normal projection onto the surface does not exist.
  *
  */
-void signed_distance_set_closed_surface( bool status );
+void signed_distance_set_closed_surface(bool status);
+
+/*!
+ * \brief Sets whether the distance query should compute or ignore the sign
+ * \param [in] computeSign predicate indicating if sign should be computed
+ *
+ * \note Options must be set before initializing the Signed Distance Query.
+ */
+void signed_distance_set_compute_signs(bool computeSign);
 
 /*!
  * \brief Sets the maximum levels of subdivision for the BVH decomposition.
@@ -181,7 +186,7 @@ void signed_distance_set_closed_surface( bool status );
  *
  * \note Options must be set before initializing the Signed Distance Query.
  */
-void signed_distance_set_max_levels( int maxLevels );
+void signed_distance_set_max_levels(int maxLevels);
 
 /*!
  * \brief Sets threshold on the max number of items per BVH bin. This option
@@ -193,7 +198,7 @@ void signed_distance_set_max_levels( int maxLevels );
  *
  * \pre theshold >= 1
  */
-void signed_distance_set_max_occupancy( int threshold );
+void signed_distance_set_max_occupancy(int threshold);
 
 /*!
  * \brief Enables/Disables verbose output for the Signed Distance Query.
@@ -204,7 +209,7 @@ void signed_distance_set_max_occupancy( int threshold );
  * \note Currently, this is only applicable when the Signed Distance Query
  *  initializes the SLIC logging environment.
  */
-void signed_distance_set_verbose( bool status );
+void signed_distance_set_verbose(bool status);
 
 /*!
  * \brief Enable/Disable the use of MPI-3 on-node shared memory for storing
@@ -214,7 +219,7 @@ void signed_distance_set_verbose( bool status );
  *
  * \note This option utilities MPI-3 features
  */
-void signed_distance_use_shared_memory( bool status );
+void signed_distance_use_shared_memory(bool status);
 
 /// @}
 
@@ -230,7 +235,7 @@ void signed_distance_use_shared_memory( bool status );
  *
  * \return d the signed distance evaluated at the specified point.
  */
-double signed_distance_evaluate( double x, double y, double z=0.0 );
+double signed_distance_evaluate(double x, double y, double z = 0.0);
 
 /*!
  * \brief Evaluates the signed distance function at the given set of points.
@@ -246,11 +251,11 @@ double signed_distance_evaluate( double x, double y, double z=0.0 );
  * \pre z != nullptr
  * \pre phi != nullptr
  */
-void signed_distance_evaluate( const double* x,
-                               const double* y,
-                               const double* z,
-                               int npoints,
-                               double* phi );
+void signed_distance_evaluate(const double* x,
+                              const double* y,
+                              const double* z,
+                              int npoints,
+                              double* phi);
 
 /*!
  * \brief Computes the bounds of the specified input mesh supplied to the
@@ -264,7 +269,7 @@ void signed_distance_evaluate( const double* x,
  * \pre hi & lo must point to a buffer that is at least ndims long.
  * \pre signed_distance_initialized() == true
  */
-void signed_distance_get_mesh_bounds( double* lo, double* hi );
+void signed_distance_get_mesh_bounds(double* lo, double* hi);
 
 /// @}
 
@@ -279,7 +284,7 @@ void signed_distance_finalize();
 
 /// @}
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom
 
 #endif /* QUEST_SIGNED_DISTANCE_INTERFACE_HPP_ */

@@ -33,7 +33,7 @@ The diagram represents a Datastore, which contains all Sidre objects and
 provides the main interface to access those objects.
 Rounded rectangles represent Sidre Group objects. Each Group has a name and
 one parent Group, except for the root Group (i.e. "/") which has no parent.
-A Group may have and zero or more child Groups (indicated by an
+A Group may have zero or more child Groups (indicated by an
 arrow from the parent to each child). The Datastore provides exactly one
 root Group (i.e. "/") which is created when a Datastore object is constructed;
 thus, an application does not create the root. Each Group also owns zero or 

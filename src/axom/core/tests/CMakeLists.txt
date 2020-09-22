@@ -20,6 +20,7 @@ set(gtest_utils_tests
    utils_TaskTimer.cpp
    utils_endianness.cpp
    utils_fileUtilities.cpp
+   utils_nvtx_settings.cpp
    utils_utilities.cpp
    utils_about.cpp
 
@@ -27,6 +28,7 @@ set(gtest_utils_tests
    numerics_determinants.cpp
    numerics_eigen_solve.cpp
    numerics_eigen_sort.cpp
+   numerics_floating_point_limits.cpp
    numerics_jacobi_eigensolve.cpp
    numerics_linear_solve.cpp
    numerics_lu.cpp
@@ -48,7 +50,7 @@ set(utils_tests_depends
    )
 
 blt_list_append( TO utils_tests_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO utils_tests_depends ELEMENTS raja IF ${RAJA_FOUD} )
+blt_list_append( TO utils_tests_depends ELEMENTS RAJA IF ${RAJA_FOUD} )
 blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------

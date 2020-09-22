@@ -41,15 +41,14 @@ changes are made, this guide should be updated accordingly.
    :maxdepth: 2
 
    dev_summary
-   jira
+   continuous_integration
    release
    semantic_versioning
    gitflow_branching
-   bitbucket
+   github
    pull_requests
    component_org
    testing
-   bamboo
    misc_tasks
 
 

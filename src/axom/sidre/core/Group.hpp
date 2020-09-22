@@ -32,7 +32,7 @@
 
 // third party lib headers
 #ifdef AXOM_USE_HDF5
-#include "hdf5.h"
+  #include "hdf5.h"
 #endif
 
 // Sidre headers
@@ -41,21 +41,20 @@
 
 // Define the default protocol for sidre I/O
 #ifdef AXOM_USE_HDF5
-#define SIDRE_DEFAULT_PROTOCOL "sidre_hdf5"
+  #define SIDRE_DEFAULT_PROTOCOL "sidre_hdf5"
 #else
-#define SIDRE_DEFAULT_PROTOCOL "sidre_conduit_json"
+  #define SIDRE_DEFAULT_PROTOCOL "sidre_conduit_json"
 #endif
-
 
 namespace axom
 {
 namespace sidre
 {
-
 class Buffer;
 class Group;
 class DataStore;
-template <typename TYPE> class MapCollection;
+template <typename TYPE>
+class ItemCollection;
 
 /*!
  * \class Group
@@ -106,6 +105,11 @@ template <typename TYPE> class MapCollection;
  * children of the current Group because an index has no meaning outside
  * of the indexed group.  None of these methods is marked with "Child".
  *
+ * A Group can optionally be created to hold items in a "list format". In
+ * this format, any number of child Group or View items can be created with
+ * empty strings for their names, and none of the methods that access
+ * child items by name or path will return a valid pointer.
+ *
  * \attention when Views or Groups are created, destroyed, copied, or moved,
  * indices of other Views and Groups in associated Group objects may
  * become invalid. This is analogous to iterator invalidation for STL
@@ -115,7 +119,6 @@ template <typename TYPE> class MapCollection;
 class Group
 {
 public:
-
   //
   // Friend declarations to constrain usage via controlled access to
   // private members.
@@ -123,35 +126,25 @@ public:
   friend class DataStore;
   friend class View;
 
-
-//@{
-//!  @name Basic query and accessor methods.
+  //@{
+  //!  @name Basic query and accessor methods.
 
   /*!
    * \brief Return the path delimiter
    */
-  char getPathDelimiter() const
-  {
-    return s_path_delimiter;
-  }
+  char getPathDelimiter() const { return s_path_delimiter; }
 
   /*!
    * \brief Return index of Group object within parent Group.
    */
-  IndexType getIndex() const
-  {
-    return m_index;
-  }
+  IndexType getIndex() const { return m_index; }
 
   /*!
    * \brief Return const reference to name of Group object.
    *
    * \sa getPath(), getPathName()
    */
-  const std::string& getName() const
-  {
-    return m_name;
-  }
+  const std::string& getName() const { return m_name; }
 
   /*!
    * \brief Return path of Group object, not including its name.
@@ -178,7 +171,7 @@ public:
   {
     const auto path = getPath();
 
-    if (path.length() < 1)
+    if(path.length() < 1)
     {
       return getName();
     }
@@ -194,10 +187,7 @@ public:
    * This allows root->getParent()->getParent() to always work similar
    * to how the filesystem's `cd /; cd ../..` works.
    */
-  Group* getParent()
-  {
-    return m_parent;
-  }
+  Group* getParent() { return m_parent; }
 
   /*!
    * \brief Return pointer to const parent Group of a Group.
@@ -207,10 +197,7 @@ public:
    * This allows root->getParent()->getParent() to always work similar
    * to how the filesystem's `cd /; cd ../..` works.
    */
-  const Group* getParent() const
-  {
-    return m_parent;
-  }
+  const Group* getParent() const { return m_parent; }
 
   /*!
    * \brief Return number of child Groups in a Group object.
@@ -226,27 +213,18 @@ public:
    * \brief Return pointer to non-const DataStore object that owns this
    * object.
    */
-  DataStore* getDataStore()
-  {
-    return m_datastore;
-  }
+  DataStore* getDataStore() { return m_datastore; }
 
   /*!
    * \brief Return pointer to const DataStore object that owns this
    * object.
    */
-  const DataStore* getDataStore() const
-  {
-    return m_datastore;
-  }
+  const DataStore* getDataStore() const { return m_datastore; }
 
   /*!
    * \brief Return true if this Group is the DataStore's root Group.
    */
-  bool isRoot() const
-  {
-    return m_parent == this;
-  }
+  bool isRoot() const { return m_parent == this; }
 
 #ifdef AXOM_USE_UMPIRE
 
@@ -254,17 +232,15 @@ public:
    * \brief Return the ID of the default umpire::Allocator associated with this
    * Group.
    */
-  int getDefaultAllocatorID() const
-  {
-    return m_default_allocator_id;
-  }
+  int getDefaultAllocatorID() const { return m_default_allocator_id; }
 
   /*!
    * \brief Return the default umpire::Allocator associated with this Group.
    */
   umpire::Allocator getDefaultAllocator() const
   {
-    return getAllocator(m_default_allocator_id);
+    umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+    return rm.getAllocator(m_default_allocator_id);
   }
 
   /*!
@@ -286,28 +262,27 @@ public:
   }
 #endif
 
-//@}
+  //@}
 
-
-//@{
-//!  @name View query methods.
+  //@{
+  //!  @name View query methods.
 
   /*!
    * \brief Return true if Group includes a descendant View with
    * given name or path; else false.
    */
-  bool hasView( const std::string& path ) const;
+  bool hasView(const std::string& path) const;
 
   /*!
    * \brief Return true if this Group owns a View with given name (not path);
    * else false.
    */
-  bool hasChildView( const std::string& name ) const;
+  bool hasChildView(const std::string& name) const;
 
   /*!
    * \brief Return true if this Group owns a View with given index; else false.
    */
-  bool hasView( IndexType idx ) const;
+  bool hasView(IndexType idx) const;
 
   /*!
    * \brief Return index of View with given name owned by this Group object.
@@ -323,11 +298,10 @@ public:
    */
   const std::string& getViewName(IndexType idx) const;
 
-//@}
+  //@}
 
-
-//@{
-//!  @name View access methods.
+  //@{
+  //!  @name View access methods.
 
   /*!
 
@@ -337,7 +311,7 @@ public:
    *
    * If no such View exists, nullptr is returned.
    */
-  View* getView( const std::string& path );
+  View* getView(const std::string& path);
 
   /*!
    * \brief Return pointer to const View with given name or path.
@@ -346,41 +320,40 @@ public:
    *
    * If no such View exists, nullptr is returned.
    */
-  const View* getView( const std::string& path ) const;
+  const View* getView(const std::string& path) const;
 
   /*!
    * \brief Return pointer to non-const View with given index.
    *
    * If no such View exists, nullptr is returned.
    */
-  View* getView( IndexType idx );
+  View* getView(IndexType idx);
 
   /*!
    * \brief Return pointer to const View with given index.
    *
    * If no such View exists, nullptr is returned.
    */
-  const View* getView( IndexType idx ) const;
+  const View* getView(IndexType idx) const;
 
-//@}
+  //@}
 
-
-//@{
-//!  @name View iteration methods.
-//!
-//! Using these methods, a code can get the first View index and each
-//! succeeding index.  This allows View iteration using the same
-//! constructs in C++, C, and Fortran.  Example:
-//!
-//!      sidre::IndexType idx = grp->getFirstValidViewIndex();
-//!      while( sidre::indexIsValid(idx) )
-//!      {
-//!          View* view = grp->getView(idx);
-//!
-//!          /// code here using view
-//!
-//!          idx = grp -> getNextValidViewIndex(idx);
-//!      }
+  //@{
+  //!  @name View iteration methods.
+  //!
+  //! Using these methods, a code can get the first View index and each
+  //! succeeding index.  This allows View iteration using the same
+  //! constructs in C++, C, and Fortran.  Example:
+  //!
+  //!      sidre::IndexType idx = grp->getFirstValidViewIndex();
+  //!      while( sidre::indexIsValid(idx) )
+  //!      {
+  //!          View* view = grp->getView(idx);
+  //!
+  //!          /// code here using view
+  //!
+  //!          idx = grp -> getNextValidViewIndex(idx);
+  //!      }
 
   /*!
    * \brief Return first valid View index in Group object
@@ -405,30 +378,33 @@ public:
    */
   IndexType getNextValidViewIndex(IndexType idx) const;
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Methods to create a View that has no associated data.
-//!
-//! \attention These methods do not allocate data or associate a View
-//! with data. Thus, to do anything useful with a View created by one
-//! of these methods, the View should be allocated, attached to a Buffer
-//! or attached to externally-owned data.
-//!
-//! Each of these methods is a no-op if the given View name is an
-//! empty string or the Group already has a View with given name or path.
-//!
-//! Additional conditions under which a method can be a no-op are described
-//! for each method.
+  //@{
+  //!  @name Methods to create a View that has no associated data.
+  //!
+  //! \attention These methods do not allocate data or associate a View
+  //! with data. Thus, to do anything useful with a View created by one
+  //! of these methods, the View should be allocated, attached to a Buffer
+  //! or attached to externally-owned data.
+  //!
+  //! Each of these methods is a no-op if the given View name is an
+  //! empty string or the Group already has a View with given name or path.
+  //!
+  //! Additional conditions under which a method can be a no-op are described
+  //! for each method.
 
   /*!
    * \brief Create an undescribed (i.e., empty) View object with given name
    * or path in this Group.
    *
+   * If path is an empty string, an unnamed view can be created only if
+   * this Group was created to hold items in a list format.  Otherwise
+   * an empty string will result in a nullptr being returned.
+   *
    * \return pointer to new View object or nullptr if one is not created.
    */
-  View* createView( const std::string& path );
+  View* createView(const std::string& path);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -439,9 +415,7 @@ public:
    *
    * \return pointer to new View object or nullptr if one is not created.
    */
-  View* createView( const std::string& path,
-                    TypeID type,
-                    IndexType num_elems );
+  View* createView(const std::string& path, TypeID type, IndexType num_elems);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -452,10 +426,10 @@ public:
    *
    * \return pointer to new View object or nullptr if one is not created.
    */
-  View* createView( const std::string& path,
-                    TypeID type,
-                    int ndims,
-                    IndexType* shape );
+  View* createView(const std::string& path,
+                   TypeID type,
+                   int ndims,
+                   const IndexType* shape);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -463,28 +437,30 @@ public:
    *
    * \return pointer to new View object or nullptr if one is not created.
    */
-  View* createView( const std::string& path,
-                    const DataType& dtype);
+  View* createView(const std::string& path, const DataType& dtype);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Methods to create a View with a Buffer attached.
-//!
-//! \attention The Buffer passed to each of these methods may or may not
-//! be allocated. Thus, to do anything useful with a View created by one
-//! of these methods, the Buffer must be allocated and it must be compatible
-//! with the View data description.
-//!
-//! Each of these methods is a no-op if the given View name is an
-//! empty string or the Group already has a View with given name or path.
-//!
-//! Also, calling one of these methods with a null Buffer pointer is
-//! similar to creating a View with no data association.
-//!
-//! Additional conditions under which a method can be a no-op are described
-//! for each method.
+  //@{
+  //!  @name Methods to create a View with a Buffer attached.
+  //!
+  //! \attention The Buffer passed to each of these methods may or may not
+  //! be allocated. Thus, to do anything useful with a View created by one
+  //! of these methods, the Buffer must be allocated and it must be compatible
+  //! with the View data description.
+  //!
+  //! Each of these methods is a no-op if Group already has a View or child
+  //! Group with the given name or path.
+  //!
+  //! If this Group was created to hold items in list format, the path can
+  //! be an empty string. Otherwise an empty string for the path will result
+  //! in a no-op.
+  //!
+  //! Also, calling one of these methods with a null Buffer pointer is
+  //! similar to creating a View with no data association.
+  //!
+  //! Additional conditions under which a method can be a no-op are described
+  //! for each method.
 
   /*!
    * \brief Create an undescribed View object with given name or path in
@@ -500,8 +476,7 @@ public:
    *
    * \sa View::attachBuffer()
    */
-  View* createView( const std::string& path,
-                    Buffer* buff );
+  View* createView(const std::string& path, Buffer* buff);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -519,10 +494,10 @@ public:
    *
    * \sa View::attachBuffer()
    */
-  View* createView( const std::string& path,
-                    TypeID type,
-                    IndexType num_elems,
-                    Buffer* buff );
+  View* createView(const std::string& path,
+                   TypeID type,
+                   IndexType num_elems,
+                   Buffer* buff);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -540,11 +515,11 @@ public:
    *
    * \sa View::attachBuffer()
    */
-  View* createView( const std::string& path,
-                    TypeID type,
-                    int ndims,
-                    IndexType* shape,
-                    Buffer* buff );
+  View* createView(const std::string& path,
+                   TypeID type,
+                   int ndims,
+                   const IndexType* shape,
+                   Buffer* buff);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -558,25 +533,22 @@ public:
    *
    * \sa View::attachBuffer()
    */
-  View* createView( const std::string& path,
-                    const DataType& dtype,
-                    Buffer* buff );
+  View* createView(const std::string& path, const DataType& dtype, Buffer* buff);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Methods to create a View with externally-owned data attached.
-//!
-//! \attention To do anything useful with a View created by one of these
-//! methods, the external data must be allocated and compatible with the
-//! View description.
-//!
-//! Each of these methods is a no-op if the given View name is an
-//! empty string or the Group already has a View with given name or path.
-//!
-//! Additional conditions under which a method can be a no-op are described
-//! for each method.
+  //@{
+  //!  @name Methods to create a View with externally-owned data attached.
+  //!
+  //! \attention To do anything useful with a View created by one of these
+  //! methods, the external data must be allocated and compatible with the
+  //! View description.
+  //!
+  //! Each of these methods is a no-op if the given View name is an
+  //! empty string or the Group already has a View with given name or path.
+  //!
+  //! Additional conditions under which a method can be a no-op are described
+  //! for each method.
 
   /*!
    * \brief Create View object with given name with given name or path in
@@ -593,8 +565,7 @@ public:
    *
    * \sa View::setExternalDataPtr()
    */
-  View* createView( const std::string& path,
-                    void* external_ptr );
+  View* createView(const std::string& path, void* external_ptr);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -613,11 +584,10 @@ public:
    *
    * \sa View::setExternalDataPtr()
    */
-  View* createView( const std::string& path,
-                    TypeID type,
-                    IndexType num_elems,
-                    void* external_ptr );
-
+  View* createView(const std::string& path,
+                   TypeID type,
+                   IndexType num_elems,
+                   void* external_ptr);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -637,11 +607,11 @@ public:
    *
    * \sa View::setExternalDataPtr()
    */
-  View* createView( const std::string& path,
-                    TypeID type,
-                    int ndims,
-                    IndexType* shape,
-                    void* external_ptr );
+  View* createView(const std::string& path,
+                   TypeID type,
+                   int ndims,
+                   const IndexType* shape,
+                   void* external_ptr);
   /*!
    * \brief Create View object with given name or path in this Group that
    * is described by a Conduit DataType object and attach externally-owned
@@ -655,21 +625,20 @@ public:
    *
    * \sa View::attachBuffer()
    */
-  View* createView( const std::string& path,
-                    const DataType& dtype,
-                    void* external_ptr );
+  View* createView(const std::string& path,
+                   const DataType& dtype,
+                   void* external_ptr);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Methods to create a View and allocate data for it.
-//!
-//! Each of these methods is a no-op if the given View name is an
-//! empty string or the Group already has a View with given name or path.
-//!
-//! Additional conditions under which a method can be a no-op are described
-//! for each method.
+  //@{
+  //!  @name Methods to create a View and allocate data for it.
+  //!
+  //! Each of these methods is a no-op if the given View name is an
+  //! empty string or the Group already has a View with given name or path.
+  //!
+  //! Additional conditions under which a method can be a no-op are described
+  //! for each method.
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -686,10 +655,10 @@ public:
    *
    * \sa View::allocate()
    */
-  View* createViewAndAllocate( const std::string& path,
-                               TypeID type,
-                               IndexType num_elems,
-                               int allocID=INVALID_ALLOCATOR_ID);
+  View* createViewAndAllocate(const std::string& path,
+                              TypeID type,
+                              IndexType num_elems,
+                              int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -706,11 +675,11 @@ public:
    *
    * \sa View::allocate()
    */
-  View* createViewAndAllocate( const std::string& path,
-                               TypeID type,
-                               int ndims,
-                               IndexType* shape,
-                               int allocID=INVALID_ALLOCATOR_ID);
+  View* createViewAndAllocate(const std::string& path,
+                              TypeID type,
+                              int ndims,
+                              const IndexType* shape,
+                              int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -726,9 +695,9 @@ public:
    *
    * \sa View::allocate()
    */
-  View* createViewAndAllocate( const std::string& path,
-                               const DataType& dtype,
-                               int allocID=INVALID_ALLOCATOR_ID);
+  View* createViewAndAllocate(const std::string& path,
+                              const DataType& dtype,
+                              int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Create View object with given name or path in this Group
@@ -742,11 +711,11 @@ public:
    *
    * \sa View::setScalar()
    */
-  template<typename ScalarType>
-  View* createViewScalar( const std::string& path, ScalarType value)
+  template <typename ScalarType>
+  View* createViewScalar(const std::string& path, ScalarType value)
   {
     View* view = createView(path);
-    if (view != nullptr)
+    if(view != nullptr)
     {
       view->setScalar(value);
     }
@@ -766,16 +735,14 @@ public:
    *
    * \sa View::setString()
    */
-  View* createViewString( const std::string& path,
-                          const std::string& value);
+  View* createViewString(const std::string& path, const std::string& value);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name View destruction methods.
-//!
-//! Each of these methods is a no-op if the specified View does not exist.
+  //@{
+  //!  @name View destruction methods.
+  //!
+  //! Each of these methods is a no-op if the specified View does not exist.
 
   /*!
    * \brief Destroy View with given name or path owned by this Group, but leave
@@ -814,11 +781,10 @@ public:
    */
   void destroyViewsAndData();
 
-//@}
+  //@}
 
-
-//@{
-//!  @name View move and copy methods.
+  //@{
+  //!  @name View move and copy methods.
 
   /*!
    * \brief Remove given View object from its owning Group and move it
@@ -847,29 +813,28 @@ public:
    */
   View* copyView(View* view);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Child Group query methods.
+  //@{
+  //!  @name Child Group query methods.
 
   /*!
    * \brief Return true if this Group has a descendant Group with given
    * name or path; else false.
    */
-  bool hasGroup( const std::string& path ) const;
+  bool hasGroup(const std::string& path) const;
 
   /*!
    * \brief Return true if this Group has a child Group with given
    * name; else false.
    */
-  bool hasChildGroup( const std::string& name ) const;
+  bool hasChildGroup(const std::string& name) const;
 
   /*!
    * \brief Return true if Group has an immediate child Group
    *        with given index; else false.
    */
-  bool hasGroup( IndexType idx ) const;
+  bool hasGroup(IndexType idx) const;
 
   /*!
    * \brief Return the index of immediate child Group with given name.
@@ -885,11 +850,10 @@ public:
    */
   const std::string& getGroupName(IndexType idx) const;
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Group access and iteration methods.
+  //@{
+  //!  @name Group access and iteration methods.
 
   /*!
    * \brief Return pointer to non-const child Group with given name or path.
@@ -898,7 +862,7 @@ public:
    *
    * If no such Group exists, nullptr is returned.
    */
-  Group* getGroup( const std::string& path );
+  Group* getGroup(const std::string& path);
 
   /*!
    * \brief Return pointer to const child Group with given name or path.
@@ -907,39 +871,38 @@ public:
    *
    * If no such Group exists, nullptr is returned.
    */
-  Group const* getGroup( const std::string& path ) const;
+  Group const* getGroup(const std::string& path) const;
 
   /*!
    * \brief Return pointer to non-const immediate child Group with given index.
    *
    * If no such Group exists, nullptr is returned.
    */
-  Group* getGroup( IndexType idx );
+  Group* getGroup(IndexType idx);
 
   /*!
    * \brief Return pointer to const immediate child Group with given index.
    *
    * If no such Group exists, nullptr is returned.
    */
-  const Group* getGroup( IndexType idx ) const;
+  const Group* getGroup(IndexType idx) const;
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Group iteration methods.
-//!
-//! Using these methods, a code can get the first Group index and each
-//! succeeding index.  This allows Group iteration using the same
-//! constructs in C++, C, and Fortran.  Example:
-//!      for (sidre::IndexType idx = grp->getFirstValidGroupIndex();
-//!           sidre::indexIsValid(idx);
-//!           idx = grp->getNextValidGroupIndex(idx))
-//!      {
-//!          Group * group = grp->getGroup(idx);
-//!
-//!          /// code here using group
-//!      }
+  //@{
+  //!  @name Group iteration methods.
+  //!
+  //! Using these methods, a code can get the first Group index and each
+  //! succeeding index.  This allows Group iteration using the same
+  //! constructs in C++, C, and Fortran.  Example:
+  //!      for (sidre::IndexType idx = grp->getFirstValidGroupIndex();
+  //!           sidre::indexIsValid(idx);
+  //!           idx = grp->getNextValidGroupIndex(idx))
+  //!      {
+  //!          Group * group = grp->getGroup(idx);
+  //!
+  //!          /// code here using group
+  //!      }
 
   /*!
    * \brief Return first valid child Group index (i.e., smallest
@@ -963,11 +926,10 @@ public:
    */
   IndexType getNextValidGroupIndex(IndexType idx) const;
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Child Group creation and destruction methods.
+  //@{
+  //!  @name Child Group creation and destruction methods.
 
   /*!
    * \brief Create a child Group within this Group with given name or path.
@@ -975,10 +937,25 @@ public:
    * If name is an empty string or Group already has a child Group with
    * given name or path, method is a no-op.
    *
+   * The optional is_list argument is used to determine if the created
+   * child Group will hold items in list format.
+   *
    * \return pointer to created Group object or nullptr if new
    * Group is not created.
    */
-  Group* createGroup( const std::string& path );
+  Group* createGroup(const std::string& path, bool is_list = false);
+
+  /*
+   * \brief Create a child Group within this Group with no name.
+   *
+   * This is intended only to be called when this Group holds items in list
+   * format.  If this Group does not use list format, this method is a
+   * no-op.
+   *
+   * \return pointer to created Group object or nullptr if new Group is
+   * not created.
+   */
+  Group* createUnnamedGroup(bool is_list = false);
 
   /*!
    * \brief Destroy child Group in this Group with given name or path.
@@ -1002,11 +979,10 @@ public:
    */
   void destroyGroups();
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Group move and copy methods.
+  //@{
+  //!  @name Group move and copy methods.
 
   /*!
    * \brief Remove given Group object from its parent Group and make it
@@ -1039,11 +1015,10 @@ public:
    */
   Group* copyGroup(Group* group);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Group print methods.
+  //@{
+  //!  @name Group print methods.
 
   /*!
    * \brief Print JSON description of data Group to stdout.
@@ -1061,14 +1036,13 @@ public:
    */
   void print(std::ostream& os) const;
 
-
   /*!
    * \brief Print given number of levels of Group sub-tree
    *        starting at this Group object to an output stream.
    */
-  void printTree( const int nlevels, std::ostream& os ) const;
+  void printTree(const int nlevels, std::ostream& os) const;
 
-//@}
+  //@}
 
   /*!
    * \brief Copy description of Group hierarchy rooted at this Group to
@@ -1092,8 +1066,7 @@ public:
    * false otherwise.
    *
    */
-  bool createNativeLayout(Node& n,
-                          const Attribute* attr = nullptr) const;
+  bool createNativeLayout(Node& n, const Attribute* attr = nullptr) const;
 
   /*!
    * \brief Copy data Group external layout to given Conduit node.
@@ -1108,9 +1081,7 @@ public:
    * \return True if the Group or any of its children have an external
    *  View, false otherwise.
    */
-  bool createExternalLayout(Node& n,
-                            const Attribute* attr = nullptr) const;
-
+  bool createExternalLayout(Node& n, const Attribute* attr = nullptr) const;
 
   /*!
    * \brief Return true if this Group is equivalent to given Group; else false.
@@ -1127,9 +1098,18 @@ public:
    */
   bool isEquivalentTo(const Group* other, bool checkName = true) const;
 
+  /*!
+   * \brief Return true if this Group holds items in map format.
+   */
+  bool isUsingMap() const { return !m_is_list; }
 
-//@{
-/*!
+  /*!
+   * \brief Return true if this Group holds items in list format.
+   */
+  bool isUsingList() const { return m_is_list; }
+
+  //@{
+  /*!
  * @name    Group I/O methods
  *   These methods save and load Group trees to and from files.
  *   This includes the views and buffers used in by groups in the tree.
@@ -1173,9 +1153,9 @@ public:
    * \param protocol  I/O protocol
    * \param attr      Save Views that have Attribute set.
    */
-  void save( const std::string& path,
-             const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
-             const Attribute* attr = nullptr) const;
+  void save(const std::string& path,
+            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const Attribute* attr = nullptr) const;
 
   /*!
    * \brief Load a Group hierarchy from a file into this Group
@@ -1224,7 +1204,7 @@ public:
   void load(const std::string& path,
             const std::string& protocol,
             bool preserve_contents,
-            std::string & name_from_file);
+            std::string& name_from_file);
 
   /*!
    * \brief Create a child Group and load a Group hierarchy from file
@@ -1255,10 +1235,10 @@ public:
    * \return pointer to created Group object or nullptr if new
    *         Group is not created.
    */
-  Group* createGroupAndLoad(std::string & group_name,
+  Group* createGroupAndLoad(std::string& group_name,
                             const std::string& path,
                             const std::string& protocol,
-                            bool & load_success);
+                            bool& load_success);
 
   /*!
    * \brief Load data into the Group's external views from a file.
@@ -1269,7 +1249,6 @@ public:
    * \param path      file path
    */
   void loadExternalData(const std::string& path);
-
 
 #ifdef AXOM_USE_HDF5
 
@@ -1283,9 +1262,9 @@ public:
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
    * \param attr       Save Views that have Attribute set.
    */
-  void save( const hid_t& h5_id,
-             const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
-             const Attribute* attr = nullptr) const;
+  void save(const hid_t& h5_id,
+            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const Attribute* attr = nullptr) const;
 
   /*!
    * \brief Load the Group from an hdf5 handle.
@@ -1301,9 +1280,9 @@ public:
    *                           child Groups and Views are destroyed before
    *                           loading data from the file.
    */
-  void load( const hid_t& h5_id,
-             const std::string &protocol = SIDRE_DEFAULT_PROTOCOL,
-             bool preserve_contents = false);
+  void load(const hid_t& h5_id,
+            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            bool preserve_contents = false);
 
   /*!
    * \brief Load the Group from an hdf5 handle.
@@ -1320,10 +1299,10 @@ public:
    *                           loading data from the file.
    * \param [out] name_from_file    Group name stored in the file
    */
-  void load( const hid_t& h5_id,
-             const std::string &protocol,
-             bool preserve_contents,
-             std::string & name_from_file );
+  void load(const hid_t& h5_id,
+            const std::string& protocol,
+            bool preserve_contents,
+            std::string& name_from_file);
 
   /*!
    * \brief Load data into the Group's external views from a hdf5 handle.
@@ -1337,8 +1316,7 @@ public:
 
 #endif /* AXOM_USE_HDF5 */
 
-//@}
-
+  //@}
 
   /*!
    * \brief Change the name of this Group.
@@ -1426,9 +1404,9 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(Group);
   DISABLE_MOVE_AND_ASSIGNMENT(Group);
 
-//@{
-//!  @name Private Group ctors and dtors
-//!        (callable only by DataStore and Group methods).
+  //@{
+  //!  @name Private Group ctors and dtors
+  //!        (callable only by DataStore and Group methods).
 
   /*!
    *  \brief Private ctor that creates a Group with given name
@@ -1436,19 +1414,23 @@ private:
    *
    *  attachGroup must be called on a newly created Group to insert it
    *  into the hierarchy. The root group is an exception to this rule.
+   *
+   *  The boolean argument is_list, if true, allows the Group to hold its
+   *  child items in list format, which allows those items to have empty
+   *  strings for names.  If not in list format, all items must have unique
+   *  non-empty strings for names.
    */
-  Group(const std::string& name, DataStore* datastore);
+  Group(const std::string& name, DataStore* datastore, bool is_list);
 
   /*!
    * \brief Destructor destroys all Views and child Groups.
    */
   ~Group();
 
-//@}
+  //@}
 
-
-//@{
-//!  @name View attach and detach methods.
+  //@{
+  //!  @name View attach and detach methods.
 
   /*!
    * \brief Attach View object to this Group.
@@ -1458,10 +1440,7 @@ private:
   /*!
    * \brief Detach View object from this Group.
    */
-  View* detachView(const View* view)
-  {
-    return detachView(view->getName());
-  }
+  View* detachView(const View* view) { return detachView(view->getName()); }
 
   /*!
    * \brief Detach View with given name from this Group.
@@ -1473,11 +1452,10 @@ private:
    */
   View* detachView(IndexType idx);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Group attach and detach methods.
+  //@{
+  //!  @name Group attach and detach methods.
 
   /*!
    * \brief Attach Group object to this Group.
@@ -1494,11 +1472,10 @@ private:
    */
   Group* detachGroup(IndexType idx);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Private Group View manipulation methods.
+  //@{
+  //!  @name Private Group View manipulation methods.
 
   /*!
    * \brief Destroy View and its data if its data is not shared with any
@@ -1509,14 +1486,12 @@ private:
    *
    * \attention this method assumes View is owned by this Group.
    */
-  void destroyViewAndData( View* view );
+  void destroyViewAndData(View* view);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Private Group methods for interacting with Conduit Nodes.
-
+  //@{
+  //!  @name Private Group methods for interacting with Conduit Nodes.
 
   /*!
    * \brief Private method to copy Group to Conduit Node.
@@ -1559,7 +1534,7 @@ private:
   void importFrom(conduit::Node& node,
                   const std::map<IndexType, IndexType>& buffer_id_map);
 
-//@}
+  //@}
 
   /*!
    * \brief Private method that returns the Group that is the next-to-last
@@ -1578,7 +1553,7 @@ private:
    * following the last "/" in the input (if there is one) or the entire
    * input path string if it contains no "/".
    */
-  Group* walkPath(std::string& path, bool create_groups_in_path );
+  Group* walkPath(std::string& path, bool create_groups_in_path);
 
   /*!
    * \brief Const private method that returns the Group that is the
@@ -1589,13 +1564,13 @@ private:
    * following the last "/" in the input (if there is one) or the entire
    * input path string if it contains no "/".
    */
-  const Group* walkPath(std::string& path ) const;
+  const Group* walkPath(std::string& path) const;
 
   /*!
    * \brief Private method. If allocatorID is a valid allocator ID then return
    *  it. Otherwise return the ID of the default allocator of the owning group.
    */
-  int getValidAllocatorID( int allocatorID );
+  int getValidAllocatorID(int allocatorID);
 
   /// Name of this Group object.
   std::string m_name;
@@ -1609,14 +1584,17 @@ private:
   /// This Group object lives in the tree of this DataStore object.
   DataStore* m_datastore;
 
+  /// This identifies whether this Group holds items in list format.
+  bool m_is_list;
+
   /// Character used to denote a path string passed to get/create calls.
   static const char s_path_delimiter;
 
   ///////////////////////////////////////////////////////////////////
   //
-  using ViewCollection = MapCollection<View>;
+  using ViewCollection = ItemCollection<View>;
   //
-  using GroupCollection =  MapCollection<Group>;
+  using GroupCollection = ItemCollection<Group>;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views
@@ -1628,9 +1606,7 @@ private:
 #ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
 #endif
-
 };
-
 
 } /* end namespace sidre */
 } /* end namespace axom */

@@ -7,24 +7,48 @@
 # We have tests here that make sure they link and can be used.
 #------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+# Register the sol library for parsing lua
+#------------------------------------------------------------------------------
+
+if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
+  blt_add_library(NAME    sol
+                  HEADERS sol/sol.hpp)
+
+  target_include_directories(sol SYSTEM INTERFACE
+              $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+
+  install(TARGETS              sol
+          EXPORT               axom-targets
+          INCLUDES DESTINATION include)
+  install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sol
+          DESTINATION include )
+  install(EXPORT axom-targets DESTINATION lib/cmake)
+
+  set(SOL_FOUND TRUE CACHE INTERNAL "")
+else()
+  set(SOL_FOUND FALSE CACHE INTERNAL "")
+endif()
+mark_as_advanced(SOL_FOUND)
+
+message(STATUS "SOL Enabled: ${SOL_FOUND}")
 
 #------------------------------------------------------------------------------
 # Register the built-in CLI11 library for command line option parsing
 #------------------------------------------------------------------------------
 
 blt_add_library(NAME cli11
-                HEADERS CLI11/CLI11.hpp
-                HEADERS_OUTPUT_SUBDIR CLI11)
+                HEADERS CLI11/CLI11.hpp)
 
 target_include_directories(cli11 SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
 install(TARGETS              cli11
-        EXPORT               cli11-targets
+        EXPORT               axom-targets
         INCLUDES DESTINATION include)
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/CLI11
         DESTINATION include )
-install(EXPORT cli11-targets DESTINATION lib/cmake)
+install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(CLI11_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(CLI11_FOUND)
@@ -57,8 +81,7 @@ set(fmt_headers_sources
     )
 
 blt_add_library(NAME fmt
-                HEADERS ${fmt_headers}
-                HEADERS_OUTPUT_SUBDIR fmt)
+                HEADERS ${fmt_headers})
 
 target_include_directories(fmt SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -68,12 +91,12 @@ set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
 set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
 
 install(TARGETS              fmt
-        EXPORT               fmt-targets
+        EXPORT               axom-targets
         INCLUDES DESTINATION include)
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
         DESTINATION include
         )
-install(EXPORT fmt-targets DESTINATION lib/cmake)
+install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
@@ -140,8 +163,7 @@ if (AXOM_ENABLE_SPARSEHASH)
      )
      
     blt_add_library(NAME sparsehash
-            HEADERS ${sparsehash_headers}
-            HEADERS_OUTPUT_SUBDIR sparsehash)
+            HEADERS ${sparsehash_headers})
      
     target_include_directories(sparsehash SYSTEM INTERFACE
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -156,13 +178,13 @@ if (AXOM_ENABLE_SPARSEHASH)
     endif()
 
     install(TARGETS              sparsehash
-            EXPORT               sparsehash-targets
+            EXPORT               axom-targets
             INCLUDES DESTINATION include)
 
     install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sparsehash
             DESTINATION include)
 
-    install(EXPORT sparsehash-targets DESTINATION lib/cmake)
+    install(EXPORT axom-targets DESTINATION lib/cmake)
 
   else()
     message(STATUS "Could not configure sparsehash")

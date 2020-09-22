@@ -20,7 +20,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *****************************************************************************
  * \brief Receives any Message sent to this rank. Returns null if terminating
@@ -43,9 +42,10 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm);
  *  packed together.
  *****************************************************************************
  */
-void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank,
+void mpiNonBlockingSendMessages(MPI_Comm comm,
+                                int destinationRank,
                                 const char* packedMessagesToBeSent);
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

@@ -14,11 +14,12 @@ cxx_header: axom/quest/interface/inout.hpp axom/quest/interface/signed_distance.
 namespace: axom quest
 
 options:
+#  debug: True
   C_line_length: 1000
   F_module_name_library_template: axom_{library_lower}
 #  F_module_per_class: False
   # Change the default template for Fortran functions to include the library name.
-  F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
+  F_name_impl_template: "{library_lower}_{C_name_scope}{underscore_name}{function_suffix}"
   F_name_generic_template: "{library_lower}_{underscore_name}"
   wrap_python: True
 
@@ -87,6 +88,7 @@ declarations:
 
       - decl: void signed_distance_set_dimension( int dim )
       - decl: void signed_distance_set_closed_surface( bool status )
+      - decl: void signed_distance_set_compute_signs( bool computeSign )
       - decl: void signed_distance_set_max_levels( int maxLevels )
       - decl: void signed_distance_set_max_occupancy( int maxOccupancy )
       - decl: void signed_distance_set_verbose( bool status )

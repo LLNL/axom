@@ -13,7 +13,7 @@
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Sidre
                         COMPONENTS SLIC
-                        TPLS       Conduit)
+                        TPLS       Conduit )
 
 #------------------------------------------------------------------------------
 # Add the sidre sources
@@ -26,7 +26,9 @@ set(sidre_headers
     core/View.hpp
     core/Attribute.hpp
     core/AttrValues.hpp
+    core/ItemCollection.hpp
     core/Iterator.hpp
+    core/ListCollection.hpp
     core/MapCollection.hpp
     core/SidreTypes.hpp
     core/SidreDataTypeIds.h

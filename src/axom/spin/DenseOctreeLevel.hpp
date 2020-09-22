@@ -6,19 +6,16 @@
 #ifndef DENSE_OCTREE_LEVEL__HXX_
 #define DENSE_OCTREE_LEVEL__HXX_
 
-
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
 
 #include "axom/spin/Brood.hpp"
 #include "axom/spin/OctreeLevel.hpp"
 
-
 namespace axom
 {
 namespace spin
 {
-
 /**
  * \class
  * \brief A representation of a dense OctreeLevel.
@@ -34,8 +31,8 @@ namespace spin
  *  \see OctreeLevel
  *  \see Brood
  */
-template<int DIM, typename BlockDataType, typename MortonIndexType>
-class DenseOctreeLevel : public OctreeLevel<DIM,BlockDataType>
+template <int DIM, typename BlockDataType, typename MortonIndexType>
+class DenseOctreeLevel : public OctreeLevel<DIM, BlockDataType>
 {
 public:
   using Base = OctreeLevel<DIM, BlockDataType>;
@@ -44,16 +41,16 @@ public:
   using BaseBlockIteratorHelper = typename Base::BlockIteratorHelper;
   using ConstBaseBlockIteratorHelper = typename Base::ConstBlockIteratorHelper;
 
-  template<typename OctreeLevelType, typename ParentType> class IteratorHelper;
+  template <typename OctreeLevelType, typename ParentType>
+  class IteratorHelper;
 
   using IterHelper = IteratorHelper<DenseOctreeLevel, BaseBlockIteratorHelper>;
-  using ConstIterHelper = IteratorHelper<const DenseOctreeLevel,
-                                         ConstBaseBlockIteratorHelper>;
+  using ConstIterHelper =
+    IteratorHelper<const DenseOctreeLevel, ConstBaseBlockIteratorHelper>;
 
   using BroodType = Brood<GridPt, MortonIndexType>;
 
 public:
-
   /**
    * \brief Concrete instance of the BlockIteratorHelper class defined in the
    * OctreeLevel base class.
@@ -62,24 +59,23 @@ public:
    * ConstBlockIteratorHelper,
    *       both are defined in the OctreeLevel base class
    */
-  template<typename OctreeLevelType, typename ParentType>
+  template <typename OctreeLevelType, typename ParentType>
   class IteratorHelper : public ParentType
   {
-public:
+  public:
     using self = IteratorHelper<OctreeLevelType, ParentType>;
     using BaseBlockItType = ParentType;
 
     IteratorHelper(OctreeLevelType* octLevel, bool begin)
-      : m_octreeLevel(octLevel),
-      m_endIdx( octLevel->m_broodCapacity),
-      m_offset(0),
-      m_isLevelZero( octLevel->level() == 0)
+      : m_octreeLevel(octLevel)
+      , m_endIdx(static_cast<MortonIndexType>(octLevel->m_broodCapacity))
+      , m_offset(0)
+      , m_isLevelZero(octLevel->level() == 0)
     {
       m_currentIdx = begin ? 0 : m_endIdx;
 
       // Advance the iterator to point to a valid Block
-      if( begin && !data()->isBlock())
-        increment();
+      if(begin && !data()->isBlock()) increment();
     }
 
     /** Increment to next block of the level */
@@ -94,8 +90,7 @@ public:
           ++m_currentIdx;
           m_offset = 0;
         }
-      }
-      while( m_currentIdx < m_endIdx && !data()->isBlock());
+      } while(m_currentIdx < m_endIdx && !data()->isBlock());
     }
 
     /** Access to point associated with the block pointed to by the iterator */
@@ -106,9 +101,9 @@ public:
     }
 
     /** Accessor for data associated with the iterator's block */
-    BlockDataType* data() {
-      return &m_octreeLevel->m_data[m_currentIdx][
-        m_offset];
+    BlockDataType* data()
+    {
+      return &m_octreeLevel->m_data[m_currentIdx][m_offset];
     }
     /** Const accessor for data associated with the iterator's block */
     const BlockDataType* data() const
@@ -121,14 +116,15 @@ public:
     {
       const self* pother = dynamic_cast<const self*>(other);
 
-      return (pother != nullptr)
-             && (m_currentIdx == pother->m_currentIdx)           // iterators
-                                                                 // are the same
-             && (m_offset == pother->m_offset);                  // brood
-                                                                 // indices are
-                                                                 // the same
+      return (pother != nullptr) &&
+        (m_currentIdx == pother->m_currentIdx)  // iterators
+                                                // are the same
+        && (m_offset == pother->m_offset);      // brood
+                                                // indices are
+                                                // the same
     }
-private:
+
+  private:
     OctreeLevelType* m_octreeLevel;
     MortonIndexType m_currentIdx, m_endIdx;
     int m_offset;
@@ -136,7 +132,6 @@ private:
   };
 
 public:
-
   /** \brief Default constructor for an octree level */
   DenseOctreeLevel(int level = -1) : Base(level), m_blockCount(0)
   {
@@ -147,20 +142,18 @@ public:
     }
     else
     {
-      const int rowsize = (level > 0) ? 1 << (level-1) : 1;
+      const int rowsize = (level > 0) ? 1 << (level - 1) : 1;
       m_broodCapacity = 1;
-      for(int i=0 ; i < DIM ; ++i)
-        m_broodCapacity *= rowsize;
+      for(int i = 0; i < DIM; ++i) m_broodCapacity *= rowsize;
 
       m_data = new BroodData[m_broodCapacity];
     }
 
     // Mark all blocks as not in tree
-    for(int i=0 ; i<m_broodCapacity ; ++i)
+    for(int i = 0; i < m_broodCapacity; ++i)
     {
       BroodData& bd = m_data[i];
-      for(int j=0 ; j< Base::BROOD_SIZE ; ++j)
-        bd[j].setNonBlock();
+      for(int j = 0; j < Base::BROOD_SIZE; ++j) bd[j].setNonBlock();
     }
   }
 
@@ -168,7 +161,7 @@ public:
   {
     if(m_data != nullptr)
     {
-      delete [] m_data;
+      delete[] m_data;
       m_data = nullptr;
     }
 
@@ -198,7 +191,6 @@ public:
     return new ConstIterHelper(this, begin);
   }
 
-
   /**
    * \brief Predicate to check whether the block associated with
    * the given GridPt pt is in the current level
@@ -219,21 +211,19 @@ public:
    */
   void addAllChildren(const GridPt& pt)
   {
-    SLIC_ASSERT_MSG(
-      this->inBounds(pt),
-      "Problem while inserting children of point "
-      << pt << " into octree level " << this->m_level
-      << ". Point was out of bounds -- "
-      << "each coordinate must be between 0 and "
-      << this->maxCoord() << ".");
+    SLIC_ASSERT_MSG(this->inBounds(pt),
+                    "Problem while inserting children of point "
+                      << pt << " into octree level " << this->m_level
+                      << ". Point was out of bounds -- "
+                      << "each coordinate must be between 0 and "
+                      << this->maxCoord() << ".");
 
     getBroodData(pt) = BroodData();
 
     // Handle level 0 -- only add the root, mark its 'siblings' as non-blocks
-    if( this->level() == 0)
+    if(this->level() == 0)
     {
-      for(int j=1 ; j< Base::BROOD_SIZE ; ++j)
-        m_data[0][j].setNonBlock();
+      for(int j = 1; j < Base::BROOD_SIZE; ++j) m_data[0][j].setNonBlock();
       ++m_blockCount;
     }
     else
@@ -241,7 +231,6 @@ public:
       m_blockCount += Base::BROOD_SIZE;
     }
   }
-
 
   /** \brief Accessor for the data associated with pt */
   BlockDataType& operator[](const GridPt& pt)
@@ -253,10 +242,9 @@ public:
   /** \brief Const accessor for the data associated with pt */
   const BlockDataType& operator[](const GridPt& pt) const
   {
-    SLIC_ASSERT_MSG(
-      hasBlock(pt),
-      "(" << pt <<", "<< this->m_level
-          << ") was not a block in the tree at level.");
+    SLIC_ASSERT_MSG(hasBlock(pt),
+                    "(" << pt << ", " << this->m_level
+                        << ") was not a block in the tree at level.");
 
     const BroodType brood(pt);
     return m_data[brood.base()][brood.offset()];
@@ -274,7 +262,6 @@ public:
     return m_data[BroodType::MortonizerType::mortonize(pt)];
   }
 
-
   /** \brief Predicate to check if there are any blocks in this octree level */
   bool empty() const { return m_blockCount == 0; }
 
@@ -287,22 +274,19 @@ public:
   /** \brief Returns the number of leaf blocks in the level */
   int numLeafBlocks() const
   {
-    if(empty())
-      return 0;
+    if(empty()) return 0;
 
     int count = 0;
-    for(int i=0 ; i< m_broodCapacity ; ++i)
+    for(int i = 0; i < m_broodCapacity; ++i)
     {
-      const BroodData& bd  = m_data[i];
-      for(int j=0 ; j< Base::BROOD_SIZE ; ++j)
+      const BroodData& bd = m_data[i];
+      for(int j = 0; j < Base::BROOD_SIZE; ++j)
       {
-        if(bd[j].isLeaf())
-          ++count;
+        if(bd[j].isLeaf()) ++count;
       }
     }
     return count;
   }
-
 
   /**
    * \brief Helper function to determine the status of
@@ -312,17 +296,15 @@ public:
    * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock,
    *...)
    */
-  TreeBlockStatus blockStatus(const GridPt & pt) const
+  TreeBlockStatus blockStatus(const GridPt& pt) const
   {
-    if(!this->inBounds(pt))
-      return BlockNotInTree;
+    if(!this->inBounds(pt)) return BlockNotInTree;
 
     const BroodType brood(pt);
-    const BlockDataType& blockData =  m_data[brood.base()][brood.offset()];
+    const BlockDataType& blockData = m_data[brood.base()][brood.offset()];
 
-    return blockData.isBlock()
-           ? (blockData.isLeaf() ? LeafBlock : InternalBlock )
-           : BlockNotInTree;
+    return blockData.isBlock() ? (blockData.isLeaf() ? LeafBlock : InternalBlock)
+                               : BlockNotInTree;
   }
 
 private:
@@ -335,7 +317,7 @@ private:
   int m_blockCount;
 };
 
-} // end namespace spin
-} // end namespace axom
+}  // end namespace spin
+}  // end namespace axom
 
 #endif  // DENSE_OCTREE_LEVEL__HXX_

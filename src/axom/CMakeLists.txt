@@ -18,6 +18,7 @@ if(ENABLE_MPI)
     axom_add_component( COMPONENT_NAME lumberjack
                         DEFAULT_STATE  ${AXOM_ENABLE_ALL_COMPONENTS})
 else()
+    message(STATUS "Axom Component Lumberjack turned off due to ENABLE_MPI=OFF")
     set(AXOM_ENABLE_LUMBERJACK OFF CACHE BOOL "")
 endif()
 
@@ -29,6 +30,12 @@ axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONE
 axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME sidre  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+if (AXOM_ENABLE_SIDRE)
+    axom_add_component(COMPONENT_NAME inlet  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+else()
+    message(STATUS "Axom Component Inlet turned off due to AXOM_ENABLE_SIDRE=OFF")
+    set(AXOM_ENABLE_INLET OFF CACHE BOOL "")
+endif()
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
 # Combine all component object libraries into a unified library
@@ -60,3 +67,21 @@ else()
     message(STATUS "AXOM_DATA_DIR: <undefined>")
 endif()
 
+#------------------------------------------------------------------------------
+# Fix FOLDER property for some targets
+#------------------------------------------------------------------------------
+if(TARGET axom)
+    set_target_properties(axom PROPERTIES FOLDER "axom")
+endif()
+
+# If Axom is the main project, set FOLDER property for top-level check targets
+if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+    set(_code_check_targets "docs" "doxygen_docs"
+                            "check" "style" 
+                            "clangformat_check" "clangformat_style" )
+    foreach(_tgt ${_code_check_targets})
+        if(TARGET ${_tgt})
+            set_target_properties(${_tgt} PROPERTIES FOLDER "axom/code_checks")
+        endif()
+    endforeach()
+endif()

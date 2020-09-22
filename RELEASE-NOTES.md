@@ -7,6 +7,120 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - Release date yyyy-mm-dd
+
+### Added
+- Exposed the tolerance parameter `EPS` that is used to determine intersections between
+  triangles in `primal:intersect()` as an optional final parameter.
+- Added BVH spatial index option to the `mesh_tester` utility for calculating
+  triangle-triangle intersection.
+- Added `axom::execution_space< ExecSpace >::onDevice()` to check if execution
+  space is on device.
+- Added Axom macro `AXOM_SUPPRESS_HD_WARN` to silence host device compiler
+  warnings.
+- Added option to quest's `SignedDistance` class and C API to toggle whether
+  the distance query computes the sign.
+- Added a `batched` option to quest's signed distance query example application.
+  This computes all distance queries on an array of points using a single call to `computeDistance`.
+  The query uses OpenMP threading, when available.
+- Added new component, Inlet, to assist in retrieving and storing data from
+  an input deck.
+- Added the ability to specify an [Umpire] allocator ID to use with the
+  BVH. This allows the application to use a device allocator for the BVH and 
+  avoid use of UM on the GPU, which can hinder perfomrmance, or use a pool
+  allocator to mitigate the latencies associated with allocation/deallocation.
+  The allocator ID is specified as an optional argument to the BVH constructor.
+- Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
+  annotations in Axom. Default is OFF.
+- Added Axom annotation macros. The macros can be used to annotate functions,
+  using the `AXOM_PERF_MARK_FUNCTION` macro, or at a more fine grain level,
+  different sections of code can be annotated by wrapping them within an
+  `AXOM_PERF_MARK_SECTION` block. As a first cut, this works with NVTX tools.
+  However, the hooks are in place to add support for Caliper in the future. 
+- Added a simple interface to NVTX that allows an application to set the color
+  and category for NVTX ranges corresponding to annotated code in Axom. The
+  application can now call `axom::nvtx:set_color()` and 
+  `axom::nvtx::set_category()` to set the corresponding parameters respectively. 
+  This facilitates in the performance evaluation by allowing developers to easily 
+  filter out calls by category or visually by setting a different color to use
+  in GUI tools, such as, NVVP and NSight.
+- Added a portable floating_point_limits traits class, to return min(), max(), lowest() 
+  and epsilon() of a `float` or `double` type. The functionality is equivalent to that provided by 
+  std::numeric_limits, but, the code is host/device decorated accordingly such that it
+  can also be called on the device.
+- Added initial support for ray queries using the BVH. The caller may now supply a set of rays to 
+  a BVH and the BVH will return a set of candidate BVH bins that intersect each ray.
+- Added initial support for bounding box queries using the BVH. The caller may
+  now supply a set of bounding boxes to a BVH and the BVH will return a set of 
+  candidate BVH bins that intersect each bounding box.
+- Added an `axom-config.cmake` file to axom's installation to streamline incorporating axom
+  into user applications. See `<axom-install>/examples/axom` for example usages.
+- Added [Sol] as a built-in TPL for fast and simple `C++` and `Lua` binding.
+  Sol is automatically enabled when `LUA_DIR` is found. 
+  The version of Sol used in this release is `v2.20.6`, which requires `C++14`.
+
+### Removed
+
+### Deprecated
+
+### Changed
+- Transitioned Axom's code formatting tool from `Uncrustify` to [clang-format].
+  Axom's clang-format rules depend on clang 10.
+- Modified the command line interface for `mesh_tester` utility. Interface
+  now uses a *-m, --method* option to select the spatial index, and *-p, policy*
+  option now accepts a string or integer value.
+- Renamed the `AXOM_USE_MPI3`option to `AXOM_ENABLE_MPI3` for consistency.
+- Renamed the `AXOM_USE_CUB` option to `AXOM_ENABLE_CUB` for consistency.
+- Modified the API for the BVH to accomodate different query types. The queries are now
+  more explicitly called `BVH::findPoints()` and `BVH::findRays()`.
+- Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
+  passing an `umpire::Allocator` object to specify an allocator, we now use the corresponding
+  integer ID associated with the allocator.
+- All names in the C API now preserve the case of the C++ function.
+  ex. `SIDRE_datastore_new` is now `SIDRE_DataStore_new`.
+- Fortran API in slic module. `axom::slic::message` Level enums are changed
+  from  *enum-name_enumerator* to *namespace_enumerator*.
+  ex. `level_error` is now `message_error`.
+- Fortran derived-type constructors are now generic functions named afer the derived type.
+  `datastore_new` is now `SidreDataStore`
+  `iomanager_new` is now `IOManager`
+
+### Fixed
+- Fixed a bug in `primal::intersect(Segment, BoundingBox)` and added regression tests.
+- Spin's octrees can now be used with 64-bit indexes. This allows octrees 
+  with up to 64 levels of resolution when using a 64-bit index type.
+- Resolved issue with `AXOM_USE_64BIT_INDEXTYPE` configurations. Axom can once again
+  be configured with 64-bit index types.
+- Fixed a triangle-triangle intersection case in primal that produced inconsistent results
+  depending on the order of the triangle's vertices.
+- Fixed issue in the parallel construction of the BVH on GPUs, due to incoherent
+  L1 cache that could result in some data corruption in the BVH. The code now
+  calls ``__threadfence_system()`` after the parent is computed and stored back
+  to global memory to ensure that the *write*  is visible to all threads. 
+- Fixed issue in Mint that would cause the clang@9.0.0 compiler to segfault. The
+  `mint_cell_types.cpp` test was causing a segfault in the compiler. The main
+  issue triggering this compiler bug was the use of `constexpr` when defining the
+  static `cell_info` array of structs. The code has been modified to use `const`
+  instead.
+- Fixed issue in Quest's Signed Distance query that would prevent consecutive
+  calls to Quest when MPI-3 shared memory is enabled due to not properly 
+  nullifying internal pointers when finalize is called.
+- Fixed issue where the BVH would dispatch to the CPU sort() routine when the
+  specified execution policy was CUDA_EXEC async. Now, when the execution policy
+  is CUDA_EXEC the code would correctly dispatch to the GPU sort, using CUB
+  (when CUB is enabled), regardless of whether it's synchronous or asynchronous.
+- Fixed issue with missing the bvh_traverse.hpp from the install prefix, which was preventing
+  applications from using the BVH when pointing to an Axom install prefix.
+- Fixed usage of cuda kernel policies in Mint. Raja v0.11.0 changed the way max threads
+  launch bounds is calculated. Consequently, a large number of threads was being launched
+  leading to max registry count violation when linking. We are now using fixed kernel size
+  of 256 threads (16x16 in 2D and 8x8x4 in 3D).
+- Third-party libraries can now build on the Windows platform through uberenv using vcpkg
+  ("zero-to-axom support on Windows")
+
+### Known Bugs
+
+
 ## [Version 0.3.3] - Release date 2020-01-31
 
 ### Added
@@ -291,4 +405,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
-
+[Umpire]: https://github.com/LLNL/Umpire
+[clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+[Sol]: https://github.com/ThePhD/sol2

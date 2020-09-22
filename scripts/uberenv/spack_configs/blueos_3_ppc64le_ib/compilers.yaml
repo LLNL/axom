@@ -6,11 +6,11 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gcc
-      cxx: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/g++
-      f77: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran
-      fc: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran
-    spec: gcc@4.9.3
+      cc:  /usr/tce/packages/gcc/gcc-7.3.1/bin/gcc
+      cxx: /usr/tce/packages/gcc/gcc-7.3.1/bin/g++
+      f77: /usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran
+      fc:  /usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran
+    spec: gcc@7.3.1
     target: ppc64le
 - compiler:
     environment: {}
@@ -19,10 +19,10 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/clang/clang-upstream-2018.11.09/bin/clang
-      cxx: /usr/tce/packages/clang/clang-upstream-2018.11.09/bin/clang++
-      f77: /usr/tce/packages/xl/xl-2018.11.26/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2018.11.26/bin/xlf2003
+      cc:  /usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang
+      cxx: /usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang++
+      f77: /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
     spec: clang@upstream_xlf
     target: ppc64le
 - compiler:
@@ -32,11 +32,11 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/clang/clang-upstream-2018.11.09/bin/clang
-      cxx: /usr/tce/packages/clang/clang-upstream-2018.11.09/bin/clang++
-      f77: /usr/tce/packages/xl/xl-2018.11.26/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2018.11.26/bin/xlf2003
-    spec: clang@upstream_nvcc_xlf
+      cc:  /usr/tce/packages/clang/clang-8.0.1/bin/clang
+      cxx: /usr/tce/packages/clang/clang-8.0.1/bin/clang++
+      f77: /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
+    spec: clang@8.0.1_nvcc_xlf
     target: ppc64le
 - compiler:
     environment: {}
@@ -45,12 +45,24 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/xl/xl-2018.11.26/bin/xlc
-      cxx: /usr/tce/packages/xl/xl-2018.11.26/bin/xlC
-      f77: /usr/tce/packages/xl/xl-2018.11.26/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2018.11.26/bin/xlf2003
+      cc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlc
+      cxx: /usr/tce/packages/xl/xl-2019.12.23/bin/xlC
+      f77: /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
     spec: xl@coral
     target: ppc64le
-
+- compiler:
+    environment: {}
+    extra_rpaths: []
+    flags: {}
+    modules: []
+    operating_system: rhel7
+    paths:
+      cc:  /usr/tce/packages/xl/xl-2019.08.20/bin/xlc
+      cxx: /usr/tce/packages/xl/xl-2019.08.20/bin/xlC
+      f77: /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
+    spec: xl@nvcc
+    target: ppc64le
 
  

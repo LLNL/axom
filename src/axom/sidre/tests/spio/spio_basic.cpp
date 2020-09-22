@@ -15,7 +15,6 @@
 
 using axom::sidre::IOManager;
 
-
 //------------------------------------------------------------------------------
 
 // Check that the mapping between sidre and relay protocols is accurate
@@ -23,15 +22,15 @@ TEST(spio_basic, root_name)
 {
   // Set up map from sidre protocols to expected relay protocols
   std::map<std::string, std::string> protocolMap;
-  protocolMap["sidre_hdf5"]         = "hdf5";
-  protocolMap["conduit_hdf5"]       = "hdf5";
-  protocolMap["sidre_json"]         = "json";
-  protocolMap["conduit_bin"]        = "json";
-  protocolMap["json"]               = "json";
+  protocolMap["sidre_hdf5"] = "hdf5";
+  protocolMap["conduit_hdf5"] = "hdf5";
+  protocolMap["sidre_json"] = "json";
+  protocolMap["conduit_bin"] = "json";
+  protocolMap["json"] = "json";
   protocolMap["sidre_conduit_json"] = "conduit_json";
 
   typedef std::map<std::string, std::string>::const_iterator MapIt;
-  for(MapIt it = protocolMap.begin() ; it != protocolMap.end() ; ++it)
+  for(MapIt it = protocolMap.begin(); it != protocolMap.end(); ++it)
   {
     const std::string& sidreProtocol = it->first;
     const std::string& expRelayProtocol = it->second;
@@ -59,7 +58,6 @@ void checkBaton(int numFiles, int numRanks, int myRank)
     int m_id;
   } myGroup;
 
-
   // Find the floor of the group size
   myGroup.m_size = numRanks / numFiles;
 
@@ -71,7 +69,7 @@ void checkBaton(int numFiles, int numRanks, int myRank)
 
   // Find the index of the group and its first element
   // And adjust group size, if necessary
-  if (myRank < splitIndex)
+  if(myRank < splitIndex)
   {
     myGroup.m_size += 1;
 
@@ -85,7 +83,6 @@ void checkBaton(int numFiles, int numRanks, int myRank)
     myGroup.m_id += numLarger;
   }
   myGroup.m_lastIdx = myGroup.m_firstIdx + myGroup.m_size - 1;
-
 
   //// Test the baton interface
   axom::sidre::IOBaton baton(MPI_COMM_WORLD, numFiles, numRanks);
@@ -110,8 +107,6 @@ void checkBaton(int numFiles, int numRanks, int myRank)
   EXPECT_EQ(0, success);
 }
 
-
-
 // Test basic baton operations
 TEST(spio_basic, baton)
 {
@@ -120,18 +115,16 @@ TEST(spio_basic, baton)
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
   // Test baton for different numbers of files
-  for (int nFiles = 1 ; nFiles <= num_ranks ; ++nFiles)
+  for(int nFiles = 1; nFiles <= num_ranks; ++nFiles)
   {
     std::stringstream sstr;
-    sstr<< "Checking baton for " << nFiles << " files "
-        << " with " << num_ranks << " ranks";
+    sstr << "Checking baton for " << nFiles << " files "
+         << " with " << num_ranks << " ranks";
 
     SCOPED_TRACE(sstr.str());
     checkBaton(nFiles, num_ranks, my_rank);
   }
-
 }
-
 
 //----------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

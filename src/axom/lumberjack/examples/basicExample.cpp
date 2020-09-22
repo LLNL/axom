@@ -20,7 +20,7 @@ int main(int argc, char** argv)
   MPI_Comm_size(MPI_COMM_WORLD, &commSize);
 
   // Determine how many ranks we want to individually track per message
-  int ranksLimit = commSize/2;
+  int ranksLimit = commSize / 2;
 
   // Initialize which lumberjack communicator we want
   axom::lumberjack::BinaryTreeCommunicator communicator;
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
   lj.initialize(&communicator, ranksLimit);
 
   // Queue messages into lumberjack
-  if (commRank == 0)
+  if(commRank == 0)
   {
     lj.queueMessage("This message will not be combined");
   }
@@ -45,16 +45,16 @@ int main(int argc, char** argv)
   lj.pushMessagesFully();
 
   // Determine if this is an output node
-  if (lj.isOutputNode())
+  if(lj.isOutputNode())
   {
     // Get Messages from Lumberjack
     std::vector<axom::lumberjack::Message*> messages = lj.getMessages();
-    for(int i=0 ; i<(int)(messages.size()) ; ++i)
+    for(int i = 0; i < (int)(messages.size()); ++i)
     {
       // Output a single Message at a time to screen
       std::cout << "(" << messages[i]->stringOfRanks() << ") "
-                << messages[i]->count() << " '"
-                << messages[i]->text() << "'" << std::endl;
+                << messages[i]->count() << " '" << messages[i]->text() << "'"
+                << std::endl;
     }
     // Clear already outputted Messages from Lumberjack
     lj.clearMessages();
