@@ -11,7 +11,7 @@
 #------------------------------------------------------------------------------
 
 # Add Serial GTests based tests
-if (LUA_FOUND)
+if (SOL_FOUND)
     set(gtest_inlet_tests
         inlet_LuaReader.cpp
         inlet_Inlet.cpp )

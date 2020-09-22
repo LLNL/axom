@@ -136,4 +136,8 @@ void demoArrayBasic()
   // _extbuffer_end
 }
 
-int main(int argc, char** argv) { demoArrayBasic(); }
+int main()
+{
+  demoArrayBasic();
+  return 0;
+}

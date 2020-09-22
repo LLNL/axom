@@ -15,6 +15,7 @@
 #define INLET_LUAMAP_HPP
 
 #include "axom/inlet/Reader.hpp"
+#include <sol/sol.hpp>
 
 extern "C" {
 #include "lua.h"
@@ -38,16 +39,6 @@ namespace inlet
 class LuaReader : public Reader
 {
 public:
-  /*!
-   *****************************************************************************
-   * \brief Destructor for the LuaReader.
-   *
-   * This performs any cleanup work the Reader needs to do before going
-   * away.
-   *****************************************************************************
-   */
-  ~LuaReader();
-
   /*!
    *****************************************************************************
    * \brief Parses the given input file.
@@ -139,23 +130,80 @@ public:
    */
   bool getString(const std::string& id, std::string& value);
 
-private:
   /*!
    *****************************************************************************
-   * \brief Move the Lua state to the given Lua variable id
+   * \brief Get an index-integer mapping for the given Lua array
    *
-   * This performs any necessary retrieval and mapping from the given fully
-   * qualified Sidre path name to what is in the input file.
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
    *
-   * \param [in] id The path name to the bool that will be retrieved
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the ints that were retrieved
    *
-   * \return true if Lua variable was found and Lua state was moved to
-   * variable
+   * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
-  bool findVariable(const std::string& id);
+  bool getIntMap(const std::string& id, std::unordered_map<int, int>& values);
 
-  lua_State* m_luaState;
+  /*!
+   *****************************************************************************
+   * \brief Get an index-double mapping for the given Lua array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the doubles that were retrieved
+   *
+   * \return true if the array was able to be retrieved from the file
+   *****************************************************************************
+   */
+  bool getDoubleMap(const std::string& id,
+                    std::unordered_map<int, double>& values);
+
+  /*!
+   *****************************************************************************
+   * \brief Get an index-bool mapping for the given Lua array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the bools that were retrieved
+   *
+   * \return true if the array was able to be retrieved from the file
+   *****************************************************************************
+   */
+  bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values);
+
+  /*!
+   *****************************************************************************
+   * \brief Get an index-string mapping for the given Lua array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the strings that were retrieved
+   *
+   * \return true if the array was able to be retrieved from the file
+   *****************************************************************************
+   */
+  bool getStringMap(const std::string& id,
+                    std::unordered_map<int, std::string>& values);
+
+private:
+  // Expect this to be called for only Inlet-supported types.
+  template <typename T>
+  bool getValue(const std::string& id, T& value);
+
+  // Expect this to be called for only Inlet-supported types.
+  template <typename T>
+  bool getMap(const std::string& id,
+              std::unordered_map<int, T>& values,
+              sol::type type);
+
+  sol::state m_lua;
 };
 
 }  // end namespace inlet

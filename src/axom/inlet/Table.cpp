@@ -64,6 +64,110 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
   return currTable;
 }
 
+std::shared_ptr<Table> Table::addBoolArray(const std::string& name,
+                                           const std::string& description)
+{
+  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+  std::unordered_map<int, bool> map;
+  const std::string& fullName = appendPrefix(m_name, name);
+  if(m_reader->getBoolMap(fullName, map))
+  {
+    for(auto p : map)
+    {
+      table->addBoolHelper(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("Bool array {0} not found.", fullName));
+  }
+  return table;
+}
+
+std::shared_ptr<Table> Table::addIntArray(const std::string& name,
+                                          const std::string& description)
+{
+  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+  std::unordered_map<int, int> map;
+  const std::string& fullName = appendPrefix(m_name, name);
+  if(m_reader->getIntMap(fullName, map))
+  {
+    for(auto p : map)
+    {
+      table->addIntHelper(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("Int array {0} not found.", fullName));
+  }
+  return table;
+}
+
+std::shared_ptr<Table> Table::addDoubleArray(const std::string& name,
+                                             const std::string& description)
+{
+  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+  std::unordered_map<int, double> map;
+  const std::string& fullName = appendPrefix(m_name, name);
+  if(m_reader->getDoubleMap(fullName, map))
+  {
+    for(auto p : map)
+    {
+      table->addDoubleHelper(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("Double array {0} not found.", fullName));
+  }
+  return table;
+}
+
+std::shared_ptr<Table> Table::addStringArray(const std::string& name,
+                                             const std::string& description)
+{
+  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+  std::unordered_map<int, std::string> map;
+  const std::string& fullName = appendPrefix(m_name, name);
+  if(m_reader->getStringMap(fullName, map))
+  {
+    for(auto p : map)
+    {
+      table->addStringHelper(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("String array {0} not found.", fullName));
+  }
+  return table;
+}
+
+bool Table::getBoolArray(std::unordered_map<int, bool>& map)
+{
+  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
+    m_reader->getBoolMap(m_name.substr(0, m_name.size() - 12), map);
+}
+
+bool Table::getIntArray(std::unordered_map<int, int>& map)
+{
+  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
+    m_reader->getIntMap(m_name.substr(0, m_name.size() - 12), map);
+}
+
+bool Table::getDoubleArray(std::unordered_map<int, double>& map)
+{
+  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
+    m_reader->getDoubleMap(m_name.substr(0, m_name.size() - 12), map);
+}
+
+bool Table::getStringArray(std::unordered_map<int, std::string>& map)
+{
+  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
+    m_reader->getStringMap(m_name.substr(0, m_name.size() - 12), map);
+}
+
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
                                             const std::string& description)
 {
@@ -109,26 +213,31 @@ std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup,
   return field;
 }
 
-std::shared_ptr<Field> Table::addBool(const std::string& name,
-                                      const std::string& description)
+std::shared_ptr<Field> Table::addBoolHelper(const std::string& name,
+                                            const std::string& description,
+                                            bool forArray,
+                                            bool num)
 {
   std::string fullName = appendPrefix(m_name, name);
   axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
   if(sidreGroup == nullptr)
   {
+    //TODO: better idea?
     return std::shared_ptr<Field>(nullptr);
   }
 
-  bool value;
-  if(m_reader->getBool(fullName, value))
+  bool value = num;
+  if(forArray || m_reader->getBool(fullName, value))
   {
     sidreGroup->createViewScalar("value", value ? int8(1) : int8(0));
   }
   return addField(sidreGroup, axom::sidre::DataTypeId::INT8_ID, fullName, name);
 }
 
-std::shared_ptr<Field> Table::addDouble(const std::string& name,
-                                        const std::string& description)
+std::shared_ptr<Field> Table::addDoubleHelper(const std::string& name,
+                                              const std::string& description,
+                                              bool forArray,
+                                              double num)
 {
   std::string fullName = appendPrefix(m_name, name);
   axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
@@ -137,16 +246,18 @@ std::shared_ptr<Field> Table::addDouble(const std::string& name,
     return std::shared_ptr<Field>(nullptr);
   }
 
-  double value;
-  if(m_reader->getDouble(fullName, value))
+  double value = num;
+  if(forArray || m_reader->getDouble(fullName, value))
   {
     sidreGroup->createViewScalar("value", value);
   }
   return addField(sidreGroup, axom::sidre::DataTypeId::DOUBLE_ID, fullName, name);
 }
 
-std::shared_ptr<Field> Table::addInt(const std::string& name,
-                                     const std::string& description)
+std::shared_ptr<Field> Table::addIntHelper(const std::string& name,
+                                           const std::string& description,
+                                           bool forArray,
+                                           int num)
 {
   std::string fullName = appendPrefix(m_name, name);
   axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
@@ -155,16 +266,18 @@ std::shared_ptr<Field> Table::addInt(const std::string& name,
     return std::shared_ptr<Field>(nullptr);
   }
 
-  int value;
-  if(m_reader->getInt(fullName, value))
+  int value = num;
+  if(forArray || m_reader->getInt(fullName, value))
   {
     sidreGroup->createViewScalar("value", value);
   }
   return addField(sidreGroup, axom::sidre::DataTypeId::INT_ID, fullName, name);
 }
 
-std::shared_ptr<Field> Table::addString(const std::string& name,
-                                        const std::string& description)
+std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
+                                              const std::string& description,
+                                              bool forArray,
+                                              const std::string& str)
 {
   std::string fullName = appendPrefix(m_name, name);
   axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
@@ -173,8 +286,8 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
     return std::shared_ptr<Field>(nullptr);
   }
 
-  std::string value;
-  if(m_reader->getString(fullName, value))
+  std::string value = str;
+  if(forArray || m_reader->getString(fullName, value))
   {
     sidreGroup->createViewString("value", value);
   }

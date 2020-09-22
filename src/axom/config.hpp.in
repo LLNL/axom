@@ -72,6 +72,7 @@
 #cmakedefine AXOM_USE_OPENMP
 #cmakedefine AXOM_USE_RAJA
 #cmakedefine AXOM_USE_SCR
+#cmakedefine AXOM_USE_SOL
 #cmakedefine AXOM_USE_SPARSEHASH
 #cmakedefine AXOM_USE_UMPIRE
 

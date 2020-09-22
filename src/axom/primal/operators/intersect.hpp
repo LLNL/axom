@@ -269,13 +269,16 @@ bool intersect(const Ray<T, DIM>& R,
 /// @{
 
 /*!
- * \brief Computes the intersection of the given segment, S, with the Box, bb.
- *     ip the point of intersection on S.
- * \return status true iff bb intersects with S, otherwise, false.
+ * \brief Computes the intersection of the given segment, \a S, with the Box, \a bb.
+ *     If an intersection is found, output parameter \a ip contains an intersection point
+ * \return status true iff \a bb intersects with \a S, otherwise, false.
  *
- * Computes Segment Box intersection using the slab method from pg 180 of
+ * \note The intersection between segment \a S and box \a bb intersect, will, in general,
+ * be a along a (1D) subset of segment \a S. This function returns a single point of 
+ * the intersection of \a S and \a bb found while determining if there is a valid intersection.
+ * 
+ * Computes Segment-Box intersection using the slab method from pg 180 of
  * Real Time Collision Detection by Christer Ericson.
- * WIP: More test cases for this
  */
 template <typename T, int DIM>
 bool intersect(const Segment<T, DIM>& S,

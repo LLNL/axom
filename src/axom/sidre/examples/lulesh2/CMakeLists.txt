@@ -21,10 +21,10 @@ set(lulesh_depends
     core
     sidre
     conduit::conduit
-    hdf5
     slic )
 
-blt_list_append( TO lulesh_depends ELEMENTS mpi IF ENABLE_MPI )
+blt_list_append( TO lulesh_depends ELEMENTS hdf5   IF HDF5_FOUND )
+blt_list_append( TO lulesh_depends ELEMENTS mpi    IF ENABLE_MPI )
 blt_list_append( TO lulesh_depends ELEMENTS openmp IF ENABLE_OPENMP )
 
 blt_add_executable(
