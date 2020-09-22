@@ -14,11 +14,17 @@
 
   // NOTE: add RAJA alias for older versions of RAJA prior to RAJA-v0.11.0
   #if (RAJA_VERSION_MAJOR==0) && (RAJA_VERSION_MINOR < 11)
+
+    /* clang-format off */
+
     namespace RAJA
     {
       template < int SIZE >
       using tile_fixed = ::RAJA::statement::tile_fixed< SIZE >;
     } // namespace RAJA
+
+   /* clang-format on */
+
   #endif
 
 #endif
