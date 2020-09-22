@@ -1621,7 +1621,7 @@ TEST(sidre_datastore, destroy_buffer)
 //------------------------------------------------------------------------------
 TEST(sidre_view, value_from_uninited_view)
 {
-  // Note: This is the test that relies on re-writing conduit error handlers
+  // Note: This test relies on re-wiring conduit error handlers
   DataStore::wireConduitMessageHandlersToSLIC();
 
   DataStore ds;

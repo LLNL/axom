@@ -160,7 +160,7 @@ TEST(sidre_attribute, create_attr)
 
 TEST(sidre_attribute, view_attr)
 {
-  // Note: This is the test that relies on re-writing conduit error handlers
+  // Note: This test relies on re-wiring conduit error handlers
   DataStore::wireConduitMessageHandlersToSLIC();
 
   bool ok;
@@ -300,7 +300,7 @@ TEST(sidre_attribute, view_attr)
 
 TEST(sidre_attribute, view_int_and_double)
 {
-  // Note: This is the test that relies on re-writing conduit error handlers
+  // Note: This test relies on re-wiring conduit error handlers
   DataStore::wireConduitMessageHandlersToSLIC();
 
   bool ok;
@@ -473,7 +473,7 @@ TEST(sidre_attribute, as_node)
 
 TEST(sidre_attribute, overloads)
 {
-  // Note: This is the test that relies on re-writing conduit error handlers
+  // Note: This test relies on re-wiring conduit error handlers
   DataStore::wireConduitMessageHandlersToSLIC();
 
   bool ok;

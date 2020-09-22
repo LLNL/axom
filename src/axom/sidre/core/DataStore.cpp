@@ -133,7 +133,7 @@ DataStore::~DataStore()
  *************************************************************************
  *
  * Rewire Conduit Message Handlers to SLIC.
- *  ... Not the best function name, but its is descriptive :-) 
+ *  ... Not the best function name, but it is descriptive :-) 
  *
  *************************************************************************
  */
@@ -150,7 +150,7 @@ void DataStore::wireConduitMessageHandlersToSLIC()
  *************************************************************************
  *
  * Restore Conduit Message Handlers to Conduit Defaults.
- *  ... Not the best function name, but its is descriptive :-) 
+ *  ... Not the best function name, but it is descriptive :-) 
  *
  *************************************************************************
  */
