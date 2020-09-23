@@ -305,7 +305,7 @@ def uberenv_build(prefix, spec, project_file, config_dir, mirror_path):
 # helpers for testing a set of host configs
 ############################################################
 
-def build_and_test_host_config(test_root,host_config):
+def build_and_test_host_config(test_root,host_config,build_type):
     host_config_root = get_host_config_root(host_config)
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
@@ -318,7 +318,7 @@ def build_and_test_host_config(test_root,host_config):
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print "[starting configure of %s]" % host_config
     print "[log file: %s]" % cfg_output_file
-    res = sexe("python config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+    res = sexe("python config-build.py  -bp %s -ip %s -hc %s -bt %s" % (build_dir,install_dir,host_config,build_type),
                output_file = cfg_output_file,
                echo=True)
     
@@ -463,7 +463,7 @@ def build_and_test_host_config(test_root,host_config):
     return 0
 
 
-def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_configs):
+def build_and_test_host_configs(prefix, job_name, build_type, timestamp, use_generated_host_configs):
     host_configs = get_host_configs_for_current_machine(prefix, use_generated_host_configs)
     if len(host_configs) == 0:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
@@ -482,7 +482,7 @@ def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_
         build_dir = get_build_dir(test_root, host_config)
 
         start_time = time.time()
-        if build_and_test_host_config(test_root,host_config) == 0:
+        if build_and_test_host_config(test_root,host_config, build_type) == 0:
             ok.append(host_config)
             log_success(build_dir, job_name, timestamp)
         else:
@@ -611,7 +611,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec):
     src_build_failed = False
     if not tpl_build_failed:
         # build the axom against the new tpls
-        res = build_and_test_host_configs(prefix, job_name, timestamp, True)
+        res = build_and_test_host_configs(prefix, job_name, build_type, timestamp, True)
         if res != 0:
             print "[ERROR: build and test of axom vs tpls test failed.]\n"
             src_build_failed = True

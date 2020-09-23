@@ -33,6 +33,12 @@ def parse_args():
                       default="",
                       help="Archive build results under given name (Defaults to off)")
 
+    # Specify build type
+    parser.add_option("-b", "--build_type",
+                      dest="build_type",
+                      default="Debug",
+                      help="Specify build type (Defaults to Debug)")
+
     ###############
     # parse args
     ###############
@@ -67,11 +73,16 @@ def main():
     else:
         job_name = get_username() + "/" + os.path.basename(__file__)
 
+    if opts["build_type"] in ["Release", "Debug", "RelWithDebInfo", "MinSizeRel"]:
+        build_type = opts["build_type"]
+    else:
+        build_type= "Debug"
+
     try:
         original_wd = os.getcwd()
         os.chdir(repo_dir)
         timestamp = get_timestamp()
-        res = build_and_test_host_configs(repo_dir, job_name, timestamp, False)
+        res = build_and_test_host_configs(repo_dir, job_name, build_type, timestamp, False)
 
         # Archive logs
         if opts["archive"] != "":
