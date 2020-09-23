@@ -81,7 +81,7 @@ source_suffix = '.rst'
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
 
-# The master toctree document.
+# The main toctree document.
 master_doc = 'index'
 
 # General information about the project.
@@ -116,7 +116,8 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = [ '_build', 'cmake/blt/docs' ]
+exclude_patterns = [ '_build',
+                     'cmake/blt/docs']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

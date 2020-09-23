@@ -6,22 +6,20 @@
 #ifndef AXOM_JACOBI_EIGENSOLVE_HPP_
 #define AXOM_JACOBI_EIGENSOLVE_HPP_
 
-#include "axom/core/Macros.hpp"           // for AXOM_STATIC_ASSERT
+#include "axom/core/Macros.hpp"  // for AXOM_STATIC_ASSERT
 
-#include "axom/core/numerics/Matrix.hpp"       // for numerics::Matrix
-#include "axom/core/numerics/eigen_sort.hpp"   // for numerics::eigen_sort()
-#include "axom/core/utilities/Utilities.hpp"   // for abs(), isNearlyEqual()
+#include "axom/core/numerics/Matrix.hpp"      // for numerics::Matrix
+#include "axom/core/numerics/eigen_sort.hpp"  // for numerics::eigen_sort()
+#include "axom/core/utilities/Utilities.hpp"  // for abs(), isNearlyEqual()
 
 namespace axom
 {
 namespace numerics
 {
-
-constexpr double JACOBI_DEFAULT_TOLERANCE   = 1.e-18;
+constexpr double JACOBI_DEFAULT_TOLERANCE = 1.e-18;
 constexpr int JACOBI_DEFAULT_MAX_ITERATIONS = 20;
-constexpr int JACOBI_EIGENSOLVE_SUCCESS     = 0;
-constexpr int JACOBI_EIGENSOLVE_FAILURE     = -1;
-
+constexpr int JACOBI_EIGENSOLVE_SUCCESS = 0;
+constexpr int JACOBI_EIGENSOLVE_FAILURE = -1;
 
 /*!
  * \brief Computes the eigenvalues and eigenvectors of a real symmetric matrix
@@ -62,129 +60,121 @@ constexpr int JACOBI_EIGENSOLVE_FAILURE     = -1;
  * \pre V.isSquare() == true
  * \pre lambdas != nullptr
  */
-template < typename T >
-int jacobi_eigensolve( Matrix < T > A,
-                       Matrix< T >& V,
-                       T* lambdas,
-                       int maxIterations=JACOBI_DEFAULT_MAX_ITERATIONS,
-                       int* numIterations=nullptr,
-                       T TOL=JACOBI_DEFAULT_TOLERANCE );
+template <typename T>
+int jacobi_eigensolve(Matrix<T> A,
+                      Matrix<T>& V,
+                      T* lambdas,
+                      int maxIterations = JACOBI_DEFAULT_MAX_ITERATIONS,
+                      int* numIterations = nullptr,
+                      T TOL = JACOBI_DEFAULT_TOLERANCE);
 
 //------------------------------------------------------------------------------
 // IMPLEMENTATION
 //------------------------------------------------------------------------------
-template < typename T >
-int jacobi_eigensolve( Matrix < T > A,
-                       Matrix< T >& V,
-                       T* lambdas,
-                       int maxIterations,
-                       int* numIterations,
-                       T TOL )
+template <typename T>
+int jacobi_eigensolve(Matrix<T> A,
+                      Matrix<T>& V,
+                      T* lambdas,
+                      int maxIterations,
+                      int* numIterations,
+                      T TOL)
 {
   bool converged = false;
-  const int n    = A.getNumRows();
+  const int n = A.getNumRows();
 
-  AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
+  AXOM_STATIC_ASSERT_MSG(std::is_floating_point<T>::value,
                          "pre: T is a floating point type");
   assert("pre: input matrix must be square" && A.isSquare());
-  assert("pre: can't have more eigenvectors than rows" &&
-         (n <= A.getNumRows()));
+  assert("pre: can't have more eigenvectors than rows" && (n <= A.getNumRows()));
   assert("pre: lambdas vector is null" && (lambdas != nullptr));
 
-
-  if ( !A.isSquare() || !V.isSquare() )
+  if(!A.isSquare() || !V.isSquare())
   {
     return JACOBI_EIGENSOLVE_FAILURE;
   }
 
-
-  T* bw = axom::allocate< T >( n );
-  T* zw = axom::allocate< T >( n );
+  T* bw = axom::allocate<T>(n);
+  T* zw = axom::allocate<T>(n);
 
   // initialize
-  for (int i = 0 ; i < n ; ++i)
+  for(int i = 0; i < n; ++i)
   {
-    lambdas[ i ] = A(i,i);
-    bw[ i ]      = lambdas[i];
-    zw[ i ]      = 0.0;
+    lambdas[i] = A(i, i);
+    bw[i] = lambdas[i];
+    zw[i] = 0.0;
 
-    for (int j = 0 ; j < n ; ++j)
+    for(int j = 0; j < n; ++j)
     {
-      V( i,j ) = ( i==j ) ? 1.0 : 0.0;
+      V(i, j) = (i == j) ? 1.0 : 0.0;
     }
-
   }
 
   // Jacobi solve
-  for (int iter = 0 ; iter < maxIterations ; ++iter)
+  for(int iter = 0; iter < maxIterations; ++iter)
   {
     // compute the sum of all elements in the upper triangular portion of A.
     // The convergence criterion (thresh) is based on the absolute value of
     // this sum.
     T sum = 0.0;
 
-    for (int i = 0 ; i < n ; ++i)
+    for(int i = 0; i < n; ++i)
     {
-      for (int j = i+1 ; j < n ; ++j)
+      for(int j = i + 1; j < n; ++j)
       {
-        sum += A(i,j) * A(i,j);
+        sum += A(i, j) * A(i, j);
       }
     }
 
-    const T thresh = sqrt(sum) / (4.0*static_cast< T >( n ) );
+    const T thresh = sqrt(sum) / (4.0 * static_cast<T>(n));
 
-    if (utilities::isNearlyEqual( thresh, 0.0, TOL ))
+    if(utilities::isNearlyEqual(thresh, 0.0, TOL))
     {
       converged = true;
       break;
     }
 
     // if not converged, then perform next iteration.
-    for (int p = 0 ; p < n ; ++p)
+    for(int p = 0; p < n; ++p)
     {
-      for (int q = p+1 ; q < n ; ++q)
+      for(int q = p + 1; q < n; ++q)
       {
-
-        T gapq  = 10.0 * utilities::abs(A(p,q));
+        T gapq = 10.0 * utilities::abs(A(p, q));
         T termp = gapq + utilities::abs(lambdas[p]);
         T termq = gapq + utilities::abs(lambdas[q]);
 
         // the Jacobi iteration ignores off diagonal elements close to zero
-        if ( 4 < iter &&
-             termp == utilities::abs(lambdas[p]) &&
-             termq == utilities::abs(lambdas[q]) )
+        if(4 < iter && termp == utilities::abs(lambdas[p]) &&
+           termq == utilities::abs(lambdas[q]))
         {
-          A(p,q) = 0.0;
+          A(p, q) = 0.0;
         }
-        else if ( thresh <= utilities::abs(A(p,q)) )
+        else if(thresh <= utilities::abs(A(p, q)))
         {
-
           T h = lambdas[q] - lambdas[p];
           T term = utilities::abs(h) + gapq;
 
           T t;
 
-          if (term == utilities::abs(h))
+          if(term == utilities::abs(h))
           {
-            t = A(p,q)/h;
+            t = A(p, q) / h;
           }
           else
           {
-            T theta = 0.5 * h / A(p,q);
-            t = 1.0 / ( utilities::abs(theta) + sqrt(1.0 + theta*theta) );
+            T theta = 0.5 * h / A(p, q);
+            t = 1.0 / (utilities::abs(theta) + sqrt(1.0 + theta * theta));
 
-            if (theta < 0.0)
+            if(theta < 0.0)
             {
               t = -t;
             }
-
           }
 
           // compute Givens rotation terms: c = cos(theta), s = sin(theta)
-          T c = 1.0 / sqrt(1.0 + t*t);
+          T c = 1.0 / sqrt(1.0 + t * t);
           T s = t * c;
           T tau = s / (1.0 + c);
-          h = t * A(p,q);
+          h = t * A(p, q);
 
           // accumulate corrections to diagonals
           zw[p] += -h;
@@ -192,47 +182,47 @@ int jacobi_eigensolve( Matrix < T > A,
           lambdas[p] += -h;
           lambdas[q] += h;
 
-          A(p,q) = 0.0;
+          A(p, q) = 0.0;
 
           // perform the rotation using information from upper triangle of A
-          for (int j = 0 ; j < p ; ++j)
+          for(int j = 0; j < p; ++j)
           {
-            T g1   = A(j,p);
-            T g2   = A(j,q);
-            A(j,p) = g1 - s * (g2 + g1 * tau);
-            A(j,q) = g2 + s * (g1 - g2 * tau);
+            T g1 = A(j, p);
+            T g2 = A(j, q);
+            A(j, p) = g1 - s * (g2 + g1 * tau);
+            A(j, q) = g2 + s * (g1 - g2 * tau);
           }
 
-          for (int j = p+1 ; j < q ; ++j)
+          for(int j = p + 1; j < q; ++j)
           {
-            T g1   = A(p,j);
-            T g2   = A(j,q);
-            A(p,j) = g1 - s * (g2 + g1 * tau);
-            A(j,q) = g2 + s * (g1 - g2 * tau);
+            T g1 = A(p, j);
+            T g2 = A(j, q);
+            A(p, j) = g1 - s * (g2 + g1 * tau);
+            A(j, q) = g2 + s * (g1 - g2 * tau);
           }
 
-          for (int j = q+1 ; j < n ; ++j)
+          for(int j = q + 1; j < n; ++j)
           {
-            T g1   = A(p,j);
-            T g2   = A(q,j);
-            A(p,j) = g1 - s * (g2 + g1 * tau);
-            A(q,j) = g2 + s * (g1 - g2 * tau);
+            T g1 = A(p, j);
+            T g2 = A(q, j);
+            A(p, j) = g1 - s * (g2 + g1 * tau);
+            A(q, j) = g2 + s * (g1 - g2 * tau);
           }
 
           // accumulate results into eigenvector matrix
-          for (int j = 0 ; j < n ; ++j)
+          for(int j = 0; j < n; ++j)
           {
-            T g1   = V(j,p);
-            T g2   = V(j,q);
-            V(j,p) = g1 - s * (g2 + g1 * tau);
-            V(j,q) = g2 + s * (g1 - g2 * tau);
+            T g1 = V(j, p);
+            T g2 = V(j, q);
+            V(j, p) = g1 - s * (g2 + g1 * tau);
+            V(j, q) = g2 + s * (g1 - g2 * tau);
           }
 
-        } // END else if
-      } // END for all q
-    } // END for all p
+        }  // END else if
+      }    // END for all q
+    }      // END for all p
 
-    for (int i = 0 ; i < n ; ++i)
+    for(int i = 0; i < n; ++i)
     {
       bw[i] += zw[i];
       lambdas[i] = bw[i];
@@ -240,20 +230,20 @@ int jacobi_eigensolve( Matrix < T > A,
     }
 
     // update number of actual iterations (if specified)
-    if ( numIterations != nullptr )
+    if(numIterations != nullptr)
     {
       (*numIterations)++;
     }
 
-  } // END for all iterations
+  }  // END for all iterations
 
   // sort eigenvalues in ascending order
-  eigen_sort( lambdas, V );
+  eigen_sort(lambdas, V);
 
-  axom::deallocate( bw );
-  axom::deallocate( zw );
+  axom::deallocate(bw);
+  axom::deallocate(zw);
 
-  return( (converged) ? JACOBI_EIGENSOLVE_SUCCESS : JACOBI_EIGENSOLVE_FAILURE );
+  return ((converged) ? JACOBI_EIGENSOLVE_SUCCESS : JACOBI_EIGENSOLVE_FAILURE);
 }
 
 } /* end namespace numerics */

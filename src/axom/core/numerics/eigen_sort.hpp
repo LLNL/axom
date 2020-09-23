@@ -7,13 +7,12 @@
 #define AXOM_EIGEN_SORT_HPP_
 
 // Axom includes
-#include "axom/core/utilities/Utilities.hpp" // for utilities::swap()
+#include "axom/core/utilities/Utilities.hpp"  // for utilities::swap()
 
 namespace axom
 {
 namespace numerics
 {
-
 /*!
  * \brief Sorts the supplied eigenvalues and eigenvectors in ascending order.
  *
@@ -34,43 +33,42 @@ namespace numerics
  * \pre eigen_vectors.getNumRows() >= 1
  * \pre eigen_vectors.getNumCols() >= 1
  */
-template < typename T >
-bool eigen_sort( T* lamdas, Matrix< T >& eigen_vectors );
+template <typename T>
+bool eigen_sort(T* lamdas, Matrix<T>& eigen_vectors);
 
 //------------------------------------------------------------------------------
 // IMPLEMENTATION
 //------------------------------------------------------------------------------
-template < typename T >
-bool eigen_sort( T* lambdas, Matrix< T >& eigen_vectors )
+template <typename T>
+bool eigen_sort(T* lambdas, Matrix<T>& eigen_vectors)
 {
-  if ( lambdas==nullptr ||
-       eigen_vectors.getNumRows() < 1 ||
-       eigen_vectors.getNumColumns() < 1 )
+  if(lambdas == nullptr || eigen_vectors.getNumRows() < 1 ||
+     eigen_vectors.getNumColumns() < 1)
   {
     return false;
   }
 
   const int n = eigen_vectors.getNumColumns();
 
-  for (int i = 0 ; i < n-1 ; ++i)
+  for(int i = 0; i < n - 1; ++i)
   {
     int m = i;
 
-    for (int j = i+1 ; j < n ; ++j)
+    for(int j = i + 1; j < n; ++j)
     {
-      if ( lambdas[ j ] < lambdas[ m ] )
+      if(lambdas[j] < lambdas[m])
       {
         m = j;
       }
-    } // END for j
+    }  // END for j
 
-    if (m != i)
+    if(m != i)
     {
-      utilities::swap( lambdas[ m ], lambdas[ i ] );
-      eigen_vectors.swapColumns( m,i );
-    } // END if swap
+      utilities::swap(lambdas[m], lambdas[i]);
+      eigen_vectors.swapColumns(m, i);
+    }  // END if swap
 
-  } // END for i
+  }  // END for i
 
   return true;
 }

@@ -6,7 +6,6 @@
 #ifndef QUEST_POINT_IN_CELL_HPP_
 #define QUEST_POINT_IN_CELL_HPP_
 
-
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 
@@ -14,12 +13,10 @@
 
 #include "axom/quest/detail/PointFinder.hpp"
 
-
 namespace axom
 {
 namespace quest
 {
-
 /*!
  * \class PointInCellTraits
  * \brief A traits class for the mesh associated with a PointInCell query.
@@ -33,14 +30,11 @@ namespace quest
  *     (e.g. with value -1 for signed ints), indicating an invalid cell
  *     index in the mesh
  */
-template<typename mesh_tag>
+template <typename mesh_tag>
 struct PointInCellTraits;
-
 
 namespace detail
 {
-
-
 /*!
  * \class PointInCellMeshWrapper
  * \brief A wrapper class for accessing the mesh instance
@@ -62,9 +56,7 @@ namespace detail
 template <typename mesh_tag>
 class PointInCellMeshWrapper;
 
-
-} // end namespace detail
-
+}  // end namespace detail
 
 /*!
  * \class PointInCell
@@ -93,7 +85,7 @@ class PointInCellMeshWrapper;
  * for [mfem](http://mfem.org) meshes of arbitrary order.  It uses
  * the mesh_tag \a quest_point_in_cell_mfem_tag
  */
-template<typename mesh_tag>
+template <typename mesh_tag>
 class PointInCell
 {
 public:
@@ -105,7 +97,6 @@ public:
 
   using PointFinder2D = detail::PointFinder<2, mesh_tag>;
   using PointFinder3D = detail::PointFinder<3, mesh_tag>;
-
 
   /*!
    * Construct a point in cell query structure over a computational mesh
@@ -127,9 +118,7 @@ public:
    * \pre If resolution is not NULL, it must have space for at least
    * meshDimension() entries.
    */
-  PointInCell(MeshType* mesh,
-              int* resolution = nullptr,
-              double bboxTolerance = 1e-8)
+  PointInCell(MeshType* mesh, int* resolution = nullptr, double bboxTolerance = 1e-8)
     : m_meshWrapper(mesh)
     , m_pointFinder2D(nullptr)
     , m_pointFinder3D(nullptr)
@@ -159,13 +148,13 @@ public:
   /*! Destructor */
   ~PointInCell()
   {
-    if( m_pointFinder2D != nullptr)
+    if(m_pointFinder2D != nullptr)
     {
       delete m_pointFinder2D;
       m_pointFinder2D = nullptr;
     }
 
-    if( m_pointFinder3D != nullptr)
+    if(m_pointFinder3D != nullptr)
     {
       delete m_pointFinder3D;
       m_pointFinder3D = nullptr;
@@ -190,8 +179,7 @@ public:
    * \pre \a pos is a non-null array with at least \a meshDimension() coords
    * \pre When not NULL, \a isopar has space for \a meshDimension() coords
    */
-  IndexType locatePoint(const double* pos,
-                        double* isopar = nullptr) const
+  IndexType locatePoint(const double* pos, double* isopar = nullptr) const
   {
     SLIC_ASSERT(pos != nullptr);
 
@@ -225,19 +213,16 @@ public:
    *  \pre \a pos is not NULL and has \a meshDimension() entries
    *  \pre \a isopar is not NULL and has space for \a meshDimension() entries
    */
-  bool locatePointInCell(IndexType cellIdx,
-                         const double* pos,
-                         double* isopar) const
+  bool locatePointInCell(IndexType cellIdx, const double* pos, double* isopar) const
   {
     // Early return if point is not within cell's bounding box
-    if(!withinBoundingBox(cellIdx, pos) )
+    if(!withinBoundingBox(cellIdx, pos))
     {
       return false;
     }
 
     return m_meshWrapper.locatePointInCell(cellIdx, pos, isopar);
   }
-
 
   /*!
    * Evaluate the position of a point within a mesh cell at the given
@@ -247,9 +232,7 @@ public:
    * \param [in[ isopar The isoparametric coordinates at which to evaluate
    * \param [out] pos The computed coordinates of the evaluated point
    */
-  void reconstructPoint(IndexType cellIdx,
-                        const double* isopar,
-                        double* pos) const
+  void reconstructPoint(IndexType cellIdx, const double* isopar, double* pos) const
   {
     m_meshWrapper.reconstructPoint(cellIdx, isopar, pos);
   }
@@ -258,7 +241,6 @@ public:
   int meshDimension() const { return m_meshWrapper.meshDimension(); }
 
 private:
-
   /*!
    * Utility function to check the given point against an element's bounding box
    * \param [in] cellIdx Index of the cell within the mesh
@@ -281,7 +263,6 @@ private:
     return false;
   }
 
-
 private:
   MeshWrapperType m_meshWrapper;
 
@@ -289,10 +270,7 @@ private:
   PointFinder3D* m_pointFinder3D;
 };
 
+}  // end namespace quest
+}  // end namespace axom
 
-
-
-} // end namespace quest
-} // end namespace axom
-
-#endif // QUEST_POINT_IN_CELL_HPP_
+#endif  // QUEST_POINT_IN_CELL_HPP_

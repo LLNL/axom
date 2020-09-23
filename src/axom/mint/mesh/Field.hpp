@@ -7,27 +7,26 @@
 #define MINT_FIELD_HPP_
 
 // axom includes
-#include "axom/core/Macros.hpp"       // for axom Macros
-#include "axom/core/Types.hpp"        // for nullptr
+#include "axom/core/Macros.hpp"  // for axom Macros
+#include "axom/core/Types.hpp"   // for nullptr
 
 // mint includes
-#include "axom/mint/config.hpp"       // for axom::IndexType
+#include "axom/mint/config.hpp"            // for axom::IndexType
 #include "axom/mint/mesh/FieldTypes.hpp"   // for the mint::FieldType enum
-#include "axom/mint/fem/FEBasisTypes.hpp" // for the mint::FEBasisType enum
+#include "axom/mint/fem/FEBasisTypes.hpp"  // for the mint::FEBasisType enum
 
 // slic includes
-#include "axom/slic/interface/slic.hpp"         // for slic macros
+#include "axom/slic/interface/slic.hpp"  // for slic macros
 
 // C/C++ includes
-#include <string>                // for std::string
+#include <string>  // for std::string
 
 namespace axom
 {
 namespace mint
 {
-
 // Forward declaration
-template < typename T >
+template <typename T>
 class FieldVariable;
 
 /*!
@@ -47,49 +46,47 @@ class FieldVariable;
  */
 class Field
 {
-
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
-  Field( ) = delete;
+  Field() = delete;
 
-/// \name Virtual methods
-/// @{
+  /// \name Virtual methods
+  /// @{
 
   /*!
    * \brief Destructor.
    */
-  virtual ~Field() {}
+  virtual ~Field() { }
 
   /*!
    * \brief Returns the number of tuples associated with this field.
    * \return N the number of tuples of this field.
    * \post N >= 0
    */
-  virtual IndexType getNumTuples( ) const = 0;
+  virtual IndexType getNumTuples() const = 0;
 
   /*!
    * \brief Returns the number of components associated with this field.
    * \return N the number of components of this field.
    * \post N >= 1
    */
-  virtual IndexType getNumComponents( ) const = 0;
+  virtual IndexType getNumComponents() const = 0;
 
   /*!
    * \brief Returns the total number of tuples this Field instance can hold.
    * \return N the number of tuples this Field instance can hold.
    * \post getCapacity() >= getNumTuples()
    */
-  virtual IndexType getCapacity( ) const = 0;
+  virtual IndexType getCapacity() const = 0;
 
   /*!
    * \brief Resizes the Field such that it can store the given number of tuples.
    * \param [in] newNumTuples the number of tuples of this Field instance.
    * \note Reallocation is done only if the new size exceeds the capacity.
    */
-  virtual void resize( IndexType newNumTuples ) = 0;
+  virtual void resize(IndexType newNumTuples) = 0;
 
   /*!
    * \brief Inserts n_tuples with the default value at the given position.
@@ -102,20 +99,20 @@ public:
    *
    * \see FieldVariable
    */
-  virtual void emplace( IndexType pos, IndexType n_tuples ) = 0;
+  virtual void emplace(IndexType pos, IndexType n_tuples) = 0;
 
   /*!
    * \brief Increase the Field capacity to hold the given number of tuples.
    * \param [in] newCapacity number of tuples to reserve memory for.
    * \note if newCapacity < getCapacity() this method returns immediately.
    */
-  virtual void reserve( IndexType newCapacity ) = 0;
+  virtual void reserve(IndexType newCapacity) = 0;
 
   /*!
    * \brief Shrinks the field capacity to be equal to the number of tuples.
    * \post getCapacity()==getNumTuple()
    */
-  virtual void shrink( ) = 0;
+  virtual void shrink() = 0;
 
   /*!
    * \brief Return the resize ratio of this field.
@@ -127,7 +124,7 @@ public:
    * \param [in] ratio the new resize ratio.
    * \post getResizeRatio() == ratio
    */
-  virtual void setResizeRatio( double ratio ) = 0;
+  virtual void setResizeRatio(double ratio) = 0;
 
   /*!
    * \brief Return true iff the field is stored in an external buffer.
@@ -139,10 +136,10 @@ public:
    */
   virtual bool isInSidre() const = 0;
 
-/// @}
+  /// @}
 
-/// \name Attribute get/set Methods
-/// @{
+  /// \name Attribute get/set Methods
+  /// @{
 
   /*!
    * \brief Returns the type of the field.
@@ -163,8 +160,7 @@ public:
    * \return basis the basis associated with this field.
    * \pre fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES
    */
-  int getBasis() const
-  { return m_basis; };
+  int getBasis() const { return m_basis; };
 
   /*!
    * \brief Sets the finite element basis associated with this field.
@@ -176,16 +172,16 @@ public:
    * \pre fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES
    * \see FEBasisTypes for a list of supported basis.
    */
-  void setBasis( int fe_basis )
+  void setBasis(int fe_basis)
   {
-    SLIC_ASSERT( fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES  );
+    SLIC_ASSERT(fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES);
     m_basis = fe_basis;
   }
 
-/// @}
+  /// @}
 
-/// \name Static Methods
-/// @{
+  /// \name Static Methods
+  /// @{
 
   /*!
    * \brief Returns raw pointer to the field data.
@@ -195,17 +191,16 @@ public:
    * \post dataPtr != nullptr
    */
   /// @{
-  template< typename T >
-  static inline T* getDataPtr( Field* field );
+  template <typename T>
+  static inline T* getDataPtr(Field* field);
 
-  template < typename T >
-  static inline const T* getDataPtr( const Field* field );
+  template <typename T>
+  static inline const T* getDataPtr(const Field* field);
   /// @}
 
-/// @}
+  /// @}
 
 protected:
-
   /*!
    * \brief Custom constructor to call from a derived class.
    *
@@ -217,22 +212,21 @@ protected:
    *
    * \see FieldType for a list of supported field types.
    */
-  Field( const std::string& name, int type ) :
-    m_name( name ),
-    m_type( type ),
-    m_basis( MINT_UNDEFINED_BASIS )
+  Field(const std::string& name, int type)
+    : m_name(name)
+    , m_type(type)
+    , m_basis(MINT_UNDEFINED_BASIS)
   {
-    SLIC_ERROR_IF( m_name.empty(), "Supplied Field name is empty!" );
-    SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE,
-                   "Supplied field type doesn't map to a supported type!" );
+    SLIC_ERROR_IF(m_name.empty(), "Supplied Field name is empty!");
+    SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE,
+                  "Supplied field type doesn't map to a supported type!");
   }
 
-  std::string m_name;    /*!< the name of the field  */
-  int m_type;            /*!< the field type */
-  int m_basis;           /*!< associated finite element basis with the field. */
+  std::string m_name; /*!< the name of the field  */
+  int m_type;         /*!< the field type */
+  int m_basis;        /*!< associated finite element basis with the field. */
 
 private:
-
   DISABLE_COPY_AND_ASSIGNMENT(Field);
   DISABLE_MOVE_AND_ASSIGNMENT(Field);
 };
@@ -241,42 +235,45 @@ private:
 //             Field IMPLEMENTATION
 //------------------------------------------------------------------------------
 
-template < typename T >
-inline T* Field::getDataPtr( Field* field )
+template <typename T>
+inline T* Field::getDataPtr(Field* field)
 {
-  SLIC_ASSERT( field != nullptr );
+  SLIC_ASSERT(field != nullptr);
 
   // check type
-  int type  = field_traits< T >::type();
-  int ftype = field->getType( );
-  SLIC_ERROR_IF( (type == UNDEFINED_FIELD_TYPE),
-                 "Template argument to Field::getDataPtr() doesn't map to a supported type" );
-  SLIC_ERROR_IF( (type != ftype),
-                 "Template argument to Field::getDataPtr() doesn't match the field type" );
+  int type = field_traits<T>::type();
+  int ftype = field->getType();
+  SLIC_ERROR_IF(
+    (type == UNDEFINED_FIELD_TYPE),
+    "Template argument to Field::getDataPtr() doesn't map to a supported type");
+  SLIC_ERROR_IF(
+    (type != ftype),
+    "Template argument to Field::getDataPtr() doesn't match the field type");
 
-  FieldVariable< T >* f = static_cast< FieldVariable< T >* >( field );
-  SLIC_ASSERT( f != nullptr );
-  return ( f->getFieldVariablePtr( ) );
+  FieldVariable<T>* f = static_cast<FieldVariable<T>*>(field);
+  SLIC_ASSERT(f != nullptr);
+  return (f->getFieldVariablePtr());
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline const T* Field::getDataPtr( const Field* field )
+template <typename T>
+inline const T* Field::getDataPtr(const Field* field)
 {
-  SLIC_ASSERT( field != nullptr );
+  SLIC_ASSERT(field != nullptr);
 
   // check type
-  int type  = field_traits< T >::type();
-  int ftype = field->getType( );
-  SLIC_ERROR_IF( (type == UNDEFINED_FIELD_TYPE),
-                 "Template argument to Field::getDataPtr() doesn't map to a supported type" );
-  SLIC_ERROR_IF( (type != ftype),
-                 "Template argument to Field::getDataPtr() doesn't match the field type" );
+  int type = field_traits<T>::type();
+  int ftype = field->getType();
+  SLIC_ERROR_IF(
+    (type == UNDEFINED_FIELD_TYPE),
+    "Template argument to Field::getDataPtr() doesn't map to a supported type");
+  SLIC_ERROR_IF(
+    (type != ftype),
+    "Template argument to Field::getDataPtr() doesn't match the field type");
 
-  const FieldVariable< T >* f =
-    static_cast< const FieldVariable< T >* >( field );
-  SLIC_ASSERT( f != nullptr );
-  return ( f->getFieldVariablePtr( ) );
+  const FieldVariable<T>* f = static_cast<const FieldVariable<T>*>(field);
+  SLIC_ASSERT(f != nullptr);
+  return (f->getFieldVariablePtr());
 }
 
 } /* namespace mint */

@@ -14,7 +14,7 @@ The quickest path to install Axom and its dependencies is via `uberenv <https://
 
 .. code:: bash
 
-    $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
+    $ git clone --recursive git@github.com:LLNL/axom.git
     $ cd axom
     $ python scripts/uberenv/uberenv.py --install --prefix="build"
 
@@ -28,7 +28,7 @@ Using Axom in Your Project
 --------------------------
 
 The install includes examples that demonstrate how to use Axom
-in a CMake-based and Makefile-based build systems.
+in CMake-based, BLT-based and Makefile-based build systems.
 
 CMake-based build system example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -36,9 +36,19 @@ CMake-based build system example
 
 .. literalinclude:: ../../../examples/using-with-cmake/CMakeLists.txt
    :language: cmake
-   :lines: 26-39
+   :lines: 27-50
 
 See:  ``examples/axom/using-with-cmake``
+
+BLT-based build system example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. literalinclude:: ../../../examples/using-with-blt/CMakeLists.txt
+   :language: cmake
+   :lines: 31-61
+
+See:  ``examples/axom/using-with-blt``
 
 
 Makefile-based build system example
@@ -46,6 +56,6 @@ Makefile-based build system example
 
 .. literalinclude:: ../../../examples/using-with-make/Makefile
    :language: make
-   :lines: 21-25
+   :lines: 20-25
 
 See: ``examples/axom/using-with-make``

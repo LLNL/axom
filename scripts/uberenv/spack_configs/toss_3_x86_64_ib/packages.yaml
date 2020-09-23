@@ -16,77 +16,143 @@
 # -------------------------------------------------------------------------
 packages:
   all:
+    # This defaults us to machine specific flags of ivybridge which allows
+    # us to run on broadwell as well
+    target: [ivybridge]
     compiler: [gcc, intel, pgi, clang, xl, nag]
     providers:
-      awk: [gawk]
-      blas: [openblas]
-      daal: [intel-daal]
-      elf: [elfutils]
-      golang: [gcc]
-      ipp: [intel-ipp]
-      java: [jdk]
-      lapack: [openblas]
-      mkl: [intel-mkl]
-      mpe: [mpe2]
+      blas: [netlib-lapack]
+      lapack: [netlib-lapack]
       mpi: [mvapich2]
-      opencl: [pocl]
-      openfoam: [openfoam-com, openfoam-org, foam-extend]
-      pil: [py-pillow]
-      scalapack: [netlib-scalapack]
-      szip: [libszip, libaec]
-      tbb: [intel-tbb]
-      jpeg: [libjpeg-turbo, libjpeg]
+
 # LLNL toss3 CUDA 
   cuda:
     paths:
-      cuda@8.0: /opt/cudatoolkit-8.0
+      cuda@10.2: /opt/cudatoolkit/10.2
     buildable: False
-# LLNL toss3 mvapich2
+
+# Lock down which MPI we are using
   mvapich2:
     paths:
-      mvapich2@2.2%gcc@6.1.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-6.1.0
-      mvapich2@2.2%gcc@7.3.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-7.3.0
-      mvapich2@2.2%gcc@8.1.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-8.1.0
-      mvapich2@2.2%intel@18.0.2 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-18.0.2
-      mvapich2@2.2%intel@19.0.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-19.0.0
-      mvapich2@2.3%clang@4.0.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0
-      mvapich2@2.3%clang@6.0.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-6.0.0
+      mvapich2@2.3%clang@9.0.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-9.0.0
+      mvapich2@2.3%clang@10.0.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-10.0.0
+      mvapich2@2.3%gcc@8.1.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0
+      mvapich2@2.3%gcc@8.1.0_no_fortran process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0
+      mvapich2@2.3%intel@18.0.2 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2
+      mvapich2@2.3%intel@19.0.4 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
     buildable: False
 # Spack may grab for mpi & we don't want to use them
+  openmpi:
+    buildable: False
+  mpich:
+    buildable: False
+  spectrum-mpi:
+    buildable: False
+  charmpp:
+    buildable: False
   charm:
     buildable: False
+  intel-mpi:
+    buildable: False
+  intel-parallel-studio:
+    buildable: False
+  fujitsu-mpi:
+    buildable: False
   mpilander:
-    buildable: False  
-# System level packages to not build
-  autotools:
+    buildable: False
+  mpt:
+    buildable: False
+
+  # blas is a bit more complicated because its a virtual package so fake it with
+  # the following per spack docs
+  netlib-lapack:
     paths:
-      autotools: /usr/bin/
+      netlib-lapack@3.6.1: /usr
+    buildable: False
+
+# System level packages to not build
+  autoconf:
+    paths:
+      autoconf: /usr
     buildable: False 
+  automake:
+    paths:
+      automake: /usr
+    buildable: False
   bzip2:
    paths:
-      bzip2: /usr/bin/
+      bzip2: /usr
    buildable: False
+  cmake:
+    version: [3.14.5]
+    paths:
+      cmake: /usr/tce/packages/cmake/cmake-3.14.5
+    buildable: False
   gettext:
    paths:
-      gettext: /usr/bin/
+      gettext: /usr
+   buildable: False
+  libtool:
+   paths:
+      libtool: /usr
    buildable: False
   m4:
    paths:
-      m4: /usr/bin/
+      m4: /usr
    buildable: False
+  perl:
+    paths:
+      perl: /usr
+    buildable: False 
   pkg-config:
     paths:
-      pkg-config: /usr/bin/
+      pkg-config: /usr
     buildable: False 
   tar:
    paths:
-      tar: /usr/bin/
+      tar: /usr
    buildable: False
-  graphviz:
-    paths:
-      graphviz: /usr/bin/
-    buildable: False
-# Globally lock in version of CMake
-  cmake:
-    version: [3.9.6]
 
+# Globally lock version of third party libraries
+  conduit:
+    version: [0.5.1]
+    variants: ~shared
+  mfem:
+    variants: ~mpi~metis~zlib
+
+# Globally lock in versions of Devtools
+  cppcheck:
+    version: [1.87]
+    paths:
+      cppcheck: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/cppcheck-1.87
+    buildable: False
+  doxygen:
+    version: [1.8.14]
+    paths:
+      doxygen: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/doxygen-1.8.14
+    buildable: False
+  graphviz:
+    version: [2.42.2]
+    paths:
+      graphviz: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/graphviz-2.42.2
+    buildable: False
+  python:
+    version: [3.7.7]
+    paths:
+      python: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.7
+    buildable: False
+  py-shroud:
+    version: [0.12.2]
+    paths:
+      py-shroud: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.7
+    buildable: False
+  py-sphinx:
+    version: [2.2.0]
+    paths:
+      py-sphinx: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.7
+    buildable: False
+  uncrustify:
+    version: [0.61]
+    paths:
+      uncrustify: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/uncrustify-0.61
+    buildable: False

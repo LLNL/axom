@@ -13,7 +13,7 @@
 using namespace axom;
 
 //------------------------------------------------------------------------------
-int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
+int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
 {
   // SPHINX_SLIC_INIT_BEGIN
 
@@ -25,31 +25,29 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   // SPHINX_SLIC_FORMAT_MSG_BEGIN
 
-  std::string format = std::string( "<TIMESTAMP>\n" ) +
-                       std::string( "[<LEVEL>]: <MESSAGE> \n" ) +
-                       std::string( "FILE=<FILE>\n" ) +
-                       std::string( "LINE=<LINE>\n\n" );
+  std::string format = std::string("<TIMESTAMP>\n") +
+    std::string("[<LEVEL>]: <MESSAGE> \n") + std::string("FILE=<FILE>\n") +
+    std::string("LINE=<LINE>\n\n");
 
   // SPHINX_SLIC_FORMAT_MSG_END
 
   // SPHINX_SLIC_SET_SEVERITY_BEGIN
 
-  slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::setLoggingMsgLevel(slic::message::Debug);
 
   // SPHINX_SLIC_SET_SEVERITY_END
 
   // SPHINX_SLIC_SET_STREAM_BEGIN
-  slic::addStreamToAllMsgLevels(
-    new slic::GenericOutputStream( &std::cout,format) );
+  slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(&std::cout, format));
 
   // SPHINX_SLIC_SET_STREAM_END
 
   // SPHINX_SLIC_LOG_MESSAGES_BEGIN
 
-  SLIC_DEBUG( "Here is a debug message!" );
-  SLIC_INFO( "Here is an info mesage!" );
-  SLIC_WARNING( "Here is a warning!" );
-  SLIC_ERROR( "Here is an error message!" );
+  SLIC_DEBUG("Here is a debug message!");
+  SLIC_INFO("Here is an info mesage!");
+  SLIC_WARNING("Here is a warning!");
+  SLIC_ERROR("Here is an error message!");
 
   // SPHINX_SLIC_LOG_MESSAGES_END
 

@@ -16,8 +16,8 @@ set( mint_tests
 
      ## mesh tests
      mint_mesh.cpp
-     mint_mesh_blueprint.cpp
      mint_mesh_cell_types.cpp
+     mint_mesh_blueprint.cpp
      mint_mesh_connectivity_array.cpp
      mint_mesh_coordinates.cpp
      mint_mesh_curvilinear_mesh.cpp
@@ -50,7 +50,7 @@ set( mint_test_dependencies
 blt_list_append( TO mint_test_dependencies
                  ELEMENTS sidre conduit::conduit
                  IF AXOM_MINT_USE_SIDRE )
-blt_list_append( TO mint_test_dependencies ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO mint_test_dependencies ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO mint_test_dependencies ELEMENTS openmp IF ${ENABLE_OPENMP} )
 blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
 

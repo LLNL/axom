@@ -32,9 +32,16 @@
 #cmakedefine AXOM_DATA_DIR "@AXOM_DATA_DIR@"
 
 /*
+ * Indicates whether Axom is compiled with Annotations that can facilitate
+ * evaluation of performance with various performance tools.
+ */
+#cmakedefine AXOM_USE_ANNOTATIONS
+
+/*
  * Platform specific definitions
  */
 #define AXOM_CXX_STD "@BLT_CXX_STD@"
+#cmakedefine AXOM_CUDA_ARCH "@AXOM_CUDA_ARCH@"
 #cmakedefine AXOM_NO_INT64_T
 #cmakedefine AXOM_USE_MPI3
 
@@ -54,16 +61,17 @@
  */
 #cmakedefine AXOM_USE_CLI11
 #cmakedefine AXOM_USE_CONDUIT
-#cmakedefine AXOM_USE_CUB
 #cmakedefine AXOM_USE_CUDA
 #cmakedefine AXOM_USE_FMT
 #cmakedefine AXOM_USE_HDF5
+#cmakedefine AXOM_USE_LUA
 #cmakedefine AXOM_USE_MFEM
 #cmakedefine AXOM_USE_MPI
 #cmakedefine AXOM_USE_MPIF_HEADER
 #cmakedefine AXOM_USE_OPENMP
 #cmakedefine AXOM_USE_RAJA
 #cmakedefine AXOM_USE_SCR
+#cmakedefine AXOM_USE_SOL
 #cmakedefine AXOM_USE_SPARSEHASH
 #cmakedefine AXOM_USE_UMPIRE
 
@@ -80,8 +88,9 @@
 
 
 /*
- * Compiler defines for the toolkit components
+ * Compiler defines for Axom components
  */
+#cmakedefine AXOM_USE_INLET
 #cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_LUMBERJACK
 #cmakedefine AXOM_USE_PRIMAL

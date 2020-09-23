@@ -14,9 +14,6 @@ set(spin_example_depends
         fmt
         )
 
-    #blt_list_append( TO spin_example_depends ELEMENTS raja IF ${RAJA_FOUND} )
-    #blt_list_append( TO spin_example_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-    #blt_list_append( TO spin_example_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO spin_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 blt_add_executable(

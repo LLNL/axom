@@ -46,18 +46,15 @@ To illustrate, consider the *sidre* component directory::
   $ cd axom/src/components/sidre
   $ ls -1 -F
   CMakeLists.txt
-  README.md
   docs/
   examples/
   src/
   tests/
-  uncrustify.cfg
 
 Note that, besides directories, the top-level component directory contains
 a few files: 
 
 * **CMakeLists.txt** contains CMake information for the component in the Axom build system.
-* **README.md** is the markdown overview file for the component. Its contents appear in the Axom Bitbucket project when you navigate through the source tree.
     
 The **docs** directory contains the component documentation. Subdirectories in 
 the docs directory are named for each type of documentation. The directories 
@@ -173,10 +170,10 @@ The top-level component directory contains a `CMakeLists.txt`, e.g.,
 
 
 
-.. note:: Each Axom component should use the common uncrustify
-          configuration file defined for the project at src/uncrustify.cfg. 
+.. note:: Each Axom component should use the common `clang-format`
+          configuration file defined for the project at ``src/.clang-format``. 
           The file is used to define source code formatting options that are
-          applied when the *uncrustify* tool is run on the code.
+          applied when the *clang-format* tool is run on the code.
 
 
 Component src directory
@@ -210,8 +207,6 @@ add *sidre* as a library is::
                        "${sidre_fortran_sources}"
                    HEADERS
                        "${sidre_headers}"
-                   HEADERS_OUTPUT_SUBDIR
-                       sidre
                    DEPENDS_ON
                        ${sidre_depends}
                    )
@@ -319,16 +314,7 @@ Documentation
 
 Complete documentation for an Axom component consists of several parts
 described in the following sections. All user documentation is accessible 
-on the `Axom LC web space <https://lc.llnl.gov/axom/docs/sphinx/web_docs/html/index.html>`_.
-
-README File
-------------
-
-Each Axom component should have a basic `README.md` markdown file in its
-top-level directory that briefly describes the role and capabilities of the 
-component. The contents of this file will appear when the component source 
-code is viewed on the 
-`Axom Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
+on `Axom Read The Docs page <https://axom.readthedocs.io>`_.
 
 User Documentation
 ------------------

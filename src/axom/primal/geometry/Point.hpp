@@ -6,21 +6,20 @@
 #ifndef POINT_HXX_
 #define POINT_HXX_
 
+#include "axom/core/Macros.hpp"
 #include "axom/slic/interface/slic.hpp"
-
 #include "axom/primal/geometry/NumericArray.hpp"
 
 // C/C++ includes
-#include <cstring> // For memcpy()
-#include <ostream> // For print() and operator <<
+#include <cstring>  // For memcpy()
+#include <ostream>  // For print() and operator <<
 
 namespace axom
 {
 namespace primal
 {
-
 // Forward declare the templated classes and operator functions
-template < typename T,int NDIMS >
+template <typename T, int NDIMS>
 class Point;
 
 /// \name Forward Declared Overloaded Operators
@@ -29,20 +28,20 @@ class Point;
 /*!
  * \brief Equality comparison operator for points
  */
-template < typename T,int NDIMS >
-bool operator==(const Point< T, NDIMS > & lhs, const Point< T, NDIMS >& rhs);
+template <typename T, int NDIMS>
+bool operator==(const Point<T, NDIMS>& lhs, const Point<T, NDIMS>& rhs);
 
 /*!
  * \brief Inequality comparison operator for points
  */
-template < typename T,int NDIMS >
-bool operator!=(const Point< T, NDIMS > & lhs, const Point< T, NDIMS >& rhs);
+template <typename T, int NDIMS>
+bool operator!=(const Point<T, NDIMS>& lhs, const Point<T, NDIMS>& rhs);
 
 /*!
  * \brief Overloaded output operator for points
  */
-template < typename T,int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Point< T,NDIMS > & pt);
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt);
 
 ///@}
 
@@ -55,21 +54,20 @@ std::ostream& operator<<(std::ostream & os, const Point< T,NDIMS > & pt);
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  */
-template < typename T, int NDIMS >
+template <typename T, int NDIMS>
 class Point
 {
 public:
   enum
   {
     DIMENSION = NDIMS,
-    NBYTES    = NDIMS * sizeof(T)
+    NBYTES = NDIMS * sizeof(T)
   };
 
-  typedef Point< T,NDIMS > PointType;
+  typedef Point<T, NDIMS> PointType;
   typedef T CoordType;
 
 public:
-
   /*!
    * \brief Fill the first sz coordinates with val and zeros the rest
    * \param [in] val The value to set the coordinates to.  Defaults to zero
@@ -77,13 +75,15 @@ public:
    * The rest will be set to zero.  Defaults is NDIMS.
    * If sz is greater than NDIMS, we set all coordinates to val
    */
-  explicit Point(T val = T(), int sz = NDIMS) : m_components(val,sz) { }
+  AXOM_HOST_DEVICE
+  explicit Point(T val = T(), int sz = NDIMS) : m_components(val, sz) { }
 
   /*!
    * \brief Constructor from a numeric array
    * \param [in] arr The numeric array to copy from
    */
-  Point(const NumericArray< T,NDIMS >& arr) : m_components(arr) { }
+  AXOM_HOST_DEVICE
+  Point(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a point from the first sz values of the input array.
@@ -91,17 +91,20 @@ public:
    * \param [in] sz num values to copy from the vals array. Defaults to NDIMS.
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    */
-  Point(const T* vals, int sz = NDIMS) : m_components(vals,sz) { }
+  AXOM_HOST_DEVICE
+  Point(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
 
   /*!
    * \brief Copy constructor.
    * \param [in] other The point to copy
    */
-  Point( const Point& other) : m_components( other.m_components) { }
+  AXOM_HOST_DEVICE
+  Point(const Point& other) : m_components(other.m_components) { }
 
   /*!
    * \brief Destructor.
    */
+  AXOM_HOST_DEVICE
   ~Point() { }
 
   /*!
@@ -115,8 +118,12 @@ public:
    * \brief Assignment operator.
    * \param [in] rhs a point instance on the right hand side.
    */
+  AXOM_HOST_DEVICE
   Point& operator=(const Point& rhs)
-  { m_components=rhs.m_components; return *this; }
+  {
+    m_components = rhs.m_components;
+    return *this;
+  }
 
   /// \name Overloaded [] operator methods
   ///@{
@@ -127,8 +134,11 @@ public:
    * \return p[i] the value at the given component index.
    * \pre (i >= 0) && (i < ndims)
    */
+  AXOM_HOST_DEVICE
   const T& operator[](int i) const { return m_components[i]; }
-  T& operator[](int i)             { return m_components[i]; }
+
+  AXOM_HOST_DEVICE
+  T& operator[](int i) { return m_components[i]; }
 
   ///@}
 
@@ -139,15 +149,18 @@ public:
    * \brief Returns a pointer to the underlying data.
    */
   const T* data() const { return m_components.data(); }
-  T* data()             { return m_components.data(); }
+  T* data() { return m_components.data(); }
 
   ///@}
 
   /*!
    * \brief Returns a reference to the underlying NumericArray.
    */
-  const NumericArray< T,NDIMS >& array() const { return m_components; }
-  NumericArray< T,NDIMS >& array()              { return m_components; }
+  AXOM_HOST_DEVICE
+  const NumericArray<T, NDIMS>& array() const { return m_components; }
+
+  AXOM_HOST_DEVICE
+  NumericArray<T, NDIMS>& array() { return m_components; }
 
   /*!
    * \brief Output the point's coordinates to the array
@@ -161,13 +174,17 @@ public:
    * \brief Equality comparison operator for points
    */
   friend inline bool operator==(const Point& lhs, const Point& rhs)
-  { return lhs.m_components == rhs.m_components; }
+  {
+    return lhs.m_components == rhs.m_components;
+  }
 
   /*!
    * \brief Inequality operator for points
    */
   friend inline bool operator!=(const Point& lhs, const Point& rhs)
-  { return !(lhs == rhs); }
+  {
+    return !(lhs == rhs);
+  }
 
   /*!
    * \brief Simple formatted print of a point instance
@@ -183,7 +200,8 @@ public:
    * \param [in] z the z--coordinate of the point. Default is 0.0.
    * \return p a Point instance with the given coordinates.
    */
-  static Point make_point( const T& x, const T& y, const T& z=0.0 );
+  AXOM_HOST_DEVICE
+  static Point make_point(const T& x, const T& y, const T& z = 0.0);
 
   /*!
    * \brief Returns the midpoint between point A and point B.
@@ -191,7 +209,7 @@ public:
    * \param [in] B user-supplied point
    * \return p point at the midpoint A and B.
    */
-  static Point midpoint( const Point& A, const Point& B );
+  static Point midpoint(const Point& A, const Point& B);
 
   /*!
    * \brief Performs linear interpolation/extrapolation between two points.
@@ -213,7 +231,7 @@ public:
    * \post \f$ P==B\f$ when \f$ \alpha=1.0\f$
    * \post The return point, P, and the user-supplied points A, B are collinear.
    */
-  static Point lerp( const Point& A, const Point& B, double alpha);
+  static Point lerp(const Point& A, const Point& B, T alpha);
 
   /*!
    * \brief Helper function to return a point whose coordinates are all 0
@@ -226,18 +244,17 @@ public:
    * (with the appropriate casting) and is only valid for Points with
    * a numerical type (i.e. where static_cast<T>(1) is valid.
    */
-  static Point ones() { return Point(static_cast< T >(1)); }
+  static Point ones() { return Point(static_cast<T>(1)); }
 
 private:
-  NumericArray< T,NDIMS > m_components;
-
+  NumericArray<T, NDIMS> m_components;
 };
 
 /// \name Pre-defined point types
 /// @{
 
-typedef Point< double,2 > Point2D;
-typedef Point< double,3 > Point3D;
+typedef Point<double, 2> Point2D;
+typedef Point<double, 3> Point3D;
 
 /// @}
 
@@ -252,61 +269,56 @@ namespace axom
 {
 namespace primal
 {
-
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-inline Point< T, NDIMS > Point< T,NDIMS >::make_point( const T& x,
-                                                       const T& y,
-                                                       const T& z )
+template <typename T, int NDIMS>
+inline Point<T, NDIMS> Point<T, NDIMS>::make_point(const T& x,
+                                                   const T& y,
+                                                   const T& z)
 {
-  T tmp_array[3] = { x, y, z};
+  T tmp_array[3] = {x, y, z};
   return Point(tmp_array, NDIMS);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-inline Point< T,NDIMS > Point< T,NDIMS >::midpoint(
-  const Point< T,NDIMS >& A,
-  const Point< T,NDIMS >& B )
+template <typename T, int NDIMS>
+inline Point<T, NDIMS> Point<T, NDIMS>::midpoint(const Point<T, NDIMS>& A,
+                                                 const Point<T, NDIMS>& B)
 {
-  Point< T,NDIMS > mid_point;
+  Point<T, NDIMS> mid_point;
 
-  for ( int i=0 ; i < NDIMS ; ++i )
+  for(int i = 0; i < NDIMS; ++i)
   {
-
-    mid_point[ i ] = static_cast<T>(0.5*( A[i]+B[i] ) );
+    mid_point[i] = static_cast<T>(0.5 * (A[i] + B[i]));
   }
 
   return mid_point;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-inline Point< T,NDIMS > Point< T,NDIMS >::lerp(
-  const Point< T,NDIMS >& A,
-  const Point< T,NDIMS >& B,
-  double alpha)
+template <typename T, int NDIMS>
+inline Point<T, NDIMS> Point<T, NDIMS>::lerp(const Point<T, NDIMS>& A,
+                                             const Point<T, NDIMS>& B,
+                                             T alpha)
 {
   PointType res;
-  const double beta = 1.-alpha;
-  for ( int i=0 ; i < NDIMS ; ++i )
+  const T beta = 1. - alpha;
+  for(int i = 0; i < NDIMS; ++i)
   {
-    res[ i ] = beta*A[ i ] + alpha*B[ i ];
+    res[i] = beta * A[i] + alpha * B[i];
   }
   return res;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-std::ostream& Point< T, NDIMS >::print(std::ostream& os) const
+template <typename T, int NDIMS>
+std::ostream& Point<T, NDIMS>::print(std::ostream& os) const
 {
-  os <<"(";
-  for (int dim=0 ; dim < NDIMS -1 ; ++dim)
+  os << "(";
+  for(int dim = 0; dim < NDIMS - 1; ++dim)
   {
-    os << static_cast< typename NonChar< T >::type >(m_components[dim]) << ",";
+    os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
   }
-  os << static_cast< typename NonChar< T >::type >(m_components[NDIMS-1])
-     << ")";
+  os << static_cast<typename NonChar<T>::type>(m_components[NDIMS - 1]) << ")";
 
   return os;
 }
@@ -315,8 +327,8 @@ std::ostream& Point< T, NDIMS >::print(std::ostream& os) const
 /// Free functions implementing Point's operators
 //------------------------------------------------------------------------------
 
-template < typename T, int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Point< T,NDIMS > & pt)
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt)
 {
   pt.print(os);
   return os;

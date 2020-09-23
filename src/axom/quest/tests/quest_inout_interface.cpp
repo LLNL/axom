@@ -3,18 +3,17 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"             // for gtest macros
+#include "gtest/gtest.h"  // for gtest macros
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 
 #include "axom/quest/interface/inout.hpp"
-#include "axom/quest/interface/internal/QuestHelpers.hpp" // for test that reads
-                                                          // in a mesh without
-                                                          // the interface
+#include "axom/quest/interface/internal/QuestHelpers.hpp"  // for test that reads
+                                                           // in a mesh without
+                                                           // the interface
 #include <string>
-
 
 /// Test fixture for quest::inout_query interface
 class InOutInterfaceTest : public ::testing::Test
@@ -43,18 +42,15 @@ protected:
   std::string meshfile;
 };
 
-
-
 TEST_F(InOutInterfaceTest, initialize_and_finalize)
 {
-  const std::string meshfile = this->meshfile;
-  EXPECT_TRUE(axom::utilities::filesystem::pathExists(meshfile));
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(this->meshfile));
 
   // InOut begins uninitialized
   EXPECT_FALSE(axom::quest::inout_initialized());
 
   // Initialize the InOut query
-  EXPECT_EQ(0, axom::quest::inout_init(meshfile));
+  EXPECT_EQ(0, axom::quest::inout_init(this->meshfile));
 
   // InOut should now be initialized
   EXPECT_TRUE(axom::quest::inout_initialized());
@@ -66,7 +62,6 @@ TEST_F(InOutInterfaceTest, initialize_and_finalize)
   EXPECT_FALSE(axom::quest::inout_initialized());
 }
 
-
 TEST_F(InOutInterfaceTest, logger_inited)
 {
   const bool origSlicInited = axom::slic::isInitialized();
@@ -77,13 +72,13 @@ TEST_F(InOutInterfaceTest, logger_inited)
   EXPECT_EQ(0, axom::quest::inout_init(this->meshfile));
 
   // slic is initialized now
-  EXPECT_TRUE( axom::slic::isInitialized() );
+  EXPECT_TRUE(axom::slic::isInitialized());
 
   // Finalize the InOut query
   EXPECT_EQ(0, axom::quest::inout_finalize());
 
   // After finalizing, slic should be in the same status that it was originally
-  EXPECT_EQ(origSlicInited, axom::slic::isInitialized() );
+  EXPECT_EQ(origSlicInited, axom::slic::isInitialized());
 
   if(origSlicInited)
   {
@@ -91,14 +86,12 @@ TEST_F(InOutInterfaceTest, logger_inited)
   }
 }
 
-
 TEST_F(InOutInterfaceTest, initialize_from_mesh)
 {
-  const std::string meshfile = this->meshfile;
-  EXPECT_TRUE(axom::utilities::filesystem::pathExists(meshfile));
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(this->meshfile));
 
   axom::mint::Mesh* mesh = nullptr;
-  int rc = axom::quest::internal::read_mesh(meshfile, mesh);
+  int rc = axom::quest::internal::read_mesh(this->meshfile, mesh);
   EXPECT_EQ(0, rc);
 
   // Initialize the InOut query
@@ -113,7 +106,6 @@ TEST_F(InOutInterfaceTest, initialize_from_mesh)
   // InOut should no longer  be initialized
   EXPECT_FALSE(axom::quest::inout_initialized());
 }
-
 
 TEST_F(InOutInterfaceTest, query_properties)
 {
@@ -130,8 +122,8 @@ TEST_F(InOutInterfaceTest, query_properties)
 
     // The following should return an error since initialized is false
     SLIC_INFO("--[==[ \n"
-              <<"\t The following three calls might emit warning messages."
-              <<" This is expected.\n");
+              << "\t The following three calls might emit warning messages."
+              << " This is expected.\n");
 
     EXPECT_EQ(failCode, axom::quest::inout_mesh_min_bounds(lo.data()));
     EXPECT_EQ(failCode, axom::quest::inout_mesh_max_bounds(hi.data()));
@@ -152,7 +144,7 @@ TEST_F(InOutInterfaceTest, query_properties)
     int spatialDim = axom::quest::inout_get_dimension();
     EXPECT_EQ(expSpatialDim, spatialDim);
 
-    SLIC_INFO("Mesh bounding box is " << BBoxType(lo,hi));
+    SLIC_INFO("Mesh bounding box is " << BBoxType(lo, hi));
     SLIC_INFO("Mesh center of mass is " << cm);
     SLIC_INFO("Spatial dimension of query is " << spatialDim);
 
@@ -203,14 +195,13 @@ TEST_F(InOutInterfaceTest, query)
   axom::quest::inout_init(this->meshfile);
 
   // test an inside point
-  EXPECT_TRUE(axom::quest::inout_evaluate(0,0,0) );
+  EXPECT_TRUE(axom::quest::inout_evaluate(0, 0, 0));
 
   // test an outside point
-  EXPECT_FALSE(axom::quest::inout_evaluate(10, 10, 10 ));
+  EXPECT_FALSE(axom::quest::inout_evaluate(10, 10, 10));
 
   axom::quest::inout_finalize();
 }
-
 
 int main(int argc, char** argv)
 {
@@ -219,8 +210,8 @@ int main(int argc, char** argv)
 #endif
   ::testing::InitGoogleTest(&argc, argv);
 
-  axom::slic::UnitTestLogger logger;    // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::setLoggingMsgLevel(axom::slic::message::Debug);
 
   int result = RUN_ALL_TESTS();
 

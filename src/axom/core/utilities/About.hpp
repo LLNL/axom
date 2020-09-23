@@ -6,7 +6,8 @@
 #ifndef AXOM_UTILS_ABOUT_H_
 #define AXOM_UTILS_ABOUT_H_
 
-#include <ostream>
+#include <ostream>  // for std::ostream
+#include <string>   // for std::string
 
 namespace axom
 {
@@ -19,9 +20,18 @@ void about();
 /*!
  * \brief Prints info about how Axom was configured and built to a stream
  *
+ * \param [in,out] oss the target stream where to append the Axom info
  */
 void about(std::ostream &oss);
 
-} // end namespace axom
+/*!
+ * \brief Returns a string consisting of the Axom version.
+ *
+ * \return str string corresponding to the Axom version
+ * \post str != ""
+ */
+std::string getVersion();
 
-#endif //  AXOM_UTILS_ABOUT_H_
+}  // end namespace axom
+
+#endif  //  AXOM_UTILS_ABOUT_H_

@@ -117,11 +117,12 @@ set( mint_dependencies
      slic
      )
 
-blt_list_append( TO mint_dependencies
-                 ELEMENTS sidre conduit::conduit
-                 IF AXOM_MINT_USE_SIDRE )
+if (AXOM_MINT_USE_SIDRE)
+   list( APPEND mint_dependencies sidre conduit::conduit )
+   blt_list_append( TO mint_dependencies ELEMENTS hdf5 IF HDF5_FOUND )
+endif()
 
-blt_list_append( TO mint_dependencies ELEMENTS raja IF RAJA_FOUND )
+blt_list_append( TO mint_dependencies ELEMENTS RAJA IF RAJA_FOUND )
 
 blt_list_append( TO mint_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
 

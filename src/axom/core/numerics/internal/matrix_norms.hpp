@@ -6,7 +6,7 @@
 #ifndef AXOM_MATRIX_NORMS_HPP_
 #define AXOM_MATRIX_NORMS_HPP_
 
-#include "axom/core/numerics/Matrix.hpp"     // for numerics::Matrix
+#include "axom/core/numerics/Matrix.hpp"      // for numerics::Matrix
 #include "axom/core/utilities/Utilities.hpp"  // for utilities::abs()
 
 namespace axom
@@ -15,7 +15,6 @@ namespace numerics
 {
 namespace internal
 {
-
 /*!
  * \brief Computes the p1-norm of a given \f$ M \times N \f$ matrix
  *
@@ -31,30 +30,30 @@ namespace internal
  * \pre A.getNumRows() >= 2
  * \pre A.getNumCols() >= 2
  */
-template < typename T >
-inline T matrix_p1_norm( const Matrix< T >& A )
+template <typename T>
+inline T matrix_p1_norm(const Matrix<T>& A)
 {
-  const int numRows = A.getNumRows( );
-  const int numCols = A.getNumColumns( );
+  const int numRows = A.getNumRows();
+  const int numCols = A.getNumColumns();
 
-  if ( numRows < 2 || numCols < 2 )
+  if(numRows < 2 || numCols < 2)
   {
     /* short-circuit and return -1.0 to indicate error */
     return -1.0;
   }
 
   T norm = -1.0;
-  for ( IndexType j=0 ; j < numCols ; ++j )
+  for(IndexType j = 0; j < numCols; ++j)
   {
-    const T* col = A.getColumn( j );
-    T col_sum    = 0.0;
-    for ( IndexType i=0 ; i < numRows ; ++i )
+    const T* col = A.getColumn(j);
+    T col_sum = 0.0;
+    for(IndexType i = 0; i < numRows; ++i)
     {
-      col_sum += utilities::abs( col[ i ] );
-    } // END for all rows
+      col_sum += utilities::abs(col[i]);
+    }  // END for all rows
 
-    norm = ( col_sum > norm ) ? col_sum : norm;
-  } // END for all columns
+    norm = (col_sum > norm) ? col_sum : norm;
+  }  // END for all columns
 
   return norm;
 }
@@ -74,33 +73,37 @@ inline T matrix_p1_norm( const Matrix< T >& A )
  * \pre A.getNumRows() >= 2
  * \pre A.getNumCols() >= 2
  */
-template < typename T >
-inline T matrix_infty_norm( const Matrix< T >& A )
+template <typename T>
+inline T matrix_infty_norm(const Matrix<T>& A)
 {
-  const int numRows = A.getNumRows( );
-  const int numCols = A.getNumColumns( );
+  const int numRows = A.getNumRows();
+  const int numCols = A.getNumColumns();
 
-  if ( numRows < 2 || numCols < 2 )
+  if(numRows < 2 || numCols < 2)
   {
     /* short-circuit and return -1.0 to indicate error */
     return -1.0;
   }
 
   T norm = -1.0;
-  for (IndexType i=0 ; i < numRows ; ++i)
+  for(IndexType i = 0; i < numRows; ++i)
   {
+    // The lines bracketed by rowsum_start and rowsum_end (prepended with
+    // an underscore) are used in the Sphinx documentation of Matrix.
+    // _rowsum_start
     IndexType p = 0;
     IndexType N = 0;
-    const T* row = A.getRow( i, p, N );
+    const T* row = A.getRow(i, p, N);
 
     T row_sum = 0.0;
-    for (IndexType j=0 ; j < N ; j+=p )
+    for(IndexType j = 0; j < N; j += p)
     {
-      row_sum += utilities::abs( row[ j ] );
-    } // END for all columns
+      row_sum += utilities::abs(row[j]);
+    }  // END for all columns
+    // _rowsum_end
 
-    norm = ( row_sum > norm ) ? row_sum : norm;
-  } // END for all rows
+    norm = (row_sum > norm) ? row_sum : norm;
+  }  // END for all rows
 
   return norm;
 }
@@ -120,30 +123,31 @@ inline T matrix_infty_norm( const Matrix< T >& A )
  * \pre A.getNumRows() >= 2
  * \pre A.getNumCols() >= 2
  */
-template < typename T >
-inline T matrix_frobenious_norm( const Matrix< T >& A )
+template <typename T>
+inline T matrix_frobenious_norm(const Matrix<T>& A)
 {
-  AXOM_STATIC_ASSERT_MSG( std::is_floating_point< T >::value,
-                          "T is required to be a floating type for computing the frobenious norm" );
+  AXOM_STATIC_ASSERT_MSG(
+    std::is_floating_point<T>::value,
+    "T is required to be a floating type for computing the frobenious norm");
 
-  const int numRows = A.getNumRows( );
-  const int numCols = A.getNumColumns( );
+  const int numRows = A.getNumRows();
+  const int numCols = A.getNumColumns();
 
-  if ( numRows < 2 || numCols < 2 )
+  if(numRows < 2 || numCols < 2)
   {
     /* short-circuit and return -1.0 to indicate error */
     return -1.0;
   }
 
   T norm = 0.0;
-  for (IndexType i=0 ; i < numRows ; ++i)
+  for(IndexType i = 0; i < numRows; ++i)
   {
-    for (IndexType j=0 ; j < numCols ; ++j)
+    for(IndexType j = 0; j < numCols; ++j)
     {
-      const T abs_a_ij = utilities::abs( A( i,j ) );
+      const T abs_a_ij = utilities::abs(A(i, j));
       norm += abs_a_ij * abs_a_ij;
-    } // END for all columns
-  } // END for all rows
+    }  // END for all columns
+  }    // END for all rows
 
   norm = sqrt(norm);
   return norm;

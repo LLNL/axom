@@ -27,12 +27,13 @@
 #include "axom/sidre/core/SidreTypes.hpp"
 
 #ifndef SIDRE_ATTRVALUES_HPP_
-#define SIDRE_ATTRVALUES_HPP_
+  #define SIDRE_ATTRVALUES_HPP_
 
 namespace axom
 {
 namespace sidre
 {
+class View;
 
 /*!
  * \class AttrValue
@@ -63,7 +64,6 @@ namespace sidre
 class AttrValues
 {
 public:
-
   /*!
    * Friend declarations to constrain usage via controlled access to
    * private members.
@@ -71,17 +71,13 @@ public:
   friend class View;
 
 private:
-
   //DISABLE_DEFAULT_CTOR(AttrValues);
   DISABLE_MOVE_AND_ASSIGNMENT(AttrValues);
 
   /*!
    * \brief Return true if attribute is set in value.
    */
-  static bool isEmpty(Node & value)
-  {
-    return value.schema().dtype().is_empty();
-  }
+  static bool isEmpty(Node& value) { return value.schema().dtype().is_empty(); }
 
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
@@ -105,24 +101,23 @@ private:
   /*!
    * \brief Set attribute value from a scalar.
    */
-  template<typename ScalarType>
+  template <typename ScalarType>
   bool setScalar(const Attribute* attr, ScalarType value)
   {
     DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-    if (arg_id != attr->getTypeID())
+    if(arg_id != attr->getTypeID())
     {
       SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
                      "setScalar: Incorrect type for attribute '"
-                     << attr->getName()
-                     << "' of type "
-                     << attr->getDefaultNodeRef().dtype().name()
-                     << ": " << DataType::id_to_name(arg_id) << ".");
+                       << attr->getName() << "' of type "
+                       << attr->getDefaultNodeRef().dtype().name() << ": "
+                       << DataType::id_to_name(arg_id) << ".");
       return false;
     }
 
     IndexType iattr = attr->getIndex();
     bool ok = createNode(iattr);
-    if (ok)
+    if(ok)
     {
       (*m_values)[iattr] = value;
     }
@@ -132,23 +127,22 @@ private:
   /*!
    * \brief Set attribute value from a string.
    */
-  bool setString(const Attribute* attr, const std::string & value)
+  bool setString(const Attribute* attr, const std::string& value)
   {
     DataTypeId arg_id = CHAR8_STR_ID;
-    if (arg_id != attr->getTypeID())
+    if(arg_id != attr->getTypeID())
     {
       SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
                      "setString: Incorrect type for attribute '"
-                     << attr->getName()
-                     << "' of type "
-                     << attr->getDefaultNodeRef().dtype().name()
-                     << ": " << DataType::id_to_name(arg_id) << ".");
+                       << attr->getName() << "' of type "
+                       << attr->getDefaultNodeRef().dtype().name() << ": "
+                       << DataType::id_to_name(arg_id) << ".");
       return false;
     }
 
     IndexType iattr = attr->getIndex();
     bool ok = createNode(iattr);
-    if (ok)
+    if(ok)
     {
       (*m_values)[iattr] = value;
     }
@@ -161,11 +155,11 @@ private:
    * Used when restoring attributes from a file.
    * The type of node is not check.
    */
-  bool setNode(const Attribute* attr, const Node & node)
+  bool setNode(const Attribute* attr, const Node& node)
   {
     IndexType iattr = attr->getIndex();
     bool ok = createNode(iattr);
-    if (ok)
+    if(ok)
     {
       (*m_values)[iattr] = node;
     }
@@ -175,24 +169,24 @@ private:
   /*!
    * \brief Return a scalar attribute value.
    */
-  Node::ConstValue getScalar( const Attribute* attr ) const;
+  Node::ConstValue getScalar(const Attribute* attr) const;
 
   /*!
    * \brief Return a string attribute value.
    */
-  const char* getString( const Attribute* attr ) const;
+  const char* getString(const Attribute* attr) const;
 
   /*!
    * \brief Return reference to value Node.
    */
-  const Node & getValueNodeRef( const Attribute* attr ) const;
+  const Node& getValueNodeRef(const Attribute* attr) const;
 
   /*!
    * \brief Return a reference to an empty Node.
    *
    * Used as error return value from getValueNodeRef.
    */
-  const Node & getEmptyNodeRef() const
+  const Node& getEmptyNodeRef() const
   {
     static const Node empty;
     return empty;
@@ -217,14 +211,14 @@ private:
    */
   IndexType getNextValidAttrValueIndex(IndexType idx) const;
 
-//@{
-//!  @name Private AttrValues ctor and dtor
-//!        (callable only by DataStore methods).
+  //@{
+  //!  @name Private AttrValues ctor and dtor
+  //!        (callable only by DataStore methods).
 
   /*!
    *  \brief Private ctor.
    */
-  AttrValues( );
+  AttrValues();
 
   /*!
    * \brief Private copy ctor.
@@ -236,16 +230,15 @@ private:
    */
   ~AttrValues();
 
-//@}
+  //@}
 
   ///////////////////////////////////////////////////////////////////
   //
-  using Values = std::vector< Node >;
+  using Values = std::vector<Node>;
   ///////////////////////////////////////////////////////////////////
 
   /// Attributes values.
   Values* m_values;
-
 };
 
 } /* end namespace sidre */

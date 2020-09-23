@@ -33,7 +33,6 @@ namespace axom
 {
 namespace sidre
 {
-
 class Group;
 class View;
 
@@ -46,9 +45,8 @@ class View;
 class Iterator
 {
 public:
-
-//@{
-//!  @name Iterator ctor and dtor
+  //@{
+  //!  @name Iterator ctor and dtor
 
   /*!
    *  \brief ctor that creates a Iterator which starts at grp.
@@ -59,12 +57,12 @@ public:
    * \brief dtor.
    */
   ~Iterator();
-//@}
+  //@}
 
-//@{
-//!  @name Methods to iterate through a Group.
+  //@{
+  //!  @name Methods to iterate through a Group.
 
-/*!
+  /*!
  *  \brief Return true if the Iterator references a Group or View.
  *         Return false if the Iterator has finished its traversal.
  */
@@ -85,10 +83,10 @@ public:
    *  once isValid returns false.
    */
   void advanceToNext();
-//@}
+  //@}
 
-//@{
-//!  @name Methods to query iterator.
+  //@{
+  //!  @name Methods to query iterator.
 
   /*!
    *  \brief Return true if the Iterator references a Group.
@@ -167,7 +165,7 @@ public:
     return getPath() + getPathDelimiter() + getName();
   }
 #endif
-//@}
+  //@}
 
 private:
   DISABLE_DEFAULT_CTOR(Iterator);
@@ -185,8 +183,7 @@ private:
   ///////////////////////////////////////////////////////////////////
 
   /// Current position in tree
-  std::stack< Cursor* > m_stack;
-
+  std::stack<Cursor*> m_stack;
 };
 
 } /* end namespace sidre */

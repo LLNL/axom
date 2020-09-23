@@ -90,6 +90,10 @@ PackageName: fmt
 PackageHomePage: https://github.com/fmtlib/fmt  
 PackageLicenseDeclared: BSD-2-Clause  
 
+PackageName: sol  
+PackageHomePage: https://github.com/ThePhD/sol2  
+PackageLicenseDeclared: MIT License
+
 PackageName: sparsehash  
 PackageHomePage: https://github.com/sparsehash/sparsehash  
 PackageLicenseDeclared: BSD-3-Clause  

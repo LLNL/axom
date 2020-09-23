@@ -53,6 +53,7 @@ program quest_signed_distance_interface
   character(LEN=:), allocatable :: file_name
   logical :: is_verbose = .true.
   logical :: is_watertight = .true.
+  logical :: compute_signs = .true.
   real(C_DOUBLE) :: mesh_bb_min(3), mesh_bb_max(3), pt(3), phi
 
 !...initialize mpi  
@@ -71,6 +72,7 @@ program quest_signed_distance_interface
   call quest_signed_distance_set_max_occupancy( max_occupancy )
   call quest_signed_distance_set_closed_surface( is_watertight )
   call quest_signed_distance_set_verbose( is_verbose )
+  call quest_signed_distance_set_compute_signs( compute_signs )
 
 !...initialize the signed distance query
 #ifdef AXOM_USE_MPI

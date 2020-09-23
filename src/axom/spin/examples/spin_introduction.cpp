@@ -36,7 +36,7 @@
 #include "axom/primal/operators/intersect.hpp"
 
 // C++ headers
-#include <cmath> // do we need this?
+#include <cmath>  // do we need this?
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -44,8 +44,8 @@
 #include "fmt/fmt.hpp"
 
 // almost all our examples are in 3D
-const int in3D = 3;
-const int in2D = 2;
+constexpr int in3D = 3;
+constexpr int in2D = 2;
 
 // primitives represented by doubles in 3D
 using BoundingBoxType = axom::primal::BoundingBox<double, in3D>;
@@ -83,8 +83,8 @@ using IBitsetType = typename IGridT::BitsetType;
 using IBitsetIndexType = typename IBitsetType::Index;
 
 // some functions we'll use
-bool expensiveTest(ISpacePt & query, Triangle2DType & tri);
-void makeTriangles(std::vector<Triangle2DType> & tris);
+bool expensiveTest(ISpacePt& query, Triangle2DType& tri);
+void makeTriangles(std::vector<Triangle2DType>& tris);
 // _igrid_header_end
 
 // _rectlattice_header_start
@@ -121,7 +121,6 @@ using OctBlockIndex = OctreeType::BlockIndex;
 using OctSpacePt = OctreeType::SpacePt;
 using OctBBox = OctreeType::GeometricBoundingBox;
 // _octree_header_end
-
 
 class DataContainer
 {
@@ -165,11 +164,11 @@ void demoMorton()
   // For several query points, create a DataContainer if necessary and register
   // the point.
   std::vector<RLSpacePt> pts = generatePoints();
-  for (RLSpacePt p : pts)
+  for(RLSpacePt p : pts)
   {
     RLGridCell g = lat.gridCell(p);
     DataContainer dat;
-    if (map.count(g) > 0)
+    if(map.count(g) > 0)
     {
       dat = map[g];
     }
@@ -178,12 +177,12 @@ void demoMorton()
   }
 
   // Report on what was registered.
-  for (auto iter : map)
+  for(auto iter : map)
   {
     RLGridCell g = iter.first;
     DataContainer dat = iter.second;
-    std::cout << "Grid cell " << g << " holds "
-              << dat.count << " points." << std::endl;
+    std::cout << "Grid cell " << g << " holds " << dat.count << " points."
+              << std::endl;
   }
   // _morton_use_end
 
@@ -206,40 +205,38 @@ void demoRectangularLattice()
   // Query point (2.0, 1.2) should be in grid cell (2, 1)
   RLSpacePt pA = RLSpacePt::make_point(2.0, 1.2);
   RLGridCell cA = lat.gridCell(pA);
-  std::cout << "Point " << pA << " is in grid cell " << cA <<
-    " (should be (2, 1))" << std::endl;
+  std::cout << "Point " << pA << " is in grid cell " << cA
+            << " (should be (2, 1))" << std::endl;
 
   // Query point (2.3, 0.8) should also be in grid cell (2, 1)
   RLSpacePt pB = RLSpacePt::make_point(2.3, 0.8);
   RLGridCell cB = lat.gridCell(pB);
-  std::cout << "Point " << pB << " is in grid cell " << cB <<
-    " (should be (2, 1))" << std::endl;
+  std::cout << "Point " << pB << " is in grid cell " << cB
+            << " (should be (2, 1))" << std::endl;
 
   // What is the lowest corner and bounding box of the shared cell?
   RLSpacePt cellcorner = lat.spacePoint(cB);
   RLBBox cellbbox = lat.cellBounds(cB);
-  std::cout << "The lower corner of the grid cell is " << cellcorner <<
-    " and its bounding box is " << cellbbox << std::endl;
+  std::cout << "The lower corner of the grid cell is " << cellcorner
+            << " and its bounding box is " << cellbbox << std::endl;
   // _rectlattice_use_end
 
   std::cout << std::endl;
 }
 
 // _naive_triintersect_start
-void findTriIntersectionsNaively(
-  std::vector<TriangleType> & tris,
-  std::vector< std::pair<int, int> > & clashes
-  )
+void findTriIntersectionsNaively(std::vector<TriangleType>& tris,
+                                 std::vector<std::pair<int, int>>& clashes)
 {
-  int tcount = tris.size();
+  int tcount = static_cast<int>(tris.size());
 
-  for (int i = 0 ; i < tcount ; ++i)
+  for(int i = 0; i < tcount; ++i)
   {
-    TriangleType & t1 = tris[i];
-    for (int j = i + 1 ; j < tcount ; ++j)
+    TriangleType& t1 = tris[i];
+    for(int j = i + 1; j < tcount; ++j)
     {
-      TriangleType & t2 = tris[j];
-      if (intersect(t1, t2))
+      TriangleType& t2 = tris[j];
+      if(intersect(t1, t2))
       {
         clashes.push_back(std::make_pair(i, j));
       }
@@ -248,11 +245,11 @@ void findTriIntersectionsNaively(
 }
 // _naive_triintersect_end
 
-BoundingBoxType findBbox(std::vector<TriangleType> & tris)
+BoundingBoxType findBbox(std::vector<TriangleType>& tris)
 {
   BoundingBoxType bbox;
 
-  for (size_t i = 0 ; i < tris.size() ; ++i)
+  for(size_t i = 0; i < tris.size(); ++i)
   {
     bbox.addPoint(tris[i][0]);
     bbox.addPoint(tris[i][1]);
@@ -262,7 +259,7 @@ BoundingBoxType findBbox(std::vector<TriangleType> & tris)
   return bbox;
 }
 
-BoundingBoxType findBbox(TriangleType & tri)
+BoundingBoxType findBbox(TriangleType& tri)
 {
   BoundingBoxType bbox;
 
@@ -273,7 +270,7 @@ BoundingBoxType findBbox(TriangleType & tri)
   return bbox;
 }
 
-BoundingBox2DType findBbox(Triangle2DType & tri)
+BoundingBox2DType findBbox(Triangle2DType& tri)
 {
   BoundingBox2DType bbox;
 
@@ -285,30 +282,30 @@ BoundingBox2DType findBbox(Triangle2DType & tri)
 }
 
 // _ugrid_build_start
-BoundingBoxType findBbox(std::vector<TriangleType> & tris);
-BoundingBoxType findBbox(TriangleType & tri);
+BoundingBoxType findBbox(std::vector<TriangleType>& tris);
+BoundingBoxType findBbox(TriangleType& tri);
 
-UniformGridType* buildUniformGrid(std::vector<TriangleType> & tris)
+UniformGridType* buildUniformGrid(std::vector<TriangleType>& tris)
 {
   // Prepare to construct the UniformGrid.
   BoundingBoxType allbbox = findBbox(tris);
-  const PointType & minBBPt = allbbox.getMin();
-  const PointType & maxBBPt = allbbox.getMax();
+  const PointType& minBBPt = allbbox.getMin();
+  const PointType& maxBBPt = allbbox.getMax();
 
-  int tcount = tris.size();
+  int tcount = static_cast<int>(tris.size());
 
   // The number of bins along one side of the UniformGrid.
   // This is a heuristic.
-  int res = (int)(1 + std::pow(tcount, 1/3.));
+  int res = (int)(1 + std::pow(tcount, 1 / 3.));
   int ress[3] = {res, res, res};
 
   // Construct the UniformGrid with minimum point, maximum point,
   // and number of bins along each side.  Then insert the triangles.
   UniformGridType* ugrid =
     new UniformGridType(minBBPt.data(), maxBBPt.data(), ress);
-  for (int i = 0 ; i < tcount ; ++i)
+  for(int i = 0; i < tcount; ++i)
   {
-    TriangleType & t1 = tris[i];
+    TriangleType& t1 = tris[i];
     BoundingBoxType bbox = findBbox(t1);
     ugrid->insert(bbox, i);
   }
@@ -318,10 +315,10 @@ UniformGridType* buildUniformGrid(std::vector<TriangleType> & tris)
 // _ugrid_build_end
 
 // _ugrid_candidate_start
-void findNeighborCandidates(TriangleType & t1,
+void findNeighborCandidates(TriangleType& t1,
                             int i,
                             UniformGridType* ugrid,
-                            std::vector<int> & neighbors)
+                            std::vector<int>& neighbors)
 {
   BoundingBoxType bbox = findBbox(t1);
 
@@ -331,12 +328,12 @@ void findNeighborCandidates(TriangleType & t1,
 
   // Load all the triangles in these bins whose indices are
   // greater than i into a vector.
-  for (size_t curb = 0 ; curb < checkcount ; ++curb)
+  for(size_t curb = 0; curb < checkcount; ++curb)
   {
     std::vector<int> ntlist = ugrid->getBinContents(bToCheck[curb]);
-    for (size_t j = 0 ; j < ntlist.size() ; ++j)
+    for(size_t j = 0; j < ntlist.size(); ++j)
     {
-      if (ntlist[j] > i)
+      if(ntlist[j] > i)
       {
         neighbors.push_back(ntlist[j]);
       }
@@ -353,27 +350,26 @@ void findNeighborCandidates(TriangleType & t1,
 // _ugrid_candidate_end
 
 // _ugrid_triintersect_start
-void findTriIntersectionsAccel(
-  std::vector<TriangleType> & tris,
-  UniformGridType* ugrid,
-  std::vector< std::pair<int, int> > & clashes)
+void findTriIntersectionsAccel(std::vector<TriangleType>& tris,
+                               UniformGridType* ugrid,
+                               std::vector<std::pair<int, int>>& clashes)
 {
-  int tcount = tris.size();
+  int tcount = static_cast<int>(tris.size());
 
   // For each triangle t1,
-  for (int i = 0 ; i < tcount ; ++i)
+  for(int i = 0; i < tcount; ++i)
   {
-    TriangleType & t1 = tris[i];
+    TriangleType& t1 = tris[i];
     std::vector<int> neighbors;
     findNeighborCandidates(t1, i, ugrid, neighbors);
 
     // Test for intersection between t1 and each of its neighbors.
-    int ncount = neighbors.size();
-    for (int n = 0 ; n < ncount ; ++n)
+    int ncount = static_cast<int>(neighbors.size());
+    for(int n = 0; n < ncount; ++n)
     {
       int j = neighbors[n];
-      TriangleType & t2 = tris[j];
-      if (axom::primal::intersect(t1, t2))
+      TriangleType& t2 = tris[j];
+      if(axom::primal::intersect(t1, t2))
       {
         clashes.push_back(std::make_pair(i, j));
       }
@@ -382,7 +378,7 @@ void findTriIntersectionsAccel(
 }
 // _ugrid_triintersect_end
 
-bool expensiveTest(ISpacePt & query, Triangle2DType & tri)
+bool expensiveTest(ISpacePt& query, Triangle2DType& tri)
 {
   // This is supposed to be really expensive.  Thankfully it isn't quite.
   return tri.checkInTriangle(query);
@@ -400,12 +396,12 @@ void showImplicitGrid()
   // establish the domain of the ImplicitGrid.
   IBBox bbox(ISpacePt::zero(), ISpacePt::ones());
   // room for one hundred elements in the index
-  const int numElts = tris.size();
+  const int numElts = static_cast<int>(tris.size());
   IGridT grid(bbox, &res, numElts);
 
   // load the bounding box of each triangle, along with its index,
   // into the ImplicitGrid.
-  for (int i = 0 ; i < numElts ; ++i)
+  for(int i = 0; i < numElts; ++i)
   {
     grid.insert(findBbox(tris[i]), i);
   }
@@ -421,9 +417,9 @@ void showImplicitGrid()
 
   // Iterate over the bitset and test the candidates expensively.
   IBitsetIndexType index = candidates.find_first();
-  while (index != IBitsetType::npos)
+  while(index != IBitsetType::npos)
   {
-    if (expensiveTest(qpt, tris[index]))
+    if(expensiveTest(qpt, tris[index]))
     {
       totalTrue += 1;
     }
@@ -433,57 +429,68 @@ void showImplicitGrid()
 
   // Report on intersection tests
   std::cout << "----- showImplicitGrid -----" << std::endl;
-  std::cout << numElts << " total triangles, " << candidates.count() <<
-    " triangles expensively tested against query point, " << totalTrue <<
-    " found true." << std::endl;
+  std::cout << numElts << " total triangles, " << candidates.count()
+            << " triangles expensively tested against query point, "
+            << totalTrue << " found true." << std::endl;
 }
 
-void makeTriangles(std::vector<TriangleType> & tris)
+void makeTriangles(std::vector<TriangleType>& tris)
 {
   PointType p[8];
-  p[0] = PointType::make_point(0.3,  0.93, 0.03);
-  p[1] = PointType::make_point(0.1,  0.85, 0.01);
-  p[2] = PointType::make_point(0.3,  0.78, 0.03);
+  p[0] = PointType::make_point(0.3, 0.93, 0.03);
+  p[1] = PointType::make_point(0.1, 0.85, 0.01);
+  p[2] = PointType::make_point(0.3, 0.78, 0.03);
   p[3] = PointType::make_point(0.18, 0.36, 0.018);
-  p[4] = PointType::make_point(0.8,  0.58, 0.08);
-  p[5] = PointType::make_point(0.6,  0.5, 0.06);
+  p[4] = PointType::make_point(0.8, 0.58, 0.08);
+  p[5] = PointType::make_point(0.6, 0.5, 0.06);
   p[6] = PointType::make_point(0.55, 0.42, 0.055);
   p[7] = PointType::make_point(0.61, 0.1, 0.061);
 
-  TriangleType t0(p[0], p[1], p[2]);    tris.push_back(t0);
-  TriangleType t1(p[2], p[1], p[3]);    tris.push_back(t1);
-  TriangleType t2(p[2], p[3], p[6]);    tris.push_back(t2);
-  TriangleType t3(p[6], p[3], p[7]);    tris.push_back(t3);
-  TriangleType t4(p[4], p[2], p[6]);    tris.push_back(t4);
-  TriangleType t5(p[4], p[5], p[7]);    tris.push_back(t5);
+  TriangleType t0(p[0], p[1], p[2]);
+  tris.push_back(t0);
+  TriangleType t1(p[2], p[1], p[3]);
+  tris.push_back(t1);
+  TriangleType t2(p[2], p[3], p[6]);
+  tris.push_back(t2);
+  TriangleType t3(p[6], p[3], p[7]);
+  tris.push_back(t3);
+  TriangleType t4(p[4], p[2], p[6]);
+  tris.push_back(t4);
+  TriangleType t5(p[4], p[5], p[7]);
+  tris.push_back(t5);
 }
 
-void makeTriangles(std::vector<Triangle2DType> & tris)
+void makeTriangles(std::vector<Triangle2DType>& tris)
 {
   Point2DType p[8];
-  p[0] = Point2DType::make_point(0.3,  0.93);
-  p[1] = Point2DType::make_point(0.1,  0.85);
-  p[2] = Point2DType::make_point(0.3,  0.78);
+  p[0] = Point2DType::make_point(0.3, 0.93);
+  p[1] = Point2DType::make_point(0.1, 0.85);
+  p[2] = Point2DType::make_point(0.3, 0.78);
   p[3] = Point2DType::make_point(0.18, 0.36);
-  p[4] = Point2DType::make_point(0.8,  0.58);
-  p[5] = Point2DType::make_point(0.6,  0.5);
+  p[4] = Point2DType::make_point(0.8, 0.58);
+  p[5] = Point2DType::make_point(0.6, 0.5);
   p[6] = Point2DType::make_point(0.55, 0.42);
   p[7] = Point2DType::make_point(0.61, 0.1);
 
-  Triangle2DType t0(p[0], p[1], p[2]);    tris.push_back(t0);
-  Triangle2DType t1(p[2], p[1], p[3]);    tris.push_back(t1);
-  Triangle2DType t2(p[2], p[3], p[6]);    tris.push_back(t2);
-  Triangle2DType t3(p[6], p[3], p[7]);    tris.push_back(t3);
-  Triangle2DType t4(p[4], p[2], p[6]);    tris.push_back(t4);
-  Triangle2DType t5(p[4], p[5], p[7]);    tris.push_back(t5);
+  Triangle2DType t0(p[0], p[1], p[2]);
+  tris.push_back(t0);
+  Triangle2DType t1(p[2], p[1], p[3]);
+  tris.push_back(t1);
+  Triangle2DType t2(p[2], p[3], p[6]);
+  tris.push_back(t2);
+  Triangle2DType t3(p[6], p[3], p[7]);
+  tris.push_back(t3);
+  Triangle2DType t4(p[4], p[2], p[6]);
+  tris.push_back(t4);
+  Triangle2DType t5(p[4], p[5], p[7]);
+  tris.push_back(t5);
 }
 
-void printPairs(std::string title,
-                std::vector< std::pair<int, int> > & clashes)
+void printPairs(std::string title, std::vector<std::pair<int, int>>& clashes)
 {
-  int ccount = clashes.size();
+  int ccount = static_cast<int>(clashes.size());
   std::cout << ccount << title << std::endl;
-  for (int i = 0 ; i < ccount ; ++i)
+  for(int i = 0; i < ccount; ++i)
   {
     std::cout << clashes[i].first << "   " << clashes[i].second << std::endl;
   }
@@ -494,11 +501,11 @@ void driveUniformGrid()
   std::vector<TriangleType> tris;
   makeTriangles(tris);
 
-  std::vector< std::pair<int, int> > naiveclashes;
+  std::vector<std::pair<int, int>> naiveclashes;
   findTriIntersectionsNaively(tris, naiveclashes);
 
   UniformGridType* ugrid = buildUniformGrid(tris);
-  std::vector< std::pair<int, int> > accelclashes;
+  std::vector<std::pair<int, int>> accelclashes;
   findTriIntersectionsAccel(tris, ugrid, accelclashes);
   delete ugrid;
 
@@ -509,23 +516,23 @@ void driveUniformGrid()
 }
 
 // _bvhtree_build_start
-BoundingBox2DType findBbox(Triangle2DType & tri);
+BoundingBox2DType findBbox(Triangle2DType& tri);
 
-BVHTree2DType* buildBVHTree(std::vector<Triangle2DType> & tris)
+BVHTree2DType* buildBVHTree(std::vector<Triangle2DType>& tris)
 {
   // Initialize BVHTree with the triangles
   const int MaxBinFill = 1;
   const int MaxLevels = 4;
-  int tricount = tris.size();
-  BVHTree2DType* tree  = new BVHTree2DType( tricount, MaxLevels );
+  int tricount = static_cast<int>(tris.size());
+  BVHTree2DType* tree = new BVHTree2DType(tricount, MaxLevels);
 
-  for ( int i=0 ; i < tricount ; ++i )
+  for(int i = 0; i < tricount; ++i)
   {
-    tree->insert( findBbox( tris[i] ), i );
+    tree->insert(findBbox(tris[i]), i);
   }
 
   // Build bounding volume hierarchy
-  tree->build( MaxBinFill );
+  tree->build(MaxBinFill);
 
   return tree;
 }
@@ -534,7 +541,7 @@ BVHTree2DType* buildBVHTree(std::vector<Triangle2DType> & tris)
 // _bvhtree_candidate_start
 void findCandidateBVHTreeBins(BVHTree2DType* tree,
                               Point2DType ppoint,
-                              std::vector<int> & candidates)
+                              std::vector<int>& candidates)
 {
   // Which triangles does the probe point intersect?
   // Get the candidate bins
@@ -543,14 +550,14 @@ void findCandidateBVHTreeBins(BVHTree2DType* tree,
   size_t nbins = bins.size();
 
   // for each candidate bin,
-  for (size_t curb = 0 ; curb < nbins ; ++curb)
+  for(size_t curb = 0; curb < nbins; ++curb)
   {
     // get its size and object array
     int bcount = tree->getBucketNumObjects(bins[curb]);
     const int* ary = tree->getBucketObjectArray(bins[curb]);
 
     // For each object in the current bin,
-    for (int j = 0 ; j < bcount ; ++j)
+    for(int j = 0; j < bcount; ++j)
     {
       // find the tree's internal object ID
       int treeObjID = ary[j];
@@ -572,17 +579,17 @@ void findCandidateBVHTreeBins(BVHTree2DType* tree,
 // _bvhtree_candidate_end
 
 // _bvhtree_cand_int_start
-void findIntersectionsWithCandidates(std::vector<Triangle2DType> & tris,
-                                     std::vector<int> & candidates,
+void findIntersectionsWithCandidates(std::vector<Triangle2DType>& tris,
+                                     std::vector<int>& candidates,
                                      Point2DType ppoint,
-                                     std::vector<int> & intersections)
+                                     std::vector<int>& intersections)
 {
   // Test if ppoint lands in any of its neighbor triangles.
-  int csize = candidates.size();
-  for (int i = 0 ; i < csize ; ++i)
+  int csize = static_cast<int>(candidates.size());
+  for(int i = 0; i < csize; ++i)
   {
-    Triangle2DType & t = tris[candidates[i]];
-    if (t.checkInTriangle(ppoint))
+    Triangle2DType& t = tris[candidates[i]];
+    if(t.checkInTriangle(ppoint))
     {
       intersections.push_back(candidates[i]);
     }
@@ -590,7 +597,7 @@ void findIntersectionsWithCandidates(std::vector<Triangle2DType> & tris,
 }
 // _bvhtree_cand_int_end
 
-void makeTreeTriangles(std::vector<Triangle2DType> & tris)
+void makeTreeTriangles(std::vector<Triangle2DType>& tris)
 {
   Point2DType p[19];
   p[0] = Point2DType::make_point(.13, .88);
@@ -613,23 +620,40 @@ void makeTreeTriangles(std::vector<Triangle2DType> & tris)
   p[17] = Point2DType::make_point(.92, .16);
   p[18] = Point2DType::make_point(.93, .09);
 
-  Triangle2DType t0(p[1], p[0], p[3]);      tris.push_back(t0);
-  Triangle2DType t1(p[0], p[2], p[3]);      tris.push_back(t1);
-  Triangle2DType t2(p[1], p[3], p[5]);      tris.push_back(t2);
-  Triangle2DType t3(p[3], p[2], p[4]);      tris.push_back(t3);
-  Triangle2DType t4(p[3], p[4], p[5]);      tris.push_back(t4);
-  Triangle2DType t5(p[2], p[6], p[4]);      tris.push_back(t5);
-  Triangle2DType t6(p[5], p[4], p[6]);      tris.push_back(t6);
-  Triangle2DType t7(p[5], p[6], p[7]);      tris.push_back(t7);
-  Triangle2DType t8(p[7], p[6], p[8]);      tris.push_back(t8);
-  Triangle2DType t9(p[7], p[8], p[9]);      tris.push_back(t9);
-  Triangle2DType t10(p[9], p[8], p[10]);    tris.push_back(t10);
-  Triangle2DType t11(p[11], p[13], p[14]);  tris.push_back(t11);
-  Triangle2DType t12(p[12], p[11], p[14]);  tris.push_back(t12);
-  Triangle2DType t13(p[12], p[14], p[15]);  tris.push_back(t13);
-  Triangle2DType t14(p[14], p[13], p[16]);  tris.push_back(t14);
-  Triangle2DType t15(p[14], p[16], p[17]);  tris.push_back(t15);
-  Triangle2DType t16(p[16], p[18], p[17]);  tris.push_back(t16);
+  Triangle2DType t0(p[1], p[0], p[3]);
+  tris.push_back(t0);
+  Triangle2DType t1(p[0], p[2], p[3]);
+  tris.push_back(t1);
+  Triangle2DType t2(p[1], p[3], p[5]);
+  tris.push_back(t2);
+  Triangle2DType t3(p[3], p[2], p[4]);
+  tris.push_back(t3);
+  Triangle2DType t4(p[3], p[4], p[5]);
+  tris.push_back(t4);
+  Triangle2DType t5(p[2], p[6], p[4]);
+  tris.push_back(t5);
+  Triangle2DType t6(p[5], p[4], p[6]);
+  tris.push_back(t6);
+  Triangle2DType t7(p[5], p[6], p[7]);
+  tris.push_back(t7);
+  Triangle2DType t8(p[7], p[6], p[8]);
+  tris.push_back(t8);
+  Triangle2DType t9(p[7], p[8], p[9]);
+  tris.push_back(t9);
+  Triangle2DType t10(p[9], p[8], p[10]);
+  tris.push_back(t10);
+  Triangle2DType t11(p[11], p[13], p[14]);
+  tris.push_back(t11);
+  Triangle2DType t12(p[12], p[11], p[14]);
+  tris.push_back(t12);
+  Triangle2DType t13(p[12], p[14], p[15]);
+  tris.push_back(t13);
+  Triangle2DType t14(p[14], p[13], p[16]);
+  tris.push_back(t14);
+  Triangle2DType t15(p[14], p[16], p[17]);
+  tris.push_back(t15);
+  Triangle2DType t16(p[16], p[18], p[17]);
+  tris.push_back(t16);
 }
 
 void driveBVHTree()
@@ -645,9 +669,9 @@ void driveBVHTree()
   tree->writeVtkFile("BVHTree.out.vtk");
 
   std::cout << "----- driveBVHTree -----" << std::endl;
-  std::cout << "Point " << ppoint << " hit the following " <<
-    intersections.size() << " triangles (0 expected):" << std::endl;
-  for (size_t i = 0 ; i < intersections.size() ; ++i)
+  std::cout << "Point " << ppoint << " hit the following "
+            << intersections.size() << " triangles (0 expected):" << std::endl;
+  for(size_t i = 0; i < intersections.size(); ++i)
   {
     std::cout << intersections[i] << std::endl;
   }
@@ -661,7 +685,7 @@ void driveOctree()
   OctBBox bb(OctSpacePt(10), OctSpacePt(20));
 
   // Generate a point within the bounding box
-  double alpha = 2./3.;
+  double alpha = 2. / 3.;
   OctSpacePt queryPt = OctSpacePt::lerp(bb.getMin(), bb.getMax(), alpha);
 
   // Instantiate the Octree
@@ -672,10 +696,10 @@ void driveOctree()
   // and the bounding box of the block.
   OctBBox leafBB = octree.blockBoundingBox(leafBlock);
 
-  for(int i=0 ; i< octree.maxInternalLevel() ; ++i)
+  for(int i = 0; i < octree.maxInternalLevel(); ++i)
   {
     // SpatialOctree allows a code to refine (subdivide) a block
-    octree.refineLeaf( leafBlock );
+    octree.refineLeaf(leafBlock);
     // and locate the (new) child block containing the query point.
     leafBlock = octree.findLeafBlock(queryPt);
   }
@@ -684,7 +708,6 @@ void driveOctree()
 
 int main(int argc, char** argv)
 {
-
   // Deal with unused variables
   AXOM_DEBUG_VAR(argc);
   AXOM_DEBUG_VAR(argv);

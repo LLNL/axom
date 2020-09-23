@@ -12,6 +12,8 @@ set(primal_example_depends
         fmt
         )
 
+blt_list_append( TO primal_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 blt_add_executable(
     NAME        primal_introduction_ex
     SOURCES     primal_introduction.cpp

@@ -1,0 +1,10 @@
+{
+"package_name" : "axomdevtools",
+"package_version" : "fakeversion",
+"package_source_dir" : "../..",
+"spack_url": "https://github.com/spack/spack",
+"spack_commit": "adafdf0644a7ab14c7e396492ab7692d75e3a3db",
+"spack_activate" : {"py-sphinx" : [""],
+                    "py-shroud" : [""],
+                    "py-pyyaml" : [""]}
+}

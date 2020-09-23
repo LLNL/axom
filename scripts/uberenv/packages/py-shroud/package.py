@@ -1,32 +1,24 @@
-from spack import *
-from spack.hooks.sbang import filter_shebang
+# Copyright 2013-2020 Lawrence Livermore National Security, LLC and other
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-class PyShroud(Package):
+from spack import *
+
+
+class PyShroud(PythonPackage):
     """Create Fortran wrappers for a C++ library."""
 
     homepage = "https://github.com/LLNL/shroud"
-    url      = "https://github.com/LLNL/shroud/archive/v0.10.1.tar.gz"
+    git      = "https://github.com/LLNL/shroud.git"
 
-    version('0.10.1', '1469d1c506a4de6eba9d6dbd950645d1')
-    version('0.10.0', 'c76bc9b1228d53ed0aabeb5806a486c7')
-    version('0.9.0', 'f6a5ce0602a0c2d1d47de78c04ab302c')
-    version('0.8.0', 'ec94d6f9cf3246d4370007abd4d270d8')
+    version('develop', branch='develop')
+    version('master',  branch='master')
+    version('0.12.2', tag='v0.12.2')
+    version('0.11.0', tag='v0.11.0')
+    version('0.10.1', tag='v0.10.1')
+    version('0.9.0', tag='v0.9.0')
+    version('0.8.0', tag='v0.8.0')
 
-    extends('python')
-
-    depends_on("py-alabaster")
-    depends_on("py-pytz")
-    depends_on("py-docutils")
-    depends_on("py-setuptools")
-    depends_on("py-pyyaml")
-
-    def install(self, spec, prefix):
-        # simply install to the spack python
-        python('setup.py', 'install') 
-
-        # shroud lives in python's bin dir
-        shroud_scripts = ["shroud"]
-        for script in shroud_scripts:
-            script_path = join_path(spec["python"].prefix,"bin",script)
-            # use spack sbang to fix issues with shebang that is too long
-            filter_shebang(script_path)
+    depends_on("py-setuptools", type='build')
+    depends_on("py-pyyaml@4.2b1:", type=('build', 'run'))

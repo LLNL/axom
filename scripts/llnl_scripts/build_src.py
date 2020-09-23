@@ -71,7 +71,7 @@ def main():
         original_wd = os.getcwd()
         os.chdir(repo_dir)
         timestamp = get_timestamp()
-        res = build_and_test_host_configs(repo_dir, job_name, timestamp)
+        res = build_and_test_host_configs(repo_dir, job_name, timestamp, False)
 
         # Archive logs
         if opts["archive"] != "":
