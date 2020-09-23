@@ -1284,6 +1284,9 @@ inline std::ostream& operator<<(std::ostream& os,
 template <int DIM>
 void InOutOctree<DIM>::generateIndex()
 {
+  // "No-op" to pass unit tests for xl coral release build
+  m_grayLeafToElementRelationLevelMap.isValid();
+
   using Timer = axom::utilities::Timer;
 
   // Loop through mesh vertices
