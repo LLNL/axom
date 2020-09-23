@@ -64,7 +64,7 @@ A typical visualization example might look like the following:
       dc.Save("data_name", "sidre_hdf5");
    }
 
-See the ``mfem_sidre_datacoll_ex`` example for a more thorough example of the above functionality.
+See the ``sidre_mfem_datacollection_ex`` example for a more thorough example of the above functionality.
 
 
 .. Note::

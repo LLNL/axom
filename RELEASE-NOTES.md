@@ -59,7 +59,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   Sol is automatically enabled when `LUA_DIR` is found. 
   The version of Sol used in this release is `v2.20.6`, which requires `C++14`.
 - Added the MFEMSidreDataCollection class for HDF5-format simulation data collection.  This
-  class was adapted from MFEM's SidreDataCollection and is enabled when Axom is build with MFEM
+  class was adapted from MFEM's SidreDataCollection and is enabled when Axom is built with MFEM
   *and* the `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` CMake option is enabled.
 
 ### Removed
