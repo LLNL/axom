@@ -132,12 +132,11 @@ DataStore::~DataStore()
 /*
  *************************************************************************
  *
- * Rewire Conduit Message Handlers to SLIC.
- *  ... Not the best function name, but it is descriptive :-) 
+ * Re-wire Conduit Message Handlers to SLIC.
  *
  *************************************************************************
  */
-void DataStore::wireConduitMessageHandlersToSLIC()
+void DataStore::setConduitSLICMessageHandlers()
 {
   // Provide SLIC message handler functions to Conduit to log
   // internal Conduit info, warning, error messages.
@@ -150,11 +149,10 @@ void DataStore::wireConduitMessageHandlersToSLIC()
  *************************************************************************
  *
  * Restore Conduit Message Handlers to Conduit Defaults.
- *  ... Not the best function name, but it is descriptive :-) 
  *
  *************************************************************************
  */
-void DataStore::restoreConduitDefaultMessageHandlers()
+void DataStore::setConduitDefaultMessageHandlers()
 {
   // restore default handlers
   conduit::utils::set_info_handler(conduit::utils::default_info_handler);

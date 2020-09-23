@@ -161,7 +161,7 @@ TEST(sidre_attribute, create_attr)
 TEST(sidre_attribute, view_attr)
 {
   // Note: This test relies on re-wiring conduit error handlers
-  DataStore::wireConduitMessageHandlersToSLIC();
+  DataStore::setConduitSLICMessageHandlers();
 
   bool ok;
 
@@ -292,7 +292,7 @@ TEST(sidre_attribute, view_attr)
   delete ds;
 
   // restore conduit default errors
-  DataStore::restoreConduitDefaultMessageHandlers();
+  DataStore::setConduitDefaultMessageHandlers();
 }
 
 //------------------------------------------------------------------------------
@@ -301,7 +301,7 @@ TEST(sidre_attribute, view_attr)
 TEST(sidre_attribute, view_int_and_double)
 {
   // Note: This test relies on re-wiring conduit error handlers
-  DataStore::wireConduitMessageHandlersToSLIC();
+  DataStore::setConduitSLICMessageHandlers();
 
   bool ok;
 
@@ -367,7 +367,7 @@ TEST(sidre_attribute, view_int_and_double)
   delete ds;
 
   // restore conduit default errors
-  DataStore::restoreConduitDefaultMessageHandlers();
+  DataStore::setConduitDefaultMessageHandlers();
 }
 
 //------------------------------------------------------------------------------
@@ -474,7 +474,7 @@ TEST(sidre_attribute, as_node)
 TEST(sidre_attribute, overloads)
 {
   // Note: This test relies on re-wiring conduit error handlers
-  DataStore::wireConduitMessageHandlersToSLIC();
+  DataStore::setConduitSLICMessageHandlers();
 
   bool ok;
   DataStore* ds = new DataStore();
@@ -562,7 +562,7 @@ TEST(sidre_attribute, overloads)
   delete ds;
 
   // restore conduit default errors
-  DataStore::restoreConduitDefaultMessageHandlers();
+  DataStore::setConduitDefaultMessageHandlers();
 }
 
 //------------------------------------------------------------------------------

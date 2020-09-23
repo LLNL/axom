@@ -1622,7 +1622,7 @@ TEST(sidre_datastore, destroy_buffer)
 TEST(sidre_view, value_from_uninited_view)
 {
   // Note: This test relies on re-wiring conduit error handlers
-  DataStore::wireConduitMessageHandlersToSLIC();
+  DataStore::setConduitSLICMessageHandlers();
 
   DataStore ds;
   View* view = ds.getRoot()->createView("empty");
@@ -1646,7 +1646,7 @@ TEST(sidre_view, value_from_uninited_view)
   EXPECT_EQ(dval,0);
 
   // restore conduit default errors
-  DataStore::restoreConduitDefaultMessageHandlers();
+  DataStore::setConduitDefaultMessageHandlers();
 
 }
 

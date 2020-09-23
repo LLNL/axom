@@ -2190,7 +2190,7 @@ TEST(sidre_group, is_equivalent_to)
 TEST(sidre_group, save_load_all_protocols)
 {
   // Note: This test relies on re-wiring conduit error handlers
-  DataStore::wireConduitMessageHandlersToSLIC();
+  DataStore::setConduitSLICMessageHandlers();
 
   const std::string file_path_base("sidre_save_load_all_protocols.");
   DataStore ds;
@@ -2263,14 +2263,14 @@ TEST(sidre_group, save_load_all_protocols)
   }
 
   // restore conduit default errors
-  DataStore::restoreConduitDefaultMessageHandlers();
+  DataStore::setConduitDefaultMessageHandlers();
 }
 
 //------------------------------------------------------------------------------
 TEST(sidre_group, save_load_preserve_contents)
 {
   // Note: This test relies on re-wiring conduit error handlers
-  DataStore::wireConduitMessageHandlersToSLIC();
+  DataStore::setConduitSLICMessageHandlers();
 
   const std::string file_path_tree0("sidre_save_load_preserve_contents.tree0.");
   const std::string file_path_tree1("sidre_save_load_preserve_contents.tree1.");
@@ -2373,7 +2373,7 @@ TEST(sidre_group, save_load_preserve_contents)
   }
 
   // restore conduit default errors
-  DataStore::restoreConduitDefaultMessageHandlers();
+  DataStore::setConduitDefaultMessageHandlers();
 
 }
 

@@ -64,6 +64,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. You can explicitly rewire using the static `DataStore::setConduitSLICMessageHandlers()` method.
 - Transitioned Axom's code formatting tool from `Uncrustify` to [clang-format].
   Axom's clang-format rules depend on clang 10.
 - Modified the command line interface for `mesh_tester` utility. Interface

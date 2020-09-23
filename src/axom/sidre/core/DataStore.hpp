@@ -411,13 +411,13 @@ public:
    * \brief Wires Conduit `info`, `warning`, and `error` messages to
    *        SLIC style handling.
    */
-  static void wireConduitMessageHandlersToSLIC();
+  static void setConduitSLICMessageHandlers();
 
   /*!
    * \brief Wires Conduit `info`, `warning`, and `error` messages to
    *        Conduit's default handling.
    */
-  static void restoreConduitDefaultMessageHandlers();
+  static void setConduitDefaultMessageHandlers();
 
 
 private:
