@@ -102,6 +102,16 @@ bool LuaReader::getStringMap(const std::string& id,
   return getMap(id, values, sol::type::string);
 }
 
+bool LuaReader::getFunction(const std::string& id, std::function<double(double)>& func) {
+  sol::function f = m_lua[id];
+  // TODO nested later
+  if (!f.valid()) {
+    return false;
+  }
+  func = f;
+  return true;
+}
+
 template <typename T>
 bool LuaReader::getValue(const std::string& id, T& value)
 {
