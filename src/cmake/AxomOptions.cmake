@@ -24,7 +24,5 @@ cmake_dependent_option(AXOM_ENABLE_TESTS "Enables Axom Tests" ON "ENABLE_TESTS" 
 cmake_dependent_option(AXOM_ENABLE_DOCS "Enables Axom Docs" ON "ENABLE_DOCS" OFF)
 cmake_dependent_option(AXOM_ENABLE_EXAMPLES "Enables Axom Examples" ON "ENABLE_EXAMPLES" OFF)
 
-cmake_dependent_option(AXOM_ENABLE_CUB "Enables use of CUB" OFF "ENABLE_CUDA" OFF)
-
 cmake_dependent_option(AXOM_ENABLE_MPI3 "Enables use of MPI-3 features" OFF "ENABLE_MPI" OFF)
 mark_as_advanced(AXOM_ENABLE_MPI3)

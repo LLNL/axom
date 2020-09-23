@@ -127,7 +127,7 @@ private:
 };
 
 #ifdef AXOM_USE_UMPIRE
-void check_alloc_and_free(int allocatorID = axom::DEFAULT_ALLOCATOR_ID,
+void check_alloc_and_free(int allocatorID = axom::getDefaultAllocatorID(),
                           bool hostAccessible = true)
 #else
 void check_alloc_and_free(bool hostAccessible = true)
@@ -166,7 +166,7 @@ void check_alloc_and_free(bool hostAccessible = true)
 }
 
 #ifdef AXOM_USE_UMPIRE
-void check_alloc_realloc_free(int allocatorID = axom::DEFAULT_ALLOCATOR_ID,
+void check_alloc_realloc_free(int allocatorID = axom::getDefaultAllocatorID(),
                               bool hostAccessible = true)
 #else
 void check_alloc_realloc_free(bool hostAccessible = true)

@@ -22,7 +22,7 @@ set(ENABLE_FORTRAN OFF CACHE BOOL "")
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_08_11_23_56_00/gcc-no_fortran" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_09_18_18_11_40/gcc-no_fortran" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
@@ -34,9 +34,9 @@ set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
 # SCR not built
 
-set(RAJA_DIR "${TPL_ROOT}/raja-0.11.0" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.12.1" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-4.0.1" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # MPI

@@ -33,6 +33,7 @@ void sleep(int numSeconds)
 
 // Axom includes
 // _header_start
+#include "axom/core/Macros.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
 #include "axom/core/utilities/Timer.hpp"
@@ -61,7 +62,8 @@ void demoFileSystemAndString(const char* argv0)
   int matchcount = 0;
   std::string prefix {"ax"};
   std::string suffix {"exe"};
-  for(std::size_t i = 0; i < cmp.size(); ++i)
+  const int N = static_cast<int>(cmp.size());
+  for(int i = 0; i < N; ++i)
   {
     if(string::startsWith(cmp[i], prefix) || string::endsWith(cmp[i], suffix))
     {
