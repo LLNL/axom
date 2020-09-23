@@ -7,7 +7,7 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Release date yyyy-mm-dd
+## [Version 0.4.0] - Release date 2020-09-22
 
 ### Added
 - Exposed the tolerance parameter `EPS` that is used to determine intersections between
@@ -406,7 +406,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.3...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.4.0...develop
+[Version 0.4.0]: https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
 [Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
 [Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
