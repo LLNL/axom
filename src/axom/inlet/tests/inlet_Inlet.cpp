@@ -1295,7 +1295,7 @@ TEST(inlet_verify, verifyTableLambda3)
 }
 
 // Checks that LuaReader parses array information as expected
-TEST(inletArrays, luaReaderArrayFunctions)
+TEST(luaReader, getMap)
 {
   std::string testString =
     "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = "
@@ -1343,7 +1343,7 @@ TEST(inletArrays, inletArraysInSidre)
     "              arr4 = { [12] = 2.4 } }";
   auto inlet = createBasicInlet(&ds, testString);
 
-  inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
+  inlet->addIntArray("luaArrays/arr1");
 
   auto group = inlet->getGlobalTable()->sidreGroup()->getGroup(
     "luaArrays/arr1/_inlet_array");
@@ -1439,6 +1439,19 @@ TEST(inletArrays, getArray)
   EXPECT_TRUE(arr4->getDoubleArray(doubleMap));
   EXPECT_EQ(doubleMap, expectedDoubles);
 }
+
+TEST(luaReader, functionCalls)
+{
+  LuaReader lr;
+  lr.parseString("function f(var) "
+                 "  return 3*var;"
+                 "end");
+  std::function<double(double)> f;
+  
+  EXPECT_TRUE(lr.getFunction("f",f) && f);
+  EXPECT_NEAR(f(5.1),15.3,0.01);
+}
+
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

@@ -358,6 +358,138 @@ public:
     return m_globalTable->hasField(name);
   }
 
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Field names to the child Field pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields() {
+    return m_globalTable->getChildFields();
+  }
+
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Table names to the child Table pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables() {
+    return m_globalTable->getChildTables();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Boolean Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addBoolArray(const std::string& name,
+                                      const std::string& description = "") {
+    return m_globalTable->addBoolArray(name,description);                                        
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Integer Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addIntArray(const std::string& name,
+                                     const std::string& description = "") {
+    return m_globalTable->addIntArray(name,description);  
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Double Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addDoubleArray(const std::string& name,
+                                        const std::string& description = "") {
+    return m_globalTable->addDoubleArray(name,description);                                     
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of String Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addStringArray(const std::string& name,
+                                        const std::string& description = "") {
+    return m_globalTable->addStringArray(name,description);                                    
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a boolean array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getBoolArray(std::unordered_map<int, bool>& map) {
+    return m_globalTable->getBoolArray(map);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a int array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getIntArray(std::unordered_map<int, int>& map) {
+    return m_globalTable->getIntArray(map);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a double array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getDoubleArray(std::unordered_map<int, double>& map) {
+    return m_globalTable->getDoubleArray(map);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a string array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getStringArray(std::unordered_map<int, std::string>& map) {
+    return m_globalTable->getStringArray(map);
+  }
+
   // TODO add update value functions
 private:
   /*!

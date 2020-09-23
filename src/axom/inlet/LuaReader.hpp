@@ -39,6 +39,12 @@ namespace inlet
 class LuaReader : public Reader
 {
 public:
+
+  LuaReader() 
+  {
+    m_lua.open_libraries(sol::lib::base);
+  }
+
   /*!
    *****************************************************************************
    * \brief Parses the given input file.
@@ -191,6 +197,8 @@ public:
    */
   bool getStringMap(const std::string& id,
                     std::unordered_map<int, std::string>& values);
+
+  bool getFunction(const std::string& id, std::function<double(double)>& func);
 
 private:
   // Expect this to be called for only Inlet-supported types.
