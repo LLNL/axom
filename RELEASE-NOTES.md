@@ -64,7 +64,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
-- The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. You can explicitly rewire using the static `DataStore::setConduitSLICMessageHandlers()` method.
+- The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
+  You can explicitly rewire using the static
+  `DataStore::setConduitSLICMessageHandlers()` method.
+- Updated Axom to support RAJA-v0.12.1 and Umpire-v4.01, but the code remains
+  backwards compatible with previous versions of RAJA and Umpire.
 - Transitioned Axom's code formatting tool from `Uncrustify` to [clang-format].
   Axom's clang-format rules depend on clang 10.
 - Modified the command line interface for `mesh_tester` utility. Interface
@@ -120,7 +124,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   ("zero-to-axom support on Windows")
 
 ### Known Bugs
-
+- Encountered a compiler bug on IBM LC platforms when using the IBM XL C/C++
+  compiler. The issue is manifested in the `generate_aabbs_and_centroids` method
+  in the `spin_bvh.cpp` unit test. It seems that the compiler does not handle
+  the lambda capture of the arrays correctly which leads to a segfault. A
+  workaround for the IBM XL compiler is provided.
 
 ## [Version 0.3.3] - Release date 2020-01-31
 
@@ -133,7 +141,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in third party library.
 
 ### Removed
-
+- Removed `AXOM_ENABLE_CUB` option, since `CUB` is no londer used directly in
+  Axom code. Instead, we use `RAJA::stable_sort` with RAJA-v0.12.1 and fallback
+  to `std::stable_sort` with older versions of RAJA and when the code is built
+  without RAJA.
+  
 ### Deprecated
 
 ### Changed

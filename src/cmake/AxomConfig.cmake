@@ -38,7 +38,7 @@ endforeach()
 ## Check for options of the form AXOM_ENABLE_<OPTION> and sets
 ## a corresponding AXOM_USE_<OPTION> accordingly to use when generating
 ## the axom/config.hpp
-set(OPTIONS ANNOTATIONS CUB MPI3)
+set(OPTIONS ANNOTATIONS MPI3)
 foreach(option ${OPTIONS})
     if( AXOM_ENABLE_${option} )
       set(AXOM_USE_${option} TRUE)
