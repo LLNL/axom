@@ -720,7 +720,9 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   if(m_comm != MPI_COMM_NULL)
   {
     IOManager reader(m_comm);
-    reader.read(m_bp_grp->getDataStore()->getRoot(), path);
+    // The conduit abstraction appears to automatically handle the ".root"
+    // suffix, but the IOManager does not, so it gets added here
+    reader.read(m_bp_grp->getDataStore()->getRoot(), path + ".root");
   }
   else
   #endif

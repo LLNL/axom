@@ -114,4 +114,69 @@ TEST(sidre_datacollection, dc_reload)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+TEST(sidre_datacollection, dc_alloc_owning_parmesh)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc(COLL_NAME, &parmesh, owns_mesh);
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
+  bool owns_mesh = false;
+  MFEMSidreDataCollection sdc(COLL_NAME, &parmesh, owns_mesh);
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_par_reload)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
+  // The mesh must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc_writer(COLL_NAME, &parmesh, owns_mesh);
+
+  sdc_writer.SetPrefixPath("/tmp/dc_par_reload_test");
+  sdc_writer.SetCycle(0);
+  sdc_writer.PrepareToSave();
+  sdc_writer.Save();
+
+  MFEMSidreDataCollection sdc_reader(COLL_NAME);
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+  sdc_reader.SetPrefixPath("/tmp/dc_par_reload_test");
+  sdc_reader.Load();
+
+  EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+}
+
+//----------------------------------------------------------------------
+#include "axom/slic/core/UnitTestLogger.hpp"
+using axom::slic::UnitTestLogger;
+
+int main(int argc, char* argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+
+  MPI_Init(&argc, &argv);
+  result = RUN_ALL_TESTS();
+  MPI_Finalize();
+
+  return result;
+}
+
+#endif
+
 #endif
