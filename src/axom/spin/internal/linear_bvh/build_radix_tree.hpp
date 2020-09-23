@@ -6,6 +6,8 @@
 #ifndef AXOM_SPIN_BUILD_RADIX_TREE_H_
 #define AXOM_SPIN_BUILD_RADIX_TREE_H_
 
+#include "axom/config.hpp"  // for axom compile-time definitions
+
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 
@@ -367,10 +369,29 @@ void reorder(int32* indices, T*& array, int32 size, int allocatorID)
 }
 
 //------------------------------------------------------------------------------
+#if(RAJA_VERSION_MAJOR > 0) || \
+  ((RAJA_VERSION_MAJOR == 0) && (RAJA_VERSION_MINOR >= 12))
+
 template <typename ExecSpace>
-void custom_sort(ExecSpace, uint32*& mcodes, int32 size, int32* iter, int allocatorID)
+void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 {
-  AXOM_PERF_MARK_FUNCTION("custom_sort");
+  AXOM_PERF_MARK_FUNCTION("sort_mcodes");
+
+  array_counting<ExecSpace>(iter, size, 0, 1);
+
+  AXOM_PERF_MARK_SECTION(
+    "raja_stable_sort",
+    using EXEC_POL = typename axom::execution_space<ExecSpace>::loop_policy;
+    RAJA::stable_sort_pairs<EXEC_POL>(mcodes, mcodes + size, iter););
+}
+
+#else
+
+// fall back to std::stable_sort
+template <typename ExecSpace>
+void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
+{
+  AXOM_PERF_MARK_FUNCTION("sort_mcodes");
 
   array_counting<ExecSpace>(iter, size, 0, 1);
 
@@ -383,91 +404,11 @@ void custom_sort(ExecSpace, uint32*& mcodes, int32 size, int32* iter, int alloca
 
   );
 
-  reorder<ExecSpace>(iter, mcodes, size, allocatorID);
+  const int allocID = axom::execution_space<ExecSpace>::allocatorID();
+  reorder<ExecSpace>(iter, mcodes, size, allocID);
 }
 
-//------------------------------------------------------------------------------
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
-  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_CUB)
-template <int BLOCK_SIZE, axom::ExecutionMode EXEC_MODE>
-void custom_sort(axom::CUDA_EXEC<BLOCK_SIZE, EXEC_MODE>,
-                 uint32*& mcodes,
-                 int32 size,
-                 int32* iter,
-                 int allocatorID)
-{
-  AXOM_PERF_MARK_FUNCTION("custom_sort");
-
-  using ExecSpace = typename axom::CUDA_EXEC<BLOCK_SIZE, EXEC_MODE>;
-  array_counting<ExecSpace>(iter, size, 0, 1);
-
-  // temporary buffers
-  uint32* mcodes_alt_buf = nullptr;
-  int32* iter_alt_buf = nullptr;
-  void* d_temp_storage = nullptr;
-
-  AXOM_PERF_MARK_SECTION(
-    "allocate_cub_buffers",
-
-    mcodes_alt_buf = axom::allocate<uint32>(size, allocatorID);
-    iter_alt_buf = axom::allocate<int32>(size, allocatorID););
-
-  AXOM_PERF_MARK_SECTION(
-    "gpu_cub_sort",
-
-    // create double buffers
-    ::cub::DoubleBuffer<uint32> d_keys(mcodes, mcodes_alt_buf);
-    ::cub::DoubleBuffer<int32> d_values(iter, iter_alt_buf);
-
-    // determine temporary device storage requirements
-    size_t temp_storage_bytes = 0;
-    ::cub::DeviceRadixSort::SortPairs(d_temp_storage,
-                                      temp_storage_bytes,
-                                      d_keys,
-                                      d_values,
-                                      size);
-
-    // Allocate temporary storage
-    d_temp_storage =
-      (void*)axom::allocate<unsigned char>(temp_storage_bytes, allocatorID);
-
-    // Run sorting operation
-    ::cub::DeviceRadixSort::SortPairs(d_temp_storage,
-                                      temp_storage_bytes,
-                                      d_keys,
-                                      d_values,
-                                      size);
-
-    uint32* sorted_keys = d_keys.Current();
-    int32* sorted_vals = d_values.Current();
-
-    for_all<ExecSpace>(
-      size,
-      AXOM_LAMBDA(int32 i) {
-        mcodes[i] = sorted_keys[i];
-        iter[i] = sorted_vals[i];
-      });
-
-  );
-
-  AXOM_PERF_MARK_SECTION("free_cub_buffers",
-
-                         // Free temporary storage
-                         axom::deallocate(d_temp_storage);
-                         axom::deallocate(mcodes_alt_buf);
-                         axom::deallocate(iter_alt_buf););
-}
-#endif
-
-//------------------------------------------------------------------------------
-template <typename ExecSpace>
-void sort_mcodes(uint32*& mcodes, int32 size, int32* iter, int allocatorID)
-{
-  AXOM_PERF_MARK_FUNCTION("sort_mcodes");
-
-  // dispatch
-  custom_sort(ExecSpace(), mcodes, size, iter, allocatorID);
-}
+#endif /* RAJA version 0.12.0 and above */
 
 //------------------------------------------------------------------------------
 template <typename IntType, typename MCType>
@@ -727,7 +668,7 @@ void build_radix_tree(const FloatType* boxes,
   // original positions of the sorted morton codes.
   // allows us to gather / sort other arrays.
   get_mcodes<ExecSpace>(radix_tree.m_leaf_aabbs, size, bounds, radix_tree.m_mcodes);
-  sort_mcodes<ExecSpace>(radix_tree.m_mcodes, size, radix_tree.m_leafs, allocatorID);
+  sort_mcodes<ExecSpace>(radix_tree.m_mcodes, size, radix_tree.m_leafs);
 
   reorder<ExecSpace>(radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size, allocatorID);
 

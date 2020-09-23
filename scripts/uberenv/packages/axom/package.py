@@ -84,8 +84,6 @@ class Axom(CMakePackage, CudaPackage):
     variant("umpire",   default=True, description="Build with umpire")
 
     variant("raja",     default=True, description="Build with raja")
-    variant("cub",      default=True,
-            description="Build with RAJA's internal CUB support")
 
     varmsg = "Build development tools (such as Sphinx, Uncrustify, etc...)"
     variant("devtools", default=False, description=varmsg)
@@ -496,11 +494,6 @@ class Axom(CMakePackage, CudaPackage):
                                              True))
 
                 cfg.write(cmake_cache_option("AXOM_ENABLE_ANNOTATIONS", True))
-
-                if "+cub" in spec:
-                    cfg.write(cmake_cache_option("AXOM_ENABLE_CUB", True))
-                else:
-                    cfg.write(cmake_cache_option("AXOM_ENABLE_CUB", False))
 
                 # CUDA_FLAGS
                 cudaflags  = "-restrict "
