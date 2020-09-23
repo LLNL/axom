@@ -44,6 +44,11 @@ set(sidre_example_depends
 blt_list_append(TO sidre_example_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO sidre_example_depends ELEMENTS mpi IF MPI_FOUND)
 
+if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    list(APPEND example_sources mfem_sidre_datacoll.cpp)
+    list(APPEND sidre_example_depends mfem)
+endif()
+
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples
 #------------------------------------------------------------------------------
@@ -121,4 +126,3 @@ endif()
 if(NOT WIN32)
   add_subdirectory(lulesh2)
 endif()
-

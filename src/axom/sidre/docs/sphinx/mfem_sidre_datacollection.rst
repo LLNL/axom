@@ -50,19 +50,21 @@ A typical visualization example might look like the following:
    dc.RegisterField("solution", &soln);
 
    // Save the initial state
-   dc->SetCycle(0); // Iteration counter
-   dc->SetTime(0.0); // Simulation time
+   dc.SetCycle(0); // Iteration counter
+   dc.SetTime(0.0); // Simulation time
    // Filename and protocol, both of which are optional
-   dc->Save("data_name", "sidre_hdf5");
+   dc.Save("data_name", "sidre_hdf5");
 
-   for (int = 0; i < n_iter; i++)
+   for (int i = 0; i < n_iter; i++)
    {
       // Calculate the next iteration of the solution field, then...
       
-      dc->SetCycle(i);
-      dc->SetTime(dt * i);
-      dc->Save("data_name", "sidre_hdf5");
+      dc.SetCycle(i);
+      dc.SetTime(dt * i);
+      dc.Save("data_name", "sidre_hdf5");
    }
+
+See the ``mfem_sidre_datacoll_ex`` example for a more thorough example of the above functionality.
 
 
 .. Note::

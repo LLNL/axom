@@ -10,16 +10,14 @@
 
 #ifdef AXOM_USE_MFEM
 
-#include "mfem.hpp"
+  #include "mfem.hpp"
 
-#include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre/core/sidre.hpp"
 
 namespace axom
 {
-
 namespace sidre
 {
-
 /** @brief Data collection with Sidre routines following the Conduit mesh
     blueprint specification. */
 /** MFEMSidreDataCollection provides an HDF5-based file format for visualization
@@ -182,11 +180,10 @@ namespace sidre
 class MFEMSidreDataCollection : public mfem::DataCollection
 {
 public:
-  using AttributeFieldMap = mfem::NamedFieldsMap< mfem::Array<int> >;
+  using AttributeFieldMap = mfem::NamedFieldsMap<mfem::Array<int>>;
   AttributeFieldMap attr_map;
 
 public:
-
   /// Constructor that allocates and initializes a Sidre DataStore.
   /**
       @param[in] collection_name  Name of the collection used as a file name
@@ -224,19 +221,18 @@ public:
                           Group* domain_grp,
                           bool owns_mesh_data = false);
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   /// Associate an MPI communicator with the collection.
   /** If no mesh was associated with the collection, this method should be
       called before using any of the Load() methods to read parallel data. */
   void SetComm(MPI_Comm comm);
-#endif
+  #endif
 
   /// Register a GridFunction in the Sidre DataStore.
   /** This method is a shortcut for the call
       `RegisterField(field_name, gf, field_name, 0)`.
    */
-  virtual void RegisterField(const std::string &field_name,
-                             mfem::GridFunction* gf)
+  virtual void RegisterField(const std::string& field_name, mfem::GridFunction* gf)
   {
     RegisterField(field_name, gf, field_name, 0);
   }
@@ -258,8 +254,9 @@ public:
       @note If the GridFunction pointer @a gf or it's FiniteElementSpace
       pointer are nullptr, the method does nothing.
    */
-  void RegisterField(const std::string &field_name, mfem::GridFunction* gf,
-                     const std::string &buffer_name,
+  void RegisterField(const std::string& field_name,
+                     mfem::GridFunction* gf,
+                     const std::string& buffer_name,
                      IndexType offset);
 
   /// Registers an attribute field in the Sidre DataStore
@@ -274,11 +271,15 @@ public:
   /** Returns a pointer to the attribute field associated with
       @a field_name, or nullptr when there is no associated field */
   mfem::Array<int>* GetAttributeField(const std::string& field_name) const
-  { return attr_map.Get(field_name); }
+  {
+    return attr_map.Get(field_name);
+  }
 
   /** Checks if there is an attribute field associated with @a field_name */
   bool HasAttributeField(const std::string& field_name) const
-  { return attr_map.Has(field_name); }
+  {
+    return attr_map.Has(field_name);
+  }
 
   /** Checks if any rank in the mesh has boundary elements */
   bool HasBoundaryMesh() const;
@@ -288,9 +289,12 @@ public:
       already registered. Also, this method should be called if the mesh nodes
       GridFunction was or will be registered directly by the user. The default
       value for the name is "mesh_nodes". */
-  void SetMeshNodesName(const std::string &nodes_name)
+  void SetMeshNodesName(const std::string& nodes_name)
   {
-    if (!nodes_name.empty()) { m_meshNodesGFName = nodes_name; }
+    if(!nodes_name.empty())
+    {
+      m_meshNodesGFName = nodes_name;
+    }
   }
 
   /// De-register @a field_name from the MFEMSidreDataCollection.
@@ -306,12 +310,12 @@ public:
       to register the mesh nodes GridFunction, if the mesh uses nodes. */
   virtual void SetMesh(mfem::Mesh* new_mesh);
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   /// Set/change the mesh associated with the collection
   /** Uses the field name "mesh_nodes" or the value set by SetMeshNodesName()
       to register the mesh nodes GridFunction, if the mesh uses nodes. */
   virtual void SetMesh(MPI_Comm comm, mfem::Mesh* new_mesh);
-#endif
+  #endif
 
   /// Reset the domain and global datastore group pointers.
   /** These are set in the constructor, but if a host code changes the
@@ -320,8 +324,7 @@ public:
       reset to valid groups in the datastore.
       @sa Load(const std::string &path, const std::string &protocol).
    */
-  void SetGroupPointers(Group* global_grp,
-                        Group* domain_grp);
+  void SetGroupPointers(Group* global_grp, Group* domain_grp);
 
   Group* GetBPGroup() { return m_bp_grp; }
   Group* GetBPIndexGroup() { return m_bp_index_grp; }
@@ -383,12 +386,11 @@ public:
       @note To access the underlying pointer, use View::getData().
       @note To query the size of the buffer, use View::getNumElements().
    */
-  View*
-  GetNamedBuffer(const std::string& buffer_name) const
+  View* GetNamedBuffer(const std::string& buffer_name) const
   {
     return named_buffers_grp()->hasView(buffer_name)
-           ? named_buffers_grp()->getView(buffer_name)
-           : nullptr;
+      ? named_buffers_grp()->getView(buffer_name)
+      : nullptr;
   }
 
   /// Return newly allocated or existing named buffer for @a buffer_name.
@@ -397,15 +399,15 @@ public:
       reallocated with size @a sz, destroying its contents.
       @note To access the underlying pointer, use View::getData().
    */
-  View*
-  AllocNamedBuffer(const std::string& buffer_name,
-                   IndexType sz,
-                   TypeID type =
-                     DOUBLE_ID);
+  View* AllocNamedBuffer(const std::string& buffer_name,
+                         IndexType sz,
+                         TypeID type = DOUBLE_ID);
 
   /// Deallocate the named buffer @a buffer_name.
   void FreeNamedBuffer(const std::string& buffer_name)
-  { named_buffers_grp()->destroyViewAndData(buffer_name); }
+  {
+    named_buffers_grp()->destroyViewAndData(buffer_name);
+  }
 
   /// Verifies that the contents of the mesh blueprint data is valid.
   bool verifyMeshBlueprint();
@@ -437,21 +439,14 @@ private:
 protected:
   Group* named_buffers_grp() const;
 
-  View*
-  alloc_view(Group* grp,
-             const std::string &view_name);
+  View* alloc_view(Group* grp, const std::string& view_name);
 
-  View*
-  alloc_view(Group* grp,
-             const std::string &view_name,
-             const DataType &dtype);
+  View* alloc_view(Group* grp, const std::string& view_name, const DataType& dtype);
 
-  Group*
-  alloc_group(Group* grp,
-              const std::string &group_name);
+  Group* alloc_group(Group* grp, const std::string& group_name);
 
   // return the filename based on prefix_path, collection name and cycle.
-  std::string get_file_path(const std::string &filename) const;
+  std::string get_file_path(const std::string& filename) const;
 
 private:
   // If the data collection does not own the datastore, it will need pointers
@@ -466,14 +461,14 @@ private:
 
   void RegisterFieldInBPIndex(const std::string& field_name,
                               mfem::GridFunction* gf);
-  void DeregisterFieldInBPIndex(const std::string & field_name);
+  void DeregisterFieldInBPIndex(const std::string& field_name);
 
   void RegisterAttributeFieldInBPIndex(const std::string& attr_name);
   void DeregisterAttributeFieldInBPIndex(const std::string& attr_name);
 
   /** @brief Return a string with the conduit blueprint name for the given
       Element::Type. */
-  std::string getElementName( mfem::Element::Type elementEnum );
+  std::string getElementName(mfem::Element::Type elementEnum);
 
   /**
    * \brief A private helper function to set up the views associated with the
@@ -486,7 +481,7 @@ private:
    */
   void addScalarBasedGridFunction(const std::string& field_name,
                                   mfem::GridFunction* gf,
-                                  const std::string &buffer_name,
+                                  const std::string& buffer_name,
                                   IndexType offset);
 
   /**
@@ -500,7 +495,7 @@ private:
    */
   void addVectorBasedGridFunction(const std::string& field_name,
                                   mfem::GridFunction* gf,
-                                  const std::string &buffer_name,
+                                  const std::string& buffer_name,
                                   IndexType offset);
 
   /** @brief A private helper function to set up the Views associated with
@@ -535,14 +530,14 @@ private:
    */
   void createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name);
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   /// Sets up the mesh blueprint 'adjacencies' group.
   /**
    * \param hasBP Indicates whether the blueprint has already been set up.
    * \note Only valid when using parallel meshes
    */
   void createMeshBlueprintAdjacencies(bool hasBP);
-#endif
+  #endif
 
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();
@@ -551,6 +546,6 @@ private:
 } /* namespace sidre */
 } /* namespace axom */
 
-#endif // AXOM_USE_MFEM
+#endif  // AXOM_USE_MFEM
 
 #endif
