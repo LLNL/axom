@@ -120,12 +120,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Third-party libraries can now build on the Windows platform through uberenv using vcpkg
   ("zero-to-axom support on Windows")
 
-### Known Bugs
+### Known Issues
 - Encountered a compiler bug on IBM LC platforms when using the IBM XL C/C++
   compiler. The issue is manifested in the `generate_aabbs_and_centroids` method
   in the `spin_bvh.cpp` unit test. It seems that the compiler does not handle
   the lambda capture of the arrays correctly which leads to a segfault. A
   workaround for the IBM XL compiler is provided.
+- There is known bug in MVAPICH that prevents consecutive creation/deletion
+  of MPI windows. This was encountered on LC platforms when enabling shared
+  memory in the Signed Distance Query. See the corresponding 
+  [Github Issue](https://github.com/LLNL/axom/issues/257) for details.
 
 ## [Version 0.3.3] - Release date 2020-01-31
 
