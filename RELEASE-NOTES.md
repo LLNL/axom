@@ -7,7 +7,7 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Release date yyyy-mm-dd
+## [Version 0.4.0] - Release date 2020-09-22
 
 ### Added
 - Exposed the tolerance parameter `EPS` that is used to determine intersections between
@@ -27,8 +27,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   an input deck.
 - Added the ability to specify an [Umpire] allocator ID to use with the
   BVH. This allows the application to use a device allocator for the BVH and 
-  avoid use of UM on the GPU, which can hinder perfomrmance, or use a pool
-  allocator to mitigate the latencies associated with allocation/deallocation.
+  avoid use of Unified Memory (UM) on the GPU, which can hinder perfomrmance, 
+  or use a pool allocator to mitigate the latencies associated with allocation/deallocation.
   The allocator ID is specified as an optional argument to the BVH constructor.
 - Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
   annotations in Axom. Default is OFF.
@@ -60,6 +60,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   The version of Sol used in this release is `v2.20.6`, which requires `C++14`.
 
 ### Removed
+- Removed the `AXOM_ENABLE_CUB` option, since `CUB` is no lonher used directly in
+  Axom code. Instead, we use `RAJA::stable_sort` with RAJA-v0.12.1 and fallback
+  to `std::stable_sort` with older versions of RAJA and when the code is built
+  without RAJA.
 
 ### Deprecated
 
@@ -75,7 +79,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   now uses a *-m, --method* option to select the spatial index, and *-p, policy*
   option now accepts a string or integer value.
 - Renamed the `AXOM_USE_MPI3`option to `AXOM_ENABLE_MPI3` for consistency.
-- Renamed the `AXOM_USE_CUB` option to `AXOM_ENABLE_CUB` for consistency.
 - Modified the API for the BVH to accomodate different query types. The queries are now
   more explicitly called `BVH::findPoints()` and `BVH::findRays()`.
 - Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
@@ -129,6 +132,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   in the `spin_bvh.cpp` unit test. It seems that the compiler does not handle
   the lambda capture of the arrays correctly which leads to a segfault. A
   workaround for the IBM XL compiler is provided.
+- There is a known bug in MVAPICH that prevents consecutive creation/deletion
+  of MPI windows. This was encountered on LC platforms when enabling shared
+  memory in the Signed Distance Query. See the corresponding 
+  [Github Issue](https://github.com/LLNL/axom/issues/257) for details.
 
 ## [Version 0.3.3] - Release date 2020-01-31
 
@@ -141,10 +148,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in third party library.
 
 ### Removed
-- Removed `AXOM_ENABLE_CUB` option, since `CUB` is no londer used directly in
-  Axom code. Instead, we use `RAJA::stable_sort` with RAJA-v0.12.1 and fallback
-  to `std::stable_sort` with older versions of RAJA and when the code is built
-  without RAJA.
   
 ### Deprecated
 
@@ -409,7 +412,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.3...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.4.0...develop
+[Version 0.4.0]: https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
 [Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
 [Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
