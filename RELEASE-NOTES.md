@@ -7,6 +7,15 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+
+### Changed
+- The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
+  You can explicitly rewire using the static
+  `DataStore::setConduitSLICMessageHandlers()` method.
+
+
 ## [Version 0.4.0] - Release date 2020-09-22
 
 ### Added

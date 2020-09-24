@@ -371,8 +371,8 @@ public:
    *        this DataStore.
    *
    * If this DataStore contains data for a mesh that adheres to Conduit's
-   * Blueprint format, this method genearates a Blueprint index and stores
-   * it at a specified locaiton within this DataStore.  It uses as input a
+   * Blueprint format, this method generates a Blueprint index and stores
+   * it at a specified location within this DataStore.  It uses as input a
    * path to a representative domain from that mesh.
    *
    * The domain must be held in a Group stored in this DataStore.  The location
@@ -406,6 +406,19 @@ public:
    *        at root) and Buffer descriptions to given output stream.
    */
   void print(std::ostream& os) const;
+
+  /*!
+   * \brief Wires Conduit `info`, `warning`, and `error` messages to
+   *        SLIC style handling.
+   */
+  static void setConduitSLICMessageHandlers();
+
+  /*!
+   * \brief Wires Conduit `info`, `warning`, and `error` messages to
+   *        Conduit's default handling.
+   */
+  static void setConduitDefaultMessageHandlers();
+
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(DataStore);
