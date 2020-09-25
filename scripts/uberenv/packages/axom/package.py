@@ -51,13 +51,14 @@ class Axom(CMakePackage, CudaPackage):
     homepage = "https://github.com/LLNL/axom"
     git      = "https://github.com/LLNL/axom.git"
 
-    version('main', branch='main', submodules=True)
-    version('develop', branch='develop', submodules=True)
-    version('0.3.3', tag='v0.3.3', submodules="True")
-    version('0.3.2', tag='v0.3.2', submodules="True")
-    version('0.3.1', tag='v0.3.1', submodules="True")
-    version('0.3.0', tag='v0.3.0', submodules="True")
-    version('0.2.9', tag='v0.2.9', submodules="True")
+    version('main', branch='main', submodules='True')
+    version('develop', branch='develop', submodules='True')
+    version('0.4.0', tag='v0.4.0', submodules='True')
+    version('0.3.3', tag='v0.3.3', submodules='True')
+    version('0.3.2', tag='v0.3.2', submodules='True')
+    version('0.3.1', tag='v0.3.1', submodules='True')
+    version('0.3.0', tag='v0.3.0', submodules='True')
+    version('0.2.9', tag='v0.2.9', submodules='True')
 
     phases = ["hostconfig", "cmake", "build", "install"]
     root_cmakelists_dir = 'src'

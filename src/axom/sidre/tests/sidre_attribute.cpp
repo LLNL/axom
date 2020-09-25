@@ -160,6 +160,9 @@ TEST(sidre_attribute, create_attr)
 
 TEST(sidre_attribute, view_attr)
 {
+  // Note: This test relies on re-wiring conduit error handlers
+  DataStore::setConduitSLICMessageHandlers();
+
   bool ok;
 
   DataStore* ds = new DataStore();
@@ -287,6 +290,9 @@ TEST(sidre_attribute, view_attr)
   grp4->destroyView(g_nameb);
 
   delete ds;
+
+  // restore conduit default errors
+  DataStore::setConduitDefaultMessageHandlers();
 }
 
 //------------------------------------------------------------------------------
@@ -294,6 +300,9 @@ TEST(sidre_attribute, view_attr)
 
 TEST(sidre_attribute, view_int_and_double)
 {
+  // Note: This test relies on re-wiring conduit error handlers
+  DataStore::setConduitSLICMessageHandlers();
+
   bool ok;
 
   DataStore* ds = new DataStore();
@@ -356,6 +365,9 @@ TEST(sidre_attribute, view_int_and_double)
   EXPECT_EQ(0, i);
 
   delete ds;
+
+  // restore conduit default errors
+  DataStore::setConduitDefaultMessageHandlers();
 }
 
 //------------------------------------------------------------------------------
@@ -461,6 +473,9 @@ TEST(sidre_attribute, as_node)
 
 TEST(sidre_attribute, overloads)
 {
+  // Note: This test relies on re-wiring conduit error handlers
+  DataStore::setConduitSLICMessageHandlers();
+
   bool ok;
   DataStore* ds = new DataStore();
 
@@ -545,6 +560,9 @@ TEST(sidre_attribute, overloads)
   EXPECT_EQ(0, view->getAttributeScalar<int>("noname"));
 
   delete ds;
+
+  // restore conduit default errors
+  DataStore::setConduitDefaultMessageHandlers();
 }
 
 //------------------------------------------------------------------------------

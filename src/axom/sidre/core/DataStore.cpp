@@ -132,6 +132,38 @@ DataStore::~DataStore()
 /*
  *************************************************************************
  *
+ * Re-wire Conduit Message Handlers to SLIC.
+ *
+ *************************************************************************
+ */
+void DataStore::setConduitSLICMessageHandlers()
+{
+  // Provide SLIC message handler functions to Conduit to log
+  // internal Conduit info, warning, error messages.
+  conduit::utils::set_error_handler( DataStoreConduitErrorHandler );
+  conduit::utils::set_warning_handler( DataStoreConduitWarningHandler );
+  conduit::utils::set_info_handler( DataStoreConduitInfoHandler );
+}
+
+/*
+ *************************************************************************
+ *
+ * Restore Conduit Message Handlers to Conduit Defaults.
+ *
+ *************************************************************************
+ */
+void DataStore::setConduitDefaultMessageHandlers()
+{
+  // restore default handlers
+  conduit::utils::set_info_handler(conduit::utils::default_info_handler);
+  conduit::utils::set_warning_handler(conduit::utils::default_warning_handler);
+  conduit::utils::set_error_handler(conduit::utils::default_error_handler);
+}
+
+
+/*
+ *************************************************************************
+ *
  * Return non-const pointer to Buffer with given index or null ptr.
  *
  *************************************************************************
