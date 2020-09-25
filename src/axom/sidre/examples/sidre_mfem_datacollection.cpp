@@ -47,10 +47,15 @@ int main(int argc, char* argv[])
   // Note: all fields (added with RegisterField) must be on this mesh
   axom::sidre::MFEMSidreDataCollection dc("sidre_mfem_datacoll_ex", mesh);
 
-  // This is where the time-dependent operator would be set up...
+// This is where the time-dependent operator would be set up...
 
-  // Initialize the solution field
+// Initialize the solution field
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  mfem::ParFiniteElementSpace par_fes(fes, parallel_mesh);
+  mfem::ParGridFunction soln(&par_fes);
+#else
   mfem::GridFunction soln(&fes);
+#endif
   soln = 0.0;
 
   // Note: Any number of fields can be registered
