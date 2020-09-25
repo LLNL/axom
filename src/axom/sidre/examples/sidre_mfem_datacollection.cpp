@@ -17,11 +17,15 @@
 // MFEM includes - needed to set up simulation
 #include "mfem.hpp"
 
+#ifdef AXOM_USE_MPI
+  #include "mpi.h"
+#endif
+
 int main(int argc, char* argv[])
 {
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   MPI_Init(&argc, &argv);
-  #endif
+#endif
 
   mfem::Mesh* mesh = nullptr;
 
@@ -29,10 +33,10 @@ int main(int argc, char* argv[])
   mfem::Mesh serial_mesh(10, 10, mfem::Element::QUADRILATERAL);
   mesh = &serial_mesh;
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   mfem::ParMesh parallel_mesh(MPI_COMM_WORLD, serial_mesh);
   mesh = &parallel_mesh;
-  #endif
+#endif
 
   // Set up the FiniteElementSpace - needed for the grid functions
   // Initialize with H1 elements of order 1
@@ -74,7 +78,7 @@ int main(int argc, char* argv[])
     dc.Save("sidre_mfem_datacoll_ex", "sidre_hdf5");
   }
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   MPI_Finalize();
-  #endif
+#endif
 }

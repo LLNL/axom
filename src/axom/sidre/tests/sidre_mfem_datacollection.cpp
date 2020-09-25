@@ -95,12 +95,25 @@ TEST(sidre_datacollection, dc_save)
 
 TEST(sidre_datacollection, dc_reload)
 {
+  const std::string field_name = "test_field";
   // 1D mesh divided into 10 segments
   mfem::Mesh mesh(10);
-  // The mesh must be owned by Sidre to properly manage data in case of
+  mfem::H1_FECollection fec(1, 1);
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
   bool owns_mesh = true;
   MFEMSidreDataCollection sdc_writer(COLL_NAME, &mesh, owns_mesh);
+  mfem::GridFunction gf_write(&fes, nullptr);
+
+  // Register to allocate storage internally, then write to it
+  sdc_writer.RegisterField(field_name, &gf_write);
+
+  mfem::ConstantCoefficient one(1.0);
+  gf_write.ProjectCoefficient(one);
+
+  EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
 
   sdc_writer.SetPrefixPath("/tmp/dc_reload_test");
   sdc_writer.SetCycle(0);
@@ -114,7 +127,7 @@ TEST(sidre_datacollection, dc_reload)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 TEST(sidre_datacollection, dc_alloc_owning_parmesh)
 {
   // 1D mesh divided into 10 segments
@@ -158,8 +171,8 @@ TEST(sidre_datacollection, dc_par_reload)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
+    //----------------------------------------------------------------------
+    #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
@@ -177,6 +190,6 @@ int main(int argc, char* argv[])
   return result;
 }
 
-#endif
+  #endif
 
 #endif
