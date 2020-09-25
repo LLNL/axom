@@ -104,7 +104,7 @@ bool LuaReader::getStringMap(const std::string& id,
 
 bool LuaReader::getFunction(const std::string& id, std::function<double(double)>& func) {
   sol::function f = m_lua[id];
-  // TODO nested later
+  // TODO add nested table traversal
   if (!f.valid()) {
     return false;
   }

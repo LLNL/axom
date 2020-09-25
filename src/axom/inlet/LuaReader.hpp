@@ -198,7 +198,12 @@ public:
   bool getStringMap(const std::string& id,
                     std::unordered_map<int, std::string>& values);
 
+  // don't really need this function if we're just returning lua state
   bool getFunction(const std::string& id, std::function<double(double)>& func);
+
+  sol::state& solState() {
+    return m_lua;
+  }
 
 private:
   // Expect this to be called for only Inlet-supported types.
