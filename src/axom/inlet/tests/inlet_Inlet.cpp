@@ -1446,9 +1446,9 @@ TEST(luaReader, functionCalls)
   lr.parseString("function f(var) "
                  "  return 3*var;"
                  "end");
-  std::function<double(double)> f;
+  std::function<double(double)> f = lr.solState()["f"];
   
-  EXPECT_TRUE(lr.getFunction("f",f) && f);
+  EXPECT_TRUE(f);
   EXPECT_NEAR(f(5.1),15.3,0.01);
 }
 
