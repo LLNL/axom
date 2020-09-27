@@ -10,7 +10,7 @@
 
 #include "axom/inlet/LuaReader.hpp"
 
-TEST(inlet_LuaReader_getBool, getTopLevelBools)
+TEST(inlet_LuaReader, getTopLevelBools)
 {
   axom::inlet::LuaReader lr;
   lr.parseString("foo = true; bar = false");
@@ -28,7 +28,7 @@ TEST(inlet_LuaReader_getBool, getTopLevelBools)
   EXPECT_EQ(value, false);
 }
 
-TEST(inlet_LuaReader_getBool, getInsideBools)
+TEST(inlet_LuaReader, getInsideBools)
 {
   axom::inlet::LuaReader lr;
   lr.parseString("foo = { bar = false; baz = true }");
@@ -46,7 +46,7 @@ TEST(inlet_LuaReader_getBool, getInsideBools)
   EXPECT_EQ(value, true);
 }
 
-TEST(inlet_LuaReader_getString, getTopLevelStrings)
+TEST(inlet_LuaReader, getTopLevelStrings)
 {
   axom::inlet::LuaReader lr;
   lr.parseString("foo = \"this is a test string\"; bar = \"TesT StrInG\"");
@@ -65,7 +65,7 @@ TEST(inlet_LuaReader_getString, getTopLevelStrings)
   EXPECT_EQ(value, "TesT StrInG");
 }
 
-TEST(inlet_LuaReader_getString, getInsideStrings)
+TEST(inlet_LuaReader, getInsideStrings)
 {
   axom::inlet::LuaReader lr;
   lr.parseString(
@@ -108,6 +108,46 @@ TEST(inlet_LuaReader, mixLevelTables)
   EXPECT_EQ(retValue, true);
   EXPECT_EQ(value, 3);
 }
+
+
+// Checks that LuaReader parses array information as expected
+TEST(inlet_LuaReader, getMap)
+{
+  std::string testString =
+    "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = "
+    "2.4, [33] = 'hello', [200] = 'bye' }";
+  axom::inlet::LuaReader lr;
+  lr.parseString(testString);
+
+  std::unordered_map<int, int> ints;
+  bool found = lr.getIntMap("luaArray", ints);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, int> expectedInts {{1, 4}, {2, 5}, {3, 6}, {12, 2}};
+  EXPECT_EQ(expectedInts, ints);
+
+  std::unordered_map<int, double> doubles;
+  found = lr.getDoubleMap("luaArray", doubles);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, double> expectedDoubles {{1, 4},
+                                                   {2, 5},
+                                                   {3, 6},
+                                                   {12, 2.4}};
+  EXPECT_EQ(expectedDoubles, doubles);
+
+  std::unordered_map<int, bool> bools;
+  found = lr.getBoolMap("luaArray", bools);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
+  EXPECT_EQ(expectedBools, bools);
+
+  std::unordered_map<int, std::string> strs;
+  found = lr.getStringMap("luaArray", strs);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, std::string> expectedStrs {{33, "hello"},
+                                                     {200, "bye"}};
+  EXPECT_EQ(expectedStrs, strs);
+}
+
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

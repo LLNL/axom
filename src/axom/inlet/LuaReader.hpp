@@ -198,9 +198,16 @@ public:
   bool getStringMap(const std::string& id,
                     std::unordered_map<int, std::string>& values);
 
-  // don't really need this function if we're just returning lua state
-  bool getFunction(const std::string& id, std::function<double(double)>& func);
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the Sol Lua state
+   *
+   * This allows the user to access functionality that was not provided by Inlet.
+   *
+   * \return Reference to the Sol Lua state
+   *****************************************************************************
+   */
   sol::state& solState() {
     return m_lua;
   }
