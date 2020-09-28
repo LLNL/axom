@@ -21,7 +21,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 constexpr int LJ_TAG = 55432;
 
 const char* mpiBlockingReceiveMessages(MPI_Comm comm)
@@ -35,25 +34,35 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm)
   MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
 
   // Setup where to receive the char array
-  charArray = new char[messageSize+1];
+  charArray = new char[messageSize + 1];
   charArray[messageSize] = '\0';
 
   // Receive packed Message
-  MPI_Recv(charArray, messageSize, MPI_CHAR, mpiStatus.MPI_SOURCE,
-           LJ_TAG, comm, &mpiStatus);
+  MPI_Recv(charArray,
+           messageSize,
+           MPI_CHAR,
+           mpiStatus.MPI_SOURCE,
+           LJ_TAG,
+           comm,
+           &mpiStatus);
 
   return charArray;
 }
 
-void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank,
+void mpiNonBlockingSendMessages(MPI_Comm comm,
+                                int destinationRank,
                                 const char* packedMessagesToBeSent)
 {
   MPI_Request mpiRequest;
   MPI_Isend(const_cast<char*>(packedMessagesToBeSent),
-            strlen(packedMessagesToBeSent), MPI_CHAR,
-            destinationRank, LJ_TAG, comm, &mpiRequest);
+            strlen(packedMessagesToBeSent),
+            MPI_CHAR,
+            destinationRank,
+            LJ_TAG,
+            comm,
+            &mpiRequest);
   MPI_Request_free(&mpiRequest);
 }
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom

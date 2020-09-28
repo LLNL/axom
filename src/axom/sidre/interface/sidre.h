@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 /**
  * @name sidre.h
  *
@@ -19,6 +18,5 @@
 #include "axom/sidre/interface/c_fortran/wrapBuffer.h"
 #include "axom/sidre/interface/c_fortran/wrapGroup.h"
 #include "axom/sidre/interface/c_fortran/wrapView.h"
-
 
 #endif

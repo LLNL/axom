@@ -18,7 +18,6 @@ namespace axom
 {
 namespace slam
 {
-
 /**
  * \class IteratorBase
  *
@@ -48,14 +47,14 @@ namespace slam
  *          Must be a signed integral type
  */
 
-template<typename IterType, typename PosType>
+template <typename IterType, typename PosType>
 class IteratorBase
 {
-  static_assert( std::is_signed<PosType>::value, "PosType must be signed");
-  static_assert( std::is_integral<PosType>::value, "PosType must be integral");
+  static_assert(std::is_signed<PosType>::value, "PosType must be signed");
+  static_assert(std::is_integral<PosType>::value, "PosType must be integral");
 
 protected:
-  IteratorBase() : m_pos(PosType() ) { }
+  IteratorBase() : m_pos(PosType()) { }
   explicit IteratorBase(PosType pos) : m_pos(pos) { }
 
 private:
@@ -67,73 +66,99 @@ private:
   {
     static void adv(IterType& derived, PosType n)
     {
-      void (IterType::* fn)(PosType) = &accessor::advance;
+      void (IterType::*fn)(PosType) = &accessor::advance;
       (derived.*fn)(n);
     }
   };
 
 private:
   /// Call the derived iterator's advance() function
-  void adv(IterType& derived, PosType n) const {
-    accessor::adv(derived, n);
-  }
+  void adv(IterType& derived, PosType n) const { accessor::adv(derived, n); }
 
 public:
-
-
   /// \name Equality and relational operators
   /// \{
 
   /// Equality operator
-  friend bool operator==(const IterType& lhs,
-                         const IterType& rhs) { return lhs.m_pos == rhs.m_pos; }
+  friend bool operator==(const IterType& lhs, const IterType& rhs)
+  {
+    return lhs.m_pos == rhs.m_pos;
+  }
   /// Inequality operator
-  friend bool operator!=(const IterType& lhs,
-                         const IterType& rhs) { return lhs.m_pos != rhs.m_pos; }
+  friend bool operator!=(const IterType& lhs, const IterType& rhs)
+  {
+    return lhs.m_pos != rhs.m_pos;
+  }
   /// Less than operator
-  friend bool operator<(const IterType& lhs,
-                        const IterType& rhs) { return lhs.m_pos < rhs.m_pos; }
+  friend bool operator<(const IterType& lhs, const IterType& rhs)
+  {
+    return lhs.m_pos < rhs.m_pos;
+  }
   /// Less than or equal operator
-  friend bool operator<=(const IterType& lhs,
-                         const IterType& rhs) { return lhs.m_pos <= rhs.m_pos; }
+  friend bool operator<=(const IterType& lhs, const IterType& rhs)
+  {
+    return lhs.m_pos <= rhs.m_pos;
+  }
   /// Greater than operator
-  friend bool operator>(const IterType& lhs,
-                        const IterType& rhs) { return lhs.m_pos > rhs.m_pos; }
+  friend bool operator>(const IterType& lhs, const IterType& rhs)
+  {
+    return lhs.m_pos > rhs.m_pos;
+  }
   /// Greater than or equal operator
-  friend bool operator>=(const IterType& lhs,
-                         const IterType& rhs) { return lhs.m_pos >= rhs.m_pos; }
+  friend bool operator>=(const IterType& lhs, const IterType& rhs)
+  {
+    return lhs.m_pos >= rhs.m_pos;
+  }
   /// \}
 
   /// \name Iterator advance and distance operators
   /// \{
 
   /// Pre-increment operator
-  IterType& operator++() { adv(getIter(),1); return getIter(); }
+  IterType& operator++()
+  {
+    adv(getIter(), 1);
+    return getIter();
+  }
   /// Post-increment operator
-  IterType operator++(int) {
+  IterType operator++(int)
+  {
     IterType ret = getIter();
     adv(getIter(), 1);
     return ret;
   }
   /// Pre-decrement operator
-  IterType& operator--() { adv(getIter(),-1); return getIter(); }
+  IterType& operator--()
+  {
+    adv(getIter(), -1);
+    return getIter();
+  }
   /// Post-decrement operator
-  IterType operator--(int) {
+  IterType operator--(int)
+  {
     IterType ret = getIter();
-    adv(getIter(),-1);
+    adv(getIter(), -1);
     return ret;
   }
 
   /// Addition-assignment operator
-  IterType& operator+=(PosType n) { adv(getIter(), n); return getIter(); }
+  IterType& operator+=(PosType n)
+  {
+    adv(getIter(), n);
+    return getIter();
+  }
   /// Subtraction-assignment operator
-  IterType& operator-=(PosType n) { adv(getIter(), -n); return getIter(); }
+  IterType& operator-=(PosType n)
+  {
+    adv(getIter(), -n);
+    return getIter();
+  }
 
   /// Addition operator with iterator on left and position on right
   friend IterType operator+(const IterType& it, PosType n)
   {
     IterType ret(it);
-    ret.adv(ret,n);
+    ret.adv(ret, n);
     return ret;
   }
   /// Addition operator with position on left and iterator on right
@@ -162,11 +187,10 @@ public:
 
 private:
   /// Accessor to derived class
-  IterType& getIter() {
-    return *static_cast<IterType*>(this);
-  }
+  IterType& getIter() { return *static_cast<IterType*>(this); }
   /// Const accessor to derived class
-  const IterType& getIter() const {
+  const IterType& getIter() const
+  {
     return *static_cast<const IterType*>(this);
   }
 
@@ -174,7 +198,7 @@ protected:
   PosType m_pos;
 };
 
-} // end namespace slam
-} // end namespace axom
+}  // end namespace slam
+}  // end namespace axom
 
-#endif //  SLAM_ITERATOR_BASE_H_
+#endif  //  SLAM_ITERATOR_BASE_H_

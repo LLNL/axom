@@ -7,14 +7,13 @@
 
 #include "axom/sidre/core/sidre.hpp"
 
-
-using axom::sidre::DataStore;
 using axom::sidre::Buffer;
+using axom::sidre::DataStore;
 using axom::sidre::IndexType;
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_datastore,destroy_buffer)
+TEST(sidre_datastore, destroy_buffer)
 {
   DataStore* ds = new DataStore();
   Buffer* dbuff = ds->createBuffer();
@@ -24,7 +23,7 @@ TEST(sidre_datastore,destroy_buffer)
 
   ds->destroyBuffer(bufferIndex);
   // should be no buffers
-  EXPECT_TRUE( ds->getFirstValidBufferIndex() == -1 );
+  EXPECT_TRUE(ds->getFirstValidBufferIndex() == -1);
 
   // After destroy, that buffer index should be available again, and have been
   // re-used..
@@ -32,7 +31,7 @@ TEST(sidre_datastore,destroy_buffer)
   (void)dbuff2;
   std::cerr << ds->getFirstValidBufferIndex() << std::endl;
   std::cerr << bufferIndex << std::endl;
-  EXPECT_TRUE( ds->getFirstValidBufferIndex() == bufferIndex );
+  EXPECT_TRUE(ds->getFirstValidBufferIndex() == bufferIndex);
 
   // check error condition
   IndexType badBufferIndex = 9999;

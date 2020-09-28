@@ -22,7 +22,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *******************************************************************************
  * \class BinaryTreeCommunicator
@@ -146,7 +145,7 @@ private:
   int m_childCount;
 };
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

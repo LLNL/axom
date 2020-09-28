@@ -10,7 +10,7 @@
 ## Adds code checks to all source files under this directory.
 ##
 ## PREFIX is used in the creation of all the underlying targets. For example:
-## <PREFIX>_uncrustify_check.
+## <PREFIX>_clangformat_check.
 ##
 ## EXCLUDES is used to exclude any files from the code checks. It is done with
 ## a simple CMake reg exp MATCHES check.
@@ -56,10 +56,10 @@ macro(axom_add_code_checks)
 
         blt_add_code_checks(PREFIX    ${arg_PREFIX}
                             SOURCES   ${_sources}
-                            UNCRUSTIFY_CFG_FILE ${PROJECT_SOURCE_DIR}/uncrustify.cfg)
+                            CLANGFORMAT_CFG_FILE ${PROJECT_SOURCE_DIR}/.clang-format)
 
         # Set FOLDER property for code check targets
-        foreach(_suffix uncrustify_check uncrustify_style)
+        foreach(_suffix clangformat_check clangformat_style)
             set(_tgt ${arg_PREFIX}_${_suffix})
             if(TARGET ${_tgt}) 
                 set_target_properties(${_tgt} PROPERTIES FOLDER "axom/code_checks")

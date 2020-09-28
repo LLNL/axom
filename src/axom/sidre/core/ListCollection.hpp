@@ -120,13 +120,10 @@
 #include "SidreTypes.hpp"
 #include "ItemCollection.hpp"
 
-
-
 namespace axom
 {
 namespace sidre
 {
-
 ////////////////////////////////////////////////////////////////////////
 //
 // ListCollection keeps an index constant for each item
@@ -151,17 +148,13 @@ template <typename TYPE>
 class ListCollection : public ItemCollection<TYPE>
 {
 public:
-
   //
   // Default compiler-generated ctor, dtor, copy ctor, and copy assignment
   // operator suffice for this class.
   //
 
   ///
-  size_t getNumItems() const
-  {
-    return m_items.size() - m_free_ids.size();
-  }
+  size_t getNumItems() const { return m_items.size() - m_free_ids.size(); }
 
   ///
   IndexType getFirstValidIndex() const;
@@ -180,8 +173,7 @@ public:
   ///
   bool hasItem(IndexType idx) const
   {
-    return (idx >= 0 &&
-            static_cast<unsigned>(idx) < m_items.size() &&
+    return (idx >= 0 && static_cast<unsigned>(idx) < m_items.size() &&
             m_items[static_cast<unsigned>(idx)]);
   }
 
@@ -204,13 +196,13 @@ public:
   ///
   TYPE* getItem(IndexType idx)
   {
-    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : nullptr );
+    return (hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : nullptr);
   }
 
   ///
   TYPE const* getItem(IndexType idx) const
   {
-    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : nullptr );
+    return (hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : nullptr);
   }
 
   ///
@@ -242,7 +234,7 @@ public:
   void removeAllItems()
   {
     m_items.clear();
-    while ( !m_free_ids.empty() )
+    while(!m_free_ids.empty())
     {
       m_free_ids.pop();
     }
@@ -250,46 +242,43 @@ public:
   }
 
 private:
-  std::vector<TYPE*>  m_items;
-  std::stack< IndexType > m_free_ids;
+  std::vector<TYPE*> m_items;
+  std::stack<IndexType> m_free_ids;
 
-  std::list< IndexType > m_index_list;
-
+  std::list<IndexType> m_index_list;
 };
 
 template <typename TYPE>
 IndexType ListCollection<TYPE>::getFirstValidIndex() const
 {
   IndexType idx = 0;
-  while ( static_cast<unsigned>(idx) < m_items.size() &&
-          m_items[static_cast<unsigned>(idx)] == nullptr )
+  while(static_cast<unsigned>(idx) < m_items.size() &&
+        m_items[static_cast<unsigned>(idx)] == nullptr)
   {
     idx++;
   }
-  return ( (static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex );
+  return ((static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex);
 }
 
 template <typename TYPE>
 IndexType ListCollection<TYPE>::getNextValidIndex(IndexType idx) const
 {
-  if (idx == InvalidIndex)
+  if(idx == InvalidIndex)
   {
     return InvalidIndex;
   }
 
   idx++;
-  while ( static_cast<unsigned>(idx) < m_items.size() &&
-          m_items[static_cast<unsigned>(idx)] == nullptr )
+  while(static_cast<unsigned>(idx) < m_items.size() &&
+        m_items[static_cast<unsigned>(idx)] == nullptr)
   {
     idx++;
   }
-  return ( (static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex );
+  return ((static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex);
 }
 
-
 template <typename TYPE>
-IndexType ListCollection<TYPE>::insertItem(TYPE* item,
-                                           const std::string& name)
+IndexType ListCollection<TYPE>::insertItem(TYPE* item, const std::string& name)
 {
   SLIC_WARNING_IF(!name.empty(),
                   "Item " << name << " added to Group "
@@ -298,7 +287,7 @@ IndexType ListCollection<TYPE>::insertItem(TYPE* item,
 
   bool use_recycled_index = false;
   IndexType idx = m_items.size();
-  if ( !m_free_ids.empty() )
+  if(!m_free_ids.empty())
   {
     idx = m_free_ids.top();
     m_free_ids.pop();
@@ -307,7 +296,7 @@ IndexType ListCollection<TYPE>::insertItem(TYPE* item,
 
   m_index_list.push_back(idx);
 
-  if ( use_recycled_index )
+  if(use_recycled_index)
   {
     m_items[idx] = item;
   }
@@ -330,11 +319,11 @@ template <typename TYPE>
 TYPE* ListCollection<TYPE>::removeItem(IndexType idx)
 {
   TYPE* ret_val = nullptr;
-  if ( hasItem(idx) )
+  if(hasItem(idx))
   {
-    for (auto itr = m_index_list.begin() ; itr != m_index_list.end() ; ++itr)
+    for(auto itr = m_index_list.begin(); itr != m_index_list.end(); ++itr)
     {
-      if (*itr == idx)
+      if(*itr == idx)
       {
         ret_val = m_items[idx];
         m_index_list.erase(itr);

@@ -13,24 +13,19 @@
 #include <vector>     // for STL vector
 #include <iterator>   // for ostream_iterator
 
-
 namespace axom
 {
-
 //-----------------------------------------------------------------------------
-void about()
-{
-  about(std::cout);
-}
+void about() { about(std::cout); }
 
 //-----------------------------------------------------------------------------
 // The guts of this were taken from the utils_config unit test.
 //-----------------------------------------------------------------------------
 void about(std::ostream &oss)
 {
-  oss << "Axom information:"  << std::endl << std::endl;
+  oss << "Axom information:" << std::endl << std::endl;
 
-  oss << "AXOM_VERSION_FULL: "  << AXOM_VERSION_FULL  << std::endl;
+  oss << "AXOM_VERSION_FULL: " << AXOM_VERSION_FULL << std::endl;
   oss << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
   oss << "AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
   oss << "AXOM_VERSION_PATCH: " << AXOM_VERSION_PATCH << std::endl;
@@ -39,21 +34,25 @@ void about(std::ostream &oss)
   oss << "AXOM_VERSION_EXTRA: " << AXOM_VERSION_EXTRA << std::endl;
 #endif
 
-  oss << "Compiler Settings: "  << std::endl
+  oss << "Compiler Settings: " << std::endl
       << "   C++ Standard: " << AXOM_CXX_STD << std::endl
       << "   OpenMP support: "
 #ifdef AXOM_USE_OPENMP
-    << "ENABLED"
+      << "ENABLED"
 #else
-    << "DISABLED"
+      << "DISABLED"
 #endif
-    << std::endl;
+      << std::endl;
 
   oss << "Available components: " << std::endl;
 
   std::vector<std::string> comps;
 
   comps.push_back("core");
+
+#ifdef AXOM_USE_INLET
+  comps.push_back("inlet");
+#endif
 
 #ifdef AXOM_USE_MINT
   comps.push_back("mint");
@@ -84,8 +83,9 @@ void about(std::ostream &oss)
 #endif
 
   std::stringstream sstr;
-  std::copy( comps.begin(), comps.end(),
-             std::ostream_iterator<std::string>(sstr, "; "));
+  std::copy(comps.begin(),
+            comps.end(),
+            std::ostream_iterator<std::string>(sstr, "; "));
   oss << " { " << sstr.str() << "}" << std::endl;
 
   oss << "Active Dependencies: " << std::endl;
@@ -108,12 +108,20 @@ void about(std::ostream &oss)
   libs.push_back("hdf5");
 #endif
 
+#ifdef AXOM_USE_LUA
+  libs.push_back("lua");
+#endif
+
 #ifdef AXOM_USE_MFEM
   libs.push_back("mfem");
 #endif
 
 #ifdef AXOM_USE_MPI
   libs.push_back("mpi");
+#endif
+
+#ifdef AXOM_USE_SOL
+  libs.push_back("sol");
 #endif
 
 #ifdef AXOM_USE_SPARSEHASH
@@ -130,8 +138,9 @@ void about(std::ostream &oss)
 
   // reset sstr
   sstr.str("");
-  std::copy( libs.begin(), libs.end(),
-             std::ostream_iterator<std::string>(sstr, "; "));
+  std::copy(libs.begin(),
+            libs.end(),
+            std::ostream_iterator<std::string>(sstr, "; "));
   oss << " { " << sstr.str() << "}" << std::endl;
 }
 
@@ -139,8 +148,11 @@ void about(std::ostream &oss)
 std::string getVersion()
 {
   std::ostringstream oss;
-  oss << AXOM_VERSION_FULL << "-" << AXOM_VERSION_EXTRA;
+  oss << AXOM_VERSION_FULL;
+#ifdef AXOM_VERSION_EXTRA
+  oss << "-" << AXOM_VERSION_EXTRA;
+#endif
   return oss.str();
 }
 
-} // end namespace axom
+}  // end namespace axom

@@ -6,11 +6,11 @@
 #ifndef AXOM_SPIN_BVH_QUERYACCESSOR_HPP_
 #define AXOM_SPIN_BVH_QUERYACCESSOR_HPP_
 
-#include "axom/core/Macros.hpp" // for axom macros
-#include "axom/core/Types.hpp"  // for axom::IndexType
+#include "axom/core/Macros.hpp"  // for axom macros
+#include "axom/core/Types.hpp"   // for axom::IndexType
 
 // C/C++ includes
-#include <type_traits> // for std::is_floating_point()
+#include <type_traits>  // for std::is_floating_point()
 
 namespace axom
 {
@@ -20,7 +20,6 @@ namespace internal
 {
 namespace linear_bvh
 {
-
 /*!
  * \brief QueryAccessor is a singleton class consisting of methods to extract
  *  the query input information for different input types, e.g., points, rays,
@@ -32,15 +31,15 @@ namespace linear_bvh
  *  \pre NDIMS==2 || NDIMS==3
  *  \pre std::is_floating_point< FloatType >::value
  */
-template < int NDIMS, typename FloatType >
+template <int NDIMS, typename FloatType>
 class QueryAccessor
 {
 public:
-
-  AXOM_STATIC_ASSERT_MSG( ( (NDIMS==2) || (NDIMS==3) ),
-                          "TraversalPredicates are defined for 2D and 3D only" );
-  AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
-                          "A valid FloatingType must be used, e.g., double or float" );
+  AXOM_STATIC_ASSERT_MSG(((NDIMS == 2) || (NDIMS == 3)),
+                         "TraversalPredicates are defined for 2D and 3D only");
+  AXOM_STATIC_ASSERT_MSG(
+    std::is_floating_point<FloatType>::value,
+    "A valid FloatingType must be used, e.g., double or float");
 
   /// \name Point Query Access Methods
   /// @{
@@ -59,13 +58,12 @@ public:
    * \note The PointType must overload the `[]` operator for accessing the
    *  point coordinates.
    */
-  template < typename PointType >
-  AXOM_HOST_DEVICE
-  static inline void getPoint( PointType& point,
-                               IndexType idx,
-                               const FloatType* x,
-                               const FloatType* y,
-                               const FloatType* z );
+  template <typename PointType>
+  AXOM_HOST_DEVICE static inline void getPoint(PointType& point,
+                                               IndexType idx,
+                                               const FloatType* x,
+                                               const FloatType* y,
+                                               const FloatType* z);
 
   /// @}
 
@@ -91,20 +89,19 @@ public:
    *  the first NDIMS locations store the source points coordinates followed
    *  by the normal direction.
    */
-  template < typename RayType >
-  AXOM_HOST_DEVICE
-  static inline void getRay( RayType& ray,
-                             IndexType idx,
-                             const FloatType* x0,
-                             const FloatType* nx,
-                             const FloatType* y0,
-                             const FloatType* ny,
-                             const FloatType* z0,
-                             const FloatType* nz );
+  template <typename RayType>
+  AXOM_HOST_DEVICE static inline void getRay(RayType& ray,
+                                             IndexType idx,
+                                             const FloatType* x0,
+                                             const FloatType* nx,
+                                             const FloatType* y0,
+                                             const FloatType* ny,
+                                             const FloatType* z0,
+                                             const FloatType* nz);
   /// @}
 
-/// \name Bounding Box Query Access Methods
-/// @{
+  /// \name Bounding Box Query Access Methods
+  /// @{
 
   /*!
    * \brief Gets the bounding box defined by lower and upper bound corners.
@@ -125,146 +122,133 @@ public:
    *  the first NDIMS locations store the lower bound coordinate min followed
    *  by the upper bound coordinate max.
    */
-  template < typename BoundingBoxType >
-  AXOM_HOST_DEVICE
-  static inline void getBoundingBox( BoundingBoxType& box,
-                                     IndexType idx,
-                                     const FloatType* xmin,
-                                     const FloatType* xmax,
-                                     const FloatType* ymin,
-                                     const FloatType* ymax,
-                                     const FloatType* zmin,
-                                     const FloatType* zmax );
+  template <typename BoundingBoxType>
+  AXOM_HOST_DEVICE static inline void getBoundingBox(BoundingBoxType& box,
+                                                     IndexType idx,
+                                                     const FloatType* xmin,
+                                                     const FloatType* xmax,
+                                                     const FloatType* ymin,
+                                                     const FloatType* ymax,
+                                                     const FloatType* zmin,
+                                                     const FloatType* zmax);
   /// @}
-
 };
 
 //------------------------------------------------------------------------------
 // 2D Specialization
 //------------------------------------------------------------------------------
-template < typename FloatType >
-class QueryAccessor< 2, FloatType >
+template <typename FloatType>
+class QueryAccessor<2, FloatType>
 {
 public:
-
-  template < typename PointType >
-  AXOM_HOST_DEVICE
-  static inline void getPoint( PointType& point,
-                               IndexType idx,
-                               const FloatType* x,
-                               const FloatType* y,
-                               const FloatType* AXOM_NOT_USED(z) )
+  template <typename PointType>
+  AXOM_HOST_DEVICE static inline void getPoint(PointType& point,
+                                               IndexType idx,
+                                               const FloatType* x,
+                                               const FloatType* y,
+                                               const FloatType* AXOM_NOT_USED(z))
   {
-    point[ 0 ] = x[ idx ];
-    point[ 1 ] = y[ idx ];
+    point[0] = x[idx];
+    point[1] = y[idx];
   }
 
-  template < typename RayType >
-  AXOM_HOST_DEVICE
-  static inline void getRay( RayType& ray,
-                             IndexType idx,
-                             const FloatType* x0,
-                             const FloatType* nx,
-                             const FloatType* y0,
-                             const FloatType* ny,
-                             const FloatType* AXOM_NOT_USED(z0),
-                             const FloatType* AXOM_NOT_USED(nz) )
+  template <typename RayType>
+  AXOM_HOST_DEVICE static inline void getRay(RayType& ray,
+                                             IndexType idx,
+                                             const FloatType* x0,
+                                             const FloatType* nx,
+                                             const FloatType* y0,
+                                             const FloatType* ny,
+                                             const FloatType* AXOM_NOT_USED(z0),
+                                             const FloatType* AXOM_NOT_USED(nz))
   {
-    ray[ 0 ] = x0[ idx ];
-    ray[ 1 ] = y0[ idx ];
+    ray[0] = x0[idx];
+    ray[1] = y0[idx];
 
-    ray[ 2 ] = nx[ idx ];
-    ray[ 3 ] = ny[ idx ];
+    ray[2] = nx[idx];
+    ray[3] = ny[idx];
   }
 
-  template < typename BoundingBoxType >
-  AXOM_HOST_DEVICE
-  static inline void getBoundingBox( BoundingBoxType& box,
-                                     IndexType idx,
-                                     const FloatType* xmin,
-                                     const FloatType* xmax,
-                                     const FloatType* ymin,
-                                     const FloatType* ymax,
-                                     const FloatType* AXOM_NOT_USED(zmin),
-                                     const FloatType* AXOM_NOT_USED(zmax) )
+  template <typename BoundingBoxType>
+  AXOM_HOST_DEVICE static inline void getBoundingBox(
+    BoundingBoxType& box,
+    IndexType idx,
+    const FloatType* xmin,
+    const FloatType* xmax,
+    const FloatType* ymin,
+    const FloatType* ymax,
+    const FloatType* AXOM_NOT_USED(zmin),
+    const FloatType* AXOM_NOT_USED(zmax))
   {
-    box[ 0 ] = xmin[ idx ];
-    box[ 1 ] = ymin[ idx ];
+    box[0] = xmin[idx];
+    box[1] = ymin[idx];
 
-    box[ 2 ] = xmax[ idx ];
-    box[ 3 ] = ymax[ idx ];
+    box[2] = xmax[idx];
+    box[3] = ymax[idx];
   }
-
 };
 
 //------------------------------------------------------------------------------
 // 3D Specialization
 //------------------------------------------------------------------------------
-template < typename FloatType >
-class QueryAccessor< 3, FloatType >
+template <typename FloatType>
+class QueryAccessor<3, FloatType>
 {
 public:
-
-  template < typename PointType >
-  AXOM_HOST_DEVICE
-  static inline void getPoint( PointType& point,
-                               IndexType idx,
-                               const FloatType* x,
-                               const FloatType* y,
-                               const FloatType* z )
+  template <typename PointType>
+  AXOM_HOST_DEVICE static inline void getPoint(PointType& point,
+                                               IndexType idx,
+                                               const FloatType* x,
+                                               const FloatType* y,
+                                               const FloatType* z)
   {
-    point[ 0 ] = x[ idx ];
-    point[ 1 ] = y[ idx ];
-    point[ 2 ] = z[ idx ];
+    point[0] = x[idx];
+    point[1] = y[idx];
+    point[2] = z[idx];
   }
 
-  template < typename RayType >
-  AXOM_HOST_DEVICE
-  static inline void getRay( RayType& ray,
-                             IndexType idx,
-                             const FloatType* x0,
-                             const FloatType* nx,
-                             const FloatType* y0,
-                             const FloatType* ny,
-                             const FloatType* z0,
-                             const FloatType* nz )
+  template <typename RayType>
+  AXOM_HOST_DEVICE static inline void getRay(RayType& ray,
+                                             IndexType idx,
+                                             const FloatType* x0,
+                                             const FloatType* nx,
+                                             const FloatType* y0,
+                                             const FloatType* ny,
+                                             const FloatType* z0,
+                                             const FloatType* nz)
   {
-    ray[ 0 ] = x0[ idx ];
-    ray[ 1 ] = y0[ idx ];
-    ray[ 2 ] = z0[ idx ];
+    ray[0] = x0[idx];
+    ray[1] = y0[idx];
+    ray[2] = z0[idx];
 
-    ray[ 3 ] = nx[ idx ];
-    ray[ 4 ] = ny[ idx ];
-    ray[ 5 ] = nz[ idx ];
+    ray[3] = nx[idx];
+    ray[4] = ny[idx];
+    ray[5] = nz[idx];
   }
 
-  template < typename BoundingBoxType >
-  AXOM_HOST_DEVICE
-  static inline void getBoundingBox( BoundingBoxType& box,
-                                     IndexType idx,
-                                     const FloatType* xmin,
-                                     const FloatType* xmax,
-                                     const FloatType* ymin,
-                                     const FloatType* ymax,
-                                     const FloatType* zmin,
-                                     const FloatType* zmax )
+  template <typename BoundingBoxType>
+  AXOM_HOST_DEVICE static inline void getBoundingBox(BoundingBoxType& box,
+                                                     IndexType idx,
+                                                     const FloatType* xmin,
+                                                     const FloatType* xmax,
+                                                     const FloatType* ymin,
+                                                     const FloatType* ymax,
+                                                     const FloatType* zmin,
+                                                     const FloatType* zmax)
   {
-    box[ 0 ] = xmin[ idx ];
-    box[ 1 ] = ymin[ idx ];
-    box[ 2 ] = zmin[ idx ];
+    box[0] = xmin[idx];
+    box[1] = ymin[idx];
+    box[2] = zmin[idx];
 
-    box[ 3 ] = xmax[ idx ];
-    box[ 4 ] = ymax[ idx ];
-    box[ 5 ] = zmax[ idx ];
+    box[3] = xmax[idx];
+    box[4] = ymax[idx];
+    box[5] = zmax[idx];
   }
-
 };
 
 } /* namespace linear_bvh */
 } /* namespace internal */
 } /* namespace spin */
 } /* namespace axom */
-
-
 
 #endif /* AXOM_SPIN_BVH_QUERYACCESSOR_HPP_ */

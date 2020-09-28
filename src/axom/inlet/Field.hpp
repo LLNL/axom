@@ -18,18 +18,18 @@
 
 #include <memory>
 #include <type_traits>
+#include <functional>
 
 namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class Field
  *
  * \brief Provides functions to help define how individual field variables in an
- * input deck are expected to behave.  It also holds the Sidre Group to 
+ * input file are expected to behave.  It also holds the Sidre Group to 
  * the individual field.
  *
  * \see Inlet Table
@@ -50,13 +50,18 @@ public:
    * \param [in] type FieldType specifying the data type of this Field instance.
    * Default is FieldType::UNSPECIFIED.
    * \param [in] docEnabled Boolean indicating whether or not documentation
-   * generation is enabled for Input Deck this Field instance belongs to.
+   * generation is enabled for Input file this Field instance belongs to.
    *****************************************************************************
    */
-  Field(axom::sidre::Group* sidreGroup, axom::sidre::Group* root,
+  Field(axom::sidre::Group* sidreGroup,
+        axom::sidre::Group* root,
         axom::sidre::DataTypeId type = axom::sidre::DataTypeId::NO_TYPE_ID,
-        bool docEnabled = true) : m_sidreGroup(sidreGroup), m_sidreRootGroup(root),
-        m_type(type), m_docEnabled(docEnabled) {}
+        bool docEnabled = true)
+    : m_sidreGroup(sidreGroup)
+    , m_sidreRootGroup(root)
+    , m_type(type)
+    , m_docEnabled(docEnabled)
+  { }
 
   /*!
    *****************************************************************************
@@ -74,7 +79,7 @@ public:
    *****************************************************************************
    * \brief Set the required status of this Field.
    *
-   * Set whether this Field is required, or not, to be in the input deck.
+   * Set whether this Field is required, or not, to be in the input file.
    * The default behavior is to not be required.
    *
    * \param [in] isRequired Boolean value of whether Field is required
@@ -88,7 +93,7 @@ public:
    *****************************************************************************
    * \brief Return the required status of this Field.
    *
-   * Return that this Field is required, or not, to be in the input deck.
+   * Return that this Field is required, or not, to be in the input file.
    * The default behavior is to not be required.
    *
    * \return Boolean value of whether this Field is required
@@ -100,7 +105,7 @@ public:
    *****************************************************************************
    * \brief Set the default value of this Field.
    *
-   * Set the default value for the Field in the input deck.
+   * Set the default value for the Field in the input file.
    *
    * \param [in] value The default string value
    *
@@ -109,11 +114,11 @@ public:
   */
   std::shared_ptr<Field> defaultValue(const std::string& value);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Set the default value of this Field.
    *
-   * Set the default value for the Field in the input deck.
+   * Set the default value for the Field in the input file.
    *
    * \param [in] value The default string value
    *
@@ -126,7 +131,7 @@ public:
    *****************************************************************************
    * \brief Set the default value of this Field.
    *
-   * Set the default value for the Field in the input deck.
+   * Set the default value for the Field in the input file.
    *
    * \param [in] value The default boolean value
    *
@@ -139,7 +144,7 @@ public:
    *****************************************************************************
    * \brief Set the default value of this Field.
    *
-   * Set the default value for the Field in the input deck.
+   * Set the default value for the Field in the input file.
    *
    * \param [in] value The default integer value
    *
@@ -152,7 +157,7 @@ public:
    *****************************************************************************
    * \brief Set the default value of this Field.
    *
-   * Set the default value for the Field in the input deck.
+   * Set the default value for the Field in the input file.
    *
    * \param [in] value The default double value
    *
@@ -165,7 +170,7 @@ public:
    *****************************************************************************
    * \brief Set the range of this Field.
    *
-   * Set the continuous range for the Field in the input deck.
+   * Set the continuous range for the Field in the input file.
    *
    * \param [in] startVal The start of the range
    * 
@@ -180,7 +185,7 @@ public:
    *****************************************************************************
    * \brief Set the range of this Field.
    *
-   * Set the continuous range for the Field in the input deck.
+   * Set the continuous range for the Field in the input file.
    *
    * \param [in] startVal The start of the range
    * 
@@ -257,8 +262,32 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<Field> validValues(const std::initializer_list<double>& set);
-private:
 
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Field's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Field::verify().
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda);
+
+  /*!
+   *****************************************************************************
+   * \brief Called by Inlet::verify to verify the contents of this Field.
+   *****************************************************************************
+  */
+  bool verify();
+
+  /*!
+   *****************************************************************************
+   * \return The full name for this Field.
+   *****************************************************************************
+  */
+  std::string name();
+
+private:
   /*!
    *****************************************************************************
    * \brief Set the valid values for this Field.
@@ -267,15 +296,15 @@ private:
    *
    * \return Shared pointer to this Field instance
    *****************************************************************************
-  */  
-  template <typename T> 
+  */
+  template <typename T>
   void setScalarValidValues(std::vector<T> set);
 
   /*!
    *****************************************************************************
    * \brief Set the range of this Field.
    *
-   * Set the continuous range for the Field in the input deck.
+   * Set the continuous range for the Field in the input file.
    *
    * \param [in] startVal The start of the range
    * 
@@ -284,31 +313,32 @@ private:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  template<typename T>
+  template <typename T>
   void setRange(T startVal, T endVal);
-  
+
   /*!
    *****************************************************************************
    * \brief Set the default value of this Field.
    *
-   * Set the default value for the Field in the input deck.
+   * Set the default value for the Field in the input file.
    *
    * \param [in] value The default value
    *
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  template<typename T>
+  template <typename T>
   void setDefaultValue(T value);
 
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
-  bool m_docEnabled = false;
+  bool m_docEnabled;
+  std::function<bool()> m_verifier;
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif

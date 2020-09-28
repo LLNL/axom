@@ -12,7 +12,6 @@
 
 #include <iostream>
 
-
 int main()
 {
   typedef int IntT;

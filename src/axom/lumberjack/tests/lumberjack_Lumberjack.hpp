@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-
 class TestCommunicator : public axom::lumberjack::Communicator
 {
 public:
@@ -25,48 +24,29 @@ public:
     srand(time(nullptr));
   }
 
-  void finalize()
-  {}
+  void finalize() { }
 
-  int rank()
-  {
-    return rand() % (m_ranksLimit*4);
-  }
+  int rank() { return rand() % (m_ranksLimit * 4); }
 
-  void ranksLimit(int value)
-  {
-    m_ranksLimit = value;
-  }
+  void ranksLimit(int value) { m_ranksLimit = value; }
 
-  int ranksLimit()
-  {
-    return m_ranksLimit;
-  }
+  int ranksLimit() { return m_ranksLimit; }
 
-  int numPushesToFlush()
-  {
-    return 1;
-  }
+  int numPushesToFlush() { return 1; }
 
   void push(const char* /* packedMessagesToBeSent */,
             std::vector<const char*>& /* receivedPackedMessages */)
-  {}
+  { }
 
-  bool isOutputNode()
-  {
-    return m_isOutputNode;
-  }
+  bool isOutputNode() { return m_isOutputNode; }
 
-  void outputNode(bool value)
-  {
-    m_isOutputNode = value;
-  }
+  void outputNode(bool value) { m_isOutputNode = value; }
+
 private:
   MPI_Comm m_mpiComm;
   int m_ranksLimit;
   bool m_isOutputNode;
 };
-
 
 TEST(lumberjack_Lumberjack, combineMessagesPushOnce01)
 {
@@ -262,10 +242,9 @@ TEST(lumberjack_Lumberjack, combineMessages03)
   std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
 
   EXPECT_EQ((int)messages.size(), 6);
-  for(int i=0 ; i<6 ; ++i)
+  for(int i = 0; i < 6; ++i)
   {
-    std::string s = "Should not be combined " +
-                    std::to_string(i+1) + ".";
+    std::string s = "Should not be combined " + std::to_string(i + 1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->count(), 1);
   }
@@ -295,10 +274,9 @@ TEST(lumberjack_Lumberjack, combineMixedMessages01)
 
   // Check total messages size
   EXPECT_EQ((int)messages.size(), 4);
-  for(int i=0 ; i<2 ; ++i)
+  for(int i = 0; i < 2; ++i)
   {
-    std::string s = "Should not be combined " +
-                    std::to_string(i+1) + ".";
+    std::string s = "Should not be combined " + std::to_string(i + 1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->count(), 1);
   }
@@ -334,10 +312,9 @@ TEST(lumberjack_Lumberjack, combineMixedMessages02)
 
   // Check total messages size
   EXPECT_EQ((int)messages.size(), 4);
-  for(int i=0 ; i<2 ; ++i)
+  for(int i = 0; i < 2; ++i)
   {
-    std::string s = "Should not be combined " +
-                    std::to_string(i+1) + ".";
+    std::string s = "Should not be combined " + std::to_string(i + 1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->count(), 1);
   }
@@ -377,10 +354,9 @@ TEST(lumberjack_Lumberjack, combineMixedMessages03)
   EXPECT_EQ(messages[0]->text(), "");
   EXPECT_EQ(messages[0]->count(), 1);
 
-  for(int i=1 ; i<3 ; ++i)
+  for(int i = 1; i < 3; ++i)
   {
-    std::string s = "Should not be combined " +
-                    std::to_string(i+1) + ".";
+    std::string s = "Should not be combined " + std::to_string(i + 1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->count(), 1);
   }
@@ -402,10 +378,9 @@ TEST(lumberjack_Lumberjack, combineMessagesManyMessages)
   axom::lumberjack::Lumberjack lumberjack;
   lumberjack.initialize(&communicator, ranksLimit);
 
-  for(int i=0 ; i<loopCount ; ++i)
+  for(int i = 0; i < loopCount; ++i)
   {
-    std::string s = "Should not be combined " +
-                    std::to_string(i) + ".";
+    std::string s = "Should not be combined " + std::to_string(i) + ".";
     lumberjack.queueMessage(s);
   }
 
@@ -414,10 +389,9 @@ TEST(lumberjack_Lumberjack, combineMessagesManyMessages)
   std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
 
   EXPECT_EQ((int)messages.size(), loopCount);
-  for(int i=0 ; i<loopCount ; ++i)
+  for(int i = 0; i < loopCount; ++i)
   {
-    std::string s = "Should not be combined " +
-                    std::to_string(i) + ".";
+    std::string s = "Should not be combined " + std::to_string(i) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->count(), 1);
   }
@@ -432,7 +406,7 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
   const int loopCount = 10;
   const int padSize = 1000;
   std::string padding = "";
-  for(int j=0 ; j<padSize ; ++j)
+  for(int j = 0; j < padSize; ++j)
   {
     padding += "0";
   }
@@ -442,7 +416,7 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
   axom::lumberjack::Lumberjack lumberjack;
   lumberjack.initialize(&communicator, ranksLimit);
 
-  for(int i=0 ; i<loopCount ; ++i)
+  for(int i = 0; i < loopCount; ++i)
   {
     std::string s = std::to_string(i) + ":" + padding;
     lumberjack.queueMessage(s);
@@ -453,7 +427,7 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
   std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
 
   EXPECT_EQ((int)messages.size(), loopCount);
-  for(int i=0 ; i<loopCount ; ++i)
+  for(int i = 0; i < loopCount; ++i)
   {
     std::string s = std::to_string(i) + ":" + padding;
     EXPECT_EQ(messages[i]->text(), s);

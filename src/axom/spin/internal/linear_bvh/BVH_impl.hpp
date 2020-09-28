@@ -6,14 +6,14 @@
 #ifndef AXOM_SPIN_BVH_IMPL_HPP_
 #define AXOM_SPIN_BVH_IMPL_HPP_
 
-#include "axom/core/Types.hpp"                          // fixed bitwidth types
-#include "axom/core/execution/for_all.hpp"              // for generic for_all()
-#include "axom/core/memory_management.hpp"              // for memory functions
-#include "axom/core/numerics/floating_point_limits.hpp" // floating_point_limits
-#include "axom/core/utilities/AnnotationMacros.hpp"     // for annotations
+#include "axom/core/Types.hpp"              // fixed bitwidth types
+#include "axom/core/execution/for_all.hpp"  // for generic for_all()
+#include "axom/core/memory_management.hpp"  // for memory functions
+#include "axom/core/numerics/floating_point_limits.hpp"  // floating_point_limits
+#include "axom/core/utilities/AnnotationMacros.hpp"      // for annotations
 
 // slic includes
-#include "axom/slic/interface/slic.hpp"                 // for SLIC macros
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 // linear bvh includes
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
@@ -29,20 +29,17 @@
 // RAJA includes
 #include "RAJA/RAJA.hpp"
 
-
 // C/C++ includes
 #include <fstream>  // for std::ofstream
 #include <sstream>  // for std::ostringstream
 #include <string>   // for std::string
 #include <cstring>  // for memcpy
 
-
 namespace axom
 {
 namespace spin
 {
-
-template < typename FloatType >
+template <typename FloatType>
 using floating_point_limits = axom::numerics::floating_point_limits<FloatType>;
 
 //------------------------------------------------------------------------------
@@ -54,14 +51,14 @@ using floating_point_limits = axom::numerics::floating_point_limits<FloatType>;
 //------------------------------------------------------------------------------
 namespace lbvh = internal::linear_bvh;
 
-template < typename FloatType, int NDIMS >
-using point_t = internal::linear_bvh::Vec< FloatType, NDIMS >;
+template <typename FloatType, int NDIMS>
+using point_t = internal::linear_bvh::Vec<FloatType, NDIMS>;
 
-template < typename FloatType, int NDIMS >
-using ray_t = internal::linear_bvh::Vec< FloatType, NDIMS*2 >;
+template <typename FloatType, int NDIMS>
+using ray_t = internal::linear_bvh::Vec<FloatType, NDIMS * 2>;
 
-template < typename FloatType, int NDIMS >
-using bounding_box_t = internal::linear_bvh::Vec< FloatType, NDIMS*2 >;
+template <typename FloatType, int NDIMS>
+using bounding_box_t = internal::linear_bvh::Vec<FloatType, NDIMS * 2>;
 
 /*!
  * \def BVH_PREDICATE
@@ -77,8 +74,8 @@ using bounding_box_t = internal::linear_bvh::Vec< FloatType, NDIMS*2 >;
  *
  * \note This macro is intended to be used internally by the BVH implementation.
  */
-#define BVH_PREDICATE(_predicateName, _p, _s1, _s2 )    \
-  auto _predicateName = [=] AXOM_HOST_DEVICE( _p, _s1, _s2 )->bool
+#define BVH_PREDICATE(_predicateName, _p, _s1, _s2) \
+  auto _predicateName = [=] AXOM_HOST_DEVICE(_p, _s1, _s2) -> bool
 
 /*!
  * \def BVH_LEAF_ACTION
@@ -93,12 +90,11 @@ using bounding_box_t = internal::linear_bvh::Vec< FloatType, NDIMS*2 >;
  *
  * \note This macro is intended to be used internally by the BVH implementation.
  */
-#define BVH_LEAF_ACTION( _funcName, _node, _leafNodes ) \
-  auto _funcName = [&]( _node, _leafNodes )->void
+#define BVH_LEAF_ACTION(_funcName, _node, _leafNodes) \
+  auto _funcName = [&](_node, _leafNodes) -> void
 
 namespace
 {
-
 /*!
  * \brief Performs a traversal to count the candidates for each query point.
  *
@@ -114,63 +110,59 @@ namespace
  *
  * \return total_count the total count of candidates for all query points.
  */
-template < int NDIMS, typename ExecSpace,
-           typename LeftPredicate,
-           typename RightPredicate,
-           typename FloatType >
-IndexType bvh_get_counts( LeftPredicate&& leftCheck,
-                          RightPredicate&& rightCheck,
-                          const internal::vec4_t< FloatType >* inner_nodes,
-                          const int32* leaf_nodes,
-                          IndexType N,
-                          IndexType* counts,
-                          const FloatType* x,
-                          const FloatType* y,
-                          const FloatType* z ) noexcept
+template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
+IndexType bvh_get_counts(LeftPredicate&& leftCheck,
+                         RightPredicate&& rightCheck,
+                         const internal::vec4_t<FloatType>* inner_nodes,
+                         const int32* leaf_nodes,
+                         IndexType N,
+                         IndexType* counts,
+                         const FloatType* x,
+                         const FloatType* y,
+                         const FloatType* z) noexcept
 {
-  AXOM_PERF_MARK_FUNCTION( "bvh_get_pointcounts" );
+  AXOM_PERF_MARK_FUNCTION("bvh_get_pointcounts");
 
   // sanity checks
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
-  SLIC_ERROR_IF( counts == nullptr, "supplied null pointer for counts!" );
-  SLIC_ERROR_IF( x == nullptr, "supplied null pointer for x-coordinates!" );
-  SLIC_ERROR_IF( y == nullptr, "supplied null pointer for y-coordinates!" );
-  SLIC_ERROR_IF( (z==nullptr && NDIMS==3),
-                 "supplied null pointer for z-coordinates!" );
+  SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(leaf_nodes != nullptr);
+  SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
+  SLIC_ERROR_IF(x == nullptr, "supplied null pointer for x-coordinates!");
+  SLIC_ERROR_IF(y == nullptr, "supplied null pointer for y-coordinates!");
+  SLIC_ERROR_IF((z == nullptr && NDIMS == 3),
+                "supplied null pointer for z-coordinates!");
 
   // STEP 1: count number of candidates for each query point
-  using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
-  RAJA::ReduceSum< reduce_pol, IndexType > total_count( 0 );
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+  RAJA::ReduceSum<reduce_pol, IndexType> total_count(0);
 
-  using QueryAccessor = lbvh::QueryAccessor< NDIMS, FloatType >;
-  for_all< ExecSpace >( N, AXOM_LAMBDA(IndexType i)
-  {
-    int32 count = 0;
-    point_t< FloatType, NDIMS > point;
-    QueryAccessor::getPoint( point, i, x, y, z );
+  using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
+  for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(IndexType i) {
+      int32 count = 0;
+      point_t<FloatType, NDIMS> point;
+      QueryAccessor::getPoint(point, i, x, y, z);
 
+      BVH_LEAF_ACTION(leafAction,
+                      int32 AXOM_NOT_USED(current_node),
+                      const int32* AXOM_NOT_USED(leaf_nodes))
+      {
+        count++;
+      };
 
-    BVH_LEAF_ACTION( leafAction,
-                     int32 AXOM_NOT_USED(current_node),
-                     const int32* AXOM_NOT_USED(leaf_nodes) )
-    {
-      count++;
-    };
+      lbvh::bvh_traverse(inner_nodes,
+                         leaf_nodes,
+                         point,
+                         leftCheck,
+                         rightCheck,
+                         leafAction);
 
-    lbvh::bvh_traverse( inner_nodes,
-                        leaf_nodes,
-                        point,
-                        leftCheck,
-                        rightCheck,
-                        leafAction );
+      counts[i] = count;
+      total_count += count;
+    });
 
-    counts[ i ]  = count;
-    total_count += count;
-
-  } );
-
-  return ( total_count.get() );
+  return (total_count.get());
 }
 
 /*!
@@ -191,70 +183,66 @@ IndexType bvh_get_counts( LeftPredicate&& leftCheck,
  *
  * \return total_count the aggregate number of candidates for all rays.
  */
-template < int NDIMS, typename ExecSpace,
-           typename LeftPredicate,
-           typename RightPredicate,
-           typename FloatType >
-IndexType bvh_get_raycounts( LeftPredicate&& leftCheck,
-                             RightPredicate&& rightCheck,
-                             const internal::vec4_t< FloatType >* inner_nodes,
-                             const int32* leaf_nodes,
-                             IndexType N,
-                             IndexType* counts,
-                             const FloatType* x0,
-                             const FloatType* nx,
-                             const FloatType* y0,
-                             const FloatType* ny,
-                             const FloatType* z0,
-                             const FloatType* nz ) noexcept
+template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
+IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
+                            RightPredicate&& rightCheck,
+                            const internal::vec4_t<FloatType>* inner_nodes,
+                            const int32* leaf_nodes,
+                            IndexType N,
+                            IndexType* counts,
+                            const FloatType* x0,
+                            const FloatType* nx,
+                            const FloatType* y0,
+                            const FloatType* ny,
+                            const FloatType* z0,
+                            const FloatType* nz) noexcept
 {
-  AXOM_PERF_MARK_FUNCTION( "bvh_get_raycounts" );
+  AXOM_PERF_MARK_FUNCTION("bvh_get_raycounts");
 
   // sanity checks
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
-  SLIC_ERROR_IF( counts == nullptr, "supplied null pointer for counts!" );
-  SLIC_ERROR_IF( x0 == nullptr, "ray source x-coordinates array is null!" );
-  SLIC_ERROR_IF( nx == nullptr, "ray normal x-components array is null!" );
-  SLIC_ERROR_IF( y0 == nullptr, "ray source y-coordinates array is null!" );
-  SLIC_ERROR_IF( ny == nullptr, "ray normal y-components array is null!" );
-  SLIC_ERROR_IF( (z0==nullptr && NDIMS==3),
-                 "ray source z-coordinates array is null!" );
-  SLIC_ERROR_IF( (nz==nullptr && NDIMS==3),
-                 "ray normal z-components is null!" );
+  SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(leaf_nodes != nullptr);
+  SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
+  SLIC_ERROR_IF(x0 == nullptr, "ray source x-coordinates array is null!");
+  SLIC_ERROR_IF(nx == nullptr, "ray normal x-components array is null!");
+  SLIC_ERROR_IF(y0 == nullptr, "ray source y-coordinates array is null!");
+  SLIC_ERROR_IF(ny == nullptr, "ray normal y-components array is null!");
+  SLIC_ERROR_IF((z0 == nullptr && NDIMS == 3),
+                "ray source z-coordinates array is null!");
+  SLIC_ERROR_IF((nz == nullptr && NDIMS == 3),
+                "ray normal z-components is null!");
 
   // STEP 1: count number of candidates for each query point
-  using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
-  RAJA::ReduceSum< reduce_pol, IndexType > total_count( 0 );
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+  RAJA::ReduceSum<reduce_pol, IndexType> total_count(0);
 
-  using QueryAccessor = lbvh::QueryAccessor< NDIMS, FloatType >;
-  for_all< ExecSpace >( N, AXOM_LAMBDA(IndexType i)
-  {
-    int32 count = 0;
-    ray_t< FloatType, NDIMS > ray;
-    QueryAccessor::getRay( ray, i, x0, nx, y0, ny, z0, nz );
+  using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
+  for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(IndexType i) {
+      int32 count = 0;
+      ray_t<FloatType, NDIMS> ray;
+      QueryAccessor::getRay(ray, i, x0, nx, y0, ny, z0, nz);
 
+      BVH_LEAF_ACTION(leafAction,
+                      int32 AXOM_NOT_USED(current_node),
+                      const int32* AXOM_NOT_USED(leaf_nodes))
+      {
+        count++;
+      };
 
-    BVH_LEAF_ACTION( leafAction,
-                     int32 AXOM_NOT_USED(current_node),
-                     const int32* AXOM_NOT_USED(leaf_nodes) )
-    {
-      count++;
-    };
+      lbvh::bvh_traverse(inner_nodes,
+                         leaf_nodes,
+                         ray,
+                         leftCheck,
+                         rightCheck,
+                         leafAction);
 
-    lbvh::bvh_traverse( inner_nodes,
-                        leaf_nodes,
-                        ray,
-                        leftCheck,
-                        rightCheck,
-                        leafAction );
+      counts[i] = count;
+      total_count += count;
+    });
 
-    counts[ i ]  = count;
-    total_count += count;
-
-  } );
-
-  return ( total_count.get() );
+  return (total_count.get());
 }
 
 /*!
@@ -277,75 +265,70 @@ IndexType bvh_get_raycounts( LeftPredicate&& leftCheck,
  * \return total_count the aggregate number of candidates for all bounding
  *  boxes.
  */
-template < int NDIMS, typename ExecSpace,
-           typename LeftPredicate,
-           typename RightPredicate,
-           typename FloatType >
-IndexType bvh_get_boxcounts( LeftPredicate&& leftCheck,
-                             RightPredicate&& rightCheck,
-                             const internal::vec4_t< FloatType >* inner_nodes,
-                             const int32* leaf_nodes,
-                             IndexType N,
-                             IndexType* counts,
-                             const FloatType* xmin,
-                             const FloatType* xmax,
-                             const FloatType* ymin,
-                             const FloatType* ymax,
-                             const FloatType* zmin,
-                             const FloatType* zmax ) noexcept
+template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
+IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
+                            RightPredicate&& rightCheck,
+                            const internal::vec4_t<FloatType>* inner_nodes,
+                            const int32* leaf_nodes,
+                            IndexType N,
+                            IndexType* counts,
+                            const FloatType* xmin,
+                            const FloatType* xmax,
+                            const FloatType* ymin,
+                            const FloatType* ymax,
+                            const FloatType* zmin,
+                            const FloatType* zmax) noexcept
 {
-  AXOM_PERF_MARK_FUNCTION( "bvh_get_boxcounts" );
+  AXOM_PERF_MARK_FUNCTION("bvh_get_boxcounts");
 
   // sanity checks
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
-  SLIC_ERROR_IF( counts == nullptr, "supplied null pointer for counts!" );
-  SLIC_ERROR_IF( xmin == nullptr,
-                 "bounding box lower x-coordinates array is null!" );
-  SLIC_ERROR_IF( xmax == nullptr,
-                 "bounding box upper x-coordinates array is null!" );
-  SLIC_ERROR_IF( ymin == nullptr,
-                 "bounding box lower y-coordinates array is null!" );
-  SLIC_ERROR_IF( ymax == nullptr,
-                 "bounding box upper y-coordinates array is null!" );
-  SLIC_ERROR_IF( (zmin==nullptr && NDIMS==3),
-                 "bounding box lower z-coordinates array is null!" );
-  SLIC_ERROR_IF( (zmax==nullptr && NDIMS==3),
-                 "bounding box upper z-coordinates array is null!" );
+  SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(leaf_nodes != nullptr);
+  SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
+  SLIC_ERROR_IF(xmin == nullptr,
+                "bounding box lower x-coordinates array is null!");
+  SLIC_ERROR_IF(xmax == nullptr,
+                "bounding box upper x-coordinates array is null!");
+  SLIC_ERROR_IF(ymin == nullptr,
+                "bounding box lower y-coordinates array is null!");
+  SLIC_ERROR_IF(ymax == nullptr,
+                "bounding box upper y-coordinates array is null!");
+  SLIC_ERROR_IF((zmin == nullptr && NDIMS == 3),
+                "bounding box lower z-coordinates array is null!");
+  SLIC_ERROR_IF((zmax == nullptr && NDIMS == 3),
+                "bounding box upper z-coordinates array is null!");
 
   // STEP 1: count number of candidates for each query point
-  using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
-  RAJA::ReduceSum< reduce_pol, IndexType > total_count( 0 );
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+  RAJA::ReduceSum<reduce_pol, IndexType> total_count(0);
 
-  using QueryAccessor = lbvh::QueryAccessor< NDIMS, FloatType >;
-  for_all< ExecSpace >( N, AXOM_LAMBDA(IndexType i)
-  {
-    int32 count = 0;
-    bounding_box_t< FloatType, NDIMS > box;
-    QueryAccessor::getBoundingBox( box, i, xmin, xmax, ymin, ymax, zmin,
-                                   zmax );
+  using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
+  for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(IndexType i) {
+      int32 count = 0;
+      bounding_box_t<FloatType, NDIMS> box;
+      QueryAccessor::getBoundingBox(box, i, xmin, xmax, ymin, ymax, zmin, zmax);
 
+      BVH_LEAF_ACTION(leafAction,
+                      int32 AXOM_NOT_USED(current_node),
+                      const int32* AXOM_NOT_USED(leaf_nodes))
+      {
+        count++;
+      };
 
-    BVH_LEAF_ACTION( leafAction,
-                     int32 AXOM_NOT_USED(current_node),
-                     const int32* AXOM_NOT_USED(leaf_nodes) )
-    {
-      count++;
-    };
+      lbvh::bvh_traverse(inner_nodes,
+                         leaf_nodes,
+                         box,
+                         leftCheck,
+                         rightCheck,
+                         leafAction);
 
-    lbvh::bvh_traverse( inner_nodes,
-                        leaf_nodes,
-                        box,
-                        leftCheck,
-                        rightCheck,
-                        leafAction );
+      counts[i] = count;
+      total_count += count;
+    });
 
-    counts[ i ]  = count;
-    total_count += count;
-
-  } );
-
-  return ( total_count.get() );
+  return (total_count.get());
 }
 
 } /* end anonymous namespace */
@@ -353,383 +336,409 @@ IndexType bvh_get_boxcounts( LeftPredicate&& leftCheck,
 //------------------------------------------------------------------------------
 //  PUBLIC API IMPLEMENTATION
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
-                                         IndexType numItems,
-                                         int allocatorID ) :
-  m_AllocatorID( allocatorID ),
-  m_Tolernace( floating_point_limits<FloatType>::epsilon() ),
-  m_scaleFactor( DEFAULT_SCALE_FACTOR ),
-  m_numItems( numItems ),
-  m_boxes( boxes )
-{}
+template <int NDIMS, typename ExecSpace, typename FloatType>
+BVH<NDIMS, ExecSpace, FloatType>::BVH(const FloatType* boxes,
+                                      IndexType numItems,
+                                      int allocatorID)
+  : m_AllocatorID(allocatorID)
+  , m_Tolernace(floating_point_limits<FloatType>::epsilon())
+  , m_scaleFactor(DEFAULT_SCALE_FACTOR)
+  , m_numItems(numItems)
+  , m_boxes(boxes)
+{ }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-BVH< NDIMS, ExecSpace, FloatType >::~BVH()
+template <int NDIMS, typename ExecSpace, typename FloatType>
+BVH<NDIMS, ExecSpace, FloatType>::~BVH()
 {
   m_bvh.deallocate();
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-int BVH< NDIMS, ExecSpace, FloatType >::build()
+template <int NDIMS, typename ExecSpace, typename FloatType>
+int BVH<NDIMS, ExecSpace, FloatType>::build()
 {
-  AXOM_PERF_MARK_FUNCTION( "BVH::build" );
+  AXOM_PERF_MARK_FUNCTION("BVH::build");
 
   // STEP 1: Handle case when user supplied a single bounding box
-  int numBoxes        = m_numItems;
+  int numBoxes = m_numItems;
   FloatType* boxesptr = nullptr;
-  if ( m_numItems == 1 )
+  if(m_numItems == 1)
   {
-    numBoxes          = 2;
-    constexpr int32 M = NDIMS * 2;      // number of entries for one box
-    const int N       = numBoxes * M;   // number of entries for N boxes
-    boxesptr          = axom::allocate< FloatType >( N, m_AllocatorID );
+    numBoxes = 2;
+    constexpr int32 M = NDIMS * 2;  // number of entries for one box
+    const int N = numBoxes * M;     // number of entries for N boxes
+    boxesptr = axom::allocate<FloatType>(N, m_AllocatorID);
 
     const FloatType* myboxes = m_boxes;
 
     // copy first box and add a fake 2nd box
-    for_all< ExecSpace >( N, AXOM_LAMBDA(IndexType i)
-    {
-      boxesptr[ i ] = ( i < M ) ? myboxes[ i ] : 0.0;
-    } );
+    for_all<ExecSpace>(
+      N,
+      AXOM_LAMBDA(IndexType i) { boxesptr[i] = (i < M) ? myboxes[i] : 0.0; });
 
-  } // END if single item
+  }  // END if single item
   else
   {
-    boxesptr = const_cast< FloatType* >( m_boxes );
+    boxesptr = const_cast<FloatType*>(m_boxes);
   }
 
   // STEP 2: Build a RadixTree consisting of the bounding boxes, sorted
   // by their corresponding morton code.
-  lbvh::RadixTree< FloatType, NDIMS > radix_tree;
-  lbvh::AABB< FloatType, NDIMS > global_bounds;
-  lbvh::build_radix_tree< ExecSpace >( 
-    boxesptr, numBoxes, global_bounds, radix_tree, m_scaleFactor, 
-    m_AllocatorID );
+  lbvh::RadixTree<FloatType, NDIMS> radix_tree;
+  lbvh::AABB<FloatType, NDIMS> global_bounds;
+  lbvh::build_radix_tree<ExecSpace>(boxesptr,
+                                    numBoxes,
+                                    global_bounds,
+                                    radix_tree,
+                                    m_scaleFactor,
+                                    m_AllocatorID);
 
   // STEP 3: emit the BVH data-structure from the radix tree
   m_bvh.m_bounds = global_bounds;
-  m_bvh.allocate( numBoxes, m_AllocatorID );
+  m_bvh.allocate(numBoxes, m_AllocatorID);
 
   // STEP 4: emit the BVH
-  lbvh::emit_bvh< ExecSpace >( radix_tree, m_bvh );
+  lbvh::emit_bvh<ExecSpace>(radix_tree, m_bvh);
 
   radix_tree.deallocate();
 
   // STEP 5: deallocate boxesptr if user supplied a single box
-  if ( m_numItems == 1 )
+  if(m_numItems == 1)
   {
-    SLIC_ASSERT( boxesptr != m_boxes );
-    axom::deallocate( boxesptr );
+    SLIC_ASSERT(boxesptr != m_boxes);
+    axom::deallocate(boxesptr);
   }
 
   return BVH_BUILD_OK;
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::getBounds( FloatType* min,
-                                                    FloatType* max ) const
+template <int NDIMS, typename ExecSpace, typename FloatType>
+void BVH<NDIMS, ExecSpace, FloatType>::getBounds(FloatType* min,
+                                                 FloatType* max) const
 {
-  SLIC_ASSERT( min != nullptr );
-  SLIC_ASSERT( max != nullptr );
-  m_bvh.m_bounds.min( min );
-  m_bvh.m_bounds.max( max );
+  SLIC_ASSERT(min != nullptr);
+  SLIC_ASSERT(max != nullptr);
+  m_bvh.m_bounds.min(min);
+  m_bvh.m_bounds.max(max);
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
-                                                     IndexType* counts,
-                                                     IndexType*& candidates,
-                                                     IndexType numPts,
-                                                     const FloatType* x,
-                                                     const FloatType* y,
-                                                     const FloatType* z ) const
+template <int NDIMS, typename ExecSpace, typename FloatType>
+void BVH<NDIMS, ExecSpace, FloatType>::findPoints(IndexType* offsets,
+                                                  IndexType* counts,
+                                                  IndexType*& candidates,
+                                                  IndexType numPts,
+                                                  const FloatType* x,
+                                                  const FloatType* y,
+                                                  const FloatType* z) const
 {
-  AXOM_PERF_MARK_FUNCTION( "BVH::findPoints" );
+  AXOM_PERF_MARK_FUNCTION("BVH::findPoints");
 
-  SLIC_ASSERT( offsets != nullptr );
-  SLIC_ASSERT( counts != nullptr );
-  SLIC_ASSERT( candidates == nullptr );
-  SLIC_ASSERT( x != nullptr );
-  SLIC_ASSERT( y != nullptr );
+  SLIC_ASSERT(offsets != nullptr);
+  SLIC_ASSERT(counts != nullptr);
+  SLIC_ASSERT(candidates == nullptr);
+  SLIC_ASSERT(x != nullptr);
+  SLIC_ASSERT(y != nullptr);
 
-  using PointType           = point_t< FloatType, NDIMS >;
-  using TraversalPredicates = lbvh::TraversalPredicates< NDIMS, FloatType >;
-  using QueryAccessor       = lbvh::QueryAccessor< NDIMS, FloatType >;
+  using PointType = point_t<FloatType, NDIMS>;
+  using TraversalPredicates = lbvh::TraversalPredicates<NDIMS, FloatType>;
+  using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
 
   // STEP 1: Grab BVH pointers
-  const internal::vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
-  const int32* leaf_nodes  = m_bvh.m_leaf_nodes;
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
+  const internal::vec4_t<FloatType>* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* leaf_nodes = m_bvh.m_leaf_nodes;
+  SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(leaf_nodes != nullptr);
 
   // STEP 2: define traversal predicates
-  BVH_PREDICATE( leftPredicate,
-                 const PointType &p,
-                 const internal::vec4_t< FloatType >&s1,
-                 const internal::vec4_t< FloatType >&s2 )
+  BVH_PREDICATE(leftPredicate,
+                const PointType& p,
+                const internal::vec4_t<FloatType>& s1,
+                const internal::vec4_t<FloatType>& s2)
   {
-    return TraversalPredicates::pointInLeftBin( p, s1, s2 );
+    return TraversalPredicates::pointInLeftBin(p, s1, s2);
   };
 
-  BVH_PREDICATE( rightPredicate,
-                 const PointType &p,
-                 const internal::vec4_t< FloatType >&s2,
-                 const internal::vec4_t< FloatType >&s3 )
+  BVH_PREDICATE(rightPredicate,
+                const PointType& p,
+                const internal::vec4_t<FloatType>& s2,
+                const internal::vec4_t<FloatType>& s3)
   {
-    return TraversalPredicates::pointInRightBin( p, s2, s3 );
+    return TraversalPredicates::pointInRightBin(p, s2, s3);
   };
 
   // STEP 3: get counts
   int total_count = 0;
-  AXOM_PERF_MARK_SECTION( "PASS[1]:count_traversal", 
-    total_count = bvh_get_counts< NDIMS,ExecSpace >( leftPredicate, 
-      rightPredicate, inner_nodes, leaf_nodes, numPts, counts, x, y, z );
-  );
+  AXOM_PERF_MARK_SECTION(
+    "PASS[1]:count_traversal",
+    total_count = bvh_get_counts<NDIMS, ExecSpace>(leftPredicate,
+                                                   rightPredicate,
+                                                   inner_nodes,
+                                                   leaf_nodes,
+                                                   numPts,
+                                                   counts,
+                                                   x,
+                                                   y,
+                                                   z););
 
-  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
-  AXOM_PERF_MARK_SECTION( "exclusive_scan", 
-    RAJA::exclusive_scan< exec_policy >(
-      counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
-  );
+  using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  AXOM_PERF_MARK_SECTION(
+    "exclusive_scan",
+    RAJA::exclusive_scan<exec_policy>(counts,
+                                      counts + numPts,
+                                      offsets,
+                                      RAJA::operators::plus<IndexType> {}););
 
-  AXOM_PERF_MARK_SECTION( "allocate_candidates",  
-    IndexType total_candidates = static_cast< IndexType >( total_count );
-    candidates = axom::allocate< IndexType >( total_candidates, m_AllocatorID );
-  );
+  AXOM_PERF_MARK_SECTION(
+    "allocate_candidates",
+    IndexType total_candidates = static_cast<IndexType>(total_count);
+    candidates = axom::allocate<IndexType>(total_candidates, m_AllocatorID););
 
   // STEP 4: fill in candidates for each point
-  AXOM_PERF_MARK_SECTION( "PASS[2]:fill_traversal", 
-    for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
-    {
-      int32 offset = offsets[ i ];
+  AXOM_PERF_MARK_SECTION(
+    "PASS[2]:fill_traversal",
+    for_all<ExecSpace>(
+      numPts,
+      AXOM_LAMBDA(IndexType i) {
+        int32 offset = offsets[i];
 
-      PointType point;
-      QueryAccessor::getPoint( point, i, x, y, z );
+        PointType point;
+        QueryAccessor::getPoint(point, i, x, y, z);
 
-      BVH_LEAF_ACTION( leafAction, int32 current_node,
-                       const int32* leaf_nodes )
-      {
-        candidates[offset] = leaf_nodes[current_node];
-        offset++;
-      };
+        BVH_LEAF_ACTION(leafAction, int32 current_node, const int32* leaf_nodes)
+        {
+          candidates[offset] = leaf_nodes[current_node];
+          offset++;
+        };
 
-      lbvh::bvh_traverse( inner_nodes,
-                          leaf_nodes,
-                          point,
-                          leftPredicate,
-                          rightPredicate,
-                          leafAction );
-
-    } );
-  );
-
+        lbvh::bvh_traverse(inner_nodes,
+                           leaf_nodes,
+                           point,
+                           leftPredicate,
+                           rightPredicate,
+                           leafAction);
+      }););
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
-                                                   IndexType* counts,
-                                                   IndexType*& candidates,
-                                                   IndexType numRays,
-                                                   const FloatType* x0,
-                                                   const FloatType* nx,
-                                                   const FloatType* y0,
-                                                   const FloatType* ny,
-                                                   const FloatType* z0,
-                                                   const FloatType* nz  ) const
+template <int NDIMS, typename ExecSpace, typename FloatType>
+void BVH<NDIMS, ExecSpace, FloatType>::findRays(IndexType* offsets,
+                                                IndexType* counts,
+                                                IndexType*& candidates,
+                                                IndexType numRays,
+                                                const FloatType* x0,
+                                                const FloatType* nx,
+                                                const FloatType* y0,
+                                                const FloatType* ny,
+                                                const FloatType* z0,
+                                                const FloatType* nz) const
 {
-  AXOM_PERF_MARK_FUNCTION( "BVH::findRays" );
+  AXOM_PERF_MARK_FUNCTION("BVH::findRays");
 
-  SLIC_ASSERT( offsets != nullptr );
-  SLIC_ASSERT( counts != nullptr );
-  SLIC_ASSERT( candidates == nullptr );
-  SLIC_ASSERT( x0 != nullptr );
-  SLIC_ASSERT( nx != nullptr );
-  SLIC_ASSERT( y0 != nullptr );
-  SLIC_ASSERT( ny != nullptr );
+  SLIC_ASSERT(offsets != nullptr);
+  SLIC_ASSERT(counts != nullptr);
+  SLIC_ASSERT(candidates == nullptr);
+  SLIC_ASSERT(x0 != nullptr);
+  SLIC_ASSERT(nx != nullptr);
+  SLIC_ASSERT(y0 != nullptr);
+  SLIC_ASSERT(ny != nullptr);
 
   const FloatType TOL = m_Tolernace;
 
-  using RayType             = ray_t< FloatType, NDIMS >;
-  using TraversalPredicates = lbvh::TraversalPredicates< NDIMS, FloatType >;
-  using QueryAccessor       = lbvh::QueryAccessor< NDIMS, FloatType >;
+  using RayType = ray_t<FloatType, NDIMS>;
+  using TraversalPredicates = lbvh::TraversalPredicates<NDIMS, FloatType>;
+  using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
 
   // STEP 1: Grab BVH pointers
-  const internal::vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
-  const int32* leaf_nodes  = m_bvh.m_leaf_nodes;
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
+  const internal::vec4_t<FloatType>* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* leaf_nodes = m_bvh.m_leaf_nodes;
+  SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(leaf_nodes != nullptr);
 
   // STEP 2: define traversal predicates
-  BVH_PREDICATE( leftPredicate,
-                 const RayType &r,
-                 const internal::vec4_t< FloatType >&s1,
-                 const internal::vec4_t< FloatType >&s2 )
+  BVH_PREDICATE(leftPredicate,
+                const RayType& r,
+                const internal::vec4_t<FloatType>& s1,
+                const internal::vec4_t<FloatType>& s2)
   {
-    return TraversalPredicates::rayIntersectsLeftBin( r, s1, s2, TOL );
+    return TraversalPredicates::rayIntersectsLeftBin(r, s1, s2, TOL);
   };
 
-  BVH_PREDICATE( rightPredicate,
-                 const RayType &r,
-                 const internal::vec4_t< FloatType >&s2,
-                 const internal::vec4_t< FloatType >&s3 )
+  BVH_PREDICATE(rightPredicate,
+                const RayType& r,
+                const internal::vec4_t<FloatType>& s2,
+                const internal::vec4_t<FloatType>& s3)
   {
-    return TraversalPredicates::rayIntersectsRightBin( r, s2, s3, TOL );
+    return TraversalPredicates::rayIntersectsRightBin(r, s2, s3, TOL);
   };
 
   // STEP 3: get counts
   int total_count = 0;
-  AXOM_PERF_MARK_SECTION( "PASS[1]:count_traversal", 
-    total_count = bvh_get_raycounts< NDIMS,ExecSpace >( leftPredicate, 
-      rightPredicate, inner_nodes, leaf_nodes, numRays, counts, x0, nx, y0, ny, 
-      z0, nz );
-  );
+  AXOM_PERF_MARK_SECTION(
+    "PASS[1]:count_traversal",
+    total_count = bvh_get_raycounts<NDIMS, ExecSpace>(leftPredicate,
+                                                      rightPredicate,
+                                                      inner_nodes,
+                                                      leaf_nodes,
+                                                      numRays,
+                                                      counts,
+                                                      x0,
+                                                      nx,
+                                                      y0,
+                                                      ny,
+                                                      z0,
+                                                      nz););
 
-  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
-  AXOM_PERF_MARK_SECTION( "exclusive_scan", 
-    RAJA::exclusive_scan< exec_policy >(
-      counts, counts+numRays, offsets, RAJA::operators::plus<IndexType>{} );
-  );
+  using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  AXOM_PERF_MARK_SECTION(
+    "exclusive_scan",
+    RAJA::exclusive_scan<exec_policy>(counts,
+                                      counts + numRays,
+                                      offsets,
+                                      RAJA::operators::plus<IndexType> {}););
 
-  AXOM_PERF_MARK_SECTION( "allocate_candidates",
-    IndexType total_candidates = static_cast< IndexType >( total_count );
-    candidates = axom::allocate< IndexType >( total_candidates, m_AllocatorID );
-  );
+  AXOM_PERF_MARK_SECTION(
+    "allocate_candidates",
+    IndexType total_candidates = static_cast<IndexType>(total_count);
+    candidates = axom::allocate<IndexType>(total_candidates, m_AllocatorID););
 
   // STEP 4: fill in candidates for each point
-  AXOM_PERF_MARK_SECTION( "PASS[2}:fill_traversal",
-    for_all< ExecSpace >( numRays, AXOM_LAMBDA (IndexType i)
-    {
-      int32 offset = offsets[ i ];
+  AXOM_PERF_MARK_SECTION(
+    "PASS[2}:fill_traversal",
+    for_all<ExecSpace>(
+      numRays,
+      AXOM_LAMBDA(IndexType i) {
+        int32 offset = offsets[i];
 
-      RayType ray;
-      QueryAccessor::getRay( ray, i, x0, nx, y0, ny, z0, nz );
+        RayType ray;
+        QueryAccessor::getRay(ray, i, x0, nx, y0, ny, z0, nz);
 
-      BVH_LEAF_ACTION( leafAction, int32 current_node,
-                       const int32* leaf_nodes )
-      {
-        candidates[offset] = leaf_nodes[current_node];
-        offset++;
-      };
+        BVH_LEAF_ACTION(leafAction, int32 current_node, const int32* leaf_nodes)
+        {
+          candidates[offset] = leaf_nodes[current_node];
+          offset++;
+        };
 
-      lbvh::bvh_traverse( inner_nodes,
-                          leaf_nodes,
-                          ray,
-                          leftPredicate,
-                          rightPredicate,
-                          leafAction );
-
-    } );
-  );
-
+        lbvh::bvh_traverse(inner_nodes,
+                           leaf_nodes,
+                           ray,
+                           leftPredicate,
+                           rightPredicate,
+                           leafAction);
+      }););
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::findBoundingBoxes(
-  IndexType* offsets, IndexType* counts,
-  IndexType*& candidates, IndexType numBoxes,
-  const FloatType* xmin,
-  const FloatType* xmax,
-  const FloatType* ymin,
-  const FloatType* ymax,
-  const FloatType* zmin,
-  const FloatType* zmax ) const
+template <int NDIMS, typename ExecSpace, typename FloatType>
+void BVH<NDIMS, ExecSpace, FloatType>::findBoundingBoxes(IndexType* offsets,
+                                                         IndexType* counts,
+                                                         IndexType*& candidates,
+                                                         IndexType numBoxes,
+                                                         const FloatType* xmin,
+                                                         const FloatType* xmax,
+                                                         const FloatType* ymin,
+                                                         const FloatType* ymax,
+                                                         const FloatType* zmin,
+                                                         const FloatType* zmax) const
 {
-  AXOM_PERF_MARK_FUNCTION( "BVH::findBoundingBoxes" );
+  AXOM_PERF_MARK_FUNCTION("BVH::findBoundingBoxes");
 
-  SLIC_ASSERT( offsets != nullptr );
-  SLIC_ASSERT( counts != nullptr );
-  SLIC_ASSERT( candidates == nullptr );
-  SLIC_ASSERT( xmin != nullptr );
-  SLIC_ASSERT( xmax != nullptr );
-  SLIC_ASSERT( ymin != nullptr );
-  SLIC_ASSERT( ymax != nullptr );
+  SLIC_ASSERT(offsets != nullptr);
+  SLIC_ASSERT(counts != nullptr);
+  SLIC_ASSERT(candidates == nullptr);
+  SLIC_ASSERT(xmin != nullptr);
+  SLIC_ASSERT(xmax != nullptr);
+  SLIC_ASSERT(ymin != nullptr);
+  SLIC_ASSERT(ymax != nullptr);
 
-  using BoundingBoxType     = bounding_box_t< FloatType, NDIMS >;
-  using TraversalPredicates = lbvh::TraversalPredicates< NDIMS, FloatType >;
-  using QueryAccessor       = lbvh::QueryAccessor< NDIMS, FloatType >;
+  using BoundingBoxType = bounding_box_t<FloatType, NDIMS>;
+  using TraversalPredicates = lbvh::TraversalPredicates<NDIMS, FloatType>;
+  using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
 
   // STEP 1: Grab BVH pointers
-  const internal::vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
-  const int32* leaf_nodes  = m_bvh.m_leaf_nodes;
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
+  const internal::vec4_t<FloatType>* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* leaf_nodes = m_bvh.m_leaf_nodes;
+  SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(leaf_nodes != nullptr);
 
   // STEP 2: define traversal predicates
-  BVH_PREDICATE( leftPredicate,
-                 const BoundingBoxType &b,
-                 const internal::vec4_t< FloatType >&s1,
-                 const internal::vec4_t< FloatType >&s2 )
+  BVH_PREDICATE(leftPredicate,
+                const BoundingBoxType& b,
+                const internal::vec4_t<FloatType>& s1,
+                const internal::vec4_t<FloatType>& s2)
   {
-    return TraversalPredicates::boundingBoxIntersectsLeftBin( b, s1, s2 );
+    return TraversalPredicates::boundingBoxIntersectsLeftBin(b, s1, s2);
   };
 
-  BVH_PREDICATE( rightPredicate,
-                 const BoundingBoxType &b,
-                 const internal::vec4_t< FloatType >&s2,
-                 const internal::vec4_t< FloatType >&s3 )
+  BVH_PREDICATE(rightPredicate,
+                const BoundingBoxType& b,
+                const internal::vec4_t<FloatType>& s2,
+                const internal::vec4_t<FloatType>& s3)
   {
-    return TraversalPredicates::boundingBoxIntersectsRightBin( b, s2, s3 );
+    return TraversalPredicates::boundingBoxIntersectsRightBin(b, s2, s3);
   };
 
   // STEP 3: get counts
   int total_count = 0;
-  AXOM_PERF_MARK_SECTION( "PASS[1]:count_traversal", 
-    total_count = bvh_get_boxcounts< NDIMS,ExecSpace >( leftPredicate, 
-      rightPredicate, inner_nodes, leaf_nodes, numBoxes, counts, xmin, xmax, 
-      ymin, ymax, zmin, zmax );
-  );
+  AXOM_PERF_MARK_SECTION(
+    "PASS[1]:count_traversal",
+    total_count = bvh_get_boxcounts<NDIMS, ExecSpace>(leftPredicate,
+                                                      rightPredicate,
+                                                      inner_nodes,
+                                                      leaf_nodes,
+                                                      numBoxes,
+                                                      counts,
+                                                      xmin,
+                                                      xmax,
+                                                      ymin,
+                                                      ymax,
+                                                      zmin,
+                                                      zmax););
 
-  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
-  AXOM_PERF_MARK_SECTION( "exclusive_scan", 
-    RAJA::exclusive_scan< exec_policy >(
-      counts, counts+numBoxes, offsets, RAJA::operators::plus<IndexType>{} );
-  );
+  using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  AXOM_PERF_MARK_SECTION(
+    "exclusive_scan",
+    RAJA::exclusive_scan<exec_policy>(counts,
+                                      counts + numBoxes,
+                                      offsets,
+                                      RAJA::operators::plus<IndexType> {}););
 
-  AXOM_PERF_MARK_SECTION( "allocate_candidates",
-    IndexType total_candidates = static_cast< IndexType >( total_count );
-    candidates = axom::allocate< IndexType >( total_candidates, m_AllocatorID );
-  );
+  AXOM_PERF_MARK_SECTION(
+    "allocate_candidates",
+    IndexType total_candidates = static_cast<IndexType>(total_count);
+    candidates = axom::allocate<IndexType>(total_candidates, m_AllocatorID););
 
   // STEP 4: fill in candidates for each bounding box
-  AXOM_PERF_MARK_SECTION( "PASS[2}:fill_traversal",
-    for_all< ExecSpace >( numBoxes, AXOM_LAMBDA (IndexType i)
-    {
-      int32 offset = offsets[ i ];
+  AXOM_PERF_MARK_SECTION(
+    "PASS[2}:fill_traversal",
+    for_all<ExecSpace>(
+      numBoxes,
+      AXOM_LAMBDA(IndexType i) {
+        int32 offset = offsets[i];
 
-      BoundingBoxType box;
-      QueryAccessor::getBoundingBox( box, i, xmin, xmax, ymin, ymax, zmin,
-                                     zmax );
+        BoundingBoxType box;
+        QueryAccessor::getBoundingBox(box, i, xmin, xmax, ymin, ymax, zmin, zmax);
 
-      BVH_LEAF_ACTION( leafAction, int32 current_node,
-                       const int32* leaf_nodes )
-      {
-        candidates[offset] = leaf_nodes[current_node];
-        offset++;
-      };
+        BVH_LEAF_ACTION(leafAction, int32 current_node, const int32* leaf_nodes)
+        {
+          candidates[offset] = leaf_nodes[current_node];
+          offset++;
+        };
 
-      lbvh::bvh_traverse( inner_nodes,
-                          leaf_nodes,
-                          box,
-                          leftPredicate,
-                          rightPredicate,
-                          leafAction );
-
-    } );
-  );
-
+        lbvh::bvh_traverse(inner_nodes,
+                           leaf_nodes,
+                           box,
+                           leftPredicate,
+                           rightPredicate,
+                           leafAction);
+      }););
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
-  const std::string& fileName ) const
+template <int NDIMS, typename ExecSpace, typename FloatType>
+void BVH<NDIMS, ExecSpace, FloatType>::writeVtkFile(const std::string& fileName) const
 {
   std::ostringstream nodes;
   std::ostringstream cells;
@@ -737,7 +746,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
 
   // STEP 0: Write VTK header
   std::ofstream ofs;
-  ofs.open( fileName.c_str() );
+  ofs.open(fileName.c_str());
   ofs << "# vtk DataFile Version 3.0\n";
   ofs << " BVHTree \n";
   ofs << "ASCII\n";
@@ -745,28 +754,33 @@ void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
 
   // STEP 1: write root
   int32 numPoints = 0;
-  int32 numBins   = 0;
-  lbvh::write_root( m_bvh.m_bounds, numPoints, numBins,nodes,cells,levels );
-
+  int32 numBins = 0;
+  lbvh::write_root(m_bvh.m_bounds, numPoints, numBins, nodes, cells, levels);
 
   // STEP 2: traverse the BVH and dump each bin
   constexpr int32 ROOT = 0;
-  lbvh::write_recursive< FloatType, NDIMS >(
-    m_bvh.m_inner_nodes, ROOT, 1, numPoints, numBins, nodes, cells, levels );
+  lbvh::write_recursive<FloatType, NDIMS>(m_bvh.m_inner_nodes,
+                                          ROOT,
+                                          1,
+                                          numPoints,
+                                          numBins,
+                                          nodes,
+                                          cells,
+                                          levels);
 
   // STEP 3: write nodes
   ofs << "POINTS " << numPoints << " double\n";
   ofs << nodes.str() << std::endl;
 
   // STEP 4: write cells
-  const int32 nnodes = (NDIMS==2) ? 4 : 8;
-  ofs << "CELLS " << numBins << " " << numBins*(nnodes+1) << std::endl;
+  const int32 nnodes = (NDIMS == 2) ? 4 : 8;
+  ofs << "CELLS " << numBins << " " << numBins * (nnodes + 1) << std::endl;
   ofs << cells.str() << std::endl;
 
   // STEP 5: write cell types
   ofs << "CELL_TYPES " << numBins << std::endl;
-  const int32 cellType = (NDIMS==2) ? 9 : 12;
-  for ( int32 i=0 ; i < numBins ; ++i )
+  const int32 cellType = (NDIMS == 2) ? 9 : 12;
+  for(int32 i = 0; i < numBins; ++i)
   {
     ofs << cellType << std::endl;
   }
@@ -784,7 +798,6 @@ void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
 
 #undef BVH_PREDICATE
 #undef BVH_LEAF_ACTION
-
 
 } /* namespace spin */
 } /* namespace axom */

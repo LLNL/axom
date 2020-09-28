@@ -11,8 +11,8 @@
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
+using axom::sidre::Group;
 using axom::sidre::IOManager;
 
 /**************************************************************************
@@ -27,14 +27,14 @@ int main(int argc, char* argv[])
 
   SLIC_ERROR_IF(argc != 2,
                 "Missing required command line argument. \n\t"
-                << "Usage: spio_IORead <sidre_root_file>");
+                  << "Usage: spio_IORead <sidre_root_file>");
 
   DataStore* ds = new DataStore();
   SLIC_ASSERT(ds);
   Group* root = ds->getRoot();
 
   std::string root_file;
-  if (argc == 2)
+  if(argc == 2)
   {
     root_file = argv[1];
   }
@@ -49,7 +49,6 @@ int main(int argc, char* argv[])
   delete ds;
 
   MPI_Finalize();
-
 
   return 0;
 }

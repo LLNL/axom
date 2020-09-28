@@ -18,40 +18,37 @@ namespace axom
 {
 namespace slam
 {
-
 using DefaultPositionType = axom::IndexType;
 using DefaultElementType = axom::IndexType;
 
 class NotImplementedException
-{};
+{ };
 
 namespace util
 {
-
-
 /** \brief A helper class to print the name of a few types */
-template<typename T>
+template <typename T>
 struct TypeToString
 {
-  static std::string to_string(){return "<unspecialized>"; }
+  static std::string to_string() { return "<unspecialized>"; }
 };
 
 /** \brief A helper class to print the name of integers as 'int' */
-template<>
+template <>
 struct TypeToString<int>
 {
-  static std::string       to_string(){return "int"; }
+  static std::string to_string() { return "int"; }
 };
 
 /** \brief A helper class to print the name of doubles as 'double' */
-template<>
+template <>
 struct TypeToString<double>
 {
-  static std::string    to_string(){return "double"; }
+  static std::string to_string() { return "double"; }
 };
 
-} // end namespace util
-} // end namespace slam
-} // end namespace axom
+}  // end namespace util
+}  // end namespace slam
+}  // end namespace axom
 
-#endif //  SLAM_UTILITIES_H_
+#endif  //  SLAM_UTILITIES_H_

@@ -16,80 +16,81 @@ namespace axom
 {
 namespace slic
 {
-
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
-                                    int ranksLimit ) :
-  m_isLJOwnedBySLIC( false ),
-  m_stream( stream )
+LumberjackStream::LumberjackStream(std::ostream* stream,
+                                   MPI_Comm comm,
+                                   int ranksLimit)
+  : m_isLJOwnedBySLIC(false)
+  , m_stream(stream)
 {
-  this->initializeLumberjack( comm, ranksLimit );
-}
-
-//------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
-                                    int ranksLimit,
-                                    const std::string& format ) :
-  m_isLJOwnedBySLIC( false ),
-  m_stream( stream )
-{
-  this->initializeLumberjack( comm, ranksLimit );
-  this->setFormatString( format );
+  this->initializeLumberjack(comm, ranksLimit);
 }
 
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream(std::ostream* stream,
-                                   axom::lumberjack::Lumberjack* lj) :
-  m_lj( lj ),
-  m_isLJOwnedBySLIC( false ),
-  m_stream( stream )
-{}
+                                   MPI_Comm comm,
+                                   int ranksLimit,
+                                   const std::string& format)
+  : m_isLJOwnedBySLIC(false)
+  , m_stream(stream)
+{
+  this->initializeLumberjack(comm, ranksLimit);
+  this->setFormatString(format);
+}
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream* stream,
-                                    axom::lumberjack::Lumberjack* lj,
-                                    const std::string& format ) :
-  m_lj( lj ),
-  m_isLJOwnedBySLIC( false ),
-  m_stream( stream )
+LumberjackStream::LumberjackStream(std::ostream* stream,
+                                   axom::lumberjack::Lumberjack* lj)
+  : m_lj(lj)
+  , m_isLJOwnedBySLIC(false)
+  , m_stream(stream)
+{ }
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream(std::ostream* stream,
+                                   axom::lumberjack::Lumberjack* lj,
+                                   const std::string& format)
+  : m_lj(lj)
+  , m_isLJOwnedBySLIC(false)
+  , m_stream(stream)
 {
-  this->setFormatString( format );
+  this->setFormatString(format);
 }
 
 //------------------------------------------------------------------------------
 LumberjackStream::~LumberjackStream()
 {
-  if ( m_isLJOwnedBySLIC )
+  if(m_isLJOwnedBySLIC)
   {
     this->finalizeLumberjack();
   }
 }
 
 //------------------------------------------------------------------------------
-void LumberjackStream::append( message::Level msgLevel,
-                               const std::string& message,
-                               const std::string& tagName,
-                               const std::string& fileName,
-                               int line,
-                               bool AXOM_NOT_USED(filter_duplicates) )
+void LumberjackStream::append(message::Level msgLevel,
+                              const std::string& message,
+                              const std::string& tagName,
+                              const std::string& fileName,
+                              int line,
+                              bool AXOM_NOT_USED(filter_duplicates))
 {
-  if ( m_lj == nullptr )
+  if(m_lj == nullptr)
   {
-    std::cerr <<
-      "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
+    std::cerr
+      << "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
     return;
   }
 
-  m_lj->queueMessage( message, fileName, line, msgLevel, tagName );
+  m_lj->queueMessage(message, fileName, line, msgLevel, tagName);
 }
 
 //------------------------------------------------------------------------------
 void LumberjackStream::flush()
 {
-  if ( m_lj == nullptr )
+  if(m_lj == nullptr)
   {
-    std::cerr <<
-      "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
+    std::cerr
+      << "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
     return;
   }
 
@@ -100,7 +101,7 @@ void LumberjackStream::flush()
 //------------------------------------------------------------------------------
 void LumberjackStream::push()
 {
-  if ( m_lj == nullptr )
+  if(m_lj == nullptr)
   {
     std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::push!\n";
     return;
@@ -112,32 +113,31 @@ void LumberjackStream::push()
 //------------------------------------------------------------------------------
 void LumberjackStream::write()
 {
-  if ( m_lj == nullptr )
+  if(m_lj == nullptr)
   {
-    std::cerr <<
-      "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";
+    std::cerr
+      << "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";
     return;
   }
 
-  if ( m_lj->isOutputNode() )
+  if(m_lj->isOutputNode())
   {
-    std::vector< axom::lumberjack::Message* > messages =
-      m_lj->getMessages();
+    std::vector<axom::lumberjack::Message*> messages = m_lj->getMessages();
 
-    const int nmessages = static_cast< int >( messages.size() );
+    const int nmessages = static_cast<int>(messages.size());
     std::string rankString;
-    for ( int i=0 ; i < nmessages ; ++i)
+    for(int i = 0; i < nmessages; ++i)
     {
-      rankString = std::to_string(messages[i]->count())
-                   + ": " + messages[i]->stringOfRanks();
-      (*m_stream) << this->getFormatedMessage( message::getLevelAsString(
-                                                 static_cast< message::Level >(
-                                                   messages[i]->level()) ),
-                                               messages[i]->text(),
-                                               messages[i]->tag(),
-                                               rankString,
-                                               messages[i]->fileName(),
-                                               messages[i]->lineNumber() );
+      rankString = std::to_string(messages[i]->count()) + ": " +
+        messages[i]->stringOfRanks();
+      (*m_stream) << this->getFormatedMessage(
+        message::getLevelAsString(
+          static_cast<message::Level>(messages[i]->level())),
+        messages[i]->text(),
+        messages[i]->tag(),
+        rankString,
+        messages[i]->fileName(),
+        messages[i]->lineNumber());
     }
 
     m_lj->clearMessages();
@@ -145,7 +145,7 @@ void LumberjackStream::write()
 }
 
 //------------------------------------------------------------------------------
-void LumberjackStream::initializeLumberjack( MPI_Comm comm, int ranksLimit )
+void LumberjackStream::initializeLumberjack(MPI_Comm comm, int ranksLimit)
 {
   m_ljComm = new axom::lumberjack::BinaryTreeCommunicator;
   m_ljComm->initialize(comm, ranksLimit);

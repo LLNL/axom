@@ -10,7 +10,6 @@ namespace axom
 {
 namespace mint
 {
-
 /*!
  * \brief The ShapeFunction class defines the shape functions, \f$ N(\xi)^e \f$,
  *  for a given reference element \f$ \overline{\Omega^e} \f$
@@ -22,59 +21,58 @@ namespace mint
  * \see FiniteElement
  * \see FEBasisTypes.hpp
  */
-template < typename ShapeType >
+template <typename ShapeType>
 class ShapeFunction
 {
 public:
-
-/// \name Generic ShapeFunction API
-///@{
+  /// \name Generic ShapeFunction API
+  ///@{
 
   /*!
    * \brief Returns the underlying cell type, e.g., MINT_QUAD, etc.
    * \return cellType the cell type
    * \see CellType.hpp
    */
-  static CellType cellType( ) { return ShapeType::getCellType(); };
+  static CellType cellType() { return ShapeType::getCellType(); };
 
   /*!
    * \brief Returns the Finite Element basis family type
    * \return type the basis function type, e.g., MINT_LAGRANGE_BASIS
    * \see FEBasisTypes.hpp
    */
-  static int type( ) { return ShapeType::getType(); };
+  static int type() { return ShapeType::getType(); };
 
   /*!
    * \brief Returns the number of degrees of freedom
    * \return ndofs the number of degrees of freedom
    * \post ndofs >= 1
    */
-  static int numDofs( ) { return ShapeType::getNumDofs(); };
+  static int numDofs() { return ShapeType::getNumDofs(); };
 
   /*!
    * \brief Returns the maximum number of iterations for the Newton-Raphson
    * \return N the maximum number of Newton-Raphson iterations
    */
-  static int maxNewtonIters( ) { return ShapeType::getMaxNewtonIters( ); };
+  static int maxNewtonIters() { return ShapeType::getMaxNewtonIters(); };
 
   /*!
    * \brief Returns the dimension of the reference element
    * \return ndims the dimension of the reference element
    * \post ndims >= 1
    */
-  static int dimension( ) { return ShapeType::getDimension( ); };
+  static int dimension() { return ShapeType::getDimension(); };
 
   /*!
    * \brief Returns the min coordinate of the reference element
    * \return min the min coordinate of the reference element
    */
-  static double min( ) { return ShapeType::getMin( ); };
+  static double min() { return ShapeType::getMin(); };
 
   /*!
    * \brief Returns the max coordinate of the reference element
    * \return max the max coordinate of the reference element
    */
-  static double max( ) { return ShapeType::getMax( ); };
+  static double max() { return ShapeType::getMax(); };
 
   /*!
    * \brief Returns the center of the reference element.
@@ -82,7 +80,7 @@ public:
    * \param [out] center buffer (ndims long) to store the centroid
    * \pre center != nullptr
    */
-  static void center( double* center ) { ShapeType::getCenter( center ); };
+  static void center(double* center) { ShapeType::getCenter(center); };
 
   /*!
    * \brief Returns the coordinates of the reference element.
@@ -92,7 +90,7 @@ public:
    *
    * \note THe coordinates are arranged in column-major flat array layout
    */
-  static void coords( double* coords ) { ShapeType::getCoords( coords ); };
+  static void coords(double* coords) { ShapeType::getCoords(coords); };
 
   /*!
    * \brief Evaluates the ShapeFunction at the given natural coordinates.
@@ -103,9 +101,9 @@ public:
    * \pre nc != nullptr
    * \pre phi != nullptr
    */
-  static void evaluate( const double* nc, double* phi )
+  static void evaluate(const double* nc, double* phi)
   {
-    ShapeType::computeShape( nc, phi );
+    ShapeType::computeShape(nc, phi);
   }
 
   /*!
@@ -118,12 +116,12 @@ public:
    * \pre nc != nullptr
    * \pre phidot != nullptr
    */
-  static void derivatives( const double* nc, double* phidot )
+  static void derivatives(const double* nc, double* phidot)
   {
-    ShapeType::computeDerivatives( nc, phidot );
+    ShapeType::computeDerivatives(nc, phidot);
   }
 
-///@}
+  ///@}
 };
 
 } /* namespace mint */

@@ -6,13 +6,12 @@
 #ifndef AXOM_STACKARRAY_HPP_
 #define AXOM_STACKARRAY_HPP_
 
-#include "axom/config.hpp"                   // for compile-time defines
-#include "axom/core/Macros.hpp"              // for axom macros
-#include "axom/core/Types.hpp"               // for axom types
+#include "axom/config.hpp"       // for compile-time defines
+#include "axom/core/Macros.hpp"  // for axom macros
+#include "axom/core/Types.hpp"   // for axom types
 
 namespace axom
 {
-
 /*!
  * \class StackArray
  *
@@ -24,7 +23,7 @@ namespace axom
  * \tparam T the type of the values to hold.
  * \tparam N the number of values in the array.
  */
-template< typename T, int N >
+template <typename T, int N>
 struct StackArray
 {
   /*!
@@ -35,12 +34,13 @@ struct StackArray
   /// @{
 
   AXOM_HOST_DEVICE
-  T& operator[](IndexType i) noexcept
-  { return m_data[ i ]; }
+  T& operator[](IndexType i) noexcept { return m_data[i]; }
 
   AXOM_HOST_DEVICE
   constexpr const T& operator[](IndexType i) const noexcept
-  { return m_data[i]; }
+  {
+    return m_data[i];
+  }
 
   /// @}
 
@@ -49,16 +49,14 @@ struct StackArray
    */
   /// @{
 
-  AXOM_HOST_DEVICE operator T* () noexcept
-  { return &m_data[0]; }
+  AXOM_HOST_DEVICE operator T*() noexcept { return &m_data[0]; }
 
   AXOM_HOST_DEVICE
-  constexpr operator const T* () const noexcept
-  { return &m_data[0]; }
+  constexpr operator const T*() const noexcept { return &m_data[0]; }
 
   /// @}
 
-  T m_data[  N  ];
+  T m_data[N];
 };
 
 } /* namespace axom */

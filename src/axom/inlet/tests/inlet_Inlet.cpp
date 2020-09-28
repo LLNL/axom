@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include <iostream>
 
@@ -15,11 +16,9 @@
 #include "axom/inlet/LuaReader.hpp"
 #include "axom/inlet/Inlet.hpp"
 
-
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
-
 
 std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
                                         const std::string& luaString,
@@ -51,7 +50,7 @@ TEST(inlet_Inlet_basic, getTopLevelBools)
   EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("nonexistant", "nothing");
+  currField = inlet->addBool("non/existant", "nothing");
   EXPECT_TRUE(currField);
 
   //
@@ -407,7 +406,8 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
   bool boolVal = false;
   bool found = false;
 
-  std::string testString = "foo = { bar = 'yet another string'; so = 3.5; re = 9; mi = true }";
+  std::string testString =
+    "foo = { bar = 'yet another string'; so = 3.5; re = 9; mi = true }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -449,12 +449,12 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
   found = inlet->get("foo/re", intVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(intVal, 9);
-
 }
 
 TEST(inlet_Inlet_views, NestedTableViewCheck1)
 {
-  std::string testString = "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
+  std::string testString =
+    "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
   std::shared_ptr<axom::inlet::Field> currField;
@@ -481,7 +481,7 @@ TEST(inlet_Inlet_views, NestedTableViewCheck1)
   found = inlet->get("field2", intVal);
   EXPECT_TRUE(found);
   found = inlet->get("NewTable/str", strVal);
-  EXPECT_TRUE(found);  
+  EXPECT_TRUE(found);
   found = inlet->get("NewTable/integer", intVal);
   EXPECT_TRUE(found);
 
@@ -498,7 +498,9 @@ TEST(inlet_Inlet_views, NestedTableViewCheck1)
 
 TEST(inlet_Inlet_views, NestedTableViewCheck2)
 {
-  std::string testString = "foo = false; bar = true; Table1 = { float1 = 3.14; Table11 = { Table111 = { x = 4 } } }";
+  std::string testString =
+    "foo = false; bar = true; Table1 = { float1 = 3.14; Table11 = { Table111 = "
+    "{ x = 4 } } }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
   std::shared_ptr<axom::inlet::Field> currField;
@@ -506,7 +508,7 @@ TEST(inlet_Inlet_views, NestedTableViewCheck2)
   currField->required(true);
   currField = inlet->addBool("bar", "bar's description");
   currField->required(false);
-  
+
   auto t = inlet->addTable("Table1", "The first table");
   t->required(false);
   currField = t->addDouble("float1", "floating point number within table 1");
@@ -519,7 +521,7 @@ TEST(inlet_Inlet_views, NestedTableViewCheck2)
 
   bool found;
   bool boolVal;
-  double doubleVal;  
+  double doubleVal;
 
   found = inlet->get("foo", boolVal);
   EXPECT_TRUE(found);
@@ -540,7 +542,9 @@ TEST(inlet_Inlet_views, NestedTableViewCheck2)
 
 TEST(inlet_Inlet_views, NestedTableViewCheck3)
 {
-  std::string testString = "Table1 = { float1 = 5.6 }; Table2 = { int1 = 95 }; Table3 = { bool1 = true }";
+  std::string testString =
+    "Table1 = { float1 = 5.6 }; Table2 = { int1 = 95 }; Table3 = { bool1 = "
+    "true }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -556,12 +560,12 @@ TEST(inlet_Inlet_views, NestedTableViewCheck3)
   bool found;
   bool boolVal;
   int intVal;
-  double doubleVal;  
+  double doubleVal;
 
   found = inlet->get("Table1/float1", doubleVal);
   EXPECT_TRUE(found);
   found = inlet->get("Table2/int1", intVal);
-  EXPECT_TRUE(found);  
+  EXPECT_TRUE(found);
   found = inlet->get("Table3/bool1", boolVal);
   EXPECT_TRUE(found);
 
@@ -576,8 +580,7 @@ TEST(inlet_Inlet, mixLevelTables)
   // level with nested tables with non-nested values
 
   axom::sidre::DataStore dataStore;
-  auto luaReader = std::make_shared<axom::inlet::LuaReader>();
-  luaReader->parseString(
+  std::string input =
     "thermal_solver={"
     "   u0 = { type = 'function', func = 'BoundaryTemperature'},"
     "   kappa = { type = 'constant', constant = 0.5},"
@@ -589,12 +592,12 @@ TEST(inlet_Inlet, mixLevelTables)
     "     dt = 1.0,"
     "     steps = 1 "
     "   }"
-    "}");
+    "}";
 
-  auto inlet = std::make_shared<axom::inlet::Inlet>(luaReader, dataStore.getRoot());
+  auto inlet = createBasicInlet(&dataStore, input);
 
   //
-  // Define input deck schema
+  // Define input file schema
   //
 
   // fields that are expected to not be present in above string
@@ -619,7 +622,7 @@ TEST(inlet_Inlet, mixLevelTables)
   inlet->addInt("thermal_solver/solver/steps", "steps");
 
   //
-  //  Verify values found in input deck
+  //  Verify values found in input file
   //
   bool found = false;
   std::string strVal;
@@ -670,14 +673,18 @@ TEST(inlet_Inlet, mixLevelTables)
   EXPECT_EQ(intVal, 1);
 }
 
-TEST(inlet_Field, defaultValuesDocsEnabled) {
-  std::string testString = "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } }; Table3 = { bool1 = true }";
+TEST(inlet_Field, defaultValuesDocsEnabled)
+{
+  std::string testString =
+    "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } "
+    "}; Table3 = { bool1 = true }";
   DataStore ds;
   // Creating basic inlet with documentation enabled (indicated by the last param)
   auto inlet = createBasicInlet(&ds, testString, true);
 
   // new fields
-  inlet->addDouble("field1")->defaultValue(2);  // int argument will get casted to double
+  inlet->addDouble("field1")->defaultValue(
+    2);  // int argument will get casted to double
   inlet->addInt("Table1/Table2/field2")->defaultValue(5);
   inlet->addBool("Table1/field3")->defaultValue(true);
   inlet->addString("Table3/field4")->defaultValue("default for new string");
@@ -686,7 +693,8 @@ TEST(inlet_Field, defaultValuesDocsEnabled) {
   inlet->addInt("Table1/Table2/int1")->defaultValue(100);
   inlet->addBool("Table3/bool1")->defaultValue(false);
   inlet->addDouble("Table1/float1")->defaultValue(3.14);
-  inlet->addString("Table1/Table2/Table4/str1")->defaultValue("default for old string");
+  inlet->addString("Table1/Table2/Table4/str1")
+    ->defaultValue("default for old string");
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
 
@@ -695,7 +703,8 @@ TEST(inlet_Field, defaultValuesDocsEnabled) {
   EXPECT_EQ(doubleVal, 2.0);
 
   EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/field2/defaultValue"));
-  int intVal = sidreGroup->getView("Table1/Table2/field2/defaultValue")->getScalar();
+  int intVal =
+    sidreGroup->getView("Table1/Table2/field2/defaultValue")->getScalar();
   EXPECT_EQ(intVal, 5);
 
   EXPECT_TRUE(sidreGroup->hasView("Table1/field3/defaultValue"));
@@ -703,8 +712,9 @@ TEST(inlet_Field, defaultValuesDocsEnabled) {
   EXPECT_EQ(boolVal, 1);
 
   EXPECT_TRUE(sidreGroup->hasView("Table3/field4/defaultValue"));
-  std::string strVal = sidreGroup->getView("Table3/field4/defaultValue")->getString();
-  EXPECT_EQ(strVal,"default for new string");
+  std::string strVal =
+    sidreGroup->getView("Table3/field4/defaultValue")->getString();
+  EXPECT_EQ(strVal, "default for new string");
 
   EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/int1/defaultValue"));
   intVal = sidreGroup->getView("Table1/Table2/int1/defaultValue")->getScalar();
@@ -717,10 +727,11 @@ TEST(inlet_Field, defaultValuesDocsEnabled) {
   EXPECT_TRUE(sidreGroup->hasView("Table1/float1/defaultValue"));
   doubleVal = sidreGroup->getView("Table1/float1/defaultValue")->getScalar();
   EXPECT_EQ(doubleVal, 3.14);
-  
+
   EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/Table4/str1/defaultValue"));
-  strVal = sidreGroup->getView("Table1/Table2/Table4/str1/defaultValue")->getString();
-  EXPECT_EQ(strVal, "default for old string"); 
+  strVal =
+    sidreGroup->getView("Table1/Table2/Table4/str1/defaultValue")->getString();
+  EXPECT_EQ(strVal, "default for old string");
 
   doubleVal = sidreGroup->getView("field1/value")->getScalar();
   EXPECT_EQ(doubleVal, 2.0);
@@ -732,7 +743,7 @@ TEST(inlet_Field, defaultValuesDocsEnabled) {
   EXPECT_EQ(boolVal, 1);
 
   strVal = sidreGroup->getView("Table3/field4/value")->getString();
-  EXPECT_EQ(strVal,"default for new string");
+  EXPECT_EQ(strVal, "default for new string");
 
   intVal = sidreGroup->getView("Table1/Table2/int1/value")->getScalar();
   EXPECT_EQ(intVal, 95);
@@ -742,19 +753,22 @@ TEST(inlet_Field, defaultValuesDocsEnabled) {
 
   doubleVal = sidreGroup->getView("Table1/float1/value")->getScalar();
   EXPECT_EQ(doubleVal, 5.6);
-  
+
   strVal = sidreGroup->getView("Table1/Table2/Table4/str1/value")->getString();
-  EXPECT_EQ(strVal, "hi"); 
+  EXPECT_EQ(strVal, "hi");
 }
 
-TEST(inlet_Field, defaultValuesDocsDisabled) {
-  std::string testString = "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } }; Table3 = { bool1 = true }";
+TEST(inlet_Field, defaultValuesDocsDisabled)
+{
+  std::string testString =
+    "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } "
+    "}; Table3 = { bool1 = true }";
   DataStore ds;
   // Creating basic inlet with documentation disabled (indicated by the last param)
   auto inlet = createBasicInlet(&ds, testString, false);
 
   // new fields
-  inlet->addDouble("field1")->defaultValue(2.0); 
+  inlet->addDouble("field1")->defaultValue(2.0);
   inlet->addInt("Table1/Table2/field2")->defaultValue(5);
   inlet->addBool("Table1/field3")->defaultValue(true);
   inlet->addString("Table3/field4")->defaultValue("default for new string");
@@ -763,7 +777,8 @@ TEST(inlet_Field, defaultValuesDocsDisabled) {
   inlet->addInt("Table1/Table2/int1")->defaultValue(100);
   inlet->addBool("Table3/bool1")->defaultValue(false);
   inlet->addDouble("Table1/float1")->defaultValue(3.14);
-  inlet->addString("Table1/Table2/Table4/str1")->defaultValue("default for old string");
+  inlet->addString("Table1/Table2/Table4/str1")
+    ->defaultValue("default for old string");
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
 
@@ -775,7 +790,7 @@ TEST(inlet_Field, defaultValuesDocsDisabled) {
   EXPECT_FALSE(sidreGroup->hasView("Table3/bool1/defaultValue"));
   EXPECT_FALSE(sidreGroup->hasView("Table1/float1/defaultValue"));
   EXPECT_FALSE(sidreGroup->hasView("Table1/Table2/Table4/str1/defaultValue"));
- 
+
   double doubleVal = sidreGroup->getView("field1/value")->getScalar();
   EXPECT_EQ(doubleVal, 2.0);
 
@@ -786,7 +801,7 @@ TEST(inlet_Field, defaultValuesDocsDisabled) {
   EXPECT_EQ(boolVal, 1);
 
   std::string strVal = sidreGroup->getView("Table3/field4/value")->getString();
-  EXPECT_EQ(strVal,"default for new string");
+  EXPECT_EQ(strVal, "default for new string");
 
   intVal = sidreGroup->getView("Table1/Table2/int1/value")->getScalar();
   EXPECT_EQ(intVal, 95);
@@ -796,32 +811,41 @@ TEST(inlet_Field, defaultValuesDocsDisabled) {
 
   doubleVal = sidreGroup->getView("Table1/float1/value")->getScalar();
   EXPECT_EQ(doubleVal, 5.6);
-  
+
   strVal = sidreGroup->getView("Table1/Table2/Table4/str1/value")->getString();
-  EXPECT_EQ(strVal, "hi"); 
+  EXPECT_EQ(strVal, "hi");
 }
 
-TEST(inlet_Field, ranges) {
-  std::string testString = "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } }; Table3 = { bool1 = true }";
+TEST(inlet_Field, ranges)
+{
+  std::string testString =
+    "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } "
+    "}; Table3 = { bool1 = true }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
-  
-  inlet->addInt("Table1/set")->validValues({2,4,6});
+
+  inlet->addInt("Table1/set")->validValues({2, 4, 6});
   EXPECT_TRUE(sidreGroup->hasView("Table1/set/validValues"));
   int* bufferArr1 = sidreGroup->getView("Table1/set/validValues")->getArray();
   EXPECT_TRUE(bufferArr1);
-  EXPECT_EQ(sidreGroup->getView("Table1/set/validValues")->getBuffer()->getNumElements(), 3);
+  EXPECT_EQ(
+    sidreGroup->getView("Table1/set/validValues")->getBuffer()->getNumElements(),
+    3);
   EXPECT_EQ(bufferArr1[0], 2);
   EXPECT_EQ(bufferArr1[1], 4);
   EXPECT_EQ(bufferArr1[2], 6);
- 
+
   inlet->addDouble("Table1/Table2/Table4/double1")->range(2.0, 5.0);
   EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/Table4/double1/range"));
-  double* bufferArr2 = sidreGroup->getView("Table1/Table2/Table4/double1/range")->getArray();
+  double* bufferArr2 =
+    sidreGroup->getView("Table1/Table2/Table4/double1/range")->getArray();
   EXPECT_TRUE(bufferArr2);
-  EXPECT_EQ(sidreGroup->getView("Table1/Table2/Table4/double1/range")->getBuffer()->getNumElements(), 2);
+  EXPECT_EQ(sidreGroup->getView("Table1/Table2/Table4/double1/range")
+              ->getBuffer()
+              ->getNumElements(),
+            2);
   EXPECT_EQ(bufferArr2[0], 2.0);
   EXPECT_EQ(bufferArr2[1], 5.0);
 
@@ -829,13 +853,17 @@ TEST(inlet_Field, ranges) {
   EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/int1/range"));
   int* bufferArr3 = sidreGroup->getView("Table1/Table2/int1/range")->getArray();
   EXPECT_TRUE(bufferArr3);
-  EXPECT_EQ(sidreGroup->getView("Table1/Table2/int1/range")->getBuffer()->getNumElements(), 2);
+  EXPECT_EQ(
+    sidreGroup->getView("Table1/Table2/int1/range")->getBuffer()->getNumElements(),
+    2);
   EXPECT_EQ(bufferArr3[0], 1);
   EXPECT_EQ(bufferArr3[1], 50);
 }
 
-TEST(inlet_Inlet_verify, verifyRequired) {
-  std::string testString = "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
+TEST(inlet_Inlet_verify, verifyRequired)
+{
+  std::string testString =
+    "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -850,13 +878,15 @@ TEST(inlet_Inlet_verify, verifyRequired) {
   EXPECT_FALSE(inlet->verify());
 }
 
-TEST(inlet_Inlet_verify, verifyDoubleRange) {
-  
+TEST(inlet_Inlet_verify, verifyDoubleRange)
+{
   // For checking values
-  std::string testString = "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 }";
+  std::string testString =
+    "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 "
+    "}";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-  
+
   auto field = inlet->addDouble("field2");
   field->range(1.0, 57.2);
   EXPECT_TRUE(inlet->verify());
@@ -870,12 +900,14 @@ TEST(inlet_Inlet_verify, verifyDoubleRange) {
   EXPECT_FALSE(inlet->verify());
 
   // For checking default values
-  std::string testString1 = "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 }";
+  std::string testString1 =
+    "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 "
+    "}";
   DataStore ds1;
   auto inlet1 = createBasicInlet(&ds1, testString1);
-  
+
   auto field1 = inlet1->addDouble("field2");
-  field1->defaultValue(5)->range(0, 60);   // ints will get casted to double 
+  field1->defaultValue(5)->range(0, 60);  // ints will get casted to double
   EXPECT_TRUE(inlet1->verify());
 
   field1 = inlet1->addDouble("field3");
@@ -883,12 +915,14 @@ TEST(inlet_Inlet_verify, verifyDoubleRange) {
   EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_Inlet_verify, verifyIntRange) {
+TEST(inlet_Inlet_verify, verifyIntRange)
+{
   // For checking values
-  std::string testString = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
+  std::string testString =
+    "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-  
+
   auto field = inlet->addInt("field2");
   field->range(0, 56);
   EXPECT_TRUE(inlet->verify());
@@ -906,7 +940,8 @@ TEST(inlet_Inlet_verify, verifyIntRange) {
   EXPECT_FALSE(inlet->verify());
 
   // For checking default values
-  std::string testString1 = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
+  std::string testString1 =
+    "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds1;
   auto inlet1 = createBasicInlet(&ds1, testString1);
   field = inlet1->addInt("field2");
@@ -922,17 +957,19 @@ TEST(inlet_Inlet_verify, verifyIntRange) {
   EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_Inlet_verify, verifyValidIntValues) {
+TEST(inlet_Inlet_verify, verifyValidIntValues)
+{
   // check values
-  std::string testString = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
+  std::string testString =
+    "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
   auto field = inlet->addInt("field2");
-  field->validValues({1,2,3,56,57,58});
+  field->validValues({1, 2, 3, 56, 57, 58});
   EXPECT_TRUE(inlet->verify());
 
-  std::vector<int> nums = {-1,-2,-6,-18,21};
+  std::vector<int> nums = {-1, -2, -6, -18, 21};
 
   field = inlet->addInt("field3");
   field->validValues(nums);
@@ -947,12 +984,13 @@ TEST(inlet_Inlet_verify, verifyValidIntValues) {
   EXPECT_FALSE(inlet->verify());
 
   // check default values
-  std::string testString1 = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
+  std::string testString1 =
+    "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds1;
   auto inlet1 = createBasicInlet(&ds1, testString1);
 
   field = inlet1->addInt("field2");
-  field->validValues({1,2,3,56,57,58})->defaultValue(2);
+  field->validValues({1, 2, 3, 56, 57, 58})->defaultValue(2);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addInt("field3");
@@ -968,17 +1006,20 @@ TEST(inlet_Inlet_verify, verifyValidIntValues) {
   EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_Inlet_verify, verifyValidDoubleValues) {
+TEST(inlet_Inlet_verify, verifyValidDoubleValues)
+{
   // check values
-  std::string testString = "field1 = true; field2 = 56.0; NewTable = { field4 = 22.0; field5 = 48.23 }";
+  std::string testString =
+    "field1 = true; field2 = 56.0; NewTable = { field4 = 22.0; field5 = 48.23 "
+    "}";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
   auto field = inlet->addDouble("field2");
-  field->validValues({1,2,3,56,57,58});
+  field->validValues({1, 2, 3, 56, 57, 58});
   EXPECT_TRUE(inlet->verify());
 
-  std::vector<int> nums = {-1,-2,-6,-18,21};
+  std::vector<int> nums = {-1, -2, -6, -18, 21};
 
   field = inlet->addDouble("field3");
   field->validValues(nums);
@@ -993,12 +1034,14 @@ TEST(inlet_Inlet_verify, verifyValidDoubleValues) {
   EXPECT_FALSE(inlet->verify());
 
   // check default values
-  std::string testString1 = "field1 = true; field2 = 56.0; NewTable = { field4 = 22.0; field5 = 48.23 }";
+  std::string testString1 =
+    "field1 = true; field2 = 56.0; NewTable = { field4 = 22.0; field5 = 48.23 "
+    "}";
   DataStore ds1;
   auto inlet1 = createBasicInlet(&ds1, testString1);
 
   field = inlet1->addDouble("field2");
-  field->validValues({1,2,3,56,57,58})->defaultValue(2.);
+  field->validValues({1, 2, 3, 56, 57, 58})->defaultValue(2.);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addDouble("field3");
@@ -1014,9 +1057,12 @@ TEST(inlet_Inlet_verify, verifyValidDoubleValues) {
   EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_Inlet_verify, verifyValidStringValues) {
+TEST(inlet_Inlet_verify, verifyValidStringValues)
+{
   // check values
-  std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
+  std::string testString =
+    "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = "
+    "'yes' }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -1058,8 +1104,340 @@ TEST(inlet_Inlet_verify, verifyValidStringValues) {
   field = inlet1->addString("NewTable/field5");
   field->validValues(strs)->defaultValue("zyx");
   EXPECT_FALSE(inlet1->verify());
+}
 
-  
+TEST(inlet_verify, verifyFieldLambda)
+{
+  std::string testString =
+    "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = "
+    "'yes' }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto field1 = inlet->addBool("field1");
+  auto field2 = inlet->addString("field2");
+  auto field3 = inlet->addString("NewTable/field3");
+
+  field2->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("field2", str);
+    return (str.size() >= 1 && str[0] == 'a');
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  field3->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("NewTable/field3", str);
+    return (str.size() >= 1 && str[0] == 'a');
+  });
+  EXPECT_FALSE(inlet->verify());
+}
+
+TEST(inlet_verify, verifyTableLambda1)
+{
+  std::string testString =
+    "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = "
+    "'yes' }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto field1 = inlet->addBool("field1");
+  auto field2 = inlet->addString("field2");
+  auto table1 = inlet->addTable("NewTable");
+  auto field3 = table1->addString("field3");
+
+  field2->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("field2", str);
+    return (str.size() >= 1 && str[0] == 'a');
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  field3->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("NewTable/field3", str);
+    return (str.size() >= 1 && str[0] == 'x');
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  EXPECT_TRUE(table1->hasField("field3"));
+
+  table1->registerVerifier([&]() -> bool { return table1->hasField("field3"); });
+  EXPECT_TRUE(inlet->verify());
+
+  table1->registerVerifier([&]() -> bool { return table1->hasField("field22"); });
+  EXPECT_FALSE(inlet->verify());
+}
+
+TEST(inlet_verify, verifyTableLambda2)
+{
+  std::string testString =
+    "thermal_solver={}\n"
+    "thermal_solver.order = 2\n"
+    "thermal_solver.timestepper = 'quasistatic'\n"
+    "solid_solver={}\n"
+    "solid_solver.order = 3\n"
+    "solid_solver.timestepper = 'BackwardEuler'\n"
+    "material={}\n"
+    "material.attribute = 1\n"
+    "material.thermalview = 'isotropic'\n"
+    "material.solidview = 'hyperelastic'";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  auto thermalOrder = inlet->addInt("thermal_solver/order");
+  auto thermalTimeStep = inlet->addString("thermal_solver/timestepper");
+  auto solidOrder = inlet->addInt("solid_solver/order");
+  auto soldTimestep = inlet->addString("solid_solver/timestepper");
+  auto attrib = inlet->addInt("material/attribute");
+  auto globalTable = inlet->getGlobalTable();
+  auto material = globalTable->getTable("material");
+
+  globalTable->registerVerifier([&]() -> bool {
+    bool verifySuccess = true;
+    if(globalTable->hasTable("thermal_solver") &&
+       !material->hasField("thermalview"))
+    {
+      verifySuccess = false;
+    }
+    if(globalTable->hasTable("solid_solver") && !material->hasField("solidview"))
+    {
+      verifySuccess = false;
+    }
+    return verifySuccess;
+  });
+
+  EXPECT_FALSE(inlet->verify());
+
+  auto thermalView = inlet->addString("material/thermalview");
+  auto solidView = inlet->addString("material/solidview");
+
+  EXPECT_TRUE(material->hasField("solidview"));
+  EXPECT_TRUE(material->hasField("thermalview"));
+
+  EXPECT_TRUE(inlet->verify());
+
+  auto thing = inlet->addTable("test");
+  auto thing2 = thing->addTable("test2");
+  auto thing5 = thing2->addTable("test3/test4/test5");
+
+  EXPECT_EQ(globalTable->getTable("test")->name(), "test");
+  EXPECT_EQ(thing->getTable("test2")->name(), "test/test2");
+  EXPECT_EQ(thing2->getTable("test3/test4/test5")->name(),
+            "test/test2/test3/test4/test5");
+}
+
+TEST(inlet_verify, requiredTable)
+{
+  std::string testString =
+    "thermal_solver={}\n"
+    "thermal_solver.order = 2\n"
+    "thermal_solver.timestepper = 'quasistatic'\n"
+    "solid_solver={}\n"
+    "solid_solver.order = 3\n"
+    "solid_solver.timestepper = 'BackwardEuler'\n"
+    "material={}\n"
+    "material.attribute = 1\n"
+    "material.thermalview = 'isotropic'\n"
+    "material.solidview = 'hyperelastic'";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  auto material = inlet->addTable("material");
+  material->required(true);
+
+  EXPECT_FALSE(inlet->verify());
+
+  auto thermalView = inlet->addString("material/thermalview");
+  auto solidView = inlet->addString("material/solidview");
+
+  EXPECT_TRUE(inlet->hasField("material/thermalview"));
+  EXPECT_TRUE(inlet->hasField("material/solidview"));
+
+  EXPECT_TRUE(inlet->verify());
+}
+
+TEST(inlet_verify, verifyTableLambda3)
+{
+  std::string testString = "dimensions = 2; vector = { x = 1; y = 2; z = 3; }";
+  DataStore ds;
+  auto myInlet = createBasicInlet(&ds, testString);
+  myInlet->addInt("dimensions")->required(true);
+  auto v = myInlet->addTable("vector")->required(true);
+  v->addInt("x");
+
+  v->registerVerifier([&]() -> bool {
+    int dim;
+    myInlet->get("dimensions", dim);
+    int value;  // field value doesnt matter just that it is present in input file
+    bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
+    bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
+    bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
+    if(dim == 1 && x_present)
+    {
+      return true;
+    }
+    else if(dim == 2 && x_present && y_present)
+    {
+      return true;
+    }
+    else if(dim == 3 && x_present && y_present && z_present)
+    {
+      return true;
+    }
+    return false;
+  });
+
+  EXPECT_FALSE(myInlet->verify());
+
+  v->addInt("y");
+  v->addInt("z");
+
+  EXPECT_TRUE(myInlet->verify());
+}
+
+// Checks that LuaReader parses array information as expected
+TEST(inletArrays, luaReaderArrayFunctions)
+{
+  std::string testString =
+    "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = "
+    "2.4, [33] = 'hello', [200] = 'bye' }";
+  LuaReader lr;
+  lr.parseString(testString);
+
+  std::unordered_map<int, int> ints;
+  bool found = lr.getIntMap("luaArray", ints);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, int> expectedInts {{1, 4}, {2, 5}, {3, 6}, {12, 2}};
+  EXPECT_EQ(expectedInts, ints);
+
+  std::unordered_map<int, double> doubles;
+  found = lr.getDoubleMap("luaArray", doubles);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, double> expectedDoubles {{1, 4},
+                                                   {2, 5},
+                                                   {3, 6},
+                                                   {12, 2.4}};
+  EXPECT_EQ(expectedDoubles, doubles);
+
+  std::unordered_map<int, bool> bools;
+  found = lr.getBoolMap("luaArray", bools);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
+  EXPECT_EQ(expectedBools, bools);
+
+  std::unordered_map<int, std::string> strs;
+  found = lr.getStringMap("luaArray", strs);
+  EXPECT_TRUE(found);
+  std::unordered_map<int, std::string> expectedStrs {{33, "hello"},
+                                                     {200, "bye"}};
+  EXPECT_EQ(expectedStrs, strs);
+}
+
+// Checks the underlying Sidre representation of the arrays added from Lua
+TEST(inletArrays, inletArraysInSidre)
+{
+  DataStore ds;
+  std::string testString =
+    "luaArrays = { arr1 = { [1] = 4, [2] = 5, [3] = 6 , [12] = 2.4}, "
+    "              arr2 = { [4] = true, [8] = false}, "
+    "              arr3 = { [33] = 'hello', [2] = 'bye'}, "
+    "              arr4 = { [12] = 2.4 } }";
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
+
+  auto group = inlet->getGlobalTable()->sidreGroup()->getGroup(
+    "luaArrays/arr1/_inlet_array");
+  auto idx = group->getGroup("1");
+  EXPECT_TRUE(idx);
+  int val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 4);
+
+  idx = group->getGroup("12");
+  EXPECT_TRUE(idx);
+  val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 2);
+
+  idx = group->getGroup("2");
+  EXPECT_TRUE(idx);
+  val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 5);
+
+  idx = group->getGroup("3");
+  EXPECT_TRUE(idx);
+  val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 6);
+
+  inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
+  group = inlet->getTable("luaArrays/arr2/_inlet_array")->sidreGroup();
+
+  idx = group->getGroup("4");
+  EXPECT_TRUE(idx);
+  int8_t boolVal = idx->getView("value")->getScalar();
+  EXPECT_EQ(boolVal, 1);
+
+  idx = group->getGroup("8");
+  EXPECT_TRUE(idx);
+  boolVal = idx->getView("value")->getScalar();
+  EXPECT_EQ(boolVal, 0);
+
+  inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
+  group = inlet->getTable("luaArrays/arr3/_inlet_array")->sidreGroup();
+
+  idx = group->getGroup("33");
+  EXPECT_TRUE(idx);
+  std::string str = idx->getView("value")->getString();
+  EXPECT_EQ(str, "hello");
+
+  idx = group->getGroup("2");
+  EXPECT_TRUE(idx);
+  str = idx->getView("value")->getString();
+  EXPECT_EQ(str, "bye");
+
+  inlet->getGlobalTable()->addDoubleArray("luaArrays/arr4");
+  group = inlet->getTable("luaArrays/arr4/_inlet_array")->sidreGroup();
+
+  idx = group->getGroup("12");
+  EXPECT_TRUE(idx);
+  double doubleVal = idx->getView("value")->getScalar();
+  EXPECT_EQ(doubleVal, 2.4);
+}
+
+// Checks all of the Table::getArray functions
+TEST(inletArrays, getArray)
+{
+  DataStore ds;
+  std::string testString =
+    "luaArrays = { arr1 = { [1] = 4}, "
+    "              arr2 = {[4] = true, [8] = false}, "
+    "              arr3 = {[33] = 'hello', [2] = 'bye'}, "
+    "              arr4 = { [12] = 2.4 } }";
+  auto inlet = createBasicInlet(&ds, testString);
+
+  std::unordered_map<int, bool> boolMap;
+  std::unordered_map<int, int> intMap;
+  std::unordered_map<int, double> doubleMap;
+  std::unordered_map<int, std::string> strMap;
+  auto arr1 = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
+  auto arr2 = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
+  auto arr3 = inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
+  auto arr4 = inlet->getGlobalTable()->addDoubleArray("luaArrays/arr4");
+
+  std::unordered_map<int, int> expectedInts {{1, 4}};
+  std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
+  std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
+  std::unordered_map<int, std::string> expectedStrs {{33, "hello"}, {2, "bye"}};
+
+  EXPECT_TRUE(arr1->getIntArray(intMap));
+  EXPECT_EQ(intMap, expectedInts);
+
+  EXPECT_TRUE(arr2->getBoolArray(boolMap));
+  EXPECT_EQ(boolMap, expectedBools);
+
+  EXPECT_TRUE(arr3->getStringArray(strMap));
+  EXPECT_EQ(strMap, expectedStrs);
+
+  EXPECT_TRUE(arr4->getDoubleArray(doubleMap));
+  EXPECT_EQ(doubleMap, expectedDoubles);
 }
 
 //------------------------------------------------------------------------------

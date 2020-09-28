@@ -17,17 +17,16 @@
  */
 enum FEBasisTypes
 {
-  MINT_UNDEFINED_BASIS=-1, /*!< Undefined basis type */
-  MINT_LAGRANGE_BASIS,     /*!< Lagrange basis type */
+  MINT_UNDEFINED_BASIS = -1, /*!< Undefined basis type */
+  MINT_LAGRANGE_BASIS,       /*!< Lagrange basis type */
 
-  MINT_NUM_BASIS_TYPES           /*!< MINT_NUM_BASIS */
+  MINT_NUM_BASIS_TYPES /*!< MINT_NUM_BASIS */
 };
 
 namespace axom
 {
 namespace mint
 {
-
 /*!
  * \brief Array of strings corresponding to each Finite Element Basis.
  *
@@ -40,7 +39,7 @@ static const std::string basis_name[] = {
   "LAGRANGE_BASIS",
 };
 
-}
-}
+}  // namespace mint
+}  // namespace axom
 
 #endif

@@ -16,28 +16,28 @@
 #include "axom/slam/Set.hpp"
 #include "axom/slam/NullSet.hpp"
 
-TEST(slam_set_nullset,construct)
+TEST(slam_set_nullset, construct)
 {
   axom::slam::NullSet<> ns;
 
   // Test function: isValid()
-  EXPECT_TRUE(  ns.isValid() );
+  EXPECT_TRUE(ns.isValid());
 
   // Test functions: empty() and size()
-  EXPECT_TRUE(  ns.empty() );
-  EXPECT_EQ(  0,  ns.size() );
+  EXPECT_TRUE(ns.empty());
+  EXPECT_EQ(0, ns.size());
 
   // Test that the parent of a nullset is itself
-  EXPECT_EQ(  ns, *ns.parentSet() );
+  EXPECT_EQ(ns, *ns.parentSet());
 
   // A Slam NullSet is not a subset of another set
-  EXPECT_FALSE( ns.isSubset() );
+  EXPECT_FALSE(ns.isSubset());
 }
 
-TEST(slam_set_nullset,subscript_fails)
+TEST(slam_set_nullset, subscript_fails)
 {
   SLIC_INFO("Testing subscript access on NullSet"
-            <<" -- code is expected to assert and die.");
+            << " -- code is expected to assert and die.");
 
   using SetPosition = axom::slam::DefaultPositionType;
   axom::slam::NullSet<SetPosition> n;
@@ -51,13 +51,12 @@ TEST(slam_set_nullset,subscript_fails)
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  EXPECT_DEATH_IF_SUPPORTED(n[0],"")
+  EXPECT_DEATH_IF_SUPPORTED(n[0], "")
     << "subscript operator on null set asserts";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
 }
-
 
 //----------------------------------------------------------------------
 

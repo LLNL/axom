@@ -23,8 +23,7 @@
 namespace axom
 {
 namespace inlet
-{ 
-
+{
 /*!
  *******************************************************************************
  * \class DocWriter
@@ -38,11 +37,12 @@ namespace inlet
  * \see SphinxDocWriter
  *******************************************************************************
  */
-class DocWriter {
+class DocWriter
+{
 public:
   /*!
    *****************************************************************************
-   * \brief Write documentation for the input deck to a given file
+   * \brief Write documentation for the input file to a given file
    *
    * This writes the documentation according to the information retrieved from 
    * the sidre group.
@@ -52,7 +52,7 @@ public:
   virtual void writeDocumentation() = 0;
 };
 
-}
-}
+}  // namespace inlet
+}  // namespace axom
 
 #endif

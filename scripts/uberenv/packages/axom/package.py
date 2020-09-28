@@ -51,13 +51,14 @@ class Axom(CMakePackage, CudaPackage):
     homepage = "https://github.com/LLNL/axom"
     git      = "https://github.com/LLNL/axom.git"
 
-    version('main', branch='main', submodules=True)
-    version('develop', branch='develop', submodules=True)
-    version('0.3.3', tag='v0.3.3', submodules="True")
-    version('0.3.2', tag='v0.3.2', submodules="True")
-    version('0.3.1', tag='v0.3.1', submodules="True")
-    version('0.3.0', tag='v0.3.0', submodules="True")
-    version('0.2.9', tag='v0.2.9', submodules="True")
+    version('main', branch='main', submodules='True')
+    version('develop', branch='develop', submodules='True')
+    version('0.4.0', tag='v0.4.0', submodules='True')
+    version('0.3.3', tag='v0.3.3', submodules='True')
+    version('0.3.2', tag='v0.3.2', submodules='True')
+    version('0.3.1', tag='v0.3.1', submodules='True')
+    version('0.3.0', tag='v0.3.0', submodules='True')
+    version('0.2.9', tag='v0.2.9', submodules='True')
 
     phases = ["hostconfig", "cmake", "build", "install"]
     root_cmakelists_dir = 'src'
@@ -84,8 +85,6 @@ class Axom(CMakePackage, CudaPackage):
     variant("umpire",   default=True, description="Build with umpire")
 
     variant("raja",     default=True, description="Build with raja")
-    variant("cub",      default=True,
-            description="Build with RAJA's internal CUB support")
 
     varmsg = "Build development tools (such as Sphinx, Uncrustify, etc...)"
     variant("devtools", default=False, description=varmsg)
@@ -496,11 +495,6 @@ class Axom(CMakePackage, CudaPackage):
                                              True))
 
                 cfg.write(cmake_cache_option("AXOM_ENABLE_ANNOTATIONS", True))
-
-                if "+cub" in spec:
-                    cfg.write(cmake_cache_option("AXOM_ENABLE_CUB", True))
-                else:
-                    cfg.write(cmake_cache_option("AXOM_ENABLE_CUB", False))
 
                 # CUDA_FLAGS
                 cudaflags  = "-restrict "
