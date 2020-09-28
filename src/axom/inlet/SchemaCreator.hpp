@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "axom/inlet/Field.hpp"
 
