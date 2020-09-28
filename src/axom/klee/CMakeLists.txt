@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 axom_component_requires(NAME       Klee
+                        COMPONENTS PRIMAL SLIC
                         TPLS       Conduit )
 
 #------------------------------------------------------------------------------
@@ -10,14 +11,23 @@ axom_component_requires(NAME       Klee
 #------------------------------------------------------------------------------
 set(klee_headers
         Geometry.hpp
+        GeometryOperators.hpp
         IO.hpp
         Shape.hpp
         ShapeSet.hpp
     )
 
+set(klee_internal_headers
+        GeometryOperatorsIO.hpp
+        IOUtil.hpp
+    )
+
 set(klee_sources
         Geometry.cpp
+        GeometryOperators.cpp
+        GeometryOperatorsIO.cpp
         IO.cpp
+        IOUtil.cpp
         Shape.cpp
         ShapeSet.cpp
     )
@@ -25,11 +35,11 @@ set(klee_sources
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(klee_depends core conduit::conduit)
+set(klee_depends core primal slic conduit::conduit)
 
 blt_add_library(NAME        klee
                 SOURCES     ${klee_sources}
-                HEADERS     ${klee_headers}
+                HEADERS     ${klee_headers} ${klee_internal_headers}
                 DEPENDS_ON  ${klee_depends}
                 FOLDER      axom/klee
                 OBJECT      TRUE

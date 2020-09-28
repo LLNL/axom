@@ -32,14 +32,14 @@ TEST(ShapeTest, replaces_non_replacement_list_given) {
   EXPECT_TRUE(shape.replaces("mat3"));
 }
 
-TEST(ShapeTest, set_not_replaced_list_after_replaced_list)  {
+TEST(ShapeTest, set_not_replaced_list_after_replaced_list) {
     Shape shape;
     shape.setMaterialsReplaced({"mat1", "mat2"});
     EXPECT_THROW(shape.setMaterialsNotReplaced({"mat1", "mat2"}),
             std::logic_error);
 }
 
-TEST(ShapeTest, set_replaced_list_after_not_replaced_list)  {
+TEST(ShapeTest, set_replaced_list_after_not_replaced_list) {
     Shape shape;
     shape.setMaterialsNotReplaced({"mat1", "mat2"});
     EXPECT_THROW(shape.setMaterialsReplaced({"mat1", "mat2"}),

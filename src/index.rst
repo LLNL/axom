@@ -37,6 +37,7 @@ Components
 ==========
 
    * Inlet: Input deck parsing and information storage/retrieval
+   * Klee: Shaping specification and implementation
    * Lumberjack: Scalable parallel message logging and filtering
    * Mint: Mesh data model
    * Primal: Computational geometry primitives
@@ -62,6 +63,9 @@ Documentation
    * - Inlet
      - :doc:`User Guide <axom/inlet/docs/sphinx/index>`
      - `Source documentation <doxygen/html/inlettop.html>`__
+   * - Klee
+     - :doc:`User Guide <axom/klee/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/kleetop.html>`__
    * - Lumberjack
      - :doc:`User Guide <axom/lumberjack/docs/sphinx/index>`
      - `Source documentation <doxygen/html/lumberjacktop.html>`__
@@ -179,6 +183,7 @@ LLNL-CODE-741217
 
    Core (Widely useful utilities) <axom/core/docs/sphinx/index>
    Inlet (Input decks) <axom/inlet/docs/sphinx/index>
+   Klee (Shaping specification and implementation) <axom/klee/docs/sphinx/index>
    Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
