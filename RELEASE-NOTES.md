@@ -14,6 +14,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
   You can explicitly rewire using the static
   `DataStore::setConduitSLICMessageHandlers()` method.
+- Inlet: Fixed `SchemaCreator` to an abstract class and added missing functions
+- Inlet: Added ability to access the `Reader` class from `Inlet` and Sol Lua state
+  from the `LuaReader` class
 
 
 ## [Version 0.4.0] - Release date 2020-09-22

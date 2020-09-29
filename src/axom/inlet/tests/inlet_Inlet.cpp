@@ -1294,42 +1294,42 @@ TEST(inlet_verify, verifyTableLambda3)
   EXPECT_TRUE(myInlet->verify());
 }
 
-// Checks that LuaReader parses array information as expected
-TEST(inletArrays, luaReaderArrayFunctions)
+// Checks all of the Table::getArray functions
+TEST(inletArrays, getArray)
 {
+  DataStore ds;
   std::string testString =
-    "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = "
-    "2.4, [33] = 'hello', [200] = 'bye' }";
-  LuaReader lr;
-  lr.parseString(testString);
+    "luaArrays = { arr1 = { [1] = 4}, "
+    "              arr2 = {[4] = true, [8] = false}, "
+    "              arr3 = {[33] = 'hello', [2] = 'bye'}, "
+    "              arr4 = { [12] = 2.4 } }";
+  auto inlet = createBasicInlet(&ds, testString);
 
-  std::unordered_map<int, int> ints;
-  bool found = lr.getIntMap("luaArray", ints);
-  EXPECT_TRUE(found);
-  std::unordered_map<int, int> expectedInts {{1, 4}, {2, 5}, {3, 6}, {12, 2}};
-  EXPECT_EQ(expectedInts, ints);
+  std::unordered_map<int, bool> boolMap;
+  std::unordered_map<int, int> intMap;
+  std::unordered_map<int, double> doubleMap;
+  std::unordered_map<int, std::string> strMap;
+  auto arr1 = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
+  auto arr2 = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
+  auto arr3 = inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
+  auto arr4 = inlet->getGlobalTable()->addDoubleArray("luaArrays/arr4");
 
-  std::unordered_map<int, double> doubles;
-  found = lr.getDoubleMap("luaArray", doubles);
-  EXPECT_TRUE(found);
-  std::unordered_map<int, double> expectedDoubles {{1, 4},
-                                                   {2, 5},
-                                                   {3, 6},
-                                                   {12, 2.4}};
-  EXPECT_EQ(expectedDoubles, doubles);
-
-  std::unordered_map<int, bool> bools;
-  found = lr.getBoolMap("luaArray", bools);
-  EXPECT_TRUE(found);
+  std::unordered_map<int, int> expectedInts {{1, 4}};
   std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
-  EXPECT_EQ(expectedBools, bools);
+  std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
+  std::unordered_map<int, std::string> expectedStrs {{33, "hello"}, {2, "bye"}};
 
-  std::unordered_map<int, std::string> strs;
-  found = lr.getStringMap("luaArray", strs);
-  EXPECT_TRUE(found);
-  std::unordered_map<int, std::string> expectedStrs {{33, "hello"},
-                                                     {200, "bye"}};
-  EXPECT_EQ(expectedStrs, strs);
+  EXPECT_TRUE(arr1->getIntArray(intMap));
+  EXPECT_EQ(intMap, expectedInts);
+
+  EXPECT_TRUE(arr2->getBoolArray(boolMap));
+  EXPECT_EQ(boolMap, expectedBools);
+
+  EXPECT_TRUE(arr3->getStringArray(strMap));
+  EXPECT_EQ(strMap, expectedStrs);
+
+  EXPECT_TRUE(arr4->getDoubleArray(doubleMap));
+  EXPECT_EQ(doubleMap, expectedDoubles);
 }
 
 // Checks the underlying Sidre representation of the arrays added from Lua
@@ -1343,7 +1343,7 @@ TEST(inletArrays, inletArraysInSidre)
     "              arr4 = { [12] = 2.4 } }";
   auto inlet = createBasicInlet(&ds, testString);
 
-  inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
+  inlet->addIntArray("luaArrays/arr1");
 
   auto group = inlet->getGlobalTable()->sidreGroup()->getGroup(
     "luaArrays/arr1/_inlet_array");
@@ -1400,44 +1400,6 @@ TEST(inletArrays, inletArraysInSidre)
   EXPECT_TRUE(idx);
   double doubleVal = idx->getView("value")->getScalar();
   EXPECT_EQ(doubleVal, 2.4);
-}
-
-// Checks all of the Table::getArray functions
-TEST(inletArrays, getArray)
-{
-  DataStore ds;
-  std::string testString =
-    "luaArrays = { arr1 = { [1] = 4}, "
-    "              arr2 = {[4] = true, [8] = false}, "
-    "              arr3 = {[33] = 'hello', [2] = 'bye'}, "
-    "              arr4 = { [12] = 2.4 } }";
-  auto inlet = createBasicInlet(&ds, testString);
-
-  std::unordered_map<int, bool> boolMap;
-  std::unordered_map<int, int> intMap;
-  std::unordered_map<int, double> doubleMap;
-  std::unordered_map<int, std::string> strMap;
-  auto arr1 = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
-  auto arr2 = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
-  auto arr3 = inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
-  auto arr4 = inlet->getGlobalTable()->addDoubleArray("luaArrays/arr4");
-
-  std::unordered_map<int, int> expectedInts {{1, 4}};
-  std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
-  std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
-  std::unordered_map<int, std::string> expectedStrs {{33, "hello"}, {2, "bye"}};
-
-  EXPECT_TRUE(arr1->getIntArray(intMap));
-  EXPECT_EQ(intMap, expectedInts);
-
-  EXPECT_TRUE(arr2->getBoolArray(boolMap));
-  EXPECT_EQ(boolMap, expectedBools);
-
-  EXPECT_TRUE(arr3->getStringArray(strMap));
-  EXPECT_EQ(strMap, expectedStrs);
-
-  EXPECT_TRUE(arr4->getDoubleArray(doubleMap));
-  EXPECT_EQ(doubleMap, expectedDoubles);
 }
 
 //------------------------------------------------------------------------------

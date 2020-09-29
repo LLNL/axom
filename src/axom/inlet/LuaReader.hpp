@@ -39,6 +39,12 @@ namespace inlet
 class LuaReader : public Reader
 {
 public:
+
+  LuaReader() 
+  {
+    m_lua.open_libraries(sol::lib::base);
+  }
+
   /*!
    *****************************************************************************
    * \brief Parses the given input file.
@@ -191,6 +197,20 @@ public:
    */
   bool getStringMap(const std::string& id,
                     std::unordered_map<int, std::string>& values);
+
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the Sol Lua state
+   *
+   * This allows the user to access functionality that was not provided by Inlet.
+   *
+   * \return Reference to the Sol Lua state
+   *****************************************************************************
+   */
+  sol::state& solState() {
+    return m_lua;
+  }
 
 private:
   // Expect this to be called for only Inlet-supported types.
