@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // C/C++ includes
-#include <iostream> // For std::cerr
+#include <iostream>  // For std::cerr
 
 // Logging includes
 #include "axom/slic/interface/slic.hpp"
@@ -15,7 +15,7 @@ using namespace axom;
 void customAbortFunction()
 {
   // finalize logging if needed
-  if (slic::isInitialized())
+  if(slic::isInitialized())
   {
     slic::finalize();
   }
