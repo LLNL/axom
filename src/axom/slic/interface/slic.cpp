@@ -28,7 +28,7 @@ void createLogger(const std::string& name, char imask)
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return;
   }
@@ -40,7 +40,7 @@ bool activateLogger(const std::string& name)
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return false;
   }
@@ -52,7 +52,7 @@ std::string getActiveLoggerName()
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return "";
   }
@@ -64,7 +64,7 @@ message::Level getLoggingMsgLevel()
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return message::Num_Levels;
   }
@@ -76,7 +76,7 @@ void setLoggingMsgLevel(message::Level level)
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return;
   }
@@ -88,7 +88,7 @@ void setAbortOnError(bool status)
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return;
   }
@@ -107,7 +107,7 @@ bool isAbortOnErrorsEnabled()
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return false;
   }
@@ -120,7 +120,7 @@ void setAbortOnWarning(bool status)
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return;
   }
@@ -139,7 +139,7 @@ bool isAbortOnWarningsEnabled()
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return false;
   }
@@ -148,11 +148,24 @@ bool isAbortOnWarningsEnabled()
 }
 
 //------------------------------------------------------------------------------
+void setAbortFunction(AbortFunctionPtr abort_func)
+{
+  if(!isInitialized())
+  {
+    std::cerr << "[ERROR]: slic::initialize() must be called "
+              << "before making any other calls to SLIC.";
+    return;
+  }
+
+  Logger::getActiveLogger()->setAbortFunction(abort_func);
+}
+
+//------------------------------------------------------------------------------
 void addStreamToMsgLevel(LogStream* ls, message::Level level)
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return;
   }
@@ -248,7 +261,7 @@ void flushStreams()
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return;
   }
@@ -260,7 +273,7 @@ void pushStreams()
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
+    std::cerr << "[ERROR]: slic::initialize() must be called "
               << "before making any other calls to SLIC.";
     return;
   }
