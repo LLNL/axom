@@ -167,6 +167,17 @@ TEST(primal_point, point_numericArray_constructor)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_point, point_initializerList_constructor)
+{
+  // Should work because of the implicit constructor from a NumericArray.
+  primal::Point<int, 3> fromInitializerList = {10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerList[i]);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_point, point_copy_and_assignment)
 {
   static const int DIM = 5;
