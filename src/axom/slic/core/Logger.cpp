@@ -20,7 +20,10 @@ Logger* Logger::s_Logger = nullptr;
 std::map<std::string, Logger*> Logger::s_loggers;
 
 //------------------------------------------------------------------------------
-Logger::Logger() : m_abortOnError(true), m_abortOnWarning(false), m_abortFunction(axom::utilities::processAbort)
+Logger::Logger()
+  : m_abortOnError(true)
+  , m_abortOnWarning(false)
+  , m_abortFunction(axom::utilities::processAbort)
 {
   // by default, all message streams are disabled
   for(int i = 0; i < message::Num_Levels; ++i)
