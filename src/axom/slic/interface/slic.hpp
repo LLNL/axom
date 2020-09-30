@@ -134,7 +134,7 @@ bool isAbortOnWarningsEnabled();
  * \param [in] abort_func The user-specified function to call
  * \pre slic::isInitialized() == true.
  */
-void setAbortFunction(void (*abort_func)(void));
+void setAbortFunction(AbortFunctionPtr abort_func);
 
 /*!
  * \brief Adds the given stream to the the given level.

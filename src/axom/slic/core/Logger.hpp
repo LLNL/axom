@@ -26,6 +26,9 @@ namespace slic
 // Forward declarations
 class LogStream;
 
+// Type alias for readability
+using AbortFunctionPtr = void (*)();
+
 /*!
  * \class Logger
  *
@@ -114,7 +117,7 @@ public:
    * \brief Sets the function to call when program abort is requested
    * \param [in] abort_func The user-specified function to call
    */
-  void setAbortFunction(void (*abort_func)(void));
+  void setAbortFunction(AbortFunctionPtr abort_func);
 
   /*!
    * \brief Returns the name of this logger instance.

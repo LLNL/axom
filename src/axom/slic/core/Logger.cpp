@@ -63,11 +63,12 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
-void Logger::setAbortFunction(void (*abort_func)(void))
+void Logger::setAbortFunction(AbortFunctionPtr abort_func)
 {
   if(abort_func == nullptr)
   {
-    std::cerr << "WARNING: supplied abort function is NULL!\n";
+    std::cerr << "WARNING: slic::Logger::setAbortFunction() -- supplied abort "
+                 "function is invalid!\n";
     return;
   }
 
