@@ -169,11 +169,32 @@ TEST(primal_point, point_numericArray_constructor)
 //------------------------------------------------------------------------------
 TEST(primal_point, point_initializerList_constructor)
 {
-  // Should work because of the implicit constructor from a NumericArray.
   primal::Point<int, 3> fromInitializerList = {10, 20, 30};
   for(int i = 0; i < 3; ++i)
   {
     EXPECT_EQ(10 * (i + 1), fromInitializerList[i]);
+  }
+
+  primal::Point<int, 4> listTooShort = {10, 20};
+  for(int i = 0; i < 2; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), listTooShort[i]);
+  }
+  for(int i = 2; i < 4; ++i)
+  {
+    EXPECT_EQ(0, listTooShort[i]);
+  }
+
+  primal::Point<int, 3> listTooLong = {10, 20, 30, 40};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), listTooLong[i]);
+  }
+
+  primal::Point<int, 3> noEqualsSign{10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), noEqualsSign[i]);
   }
 }
 
