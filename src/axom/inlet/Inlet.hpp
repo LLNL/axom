@@ -364,7 +364,8 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields() {
+  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields()
+  {
     return m_globalTable->getChildFields();
   }
 
@@ -374,7 +375,8 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables() {
+  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables()
+  {
     return m_globalTable->getChildTables();
   }
 
@@ -389,8 +391,9 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addBoolArray(const std::string& name,
-                                      const std::string& description = "") {
-    return m_globalTable->addBoolArray(name,description);                                        
+                                      const std::string& description = "")
+  {
+    return m_globalTable->addBoolArray(name, description);
   }
 
   /*!
@@ -404,8 +407,9 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addIntArray(const std::string& name,
-                                     const std::string& description = "") {
-    return m_globalTable->addIntArray(name,description);  
+                                     const std::string& description = "")
+  {
+    return m_globalTable->addIntArray(name, description);
   }
 
   /*!
@@ -419,8 +423,9 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addDoubleArray(const std::string& name,
-                                        const std::string& description = "") {
-    return m_globalTable->addDoubleArray(name,description);                                     
+                                        const std::string& description = "")
+  {
+    return m_globalTable->addDoubleArray(name, description);
   }
 
   /*!
@@ -434,8 +439,9 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addStringArray(const std::string& name,
-                                        const std::string& description = "") {
-    return m_globalTable->addStringArray(name,description);                                    
+                                        const std::string& description = "")
+  {
+    return m_globalTable->addStringArray(name, description);
   }
 
   /*!
@@ -447,7 +453,8 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getBoolArray(std::unordered_map<int, bool>& map) {
+  bool getBoolArray(std::unordered_map<int, bool>& map)
+  {
     return m_globalTable->getBoolArray(map);
   }
 
@@ -460,7 +467,8 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getIntArray(std::unordered_map<int, int>& map) {
+  bool getIntArray(std::unordered_map<int, int>& map)
+  {
     return m_globalTable->getIntArray(map);
   }
 
@@ -473,7 +481,8 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getDoubleArray(std::unordered_map<int, double>& map) {
+  bool getDoubleArray(std::unordered_map<int, double>& map)
+  {
     return m_globalTable->getDoubleArray(map);
   }
 
@@ -486,7 +495,8 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getStringArray(std::unordered_map<int, std::string>& map) {
+  bool getStringArray(std::unordered_map<int, std::string>& map)
+  {
     return m_globalTable->getStringArray(map);
   }
 

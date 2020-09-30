@@ -1643,11 +1643,10 @@ TEST(sidre_view, value_from_uninited_view)
   EXPECT_TRUE(dval_ptr == nullptr);
 
   int dval = view->getData();
-  EXPECT_EQ(dval,0);
+  EXPECT_EQ(dval, 0);
 
   // restore conduit default errors
   DataStore::setConduitDefaultMessageHandlers();
-
 }
 
 #ifdef AXOM_USE_UMPIRE

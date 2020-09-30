@@ -109,7 +109,6 @@ TEST(inlet_LuaReader, mixLevelTables)
   EXPECT_EQ(value, 3);
 }
 
-
 // Checks that LuaReader parses array information as expected
 TEST(inlet_LuaReader, getMap)
 {
@@ -147,7 +146,6 @@ TEST(inlet_LuaReader, getMap)
                                                      {200, "bye"}};
   EXPECT_EQ(expectedStrs, strs);
 }
-
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
