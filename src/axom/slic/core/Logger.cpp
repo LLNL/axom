@@ -20,7 +20,7 @@ Logger* Logger::s_Logger = nullptr;
 std::map<std::string, Logger*> Logger::s_loggers;
 
 //------------------------------------------------------------------------------
-Logger::Logger() : m_abortOnError(true), m_abortOnWarning(false)
+Logger::Logger() : m_abortOnError(true), m_abortOnWarning(false), m_abortFunction(axom::utilities::processAbort)
 {
   // by default, all message streams are disabled
   for(int i = 0; i < message::Num_Levels; ++i)
@@ -34,6 +34,7 @@ Logger::Logger(const std::string& name)
   : m_name(name)
   , m_abortOnError(true)
   , m_abortOnWarning(false)
+  , m_abortFunction(axom::utilities::processAbort)
 {
   // by default, all message streams are disabled
   for(int i = 0; i < message::Num_Levels; ++i)
@@ -56,6 +57,18 @@ Logger::~Logger()
     m_logStreams[level].clear();
 
   }  // END for all levels
+}
+
+//------------------------------------------------------------------------------
+void Logger::setAbortFunction(void (*abort_func)(void))
+{
+  if(abort_func == nullptr)
+  {
+    std::cerr << "WARNING: supplied abort function is NULL!\n";
+    return;
+  }
+
+  m_abortFunction = abort_func;
 }
 
 //------------------------------------------------------------------------------
@@ -202,7 +215,7 @@ void Logger::logMessage(message::Level level,
      (m_abortOnWarning && (level == message::Warning)))
   {
     this->flushStreams();
-    axom::utilities::processAbort();
+    m_abortFunction();
 
   }  // END if
 }

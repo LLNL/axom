@@ -148,6 +148,19 @@ bool isAbortOnWarningsEnabled()
 }
 
 //------------------------------------------------------------------------------
+void setAbortFunction(void (*abort_func)(void))
+{
+  if(!isInitialized())
+  {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return;
+  }
+
+  Logger::getActiveLogger()->setAbortFunction(abort_func);
+}
+
+//------------------------------------------------------------------------------
 void addStreamToMsgLevel(LogStream* ls, message::Level level)
 {
   if(!isInitialized())
