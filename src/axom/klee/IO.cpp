@@ -13,6 +13,7 @@
 #include "conduit.hpp"
 
 #include "axom/klee/GeometryOperatorsIO.hpp"
+#include "axom/klee/IOUtil.hpp"
 
 namespace axom { namespace klee {
 
@@ -59,18 +60,18 @@ std::vector<std::string> toStringList(const Node &listNode) {
  * \param initialDimensions the initial dimensions of the shape
  * \return the geometry description for the shape
  */
-Geometry getGeometry(const Node &geometryNode, int initialDimensions) {
+Geometry getGeometry(const Node &geometryNode, Dimensions initialDimensions) {
     Geometry geometry;
     geometry.setInitialDimensions(initialDimensions);
     geometry.setFormat(geometryNode["format"].as_string());
     geometry.setPath(geometryNode["path"].as_string());
     if (geometryNode.has_child("initial_dimensions")) {
-        geometry.setInitialDimensions(
-                geometryNode["initial_dimensions"].to_int());
+        geometry.setInitialDimensions(internal::toDimensions(
+                geometryNode["initial_dimensions"]));
     }
     if (geometryNode.has_child("operators")) {
-        auto operators = parseGeometryOperators(geometryNode["operators"],
-                geometry.getInitialDimensions());
+        auto operators = internal::parseGeometryOperators(
+                geometryNode["operators"], geometry.getInitialDimensions());
         geometry.setGeometryOperator(operators);
     }
     return geometry;
@@ -83,7 +84,7 @@ Geometry getGeometry(const Node &geometryNode, int initialDimensions) {
  * \return the shape as a Shape object
  */
 Shape convertToShape(const Node &shapeNode,
-        int fileDimensions) {
+        Dimensions fileDimensions) {
     Shape shape;
     shape.setName(shapeNode["name"].as_string());
     shape.setMaterial(shapeNode["material"].as_string());
@@ -103,21 +104,6 @@ Shape convertToShape(const Node &shapeNode,
     return shape;
 }
 
-/**
- * Get the number of dimensions of shapes specified in the document.
- *
- * \param doc the document
- * \return the number of dimensions. Always 2 or 3.
- * \throws std::invalid_argument if the number of dimensions is invalid
- */
-int getDimensions(const Node &doc) {
-    int dimensions = doc["dimensions"].to_int();
-    if (dimensions != 2 && dimensions != 3) {
-        throw std::invalid_argument("'dimensions' must be either 2 or 3");
-    }
-    return dimensions;
-}
-
 }
 
 ShapeSet readShapeSet(std::istream &stream) {
@@ -125,7 +111,7 @@ ShapeSet readShapeSet(std::istream &stream) {
     std::string contents{std::istreambuf_iterator<char>(stream), {}};
     doc.parse(contents, "yaml");
     ShapeSet shapeSet;
-    int dimensions = getDimensions(doc);
+    Dimensions dimensions = internal::toDimensions(doc["dimensions"]);
     shapeSet.setShapes(convertList(doc["shapes"],
             [dimensions] (const Node &shapeNode) -> Shape {
                 return convertToShape(shapeNode, dimensions);

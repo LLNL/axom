@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "axom/core/numerics/Matrix.hpp"
+#include "axom/klee/Dimensions.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
@@ -34,14 +35,14 @@ public:
      * this operator is applied.
      * \return always 2 or 3
      */
-    virtual int startDims() const = 0;
+    virtual Dimensions startDims() const = 0;
 
     /**
      * Get the number of dimensions that the geometry will be in after
      * this operator is applied.
      * \return always 2 or 3
      */
-    virtual int endDims() const = 0;
+    virtual Dimensions endDims() const = 0;
 
     /**
      * Accept the given visitor. The appropriate visit() method will
@@ -74,9 +75,9 @@ class CompositeOperator : public GeometryOperator {
 public:
     using OpPtr = std::shared_ptr<const GeometryOperator>;
 
-    int startDims() const override;
+    Dimensions startDims() const override;
 
-    int endDims() const override;
+    Dimensions endDims() const override;
 
     void accept(GeometryOperatorVisitor &visitor) const override;
 
@@ -114,18 +115,18 @@ public:
      *
      * \param dims the number of dimensions
      */
-    explicit ConstantDimensionOperator(int dims) : m_dims{dims} {}
+    explicit ConstantDimensionOperator(Dimensions dims) : m_dims{dims} {}
 
-    int startDims() const override {
+    Dimensions startDims() const override {
         return m_dims;
     }
 
-    int endDims() const override {
+    Dimensions endDims() const override {
         return m_dims;
     }
 
 private:
-    int m_dims;
+    Dimensions m_dims;
 };
 
 /**
@@ -141,7 +142,7 @@ public:
      * operate in. If 2, the 3rd entry in the offset should be zero, but this
      * is not checked.
      */
-    Translation(const primal::Vector3D &offset, int dims);
+    Translation(const primal::Vector3D &offset, Dimensions dims);
 
     /**
      * Get the amount by which to offset points.
@@ -177,7 +178,7 @@ public:
      * operate in. If 2, the axis should be [0, 0, 1], but this is not checked.
      */
     Rotation(double angle, const primal::Point3D &center,
-            const primal::Vector3D &axis, int dims);
+            const primal::Vector3D &axis, Dimensions dims);
 
     /**
      * Get the angle of rotation.
@@ -232,7 +233,7 @@ public:
      * \param dims the number of dimensions. If 3, zFactor should be 1.0,
      * but this is not enforced.
      */
-    Scale(double xFactor, double yFactor, double zFactor, int dims);
+    Scale(double xFactor, double yFactor, double zFactor, Dimensions dims);
 
     /**
      * Get the scale factor in the x direction.
@@ -286,7 +287,7 @@ public:
      * not enforced.
      */
     ArbitraryMatrixOperator(const numerics::Matrix<double> &transformation,
-            int dims);
+            Dimensions dims);
 
     numerics::Matrix<double> toMatrix() const override;
 
@@ -342,8 +343,8 @@ public:
         return m_up;
     }
 
-    int startDims() const override;
-    int endDims() const override;
+    Dimensions startDims() const override;
+    Dimensions endDims() const override;
 
     numerics::Matrix<double> toMatrix() const override;
 

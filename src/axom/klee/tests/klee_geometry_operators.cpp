@@ -73,6 +73,8 @@ primal::Point<double, 4> affinePoint(const Point3D &point3d) {
     return point;
 }
 
+Dimensions ALL_DIMS[] = {Dimensions::Two, Dimensions::Three};
+
 class MockVisitor : public GeometryOperatorVisitor {
 public:
     MOCK_METHOD(void, visit, (const Translation &translation), (override));
@@ -84,7 +86,7 @@ public:
 };
 
 TEST(Tanslation, basics) {
-    for (int dims = 2; dims <= 3; ++dims) {
+    for (Dimensions dims : ALL_DIMS) {
         Vector3D offset = makeVector({10, 20, 30});
         Translation translation{offset, dims};
         EXPECT_EQ(dims, translation.startDims());
@@ -94,7 +96,7 @@ TEST(Tanslation, basics) {
 }
 
 TEST(Tanslation, toMatrix) {
-    for (int dims = 2; dims <= 3; ++dims) {
+    for (Dimensions dims : ALL_DIMS) {
         Vector3D offset = makeVector({10, 20, 30});
         Translation translation{offset, dims};
         EXPECT_THAT(translation.toMatrix(), AlmostEqMatrix(affine({
@@ -106,14 +108,14 @@ TEST(Tanslation, toMatrix) {
 }
 
 TEST(Tanslation, accept) {
-    Translation translation{makeVector({10, 20, 30}), 3};
+    Translation translation{makeVector({10, 20, 30}), Dimensions::Three};
     MockVisitor visitor;
     EXPECT_CALL(visitor, visit(Matcher<const Translation &>(Ref(translation))));
     translation.accept(visitor);
 }
 
 TEST(Rotation, basics) {
-    for (int dims = 2; dims <= 3; ++dims) {
+    for (Dimensions dims : ALL_DIMS) {
         Vector3D axis = makeVector({10, 20, 30});
         Point3D center = makePoint({40, 50, 60});
         double angle = 45;
@@ -130,7 +132,7 @@ TEST(Rotation, rotate2d_with_center){
     Vector3D axis = makeVector({0, 0, 1});
     Point3D center = makePoint({10, 20, 0});
     double angle = 30;
-    Rotation rotation{angle, center, axis, 2};
+    Rotation rotation{angle, center, axis, Dimensions::Two};
 
     double sin30 = 0.5;
     double cos30 = std::sqrt(3) / 2;
@@ -146,7 +148,8 @@ TEST(Rotation, rotate2d_with_center){
     // Sanity check to make sure things work with nice rotation since
     // the test and implementation use similar approaches (though the equations
     // were verified by hand).
-    Rotation rotate90{90, makePoint({10, 20, 0}), makeVector({0, 0, 1}), 2};
+    Rotation rotate90{90, makePoint({10, 20, 0}), makeVector({0, 0, 1}),
+                      Dimensions::Two};
 
     EXPECT_THAT(rotate90.toMatrix() * affinePoint({15, 20, 0}),
             AlmostEqPoint(affinePoint({10, 25, 0})));
@@ -158,20 +161,23 @@ TEST(Rotation, rotate3d_axis_aligned){
 
     Point3D origin = makePoint({0, 0, 0});
 
-    Rotation rotatedAboutXAxis{30, origin, makeVector({1, 0, 0}), 3};
+    Rotation rotatedAboutXAxis{30, origin, makeVector({1, 0, 0}),
+                               Dimensions::Three};
 
     EXPECT_THAT(rotatedAboutXAxis.toMatrix(), AlmostEqMatrix(affine({
             1, 0, 0, 0,
             0, cos30, -sin30, 0,
             0, sin30, cos30, 0})));
 
-    Rotation rotatedAboutYAxis{30, origin, makeVector({0, 1, 0}), 3};
+    Rotation rotatedAboutYAxis{30, origin, makeVector({0, 1, 0}),
+                               Dimensions::Three};
     EXPECT_THAT(rotatedAboutYAxis.toMatrix(), AlmostEqMatrix(affine({
             cos30, 0, sin30, 0,
             0, 1, 0, 0,
             -sin30, 0, cos30, 0})));
 
-    Rotation rotatedAboutZAxis{30, origin, makeVector({0, 0, 1}), 3};
+    Rotation rotatedAboutZAxis{30, origin, makeVector({0, 0, 1}),
+                               Dimensions::Three};
     EXPECT_THAT(rotatedAboutZAxis.toMatrix(), AlmostEqMatrix(affine({
             cos30, -sin30, 0, 0,
             sin30, cos30, 0, 0,
@@ -179,7 +185,8 @@ TEST(Rotation, rotate3d_axis_aligned){
 }
 
 TEST(Rotation, rotate3d_with_center){
-    Rotation rotation{90, makePoint({10, 20, 30}), makeVector({1, 1, 0}), 3};
+    Rotation rotation{90, makePoint({10, 20, 30}), makeVector({1, 1, 0}),
+                      Dimensions::Three};
 
     double halfRoot2 = std::sqrt(2) / 2;
     numerics::Matrix<double> expected = affine({
@@ -197,7 +204,8 @@ TEST(Rotation, rotate3d_with_center){
             AlmostEqPoint(affinePoint({10.5, 20.5, 30 -1 / std::sqrt(2)})));
 
     // Use the pythagorean quadruple (1, 4, 8, 9) for easier manual checking
-    rotation = Rotation{90, makePoint({10, 20, 30}), makeVector({1, -4, 8}), 3};
+    rotation = Rotation{90, makePoint({10, 20, 30}), makeVector({1, -4, 8}),
+                        Dimensions::Three};
 
     expected = affine({
             1, -76, -28, 0,
@@ -213,14 +221,15 @@ TEST(Rotation, rotate3d_with_center){
 }
 
 TEST(Rotation, accept) {
-    Rotation rotation{90, makePoint({0, 0, 0}), makeVector({1, 2, 3}), 3};
+    Rotation rotation{90, makePoint({0, 0, 0}), makeVector({1, 2, 3}),
+                      Dimensions::Three};
     MockVisitor visitor;
     EXPECT_CALL(visitor, visit(Matcher<const Rotation &>(Ref(rotation))));
     rotation.accept(visitor);
 }
 
 TEST(Scale, basics) {
-    for (int dims = 2; dims <= 3; ++dims) {
+    for (Dimensions dims : ALL_DIMS) {
         Scale scale{2, 3, 4, dims};
         EXPECT_EQ(dims, scale.startDims());
         EXPECT_EQ(dims, scale.endDims());
@@ -231,7 +240,7 @@ TEST(Scale, basics) {
 }
 
 TEST(Scale, toMatrix) {
-    for (int dims = 2; dims <= 3; ++dims) {
+    for (Dimensions dims : ALL_DIMS) {
         Scale scale{2, 3, 4, dims};
         EXPECT_THAT(scale.toMatrix(), AlmostEqMatrix(affine({
             2, 0, 0, 0,
@@ -242,14 +251,14 @@ TEST(Scale, toMatrix) {
 }
 
 TEST(Scale, accept) {
-    Scale scale{1, 2, 3, 3};
+    Scale scale{1, 2, 3, Dimensions::Three};
     MockVisitor visitor;
     EXPECT_CALL(visitor, visit(Matcher<const Scale &>(Ref(scale))));
     scale.accept(visitor);
 }
 
 TEST(ArbitraryMatrixOperator, basics) {
-    for (int dims = 2; dims <= 3; ++dims) {
+    for (Dimensions dims : ALL_DIMS) {
         auto transformation = affine({
             1, -2, 3, -4,
             -5, 6, -7, 8,
@@ -263,7 +272,8 @@ TEST(ArbitraryMatrixOperator, basics) {
 }
 
 TEST(ArbitraryMatrixOperator, accept) {
-    ArbitraryMatrixOperator op{numerics::Matrix<double>::identity(4), 3};
+    ArbitraryMatrixOperator op{numerics::Matrix<double>::identity(4),
+                               Dimensions::Three};
     MockVisitor visitor;
     EXPECT_CALL(visitor, visit(Matcher<const ArbitraryMatrixOperator &>(Ref(op))));
     op.accept(visitor);
@@ -280,33 +290,33 @@ TEST(CompositeOperator, addOperator) {
     CompositeOperator compositeOp;
 
     auto startMock = std::make_shared<MockOperator>();
-    ON_CALL(*startMock, startDims()).WillByDefault(Return(2));
-    ON_CALL(*startMock, endDims()).WillByDefault(Return(3));
+    ON_CALL(*startMock, startDims()).WillByDefault(Return(Dimensions::Two));
+    ON_CALL(*startMock, endDims()).WillByDefault(Return(Dimensions::Three));
     compositeOp.addOperator(startMock);
     EXPECT_CALL(*startMock, startDims());
-    EXPECT_EQ(2, compositeOp.startDims());
+    EXPECT_EQ(Dimensions::Two, compositeOp.startDims());
     EXPECT_CALL(*startMock, endDims());
-    EXPECT_EQ(3, compositeOp.endDims());
+    EXPECT_EQ(Dimensions::Three, compositeOp.endDims());
     EXPECT_THAT(compositeOp.getOperators(), ElementsAre(startMock));
 
     auto midMock = std::make_shared<MockOperator>();
-    ON_CALL(*midMock, startDims()).WillByDefault(Return(3));
-    ON_CALL(*midMock, endDims()).WillByDefault(Return(3));
+    ON_CALL(*midMock, startDims()).WillByDefault(Return(Dimensions::Three));
+    ON_CALL(*midMock, endDims()).WillByDefault(Return(Dimensions::Three));
     compositeOp.addOperator(midMock);
     EXPECT_CALL(*startMock, startDims());
-    EXPECT_EQ(2, compositeOp.startDims());
+    EXPECT_EQ(Dimensions::Two, compositeOp.startDims());
     EXPECT_CALL(*midMock, endDims());
-    EXPECT_EQ(3, compositeOp.endDims());
+    EXPECT_EQ(Dimensions::Three, compositeOp.endDims());
     EXPECT_THAT(compositeOp.getOperators(), ElementsAre(startMock, midMock));
 
     auto endMock = std::make_shared<MockOperator>();
-    ON_CALL(*endMock, startDims()).WillByDefault(Return(3));
-    ON_CALL(*endMock, endDims()).WillByDefault(Return(2));
+    ON_CALL(*endMock, startDims()).WillByDefault(Return(Dimensions::Three));
+    ON_CALL(*endMock, endDims()).WillByDefault(Return(Dimensions::Two));
     compositeOp.addOperator(endMock);
     EXPECT_CALL(*startMock, startDims());
-    EXPECT_EQ(2, compositeOp.startDims());
+    EXPECT_EQ(Dimensions::Two, compositeOp.startDims());
     EXPECT_CALL(*endMock, endDims());
-    EXPECT_EQ(2, compositeOp.endDims());
+    EXPECT_EQ(Dimensions::Two, compositeOp.endDims());
     EXPECT_THAT(compositeOp.getOperators(),
             ElementsAre(startMock, midMock, endMock));
 }
@@ -327,8 +337,8 @@ TEST(Slice, basics) {
     EXPECT_THAT(slice.getOrigin(), AlmostEqPoint(origin));
     EXPECT_THAT(slice.getNormal(), AlmostEqVector(normal));
     EXPECT_THAT(slice.getUp(), AlmostEqVector(up));
-    EXPECT_EQ(3, slice.startDims());
-    EXPECT_EQ(2, slice.endDims());
+    EXPECT_EQ(Dimensions::Three, slice.startDims());
+    EXPECT_EQ(Dimensions::Two, slice.endDims());
 }
 
 TEST(Slice, toMatrix_translateOnly) {

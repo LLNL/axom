@@ -154,8 +154,8 @@ TEST(IOTest, readShapeSet_differentDimensions) {
     ASSERT_EQ(1u, shapes.size());
     auto &shape = shapes[0];
     auto &geometry = shape.getGeometry();
-    EXPECT_EQ(3, geometry.getInitialDimensions());
-    EXPECT_EQ(2, geometry.getDimensions());
+    EXPECT_EQ(Dimensions::Three, geometry.getInitialDimensions());
+    EXPECT_EQ(Dimensions::Two, geometry.getDimensions());
     auto &geometryOperator = geometry.getGeometryOperator();
     ASSERT_TRUE(geometryOperator);
     auto composite = std::dynamic_pointer_cast<const CompositeOperator>(

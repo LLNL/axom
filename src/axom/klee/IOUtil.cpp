@@ -41,4 +41,14 @@ double toDouble(const conduit::Node &value) {
     return value.to_double();
 }
 
+Dimensions toDimensions(const conduit::Node &dimensionsNode) {
+    int dimensions = dimensionsNode.to_int();
+    if (dimensions == 2) {
+        return Dimensions::Two;
+    } else if (dimensions == 3) {
+        return Dimensions::Three;
+    }
+    throw std::invalid_argument("'dimensions' must be either 2 or 3");
+}
+
 }}}

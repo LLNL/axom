@@ -18,23 +18,23 @@ using ::testing::Return;
 
 TEST(GeometryTest, dimensions_noOperators) {
     Geometry geometry;
-    geometry.setInitialDimensions(3);
-    EXPECT_EQ(3, geometry.getInitialDimensions());
-    EXPECT_EQ(3, geometry.getDimensions());
+    geometry.setInitialDimensions(Dimensions::Three);
+    EXPECT_EQ(Dimensions::Three, geometry.getInitialDimensions());
+    EXPECT_EQ(Dimensions::Three, geometry.getDimensions());
 }
 
 TEST(GeometryTest, dimensions_dimensionPreservingOperator) {
     Geometry geometry;
-    geometry.setInitialDimensions(3);
+    geometry.setInitialDimensions(Dimensions::Three);
 
     auto mockOperator = std::make_shared<MockOperator>();
-    ON_CALL(*mockOperator, startDims()).WillByDefault(Return(3));
-    ON_CALL(*mockOperator, endDims()).WillByDefault(Return(2));
+    ON_CALL(*mockOperator, startDims()).WillByDefault(Return(Dimensions::Three));
+    ON_CALL(*mockOperator, endDims()).WillByDefault(Return(Dimensions::Two));
     geometry.setGeometryOperator(mockOperator);
     EXPECT_CALL(*mockOperator, endDims());
 
-    EXPECT_EQ(3, geometry.getInitialDimensions());
-    EXPECT_EQ(2, geometry.getDimensions());
+    EXPECT_EQ(Dimensions::Three, geometry.getInitialDimensions());
+    EXPECT_EQ(Dimensions::Two, geometry.getDimensions());
 }
 
 }}

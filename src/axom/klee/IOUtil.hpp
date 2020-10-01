@@ -9,6 +9,8 @@
 
 #include "conduit.hpp"
 
+#include "axom/klee/Dimensions.hpp"
+
 namespace axom { namespace klee { namespace internal {
 
 /**
@@ -32,6 +34,15 @@ std::vector<double> toDoubleVector(const conduit::Node &listNode,
  * \throws std::invalid_argument if the node is not a double
  */
 double toDouble(const conduit::Node &value);
+
+/**
+ * Convert a Conduit node to Dimensions. Must be an integer with a value of
+ * 2 or 3/
+ * \param dimensionsNode the node to convert
+ * \return the number of dimensions
+ * \throws std::invalid_argument if the node is not a valid dimension value
+ */
+Dimensions toDimensions(const conduit::Node &dimensionsNode);
 
 }}}
 

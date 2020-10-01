@@ -12,14 +12,14 @@
 
 namespace axom { namespace klee {
 
-int CompositeOperator::startDims() const {
+Dimensions CompositeOperator::startDims() const {
     if (m_operators.empty()) {
         throw std::logic_error("An empty composite has no dimensionality");
     }
     return m_operators[0]->startDims();
 }
 
-int CompositeOperator::endDims() const {
+Dimensions CompositeOperator::endDims() const {
     if (m_operators.empty()) {
         throw std::logic_error("An empty composite has no dimensionality");
     }
@@ -34,7 +34,7 @@ void CompositeOperator::addOperator(const OpPtr &op) {
     m_operators.emplace_back(op);
 }
 
-Translation::Translation(const primal::Vector3D &offset, int dims) :
+Translation::Translation(const primal::Vector3D &offset, Dimensions dims) :
         ConstantDimensionOperator{dims}, MatrixOperator{}, m_offset{offset} {}
 
 numerics::Matrix<double> Translation::toMatrix() const {
@@ -50,7 +50,7 @@ void Translation::accept(GeometryOperatorVisitor &visitor) const {
 }
 
 Rotation::Rotation(double angle, const primal::Point3D &center,
-        const primal::Vector3D &axis, int dims) :
+        const primal::Vector3D &axis, Dimensions dims) :
         ConstantDimensionOperator{dims}, MatrixOperator{},
         m_angle{angle}, m_center{center}, m_axis{axis} {}
 
@@ -97,7 +97,7 @@ void Rotation::accept(GeometryOperatorVisitor &visitor) const {
     visitor.visit(*this);
 }
 
-Scale::Scale(double xFactor, double yFactor, double zFactor, int dims) :
+Scale::Scale(double xFactor, double yFactor, double zFactor, Dimensions dims) :
         ConstantDimensionOperator{dims}, MatrixOperator{},
         m_xFactor{xFactor}, m_yFactor{yFactor},m_zFactor{zFactor} {}
 
@@ -115,7 +115,7 @@ void Scale::accept(GeometryOperatorVisitor &visitor) const {
 }
 
 ArbitraryMatrixOperator::ArbitraryMatrixOperator(
-        const numerics::Matrix<double> &transformation, int dims) :
+        const numerics::Matrix<double> &transformation, Dimensions dims) :
         ConstantDimensionOperator{dims}, MatrixOperator{},
         m_transformation{transformation} {}
 
@@ -131,12 +131,12 @@ SliceOperator::SliceOperator(const primal::Point3D &origin,
         const primal::Vector3D &normal, const primal::Vector3D &up)
         : m_origin{origin}, m_normal{normal}, m_up{up} {}
 
-int SliceOperator::startDims() const {
-    return 3;
+Dimensions SliceOperator::startDims() const {
+    return Dimensions::Three;
 }
 
-int SliceOperator::endDims() const {
-    return 2;
+Dimensions SliceOperator::endDims() const {
+    return Dimensions::Two;
 }
 
 numerics::Matrix<double> SliceOperator::toMatrix() const {
@@ -184,7 +184,8 @@ numerics::Matrix<double> SliceOperator::createTranslationToOrigin() const {
 }
 
 primal::Vector3D SliceOperator::calculateRightVector() const {
-    Rotation rotation{270, primal::Point3D{0.0}, m_normal.unitVector(), 3};
+    Rotation rotation{270, primal::Point3D{0.0}, m_normal.unitVector(),
+                      Dimensions::Three};
     primal::Vector3D unitRight;
     auto unitUp = m_up.unitVector();
     numerics::matrix_vector_multiply(rotation.toMatrix(), unitUp.data(),

@@ -15,7 +15,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace axom { namespace klee { namespace {
+namespace axom { namespace klee { namespace internal { namespace {
 
 using test::AlmostEqPoint;
 using test::AlmostEqMatrix;
@@ -33,8 +33,8 @@ using ::testing::HasSubstr;
  * \param input the operators expressed in yaml
  * \return the operators that were read.
  */
-std::shared_ptr<const GeometryOperator> readOperators(int startingDimensions,
-        const std::string &input) {
+std::shared_ptr<const GeometryOperator> readOperators(
+        Dimensions startingDimensions, const std::string &input) {
     conduit::Node node;
     node.parse(input, "yaml");
     return parseGeometryOperators(node, startingDimensions);
@@ -51,7 +51,7 @@ std::shared_ptr<const GeometryOperator> readOperators(int startingDimensions,
  * the specified type.
  */
 template<typename T>
-T readSingleOperator(int startingDimensions, const std::string &input) {
+T readSingleOperator(Dimensions startingDimensions, const std::string &input) {
     std::string wrappedInput{"-\n"};
     wrappedInput += input;
     std::shared_ptr<const GeometryOperator> genericOperator =
@@ -87,28 +87,28 @@ test::MatchesSliceMatcherP<SliceOperator> isSlice(
 }
 
 TEST(GeometryOperatorsIO, readTranslation_2D) {
-    auto translation = readSingleOperator<Translation>(2, R"(
+    auto translation = readSingleOperator<Translation>(Dimensions::Two, R"(
       translate: [10, 20]
     )");
-    EXPECT_EQ(2, translation.startDims());
-    EXPECT_EQ(2, translation.endDims());
+    EXPECT_EQ(Dimensions::Two, translation.startDims());
+    EXPECT_EQ(Dimensions::Two, translation.endDims());
     EXPECT_THAT(translation.getOffset(),
             AlmostEqVector(makeVector({10, 20, 0})));
 }
 
 TEST(GeometryOperatorsIO, readTranslation_3D) {
-    auto translation = readSingleOperator<Translation>(3, R"(
+    auto translation = readSingleOperator<Translation>(Dimensions::Three, R"(
       translate: [10, 20, 30]
     )");
-    EXPECT_EQ(3, translation.startDims());
-    EXPECT_EQ(3, translation.endDims());
+    EXPECT_EQ(Dimensions::Three, translation.startDims());
+    EXPECT_EQ(Dimensions::Three, translation.endDims());
     EXPECT_THAT(translation.getOffset(),
             AlmostEqVector(makeVector({10, 20, 30})));
 }
 
 TEST(GeometryOperatorsIO, readTranslation_unknownKeys) {
     try {
-        readSingleOperator<Translation>(2, R"(
+        readSingleOperator<Translation>(Dimensions::Two, R"(
           translate: [10, 20]
           UNKNOWN_KEY: UNKNOWN_VALUE
         )");
@@ -120,23 +120,23 @@ TEST(GeometryOperatorsIO, readTranslation_unknownKeys) {
 }
 
 TEST(GeometryOperatorsIO, readRotation_2D_requiredOnly) {
-    auto rotation = readSingleOperator<Rotation>(2, R"(
+    auto rotation = readSingleOperator<Rotation>(Dimensions::Two, R"(
       rotate: 45
     )");
-    EXPECT_EQ(2, rotation.startDims());
-    EXPECT_EQ(2, rotation.endDims());
+    EXPECT_EQ(Dimensions::Two, rotation.startDims());
+    EXPECT_EQ(Dimensions::Two, rotation.endDims());
     EXPECT_DOUBLE_EQ(45, rotation.getAngle());
     EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(makePoint({0, 0, 0})));
     EXPECT_THAT(rotation.getAxis(), AlmostEqVector(makeVector({0, 0, 1})));
 }
 
 TEST(GeometryOperatorsIO, readRotation_2D_optionalFields) {
-    auto rotation = readSingleOperator<Rotation>(2, R"(
+    auto rotation = readSingleOperator<Rotation>(Dimensions::Two, R"(
       rotate: 45
       center: [10, 20]
     )");
-    EXPECT_EQ(2, rotation.startDims());
-    EXPECT_EQ(2, rotation.endDims());
+    EXPECT_EQ(Dimensions::Two, rotation.startDims());
+    EXPECT_EQ(Dimensions::Two, rotation.endDims());
     EXPECT_DOUBLE_EQ(45, rotation.getAngle());
     EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(makePoint({10, 20, 0})));
     EXPECT_THAT(rotation.getAxis(), AlmostEqVector(makeVector({0, 0, 1})));
@@ -144,7 +144,7 @@ TEST(GeometryOperatorsIO, readRotation_2D_optionalFields) {
 
 TEST(GeometryOperatorsIO, readRotation_2D_axisNotAllowed) {
     try {
-        readSingleOperator<Rotation>(2, R"(
+        readSingleOperator<Rotation>(Dimensions::Two, R"(
             rotate: 45
             axis: [1, 2, 3]
         )");
@@ -156,32 +156,33 @@ TEST(GeometryOperatorsIO, readRotation_2D_axisNotAllowed) {
 }
 
 TEST(GeometryOperatorsIO, readRotation_3D_requiredOnly) {
-    auto rotation = readSingleOperator<Rotation>(3, R"(
+    auto rotation = readSingleOperator<Rotation>(Dimensions::Three, R"(
       rotate: 45
       axis: [1, 2, 3]
     )");
-    EXPECT_EQ(3, rotation.startDims());
-    EXPECT_EQ(3, rotation.endDims());
+    EXPECT_EQ(Dimensions::Three, rotation.startDims());
+    EXPECT_EQ(Dimensions::Three, rotation.endDims());
     EXPECT_DOUBLE_EQ(45, rotation.getAngle());
     EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(makePoint({0, 0, 0})));
     EXPECT_THAT(rotation.getAxis(), AlmostEqVector(makeVector({1, 2, 3})));
 }
 
 TEST(GeometryOperatorsIO, readRotation_3D_optionalFields) {
-    auto rotation = readSingleOperator<Rotation>(3, R"(
+    auto rotation = readSingleOperator<Rotation>(Dimensions::Three, R"(
       rotate: 45
       axis: [1, 2, 3]
       center: [4, 5, 6]
     )");
-    EXPECT_EQ(3, rotation.startDims());
-    EXPECT_EQ(3, rotation.endDims());
+    EXPECT_EQ(Dimensions::Three, rotation.startDims());
+    EXPECT_EQ(Dimensions::Three, rotation.endDims());
     EXPECT_DOUBLE_EQ(45, rotation.getAngle());
     EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(makePoint({4, 5, 6})));
     EXPECT_THAT(rotation.getAxis(), AlmostEqVector(makeVector({1, 2, 3})));
 }
 
 TEST(GeometryOperatorsIO, readScale_singleValue) {
-    for (int dims = 2; dims <= 3; ++dims) {
+    Dimensions all_dims[] = {Dimensions::Two, Dimensions::Three};
+    for (Dimensions dims : all_dims) {
         auto scale = readSingleOperator<Scale>(dims, R"(
           scale: 1.2
         )");
@@ -194,33 +195,34 @@ TEST(GeometryOperatorsIO, readScale_singleValue) {
 }
 
 TEST(GeometryOperatorsIO, readScale_2d_array) {
-    auto scale = readSingleOperator<Scale>(2, R"(
+    auto scale = readSingleOperator<Scale>(Dimensions::Two, R"(
       scale: [1.2, 3.4]
     )");
-    EXPECT_EQ(2, scale.startDims());
-    EXPECT_EQ(2, scale.endDims());
+    EXPECT_EQ(Dimensions::Two, scale.startDims());
+    EXPECT_EQ(Dimensions::Two, scale.endDims());
     EXPECT_DOUBLE_EQ(1.2, scale.getXFactor());
     EXPECT_DOUBLE_EQ(3.4, scale.getYFactor());
     EXPECT_DOUBLE_EQ(1.0, scale.getZFactor());
 }
 
 TEST(GeometryOperatorsIO, readScale_3d_array) {
-    auto scale = readSingleOperator<Scale>(3, R"(
+    auto scale = readSingleOperator<Scale>(Dimensions::Three, R"(
       scale: [1.2, 3.4, 5.6]
     )");
-    EXPECT_EQ(3, scale.startDims());
-    EXPECT_EQ(3, scale.endDims());
+    EXPECT_EQ(Dimensions::Three, scale.startDims());
+    EXPECT_EQ(Dimensions::Three, scale.endDims());
     EXPECT_DOUBLE_EQ(1.2, scale.getXFactor());
     EXPECT_DOUBLE_EQ(3.4, scale.getYFactor());
     EXPECT_DOUBLE_EQ(5.6, scale.getZFactor());
 }
 
 TEST(GeometryOperatorsIO, readArbitraryMatrix_2D) {
-    auto matrixOp = readSingleOperator<ArbitraryMatrixOperator>(2, R"(
+    auto matrixOp = readSingleOperator<ArbitraryMatrixOperator>(
+            Dimensions::Two, R"(
       matrix: [10, 20, 30, 40, 50, 60]
     )");
-    EXPECT_EQ(2, matrixOp.startDims());
-    EXPECT_EQ(2, matrixOp.endDims());
+    EXPECT_EQ(Dimensions::Two, matrixOp.startDims());
+    EXPECT_EQ(Dimensions::Two, matrixOp.endDims());
     EXPECT_THAT(matrixOp.toMatrix(), AlmostEqMatrix(affine({
             10, 20, 0, 30,
             40, 50, 0, 60,
@@ -229,11 +231,12 @@ TEST(GeometryOperatorsIO, readArbitraryMatrix_2D) {
 }
 
 TEST(GeometryOperatorsIO, readArbitraryMatrix_3D) {
-    auto matrixOp = readSingleOperator<ArbitraryMatrixOperator>(3, R"(
+    auto matrixOp = readSingleOperator<ArbitraryMatrixOperator>(
+            Dimensions::Three, R"(
       matrix: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
     )");
-    EXPECT_EQ(3, matrixOp.startDims());
-    EXPECT_EQ(3, matrixOp.endDims());
+    EXPECT_EQ(Dimensions::Three, matrixOp.startDims());
+    EXPECT_EQ(Dimensions::Three, matrixOp.endDims());
     EXPECT_THAT(matrixOp.toMatrix(), AlmostEqMatrix(affine({
             10, 20, 30, 40,
             50, 60, 70, 80,
@@ -242,7 +245,7 @@ TEST(GeometryOperatorsIO, readArbitraryMatrix_3D) {
 }
 
 TEST(GeometryOperatorsIO, readSlice_specifyAll) {
-    auto slice = readSingleOperator<SliceOperator>(3, R"(
+    auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         origin: [1, 2, 3]
         normal: [4, 5, 6]
@@ -252,7 +255,7 @@ TEST(GeometryOperatorsIO, readSlice_specifyAll) {
 }
 
 TEST(GeometryOperatorsIO, readSlice_x_defaults) {
-    auto slice = readSingleOperator<SliceOperator>(3, R"(
+    auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         x: 10
     )");
@@ -260,7 +263,7 @@ TEST(GeometryOperatorsIO, readSlice_x_defaults) {
 }
 
 TEST(GeometryOperatorsIO, readSlice_x_optionals) {
-    auto slice = readSingleOperator<SliceOperator>(3, R"(
+    auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         x: 10
         origin: [10, 20, 30]
@@ -271,7 +274,7 @@ TEST(GeometryOperatorsIO, readSlice_x_optionals) {
 }
 
 TEST(GeometryOperatorsIO, readSlice_y_defaults) {
-    auto slice = readSingleOperator<SliceOperator>(3, R"(
+    auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         y: 20
     )");
@@ -279,7 +282,7 @@ TEST(GeometryOperatorsIO, readSlice_y_defaults) {
 }
 
 TEST(GeometryOperatorsIO, readSlice_y_optionals) {
-    auto slice = readSingleOperator<SliceOperator>(3, R"(
+    auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         y: 20
         origin: [10, 20, 30]
@@ -290,7 +293,7 @@ TEST(GeometryOperatorsIO, readSlice_y_optionals) {
 }
 
 TEST(GeometryOperatorsIO, readSlice_z_defaults) {
-    auto slice = readSingleOperator<SliceOperator>(3, R"(
+    auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         z: 30
     )");
@@ -298,7 +301,7 @@ TEST(GeometryOperatorsIO, readSlice_z_defaults) {
 }
 
 TEST(GeometryOperatorsIO, readSlice_z_optionals) {
-    auto slice = readSingleOperator<SliceOperator>(3, R"(
+    auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         z: 30
         origin: [10, 20, 30]
@@ -310,7 +313,7 @@ TEST(GeometryOperatorsIO, readSlice_z_optionals) {
 
 TEST(GeometryOperatorsIO, readSlice_zeroNormal) {
     try {
-        readSingleOperator<SliceOperator>(3, R"(
+        readSingleOperator<SliceOperator>(Dimensions::Three, R"(
           slice:
             origin: [10, 20, 30]
             normal: [0, 0, 0]
@@ -325,7 +328,7 @@ TEST(GeometryOperatorsIO, readSlice_zeroNormal) {
 
 TEST(GeometryOperatorsIO, readSlice_upAndNormalNotNormal) {
     try {
-        readSingleOperator<SliceOperator>(3, R"(
+        readSingleOperator<SliceOperator>(Dimensions::Three, R"(
           slice:
             origin: [10, 20, 30]
             normal: [10, 20, 30]
@@ -340,19 +343,19 @@ TEST(GeometryOperatorsIO, readSlice_upAndNormalNotNormal) {
 }
 
 TEST(GeometryOperatorsIO, readSlice_badPlaneValues) {
-    EXPECT_THROW(readSingleOperator<SliceOperator>(3, R"(
+    EXPECT_THROW(readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         x: 10
         origin: [20, 0, 0]
     )"), std::invalid_argument) << "Bad origin";
 
-    EXPECT_THROW(readSingleOperator<SliceOperator>(3, R"(
+    EXPECT_THROW(readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         x: 10
         normal: [1, 2, 3]
     )"), std::invalid_argument) << "Bad normal";
 
-    EXPECT_THROW(readSingleOperator<SliceOperator>(3, R"(
+    EXPECT_THROW(readSingleOperator<SliceOperator>(Dimensions::Three, R"(
       slice:
         x: 10
         up: [1, 2, 3]
@@ -360,7 +363,7 @@ TEST(GeometryOperatorsIO, readSlice_badPlaneValues) {
 }
 
 TEST(GeometryOperatorsIO, readMultiple_matchingDimensions) {
-    auto op = readOperators(3, R"(
+    auto op = readOperators(Dimensions::Three, R"(
       - translate: [10, 20, 30]
       - translate: [40, 50, 60]
     )");
@@ -370,7 +373,7 @@ TEST(GeometryOperatorsIO, readMultiple_matchingDimensions) {
 }
 
 TEST(GeometryOperatorsIO, readMultiple_nonMatchingDimensions) {
-    EXPECT_THROW(readOperators(3, R"(
+    EXPECT_THROW(readOperators(Dimensions::Three, R"(
       - translate: [10, 20, 30]
       - translate: [40, 50]
     )"), std::invalid_argument);
@@ -378,7 +381,7 @@ TEST(GeometryOperatorsIO, readMultiple_nonMatchingDimensions) {
 
 TEST(GeometryOperatorsIO, readMultiple_unknownOperator) {
     try {
-        readOperators(3, R"(
+        readOperators(Dimensions::Three, R"(
           - UNKNOWN_OPERATOR: [10, 20, 30]
          )");
         FAIL() << "Should have thrown";
@@ -387,4 +390,4 @@ TEST(GeometryOperatorsIO, readMultiple_unknownOperator) {
     }
 }
 
-}}}
+}}}}

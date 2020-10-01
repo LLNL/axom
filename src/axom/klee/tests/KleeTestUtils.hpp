@@ -51,8 +51,8 @@ primal::Point<double, dims> makePoint(const double (&values)[dims]) {
 
 class MockOperator : public GeometryOperator {
 public:
-    MOCK_METHOD(int, startDims, (), (const));
-    MOCK_METHOD(int, endDims, (), (const));
+    MOCK_METHOD(Dimensions, startDims, (), (const));
+    MOCK_METHOD(Dimensions, endDims, (), (const));
     MOCK_METHOD(void, accept, (GeometryOperatorVisitor &), (const));
 };
 

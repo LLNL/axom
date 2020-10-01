@@ -9,9 +9,13 @@
 
 #include "conduit.hpp"
 
+#include "axom/klee/Dimensions.hpp"
+
 namespace axom { namespace klee {
 
 class GeometryOperator;
+
+namespace internal {
 
 /**
  * Parse a GeometryOperator from the given node.
@@ -23,8 +27,8 @@ class GeometryOperator;
  * \return A GeometryOperator describing the parsed values.
  */
 std::shared_ptr<const GeometryOperator> parseGeometryOperators(
-        const conduit::Node &node, int initialDimensions);
+        const conduit::Node &node, Dimensions initialDimensions);
 
-}}
+}}}
 
 #endif //AXOM_KLEE_GEOMETRYOPERATORSIO_HPP

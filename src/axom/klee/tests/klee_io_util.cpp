@@ -43,4 +43,10 @@ TEST(io_util, toDoubleVector){
             std::invalid_argument) << "Wrong type";
 }
 
+TEST(io_util, toDimensions){
+    EXPECT_EQ(Dimensions::Two, toDimensions(parseValue("2")));
+    EXPECT_EQ(Dimensions::Three, toDimensions(parseValue("3")));
+    EXPECT_THROW(toDimensions(parseValue("4")), std::invalid_argument);
+}
+
 }}}

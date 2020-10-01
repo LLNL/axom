@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "axom/klee/Dimensions.hpp"
+
 namespace axom { namespace klee {
 
 class GeometryOperator;
@@ -74,7 +76,7 @@ public:
      *
      * \param initialDimensions the initial dimensions. Must be 2 or 3.
      */
-    void setInitialDimensions(int initialDimensions) {
+    void setInitialDimensions(Dimensions initialDimensions) {
         m_initialDimensions = initialDimensions;
     }
 
@@ -83,7 +85,7 @@ public:
      *
      * \return the initial dimensions of this geometry
      */
-    int getInitialDimensions() const {
+    Dimensions getInitialDimensions() const {
         return m_initialDimensions;
     }
 
@@ -92,10 +94,10 @@ public:
      *
      * \return the geometry's dimension
      */
-    int getDimensions() const;
+    Dimensions getDimensions() const;
 
 private:
-    int m_initialDimensions;
+    Dimensions m_initialDimensions;
     std::string m_format;
     std::string m_path;
     std::shared_ptr<const GeometryOperator> m_operator;

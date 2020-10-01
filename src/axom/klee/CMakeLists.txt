@@ -10,6 +10,7 @@ axom_component_requires(NAME       Klee
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 set(klee_headers
+        Dimensions.hpp
         Geometry.hpp
         GeometryOperators.hpp
         IO.hpp

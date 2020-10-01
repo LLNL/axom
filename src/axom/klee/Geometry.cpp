@@ -19,7 +19,7 @@ void Geometry::setPath(std::string path) {
     m_path = std::move(path);
 }
 
-int Geometry::getDimensions() const {
+Dimensions Geometry::getDimensions() const {
     if (m_operator) {
         return m_operator->endDims();
     }

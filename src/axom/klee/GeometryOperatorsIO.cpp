@@ -14,15 +14,28 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace axom { namespace klee {
+namespace axom { namespace klee { namespace internal {
 namespace {
 
 using OpPtr = CompositeOperator::OpPtr;
-using OperatorParser = std::function<OpPtr(const conduit::Node &, int)>;
+using OperatorParser = std::function<OpPtr(const conduit::Node &, Dimensions)>;
 using internal::toDoubleVector;
 using internal::toDouble;
 using primal::Point3D;
 using primal::Vector3D;
+
+/**
+ * Convert a Dimensions value to an integer.
+ *
+ * \param dims the number of dimensions
+ * \return the number as an integer
+ */
+int toInt(Dimensions dims) {
+    if (dims == Dimensions::Two) {
+        return 2;
+    }
+    return 3;
+}
 
 /**
  * Verify that a node has the correct fields.
@@ -80,9 +93,10 @@ void verifyObjectFields(const conduit::Node &node,
  * specified number of entries.
  */
 template<typename T>
-T makeFromDoubleVector(const conduit::Node &node, int dimensions) {
-    auto values = toDoubleVector(node, static_cast<std::size_t>(dimensions));
-    return T{values.data(), dimensions};
+T makeFromDoubleVector(const conduit::Node &node, Dimensions dimensions) {
+    auto values = toDoubleVector(node,
+            static_cast<std::size_t>(toInt(dimensions)));
+    return T{values.data(), toInt(dimensions)};
 }
 
 /**
@@ -93,7 +107,7 @@ T makeFromDoubleVector(const conduit::Node &node, int dimensions) {
  * than 3, trailing values will be zero.
  * \return the created vector
  */
-Vector3D toVector3D(const conduit::Node &node, int dimensions) {
+Vector3D toVector3D(const conduit::Node &node, Dimensions dimensions) {
     return makeFromDoubleVector<Vector3D>(node, dimensions);
 }
 
@@ -105,7 +119,7 @@ Vector3D toVector3D(const conduit::Node &node, int dimensions) {
  * than 3, trailing values will be zero.
  * \return the created point
  */
-Point3D toPoint3D(const conduit::Node &node, int dimensions) {
+Point3D toPoint3D(const conduit::Node &node, Dimensions dimensions) {
     return makeFromDoubleVector<Point3D>(node, dimensions);
 }
 
@@ -120,7 +134,7 @@ Point3D toPoint3D(const conduit::Node &node, int dimensions) {
  * child in the parent node.
  */
 Point3D getOptionalPoint(const conduit::Node &parent, const std::string &name,
-        int dimensions, const std::array<double, 3> &defaultValue) {
+        Dimensions dimensions, const std::array<double, 3> &defaultValue) {
     if (!parent.has_child(name)) {
         return Point3D{defaultValue.data()};
     }
@@ -138,7 +152,7 @@ Point3D getOptionalPoint(const conduit::Node &parent, const std::string &name,
  * child in the parent node.
  */
 Vector3D getOptionalVector(const conduit::Node &parent, const std::string &name,
-        int dimensions, const std::array<double, 3> &defaultValue) {
+        Dimensions dimensions, const std::array<double, 3> &defaultValue) {
     if (!parent.has_child(name)) {
         return Vector3D{defaultValue.data()};
     }
@@ -152,7 +166,7 @@ Vector3D getOptionalVector(const conduit::Node &parent, const std::string &name,
  * \param dimensions the expected number of dimensions
  * \return the created operator
  */
-OpPtr parseTranslate(const conduit::Node &node, int dimensions) {
+OpPtr parseTranslate(const conduit::Node &node, Dimensions dimensions) {
     verifyObjectFields(node, "translate", {}, {});
     return std::make_shared<Translation>(
             toVector3D(node["translate"], dimensions),
@@ -166,8 +180,8 @@ OpPtr parseTranslate(const conduit::Node &node, int dimensions) {
  * \param dimensions the expected number of dimensions
  * \return the created operator
  */
-OpPtr parseRotate(const conduit::Node &node, int dimensions) {
-    if (dimensions == 2) {
+OpPtr parseRotate(const conduit::Node &node, Dimensions dimensions) {
+    if (dimensions == Dimensions::Two) {
         verifyObjectFields(node, "rotate", {}, {"center"});
         std::array<double, 3> axis{0, 0, 1};
         return std::make_shared<Rotation>(
@@ -180,7 +194,7 @@ OpPtr parseRotate(const conduit::Node &node, int dimensions) {
         return std::make_shared<Rotation>(
                 toDouble(node["rotate"]),
                 getOptionalPoint(node, "center", dimensions, {0, 0, 0}),
-                toVector3D(node["axis"], 3),
+                toVector3D(node["axis"], Dimensions::Three),
                 dimensions);
     }
 }
@@ -192,7 +206,7 @@ OpPtr parseRotate(const conduit::Node &node, int dimensions) {
  * \param dimensions the expected number of dimensions
  * \return the created operator
  */
-OpPtr parseScale(const conduit::Node &node, int dimensions) {
+OpPtr parseScale(const conduit::Node &node, Dimensions dimensions) {
     verifyObjectFields(node, "scale", {}, {});
     auto &scaleNode = node["scale"];
     if (scaleNode.dtype().is_number()
@@ -200,8 +214,8 @@ OpPtr parseScale(const conduit::Node &node, int dimensions) {
         double factor = scaleNode.to_double();
         return std::make_shared<Scale>(factor, factor, factor, dimensions);
     }
-    auto factors = toDoubleVector(scaleNode, dimensions);
-    if (dimensions == 2) {
+    auto factors = toDoubleVector(scaleNode, toInt(dimensions));
+    if (dimensions == Dimensions::Two) {
         factors.emplace_back(1.0);
     }
     return std::make_shared<Scale>(factors[0], factors[1], factors[2],
@@ -215,11 +229,11 @@ OpPtr parseScale(const conduit::Node &node, int dimensions) {
  * \param dimensions the expected number of dimensions
  * \return the created operator
  */
-OpPtr parseMatrix(const conduit::Node &node, int dimensions) {
+OpPtr parseMatrix(const conduit::Node &node, Dimensions dimensions) {
     verifyObjectFields(node, "matrix", {}, {});
     auto &valuesNode = node["matrix"];
     numerics::Matrix<double> matrix = numerics::Matrix<double>::identity(4);
-    if (dimensions == 2) {
+    if (dimensions == Dimensions::Two) {
         auto readEntries = toDoubleVector(valuesNode, 6);
         auto elementIter = readEntries.begin();
         for (int i = 0; i < 2; ++i) {
@@ -288,7 +302,8 @@ primal::Point3D getPerpendicularSliceOrigin(const conduit::Node &sliceNode,
         return defaultOrigin;
     }
 
-    primal::Point3D givenOrigin = toPoint3D(sliceNode["origin"], 3);
+    primal::Point3D givenOrigin = toPoint3D(sliceNode["origin"],
+            Dimensions::Three);
     if (givenOrigin[nonZeroIndex] != axisIntercept) {
         throw std::invalid_argument("The origin must be on the slice plane");
     }
@@ -308,7 +323,8 @@ primal::Vector3D getPerpendicularSliceNormal(const conduit::Node &sliceNode,
         return defaultNormal;
     }
 
-    primal::Vector3D givenNormal = toVector3D(sliceNode["normal"], 3);
+    primal::Vector3D givenNormal = toVector3D(sliceNode["normal"],
+            Dimensions::Three);
     auto cross = primal::Vector3D::cross_product(
             givenNormal, defaultNormal);
     bool parallel = cross.is_zero();
@@ -339,7 +355,7 @@ OpPtr readPerpendicularSlice(const conduit::Node &sliceNode,
     auto origin = getPerpendicularSliceOrigin(sliceNode, planeName,
             defaultNormalVec);
     auto normal = getPerpendicularSliceNormal(sliceNode, defaultNormalVec);
-    auto up = getOptionalVector(sliceNode, "up", 3, defaultUp);
+    auto up = getOptionalVector(sliceNode, "up", Dimensions::Three, defaultUp);
 
     return makeCheckedSlice(origin, normal, up);
 }
@@ -351,8 +367,8 @@ OpPtr readPerpendicularSlice(const conduit::Node &sliceNode,
  * \param dimensions the expected number of dimensions
  * \return the created operator
  */
-OpPtr parseSlice(const conduit::Node &node, int dimensions) {
-    if (dimensions != 3) {
+OpPtr parseSlice(const conduit::Node &node, Dimensions dimensions) {
+    if (dimensions != Dimensions::Three) {
         throw std::invalid_argument("Cannot do a slice from 2D");
     }
     verifyObjectFields(node, "slice", {}, {});
@@ -367,9 +383,9 @@ OpPtr parseSlice(const conduit::Node &node, int dimensions) {
 
     verifyObjectFields(properties, "origin", {"normal", "up"}, {});
     return makeCheckedSlice(
-            toPoint3D(properties["origin"], 3),
-            toVector3D(properties["normal"], 3),
-            toVector3D(properties["up"], 3));
+            toPoint3D(properties["origin"], Dimensions::Three),
+            toVector3D(properties["normal"], Dimensions::Three),
+            toVector3D(properties["up"], Dimensions::Three));
 }
 
 /**
@@ -380,7 +396,7 @@ OpPtr parseSlice(const conduit::Node &node, int dimensions) {
  * \return the created operator
  */
 OpPtr parseSingleOperator(
-        const conduit::Node &node, int dimensions) {
+        const conduit::Node &node, Dimensions dimensions) {
 
     std::unordered_map<std::string, OperatorParser> parsers{
             {"translate", parseTranslate},
@@ -404,9 +420,9 @@ OpPtr parseSingleOperator(
 }
 
 std::shared_ptr<const GeometryOperator> parseGeometryOperators(
-        const conduit::Node &node, int initialDimensions) {
+        const conduit::Node &node, Dimensions initialDimensions) {
     auto composite = std::make_shared<CompositeOperator>();
-    int currentDimensions = initialDimensions;
+    Dimensions currentDimensions = initialDimensions;
     for (auto iter = node.children(); iter.has_next();) {
         auto op = parseSingleOperator(iter.next(), currentDimensions);
         composite->addOperator(op);
@@ -415,4 +431,4 @@ std::shared_ptr<const GeometryOperator> parseGeometryOperators(
     return composite;
 }
 
-}}
+}}}
