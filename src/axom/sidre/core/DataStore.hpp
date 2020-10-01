@@ -419,7 +419,6 @@ public:
    */
   static void setConduitDefaultMessageHandlers();
 
-
 private:
   DISABLE_COPY_AND_ASSIGNMENT(DataStore);
   DISABLE_MOVE_AND_ASSIGNMENT(DataStore);

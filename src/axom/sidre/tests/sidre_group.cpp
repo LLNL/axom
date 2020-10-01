@@ -2374,7 +2374,6 @@ TEST(sidre_group, save_load_preserve_contents)
 
   // restore conduit default errors
   DataStore::setConduitDefaultMessageHandlers();
-
 }
 
 //------------------------------------------------------------------------------

@@ -60,7 +60,7 @@ public:
    *****************************************************************************
    */
   virtual std::shared_ptr<Table> addTable(const std::string& name,
-                                  const std::string& description) = 0;
+                                          const std::string& description) = 0;
 
   /*!
    *****************************************************************************
@@ -78,7 +78,7 @@ public:
    *****************************************************************************
    */
   virtual std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description) = 0;
+                                         const std::string& description) = 0;
 
   /*!
    *****************************************************************************
@@ -96,7 +96,7 @@ public:
    *****************************************************************************
    */
   virtual std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description) = 0;
+                                           const std::string& description) = 0;
 
   /*!
    *****************************************************************************
@@ -114,7 +114,7 @@ public:
    *****************************************************************************
    */
   virtual std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description) = 0;
+                                        const std::string& description) = 0;
 
   /*!
    *****************************************************************************
@@ -132,7 +132,7 @@ public:
    *****************************************************************************
    */
   virtual std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description) = 0;
+                                           const std::string& description) = 0;
   /*!
    *****************************************************************************
    * \brief Return whether a Table with the given name is present in this Table's subtree.
@@ -202,8 +202,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Table> addBoolArray(const std::string& name,
-                                      const std::string& description = "") = 0;
+  virtual std::shared_ptr<Table> addBoolArray(
+    const std::string& name,
+    const std::string& description = "") = 0;
 
   /*!
    *****************************************************************************
@@ -215,8 +216,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Table> addIntArray(const std::string& name,
-                                     const std::string& description = "") = 0;
+  virtual std::shared_ptr<Table> addIntArray(
+    const std::string& name,
+    const std::string& description = "") = 0;
 
   /*!
    *****************************************************************************
@@ -228,8 +230,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Table> addDoubleArray(const std::string& name,
-                                        const std::string& description = "") = 0;
+  virtual std::shared_ptr<Table> addDoubleArray(
+    const std::string& name,
+    const std::string& description = "") = 0;
 
   /*!
    *****************************************************************************
@@ -241,8 +244,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Table> addStringArray(const std::string& name,
-                                        const std::string& description = "") = 0;
+  virtual std::shared_ptr<Table> addStringArray(
+    const std::string& name,
+    const std::string& description = "") = 0;
 
   /*!
    *****************************************************************************
