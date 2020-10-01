@@ -25,30 +25,6 @@ namespace axom {namespace klee { namespace test {
  */
 numerics::Matrix<double> affine(const std::array<double, 12> &values);
 
-/**
- * Make a vector with the given values.
- *
- * \tparam dims the number of dimensions
- * \param values the values
- * \return a vector with the given values
- */
-template<int dims>
-primal::Vector<double, dims> makeVector(const double (&values)[dims]) {
-    return primal::Vector<double, dims>{values};
-}
-
-/**
- * Make a point with the given values.
- *
- * \tparam dims the number of dimensions
- * \param values the values
- * \return a point with the given values
- */
-template<int dims>
-primal::Point<double, dims> makePoint(const double (&values)[dims]) {
-    return primal::Point<double, dims>{values};
-}
-
 class MockOperator : public GeometryOperator {
 public:
     MOCK_METHOD(Dimensions, startDims, (), (const));

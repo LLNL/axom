@@ -11,19 +11,18 @@
 #include "KleeMatchers.hpp"
 #include "KleeTestUtils.hpp"
 
-#include <array>
 #include <memory>
 #include <stdexcept>
 
 namespace axom { namespace klee { namespace internal { namespace {
 
+using primal::Point3D;
+using primal::Vector3D;
 using test::AlmostEqPoint;
 using test::AlmostEqMatrix;
 using test::AlmostEqVector;
 using test::MatchesSlice;
 using test::affine;
-using test::makePoint;
-using test::makeVector;
 
 using ::testing::HasSubstr;
 
@@ -78,8 +77,7 @@ T readSingleOperator(Dimensions startingDimensions, const std::string &input) {
  * \return a matcher that verifies a SliceOperator is as specified
  */
 test::MatchesSliceMatcherP<SliceOperator> isSlice(
-        std::array<double, 3> origin, std::array<double, 3> normal,
-        std::array<double, 3> up) {
+        Point3D origin, Vector3D normal, Vector3D up) {
     SliceOperator op{primal::Point3D{origin.data()},
                      primal::Vector3D{normal.data()},
                      primal::Vector3D{up.data()}};
@@ -93,7 +91,7 @@ TEST(GeometryOperatorsIO, readTranslation_2D) {
     EXPECT_EQ(Dimensions::Two, translation.startDims());
     EXPECT_EQ(Dimensions::Two, translation.endDims());
     EXPECT_THAT(translation.getOffset(),
-            AlmostEqVector(makeVector({10, 20, 0})));
+            AlmostEqVector(Vector3D{10, 20, 0}));
 }
 
 TEST(GeometryOperatorsIO, readTranslation_3D) {
@@ -103,7 +101,7 @@ TEST(GeometryOperatorsIO, readTranslation_3D) {
     EXPECT_EQ(Dimensions::Three, translation.startDims());
     EXPECT_EQ(Dimensions::Three, translation.endDims());
     EXPECT_THAT(translation.getOffset(),
-            AlmostEqVector(makeVector({10, 20, 30})));
+            AlmostEqVector(Vector3D{10, 20, 30}));
 }
 
 TEST(GeometryOperatorsIO, readTranslation_unknownKeys) {
@@ -126,8 +124,8 @@ TEST(GeometryOperatorsIO, readRotation_2D_requiredOnly) {
     EXPECT_EQ(Dimensions::Two, rotation.startDims());
     EXPECT_EQ(Dimensions::Two, rotation.endDims());
     EXPECT_DOUBLE_EQ(45, rotation.getAngle());
-    EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(makePoint({0, 0, 0})));
-    EXPECT_THAT(rotation.getAxis(), AlmostEqVector(makeVector({0, 0, 1})));
+    EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(Point3D{0, 0, 0}));
+    EXPECT_THAT(rotation.getAxis(), AlmostEqVector(Vector3D{0, 0, 1}));
 }
 
 TEST(GeometryOperatorsIO, readRotation_2D_optionalFields) {
@@ -138,8 +136,8 @@ TEST(GeometryOperatorsIO, readRotation_2D_optionalFields) {
     EXPECT_EQ(Dimensions::Two, rotation.startDims());
     EXPECT_EQ(Dimensions::Two, rotation.endDims());
     EXPECT_DOUBLE_EQ(45, rotation.getAngle());
-    EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(makePoint({10, 20, 0})));
-    EXPECT_THAT(rotation.getAxis(), AlmostEqVector(makeVector({0, 0, 1})));
+    EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(Point3D{10, 20, 0}));
+    EXPECT_THAT(rotation.getAxis(), AlmostEqVector(Vector3D{0, 0, 1}));
 }
 
 TEST(GeometryOperatorsIO, readRotation_2D_axisNotAllowed) {
@@ -163,8 +161,8 @@ TEST(GeometryOperatorsIO, readRotation_3D_requiredOnly) {
     EXPECT_EQ(Dimensions::Three, rotation.startDims());
     EXPECT_EQ(Dimensions::Three, rotation.endDims());
     EXPECT_DOUBLE_EQ(45, rotation.getAngle());
-    EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(makePoint({0, 0, 0})));
-    EXPECT_THAT(rotation.getAxis(), AlmostEqVector(makeVector({1, 2, 3})));
+    EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(Point3D{0, 0, 0}));
+    EXPECT_THAT(rotation.getAxis(), AlmostEqVector(Vector3D{1, 2, 3}));
 }
 
 TEST(GeometryOperatorsIO, readRotation_3D_optionalFields) {
@@ -176,8 +174,8 @@ TEST(GeometryOperatorsIO, readRotation_3D_optionalFields) {
     EXPECT_EQ(Dimensions::Three, rotation.startDims());
     EXPECT_EQ(Dimensions::Three, rotation.endDims());
     EXPECT_DOUBLE_EQ(45, rotation.getAngle());
-    EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(makePoint({4, 5, 6})));
-    EXPECT_THAT(rotation.getAxis(), AlmostEqVector(makeVector({1, 2, 3})));
+    EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(Point3D{4, 5, 6}));
+    EXPECT_THAT(rotation.getAxis(), AlmostEqVector(Vector3D{1, 2, 3}));
 }
 
 TEST(GeometryOperatorsIO, readScale_singleValue) {

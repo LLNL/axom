@@ -8,7 +8,6 @@
 #include "axom/klee/GeometryOperators.hpp"
 #include "axom/klee/IOUtil.hpp"
 
-#include <array>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -134,9 +133,9 @@ Point3D toPoint3D(const conduit::Node &node, Dimensions dimensions) {
  * child in the parent node.
  */
 Point3D getOptionalPoint(const conduit::Node &parent, const std::string &name,
-        Dimensions dimensions, const std::array<double, 3> &defaultValue) {
+        Dimensions dimensions, const Point3D &defaultValue) {
     if (!parent.has_child(name)) {
-        return Point3D{defaultValue.data()};
+        return defaultValue;
     }
     return toPoint3D(parent[name], dimensions);
 }
@@ -152,9 +151,9 @@ Point3D getOptionalPoint(const conduit::Node &parent, const std::string &name,
  * child in the parent node.
  */
 Vector3D getOptionalVector(const conduit::Node &parent, const std::string &name,
-        Dimensions dimensions, const std::array<double, 3> &defaultValue) {
+        Dimensions dimensions, const Vector3D &defaultValue) {
     if (!parent.has_child(name)) {
-        return Vector3D{defaultValue.data()};
+        return defaultValue;
     }
     return toPoint3D(parent[name], dimensions);
 }
@@ -183,12 +182,11 @@ OpPtr parseTranslate(const conduit::Node &node, Dimensions dimensions) {
 OpPtr parseRotate(const conduit::Node &node, Dimensions dimensions) {
     if (dimensions == Dimensions::Two) {
         verifyObjectFields(node, "rotate", {}, {"center"});
-        std::array<double, 3> axis{0, 0, 1};
+        Vector3D axis{0, 0, 1};
         return std::make_shared<Rotation>(
                 toDouble(node["rotate"]),
                 getOptionalPoint(node, "center", dimensions, {0, 0, 0}),
-                Vector3D{axis.data()},
-                dimensions);
+                axis, dimensions);
     } else {
         verifyObjectFields(node, "rotate", {"axis"}, {"center"});
         return std::make_shared<Rotation>(
@@ -345,9 +343,8 @@ primal::Vector3D getPerpendicularSliceNormal(const conduit::Node &sliceNode,
  * \return the parsed plane
  */
 OpPtr readPerpendicularSlice(const conduit::Node &sliceNode,
-        char const *planeName,
-        std::array<double, 3> const &defaultNormal,
-        std::array<double, 3> const &defaultUp) {
+        char const *planeName, Vector3D const &defaultNormal,
+        Vector3D const &defaultUp) {
     verifyObjectFields(sliceNode, planeName, {},
             {"origin", "normal", "up"});
     const primal::Vector3D defaultNormalVec{defaultNormal.data()};

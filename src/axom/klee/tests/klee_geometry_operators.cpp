@@ -7,7 +7,6 @@
 
 #include "axom/primal/geometry/Vector.hpp"
 
-#include <array>
 #include <cmath>
 #include <stdexcept>
 #include <utility>
@@ -21,8 +20,6 @@
 namespace axom { namespace klee { namespace {
 
 using test::affine;
-using test::makePoint;
-using test::makeVector;
 using test::AlmostEqMatrix;
 using test::AlmostEqPoint;
 using test::AlmostEqVector;
@@ -49,22 +46,11 @@ ColumnVector operator*(const numerics::Matrix<double> & matrix,
     return result;
 }
 
-primal::Vector<double, 4> affineVec(const std::array<double, 3> &values) {
-    primal::Vector<double, 4> vector{values.data(), 3};
-    vector[3] = 0;
-    return vector;
-}
 
 primal::Vector<double, 4> affineVec(const Vector3D &vec3d) {
     primal::Vector<double, 4> vector{vec3d.data(), 3};
     vector[3] = 0;
     return vector;
-}
-
-primal::Point<double, 4> affinePoint(const std::array<double, 3> &values) {
-    primal::Point<double, 4> point{values.data(), 3};
-    point[3] = 1;
-    return point;
 }
 
 primal::Point<double, 4> affinePoint(const Point3D &point3d) {
@@ -87,7 +73,7 @@ public:
 
 TEST(Tanslation, basics) {
     for (Dimensions dims : ALL_DIMS) {
-        Vector3D offset = makeVector({10, 20, 30});
+        Vector3D offset{10, 20, 30};
         Translation translation{offset, dims};
         EXPECT_EQ(dims, translation.startDims());
         EXPECT_EQ(dims, translation.endDims());
@@ -97,7 +83,7 @@ TEST(Tanslation, basics) {
 
 TEST(Tanslation, toMatrix) {
     for (Dimensions dims : ALL_DIMS) {
-        Vector3D offset = makeVector({10, 20, 30});
+        Vector3D offset{10, 20, 30};
         Translation translation{offset, dims};
         EXPECT_THAT(translation.toMatrix(), AlmostEqMatrix(affine({
             1, 0, 0, 10,
@@ -108,7 +94,7 @@ TEST(Tanslation, toMatrix) {
 }
 
 TEST(Tanslation, accept) {
-    Translation translation{makeVector({10, 20, 30}), Dimensions::Three};
+    Translation translation{{10, 20, 30}, Dimensions::Three};
     MockVisitor visitor;
     EXPECT_CALL(visitor, visit(Matcher<const Translation &>(Ref(translation))));
     translation.accept(visitor);
@@ -116,8 +102,8 @@ TEST(Tanslation, accept) {
 
 TEST(Rotation, basics) {
     for (Dimensions dims : ALL_DIMS) {
-        Vector3D axis = makeVector({10, 20, 30});
-        Point3D center = makePoint({40, 50, 60});
+        Vector3D axis{10, 20, 30};
+        Point3D center{40, 50, 60};
         double angle = 45;
         Rotation rotation{angle, center, axis, dims};
         EXPECT_EQ(dims, rotation.startDims());
@@ -129,8 +115,8 @@ TEST(Rotation, basics) {
 }
 
 TEST(Rotation, rotate2d_with_center){
-    Vector3D axis = makeVector({0, 0, 1});
-    Point3D center = makePoint({10, 20, 0});
+    Vector3D axis{0, 0, 1};
+    Point3D center{10, 20, 0};
     double angle = 30;
     Rotation rotation{angle, center, axis, Dimensions::Two};
 
@@ -148,8 +134,7 @@ TEST(Rotation, rotate2d_with_center){
     // Sanity check to make sure things work with nice rotation since
     // the test and implementation use similar approaches (though the equations
     // were verified by hand).
-    Rotation rotate90{90, makePoint({10, 20, 0}), makeVector({0, 0, 1}),
-                      Dimensions::Two};
+    Rotation rotate90{90, {10, 20, 0}, {0, 0, 1}, Dimensions::Two};
 
     EXPECT_THAT(rotate90.toMatrix() * affinePoint({15, 20, 0}),
             AlmostEqPoint(affinePoint({10, 25, 0})));
@@ -159,25 +144,22 @@ TEST(Rotation, rotate3d_axis_aligned){
     double sin30 = 0.5;
     double cos30 = std::sqrt(3) / 2;
 
-    Point3D origin = makePoint({0, 0, 0});
+    Point3D origin{0, 0, 0};
 
-    Rotation rotatedAboutXAxis{30, origin, makeVector({1, 0, 0}),
-                               Dimensions::Three};
+    Rotation rotatedAboutXAxis{30, origin, {1, 0, 0}, Dimensions::Three};
 
     EXPECT_THAT(rotatedAboutXAxis.toMatrix(), AlmostEqMatrix(affine({
             1, 0, 0, 0,
             0, cos30, -sin30, 0,
             0, sin30, cos30, 0})));
 
-    Rotation rotatedAboutYAxis{30, origin, makeVector({0, 1, 0}),
-                               Dimensions::Three};
+    Rotation rotatedAboutYAxis{30, origin, {0, 1, 0}, Dimensions::Three};
     EXPECT_THAT(rotatedAboutYAxis.toMatrix(), AlmostEqMatrix(affine({
             cos30, 0, sin30, 0,
             0, 1, 0, 0,
             -sin30, 0, cos30, 0})));
 
-    Rotation rotatedAboutZAxis{30, origin, makeVector({0, 0, 1}),
-                               Dimensions::Three};
+    Rotation rotatedAboutZAxis{30, origin, {0, 0, 1}, Dimensions::Three};
     EXPECT_THAT(rotatedAboutZAxis.toMatrix(), AlmostEqMatrix(affine({
             cos30, -sin30, 0, 0,
             sin30, cos30, 0, 0,
@@ -185,8 +167,7 @@ TEST(Rotation, rotate3d_axis_aligned){
 }
 
 TEST(Rotation, rotate3d_with_center){
-    Rotation rotation{90, makePoint({10, 20, 30}), makeVector({1, 1, 0}),
-                      Dimensions::Three};
+    Rotation rotation{90, {10, 20, 30}, {1, 1, 0}, Dimensions::Three};
 
     double halfRoot2 = std::sqrt(2) / 2;
     numerics::Matrix<double> expected = affine({
@@ -204,8 +185,7 @@ TEST(Rotation, rotate3d_with_center){
             AlmostEqPoint(affinePoint({10.5, 20.5, 30 -1 / std::sqrt(2)})));
 
     // Use the pythagorean quadruple (1, 4, 8, 9) for easier manual checking
-    rotation = Rotation{90, makePoint({10, 20, 30}), makeVector({1, -4, 8}),
-                        Dimensions::Three};
+    rotation = Rotation{90, {10, 20, 30}, {1, -4, 8}, Dimensions::Three};
 
     expected = affine({
             1, -76, -28, 0,
@@ -221,8 +201,7 @@ TEST(Rotation, rotate3d_with_center){
 }
 
 TEST(Rotation, accept) {
-    Rotation rotation{90, makePoint({0, 0, 0}), makeVector({1, 2, 3}),
-                      Dimensions::Three};
+    Rotation rotation{90, {0, 0, 0}, {1, 2, 3}, Dimensions::Three};
     MockVisitor visitor;
     EXPECT_CALL(visitor, visit(Matcher<const Rotation &>(Ref(rotation))));
     rotation.accept(visitor);
@@ -330,9 +309,9 @@ TEST(CompositeOperator, accept) {
 }
 
 TEST(Slice, basics) {
-    Point3D origin = makePoint({1, 2, 3});
-    Vector3D normal = makeVector({4, 5, 6});
-    Vector3D up = makeVector({-5, 4, 0});
+    Point3D origin{1, 2, 3};
+    Vector3D normal{4, 5, 6};
+    Vector3D up{-5, 4, 0};
     SliceOperator slice{origin, normal, up};
     EXPECT_THAT(slice.getOrigin(), AlmostEqPoint(origin));
     EXPECT_THAT(slice.getNormal(), AlmostEqVector(normal));
@@ -342,9 +321,9 @@ TEST(Slice, basics) {
 }
 
 TEST(Slice, toMatrix_translateOnly) {
-    Point3D origin = makePoint({10, 20, 30});
-    Vector3D normal = makeVector({0, 0, 1});
-    Vector3D up = makeVector({0, 1, 0});
+    Point3D origin{10, 20, 30};
+    Vector3D normal{0, 0, 1};
+    Vector3D up{0, 1, 0};
     SliceOperator slice{origin, normal, up};
     EXPECT_THAT(slice.toMatrix(), AlmostEqMatrix(affine({
         1, 0, 0, -10,
@@ -354,9 +333,9 @@ TEST(Slice, toMatrix_translateOnly) {
 }
 
 TEST(Slice, toMatrix_vectorScaleIgnored) {
-    Point3D origin = makePoint({10, 20, 30});
-    Vector3D normal = makeVector({0, 0, 100});
-    Vector3D up = makeVector({0, 200, 0});
+    Point3D origin{10, 20, 30};
+    Vector3D normal{0, 0, 100};
+    Vector3D up{0, 200, 0};
     SliceOperator slice{origin, normal, up};
     EXPECT_THAT(slice.toMatrix(), AlmostEqMatrix(affine({
         1, 0, 0, -10,
@@ -366,9 +345,9 @@ TEST(Slice, toMatrix_vectorScaleIgnored) {
 }
 
 TEST(Slice, toMatrix_general) {
-    Point3D origin = makePoint({10, 20, 30});
-    Vector3D normal = makeVector({1, 4, 8});
-    Vector3D up = makeVector({-4, 1, 0});
+    Point3D origin{10, 20, 30};
+    Vector3D normal{1, 4, 8};
+    Vector3D up{-4, 1, 0};
     SliceOperator slice{origin, normal, up};
 
     auto sliceMatrix = slice.toMatrix();
@@ -392,8 +371,7 @@ TEST(Slice, toMatrix_general) {
 }
 
 TEST(Slice, accept) {
-    SliceOperator slice{makePoint({0, 0, 0}), makeVector({1, 0, 0}),
-                 makeVector({0, 1, 0})};
+    SliceOperator slice{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
     MockVisitor visitor;
     EXPECT_CALL(visitor,
             visit(Matcher<const SliceOperator &>(Ref(slice))));
