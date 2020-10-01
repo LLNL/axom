@@ -63,6 +63,35 @@ TEST(primal_vector, vector_constructors)
   {
     EXPECT_EQ(vFromNA[i], valsArr[i]);
   }
+
+  // Initializer list constructor
+  primal::Vector<int, 3> fromInitializerListRightSize = {10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListRightSize[i]);
+  }
+
+  primal::Vector<int, 3> fromInitializerListTooLong = {10, 20, 30, 40};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListTooLong[i]);
+  }
+
+  primal::Vector<int, 5> fromInitializerListTooShort = {10, 20};
+  for(int i = 0; i < 2; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListTooShort[i]);
+  }
+  for(int i = 2; i < 5; ++i)
+  {
+    EXPECT_EQ(0, fromInitializerListTooShort[i]);
+  }
+
+  primal::Vector<int, 3> fromInitializerNoEquaslSign{10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerNoEquaslSign[i]);
+  }
 }
 
 //------------------------------------------------------------------------------

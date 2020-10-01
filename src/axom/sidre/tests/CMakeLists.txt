@@ -111,6 +111,29 @@ if (ENABLE_FORTRAN)
     endforeach()
 endif()
 
+#------------------------------------------------------------------------------
+# Add MFEMSidreDataCollection tests
+#------------------------------------------------------------------------------
+if (AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    blt_add_executable( NAME sidre_mfem_datacollection_test
+                        SOURCES sidre_mfem_datacollection.cpp
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON ${sidre_test_depends} gtest
+                        FOLDER axom/sidre/tests
+                        )
+    if (ENABLE_MPI)
+        blt_add_test( NAME sidre_mfem_datacollection
+                        COMMAND sidre_mfem_datacollection_test
+                        NUM_MPI_TASKS 2
+                        )
+    else()
+        blt_add_test( NAME sidre_mfem_datacollection
+                        COMMAND sidre_mfem_datacollection_test
+                        )
+    endif()
+endif()
+
+
 if (ENABLE_MPI)
     add_subdirectory(spio)
 endif()

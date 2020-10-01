@@ -26,6 +26,9 @@ namespace slic
 // Forward declarations
 class LogStream;
 
+// Type alias for readability
+using AbortFunctionPtr = void (*)();
+
 /*!
  * \class Logger
  *
@@ -109,6 +112,12 @@ public:
    * \return status true if the code will abort on warnings, otherwise, false.
    */
   bool isAbortOnWarningsEnabled() const { return m_abortOnWarning; };
+
+  /*!
+   * \brief Sets the function to call when program abort is requested
+   * \param [in] abort_func The user-specified function to call
+   */
+  void setAbortFunction(AbortFunctionPtr abort_func);
 
   /*!
    * \brief Returns the name of this logger instance.
@@ -315,6 +324,7 @@ private:
   std::string m_name;
   bool m_abortOnError;
   bool m_abortOnWarning;
+  void (*m_abortFunction)(void);
 
   bool m_isEnabled[message::Num_Levels];
   std::map<LogStream*, LogStream*> m_streamObjectsManager;

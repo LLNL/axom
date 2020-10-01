@@ -169,6 +169,16 @@ public:
   { }
 
   /*!
+   * \brief Creates a vector from an initializer list
+   * \param [in] values an initializer list containing the values of the
+   * vector. If the size is not the same as the size of this vector, this
+   * behaves the same way as the constructor which takes a pointer and size.
+   */
+  Vector(std::initializer_list<T> values)
+    : Vector {values.begin(), static_cast<int>(values.size())}
+  { }
+
+  /*!
    * \brief Destructor.
    */
   AXOM_HOST_DEVICE
