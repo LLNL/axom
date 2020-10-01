@@ -130,6 +130,13 @@ void disableAbortOnWarning();
 bool isAbortOnWarningsEnabled();
 
 /*!
+ * \brief Sets the function to call when program abort is requested
+ * \param [in] abort_func The user-specified function to call
+ * \pre slic::isInitialized() == true.
+ */
+void setAbortFunction(AbortFunctionPtr abort_func);
+
+/*!
  * \brief Adds the given stream to the the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.

@@ -57,6 +57,34 @@ TEST(primal_numeric_array, constructors)
     CoordType expVal = i < halfPt ? valsArr[i] : CoordType();
     EXPECT_EQ(arrHalfVec[i], expVal);
   }
+
+  primal::NumericArray<int, 3> fromInitializerListRightSize = {10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListRightSize[i]);
+  }
+
+  primal::NumericArray<int, 3> fromInitializerListTooLong = {10, 20, 30, 40};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListTooLong[i]);
+  }
+
+  primal::NumericArray<int, 5> fromInitializerListTooShort = {10, 20};
+  for(int i = 0; i < 2; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListTooShort[i]);
+  }
+  for(int i = 2; i < 5; ++i)
+  {
+    EXPECT_EQ(0, fromInitializerListTooShort[i]);
+  }
+
+  primal::NumericArray<int, 3> fromInitializerNoEquaslSign{10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerNoEquaslSign[i]);
+  }
 }
 
 //------------------------------------------------------------------------------
