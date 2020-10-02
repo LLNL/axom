@@ -207,7 +207,10 @@ public:
    * \return True if the value was found in the Datastore
    *****************************************************************************
    */
-  bool get(const std::string& name, bool& value);
+  bool get(const std::string& name, bool& value)
+  {
+    return m_globalTable->get(name, value);
+  }
 
   /*!
    *****************************************************************************
@@ -223,7 +226,10 @@ public:
    * \return True if the value was found in the Datastore
    *****************************************************************************
    */
-  bool get(const std::string& name, double& value);
+  bool get(const std::string& name, double& value)
+  {
+    return m_globalTable->get(name, value);
+  }
 
   /*!
    *****************************************************************************
@@ -239,7 +245,10 @@ public:
    * \return True if the value was found in the Datastore
    *****************************************************************************
    */
-  bool get(const std::string& name, int& value);
+  bool get(const std::string& name, int& value)
+  {
+    return m_globalTable->get(name, value);
+  }
 
   /*!
    *****************************************************************************
@@ -255,7 +264,10 @@ public:
    * \return True if the value was found in the Datastore
    *****************************************************************************
    */
-  bool get(const std::string& name, std::string& value);
+  bool get(const std::string& name, std::string& value)
+  {
+    return m_globalTable->get(name, value);
+  }
 
   /*!
    *****************************************************************************
@@ -610,8 +622,6 @@ private:
    *****************************************************************************
    */
   bool searchValidValues(axom::sidre::Group* sidreGroup, std::string value);
-
-  axom::sidre::View* baseGet(const std::string& name);
 
   std::shared_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;

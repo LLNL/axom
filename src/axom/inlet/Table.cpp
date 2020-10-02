@@ -294,6 +294,159 @@ std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
   return addField(sidreGroup, axom::sidre::DataTypeId::CHAR8_STR_ID, fullName, name);
 }
 
+//-------------------------------------------------
+//   Get values out of the datastore
+//-------------------------------------------------
+
+axom::sidre::View* Table::baseGet(const std::string& name)
+{
+  auto pos = name.find("/");
+  // Check if subtables need to be traversed through
+  if(pos != std::string::npos)
+  {
+    auto sub_table_name = name.substr(0, pos);
+    if(!hasTable(sub_table_name))
+    {
+      return nullptr;
+    }
+    return getTable(sub_table_name)->baseGet(name.substr(pos + 1));
+  }
+  // Otherwise it's a direct value
+  else
+  {
+    if(m_sidreGroup == nullptr)
+    {
+      return nullptr;
+    }
+
+    if(!m_sidreGroup->hasGroup(name))
+    {
+      return nullptr;
+    }
+
+    auto group = m_sidreGroup->getGroup(name);
+    if(!group->hasView("value"))
+    {
+      return nullptr;
+    }
+    return group->getView("value");
+  }
+}
+
+bool Table::get(const std::string& name, bool& value)
+{
+  axom::sidre::View* valueView = baseGet(name);
+  if(valueView == nullptr)
+  {
+    return false;
+  }
+
+  // There is no boolean type in conduit/sidre so we use int8
+  if(valueView->getTypeID() != axom::sidre::INT8_ID)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Boolean named '{0}' was asked for"
+      " but recieved type {1}",
+      name,
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  int8 intValue = valueView->getScalar();
+  if(intValue < 0 || intValue > 1)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Invalid integer value stored in "
+      " boolean value named {0}",
+      name);
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  value = (bool)intValue;
+  return true;
+}
+
+bool Table::get(const std::string& name, double& value)
+{
+  axom::sidre::View* valueView = baseGet(name);
+  if(valueView == nullptr)
+  {
+    return false;
+  }
+
+  if(valueView->getTypeID() != axom::sidre::DOUBLE_ID)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Double named '{0}' was asked for"
+      " but recieved type {1}",
+      name,
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  value = valueView->getScalar();
+  return true;
+}
+
+bool Table::get(const std::string& name, int& value)
+{
+  axom::sidre::View* valueView = baseGet(name);
+  if(valueView == nullptr)
+  {
+    return false;
+  }
+
+  if(valueView->getTypeID() != axom::sidre::INT_ID)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Integer named '{0}' was asked for"
+      " but recieved type {1}",
+      name,
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  value = valueView->getScalar();
+  return true;
+}
+
+bool Table::get(const std::string& name, std::string& value)
+{
+  axom::sidre::View* valueView = baseGet(name);
+  if(valueView == nullptr)
+  {
+    return false;
+  }
+
+  if(valueView->getTypeID() != axom::sidre::CHAR8_STR_ID)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] String named '{0}' was asked for"
+      " but recieved type {1}",
+      name,
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  const char* valueStr = valueView->getString();
+  if(valueStr == nullptr)
+  {
+    value = std::string("");
+  }
+  value = std::string(valueStr);
+  return true;
+}
+
 std::shared_ptr<Table> Table::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,

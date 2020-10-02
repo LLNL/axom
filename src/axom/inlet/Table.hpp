@@ -319,6 +319,70 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Gets a Boolean value out of the Datastore.
+   *
+   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * been actually present in the input file and will be indicted by the return
+   * value. 
+   *
+   * \param [in] name Name of the Field value to be gotten
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value was found in the Datastore
+   *****************************************************************************
+   */
+  bool get(const std::string& name, bool& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Gets a Double value out of the Datastore.
+   *
+   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * been actually present in the input file and will be indicted by the return
+   * value. 
+   *
+   * \param [in] name Name of the Field value to be gotten
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value was found in the Datastore
+   *****************************************************************************
+   */
+  bool get(const std::string& name, double& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Gets a Integer value out of the Datastore.
+   *
+   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * been actually present in the input file and will be indicted by the return
+   * value. 
+   *
+   * \param [in] name Name of the Field value to be gotten
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value was found in the Datastore
+   *****************************************************************************
+   */
+  bool get(const std::string& name, int& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Gets a String value out of the Datastore.
+   *
+   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * been actually present in the input file and will be indicted by the return
+   * value. 
+   *
+   * \param [in] name Name of the Field value to be gotten
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value was found in the Datastore
+   *****************************************************************************
+   */
+  bool get(const std::string& name, std::string& value);
+
+  /*!
+   *****************************************************************************
    * \brief Set the required status of this Table.
    *
    * Set whether this Table is required, or not, to be in the input file.
@@ -517,6 +581,8 @@ private:
    *****************************************************************************
    */
   bool hasChildField(const std::string& fieldName);
+
+  axom::sidre::View* baseGet(const std::string& name);
 
   std::string m_name;
   std::shared_ptr<Reader> m_reader;
