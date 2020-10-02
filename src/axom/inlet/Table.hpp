@@ -319,64 +319,64 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Gets a Boolean value out of the Datastore.
+   * \brief Gets a Boolean value out of the table.
    *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * Retrieves the Field value out of the table.  This Field may not have
    * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
    * \param [out] value Value to be filled
    *
-   * \return True if the value was found in the Datastore
+   * \return True if the value was found in the table
    *****************************************************************************
    */
   bool get(const std::string& name, bool& value);
 
   /*!
    *****************************************************************************
-   * \brief Gets a Double value out of the Datastore.
+   * \brief Gets a Double value out of the table.
    *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * Retrieves the Field value out of the table.  This Field may not have
    * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
    * \param [out] value Value to be filled
    *
-   * \return True if the value was found in the Datastore
+   * \return True if the value was found in the table
    *****************************************************************************
    */
   bool get(const std::string& name, double& value);
 
   /*!
    *****************************************************************************
-   * \brief Gets a Integer value out of the Datastore.
+   * \brief Gets a Integer value out of the table.
    *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * Retrieves the Field value out of the table.  This Field may not have
    * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
    * \param [out] value Value to be filled
    *
-   * \return True if the value was found in the Datastore
+   * \return True if the value was found in the table
    *****************************************************************************
    */
   bool get(const std::string& name, int& value);
 
   /*!
    *****************************************************************************
-   * \brief Gets a String value out of the Datastore.
+   * \brief Gets a String value out of the table.
    *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * Retrieves the Field value out of the table.  This Field may not have
    * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
    * \param [out] value Value to be filled
    *
-   * \return True if the value was found in the Datastore
+   * \return True if the value was found in the table
    *****************************************************************************
    */
   bool get(const std::string& name, std::string& value);

@@ -295,16 +295,16 @@ std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
 }
 
 //-------------------------------------------------
-//   Get values out of the datastore
+//   Get values out of the table
 //-------------------------------------------------
 
 axom::sidre::View* Table::baseGet(const std::string& name)
 {
-  auto pos = name.find("/");
+  const auto pos = name.find("/");
   // Check if subtables need to be traversed through
   if(pos != std::string::npos)
   {
-    auto sub_table_name = name.substr(0, pos);
+    const auto sub_table_name = name.substr(0, pos);
     if(!hasTable(sub_table_name))
     {
       return nullptr;
@@ -325,6 +325,7 @@ axom::sidre::View* Table::baseGet(const std::string& name)
     }
 
     auto group = m_sidreGroup->getGroup(name);
+
     if(!group->hasView("value"))
     {
       return nullptr;
