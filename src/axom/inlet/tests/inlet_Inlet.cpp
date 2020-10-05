@@ -122,6 +122,55 @@ TEST(inlet_Inlet_basic, getNestedBools)
   EXPECT_TRUE(value);
 }
 
+TEST(inlet_Inlet_basic, getNestedBoolsThroughTable)
+{
+  std::string testString = "foo = { bar = true; baz = false }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  //
+  // Define schema
+  //
+
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  // Check one that doesn't exist and doesn't have a default value
+  currField = inlet->addBool("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currField);
+
+  //
+  // Check stored values from get
+  //
+
+  bool value = false;
+  bool found = false;
+
+  // Grab the subtable
+  auto table = inlet->getTable("foo");
+
+  // Check for existing fields
+  found = table->get("bar", value);
+  EXPECT_TRUE(found);
+  EXPECT_TRUE(value);
+
+  found = table->get("baz", value);
+  EXPECT_TRUE(found);
+  EXPECT_FALSE(value);
+
+  // Check one that doesn't exist and doesn't have a default value
+  value = true;
+  found = table->get("nonexistant", value);
+  EXPECT_FALSE(found);
+  EXPECT_TRUE(value);
+}
+
 TEST(inlet_Inlet_basic, getTopLevelDoubles)
 {
   std::string testString = "foo = 5.05; bar = 15.1";
