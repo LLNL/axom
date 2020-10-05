@@ -36,9 +36,15 @@ else()
     message(STATUS "Axom Component Inlet turned off due to AXOM_ENABLE_SIDRE=OFF")
     set(AXOM_ENABLE_INLET OFF CACHE BOOL "")
 endif()
+
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
-axom_add_component(COMPONENT_NAME klee   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+if (AXOM_ENABLE_PRIMAL)
+    axom_add_component(COMPONENT_NAME klee   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+else()
+    message(STATUS "Axom Component Klee turned off due to AXOM_ENABLE_PRIMAL=OFF")
+    set(AXOM_ENABLE_KLEE OFF CACHE BOOL "")
+endif()
 
 # Combine all component object libraries into a unified library
 blt_add_library(NAME       axom

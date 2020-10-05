@@ -26,7 +26,3 @@ build_rzgenie:
     - cd build-rzgenie-toss_3_x86_64_ib-clang@10.0.0-debug
     - make -j
     - GTEST_OUTPUT="xml:./" make test
-  artifacts:
-    when: always
-    paths:
-      - "build*/axom/**/tests/*_test.xml"

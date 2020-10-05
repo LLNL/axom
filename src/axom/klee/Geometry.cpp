@@ -5,6 +5,8 @@
 
 #include "axom/klee/Geometry.hpp"
 
+#include "axom/klee/GeometryOperators.hpp"
+
 #include <utility>
 
 namespace axom { namespace klee {
@@ -15,6 +17,13 @@ void Geometry::setFormat(std::string format) {
 
 void Geometry::setPath(std::string path) {
     m_path = std::move(path);
+}
+
+Dimensions Geometry::getDimensions() const {
+    if (m_operator) {
+        return m_operator->endDims();
+    }
+    return m_initialDimensions;
 }
 
 }}

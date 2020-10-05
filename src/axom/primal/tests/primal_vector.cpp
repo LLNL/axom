@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"
-
 #include "axom/primal/geometry/Vector.hpp"
+
+#include "gtest/gtest.h"
 
 using namespace axom;
 
@@ -252,6 +252,21 @@ TEST(primal_vector, vector_outer_product)
   EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
   EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
   EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_vector, vector_zero)
+{
+  constexpr int DIM = 5;
+  typedef primal::Vector< double, DIM > QVec;
+  QVec zero{0.0};
+  EXPECT_TRUE(zero.is_zero());
+
+  for (int i = 0; i < DIM; ++i) {
+      QVec notZero = zero;
+      notZero[i] = 1e-7;
+      EXPECT_FALSE(notZero.is_zero()) << "Wrong when changing index " << i;
+  }
 }
 
 //----------------------------------------------------------------------

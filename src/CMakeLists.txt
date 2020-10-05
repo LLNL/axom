@@ -21,6 +21,8 @@ if (ENABLE_FORTRAN)
    enable_language(Fortran)
 endif()
 
+set(ENABLE_GMOCK ON CACHE STRING "")
+
 #------------------------------------------------------------------------------
 # Initialize BLT build system
 #------------------------------------------------------------------------------
