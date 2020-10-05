@@ -584,13 +584,8 @@ bool DataStore::generateBlueprintIndex(const std::string& domain_path,
 
   bool success = false;
   conduit::Node info;
-#ifdef AXOM_USE_MPI
-  if (conduit::blueprint::mpi::verify("mesh", mesh_node, info, MPI_COMM_WORLD))
-#else
   if (conduit::blueprint::verify("mesh", mesh_node, info))
-#endif
   {
-
     conduit::Node index;
     conduit::blueprint::mesh::generate_index(mesh_node,
                                              mesh_name,
@@ -605,6 +600,41 @@ bool DataStore::generateBlueprintIndex(const std::string& domain_path,
   return success;
 }
 
+#ifdef AXOM_USE_MPI
+bool DataStore::generateBlueprintIndex(MPI_Comm comm,
+                                       const std::string& domain_path,
+                                       const std::string& mesh_name,
+                                       const std::string& index_path)
+{
+
+  Group* domain = (domain_path == "/") ?
+                  getRoot() : getRoot()->getGroup(domain_path);
+
+  conduit::Node mesh_node;
+  domain->createNativeLayout(mesh_node);
+
+  Group* bpindex = getRoot()->hasGroup(index_path)
+                   ? getRoot()->getGroup(index_path)
+                   : getRoot()->createGroup(index_path);
+
+  bool success = false;
+  conduit::Node info;
+  if (conduit::blueprint::mpi::verify("mesh", mesh_node, info, comm))
+  {
+    conduit::Node index;
+    conduit::blueprint::mpi::mesh::generate_index(mesh_node,
+                                                  mesh_name,
+                                                  index,
+                                                  comm);
+
+    bpindex->importConduitTree(index);
+
+    success = true;
+  }
+
+  return success;
+}
+#endif
 
 /*
  *************************************************************************

@@ -73,6 +73,10 @@
 #include "conduit_blueprint.hpp"
 #include "conduit_relay.hpp"
 
+#ifdef AXOM_USE_MPI
+#include "conduit_blueprint_mpi.hpp"
+#endif
+
 // C++ headers
 #include <cstring>
 
@@ -574,7 +578,7 @@ void generate_spio_blueprint(DataStore* ds) {
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
   std::string bp_protocol = "mesh";
-  if (conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
+  if (conduit::blueprint::mpi::verify(bp_protocol, mesh_node[domain_mesh], info, MPI_COMM_WORLD))
   {
 
 #if defined(AXOM_USE_HDF5)
@@ -589,7 +593,6 @@ void generate_spio_blueprint(DataStore* ds) {
 
     writer.writeBlueprintIndexToRootFile(ds, domain_mesh, bp_rootfile,
                                          mesh_name);
-
   }
   // _blueprint_generate_spio_end
 }
@@ -622,7 +625,7 @@ void generate_spio_blueprint_to_path(DataStore* ds) {
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
   std::string bp_protocol = "mesh";
-  if (conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
+  if (conduit::blueprint::mpi::verify(bp_protocol, mesh_node[domain_mesh], info, MPI_COMM_WORLD))
   {
 
     std::string bp_rootfile("pathbpspio.root");
@@ -677,22 +680,31 @@ int main(int argc, char** argv)
 
   int region[3375];
 
-  DataStore* ds = create_datastore(region);
-  access_datastore(ds);
+  int num_ranks = 1;
 
-  DataStore* tds = create_tiny_datastore();
-  save_as_blueprint(tds);
+#ifdef AXOM_USE_MPI
+  MPI_Init(&argc, &argv);
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+#endif
 
-  DataStore* bds = create_tiny_datastore();
-  generate_blueprint(bds);
+  if (num_ranks == 1) {
 
-  DataStore* pds = create_tiny_datastore();
-  generate_blueprint_to_path(pds);
+    DataStore* ds = create_datastore(region);
+    access_datastore(ds);
+
+    DataStore* tds = create_tiny_datastore();
+    save_as_blueprint(tds);
+
+    DataStore* bds = create_tiny_datastore();
+    generate_blueprint(bds);
+
+    DataStore* pds = create_tiny_datastore();
+    generate_blueprint_to_path(pds);
+  }
 
 #ifdef AXOM_USE_MPI
   DataStore* sds = create_tiny_datastore();
   DataStore* spds = create_tiny_datastore();
-  MPI_Init(&argc, &argv);
   generate_spio_blueprint(sds);
   generate_spio_blueprint_to_path(spds);
   MPI_Finalize();

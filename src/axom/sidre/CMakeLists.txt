@@ -101,6 +101,7 @@ endif()
 set(sidre_depends
     core
     conduit::conduit
+    conduit::conduit_mpi
     slic)
 
 blt_list_append(TO sidre_depends ELEMENTS hdf5 IF HDF5_FOUND)

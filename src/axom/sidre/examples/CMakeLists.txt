@@ -83,6 +83,12 @@ if(ENABLE_MPI)
                           )
         endif()
     endforeach()
+
+    blt_add_test( NAME sidre_createdatastore_parallel
+                  COMMAND sidre_createdatastore_ex
+                  NUM_MPI_TASKS 4
+                  )
+
 endif()
 
 #------------------------------------------------------------------------------

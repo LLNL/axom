@@ -400,6 +400,13 @@ public:
                               const std::string& index_path,
                               int num_domains);
 
+#ifdef AXOM_USE_MPI
+  bool generateBlueprintIndex(MPI_Comm comm,
+                              const std::string& domain_path,
+                              const std::string& mesh_name,
+                              const std::string& index_path);
+#endif
+
 //----------------
 
 

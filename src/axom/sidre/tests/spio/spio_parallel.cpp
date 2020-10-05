@@ -1024,13 +1024,10 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   MPI_Barrier(MPI_COMM_WORLD);
 
   // rank 0 adds the bp index to the root file
-  if(my_rank == 0)
-  {
-    writer.writeBlueprintIndexToRootFile(&ds,
-                                         "mesh",
-                                         "out_spio_blueprint_example.root",
-                                         "mesh");
-  }
+  writer.writeBlueprintIndexToRootFile(&ds,
+                                       "mesh",
+                                       "out_spio_blueprint_example.root",
+                                       "mesh");
 
 #endif
 }
