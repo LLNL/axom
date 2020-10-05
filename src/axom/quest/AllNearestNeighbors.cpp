@@ -6,23 +6,26 @@
 #include "axom/quest/AllNearestNeighbors.hpp"
 #include "axom/quest/detail/AllNearestNeighbors_detail.hpp"
 
-#include <cfloat>   // for DBL_MAX
+#include <cfloat>  // for DBL_MAX
 
 #include "axom/config.hpp"
 #include "axom/spin/UniformGrid.hpp"
-
 
 namespace axom
 {
 namespace quest
 {
-
 /* Given a list of point locations and regions, for each point, find
  * the closest point in a different region within a given search radius.
  */
-void all_nearest_neighbors(const double* x, const double* y, const double* z,
-                           const int* region, int n, double limit,
-                           int* neighbor, double* sqdistance)
+void all_nearest_neighbors(const double* x,
+                           const double* y,
+                           const double* z,
+                           const int* region,
+                           int n,
+                           double limit,
+                           int* neighbor,
+                           double* sqdistance)
 {
   // Indexed approach.  For each point i, test distance to all other
   // points in this and neighboring UniformGrid bins (out to distance limit)
@@ -36,7 +39,7 @@ void all_nearest_neighbors(const double* x, const double* y, const double* z,
   double sqlimit = limit * limit;
 
   PointType pmin, pmax;
-  for (int i = 0 ; i < n ; ++i)
+  for(int i = 0; i < n; ++i)
   {
     sqdistance[i] = DBL_MAX;
     neighbor[i] = NEIGHBOR_NOT_FOUND;
@@ -51,20 +54,20 @@ void all_nearest_neighbors(const double* x, const double* y, const double* z,
 
   int res[3];
   VectorType boxrange = allpointsbox.range();
-  for (int i = 0 ; i < 3 ; ++i)
+  for(int i = 0; i < 3; ++i)
   {
     res[i] = std::max(1, (int)(boxrange[i] / limit + 0.5));
   }
 
   // 1. Build an index, inserting each point individually
   GridType ugrid(allpointsbox, res);
-  for (int i = 0 ; i < n ; ++i)
+  for(int i = 0; i < n; ++i)
   {
     ugrid.insert(BoxType(PointType::make_point(x[i], y[i], z[i])), i);
   }
 
   // 2. For point a,
-  for (int i = 0 ; i < n ; ++i)
+  for(int i = 0; i < n; ++i)
   {
     // 3. For each other bin B less than limit distance away from a, for each
     // point b in B,
@@ -75,19 +78,19 @@ void all_nearest_neighbors(const double* x, const double* y, const double* z,
     BoxType qbox(qmin, qmax);
     const std::vector<int> qbins = ugrid.getBinsForBbox(qbox);
     const size_t querybincount = qbins.size();
-    for (size_t binidx = 0 ; binidx < querybincount ; ++binidx)
+    for(size_t binidx = 0; binidx < querybincount; ++binidx)
     {
       const std::vector<int> bs = ugrid.getBinContents(qbins[binidx]);
       const size_t binsize = bs.size();
-      for (size_t bj = 0 ; bj < binsize ; ++bj)
+      for(size_t bj = 0; bj < binsize; ++bj)
       {
         // 4. Compare distances to find the closest distance d = |ab|
         int j = bs[bj];
-        if (region[i] != region[j])
+        if(region[i] != region[j])
         {
-          double sqdist = detail::squared_distance(x[i], y[i], z[i],
-                                                   x[j], y[j], z[j]);
-          if (sqdist < sqdistance[i] && sqdist < sqlimit)
+          double sqdist =
+            detail::squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
+          if(sqdist < sqdistance[i] && sqdist < sqlimit)
           {
             sqdistance[i] = sqdist;
             neighbor[i] = j;
@@ -98,5 +101,5 @@ void all_nearest_neighbors(const double* x, const double* y, const double* z,
   }
 }
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom

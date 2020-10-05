@@ -13,6 +13,9 @@
 
 #include "conduit.hpp"
 
+#include "axom/klee/GeometryOperatorsIO.hpp"
+#include "axom/klee/IOUtil.hpp"
+
 namespace axom { namespace klee {
 
 namespace {
@@ -55,12 +58,23 @@ std::vector<std::string> toStringList(const Node &listNode) {
  * Get the geometry specification for a shape.
  *
  * \param geometryNode the node describing the geometry
+ * \param initialDimensions the initial dimensions of the shape
  * \return the geometry description for the shape
  */
-Geometry getGeometry(const Node &geometryNode) {
+Geometry getGeometry(const Node &geometryNode, Dimensions initialDimensions) {
     Geometry geometry;
+    geometry.setInitialDimensions(initialDimensions);
     geometry.setFormat(geometryNode["format"].as_string());
     geometry.setPath(geometryNode["path"].as_string());
+    if (geometryNode.has_child("initial_dimensions")) {
+        geometry.setInitialDimensions(internal::toDimensions(
+                geometryNode["initial_dimensions"]));
+    }
+    if (geometryNode.has_child("operators")) {
+        auto operators = internal::parseGeometryOperators(
+                geometryNode["operators"], geometry.getInitialDimensions());
+        geometry.setGeometryOperator(operators);
+    }
     return geometry;
 }
 
@@ -70,16 +84,17 @@ Geometry getGeometry(const Node &geometryNode) {
  * \param shapeNode the shape as a conduit node
  * \return the shape as a Shape object
  */
-Shape convertToShape(const Node &shapeNode) {
+Shape convertToShape(const Node &shapeNode,
+        Dimensions fileDimensions) {
     Shape shape;
     shape.setName(shapeNode["name"].as_string());
     shape.setMaterial(shapeNode["material"].as_string());
-    shape.setGeometry(getGeometry(shapeNode["geometry"]));
+    shape.setGeometry(getGeometry(shapeNode["geometry"], fileDimensions));
 
     if (shapeNode.has_child("replaces")) {
         if (shapeNode.has_child("does_not_replace")) {
-            throw std::runtime_error("Can't have both 'replaces' and "
-                                     "'does_not_replace' lists");
+            throw std::invalid_argument("Can't have both 'replaces' and "
+                                        "'does_not_replace' lists");
         }
         shape.setMaterialsReplaced(toStringList(shapeNode["replaces"]));
     } else if (shapeNode.has_child("does_not_replace")) {
@@ -97,7 +112,11 @@ ShapeSet readShapeSet(std::istream &stream) {
     std::string contents{std::istreambuf_iterator<char>(stream), {}};
     doc.parse(contents, "yaml");
     ShapeSet shapeSet;
-    shapeSet.setShapes(convertList(doc["shapes"], convertToShape));
+    Dimensions dimensions = internal::toDimensions(doc["dimensions"]);
+    shapeSet.setShapes(convertList(doc["shapes"],
+            [dimensions] (const Node &shapeNode) -> Shape {
+                return convertToShape(shapeNode, dimensions);
+            }));
     return shapeSet;
 }
 

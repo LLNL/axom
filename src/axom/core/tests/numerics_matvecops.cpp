@@ -8,12 +8,11 @@
 #include "axom/core/numerics/matvecops.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
-namespace numerics  = axom::numerics;
+namespace numerics = axom::numerics;
 namespace utilities = axom::utilities;
 
 namespace
 {
-
 /*!
  * \brief Checks if the given two vectors are equal.
  *
@@ -21,11 +20,11 @@ namespace
  * \param [in] v lhs vector to compare
  * \param [in] N the size of the vector
  */
-void expect_vector_eq( const double* u, const double* v, int N)
+void expect_vector_eq(const double* u, const double* v, int N)
 {
-  for ( int i=0 ; i < N ; ++i )
+  for(int i = 0; i < N; ++i)
   {
-    EXPECT_DOUBLE_EQ( u[i], v[i] );
+    EXPECT_DOUBLE_EQ(u[i], v[i]);
   }
 }
 
@@ -34,336 +33,350 @@ void expect_vector_eq( const double* u, const double* v, int N)
 //------------------------------------------------------------------------------
 // UNIT TESTS FOR MATRIX OPS
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, check_invalid_matrix_addition )
+TEST(numerics_matvecops, check_invalid_matrix_addition)
 {
-  numerics::Matrix< int > A( 2, 2 );
-  numerics::Matrix< int > B( 3, 3 );
-  numerics::Matrix< int > C( 3, 3 );
-  numerics::Matrix< int > C2( 3, 3 );
+  numerics::Matrix<int> A(2, 2);
+  numerics::Matrix<int> B(3, 3);
+  numerics::Matrix<int> C(3, 3);
+  numerics::Matrix<int> C2(3, 3);
 
-  EXPECT_FALSE( numerics::matrix_add( A, B, C ) );
-  EXPECT_EQ( C.getNumColumns(), 1 );
-  EXPECT_EQ( C.getNumRows(), 1 );
-  EXPECT_EQ( C(0,0), 0 );
+  EXPECT_FALSE(numerics::matrix_add(A, B, C));
+  EXPECT_EQ(C.getNumColumns(), 1);
+  EXPECT_EQ(C.getNumRows(), 1);
+  EXPECT_EQ(C(0, 0), 0);
 
-  EXPECT_FALSE( numerics::matrix_add( B, C2, A ) );
-  EXPECT_EQ( A.getNumColumns(), 1 );
-  EXPECT_EQ( A.getNumRows(), 1 );
-  EXPECT_EQ( A(0,0), 0 );
+  EXPECT_FALSE(numerics::matrix_add(B, C2, A));
+  EXPECT_EQ(A.getNumColumns(), 1);
+  EXPECT_EQ(A.getNumRows(), 1);
+  EXPECT_EQ(A(0, 0), 0);
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, matrix_add )
+TEST(numerics_matvecops, matrix_add)
 {
-  constexpr int N=3;
-  numerics::Matrix< int > I1 = numerics::Matrix< int >::identity( N );
-  numerics::Matrix< int > I2 = numerics::Matrix< int >::identity( N );
+  constexpr int N = 3;
+  numerics::Matrix<int> I1 = numerics::Matrix<int>::identity(N);
+  numerics::Matrix<int> I2 = numerics::Matrix<int>::identity(N);
 
-  numerics::Matrix< int > A( N, N );
-  EXPECT_TRUE( numerics::matrix_add( I1, I2, A ) );
+  numerics::Matrix<int> A(N, N);
+  EXPECT_TRUE(numerics::matrix_add(I1, I2, A));
 
-  for ( int i=0 ; i < N ; ++i )
+  for(int i = 0; i < N; ++i)
   {
-    for ( int j=0 ; j < N ; ++j )
+    for(int j = 0; j < N; ++j)
     {
-      int expected = (i==j) ? 2 : 0;
-      EXPECT_EQ( expected, A(i,j) );
+      int expected = (i == j) ? 2 : 0;
+      EXPECT_EQ(expected, A(i, j));
     }  // END for all columns
-  } // END for all rows
+  }    // END for all rows
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, check_invalid_matrix_subtraction )
+TEST(numerics_matvecops, check_invalid_matrix_subtraction)
 {
-  numerics::Matrix< int > A( 2, 2 );
-  numerics::Matrix< int > B( 3, 3 );
-  numerics::Matrix< int > C( 3, 3 );
-  numerics::Matrix< int > C2( 3, 3 );
+  numerics::Matrix<int> A(2, 2);
+  numerics::Matrix<int> B(3, 3);
+  numerics::Matrix<int> C(3, 3);
+  numerics::Matrix<int> C2(3, 3);
 
-  EXPECT_FALSE( numerics::matrix_subtract( A, B, C ) );
-  EXPECT_EQ( C.getNumColumns(), 1 );
-  EXPECT_EQ( C.getNumRows(), 1 );
-  EXPECT_EQ( C(0,0), 0 );
+  EXPECT_FALSE(numerics::matrix_subtract(A, B, C));
+  EXPECT_EQ(C.getNumColumns(), 1);
+  EXPECT_EQ(C.getNumRows(), 1);
+  EXPECT_EQ(C(0, 0), 0);
 
-  EXPECT_FALSE( numerics::matrix_subtract( B, C2, A ) );
-  EXPECT_EQ( A.getNumColumns(), 1 );
-  EXPECT_EQ( A.getNumRows(), 1 );
-  EXPECT_EQ( A(0,0), 0 );
+  EXPECT_FALSE(numerics::matrix_subtract(B, C2, A));
+  EXPECT_EQ(A.getNumColumns(), 1);
+  EXPECT_EQ(A.getNumRows(), 1);
+  EXPECT_EQ(A(0, 0), 0);
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, matrix_subtract )
+TEST(numerics_matvecops, matrix_subtract)
 {
   constexpr int ZERO = 0;
-  constexpr int N    = 3;
+  constexpr int N = 3;
 
-  numerics::Matrix< int > I1 = numerics::Matrix< int >::identity( N );
-  numerics::Matrix< int > I2 = numerics::Matrix< int >::identity( N );
+  numerics::Matrix<int> I1 = numerics::Matrix<int>::identity(N);
+  numerics::Matrix<int> I2 = numerics::Matrix<int>::identity(N);
 
-  numerics::Matrix< int > A( N, N );
-  EXPECT_TRUE( numerics::matrix_subtract( I1, I2, A ) );
+  numerics::Matrix<int> A(N, N);
+  EXPECT_TRUE(numerics::matrix_subtract(I1, I2, A));
 
-  for ( int i=0 ; i < N ; ++i )
+  for(int i = 0; i < N; ++i)
   {
-    for ( int j=0 ; j < N ; ++j )
+    for(int j = 0; j < N; ++j)
     {
-      EXPECT_EQ( A(i,j), ZERO );
+      EXPECT_EQ(A(i, j), ZERO);
     }  // END for all columns
-  } // END for all rows
-
+  }    // END for all rows
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, check_invalid_matrix_multiplication )
+TEST(numerics_matvecops, check_invalid_matrix_multiplication)
 {
-  numerics::Matrix< int > A( 2, 3 );
-  numerics::Matrix< int > B( 3, 2 );
-  numerics::Matrix< int > C( 3, 3 );
+  numerics::Matrix<int> A(2, 3);
+  numerics::Matrix<int> B(3, 2);
+  numerics::Matrix<int> C(3, 3);
 
-  EXPECT_FALSE( numerics::matrix_multiply( A, B, C ) );
-  EXPECT_EQ( C.getNumColumns(), 1 );
-  EXPECT_EQ( C.getNumRows(), 1 );
-  EXPECT_EQ( C(0,0), 0 );
+  EXPECT_FALSE(numerics::matrix_multiply(A, B, C));
+  EXPECT_EQ(C.getNumColumns(), 1);
+  EXPECT_EQ(C.getNumRows(), 1);
+  EXPECT_EQ(C(0, 0), 0);
 
-  EXPECT_FALSE( numerics::matrix_multiply( A, C, B ) );
-  EXPECT_EQ( B.getNumColumns(), 1 );
-  EXPECT_EQ( B.getNumRows(), 1 );
-  EXPECT_EQ( B(0,0), 0 );
+  EXPECT_FALSE(numerics::matrix_multiply(A, C, B));
+  EXPECT_EQ(B.getNumColumns(), 1);
+  EXPECT_EQ(B.getNumRows(), 1);
+  EXPECT_EQ(B(0, 0), 0);
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, matrix_matrix_multiply )
+TEST(numerics_matvecops, matrix_matrix_multiply)
 {
   // Setup test matrix A
-  numerics::Matrix< int > A( 2, 3 );
-  A( 0,0 ) = 1; A( 0,1 ) = 2; A( 0,2 ) = 3;
-  A( 1,0 ) = 4; A( 1,1 ) = 5; A( 1,2 ) = 6;
+  numerics::Matrix<int> A(2, 3);
+  A(0, 0) = 1;
+  A(0, 1) = 2;
+  A(0, 2) = 3;
+  A(1, 0) = 4;
+  A(1, 1) = 5;
+  A(1, 2) = 6;
 
   // Setup test matrix B
-  numerics::Matrix< int > B( 3, 2 );
-  B( 0,0 ) = 1; B( 0,1 ) = 2;
-  B( 1,0 ) = 3; B( 1,1 ) = 4;
-  B( 2,0 ) = 5; B( 2,1 ) = 6;
+  numerics::Matrix<int> B(3, 2);
+  B(0, 0) = 1;
+  B(0, 1) = 2;
+  B(1, 0) = 3;
+  B(1, 1) = 4;
+  B(2, 0) = 5;
+  B(2, 1) = 6;
 
-  numerics::Matrix< int > C( 2, 2 );
-  EXPECT_TRUE( numerics::matrix_multiply( A, B, C ) );
+  numerics::Matrix<int> C(2, 2);
+  EXPECT_TRUE(numerics::matrix_multiply(A, B, C));
 
-  EXPECT_EQ( 22, C(0,0) );
-  EXPECT_EQ( 28, C(0,1) );
-  EXPECT_EQ( 49, C(1,0) );
-  EXPECT_EQ( 64, C(1,1) );
+  EXPECT_EQ(22, C(0, 0));
+  EXPECT_EQ(28, C(0, 1));
+  EXPECT_EQ(49, C(1, 0));
+  EXPECT_EQ(64, C(1, 1));
 
-  numerics::Matrix< int > I2 = numerics::Matrix< int >::identity( 2 );
-  numerics::Matrix< int > C2( 2, 2 );
-  EXPECT_TRUE( numerics::matrix_multiply( C, I2, C2 ) );
+  numerics::Matrix<int> I2 = numerics::Matrix<int>::identity(2);
+  numerics::Matrix<int> C2(2, 2);
+  EXPECT_TRUE(numerics::matrix_multiply(C, I2, C2));
 
-  EXPECT_EQ( 22, C2(0,0) );
-  EXPECT_EQ( 28, C2(0,1) );
-  EXPECT_EQ( 49, C2(1,0) );
-  EXPECT_EQ( 64, C2(1,1) );
+  EXPECT_EQ(22, C2(0, 0));
+  EXPECT_EQ(28, C2(0, 1));
+  EXPECT_EQ(49, C2(1, 0));
+  EXPECT_EQ(64, C2(1, 1));
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, matrix_scalar_multiply )
+TEST(numerics_matvecops, matrix_scalar_multiply)
 {
   constexpr int N = 3;
   constexpr int SCALAR = 2;
 
-  numerics::Matrix< int > A = numerics::Matrix< int >::identity( N );
-  numerics::matrix_scalar_multiply( A, SCALAR );
+  numerics::Matrix<int> A = numerics::Matrix<int>::identity(N);
+  numerics::matrix_scalar_multiply(A, SCALAR);
 
-  for ( int i=0 ; i < N ; ++i )
+  for(int i = 0; i < N; ++i)
   {
-    for ( int j=0 ; j < N ; ++j )
+    for(int j = 0; j < N; ++j)
     {
-      int expected = (i==j) ? SCALAR : 0;
-      EXPECT_EQ( expected, A(i,j) );
+      int expected = (i == j) ? SCALAR : 0;
+      EXPECT_EQ(expected, A(i, j));
     }
   }
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, matrix_vector_multiply )
+TEST(numerics_matvecops, matrix_vector_multiply)
 {
-  constexpr int N=2;
-  numerics::Matrix< int > A( N,N );
-  A( 0,0 ) = 1; A( 0,1 ) = 2;
-  A( 1,0 ) = 3; A( 1,1 ) = 4;
+  constexpr int N = 2;
+  numerics::Matrix<int> A(N, N);
+  A(0, 0) = 1;
+  A(0, 1) = 2;
+  A(1, 0) = 3;
+  A(1, 1) = 4;
 
-  int res[ 2 ];
-  int v[2] = { 1, 2 };
-  int expected[2] = { 5, 11 };
+  int res[2];
+  int v[2] = {1, 2};
+  int expected[2] = {5, 11};
 
-  numerics::matrix_vector_multiply( A, v, res );
+  numerics::matrix_vector_multiply(A, v, res);
 
-  for ( int i=0 ; i < N ; ++i )
+  for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ( expected[ i ], res[ i ] );
+    EXPECT_EQ(expected[i], res[i]);
   }
-
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, check_invalid_matrix_transpose )
+TEST(numerics_matvecops, check_invalid_matrix_transpose)
 {
-  numerics::Matrix< int > A( 2,3 );
-  numerics::Matrix< int > M( 10, 10 );
+  numerics::Matrix<int> A(2, 3);
+  numerics::Matrix<int> M(10, 10);
 
-  EXPECT_FALSE( numerics::matrix_transpose( A, M ) );
-  EXPECT_EQ( M.getNumRows(), 1 );
-  EXPECT_EQ( M.getNumColumns(), 1 );
-  EXPECT_EQ( M(0,0), 0 );
+  EXPECT_FALSE(numerics::matrix_transpose(A, M));
+  EXPECT_EQ(M.getNumRows(), 1);
+  EXPECT_EQ(M.getNumColumns(), 1);
+  EXPECT_EQ(M(0, 0), 0);
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, matrix_transpose )
+TEST(numerics_matvecops, matrix_transpose)
 {
   // Setup matrix: (1 2 3)
   //               (4 5 6)
-  numerics::Matrix< int > A( 2, 3 );
-  A( 0,0 ) = 1; A( 0,1 ) = 2; A( 0,2 ) = 3;
-  A( 1,0 ) = 4; A( 1,1 ) = 5; A( 1,2 ) = 6;
+  numerics::Matrix<int> A(2, 3);
+  A(0, 0) = 1;
+  A(0, 1) = 2;
+  A(0, 2) = 3;
+  A(1, 0) = 4;
+  A(1, 1) = 5;
+  A(1, 2) = 6;
 
   // Matrix transpose
-  numerics::Matrix< int > M( A.getNumColumns(), A.getNumRows() );
-  EXPECT_TRUE( numerics::matrix_transpose( A, M ) );
+  numerics::Matrix<int> M(A.getNumColumns(), A.getNumRows());
+  EXPECT_TRUE(numerics::matrix_transpose(A, M));
 
-  EXPECT_EQ( 1, M(0,0) );
-  EXPECT_EQ( 2, M(1,0) );
-  EXPECT_EQ( 3, M(2,0) );
+  EXPECT_EQ(1, M(0, 0));
+  EXPECT_EQ(2, M(1, 0));
+  EXPECT_EQ(3, M(2, 0));
 
-  EXPECT_EQ( 4, M(0,1) );
-  EXPECT_EQ( 5, M(1,1) );
-  EXPECT_EQ( 6, M(2,1) );
+  EXPECT_EQ(4, M(0, 1));
+  EXPECT_EQ(5, M(1, 1));
+  EXPECT_EQ(6, M(2, 1));
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, matrix_norm )
+TEST(numerics_matvecops, matrix_norm)
 {
-  constexpr int N                        = 3;
-  constexpr bool ZERO_COPY                = true;
-  constexpr double EXPECTED_P1_NORM         = 19;
-  constexpr double EXPECTED_INFTY_NORM      = 15;
+  constexpr int N = 3;
+  constexpr bool ZERO_COPY = true;
+  constexpr double EXPECTED_P1_NORM = 19;
+  constexpr double EXPECTED_INFTY_NORM = 15;
   constexpr double EXPECTED_FROBENIOUS_NORM = 14.387494569938159;
 
   // STEP 0: construct test matrix
-  double data[ 9 /* 3 x 3 */ ] = {
-    -3, 2, 0,    // column 1
-    5, 6, 2,     // column 2
-    7, 4, 8      // column 3
+  // clang-format off
+  double data[9 /* 3 x 3 */] = {
+    -3, 2, 0,     // column 1
+     5, 6, 2,     // column 2
+     7, 4, 8      // column 3
   };
-  numerics::Matrix< double > A( N, N, data, ZERO_COPY );
+  // clang-format on
+
+  numerics::Matrix<double> A(N, N, data, ZERO_COPY);
 
   // STEP 1: test p1-norm
-  double p1norm = numerics::matrix_norm( A, numerics::P1_NORM );
-  EXPECT_DOUBLE_EQ( p1norm, EXPECTED_P1_NORM );
+  double p1norm = numerics::matrix_norm(A, numerics::P1_NORM);
+  EXPECT_DOUBLE_EQ(p1norm, EXPECTED_P1_NORM);
 
   // STEP 2: test infinity-norm
-  double inftynorm = numerics::matrix_norm( A, numerics::INF_NORM );
-  EXPECT_DOUBLE_EQ( inftynorm, EXPECTED_INFTY_NORM );
+  double inftynorm = numerics::matrix_norm(A, numerics::INF_NORM);
+  EXPECT_DOUBLE_EQ(inftynorm, EXPECTED_INFTY_NORM);
 
   // STEP 3: test frobenius norm
-  double frobnorm = numerics::matrix_norm( A, numerics::FROBENIUS_NORM );
-  EXPECT_DOUBLE_EQ( frobnorm, EXPECTED_FROBENIOUS_NORM );
+  double frobnorm = numerics::matrix_norm(A, numerics::FROBENIUS_NORM);
+  EXPECT_DOUBLE_EQ(frobnorm, EXPECTED_FROBENIOUS_NORM);
 }
 
 //------------------------------------------------------------------------------
 // UNIT TESTS FOR VECTOR OPS
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, linspace )
+TEST(numerics_matvecops, linspace)
 {
-  double vc[ 6 ]; // storage for the computed vector
+  double vc[6];  // storage for the computed vector
 
-  const double v1[ 6 ] = { -2, -1, 0, 1, 2, 3   };
-  const double v2[ 6 ] = {  3,  2, 1, 0, -1, -2 };
-  const double v3[ 3 ] = { 0.0, 0.5, 1.0 };
+  const double v1[6] = {-2, -1, 0, 1, 2, 3};
+  const double v2[6] = {3, 2, 1, 0, -1, -2};
+  const double v3[3] = {0.0, 0.5, 1.0};
 
   const double x0 = -2.0;
-  const double x1 =  3.0;
+  const double x1 = 3.0;
 
-  EXPECT_FALSE( numerics::linspace( x0, x1, vc, 0) );
-  EXPECT_FALSE( numerics::linspace( x0, x1, vc, 1) );
+  EXPECT_FALSE(numerics::linspace(x0, x1, vc, 0));
+  EXPECT_FALSE(numerics::linspace(x0, x1, vc, 1));
 
-  EXPECT_TRUE( numerics::linspace( x0, x1, vc, 6 ) );
-  expect_vector_eq( vc, v1, 6 );
+  EXPECT_TRUE(numerics::linspace(x0, x1, vc, 6));
+  expect_vector_eq(vc, v1, 6);
 
-  EXPECT_TRUE( numerics::linspace( x1, x0, vc, 6) );
-  expect_vector_eq( vc, v2, 6 );
+  EXPECT_TRUE(numerics::linspace(x1, x0, vc, 6));
+  expect_vector_eq(vc, v2, 6);
 
-  EXPECT_TRUE( numerics::linspace( 0.0, 1.0, vc, 3 ) );
-  expect_vector_eq( vc, v3, 3 );
+  EXPECT_TRUE(numerics::linspace(0.0, 1.0, vc, 3));
+  expect_vector_eq(vc, v3, 3);
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, vector_cross_product )
+TEST(numerics_matvecops, vector_cross_product)
 {
   const int NDIMS = 3;
 
-  const double e1[ 3  ] = { 1.0, 0.0, 0.0  };
-  const double e2[ 3  ] = { 0.0, 1.0, 0.0  };
-  const double e3[ 3  ] = { 0.0, 0.0, 1.0  };
-  const double me3[ 3 ] = { 0.0, 0.0, -1.0 };
+  const double e1[3] = {1.0, 0.0, 0.0};
+  const double e2[3] = {0.0, 1.0, 0.0};
+  const double e3[3] = {0.0, 0.0, 1.0};
+  const double me3[3] = {0.0, 0.0, -1.0};
 
-  const double u[ 3 ]     = { 2.0,  1.0, -1.0  };
-  const double v[ 3 ]     = {-3.0,  4.0,  1.0  };
-  const double u_x_v[ 3 ] = { 5.0,  1.0,  11.0 };
+  const double u[3] = {2.0, 1.0, -1.0};
+  const double v[3] = {-3.0, 4.0, 1.0};
+  const double u_x_v[3] = {5.0, 1.0, 11.0};
 
   double w[3];
 
-  numerics::cross_product( e1, e2, w);
-  expect_vector_eq( w, e3, NDIMS );
+  numerics::cross_product(e1, e2, w);
+  expect_vector_eq(w, e3, NDIMS);
 
-  numerics::cross_product( e2, e1, w );
-  expect_vector_eq( w, me3, NDIMS );
+  numerics::cross_product(e2, e1, w);
+  expect_vector_eq(w, me3, NDIMS);
 
-  numerics::cross_product( e3, e1, w );
-  expect_vector_eq( w, e2, NDIMS );
+  numerics::cross_product(e3, e1, w);
+  expect_vector_eq(w, e2, NDIMS);
 
-  numerics::cross_product( e2, e3, w );
-  expect_vector_eq( w, e1, NDIMS );
+  numerics::cross_product(e2, e3, w);
+  expect_vector_eq(w, e1, NDIMS);
 
-  numerics::cross_product( u, v, w );
-  expect_vector_eq( w, u_x_v, NDIMS );
+  numerics::cross_product(u, v, w);
+  expect_vector_eq(w, u_x_v, NDIMS);
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, vector_dot_product )
+TEST(numerics_matvecops, vector_dot_product)
 {
   const int dim = 10;
   const double EPS = 1E-4;
 
-  double* u = new double[dim]();   // 0 initialization
-  double* v = new double[dim]();   // 0 initialization
+  double* u = new double[dim]();  // 0 initialization
+  double* v = new double[dim]();  // 0 initialization
 
   u[0] = 1.;
   v[1] = 1.;
 
-  EXPECT_NEAR(numerics::dot_product< double >(u, v, dim), 0., EPS);
+  EXPECT_NEAR(numerics::dot_product<double>(u, v, dim), 0., EPS);
 
   u[1] = 1.;
   v[0] = 1.;
 
-  EXPECT_NEAR(numerics::dot_product< double >(u, v, dim), 2., EPS);
+  EXPECT_NEAR(numerics::dot_product<double>(u, v, dim), 2., EPS);
 
   u[5] = 10.;
   v[5] = -10.;
 
-  EXPECT_NEAR(numerics::dot_product< double >(u, v, dim), -98., EPS);
+  EXPECT_NEAR(numerics::dot_product<double>(u, v, dim), -98., EPS);
 
   // free up allocated memory
-  delete [] u;
-  delete [] v;
+  delete[] u;
+  delete[] v;
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, vector_make_orthogonal )
+TEST(numerics_matvecops, vector_make_orthogonal)
 {
   const int dim = 3;
   const double ONE_THIRD = 0.3333333333;
   const double EPS = 1E-4;
 
-  double* u = new double[dim]();   // 0 initialization
-  double* v = new double[dim]();   // 0 initialization
+  double* u = new double[dim]();  // 0 initialization
+  double* v = new double[dim]();  // 0 initialization
 
   u[0] = 1.;
   u[1] = 1.;
@@ -373,7 +386,7 @@ TEST( numerics_matvecops, vector_make_orthogonal )
   v[1] = 1.;
   v[2] = 1.;
 
-  numerics::make_orthogonal< double >(u, v, dim);
+  numerics::make_orthogonal<double>(u, v, dim);
 
   EXPECT_NEAR(u[0], 1. - ONE_THIRD, EPS);
   EXPECT_NEAR(u[1], 1. - ONE_THIRD, EPS);
@@ -386,19 +399,19 @@ TEST( numerics_matvecops, vector_make_orthogonal )
   EXPECT_NEAR(u[2], 0., EPS);
 
   // free up allocated memory
-  delete [] u;
-  delete [] v;
+  delete[] u;
+  delete[] v;
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, vector_orthonormalize )
+TEST(numerics_matvecops, vector_orthonormalize)
 {
   const int dim = 3;
   const int size = 2;
   const double EPS = 1E-4;
   const double ONE_OVER_SQRT_TWO = 0.70710678;
 
-  double* basis = new double[dim*dim]();   // 0 initialization
+  double* basis = new double[dim * dim]();  // 0 initialization
 
   double* u = basis;
   double* v = basis + dim;
@@ -407,7 +420,7 @@ TEST( numerics_matvecops, vector_orthonormalize )
   u[1] = 1.;
   v[0] = 2.;
 
-  EXPECT_TRUE(numerics::orthonormalize< double >(basis, size, dim));
+  EXPECT_TRUE(numerics::orthonormalize<double>(basis, size, dim));
 
   EXPECT_NEAR(u[0], ONE_OVER_SQRT_TWO, EPS);
   EXPECT_NEAR(u[1], ONE_OVER_SQRT_TWO, EPS);
@@ -418,22 +431,22 @@ TEST( numerics_matvecops, vector_orthonormalize )
   EXPECT_NEAR(v[2], 0., EPS);
 
   // doesn't span
-  EXPECT_FALSE(numerics::orthonormalize< double >(basis, dim, dim));
+  EXPECT_FALSE(numerics::orthonormalize<double>(basis, dim, dim));
 
   // free up allocated memory
-  delete [] basis;
+  delete[] basis;
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matvecops, vector_normalize )
+TEST(numerics_matvecops, vector_normalize)
 {
   const int dim = 3;
   const double EPS = 1E-4;
   const double ONE_OVER_SQRT_THREE = 0.57735026;
   const double ONE_OVER_SQRT_TEN = 0.316227766;
 
-  double* u = new double[dim]();   // 0 initialization
-  double* v = new double[dim]();   // 0 initialization
+  double* u = new double[dim]();  // 0 initialization
+  double* v = new double[dim]();  // 0 initialization
 
   u[0] = 1.;
   u[1] = 1.;
@@ -443,21 +456,21 @@ TEST( numerics_matvecops, vector_normalize )
   v[1] = 3.;
   v[2] = 1.;
 
-  EXPECT_TRUE(numerics::normalize< double >(u, dim));
+  EXPECT_TRUE(numerics::normalize<double>(u, dim));
 
   EXPECT_NEAR(u[0], ONE_OVER_SQRT_THREE, EPS);
   EXPECT_NEAR(u[1], ONE_OVER_SQRT_THREE, EPS);
   EXPECT_NEAR(u[2], ONE_OVER_SQRT_THREE, EPS);
 
-  EXPECT_TRUE(numerics::normalize< double >(v, dim));
+  EXPECT_TRUE(numerics::normalize<double>(v, dim));
 
   EXPECT_NEAR(v[0], 0., EPS);
-  EXPECT_NEAR(v[1], 3.*ONE_OVER_SQRT_TEN, EPS);
+  EXPECT_NEAR(v[1], 3. * ONE_OVER_SQRT_TEN, EPS);
   EXPECT_NEAR(v[2], ONE_OVER_SQRT_TEN, EPS);
 
   // now make u = (0, 0, 0)
   numerics::make_orthogonal(u, u, dim);
 
   // normalize should fail
-  EXPECT_FALSE(numerics::normalize< double >(u, dim));
+  EXPECT_FALSE(numerics::normalize<double>(u, dim));
 }

@@ -14,7 +14,7 @@
 #define UNITTESTLOGGER_HPP_
 
 // Other axom headers
-#include "axom/core/Macros.hpp"    // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
+#include "axom/core/Macros.hpp"  // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
 
 // slic component headers
 #include "axom/slic/interface/slic.hpp"
@@ -24,7 +24,6 @@ namespace axom
 {
 namespace slic
 {
-
 /*!
  * \class UnitTestLogger
  *
@@ -58,49 +57,43 @@ namespace slic
 class UnitTestLogger
 {
 public:
-
   /*!
    * \brief Constructor initializes slic loging environment.
    */
   UnitTestLogger()
   {
     initialize();
-    setLoggingMsgLevel( message::Debug );
+    setLoggingMsgLevel(message::Debug);
 
     // Formatting for warning, errors and fatal message
     std::string wefFormatStr =
-      std:: string( "\n***********************************\n")+
-      std:: string( "[<LEVEL> in line <LINE> of file <FILE>]\n") +
-      std:: string( "MESSAGE=<MESSAGE>\n" ) +
-      std:: string( "***********************************\n");
+      std::string("\n***********************************\n") +
+      std::string("[<LEVEL> in line <LINE> of file <FILE>]\n") +
+      std::string("MESSAGE=<MESSAGE>\n") +
+      std::string("***********************************\n");
 
     // Simple formatting for debug and info messages
     std::string diFormatStr = "[<LEVEL>] <MESSAGE> \n";
 
-    GenericOutputStream* wefStream
-      = new GenericOutputStream(&std::cout, wefFormatStr);
-    GenericOutputStream* diStream
-      = new GenericOutputStream(&std::cout, diFormatStr);
+    GenericOutputStream* wefStream =
+      new GenericOutputStream(&std::cout, wefFormatStr);
+    GenericOutputStream* diStream =
+      new GenericOutputStream(&std::cout, diFormatStr);
 
-    addStreamToMsgLevel(wefStream,  message::Error);
-    addStreamToMsgLevel(wefStream,  message::Warning);
-    addStreamToMsgLevel(diStream,   message::Info);
-    addStreamToMsgLevel(diStream,   message::Debug);
-
+    addStreamToMsgLevel(wefStream, message::Error);
+    addStreamToMsgLevel(wefStream, message::Warning);
+    addStreamToMsgLevel(diStream, message::Info);
+    addStreamToMsgLevel(diStream, message::Debug);
   }
 
   /*!
    * \brief Destructor finalizes slic loging environment.
    */
-  ~UnitTestLogger()
-  {
-    finalize();
-  }
+  ~UnitTestLogger() { finalize(); }
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(UnitTestLogger);
   DISABLE_MOVE_AND_ASSIGNMENT(UnitTestLogger);
-
 };
 
 } /* end namespace slic */

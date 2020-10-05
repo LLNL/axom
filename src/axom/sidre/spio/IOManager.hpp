@@ -31,8 +31,6 @@ namespace axom
 {
 namespace sidre
 {
-
-
 /*!
  * \class IOManager
  *
@@ -46,7 +44,6 @@ namespace sidre
 class IOManager
 {
 public:
-
   /*!
    * \brief Constructor
    *
@@ -115,8 +112,7 @@ public:
    * \param group         Group to add to root file
    * \param file_name     name of existing root file
    */
-  void writeGroupToRootFile(sidre::Group* group,
-                            const std::string& file_name);
+  void writeGroupToRootFile(sidre::Group* group, const std::string& file_name);
 
   /*!
    * \brief write additional group to a path inside an existing root file
@@ -272,8 +268,7 @@ public:
    * Options are: "hdf5", "json" and "conduit_json"
    * \see Group::save() for a list of valid sidre protocols
    */
-  static std::string correspondingRelayProtocol(
-    const std::string& sidre_protocol);
+  static std::string correspondingRelayProtocol(const std::string& sidre_protocol);
 
   /*!
    * \brief load external data into a group
@@ -284,8 +279,7 @@ public:
    * \param group         Group to fill with external data from input
    * \param root_file     root file containing input data
    */
-  void loadExternalData(sidre::Group* group,
-                        const std::string& root_file);
+  void loadExternalData(sidre::Group* group, const std::string& root_file);
 
   /*!
    * \brief gets the number of files in the dataset from the specified root file
@@ -293,8 +287,7 @@ public:
   int getNumFilesFromRoot(const std::string& root_file);
 
 private:
-
-  DISABLE_COPY_AND_ASSIGNMENT( IOManager );
+  DISABLE_COPY_AND_ASSIGNMENT(IOManager);
 
   void createRootFile(const std::string& file_base,
                       int num_files,
@@ -311,7 +304,6 @@ private:
   std::string getFilePatternFromRoot(const std::string& root_name,
                                      const std::string& protocol);
 
-
   /*!
    * \brief gets the number of groups in the dataset from the specified root
    * file
@@ -324,7 +316,8 @@ private:
 #ifdef AXOM_USE_HDF5
   std::string getHDF5FilePattern(const std::string& root_name);
 
-  void readSidreHDF5(sidre::Group* group, const std::string& root_file,
+  void readSidreHDF5(sidre::Group* group,
+                     const std::string& root_file,
                      bool preserve_contents = false);
 #endif /* AXOM_USE_HDF5 */
 
@@ -338,8 +331,6 @@ private:
                    bool preserve_contents = false);
 #endif
 
-
-
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
 
@@ -349,9 +340,7 @@ private:
 
   bool m_use_scr;
   std::string m_scr_checkpoint_dir;
-
 };
-
 
 } /* end namespace sidre */
 } /* end namespace axom */

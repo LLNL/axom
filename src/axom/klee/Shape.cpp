@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 namespace axom { namespace klee {
 
@@ -22,16 +23,16 @@ namespace {
  */
 template <typename Container>
 bool contains(const Container &container,
-        const  typename Container::value_type &value) {
+        const typename Container::value_type &value) {
     using std::begin;
     using std::end;
     auto endIter = end(container);
     return std::find(begin(container), endIter, value) != endIter;
 }
-}
+} // unnamed namespace
 
 void Shape::setMaterialsReplaced(
-        const  std::vector<std::string> &materialsReplaced) {
+        const std::vector<std::string> &materialsReplaced) {
     if (!m_materialsNotReplaced.empty()) {
         throw std::logic_error("Can't set list of materials to replace "
                                "when materials to not replace have already "

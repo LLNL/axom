@@ -17,50 +17,50 @@ namespace mint
 {
 namespace internal
 {
-
 //------------------------------------------------------------------------------
 // IMPLEMENTATION OF FREE METHODS
 //------------------------------------------------------------------------------
-std::string join_ints_into_string(int count, IndexType * values, char sep)
+std::string join_ints_into_string(int count, IndexType* values, char sep)
 {
   std::stringstream joined;
 
-  for (int i = 0; i < count; ++i)
+  for(int i = 0; i < count; ++i)
   {
-    if (i > 0) { joined << sep; }
+    if(i > 0)
+    {
+      joined << sep;
+    }
     joined << values[i];
   }
 
   return joined.str();
 }
 
-
 //------------------------------------------------------------------------------
-std::string make_face_key(int count, IndexType * values, char sep)
+std::string make_face_key(int count, IndexType* values, char sep)
 {
   std::vector<IndexType> locvalues(values, values + count);
   std::sort(locvalues.begin(), locvalues.end());
   return join_ints_into_string(count, locvalues.data(), sep);
 }
 
-
 //------------------------------------------------------------------------------
-IndexType otherSide(IndexType * f2c, IndexType thisSide)
+IndexType otherSide(IndexType* f2c, IndexType thisSide)
 {
-  return ( f2c[0] != thisSide ) ? f2c[0] : f2c[1];
+  return (f2c[0] != thisSide) ? f2c[0] : f2c[1];
 }
-
 
 //------------------------------------------------------------------------------
 struct FaceTypeCellsNodes
 {
-  FaceTypeCellsNodes() : facetype(UNDEFINED_CELL)
-  { }
+  FaceTypeCellsNodes() : facetype(UNDEFINED_CELL) { }
 
   FaceTypeCellsNodes(CellType ftype,
-                     std::vector<IndexType> & fcells,
-                     std::vector<IndexType> & fnodes) :
-    facetype(ftype), facecells(fcells), facenodes(fnodes)
+                     std::vector<IndexType>& fcells,
+                     std::vector<IndexType>& fnodes)
+    : facetype(ftype)
+    , facecells(fcells)
+    , facenodes(fnodes)
   { }
 
   CellType facetype;
@@ -68,17 +68,16 @@ struct FaceTypeCellsNodes
   std::vector<IndexType> facenodes;
 };
 
-
 //------------------------------------------------------------------------------
-bool initFaces(Mesh * mesh,
-               IndexType & facecount,
-               IndexType *& f2c,
-               IndexType *& c2f,
-               IndexType *& c2n,
-               IndexType *& c2foffsets,
-               IndexType *& f2n,
-               IndexType *& f2noffsets,
-               CellType *& f2ntypes )
+bool initFaces(Mesh* mesh,
+               IndexType& facecount,
+               IndexType*& f2c,
+               IndexType*& c2f,
+               IndexType*& c2n,
+               IndexType*& c2foffsets,
+               IndexType*& f2n,
+               IndexType*& f2noffsets,
+               CellType*& f2ntypes)
 {
   bool success = true;
 
@@ -91,15 +90,15 @@ bool initFaces(Mesh * mesh,
   f2noffsets = nullptr;
   f2ntypes = nullptr;
 
-  using IDtoKeyType = std::unordered_map< IndexType, std::vector<IndexType> > ;
-  using FaceBuilderType = std::map< std::vector<IndexType>,
-                                    FaceTypeCellsNodes,
-                                    utilities::LexiComparator<IndexType> > ;
+  using IDtoKeyType = std::unordered_map<IndexType, std::vector<IndexType>>;
+  using FaceBuilderType = std::map<std::vector<IndexType>,
+                                   FaceTypeCellsNodes,
+                                   utilities::LexiComparator<IndexType>>;
   FaceBuilderType workface;
 
   // Iterate over each cell.
   const IndexType cellcount = mesh->getNumberOfCells();
-  for (int c = 0; c < cellcount; ++c)
+  for(int c = 0; c < cellcount; ++c)
   {
     // Step 1. For every cell, get the nodes.
     IndexType nodes[MAX_CELL_NODES];
@@ -108,7 +107,7 @@ bool initFaces(Mesh * mesh,
     const CellInfo thisCell = getCellInfo(celltype);
 
     int base = 0;
-    for (int f = 0; f < thisCell.num_faces; ++f)
+    for(int f = 0; f < thisCell.num_faces; ++f)
     {
       // Step 2. The cell nodes will be in "VTK Order," as specified by
       // https://www.vtk.org/wp-content/uploads/2015/04/file-formats.pdf.
@@ -120,8 +119,8 @@ bool initFaces(Mesh * mesh,
       // array whose value is a list of cell IDs.
       int num_face_nodes = thisCell.face_nodecount[f];
       std::vector<IndexType> inorder_facenodes(num_face_nodes);
-      const IndexType * face_node_offsets = thisCell.face_nodes + base;
-      for (int fn = 0; fn < num_face_nodes; ++fn)
+      const IndexType* face_node_offsets = thisCell.face_nodes + base;
+      for(int fn = 0; fn < num_face_nodes; ++fn)
       {
         inorder_facenodes[fn] = nodes[face_node_offsets[fn]];
       }
@@ -131,7 +130,7 @@ bool initFaces(Mesh * mesh,
       std::sort(sorted_facenodes.begin(), sorted_facenodes.end());
 
       FaceTypeCellsNodes cells_of_face;
-      if (workface.count(sorted_facenodes) > 0)
+      if(workface.count(sorted_facenodes) > 0)
       {
         cells_of_face = workface[sorted_facenodes];
       }
@@ -152,21 +151,21 @@ bool initFaces(Mesh * mesh,
   IndexType faceNodeTotal = 0;
   IDtoKeyType keys;
   f2c = new IndexType[2 * workface.size()];
-  for (FaceBuilderType::value_type v : workface)
+  for(FaceBuilderType::value_type v : workface)
   {
     FaceTypeCellsNodes theFace = v.second;
-    faceNodeTotal += static_cast< IndexType >( theFace.facenodes.size() );
-    int faceCellCount = static_cast< int >( theFace.facecells.size() );
-    IndexType * faceCells = theFace.facecells.data();
+    faceNodeTotal += static_cast<IndexType>(theFace.facenodes.size());
+    int faceCellCount = static_cast<int>(theFace.facecells.size());
+    IndexType* faceCells = theFace.facecells.data();
 
-    if (faceCellCount < 1 || faceCellCount > 2)
+    if(faceCellCount < 1 || faceCellCount > 2)
     {
       success = false;
     }
     else
     {
-      f2c[2*faceID] = faceCells[0];
-      f2c[2*faceID + 1] = (faceCellCount > 1? faceCells[1]: -1);
+      f2c[2 * faceID] = faceCells[0];
+      f2c[2 * faceID + 1] = (faceCellCount > 1 ? faceCells[1] : -1);
     }
 
     keys[faceID] = v.first;
@@ -176,9 +175,9 @@ bool initFaces(Mesh * mesh,
 
   // If we have any face with less than one or more than two incident cells,
   // clean up and return failure.  We won't do any more work here.
-  if (!success)
+  if(!success)
   {
-    delete [] f2c;
+    delete[] f2c;
     f2c = nullptr;
     return success;
   }
@@ -192,29 +191,28 @@ bool initFaces(Mesh * mesh,
   f2noffsets = new IndexType[facecount + 1];
   f2ntypes = new CellType[facecount];
   int faceNodeOffset = 0;
-  for (int fidx = 0; fidx < facecount; ++fidx)
+  for(int fidx = 0; fidx < facecount; ++fidx)
   {
     FaceTypeCellsNodes theFace = workface[keys[fidx]];
-    std::vector<IndexType> & faceNodes = theFace.facenodes;
+    std::vector<IndexType>& faceNodes = theFace.facenodes;
     std::copy(faceNodes.begin(), faceNodes.end(), f2n + faceNodeOffset);
     f2noffsets[fidx] = faceNodeOffset;
     f2ntypes[fidx] = theFace.facetype;
-    faceNodeOffset += static_cast< int >( faceNodes.size() );
+    faceNodeOffset += static_cast<int>(faceNodes.size());
   }
   f2noffsets[facecount] = faceNodeOffset;
 
   // Step 4. Now that we have face IDs, record cell-to-face relation.
-  typedef std::unordered_map< IndexType, std::vector<IndexType> >
-    CellFaceBuilderType;
+  typedef std::unordered_map<IndexType, std::vector<IndexType>> CellFaceBuilderType;
 
   CellFaceBuilderType cell_to_face;
   int cellFaceCount = 0;
-  for (int f = 0; f < facecount; ++f)
+  for(int f = 0; f < facecount; ++f)
   {
-    for (IndexType c : workface[keys[f]].facecells)
+    for(IndexType c : workface[keys[f]].facecells)
     {
       std::vector<IndexType> cell_faces;
-      if (cell_to_face.count(c) > 0)
+      if(cell_to_face.count(c) > 0)
       {
         cell_faces = cell_to_face[c];
       }
@@ -230,25 +228,25 @@ bool initFaces(Mesh * mesh,
   c2foffsets = new IndexType[cellcount + 1];
   cellFaceCount = 0;
 
-  for (IndexType cellID = 0; cellID < cellcount; ++cellID)
+  for(IndexType cellID = 0; cellID < cellcount; ++cellID)
   {
     // For the current cell ID, set its type and value offset
     //  cellTypes[cellID] = m_cell_connectivity->getIDType(cellID);
     c2foffsets[cellID] = cellFaceCount;
 
-    if (cell_to_face.count(cellID) > 0)
+    if(cell_to_face.count(cellID) > 0)
     {
       // If we have faces for the current cell (which we certainly
       // *SHOULD* have), copy them in.
-      std::vector<IndexType> & theCells = cell_to_face[cellID];
-      IndexType * faceIDs = theCells.data();
-      int thisCellFaceCount = static_cast< int >( theCells.size() );
+      std::vector<IndexType>& theCells = cell_to_face[cellID];
+      IndexType* faceIDs = theCells.data();
+      int thisCellFaceCount = static_cast<int>(theCells.size());
 
       // Copy in values
-      for (int f = 0; f < thisCellFaceCount; ++f)
+      for(int f = 0; f < thisCellFaceCount; ++f)
       {
         c2f[cellFaceCount + f] = faceIDs[f];
-        c2n[cellFaceCount + f] = otherSide(&f2c[2*faceIDs[f]], cellID);
+        c2n[cellFaceCount + f] = otherSide(&f2c[2 * faceIDs[f]], cellID);
       }
 
       // Maintain offset

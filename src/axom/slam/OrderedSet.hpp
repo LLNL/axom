@@ -39,8 +39,6 @@ namespace axom
 {
 namespace slam
 {
-
-
 /**
  * \class OrderedSet
  *
@@ -50,23 +48,21 @@ namespace slam
  * In an OrderedSet, the element at position pos can be defined as:
  *     static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
-template<
-  typename PosType             = slam::DefaultPositionType,
-  typename ElemType            = slam::DefaultElementType,
-  typename SizePolicy          = policies::RuntimeSize<PosType>,
-  typename OffsetPolicy        = policies::ZeroOffset<PosType>,
-  typename StridePolicy        = policies::StrideOne<PosType>,
-  typename IndirectionPolicy   = policies::NoIndirection<PosType, ElemType>,
-  typename SubsettingPolicy    = policies::NoSubset >
-struct OrderedSet : public Set<PosType,ElemType>,
-                           SizePolicy,
-                           OffsetPolicy,
-                           StridePolicy,
-                           IndirectionPolicy,
-                           SubsettingPolicy
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType,
+          typename SizePolicy = policies::RuntimeSize<PosType>,
+          typename OffsetPolicy = policies::ZeroOffset<PosType>,
+          typename StridePolicy = policies::StrideOne<PosType>,
+          typename IndirectionPolicy = policies::NoIndirection<PosType, ElemType>,
+          typename SubsettingPolicy = policies::NoSubset>
+struct OrderedSet : public Set<PosType, ElemType>,
+                    SizePolicy,
+                    OffsetPolicy,
+                    StridePolicy,
+                    IndirectionPolicy,
+                    SubsettingPolicy
 {
 public:
-
   using PositionType = PosType;
   using ElementType = ElemType;
 
@@ -83,28 +79,28 @@ public:
   struct SetBuilder;
 
   // types for OrderedSet iterator
-  template<typename T, bool C> class OrderedSetIterator;
+  template <typename T, bool C>
+  class OrderedSetIterator;
 
-  using const_iterator = OrderedSetIterator< ElementType, true>;
-  using const_iterator_pair = std::pair<const_iterator,const_iterator>;
+  using const_iterator = OrderedSetIterator<ElementType, true>;
+  using const_iterator_pair = std::pair<const_iterator, const_iterator>;
 
   using iterator = OrderedSetIterator<ElementType, false>;
-  using iterator_pair = std::pair<iterator,iterator>;
+  using iterator_pair = std::pair<iterator, iterator>;
 
 public:
-
-  OrderedSet(PositionType size    = SizePolicyType::DEFAULT_VALUE,
-             PositionType offset  = OffsetPolicyType::DEFAULT_VALUE,
-             PositionType stride  = StridePolicyType::DEFAULT_VALUE
-                                    // Note: constructor does not yet take an
-                                    // indirection type pointer...
-                                    // const Set* parentSet = &s_nullSet
+  OrderedSet(PositionType size = SizePolicyType::DEFAULT_VALUE,
+             PositionType offset = OffsetPolicyType::DEFAULT_VALUE,
+             PositionType stride = StridePolicyType::DEFAULT_VALUE
+             // Note: constructor does not yet take an
+             // indirection type pointer...
+             // const Set* parentSet = &s_nullSet
              )
     : SizePolicyType(size)
     , OffsetPolicyType(offset)
     , StridePolicyType(stride)
-    //, SubsettingPolicyType(parentSet)
-  {}
+  //, SubsettingPolicyType(parentSet)
+  { }
 
   OrderedSet(const SetBuilder& builder)
     : SizePolicyType(builder.m_size)
@@ -112,13 +108,12 @@ public:
     , StridePolicyType(builder.m_stride)
     , IndirectionPolicyType(builder.m_data)
     , SubsettingPolicyType(builder.m_parent)
-  {}
+  { }
 
   OrderedSet(const OrderedSet& oset) = default;
   OrderedSet& operator=(const OrderedSet& other) = default;
 
 public:
-
   /**
    * \class SetBuilder
    * \brief Helper class for constructing an ordered set.
@@ -135,25 +130,25 @@ public:
 
     SetBuilder& size(PositionType sz)
     {
-      m_size    = SizePolicyType(sz);
+      m_size = SizePolicyType(sz);
       return *this;
     }
 
     SetBuilder& offset(PositionType off)
     {
-      m_offset  = OffsetPolicyType(off);
+      m_offset = OffsetPolicyType(off);
       return *this;
     }
 
     SetBuilder& stride(PositionType str)
     {
-      m_stride  = StridePolicyType(str);
+      m_stride = StridePolicyType(str);
       return *this;
     }
 
     SetBuilder& data(DataType* bufPtr)
     {
-      m_data   = IndirectionPolicyType(bufPtr);
+      m_data = IndirectionPolicyType(bufPtr);
       return *this;
     }
 
@@ -174,7 +169,7 @@ public:
       return *this;
     }
 
-private:
+  private:
     SizePolicyType m_size;
     OffsetPolicyType m_offset;
     StridePolicyType m_stride;
@@ -197,41 +192,38 @@ private:
    * \note Use of a const template parameter with conditional member and pointer
    * operations based on ideas from https://stackoverflow.com/a/49425072
    */
-  template<typename T, bool Const>
+  template <typename T, bool Const>
   class OrderedSetIterator
-    : public IteratorBase< OrderedSetIterator<T, Const>, PositionType>
+    : public IteratorBase<OrderedSetIterator<T, Const>, PositionType>
   {
-public:
-
+  public:
     using iterator_category = std::random_access_iterator_tag;
     using value_type = T;
     using difference_type = PositionType;
 
-    using reference =
-            typename std::conditional<
-              Const,
-              typename OrderedSet::IndirectionPolicyType::ConstIndirectionResult,
-              typename OrderedSet::IndirectionPolicyType::IndirectionResult>::
-            type;
+    using reference = typename std::conditional<
+      Const,
+      typename OrderedSet::IndirectionPolicyType::ConstIndirectionResult,
+      typename OrderedSet::IndirectionPolicyType::IndirectionResult>::type;
 
     using pointer = typename std::conditional<Const, const T*, T*>::type;
 
-    using IterBase = IteratorBase<OrderedSetIterator<T, Const>, PositionType >;
+    using IterBase = IteratorBase<OrderedSetIterator<T, Const>, PositionType>;
 
     using IndirectionType = typename OrderedSet::IndirectionPolicyType;
     using StrideType = typename OrderedSet::StridePolicyType;
 
     using IterBase::m_pos;
 
-public:
-
+  public:
     /// \name Constructors, copying and assignment
     /// \{
     OrderedSetIterator() = default;
 
     OrderedSetIterator(PositionType pos, const OrderedSet& oSet)
-      : IterBase(pos), m_orderedSet(oSet) {}
-
+      : IterBase(pos)
+      , m_orderedSet(oSet)
+    { }
 
     OrderedSetIterator(const OrderedSetIterator& it) = default;
 
@@ -249,47 +241,45 @@ public:
     /// \{
 
     /// Indirection operator for non-const iterator
-    template<bool _Const = Const>
+    template <bool _Const = Const>
     typename std::enable_if<!_Const, reference>::type operator*()
     {
       return m_orderedSet.IndirectionType::indirection(m_pos);
     }
 
     /// Indirection operator for const iterator
-    template<bool _Const = Const>
+    template <bool _Const = Const>
     typename std::enable_if<_Const, reference>::type operator*() const
     {
       return m_orderedSet.IndirectionType::indirection(m_pos);
     }
 
     /// Structure dereference operator for non-const iterator
-    template<bool _Const = Const>
+    template <bool _Const = Const>
     typename std::enable_if<!_Const, pointer>::type operator->()
     {
       return &(m_orderedSet.IndirectionType::indirection(m_pos));
     }
 
     /// Structure dereference operator for const iterator
-    template<bool _Const = Const>
+    template <bool _Const = Const>
     typename std::enable_if<_Const, pointer>::type operator->() const
     {
       return &(m_orderedSet.IndirectionType::indirection(m_pos));
     }
 
     /// Subscript operator for non-const iterator
-    template<bool _Const = Const>
-    typename std::enable_if<!_Const, reference>::type
-    operator[](PositionType n)
+    template <bool _Const = Const>
+    typename std::enable_if<!_Const, reference>::type operator[](PositionType n)
     {
-      return *(*this+n);
+      return *(*this + n);
     }
 
     /// Subscript operator for const iterator
-    template<bool _Const = Const>
-    typename std::enable_if<_Const, reference>::type
-    operator[](PositionType n) const
+    template <bool _Const = Const>
+    typename std::enable_if<_Const, reference>::type operator[](PositionType n) const
     {
-      return *(*this+n);
+      return *(*this + n);
     }
 
     /// \}
@@ -298,88 +288,78 @@ public:
     /// \{
 
     /// Convert from iterator type to const_iterator type
-    template<typename U>
+    template <typename U>
     operator OrderedSetIterator<U, true>() const
     {
       return OrderedSetIterator<U, true>(this->m_pos, this->m_orderedSet);
     }
     /// \}
 
-    PositionType index() const
-    {
-      return m_pos;
-    }
-protected:
+    PositionType index() const { return m_pos; }
+
+  protected:
     /** Implementation of advance() as required by IteratorBase */
     void advance(PositionType n) { m_pos += n * stride(); }
 
-private:
+  private:
     inline const PositionType stride() const
     {
       return m_orderedSet.StrideType::stride();
     }
 
-private:
+  private:
     OrderedSet m_orderedSet;
   };
 
-public:     // Functions related to iteration
-
-  iterator begin()
-  {
-    return iterator( OffsetPolicyType::offset(), *this);
-  }
+public:  // Functions related to iteration
+  iterator begin() { return iterator(OffsetPolicyType::offset(), *this); }
 
   const_iterator begin() const
   {
-    return const_iterator( OffsetPolicyType::offset(), *this);
+    return const_iterator(OffsetPolicyType::offset(), *this);
   }
 
   iterator end()
   {
-    return iterator( SizePolicyType::size() * StridePolicyType::stride()
-                     + OffsetPolicyType::offset(), *this);
+    return iterator(SizePolicyType::size() * StridePolicyType::stride() +
+                      OffsetPolicyType::offset(),
+                    *this);
   }
 
   const_iterator end() const
   {
-    return const_iterator( SizePolicyType::size() * StridePolicyType::stride()
-                           + OffsetPolicyType::offset(), *this);
+    return const_iterator(SizePolicyType::size() * StridePolicyType::stride() +
+                            OffsetPolicyType::offset(),
+                          *this);
   }
 
   iterator_pair range() { return std::make_pair(begin(), end()); }
 
   const_iterator_pair range() const { return std::make_pair(begin(), end()); }
 
-
 public:
   /**
    * \brief Given a position in the Set, return a position in the larger index
    *  space
    */
-  inline typename IndirectionPolicy::ConstIndirectionResult
-  operator[](PositionType pos) const
+  inline typename IndirectionPolicy::ConstIndirectionResult operator[](
+    PositionType pos) const
   {
     verifyPositionImpl(pos);
-    return IndirectionPolicy::indirection( pos * StridePolicyType::stride()
-                                           + OffsetPolicyType::offset() );
+    return IndirectionPolicy::indirection(pos * StridePolicyType::stride() +
+                                          OffsetPolicyType::offset());
   }
 
-  inline typename IndirectionPolicy::IndirectionResult
-  operator[](PositionType pos)
+  inline typename IndirectionPolicy::IndirectionResult operator[](PositionType pos)
   {
     verifyPositionImpl(pos);
-    return IndirectionPolicy::indirection( pos * StridePolicyType::stride()
-                                           + OffsetPolicyType::offset() );
+    return IndirectionPolicy::indirection(pos * StridePolicyType::stride() +
+                                          OffsetPolicyType::offset());
   }
-  inline ElementType at(PositionType pos) const
-  {
-    return operator[](pos);
-  }
+  inline ElementType at(PositionType pos) const { return operator[](pos); }
 
-
-  inline PositionType size()  const { return SizePolicyType::size(); }
-  inline bool         empty() const { return SizePolicyType::empty(); }
+  inline PositionType size() const { return SizePolicyType::size(); }
+  inline bool empty() const { return SizePolicyType::empty(); }
 
   bool isValid(bool verboseOutput = false) const;
 
@@ -391,10 +371,7 @@ public:
    * An index pos is valid when \f$ 0 \le pos < size() \f$
    * \return true if the position is valid, false otherwise
    */
-  bool isValidIndex(PositionType pos) const
-  {
-    return pos >= 0 && pos < size();
-  }
+  bool isValidIndex(PositionType pos) const { return pos >= 0 && pos < size(); }
 
   /**
    * \brief returns a PositionSet over the set's positions
@@ -404,7 +381,6 @@ public:
   PositionSet positions() const { return PositionSet(size()); }
 
 private:
-
   inline void verifyPosition(PositionType pos) const
   {
     verifyPositionImpl(pos);
@@ -414,40 +390,41 @@ private:
     SLIC_ASSERT_MSG(
       isValidIndex(pos),
       "SLAM::OrderedSet -- requested out-of-range element at position "
-      << pos << ", but set only has " << size() << " elements." );
+        << pos << ", but set only has " << size() << " elements.");
   }
 
 private:
   /// NOTE: All data for OrderedSet is associated with parent policy classes
 };
 
-template<
-  typename PosType,
-  typename ElemType,
-  typename SizePolicy,
-  typename OffsetPolicy,
-  typename StridePolicy,
-  typename IndirectionPolicy,
-  typename SubsettingPolicy >
-bool OrderedSet<PosType, ElemType,
-                SizePolicy,OffsetPolicy, StridePolicy, IndirectionPolicy,
+template <typename PosType,
+          typename ElemType,
+          typename SizePolicy,
+          typename OffsetPolicy,
+          typename StridePolicy,
+          typename IndirectionPolicy,
+          typename SubsettingPolicy>
+bool OrderedSet<PosType,
+                ElemType,
+                SizePolicy,
+                OffsetPolicy,
+                StridePolicy,
+                IndirectionPolicy,
                 SubsettingPolicy>::isValid(bool verboseOutput) const
 {
-  bool bValid =  SizePolicyType::isValid(verboseOutput)
-                && OffsetPolicyType::isValid(verboseOutput)
-                && StridePolicyType::isValid(verboseOutput)
-                && IndirectionPolicyType::isValid(size(),
-                                                  OffsetPolicy::offset(),
-                                                  StridePolicy::stride(),
-                                                  verboseOutput)
-                && SubsettingPolicyType::isValid(begin(), end(), verboseOutput)
-  ;
+  bool bValid = SizePolicyType::isValid(verboseOutput) &&
+    OffsetPolicyType::isValid(verboseOutput) &&
+    StridePolicyType::isValid(verboseOutput) &&
+    IndirectionPolicyType::isValid(size(),
+                                   OffsetPolicy::offset(),
+                                   StridePolicy::stride(),
+                                   verboseOutput) &&
+    SubsettingPolicyType::isValid(begin(), end(), verboseOutput);
 
   return bValid;
 }
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_ORDERED_SET_H_
+#endif  //  SLAM_ORDERED_SET_H_

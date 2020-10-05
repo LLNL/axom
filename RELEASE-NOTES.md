@@ -7,9 +7,34 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Release date yyyy-mm-dd
+## Unreleased
 
 ### Added
+- Added the MFEMSidreDataCollection class for HDF5-format simulation data collection.  This
+  class was adapted from MFEM's SidreDataCollection and is enabled when Axom is built with MFEM
+  *and* the `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` CMake option is enabled.
+- Added `slic::setAbortFunction` to configure a custom callback when SLIC aborts.
+
+### Changed
+- The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
+  You can explicitly rewire using the static
+  `DataStore::setConduitSLICMessageHandlers()` method.
+- Inlet: Fixed `SchemaCreator` to an abstract class and added missing functions
+- Inlet: Added ability to access the `Reader` class from `Inlet` and Sol Lua state
+  from the `LuaReader` class
+
+
+## [Version 0.4.0] - Release date 2020-09-22
+
+### Added
+- Exposed the tolerance parameter `EPS` that is used to determine intersections between
+  triangles in `primal:intersect()` as an optional final parameter.
+- Added BVH spatial index option to the `mesh_tester` utility for calculating
+  triangle-triangle intersection.
+- Added `axom::execution_space< ExecSpace >::onDevice()` to check if execution
+  space is on device.
+- Added Axom macro `AXOM_SUPPRESS_HD_WARN` to silence host device compiler
+  warnings.
 - Added option to quest's `SignedDistance` class and C API to toggle whether
   the distance query computes the sign.
 - Added a `batched` option to quest's signed distance query example application.
@@ -19,8 +44,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   an input deck.
 - Added the ability to specify an [Umpire] allocator ID to use with the
   BVH. This allows the application to use a device allocator for the BVH and 
-  avoid use of UM on the GPU, which can hinder perfomrmance, or use a pool
-  allocator to mitigate the latencies associated with allocation/deallocation.
+  avoid use of Unified Memory (UM) on the GPU, which can hinder perfomrmance, 
+  or use a pool allocator to mitigate the latencies associated with allocation/deallocation.
   The allocator ID is specified as an optional argument to the BVH constructor.
 - Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
   annotations in Axom. Default is OFF.
@@ -47,14 +72,27 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   candidate BVH bins that intersect each bounding box.
 - Added an `axom-config.cmake` file to axom's installation to streamline incorporating axom
   into user applications. See `<axom-install>/examples/axom` for example usages.
+- Added [Sol] as a built-in TPL for fast and simple `C++` and `Lua` binding.
+  Sol is automatically enabled when `LUA_DIR` is found. 
+  The version of Sol used in this release is `v2.20.6`, which requires `C++14`.
 
 ### Removed
+- Removed the `AXOM_ENABLE_CUB` option, since `CUB` is no lonher used directly in
+  Axom code. Instead, we use `RAJA::stable_sort` with RAJA-v0.12.1 and fallback
+  to `std::stable_sort` with older versions of RAJA and when the code is built
+  without RAJA.
 
 ### Deprecated
 
 ### Changed
+- Updated Axom to support RAJA-v0.12.1 and Umpire-v4.01, but the code remains
+  backwards compatible with previous versions of RAJA and Umpire.
+- Transitioned Axom's code formatting tool from `Uncrustify` to [clang-format].
+  Axom's clang-format rules depend on clang 10.
+- Modified the command line interface for `mesh_tester` utility. Interface
+  now uses a *-m, --method* option to select the spatial index, and *-p, policy*
+  option now accepts a string or integer value.
 - Renamed the `AXOM_USE_MPI3`option to `AXOM_ENABLE_MPI3` for consistency.
-- Renamed the `AXOM_USE_CUB` option to `AXOM_ENABLE_CUB` for consistency.
 - Modified the API for the BVH to accomodate different query types. The queries are now
   more explicitly called `BVH::findPoints()` and `BVH::findRays()`.
 - Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
@@ -65,8 +103,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fortran API in slic module. `axom::slic::message` Level enums are changed
   from  *enum-name_enumerator* to *namespace_enumerator*.
   ex. `level_error` is now `message_error`.
+- Fortran derived-type constructors are now generic functions named afer the derived type.
+  `datastore_new` is now `SidreDataStore`
+  `iomanager_new` is now `IOManager`
 
 ### Fixed
+- Fixed a bug in `primal::intersect(Segment, BoundingBox)` and added regression tests.
+- Spin's octrees can now be used with 64-bit indexes. This allows octrees 
+  with up to 64 levels of resolution when using a 64-bit index type.
+- Resolved issue with `AXOM_USE_64BIT_INDEXTYPE` configurations. Axom can once again
+  be configured with 64-bit index types.
+- Fixed a triangle-triangle intersection case in primal that produced inconsistent results
+  depending on the order of the triangle's vertices.
 - Fixed issue in the parallel construction of the BVH on GPUs, due to incoherent
   L1 cache that could result in some data corruption in the BVH. The code now
   calls ``__threadfence_system()`` after the parent is computed and stored back
@@ -93,7 +141,15 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   ("zero-to-axom support on Windows")
 
 ### Known Bugs
-
+- Encountered a compiler bug on IBM LC platforms when using the IBM XL C/C++
+  compiler. The issue is manifested in the `generate_aabbs_and_centroids` method
+  in the `spin_bvh.cpp` unit test. It seems that the compiler does not handle
+  the lambda capture of the arrays correctly which leads to a segfault. A
+  workaround for the IBM XL compiler is provided.
+- There is a known bug in MVAPICH that prevents consecutive creation/deletion
+  of MPI windows. This was encountered on LC platforms when enabling shared
+  memory in the Signed Distance Query. See the corresponding 
+  [Github Issue](https://github.com/LLNL/axom/issues/257) for details.
 
 ## [Version 0.3.3] - Release date 2020-01-31
 
@@ -106,7 +162,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in third party library.
 
 ### Removed
-
+  
 ### Deprecated
 
 ### Changed
@@ -370,7 +426,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.3...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.4.0...develop
+[Version 0.4.0]: https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
 [Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
 [Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
@@ -380,3 +437,5 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
 [Umpire]: https://github.com/LLNL/Umpire
+[clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+[Sol]: https://github.com/ThePhD/sol2

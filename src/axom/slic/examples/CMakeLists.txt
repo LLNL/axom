@@ -8,6 +8,7 @@
 
 set(example_sources
     basic/cpplogger.cpp
+    basic/custom_abort_logger.cpp
     basic/logging.cpp
     multicode/driver.cpp
     )
@@ -52,4 +53,3 @@ if ( ENABLE_MPI )
         endif()
     endforeach()
 endif()
-

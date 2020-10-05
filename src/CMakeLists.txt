@@ -21,6 +21,8 @@ if (ENABLE_FORTRAN)
    enable_language(Fortran)
 endif()
 
+set(ENABLE_GMOCK ON CACHE STRING "")
+
 #------------------------------------------------------------------------------
 # Initialize BLT build system
 #------------------------------------------------------------------------------
@@ -51,7 +53,7 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     endif()
 
     set(ENABLE_ASTYLE      OFF CACHE BOOL "")
-    set(ENABLE_CLANGFORMAT OFF CACHE BOOL "")
+    set(ENABLE_UNCRUSTIFY  OFF CACHE BOOL "")
 endif()
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)

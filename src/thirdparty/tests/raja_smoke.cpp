@@ -7,52 +7,49 @@
 #include "axom/core/Macros.hpp"             // for AXOM_LAMBDA
 
 // RAJA includes
-#include "RAJA/RAJA.hpp"     // for RAJA
+#include "RAJA/RAJA.hpp"  // for RAJA
 
 // Google Test
-#include "gtest/gtest.h"     // for google test functions
+#include "gtest/gtest.h"  // for google test functions
 
 // C/C++ includes
-#include <iostream> // for std::cout
+#include <iostream>  // for std::cout
 
 //------------------------------------------------------------------------------
 // HELPER METHODS
 //------------------------------------------------------------------------------
 namespace
 {
-
-template< typename execution_policy >
-void raja_basic_usage_test( )
+template <typename execution_policy>
+void raja_basic_usage_test()
 {
   constexpr int N = 100;
-  int* a = axom::allocate< int >( N );
-  int* b = axom::allocate< int >( N );
-  int* c = axom::allocate< int >( N );
+  int* a = axom::allocate<int>(N);
+  int* b = axom::allocate<int>(N);
+  int* c = axom::allocate<int>(N);
 
   // initialize
-  RAJA::forall< execution_policy >( RAJA::RangeSegment( 0, N ),
-    AXOM_LAMBDA( int i ) {
-      a[ i ] = b[ i ] = 1;
-      c[ i ] = 0;
-    }
-  );
+  RAJA::forall<execution_policy>(
+    RAJA::RangeSegment(0, N),
+    AXOM_LAMBDA(int i) {
+      a[i] = b[i] = 1;
+      c[i] = 0;
+    });
 
   // add vectors
-  RAJA::forall< execution_policy >( RAJA::RangeSegment( 0, N ),
-    AXOM_LAMBDA( int i ) {
-      c[ i ] = a[ i ] + b[ i ];
-    }
-  );
+  RAJA::forall<execution_policy>(
+    RAJA::RangeSegment(0, N),
+    AXOM_LAMBDA(int i) { c[i] = a[i] + b[i]; });
 
   // check result in serial
-  for ( int i = 0 ; i < N ; ++i )
+  for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ( c[ i ], 2 );
+    EXPECT_EQ(c[i], 2);
   }
 
-  axom::deallocate( a );
-  axom::deallocate( b );
-  axom::deallocate( c );
+  axom::deallocate(a);
+  axom::deallocate(b);
+  axom::deallocate(c);
 }
 
 } /* end anonymous namespace */
@@ -60,34 +57,35 @@ void raja_basic_usage_test( )
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
-AXOM_CUDA_TEST( raja_smoke, basic_use )
+AXOM_CUDA_TEST(raja_smoke, basic_use)
 {
   std::cout << "Testing RAJA Sequential execution" << std::endl;
-  raja_basic_usage_test< RAJA::seq_exec >( );
+  raja_basic_usage_test<RAJA::seq_exec>();
 
 #if defined(AXOM_USE_OPENMP) && defined(RAJA_ENABLE_OPENMP)
   std::cout << "Testing RAJA OpenMP(CPU) execution" << std::endl;
-  raja_basic_usage_test< RAJA::omp_parallel_for_exec >( );
+  raja_basic_usage_test<RAJA::omp_parallel_for_exec>();
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA) && \
+  defined(AXOM_USE_UMPIRE)
   const int prev_allocator = axom::getDefaultAllocatorID();
   const int UnifiedAllocatorID =
-          axom::getUmpireResourceAllocatorID( umpire::resource::Unified );
-  axom::setDefaultAllocator( UnifiedAllocatorID );
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  axom::setDefaultAllocator(UnifiedAllocatorID);
 
   std::cout << "Testing RAJA CUDA execution" << std::endl;
   constexpr int BLOCKSIZE = 256;
-  raja_basic_usage_test< RAJA::cuda_exec< BLOCKSIZE > >( );
+  raja_basic_usage_test<RAJA::cuda_exec<BLOCKSIZE>>();
 
-  axom::setDefaultAllocator( prev_allocator );
+  axom::setDefaultAllocator(prev_allocator);
 #endif
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-  int result = RUN_ALL_TESTS( );
-  return( result );
+  int result = RUN_ALL_TESTS();
+  return (result);
 }

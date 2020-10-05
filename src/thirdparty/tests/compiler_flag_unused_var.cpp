@@ -10,7 +10,6 @@
  * build variable.
  */
 
-
 int main()
 {
   int x;

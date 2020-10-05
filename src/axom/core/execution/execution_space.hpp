@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef AXOM_EXECUTIONSPACE_HPP_
 #define AXOM_EXECUTIONSPACE_HPP_
 
@@ -61,7 +60,6 @@
 
 namespace axom
 {
-
 /*!
  * \brief The execution_space is a traits class that binds the execution
  *  space to a corresponding RAJA execution policies and default memory
@@ -72,34 +70,33 @@ namespace axom
  * \note This class is specialized for each execution space.
  *
  */
-template < typename ExecSpace >
+template <typename ExecSpace>
 struct execution_space
 {
-  using loop_policy   = void;
+  using loop_policy = void;
 
   using reduce_policy = void;
   using atomic_policy = void;
-  using sync_policy   = void;
+  using sync_policy = void;
 
   static constexpr bool async() noexcept { return false; };
   static constexpr bool valid() noexcept { return false; };
+  static constexpr bool onDevice() noexcept { return false; };
   static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; };
   static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; };
 };
 
 } /* namespace axom */
 
-
 // execution_space traits specialization
 #include "axom/core/execution/internal/seq_exec.hpp"
 
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-#include "axom/core/execution/internal/omp_exec.hpp"
+  #include "axom/core/execution/internal/omp_exec.hpp"
 #endif
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-#include "axom/core/execution/internal/cuda_exec.hpp"
+  #include "axom/core/execution/internal/cuda_exec.hpp"
 #endif
-
 
 #endif /* AXOM_SPIN_EXECUTIONSPACE_HPP_ */

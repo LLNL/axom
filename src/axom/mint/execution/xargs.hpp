@@ -21,7 +21,6 @@ namespace axom
 {
 namespace mint
 {
-
 namespace xargs
 {
 /*!
@@ -30,7 +29,8 @@ namespace xargs
  * \note This is the default argument passed to the lambda expression and
  *  does not need to be specified explicitly.
  */
-struct index { };
+struct index
+{ };
 
 /*!
  * \brief Indicates that the lambda expression takes the corresponding
@@ -39,7 +39,8 @@ struct index { };
  * \note This option can be used for node and/or cell loop traversals on
  *  2D Structured meshes.
  */
-struct ij { };
+struct ij
+{ };
 
 /*!
  * \brief Indicates that the lambda expression takes the corresponding IJK
@@ -48,7 +49,8 @@ struct ij { };
  * \note This option can be used for node and/or cell loop traversals on
  *  3D Structured meshes.
  */
-struct ijk { };
+struct ijk
+{ };
 
 /*!
  * \brief Indicates that the lambda expression takes the corresponding X
@@ -56,7 +58,8 @@ struct ijk { };
  *
  * \note This option can be be use for node mesh traversals with any 1D mesh.
  */
-struct x {};
+struct x
+{ };
 
 /*!
  * \brief Indicates that the lambda expression takes the corresponding X,Y,
@@ -64,7 +67,8 @@ struct x {};
  *
  * \note This option can be be used for node mesh traversals with any 2D mesh.
  */
-struct xy { };
+struct xy
+{ };
 
 /*!
  * \brief Indicates that the lambda expression takes the corresponding X,Y,Z
@@ -72,7 +76,8 @@ struct xy { };
  *
  * \note This option can be used for node mesh traversals with any 3D mesh.
  */
-struct xyz { };
+struct xyz
+{ };
 
 /*!
  * \brief Indicates that the lambda expression also takes the node
@@ -81,7 +86,8 @@ struct xyz { };
  *
  * \note This option can be used for cell/face mesh traversals with any mesh.
  */
-struct nodeids { };
+struct nodeids
+{ };
 
 /*!
  * \brief Indicates that the lambda expression also takes a matrix of the nodal
@@ -90,7 +96,8 @@ struct nodeids { };
  *
  * \note This option can be used for cell/face mesh traversals with any mesh.
  */
-struct coords { };
+struct coords
+{ };
 
 /*!
  * \brief Indicates that the lambda expression also takes the face
@@ -99,7 +106,8 @@ struct coords { };
  *
  * \note This option can be used for cell mesh traversals with any mesh.
  */
-struct faceids { };
+struct faceids
+{ };
 
 /*!
  * \brief Indicates that the lambda expression also takes the cell
@@ -108,90 +116,90 @@ struct faceids { };
  *
  * \note This option can be used for face mesh traversals with any mesh.
  */
-struct cellids { };
+struct cellids
+{ };
 
 } /* namespace xargs */
 
 /*!
  * \brief Traits class used for compile-time checking of xargs types.
  */
-template < typename ArgType >
+template <typename ArgType>
 struct xargs_traits
 {
   static constexpr bool valid() { return false; };
   static constexpr char* name() { return (char*)""; };
 };
 
-template < >
-struct xargs_traits< xargs::index >
+template <>
+struct xargs_traits<xargs::index>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::index"); };
 };
 
-template < >
-struct xargs_traits< xargs::ij >
+template <>
+struct xargs_traits<xargs::ij>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::ij"); };
 };
 
-template < >
-struct xargs_traits< xargs::ijk >
+template <>
+struct xargs_traits<xargs::ijk>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::ijk"); };
 };
 
-template < >
-struct xargs_traits< xargs::x >
+template <>
+struct xargs_traits<xargs::x>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::x"); };
 };
 
-template < >
-struct xargs_traits< xargs::xy >
+template <>
+struct xargs_traits<xargs::xy>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::xy"); };
 };
 
-template < >
-struct xargs_traits< xargs::xyz >
+template <>
+struct xargs_traits<xargs::xyz>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::xyz"); };
 };
 
-template < >
-struct xargs_traits< xargs::nodeids >
+template <>
+struct xargs_traits<xargs::nodeids>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::nodeids"); };
 };
 
-template < >
-struct xargs_traits< xargs::coords >
+template <>
+struct xargs_traits<xargs::coords>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::coords"); };
 };
 
-template < >
-struct xargs_traits< xargs::faceids >
+template <>
+struct xargs_traits<xargs::faceids>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::faceids"); };
 };
 
-template < >
-struct xargs_traits< xargs::cellids >
+template <>
+struct xargs_traits<xargs::cellids>
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::cellids"); };
 };
-
 
 } /* namespace mint */
 } /* namespace axom */

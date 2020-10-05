@@ -1,4 +1,4 @@
--- Basic example of a simulation Input Deck
+-- Basic example of a simulation Input File
 thermal_solver={}
 thermal_solver.mesh = {
  filename = "/data/star.mesh",

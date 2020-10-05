@@ -213,7 +213,7 @@ declarations:
   - decl: View *createView( const std::string& path,
                             TypeID type,
                             int ndims,
-                            IndexType * shape+dimension)
+                            const IndexType * shape+rank(1))
     format:
       function_suffix: _from_shape
     C_error_pattern: C_null_to_error_capsule
@@ -246,7 +246,7 @@ declarations:
   - decl: View *createView( const std::string& path,
                             TypeID type,
                             int ndims,
-                            IndexType * shape+dimension,
+                            const IndexType * shape+rank(1),
                             Buffer * buff)
     format:
       function_suffix: _from_shape_and_buffer
@@ -278,7 +278,7 @@ declarations:
   - decl: View *createView( const std::string& path,
                             TypeID type,
                             int ndims,
-                            IndexType * shape+dimension,
+                            const IndexType * shape+rank(1),
                             void * external_ptr)
     format:
       function_suffix: _from_shape_external
@@ -302,7 +302,7 @@ declarations:
   - decl: View *createViewAndAllocate( const std::string& path,
                                        TypeID type,
                                        int ndims,
-                                       IndexType *shape+dimension)
+                                       const IndexType *shape+rank(1))
     format:
       function_suffix: _shape
     C_error_pattern: C_null_to_error_capsule
@@ -531,7 +531,7 @@ declarations:
   - decl: size_t getOffset() const
   - decl: size_t getStride() const
   - decl: int getNumDimensions() const
-  - decl: int getShape(int ndims, IndexType * shape+dimension+intent(OUT) ) const
+  - decl: int getShape(int ndims, IndexType * shape+rank(1)+intent(OUT) ) const
 #  - decl: const Schema& getSchema() const
 #  - decl: Node& getNode()
 #  - decl: const Node& getNode() const
@@ -584,7 +584,7 @@ declarations:
 
   - decl: View* attachBuffer(TypeID type,
                              int ndims,
-                             IndexType * shape+dimension,
+                             const IndexType * shape+rank(1),
                              Buffer * buff)
     return_this: True
     format:
@@ -614,7 +614,7 @@ declarations:
       -  _type_nelems_offset_stride
     return_this: True
 
-  - decl: View * apply( TypeID type, int ndims, IndexType * shape+dimension )
+  - decl: View * apply( TypeID type, int ndims, const IndexType * shape+rank(1) )
     format:
       function_suffix: _type_shape
     return_this: True
@@ -652,7 +652,7 @@ declarations:
 
   - decl: View * setExternalDataPtr(TypeID type,
                                     int ndims,
-                                    IndexType * shape+dimension,
+                                    const IndexType * shape+rank(1),
                                     void * external_ptr)
     return_this: True
     format:

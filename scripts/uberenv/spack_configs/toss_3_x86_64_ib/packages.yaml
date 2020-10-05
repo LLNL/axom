@@ -142,7 +142,7 @@ packages:
       python: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.7
     buildable: False
   py-shroud:
-    version: [0.11.0]
+    version: [0.12.2]
     paths:
       py-shroud: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.7
     buildable: False

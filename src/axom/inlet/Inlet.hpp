@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "axom/inlet/SchemaCreator.hpp"
 #include "axom/inlet/Table.hpp"
@@ -32,13 +33,12 @@ namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class Inlet
  *
  * \brief This class is the main access point for all Inlet operations from
- *        from defining the schema of the users input deck to getting the values
+ *        from defining the schema of the users input file to getting the values
  *        out of the Sidre DataStore.
  *
  * \see Table Field
@@ -54,18 +54,21 @@ public:
    * Creates an Inlet class that can then be used with the given Reader and will
    * store data under the given Sidre Group.
    *
-   * \param [in] reader Shared pointer to the input deck Reader class.
+   * \param [in] reader Shared pointer to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether documentation generation
    * is enabled. This also toggles the storing of documentation-specific information.
    *****************************************************************************
    */
   Inlet(std::shared_ptr<Reader> reader,
-        axom::sidre::Group* sidreRootGroup, bool docEnabled = true) :
-    m_reader(reader),
-    m_sidreRootGroup(sidreRootGroup),
-    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled)),
-    m_docEnabled(docEnabled) {}
+        axom::sidre::Group* sidreRootGroup,
+        bool docEnabled = true)
+    : m_reader(reader)
+    , m_sidreRootGroup(sidreRootGroup)
+    , m_globalTable(
+        std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled))
+    , m_docEnabled(docEnabled)
+  { }
 
   virtual ~Inlet() = default;
 
@@ -73,7 +76,7 @@ public:
    *****************************************************************************
    * \brief Returns the shared pointer to the Reader class.
    *
-   * Provides access to the Reader class that is used to access the input deck.
+   * Provides access to the Reader class that is used to access the input file.
    *
    * \return Shared pointer to this instances' Reader class
    *****************************************************************************
@@ -93,19 +96,19 @@ public:
   axom::sidre::Group* sidreGroup() { return m_sidreRootGroup; };
 
   //
-  // Functions that define the input deck schema
+  // Functions that define the input file schema
   //
 
   /*!
    *****************************************************************************
-   * \brief Add a Table to the input deck schema.
+   * \brief Add a Table to the input file schema.
    *
-   * Adds a Table to the input deck schema. Tables hold a varying amount Fields
+   * Adds a Table to the input file schema. Tables hold a varying amount Fields
    * defined by the user.  By default, it is not required unless marked with
    * Table::required(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Table
@@ -116,14 +119,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Boolean Field to the input deck schema.
+   * \brief Add a Boolean Field to the input file schema.
    *
-   * Adds a Boolean Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Boolean Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -134,14 +137,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Double Field to the input deck schema.
+   * \brief Add a Double Field to the input file schema.
    *
-   * Adds a Double Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Double Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -152,14 +155,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Integer Field to the input deck schema.
+   * \brief Add a Integer Field to the input file schema.
    *
-   * Adds a Integer Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Integer Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -170,14 +173,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a String Field to the input deck schema.
+   * \brief Add a String Field to the input file schema.
    *
-   * Adds a String Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a String Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Field
@@ -195,7 +198,7 @@ public:
    * \brief Gets a Boolean value out of the Datastore.
    *
    * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input deck and will be indicted by the return
+   * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -211,7 +214,7 @@ public:
    * \brief Gets a Double value out of the Datastore.
    *
    * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input deck and will be indicted by the return
+   * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -227,7 +230,7 @@ public:
    * \brief Gets a Integer value out of the Datastore.
    *
    * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input deck and will be indicted by the return
+   * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -243,7 +246,7 @@ public:
    * \brief Gets a String value out of the Datastore.
    *
    * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input deck and will be indicted by the return
+   * been actually present in the input file and will be indicted by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -269,9 +272,9 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Writes input deck documentation.
+   * \brief Writes input file documentation.
    *
-   * This writes the input deck's documentation through the registered DocWriter.
+   * This writes the input file's documentation through the registered DocWriter.
    *
    *****************************************************************************
    */
@@ -285,13 +288,217 @@ public:
    * This recursively checks the correctness of each Field and Table in the Sidre
    * Group: ensuring that required Fields are specified, each Field's value 
    * and default value are within the specified range or are equal to a valid 
-   * value, and types are consistent.
+   * value, and types are consistent. Also ensures that the registered verification
+   * functions hold true.
    * 
    * \return true if contents are correct and false if not.
    *
    *****************************************************************************
    */
-  bool verify(); 
+  bool verify();
+
+  /*!
+   *****************************************************************************
+   * \return The global Table.
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> getGlobalTable() { return m_globalTable; }
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Table.
+   * 
+   * \param [in] The string indicating the target name of the Table to be searched for.
+   * 
+   * \return The Table matching the target name. If no such Table is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> getTable(const std::string& name)
+  {
+    return m_globalTable->getTable(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Field.
+   * 
+   * \param [in] The string indicating the target name of the Field to be searched for.
+   * 
+   * \return The child Field matching the target name. If no such Field is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> getField(const std::string& name)
+  {
+    return m_globalTable->getField(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Table with the given name is present in Inlet.
+   *
+   * \return Boolean value indicating whether this Inlet contains the Table.
+   *****************************************************************************
+   */
+  bool hasTable(const std::string& name)
+  {
+    return m_globalTable->hasTable(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Field with the given name is present in Inlet.
+   *
+   * \return Boolean value indicating whether this Inlet contains the Field.
+   *****************************************************************************
+   */
+  bool hasField(const std::string& name)
+  {
+    return m_globalTable->hasField(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Field names to the child Field pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields()
+  {
+    return m_globalTable->getChildFields();
+  }
+
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Table names to the child Table pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables()
+  {
+    return m_globalTable->getChildTables();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Boolean Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addBoolArray(const std::string& name,
+                                      const std::string& description = "")
+  {
+    return m_globalTable->addBoolArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Integer Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addIntArray(const std::string& name,
+                                     const std::string& description = "")
+  {
+    return m_globalTable->addIntArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Double Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addDoubleArray(const std::string& name,
+                                        const std::string& description = "")
+  {
+    return m_globalTable->addDoubleArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of String Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addStringArray(const std::string& name,
+                                        const std::string& description = "")
+  {
+    return m_globalTable->addStringArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a boolean array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getBoolArray(std::unordered_map<int, bool>& map)
+  {
+    return m_globalTable->getBoolArray(map);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a int array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getIntArray(std::unordered_map<int, int>& map)
+  {
+    return m_globalTable->getIntArray(map);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a double array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getDoubleArray(std::unordered_map<int, double>& map)
+  {
+    return m_globalTable->getDoubleArray(map);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a string array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getStringArray(std::unordered_map<int, std::string>& map)
+  {
+    return m_globalTable->getStringArray(map);
+  }
 
   // TODO add update value functions
 private:
@@ -341,7 +548,7 @@ private:
    */
   bool verifyDefaultValue(axom::sidre::Group* sidreGroup);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Checks if the given value is within the range.
    * 
@@ -390,8 +597,7 @@ private:
    *****************************************************************************
    */
   bool searchValidValues(axom::sidre::Group* sidreGroup, double value);
-  
-  
+
   /*!
    *****************************************************************************
    * \brief Checks if the given value is found in the list of valid values.
@@ -410,12 +616,11 @@ private:
   std::shared_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   std::shared_ptr<Table> m_globalTable;
-
   std::shared_ptr<DocWriter> m_docWriter;
-  bool m_docEnabled = false;
+  bool m_docEnabled;
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif

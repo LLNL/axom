@@ -13,7 +13,7 @@ message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
 ## Add a definition to the generated config file for each library dependency
 ## (optional and built-in) that we might need to know about in the code. We
 ## check for vars of the form <DEP>_FOUND or ENABLE_<DEP>
-set(TPL_DEPS CLI11 CONDUIT CUDA FMT HDF5 LUA MFEM MPI OPENMP RAJA SCR SPARSEHASH UMPIRE )
+set(TPL_DEPS CLI11 CONDUIT CUDA FMT HDF5 LUA MFEM MPI OPENMP RAJA SCR SOL SPARSEHASH UMPIRE )
 foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
@@ -38,7 +38,7 @@ endforeach()
 ## Check for options of the form AXOM_ENABLE_<OPTION> and sets
 ## a corresponding AXOM_USE_<OPTION> accordingly to use when generating
 ## the axom/config.hpp
-set(OPTIONS ANNOTATIONS CUB MPI3)
+set(OPTIONS ANNOTATIONS MPI3)
 foreach(option ${OPTIONS})
     if( AXOM_ENABLE_${option} )
       set(AXOM_USE_${option} TRUE)

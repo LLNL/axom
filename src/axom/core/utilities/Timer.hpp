@@ -23,7 +23,6 @@ namespace axom
 {
 namespace utilities
 {
-
 /*!
  * \brief A simple Timer class to measure execution time.
  *
@@ -61,14 +60,13 @@ namespace utilities
 class Timer
 {
 private:
-  using ClockType     = std::chrono::high_resolution_clock;
-  using TimeStruct    = std::chrono::time_point<ClockType>;
-  using TimeDiff      = std::chrono::duration<double>;
+  using ClockType = std::chrono::high_resolution_clock;
+  using TimeStruct = std::chrono::time_point<ClockType>;
+  using TimeDiff = std::chrono::duration<double>;
   using MilliTimeDiff = std::chrono::duration<double, std::milli>;
   using MicroTimeDiff = std::chrono::duration<double, std::micro>;
 
 public:
-
   /*!
    * \brief Default constructor.
    * \param startRunning Indicates whether to start the timer
@@ -76,19 +74,26 @@ public:
    */
   Timer(bool startRunning = false) : m_running(startRunning)
   {
-    if(m_running)
-      start();
+    if(m_running) start();
   }
 
   /*!
    * \brief Starts the timer.Sets the start time of this Timer instance.
    */
-  void start() { m_running = true; m_startTime = ClockType::now(); }
+  void start()
+  {
+    m_running = true;
+    m_startTime = ClockType::now();
+  }
 
   /*!
    * \brief Stops the timer. Sets the end time of this Timer instance.
    */
-  void stop() { m_stopTime = ClockType::now(); m_running = false; }
+  void stop()
+  {
+    m_stopTime = ClockType::now();
+    m_running = false;
+  }
 
   /*!
    * \brief Returns the elapsed time in seconds.
@@ -102,8 +107,7 @@ public:
    */
   double elapsedTimeInSec()
   {
-    if(m_running)
-      stop();
+    if(m_running) stop();
     return clockDiff().count();
   }
 
@@ -113,9 +117,8 @@ public:
    */
   double elapsedTimeInMilliSec()
   {
-    if(m_running)
-      stop();
-    return std::chrono::duration_cast< MilliTimeDiff >( clockDiff() ).count();
+    if(m_running) stop();
+    return std::chrono::duration_cast<MilliTimeDiff>(clockDiff()).count();
   }
 
   /*!
@@ -124,19 +127,21 @@ public:
    */
   double elapsedTimeInMicroSec()
   {
-    if(m_running)
-      stop();
-    return std::chrono::duration_cast< MicroTimeDiff >( clockDiff() ).count();
+    if(m_running) stop();
+    return std::chrono::duration_cast<MicroTimeDiff>(clockDiff()).count();
   }
 
   /*!
    * \brief Resets the timer.
    * \post this->elapsed()==0.0
    */
-  void reset() { m_running = false; m_startTime = m_stopTime = TimeStruct(); }
+  void reset()
+  {
+    m_running = false;
+    m_startTime = m_stopTime = TimeStruct();
+  }
 
 private:
-
   /*! \brief Computes the difference between start() and stop() */
   TimeDiff clockDiff() const { return m_stopTime - m_startTime; }
 
@@ -145,7 +150,7 @@ private:
   bool m_running;
 };
 
-} // namespace utilities
-} // namespace axom
+}  // namespace utilities
+}  // namespace axom
 
-#endif // TIMER_HPP_
+#endif  // TIMER_HPP_

@@ -25,7 +25,6 @@ namespace axom
 {
 namespace numerics
 {
-
 /*!
  * \brief Find the real root for a linear equation of form \f$ ax + b = 0 \f$.
  *
@@ -42,7 +41,7 @@ namespace numerics
  * \pre coeff points to an array of length at least 2.
  * \pre roots points to an array of length at least 1.
  */
-int solve_linear( const double* coeff, double* roots, int& numRoots );
+int solve_linear(const double* coeff, double* roots, int& numRoots);
 
 /*!
  * \brief For a quadratic equation of the form \f$ ax^2 + bx + c = 0 \f$,
@@ -61,7 +60,7 @@ int solve_linear( const double* coeff, double* roots, int& numRoots );
  * \pre coeff points to an array of length at least 3.
  * \pre roots points to an array of length at least 2.
  */
-int solve_quadratic( const double* coeff, double* roots, int& numRoots );
+int solve_quadratic(const double* coeff, double* roots, int& numRoots);
 
 /*!
  * \brief For a cubic equation of the form \f$ ax^3 + bx^2 + cx + d = 0 \f$,
@@ -114,9 +113,9 @@ int solve_quadratic( const double* coeff, double* roots, int& numRoots );
  * \pre coeff points to an array of length at least 4.
  * \pre roots points to an array of length at least 3.
  */
-int solve_cubic( const double* coeff,  double* roots, int &numRoots );
+int solve_cubic(const double* coeff, double* roots, int& numRoots);
 
 } /* end namespace numerics */
 } /* end namespace axom */
 
-#endif // AXOM_NUMERICS_POLY_SOLVE_HPP_
+#endif  // AXOM_NUMERICS_POLY_SOLVE_HPP_

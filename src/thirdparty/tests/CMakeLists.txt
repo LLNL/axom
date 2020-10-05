@@ -37,11 +37,8 @@ if ( RAJA_FOUND )
   set( raja_smoke_dependencies RAJA gtest )
 
   blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ENABLE_OPENMP)
-
   blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND)
-
   blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA)
-
   blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
 
   blt_add_executable( NAME raja_smoke_test
@@ -59,10 +56,15 @@ endif()
 # Smoke test for hdf5 third party library
 #------------------------------------------------------------------------------
 if( HDF5_FOUND)
+
+    set( hdf5_smoke_dependencies hdf5 gtest )
+
+    blt_list_append( TO hdf5_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
+
     blt_add_executable(NAME hdf5_smoke_test
                        SOURCES hdf5_smoke.cpp
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON hdf5 gtest
+                       DEPENDS_ON ${hdf5_smoke_dependencies}
                        FOLDER axom/thirdparty/tests )
 
     blt_add_test(NAME hdf5_smoke
@@ -157,6 +159,22 @@ if (SPARSEHASH_FOUND)
 
   blt_add_test(NAME sparsehash_smoke
              COMMAND sparsehash_smoke_test)
+endif()
+
+#------------------------------------------------------------------------------
+# Smoke test for SOL third party library
+#------------------------------------------------------------------------------
+
+if (SOL_FOUND)
+    blt_add_executable(
+        NAME       sol_smoke_test
+        SOURCES    sol_smoke.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON sol lua gtest
+        FOLDER     axom/thirdparty/tests )
+
+    blt_add_test(NAME    sol_smoke
+                 COMMAND sol_smoke_test)
 endif()
 
 #------------------------------------------------------------------------------

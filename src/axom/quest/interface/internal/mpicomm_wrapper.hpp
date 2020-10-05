@@ -6,7 +6,7 @@
 #ifndef QUEST_MPICOMM_WRAPPER_HPP_
 #define QUEST_MPICOMM_WRAPPER_HPP_
 
-#include "axom/config.hpp" // for Axom compile-time definitions
+#include "axom/config.hpp"  // for Axom compile-time definitions
 
 /*!
  * \file
