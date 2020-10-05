@@ -386,21 +386,49 @@ OpPtr parseSlice(const conduit::Node &node, Dimensions dimensions) {
 }
 
 /**
+ * Parse an operator specified via the "ref" command.
+ *
+ * \param node the node from which to read the operator
+ * \param namedOperators a map of named operators from which to get
+ * referenced operators
+ * \return the created operator
+ */
+OpPtr parseRef(const conduit::Node &node,
+        const NamedOperatorMap &namedOperators) {
+    verifyObjectFields(node, "ref", {}, {});
+    std::string const &operatorName = node["ref"].as_string();
+    auto opIter = namedOperators.find(operatorName);
+    if (opIter == namedOperators.end()) {
+        std::string message = "No operator named '";
+        message += operatorName;
+        message += '\'';
+        throw std::invalid_argument(message);
+    }
+    return opIter->second;
+}
+
+
+/**
  * Parse a single operator
  *
  * \param node the node from which to parse the operator
  * \param dimensions the expected number of dimensions
+ * \param namedOperators a map of named operators from which to get
+ * referenced operators
  * \return the created operator
  */
-OpPtr parseSingleOperator(
-        const conduit::Node &node, Dimensions dimensions) {
+OpPtr parseSingleOperator(const conduit::Node &node, Dimensions dimensions,
+        const NamedOperatorMap &namedOperators) {
 
     std::unordered_map<std::string, OperatorParser> parsers{
             {"translate", parseTranslate},
             {"rotate", parseRotate},
             {"scale", parseScale},
             {"matrix", parseMatrix},
-            {"slice", parseSlice}
+            {"slice", parseSlice},
+            {"ref", [&namedOperators](const conduit::Node &node, Dimensions) {
+                return parseRef(node, namedOperators);
+            }}
     };
 
     for (auto &entry : parsers) {
@@ -417,15 +445,37 @@ OpPtr parseSingleOperator(
 }
 
 std::shared_ptr<const GeometryOperator> parseGeometryOperators(
-        const conduit::Node &node, Dimensions initialDimensions) {
+        const conduit::Node &node, Dimensions initialDimensions,
+        const NamedOperatorMap &namedOperators) {
     auto composite = std::make_shared<CompositeOperator>();
     Dimensions currentDimensions = initialDimensions;
     for (auto iter = node.children(); iter.has_next();) {
-        auto op = parseSingleOperator(iter.next(), currentDimensions);
+        auto op = parseSingleOperator(iter.next(), currentDimensions,
+                namedOperators);
         composite->addOperator(op);
         currentDimensions = composite->endDims();
     }
     return composite;
+}
+
+NamedOperatorMap parseNamedGeometryOperators(const conduit::Node &node,
+        Dimensions initialDimensions) {
+    NamedOperatorMap namedOperators;
+
+    for (auto iter = node.children(); iter.has_next();) {
+        auto &namedOperator = iter.next();
+        std::string name = namedOperator["name"].as_string();
+
+        Dimensions dimensions = initialDimensions;
+        if (namedOperator.has_child("initial_dimensions")) {
+            dimensions = toDimensions(namedOperator["initial_dimensions"]);
+        }
+
+        auto op = parseGeometryOperators(namedOperator["value"],
+                dimensions, namedOperators);
+        namedOperators.insert({name, op});
+    }
+    return namedOperators;
 }
 
 }}}

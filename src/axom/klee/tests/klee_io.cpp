@@ -167,4 +167,34 @@ TEST(IOTest, readShapeSet_differentDimensions) {
     EXPECT_TRUE(slice);
 }
 
+TEST(IOTest, readShapeSet_namedGeometryOperators) {
+    auto shapeSet = readShapeSetFromString(R"(
+      dimensions: 2
+
+      shapes:
+        - name: wheel
+          material: steel
+          geometry:
+            format: test_format
+            path: path/to/file.format
+            operators:
+              - ref: my_operation
+
+      named_operators:
+        - name: my_operation
+          value:
+            - rotate: 90
+            - translate: [10, 20]
+    )");
+    auto &shapes = shapeSet.getShapes();
+    ASSERT_EQ(1u, shapes.size());
+    auto &shape = shapes[0];
+    auto &geometryOperator = shape.getGeometry().getGeometryOperator();
+    ASSERT_TRUE(geometryOperator);
+    auto composite = std::dynamic_pointer_cast<const CompositeOperator>(
+            geometryOperator);
+    ASSERT_TRUE(composite);
+    EXPECT_EQ(1u, composite->getOperators().size());
+}
+
 }}}
