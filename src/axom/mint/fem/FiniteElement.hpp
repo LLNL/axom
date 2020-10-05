@@ -6,19 +6,18 @@
 #ifndef MINT_FINITEELEMENT_HPP_
 #define MINT_FINITEELEMENT_HPP_
 
-#include "axom/core/Macros.hpp" // for disable copy/assignment macros
-#include "axom/core/Types.hpp"  // for nullptr definition
+#include "axom/core/Macros.hpp"  // for disable copy/assignment macros
+#include "axom/core/Types.hpp"   // for nullptr definition
 
-#include "axom/core/numerics/Matrix.hpp" // for Matrix definition
+#include "axom/core/numerics/Matrix.hpp"  // for Matrix definition
 
 #include "axom/mint/config.hpp"       // for axom::IndexType
-#include "axom/mint/fem/FEBasis.hpp"      // for FEBasis traits class
+#include "axom/mint/fem/FEBasis.hpp"  // for FEBasis traits class
 
 namespace axom
 {
 namespace mint
 {
-
 /*!
  * \enum
  *
@@ -111,7 +110,6 @@ enum
 class FiniteElement
 {
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
@@ -131,8 +129,9 @@ public:
    *  that the number of rows corresponds to the dimension of the element and
    *  number of columns corresponds to the number of nodes.
    */
-  FiniteElement( numerics::Matrix< double >& M, CellType cellType,
-                 bool useExternal=false );
+  FiniteElement(numerics::Matrix<double>& M,
+                CellType cellType,
+                bool useExternal = false);
 
   /*!
    * \brief Destructor.
@@ -145,7 +144,7 @@ public:
    *
    * \return status true if an external buffer is used, otherwise, false.
    */
-  bool usesExternalBuffer( ) const { return m_usingExternal; };
+  bool usesExternalBuffer() const { return m_usingExternal; };
 
   /*!
    * \brief Overrides the max number of iterations for the Newton-Raphson, used
@@ -162,13 +161,16 @@ public:
    *
    * \param [in] N user-supplied number for
    */
-  void setMaxSolverIterations(int numIters) { m_maxNewtonIterations=numIters; };
+  void setMaxSolverIterations(int numIters)
+  {
+    m_maxNewtonIterations = numIters;
+  };
 
   /*!
    * \brief Returns the max number of iterations used for the Newton-Raphson.
    * \return N max number of iterations for the Newton-Raphson
    */
-  int getMaxSolverIterations( ) const { return m_maxNewtonIterations; };
+  int getMaxSolverIterations() const { return m_maxNewtonIterations; };
 
   /*!
    * \brief Returns the cell type associated with this FiniteElement instance.
@@ -250,7 +252,7 @@ public:
   /// @{
 
   double* getPhysicalNodes() { return m_xyz; };
-  const double* getPhysicalNodes( ) const { return m_xyz; };
+  const double* getPhysicalNodes() const { return m_xyz; };
 
   /// @}
 
@@ -329,9 +331,7 @@ public:
    * \pre xr != nullptr
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  int computeReferenceCoords( const double* xp,
-                              double* xr,
-                              double TOL=1.e-12 );
+  int computeReferenceCoords(const double* xp, double* xr, double TOL = 1.e-12);
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -345,7 +345,7 @@ public:
    * \pre xp != nullptr
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  void computePhysicalCoords( const double* xr, double* xp);
+  void computePhysicalCoords(const double* xr, double* xp);
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -357,7 +357,7 @@ public:
    * \pre xr != nullptr
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  void jacobian( const double* xr, numerics::Matrix< double >& J );
+  void jacobian(const double* xr, numerics::Matrix<double>& J);
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -372,7 +372,7 @@ public:
    * \pre xr != nullptr
    * \pre phi != nullptr
    */
-  void evaluateShapeFunctions( const double* xr, double* phi );
+  void evaluateShapeFunctions(const double* xr, double* phi);
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -415,7 +415,7 @@ public:
    * \pre xr != nullptr
    * \pre phidot != nullptr
    */
-  void evaluateDerivatives( const double* xr, double* phidot );
+  void evaluateDerivatives(const double* xr, double* phidot);
 
   /// \name Friend Functions
   /// @{
@@ -430,13 +430,12 @@ public:
    *
    * \post fe.getBasisType() != MINT_UNDEFINED_BASIS
    */
-  template < int BasisType, CellType CellType >
-  friend void bind_basis( FiniteElement& fe );
+  template <int BasisType, CellType CellType>
+  friend void bind_basis(FiniteElement& fe);
 
   /// @}
 
 private:
-
   /// \name Internal Helper methods
   /// @{
 
@@ -475,42 +474,42 @@ private:
    *
    * \pre xr != nullptr
    */
-  bool inReferenceElement( const double* xr, double TOL=1.e-12 );
+  bool inReferenceElement(const double* xr, double TOL = 1.e-12);
 
   /// @}
 
   /// \name Private Data Members
   /// @{
 
-  int m_dim;                   /*!< physical dimension */
-  CellType m_ctype;            /*!< cell type, e.g., MINT_QUAD, etc. */
-  int m_shape_func_type;       /*!< basis type, e.g., MINT_LAGRANGE */
-  int m_maxNewtonIterations;   /*!< max newton iterations for inverse map */
-  int m_numnodes;              /*!< number of nodes of the element */
+  int m_dim;                 /*!< physical dimension */
+  CellType m_ctype;          /*!< cell type, e.g., MINT_QUAD, etc. */
+  int m_shape_func_type;     /*!< basis type, e.g., MINT_LAGRANGE */
+  int m_maxNewtonIterations; /*!< max newton iterations for inverse map */
+  int m_numnodes;            /*!< number of nodes of the element */
 
-  double* m_jac;                /*!< stores jacobian at some point */
-  double* m_xyz;                /*!< stores element coordinates */
-  double* m_phi;                /*!< stores shape functions at some point */
-  double* m_phidot;             /*!< stores shape function derivatives */
+  double* m_jac;    /*!< stores jacobian at some point */
+  double* m_xyz;    /*!< stores element coordinates */
+  double* m_phi;    /*!< stores shape functions at some point */
+  double* m_phidot; /*!< stores shape function derivatives */
 
-  bool m_usingExternal;         /*!< indicates whether the element coordinates
+  bool m_usingExternal; /*!< indicates whether the element coordinates
                                      are pointing to an external buffer. */
   /// @}
 
   /// \name Reference Element Attributes
   /// @{
 
-  typedef void (* ShapeFunctionPtr)(const double* lc, double* phi);
-  ShapeFunctionPtr m_shapeFunction;             /*! shape function functor */
-  ShapeFunctionPtr m_shapeFunctionDerivatives;  /*! derivatives functor */
+  typedef void (*ShapeFunctionPtr)(const double* lc, double* phi);
+  ShapeFunctionPtr m_shapeFunction;            /*! shape function functor */
+  ShapeFunctionPtr m_shapeFunctionDerivatives; /*! derivatives functor */
 
-  double m_reference_min;  /*!< min of reference frame \f$ \xi_0 \f$ */
-  double m_reference_max;  /*!< max of reference frame \f$ \xi_1 \f$ */
-  int m_reference_dim;     /*!< dimension of the reference space */
-  int m_numdofs;           /*!< number of degrees of freedom */
+  double m_reference_min; /*!< min of reference frame \f$ \xi_0 \f$ */
+  double m_reference_max; /*!< max of reference frame \f$ \xi_1 \f$ */
+  int m_reference_dim;    /*!< dimension of the reference space */
+  int m_numdofs;          /*!< number of degrees of freedom */
 
-  double* m_reference_coords;  /*!< stores reference coords \f$ \xi_i \f$ */
-  double* m_reference_center;  /*!< stores reference center \f$ \xi_c \f$ */
+  double* m_reference_coords; /*!< stores reference coords \f$ \xi_i \f$ */
+  double* m_reference_center; /*!< stores reference center \f$ \xi_c \f$ */
 
   /// @}
 
@@ -519,7 +518,7 @@ private:
 };
 
 } /* namespace mint */
-} /* namspace axom */
+}  // namespace axom
 
 //------------------------------------------------------------------------------
 //    IMPLEMENTATION OF TEMPLATED FRIEND METHODS
@@ -528,39 +527,38 @@ namespace axom
 {
 namespace mint
 {
-
-template < int BasisType, CellType CELLTYPE >
-void bind_basis( FiniteElement& fe )
+template <int BasisType, CellType CELLTYPE>
+void bind_basis(FiniteElement& fe)
 {
-  SLIC_ASSERT(  CELLTYPE == fe.getCellType() );
-  SLIC_ASSERT(  fe.m_reference_center != nullptr );
-  SLIC_ASSERT(  fe.m_reference_coords != nullptr );
+  SLIC_ASSERT(CELLTYPE == fe.getCellType());
+  SLIC_ASSERT(fe.m_reference_center != nullptr);
+  SLIC_ASSERT(fe.m_reference_coords != nullptr);
 
-  typedef mint::FEBasis< BasisType, CELLTYPE > FEBasisType;
+  typedef mint::FEBasis<BasisType, CELLTYPE> FEBasisType;
   typedef typename FEBasisType::ShapeFunctionType ShapeType;
 
-  if ( CELLTYPE != fe.getCellType() )
+  if(CELLTYPE != fe.getCellType())
   {
-    SLIC_WARNING( "Inconsistent celltype, cannot bind FEBasis!" );
+    SLIC_WARNING("Inconsistent celltype, cannot bind FEBasis!");
     return;
   }
 
-  fe.m_shape_func_type     = FEBasisType::BasisType;
+  fe.m_shape_func_type = FEBasisType::BasisType;
   fe.m_maxNewtonIterations = ShapeType::maxNewtonIters();
-  fe.m_reference_dim       = ShapeType::dimension();
-  fe.m_numdofs             = ShapeType::numDofs();
-  fe.m_reference_min       = ShapeType::min();
-  fe.m_reference_max       = ShapeType::max();
+  fe.m_reference_dim = ShapeType::dimension();
+  fe.m_numdofs = ShapeType::numDofs();
+  fe.m_reference_min = ShapeType::min();
+  fe.m_reference_max = ShapeType::max();
 
-  ShapeType::coords( fe.m_reference_coords );
-  ShapeType::center( fe.m_reference_center );
+  ShapeType::coords(fe.m_reference_coords);
+  ShapeType::center(fe.m_reference_center);
 
-  fe.m_shapeFunction            = &ShapeType::evaluate;
+  fe.m_shapeFunction = &ShapeType::evaluate;
   fe.m_shapeFunctionDerivatives = &ShapeType::derivatives;
 
-  SLIC_ASSERT(  fe.m_shape_func_type != MINT_UNDEFINED_BASIS );
-  SLIC_ASSERT(  fe.m_shapeFunction != nullptr );
-  SLIC_ASSERT(  fe.m_shapeFunctionDerivatives != nullptr );
+  SLIC_ASSERT(fe.m_shape_func_type != MINT_UNDEFINED_BASIS);
+  SLIC_ASSERT(fe.m_shapeFunction != nullptr);
+  SLIC_ASSERT(fe.m_shapeFunctionDerivatives != nullptr);
 }
 
 } /* namespace mint */

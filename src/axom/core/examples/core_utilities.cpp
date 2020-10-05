@@ -7,7 +7,7 @@
  *  \brief This example code is a demonstration of the Axom Core utilites.
  */
 
- /* This example code contains snippets used in the Core Sphinx documentation.
+/* This example code contains snippets used in the Core Sphinx documentation.
   * They begin and end with comments such as
   *
   * timer_start
@@ -16,16 +16,15 @@
   * each prepended with an underscore.
   */
 
-
 #ifdef WIN32
-#include "windows.h"
+  #include "windows.h"
 void sleep(int numSeconds)
 {
   int numMilliSecs = numSeconds * 1000;
   Sleep(numMilliSecs);
 }
 #else
-#include <unistd.h> // for sleep()
+  #include <unistd.h>  // for sleep()
 #endif
 
 // C/C++ includes
@@ -34,6 +33,7 @@ void sleep(int numSeconds)
 
 // Axom includes
 // _header_start
+#include "axom/core/Macros.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
 #include "axom/core/utilities/Timer.hpp"
@@ -60,26 +60,26 @@ void demoFileSystemAndString(const char* argv0)
   // Count how many start with "ax" or end with "exe"
   // (we could also use std::count_if)
   int matchcount = 0;
-  std::string prefix{ "ax" };
-  std::string suffix{ "exe" };
-  for (int i = 0; i < cmp.size(); ++i)
+  std::string prefix {"ax"};
+  std::string suffix {"exe"};
+  const int N = static_cast<int>(cmp.size());
+  for(int i = 0; i < N; ++i)
   {
-    if (string::startsWith(cmp[i], prefix) || 
-        string::endsWith(cmp[i], suffix))
+    if(string::startsWith(cmp[i], prefix) || string::endsWith(cmp[i], suffix))
     {
       matchcount += 1;
     }
   }
-  std::cout << "Found " << matchcount << " path components starting with " << 
-    prefix << " or ending with " << suffix << "." << std::endl;
+  std::cout << "Found " << matchcount << " path components starting with "
+            << prefix << " or ending with " << suffix << "." << std::endl;
 
   // Append "hello.txt"
-  std::string hellofile = 
-    filesystem::joinPath(cwd, "hello.txt", std::string{pathsep});
+  std::string hellofile =
+    filesystem::joinPath(cwd, "hello.txt", std::string {pathsep});
 
   // Does this exist?
   std::cout << "The file \"hello.txt\" ";
-  if (filesystem::pathExists(hellofile))
+  if(filesystem::pathExists(hellofile))
   {
     std::cout << "exists ";
   }
@@ -90,7 +90,7 @@ void demoFileSystemAndString(const char* argv0)
   std::cout << "in the current working directory." << std::endl;
 
   // Does argv0 exist?
-  if (filesystem::pathExists(argv0))
+  if(filesystem::pathExists(argv0))
   {
     std::cout << argv0 << " exists ";
   }
@@ -111,9 +111,9 @@ int main(int argc, char** argv)
   std::cout << "Here is a message telling you about Axom." << std::endl;
   axom::about();
 
-  std::cout << "The version string '" << axom::getVersion() <<
-    "' is part of the previous message, " << std::endl <<
-    " and is also available separately." << std::endl;
+  std::cout << "The version string '" << axom::getVersion()
+            << "' is part of the previous message, " << std::endl
+            << " and is also available separately." << std::endl;
   // _about_end
 
   // _timer_start
@@ -121,11 +121,21 @@ int main(int argc, char** argv)
 
   t.start();
 
-  demoFileSystemAndString(argv[0]);
+  if(argc == 1)
+  {
+    std::cerr << "Error: not path given on command line" << std::endl;
+    return 1;
+  }
+  else
+  {
+    demoFileSystemAndString(argv[0]);
+  }
 
   t.stop();
 
-  std::cout << "The tests took " << t.elapsedTimeInMilliSec() <<
-    " ms." << std::endl;
+  std::cout << "The tests took " << t.elapsedTimeInMilliSec() << " ms."
+            << std::endl;
   // _timer_end
+
+  return 0;
 }

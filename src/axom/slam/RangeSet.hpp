@@ -19,8 +19,6 @@ namespace axom
 {
 namespace slam
 {
-
-
 /**
  * \class PositionSet
  * \brief Alias template for an OrderedSet whose elements belong
@@ -30,16 +28,15 @@ namespace slam
  * \tparam E The ElementType
  * \sa OrderedSet
  */
-template<typename P = slam::DefaultPositionType,
-         typename E = slam::DefaultElementType>
-class PositionSet : public OrderedSet<P,E>
+template <typename P = slam::DefaultPositionType, typename E = slam::DefaultElementType>
+class PositionSet : public OrderedSet<P, E>
 {
 public:
   using PositionType = P;
   using ElementType = E;
 
 private:
-  using OrderedSetType =  OrderedSet<P,E>;
+  using OrderedSetType = OrderedSet<P, E>;
 
   static const PositionType DEFAULT_SIZE;
   static const PositionType DEFAULT_OFFSET;
@@ -47,24 +44,25 @@ private:
 
 public:
   PositionSet(PositionType size = DEFAULT_SIZE)
-    : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+    : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE)
+  { }
 
-  PositionSet(const typename OrderedSetType::SetBuilder & builder)
-    : OrderedSetType(builder) {}
+  PositionSet(const typename OrderedSetType::SetBuilder& builder)
+    : OrderedSetType(builder)
+  { }
 };
 
-template<typename P, typename E>
-const P PositionSet<P,E>::DEFAULT_SIZE =
+template <typename P, typename E>
+const P PositionSet<P, E>::DEFAULT_SIZE =
   PositionSet<P, E>::OrderedSetType::SizePolicyType::DEFAULT_VALUE;
 
-template<typename P, typename E>
+template <typename P, typename E>
 const P PositionSet<P, E>::DEFAULT_OFFSET =
   PositionSet<P, E>::OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
 
-template<typename P, typename E>
+template <typename P, typename E>
 const P PositionSet<P, E>::DEFAULT_STRIDE =
   PositionSet<P, E>::OrderedSetType::StridePolicyType::DEFAULT_VALUE;
-
 
 /**
  * \class GenericRangeSet
@@ -78,50 +76,49 @@ const P PositionSet<P, E>::DEFAULT_STRIDE =
  *  different policies on striding, indirection and subsetting
  *  \sa OrderedSet, PositionSet, RangeSet
  */
-template<
-  typename P = slam::DefaultPositionType,
-  typename E = slam::DefaultElementType,
-  typename StridingPolicy = policies::StrideOne<P>,
-  typename IndirectionPolicy = policies::NoIndirection<P, E>,
-  typename SubsettingPolicy = policies::NoSubset >
-class GenericRangeSet : public OrderedSet<
-    P,
-    E,
-    policies::RuntimeSize<P>,
-    policies::RuntimeOffset<P>,
-    StridingPolicy,
-    IndirectionPolicy,
-    SubsettingPolicy >
+template <typename P = slam::DefaultPositionType,
+          typename E = slam::DefaultElementType,
+          typename StridingPolicy = policies::StrideOne<P>,
+          typename IndirectionPolicy = policies::NoIndirection<P, E>,
+          typename SubsettingPolicy = policies::NoSubset>
+class GenericRangeSet : public OrderedSet<P,
+                                          E,
+                                          policies::RuntimeSize<P>,
+                                          policies::RuntimeOffset<P>,
+                                          StridingPolicy,
+                                          IndirectionPolicy,
+                                          SubsettingPolicy>
 {
 public:
   using PositionType = P;
   using ElementType = E;
 
 private:
-  using OrderedSetType =
-          OrderedSet<P,E,
-                     policies::RuntimeSize<P>,
-                     policies::RuntimeOffset<P>,
-                     StridingPolicy,
-                     IndirectionPolicy,
-                     SubsettingPolicy>;
+  using OrderedSetType = OrderedSet<P,
+                                    E,
+                                    policies::RuntimeSize<P>,
+                                    policies::RuntimeOffset<P>,
+                                    StridingPolicy,
+                                    IndirectionPolicy,
+                                    SubsettingPolicy>;
 
 public:
-  GenericRangeSet(
-    PositionType size = OrderedSetType::SizePolicyType::DEFAULT_VALUE)
+  GenericRangeSet(PositionType size = OrderedSetType::SizePolicyType::DEFAULT_VALUE)
     : OrderedSetType(size,
                      OrderedSetType::OffsetPolicyType::DEFAULT_VALUE,
-                     OrderedSetType::StridePolicyType::DEFAULT_VALUE) {}
+                     OrderedSetType::StridePolicyType::DEFAULT_VALUE)
+  { }
 
-  GenericRangeSet(const typename OrderedSetType::SetBuilder & builder)
-    : OrderedSetType(builder) {}
+  GenericRangeSet(const typename OrderedSetType::SetBuilder& builder)
+    : OrderedSetType(builder)
+  { }
 
   GenericRangeSet(PositionType lowerIndex, PositionType upperIndex)
     : OrderedSetType(upperIndex - lowerIndex,
                      lowerIndex,
-                     OrderedSetType::StridePolicyType::DEFAULT_VALUE) {}
+                     OrderedSetType::StridePolicyType::DEFAULT_VALUE)
+  { }
 };
-
 
 /**
  * \class RangeSet
@@ -135,16 +132,15 @@ public:
  * \a PositionType) from the lowerIndex.
  * Examples include: signed and unsigned integral types
  */
-template<typename P = slam::DefaultPositionType,
-         typename E = slam::DefaultElementType>
-class RangeSet : public GenericRangeSet<P,E>
+template <typename P = slam::DefaultPositionType, typename E = slam::DefaultElementType>
+class RangeSet : public GenericRangeSet<P, E>
 {
 public:
   using PositionType = P;
   using ElementType = E;
 
 private:
-  using GenericRangeSetType = GenericRangeSet<P,E>;
+  using GenericRangeSetType = GenericRangeSet<P, E>;
 
 private:
   static const PositionType DEFAULT_SIZE;
@@ -152,33 +148,30 @@ private:
   static const PositionType DEFAULT_STRIDE;
 
 public:
-  RangeSet(PositionType size = DEFAULT_SIZE)
-    : GenericRangeSetType(size) {}
+  RangeSet(PositionType size = DEFAULT_SIZE) : GenericRangeSetType(size) { }
 
   RangeSet(PositionType lowerIndex, PositionType upperIndex)
-    : GenericRangeSetType(lowerIndex, upperIndex) {}
+    : GenericRangeSetType(lowerIndex, upperIndex)
+  { }
 
-  RangeSet(const typename GenericRangeSetType::SetBuilder & builder)
-    : GenericRangeSetType(builder) {}
-
+  RangeSet(const typename GenericRangeSetType::SetBuilder& builder)
+    : GenericRangeSetType(builder)
+  { }
 };
 
-template<typename P, typename E>
+template <typename P, typename E>
 const P RangeSet<P, E>::DEFAULT_SIZE =
   RangeSet<P, E>::GenericRangeSetType::SizePolicyType::DEFAULT_VALUE;
 
-template<typename P, typename E>
+template <typename P, typename E>
 const P RangeSet<P, E>::DEFAULT_OFFSET =
   RangeSet<P, E>::GenericRangeSetType::OffsetPolicyType::DEFAULT_VALUE;
 
-template<typename P, typename E>
+template <typename P, typename E>
 const P RangeSet<P, E>::DEFAULT_STRIDE =
   RangeSet<P, E>::GenericRangeSetType::StridePolicyType::DEFAULT_VALUE;
 
+}  // end namespace slam
+}  // end namespace axom
 
-
-
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_RANGE_SET_H_
+#endif  //  SLAM_RANGE_SET_H_

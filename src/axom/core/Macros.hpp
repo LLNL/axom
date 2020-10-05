@@ -2,8 +2,6 @@
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-#include "axom/config.hpp"
-#include <cassert>                          // for assert()
 
 /*!
  *
@@ -16,6 +14,9 @@
 #ifndef AXOM_MACROS_HPP_
 #define AXOM_MACROS_HPP_
 
+#include "axom/config.hpp"
+#include <cassert>  // for assert()
+
 /*!
  * \def AXOM_DEVICE
  * \def AXOM_HOST_DEVICE
@@ -26,13 +27,13 @@
  *  compiled with -DAXOM_USE_CUDA
  */
 #if defined(__CUDACC__)
-#define AXOM_DEVICE __device__
-#define AXOM_HOST_DEVICE __host__ __device__
-#define AXOM_HOST __host__
+  #define AXOM_DEVICE __device__
+  #define AXOM_HOST_DEVICE __host__ __device__
+  #define AXOM_HOST __host__
 #else
-#define AXOM_DEVICE
-#define AXOM_HOST_DEVICE
-#define AXOM_HOST
+  #define AXOM_DEVICE
+  #define AXOM_HOST_DEVICE
+  #define AXOM_HOST
 #endif
 
 /*
@@ -49,9 +50,9 @@
  * \brief Macro used to specify pragma directive
  */
 #ifdef _WIN32
-#define AXOM_PRAGMA(x) __pragma(x)
+  #define AXOM_PRAGMA(x) __pragma(x)
 #else
-#define AXOM_PRAGMA(x) _Pragma(AXOM_STRINGIFY(x))
+  #define AXOM_PRAGMA(x) _Pragma(AXOM_STRINGIFY(x))
 #endif
 
 /*
@@ -61,9 +62,9 @@
  *  when calling __host__ function from __host__ __device__ function.
  */
 #if defined(__CUDACC__)
-#define AXOM_SUPPRESS_HD_WARN AXOM_PRAGMA(nv_exec_check_disable)
+  #define AXOM_SUPPRESS_HD_WARN AXOM_PRAGMA(nv_exec_check_disable)
 #else
-#define AXOM_SUPPRESS_HD_WARN
+  #define AXOM_SUPPRESS_HD_WARN
 #endif
 
 /*!
@@ -79,13 +80,13 @@
  *  is making more use of the parallel_cpu and serial execution policies.
  */
 #ifdef AXOM_USE_CUDA
-#define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
-#define AXOM_DEVICE_LAMBDA [=] AXOM_DEVICE
-#define AXOM_HOST_LAMBDA [=] AXOM_HOST
+  #define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
+  #define AXOM_DEVICE_LAMBDA [=] AXOM_DEVICE
+  #define AXOM_HOST_LAMBDA [=] AXOM_HOST
 #else
-#define AXOM_LAMBDA [=]
-#define AXOM_DEVICE_LAMBDA [=]
-#define AXOM_HOST_LAMBDA [=]
+  #define AXOM_LAMBDA [=]
+  #define AXOM_DEVICE_LAMBDA [=]
+  #define AXOM_HOST_LAMBDA [=]
 #endif
 
 /*!
@@ -94,12 +95,12 @@
  * \brief Convenience macro used for a gtest that uses cuda.
  */
 #if defined(AXOM_USE_CUDA)
-#define AXOM_CUDA_TEST(X, Y)         \
-  static void cuda_test_ ## X ## Y();    \
-  TEST(X, Y) { cuda_test_ ## X ## Y(); } \
-  static void cuda_test_ ## X ## Y()
+  #define AXOM_CUDA_TEST(X, Y)         \
+    static void cuda_test_##X##Y();    \
+    TEST(X, Y) { cuda_test_##X##Y(); } \
+    static void cuda_test_##X##Y()
 #else
-#define AXOM_CUDA_TEST(X, Y) TEST(X, Y)
+  #define AXOM_CUDA_TEST(X, Y) TEST(X, Y)
 #endif
 
 /*!
@@ -107,8 +108,8 @@
  *
  * \brief Convenience macro used for kernel code
  */
-#if defined (__CUDA_ARCH__)
-#define AXOM_DEVICE_CODE
+#if defined(__CUDA_ARCH__)
+  #define AXOM_DEVICE_CODE
 #endif
 
 /*!
@@ -136,8 +137,8 @@
  * \brief This macro wraps the compile time static_assert functionality
  *  so you don't have to provide a message.
  */
-#define AXOM_STATIC_ASSERT( cond ) static_assert( cond, #cond )
-#define AXOM_STATIC_ASSERT_MSG( cond, MSG ) static_assert( cond, MSG )
+#define AXOM_STATIC_ASSERT(cond) static_assert(cond, #cond)
+#define AXOM_STATIC_ASSERT_MSG(cond, MSG) static_assert(cond, MSG)
 
 /*!
  *
@@ -159,7 +160,7 @@
  *
  * \endcode
  */
-#define AXOM_DEBUG_VAR(_x)   static_cast<void>(_x)
+#define AXOM_DEBUG_VAR(_x) static_cast<void>(_x)
 
 /*!
  * \def AXOM_DEBUG_PARAM(x)
@@ -177,9 +178,9 @@
  * \endcode
  */
 #ifdef AXOM_DEBUG
- #define AXOM_DEBUG_PARAM(_x)  _x
+  #define AXOM_DEBUG_PARAM(_x) _x
 #else
- #define AXOM_DEBUG_PARAM(_x)
+  #define AXOM_DEBUG_PARAM(_x)
 #endif
 
 /*!
@@ -202,8 +203,7 @@
  *
  * \endcode
  */
-#define DISABLE_DEFAULT_CTOR(className)                      \
-  className( ) = delete
+#define DISABLE_DEFAULT_CTOR(className) className() = delete
 
 /*!
  * \def DISABLE_COPY_AND_ASSIGNMENT(className)
@@ -227,8 +227,8 @@
  *
  * \endcode
  */
-#define DISABLE_COPY_AND_ASSIGNMENT(className)                                 \
-  className( const className & ) = delete;                                     \
+#define DISABLE_COPY_AND_ASSIGNMENT(className) \
+  className(const className&) = delete;        \
   className& operator=(const className&) = delete
 
 /*!
@@ -254,9 +254,8 @@
  *
  * \endcode
  */
-#define DISABLE_MOVE_AND_ASSIGNMENT(className)                                \
-  className( const className&& ) = delete;                                    \
+#define DISABLE_MOVE_AND_ASSIGNMENT(className) \
+  className(const className&&) = delete;       \
   className& operator=(const className&&) = delete
-
 
 #endif /* AXOM_MACROS_HPP_ */

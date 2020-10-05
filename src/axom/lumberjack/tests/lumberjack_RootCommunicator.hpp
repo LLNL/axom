@@ -13,7 +13,6 @@
 
 #include "axom/lumberjack/RootCommunicator.hpp"
 
-
 TEST(lumberjack_RootCommunicator, basic)
 {
   MPI_Barrier(MPI_COMM_WORLD);
@@ -31,7 +30,7 @@ TEST(lumberjack_RootCommunicator, basic)
   EXPECT_EQ(c.rank(), commRank);
 
   // Check if we are an output node
-  if (commRank != 0)
+  if(commRank != 0)
   {
     EXPECT_EQ(c.isOutputNode(), false);
   }
@@ -58,26 +57,26 @@ TEST(lumberjack_RootCommunicator, basic)
   c.push(packedMessage, receivedPackedMessages);
   EXPECT_EQ(strcmp(packedMessage, origS.c_str()), 0);
 
-  if (commRank != 0)
+  if(commRank != 0)
   {
     EXPECT_EQ((int)receivedPackedMessages.size(), 0);
   }
   else
   {
-    const int numMessagesToReceive = commSize-1;
+    const int numMessagesToReceive = commSize - 1;
     EXPECT_EQ((int)receivedPackedMessages.size(), numMessagesToReceive);
-    for (int i=1 ; i<=numMessagesToReceive ; ++i)
+    for(int i = 1; i <= numMessagesToReceive; ++i)
     {
       std::string currMessage = std::to_string(i);
       bool found = false;
-      for (auto &rm : receivedPackedMessages)
+      for(auto& rm : receivedPackedMessages)
       {
-        if (strcmp(rm, currMessage.c_str()) == 0)
+        if(strcmp(rm, currMessage.c_str()) == 0)
         {
           found = true;
         }
       }
-      if (!found)
+      if(!found)
       {
         std::cout << "Error: Message not received:" << currMessage << std::endl;
       }
@@ -113,7 +112,7 @@ TEST(lumberjack_RootCommunicator, pushNothing)
   // Call push with a nullptr
   packedMessage = nullptr;
   c.push(packedMessage, receivedPackedMessages);
-  EXPECT_EQ(packedMessage, nullptr); // Message should still be nullptr
+  EXPECT_EQ(packedMessage, nullptr);  // Message should still be nullptr
   EXPECT_EQ((int)receivedPackedMessages.size(), 0);
 
   // Finalize

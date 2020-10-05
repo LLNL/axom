@@ -33,7 +33,6 @@ namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class Inlet
@@ -62,11 +61,14 @@ public:
    *****************************************************************************
    */
   Inlet(std::shared_ptr<Reader> reader,
-        axom::sidre::Group* sidreRootGroup, bool docEnabled = true) :
-    m_reader(reader),
-    m_sidreRootGroup(sidreRootGroup),
-    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled)),
-    m_docEnabled(docEnabled) {}
+        axom::sidre::Group* sidreRootGroup,
+        bool docEnabled = true)
+    : m_reader(reader)
+    , m_sidreRootGroup(sidreRootGroup)
+    , m_globalTable(
+        std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled))
+    , m_docEnabled(docEnabled)
+  { }
 
   virtual ~Inlet() = default;
 
@@ -293,16 +295,14 @@ public:
    *
    *****************************************************************************
    */
-  bool verify(); 
+  bool verify();
 
   /*!
    *****************************************************************************
    * \return The global Table.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getGlobalTable() {
-    return m_globalTable;
-  }
+  std::shared_ptr<Table> getGlobalTable() { return m_globalTable; }
 
   /*!
    *****************************************************************************
@@ -314,7 +314,8 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTable(const std::string& name) {
+  std::shared_ptr<Table> getTable(const std::string& name)
+  {
     return m_globalTable->getTable(name);
   }
 
@@ -328,7 +329,8 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getField(const std::string& name) {
+  std::shared_ptr<Field> getField(const std::string& name)
+  {
     return m_globalTable->getField(name);
   }
 
@@ -339,7 +341,8 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Table.
    *****************************************************************************
    */
-  bool hasTable(const std::string& name) {
+  bool hasTable(const std::string& name)
+  {
     return m_globalTable->hasTable(name);
   }
 
@@ -350,8 +353,151 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Field.
    *****************************************************************************
    */
-  bool hasField(const std::string& name) {
+  bool hasField(const std::string& name)
+  {
     return m_globalTable->hasField(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Field names to the child Field pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields()
+  {
+    return m_globalTable->getChildFields();
+  }
+
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Table names to the child Table pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables()
+  {
+    return m_globalTable->getChildTables();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Boolean Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addBoolArray(const std::string& name,
+                                      const std::string& description = "")
+  {
+    return m_globalTable->addBoolArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Integer Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addIntArray(const std::string& name,
+                                     const std::string& description = "")
+  {
+    return m_globalTable->addIntArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Double Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addDoubleArray(const std::string& name,
+                                        const std::string& description = "")
+  {
+    return m_globalTable->addDoubleArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of String Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addStringArray(const std::string& name,
+                                        const std::string& description = "")
+  {
+    return m_globalTable->addStringArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a boolean array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getBoolArray(std::unordered_map<int, bool>& map)
+  {
+    return m_globalTable->getBoolArray(map);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a int array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getIntArray(std::unordered_map<int, int>& map)
+  {
+    return m_globalTable->getIntArray(map);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a double array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getDoubleArray(std::unordered_map<int, double>& map)
+  {
+    return m_globalTable->getDoubleArray(map);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a string array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getStringArray(std::unordered_map<int, std::string>& map)
+  {
+    return m_globalTable->getStringArray(map);
   }
 
   // TODO add update value functions
@@ -402,7 +548,7 @@ private:
    */
   bool verifyDefaultValue(axom::sidre::Group* sidreGroup);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Checks if the given value is within the range.
    * 
@@ -451,7 +597,7 @@ private:
    *****************************************************************************
    */
   bool searchValidValues(axom::sidre::Group* sidreGroup, double value);
-  
+
   /*!
    *****************************************************************************
    * \brief Checks if the given value is found in the list of valid values.
@@ -470,12 +616,11 @@ private:
   std::shared_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   std::shared_ptr<Table> m_globalTable;
-
   std::shared_ptr<DocWriter> m_docWriter;
   bool m_docEnabled;
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif

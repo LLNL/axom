@@ -3,8 +3,8 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Quest User Documentation
-========================
+Quest User Guide
+================
 
 The Quest component of Axom provides several spatial operations and queries
 on a ``mint::Mesh``.
@@ -35,9 +35,16 @@ on a ``mint::Mesh``.
       locations and regions, find all neighbors of each point in a different
       region
 
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/questtop.html>`_
+
+
 .. toctree::
+   :caption: Contents
    :maxdepth: 2
-   :hidden:
 
    read_mesh
    check_and_repair

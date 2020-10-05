@@ -46,6 +46,7 @@ if(NOT AXOM_FOUND)
   # Axom built-in TPLs
   set(AXOM_USE_CLI11          "@AXOM_USE_CLI11@")
   set(AXOM_USE_FMT            "@AXOM_USE_FMT@")
+  set(AXOM_USE_SOL            "@AXOM_USE_SOL@")
   set(AXOM_USE_SPARSEHASH     "@AXOM_USE_SPARSEHASH@")
 
   # Axom external TPLs

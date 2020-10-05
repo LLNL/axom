@@ -5,11 +5,10 @@
 #ifndef MINT_MESH_HELPERS_HPP_
 #define MINT_MESH_HELPERS_HPP_
 
-
-#include "axom/core/Macros.hpp"         // for AXOM_NOT_USED
-#include "axom/core/Types.hpp"          // for nullptr
-#include "axom/mint/config.hpp"         // for mint compile-time type
-#include "axom/mint/mesh/CellTypes.hpp" // for CellType
+#include "axom/core/Macros.hpp"          // for AXOM_NOT_USED
+#include "axom/core/Types.hpp"           // for nullptr
+#include "axom/mint/config.hpp"          // for mint compile-time type
+#include "axom/mint/mesh/CellTypes.hpp"  // for CellType
 
 #include <string>
 
@@ -17,22 +16,18 @@ namespace axom
 {
 namespace mint
 {
-
 class Mesh;  // forward declaration
 
 namespace internal
 {
-
-inline int dim( const double* AXOM_NOT_USED(x),
-                const double* y,
-                const double* z )
+inline int dim(const double* AXOM_NOT_USED(x), const double* y, const double* z)
 {
-  return ( ( z != nullptr ) ? 3 : ( (y != nullptr ) ? 2 : 1 ) );
+  return ((z != nullptr) ? 3 : ((y != nullptr) ? 2 : 1));
 }
 
-std::string join_ints_into_string(int vcount, IndexType * values, char sep);
+std::string join_ints_into_string(int vcount, IndexType* values, char sep);
 
-std::string make_face_key(int vcount, IndexType * values, char sep);
+std::string make_face_key(int vcount, IndexType* values, char sep);
 
 /*! \brief Record a Mesh's face-to-cell, cell-to-face, and face-to-node
  *         relations.
@@ -68,15 +63,15 @@ std::string make_face_key(int vcount, IndexType * values, char sep);
  * This routine is intended to be used in constructing an UnstructuredMesh's
  * face relations, though it will give correct results for any Mesh.
  */
-bool initFaces(Mesh * m,
-               IndexType & facecount,
-               IndexType *& f2c,
-               IndexType *& c2f,
-               IndexType *& c2n,
-               IndexType *& c2foffsets,
-               IndexType *& f2n,
-               IndexType *& f2noffsets,
-               CellType *& f2ntypes );
+bool initFaces(Mesh* m,
+               IndexType& facecount,
+               IndexType*& f2c,
+               IndexType*& c2f,
+               IndexType*& c2n,
+               IndexType*& c2foffsets,
+               IndexType*& f2n,
+               IndexType*& f2noffsets,
+               CellType*& f2ntypes);
 
 } /* namespace internal */
 } /* namespace mint */

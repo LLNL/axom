@@ -13,13 +13,11 @@ namespace axom
 {
 namespace slam
 {
-
 namespace policies
 {
-
 const NullSet<> NoSubset::s_nullSet;
 NullSet<> VirtualParentSubset::s_nullSet;
 
-} // namespace policies
-} // namespace slam
-} // namespace axom
+}  // namespace policies
+}  // namespace slam
+}  // namespace axom

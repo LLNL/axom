@@ -7,7 +7,7 @@
 #include <fstream>
 
 #include "conduit_blueprint.hpp"
-#include "conduit_utils.hpp" // for setting conduit's message logging handlers
+#include "conduit_utils.hpp"  // for setting conduit's message logging handlers
 
 // Associated header file
 #include "DataStore.hpp"
@@ -30,7 +30,6 @@ namespace axom
 {
 namespace sidre
 {
-
 /*
  *************************************************************************
  *
@@ -38,13 +37,12 @@ namespace sidre
  *
  *************************************************************************
  */
-void DataStoreConduitErrorHandler( const std::string& message,
-                                   const std::string& fileName,
-                                   int line )
+void DataStoreConduitErrorHandler(const std::string& message,
+                                  const std::string& fileName,
+                                  int line)
 {
-  axom::slic::logErrorMessage( message, fileName, line );
+  axom::slic::logErrorMessage(message, fileName, line);
 }
-
 
 /*
  *************************************************************************
@@ -53,11 +51,11 @@ void DataStoreConduitErrorHandler( const std::string& message,
  *
  *************************************************************************
  */
-void DataStoreConduitWarningHandler( const std::string& message,
-                                     const std::string& fileName,
-                                     int line )
+void DataStoreConduitWarningHandler(const std::string& message,
+                                    const std::string& fileName,
+                                    int line)
 {
-  axom::slic::logWarningMessage( message, fileName, line );
+  axom::slic::logWarningMessage(message, fileName, line);
 }
 
 /*
@@ -68,11 +66,11 @@ void DataStoreConduitWarningHandler( const std::string& message,
  *
  *************************************************************************
  */
-void DataStoreConduitInfoHandler( const std::string& message,
-                                  const std::string& fileName,
-                                  int line )
+void DataStoreConduitInfoHandler(const std::string& message,
+                                 const std::string& fileName,
+                                 int line)
 {
-  axom::slic::logMessage( axom::slic::message::Info, message, fileName, line );
+  axom::slic::logMessage(axom::slic::message::Info, message, fileName, line);
 }
 
 /*
@@ -83,40 +81,36 @@ void DataStoreConduitInfoHandler( const std::string& message,
  *************************************************************************
  */
 DataStore::DataStore()
-  : m_RootGroup(nullptr),
-  m_attribute_coll(new AttributeCollection()),
-  m_need_to_finalize_slic(false)
+  : m_RootGroup(nullptr)
+  , m_attribute_coll(new AttributeCollection())
+  , m_need_to_finalize_slic(false)
 {
-
-  if ( !axom::slic::isInitialized() )
+  if(!axom::slic::isInitialized())
   {
     axom::slic::initialize();
 
     std::string format =
-      std::string("\n***********************************\n")+
-      std::string( "LEVEL=<LEVEL>\n" ) +
-      std::string( "MESSAGE=<MESSAGE>\n" ) +
-      std::string( "FILE=<FILE>\n" ) +
-      std::string( "LINE=<LINE>\n" ) +
+      std::string("\n***********************************\n") +
+      std::string("LEVEL=<LEVEL>\n") + std::string("MESSAGE=<MESSAGE>\n") +
+      std::string("FILE=<FILE>\n") + std::string("LINE=<LINE>\n") +
       std::string("***********************************\n");
 
-    axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
+    axom::slic::setLoggingMsgLevel(axom::slic::message::Debug);
     axom::slic::addStreamToAllMsgLevels(
-      new axom::slic::GenericOutputStream(&std::cout,format) );
+      new axom::slic::GenericOutputStream(&std::cout, format));
 
     m_need_to_finalize_slic = true;
   }
 
   // Provide SLIC error handler function to Conduit to log
   // internal Conduit errors.
-  conduit::utils::set_error_handler( DataStoreConduitErrorHandler );
-  conduit::utils::set_warning_handler( DataStoreConduitWarningHandler );
-  conduit::utils::set_info_handler( DataStoreConduitInfoHandler );
+  conduit::utils::set_error_handler(DataStoreConduitErrorHandler);
+  conduit::utils::set_warning_handler(DataStoreConduitWarningHandler);
+  conduit::utils::set_info_handler(DataStoreConduitInfoHandler);
 
   m_RootGroup = new Group("", this, false);
   m_RootGroup->m_parent = m_RootGroup;
 };
-
 
 /*
  *************************************************************************
@@ -133,12 +127,42 @@ DataStore::~DataStore()
   destroyAllAttributes();
   delete m_attribute_coll;
 
-  if ( m_need_to_finalize_slic )
+  if(m_need_to_finalize_slic)
   {
     axom::slic::finalize();
   }
 }
 
+/*
+ *************************************************************************
+ *
+ * Re-wire Conduit Message Handlers to SLIC.
+ *
+ *************************************************************************
+ */
+void DataStore::setConduitSLICMessageHandlers()
+{
+  // Provide SLIC message handler functions to Conduit to log
+  // internal Conduit info, warning, error messages.
+  conduit::utils::set_error_handler(DataStoreConduitErrorHandler);
+  conduit::utils::set_warning_handler(DataStoreConduitWarningHandler);
+  conduit::utils::set_info_handler(DataStoreConduitInfoHandler);
+}
+
+/*
+ *************************************************************************
+ *
+ * Restore Conduit Message Handlers to Conduit Defaults.
+ *
+ *************************************************************************
+ */
+void DataStore::setConduitDefaultMessageHandlers()
+{
+  // restore default handlers
+  conduit::utils::set_info_handler(conduit::utils::default_info_handler);
+  conduit::utils::set_warning_handler(conduit::utils::default_warning_handler);
+  conduit::utils::set_error_handler(conduit::utils::default_error_handler);
+}
 
 /*
  *************************************************************************
@@ -147,9 +171,9 @@ DataStore::~DataStore()
  *
  *************************************************************************
  */
-Buffer* DataStore::getBuffer( IndexType idx ) const
+Buffer* DataStore::getBuffer(IndexType idx) const
 {
-  if ( !hasBuffer(idx) )
+  if(!hasBuffer(idx))
   {
     SLIC_CHECK_MSG(hasBuffer(idx),
                    "DataStore has no Buffer with index == " << idx);
@@ -170,10 +194,10 @@ Buffer* DataStore::createBuffer()
 {
   // TODO: implement pool, look for free nodes.  Allocate in blocks.
   IndexType newIndex;
-  if( m_free_buffer_ids.empty() )
+  if(m_free_buffer_ids.empty())
   {
     newIndex = m_data_buffers.size();
-    m_data_buffers.push_back( nullptr );
+    m_data_buffers.push_back(nullptr);
   }
   else
   {
@@ -181,7 +205,7 @@ Buffer* DataStore::createBuffer()
     m_free_buffer_ids.pop();
   }
 
-  Buffer* const obj = new(std::nothrow) Buffer( newIndex );
+  Buffer* const obj = new(std::nothrow) Buffer(newIndex);
   m_data_buffers[newIndex] = obj;
 
   return obj;
@@ -194,11 +218,11 @@ Buffer* DataStore::createBuffer()
  *
  *************************************************************************
  */
-Buffer* DataStore::createBuffer( TypeID type, IndexType num_elems )
+Buffer* DataStore::createBuffer(TypeID type, IndexType num_elems)
 {
   Buffer* buffer = createBuffer();
 
-  if (buffer != nullptr)
+  if(buffer != nullptr)
   {
     buffer->describe(type, num_elems);
   }
@@ -214,14 +238,14 @@ Buffer* DataStore::createBuffer( TypeID type, IndexType num_elems )
  *
  *************************************************************************
  */
-void DataStore::destroyBuffer( Buffer* buff )
+void DataStore::destroyBuffer(Buffer* buff)
 {
-  if ( buff != nullptr )
+  if(buff != nullptr)
   {
     buff->detachFromAllViews();
     IndexType idx = buff->getIndex();
     delete buff;
-    SLIC_ASSERT( m_data_buffers[idx] != nullptr);
+    SLIC_ASSERT(m_data_buffers[idx] != nullptr);
     m_data_buffers[idx] = nullptr;
     m_free_buffer_ids.push(idx);
   }
@@ -235,10 +259,7 @@ void DataStore::destroyBuffer( Buffer* buff )
  *
  *************************************************************************
  */
-void DataStore::destroyBuffer( IndexType idx )
-{
-  destroyBuffer(getBuffer(idx));
-}
+void DataStore::destroyBuffer(IndexType idx) { destroyBuffer(getBuffer(idx)); }
 
 /*
  *************************************************************************
@@ -250,9 +271,9 @@ void DataStore::destroyBuffer( IndexType idx )
 void DataStore::destroyAllBuffers()
 {
   IndexType bidx = getFirstValidBufferIndex();
-  while ( indexIsValid(bidx) )
+  while(indexIsValid(bidx))
   {
-    destroyBuffer( bidx );
+    destroyBuffer(bidx);
     bidx = getNextValidBufferIndex(bidx);
   }
 }
@@ -279,13 +300,13 @@ IndexType DataStore::getFirstValidBufferIndex() const
 IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
 {
   idx++;
-  while ( static_cast<unsigned>(idx) < m_data_buffers.size() &&
-          m_data_buffers[idx] == nullptr )
+  while(static_cast<unsigned>(idx) < m_data_buffers.size() &&
+        m_data_buffers[idx] == nullptr)
   {
     idx++;
   }
   return ((static_cast<unsigned>(idx) < m_data_buffers.size()) ? idx
-          : InvalidIndex);
+                                                               : InvalidIndex);
 }
 
 /*
@@ -307,19 +328,20 @@ IndexType DataStore::getNumAttributes() const
  *
  *************************************************************************
  */
-Attribute* DataStore::createAttributeEmpty(const std::string & name)
+Attribute* DataStore::createAttributeEmpty(const std::string& name)
 {
-  if ( name.empty() || hasAttribute(name) )
+  if(name.empty() || hasAttribute(name))
   {
-    SLIC_CHECK( !name.empty() );
-    SLIC_CHECK_MSG( hasAttribute(name),
-                    "Cannot create Attribute with name '" << name <<
-                    " since it already has an Attribute with that name" );
+    SLIC_CHECK(!name.empty());
+    SLIC_CHECK_MSG(hasAttribute(name),
+                   "Cannot create Attribute with name '"
+                     << name
+                     << " since it already has an Attribute with that name");
     return nullptr;
   }
 
   Attribute* new_attribute = new(std::nothrow) Attribute(name);
-  if ( new_attribute == nullptr )
+  if(new_attribute == nullptr)
   {
     return nullptr;
   }
@@ -335,7 +357,7 @@ Attribute* DataStore::createAttributeEmpty(const std::string & name)
  *
  *************************************************************************
  */
-bool DataStore::hasAttribute( const std::string & name ) const
+bool DataStore::hasAttribute(const std::string& name) const
 {
   return m_attribute_coll->hasItem(name);
 }
@@ -347,7 +369,7 @@ bool DataStore::hasAttribute( const std::string & name ) const
  *
  *************************************************************************
  */
-bool DataStore::hasAttribute( IndexType idx ) const
+bool DataStore::hasAttribute(IndexType idx) const
 {
   return m_attribute_coll->hasItem(idx);
 }
@@ -359,7 +381,7 @@ bool DataStore::hasAttribute( IndexType idx ) const
  *
  *************************************************************************
  */
-void DataStore::destroyAttribute( const std::string & name )
+void DataStore::destroyAttribute(const std::string& name)
 {
   Attribute* attr = getAttribute(name);
   destroyAttribute(attr);
@@ -372,10 +394,10 @@ void DataStore::destroyAttribute( const std::string & name )
  *
  *************************************************************************
  */
-void DataStore::destroyAttribute( IndexType idx )
+void DataStore::destroyAttribute(IndexType idx)
 {
   Attribute* attr = m_attribute_coll->removeItem(idx);
-  if ( attr != nullptr )
+  if(attr != nullptr)
   {
     delete attr;
   }
@@ -388,9 +410,9 @@ void DataStore::destroyAttribute( IndexType idx )
  *
  *************************************************************************
  */
-void DataStore::destroyAttribute( Attribute* attr )
+void DataStore::destroyAttribute(Attribute* attr)
 {
-  SLIC_ASSERT( attr != nullptr);
+  SLIC_ASSERT(attr != nullptr);
 
   destroyAttribute(attr->getIndex());
 }
@@ -405,9 +427,9 @@ void DataStore::destroyAttribute( Attribute* attr )
 void DataStore::destroyAllAttributes()
 {
   IndexType bidx = getFirstValidAttributeIndex();
-  while ( indexIsValid(bidx) )
+  while(indexIsValid(bidx))
   {
-    destroyAttribute( bidx );
+    destroyAttribute(bidx);
     bidx = getNextValidAttributeIndex(bidx);
   }
 }
@@ -421,10 +443,10 @@ void DataStore::destroyAllAttributes()
  *
  *************************************************************************
  */
-Attribute* DataStore::getAttribute( IndexType idx )
+Attribute* DataStore::getAttribute(IndexType idx)
 {
-  SLIC_CHECK_MSG( hasAttribute(idx),
-                  "DataStore has no Attribute with index " << idx);
+  SLIC_CHECK_MSG(hasAttribute(idx),
+                 "DataStore has no Attribute with index " << idx);
 
   return m_attribute_coll->getItem(idx);
 }
@@ -438,10 +460,10 @@ Attribute* DataStore::getAttribute( IndexType idx )
  *
  *************************************************************************
  */
-const Attribute* DataStore::getAttribute( IndexType idx ) const
+const Attribute* DataStore::getAttribute(IndexType idx) const
 {
-  SLIC_CHECK_MSG( hasAttribute(idx),
-                  "DataStore has no Attribute with index " << idx);
+  SLIC_CHECK_MSG(hasAttribute(idx),
+                 "DataStore has no Attribute with index " << idx);
 
   return m_attribute_coll->getItem(idx);
 }
@@ -455,10 +477,10 @@ const Attribute* DataStore::getAttribute( IndexType idx ) const
  *
  *************************************************************************
  */
-Attribute* DataStore::getAttribute( const std::string& name )
+Attribute* DataStore::getAttribute(const std::string& name)
 {
-  SLIC_CHECK_MSG( hasAttribute(name),
-                  "DataStore has no Attribute with name " << name);
+  SLIC_CHECK_MSG(hasAttribute(name),
+                 "DataStore has no Attribute with name " << name);
 
   return m_attribute_coll->getItem(name);
 }
@@ -472,10 +494,10 @@ Attribute* DataStore::getAttribute( const std::string& name )
  *
  *************************************************************************
  */
-const Attribute* DataStore::getAttribute( const std::string& name ) const
+const Attribute* DataStore::getAttribute(const std::string& name) const
 {
-  SLIC_CHECK_MSG( hasAttribute(name),
-                  "DataStore has no Attribute with name " << name);
+  SLIC_CHECK_MSG(hasAttribute(name),
+                 "DataStore has no Attribute with name " << name);
 
   return m_attribute_coll->getItem(name);
 }
@@ -529,7 +551,7 @@ bool DataStore::saveAttributeLayout(Node& node) const
   bool hasAttributes = false;
 
   IndexType aidx = getFirstValidAttributeIndex();
-  while ( indexIsValid(aidx) )
+  while(indexIsValid(aidx))
   {
     const Attribute* attr = getAttribute(aidx);
 
@@ -553,10 +575,10 @@ bool DataStore::saveAttributeLayout(Node& node) const
  */
 void DataStore::loadAttributeLayout(Node& node)
 {
-  if (node.has_path("attribute") )
+  if(node.has_path("attribute"))
   {
     conduit::NodeIterator attrs_itr = node["attribute"].children();
-    while (attrs_itr.has_next())
+    while(attrs_itr.has_next())
     {
       Node& n_attr = attrs_itr.next();
       std::string attr_name = attrs_itr.name();
@@ -572,19 +594,19 @@ bool DataStore::generateBlueprintIndex(const std::string& domain_path,
                                        const std::string& index_path,
                                        int num_domains)
 {
-  Group* domain = (domain_path == "/") ?
-                  getRoot() : getRoot()->getGroup(domain_path);
+  Group* domain =
+    (domain_path == "/") ? getRoot() : getRoot()->getGroup(domain_path);
 
   conduit::Node mesh_node;
   domain->createNativeLayout(mesh_node);
 
   Group* bpindex = getRoot()->hasGroup(index_path)
-                   ? getRoot()->getGroup(index_path)
-                   : getRoot()->createGroup(index_path);
+    ? getRoot()->getGroup(index_path)
+    : getRoot()->createGroup(index_path);
 
   bool success = false;
   conduit::Node info;
-  if (conduit::blueprint::verify("mesh", mesh_node, info))
+  if(conduit::blueprint::verify("mesh", mesh_node, info))
   {
     conduit::Node index;
     conduit::blueprint::mesh::generate_index(mesh_node,
@@ -644,10 +666,7 @@ bool DataStore::generateBlueprintIndex(MPI_Comm comm,
  *
  *************************************************************************
  */
-void DataStore::print() const
-{
-  print(std::cout);
-}
+void DataStore::print() const { print(std::cout); }
 
 /*
  *************************************************************************

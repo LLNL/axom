@@ -8,14 +8,12 @@
 #include "axom/core/utilities/StringUtilities.hpp"
 
 #ifndef INLET_UTILS_HPP
-#define INLET_UTILS_HPP
+  #define INLET_UTILS_HPP
 
 namespace axom
 {
 namespace inlet
 {
-
-
 /*!
 *****************************************************************************
 * \brief This function is used to mark if anything went wrong during the 
@@ -51,7 +49,7 @@ std::string appendPrefix(const std::string& prefix, const std::string& name);
 */
 std::string removePrefix(const std::string& prefix, const std::string& name);
 
-}
-}
+}  // namespace inlet
+}  // namespace axom
 
 #endif

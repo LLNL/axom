@@ -18,7 +18,6 @@ namespace axom
 {
 namespace mint
 {
-
 /*!
  * \brief Lagrange Finite Element definition for the Quadratic Quadrilateral.
  *
@@ -41,17 +40,15 @@ namespace mint
  *
  * \see ShapeFunction
  */
-template < >
-class Lagrange< mint::QUAD9 > :
-  public ShapeFunction< Lagrange< mint::QUAD9 > >
+template <>
+class Lagrange<mint::QUAD9> : public ShapeFunction<Lagrange<mint::QUAD9>>
 {
 public:
-
   static CellType getCellType() { return mint::QUAD9; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 
-  static int getNumDofs() { return 9;  }
+  static int getNumDofs() { return 9; }
 
   static int getMaxNewtonIters() { return 16; }
 
@@ -61,65 +58,65 @@ public:
 
   static double getMax() { return 1; }
 
-  static void getCenter( double* center )
+  static void getCenter(double* center)
   {
-    SLIC_ASSERT( center != nullptr );
+    SLIC_ASSERT(center != nullptr);
 
-    center[ 0 ] = 0.5;
-    center[ 1 ] = 0.5;
+    center[0] = 0.5;
+    center[1] = 0.5;
   }
 
-  static void getCoords( double* coords )
+  static void getCoords(double* coords)
   {
-    SLIC_ASSERT( coords != nullptr );
+    SLIC_ASSERT(coords != nullptr);
 
     // corners:
     // node 0
-    coords[ 0 ] = 0.0;
-    coords[ 1 ] = 0.0;
+    coords[0] = 0.0;
+    coords[1] = 0.0;
 
     // node 1
-    coords[ 2 ] = 1.0;
-    coords[ 3 ] = 0.0;
+    coords[2] = 1.0;
+    coords[3] = 0.0;
 
     // node 2
-    coords[ 4 ] = 1.0;
-    coords[ 5 ] = 1.0;
+    coords[4] = 1.0;
+    coords[5] = 1.0;
 
     // node 3
-    coords[ 6 ] = 0.0;
-    coords[ 7 ] = 1.0;
+    coords[6] = 0.0;
+    coords[7] = 1.0;
 
     // edges:
     // node 4
-    coords[ 8 ] = 0.5;
-    coords[ 9 ] = 0.0;
+    coords[8] = 0.5;
+    coords[9] = 0.0;
 
     // node 5
-    coords[ 10 ] = 1.0;
-    coords[ 11 ] = 0.5;
+    coords[10] = 1.0;
+    coords[11] = 0.5;
 
     // node 6
-    coords[ 12 ] = 0.5;
-    coords[ 13 ] = 1.0;
+    coords[12] = 0.5;
+    coords[13] = 1.0;
 
     // node 7
-    coords[ 14 ] = 0.0;
-    coords[ 15 ] = 0.5;
+    coords[14] = 0.0;
+    coords[15] = 0.5;
 
     // centroid:
     // node 8
-    coords[ 16 ] = 0.5;
-    coords[ 17 ] = 0.5;
+    coords[16] = 0.5;
+    coords[17] = 0.5;
   }
 
-  static void computeShape( const double* xr, double* phi )
+  static void computeShape(const double* xr, double* phi)
   {
-    SLIC_ASSERT(  xr != nullptr );
-    SLIC_ASSERT(  phi != nullptr );
+    SLIC_ASSERT(xr != nullptr);
+    SLIC_ASSERT(phi != nullptr);
 
-    const double r  = xr[0];
-    const double s  = xr[1];
+    const double r = xr[0];
+    const double s = xr[1];
 
     // bar element along r
     const double r1 = (r - 1.) * (2. * r - 1);
@@ -131,24 +128,24 @@ public:
     const double s2 = 4. * s * (1. - s);
     const double s3 = s * (2. * s - 1.);
 
-    phi[ 0 ] = r1 * s1;
-    phi[ 1 ] = r3 * s1;
-    phi[ 2 ] = r3 * s3;
-    phi[ 3 ] = r1 * s3;
-    phi[ 4 ] = r2 * s1;
-    phi[ 5 ] = r3 * s2;
-    phi[ 6 ] = r2 * s3;
-    phi[ 7 ] = r1 * s2;
-    phi[ 8 ] = r2 * s2;
+    phi[0] = r1 * s1;
+    phi[1] = r3 * s1;
+    phi[2] = r3 * s3;
+    phi[3] = r1 * s3;
+    phi[4] = r2 * s1;
+    phi[5] = r3 * s2;
+    phi[6] = r2 * s3;
+    phi[7] = r1 * s2;
+    phi[8] = r2 * s2;
   }
 
-  static void computeDerivatives( const double* xr, double* phidot )
+  static void computeDerivatives(const double* xr, double* phidot)
   {
-    SLIC_ASSERT(  xr != nullptr );
-    SLIC_ASSERT(  phidot != nullptr );
+    SLIC_ASSERT(xr != nullptr);
+    SLIC_ASSERT(phidot != nullptr);
 
-    const double r  = xr[0];
-    const double s  = xr[1];
+    const double r = xr[0];
+    const double s = xr[1];
 
     // bar element along r
     const double r1 = (r - 1.) * (2. * r - 1);
@@ -171,31 +168,30 @@ public:
     const double ds3 = 4. * s - 1.;
 
     // r derivatives
-    phidot[ 0 ] = dr1 * s1;
-    phidot[ 1 ] = dr3 * s1;
-    phidot[ 2 ] = dr3 * s3;
-    phidot[ 3 ] = dr1 * s3;
-    phidot[ 4 ] = dr2 * s1;
-    phidot[ 5 ] = dr3 * s2;
-    phidot[ 6 ] = dr2 * s3;
-    phidot[ 7 ] = dr1 * s2;
-    phidot[ 8 ] = dr2 * s2;
+    phidot[0] = dr1 * s1;
+    phidot[1] = dr3 * s1;
+    phidot[2] = dr3 * s3;
+    phidot[3] = dr1 * s3;
+    phidot[4] = dr2 * s1;
+    phidot[5] = dr3 * s2;
+    phidot[6] = dr2 * s3;
+    phidot[7] = dr1 * s2;
+    phidot[8] = dr2 * s2;
 
     // s derivatives
-    phidot[ 9  ] = r1 * ds1;
-    phidot[ 10 ] = r3 * ds1;
-    phidot[ 11 ] = r3 * ds3;
-    phidot[ 12 ] = r1 * ds3;
-    phidot[ 13 ] = r2 * ds1;
-    phidot[ 14 ] = r3 * ds2;
-    phidot[ 15 ] = r2 * ds3;
-    phidot[ 16 ] = r1 * ds2;
-    phidot[ 17 ] = r2 * ds2;
+    phidot[9] = r1 * ds1;
+    phidot[10] = r3 * ds1;
+    phidot[11] = r3 * ds3;
+    phidot[12] = r1 * ds3;
+    phidot[13] = r2 * ds1;
+    phidot[14] = r3 * ds2;
+    phidot[15] = r2 * ds3;
+    phidot[16] = r1 * ds2;
+    phidot[17] = r2 * ds2;
   }
-
 };
 
 } /* namespace mint */
-} /* namespace arom */
+}  // namespace axom
 
 #endif /* MINT_QUAD_9_HPP_ */

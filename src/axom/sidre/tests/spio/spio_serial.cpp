@@ -5,16 +5,16 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"   // for AXOM_USE_HDF5
-#include "axom/core/Types.hpp"    // for common::int64
+#include "axom/config.hpp"      // for AXOM_USE_HDF5
+#include "axom/core/Types.hpp"  // for common::int64
 #include "axom/sidre/core/sidre.hpp"
 #include "axom/sidre/spio/IOManager.hpp"
 #include <list>
 
 #include "mpi.h"
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
+using axom::sidre::Group;
 using axom::sidre::IOManager;
 
 using axom::int64;
@@ -27,7 +27,7 @@ const std::string PROTOCOL = "sidre_hdf5";
 const std::string PROTOCOL = "sidre_json";
 #endif
 const std::string ROOT_EXT = ".root";
-}
+}  // namespace
 
 //------------------------------------------------------------------------------
 
@@ -67,14 +67,14 @@ TEST(spio_serial, basic_writeread)
   int64 testvalue2 =
     ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
 
-  EXPECT_EQ(testvalue1,testvalue2);
+  EXPECT_EQ(testvalue1, testvalue2);
 
   testvalue1 =
     ds1->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1")->getData();
   testvalue2 =
     ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1")->getData();
 
-  EXPECT_EQ(testvalue1,testvalue2);
+  EXPECT_EQ(testvalue1, testvalue2);
 
   delete ds1;
   delete ds2;
@@ -94,8 +94,9 @@ TEST(spio_serial, basic_writeread_protocols)
   protocols.push_back("sidre_conduit_json");
   protocols.push_back("sidre_json");
 
-  for (std::list<std::string>::const_iterator itr = protocols.begin() ;
-       itr != protocols.end() ; ++itr)
+  for(std::list<std::string>::const_iterator itr = protocols.begin();
+      itr != protocols.end();
+      ++itr)
   {
     const std::string& protocol = *itr;
 
@@ -133,14 +134,14 @@ TEST(spio_serial, basic_writeread_protocols)
     int64 testvalue2 =
       ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
 
-    EXPECT_EQ(testvalue1,testvalue2);
+    EXPECT_EQ(testvalue1, testvalue2);
 
     testvalue1 =
       ds1->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1")->getData();
     testvalue2 =
       ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1")->getData();
 
-    EXPECT_EQ(testvalue1,testvalue2);
+    EXPECT_EQ(testvalue1, testvalue2);
 
     delete ds1;
     delete ds2;
@@ -154,15 +155,15 @@ TEST(spio_serial, write_read_write)
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_files = std::max( num_ranks / 2, 1);
+  int num_files = std::max(num_ranks / 2, 1);
   std::stringstream sstr;
   sstr << "out_spio_WRW_" << num_ranks;
   std::string filename = sstr.str();
 
   // Initialize a datastore and dump to disk
   DataStore* ds = new DataStore();
-  ds->getRoot()->createViewScalar("grp/i",2);
-  ds->getRoot()->createViewScalar("grp/f",3.0);
+  ds->getRoot()->createViewScalar("grp/i", 2);
+  ds->getRoot()->createViewScalar("grp/f", 3.0);
   IOManager writer_a(MPI_COMM_WORLD);
   writer_a.write(ds->getRoot(), num_files, filename, PROTOCOL);
 
@@ -184,10 +185,7 @@ TEST(spio_serial, write_read_write)
   //      minor: Unable to open file
   IOManager writer_b(MPI_COMM_WORLD);
   writer_b.write(ds_r.getRoot(), num_files, filename, PROTOCOL);
-
 }
-
-
 
 //----------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

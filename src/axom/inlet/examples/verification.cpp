@@ -4,12 +4,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include <iostream>
-
 #include "axom/inlet.hpp"
 #include "axom/slic/core/UnitTestLogger.hpp"
 
-int main() {
-
+int main()
+{
   // Inlet requires a SLIC logger to be initialized to output runtime information
   // This is a generic basic SLIC logger
   axom::slic::UnitTestLogger logger;
@@ -37,13 +36,16 @@ int main() {
     bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
     bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
     bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
-    if(dim == 1 && x_present) {
+    if(dim == 1 && x_present)
+    {
       return true;
     }
-    else if(dim == 2 && x_present && y_present) {
+    else if(dim == 2 && x_present && y_present)
+    {
       return true;
     }
-    else if(dim == 3 && x_present && y_present && z_present) {
+    else if(dim == 3 && x_present && y_present && z_present)
+    {
       return true;
     }
     return false;
@@ -53,7 +55,7 @@ int main() {
   // We expect verification to be unsuccessful since the only Field
   // in vector is x but 2 dimensions are expected
   SLIC_INFO("This should fail due to a missing dimension:");
-  myInlet->verify() ? msg = "Verification was successful\n" 
+  myInlet->verify() ? msg = "Verification was successful\n"
                     : msg = "Verification was unsuccessful\n";
   SLIC_INFO(msg);
 
@@ -63,7 +65,7 @@ int main() {
   // We expect the verification to succeed because vector now contains
   // both x and y to match the 2 dimensions
   SLIC_INFO("After adding the required dimension:");
-  myInlet->verify() ? msg = "Verification was successful\n" 
+  myInlet->verify() ? msg = "Verification was successful\n"
                     : msg = "Verification was unsuccessful\n";
   SLIC_INFO(msg);
   // _inlet_workflow_verification_end
@@ -74,7 +76,8 @@ int main() {
 
   // Get dimensions if it was present in input file
   dim_found = myInlet->get("dimensions", dim);
-  if (dim_found) {
+  if(dim_found)
+  {
     msg = "Dimensions = " + std::to_string(dim) + "\n";
     SLIC_INFO(msg);
   }
@@ -82,7 +85,8 @@ int main() {
   // Get vector information if it was present in input file
   x_found = myInlet->get("vector/x", x);
   y_found = myInlet->get("vector/y", y);
-  if (x_found && y_found) {
+  if(x_found && y_found)
+  {
     msg = "Vector = " + std::to_string(x) + "," + std::to_string(y) + "\n";
     SLIC_INFO(msg);
   }

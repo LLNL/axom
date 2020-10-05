@@ -30,7 +30,6 @@ namespace axom
 {
 namespace inlet
 {
-
 /*!
  *******************************************************************************
  * \class Table
@@ -65,42 +64,43 @@ public:
         const std::string& description,
         std::shared_ptr<Reader> reader,
         axom::sidre::Group* sidreRootGroup,
-        bool docEnabled = true) : 
-    m_name(name),
-    m_reader(reader),
-    m_sidreRootGroup(sidreRootGroup),
-    m_docEnabled(docEnabled)
-    {
-      SLIC_ASSERT_MSG(m_reader, "Inlet's Reader class not valid");
-      SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr, "Inlet's Sidre Datastore class not set");
+        bool docEnabled = true)
+    : m_name(name)
+    , m_reader(reader)
+    , m_sidreRootGroup(sidreRootGroup)
+    , m_docEnabled(docEnabled)
+  {
+    SLIC_ASSERT_MSG(m_reader, "Inlet's Reader class not valid");
+    SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
+                    "Inlet's Sidre Datastore class not set");
 
-      if (m_name == "")
+    if(m_name == "")
+    {
+      m_sidreGroup = m_sidreRootGroup;
+    }
+    else
+    {
+      if(!m_sidreRootGroup->hasGroup(name))
       {
-        m_sidreGroup = m_sidreRootGroup;
+        m_sidreGroup = m_sidreRootGroup->createGroup(name);
+        m_sidreGroup->createViewString("InletType", "Table");
       }
       else
       {
-        if (!m_sidreRootGroup->hasGroup(name))
-        {
-          m_sidreGroup = m_sidreRootGroup->createGroup(name);
-          m_sidreGroup->createViewString("InletType", "Table");
-        }
-        else
-        {
-          m_sidreGroup = m_sidreRootGroup->getGroup(name);
-        }
-      }
-
-      if(description != "")
-      {
-        if (m_sidreGroup->hasView("description"))
-        {
-          //TODO: warn user?
-          m_sidreGroup->destroyViewAndData("description");
-        }
-        m_sidreGroup->createViewString("description", description);
+        m_sidreGroup = m_sidreRootGroup->getGroup(name);
       }
     }
+
+    if(description != "")
+    {
+      if(m_sidreGroup->hasView("description"))
+      {
+        //TODO: warn user?
+        m_sidreGroup->destroyViewAndData("description");
+      }
+      m_sidreGroup->createViewString("description", description);
+    }
+  }
 
   virtual ~Table() = default;
 
@@ -136,11 +136,107 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addTable(const std::string& name,
-                                  const std::string& description="");
+                                  const std::string& description = "");
 
   /*!
    *****************************************************************************
-   * \brief Add a Boolean Field to the input file schema.
+   * \brief Add an array of Boolean Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addBoolArray(const std::string& name,
+                                      const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Integer Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addIntArray(const std::string& name,
+                                     const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Double Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addDoubleArray(const std::string& name,
+                                        const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of String Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addStringArray(const std::string& name,
+                                        const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Get a boolean array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getBoolArray(std::unordered_map<int, bool>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get a int array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getIntArray(std::unordered_map<int, int>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get a double array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getDoubleArray(std::unordered_map<int, double>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get a string array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  bool getStringArray(std::unordered_map<int, std::string>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Add a Boolean Field to the input deck schema.
    *
    * Adds a Boolean Field to the input file schema. It may or may not be required
    * to be present in the input file. This creates the Sidre Group class with the
@@ -154,7 +250,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description="");
+                                 const std::string& description = "")
+  {
+    return addBoolHelper(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -172,7 +271,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description="");
+                                   const std::string& description = "")
+  {
+    return addDoubleHelper(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -190,8 +292,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description="");
-
+                                const std::string& description = "")
+  {
+    return addIntHelper(name, description);
+  }
   /*!
    *****************************************************************************
    * \brief Add a String Field to the input file schema.
@@ -208,7 +312,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description="");
+                                   const std::string& description = "")
+  {
+    return addStringHelper(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -246,7 +353,7 @@ public:
   */
   std::shared_ptr<Table> registerVerifier(std::function<bool()> lambda);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief This will be called by Inlet::verify to verify the contents of this
    *  Table and all child Tables/Fields of this Table.
@@ -263,7 +370,7 @@ public:
    */
   bool hasTable(const std::string& tableName);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Return whether a Field with the given name is present in this Table's
    *  subtree.
@@ -272,7 +379,6 @@ public:
    *****************************************************************************
    */
   bool hasField(const std::string& fieldName);
- 
 
   /*!
    *****************************************************************************
@@ -309,7 +415,7 @@ public:
    */
   std::shared_ptr<Table> getTable(const std::string& tableName);
 
-   /*!
+  /*!
    *****************************************************************************
    * \brief Retrieves the matching Field.
    * 
@@ -322,6 +428,22 @@ public:
   std::shared_ptr<Field> getField(const std::string& fieldName);
 
 private:
+  std::shared_ptr<Field> addBoolHelper(const std::string& name,
+                                       const std::string& description = "",
+                                       bool forArray = false,
+                                       bool num = 0);
+  std::shared_ptr<Field> addIntHelper(const std::string& name,
+                                      const std::string& description = "",
+                                      bool forArray = false,
+                                      int num = 0);
+  std::shared_ptr<Field> addDoubleHelper(const std::string& name,
+                                         const std::string& description = "",
+                                         bool forArray = false,
+                                         double num = 0);
+  std::shared_ptr<Field> addStringHelper(const std::string& name,
+                                         const std::string& description = "",
+                                         bool forArray = false,
+                                         const std::string& str = "");
   /*!
    *****************************************************************************
    * \brief Creates the basic Sidre Group for this Table and stores the given
@@ -331,7 +453,7 @@ private:
    *****************************************************************************
    */
   axom::sidre::Group* createSidreGroup(const std::string& name,
-                                   const std::string& description);
+                                       const std::string& description);
 
   /*!
    *****************************************************************************
@@ -347,8 +469,8 @@ private:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> addField(axom::sidre::Group* sidreGroup, 
-                                  axom::sidre::DataTypeId type, 
+  std::shared_ptr<Field> addField(axom::sidre::Group* sidreGroup,
+                                  axom::sidre::DataTypeId type,
                                   const std::string& fullName,
                                   const std::string& name);
 
@@ -386,7 +508,7 @@ private:
    */
   bool hasChildTable(const std::string& tableName);
 
-    /*!
+  /*!
    *****************************************************************************
    * \brief This is an internal helper. It return whether this Table has a child 
    * Field with the given name.
@@ -408,7 +530,7 @@ private:
   std::function<bool()> m_verifier;
 };
 
-} // end namespace inlet
-} // end namespace axom
+}  // end namespace inlet
+}  // end namespace axom
 
 #endif

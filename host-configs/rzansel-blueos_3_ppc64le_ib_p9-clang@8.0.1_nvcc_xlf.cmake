@@ -24,7 +24,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACH
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2020_08_11_23_54_55/clang-8.0.1_nvcc_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2020_09_19_17_03_53/clang-8.0.1_nvcc_xlf" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
@@ -36,9 +36,9 @@ set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
 # SCR not built
 
-set(RAJA_DIR "${TPL_ROOT}/raja-0.11.0" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.12.1" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-4.0.1" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # MPI
@@ -75,7 +75,7 @@ set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/sphinx-build" CACHE PAT
 
 set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/shroud" CACHE PATH "")
 
-set(UNCRUSTIFY_EXECUTABLE "${DEVTOOLS_ROOT}/uncrustify-0.61/bin/uncrustify" CACHE PATH "")
+set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
 
 set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-1.87/bin/cppcheck" CACHE PATH "")
 
@@ -108,8 +108,6 @@ set(CMAKE_CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc" CACHE PATH "")
 set(CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "")
 
 set(AXOM_ENABLE_ANNOTATIONS ON CACHE BOOL "")
-
-set(AXOM_ENABLE_CUB ON CACHE BOOL "")
 
 set(AXOM_CUDA_ARCH "sm_70" CACHE PATH "")
 

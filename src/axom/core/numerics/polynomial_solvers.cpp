@@ -3,20 +3,19 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/utilities/Utilities.hpp" // for isNearlyEqual()
+#include "axom/core/utilities/Utilities.hpp"  // for isNearlyEqual()
 
 #include "axom/core/numerics/polynomial_solvers.hpp"
 
 // C/C++ includes
-#include <cassert> // for assert()
+#include <cassert>  // for assert()
 
 namespace axom
 {
 namespace numerics
 {
-
 //------------------------------------------------------------------------------
-int solve_linear( const double* coeff, double* roots, int& numRoots )
+int solve_linear(const double* coeff, double* roots, int& numRoots)
 {
   int status = -1;
 
@@ -24,9 +23,9 @@ int solve_linear( const double* coeff, double* roots, int& numRoots )
   double a = coeff[1];
   double b = coeff[0];
 
-  if (utilities::isNearlyEqual(a, 0.))
+  if(utilities::isNearlyEqual(a, 0.))
   {
-    if (utilities::isNearlyEqual(b, 0.))
+    if(utilities::isNearlyEqual(b, 0.))
     {
       // Infinite solutions: a horizontal line on the X-axis.
       status = 0;
@@ -50,7 +49,7 @@ int solve_linear( const double* coeff, double* roots, int& numRoots )
 }
 
 //------------------------------------------------------------------------------
-int solve_quadratic( const double* coeff, double* roots, int& numRoots )
+int solve_quadratic(const double* coeff, double* roots, int& numRoots)
 {
   int status = -1;
 
@@ -59,23 +58,23 @@ int solve_quadratic( const double* coeff, double* roots, int& numRoots )
   double b = coeff[1];
   double c = coeff[0];
 
-  if (utilities::isNearlyEqual(a, 0.))
+  if(utilities::isNearlyEqual(a, 0.))
   {
     // If this system is nearly linear, solve it as such.
     return solve_linear(coeff, roots, numRoots);
   }
 
-  double discriminant = b*b - 4*a*c;
-  double overtwoa = 1. / (2*a);
+  double discriminant = b * b - 4 * a * c;
+  double overtwoa = 1. / (2 * a);
 
-  if (utilities::isNearlyEqual(discriminant, 0.))
+  if(utilities::isNearlyEqual(discriminant, 0.))
   {
     // One unique real root
     status = 0;
     numRoots = 1;
     roots[0] = roots[1] = -b * overtwoa;
   }
-  else if (discriminant < 0)
+  else if(discriminant < 0)
   {
     // No real roots
     numRoots = 0;
@@ -96,18 +95,18 @@ int solve_quadratic( const double* coeff, double* roots, int& numRoots )
 inline double cuberoot(double x)
 {
   // pow(x, y) returns NaN for negative finite x and noninteger y.
-  if (x < 0)
+  if(x < 0)
   {
     return -pow(-x, 1. / 3.);
   }
   else
   {
-    return pow( x, 1. / 3.);
+    return pow(x, 1. / 3.);
   }
 }
 
 //------------------------------------------------------------------------------
-int solve_cubic( const double* coeff, double* roots, int& numRoots )
+int solve_cubic(const double* coeff, double* roots, int& numRoots)
 {
   int status = -1;
 
@@ -118,7 +117,7 @@ int solve_cubic( const double* coeff, double* roots, int& numRoots )
   double b = coeff[1];
   double c = coeff[0];
 
-  if (utilities::isNearlyEqual(cubecoeff, 0.))
+  if(utilities::isNearlyEqual(cubecoeff, 0.))
   {
     // If this system is nearly quadratic, solve it as such.
     return solve_quadratic(coeff, roots, numRoots);
@@ -132,19 +131,19 @@ int solve_cubic( const double* coeff, double* roots, int& numRoots )
 
   // Note that p and q differ by a multiplicative constant from Korn,
   // because they're always used with that multiplication.
-  double p = (-a*a + 3*b) / 9;                 //  1/3 Korn's p
-  double q = (a*(-2*a*a + 9*b) - 27*c) / 54;   // -1/2 Korn's q
+  double p = (-a * a + 3 * b) / 9;                      //  1/3 Korn's p
+  double q = (a * (-2 * a * a + 9 * b) - 27 * c) / 54;  // -1/2 Korn's q
 
-  double Q = p*p*p + q*q;           // actual discriminant == -108Q
+  double Q = p * p * p + q * q;  // actual discriminant == -108Q
   // the term chVar occurs because we've changed variables
   // (x = y - a/3) and we need to change back to x.
   const double onethird = 1. / 3.;
   double chVar = -a * onethird;
 
-  if (utilities::isNearlyEqual(Q, 0.))
+  if(utilities::isNearlyEqual(Q, 0.))
   {
     // We have three real roots, and at least two are equal.
-    if (utilities::isNearlyEqual(q, 0.))
+    if(utilities::isNearlyEqual(q, 0.))
     {
       numRoots = 1;
     }
@@ -155,11 +154,11 @@ int solve_cubic( const double* coeff, double* roots, int& numRoots )
     status = 0;
 
     double cuberootq = cuberoot(q);
-    roots[0] = chVar + 2*cuberootq;
-    roots[1] = chVar -   cuberootq;
+    roots[0] = chVar + 2 * cuberootq;
+    roots[1] = chVar - cuberootq;
     roots[2] = roots[1];
   }
-  else if (Q > 0)
+  else if(Q > 0)
   {
     // We have one real root, and two complex roots.
     // Right now we're calculating the real root only, but the complex roots
@@ -193,12 +192,12 @@ int solve_cubic( const double* coeff, double* roots, int& numRoots )
     numRoots = 3;
     status = 0;
 
-    double alpha = acos(q / sqrt(-p*p*p));
+    double alpha = acos(q / sqrt(-p * p * p));
     double m = 2 * sqrt(-p);
 
-    roots[0] = chVar + m*cos(alpha * onethird);
-    roots[1] = chVar - m*cos((alpha + M_PI) * onethird);
-    roots[2] = chVar - m*cos((alpha - M_PI) * onethird);
+    roots[0] = chVar + m * cos(alpha * onethird);
+    roots[1] = chVar - m * cos((alpha + M_PI) * onethird);
+    roots[2] = chVar - m * cos((alpha - M_PI) * onethird);
   }
 
   return status;

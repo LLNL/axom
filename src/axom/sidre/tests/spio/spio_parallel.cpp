@@ -19,14 +19,14 @@
 #include "gtest/gtest.h"
 
 // _parallel_io_headers_start
-#include "axom/config.hpp"   // for AXOM_USE_HDF5
+#include "axom/config.hpp"  // for AXOM_USE_HDF5
 
 #include "conduit_blueprint.hpp"
 
 #include "conduit_relay.hpp"
 
 #ifdef AXOM_USE_HDF5
-#include "conduit_relay_io_hdf5.hpp"
+  #include "conduit_relay_io_hdf5.hpp"
 #endif
 
 #include "axom/sidre/core/sidre.hpp"
@@ -36,11 +36,11 @@
 #include "mpi.h"
 // _parallel_io_headers_end
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
-using axom::sidre::View;
+using axom::sidre::Group;
 using axom::sidre::IOManager;
+using axom::sidre::View;
 
 namespace
 {
@@ -58,14 +58,13 @@ const std::string ROOT_EXT = ".root";
 int numOutputFiles(int numRanks)
 {
 #ifdef AXOM_USE_HDF5
-  return std::max( numRanks / 2, 1);
+  return std::max(numRanks / 2, 1);
 #else
   return numRanks;
 #endif
 }
 
-
-}
+}  // namespace
 
 //------------------------------------------------------------------------------
 
@@ -77,7 +76,7 @@ TEST(spio_parallel, parallel_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  const int num_output = numOutputFiles (num_ranks);
+  const int num_output = numOutputFiles(num_ranks);
 
   /*
    * Create a DataStore and give it a small hierarchy of groups and views.
@@ -94,13 +93,13 @@ TEST(spio_parallel, parallel_writeread)
 
   Group* ga = flds->createGroup("a");
   Group* gb = flds2->createGroup("b");
-  ga->createViewScalar<int>("i0", 101*my_rank);
+  ga->createViewScalar<int>("i0", 101 * my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
   int* i1_vals = gb->getView("i1")->getData();
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i = 0; i < 10; i++)
   {
-    i1_vals[i] = (i+10) * (404-my_rank-i);
+    i1_vals[i] = (i + 10) * (404 - my_rank - i);
   }
 
   // The namespace qualifying IOManager is not necessary for compilation
@@ -125,7 +124,7 @@ TEST(spio_parallel, parallel_writeread)
    * Note: This is only valid for the 'sidre_hdf5' protocol
    */
   MPI_Barrier(MPI_COMM_WORLD);
-  if (my_rank == 0 && PROTOCOL == "sidre_hdf5")
+  if(my_rank == 0 && PROTOCOL == "sidre_hdf5")
   {
     DataStore* dsextra = new DataStore();
     Group* extra = dsextra->getRoot()->createGroup("extra");
@@ -144,8 +143,7 @@ TEST(spio_parallel, parallel_writeread)
 
     writer.writeGroupToRootFileAtPath(path_test, root_name, "extra/child");
 
-    View* view_test =
-      dsextra->getRoot()->createViewString("word3", "new_view");
+    View* view_test = dsextra->getRoot()->createViewString("word3", "new_view");
 
     writer.writeViewToRootFileAtPath(view_test,
                                      root_name,
@@ -158,15 +156,14 @@ TEST(spio_parallel, parallel_writeread)
   /*
    * Read the root file on rank 1, unless this is a serial run.
    */
-  if ( (my_rank == 1 || num_ranks == 1) && PROTOCOL == "sidre_hdf5" )
+  if((my_rank == 1 || num_ranks == 1) && PROTOCOL == "sidre_hdf5")
   {
-
     conduit::Node root_node;
     conduit::relay::io::load(root_name, "hdf5", root_node);
 
     std::string pattern = root_node["tree_pattern"].as_string();
 
-    const conduit::Node& n = root_node["extra"]; 
+    const conduit::Node& n = root_node["extra"];
 
     EXPECT_EQ(pattern, "tree_%07d");
 
@@ -180,7 +177,6 @@ TEST(spio_parallel, parallel_writeread)
     EXPECT_EQ(n["child"]["path_test"]["path_val"].to_int(), 9);
     EXPECT_EQ(n["child"]["path_test"]["word2"].as_string(), "again");
     EXPECT_EQ(n["child"]["path_test"]["word3"].as_string(), "new_view");
-
   }
 
   // _parallel_io_load_start
@@ -194,10 +190,8 @@ TEST(spio_parallel, parallel_writeread)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-
   reader.read(ds2->getRoot(), root_name);
   // _parallel_io_load_end
-
 
   /*
    * Verify that the contents of ds2 match those written from ds.
@@ -218,12 +212,12 @@ TEST(spio_parallel, parallel_writeread)
 
   int num_elems = view_i1_orig->getNumElements();
   EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
-  if (view_i1_restored->getNumElements() == num_elems)
+  if(view_i1_restored->getNumElements() == num_elems)
   {
     int* i1_orig = view_i1_orig->getData();
     int* i1_restored = view_i1_restored->getData();
 
-    for (int i = 0 ; i < num_elems ; ++i)
+    for(int i = 0; i < num_elems; ++i)
     {
       EXPECT_EQ(i1_orig[i], i1_restored[i]);
     }
@@ -231,7 +225,6 @@ TEST(spio_parallel, parallel_writeread)
 
   delete ds;
   delete ds2;
-
 }
 
 //----------------------------------------------------------------------
@@ -241,7 +234,7 @@ TEST(spio_parallel, write_read_write)
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  const int num_files = numOutputFiles (num_ranks);
+  const int num_files = numOutputFiles(num_ranks);
 
   std::stringstream sstr;
   sstr << "out_spio_WRW_" << num_ranks;
@@ -249,8 +242,8 @@ TEST(spio_parallel, write_read_write)
 
   // Initialize a datastore and dump to disk
   DataStore* ds = new DataStore();
-  ds->getRoot()->createViewScalar("grp/i",2);
-  ds->getRoot()->createViewScalar("grp/f",3.0);
+  ds->getRoot()->createViewScalar("grp/i", 2);
+  ds->getRoot()->createViewScalar("grp/f", 3.0);
   IOManager writer_a(MPI_COMM_WORLD);
   writer_a.write(ds->getRoot(), num_files, filename, PROTOCOL);
 
@@ -277,11 +270,10 @@ TEST(spio_parallel, write_read_write)
 //------------------------------------------------------------------------------
 TEST(spio_parallel, external_writeread)
 {
-  if( PROTOCOL != "sidre_hdf5")
+  if(PROTOCOL != "sidre_hdf5")
   {
-    SUCCEED()
-      << "Loading external data in spio only currently supported "
-      << " for 'sidre_hdf5' protocol";
+    SUCCEED() << "Loading external data in spio only currently supported "
+              << " for 'sidre_hdf5' protocol";
     return;
   }
 
@@ -291,14 +283,14 @@ TEST(spio_parallel, external_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  const int num_output = numOutputFiles (num_ranks);
+  const int num_output = numOutputFiles(num_ranks);
 
   const int nvals = 10;
   int orig_vals1[nvals], orig_vals2[nvals];
-  for(int i=0 ; i<10 ; i++)
+  for(int i = 0; i < 10; i++)
   {
-    orig_vals1[i] = (i+10) * (404-my_rank-i);
-    orig_vals2[i] = (i+10) * (404-my_rank-i) + 20;
+    orig_vals1[i] = (i + 10) * (404 - my_rank - i);
+    orig_vals2[i] = (i + 10) * (404 - my_rank - i) + 20;
   }
 
   /*
@@ -343,7 +335,7 @@ TEST(spio_parallel, external_writeread)
   reader.read(root2, file_name + ROOT_EXT);
 
   int restored_vals1[nvals], restored_vals2[nvals];
-  for (int i = 0 ; i < nvals ; ++i)
+  for(int i = 0; i < nvals; ++i)
   {
     restored_vals1[i] = -1;
     restored_vals2[i] = -1;
@@ -360,9 +352,9 @@ TEST(spio_parallel, external_writeread)
   enum SpioTestResult
   {
     SPIO_TEST_SUCCESS = 0,
-    HIERARCHY_ERROR   = 1<<0,
-    EXT_ARRAY_ERROR   = 1<<1,
-    EXT_UNDESC_ERROR  = 1<<2
+    HIERARCHY_ERROR = 1 << 0,
+    EXT_ARRAY_ERROR = 1 << 1,
+    EXT_UNDESC_ERROR = 1 << 2
   };
   int result = SPIO_TEST_SUCCESS;
 
@@ -370,51 +362,50 @@ TEST(spio_parallel, external_writeread)
    * Verify that the contents of ds2 match those written from ds.
    */
   EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
-  if (!ds2->getRoot()->isEquivalentTo(root1))
+  if(!ds2->getRoot()->isEquivalentTo(root1))
   {
     result |= HIERARCHY_ERROR;
   }
-  SLIC_WARNING_IF( result & HIERARCHY_ERROR, "Tree layouts don't match");
+  SLIC_WARNING_IF(result & HIERARCHY_ERROR, "Tree layouts don't match");
 
   EXPECT_EQ(view1->getNumElements(), nvals);
-  if (view1->getNumElements() != nvals)
+  if(view1->getNumElements() != nvals)
   {
     result |= EXT_ARRAY_ERROR;
   }
   else
   {
-    for (int i = 0 ; i < nvals ; ++i)
+    for(int i = 0; i < nvals; ++i)
     {
       EXPECT_EQ(orig_vals1[i], restored_vals1[i]);
-      if (orig_vals1[i] != restored_vals1[i])
+      if(orig_vals1[i] != restored_vals1[i])
       {
         result |= EXT_ARRAY_ERROR;
         break;
       }
     }
   }
-  SLIC_WARNING_IF( result & EXT_ARRAY_ERROR,
-                   "External_array was not correctly loaded");
+  SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
+                  "External_array was not correctly loaded");
 
   /*
    * external_undescribed was not written to disk (since it is undescribed)
    * make sure it was not read in.
    */
-  for (int i = 0 ; i < nvals ; ++i)
+  for(int i = 0; i < nvals; ++i)
   {
     EXPECT_EQ(-1, restored_vals2[i]);
-    if (-1 != restored_vals2[i])
+    if(-1 != restored_vals2[i])
     {
       result |= EXT_UNDESC_ERROR;
       break;
     }
   }
-  SLIC_WARNING_IF( result & EXT_UNDESC_ERROR,
-                   "External_undescribed data was modified.");
+  SLIC_WARNING_IF(result & EXT_UNDESC_ERROR,
+                  "External_undescribed data was modified.");
 
   delete ds1;
   delete ds2;
-
 }
 
 //----------------------------------------------------------------------
@@ -426,7 +417,7 @@ TEST(spio_parallel, irregular_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  const int num_output = numOutputFiles (num_ranks);
+  const int num_output = numOutputFiles(num_ranks);
 
   /*
    * Create a DataStore and give it a small hierarchy of groups and views.
@@ -440,14 +431,14 @@ TEST(spio_parallel, irregular_writeread)
 
   int num_fields = my_rank + 2;
 
-  for (int f = 0 ; f < num_fields ; ++f)
+  for(int f = 0; f < num_fields; ++f)
   {
     std::ostringstream ostream;
     ostream << "fields" << f;
     Group* flds = root1->createGroup(ostream.str());
 
-    int num_subgroups = ((f+my_rank)%3) + 1;
-    for (int g = 0 ; g < num_subgroups ; ++g)
+    int num_subgroups = ((f + my_rank) % 3) + 1;
+    for(int g = 0; g < num_subgroups; ++g)
     {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
@@ -455,24 +446,22 @@ TEST(spio_parallel, irregular_writeread)
 
       std::ostringstream vstream;
       vstream << "view" << g;
-      if (g % 2)
+      if(g % 2)
       {
-        sg->createView(vstream.str())->allocate(DataType::c_int(10+my_rank));
+        sg->createView(vstream.str())->allocate(DataType::c_int(10 + my_rank));
         int* vals = sg->getView(vstream.str())->getData();
 
-        for(int i=0 ; i<10+my_rank ; i++)
+        for(int i = 0; i < 10 + my_rank; i++)
         {
-          vals[i] = (i+10) * (404-my_rank-i-g-f);
+          vals[i] = (i + 10) * (404 - my_rank - i - g - f);
         }
-
       }
       else
       {
-        sg->createViewScalar<int>(vstream.str(), 101*my_rank*(f+g+1));
+        sg->createViewScalar<int>(vstream.str(), 101 * my_rank * (f + g + 1));
       }
     }
   }
-
 
   /*
    * Contents of the DataStore written to files with IOManager.
@@ -495,21 +484,20 @@ TEST(spio_parallel, irregular_writeread)
 
   reader.read(ds2->getRoot(), file_name + ROOT_EXT);
 
-
   /*
    * Verify that the contents of ds2 match those written from ds.
    */
   EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
 
-  for (int f = 0 ; f < num_fields ; ++f)
+  for(int f = 0; f < num_fields; ++f)
   {
     std::ostringstream ostream;
     ostream << "fields" << f;
     Group* flds1 = ds1->getRoot()->getGroup(ostream.str());
     Group* flds2 = ds2->getRoot()->getGroup(ostream.str());
 
-    int num_subgroups = ((f+my_rank)%3) + 1;
-    for (int g = 0 ; g < num_subgroups ; ++g)
+    int num_subgroups = ((f + my_rank) % 3) + 1;
+    for(int g = 0; g < num_subgroups; ++g)
     {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
@@ -518,9 +506,8 @@ TEST(spio_parallel, irregular_writeread)
 
       std::ostringstream vstream;
       vstream << "view" << g;
-      if (g % 2)
+      if(g % 2)
       {
-
         View* view_orig = sg1->getView(vstream.str());
         View* view_restored = sg2->getView(vstream.str());
 
@@ -529,7 +516,7 @@ TEST(spio_parallel, irregular_writeread)
         int* vals_orig = view_orig->getData();
         int* vals_restored = view_restored->getData();
 
-        for (int i = 0 ; i < num_elems ; ++i)
+        for(int i = 0; i < num_elems; ++i)
         {
           EXPECT_EQ(vals_orig[i], vals_restored[i]);
         }
@@ -557,7 +544,7 @@ TEST(spio_parallel, preserve_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  const int num_output = numOutputFiles (num_ranks);
+  const int num_output = numOutputFiles(num_ranks);
 
   /*
    * Create a DataStore and give it a small hierarchy of groups and views.
@@ -574,13 +561,13 @@ TEST(spio_parallel, preserve_writeread)
 
   Group* ga = flds->createGroup("a");
   Group* gb = flds2->createGroup("b");
-  ga->createViewScalar<int>("i0", 101*my_rank);
+  ga->createViewScalar<int>("i0", 101 * my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
   int* i1_vals = gb->getView("i1")->getData();
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i = 0; i < 10; i++)
   {
-    i1_vals[i] = (i+10) * (404-my_rank-i);
+    i1_vals[i] = (i + 10) * (404 - my_rank - i);
   }
 
   /*
@@ -647,7 +634,7 @@ TEST(spio_parallel, preserve_writeread)
   int* i1_orig = view_i1_orig->getData();
   int* i1_restored = view_i1_restored->getData();
 
-  for (int i = 0 ; i < num_elems ; ++i)
+  for(int i = 0; i < num_elems; ++i)
   {
     EXPECT_EQ(i1_orig[i], i1_restored[i]);
   }
@@ -674,17 +661,16 @@ TEST(spio_parallel, preserve_writeread)
   int ival = extra_fields->getView("child/ival")->getData();
   EXPECT_EQ(ival, 7);
 
-  EXPECT_EQ(std::string(extra_fields->getView(
-                          "child/word0")->getString()), "hello");
+  EXPECT_EQ(std::string(extra_fields->getView("child/word0")->getString()),
+            "hello");
 
-  EXPECT_EQ(std::string(extra_fields->getView(
-                          "child/word1")->getString()), "world");
+  EXPECT_EQ(std::string(extra_fields->getView("child/word1")->getString()),
+            "world");
 
   delete ds;
   delete ds2;
   delete dsextra;
 }
-
 
 TEST(spio_parallel, parallel_increase_procs)
 {
@@ -710,7 +696,7 @@ TEST(spio_parallel, parallel_increase_procs)
    */
 
   int top_output_rank = 1;
-  if (num_ranks <= 2)
+  if(num_ranks <= 2)
   {
     top_output_rank = 0;
   }
@@ -719,7 +705,7 @@ TEST(spio_parallel, parallel_increase_procs)
   // top_output_rank have their own communicator for the output step.
   MPI_Comm split_comm;
 
-  if (my_rank <= top_output_rank)
+  if(my_rank <= top_output_rank)
   {
     MPI_Comm_split(MPI_COMM_WORLD, 0, my_rank, &split_comm);
   }
@@ -729,9 +715,8 @@ TEST(spio_parallel, parallel_increase_procs)
   }
 
   DataStore* ds = new DataStore();
-  if (my_rank <= top_output_rank)
+  if(my_rank <= top_output_rank)
   {
-
     Group* root = ds->getRoot();
 
     Group* flds = root->createGroup("fields");
@@ -739,13 +724,13 @@ TEST(spio_parallel, parallel_increase_procs)
 
     Group* ga = flds->createGroup("a");
     Group* gb = flds2->createGroup("b");
-    ga->createViewScalar<int>("i0", 101*my_rank);
+    ga->createViewScalar<int>("i0", 101 * my_rank);
     gb->createView("i1")->allocate(DataType::c_int(10));
     int* i1_vals = gb->getView("i1")->getData();
 
-    for(int i=0 ; i<10 ; i++)
+    for(int i = 0; i < 10; i++)
     {
-      i1_vals[i] = (i+10) * (404-my_rank-i);
+      i1_vals[i] = (i + 10) * (404 - my_rank - i);
     }
 
     int num_files = 1;
@@ -754,7 +739,6 @@ TEST(spio_parallel, parallel_increase_procs)
     const std::string file_name = "out_spio_parallel_increase_procs";
 
     writer.write(root, num_files, file_name, PROTOCOL);
-
   }
 
   /*
@@ -774,7 +758,7 @@ TEST(spio_parallel, parallel_increase_procs)
    * Verify that the contents of ds2 on rank 0 match those written from ds.
    */
 
-  if (my_rank <= top_output_rank)
+  if(my_rank <= top_output_rank)
   {
     EXPECT_TRUE(my_rank != 0 || ds2->getRoot()->isEquivalentTo(ds->getRoot()));
 
@@ -792,12 +776,12 @@ TEST(spio_parallel, parallel_increase_procs)
 
     int num_elems = view_i1_orig->getNumElements();
     EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
-    if (view_i1_restored->getNumElements() == num_elems)
+    if(view_i1_restored->getNumElements() == num_elems)
     {
       int* i1_orig = view_i1_orig->getData();
       int* i1_restored = view_i1_restored->getData();
 
-      for (int i = 0 ; i < num_elems ; ++i)
+      for(int i = 0; i < num_elems; ++i)
       {
         EXPECT_EQ(i1_orig[i], i1_restored[i]);
       }
@@ -817,7 +801,6 @@ TEST(spio_parallel, parallel_increase_procs)
   MPI_Comm_free(&split_comm);
 
 #endif
-
 }
 
 TEST(spio_parallel, parallel_decrease_procs)
@@ -850,13 +833,13 @@ TEST(spio_parallel, parallel_decrease_procs)
 
   Group* ga = flds->createGroup("a");
   Group* gb = flds2->createGroup("b");
-  ga->createViewScalar<int>("i0", 101*my_rank);
+  ga->createViewScalar<int>("i0", 101 * my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
   int* i1_vals = gb->getView("i1")->getData();
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i = 0; i < 10; i++)
   {
-    i1_vals[i] = (i+10) * (404-my_rank-i);
+    i1_vals[i] = (i + 10) * (404 - my_rank - i);
   }
 
   int num_files = num_ranks;
@@ -867,7 +850,7 @@ TEST(spio_parallel, parallel_decrease_procs)
   writer.write(root, num_files, file_name, PROTOCOL);
 
   int top_input_rank = 1;
-  if (num_ranks <= 2)
+  if(num_ranks <= 2)
   {
     top_input_rank = 0;
   }
@@ -876,7 +859,7 @@ TEST(spio_parallel, parallel_decrease_procs)
   // top_input_rank have their own communicator for the input step.
   MPI_Comm split_comm;
 
-  if (my_rank <= top_input_rank)
+  if(my_rank <= top_input_rank)
   {
     MPI_Comm_split(MPI_COMM_WORLD, 0, my_rank, &split_comm);
   }
@@ -891,7 +874,7 @@ TEST(spio_parallel, parallel_decrease_procs)
    */
   DataStore* ds2 = new DataStore();
 
-  if (my_rank <= top_input_rank)
+  if(my_rank <= top_input_rank)
   {
     IOManager reader(split_comm);
 
@@ -901,47 +884,50 @@ TEST(spio_parallel, parallel_decrease_procs)
     Group* ds2_root = ds2->getRoot();
 
     int num_output_ranks = 1;
-    if (num_ranks > 1)
+    if(num_ranks > 1)
     {
       EXPECT_TRUE(ds2_root->hasView("reduced_input_ranks"));
     }
 
-    if (ds2->getRoot()->hasView("reduced_input_ranks"))
+    if(ds2->getRoot()->hasView("reduced_input_ranks"))
     {
       num_output_ranks = ds2_root->getView("reduced_input_ranks")->getData();
     }
 
-    for (int output_rank = my_rank ; output_rank < num_output_ranks ;
-         output_rank += (top_input_rank+1))
+    for(int output_rank = my_rank; output_rank < num_output_ranks;
+        output_rank += (top_input_rank + 1))
     {
       /*
        * Verify that the contents of ds2 on rank 0 match those written from ds.
        */
-      std::string output_name = fmt::sprintf("rank_%07d/sidre_input",
-                                             output_rank);
+      std::string output_name =
+        fmt::sprintf("rank_%07d/sidre_input", output_rank);
 
-      int testvalue = 101*output_rank;
-      int testvalue2 =
-        ds2_root->getGroup(output_name)->getGroup("fields")->getGroup("a")->
-        getView("i0")->getData();
+      int testvalue = 101 * output_rank;
+      int testvalue2 = ds2_root->getGroup(output_name)
+                         ->getGroup("fields")
+                         ->getGroup("a")
+                         ->getView("i0")
+                         ->getData();
 
       EXPECT_EQ(testvalue, testvalue2);
 
       View* view_i1_orig =
         ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-      View* view_i1_restored =
-        ds2_root->getGroup(output_name)->getGroup("fields2")->getGroup("b")->
-        getView("i1");
+      View* view_i1_restored = ds2_root->getGroup(output_name)
+                                 ->getGroup("fields2")
+                                 ->getGroup("b")
+                                 ->getView("i1");
 
       int num_elems = view_i1_orig->getNumElements();
       EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
-      if (view_i1_restored->getNumElements() == num_elems)
+      if(view_i1_restored->getNumElements() == num_elems)
       {
         int* i1_restored = view_i1_restored->getData();
 
-        for (int i = 0 ; i < num_elems ; ++i)
+        for(int i = 0; i < num_elems; ++i)
         {
-          EXPECT_EQ((i+10) * (404-output_rank-i), i1_restored[i]);
+          EXPECT_EQ((i + 10) * (404 - output_rank - i), i1_restored[i]);
         }
       }
     }
@@ -958,7 +944,6 @@ TEST(spio_parallel, parallel_decrease_procs)
   MPI_Comm_free(&split_comm);
 
 #endif
-
 }
 
 TEST(spio_parallel, sidre_simple_blueprint_example)
@@ -982,9 +967,7 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   // create a mesh using conduit's examples
   axom::sidre::Node n_mesh;
   // create a 2x2 element uniform mesh for each domain
-  conduit::blueprint::mesh::examples::basic("uniform",
-                                            3,3,1,
-                                            n_mesh);
+  conduit::blueprint::mesh::examples::basic("uniform", 3, 3, 1, n_mesh);
 
   // shift example mesh in x using rank to create non-overlapping domains
   n_mesh["coordsets/coords/origin/x"] = my_rank * 20.0;
@@ -995,9 +978,9 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   n_mesh["fields/rank/values"].set(conduit::DataType::int64(4));
 
   // fill rank field values
-  axom::int64 *rank_vals_ptr = n_mesh["fields/rank/values"].value();
+  axom::int64* rank_vals_ptr = n_mesh["fields/rank/values"].value();
 
-  for(int i=0;i<4;i++)
+  for(int i = 0; i < 4; i++)
   {
     rank_vals_ptr[i] = my_rank;
   }
@@ -1005,7 +988,7 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   // setup the data store
   DataStore ds;
   Group* root = ds.getRoot();
-  Group *domain_root = root->createGroup("mesh");
+  Group* domain_root = root->createGroup("mesh");
   // setup sidre group using the conduit tree
   domain_root->importConduitTree(n_mesh);
 
@@ -1031,8 +1014,6 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
 
 #endif
 }
-
-
 
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

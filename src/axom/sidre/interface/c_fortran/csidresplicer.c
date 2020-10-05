@@ -27,13 +27,7 @@
 //
 // The result must be an argument because some compilers (Intel)
 // cannot return type(C_PTR)
-void sidre_c_loc(void* addr, void** out)
-{
-  *out = addr;
-}
-void sidre_c_loc_(void* addr, void** out)
-{
-  *out = addr;
-}
+void sidre_c_loc(void* addr, void** out) { *out = addr; }
+void sidre_c_loc_(void* addr, void** out) { *out = addr; }
 
 // splicer end C_definitions

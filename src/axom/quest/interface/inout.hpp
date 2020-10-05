@@ -10,11 +10,10 @@
 #include "axom/config.hpp"  // for compile-time configuration options
 
 // Quest includes
-#include "axom/quest/interface/internal/mpicomm_wrapper.hpp" // MPI_COMM_SELF
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"  // MPI_COMM_SELF
 
 // C/C++ includes
-#include <string>   // for std::string
-
+#include <string>  // for std::string
 
 /*!
  * \file inout.hpp
@@ -37,7 +36,6 @@
 
 namespace axom
 {
-
 // Forward Mint declarations
 namespace mint
 {
@@ -98,12 +96,9 @@ bool inout_initialized();
 
 /// @}
 
-
-
 /// \name InOut query -- properties and querying functions
 /// \note These must be called after \a inout_init()
 /// @{
-
 
 /*!
  * \brief Tests if the point (\a x, \a y, \a z) is inside the contained volume
@@ -115,7 +110,7 @@ bool inout_initialized();
  *    surface mesh, false otherwise.
  * \pre inout_initialized() == true
  */
-bool inout_evaluate(double x, double y, double z=0.);
+bool inout_evaluate(double x, double y, double z = 0.);
 
 /*!
  * \brief Tests an array of points for containment
@@ -139,8 +134,11 @@ bool inout_evaluate(double x, double y, double z=0.);
  *  and \a res are not \a nullptr and contain sufficient data/space for
  *  \a npoints points.
  */
-int inout_evaluate(const double* x,const double* y,const double* z,
-                   int npoints, int* res);
+int inout_evaluate(const double* x,
+                   const double* y,
+                   const double* z,
+                   int npoints,
+                   int* res);
 
 /*!
  * \brief Returns the lower coordinates of the mesh's bounding box
@@ -193,7 +191,6 @@ int inout_get_dimension();
 
 /// @}
 
-
 /// \name InOut query -- setup options and parameters
 /// \note These must be called before \a inout_init()
 /// @{
@@ -231,9 +228,7 @@ int inout_set_vertex_weld_threshold(double thresh);
 
 /// @}
 
-
-
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom
 
 #endif /* QUEST_INOUT_INTERFACE_HPP_ */
