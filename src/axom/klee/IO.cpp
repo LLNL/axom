@@ -5,6 +5,7 @@
 
 #include "axom/klee/IO.hpp"
 
+#include <fstream>
 #include <functional>
 #include <iterator>
 #include <stdexcept>
@@ -119,4 +120,11 @@ ShapeSet readShapeSet(std::istream &stream) {
     return shapeSet;
 }
 
+ShapeSet readShapeSet(const std::string &filePath) {
+    std::ifstream fin{filePath};
+    auto shapeSet = readShapeSet(fin);
+    fin.close();
+    shapeSet.setPath(filePath);
+    return shapeSet;
+}
 }}

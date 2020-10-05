@@ -5,6 +5,7 @@
 
 #include "axom/klee/IO.hpp"
 
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
 
@@ -94,6 +95,27 @@ TEST(IOTest, readShapeSet_shapeWithDoesNotReplaceList) {
     EXPECT_FALSE(shape.replaces("mat1"));
     EXPECT_FALSE(shape.replaces("mat2"));
     EXPECT_TRUE(shape.replaces("material_not_in_list"));
+}
+
+TEST(IOTest, readShapeSet_file) {
+    std::string fileName = "testFile.yaml";
+
+    std::string fileContents = R"(
+    dimensions: 2
+
+    shapes:
+      - name: wheel
+        material: steel
+        geometry:
+          format: test_format
+          path: path/to/file.format)";
+    std::ofstream fout{fileName};
+    fout << fileContents;
+    fout.close();
+
+    auto shapeSet = readShapeSet(fileName);
+    EXPECT_EQ(1u, shapeSet.getShapes().size());
+    EXPECT_EQ("testFile.yaml", shapeSet.getPath());
 }
 
 TEST(IOTest, readShapeSet_shapeWithReplacesAndDoesNotReplaceLists) {

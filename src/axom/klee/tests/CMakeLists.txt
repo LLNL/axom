@@ -17,6 +17,7 @@ set(gtest_klee_tests
         klee_io.cpp
         klee_io_util.cpp
         klee_shape.cpp
+        klee_shape_set.cpp
    )
 
 blt_add_library(
