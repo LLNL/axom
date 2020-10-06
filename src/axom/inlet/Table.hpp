@@ -19,12 +19,33 @@
 #include <functional>
 #include <unordered_map>
 #include <tuple>
+#include <type_traits>
+
+#include "fmt/fmt.hpp"
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
 #include "axom/inlet/SchemaCreator.hpp"
 
 #include "axom/sidre.hpp"
+
+/*!
+ *******************************************************************************
+ * \brief Prototype for user-defined types wishing to define a by-value read
+ * from inlet with axom::inlet::Table::get(const std::string&)
+ * 
+ * This is the only way of reading in a non-default-constructible type from
+ * Inlet.  Usage of axom::inlet::Table::get(const std::string&) without
+ * specializing this function will result in a linker error.
+ * 
+ * \see axom::inlet::Table::get(const std::string&)
+ * 
+ * \param [in] base The Inlet table representing the root of the object
+ * in which all object fields are children
+ *******************************************************************************
+ */
+template <typename T>
+T from_inlet(axom::inlet::Table& base);
 
 namespace axom
 {
@@ -411,6 +432,53 @@ public:
       found = getField(name)->get(value);
     }
     return found;
+  }
+
+  /*!
+ *******************************************************************************
+ * \brief Gets a value of arbitrary type out of a subtable
+ * 
+ * Retrieves a value of user-defined type.
+ * 
+ * \param [in] name The name of the subtable representing the root of the object
+ * \param [out] value Value to be filled
+ * \return True if the value was found in the table
+ * \tparam T The user-defined type to retrieve
+ * \pre T must satisfy DefaultConstructible
+ *******************************************************************************
+ */
+  template <typename T,
+            typename =
+              typename std::enable_if<std::is_default_constructible<T>::value>::type>
+  bool get(const std::string& name, T& value)
+  {
+    if(!hasTable(name))
+    {
+      return false;
+    }
+    return from_inlet(*getTable(name), value);
+  }
+
+  /*!
+ *******************************************************************************
+ * \brief Gets a value of arbitrary type out of a subtable
+ * 
+ * Retrieves a value of user-defined type.
+ * 
+ * \param [in] name The name of the subtable representing the root of the object
+ * \return The retrieved value
+ *******************************************************************************
+ */
+  template <typename T>
+  T get(const std::string& name)
+  {
+    if(!hasTable(name))
+    {
+      std::string msg =
+        fmt::format("[Inlet] Table with name {0} does not exist", name);
+      SLIC_ERROR(msg);
+    }
+    return from_inlet<T>(*getTable(name));
   }
 
   /*!

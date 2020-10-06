@@ -5,7 +5,6 @@
 
 #include "axom/inlet/Table.hpp"
 
-#include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 
