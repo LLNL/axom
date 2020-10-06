@@ -245,6 +245,119 @@ std::shared_ptr<Field> Field::range(double startVal, double endVal)
   return shared_from_this();
 }
 
+bool Field::get(bool& value)
+{
+  axom::sidre::View* valueView = m_sidreGroup->getView("value");
+  if(valueView == nullptr)
+  {
+    return false;
+  }
+  // There is no boolean type in conduit/sidre so we use int8
+  if(valueView->getTypeID() != axom::sidre::INT8_ID)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Boolean named '{0}' was asked for"
+      " but recieved type {1}",
+      name(),
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  int8 intValue = valueView->getScalar();
+  if(intValue < 0 || intValue > 1)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Invalid integer value stored in "
+      " boolean value named {0}",
+      name());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  value = (bool)intValue;
+  return true;
+}
+
+bool Field::get(double& value)
+{
+  axom::sidre::View* valueView = m_sidreGroup->getView("value");
+  if(valueView == nullptr)
+  {
+    return false;
+  }
+
+  if(valueView->getTypeID() != axom::sidre::DOUBLE_ID)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Double named '{0}' was asked for"
+      " but recieved type {1}",
+      name(),
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  value = valueView->getScalar();
+  return true;
+}
+
+bool Field::get(int& value)
+{
+  axom::sidre::View* valueView = m_sidreGroup->getView("value");
+  if(valueView == nullptr)
+  {
+    return false;
+  }
+
+  if(valueView->getTypeID() != axom::sidre::INT_ID)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Integer named '{0}' was asked for"
+      " but recieved type {1}",
+      name(),
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  value = valueView->getScalar();
+  return true;
+}
+
+bool Field::get(std::string& value)
+{
+  axom::sidre::View* valueView = m_sidreGroup->getView("value");
+  if(valueView == nullptr)
+  {
+    return false;
+  }
+
+  if(valueView->getTypeID() != axom::sidre::CHAR8_STR_ID)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] String named '{0}' was asked for"
+      " but recieved type {1}",
+      name(),
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+    return false;
+  }
+
+  const char* valueStr = valueView->getString();
+  if(valueStr == nullptr)
+  {
+    value = std::string("");
+  }
+  value = std::string(valueStr);
+  return true;
+}
+
 template <typename T>
 void Field::setScalarValidValues(std::vector<T> set)
 {
