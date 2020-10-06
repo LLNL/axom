@@ -1072,7 +1072,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   bool success = false;
 
-  if (m_comm_size > 1)
+  if(m_comm_size > 1)
   {
     success = datastore->generateBlueprintIndex(MPI_COMM_WORLD,
                                                 domain_path,
@@ -1089,7 +1089,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   if(success)
   {
-    if (m_my_rank == 0)
+    if(m_my_rank == 0)
     {
       Group* ind_group = datastore->getRoot()->getGroup("blueprint_index");
       writeGroupToRootFile(ind_group, file_name);

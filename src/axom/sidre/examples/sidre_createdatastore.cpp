@@ -74,7 +74,7 @@
 #include "conduit_relay.hpp"
 
 #ifdef AXOM_USE_MPI
-#include "conduit_blueprint_mpi.hpp"
+  #include "conduit_blueprint_mpi.hpp"
 #endif
 
 // C++ headers
@@ -602,7 +602,10 @@ void generate_spio_blueprint(DataStore* ds)
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
   std::string bp_protocol = "mesh";
-  if (conduit::blueprint::mpi::verify(bp_protocol, mesh_node[domain_mesh], info, MPI_COMM_WORLD))
+  if(conduit::blueprint::mpi::verify(bp_protocol,
+                                     mesh_node[domain_mesh],
+                                     info,
+                                     MPI_COMM_WORLD))
   {
   #if defined(AXOM_USE_HDF5)
     std::string protocol = "sidre_hdf5";
@@ -646,7 +649,10 @@ void generate_spio_blueprint_to_path(DataStore* ds)
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
   std::string bp_protocol = "mesh";
-  if (conduit::blueprint::mpi::verify(bp_protocol, mesh_node[domain_mesh], info, MPI_COMM_WORLD))
+  if(conduit::blueprint::mpi::verify(bp_protocol,
+                                     mesh_node[domain_mesh],
+                                     info,
+                                     MPI_COMM_WORLD))
   {
     std::string bp_rootfile("pathbpspio.root");
   #if defined(AXOM_USE_HDF5)
@@ -706,8 +712,8 @@ int main(int argc, char** argv)
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 #endif
 
-  if (num_ranks == 1) {
-
+  if(num_ranks == 1)
+  {
     DataStore* ds = create_datastore(region);
     access_datastore(ds);
 
