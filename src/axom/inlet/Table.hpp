@@ -322,7 +322,7 @@ public:
    * \brief Gets a Boolean value out of the table.
    *
    * Retrieves the Field value out of the table.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
+   * been actually present in the input file and will be indicated by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -331,14 +331,22 @@ public:
    * \return True if the value was found in the table
    *****************************************************************************
    */
-  bool get(const std::string& name, bool& value);
+  bool get(const std::string& name, bool& value)
+  {
+    bool found = false;
+    if(hasField(name))
+    {
+      found = getField(name)->get(value);
+    }
+    return found;
+  }
 
   /*!
    *****************************************************************************
    * \brief Gets a Double value out of the table.
    *
    * Retrieves the Field value out of the table.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
+   * been actually present in the input file and will be indicated by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -347,14 +355,22 @@ public:
    * \return True if the value was found in the table
    *****************************************************************************
    */
-  bool get(const std::string& name, double& value);
+  bool get(const std::string& name, double& value)
+  {
+    bool found = false;
+    if(hasField(name))
+    {
+      found = getField(name)->get(value);
+    }
+    return found;
+  }
 
   /*!
    *****************************************************************************
    * \brief Gets a Integer value out of the table.
    *
    * Retrieves the Field value out of the table.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
+   * been actually present in the input file and will be indicated by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -363,14 +379,22 @@ public:
    * \return True if the value was found in the table
    *****************************************************************************
    */
-  bool get(const std::string& name, int& value);
+  bool get(const std::string& name, int& value)
+  {
+    bool found = false;
+    if(hasField(name))
+    {
+      found = getField(name)->get(value);
+    }
+    return found;
+  }
 
   /*!
    *****************************************************************************
    * \brief Gets a String value out of the table.
    *
    * Retrieves the Field value out of the table.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
+   * been actually present in the input file and will be indicated by the return
    * value. 
    *
    * \param [in] name Name of the Field value to be gotten
@@ -379,7 +403,15 @@ public:
    * \return True if the value was found in the table
    *****************************************************************************
    */
-  bool get(const std::string& name, std::string& value);
+  bool get(const std::string& name, std::string& value)
+  {
+    bool found = false;
+    if(hasField(name))
+    {
+      found = getField(name)->get(value);
+    }
+    return found;
+  }
 
   /*!
    *****************************************************************************

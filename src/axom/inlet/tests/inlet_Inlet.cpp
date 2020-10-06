@@ -122,6 +122,103 @@ TEST(inlet_Inlet_basic, getNestedBools)
   EXPECT_TRUE(value);
 }
 
+TEST(inlet_Inlet_basic, getDoublyNestedBools)
+{
+  std::string testString = "foo = { quux = { bar = true; baz = false } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  //
+  // Define schema
+  //
+
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("foo/quux/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("foo/quux/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  // Check one that doesn't exist and doesn't have a default value
+  currField = inlet->addBool("foo/quux/nonexistant", "nothing");
+  EXPECT_TRUE(currField);
+
+  //
+  // Check stored values from get
+  //
+
+  bool value = false;
+  bool found = false;
+
+  // Check for existing fields
+  found = inlet->get("foo/quux/bar", value);
+  EXPECT_TRUE(found);
+  EXPECT_TRUE(value);
+
+  found = inlet->get("foo/quux/baz", value);
+  EXPECT_TRUE(found);
+  EXPECT_FALSE(value);
+
+  // Check one that doesn't exist and doesn't have a default value
+  value = true;
+  found = inlet->get("foo/quux/nonexistant", value);
+  EXPECT_FALSE(found);
+  EXPECT_TRUE(value);
+}
+
+TEST(inlet_Inlet_basic, getDeeplyNestedBools)
+{
+  std::string testString =
+    "foo = { quux = { corge = { quuz = { grault = { bar = true; baz = false } "
+    "} } } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  //
+  // Define schema
+  //
+
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField =
+    inlet->addBool("foo/quux/corge/quuz/grault/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField =
+    inlet->addBool("foo/quux/corge/quuz/grault/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  // Check one that doesn't exist and doesn't have a default value
+  currField =
+    inlet->addBool("foo/quux/corge/quuz/grault/nonexistant", "nothing");
+  EXPECT_TRUE(currField);
+
+  //
+  // Check stored values from get
+  //
+
+  bool value = false;
+  bool found = false;
+
+  // Check for existing fields
+  found = inlet->get("foo/quux/corge/quuz/grault/bar", value);
+  EXPECT_TRUE(found);
+  EXPECT_TRUE(value);
+
+  found = inlet->get("foo/quux/corge/quuz/grault/baz", value);
+  EXPECT_TRUE(found);
+  EXPECT_FALSE(value);
+
+  // Check one that doesn't exist and doesn't have a default value
+  value = true;
+  found = inlet->get("foo/quux/corge/quuz/grault/nonexistant", value);
+  EXPECT_FALSE(found);
+  EXPECT_TRUE(value);
+}
+
 TEST(inlet_Inlet_basic, getNestedBoolsThroughTable)
 {
   std::string testString = "foo = { bar = true; baz = false }";
@@ -167,6 +264,115 @@ TEST(inlet_Inlet_basic, getNestedBoolsThroughTable)
   // Check one that doesn't exist and doesn't have a default value
   value = true;
   found = table->get("nonexistant", value);
+  EXPECT_FALSE(found);
+  EXPECT_TRUE(value);
+}
+
+TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughTable)
+{
+  std::string testString =
+    "foo = { quux = { corge = { quuz = { grault = { bar = true; baz = false } "
+    "} } } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  //
+  // Define schema
+  //
+
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField =
+    inlet->addBool("foo/quux/corge/quuz/grault/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField =
+    inlet->addBool("foo/quux/corge/quuz/grault/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  // Check one that doesn't exist and doesn't have a default value
+  currField =
+    inlet->addBool("foo/quux/corge/quuz/grault/nonexistant", "nothing");
+  EXPECT_TRUE(currField);
+
+  //
+  // Check stored values from get
+  //
+
+  bool value = false;
+  bool found = false;
+
+  auto table = inlet->getTable("foo/quux/corge");
+
+  // Check for existing fields
+  found = table->get("quuz/grault/bar", value);
+  EXPECT_TRUE(found);
+  EXPECT_TRUE(value);
+
+  found = table->get("quuz/grault/baz", value);
+  EXPECT_TRUE(found);
+  EXPECT_FALSE(value);
+
+  // Check one that doesn't exist and doesn't have a default value
+  value = true;
+  found = table->get("quuz/grault/nonexistant", value);
+  EXPECT_FALSE(found);
+  EXPECT_TRUE(value);
+}
+
+TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughField)
+{
+  std::string testString =
+    "foo = { quux = { corge = { quuz = { grault = { bar = true; baz = false } "
+    "} } } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  //
+  // Define schema
+  //
+
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField =
+    inlet->addBool("foo/quux/corge/quuz/grault/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField =
+    inlet->addBool("foo/quux/corge/quuz/grault/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  // Check one that doesn't exist and doesn't have a default value
+  currField =
+    inlet->addBool("foo/quux/corge/quuz/grault/nonexistant", "nothing");
+  EXPECT_TRUE(currField);
+
+  //
+  // Check stored values from get
+  //
+
+  bool value = false;
+  bool found = false;
+
+  auto table = inlet->getTable("foo/quux/corge");
+
+  // Check for existing fields
+  auto bar_field = table->getField("quuz/grault/bar");
+  found = bar_field->get(value);
+  EXPECT_TRUE(found);
+  EXPECT_TRUE(value);
+
+  auto baz_field = table->getField("quuz/grault/baz");
+  found = baz_field->get(value);
+  EXPECT_TRUE(found);
+  EXPECT_FALSE(value);
+
+  // Check one that doesn't exist and doesn't have a default value
+  value = true;
+  auto nonexistant_field = table->getField("quuz/grault/nonexistant");
+  found = nonexistant_field->get(value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }

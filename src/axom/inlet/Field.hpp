@@ -287,6 +287,66 @@ public:
   */
   std::string name();
 
+  /*!
+   *****************************************************************************
+   * \brief Gets a Boolean value.
+   *
+   * Retrieves the Field value.  This Field may not have
+   * been actually present in the input file and will be indicated by the return
+   * value. 
+   *
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value exists
+   *****************************************************************************
+   */
+  bool get(bool& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Gets a Double value.
+   *
+   * Retrieves the Field value.  This Field may not have
+   * been actually present in the input file and will be indicated by the return
+   * value. 
+   *
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value exists
+   *****************************************************************************
+   */
+  bool get(double& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Gets an Integer value.
+   *
+   * Retrieves the Field value.  This Field may not have
+   * been actually present in the input file and will be indicated by the return
+   * value. 
+   *
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value exists
+   *****************************************************************************
+   */
+  bool get(int& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Gets a String value.
+   *
+   * Retrieves the Field value.  This Field may not have
+   * been actually present in the input file and will be indicated by the return
+   * value. 
+   *
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value exists
+   *****************************************************************************
+   */
+  bool get(std::string& value);
+
 private:
   /*!
    *****************************************************************************
