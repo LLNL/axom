@@ -295,46 +295,6 @@ std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
   return addField(sidreGroup, axom::sidre::DataTypeId::CHAR8_STR_ID, fullName, name);
 }
 
-//-------------------------------------------------
-//   Get values out of the table
-//-------------------------------------------------
-
-axom::sidre::View* Table::baseGet(const std::string& name)
-{
-  const auto pos = name.find("/");
-  // Check if subtables need to be traversed through
-  if(pos != std::string::npos)
-  {
-    const auto sub_table_name = name.substr(0, pos);
-    if(!hasTable(sub_table_name))
-    {
-      return nullptr;
-    }
-    return getTable(sub_table_name)->baseGet(name.substr(pos + 1));
-  }
-  // Otherwise it's a direct value
-  else
-  {
-    if(m_sidreGroup == nullptr)
-    {
-      return nullptr;
-    }
-
-    if(!m_sidreGroup->hasGroup(name))
-    {
-      return nullptr;
-    }
-
-    auto group = m_sidreGroup->getGroup(name);
-
-    if(!group->hasView("value"))
-    {
-      return nullptr;
-    }
-    return group->getView("value");
-  }
-}
-
 std::shared_ptr<Table> Table::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
