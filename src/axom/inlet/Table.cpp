@@ -330,6 +330,16 @@ Proxy Table::operator[](const std::string& name)
   }
 }
 
+Proxy Proxy::operator[](const std::string& name)
+{
+  if(m_table == nullptr)
+  {
+    throw std::out_of_range(
+      "[Inlet] Cannot index a proxy that refers to a field");
+  }
+  return (*m_table)[name];
+}
+
 std::shared_ptr<Table> Table::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,

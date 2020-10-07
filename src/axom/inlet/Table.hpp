@@ -51,6 +51,14 @@ namespace axom
 {
 namespace inlet
 {
+/*!
+ *******************************************************************************
+ * \class is_lua_primitive
+ *
+ * \brief A type trait for checking if a type is isomorphic to a Lua primitive
+ * \tparam T The type to check
+ *******************************************************************************
+ */
 template <typename T>
 struct is_lua_primitive
 {
@@ -60,7 +68,15 @@ struct is_lua_primitive
     std::is_same<BaseType, std::string>::value;
 };
 
-// By default it's false
+/*!
+ *******************************************************************************
+ * \class is_lua_primitive
+ *
+ * \brief A type trait for checking if a type is isomorphic to an array of Lua
+ * primitives
+ * \tparam T The type to check
+ *******************************************************************************
+ */
 template <typename T>
 struct is_lua_primitive_array
 {
@@ -90,20 +106,77 @@ class Proxy
 {
 public:
   Proxy() = default;
+  /*!
+   *******************************************************************************
+   * \brief Constructs a proxy view onto a table
+   * 
+   * \param [in] table The table to construct a proxy into
+   *******************************************************************************
+   */
   Proxy(Table& table) : m_table(&table) { }
+
+  /*!
+   *******************************************************************************
+   * \brief Constructs a proxy view onto a field
+   * 
+   * \param [in] field The field to construct a proxy into
+   *******************************************************************************
+   */
   Proxy(Field& field) : m_field(&field) { }
 
+  /*!
+   *******************************************************************************
+   * \brief Returns an object from the proxy
+   * 
+   * \tparam T The type of the object to retrieve
+   * \return The retrieved object
+   * \note This is guaranteed to work for primitive types but may fail to 
+   * compile for types that define multiple single-argument constructors.
+   * If this occurs, use get() instead.
+   *******************************************************************************
+   */
   template <typename T>
   operator T()
   {
     return get<T>();
   }
 
-  // user-defined types
+  /*!
+   *******************************************************************************
+   * \brief Obtains a proxy view into the proxy for either a Field/Table subobject
+   * 
+   * Returns a reference via a lightweight proxy object to the element in the 
+   * datastore at the index specified by the name.  This can be a field 
+   * or a table.
+   * 
+   * \param [in] name The name of the subobject
+   * \return The retrieved array
+   * \exception std::out_of_range If the calling proxy does not refer to a table
+   *******************************************************************************
+   */
+  Proxy operator[](const std::string& name);
+
+  /*!
+   *******************************************************************************
+   * \brief Returns a user-defined type from the proxy
+   * 
+   * \tparam T The type of the object to retrieve
+   * \return The retrieved object
+   * \pre The Proxy must refer to a table object
+   *******************************************************************************
+   */
   template <typename T>
   typename std::enable_if<!is_lua_primitive<T>::value, T>::type get();
 
-  // primitives
+  /*!
+   *******************************************************************************
+   * \brief Returns a primitive type from the proxy
+   * 
+   * \tparam T The type of the object to retrieve
+   * \return The retrieved object
+   * \pre The Proxy must refer to a field object
+   *******************************************************************************
+   */
   template <typename T>
   typename std::enable_if<is_lua_primitive<T>::value, T>::type get();
 
