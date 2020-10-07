@@ -111,6 +111,50 @@ TEST(inlet_object, simple_struct_by_value)
   EXPECT_FALSE(foo.baz);
 }
 
+struct MoveOnlyFoo
+{
+  MoveOnlyFoo() = delete;
+  MoveOnlyFoo(const MoveOnlyFoo&) = delete;
+  MoveOnlyFoo(MoveOnlyFoo&&) = default;
+  MoveOnlyFoo(bool first, bool second) : bar(first), baz(second) { }
+  bool bar;
+  bool baz;
+};
+
+template <>
+MoveOnlyFoo from_inlet<MoveOnlyFoo>(axom::inlet::Table& base)
+{
+  bool bar;
+  bool baz;
+  base.get("bar", bar);
+  base.get("baz", baz);
+  MoveOnlyFoo f {bar, baz};
+  return f;
+}
+
+TEST(inlet_object, simple_moveonly_struct_by_value)
+{
+  std::string testString = "foo = { bar = true; baz = false }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // Define schema
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  // Need to forward from Inlet
+  auto global_table = inlet->getGlobalTable();
+  MoveOnlyFoo foo = global_table->get<MoveOnlyFoo>("foo");
+  EXPECT_TRUE(foo.bar);
+  EXPECT_FALSE(foo.baz);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
