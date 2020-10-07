@@ -149,6 +149,44 @@ TEST(inlet_object, simple_moveonly_struct_by_value)
   EXPECT_FALSE(foo.baz);
 }
 
+TEST(inlet_object, simple_value_from_bracket)
+{
+  std::string testString = "foo = true";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // Define schema
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("foo", "foo's description");
+  EXPECT_TRUE(currField);
+
+  bool foo = (*inlet)["foo"];
+  EXPECT_TRUE(foo);
+}
+
+TEST(inlet_object, simple_struct_from_bracket)
+{
+  std::string testString = "foo = { bar = true; baz = false }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // Define schema
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  Foo foo = (*inlet)["foo"];
+  EXPECT_TRUE(foo.bar);
+  EXPECT_FALSE(foo.baz);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

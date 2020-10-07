@@ -236,6 +236,8 @@ public:
     return m_globalTable->get<T>(name);
   }
 
+  Proxy operator[](const std::string& name) { return (*m_globalTable)[name]; }
+
   /*!
    *****************************************************************************
    * \brief Sets the associated DocWriter for the Inlet instance.

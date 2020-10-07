@@ -51,6 +51,52 @@ namespace axom
 {
 namespace inlet
 {
+template <typename T>
+struct is_lua_primitive
+{
+  using BaseType = typename std::decay<T>::type;
+  static constexpr bool value = std::is_same<BaseType, bool>::value ||
+    std::is_same<BaseType, int>::value || std::is_same<BaseType, double>::value ||
+    std::is_same<BaseType, std::string>::value;
+};
+
+/*!
+ *******************************************************************************
+ * \class Proxy
+ *
+ * \brief Provides a uniform interface for access and conversion to primitive
+ * and user-defined types
+ *
+ * \see Inlet Field
+ * \see Inlet Table
+ *******************************************************************************
+ */
+class Proxy
+{
+public:
+  Proxy() = default;
+  Proxy(Table& table) : m_table(&table) { }
+  Proxy(Field& field) : m_field(&field) { }
+
+  template <typename T>
+  operator T()
+  {
+    return convert<T>();
+  }
+
+private:
+  // primitives
+  template <typename T>
+  typename std::enable_if<is_lua_primitive<T>::value, T>::type convert();
+
+  // user-defined types
+  template <typename T>
+  typename std::enable_if<!is_lua_primitive<T>::value, T>::type convert();
+
+  Table* m_table = nullptr;
+  Field* m_field = nullptr;
+};
+
 /*!
  *******************************************************************************
  * \class Table
@@ -338,16 +384,6 @@ public:
     return addStringHelper(name, description);
   }
 
-  template <typename T>
-  struct is_lua_primitive
-  {
-    using BaseType = typename std::decay<T>::type;
-    static constexpr bool value = std::is_same<BaseType, bool>::value ||
-      std::is_same<BaseType, int>::value ||
-      std::is_same<BaseType, double>::value ||
-      std::is_same<BaseType, std::string>::value;
-  };
-
   /*!
    *****************************************************************************
    * \brief Gets a value of primitive type out of the table.
@@ -410,7 +446,7 @@ public:
    *******************************************************************************
    * \brief Gets a value of primitive type out of a subtable
    * 
-   * Retrieves a value of user-defined type.
+   * Retrieves a value of primitive type.
    * 
    * \param [in] name The name of the subtable representing the root of the object
    * \return The retrieved value
@@ -457,6 +493,48 @@ public:
       SLIC_ERROR(msg);
     }
     return from_inlet<T>(*getTable(name));
+  }
+
+  template <typename T>
+  typename std::enable_if<!is_lua_primitive<T>::value, T>::type get()
+  {
+    return from_inlet<T>(*this);
+  }
+
+  Proxy operator[](const std::string& name)
+  {
+    auto has_table = hasTable(name);
+    auto has_field = hasField(name);
+
+    // Ambiguous case - both a table and field exist with the same name
+    if(has_table && has_field)
+    {
+      std::string msg = fmt::format(
+        "[Inlet] Ambiguous lookup - both a table and field with name {0} exist",
+        name);
+      SLIC_ERROR(msg);
+      return Proxy();
+    }
+
+    else if(has_table)
+    {
+      return Proxy(*getTable(name));
+    }
+
+    else if(has_field)
+    {
+      return Proxy(*getField(name));
+    }
+
+    // Neither exists
+    else
+    {
+      std::string msg =
+        fmt::format("[Inlet] Neither a table nor a field with name {0} exist",
+                    name);
+      SLIC_ERROR(msg);
+      return Proxy();
+    }
   }
 
   /*!
@@ -673,6 +751,29 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
   std::function<bool()> m_verifier;
 };
+
+template <typename T>
+typename std::enable_if<is_lua_primitive<T>::value, T>::type Proxy::convert()
+{
+  SLIC_ASSERT_MSG(
+    m_field != nullptr,
+    "[Inlet] Tried to read a primitive type from a Proxy containing a table");
+  T result;
+  bool found = m_field->get(result);
+  SLIC_ASSERT_MSG(
+    found,
+    "[Inlet] Failed to read a primitive type from a Field-containing Proxy");
+  return result;
+}
+
+template <typename T>
+typename std::enable_if<!is_lua_primitive<T>::value, T>::type Proxy::convert()
+{
+  SLIC_ASSERT_MSG(m_table != nullptr,
+                  "[Inlet] Tried to read a user-defined type from a Proxy "
+                  "containing a single field");
+  return m_table->get<T>();
+}
 
 }  // end namespace inlet
 }  // end namespace axom
