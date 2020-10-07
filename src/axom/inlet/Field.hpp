@@ -19,6 +19,7 @@
 #include <memory>
 #include <type_traits>
 #include <functional>
+#include <stdexcept>
 
 namespace axom
 {
@@ -346,6 +347,18 @@ public:
    *****************************************************************************
    */
   bool get(std::string& value);
+
+  template <typename T>
+  T get()
+  {
+    T result;
+    if(!get(result))
+    {
+      throw std::out_of_range(
+        "[Inlet] Field does not exist or is of incorrect type");
+    }
+    return result;
+  }
 
 private:
   /*!

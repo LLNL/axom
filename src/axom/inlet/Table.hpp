@@ -19,6 +19,7 @@
 #include <functional>
 #include <unordered_map>
 #include <tuple>
+#include <type_traits>
 
 #include "fmt/fmt.hpp"
 
@@ -337,33 +338,19 @@ public:
     return addStringHelper(name, description);
   }
 
-  /*!
-   *****************************************************************************
-   * \brief Gets a Boolean value out of the table.
-   *
-   * Retrieves the Field value out of the table.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the table
-   *****************************************************************************
-   */
-  bool get(const std::string& name, bool& value)
+  template <typename T>
+  struct is_lua_primitive
   {
-    bool found = false;
-    if(hasField(name))
-    {
-      found = getField(name)->get(value);
-    }
-    return found;
-  }
+    using BaseType = typename std::decay<T>::type;
+    static constexpr bool value = std::is_same<BaseType, bool>::value ||
+      std::is_same<BaseType, int>::value ||
+      std::is_same<BaseType, double>::value ||
+      std::is_same<BaseType, std::string>::value;
+  };
 
   /*!
    *****************************************************************************
-   * \brief Gets a Double value out of the table.
+   * \brief Gets a value of primitive type out of the table.
    *
    * Retrieves the Field value out of the table.  This Field may not have
    * been actually present in the input file and will be indicated by the return
@@ -373,57 +360,13 @@ public:
    * \param [out] value Value to be filled
    *
    * \return True if the value was found in the table
+   * \tparam T The type of the value to retrieve
    *****************************************************************************
    */
-  bool get(const std::string& name, double& value)
-  {
-    bool found = false;
-    if(hasField(name))
-    {
-      found = getField(name)->get(value);
-    }
-    return found;
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Gets a Integer value out of the table.
-   *
-   * Retrieves the Field value out of the table.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the table
-   *****************************************************************************
-   */
-  bool get(const std::string& name, int& value)
-  {
-    bool found = false;
-    if(hasField(name))
-    {
-      found = getField(name)->get(value);
-    }
-    return found;
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Gets a String value out of the table.
-   *
-   * Retrieves the Field value out of the table.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the table
-   *****************************************************************************
-   */
-  bool get(const std::string& name, std::string& value)
+  template <typename T>
+  typename std::enable_if<is_lua_primitive<T>::value, bool>::type get(
+    const std::string& name,
+    T& value)
   {
     bool found = false;
     if(hasField(name))
@@ -451,7 +394,9 @@ public:
  *******************************************************************************
  */
   template <typename T>
-  bool get(const std::string& name, T& value)
+  typename std::enable_if<!is_lua_primitive<T>::value, bool>::type get(
+    const std::string& name,
+    T& value)
   {
     bool found = false;
     if(hasTable(name))
@@ -459,6 +404,34 @@ public:
       found = from_inlet(*getTable(name), value);
     }
     return found;
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Gets a value of primitive type out of a subtable
+   * 
+   * Retrieves a value of user-defined type.
+   * 
+   * \param [in] name The name of the subtable representing the root of the object
+   * \return The retrieved value
+   * \pre Requires a specialization of from_inlet<T>(axom::inlet::Table&)
+   * \note This function does not indicate failure
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<is_lua_primitive<T>::value, T>::type get(
+    const std::string& name)
+  {
+    T result;
+    if(!hasField(name))
+    {
+      const std::string msg = fmt::format(
+        "[Inlet] Field with specified path"
+        "does not exist: {0}",
+        name);
+      throw std::out_of_range(msg);
+    }
+    return getField(name)->get<T>();
   }
 
   /*!
@@ -474,7 +447,8 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  T get(const std::string& name)
+  typename std::enable_if<!is_lua_primitive<T>::value, T>::type get(
+    const std::string& name)
   {
     if(!hasTable(name))
     {
