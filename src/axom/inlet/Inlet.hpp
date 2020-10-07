@@ -236,6 +236,26 @@ public:
     return m_globalTable->get<T>(name);
   }
 
+  /*!
+   *****************************************************************************
+   * \brief Return whether a subobject with the given name is present in 
+   * the datastore.
+   *
+   * \see Table::contains
+   *****************************************************************************
+   */
+  bool contains(const std::string& name)
+  {
+    return m_globalTable->contains(name);
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Obtains a proxy view into the datastore.
+   * 
+   * \see Table::operator[]
+   *******************************************************************************
+   */
   Proxy operator[](const std::string& name) { return (*m_globalTable)[name]; }
 
   /*!

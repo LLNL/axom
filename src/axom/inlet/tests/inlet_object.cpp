@@ -172,6 +172,50 @@ TEST(inlet_object, simple_struct_from_bracket)
   EXPECT_FALSE(foo.baz);
 }
 
+TEST(inlet_object, contains_from_table)
+{
+  std::string testString = "foo = { bar = true; baz = false }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // Define schema
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  EXPECT_TRUE(inlet->contains("foo/bar"));
+  EXPECT_TRUE(inlet->contains("foo/baz"));
+
+  auto foo_table = inlet->getTable("foo");
+  EXPECT_TRUE(foo_table->contains("bar"));
+  EXPECT_TRUE(foo_table->contains("baz"));
+}
+
+TEST(inlet_object, contains_from_bracket)
+{
+  std::string testString = "foo = { bar = true; baz = false }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // Define schema
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  EXPECT_TRUE((*inlet)["foo"].contains("bar"));
+  EXPECT_TRUE((*inlet)["foo"].contains("baz"));
+}
+
 TEST(inlet_object, array_from_bracket)
 {
   DataStore ds;

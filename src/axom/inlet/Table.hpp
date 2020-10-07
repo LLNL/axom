@@ -142,6 +142,18 @@ public:
   }
 
   /*!
+   *****************************************************************************
+   * \brief Return whether a subobject with the given name is present in 
+   * the table referred to by the calling proxy.
+   *
+   * \return Boolean value indicating whether this Table's subtree contains a
+   * Field or Table with the given name.
+   * \exception std::out_of_range If the calling proxy does not refer to a table
+   *****************************************************************************
+   */
+  bool contains(const std::string& name);
+
+  /*!
    *******************************************************************************
    * \brief Obtains a proxy view into the proxy for either a Field/Table subobject
    * 
@@ -150,7 +162,7 @@ public:
    * or a table.
    * 
    * \param [in] name The name of the subobject
-   * \return The retrieved array
+   * \return A view onto the subobject
    * \exception std::out_of_range If the calling proxy does not refer to a table
    *******************************************************************************
    */
@@ -700,6 +712,20 @@ public:
    *****************************************************************************
    */
   bool hasField(const std::string& fieldName);
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Table or Field with the given name is present in 
+   * this Table's subtree.
+   *
+   * \return Boolean value indicating whether this Table's subtree contains a
+   * Field or Table with the given name.
+   *****************************************************************************
+   */
+  bool contains(const std::string& name)
+  {
+    return hasTable(name) || hasField(name);
+  }
 
   /*!
    *****************************************************************************

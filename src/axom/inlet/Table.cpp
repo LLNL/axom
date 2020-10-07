@@ -294,6 +294,16 @@ std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
   return addField(sidreGroup, axom::sidre::DataTypeId::CHAR8_STR_ID, fullName, name);
 }
 
+bool Proxy::contains(const std::string& name)
+{
+  if(m_table == nullptr)
+  {
+    throw std::out_of_range(
+      "[Inlet] Cannot index a proxy that refers to a field");
+  }
+  return m_table->contains(name);
+}
+
 Proxy Table::operator[](const std::string& name)
 {
   auto has_table = hasTable(name);
