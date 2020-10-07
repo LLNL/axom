@@ -434,9 +434,9 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getBoolArray(std::unordered_map<int, bool>& map)
+  bool getArray(std::unordered_map<int, bool>& map)
   {
-    return m_globalTable->getBoolArray(map);
+    return m_globalTable->getArray(map);
   }
 
   /*!
@@ -448,9 +448,9 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getIntArray(std::unordered_map<int, int>& map)
+  bool getArray(std::unordered_map<int, int>& map)
   {
-    return m_globalTable->getIntArray(map);
+    return m_globalTable->getArray(map);
   }
 
   /*!
@@ -462,9 +462,9 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getDoubleArray(std::unordered_map<int, double>& map)
+  bool getArray(std::unordered_map<int, double>& map)
   {
-    return m_globalTable->getDoubleArray(map);
+    return m_globalTable->getArray(map);
   }
 
   /*!
@@ -476,9 +476,9 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getStringArray(std::unordered_map<int, std::string>& map)
+  bool getArray(std::unordered_map<int, std::string>& map)
   {
-    return m_globalTable->getStringArray(map);
+    return m_globalTable->getArray(map);
   }
 
   // TODO add update value functions

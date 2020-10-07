@@ -1574,16 +1574,16 @@ TEST(inletArrays, getArray)
   std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
   std::unordered_map<int, std::string> expectedStrs {{33, "hello"}, {2, "bye"}};
 
-  EXPECT_TRUE(arr1->getIntArray(intMap));
+  EXPECT_TRUE(arr1->getArray(intMap));
   EXPECT_EQ(intMap, expectedInts);
 
-  EXPECT_TRUE(arr2->getBoolArray(boolMap));
+  EXPECT_TRUE(arr2->getArray(boolMap));
   EXPECT_EQ(boolMap, expectedBools);
 
-  EXPECT_TRUE(arr3->getStringArray(strMap));
+  EXPECT_TRUE(arr3->getArray(strMap));
   EXPECT_EQ(strMap, expectedStrs);
 
-  EXPECT_TRUE(arr4->getDoubleArray(doubleMap));
+  EXPECT_TRUE(arr4->getArray(doubleMap));
   EXPECT_EQ(doubleMap, expectedDoubles);
 }
 

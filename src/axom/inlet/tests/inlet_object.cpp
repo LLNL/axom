@@ -36,19 +36,10 @@ struct Foo
   bool baz;
 };
 
-bool from_inlet(axom::inlet::Table& base, Foo& f)
+void from_inlet(axom::inlet::Table& base, Foo& f)
 {
-  if(!base.get("bar", f.bar))
-  {
-    return false;
-  }
-
-  if(!base.get("baz", f.baz))
-  {
-    return false;
-  }
-
-  return true;
+  f.bar = base["bar"];
+  f.baz = base["baz"];
 }
 
 TEST(inlet_object, simple_struct_by_ref)
@@ -78,9 +69,7 @@ TEST(inlet_object, simple_struct_by_ref)
 template <>
 Foo from_inlet<Foo>(axom::inlet::Table& base)
 {
-  Foo f;
-  base.get("bar", f.bar);
-  base.get("baz", f.baz);
+  Foo f {base["bar"], base["baz"]};
   return f;
 }
 
@@ -120,11 +109,7 @@ struct MoveOnlyFoo
 template <>
 MoveOnlyFoo from_inlet<MoveOnlyFoo>(axom::inlet::Table& base)
 {
-  bool bar;
-  bool baz;
-  base.get("bar", bar);
-  base.get("baz", baz);
-  MoveOnlyFoo f {bar, baz};
+  MoveOnlyFoo f(base["bar"], base["baz"]);
   return f;
 }
 
@@ -197,10 +182,10 @@ TEST(inlet_object, array_from_bracket)
     "              arr4 = { [12] = 2.4 } }";
   auto inlet = createBasicInlet(&ds, testString);
 
-  std::unordered_map<int, bool> boolMap;
   std::unordered_map<int, int> intMap;
-  std::unordered_map<int, double> doubleMap;
+  std::unordered_map<int, bool> boolMap;
   std::unordered_map<int, std::string> strMap;
+  std::unordered_map<int, double> doubleMap;
   auto arr1_field = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
   auto arr2_field = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
   auto arr3_field = inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
@@ -208,21 +193,20 @@ TEST(inlet_object, array_from_bracket)
 
   std::unordered_map<int, int> expectedInts {{1, 4}};
   std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
-  std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
   std::unordered_map<int, std::string> expectedStrs {{33, "hello"}, {2, "bye"}};
+  std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
 
-  // auto intMap1 = static_cast<std::unordered_map<int, int>>((*inlet)["luaArrays/arr1"]);
-  std::unordered_map<int, int> arr1 = (*inlet)["luaArrays/arr1"];
-  EXPECT_EQ(arr1, expectedInts);
+  intMap = (*inlet)["luaArrays/arr1"].get<std::unordered_map<int, int>>();
+  EXPECT_EQ(intMap, expectedInts);
 
-  std::unordered_map<int, bool> arr2 = (*inlet)["luaArrays/arr2"];
-  EXPECT_EQ(arr2, expectedBools);
+  boolMap = (*inlet)["luaArrays/arr2"].get<std::unordered_map<int, bool>>();
+  EXPECT_EQ(boolMap, expectedBools);
 
-  std::unordered_map<int, std::string> arr3 = (*inlet)["luaArrays/arr3"];
-  EXPECT_EQ(arr3, expectedStrs);
+  strMap = (*inlet)["luaArrays/arr3"].get<std::unordered_map<int, std::string>>();
+  EXPECT_EQ(strMap, expectedStrs);
 
-  std::unordered_map<int, double> arr4 = (*inlet)["luaArrays/arr4"];
-  EXPECT_EQ(arr4, expectedDoubles);
+  doubleMap = (*inlet)["luaArrays/arr4"].get<std::unordered_map<int, double>>();
+  EXPECT_EQ(doubleMap, expectedDoubles);
 }
 
 //------------------------------------------------------------------------------

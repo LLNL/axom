@@ -96,18 +96,18 @@ public:
   template <typename T>
   operator T()
   {
-    return convert<T>();
+    return get<T>();
   }
-
-private:
-  // primitives
-  template <typename T>
-  typename std::enable_if<is_lua_primitive<T>::value, T>::type convert();
 
   // user-defined types
   template <typename T>
-  typename std::enable_if<!is_lua_primitive<T>::value, T>::type convert();
+  typename std::enable_if<!is_lua_primitive<T>::value, T>::type get();
 
+  // primitives
+  template <typename T>
+  typename std::enable_if<is_lua_primitive<T>::value, T>::type get();
+
+private:
   Table* m_table = nullptr;
   Field* m_field = nullptr;
 };
@@ -281,7 +281,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getBoolArray(std::unordered_map<int, bool>& map);
+  bool getArray(std::unordered_map<int, bool>& map);
 
   /*!
    *****************************************************************************
@@ -292,7 +292,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getIntArray(std::unordered_map<int, int>& map);
+  bool getArray(std::unordered_map<int, int>& map);
 
   /*!
    *****************************************************************************
@@ -303,7 +303,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getDoubleArray(std::unordered_map<int, double>& map);
+  bool getArray(std::unordered_map<int, double>& map);
 
   /*!
    *****************************************************************************
@@ -314,7 +314,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getStringArray(std::unordered_map<int, std::string>& map);
+  bool getArray(std::unordered_map<int, std::string>& map);
 
   /*!
    *****************************************************************************
@@ -401,7 +401,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Gets a value of primitive type out of the table.
+   * \brief Gets a value of primitive type out of the table with an out-param.
    *
    * Retrieves the Field value out of the table.  This Field may not have
    * been actually present in the input file and will be indicated by the return
@@ -429,17 +429,18 @@ public:
 
   /*!
  *******************************************************************************
- * \brief Gets a value of arbitrary type out of a subtable
+ * \brief Gets a value of user-defined type out of the table with an out-param.
  * 
  * Retrieves a value of user-defined type.
  * 
  * \param [in] name The name of the subtable representing the root of the object
+ * If the empty string is passed, the calling table is used as the root
  * \param [out] value Value to be filled
  * \return True if the value was found in the table
  * \tparam T The user-defined type to retrieve
  * \pre If T is a user-defined type, requires a function
  * \code{.cpp}
- * bool from_inlet(axom::inlet::Table&, T&);
+ * void from_inlet(axom::inlet::Table&, T&);
  * \endcode
  * to be defined
  *******************************************************************************
@@ -450,30 +451,35 @@ public:
     T& value)
   {
     bool found = false;
-    if(hasTable(name))
+    if(name.empty())
     {
-      found = from_inlet(*getTable(name), value);
+      found = true;
+      from_inlet(*this, value);
+    }
+    else if(hasTable(name))
+    {
+      found = true;
+      from_inlet(*getTable(name), value);
     }
     return found;
   }
 
   /*!
    *******************************************************************************
-   * \brief Gets a value of primitive type out of a subtable
+   * \brief Returns a stored value of primitive type.
    * 
    * Retrieves a value of primitive type.
    * 
-   * \param [in] name The name of the subtable representing the root of the object
+   * \param [in] name Name of the Field value to be gotten
    * \return The retrieved value
-   * \pre Requires a specialization of from_inlet<T>(axom::inlet::Table&)
-   * \note This function does not indicate failure
+   * \exception std::out_of_range If the requested field does not exist or does not 
+   * contain the requested type
    *******************************************************************************
    */
   template <typename T>
   typename std::enable_if<is_lua_primitive<T>::value, T>::type get(
     const std::string& name)
   {
-    T result;
     if(!hasField(name))
     {
       const std::string msg = fmt::format(
@@ -487,145 +493,77 @@ public:
 
   /*!
    *******************************************************************************
-   * \brief Gets a value of arbitrary type out of a subtable
+   * \brief Returns a stored value of user-defined type.
    * 
    * Retrieves a value of user-defined type.
    * 
    * \param [in] name The name of the subtable representing the root of the object
+   * If nothing is passed, the calling table is interpreted as the roof of the object
    * \return The retrieved value
-   * \pre Requires a specialization of from_inlet<T>(axom::inlet::Table&)
-   * \note This function does not indicate failure
+   * \pre Requires a specialization of T from_inlet<T>(axom::inlet::Table&)
+   * \exception std::out_of_range If the requested subtable does not exist
    *******************************************************************************
    */
   template <typename T>
   typename std::enable_if<!is_lua_primitive<T>::value &&
                             !is_lua_primitive_array<T>::value,
                           T>::type
-  get(const std::string& name)
+  get(const std::string& name = "")
   {
-    if(!hasTable(name))
+    if(name.empty())
     {
-      std::string msg =
-        fmt::format("[Inlet] Table with name {0} does not exist", name);
-      SLIC_ERROR(msg);
+      return from_inlet<T>(*this);
     }
-    return from_inlet<T>(*getTable(name));
-  }
-
-  template <typename T>
-  typename std::enable_if<!is_lua_primitive<T>::value &&
-                            !is_lua_primitive_array<T>::value,
-                          T>::type
-  get()
-  {
-    return from_inlet<T>(*this);
-  }
-
-  template <typename T>
-  typename std::enable_if<std::is_same<T, bool>::value,
-                          std::unordered_map<int, bool>>::type
-  getArray()
-  {
-    std::unordered_map<int, bool> result;
-    if(!getTable("_inlet_array")->getBoolArray(result))
+    else
     {
-      std::string msg = fmt::format(
-        "[Inlet] Failed to read in bool array from table with name {0}",
-        m_name);
-      SLIC_ERROR(msg);
+      if(!hasTable(name))
+      {
+        std::string msg =
+          fmt::format("[Inlet] Table with name {0} does not exist", name);
+        throw std::out_of_range(msg);
+      }
+      return from_inlet<T>(*getTable(name));
     }
-    return result;
   }
 
-  template <typename T>
-  typename std::enable_if<std::is_same<T, int>::value, std::unordered_map<int, int>>::type
-  getArray()
-  {
-    std::unordered_map<int, int> result;
-    if(!getTable("_inlet_array")->getIntArray(result))
-    {
-      std::string msg = fmt::format(
-        "[Inlet] Failed to read in int array from table with name {0}",
-        m_name);
-      SLIC_ERROR(msg);
-    }
-    return result;
-  }
-
-  template <typename T>
-  typename std::enable_if<std::is_same<T, double>::value,
-                          std::unordered_map<int, double>>::type
-  getArray()
-  {
-    std::unordered_map<int, double> result;
-    if(!getTable("_inlet_array")->getDoubleArray(result))
-    {
-      std::string msg = fmt::format(
-        "[Inlet] Failed to read in double array from table with name {0}",
-        m_name);
-      SLIC_ERROR(msg);
-    }
-    return result;
-  }
-
-  template <typename T>
-  typename std::enable_if<std::is_same<T, std::string>::value,
-                          std::unordered_map<int, std::string>>::type
-  getArray()
-  {
-    std::unordered_map<int, std::string> result;
-    if(!getTable("_inlet_array")->getStringArray(result))
-    {
-      std::string msg = fmt::format(
-        "[Inlet] Failed to read in std::string array from table with name {0}",
-        m_name);
-      SLIC_ERROR(msg);
-    }
-    return result;
-  }
-
-  // Arrays of Lua primitives
+  /*!
+   *******************************************************************************
+   * \brief Returns a stored array of primitive types.
+   * 
+   * Retrieves a value of user-defined type.
+   * 
+   * \return The retrieved array
+   * \exception std::out_of_range If the calling table does not contain an array
+   *******************************************************************************
+   */
   template <typename T>
   typename std::enable_if<is_lua_primitive_array<T>::value, T>::type get()
   {
-    return getArray<typename T::mapped_type>();
+    T result;
+    if(!getTable("_inlet_array")->getArray(result))
+    {
+      throw std::out_of_range(
+        "[Inlet] Table does not contain a valid array of requested type");
+    }
+    return result;
   }
 
-  Proxy operator[](const std::string& name)
-  {
-    auto has_table = hasTable(name);
-    auto has_field = hasField(name);
-
-    // Ambiguous case - both a table and field exist with the same name
-    if(has_table && has_field)
-    {
-      std::string msg = fmt::format(
-        "[Inlet] Ambiguous lookup - both a table and field with name {0} exist",
-        name);
-      SLIC_ERROR(msg);
-      return Proxy();
-    }
-
-    else if(has_table)
-    {
-      return Proxy(*getTable(name));
-    }
-
-    else if(has_field)
-    {
-      return Proxy(*getField(name));
-    }
-
-    // Neither exists
-    else
-    {
-      std::string msg =
-        fmt::format("[Inlet] Neither a table nor a field with name {0} exist",
-                    name);
-      SLIC_ERROR(msg);
-      return Proxy();
-    }
-  }
+  /*!
+   *******************************************************************************
+   * \brief Obtains a proxy view into the table for either a Field/Table subobject
+   * 
+   * Returns a reference via a lightweight proxy object to the element in the 
+   * datastore at the index specified by the name.  This can be a field 
+   * or a table.
+   * 
+   * \param [in] name The name of the subobject
+   * \return The retrieved array
+   * \exception std::out_of_range If the calling table contains both a field and 
+   * a subtable with the specified name, or if the calling table does not have 
+   * either a field or a subtable with the specified name
+   *******************************************************************************
+   */
+  Proxy operator[](const std::string& name);
 
   /*!
    *****************************************************************************
@@ -843,7 +781,7 @@ private:
 };
 
 template <typename T>
-typename std::enable_if<is_lua_primitive<T>::value, T>::type Proxy::convert()
+typename std::enable_if<is_lua_primitive<T>::value, T>::type Proxy::get()
 {
   SLIC_ASSERT_MSG(
     m_field != nullptr,
@@ -857,7 +795,7 @@ typename std::enable_if<is_lua_primitive<T>::value, T>::type Proxy::convert()
 }
 
 template <typename T>
-typename std::enable_if<!is_lua_primitive<T>::value, T>::type Proxy::convert()
+typename std::enable_if<!is_lua_primitive<T>::value, T>::type Proxy::get()
 {
   SLIC_ASSERT_MSG(m_table != nullptr,
                   "[Inlet] Tried to read a user-defined type from a Proxy "
