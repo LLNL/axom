@@ -194,79 +194,46 @@ public:
   //
 
   /*!
-   *****************************************************************************
-   * \brief Gets a Boolean value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
-   */
-  bool get(const std::string& name, bool& value)
+ *******************************************************************************
+ * \brief Gets a value of arbitrary type out of the datastore
+ * 
+ * Retrieves a value of builtin (double, int, bool, string) or user-defined type.
+ * 
+ * \param [in] name The path to the object, or the root of the object for 
+ * a user-defined type
+ * \param [out] value Value to be filled
+ * \return True if the value was found in the table
+ * \tparam T The type to retrieve
+ * \pre If T is a user-defined type, requires a function
+ * \code{.cpp}
+ * bool from_inlet(axom::inlet::Table&, T&);
+ * \endcode
+ * to be defined
+ *******************************************************************************
+ */
+  template <typename T>
+  bool get(const std::string& name, T& value)
   {
     return m_globalTable->get(name, value);
   }
 
   /*!
-   *****************************************************************************
-   * \brief Gets a Double value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
-   */
-  bool get(const std::string& name, double& value)
+ *******************************************************************************
+ * \brief Gets a value of arbitrary type out of the datastore
+ * 
+ * Retrieves a value of user-defined type.
+ * 
+ * \param [in] name The name of the subtable representing the root of the object
+ * \return The retrieved value
+ * \tparam The type to retrieve
+ * \pre Requires a specialization of from_inlet<T>(axom::inlet::Table&)
+ * \note This function does not indicate failure
+ *******************************************************************************
+ */
+  template <typename T>
+  T get(const std::string& name)
   {
-    return m_globalTable->get(name, value);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Gets a Integer value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
-   */
-  bool get(const std::string& name, int& value)
-  {
-    return m_globalTable->get(name, value);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Gets a String value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
-   */
-  bool get(const std::string& name, std::string& value)
-  {
-    return m_globalTable->get(name, value);
+    return m_globalTable->get<T>(name);
   }
 
   /*!

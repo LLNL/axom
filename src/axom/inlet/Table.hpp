@@ -19,7 +19,6 @@
 #include <functional>
 #include <unordered_map>
 #include <tuple>
-#include <type_traits>
 
 #include "fmt/fmt.hpp"
 
@@ -444,31 +443,36 @@ public:
  * \param [out] value Value to be filled
  * \return True if the value was found in the table
  * \tparam T The user-defined type to retrieve
- * \pre T must satisfy DefaultConstructible
+ * \pre If T is a user-defined type, requires a function
+ * \code{.cpp}
+ * bool from_inlet(axom::inlet::Table&, T&);
+ * \endcode
+ * to be defined
  *******************************************************************************
  */
-  template <typename T,
-            typename =
-              typename std::enable_if<std::is_default_constructible<T>::value>::type>
+  template <typename T>
   bool get(const std::string& name, T& value)
   {
-    if(!hasTable(name))
+    bool found = false;
+    if(hasTable(name))
     {
-      return false;
+      found = from_inlet(*getTable(name), value);
     }
-    return from_inlet(*getTable(name), value);
+    return found;
   }
 
   /*!
- *******************************************************************************
- * \brief Gets a value of arbitrary type out of a subtable
- * 
- * Retrieves a value of user-defined type.
- * 
- * \param [in] name The name of the subtable representing the root of the object
- * \return The retrieved value
- *******************************************************************************
- */
+   *******************************************************************************
+   * \brief Gets a value of arbitrary type out of a subtable
+   * 
+   * Retrieves a value of user-defined type.
+   * 
+   * \param [in] name The name of the subtable representing the root of the object
+   * \return The retrieved value
+   * \pre Requires a specialization of from_inlet<T>(axom::inlet::Table&)
+   * \note This function does not indicate failure
+   *******************************************************************************
+   */
   template <typename T>
   T get(const std::string& name)
   {

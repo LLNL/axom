@@ -67,11 +67,9 @@ TEST(inlet_object, simple_struct_by_ref)
   currField = inlet->addBool("foo/baz", "baz's description");
   EXPECT_TRUE(currField);
 
-  // Need to forward from Inlet
-  auto global_table = inlet->getGlobalTable();
   Foo foo;
+  bool found = inlet->get("foo", foo);
 
-  bool found = global_table->get("foo", foo);
   EXPECT_TRUE(found);
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
@@ -102,11 +100,9 @@ TEST(inlet_object, simple_struct_by_value)
   currField = inlet->addBool("foo/baz", "baz's description");
   EXPECT_TRUE(currField);
 
-  // Need to forward from Inlet
-  auto global_table = inlet->getGlobalTable();
   Foo foo;
 
-  foo = global_table->get<Foo>("foo");
+  foo = inlet->get<Foo>("foo");
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
 }
@@ -148,9 +144,7 @@ TEST(inlet_object, simple_moveonly_struct_by_value)
   currField = inlet->addBool("foo/baz", "baz's description");
   EXPECT_TRUE(currField);
 
-  // Need to forward from Inlet
-  auto global_table = inlet->getGlobalTable();
-  MoveOnlyFoo foo = global_table->get<MoveOnlyFoo>("foo");
+  MoveOnlyFoo foo = inlet->get<MoveOnlyFoo>("foo");
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
 }
