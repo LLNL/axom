@@ -187,6 +187,44 @@ TEST(inlet_object, simple_struct_from_bracket)
   EXPECT_FALSE(foo.baz);
 }
 
+TEST(inlet_object, array_from_bracket)
+{
+  DataStore ds;
+  std::string testString =
+    "luaArrays = { arr1 = { [1] = 4}, "
+    "              arr2 = {[4] = true, [8] = false}, "
+    "              arr3 = {[33] = 'hello', [2] = 'bye'}, "
+    "              arr4 = { [12] = 2.4 } }";
+  auto inlet = createBasicInlet(&ds, testString);
+
+  std::unordered_map<int, bool> boolMap;
+  std::unordered_map<int, int> intMap;
+  std::unordered_map<int, double> doubleMap;
+  std::unordered_map<int, std::string> strMap;
+  auto arr1_field = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
+  auto arr2_field = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
+  auto arr3_field = inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
+  auto arr4_field = inlet->getGlobalTable()->addDoubleArray("luaArrays/arr4");
+
+  std::unordered_map<int, int> expectedInts {{1, 4}};
+  std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
+  std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
+  std::unordered_map<int, std::string> expectedStrs {{33, "hello"}, {2, "bye"}};
+
+  // auto intMap1 = static_cast<std::unordered_map<int, int>>((*inlet)["luaArrays/arr1"]);
+  std::unordered_map<int, int> arr1 = (*inlet)["luaArrays/arr1"];
+  EXPECT_EQ(arr1, expectedInts);
+
+  std::unordered_map<int, bool> arr2 = (*inlet)["luaArrays/arr2"];
+  EXPECT_EQ(arr2, expectedBools);
+
+  std::unordered_map<int, std::string> arr3 = (*inlet)["luaArrays/arr3"];
+  EXPECT_EQ(arr3, expectedStrs);
+
+  std::unordered_map<int, double> arr4 = (*inlet)["luaArrays/arr4"];
+  EXPECT_EQ(arr4, expectedDoubles);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

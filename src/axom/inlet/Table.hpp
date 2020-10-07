@@ -60,6 +60,21 @@ struct is_lua_primitive
     std::is_same<BaseType, std::string>::value;
 };
 
+// By default it's false
+template <typename T>
+struct is_lua_primitive_array
+{
+  static constexpr bool value = false;
+};
+
+// If it's an unordered map whose value type is a lua primitive,
+// assume that it's an array
+template <typename T>
+struct is_lua_primitive_array<std::unordered_map<int, T>>
+{
+  static constexpr bool value = is_lua_primitive<T>::value;
+};
+
 /*!
  *******************************************************************************
  * \class Proxy
@@ -483,8 +498,10 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!is_lua_primitive<T>::value, T>::type get(
-    const std::string& name)
+  typename std::enable_if<!is_lua_primitive<T>::value &&
+                            !is_lua_primitive_array<T>::value,
+                          T>::type
+  get(const std::string& name)
   {
     if(!hasTable(name))
     {
@@ -496,9 +513,82 @@ public:
   }
 
   template <typename T>
-  typename std::enable_if<!is_lua_primitive<T>::value, T>::type get()
+  typename std::enable_if<!is_lua_primitive<T>::value &&
+                            !is_lua_primitive_array<T>::value,
+                          T>::type
+  get()
   {
     return from_inlet<T>(*this);
+  }
+
+  template <typename T>
+  typename std::enable_if<std::is_same<T, bool>::value,
+                          std::unordered_map<int, bool>>::type
+  getArray()
+  {
+    std::unordered_map<int, bool> result;
+    if(!getTable("_inlet_array")->getBoolArray(result))
+    {
+      std::string msg = fmt::format(
+        "[Inlet] Failed to read in bool array from table with name {0}",
+        m_name);
+      SLIC_ERROR(msg);
+    }
+    return result;
+  }
+
+  template <typename T>
+  typename std::enable_if<std::is_same<T, int>::value, std::unordered_map<int, int>>::type
+  getArray()
+  {
+    std::unordered_map<int, int> result;
+    if(!getTable("_inlet_array")->getIntArray(result))
+    {
+      std::string msg = fmt::format(
+        "[Inlet] Failed to read in int array from table with name {0}",
+        m_name);
+      SLIC_ERROR(msg);
+    }
+    return result;
+  }
+
+  template <typename T>
+  typename std::enable_if<std::is_same<T, double>::value,
+                          std::unordered_map<int, double>>::type
+  getArray()
+  {
+    std::unordered_map<int, double> result;
+    if(!getTable("_inlet_array")->getDoubleArray(result))
+    {
+      std::string msg = fmt::format(
+        "[Inlet] Failed to read in double array from table with name {0}",
+        m_name);
+      SLIC_ERROR(msg);
+    }
+    return result;
+  }
+
+  template <typename T>
+  typename std::enable_if<std::is_same<T, std::string>::value,
+                          std::unordered_map<int, std::string>>::type
+  getArray()
+  {
+    std::unordered_map<int, std::string> result;
+    if(!getTable("_inlet_array")->getStringArray(result))
+    {
+      std::string msg = fmt::format(
+        "[Inlet] Failed to read in std::string array from table with name {0}",
+        m_name);
+      SLIC_ERROR(msg);
+    }
+    return result;
+  }
+
+  // Arrays of Lua primitives
+  template <typename T>
+  typename std::enable_if<is_lua_primitive_array<T>::value, T>::type get()
+  {
+    return getArray<typename T::mapped_type>();
   }
 
   Proxy operator[](const std::string& name)
