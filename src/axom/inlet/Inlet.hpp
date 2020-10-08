@@ -194,23 +194,23 @@ public:
   //
 
   /*!
- *******************************************************************************
- * \brief Gets a value of arbitrary type out of the datastore
- * 
- * Retrieves a value of builtin (double, int, bool, string) or user-defined type.
- * 
- * \param [in] name The path to the object, or the root of the object for 
- * a user-defined type
- * \param [out] value Value to be filled
- * \return True if the value was found in the table
- * \tparam T The type to retrieve
- * \pre If T is a user-defined type, requires a function
- * \code{.cpp}
- * bool from_inlet(axom::inlet::Table&, T&);
- * \endcode
- * to be defined
- *******************************************************************************
- */
+   *******************************************************************************
+   * \brief Gets a value of arbitrary type out of the datastore via out-param
+   * 
+   * Retrieves a value of builtin (double, int, bool, string) or user-defined type.
+   * 
+   * \param [in] name The path to the object, or the root of the object for 
+   * a user-defined type
+   * \param [out] value Value to be filled
+   * \return True if the value was found in the table
+   * \tparam T The type to retrieve
+   * \pre If T is a user-defined type, requires a function
+   * \code{.cpp}
+   * bool from_inlet(axom::inlet::Table&, T&);
+   * \endcode
+   * to be defined
+   *******************************************************************************
+   */
   template <typename T>
   bool get_to(const std::string& name, T& value)
   {
@@ -218,18 +218,18 @@ public:
   }
 
   /*!
- *******************************************************************************
- * \brief Gets a value of arbitrary type out of the datastore
- * 
- * Retrieves a value of user-defined type.
- * 
- * \param [in] name The name of the subtable representing the root of the object
- * \return The retrieved value
- * \tparam The type to retrieve
- * \pre Requires a specialization of from_inlet<T>(axom::inlet::Table&)
- * \note This function does not indicate failure
- *******************************************************************************
- */
+   *******************************************************************************
+   * \brief Gets a value of arbitrary type out of the datastore
+   * 
+   * Retrieves a value of user-defined type, i.e., not double, int, bool, or string.
+   * 
+   * \param [in] name The name of the subtable representing the root of the object
+   * \return The retrieved value
+   * \tparam The type to retrieve
+   * \pre Requires a specialization of from_inlet<T>(axom::inlet::Table&)
+   * \note This function does not indicate failure
+   *******************************************************************************
+   */
   template <typename T>
   T get(const std::string& name)
   {
