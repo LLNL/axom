@@ -61,17 +61,17 @@ TEST(inlet_Inlet_basic, getTopLevelBools)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo", value);
+  found = inlet->get_to("foo", value);
   EXPECT_TRUE(found);
   EXPECT_TRUE(value);
 
-  found = inlet->get("bar", value);
+  found = inlet->get_to("bar", value);
   EXPECT_TRUE(found);
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
   value = true;
-  found = inlet->get("nonexistant", value);
+  found = inlet->get_to("nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }
@@ -107,17 +107,17 @@ TEST(inlet_Inlet_basic, getNestedBools)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo/bar", value);
+  found = inlet->get_to("foo/bar", value);
   EXPECT_TRUE(found);
   EXPECT_TRUE(value);
 
-  found = inlet->get("foo/baz", value);
+  found = inlet->get_to("foo/baz", value);
   EXPECT_TRUE(found);
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
   value = true;
-  found = inlet->get("foo/nonexistant", value);
+  found = inlet->get_to("foo/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }
@@ -153,17 +153,17 @@ TEST(inlet_Inlet_basic, getDoublyNestedBools)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo/quux/bar", value);
+  found = inlet->get_to("foo/quux/bar", value);
   EXPECT_TRUE(found);
   EXPECT_TRUE(value);
 
-  found = inlet->get("foo/quux/baz", value);
+  found = inlet->get_to("foo/quux/baz", value);
   EXPECT_TRUE(found);
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
   value = true;
-  found = inlet->get("foo/quux/nonexistant", value);
+  found = inlet->get_to("foo/quux/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }
@@ -204,17 +204,17 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBools)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo/quux/corge/quuz/grault/bar", value);
+  found = inlet->get_to("foo/quux/corge/quuz/grault/bar", value);
   EXPECT_TRUE(found);
   EXPECT_TRUE(value);
 
-  found = inlet->get("foo/quux/corge/quuz/grault/baz", value);
+  found = inlet->get_to("foo/quux/corge/quuz/grault/baz", value);
   EXPECT_TRUE(found);
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
   value = true;
-  found = inlet->get("foo/quux/corge/quuz/grault/nonexistant", value);
+  found = inlet->get_to("foo/quux/corge/quuz/grault/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }
@@ -253,17 +253,17 @@ TEST(inlet_Inlet_basic, getNestedBoolsThroughTable)
   auto table = inlet->getTable("foo");
 
   // Check for existing fields
-  found = table->get("bar", value);
+  found = table->get_to("bar", value);
   EXPECT_TRUE(found);
   EXPECT_TRUE(value);
 
-  found = table->get("baz", value);
+  found = table->get_to("baz", value);
   EXPECT_TRUE(found);
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
   value = true;
-  found = table->get("nonexistant", value);
+  found = table->get_to("nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }
@@ -306,17 +306,17 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughTable)
   auto table = inlet->getTable("foo/quux/corge");
 
   // Check for existing fields
-  found = table->get("quuz/grault/bar", value);
+  found = table->get_to("quuz/grault/bar", value);
   EXPECT_TRUE(found);
   EXPECT_TRUE(value);
 
-  found = table->get("quuz/grault/baz", value);
+  found = table->get_to("quuz/grault/baz", value);
   EXPECT_TRUE(found);
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
   value = true;
-  found = table->get("quuz/grault/nonexistant", value);
+  found = table->get_to("quuz/grault/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }
@@ -360,19 +360,19 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughField)
 
   // Check for existing fields
   auto bar_field = table->getField("quuz/grault/bar");
-  found = bar_field->get(value);
+  found = bar_field->get_to(value);
   EXPECT_TRUE(found);
   EXPECT_TRUE(value);
 
   auto baz_field = table->getField("quuz/grault/baz");
-  found = baz_field->get(value);
+  found = baz_field->get_to(value);
   EXPECT_TRUE(found);
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
   value = true;
   auto nonexistant_field = table->getField("quuz/grault/nonexistant");
-  found = nonexistant_field->get(value);
+  found = nonexistant_field->get_to(value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }
@@ -408,17 +408,17 @@ TEST(inlet_Inlet_basic, getTopLevelDoubles)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo", value);
+  found = inlet->get_to("foo", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 5.05);
 
-  found = inlet->get("bar", value);
+  found = inlet->get_to("bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 15.1);
 
   // Check one that doesn't exist and doesn't have a default value
   value = 1000;
-  found = inlet->get("nonexistant", value);
+  found = inlet->get_to("nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, 1000);
 }
@@ -454,17 +454,17 @@ TEST(inlet_Inlet_basic, getNestedDoubles)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo/bar", value);
+  found = inlet->get_to("foo/bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 200.5);
 
-  found = inlet->get("foo/baz", value);
+  found = inlet->get_to("foo/baz", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 100.987654321);
 
   // Check one that doesn't exist and doesn't have a default value
   value = 1000;
-  found = inlet->get("foo/nonexistant", value);
+  found = inlet->get_to("foo/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, 1000);
 }
@@ -500,17 +500,17 @@ TEST(inlet_Inlet_basic, getTopLevelInts)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo", value);
+  found = inlet->get_to("foo", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 5);
 
-  found = inlet->get("bar", value);
+  found = inlet->get_to("bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 15);
 
   // Check one that doesn't exist and doesn't have a default value
   value = 1000;
-  found = inlet->get("nonexistant", value);
+  found = inlet->get_to("nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, 1000);
 }
@@ -546,17 +546,17 @@ TEST(inlet_Inlet_basic, getNestedInts)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo/bar", value);
+  found = inlet->get_to("foo/bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 200);
 
-  found = inlet->get("foo/baz", value);
+  found = inlet->get_to("foo/baz", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 100);
 
   // Check one that doesn't exist and doesn't have a default value
   value = 1000;
-  found = inlet->get("foo/nonexistant", value);
+  found = inlet->get_to("foo/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, 1000);
 }
@@ -592,17 +592,17 @@ TEST(inlet_Inlet_basic, getTopLevelStrings)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo", value);
+  found = inlet->get_to("foo", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, "test string");
 
-  found = inlet->get("bar", value);
+  found = inlet->get_to("bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, "15");
 
   // Check one that doesn't exist and doesn't have a default value
   value = "don't change";
-  found = inlet->get("nonexistant", value);
+  found = inlet->get_to("nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, "don't change");
 }
@@ -638,17 +638,17 @@ TEST(inlet_Inlet_basic, getNestedStrings)
   bool found = false;
 
   // Check for existing fields
-  found = inlet->get("foo/bar", value);
+  found = inlet->get_to("foo/bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, "yet another string");
 
-  found = inlet->get("foo/baz", value);
+  found = inlet->get_to("foo/baz", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, "");
 
   // Check one that doesn't exist and doesn't have a default value
   value = "1000";
-  found = inlet->get("foo/nonexistant", value);
+  found = inlet->get_to("foo/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, "1000");
 }
@@ -689,19 +689,19 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
   // Check stored values from get
   //
 
-  found = inlet->get("foo/bar", strVal);
+  found = inlet->get_to("foo/bar", strVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(strVal, "yet another string");
 
-  found = inlet->get("foo/mi", boolVal);
+  found = inlet->get_to("foo/mi", boolVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(boolVal, true);
 
-  found = inlet->get("foo/so", doubleVal);
+  found = inlet->get_to("foo/so", doubleVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(doubleVal, 3.5);
 
-  found = inlet->get("foo/re", intVal);
+  found = inlet->get_to("foo/re", intVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(intVal, 9);
 }
@@ -731,13 +731,13 @@ TEST(inlet_Inlet_views, NestedTableViewCheck1)
   int intVal;
   std::string strVal;
 
-  found = inlet->get("field1", boolVal);
+  found = inlet->get_to("field1", boolVal);
   EXPECT_TRUE(found);
-  found = inlet->get("field2", intVal);
+  found = inlet->get_to("field2", intVal);
   EXPECT_TRUE(found);
-  found = inlet->get("NewTable/str", strVal);
+  found = inlet->get_to("NewTable/str", strVal);
   EXPECT_TRUE(found);
-  found = inlet->get("NewTable/integer", intVal);
+  found = inlet->get_to("NewTable/integer", intVal);
   EXPECT_TRUE(found);
 
   EXPECT_TRUE(sidreGroup->hasView("field1/required"));
@@ -778,11 +778,11 @@ TEST(inlet_Inlet_views, NestedTableViewCheck2)
   bool boolVal;
   double doubleVal;
 
-  found = inlet->get("foo", boolVal);
+  found = inlet->get_to("foo", boolVal);
   EXPECT_TRUE(found);
-  found = inlet->get("bar", boolVal);
+  found = inlet->get_to("bar", boolVal);
   EXPECT_TRUE(found);
-  found = inlet->get("Table1/float1", doubleVal);
+  found = inlet->get_to("Table1/float1", doubleVal);
   EXPECT_TRUE(found);
 
   EXPECT_TRUE(sidreGroup->hasView("foo/required"));
@@ -817,11 +817,11 @@ TEST(inlet_Inlet_views, NestedTableViewCheck3)
   int intVal;
   double doubleVal;
 
-  found = inlet->get("Table1/float1", doubleVal);
+  found = inlet->get_to("Table1/float1", doubleVal);
   EXPECT_TRUE(found);
-  found = inlet->get("Table2/int1", intVal);
+  found = inlet->get_to("Table2/int1", intVal);
   EXPECT_TRUE(found);
-  found = inlet->get("Table3/bool1", boolVal);
+  found = inlet->get_to("Table3/bool1", boolVal);
   EXPECT_TRUE(found);
 
   EXPECT_TRUE(sidreGroup->hasView("Table1/float1/description"));
@@ -885,45 +885,45 @@ TEST(inlet_Inlet, mixLevelTables)
   double doubleVal;
 
   // u0
-  found = inlet->get("thermal_solver/u0/type", strVal);
+  found = inlet->get_to("thermal_solver/u0/type", strVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(strVal, "function");
 
-  found = inlet->get("thermal_solver/u0/func", strVal);
+  found = inlet->get_to("thermal_solver/u0/func", strVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(strVal, "BoundaryTemperature");
 
   // kappa
-  found = inlet->get("thermal_solver/kappa/type", strVal);
+  found = inlet->get_to("thermal_solver/kappa/type", strVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(strVal, "constant");
 
-  found = inlet->get("thermal_solver/kappa/constant", doubleVal);
+  found = inlet->get_to("thermal_solver/kappa/constant", doubleVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(doubleVal, 0.5);
 
   // solver
-  found = inlet->get("thermal_solver/solver/rel_tol", doubleVal);
+  found = inlet->get_to("thermal_solver/solver/rel_tol", doubleVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(doubleVal, 1.e-6);
 
-  found = inlet->get("thermal_solver/solver/abs_tol", doubleVal);
+  found = inlet->get_to("thermal_solver/solver/abs_tol", doubleVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(doubleVal, 1.e-12);
 
-  found = inlet->get("thermal_solver/solver/print_level", intVal);
+  found = inlet->get_to("thermal_solver/solver/print_level", intVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(intVal, 0);
 
-  found = inlet->get("thermal_solver/solver/max_iter", intVal);
+  found = inlet->get_to("thermal_solver/solver/max_iter", intVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(intVal, 100);
 
-  found = inlet->get("thermal_solver/solver/dt", doubleVal);
+  found = inlet->get_to("thermal_solver/solver/dt", doubleVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(doubleVal, 1.0);
 
-  found = inlet->get("thermal_solver/solver/steps", intVal);
+  found = inlet->get_to("thermal_solver/solver/steps", intVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(intVal, 1);
 }
@@ -1375,14 +1375,14 @@ TEST(inlet_verify, verifyFieldLambda)
 
   field2->registerVerifier([&]() -> bool {
     std::string str = "";
-    inlet->get("field2", str);
+    inlet->get_to("field2", str);
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_TRUE(inlet->verify());
 
   field3->registerVerifier([&]() -> bool {
     std::string str = "";
-    inlet->get("NewTable/field3", str);
+    inlet->get_to("NewTable/field3", str);
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_FALSE(inlet->verify());
@@ -1403,14 +1403,14 @@ TEST(inlet_verify, verifyTableLambda1)
 
   field2->registerVerifier([&]() -> bool {
     std::string str = "";
-    inlet->get("field2", str);
+    inlet->get_to("field2", str);
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_TRUE(inlet->verify());
 
   field3->registerVerifier([&]() -> bool {
     std::string str = "";
-    inlet->get("NewTable/field3", str);
+    inlet->get_to("NewTable/field3", str);
     return (str.size() >= 1 && str[0] == 'x');
   });
   EXPECT_TRUE(inlet->verify());
@@ -1521,11 +1521,11 @@ TEST(inlet_verify, verifyTableLambda3)
 
   v->registerVerifier([&]() -> bool {
     int dim;
-    myInlet->get("dimensions", dim);
+    myInlet->get_to("dimensions", dim);
     int value;  // field value doesnt matter just that it is present in input file
-    bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
-    bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
-    bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
+    bool x_present = v->hasField("x") && myInlet->get_to("vector/x", value);
+    bool y_present = v->hasField("y") && myInlet->get_to("vector/y", value);
+    bool z_present = v->hasField("z") && myInlet->get_to("vector/z", value);
     if(dim == 1 && x_present)
     {
       return true;

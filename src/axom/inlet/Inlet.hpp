@@ -212,9 +212,9 @@ public:
  *******************************************************************************
  */
   template <typename T>
-  bool get(const std::string& name, T& value)
+  bool get_to(const std::string& name, T& value)
   {
-    return m_globalTable->get(name, value);
+    return m_globalTable->get_to(name, value);
   }
 
   /*!

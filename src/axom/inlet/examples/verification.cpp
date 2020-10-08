@@ -31,11 +31,11 @@ int main()
   // _inlet_workflow_verification_start
   v->registerVerifier([&]() -> bool {
     int dim;
-    myInlet->get("dimensions", dim);
+    myInlet->get_to("dimensions", dim);
     int value;  // field value doesnt matter just that it is present in input file
-    bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
-    bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
-    bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
+    bool x_present = v->hasField("x") && myInlet->get_to("vector/x", value);
+    bool y_present = v->hasField("y") && myInlet->get_to("vector/y", value);
+    bool z_present = v->hasField("z") && myInlet->get_to("vector/z", value);
     if(dim == 1 && x_present)
     {
       return true;
@@ -75,7 +75,7 @@ int main()
   bool dim_found, x_found, y_found;
 
   // Get dimensions if it was present in input file
-  dim_found = myInlet->get("dimensions", dim);
+  dim_found = myInlet->get_to("dimensions", dim);
   if(dim_found)
   {
     msg = "Dimensions = " + std::to_string(dim) + "\n";
@@ -83,8 +83,8 @@ int main()
   }
 
   // Get vector information if it was present in input file
-  x_found = myInlet->get("vector/x", x);
-  y_found = myInlet->get("vector/y", y);
+  x_found = myInlet->get_to("vector/x", x);
+  y_found = myInlet->get_to("vector/y", y);
   if(x_found && y_found)
   {
     msg = "Vector = " + std::to_string(x) + "," + std::to_string(y) + "\n";

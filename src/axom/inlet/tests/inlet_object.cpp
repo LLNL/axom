@@ -59,7 +59,7 @@ TEST(inlet_object, simple_struct_by_ref)
   EXPECT_TRUE(currField);
 
   Foo foo;
-  bool found = inlet->get("foo", foo);
+  bool found = inlet->get_to("foo", foo);
 
   EXPECT_TRUE(found);
   EXPECT_TRUE(foo.bar);

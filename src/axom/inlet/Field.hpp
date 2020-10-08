@@ -301,7 +301,7 @@ public:
    * \return True if the value exists
    *****************************************************************************
    */
-  bool get(bool& value);
+  bool get_to(bool& value);
 
   /*!
    *****************************************************************************
@@ -316,7 +316,7 @@ public:
    * \return True if the value exists
    *****************************************************************************
    */
-  bool get(double& value);
+  bool get_to(double& value);
 
   /*!
    *****************************************************************************
@@ -331,7 +331,7 @@ public:
    * \return True if the value exists
    *****************************************************************************
    */
-  bool get(int& value);
+  bool get_to(int& value);
 
   /*!
    *****************************************************************************
@@ -346,13 +346,13 @@ public:
    * \return True if the value exists
    *****************************************************************************
    */
-  bool get(std::string& value);
+  bool get_to(std::string& value);
 
   template <typename T>
   T get()
   {
     T result;
-    if(!get(result))
+    if(!get_to(result))
     {
       throw std::out_of_range(
         "[Inlet] Field does not exist or is of incorrect type");

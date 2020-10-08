@@ -245,7 +245,7 @@ std::shared_ptr<Field> Field::range(double startVal, double endVal)
   return shared_from_this();
 }
 
-bool Field::get(bool& value)
+bool Field::get_to(bool& value)
 {
   axom::sidre::View* valueView = m_sidreGroup->getView("value");
   if(valueView == nullptr)
@@ -281,7 +281,7 @@ bool Field::get(bool& value)
   return true;
 }
 
-bool Field::get(double& value)
+bool Field::get_to(double& value)
 {
   axom::sidre::View* valueView = m_sidreGroup->getView("value");
   if(valueView == nullptr)
@@ -305,7 +305,7 @@ bool Field::get(double& value)
   return true;
 }
 
-bool Field::get(int& value)
+bool Field::get_to(int& value)
 {
   axom::sidre::View* valueView = m_sidreGroup->getView("value");
   if(valueView == nullptr)
@@ -329,7 +329,7 @@ bool Field::get(int& value)
   return true;
 }
 
-bool Field::get(std::string& value)
+bool Field::get_to(std::string& value)
 {
   axom::sidre::View* valueView = m_sidreGroup->getView("value");
   if(valueView == nullptr)

@@ -500,14 +500,14 @@ public:
    *****************************************************************************
    */
   template <typename T>
-  typename std::enable_if<is_lua_primitive<T>::value, bool>::type get(
+  typename std::enable_if<is_lua_primitive<T>::value, bool>::type get_to(
     const std::string& name,
     T& value)
   {
     bool found = false;
     if(hasField(name))
     {
-      found = getField(name)->get(value);
+      found = getField(name)->get_to(value);
     }
     return found;
   }
@@ -531,7 +531,7 @@ public:
  *******************************************************************************
  */
   template <typename T>
-  typename std::enable_if<!is_lua_primitive<T>::value, bool>::type get(
+  typename std::enable_if<!is_lua_primitive<T>::value, bool>::type get_to(
     const std::string& name,
     T& value)
   {
@@ -886,7 +886,7 @@ typename std::enable_if<is_lua_primitive<T>::value, T>::type Proxy::get()
     m_field != nullptr,
     "[Inlet] Tried to read a primitive type from a Proxy containing a table");
   T result;
-  bool found = m_field->get(result);
+  bool found = m_field->get_to(result);
   SLIC_ASSERT_MSG(
     found,
     "[Inlet] Failed to read a primitive type from a Field-containing Proxy");
