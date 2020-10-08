@@ -30,13 +30,18 @@ struct Mesh
   }
 };
 
-// Additionally, each class should specialize this function
+// Additionally, each class should specialize this struct as follows
 // in the global namespace so that Inlet can access it
+// Alternatively, if a class is default-constructible, an equivalent
+// by-reference function can be implemented (see LinearSolver below)
 template <>
-Mesh from_inlet<Mesh>(axom::inlet::Table& base)
+struct FromInlet<Mesh>
 {
-  return {base["filename"], base["serial"], base["parallel"]};
-}
+  Mesh operator()(axom::inlet::Table& base)
+  {
+    return {base["filename"], base["serial"], base["parallel"]};
+  }
+};
 
 struct LinearSolver
 {
@@ -57,17 +62,16 @@ struct LinearSolver
   }
 };
 
-template <>
-LinearSolver from_inlet<LinearSolver>(axom::inlet::Table& base)
+// Example definition of a "deserializer" using a free function
+// that takes a reference param
+void from_inlet(axom::inlet::Table& base, LinearSolver& lin_solve)
 {
-  LinearSolver lin_solve;
   lin_solve.rel_tol = base["rel_tol"];
   lin_solve.abs_tol = base["abs_tol"];
   lin_solve.print_level = base["print_level"];
   lin_solve.max_iter = base["max_iter"];
   lin_solve.dt = base["dt"];
   lin_solve.steps = base["steps"];
-  return lin_solve;
 }
 
 struct ThermalSolver
@@ -88,13 +92,16 @@ struct ThermalSolver
   }
 };
 
-// This is also implicitly recursive - will call the from_inlet
-// functions defined for the subobjects
 template <>
-ThermalSolver from_inlet<ThermalSolver>(axom::inlet::Table& base)
+struct FromInlet<ThermalSolver>
 {
-  return {base["mesh"], base["solver"]};
-}
+  // This is also implicitly recursive - will call the from_inlet
+  // functions defined for the subobjects
+  ThermalSolver operator()(axom::inlet::Table& base)
+  {
+    return {base["mesh"], base["solver"]};
+  }
+};
 
 int main(int argc, char** argv)
 {

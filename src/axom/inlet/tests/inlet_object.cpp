@@ -67,11 +67,14 @@ TEST(inlet_object, simple_struct_by_ref)
 }
 
 template <>
-Foo from_inlet<Foo>(axom::inlet::Table& base)
+struct FromInlet<Foo>
 {
-  Foo f {base["bar"], base["baz"]};
-  return f;
-}
+  Foo operator()(axom::inlet::Table& base)
+  {
+    Foo f {base["bar"], base["baz"]};
+    return f;
+  }
+};
 
 TEST(inlet_object, simple_struct_by_value)
 {
@@ -107,11 +110,14 @@ struct MoveOnlyFoo
 };
 
 template <>
-MoveOnlyFoo from_inlet<MoveOnlyFoo>(axom::inlet::Table& base)
+struct FromInlet<MoveOnlyFoo>
 {
-  MoveOnlyFoo f(base["bar"], base["baz"]);
-  return f;
-}
+  MoveOnlyFoo operator()(axom::inlet::Table& base)
+  {
+    MoveOnlyFoo f(base["bar"], base["baz"]);
+    return f;
+  }
+};
 
 TEST(inlet_object, simple_moveonly_struct_by_value)
 {

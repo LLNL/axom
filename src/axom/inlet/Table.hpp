@@ -35,21 +35,24 @@
  * from inlet with axom::inlet::Table::get(const std::string&)
  * 
  * This is the only way of reading in a non-default-constructible type from
- * Inlet.  Usage of axom::inlet::Table::get(const std::string&) without
- * specializing this function will result in a linker error.
+ * Inlet.
  * 
  * \see axom::inlet::Table::get(const std::string&)
- * 
- * \param [in] base The Inlet table representing the root of the object
- * in which all object fields are children
  *******************************************************************************
  */
 template <typename T>
-T from_inlet(axom::inlet::Table& base);
+struct FromInlet
+{
+  // "Poison" the base implementation so it cannot be used
+  // and so it can be checked in a SFINAE context
+  FromInlet() = delete;
+};
 
 namespace axom
 {
 namespace inlet
+{
+namespace detail
 {
 /*!
  *******************************************************************************
@@ -78,10 +81,8 @@ struct is_lua_primitive
  *******************************************************************************
  */
 template <typename T>
-struct is_lua_primitive_array
-{
-  static constexpr bool value = false;
-};
+struct is_lua_primitive_array : std::false_type
+{ };
 
 // If it's an unordered map whose value type is a lua primitive,
 // assume that it's an array
@@ -90,6 +91,49 @@ struct is_lua_primitive_array<std::unordered_map<int, T>>
 {
   static constexpr bool value = is_lua_primitive<T>::value;
 };
+
+/*!
+ *******************************************************************************
+ * \class has_free_from_inlet
+ *
+ * \brief A type trait for checking if a free function with the signature
+ * from_inlet(axom::inlet::Table&, T&) exists
+ * \tparam T The type to check
+ *******************************************************************************
+ */
+template <typename T, typename SFINAE = void>
+struct has_free_from_inlet : std::false_type
+{ };
+
+template <typename T>
+struct has_free_from_inlet<T,
+                           decltype(from_inlet(std::declval<Table&>(),
+                                               std::declval<T&>()))>
+  : std::true_type
+{ };
+
+/*!
+ *******************************************************************************
+ * \class has_from_inlet_specialization
+ *
+ * \brief A type trait for checking if a type has specialized FromInlet
+ * with the required T operator()(axom::inlet::Table&)
+ * \tparam T The type to check
+ *******************************************************************************
+ */
+template <typename T, typename SFINAE = void>
+struct has_from_inlet_specialization : std::false_type
+{ };
+
+template <typename T>
+struct has_from_inlet_specialization<
+  T,
+  typename std::enable_if<
+    std::is_same<T, decltype(std::declval<FromInlet<T>&>()(std::declval<Table&>()))>::value>::type>
+  : std::true_type
+{ };
+
+}  // namespace detail
 
 /*!
  *******************************************************************************
@@ -178,7 +222,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!is_lua_primitive<T>::value, T>::type get();
+  typename std::enable_if<!detail::is_lua_primitive<T>::value, T>::type get();
 
   /*!
    *******************************************************************************
@@ -190,7 +234,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<is_lua_primitive<T>::value, T>::type get();
+  typename std::enable_if<detail::is_lua_primitive<T>::value, T>::type get();
 
 private:
   Table* m_table = nullptr;
@@ -500,9 +544,8 @@ public:
    *****************************************************************************
    */
   template <typename T>
-  typename std::enable_if<is_lua_primitive<T>::value, bool>::type get_to(
-    const std::string& name,
-    T& value)
+  typename std::enable_if<detail::is_lua_primitive<T>::value, bool>::type
+  get_to(const std::string& name, T& value)
   {
     bool found = false;
     if(hasField(name))
@@ -523,7 +566,7 @@ public:
  * \param [out] value Value to be filled
  * \return True if the value was found in the table
  * \tparam T The user-defined type to retrieve
- * \pre If T is a user-defined type, requires a function
+ * \pre Requires a function
  * \code{.cpp}
  * void from_inlet(axom::inlet::Table&, T&);
  * \endcode
@@ -531,10 +574,12 @@ public:
  *******************************************************************************
  */
   template <typename T>
-  typename std::enable_if<!is_lua_primitive<T>::value, bool>::type get_to(
-    const std::string& name,
-    T& value)
+  typename std::enable_if<!detail::is_lua_primitive<T>::value, bool>::type
+  get_to(const std::string& name, T& value)
   {
+    static_assert(detail::has_free_from_inlet<T>::value,
+                  "A user-defined type must implement "
+                  "from_inlet(axom::inlet::Table&, T&) to use this function!");
     bool found = false;
     if(name.empty())
     {
@@ -562,7 +607,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<is_lua_primitive<T>::value, T>::type get(
+  typename std::enable_if<detail::is_lua_primitive<T>::value, T>::type get(
     const std::string& name)
   {
     if(!hasField(name))
@@ -585,19 +630,21 @@ public:
    * \param [in] name The name of the subtable representing the root of the object
    * If nothing is passed, the calling table is interpreted as the roof of the object
    * \return The retrieved value
-   * \pre Requires a specialization of T from_inlet<T>(axom::inlet::Table&)
+   * \pre Requires a specialization of FromInlet for T
    * \exception std::out_of_range If the requested subtable does not exist
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!is_lua_primitive<T>::value &&
-                            !is_lua_primitive_array<T>::value,
+  typename std::enable_if<!detail::is_lua_primitive<T>::value &&
+                            !detail::is_lua_primitive_array<T>::value &&
+                            detail::has_from_inlet_specialization<T>::value,
                           T>::type
   get(const std::string& name = "")
   {
+    FromInlet<T> from_inlet;
     if(name.empty())
     {
-      return from_inlet<T>(*this);
+      return from_inlet(*this);
     }
     else
     {
@@ -607,8 +654,36 @@ public:
           fmt::format("[Inlet] Table with name {0} does not exist", name);
         throw std::out_of_range(msg);
       }
-      return from_inlet<T>(*getTable(name));
+      return from_inlet(*getTable(name));
     }
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Returns a stored value of user-defined type.
+   * 
+   * Retrieves a value of user-defined type.
+   * 
+   * \param [in] name The name of the subtable representing the root of the object
+   * If nothing is passed, the calling table is interpreted as the roof of the object
+   * \return The retrieved value
+   * \pre Requires a function
+   * \code{.cpp}
+   * void from_inlet(axom::inlet::Table&, T&);
+   * \endcode
+   * \exception std::out_of_range If the requested subtable does not exist
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<!detail::is_lua_primitive<T>::value &&
+                            !detail::is_lua_primitive_array<T>::value &&
+                            !detail::has_from_inlet_specialization<T>::value,
+                          T>::type
+  get(const std::string& name = "")
+  {
+    T value;
+    get_to(name, value);
+    return value;
   }
 
   /*!
@@ -622,7 +697,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<is_lua_primitive_array<T>::value, T>::type get()
+  typename std::enable_if<detail::is_lua_primitive_array<T>::value, T>::type get()
   {
     T result;
     if(!getTable("_inlet_array")->getArray(result))
@@ -880,7 +955,7 @@ private:
 };
 
 template <typename T>
-typename std::enable_if<is_lua_primitive<T>::value, T>::type Proxy::get()
+typename std::enable_if<detail::is_lua_primitive<T>::value, T>::type Proxy::get()
 {
   SLIC_ASSERT_MSG(
     m_field != nullptr,
@@ -894,7 +969,7 @@ typename std::enable_if<is_lua_primitive<T>::value, T>::type Proxy::get()
 }
 
 template <typename T>
-typename std::enable_if<!is_lua_primitive<T>::value, T>::type Proxy::get()
+typename std::enable_if<!detail::is_lua_primitive<T>::value, T>::type Proxy::get()
 {
   SLIC_ASSERT_MSG(m_table != nullptr,
                   "[Inlet] Tried to read a user-defined type from a Proxy "
