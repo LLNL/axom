@@ -56,14 +56,14 @@ namespace detail
 {
 /*!
  *******************************************************************************
- * \class is_lua_primitive
+ * \class is_inlet_primitive
  *
  * \brief A type trait for checking if a type is isomorphic to a Lua primitive
  * \tparam T The type to check
  *******************************************************************************
  */
 template <typename T>
-struct is_lua_primitive
+struct is_inlet_primitive
 {
   using BaseType = typename std::decay<T>::type;
   static constexpr bool value = std::is_same<BaseType, bool>::value ||
@@ -73,7 +73,7 @@ struct is_lua_primitive
 
 /*!
  *******************************************************************************
- * \class is_lua_primitive
+ * \class is_inlet_primitive
  *
  * \brief A type trait for checking if a type is isomorphic to an array of Lua
  * primitives
@@ -81,15 +81,15 @@ struct is_lua_primitive
  *******************************************************************************
  */
 template <typename T>
-struct is_lua_primitive_array : std::false_type
+struct is_inlet_primitive_array : std::false_type
 { };
 
 // If it's an unordered map whose value type is a lua primitive,
 // assume that it's an array
 template <typename T>
-struct is_lua_primitive_array<std::unordered_map<int, T>>
+struct is_inlet_primitive_array<std::unordered_map<int, T>>
 {
-  static constexpr bool value = is_lua_primitive<T>::value;
+  static constexpr bool value = is_inlet_primitive<T>::value;
 };
 
 /*!
@@ -198,6 +198,16 @@ public:
   bool contains(const std::string& name);
 
   /*!
+   *****************************************************************************
+   * \brief Returns the type of the stored value
+   * 
+   * \return The type
+   * \see InletType
+   *****************************************************************************
+   */
+  InletType type() const;
+
+  /*!
    *******************************************************************************
    * \brief Obtains a proxy view into the proxy for either a Field/Table subobject
    * 
@@ -222,7 +232,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!detail::is_lua_primitive<T>::value, T>::type get();
+  typename std::enable_if<!detail::is_inlet_primitive<T>::value, T>::type get();
 
   /*!
    *******************************************************************************
@@ -234,7 +244,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_lua_primitive<T>::value, T>::type get();
+  typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type get();
 
 private:
   Table* m_table = nullptr;
@@ -544,7 +554,7 @@ public:
    *****************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_lua_primitive<T>::value, bool>::type
+  typename std::enable_if<detail::is_inlet_primitive<T>::value, bool>::type
   get_to(const std::string& name, T& value)
   {
     bool found = false;
@@ -574,7 +584,7 @@ public:
  *******************************************************************************
  */
   template <typename T>
-  typename std::enable_if<!detail::is_lua_primitive<T>::value, bool>::type
+  typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
   get_to(const std::string& name, T& value)
   {
     static_assert(detail::has_free_from_inlet<T>::value,
@@ -607,7 +617,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_lua_primitive<T>::value, T>::type get(
+  typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type get(
     const std::string& name)
   {
     if(!hasField(name))
@@ -635,8 +645,8 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!detail::is_lua_primitive<T>::value &&
-                            !detail::is_lua_primitive_array<T>::value &&
+  typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
+                            !detail::is_inlet_primitive_array<T>::value &&
                             detail::has_from_inlet_specialization<T>::value,
                           T>::type
   get(const std::string& name = "")
@@ -675,8 +685,8 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!detail::is_lua_primitive<T>::value &&
-                            !detail::is_lua_primitive_array<T>::value &&
+  typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
+                            !detail::is_inlet_primitive_array<T>::value &&
                             !detail::has_from_inlet_specialization<T>::value,
                           T>::type
   get(const std::string& name = "")
@@ -697,7 +707,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_lua_primitive_array<T>::value, T>::type get()
+  typename std::enable_if<detail::is_inlet_primitive_array<T>::value, T>::type get()
   {
     T result;
     if(!getTable("_inlet_array")->getArray(result))
@@ -955,7 +965,7 @@ private:
 };
 
 template <typename T>
-typename std::enable_if<detail::is_lua_primitive<T>::value, T>::type Proxy::get()
+typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type Proxy::get()
 {
   SLIC_ASSERT_MSG(
     m_field != nullptr,
@@ -969,7 +979,7 @@ typename std::enable_if<detail::is_lua_primitive<T>::value, T>::type Proxy::get(
 }
 
 template <typename T>
-typename std::enable_if<!detail::is_lua_primitive<T>::value, T>::type Proxy::get()
+typename std::enable_if<!detail::is_inlet_primitive<T>::value, T>::type Proxy::get()
 {
   SLIC_ASSERT_MSG(m_table != nullptr,
                   "[Inlet] Tried to read a user-defined type from a Proxy "

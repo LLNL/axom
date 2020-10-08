@@ -358,6 +358,35 @@ bool Field::get_to(std::string& value)
   return true;
 }
 
+InletType Field::type() const
+{
+  axom::sidre::View* valueView = m_sidreGroup->getView("value");
+  if(valueView == nullptr)
+  {
+    return InletType::Nothing;
+  }
+
+  switch(valueView->getTypeID())
+  {
+  case axom::sidre::NO_TYPE_ID:
+    return InletType::Nothing;
+  case axom::sidre::INT8_ID:
+    return InletType::Bool;
+  case axom::sidre::INT_ID:
+    return InletType::Integer;
+  case axom::sidre::CHAR8_STR_ID:
+    return InletType::String;
+  case axom::sidre::DOUBLE_ID:
+    return InletType::Double;
+  default:
+    std::string msg = fmt::format(
+      "Type ID {0} for field not recognized, returning InletType::Nothing",
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    return InletType::Nothing;
+  }
+}
+
 template <typename T>
 void Field::setScalarValidValues(std::vector<T> set)
 {

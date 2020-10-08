@@ -294,6 +294,27 @@ std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
   return addField(sidreGroup, axom::sidre::DataTypeId::CHAR8_STR_ID, fullName, name);
 }
 
+InletType Proxy::type() const
+{
+  // If it's a table, it must be either an object or an array
+  if(m_table != nullptr)
+  {
+    // This is how Inlet stores array types in the datastore
+    if(m_table->hasTable("_inlet_array"))
+    {
+      return InletType::Array;
+    }
+    return InletType::Object;
+  }
+  // Otherwise it must be a field
+  if(m_field == nullptr)
+  {
+    throw std::out_of_range(
+      "[Inlet] Cannot retrieve the type of an empty Proxy");
+  }
+  return m_field->type();
+}
+
 bool Proxy::contains(const std::string& name)
 {
   if(m_table == nullptr)

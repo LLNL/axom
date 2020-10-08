@@ -17,6 +17,7 @@
 #include "axom/inlet/Inlet.hpp"
 
 using axom::inlet::Inlet;
+using axom::inlet::InletType;
 using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
 
@@ -257,6 +258,88 @@ TEST(inlet_object, array_from_bracket)
 
   doubleMap = (*inlet)["luaArrays/arr4"].get<std::unordered_map<int, double>>();
   EXPECT_EQ(doubleMap, expectedDoubles);
+}
+
+TEST(inlet_object, primitive_type_checks)
+{
+  std::string testString =
+    " bar = true; baz = 12; quux = 2.5; corge = 'hello' ";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // Define schema
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addInt("baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addDouble("quux", "quux's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addString("corge", "corge's description");
+  EXPECT_TRUE(currField);
+
+  EXPECT_EQ((*inlet)["bar"].type(), InletType::Bool);
+  bool bar = (*inlet)["bar"];
+  EXPECT_EQ(bar, true);
+
+  EXPECT_EQ((*inlet)["baz"].type(), InletType::Integer);
+  int baz = (*inlet)["baz"];
+  EXPECT_EQ(baz, 12);
+
+  EXPECT_EQ((*inlet)["quux"].type(), InletType::Double);
+  double quux = (*inlet)["quux"];
+  EXPECT_DOUBLE_EQ(quux, 2.5);
+
+  EXPECT_EQ((*inlet)["corge"].type(), InletType::String);
+  std::string corge = (*inlet)["corge"];
+  EXPECT_EQ(corge, "hello");
+}
+
+TEST(inlet_object, composite_type_checks)
+{
+  std::string testString =
+    "luaArrays = { arr1 = { [1] = 4}, "
+    "              arr2 = {[4] = true, [8] = false} }; "
+    "foo = { bar = true; baz = false }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // Define schema
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  auto currArrField = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
+  EXPECT_TRUE(currArrField);
+
+  currArrField = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
+  EXPECT_TRUE(currArrField);
+
+  auto arr_table = (*inlet)["luaArrays"];
+  // The table containing the two arrays is not an array, but an object
+  EXPECT_EQ(arr_table.type(), InletType::Object);
+
+  // But the things it contains are arrays
+  EXPECT_EQ(arr_table["arr1"].type(), InletType::Array);
+  EXPECT_EQ(arr_table["arr2"].type(), InletType::Array);
+
+  auto foo_table = (*inlet)["foo"];
+  // Similarly, the table containing the two bools is an object
+  EXPECT_EQ(foo_table.type(), InletType::Object);
+
+  // But the things it contains are booleans
+  EXPECT_EQ(foo_table["bar"].type(), InletType::Bool);
+  EXPECT_EQ(foo_table["baz"].type(), InletType::Bool);
 }
 
 //------------------------------------------------------------------------------

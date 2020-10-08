@@ -27,6 +27,25 @@ namespace inlet
 {
 /*!
  *******************************************************************************
+ * \enum InletType
+ *
+ * \brief Enumeration of basic types for things in inlet
+ *******************************************************************************
+ */
+enum class InletType
+{
+  Nothing,
+  Bool,
+  String,
+  Integer,
+  // TODO: Unsigned integer
+  Double,
+  Object,
+  Array
+};
+
+/*!
+ *******************************************************************************
  * \class Field
  *
  * \brief Provides functions to help define how individual field variables in an
@@ -348,6 +367,16 @@ public:
    */
   bool get_to(std::string& value);
 
+  /*!
+   *****************************************************************************
+   * \brief Returns a value of primitive type
+   * 
+   * \return The value
+   * \tparam T The type to retrieve
+   * \throw std::out_of_range If the value doesn't exist or is not of the 
+   * requested type
+   *****************************************************************************
+   */
   template <typename T>
   T get()
   {
@@ -359,6 +388,16 @@ public:
     }
     return result;
   }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the type of the stored value
+   * 
+   * \return The type
+   * \see InletType
+   *****************************************************************************
+   */
+  InletType type() const;
 
 private:
   /*!
