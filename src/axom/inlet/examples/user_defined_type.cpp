@@ -101,7 +101,7 @@ struct FromInlet<ThermalSolver>
   // functions defined for the subobjects
   ThermalSolver operator()(axom::inlet::Table& base)
   {
-    return {base["mesh"], base["solver"]};
+    return {base["mesh"].get<Mesh>(), base["solver"].get<LinearSolver>()};
   }
 };
 
@@ -135,5 +135,5 @@ int main(int argc, char** argv)
   }
 
   // Read all the data into a thermal solver object
-  ThermalSolver thermal_solver = (*inlet)["thermal_solver"];
+  auto thermal_solver = (*inlet)["thermal_solver"].get<ThermalSolver>();
 }

@@ -144,7 +144,7 @@ TEST(inlet_object, simple_struct_from_bracket)
   currField = inlet->addBool("foo/baz", "baz's description");
   EXPECT_TRUE(currField);
 
-  Foo foo = (*inlet)["foo"];
+  auto foo = Foo((*inlet)["foo"]);
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
 }
@@ -310,6 +310,94 @@ TEST(inlet_object, composite_type_checks)
   // But the things it contains are booleans
   EXPECT_EQ(foo_table["bar"].type(), InletType::Bool);
   EXPECT_EQ(foo_table["baz"].type(), InletType::Bool);
+}
+
+TEST(inlet_object, implicit_conversion_primitives)
+{
+  std::string testString =
+    " bar = true; baz = 12; quux = 2.5; corge = 'hello'; arr = { [1] = 4, [2] "
+    "= 6, [7] = 10}";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // Define schema
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addInt("baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addDouble("quux", "quux's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addString("corge", "corge's description");
+  EXPECT_TRUE(currField);
+
+  auto currArrField = inlet->getGlobalTable()->addIntArray("arr");
+  EXPECT_TRUE(currArrField);
+
+  // Attempt both construction and assignment
+  bool bar = (*inlet)["bar"];
+  EXPECT_EQ(bar, true);
+  bar = (*inlet)["bar"];
+  EXPECT_EQ(bar, true);
+
+  int baz = (*inlet)["baz"];
+  EXPECT_EQ(baz, 12);
+  baz = (*inlet)["baz"];
+  EXPECT_EQ(baz, 12);
+
+  double quux = (*inlet)["quux"];
+  EXPECT_DOUBLE_EQ(quux, 2.5);
+  quux = (*inlet)["quux"];
+  EXPECT_DOUBLE_EQ(quux, 2.5);
+
+  std::string corge = (*inlet)["corge"];
+  EXPECT_EQ(corge, "hello");
+  corge = (*inlet)["corge"];
+  EXPECT_EQ(corge, "hello");
+
+  std::unordered_map<int, int> expected_arr {{1, 4}, {2, 6}, {7, 10}};
+  std::unordered_map<int, int> arr = (*inlet)["arr"];
+  EXPECT_EQ(arr, expected_arr);
+  arr = (*inlet)["arr"];
+  EXPECT_EQ(arr, expected_arr);
+}
+
+TEST(inlet_object, simple_struct_conversion)
+{
+  std::string testString = "foo = { bar = true; baz = false }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // Define schema
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  currField = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
+
+  // Check construction/assignment by move (temporary copy)
+  auto foo = Foo((*inlet)["foo"]);
+  EXPECT_TRUE(foo.bar);
+  EXPECT_FALSE(foo.baz);
+  foo = Foo((*inlet)["foo"]);
+  EXPECT_TRUE(foo.bar);
+  EXPECT_FALSE(foo.baz);
+
+  // Check construction/assignment by static cast
+  auto foo2 = static_cast<Foo>((*inlet)["foo"]);
+  EXPECT_TRUE(foo2.bar);
+  EXPECT_FALSE(foo2.baz);
+  foo2 = static_cast<Foo>((*inlet)["foo"]);
+  EXPECT_TRUE(foo2.bar);
+  EXPECT_FALSE(foo2.baz);
 }
 
 //------------------------------------------------------------------------------

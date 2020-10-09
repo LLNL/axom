@@ -154,13 +154,22 @@ public:
    * 
    * \tparam T The type of the object to retrieve
    * \return The retrieved object
-   * \note This is guaranteed to work for primitive types but may fail to 
-   * compile for types that define multiple single-argument constructors.
-   * If this occurs, use get() instead.
+   * \note Implicit conversions are defined only for primitive types - to 
+   * convert to a user-defined type, use an explicit conversion with static_cast
+   * or T{}
    *******************************************************************************
    */
-  template <typename T>
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value ||
+                                      detail::is_inlet_primitive_array<T>::value>::type>
   operator T()
+  {
+    return get<T>();
+  }
+
+  template <typename T>
+  explicit operator T()
   {
     return get<T>();
   }
