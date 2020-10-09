@@ -169,7 +169,6 @@ numerics::Matrix<double> SliceOperator::createRotation() const {
         rotation(1, i) = unitUp[i];
         rotation(2, i) = unitNormal[i];
     }
-
     return rotation;
 }
 
@@ -186,11 +185,12 @@ numerics::Matrix<double> SliceOperator::createTranslationToOrigin() const {
 primal::Vector3D SliceOperator::calculateRightVector() const {
     Rotation rotation{270, primal::Point3D{0.0}, m_normal.unitVector(),
                       Dimensions::Three};
-    primal::Vector3D unitRight;
+    primal::Vector<double, 4> unitRightAffine;
     auto unitUp = m_up.unitVector();
-    numerics::matrix_vector_multiply(rotation.toMatrix(), unitUp.data(),
-            unitRight.data());
-    return unitRight;
+    primal::Vector<double, 4> upAffine{unitUp.data(), 3};
+    numerics::matrix_vector_multiply(rotation.toMatrix(), upAffine.data(),
+            unitRightAffine.data());
+    return primal::Vector3D{unitRightAffine.data()};
 }
 
 void SliceOperator::accept(GeometryOperatorVisitor &visitor) const {

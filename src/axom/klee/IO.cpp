@@ -125,7 +125,7 @@ internal::NamedOperatorMap getNamedOperators(const Node &doc,
         return internal::parseNamedGeometryOperators(doc["named_operators"],
                 initialDimensions);
     }
-    return {};
+    return internal::NamedOperatorMap{};
 }
 }
 

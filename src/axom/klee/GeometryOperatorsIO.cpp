@@ -22,6 +22,7 @@ using internal::toDoubleVector;
 using internal::toDouble;
 using primal::Point3D;
 using primal::Vector3D;
+using FieldSet = std::unordered_set<std::string>;
 
 /**
  * Convert a Dimensions value to an integer.
@@ -46,8 +47,8 @@ int toInt(Dimensions dims) {
  */
 void verifyObjectFields(const conduit::Node &node,
         const std::string &name,
-        const std::unordered_set<std::string> &additionalRequiredFields,
-        const std::unordered_set<std::string> &optionalFields) {
+        const FieldSet &additionalRequiredFields,
+        const FieldSet &optionalFields) {
 
     std::unordered_set<std::string> requiredParameters{
             additionalRequiredFields};
@@ -166,7 +167,7 @@ Vector3D getOptionalVector(const conduit::Node &parent, const std::string &name,
  * \return the created operator
  */
 OpPtr parseTranslate(const conduit::Node &node, Dimensions dimensions) {
-    verifyObjectFields(node, "translate", {}, {});
+    verifyObjectFields(node, "translate", FieldSet{}, FieldSet{});
     return std::make_shared<Translation>(
             toVector3D(node["translate"], dimensions),
             dimensions);
@@ -181,7 +182,7 @@ OpPtr parseTranslate(const conduit::Node &node, Dimensions dimensions) {
  */
 OpPtr parseRotate(const conduit::Node &node, Dimensions dimensions) {
     if (dimensions == Dimensions::Two) {
-        verifyObjectFields(node, "rotate", {}, {"center"});
+        verifyObjectFields(node, "rotate", FieldSet{}, {"center"});
         Vector3D axis{0, 0, 1};
         return std::make_shared<Rotation>(
                 toDouble(node["rotate"]),
@@ -205,7 +206,7 @@ OpPtr parseRotate(const conduit::Node &node, Dimensions dimensions) {
  * \return the created operator
  */
 OpPtr parseScale(const conduit::Node &node, Dimensions dimensions) {
-    verifyObjectFields(node, "scale", {}, {});
+    verifyObjectFields(node, "scale", FieldSet{}, FieldSet{});
     auto &scaleNode = node["scale"];
     if (scaleNode.dtype().is_number()
         && scaleNode.dtype().number_of_elements() == 1) {
@@ -228,7 +229,7 @@ OpPtr parseScale(const conduit::Node &node, Dimensions dimensions) {
  * \return the created operator
  */
 OpPtr parseMatrix(const conduit::Node &node, Dimensions dimensions) {
-    verifyObjectFields(node, "matrix", {}, {});
+    verifyObjectFields(node, "matrix", FieldSet{}, FieldSet{});
     auto &valuesNode = node["matrix"];
     numerics::Matrix<double> matrix = numerics::Matrix<double>::identity(4);
     if (dimensions == Dimensions::Two) {
@@ -345,7 +346,7 @@ primal::Vector3D getPerpendicularSliceNormal(const conduit::Node &sliceNode,
 OpPtr readPerpendicularSlice(const conduit::Node &sliceNode,
         char const *planeName, Vector3D const &defaultNormal,
         Vector3D const &defaultUp) {
-    verifyObjectFields(sliceNode, planeName, {},
+    verifyObjectFields(sliceNode, planeName, FieldSet{},
             {"origin", "normal", "up"});
     const primal::Vector3D defaultNormalVec{defaultNormal.data()};
 
@@ -368,7 +369,7 @@ OpPtr parseSlice(const conduit::Node &node, Dimensions dimensions) {
     if (dimensions != Dimensions::Three) {
         throw std::invalid_argument("Cannot do a slice from 2D");
     }
-    verifyObjectFields(node, "slice", {}, {});
+    verifyObjectFields(node, "slice", FieldSet{}, FieldSet{});
     auto &properties = node["slice"];
     if (properties.has_child("x")) {
         return readPerpendicularSlice(properties, "x", {1, 0, 0}, {0, 0, 1});
@@ -378,7 +379,7 @@ OpPtr parseSlice(const conduit::Node &node, Dimensions dimensions) {
         return readPerpendicularSlice(properties, "z", {0, 0, 1}, {0, 1, 0});
     }
 
-    verifyObjectFields(properties, "origin", {"normal", "up"}, {});
+    verifyObjectFields(properties, "origin", {"normal", "up"}, FieldSet{});
     return makeCheckedSlice(
             toPoint3D(properties["origin"], Dimensions::Three),
             toVector3D(properties["normal"], Dimensions::Three),
@@ -395,7 +396,7 @@ OpPtr parseSlice(const conduit::Node &node, Dimensions dimensions) {
  */
 OpPtr parseRef(const conduit::Node &node,
         const NamedOperatorMap &namedOperators) {
-    verifyObjectFields(node, "ref", {}, {});
+    verifyObjectFields(node, "ref", FieldSet{}, FieldSet{});
     std::string const &operatorName = node["ref"].as_string();
     auto opIter = namedOperators.find(operatorName);
     if (opIter == namedOperators.end()) {

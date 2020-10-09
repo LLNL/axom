@@ -38,7 +38,7 @@ using OperatorPointer = CompositeOperator::OpPtr ;
  */
 OperatorPointer readOperators(Dimensions startingDimensions,
         const std::string &input,
-        const NamedOperatorMap &namedOperators = {}) {
+        const NamedOperatorMap &namedOperators = NamedOperatorMap{}) {
     conduit::Node node;
     node.parse(input, "yaml");
     return parseGeometryOperators(node, startingDimensions, namedOperators);
@@ -110,7 +110,8 @@ T getSingleOperatorFromComposite(const OperatorPointer &ptr) {
  */
 template<typename T>
 T readSingleOperator(Dimensions startingDimensions, const std::string &input,
-        const std::unordered_map<std::string, OperatorPointer> &namedOperators = {}) {
+        const std::unordered_map<std::string, OperatorPointer> &namedOperators =
+            std::unordered_map<std::string, OperatorPointer>{}) {
     std::string wrappedInput{"-\n"};
     wrappedInput += input;
     OperatorPointer genericOperator =
