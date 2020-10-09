@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <unordered_map>
 
 namespace axom { namespace klee { namespace internal { namespace {
 
@@ -26,17 +27,74 @@ using test::affine;
 
 using ::testing::HasSubstr;
 
+using OperatorPointer = CompositeOperator::OpPtr ;
+
 /**
  * Read geometry operators from a string
  * \param startingDimensions the starting dimensions
  * \param input the operators expressed in yaml
+ * \param an optional map of named operators
  * \return the operators that were read.
  */
-std::shared_ptr<const GeometryOperator> readOperators(
-        Dimensions startingDimensions, const std::string &input) {
+OperatorPointer readOperators(Dimensions startingDimensions,
+        const std::string &input,
+        const NamedOperatorMap &namedOperators = {}) {
     conduit::Node node;
     node.parse(input, "yaml");
-    return parseGeometryOperators(node, startingDimensions);
+    return parseGeometryOperators(node, startingDimensions, namedOperators);
+}
+
+/**
+ * Read named operators from the given input string.
+ *
+ * \param startingDimensions the starting dimensions
+ * \param input the operators expressed in yaml
+ * \return the named operators that were read
+ */
+NamedOperatorMap readNamedOperators(Dimensions startingDimensions,
+        const std::string &input) {
+    conduit::Node node;
+    node.parse(input, "yaml");
+    return parseNamedGeometryOperators(node, startingDimensions);
+}
+
+/**
+ * Copy an operator from a pointer.
+ *
+ * \tparam T the expected type of the operator
+ * \param ptr the pointer to the operator. Must not be null after
+ * a dynamic_cast to T.
+ * \return a copy of the operator
+ * \throws std::logic error if the pointer is of the wrong type
+ */
+template<typename T>
+T copyOperator(const OperatorPointer &ptr) {
+    auto desired = dynamic_cast<const T *>(ptr.get());
+    if (desired == nullptr) {
+        throw std::logic_error("Did not get expected type");
+    }
+    return *desired;
+}
+
+/**
+ * Get a single operator from a CompositeOperator.
+ *
+ * \tparam T the expected type of the operator
+ * \param ptr the pointer to the operator. Must not be null after
+ * a dynamic_cast to CompositeOperator.
+ * \return a copy of the operator
+ * \throws std::logic error if the pointer is of the wrong type
+ */
+template<typename T>
+T getSingleOperatorFromComposite(const OperatorPointer &ptr) {
+    auto composite = dynamic_cast<const CompositeOperator *>(ptr.get());
+    if (composite == nullptr) {
+        throw std::logic_error("Did not get CompositeOperator");
+    }
+    if (composite->getOperators().size() != 1u) {
+        throw std::logic_error("Did not have exactly one operator");
+    }
+    return copyOperator<T>(composite->getOperators()[0]);
 }
 
 /**
@@ -45,28 +103,40 @@ std::shared_ptr<const GeometryOperator> readOperators(
  * \tparam T the expected type of the operator
  * \param startingDimensions the starting dimensions
  * \param input the operator as yaml.
+ * \param an optional map of named operators
  * \return the read operator
  * \throws std::logic_error if there isn't excatly one operator of
  * the specified type.
  */
 template<typename T>
-T readSingleOperator(Dimensions startingDimensions, const std::string &input) {
+T readSingleOperator(Dimensions startingDimensions, const std::string &input,
+        const std::unordered_map<std::string, OperatorPointer> &namedOperators = {}) {
     std::string wrappedInput{"-\n"};
     wrappedInput += input;
-    std::shared_ptr<const GeometryOperator> genericOperator =
-            readOperators(startingDimensions, wrappedInput);
-    auto composite = dynamic_cast<const CompositeOperator *>(genericOperator.get());
-    if (composite == nullptr) {
-        throw std::logic_error("Did not get CompositeOperator");
+    OperatorPointer genericOperator =
+            readOperators(startingDimensions, wrappedInput, namedOperators);
+    return getSingleOperatorFromComposite<T>(genericOperator);
+}
+
+/**
+ * Get a named operator from the given map. The composite operator in the
+ * map must have a single entry of the specified type.
+ *
+ * \tparam T the expected type of the operator
+ * \param operators the map from which to get the operator
+ * \param name the name of the operator
+ * \return the requested operator
+ * \throws std::logic_error if any of the operators are of the wrong type
+ */
+template<typename T>
+T getSingleNamedOperator(const NamedOperatorMap &operators,
+        std::string const &name) {
+    auto iter = operators.find(name);
+    if (iter == operators.end()) {
+        std::string message = "No operator named ";
+        throw std::logic_error(message + name);
     }
-    if (composite->getOperators().size() != 1u) {
-        throw std::logic_error("Did not have exactly one operator");
-    }
-    auto desired = dynamic_cast<const T *>(composite->getOperators()[0].get());
-    if (desired == nullptr) {
-        throw std::logic_error("Did not get expected type");
-    }
-    return *desired;
+    return getSingleOperatorFromComposite<T>(iter->second);
 }
 
 /**
@@ -386,6 +456,108 @@ TEST(GeometryOperatorsIO, readMultiple_unknownOperator) {
     } catch (const std::invalid_argument &ex) {
         EXPECT_THAT(ex.what(), HasSubstr("UNKNOWN_OPERATOR"));
     }
+}
+
+TEST(GeometryOperatorsIO, readRef_missing) {
+    try {
+        readOperators(Dimensions::Two, "ref: MISSING");
+        FAIL() << "Should have thrown";
+    } catch (const std::invalid_argument &ex) {
+        EXPECT_THAT(ex.what(), HasSubstr("MISSING"));
+    }
+}
+
+TEST(GeometryOperatorsIO, readRef_present) {
+    NamedOperatorMap namedOperators = {
+            {"op1", std::make_shared<Translation>(Vector3D{10, 20, 30},
+                    Dimensions::Three)},
+            {"op2", std::make_shared<Scale>(1.5, 2.0, 2.5, Dimensions::Three)},
+    };
+    auto translation = readSingleOperator<Translation>(Dimensions::Three, R"(
+      ref: op1
+    )", namedOperators);
+    EXPECT_EQ(Dimensions::Three, translation.startDims());
+    EXPECT_EQ(Dimensions::Three, translation.endDims());
+    EXPECT_THAT(translation.getOffset(),
+            AlmostEqVector(Vector3D{10, 20, 30}));
+}
+
+TEST(GeometryOperatorsIO, readNamedOperators_basic) {
+    NamedOperatorMap readOperators = readNamedOperators(Dimensions::Two, R"(
+      - name: op1
+        value:
+          - translate: [10, 20]
+      - name: op2
+        value:
+          - scale: 1.5
+    )");
+    EXPECT_EQ(2, readOperators.size());
+
+    auto translation = getSingleNamedOperator<Translation>(readOperators, "op1");
+    EXPECT_THAT(translation.getOffset(),
+            AlmostEqVector(Vector3D{10, 20, 0}));
+
+    auto scale = getSingleNamedOperator<Scale>(readOperators, "op2");
+    EXPECT_EQ(1.5, scale.getXFactor());
+    EXPECT_EQ(1.5, scale.getYFactor());
+}
+
+TEST(GeometryOperatorsIO, readNamedOperators_invalidDimensions) {
+    EXPECT_THROW(readNamedOperators(Dimensions::Two, R"(
+      - name: op1
+        value:
+          - translate: [10, 20, 30]
+    )"), std::invalid_argument);
+}
+
+
+TEST(GeometryOperatorsIO, readNamedOperators_differentInitialDimensions) {
+    NamedOperatorMap readOperators = readNamedOperators(Dimensions::Two, R"(
+      - name: op1
+        initial_dimensions: 3
+        value:
+          - translate: [10, 20, 30]
+    )");
+    ASSERT_EQ(1, readOperators.size());
+
+    auto translation = getSingleNamedOperator<Translation>(readOperators, "op1");
+    EXPECT_THAT(translation.getOffset(),
+            AlmostEqVector(Vector3D{10, 20, 30}));
+}
+
+TEST(GeometryOperatorsIO, readNamedOperators_ref) {
+    NamedOperatorMap readOperators = readNamedOperators(Dimensions::Two, R"(
+      - name: op1
+        value:
+          - translate: [10, 20]
+      - name: op2
+        value:
+          - scale: 1.5
+          - ref: op1
+    )");
+    EXPECT_EQ(2, readOperators.size());
+
+    auto translation = getSingleNamedOperator<Translation>(readOperators, "op1");
+    EXPECT_THAT(translation.getOffset(),
+            AlmostEqVector(Vector3D{10, 20, 0}));
+
+    auto op2 = readOperators["op2"];
+    auto composite = dynamic_cast<const CompositeOperator *>(op2.get());
+    ASSERT_NE(nullptr, composite);
+    ASSERT_EQ(2u, composite->getOperators().size());
+
+    auto scale = copyOperator<Scale>(
+            composite->getOperators()[0]);
+    EXPECT_EQ(1.5, scale.getXFactor());
+    EXPECT_EQ(1.5, scale.getYFactor());
+
+    auto referencedOperator = copyOperator<CompositeOperator>(
+            composite->getOperators()[1]);
+    ASSERT_EQ(1u, referencedOperator.getOperators().size());
+    auto referencedTranslation = copyOperator<Translation>(
+            referencedOperator.getOperators()[0]);
+    EXPECT_THAT(referencedTranslation.getOffset(),
+            AlmostEqVector(Vector3D{10, 20, 0}));
 }
 
 }}}}

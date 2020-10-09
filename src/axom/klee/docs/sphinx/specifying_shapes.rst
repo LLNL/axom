@@ -260,3 +260,63 @@ Operators may also have additional required or optional parameters.
           origin: [10, 20, 30]
           normal: [4, 5, 6]
           up: [-5, 4, 0]
+
+Named Operators
+***************
+It can often be useful to name and reuse operators. For example, you may
+have several parts of an assembly specified in one coordinate system
+that you then need to transform to another. To enable reuse, we provide
+support for named operators.
+
+Named operators are specified via the top-level :code:`named_operators`
+object. This is a list where each entry has the following values:
+
+:name (required): the name of the operator. This is how it is referenced later.
+:value (required): A list of operators. This is identical to the
+  :code:`operators` entry in the :code:`geometry` object of a :code:`shape`.
+:initial_dimensions (optional): the number of initial dimensions of the
+  operator. Must be 2 or 3. If not specified, the number of dimensions of the
+  document is used.
+
+The example below demonstrates how to create and then use a named operator.
+Note that :code:`ref` is just one entry in the list of operators, and
+additional operators may be used.
+
+.. code-block:: yaml
+
+    dimensions: 2
+
+    shapes:
+      - name: wheel
+        material: steel
+        geometry:
+          format: stl
+          path: wheel.stl
+          operators:
+            - ref MyFirstOperator
+            - rotate: 90
+
+    named_operators:
+      - name: MyFirstOperator
+        value:
+          - translate: [10, 20]
+          - scale: 1.5
+
+
+In addition to using :code:`ref` in an individual shape's operators, you
+can also use it in other named operators. The only restriction is that it
+be defined in the list before it is used.
+
+.. code-block:: yaml
+
+    dimensions: 2
+
+    named_operators:
+      - name: SomeOperator
+        value:
+          - translate: [10, 20]
+          - scale: 1.5
+      - name: AnotherOperator
+        value:
+          - rotate: 90
+          - ref: SomeOperator
