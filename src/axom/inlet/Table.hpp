@@ -94,26 +94,6 @@ struct is_inlet_primitive_array<std::unordered_map<int, T>>
 
 /*!
  *******************************************************************************
- * \class has_free_from_inlet
- *
- * \brief A type trait for checking if a free function with the signature
- * from_inlet(axom::inlet::Table&, T&) exists
- * \tparam T The type to check
- *******************************************************************************
- */
-template <typename T, typename SFINAE = void>
-struct has_free_from_inlet : std::false_type
-{ };
-
-template <typename T>
-struct has_free_from_inlet<T,
-                           decltype(from_inlet(std::declval<Table&>(),
-                                               std::declval<T&>()))>
-  : std::true_type
-{ };
-
-/*!
- *******************************************************************************
  * \class has_from_inlet_specialization
  *
  * \brief A type trait for checking if a type has specialized FromInlet
@@ -539,72 +519,6 @@ public:
   }
 
   /*!
-   *****************************************************************************
-   * \brief Gets a value of primitive type out of the table with an out-param.
-   *
-   * Retrieves the Field value out of the table.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the table
-   * \tparam T The type of the value to retrieve
-   *****************************************************************************
-   */
-  template <typename T>
-  typename std::enable_if<detail::is_inlet_primitive<T>::value, bool>::type
-  get_to(const std::string& name, T& value)
-  {
-    bool found = false;
-    if(hasField(name))
-    {
-      found = getField(name)->get_to(value);
-    }
-    return found;
-  }
-
-  /*!
- *******************************************************************************
- * \brief Gets a value of user-defined type out of the table with an out-param.
- * 
- * Retrieves a value of user-defined type.
- * 
- * \param [in] name The name of the subtable representing the root of the object
- * If the empty string is passed, the calling table is used as the root
- * \param [out] value Value to be filled
- * \return True if the value was found in the table
- * \tparam T The user-defined type to retrieve
- * \pre Requires a function
- * \code{.cpp}
- * void from_inlet(axom::inlet::Table&, T&);
- * \endcode
- * to be defined
- *******************************************************************************
- */
-  template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
-  get_to(const std::string& name, T& value)
-  {
-    static_assert(detail::has_free_from_inlet<T>::value,
-                  "A user-defined type must implement "
-                  "from_inlet(axom::inlet::Table&, T&) to use this function!");
-    bool found = false;
-    if(name.empty())
-    {
-      found = true;
-      from_inlet(*this, value);
-    }
-    else if(hasTable(name))
-    {
-      found = true;
-      from_inlet(*getTable(name), value);
-    }
-    return found;
-  }
-
-  /*!
    *******************************************************************************
    * \brief Returns a stored value of primitive type.
    * 
@@ -646,11 +560,12 @@ public:
    */
   template <typename T>
   typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
-                            !detail::is_inlet_primitive_array<T>::value &&
-                            detail::has_from_inlet_specialization<T>::value,
+                            !detail::is_inlet_primitive_array<T>::value,
                           T>::type
   get(const std::string& name = "")
   {
+    static_assert(detail::has_from_inlet_specialization<T>::value,
+                  "To read a user-defined type, specialize FromInlet<T>");
     FromInlet<T> from_inlet;
     if(name.empty())
     {
@@ -666,34 +581,6 @@ public:
       }
       return from_inlet(*getTable(name));
     }
-  }
-
-  /*!
-   *******************************************************************************
-   * \brief Returns a stored value of user-defined type.
-   * 
-   * Retrieves a value of user-defined type.
-   * 
-   * \param [in] name The name of the subtable representing the root of the object
-   * If nothing is passed, the calling table is interpreted as the roof of the object
-   * \return The retrieved value
-   * \pre Requires a function
-   * \code{.cpp}
-   * void from_inlet(axom::inlet::Table&, T&);
-   * \endcode
-   * \exception std::out_of_range If the requested subtable does not exist
-   *******************************************************************************
-   */
-  template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
-                            !detail::is_inlet_primitive_array<T>::value &&
-                            !detail::has_from_inlet_specialization<T>::value,
-                          T>::type
-  get(const std::string& name = "")
-  {
-    T value;
-    get_to(name, value);
-    return value;
   }
 
   /*!

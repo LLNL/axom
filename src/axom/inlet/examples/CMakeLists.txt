@@ -14,7 +14,8 @@ if (SOL_FOUND)
    set(inlet_examples
         arrays.cpp
         verification.cpp
-        user_defined_type.cpp )
+        user_defined_type.cpp
+        documentation_generation.cpp )
 
     foreach(example ${inlet_examples})
         get_filename_component( ex_name ${example} NAME_WE )

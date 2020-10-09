@@ -30,12 +30,13 @@ int main()
 
   // _inlet_workflow_verification_start
   v->registerVerifier([&]() -> bool {
-    int dim;
-    myInlet->get_to("dimensions", dim);
-    int value;  // field value doesnt matter just that it is present in input file
-    bool x_present = v->hasField("x") && myInlet->get_to("vector/x", value);
-    bool y_present = v->hasField("y") && myInlet->get_to("vector/y", value);
-    bool z_present = v->hasField("z") && myInlet->get_to("vector/z", value);
+    int dim = (*myInlet)["dimensions"];
+    bool x_present = v->hasField("x") &&
+      ((*myInlet)["vector/x"].type() == axom::inlet::InletType::Integer);
+    bool y_present = v->hasField("y") &&
+      ((*myInlet)["vector/y"].type() == axom::inlet::InletType::Integer);
+    bool z_present = v->hasField("z") &&
+      ((*myInlet)["vector/z"].type() == axom::inlet::InletType::Integer);
     if(dim == 1 && x_present)
     {
       return true;
@@ -71,23 +72,22 @@ int main()
   // _inlet_workflow_verification_end
 
   // _inlet_workflow_accessing_data_start
-  int dim, x, y;
-  bool dim_found, x_found, y_found;
 
   // Get dimensions if it was present in input file
-  dim_found = myInlet->get_to("dimensions", dim);
-  if(dim_found)
+  auto proxy = (*myInlet)["dimensions"];
+  if(proxy.type() == axom::inlet::InletType::Integer)
   {
-    msg = "Dimensions = " + std::to_string(dim) + "\n";
+    msg = "Dimensions = " + std::to_string(proxy.get<int>()) + "\n";
     SLIC_INFO(msg);
   }
 
   // Get vector information if it was present in input file
-  x_found = myInlet->get_to("vector/x", x);
-  y_found = myInlet->get_to("vector/y", y);
+  bool x_found = (*myInlet)["vector/x"].type() == axom::inlet::InletType::Integer;
+  bool y_found = (*myInlet)["vector/y"].type() == axom::inlet::InletType::Integer;
   if(x_found && y_found)
   {
-    msg = "Vector = " + std::to_string(x) + "," + std::to_string(y) + "\n";
+    msg = "Vector = " + std::to_string((*myInlet)["vector/x"].get<int>()) +
+      "," + std::to_string((*myInlet)["vector/y"].get<int>()) + "\n";
     SLIC_INFO(msg);
   }
   // _inlet_workflow_accessing_data_end

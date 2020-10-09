@@ -37,36 +37,6 @@ struct Foo
   bool baz;
 };
 
-void from_inlet(axom::inlet::Table& base, Foo& f)
-{
-  f.bar = base["bar"];
-  f.baz = base["baz"];
-}
-
-TEST(inlet_object, simple_struct_by_ref)
-{
-  std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
-
-  // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
-  // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
-
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
-
-  Foo foo;
-  bool found = inlet->get_to("foo", foo);
-
-  EXPECT_TRUE(found);
-  EXPECT_TRUE(foo.bar);
-  EXPECT_FALSE(foo.baz);
-}
-
 template <>
 struct FromInlet<Foo>
 {

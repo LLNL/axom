@@ -195,30 +195,6 @@ public:
 
   /*!
    *******************************************************************************
-   * \brief Gets a value of arbitrary type out of the datastore via out-param
-   * 
-   * Retrieves a value of builtin (double, int, bool, string) or user-defined type.
-   * 
-   * \param [in] name The path to the object, or the root of the object for 
-   * a user-defined type
-   * \param [out] value Value to be filled
-   * \return True if the value was found in the table
-   * \tparam T The type to retrieve
-   * \pre If T is a user-defined type, requires a function
-   * \code{.cpp}
-   * bool from_inlet(axom::inlet::Table&, T&);
-   * \endcode
-   * to be defined
-   *******************************************************************************
-   */
-  template <typename T>
-  bool get_to(const std::string& name, T& value)
-  {
-    return m_globalTable->get_to(name, value);
-  }
-
-  /*!
-   *******************************************************************************
    * \brief Gets a value of arbitrary type out of the datastore
    * 
    * Retrieves a value of user-defined type, i.e., not double, int, bool, or string.

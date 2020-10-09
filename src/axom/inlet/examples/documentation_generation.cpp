@@ -18,28 +18,43 @@ using axom::sidre::DataStore;
 
 void findStr(std::string path, std::shared_ptr<Inlet> inlet)
 {
-  std::string strVal;
-  bool found = inlet->get_to(path, strVal);
-  std::cout << path << ": ";
-  found ? std::cout << "found " << strVal : std::cout << "not found ";
+  auto proxy = (*inlet)[path];
+  if(proxy.type() == axom::inlet::InletType::String)
+  {
+    std::cout << "found " << proxy.get<std::string>();
+  }
+  else
+  {
+    std::cout << "not found ";
+  }
   std::cout << std::endl;
 }
 
 void findInt(std::string path, std::shared_ptr<Inlet> inlet)
 {
-  int val;
-  bool found = inlet->get_to(path, val);
-  std::cout << path << ": ";
-  found ? std::cout << "found " << val : std::cout << "not found ";
+  auto proxy = (*inlet)[path];
+  if(proxy.type() == axom::inlet::InletType::Integer)
+  {
+    std::cout << "found " << proxy.get<int>();
+  }
+  else
+  {
+    std::cout << "not found ";
+  }
   std::cout << std::endl;
 }
 
 void findDouble(std::string path, std::shared_ptr<Inlet> inlet)
 {
-  double val;
-  bool found = inlet->get_to(path, val);
-  std::cout << path << ": ";
-  found ? std::cout << "found " << val : std::cout << "not found ";
+  auto proxy = (*inlet)[path];
+  if(proxy.type() == axom::inlet::InletType::Double)
+  {
+    std::cout << "found " << proxy.get<double>();
+  }
+  else
+  {
+    std::cout << "not found ";
+  }
   std::cout << std::endl;
 }
 
