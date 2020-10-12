@@ -16,10 +16,12 @@
 #include "axom/klee/GeometryOperatorsIO.hpp"
 #include "axom/klee/IOUtil.hpp"
 
-namespace axom { namespace klee {
-
-namespace {
-
+namespace axom
+{
+namespace klee
+{
+namespace
+{
 using conduit::Node;
 
 /**
@@ -32,15 +34,17 @@ using conduit::Node;
  * value
  * \return a vector of converted values
  */
-template<typename Converter>
+template <typename Converter>
 auto convertList(const Node &listToConvert, Converter converter)
--> std::vector<decltype(converter(listToConvert.child(0)))> {
-    std::vector<decltype(converter(listToConvert.child(0)))> converted;
-    auto childIter = listToConvert.children();
-    while (childIter.has_next()) {
-        converted.emplace_back(converter(childIter.next()));
-    }
-    return converted;
+  -> std::vector<decltype(converter(listToConvert.child(0)))>
+{
+  std::vector<decltype(converter(listToConvert.child(0)))> converted;
+  auto childIter = listToConvert.children();
+  while(childIter.has_next())
+  {
+    converted.emplace_back(converter(childIter.next()));
+  }
+  return converted;
 }
 
 /**
@@ -50,8 +54,9 @@ auto convertList(const Node &listToConvert, Converter converter)
  * \param listNode the node that represents the list
  * \return  the node as a string vector
  */
-std::vector<std::string> toStringList(const Node &listNode) {
-    return convertList(listNode, std::mem_fn(&Node::as_string));
+std::vector<std::string> toStringList(const Node &listNode)
+{
+  return convertList(listNode, std::mem_fn(&Node::as_string));
 }
 
 /**
@@ -62,24 +67,29 @@ std::vector<std::string> toStringList(const Node &listNode) {
  * \param namedOperators any named operators that were parsed from the file
  * \return the geometry description for the shape
  */
-Geometry getGeometry(const Node &geometryNode, Dimensions initialDimensions,
-        const internal::NamedOperatorMap &namedOperators) {
-    Geometry geometry;
-    geometry.setInitialDimensions(initialDimensions);
-    geometry.setFormat(geometryNode["format"].as_string());
-    geometry.setPath(geometryNode["path"].as_string());
-    if (geometryNode.has_child("initial_dimensions")) {
-        geometry.setInitialDimensions(internal::toDimensions(
-                geometryNode["initial_dimensions"]));
-    }
+Geometry getGeometry(const Node &geometryNode,
+                     Dimensions initialDimensions,
+                     const internal::NamedOperatorMap &namedOperators)
+{
+  Geometry geometry;
+  geometry.setInitialDimensions(initialDimensions);
+  geometry.setFormat(geometryNode["format"].as_string());
+  geometry.setPath(geometryNode["path"].as_string());
+  if(geometryNode.has_child("initial_dimensions"))
+  {
+    geometry.setInitialDimensions(
+      internal::toDimensions(geometryNode["initial_dimensions"]));
+  }
 
-    if (geometryNode.has_child("operators")) {
-        auto operators = internal::parseGeometryOperators(
-                geometryNode["operators"], geometry.getInitialDimensions(),
-                namedOperators);
-        geometry.setGeometryOperator(operators);
-    }
-    return geometry;
+  if(geometryNode.has_child("operators"))
+  {
+    auto operators =
+      internal::parseGeometryOperators(geometryNode["operators"],
+                                       geometry.getInitialDimensions(),
+                                       namedOperators);
+    geometry.setGeometryOperator(operators);
+  }
+  return geometry;
 }
 
 /**
@@ -89,28 +99,33 @@ Geometry getGeometry(const Node &geometryNode, Dimensions initialDimensions,
  * \param namedOperators any named operators that were parsed from the file
  * \return the shape as a Shape object
  */
-Shape convertToShape(const Node &shapeNode, Dimensions fileDimensions,
-        const internal::NamedOperatorMap &namedOperators) {
-    Shape shape;
-    shape.setName(shapeNode["name"].as_string());
-    shape.setMaterial(shapeNode["material"].as_string());
-    shape.setGeometry(getGeometry(shapeNode["geometry"], fileDimensions,
-            namedOperators));
+Shape convertToShape(const Node &shapeNode,
+                     Dimensions fileDimensions,
+                     const internal::NamedOperatorMap &namedOperators)
+{
+  Shape shape;
+  shape.setName(shapeNode["name"].as_string());
+  shape.setMaterial(shapeNode["material"].as_string());
+  shape.setGeometry(
+    getGeometry(shapeNode["geometry"], fileDimensions, namedOperators));
 
-    if (shapeNode.has_child("replaces")) {
-        if (shapeNode.has_child("does_not_replace")) {
-            throw std::invalid_argument("Can't have both 'replaces' and "
-                                        "'does_not_replace' lists");
-        }
-        shape.setMaterialsReplaced(toStringList(shapeNode["replaces"]));
-    } else if (shapeNode.has_child("does_not_replace")) {
-        shape.setMaterialsNotReplaced(
-                toStringList(shapeNode["does_not_replace"]));
+  if(shapeNode.has_child("replaces"))
+  {
+    if(shapeNode.has_child("does_not_replace"))
+    {
+      throw std::invalid_argument(
+        "Can't have both 'replaces' and "
+        "'does_not_replace' lists");
     }
+    shape.setMaterialsReplaced(toStringList(shapeNode["replaces"]));
+  }
+  else if(shapeNode.has_child("does_not_replace"))
+  {
+    shape.setMaterialsNotReplaced(toStringList(shapeNode["does_not_replace"]));
+  }
 
-    return shape;
+  return shape;
 }
-
 
 /**
  * Get all named geometry operators from the file
@@ -120,34 +135,40 @@ Shape convertToShape(const Node &shapeNode, Dimensions fileDimensions,
  * \return all named operators read from the document
  */
 internal::NamedOperatorMap getNamedOperators(const Node &doc,
-        Dimensions initialDimensions) {
-    if (doc.has_child("named_operators")) {
-        return internal::parseNamedGeometryOperators(doc["named_operators"],
-                initialDimensions);
-    }
-    return internal::NamedOperatorMap{};
+                                             Dimensions initialDimensions)
+{
+  if(doc.has_child("named_operators"))
+  {
+    return internal::parseNamedGeometryOperators(doc["named_operators"],
+                                                 initialDimensions);
+  }
+  return internal::NamedOperatorMap {};
 }
+}  // namespace
+
+ShapeSet readShapeSet(std::istream &stream)
+{
+  Node doc;
+  std::string contents {std::istreambuf_iterator<char>(stream), {}};
+  doc.parse(contents, "yaml");
+  ShapeSet shapeSet;
+  Dimensions dimensions = internal::toDimensions(doc["dimensions"]);
+  auto namedOperators = getNamedOperators(doc, dimensions);
+  shapeSet.setShapes(
+    convertList(doc["shapes"],
+                [dimensions, &namedOperators](const Node &shapeNode) -> Shape {
+                  return convertToShape(shapeNode, dimensions, namedOperators);
+                }));
+  return shapeSet;
 }
 
-ShapeSet readShapeSet(std::istream &stream) {
-    Node doc;
-    std::string contents{std::istreambuf_iterator<char>(stream), {}};
-    doc.parse(contents, "yaml");
-    ShapeSet shapeSet;
-    Dimensions dimensions = internal::toDimensions(doc["dimensions"]);
-    auto namedOperators = getNamedOperators(doc, dimensions);
-    shapeSet.setShapes(convertList(doc["shapes"],
-            [dimensions, &namedOperators] (const Node &shapeNode) -> Shape {
-                return convertToShape(shapeNode, dimensions, namedOperators);
-            }));
-    return shapeSet;
+ShapeSet readShapeSet(const std::string &filePath)
+{
+  std::ifstream fin {filePath};
+  auto shapeSet = readShapeSet(fin);
+  fin.close();
+  shapeSet.setPath(filePath);
+  return shapeSet;
 }
-
-ShapeSet readShapeSet(const std::string &filePath) {
-    std::ifstream fin{filePath};
-    auto shapeSet = readShapeSet(fin);
-    fin.close();
-    shapeSet.setPath(filePath);
-    return shapeSet;
-}
-}}
+}  // namespace klee
+}  // namespace axom

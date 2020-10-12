@@ -13,28 +13,37 @@
 
 #include "axom/klee/GeometryOperators.hpp"
 
-namespace axom { namespace klee { namespace {
-
-ShapeSet readShapeSetFromString(const std::string &input) {
-    std::istringstream istream(input);
-    return readShapeSet(istream);
+namespace axom
+{
+namespace klee
+{
+namespace
+{
+ShapeSet readShapeSetFromString(const std::string &input)
+{
+  std::istringstream istream(input);
+  return readShapeSet(istream);
 }
 
-TEST(IOTest, readShapeSet_noShapes) {
-    auto shapeSet = readShapeSetFromString(R"(
+TEST(IOTest, readShapeSet_noShapes)
+{
+  auto shapeSet = readShapeSetFromString(R"(
         dimensions: 2
         shapes: [])");
-    EXPECT_TRUE(shapeSet.getShapes().empty());
+  EXPECT_TRUE(shapeSet.getShapes().empty());
 }
 
-TEST(IOTest, readShapeSet_invalidDimensions) {
-    EXPECT_THROW(readShapeSetFromString(R"(
+TEST(IOTest, readShapeSet_invalidDimensions)
+{
+  EXPECT_THROW(readShapeSetFromString(R"(
         dimensions: 5
-        shapes: [])"), std::invalid_argument);
+        shapes: [])"),
+               std::invalid_argument);
 }
 
-TEST(IOTest, readShapeSet_shapeWithNoReplacementLists) {
-    auto shapeSet = readShapeSetFromString(R"(
+TEST(IOTest, readShapeSet_shapeWithNoReplacementLists)
+{
+  auto shapeSet = readShapeSetFromString(R"(
         dimensions: 2
         shapes:
           - name: wheel
@@ -44,21 +53,22 @@ TEST(IOTest, readShapeSet_shapeWithNoReplacementLists) {
               path: path/to/file.format
     )");
 
-    auto &shapes = shapeSet.getShapes();
-    ASSERT_EQ(1u, shapes.size());
-    auto &shape = shapes[0];
-    EXPECT_TRUE(shape.replaces("mat1"));
-    EXPECT_TRUE(shape.replaces("mat2"));
-    EXPECT_EQ("wheel", shape.getName());
-    EXPECT_EQ("steel", shape.getMaterial());
-    auto &geometry = shape.getGeometry();
-    EXPECT_EQ("test_format", geometry.getFormat());
-    EXPECT_EQ("path/to/file.format", geometry.getPath());
-    EXPECT_FALSE(geometry.getGeometryOperator());
+  auto &shapes = shapeSet.getShapes();
+  ASSERT_EQ(1u, shapes.size());
+  auto &shape = shapes[0];
+  EXPECT_TRUE(shape.replaces("mat1"));
+  EXPECT_TRUE(shape.replaces("mat2"));
+  EXPECT_EQ("wheel", shape.getName());
+  EXPECT_EQ("steel", shape.getMaterial());
+  auto &geometry = shape.getGeometry();
+  EXPECT_EQ("test_format", geometry.getFormat());
+  EXPECT_EQ("path/to/file.format", geometry.getPath());
+  EXPECT_FALSE(geometry.getGeometryOperator());
 }
 
-TEST(IOTest, readShapeSet_shapeWithReplacesList) {
-    auto shapeSet = readShapeSetFromString(R"(
+TEST(IOTest, readShapeSet_shapeWithReplacesList)
+{
+  auto shapeSet = readShapeSetFromString(R"(
         dimensions: 2
         shapes:
           - name: wheel
@@ -69,16 +79,17 @@ TEST(IOTest, readShapeSet_shapeWithReplacesList) {
               path: path/to/file.format
 )");
 
-    auto &shapes = shapeSet.getShapes();
-    ASSERT_EQ(1u, shapes.size());
-    auto &shape = shapes[0];
-    EXPECT_TRUE(shape.replaces("mat1"));
-    EXPECT_TRUE(shape.replaces("mat2"));
-    EXPECT_FALSE(shape.replaces("material_not_in_list"));
+  auto &shapes = shapeSet.getShapes();
+  ASSERT_EQ(1u, shapes.size());
+  auto &shape = shapes[0];
+  EXPECT_TRUE(shape.replaces("mat1"));
+  EXPECT_TRUE(shape.replaces("mat2"));
+  EXPECT_FALSE(shape.replaces("material_not_in_list"));
 }
 
-TEST(IOTest, readShapeSet_shapeWithDoesNotReplaceList) {
-    auto shapeSet = readShapeSetFromString(R"(
+TEST(IOTest, readShapeSet_shapeWithDoesNotReplaceList)
+{
+  auto shapeSet = readShapeSetFromString(R"(
         dimensions: 2
         shapes:
           - name: wheel
@@ -89,18 +100,19 @@ TEST(IOTest, readShapeSet_shapeWithDoesNotReplaceList) {
               path: path/to/file.format
     )");
 
-    auto &shapes = shapeSet.getShapes();
-    ASSERT_EQ(1u, shapes.size());
-    auto &shape = shapes[0];
-    EXPECT_FALSE(shape.replaces("mat1"));
-    EXPECT_FALSE(shape.replaces("mat2"));
-    EXPECT_TRUE(shape.replaces("material_not_in_list"));
+  auto &shapes = shapeSet.getShapes();
+  ASSERT_EQ(1u, shapes.size());
+  auto &shape = shapes[0];
+  EXPECT_FALSE(shape.replaces("mat1"));
+  EXPECT_FALSE(shape.replaces("mat2"));
+  EXPECT_TRUE(shape.replaces("material_not_in_list"));
 }
 
-TEST(IOTest, readShapeSet_file) {
-    std::string fileName = "testFile.yaml";
+TEST(IOTest, readShapeSet_file)
+{
+  std::string fileName = "testFile.yaml";
 
-    std::string fileContents = R"(
+  std::string fileContents = R"(
     dimensions: 2
 
     shapes:
@@ -109,17 +121,18 @@ TEST(IOTest, readShapeSet_file) {
         geometry:
           format: test_format
           path: path/to/file.format)";
-    std::ofstream fout{fileName};
-    fout << fileContents;
-    fout.close();
+  std::ofstream fout {fileName};
+  fout << fileContents;
+  fout.close();
 
-    auto shapeSet = readShapeSet(fileName);
-    EXPECT_EQ(1u, shapeSet.getShapes().size());
-    EXPECT_EQ("testFile.yaml", shapeSet.getPath());
+  auto shapeSet = readShapeSet(fileName);
+  EXPECT_EQ(1u, shapeSet.getShapes().size());
+  EXPECT_EQ("testFile.yaml", shapeSet.getPath());
 }
 
-TEST(IOTest, readShapeSet_shapeWithReplacesAndDoesNotReplaceLists) {
-    EXPECT_THROW(readShapeSetFromString(R"(
+TEST(IOTest, readShapeSet_shapeWithReplacesAndDoesNotReplaceLists)
+{
+  EXPECT_THROW(readShapeSetFromString(R"(
       dimensions: 2
       shapes:
         - name: wheel
@@ -129,11 +142,13 @@ TEST(IOTest, readShapeSet_shapeWithReplacesAndDoesNotReplaceLists) {
           geometry:
             format: test_format
             path: path/to/file.format
-    )"), std::invalid_argument);
+    )"),
+               std::invalid_argument);
 }
 
-TEST(IOTest, readShapeSet_geometryOperators) {
-    auto shapeSet = readShapeSetFromString(R"(
+TEST(IOTest, readShapeSet_geometryOperators)
+{
+  auto shapeSet = readShapeSetFromString(R"(
       dimensions: 2
 
       shapes:
@@ -146,19 +161,20 @@ TEST(IOTest, readShapeSet_geometryOperators) {
               - rotate: 90
               - translate: [10, 20]
     )");
-    auto &shapes = shapeSet.getShapes();
-    ASSERT_EQ(1u, shapes.size());
-    auto &shape = shapes[0];
-    auto &geometryOperator = shape.getGeometry().getGeometryOperator();
-    ASSERT_TRUE(geometryOperator);
-    auto composite = std::dynamic_pointer_cast<const CompositeOperator>(
-            geometryOperator);
-    ASSERT_TRUE(composite);
-    EXPECT_EQ(2u, composite->getOperators().size());
+  auto &shapes = shapeSet.getShapes();
+  ASSERT_EQ(1u, shapes.size());
+  auto &shape = shapes[0];
+  auto &geometryOperator = shape.getGeometry().getGeometryOperator();
+  ASSERT_TRUE(geometryOperator);
+  auto composite =
+    std::dynamic_pointer_cast<const CompositeOperator>(geometryOperator);
+  ASSERT_TRUE(composite);
+  EXPECT_EQ(2u, composite->getOperators().size());
 }
 
-TEST(IOTest, readShapeSet_differentDimensions) {
-    auto shapeSet = readShapeSetFromString(R"(
+TEST(IOTest, readShapeSet_differentDimensions)
+{
+  auto shapeSet = readShapeSetFromString(R"(
       dimensions: 2
 
       shapes:
@@ -172,25 +188,26 @@ TEST(IOTest, readShapeSet_differentDimensions) {
               - slice:
                  x: 10
     )");
-    auto &shapes = shapeSet.getShapes();
-    ASSERT_EQ(1u, shapes.size());
-    auto &shape = shapes[0];
-    auto &geometry = shape.getGeometry();
-    EXPECT_EQ(Dimensions::Three, geometry.getInitialDimensions());
-    EXPECT_EQ(Dimensions::Two, geometry.getDimensions());
-    auto &geometryOperator = geometry.getGeometryOperator();
-    ASSERT_TRUE(geometryOperator);
-    auto composite = std::dynamic_pointer_cast<const CompositeOperator>(
-            geometryOperator);
-    ASSERT_TRUE(composite);
-    EXPECT_EQ(1u, composite->getOperators().size());
-    auto slice = std::dynamic_pointer_cast<const SliceOperator>(
-            composite->getOperators()[0]);
-    EXPECT_TRUE(slice);
+  auto &shapes = shapeSet.getShapes();
+  ASSERT_EQ(1u, shapes.size());
+  auto &shape = shapes[0];
+  auto &geometry = shape.getGeometry();
+  EXPECT_EQ(Dimensions::Three, geometry.getInitialDimensions());
+  EXPECT_EQ(Dimensions::Two, geometry.getDimensions());
+  auto &geometryOperator = geometry.getGeometryOperator();
+  ASSERT_TRUE(geometryOperator);
+  auto composite =
+    std::dynamic_pointer_cast<const CompositeOperator>(geometryOperator);
+  ASSERT_TRUE(composite);
+  EXPECT_EQ(1u, composite->getOperators().size());
+  auto slice =
+    std::dynamic_pointer_cast<const SliceOperator>(composite->getOperators()[0]);
+  EXPECT_TRUE(slice);
 }
 
-TEST(IOTest, readShapeSet_namedGeometryOperators) {
-    auto shapeSet = readShapeSetFromString(R"(
+TEST(IOTest, readShapeSet_namedGeometryOperators)
+{
+  auto shapeSet = readShapeSetFromString(R"(
       dimensions: 2
 
       shapes:
@@ -208,15 +225,17 @@ TEST(IOTest, readShapeSet_namedGeometryOperators) {
             - rotate: 90
             - translate: [10, 20]
     )");
-    auto &shapes = shapeSet.getShapes();
-    ASSERT_EQ(1u, shapes.size());
-    auto &shape = shapes[0];
-    auto &geometryOperator = shape.getGeometry().getGeometryOperator();
-    ASSERT_TRUE(geometryOperator);
-    auto composite = std::dynamic_pointer_cast<const CompositeOperator>(
-            geometryOperator);
-    ASSERT_TRUE(composite);
-    EXPECT_EQ(1u, composite->getOperators().size());
+  auto &shapes = shapeSet.getShapes();
+  ASSERT_EQ(1u, shapes.size());
+  auto &shape = shapes[0];
+  auto &geometryOperator = shape.getGeometry().getGeometryOperator();
+  ASSERT_TRUE(geometryOperator);
+  auto composite =
+    std::dynamic_pointer_cast<const CompositeOperator>(geometryOperator);
+  ASSERT_TRUE(composite);
+  EXPECT_EQ(1u, composite->getOperators().size());
 }
 
-}}}
+}  // namespace
+}  // namespace klee
+}  // namespace axom

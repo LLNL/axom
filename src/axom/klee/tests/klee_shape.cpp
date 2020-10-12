@@ -9,14 +9,20 @@
 
 #include "gtest/gtest.h"
 
-namespace axom { namespace klee { namespace {
-
-TEST(ShapeTest, replaces_no_lists_given) {
+namespace axom
+{
+namespace klee
+{
+namespace
+{
+TEST(ShapeTest, replaces_no_lists_given)
+{
   Shape shape;
   EXPECT_TRUE(shape.replaces("some_material"));
 }
 
-TEST(ShapeTest, replaces_replacement_list_given) {
+TEST(ShapeTest, replaces_replacement_list_given)
+{
   Shape shape;
   shape.setMaterialsReplaced({"mat1", "mat2"});
   EXPECT_TRUE(shape.replaces("mat1"));
@@ -24,7 +30,8 @@ TEST(ShapeTest, replaces_replacement_list_given) {
   EXPECT_FALSE(shape.replaces("mat3"));
 }
 
-TEST(ShapeTest, replaces_non_replacement_list_given) {
+TEST(ShapeTest, replaces_non_replacement_list_given)
+{
   Shape shape;
   shape.setMaterialsNotReplaced({"mat1", "mat2"});
   EXPECT_FALSE(shape.replaces("mat1"));
@@ -32,18 +39,20 @@ TEST(ShapeTest, replaces_non_replacement_list_given) {
   EXPECT_TRUE(shape.replaces("mat3"));
 }
 
-TEST(ShapeTest, set_not_replaced_list_after_replaced_list) {
-    Shape shape;
-    shape.setMaterialsReplaced({"mat1", "mat2"});
-    EXPECT_THROW(shape.setMaterialsNotReplaced({"mat1", "mat2"}),
-            std::logic_error);
+TEST(ShapeTest, set_not_replaced_list_after_replaced_list)
+{
+  Shape shape;
+  shape.setMaterialsReplaced({"mat1", "mat2"});
+  EXPECT_THROW(shape.setMaterialsNotReplaced({"mat1", "mat2"}), std::logic_error);
 }
 
-TEST(ShapeTest, set_replaced_list_after_not_replaced_list) {
-    Shape shape;
-    shape.setMaterialsNotReplaced({"mat1", "mat2"});
-    EXPECT_THROW(shape.setMaterialsReplaced({"mat1", "mat2"}),
-            std::logic_error);
+TEST(ShapeTest, set_replaced_list_after_not_replaced_list)
+{
+  Shape shape;
+  shape.setMaterialsNotReplaced({"mat1", "mat2"});
+  EXPECT_THROW(shape.setMaterialsReplaced({"mat1", "mat2"}), std::logic_error);
 }
 
-}}}
+}  // namespace
+}  // namespace klee
+}  // namespace axom
