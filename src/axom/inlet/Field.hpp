@@ -19,7 +19,6 @@
 #include <memory>
 #include <type_traits>
 #include <functional>
-#include <stdexcept>
 
 namespace axom
 {
@@ -373,8 +372,6 @@ public:
    * 
    * \return The value
    * \tparam T The type to retrieve
-   * \throw std::out_of_range If the value doesn't exist or is not of the 
-   * requested type
    *****************************************************************************
    */
   template <typename T>
@@ -383,8 +380,7 @@ public:
     T result;
     if(!get_to(result))
     {
-      throw std::out_of_range(
-        "[Inlet] Field does not exist or is of incorrect type");
+      SLIC_ERROR("[Inlet] Field does not exist or is of incorrect type");
     }
     return result;
   }

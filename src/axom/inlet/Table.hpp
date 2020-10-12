@@ -181,7 +181,6 @@ public:
    *
    * \return Boolean value indicating whether this Table's subtree contains a
    * Field or Table with the given name.
-   * \exception std::out_of_range If the calling proxy does not refer to a table
    *****************************************************************************
    */
   bool contains(const std::string& name);
@@ -206,7 +205,6 @@ public:
    * 
    * \param [in] name The name of the subobject
    * \return A view onto the subobject
-   * \exception std::out_of_range If the calling proxy does not refer to a table
    *******************************************************************************
    */
   Proxy operator[](const std::string& name);
@@ -535,8 +533,6 @@ public:
    * 
    * \param [in] name Name of the Field value to be gotten
    * \return The retrieved value
-   * \exception std::out_of_range If the requested field does not exist or does not 
-   * contain the requested type
    *******************************************************************************
    */
   template <typename T>
@@ -549,7 +545,7 @@ public:
         "[Inlet] Field with specified path"
         "does not exist: {0}",
         name);
-      throw std::out_of_range(msg);
+      SLIC_ERROR(msg);
     }
     return getField(name)->get<T>();
   }
@@ -564,7 +560,6 @@ public:
    * If nothing is passed, the calling table is interpreted as the roof of the object
    * \return The retrieved value
    * \pre Requires a specialization of FromInlet for T
-   * \exception std::out_of_range If the requested subtable does not exist
    *******************************************************************************
    */
   template <typename T>
@@ -586,7 +581,7 @@ public:
       {
         std::string msg =
           fmt::format("[Inlet] Table with name {0} does not exist", name);
-        throw std::out_of_range(msg);
+        SLIC_ERROR(msg);
       }
       return from_inlet(*getTable(name));
     }
@@ -599,7 +594,6 @@ public:
    * Retrieves a value of user-defined type.
    * 
    * \return The retrieved array
-   * \exception std::out_of_range If the calling table does not contain an array
    *******************************************************************************
    */
   template <typename T>
@@ -608,7 +602,7 @@ public:
     T result;
     if(!getTable("_inlet_array")->getArray(result))
     {
-      throw std::out_of_range(
+      SLIC_ERROR(
         "[Inlet] Table does not contain a valid array of requested type");
     }
     return result;
@@ -624,9 +618,6 @@ public:
    * 
    * \param [in] name The name of the subobject
    * \return The retrieved array
-   * \exception std::out_of_range If the calling table contains both a field and 
-   * a subtable with the specified name, or if the calling table does not have 
-   * either a field or a subtable with the specified name
    *******************************************************************************
    */
   Proxy operator[](const std::string& name);

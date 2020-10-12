@@ -309,8 +309,7 @@ InletType Proxy::type() const
   // Otherwise it must be a field
   if(m_field == nullptr)
   {
-    throw std::out_of_range(
-      "[Inlet] Cannot retrieve the type of an empty Proxy");
+    SLIC_ERROR("[Inlet] Cannot retrieve the type of an empty Proxy");
   }
   return m_field->type();
 }
@@ -319,8 +318,7 @@ bool Proxy::contains(const std::string& name)
 {
   if(m_table == nullptr)
   {
-    throw std::out_of_range(
-      "[Inlet] Cannot index a proxy that refers to a field");
+    SLIC_ERROR("[Inlet] Cannot index a proxy that refers to a field");
   }
   return m_table->contains(name);
 }
@@ -336,7 +334,7 @@ Proxy Table::operator[](const std::string& name)
     std::string msg = fmt::format(
       "[Inlet] Ambiguous lookup - both a table and field with name {0} exist",
       name);
-    throw std::out_of_range(msg);
+    SLIC_ERROR(msg);
     return Proxy();
   }
 
@@ -356,7 +354,7 @@ Proxy Table::operator[](const std::string& name)
     std::string msg =
       fmt::format("[Inlet] Neither a table nor a field with name {0} exist",
                   name);
-    throw std::out_of_range(msg);
+    SLIC_ERROR(msg);
     return Proxy();
   }
 }
@@ -365,8 +363,7 @@ Proxy Proxy::operator[](const std::string& name)
 {
   if(m_table == nullptr)
   {
-    throw std::out_of_range(
-      "[Inlet] Cannot index a proxy that refers to a field");
+    SLIC_ERROR("[Inlet] Cannot index a proxy that refers to a field");
   }
   return (*m_table)[name];
 }
