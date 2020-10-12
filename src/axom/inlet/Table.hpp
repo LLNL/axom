@@ -857,12 +857,7 @@ typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type Proxy::ge
   SLIC_ASSERT_MSG(
     m_field != nullptr,
     "[Inlet] Tried to read a primitive type from a Proxy containing a table");
-  T result;
-  bool found = m_field->get_to(result);
-  SLIC_ASSERT_MSG(
-    found,
-    "[Inlet] Failed to read a primitive type from a Field-containing Proxy");
-  return result;
+  return m_field->get<T>();
 }
 
 template <typename T>

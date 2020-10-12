@@ -308,66 +308,6 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Gets a Boolean value.
-   *
-   * Retrieves the Field value.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value exists
-   *****************************************************************************
-   */
-  bool get_to(bool& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Gets a Double value.
-   *
-   * Retrieves the Field value.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value exists
-   *****************************************************************************
-   */
-  bool get_to(double& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Gets an Integer value.
-   *
-   * Retrieves the Field value.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value exists
-   *****************************************************************************
-   */
-  bool get_to(int& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Gets a String value.
-   *
-   * Retrieves the Field value.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value exists
-   *****************************************************************************
-   */
-  bool get_to(std::string& value);
-
-  /*!
-   *****************************************************************************
    * \brief Returns a value of primitive type
    * 
    * \return The value
@@ -375,15 +315,7 @@ public:
    *****************************************************************************
    */
   template <typename T>
-  T get()
-  {
-    T result;
-    if(!get_to(result))
-    {
-      SLIC_ERROR("[Inlet] Field does not exist or is of incorrect type");
-    }
-    return result;
-  }
+  T get();
 
   /*!
    *****************************************************************************
@@ -445,6 +377,18 @@ private:
   bool m_docEnabled;
   std::function<bool()> m_verifier;
 };
+
+template <>
+bool Field::get<bool>();
+
+template <>
+int Field::get<int>();
+
+template <>
+double Field::get<double>();
+
+template <>
+std::string Field::get<std::string>();
 
 }  // end namespace inlet
 }  // end namespace axom
