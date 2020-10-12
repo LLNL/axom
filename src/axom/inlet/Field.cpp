@@ -249,8 +249,13 @@ template <>
 bool Field::get<bool>()
 {
   axom::sidre::View* valueView = m_sidreGroup->getView("value");
+  if(valueView == nullptr)
+  {
+    SLIC_ERROR("[Inlet] Field does not contain a value");
+    setWarningFlag(m_sidreRootGroup);
+  }
   // There is no boolean type in conduit/sidre so we use int8
-  if(valueView == nullptr || valueView->getTypeID() != axom::sidre::INT8_ID)
+  if(valueView->getTypeID() != axom::sidre::INT8_ID)
   {
     std::string msg = fmt::format(
       "[Inlet] Boolean named '{0}' was asked for"
@@ -280,7 +285,13 @@ double Field::get<double>()
 {
   axom::sidre::View* valueView = m_sidreGroup->getView("value");
 
-  if(valueView == nullptr || valueView->getTypeID() != axom::sidre::DOUBLE_ID)
+  if(valueView == nullptr)
+  {
+    SLIC_ERROR("[Inlet] Field does not contain a value");
+    setWarningFlag(m_sidreRootGroup);
+  }
+
+  if(valueView->getTypeID() != axom::sidre::DOUBLE_ID)
   {
     std::string msg = fmt::format(
       "[Inlet] Double named '{0}' was asked for"
@@ -299,7 +310,13 @@ int Field::get<int>()
 {
   axom::sidre::View* valueView = m_sidreGroup->getView("value");
 
-  if(valueView == nullptr || valueView->getTypeID() != axom::sidre::INT_ID)
+  if(valueView == nullptr)
+  {
+    SLIC_ERROR("[Inlet] Field does not contain a value");
+    setWarningFlag(m_sidreRootGroup);
+  }
+
+  if(valueView->getTypeID() != axom::sidre::INT_ID)
   {
     std::string msg = fmt::format(
       "[Inlet] Integer named '{0}' was asked for"
@@ -318,7 +335,13 @@ std::string Field::get<std::string>()
 {
   axom::sidre::View* valueView = m_sidreGroup->getView("value");
 
-  if(valueView == nullptr || valueView->getTypeID() != axom::sidre::CHAR8_STR_ID)
+  if(valueView == nullptr)
+  {
+    SLIC_ERROR("[Inlet] Field does not contain a value");
+    setWarningFlag(m_sidreRootGroup);
+  }
+
+  if(valueView->getTypeID() != axom::sidre::CHAR8_STR_ID)
   {
     std::string msg = fmt::format(
       "[Inlet] String named '{0}' was asked for"

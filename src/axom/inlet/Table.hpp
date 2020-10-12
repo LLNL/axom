@@ -94,7 +94,7 @@ struct is_inlet_primitive_array<std::unordered_map<int, T>>
 
 /*!
  *******************************************************************************
- * \class has_from_inlet_specialization
+ * \class has_FromInlet_specialization
  *
  * \brief A type trait for checking if a type has specialized FromInlet
  * with the required T operator()(axom::inlet::Table&)
@@ -102,11 +102,11 @@ struct is_inlet_primitive_array<std::unordered_map<int, T>>
  *******************************************************************************
  */
 template <typename T, typename SFINAE = void>
-struct has_from_inlet_specialization : std::false_type
+struct has_FromInlet_specialization : std::false_type
 { };
 
 template <typename T>
-struct has_from_inlet_specialization<
+struct has_FromInlet_specialization<
   T,
   typename std::enable_if<
     std::is_same<T, decltype(std::declval<FromInlet<T>&>()(std::declval<Table&>()))>::value>::type>
@@ -568,7 +568,7 @@ public:
                           T>::type
   get(const std::string& name = "")
   {
-    static_assert(detail::has_from_inlet_specialization<T>::value,
+    static_assert(detail::has_FromInlet_specialization<T>::value,
                   "To read a user-defined type, specialize FromInlet<T>");
     FromInlet<T> from_inlet;
     if(name.empty())
