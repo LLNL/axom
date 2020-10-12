@@ -129,17 +129,6 @@ bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices
   {
     indices.push_back(entry.first.as<int>());
   }
-
-  // auto it = t.cbegin();
-  // while(it != t.cend())
-  // {
-  //   // Gets only indexed items in the table.
-  //   if((*it).first.get_type() == sol::type::number)
-  //   {
-  //     values[(*it).first.as<int>()] = (*it).second.as<T>();
-  //   }
-  //   ++it;
-  // }
   return true;
 }
 

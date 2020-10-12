@@ -438,6 +438,43 @@ private:
   template <typename T>
   void setDefaultValue(T value);
 
+  /*!
+   *****************************************************************************
+   * \brief Checks the validity of a field value
+   *
+   * \param [in] view The view to verify
+   *
+   * \return Whether the value satisfied all constraints
+   *****************************************************************************
+  */
+  bool verifyValue(axom::sidre::View& view);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is within the range.
+   * 
+   * \param [in] view The view containing the value that will be checked.
+   * 
+   * \return true if the given value was within its respective range, else false.
+   * \pre T must define bool operator<=(T, T)
+   *****************************************************************************
+   */
+  template <typename T>
+  bool checkRange(axom::sidre::View& view);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is found in the list of valid values.
+   * 
+   * \param [in] view The view containing the value that will be checked.
+   * 
+   * \return true if the given target was found in its respective valid values, 
+   *  else false.
+   *****************************************************************************
+   */
+  template <typename T>
+  bool searchValidValues(axom::sidre::View& view);
+
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
@@ -445,6 +482,9 @@ private:
   bool m_docEnabled;
   std::function<bool()> m_verifier;
 };
+
+template <>
+inline bool Field::searchValidValues<std::string>(axom::sidre::View& view);
 
 }  // end namespace inlet
 }  // end namespace axom

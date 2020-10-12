@@ -515,13 +515,121 @@ std::shared_ptr<Field> Field::registerVerifier(std::function<bool()> lambda)
 
 bool Field::verify()
 {
+  // If this field was required, make sure soemething was defined in it
+  if(m_sidreGroup->hasView("required"))
+  {
+    int8 required = m_sidreGroup->getView("required")->getData();
+    if(required && !m_sidreGroup->hasView("value"))
+    {
+      std::string msg = fmt::format(
+        "[Inlet] Required Field not "
+        "specified: {0}",
+        m_sidreGroup->getPathName());
+      SLIC_WARNING(msg);
+      return false;
+    }
+  }
+
+  // Verify the provided value
+  if(m_sidreGroup->hasView("value") &&
+     !verifyValue(*m_sidreGroup->getView("value")))
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Value did not meet range/valid "
+      "value(s) constraints: {0}",
+      m_sidreGroup->getPathName());
+    SLIC_WARNING(msg);
+    return false;
+  }
+
+  // Verify the default value
+  if(m_sidreGroup->hasView("defaultValue") &&
+     !verifyValue(*m_sidreGroup->getView("defaultValue")))
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Default value did not meet range/valid "
+      "value(s) constraints: {0}",
+      m_sidreGroup->getPathName());
+    SLIC_WARNING(msg);
+    return false;
+  }
+
+  // Lambda verification step
   if(m_verifier && !m_verifier())
   {
-    SLIC_WARNING(fmt::format("[Inlet] Field failed verification: {0}",
+    SLIC_WARNING(fmt::format("[Inlet] Field failed lambda verification: {0}",
                              m_sidreGroup->getPathName()));
     return false;
   }
   return true;
+}
+
+bool Field::verifyValue(axom::sidre::View& view)
+{
+  auto type = view.getTypeID();
+  if(m_sidreGroup->hasView("validValues"))
+  {
+    if(type == axom::sidre::INT_ID)
+    {
+      return searchValidValues<int>(view);
+    }
+    else
+    {
+      return searchValidValues<double>(view);
+    }
+  }
+  else if(m_sidreGroup->hasView("range"))
+  {
+    if(type == axom::sidre::INT_ID)
+    {
+      return checkRange<int>(view);
+    }
+    else
+    {
+      return checkRange<double>(view);
+    }
+  }
+  else if(m_sidreGroup->hasGroup("validStringValues"))
+  {
+    return searchValidValues<std::string>(view);
+  }
+  return true;
+}
+
+template <typename T>
+bool Field::checkRange(axom::sidre::View& view)
+{
+  T val = view.getScalar();
+  T* range = m_sidreGroup->getView("range")->getArray();
+  return range[0] <= val && val <= range[1];
+}
+
+template <typename T>
+bool Field::searchValidValues(axom::sidre::View& view)
+{
+  T target = view.getScalar();
+  auto valid_vals = m_sidreGroup->getView("validValues");
+  T* valuesArray = valid_vals->getArray();
+  size_t size = valid_vals->getBuffer()->getNumElements();
+  T* result = std::find(valuesArray, valuesArray + size, target);
+  return result != valuesArray + size;
+}
+
+template <>
+bool Field::searchValidValues<std::string>(axom::sidre::View& view)
+{
+  auto string_group = m_sidreGroup->getGroup("validStringValues");
+  std::string value = view.getString();
+  auto idx = string_group->getFirstValidViewIndex();
+  while(axom::sidre::indexIsValid(idx))
+  {
+    if(string_group->getView(idx)->getString() == value)
+    {
+      return true;
+    }
+    idx = string_group->getNextValidViewIndex(idx);
+  }
+  return false;
 }
 
 std::string Field::name()

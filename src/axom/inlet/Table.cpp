@@ -491,7 +491,21 @@ std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda)
 bool Table::verify()
 {
   bool verified = true;
-  // Verify this Table
+  // If this table was required, make sure soemething was defined in it
+  if(m_sidreGroup->hasView("required"))
+  {
+    int8 required = m_sidreGroup->getView("required")->getData();
+    if(required && m_sidreGroup->getNumGroups() == 0)
+    {
+      std::string msg = fmt::format(
+        "[Inlet] Required Table not "
+        "specified: {0}",
+        m_sidreGroup->getPathName());
+      SLIC_WARNING(msg);
+      verified = false;
+    }
+  }
+  // Verify this Table if a lambda was configured
   if(m_verifier && !m_verifier())
   {
     verified = false;
