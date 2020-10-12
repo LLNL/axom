@@ -15,8 +15,12 @@
 
 #include "gmock/gmock.h"
 
-namespace axom {namespace klee { namespace test {
-
+namespace axom
+{
+namespace klee
+{
+namespace test
+{
 /**
  * Create a 3D affine transformation matrix
  *
@@ -25,13 +29,16 @@ namespace axom {namespace klee { namespace test {
  */
 numerics::Matrix<double> affine(const std::array<double, 12> &values);
 
-class MockOperator : public GeometryOperator {
+class MockOperator : public GeometryOperator
+{
 public:
-    MOCK_METHOD(Dimensions, startDims, (), (const));
-    MOCK_METHOD(Dimensions, endDims, (), (const));
-    MOCK_METHOD(void, accept, (GeometryOperatorVisitor &), (const));
+  MOCK_METHOD(Dimensions, startDims, (), (const));
+  MOCK_METHOD(Dimensions, endDims, (), (const));
+  MOCK_METHOD(void, accept, (GeometryOperatorVisitor &), (const));
 };
 
-}}}
+}  // namespace test
+}  // namespace klee
+}  // namespace axom
 
-#endif //AXOM_KLEETESTUTILS_HPP
+#endif  //AXOM_KLEETESTUTILS_HPP

@@ -5,15 +5,20 @@
 #ifndef AXOM_DIMENSIONS_HPP
 #define AXOM_DIMENSIONS_HPP
 
-namespace axom { namespace klee {
-
+namespace axom
+{
+namespace klee
+{
 /**
  * The dimensions that are supported for specifying operations in Klee.
  */
-enum class Dimensions : int {
-    Two = 2,
-    Three = 3,
+enum class Dimensions : int
+{
+  Two = 2,
+  Three = 3,
 };
-}}
 
-#endif //AXOM_DIMENSIONS_HPP
+}  // namespace klee
+}  // namespace axom
+
+#endif  //AXOM_DIMENSIONS_HPP

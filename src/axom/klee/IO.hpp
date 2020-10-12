@@ -11,8 +11,10 @@
 
 #include "axom/klee/ShapeSet.hpp"
 
-namespace axom { namespace klee {
-
+namespace axom
+{
+namespace klee
+{
 /**
  * Read a ShapeSet from an input stream.
  *
@@ -31,6 +33,7 @@ ShapeSet readShapeSet(std::istream &stream);
  */
 ShapeSet readShapeSet(const std::string &filePath);
 
-}}
+}  // namespace klee
+}  // namespace axom
 
-#endif //AXOM_KLEE_IO_HPP
+#endif  //AXOM_KLEE_IO_HPP

@@ -9,10 +9,12 @@
 #include <stdexcept>
 #include <utility>
 
-namespace axom { namespace klee {
-
-namespace {
-
+namespace axom
+{
+namespace klee
+{
+namespace
+{
 /**
  * Check whether a given container contains a value
  *
@@ -23,53 +25,61 @@ namespace {
  */
 template <typename Container>
 bool contains(const Container &container,
-        const typename Container::value_type &value) {
-    using std::begin;
-    using std::end;
-    auto endIter = end(container);
-    return std::find(begin(container), endIter, value) != endIter;
+              const typename Container::value_type &value)
+{
+  using std::begin;
+  using std::end;
+  auto endIter = end(container);
+  return std::find(begin(container), endIter, value) != endIter;
 }
-} // unnamed namespace
+}  // unnamed namespace
 
-void Shape::setMaterialsReplaced(
-        const std::vector<std::string> &materialsReplaced) {
-    if (!m_materialsNotReplaced.empty()) {
-        throw std::logic_error("Can't set list of materials to replace "
-                               "when materials to not replace have already "
-                               "been set");
-    }
-    m_materialsReplaced = materialsReplaced;
+void Shape::setMaterialsReplaced(const std::vector<std::string> &materialsReplaced)
+{
+  if(!m_materialsNotReplaced.empty())
+  {
+    throw std::logic_error(
+      "Can't set list of materials to replace "
+      "when materials to not replace have already "
+      "been set");
+  }
+  m_materialsReplaced = materialsReplaced;
 }
 
 void Shape::setMaterialsNotReplaced(
-        const std::vector<std::string> &materialsNotReplaced) {
-    if (!m_materialsReplaced.empty()) {
-        throw std::logic_error("Can't set list of materials to not replace "
-                               "when materials to replace have already "
-                               "been set");
-    }
-    m_materialsNotReplaced = materialsNotReplaced;
+  const std::vector<std::string> &materialsNotReplaced)
+{
+  if(!m_materialsReplaced.empty())
+  {
+    throw std::logic_error(
+      "Can't set list of materials to not replace "
+      "when materials to replace have already "
+      "been set");
+  }
+  m_materialsNotReplaced = materialsNotReplaced;
 }
 
-bool Shape::replaces(const std::string &material) const {
-    if (!m_materialsReplaced.empty()) {
-        return contains(m_materialsReplaced, material);
-    } else if (!m_materialsNotReplaced.empty()) {
-        return !contains(m_materialsNotReplaced, material);
-    }
-    return true;
+bool Shape::replaces(const std::string &material) const
+{
+  if(!m_materialsReplaced.empty())
+  {
+    return contains(m_materialsReplaced, material);
+  }
+  else if(!m_materialsNotReplaced.empty())
+  {
+    return !contains(m_materialsNotReplaced, material);
+  }
+  return true;
 }
 
-void Shape::setName(std::string name) {
-    m_name = std::move(name);
+void Shape::setName(std::string name) { m_name = std::move(name); }
+
+void Shape::setMaterial(std::string material)
+{
+  m_material = std::move(material);
 }
 
-void Shape::setMaterial(std::string material) {
-    m_material = std::move(material);
-}
+void Shape::setGeometry(Geometry geometry) { m_geometry = std::move(geometry); }
 
-void Shape::setGeometry(Geometry geometry) {
-    m_geometry = std::move(geometry);
-}
-
-}}
+}  // namespace klee
+}  // namespace axom

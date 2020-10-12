@@ -13,13 +13,16 @@
 
 #include "axom/klee/Dimensions.hpp"
 
-namespace axom { namespace klee {
-
+namespace axom
+{
+namespace klee
+{
 class GeometryOperator;
 
-namespace internal {
-
-using NamedOperatorMap = std::unordered_map<std::string, std::shared_ptr<const GeometryOperator>>;
+namespace internal
+{
+using NamedOperatorMap =
+  std::unordered_map<std::string, std::shared_ptr<const GeometryOperator>>;
 
 /**
  * Parse a GeometryOperator from the given node.
@@ -33,8 +36,9 @@ using NamedOperatorMap = std::unordered_map<std::string, std::shared_ptr<const G
  * \return A GeometryOperator describing the parsed values.
  */
 std::shared_ptr<const GeometryOperator> parseGeometryOperators(
-        const conduit::Node &node, Dimensions initialDimensions,
-        const NamedOperatorMap &namedOperators);
+  const conduit::Node &node,
+  Dimensions initialDimensions,
+  const NamedOperatorMap &namedOperators);
 
 /**
  * Parse named geometry operators.
@@ -46,8 +50,10 @@ std::shared_ptr<const GeometryOperator> parseGeometryOperators(
  * \return a map of names to operators
  */
 NamedOperatorMap parseNamedGeometryOperators(const conduit::Node &node,
-        Dimensions initialDimensions);
+                                             Dimensions initialDimensions);
 
-}}}
+}  // namespace internal
+}  // namespace klee
+}  // namespace axom
 
-#endif //AXOM_KLEE_GEOMETRYOPERATORSIO_HPP
+#endif  //AXOM_KLEE_GEOMETRYOPERATORSIO_HPP

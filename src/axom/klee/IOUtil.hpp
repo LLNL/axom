@@ -11,8 +11,12 @@
 
 #include "axom/klee/Dimensions.hpp"
 
-namespace axom { namespace klee { namespace internal {
-
+namespace axom
+{
+namespace klee
+{
+namespace internal
+{
 /**
  * Convert a Conduit node to a vector of doubles.
  *
@@ -23,7 +27,7 @@ namespace axom { namespace klee { namespace internal {
  * of exactly the specified number of elements.
  */
 std::vector<double> toDoubleVector(const conduit::Node &listNode,
-        std::size_t expectedSize);
+                                   std::size_t expectedSize);
 
 /**
  * Convert a Conduit node to a double, or throw an exception with a nice
@@ -44,7 +48,8 @@ double toDouble(const conduit::Node &value);
  */
 Dimensions toDimensions(const conduit::Node &dimensionsNode);
 
-}}}
+}  // namespace internal
+}  // namespace klee
+}  // namespace axom
 
-
-#endif //AXOM_KLEE_IO_UTIL_HPP
+#endif  //AXOM_KLEE_IO_UTIL_HPP
