@@ -91,7 +91,7 @@ TEST(inlet_object, simple_array_of_struct_by_value)
   std::unordered_map<int, Foo> expected_foos = {{4, {true, false}},
                                                 {7, {false, true}}};
   std::unordered_map<int, Foo> foos;
-  EXPECT_TRUE(arr_table->getGenericArray(foos));
+  EXPECT_TRUE(arr_table->getArray(foos));
   EXPECT_EQ(foos, expected_foos);
 }
 
@@ -156,7 +156,7 @@ TEST(inlet_object, array_of_struct_containing_array)
   // std::unordered_map<int, Foo> expected_foos = {{4, {true, false}},
   //                                               {7, {false, true}}};
   std::unordered_map<int, FooWithArray> foos_with_arr;
-  EXPECT_TRUE(arr_table->getGenericArray(foos_with_arr));
+  EXPECT_TRUE(arr_table->getArray(foos_with_arr));
   // EXPECT_EQ(foos, expected_foos);
 }
 

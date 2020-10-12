@@ -419,7 +419,7 @@ private:
   std::function<bool()> m_verifier;
 };
 
-template<>
+template <>
 bool Field::get<bool>();
 
 template <>

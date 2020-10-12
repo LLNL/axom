@@ -26,6 +26,7 @@
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
 #include "axom/inlet/SchemaCreator.hpp"
+#include "axom/inlet/inlet_utils.hpp"
 
 #include "axom/sidre.hpp"
 
@@ -93,14 +94,12 @@ struct is_inlet_primitive_array<std::unordered_map<int, T>>
 };
 
 template <typename T>
-struct is_inlet_userdef_array : std::false_type
+struct is_inlet_array : std::false_type
 { };
 
 template <typename T>
-struct is_inlet_userdef_array<std::unordered_map<int, T>>
-{
-  static constexpr bool value = !is_inlet_primitive<T>::value;
-};
+struct is_inlet_array<std::unordered_map<int, T>> : std::true_type
+{ };
 
 /*!
  *******************************************************************************
@@ -424,51 +423,8 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get a boolean array represented as an unordered map from the input deck
-   *
-   * \param [out] map Unordered map to be populated with array contents
-   *
-   * \return Whether or not the array was found
-   *****************************************************************************
-   */
-  bool getArray(std::unordered_map<int, bool>& map);
-
-  /*!
-   *****************************************************************************
-   * \brief Get a int array represented as an unordered map from the input deck
-   *
-   * \param [out] map Unordered map to be populated with array contents
-   *
-   * \return Whether or not the array was found
-   *****************************************************************************
-   */
-  bool getArray(std::unordered_map<int, int>& map);
-
-  /*!
-   *****************************************************************************
-   * \brief Get a double array represented as an unordered map from the input deck
-   *
-   * \param [out] map Unordered map to be populated with array contents
-   *
-   * \return Whether or not the array was found
-   *****************************************************************************
-   */
-  bool getArray(std::unordered_map<int, double>& map);
-
-  /*!
-   *****************************************************************************
-   * \brief Get a string array represented as an unordered map from the input deck
-   *
-   * \param [out] map Unordered map to be populated with array contents
-   *
-   * \return Whether or not the array was found
-   *****************************************************************************
-   */
-  bool getArray(std::unordered_map<int, std::string>& map);
-
-  /*!
-   *****************************************************************************
    * \brief Get an array represented as an unordered map from the input deck
+   * of primitive type
    *
    * \param [out] map Unordered map to be populated with array contents
    *
@@ -476,7 +432,36 @@ public:
    *****************************************************************************
    */
   template <typename T>
-  bool getGenericArray(std::unordered_map<int, T>& map)
+  typename std::enable_if<detail::is_inlet_primitive<T>::value, bool>::type
+  getArray(std::unordered_map<int, T>& map)
+  {
+    map.clear();
+    if(!axom::utilities::string::endsWith(m_name, "_inlet_array"))
+    {
+      return false;
+    }
+    for(auto& item : m_fieldChildren)
+    {
+      auto pos = item.first.find_last_of("/");
+      int index = std::stoi(item.first.substr(pos + 1));
+      map[index] = item.second->get<T>();
+    }
+    return true;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get an array represented as an unordered map from the input deck
+   * of user-defined type
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
+  getArray(std::unordered_map<int, T>& map)
   {
     if(m_sidreGroup->hasView("_inlet_array_indices"))
     {
@@ -618,8 +603,7 @@ public:
    */
   template <typename T>
   typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
-                            !detail::is_inlet_primitive_array<T>::value &&
-                            !detail::is_inlet_userdef_array<T>::value,
+                            !detail::is_inlet_array<T>::value,
                           T>::type
   get(const std::string& name = "")
   {
@@ -652,31 +636,10 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_inlet_primitive_array<T>::value, T>::type get()
+  typename std::enable_if<detail::is_inlet_array<T>::value, T>::type get()
   {
     T result;
     if(!getTable("_inlet_array")->getArray(result))
-    {
-      SLIC_ERROR(
-        "[Inlet] Table does not contain a valid array of requested type");
-    }
-    return result;
-  }
-
-  /*!
-   *******************************************************************************
-   * \brief Returns a stored array of primitive types.
-   * 
-   * Retrieves a value of user-defined type.
-   * 
-   * \return The retrieved array
-   *******************************************************************************
-   */
-  template <typename T>
-  typename std::enable_if<detail::is_inlet_userdef_array<T>::value, T>::type get()
-  {
-    T result;
-    if(!getTable("_inlet_array")->getGenericArray(result))
     {
       SLIC_ERROR(
         "[Inlet] Table does not contain a valid array of requested type");

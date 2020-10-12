@@ -198,38 +198,6 @@ std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
   return table;
 }
 
-bool Table::getArray(std::unordered_map<int, bool>& map)
-{
-  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
-    m_reader->getBoolMap(m_name.substr(0, m_name.size() - 12), map);
-}
-
-bool Table::getArray(std::unordered_map<int, int>& map)
-{
-  std::string filtered_name = m_name;
-  std::string replace = "/_inlet_array";
-  auto len = replace.length();
-  for(auto i = filtered_name.find(replace); i != std::string::npos;
-      i = filtered_name.find(replace))
-  {
-    filtered_name.erase(i, len);
-  }
-  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
-    m_reader->getIntMap(filtered_name, map);
-}
-
-bool Table::getArray(std::unordered_map<int, double>& map)
-{
-  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
-    m_reader->getDoubleMap(m_name.substr(0, m_name.size() - 12), map);
-}
-
-bool Table::getArray(std::unordered_map<int, std::string>& map)
-{
-  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
-    m_reader->getStringMap(m_name.substr(0, m_name.size() - 12), map);
-}
-
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
                                             const std::string& description)
 {
