@@ -400,6 +400,19 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Add an array of Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addGenericArray(const std::string& name,
+                                         const std::string& description = "");
+
+  /*!
+   *****************************************************************************
    * \brief Get a boolean array represented as an unordered map from the input deck
    *
    * \param [out] map Unordered map to be populated with array contents
@@ -441,6 +454,36 @@ public:
    *****************************************************************************
    */
   bool getArray(std::unordered_map<int, std::string>& map);
+
+  /*!
+   *****************************************************************************
+   * \brief Get an array represented as an unordered map from the input deck
+   *
+   * \param [out] map Unordered map to be populated with array contents
+   *
+   * \return Whether or not the array was found
+   *****************************************************************************
+   */
+  template <typename T>
+  bool getGenericArray(std::unordered_map<int, T>& map)
+  {
+    if(m_sidreGroup->hasView("_inlet_array_indices"))
+    {
+      auto view = m_sidreGroup->getView("_inlet_array_indices");
+      int* array = view->getArray();
+      for(int i = 0; i < view->getNumElements(); i++)
+      {
+        auto index_label = std::to_string(array[i]);
+        map[array[i]] = getTable(index_label)->get<T>();
+      }
+    }
+    else
+    {
+      SLIC_WARNING("Table does not contain an array");
+      return false;
+    }
+    return true;
+  }
 
   /*!
    *****************************************************************************

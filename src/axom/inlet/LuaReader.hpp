@@ -196,6 +196,18 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Get the list of indices for an array
+   *
+   * \param [in]  id    The identifier to the array that will be retrieved
+   * \param [out] map The values of the indices that were retrieved
+   *
+   * \return true if the array was able to be retrieved from the file
+   *****************************************************************************
+   */
+  bool getArrayIndices(const std::string& id, std::vector<int>& indices);
+
+  /*!
+   *****************************************************************************
    * \brief Returns the Sol Lua state
    *
    * This allows the user to access functionality that was not provided by Inlet.

@@ -102,6 +102,47 @@ bool LuaReader::getStringMap(const std::string& id,
   return getMap(id, values, sol::type::string);
 }
 
+bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices)
+{
+  indices.clear();
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+
+  if(tokens.empty() || !m_lua[tokens[0]].valid())
+  {
+    return false;
+  }
+  sol::table t = m_lua[tokens[0]];
+  for(size_t i = 1; i < tokens.size(); i++)
+  {
+    if(t[tokens[i]].valid())
+    {
+      t = t[tokens[i]];
+    }
+    else
+    {
+      return false;
+    }
+  }
+
+  for(const auto& entry : t)
+  {
+    indices.push_back(entry.first.as<int>());
+  }
+
+  // auto it = t.cbegin();
+  // while(it != t.cend())
+  // {
+  //   // Gets only indexed items in the table.
+  //   if((*it).first.get_type() == sol::type::number)
+  //   {
+  //     values[(*it).first.as<int>()] = (*it).second.as<T>();
+  //   }
+  //   ++it;
+  // }
+  return true;
+}
+
 template <typename T>
 bool LuaReader::getValue(const std::string& id, T& value)
 {
@@ -120,7 +161,15 @@ bool LuaReader::getValue(const std::string& id, T& value)
   sol::table t = m_lua[tokens[0]];
   for(size_t i = 1; i < tokens.size() - 1; i++)
   {
-    if(t[tokens[i]].valid())
+    // Use the C versions to avoid the exceptions
+    // thrown by std::stoi on conversion failure
+    char* ptr;
+    auto as_int = strtol(tokens[i].c_str(), &ptr, 10);
+    if((!*ptr) && t[as_int].valid())
+    {
+      t = t[as_int];
+    }
+    else if(t[tokens[i]].valid())
     {
       t = t[tokens[i]];
     }

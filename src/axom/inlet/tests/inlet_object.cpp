@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 
+#include <array>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -35,6 +36,11 @@ struct Foo
 {
   bool bar;
   bool baz;
+
+  bool operator==(const Foo& other) const
+  {
+    return bar == other.bar && baz == other.baz;
+  }
 };
 
 template <>
@@ -68,6 +74,25 @@ TEST(inlet_object, simple_struct_by_value)
   foo = inlet->get<Foo>("foo");
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
+}
+
+TEST(inlet_object, simple_array_of_struct_by_value)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true; baz = false}, "
+    "        [7] = { bar = false; baz = true} }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+
+  arr_table->addBool("bar", "bar's description");
+  arr_table->addBool("baz", "baz's description");
+  std::unordered_map<int, Foo> expected_foos = {{4, {true, false}},
+                                                {7, {false, true}}};
+  std::unordered_map<int, Foo> foos;
+  EXPECT_TRUE(arr_table->getGenericArray(foos));
+  EXPECT_EQ(foos, expected_foos);
 }
 
 struct MoveOnlyFoo

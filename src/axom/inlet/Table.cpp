@@ -144,6 +144,33 @@ std::shared_ptr<Table> Table::addStringArray(const std::string& name,
   return table;
 }
 
+std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
+                                              const std::string& description)
+{
+  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+  std::vector<int> indices;
+  const std::string& fullName = appendPrefix(m_name, name);
+  if(m_reader->getArrayIndices(fullName, indices))
+  {
+    auto view =
+      table->m_sidreGroup->createViewAndAllocate("_inlet_array_indices",
+                                                 axom::sidre::INT_ID,
+                                                 indices.size());
+    table->m_sidreGroup->createViewString("_inlet_base_array_name", name);
+    int* raw_array = view->getArray();
+    std::copy(indices.begin(), indices.end(), raw_array);
+    for(const auto idx : indices)
+    {
+      table->addTable(std::to_string(idx), description);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("Array {0} not found.", fullName));
+  }
+  return table;
+}
+
 bool Table::getArray(std::unordered_map<int, bool>& map)
 {
   return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
@@ -220,17 +247,41 @@ std::shared_ptr<Field> Table::addBoolHelper(const std::string& name,
 {
   std::string fullName = appendPrefix(m_name, name);
   axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-  if(sidreGroup == nullptr)
-  {
-    //TODO: better idea?
-    return std::shared_ptr<Field>(nullptr);
-  }
-
   bool value = num;
-  if(forArray || m_reader->getBool(fullName, value))
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    sidreGroup->createViewScalar("value", value ? int8(1) : int8(0));
+    auto view = m_sidreGroup->getView("_inlet_array_indices");
+    int* array = view->getArray();
+    std::string base_name =
+      m_sidreGroup->getView("_inlet_base_array_name")->getString();
+    for(int i = 0; i < view->getNumElements(); i++)
+    {
+      auto index_label = std::to_string(array[i]);
+      auto full_path = appendPrefix(base_name, index_label);
+      full_path = appendPrefix(full_path, name);
+      if(!m_reader->getBool(full_path, value))
+      {
+        std::string msg =
+          fmt::format("[Inlet] Could not find a boolean at {0}", full_path);
+        SLIC_WARNING(msg);
+      }
+      getTable(index_label)->addBoolHelper(name, description, true, value);
+    }
   }
+  else
+  {
+    if(sidreGroup == nullptr)
+    {
+      //TODO: better idea?
+      return std::shared_ptr<Field>(nullptr);
+    }
+
+    if(forArray || m_reader->getBool(fullName, value))
+    {
+      sidreGroup->createViewScalar("value", value ? int8(1) : int8(0));
+    }
+  }
+  // This is completely wrong for the arrays - need to create an aggregate Field type
   return addField(sidreGroup, axom::sidre::DataTypeId::INT8_ID, fullName, name);
 }
 
