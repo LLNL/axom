@@ -218,7 +218,8 @@ public:
    */
   virtual std::shared_ptr<Table> addIntArray(
     const std::string& name,
-    const std::string& description = "") = 0;
+    const std::string& description = "",
+    const std::string& path_override = "") = 0;
 
   /*!
    *****************************************************************************
@@ -245,6 +246,20 @@ public:
    *****************************************************************************
    */
   virtual std::shared_ptr<Table> addStringArray(
+    const std::string& name,
+    const std::string& description = "") = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  virtual std::shared_ptr<Table> addGenericArray(
     const std::string& name,
     const std::string& description = "") = 0;
 

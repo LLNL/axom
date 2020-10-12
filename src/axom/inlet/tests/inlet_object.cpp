@@ -95,6 +95,71 @@ TEST(inlet_object, simple_array_of_struct_by_value)
   EXPECT_EQ(foos, expected_foos);
 }
 
+TEST(inlet_object, simple_array_of_struct_verify_optional)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false;} }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+
+  arr_table->addBool("bar", "bar's description")->required(true);
+  arr_table->addBool("baz", "baz's description")->required(false);
+
+  EXPECT_TRUE(inlet->verify());
+}
+
+TEST(inlet_object, simple_array_of_struct_verify_reqd)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false;} }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+
+  arr_table->addBool("bar", "bar's description")->required(true);
+  arr_table->addBool("baz", "baz's description")->required(true);
+
+  EXPECT_FALSE(inlet->verify());
+}
+
+struct FooWithArray
+{
+  std::unordered_map<int, int> arr;
+};
+
+template <>
+struct FromInlet<FooWithArray>
+{
+  FooWithArray operator()(axom::inlet::Table& base)
+  {
+    FooWithArray f = {base["arr"]};
+    return f;
+  }
+};
+
+TEST(inlet_object, array_of_struct_containing_array)
+{
+  std::string testString =
+    "foo = { [4] = { arr = { [1] = 3 }; }, "
+    "        [7] = { arr = { [6] = 2 }; } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+
+  arr_table->addIntArray("arr", "arr's description");
+  // std::unordered_map<int, Foo> expected_foos = {{4, {true, false}},
+  //                                               {7, {false, true}}};
+  std::unordered_map<int, FooWithArray> foos_with_arr;
+  EXPECT_TRUE(arr_table->getGenericArray(foos_with_arr));
+  // EXPECT_EQ(foos, expected_foos);
+}
+
 struct MoveOnlyFoo
 {
   MoveOnlyFoo() = delete;

@@ -6,6 +6,7 @@
 #include "axom/inlet.hpp"
 
 #include <iostream>
+#include <unordered_map>
 #include "CLI11/CLI11.hpp"
 #include "axom/slic/core/UnitTestLogger.hpp"
 
@@ -76,10 +77,35 @@ struct FromInlet<LinearSolver>
   }
 };
 
+struct BoundaryCondition
+{
+  std::unordered_map<int, int> attrs;
+  double constant;
+  static void defineSchema(SchemaCreator& schema)
+  {
+    schema.addIntArray("attrs", "List of boundary attributes");
+    schema.addDouble("constant",
+                     "The scalar to fix the value of the solution to");
+  }
+};
+
+template <>
+struct FromInlet<BoundaryCondition>
+{
+  BoundaryCondition operator()(axom::inlet::Table& base)
+  {
+    BoundaryCondition bc;
+    bc.attrs = base["attrs"];
+    bc.constant = base["constant"];
+    return bc;
+  }
+};
+
 struct ThermalSolver
 {
   Mesh mesh;
   LinearSolver solver;
+  std::unordered_map<int, BoundaryCondition> bcs;
   // defineSchema is intended to be used recursively
   // Tables are created for subobjects and passed to
   // subobject defineSchema implementations
@@ -91,6 +117,8 @@ struct ThermalSolver
       schema.addTable("solver",
                       "Information about the iterative solver used for Ku = f");
     LinearSolver::defineSchema(*solver_table);
+    auto bc_table = schema.addGenericArray("bcs", "List of boundary conditions");
+    BoundaryCondition::defineSchema(*bc_table);
   }
 };
 
@@ -101,7 +129,9 @@ struct FromInlet<ThermalSolver>
   // functions defined for the subobjects
   ThermalSolver operator()(axom::inlet::Table& base)
   {
-    return {base["mesh"].get<Mesh>(), base["solver"].get<LinearSolver>()};
+    return {base["mesh"].get<Mesh>(),
+            base["solver"].get<LinearSolver>(),
+            base["bcs"].get<std::unordered_map<int, BoundaryCondition>>()};
   }
 };
 

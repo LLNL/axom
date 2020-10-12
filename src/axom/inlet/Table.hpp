@@ -92,6 +92,16 @@ struct is_inlet_primitive_array<std::unordered_map<int, T>>
   static constexpr bool value = is_inlet_primitive<T>::value;
 };
 
+template <typename T>
+struct is_inlet_userdef_array : std::false_type
+{ };
+
+template <typename T>
+struct is_inlet_userdef_array<std::unordered_map<int, T>>
+{
+  static constexpr bool value = !is_inlet_primitive<T>::value;
+};
+
 /*!
  *******************************************************************************
  * \class has_from_inlet_specialization
@@ -370,7 +380,8 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addIntArray(const std::string& name,
-                                     const std::string& description = "");
+                                     const std::string& description = "",
+                                     const std::string& path_override = "");
 
   /*!
    *****************************************************************************
@@ -607,7 +618,8 @@ public:
    */
   template <typename T>
   typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
-                            !detail::is_inlet_primitive_array<T>::value,
+                            !detail::is_inlet_primitive_array<T>::value &&
+                            !detail::is_inlet_userdef_array<T>::value,
                           T>::type
   get(const std::string& name = "")
   {
@@ -644,6 +656,27 @@ public:
   {
     T result;
     if(!getTable("_inlet_array")->getArray(result))
+    {
+      SLIC_ERROR(
+        "[Inlet] Table does not contain a valid array of requested type");
+    }
+    return result;
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Returns a stored array of primitive types.
+   * 
+   * Retrieves a value of user-defined type.
+   * 
+   * \return The retrieved array
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<detail::is_inlet_userdef_array<T>::value, T>::type get()
+  {
+    T result;
+    if(!getTable("_inlet_array")->getGenericArray(result))
     {
       SLIC_ERROR(
         "[Inlet] Table does not contain a valid array of requested type");
@@ -793,19 +826,23 @@ private:
   std::shared_ptr<Field> addBoolHelper(const std::string& name,
                                        const std::string& description = "",
                                        bool forArray = false,
-                                       bool num = 0);
+                                       bool num = 0,
+                                       const std::string& path_override = "");
   std::shared_ptr<Field> addIntHelper(const std::string& name,
                                       const std::string& description = "",
                                       bool forArray = false,
-                                      int num = 0);
+                                      int num = 0,
+                                      const std::string& path_override = "");
   std::shared_ptr<Field> addDoubleHelper(const std::string& name,
                                          const std::string& description = "",
                                          bool forArray = false,
-                                         double num = 0);
+                                         double num = 0,
+                                         const std::string& path_override = "");
   std::shared_ptr<Field> addStringHelper(const std::string& name,
                                          const std::string& description = "",
                                          bool forArray = false,
-                                         const std::string& str = "");
+                                         const std::string& str = "",
+                                         const std::string& path_override = "");
   /*!
    *****************************************************************************
    * \brief Creates the basic Sidre Group for this Table and stores the given

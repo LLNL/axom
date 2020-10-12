@@ -82,6 +82,8 @@ public:
     , m_docEnabled(docEnabled)
   { }
 
+  virtual ~Field() {};
+
   /*!
    *****************************************************************************
    * \brief Returns pointer to the Sidre Group class for this Field.
@@ -106,7 +108,7 @@ public:
    * \return Shared pointer to this instance of this class
    *****************************************************************************
    */
-  std::shared_ptr<Field> required(bool isRequired);
+  virtual std::shared_ptr<Field> required(bool isRequired);
 
   /*!
    *****************************************************************************
@@ -118,7 +120,7 @@ public:
    * \return Boolean value of whether this Field is required
    *****************************************************************************
    */
-  bool required();
+  virtual bool required();
 
   /*!
    *****************************************************************************
@@ -131,7 +133,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(const std::string& value);
+  virtual std::shared_ptr<Field> defaultValue(const std::string& value);
 
   /*!
    *****************************************************************************
@@ -144,7 +146,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(const char* value);
+  virtual std::shared_ptr<Field> defaultValue(const char* value);
 
   /*!
    *****************************************************************************
@@ -157,7 +159,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(bool value);
+  virtual std::shared_ptr<Field> defaultValue(bool value);
 
   /*!
    *****************************************************************************
@@ -170,7 +172,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(int value);
+  virtual std::shared_ptr<Field> defaultValue(int value);
 
   /*!
    *****************************************************************************
@@ -183,7 +185,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(double value);
+  virtual std::shared_ptr<Field> defaultValue(double value);
 
   /*!
    *****************************************************************************
@@ -198,7 +200,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> range(double startVal, double endVal);
+  virtual std::shared_ptr<Field> range(double startVal, double endVal);
 
   /*!
    *****************************************************************************
@@ -213,7 +215,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> range(int startVal, int endVal);
+  virtual std::shared_ptr<Field> range(int startVal, int endVal);
 
   /*!
    *****************************************************************************
@@ -224,7 +226,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<int>& set);
+  virtual std::shared_ptr<Field> validValues(const std::vector<int>& set);
 
   /*!
    *****************************************************************************
@@ -235,7 +237,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<double>& set);
+  virtual std::shared_ptr<Field> validValues(const std::vector<double>& set);
 
   /*!
    *****************************************************************************
@@ -246,7 +248,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<std::string>& set);
+  virtual std::shared_ptr<Field> validValues(const std::vector<std::string>& set);
 
   /*!
    *****************************************************************************
@@ -258,7 +260,8 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::initializer_list<const char*>& set);
+  virtual std::shared_ptr<Field> validValues(
+    const std::initializer_list<const char*>& set);
 
   /*!
    *****************************************************************************
@@ -269,7 +272,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::initializer_list<int>& set);
+  virtual std::shared_ptr<Field> validValues(const std::initializer_list<int>& set);
 
   /*!
    *****************************************************************************
@@ -280,7 +283,8 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::initializer_list<double>& set);
+  virtual std::shared_ptr<Field> validValues(
+    const std::initializer_list<double>& set);
 
   /*!
    *****************************************************************************
@@ -290,7 +294,7 @@ public:
    * \param [in] The function object that will be called by Field::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda);
+  virtual std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda);
 
   /*!
    *****************************************************************************
@@ -485,6 +489,334 @@ private:
 
 template <>
 inline bool Field::searchValidValues<std::string>(axom::sidre::View& view);
+
+class AggregateField : public Field
+{
+public:
+  AggregateField(std::vector<std::shared_ptr<Field>>&& fields)
+    : Field(nullptr, nullptr)
+    , m_fields(std::move(fields))
+  { }
+
+  virtual ~AggregateField() { }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Field.
+   *
+   * Set whether this Field is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \param [in] isRequired Boolean value of whether Field is required
+   *
+   * \return Shared pointer to this instance of this class
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> required(bool isRequired)
+  {
+    for(auto field : m_fields)
+    {
+      field->required(isRequired);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Return the required status of this Field.
+   *
+   * Return that this Field is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Field is required
+   *****************************************************************************
+   */
+  bool required()
+  {
+    bool result = false;
+    for(auto field : m_fields)
+    {
+      if(field->required())
+      {
+        result = true;
+      }
+    }
+    return result;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(const std::string& value)
+  {
+    for(auto field : m_fields)
+    {
+      field->defaultValue(value);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(const char* value)
+  {
+    for(auto field : m_fields)
+    {
+      field->defaultValue(value);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default boolean value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(bool value)
+  {
+    for(auto field : m_fields)
+    {
+      field->defaultValue(value);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default integer value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(int value)
+  {
+    for(auto field : m_fields)
+    {
+      field->defaultValue(value);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default double value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(double value)
+  {
+    for(auto field : m_fields)
+    {
+      field->defaultValue(value);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input file.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> range(double startVal, double endVal)
+  {
+    for(auto field : m_fields)
+    {
+      field->range(startVal, endVal);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input file.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> range(int startVal, int endVal)
+  {
+    for(auto field : m_fields)
+    {
+      field->range(startVal, endVal);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An vector containing the set of allowed integer values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::vector<int>& set)
+  {
+    for(auto field : m_fields)
+    {
+      field->validValues(set);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An vector containing the set of allowed double values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::vector<double>& set)
+  {
+    for(auto field : m_fields)
+    {
+      field->validValues(set);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set A vector containing the set of allowed string values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::vector<std::string>& set)
+  {
+    for(auto field : m_fields)
+    {
+      field->validValues(set);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the set of allowed C-string 
+   * values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::initializer_list<const char*>& set)
+  {
+    for(auto field : m_fields)
+    {
+      field->validValues(set);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid integer values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::initializer_list<int>& set)
+  {
+    for(auto field : m_fields)
+    {
+      field->validValues(set);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid double values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::initializer_list<double>& set)
+  {
+    for(auto field : m_fields)
+    {
+      field->validValues(set);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Field's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Field::verify().
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda)
+  {
+    for(auto field : m_fields)
+    {
+      field->registerVerifier(lambda);
+    }
+    return shared_from_this();
+  }
+
+private:
+  std::vector<std::shared_ptr<Field>> m_fields;
+};
 
 }  // end namespace inlet
 }  // end namespace axom

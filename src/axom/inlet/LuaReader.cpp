@@ -115,7 +115,15 @@ bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices
   sol::table t = m_lua[tokens[0]];
   for(size_t i = 1; i < tokens.size(); i++)
   {
-    if(t[tokens[i]].valid())
+    // Use the C versions to avoid the exceptions
+    // thrown by std::stoi on conversion failure
+    char* ptr;
+    auto as_int = strtol(tokens[i].c_str(), &ptr, 10);
+    if((!*ptr) && t[as_int].valid())
+    {
+      t = t[as_int];
+    }
+    else if(t[tokens[i]].valid())
     {
       t = t[tokens[i]];
     }
@@ -192,7 +200,15 @@ bool LuaReader::getMap(const std::string& id,
   sol::table t = m_lua[tokens[0]];
   for(size_t i = 1; i < tokens.size(); i++)
   {
-    if(t[tokens[i]].valid())
+    // Use the C versions to avoid the exceptions
+    // thrown by std::stoi on conversion failure
+    char* ptr;
+    auto as_int = strtol(tokens[i].c_str(), &ptr, 10);
+    if((!*ptr) && t[as_int].valid())
+    {
+      t = t[as_int];
+    }
+    else if(t[tokens[i]].valid())
     {
       t = t[tokens[i]];
     }

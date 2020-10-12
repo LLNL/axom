@@ -85,23 +85,50 @@ std::shared_ptr<Table> Table::addBoolArray(const std::string& name,
 }
 
 std::shared_ptr<Table> Table::addIntArray(const std::string& name,
-                                          const std::string& description)
+                                          const std::string& description,
+                                          const std::string& path_override)
 {
-  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-  std::unordered_map<int, int> map;
-  const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader->getIntMap(fullName, map))
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    for(auto p : map)
+    auto view = m_sidreGroup->getView("_inlet_array_indices");
+    int* array = view->getArray();
+    std::string base_name =
+      m_sidreGroup->getView("_inlet_base_array_name")->getString();
+    std::vector<std::shared_ptr<Table>> tables;
+    for(int i = 0; i < view->getNumElements(); i++)
     {
-      table->addIntHelper(std::to_string(p.first), "", true, p.second);
+      auto index_label = std::to_string(array[i]);
+      // The base name reflects the structure of the actual data
+      // and is used for the reader call
+      auto full_path = appendPrefix(base_name, index_label);
+      full_path = appendPrefix(full_path, name);
+      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+      // Override the path with full_path so the subtable will look in the right place
+      tables.push_back(
+        getTable(index_label)->addIntArray(name, description, full_path));
     }
+    // This is completely wrong
+    return tables[0];
   }
   else
   {
-    SLIC_WARNING(fmt::format("Int array {0} not found.", fullName));
+    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+    std::unordered_map<int, int> map;
+    const std::string& fullName = appendPrefix(m_name, name);
+    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    if(m_reader->getIntMap(lookup_path, map))
+    {
+      for(auto p : map)
+      {
+        table->addIntHelper(std::to_string(p.first), "", true, p.second);
+      }
+    }
+    else
+    {
+      SLIC_WARNING(fmt::format("Int array {0} not found.", fullName));
+    }
+    return table;
   }
-  return table;
 }
 
 std::shared_ptr<Table> Table::addDoubleArray(const std::string& name,
@@ -179,8 +206,16 @@ bool Table::getArray(std::unordered_map<int, bool>& map)
 
 bool Table::getArray(std::unordered_map<int, int>& map)
 {
+  std::string filtered_name = m_name;
+  std::string replace = "/_inlet_array";
+  auto len = replace.length();
+  for(auto i = filtered_name.find(replace); i != std::string::npos;
+      i = filtered_name.find(replace))
+  {
+    filtered_name.erase(i, len);
+  }
   return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
-    m_reader->getIntMap(m_name.substr(0, m_name.size() - 12), map);
+    m_reader->getIntMap(filtered_name, map);
 }
 
 bool Table::getArray(std::unordered_map<int, double>& map)
@@ -243,106 +278,192 @@ std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup,
 std::shared_ptr<Field> Table::addBoolHelper(const std::string& name,
                                             const std::string& description,
                                             bool forArray,
-                                            bool num)
+                                            bool num,
+                                            const std::string& path_override)
 {
-  std::string fullName = appendPrefix(m_name, name);
-  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-  bool value = num;
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
     auto view = m_sidreGroup->getView("_inlet_array_indices");
     int* array = view->getArray();
     std::string base_name =
       m_sidreGroup->getView("_inlet_base_array_name")->getString();
+    std::vector<std::shared_ptr<Field>> fields;
     for(int i = 0; i < view->getNumElements(); i++)
     {
       auto index_label = std::to_string(array[i]);
+      // The base name reflects the structure of the actual data
+      // and is used for the reader call
       auto full_path = appendPrefix(base_name, index_label);
       full_path = appendPrefix(full_path, name);
-      if(!m_reader->getBool(full_path, value))
-      {
-        std::string msg =
-          fmt::format("[Inlet] Could not find a boolean at {0}", full_path);
-        SLIC_WARNING(msg);
-      }
-      getTable(index_label)->addBoolHelper(name, description, true, value);
+      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+      // Override the path with full_path so the subtable will look in the right place
+      fields.push_back(
+        getTable(index_label)
+          ->addBoolHelper(name, description, forArray, num, full_path));
     }
+    return std::make_shared<AggregateField>(std::move(fields));
   }
   else
   {
+    std::string fullName = appendPrefix(m_name, name);
+    axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     if(sidreGroup == nullptr)
     {
       //TODO: better idea?
       return std::shared_ptr<Field>(nullptr);
     }
-
-    if(forArray || m_reader->getBool(fullName, value))
+    bool value = num;
+    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    if(forArray || m_reader->getBool(lookup_path, value))
     {
       sidreGroup->createViewScalar("value", value ? int8(1) : int8(0));
     }
+    return addField(sidreGroup, axom::sidre::DataTypeId::INT8_ID, fullName, name);
   }
-  // This is completely wrong for the arrays - need to create an aggregate Field type
-  return addField(sidreGroup, axom::sidre::DataTypeId::INT8_ID, fullName, name);
 }
 
 std::shared_ptr<Field> Table::addDoubleHelper(const std::string& name,
                                               const std::string& description,
                                               bool forArray,
-                                              double num)
+                                              double num,
+                                              const std::string& path_override)
 {
-  std::string fullName = appendPrefix(m_name, name);
-  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-  if(sidreGroup == nullptr)
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    return std::shared_ptr<Field>(nullptr);
+    auto view = m_sidreGroup->getView("_inlet_array_indices");
+    int* array = view->getArray();
+    std::string base_name =
+      m_sidreGroup->getView("_inlet_base_array_name")->getString();
+    std::vector<std::shared_ptr<Field>> fields;
+    for(int i = 0; i < view->getNumElements(); i++)
+    {
+      auto index_label = std::to_string(array[i]);
+      // The base name reflects the structure of the actual data
+      // and is used for the reader call
+      auto full_path = appendPrefix(base_name, index_label);
+      full_path = appendPrefix(full_path, name);
+      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+      // Override the path with full_path so the subtable will look in the right place
+      fields.push_back(
+        getTable(index_label)
+          ->addDoubleHelper(name, description, forArray, num, full_path));
+    }
+    return std::make_shared<AggregateField>(std::move(fields));
   }
+  else
+  {
+    std::string fullName = appendPrefix(m_name, name);
+    axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
+    if(sidreGroup == nullptr)
+    {
+      return std::shared_ptr<Field>(nullptr);
+    }
 
-  double value = num;
-  if(forArray || m_reader->getDouble(fullName, value))
-  {
-    sidreGroup->createViewScalar("value", value);
+    double value = num;
+    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    if(forArray || m_reader->getDouble(lookup_path, value))
+    {
+      sidreGroup->createViewScalar("value", value);
+    }
+    return addField(sidreGroup, axom::sidre::DataTypeId::DOUBLE_ID, fullName, name);
   }
-  return addField(sidreGroup, axom::sidre::DataTypeId::DOUBLE_ID, fullName, name);
 }
 
 std::shared_ptr<Field> Table::addIntHelper(const std::string& name,
                                            const std::string& description,
                                            bool forArray,
-                                           int num)
+                                           int num,
+                                           const std::string& path_override)
 {
-  std::string fullName = appendPrefix(m_name, name);
-  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-  if(sidreGroup == nullptr)
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    return std::shared_ptr<Field>(nullptr);
+    auto view = m_sidreGroup->getView("_inlet_array_indices");
+    int* array = view->getArray();
+    std::string base_name =
+      m_sidreGroup->getView("_inlet_base_array_name")->getString();
+    std::vector<std::shared_ptr<Field>> fields;
+    for(int i = 0; i < view->getNumElements(); i++)
+    {
+      auto index_label = std::to_string(array[i]);
+      // The base name reflects the structure of the actual data
+      // and is used for the reader call
+      auto full_path = appendPrefix(base_name, index_label);
+      full_path = appendPrefix(full_path, name);
+      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+      // Override the path with full_path so the subtable will look in the right place
+      fields.push_back(
+        getTable(index_label)
+          ->addIntHelper(name, description, forArray, num, full_path));
+    }
+    return std::make_shared<AggregateField>(std::move(fields));
   }
+  else
+  {
+    std::string fullName = appendPrefix(m_name, name);
+    axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
+    if(sidreGroup == nullptr)
+    {
+      return std::shared_ptr<Field>(nullptr);
+    }
 
-  int value = num;
-  if(forArray || m_reader->getInt(fullName, value))
-  {
-    sidreGroup->createViewScalar("value", value);
+    int value = num;
+    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    if(forArray || m_reader->getInt(lookup_path, value))
+    {
+      sidreGroup->createViewScalar("value", value);
+    }
+    return addField(sidreGroup, axom::sidre::DataTypeId::INT_ID, fullName, name);
   }
-  return addField(sidreGroup, axom::sidre::DataTypeId::INT_ID, fullName, name);
 }
 
 std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
                                               const std::string& description,
                                               bool forArray,
-                                              const std::string& str)
+                                              const std::string& str,
+                                              const std::string& path_override)
 {
-  std::string fullName = appendPrefix(m_name, name);
-  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-  if(sidreGroup == nullptr)
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    return std::shared_ptr<Field>(nullptr);
+    auto view = m_sidreGroup->getView("_inlet_array_indices");
+    int* array = view->getArray();
+    std::string base_name =
+      m_sidreGroup->getView("_inlet_base_array_name")->getString();
+    std::vector<std::shared_ptr<Field>> fields;
+    for(int i = 0; i < view->getNumElements(); i++)
+    {
+      auto index_label = std::to_string(array[i]);
+      // The base name reflects the structure of the actual data
+      // and is used for the reader call
+      auto full_path = appendPrefix(base_name, index_label);
+      full_path = appendPrefix(full_path, name);
+      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+      // Override the path with full_path so the subtable will look in the right place
+      fields.push_back(
+        getTable(index_label)
+          ->addStringHelper(name, description, forArray, str, full_path));
+    }
+    return std::make_shared<AggregateField>(std::move(fields));
   }
+  else
+  {
+    std::string fullName = appendPrefix(m_name, name);
+    axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
+    if(sidreGroup == nullptr)
+    {
+      return std::shared_ptr<Field>(nullptr);
+    }
 
-  std::string value = str;
-  if(forArray || m_reader->getString(fullName, value))
-  {
-    sidreGroup->createViewString("value", value);
+    std::string value = str;
+    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    if(forArray || m_reader->getString(lookup_path, value))
+    {
+      sidreGroup->createViewString("value", value);
+    }
+    return addField(sidreGroup,
+                    axom::sidre::DataTypeId::CHAR8_STR_ID,
+                    fullName,
+                    name);
   }
-  return addField(sidreGroup, axom::sidre::DataTypeId::CHAR8_STR_ID, fullName, name);
 }
 
 InletType Proxy::type() const
