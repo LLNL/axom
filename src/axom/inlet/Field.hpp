@@ -490,15 +490,14 @@ public:
    */
   bool required()
   {
-    bool result = false;
     for(auto field : m_fields)
     {
       if(field->required())
       {
-        result = true;
+        return true;
       }
     }
-    return result;
+    return false;
   }
 
   /*!

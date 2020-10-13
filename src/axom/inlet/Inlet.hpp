@@ -371,9 +371,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addBoolArray(const std::string& name,
-                                      const std::string& description = "")
+                                      const std::string& description = "",
+                                      const std::string& path_override = "")
   {
-    return m_globalTable->addBoolArray(name, description);
+    return m_globalTable->addBoolArray(name, description, path_override);
   }
 
   /*!
@@ -404,9 +405,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addDoubleArray(const std::string& name,
-                                        const std::string& description = "")
+                                        const std::string& description = "",
+                                        const std::string& path_override = "")
   {
-    return m_globalTable->addDoubleArray(name, description);
+    return m_globalTable->addDoubleArray(name, description, path_override);
   }
 
   /*!
@@ -420,9 +422,10 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addStringArray(const std::string& name,
-                                        const std::string& description = "")
+                                        const std::string& description = "",
+                                        const std::string& path_override = "")
   {
-    return m_globalTable->addStringArray(name, description);
+    return m_globalTable->addStringArray(name, description, path_override);
   }
 
   /*!

@@ -204,7 +204,8 @@ public:
    */
   virtual std::shared_ptr<Table> addBoolArray(
     const std::string& name,
-    const std::string& description = "") = 0;
+    const std::string& description = "",
+    const std::string& path_override = "") = 0;
 
   /*!
    *****************************************************************************
@@ -233,7 +234,8 @@ public:
    */
   virtual std::shared_ptr<Table> addDoubleArray(
     const std::string& name,
-    const std::string& description = "") = 0;
+    const std::string& description = "",
+    const std::string& path_override = "") = 0;
 
   /*!
    *****************************************************************************
@@ -247,7 +249,8 @@ public:
    */
   virtual std::shared_ptr<Table> addStringArray(
     const std::string& name,
-    const std::string& description = "") = 0;
+    const std::string& description = "",
+    const std::string& path_override = "") = 0;
 
   /*!
    *****************************************************************************
@@ -262,50 +265,6 @@ public:
   virtual std::shared_ptr<Table> addGenericArray(
     const std::string& name,
     const std::string& description = "") = 0;
-
-  // /*!
-  //  *****************************************************************************
-  //  * \brief Get a boolean array represented as an unordered map from the input deck
-  //  *
-  //  * \param [out] map Unordered map to be populated with array contents
-  //  *
-  //  * \return Whether or not the array was found
-  //  *****************************************************************************
-  //  */
-  // virtual bool getArray(std::unordered_map<int, bool>& map) = 0;
-
-  // /*!
-  //  *****************************************************************************
-  //  * \brief Get a int array represented as an unordered map from the input deck
-  //  *
-  //  * \param [out] map Unordered map to be populated with array contents
-  //  *
-  //  * \return Whether or not the array was found
-  //  *****************************************************************************
-  //  */
-  // virtual bool getArray(std::unordered_map<int, int>& map) = 0;
-
-  // /*!
-  //  *****************************************************************************
-  //  * \brief Get a double array represented as an unordered map from the input deck
-  //  *
-  //  * \param [out] map Unordered map to be populated with array contents
-  //  *
-  //  * \return Whether or not the array was found
-  //  *****************************************************************************
-  //  */
-  // virtual bool getArray(std::unordered_map<int, double>& map) = 0;
-
-  // /*!
-  //  *****************************************************************************
-  //  * \brief Get a string array represented as an unordered map from the input deck
-  //  *
-  //  * \param [out] map Unordered map to be populated with array contents
-  //  *
-  //  * \return Whether or not the array was found
-  //  *****************************************************************************
-  //  */
-  // virtual bool getArray(std::unordered_map<int, std::string>& map) = 0;
 };
 
 }  // end namespace inlet

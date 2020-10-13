@@ -248,7 +248,8 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addBoolArray(const std::string& name,
-                                      const std::string& description = "");
+                                      const std::string& description = "",
+                                      const std::string& path_override = "");
 
   /*!
    *****************************************************************************
@@ -275,7 +276,8 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addDoubleArray(const std::string& name,
-                                        const std::string& description = "");
+                                        const std::string& description = "",
+                                        const std::string& path_override = "");
 
   /*!
    *****************************************************************************
@@ -288,7 +290,8 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addStringArray(const std::string& name,
-                                        const std::string& description = "");
+                                        const std::string& description = "",
+                                        const std::string& path_override = "");
 
   /*!
    *****************************************************************************
@@ -763,6 +766,19 @@ private:
   bool hasChildField(const std::string& fieldName);
 
   axom::sidre::View* baseGet(const std::string& name);
+
+  /*!
+   *****************************************************************************
+   * \brief This is an internal utility intended to be used with arrays of 
+   * user-defined types that returns the a list of pairs, each of which contain
+   * an index (a number) and a fully qualified path within the input deck to
+   * the array element at the corresponding index.
+   * 
+   * \param [in] name The name of the array object in the input deck
+   *****************************************************************************
+   */
+  std::vector<std::pair<std::string, std::string>> arrayIndicesWithPaths(
+    const std::string& name);
 
   std::string m_name;
   std::shared_ptr<Reader> m_reader;

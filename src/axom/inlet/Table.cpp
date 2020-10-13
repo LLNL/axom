@@ -65,24 +65,68 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
   return currTable;
 }
 
-std::shared_ptr<Table> Table::addBoolArray(const std::string& name,
-                                           const std::string& description)
+std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
+  const std::string& name)
 {
-  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-  std::unordered_map<int, bool> map;
-  const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader->getBoolMap(fullName, map))
+  std::vector<std::pair<std::string, std::string>> result;
+  if(!m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    for(auto p : map)
+    SLIC_ERROR(fmt::format(
+      "Table '{0}' does not contain an array of user-defined objects",
+      m_name));
+  }
+  auto view = m_sidreGroup->getView("_inlet_array_indices");
+  int* array = view->getArray();
+  // Need to go up one level because this is an _inlet_array group
+  auto pos = m_name.find_last_of("/");
+  std::string base_name = m_name.substr(0, pos);
+  for(int i = 0; i < view->getNumElements(); i++)
+  {
+    auto index_label = std::to_string(array[i]);
+    // The base name reflects the structure of the actual data
+    // and is used for the reader call
+    auto full_path = appendPrefix(base_name, index_label);
+    full_path = appendPrefix(full_path, name);
+    // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+    result.push_back({index_label, full_path});
+  }
+  return result;
+}
+
+std::shared_ptr<Table> Table::addBoolArray(const std::string& name,
+                                           const std::string& description,
+                                           const std::string& path_override)
+{
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
+  {
+    std::vector<std::shared_ptr<Table>> tables;
+    for(const auto& index_path : arrayIndicesWithPaths(name))
     {
-      table->addBoolHelper(std::to_string(p.first), "", true, p.second);
+      tables.push_back(getTable(index_path.first)
+                         ->addBoolArray(name, description, index_path.second));
     }
+    // This is completely wrong
+    return tables[0];
   }
   else
   {
-    SLIC_WARNING(fmt::format("Bool array {0} not found.", fullName));
+    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+    std::unordered_map<int, bool> map;
+    const std::string& fullName = appendPrefix(m_name, name);
+    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    if(m_reader->getBoolMap(lookup_path, map))
+    {
+      for(auto p : map)
+      {
+        table->addBoolHelper(std::to_string(p.first), "", true, p.second);
+      }
+    }
+    else
+    {
+      SLIC_WARNING(fmt::format("Bool array {0} not found.", lookup_path));
+    }
+    return table;
   }
-  return table;
 }
 
 std::shared_ptr<Table> Table::addIntArray(const std::string& name,
@@ -91,22 +135,11 @@ std::shared_ptr<Table> Table::addIntArray(const std::string& name,
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    auto view = m_sidreGroup->getView("_inlet_array_indices");
-    int* array = view->getArray();
-    std::string base_name =
-      m_sidreGroup->getView("_inlet_base_array_name")->getString();
     std::vector<std::shared_ptr<Table>> tables;
-    for(int i = 0; i < view->getNumElements(); i++)
+    for(const auto& index_path : arrayIndicesWithPaths(name))
     {
-      auto index_label = std::to_string(array[i]);
-      // The base name reflects the structure of the actual data
-      // and is used for the reader call
-      auto full_path = appendPrefix(base_name, index_label);
-      full_path = appendPrefix(full_path, name);
-      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
-      // Override the path with full_path so the subtable will look in the right place
-      tables.push_back(
-        getTable(index_label)->addIntArray(name, description, full_path));
+      tables.push_back(getTable(index_path.first)
+                         ->addIntArray(name, description, index_path.second));
     }
     // This is completely wrong
     return tables[0];
@@ -126,50 +159,82 @@ std::shared_ptr<Table> Table::addIntArray(const std::string& name,
     }
     else
     {
-      SLIC_WARNING(fmt::format("Int array {0} not found.", fullName));
+      SLIC_WARNING(fmt::format("Int array {0} not found.", lookup_path));
     }
     return table;
   }
 }
 
 std::shared_ptr<Table> Table::addDoubleArray(const std::string& name,
-                                             const std::string& description)
+                                             const std::string& description,
+                                             const std::string& path_override)
 {
-  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-  std::unordered_map<int, double> map;
-  const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader->getDoubleMap(fullName, map))
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    for(auto p : map)
+    std::vector<std::shared_ptr<Table>> tables;
+    for(const auto& index_path : arrayIndicesWithPaths(name))
     {
-      table->addDoubleHelper(std::to_string(p.first), "", true, p.second);
+      tables.push_back(getTable(index_path.first)
+                         ->addDoubleArray(name, description, index_path.second));
     }
+    // This is completely wrong
+    return tables[0];
   }
   else
   {
-    SLIC_WARNING(fmt::format("Double array {0} not found.", fullName));
+    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+    std::unordered_map<int, double> map;
+    const std::string& fullName = appendPrefix(m_name, name);
+    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    if(m_reader->getDoubleMap(lookup_path, map))
+    {
+      for(auto p : map)
+      {
+        table->addDoubleHelper(std::to_string(p.first), "", true, p.second);
+      }
+    }
+    else
+    {
+      SLIC_WARNING(fmt::format("Double array {0} not found.", lookup_path));
+    }
+    return table;
   }
-  return table;
 }
 
 std::shared_ptr<Table> Table::addStringArray(const std::string& name,
-                                             const std::string& description)
+                                             const std::string& description,
+                                             const std::string& path_override)
 {
-  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-  std::unordered_map<int, std::string> map;
-  const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader->getStringMap(fullName, map))
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    for(auto p : map)
+    std::vector<std::shared_ptr<Table>> tables;
+    for(const auto& index_path : arrayIndicesWithPaths(name))
     {
-      table->addStringHelper(std::to_string(p.first), "", true, p.second);
+      tables.push_back(getTable(index_path.first)
+                         ->addDoubleArray(name, description, index_path.second));
     }
+    // This is completely wrong
+    return tables[0];
   }
   else
   {
-    SLIC_WARNING(fmt::format("String array {0} not found.", fullName));
+    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+    std::unordered_map<int, std::string> map;
+    const std::string& fullName = appendPrefix(m_name, name);
+    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    if(m_reader->getStringMap(lookup_path, map))
+    {
+      for(auto p : map)
+      {
+        table->addStringHelper(std::to_string(p.first), "", true, p.second);
+      }
+    }
+    else
+    {
+      SLIC_WARNING(fmt::format("String array {0} not found.", lookup_path));
+    }
+    return table;
   }
-  return table;
 }
 
 std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
@@ -252,23 +317,12 @@ std::shared_ptr<Field> Table::addBoolHelper(const std::string& name,
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    auto view = m_sidreGroup->getView("_inlet_array_indices");
-    int* array = view->getArray();
-    std::string base_name =
-      m_sidreGroup->getView("_inlet_base_array_name")->getString();
     std::vector<std::shared_ptr<Field>> fields;
-    for(int i = 0; i < view->getNumElements(); i++)
+    for(const auto& index_path : arrayIndicesWithPaths(name))
     {
-      auto index_label = std::to_string(array[i]);
-      // The base name reflects the structure of the actual data
-      // and is used for the reader call
-      auto full_path = appendPrefix(base_name, index_label);
-      full_path = appendPrefix(full_path, name);
-      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
-      // Override the path with full_path so the subtable will look in the right place
       fields.push_back(
-        getTable(index_label)
-          ->addBoolHelper(name, description, forArray, num, full_path));
+        getTable(index_path.first)
+          ->addBoolHelper(name, description, forArray, num, index_path.second));
     }
     return std::make_shared<AggregateField>(std::move(fields));
   }
@@ -299,23 +353,12 @@ std::shared_ptr<Field> Table::addDoubleHelper(const std::string& name,
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    auto view = m_sidreGroup->getView("_inlet_array_indices");
-    int* array = view->getArray();
-    std::string base_name =
-      m_sidreGroup->getView("_inlet_base_array_name")->getString();
     std::vector<std::shared_ptr<Field>> fields;
-    for(int i = 0; i < view->getNumElements(); i++)
+    for(const auto& index_path : arrayIndicesWithPaths(name))
     {
-      auto index_label = std::to_string(array[i]);
-      // The base name reflects the structure of the actual data
-      // and is used for the reader call
-      auto full_path = appendPrefix(base_name, index_label);
-      full_path = appendPrefix(full_path, name);
-      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
-      // Override the path with full_path so the subtable will look in the right place
       fields.push_back(
-        getTable(index_label)
-          ->addDoubleHelper(name, description, forArray, num, full_path));
+        getTable(index_path.first)
+          ->addDoubleHelper(name, description, forArray, num, index_path.second));
     }
     return std::make_shared<AggregateField>(std::move(fields));
   }
@@ -346,23 +389,12 @@ std::shared_ptr<Field> Table::addIntHelper(const std::string& name,
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    auto view = m_sidreGroup->getView("_inlet_array_indices");
-    int* array = view->getArray();
-    std::string base_name =
-      m_sidreGroup->getView("_inlet_base_array_name")->getString();
     std::vector<std::shared_ptr<Field>> fields;
-    for(int i = 0; i < view->getNumElements(); i++)
+    for(const auto& index_path : arrayIndicesWithPaths(name))
     {
-      auto index_label = std::to_string(array[i]);
-      // The base name reflects the structure of the actual data
-      // and is used for the reader call
-      auto full_path = appendPrefix(base_name, index_label);
-      full_path = appendPrefix(full_path, name);
-      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
-      // Override the path with full_path so the subtable will look in the right place
       fields.push_back(
-        getTable(index_label)
-          ->addIntHelper(name, description, forArray, num, full_path));
+        getTable(index_path.first)
+          ->addIntHelper(name, description, forArray, num, index_path.second));
     }
     return std::make_shared<AggregateField>(std::move(fields));
   }
@@ -393,23 +425,12 @@ std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    auto view = m_sidreGroup->getView("_inlet_array_indices");
-    int* array = view->getArray();
-    std::string base_name =
-      m_sidreGroup->getView("_inlet_base_array_name")->getString();
     std::vector<std::shared_ptr<Field>> fields;
-    for(int i = 0; i < view->getNumElements(); i++)
+    for(const auto& index_path : arrayIndicesWithPaths(name))
     {
-      auto index_label = std::to_string(array[i]);
-      // The base name reflects the structure of the actual data
-      // and is used for the reader call
-      auto full_path = appendPrefix(base_name, index_label);
-      full_path = appendPrefix(full_path, name);
-      // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
-      // Override the path with full_path so the subtable will look in the right place
       fields.push_back(
-        getTable(index_label)
-          ->addStringHelper(name, description, forArray, str, full_path));
+        getTable(index_path.first)
+          ->addStringHelper(name, description, forArray, str, index_path.second));
     }
     return std::make_shared<AggregateField>(std::move(fields));
   }
