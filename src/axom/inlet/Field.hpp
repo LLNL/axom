@@ -468,9 +468,10 @@ public:
 
   bool verify()
   {
-    return std::all_of(m_fields.begin(), m_fields.end(), [](auto&& field) {
-      return field->verify();
-    });
+    return std::all_of(
+      m_fields.begin(),
+      m_fields.end(),
+      [](std::shared_ptr<VerifiableScalar>& field) { return field->verify(); });
   }
 
   /*!

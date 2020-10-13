@@ -819,9 +819,10 @@ public:
 
   bool verify()
   {
-    return std::all_of(m_tables.begin(), m_tables.end(), [](auto&& table) {
-      return table->verify();
-    });
+    return std::all_of(
+      m_tables.begin(),
+      m_tables.end(),
+      [](std::shared_ptr<Verifiable>& table) { return table->verify(); });
   }
 
   /*!
