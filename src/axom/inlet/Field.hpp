@@ -411,6 +411,19 @@ private:
   template <typename T>
   bool searchValidValues(axom::sidre::View& view);
 
+  /*!
+   *****************************************************************************
+   * \brief Checks the existence and type of the value for the field
+   *
+   * \param [in] expected The expected type for the value
+   *
+   * \return Non-owning pointer to the Sidre view containing the value
+   * \note Treats a nonexistent value or type mismatch as an error and will
+   * emit a SLIC_ERROR accordingly
+   *****************************************************************************
+  */
+  axom::sidre::View* checkExistenceAndType(const axom::sidre::DataTypeId expected);
+
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;

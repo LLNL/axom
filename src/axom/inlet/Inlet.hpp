@@ -23,6 +23,7 @@
 #include "axom/inlet/SchemaCreator.hpp"
 #include "axom/inlet/Table.hpp"
 #include "axom/inlet/Field.hpp"
+#include "axom/inlet/Proxy.hpp"
 #include "axom/inlet/Reader.hpp"
 
 #include "axom/sidre.hpp"
@@ -202,8 +203,10 @@ public:
    * \param [in] name The name of the subtable representing the root of the object
    * \return The retrieved value
    * \tparam The type to retrieve
-   * \pre Requires a specialization of from_inlet<T>(axom::inlet::Table&)
-   * \note This function does not indicate failure
+   * \pre Requires a specialization of FromInlet<T>
+   * \note This function does not indicate failure in a way that can be handled
+   * by a program - if an object of requested type does not exist at the specified
+   * location, the program will terminate
    *******************************************************************************
    */
   template <typename T>

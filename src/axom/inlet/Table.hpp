@@ -59,8 +59,11 @@ namespace detail
  *******************************************************************************
  * \class is_inlet_primitive
  *
- * \brief A type trait for checking if a type is isomorphic to a Lua primitive
+ * \brief A type trait for checking if a type is isomorphic to an Inlet primitive
  * \tparam T The type to check
+ * \note An Inlet primitive is any of the following C++ types: int, double, bool,
+ * std::string.
+ * \see InletType
  *******************************************************************************
  */
 template <typename T>
@@ -76,7 +79,7 @@ struct is_inlet_primitive
  *******************************************************************************
  * \class is_inlet_primitive
  *
- * \brief A type trait for checking if a type is isomorphic to an array of Lua
+ * \brief A type trait for checking if a type is isomorphic to an array of Inlet
  * primitives
  * \tparam T The type to check
  *******************************************************************************
@@ -85,7 +88,7 @@ template <typename T>
 struct is_inlet_primitive_array : std::false_type
 { };
 
-// If it's an unordered map whose value type is a lua primitive,
+// If it's an unordered map whose value type is a Inlet primitive,
 // assume that it's an array
 template <typename T>
 struct is_inlet_primitive_array<std::unordered_map<int, T>>
@@ -103,7 +106,7 @@ struct is_inlet_array<std::unordered_map<int, T>> : std::true_type
 
 /*!
  *******************************************************************************
- * \class has_from_inlet_specialization
+ * \class has_FromInlet_specialization
  *
  * \brief A type trait for checking if a type has specialized FromInlet
  * with the required T operator()(axom::inlet::Table&)
@@ -111,11 +114,11 @@ struct is_inlet_array<std::unordered_map<int, T>> : std::true_type
  *******************************************************************************
  */
 template <typename T, typename SFINAE = void>
-struct has_from_inlet_specialization : std::false_type
+struct has_FromInlet_specialization : std::false_type
 { };
 
 template <typename T>
-struct has_from_inlet_specialization<
+struct has_FromInlet_specialization<
   T,
   typename std::enable_if<
     std::is_same<T, decltype(std::declval<FromInlet<T>&>()(std::declval<Table&>()))>::value>::type>
@@ -124,128 +127,7 @@ struct has_from_inlet_specialization<
 
 }  // namespace detail
 
-/*!
- *******************************************************************************
- * \class Proxy
- *
- * \brief Provides a uniform interface for access and conversion to primitive
- * and user-defined types
- *
- * \see Inlet Field
- * \see Inlet Table
- *******************************************************************************
- */
-class Proxy
-{
-public:
-  Proxy() = default;
-  /*!
-   *******************************************************************************
-   * \brief Constructs a proxy view onto a table
-   * 
-   * \param [in] table The table to construct a proxy into
-   *******************************************************************************
-   */
-  Proxy(Table& table) : m_table(&table) { }
-
-  /*!
-   *******************************************************************************
-   * \brief Constructs a proxy view onto a field
-   * 
-   * \param [in] field The field to construct a proxy into
-   *******************************************************************************
-   */
-  Proxy(Field& field) : m_field(&field) { }
-
-  /*!
-   *******************************************************************************
-   * \brief Returns an object from the proxy
-   * 
-   * \tparam T The type of the object to retrieve
-   * \return The retrieved object
-   * \note Implicit conversions are defined only for primitive types - to 
-   * convert to a user-defined type, use an explicit conversion with static_cast
-   * or T{}
-   *******************************************************************************
-   */
-  template <typename T,
-            typename SFINAE =
-              typename std::enable_if<detail::is_inlet_primitive<T>::value ||
-                                      detail::is_inlet_primitive_array<T>::value>::type>
-  operator T()
-  {
-    return get<T>();
-  }
-
-  template <typename T>
-  explicit operator T()
-  {
-    return get<T>();
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Return whether a subobject with the given name is present in 
-   * the table referred to by the calling proxy.
-   *
-   * \return Boolean value indicating whether this Table's subtree contains a
-   * Field or Table with the given name.
-   *****************************************************************************
-   */
-  bool contains(const std::string& name);
-
-  /*!
-   *****************************************************************************
-   * \brief Returns the type of the stored value
-   * 
-   * \return The type
-   * \see InletType
-   *****************************************************************************
-   */
-  InletType type() const;
-
-  /*!
-   *******************************************************************************
-   * \brief Obtains a proxy view into the proxy for either a Field/Table subobject
-   * 
-   * Returns a reference via a lightweight proxy object to the element in the 
-   * datastore at the index specified by the name.  This can be a field 
-   * or a table.
-   * 
-   * \param [in] name The name of the subobject
-   * \return A view onto the subobject
-   *******************************************************************************
-   */
-  Proxy operator[](const std::string& name);
-
-  /*!
-   *******************************************************************************
-   * \brief Returns a user-defined type from the proxy
-   * 
-   * \tparam T The type of the object to retrieve
-   * \return The retrieved object
-   * \pre The Proxy must refer to a table object
-   *******************************************************************************
-   */
-  template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value, T>::type get();
-
-  /*!
-   *******************************************************************************
-   * \brief Returns a primitive type from the proxy
-   * 
-   * \tparam T The type of the object to retrieve
-   * \return The retrieved object
-   * \pre The Proxy must refer to a field object
-   *******************************************************************************
-   */
-  template <typename T>
-  typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type get();
-
-private:
-  Table* m_table = nullptr;
-  Field* m_field = nullptr;
-};
+class Proxy;
 
 /*!
  *******************************************************************************
@@ -607,7 +489,7 @@ public:
                           T>::type
   get(const std::string& name = "")
   {
-    static_assert(detail::has_from_inlet_specialization<T>::value,
+    static_assert(detail::has_FromInlet_specialization<T>::value,
                   "To read a user-defined type, specialize FromInlet<T>");
     FromInlet<T> from_inlet;
     if(name.empty())
@@ -893,24 +775,6 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
   std::function<bool()> m_verifier;
 };
-
-template <typename T>
-typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type Proxy::get()
-{
-  SLIC_ASSERT_MSG(
-    m_field != nullptr,
-    "[Inlet] Tried to read a primitive type from a Proxy containing a table");
-  return m_field->get<T>();
-}
-
-template <typename T>
-typename std::enable_if<!detail::is_inlet_primitive<T>::value, T>::type Proxy::get()
-{
-  SLIC_ASSERT_MSG(m_table != nullptr,
-                  "[Inlet] Tried to read a user-defined type from a Proxy "
-                  "containing a single field");
-  return m_table->get<T>();
-}
 
 }  // end namespace inlet
 }  // end namespace axom

@@ -7,6 +7,7 @@
 
 #include "axom/slic.hpp"
 #include "axom/inlet/inlet_utils.hpp"
+#include "axom/inlet/Proxy.hpp"
 
 namespace axom
 {
@@ -434,35 +435,6 @@ std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
   }
 }
 
-InletType Proxy::type() const
-{
-  // If it's a table, it must be either an object or an array
-  if(m_table != nullptr)
-  {
-    // This is how Inlet stores array types in the datastore
-    if(m_table->hasTable("_inlet_array"))
-    {
-      return InletType::Array;
-    }
-    return InletType::Object;
-  }
-  // Otherwise it must be a field
-  if(m_field == nullptr)
-  {
-    SLIC_ERROR("[Inlet] Cannot retrieve the type of an empty Proxy");
-  }
-  return m_field->type();
-}
-
-bool Proxy::contains(const std::string& name)
-{
-  if(m_table == nullptr)
-  {
-    SLIC_ERROR("[Inlet] Cannot index a proxy that refers to a field");
-  }
-  return m_table->contains(name);
-}
-
 Proxy Table::operator[](const std::string& name)
 {
   auto has_table = hasTable(name);
@@ -497,15 +469,6 @@ Proxy Table::operator[](const std::string& name)
     SLIC_ERROR(msg);
     return Proxy();
   }
-}
-
-Proxy Proxy::operator[](const std::string& name)
-{
-  if(m_table == nullptr)
-  {
-    SLIC_ERROR("[Inlet] Cannot index a proxy that refers to a field");
-  }
-  return (*m_table)[name];
 }
 
 std::shared_ptr<Table> Table::required(bool isRequired)

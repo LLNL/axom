@@ -15,7 +15,7 @@ int main()
 
   // Initialize Inlet
   auto lr = std::make_shared<axom::inlet::LuaReader>();
-  lr->parseString("dimensions = 2; vector = { x = 1; y = 2; z = 3; }");
+  lr->parseString("dimensions = 2; vector = { x = 1.0; y = 2.0; z = 3.0; }");
   axom::sidre::DataStore ds;
   auto myInlet = std::make_shared<axom::inlet::Inlet>(lr, ds.getRoot());
 
@@ -25,18 +25,18 @@ int main()
 
   // defines a required table named vector with an internal field named 'x'
   auto v = myInlet->addTable("vector")->required(true);
-  v->addInt("x");
+  v->addDouble("x");
   // _inlet_workflow_defining_schema_end
 
   // _inlet_workflow_verification_start
   v->registerVerifier([&]() -> bool {
     int dim = (*myInlet)["dimensions"];
     bool x_present = v->hasField("x") &&
-      ((*myInlet)["vector/x"].type() == axom::inlet::InletType::Integer);
+      ((*myInlet)["vector/x"].type() == axom::inlet::InletType::Double);
     bool y_present = v->hasField("y") &&
-      ((*myInlet)["vector/y"].type() == axom::inlet::InletType::Integer);
+      ((*myInlet)["vector/y"].type() == axom::inlet::InletType::Double);
     bool z_present = v->hasField("z") &&
-      ((*myInlet)["vector/z"].type() == axom::inlet::InletType::Integer);
+      ((*myInlet)["vector/z"].type() == axom::inlet::InletType::Double);
     if(dim == 1 && x_present)
     {
       return true;
@@ -61,7 +61,7 @@ int main()
   SLIC_INFO(msg);
 
   // Add required dimension to schema
-  v->addInt("y");
+  v->addDouble("y");
 
   // We expect the verification to succeed because vector now contains
   // both x and y to match the 2 dimensions
@@ -82,12 +82,12 @@ int main()
   }
 
   // Get vector information if it was present in input file
-  bool x_found = (*myInlet)["vector/x"].type() == axom::inlet::InletType::Integer;
-  bool y_found = (*myInlet)["vector/y"].type() == axom::inlet::InletType::Integer;
+  bool x_found = (*myInlet)["vector/x"].type() == axom::inlet::InletType::Double;
+  bool y_found = (*myInlet)["vector/y"].type() == axom::inlet::InletType::Double;
   if(x_found && y_found)
   {
-    msg = "Vector = " + std::to_string((*myInlet)["vector/x"].get<int>()) +
-      "," + std::to_string((*myInlet)["vector/y"].get<int>()) + "\n";
+    msg = "Vector = " + std::to_string((*myInlet)["vector/x"].get<double>()) +
+      "," + std::to_string((*myInlet)["vector/y"].get<double>()) + "\n";
     SLIC_INFO(msg);
   }
   // _inlet_workflow_accessing_data_end
