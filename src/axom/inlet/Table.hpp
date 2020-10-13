@@ -25,7 +25,6 @@
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
-#include "axom/inlet/SchemaCreator.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 
 #include "axom/sidre.hpp"
@@ -53,6 +52,10 @@ namespace axom
 {
 namespace inlet
 {
+// Forward declaration for the traits
+
+class Table;
+
 namespace detail
 {
 /*!
@@ -140,9 +143,7 @@ class Proxy;
  * \see Inlet Field
  *******************************************************************************
  */
-class Table : public SchemaCreator,
-              public std::enable_shared_from_this<Table>,
-              public Verifiable
+class Table : public std::enable_shared_from_this<Table>, public Verifiable
 {
 public:
   /*!

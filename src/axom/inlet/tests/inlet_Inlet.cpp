@@ -1282,10 +1282,12 @@ TEST(inlet_verify, verifyTableLambda1)
 
   EXPECT_TRUE(table1->hasField("field3"));
 
-  table1->registerVerifier([](auto& table) -> bool { return table.contains("field3"); });
+  table1->registerVerifier(
+    [](auto& table) -> bool { return table.contains("field3"); });
   EXPECT_TRUE(inlet->verify());
 
-  table1->registerVerifier([](auto& table) -> bool { return table.contains("field22"); });
+  table1->registerVerifier(
+    [](auto& table) -> bool { return table.contains("field22"); });
   EXPECT_FALSE(inlet->verify());
 }
 

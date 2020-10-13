@@ -20,7 +20,6 @@
 #include <vector>
 #include <functional>
 
-#include "axom/inlet/SchemaCreator.hpp"
 #include "axom/inlet/Table.hpp"
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Proxy.hpp"
@@ -45,7 +44,7 @@ namespace inlet
  * \see Table Field
  *******************************************************************************
  */
-class Inlet : public SchemaCreator
+class Inlet
 {
 public:
   /*!

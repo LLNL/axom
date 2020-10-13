@@ -19,7 +19,6 @@ set(inlet_headers
     Field.hpp
     Inlet.hpp
     Reader.hpp
-    SchemaCreator.hpp
     Table.hpp 
     Proxy.hpp
     Verifiable.hpp
