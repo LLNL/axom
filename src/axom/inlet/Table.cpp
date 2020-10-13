@@ -5,9 +5,9 @@
 
 #include "axom/inlet/Table.hpp"
 
-#include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
 #include "axom/inlet/inlet_utils.hpp"
+#include "axom/inlet/Proxy.hpp"
 
 namespace axom
 {
@@ -145,25 +145,25 @@ std::shared_ptr<Table> Table::addStringArray(const std::string& name,
   return table;
 }
 
-bool Table::getBoolArray(std::unordered_map<int, bool>& map)
+bool Table::getArray(std::unordered_map<int, bool>& map)
 {
   return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
     m_reader->getBoolMap(m_name.substr(0, m_name.size() - 12), map);
 }
 
-bool Table::getIntArray(std::unordered_map<int, int>& map)
+bool Table::getArray(std::unordered_map<int, int>& map)
 {
   return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
     m_reader->getIntMap(m_name.substr(0, m_name.size() - 12), map);
 }
 
-bool Table::getDoubleArray(std::unordered_map<int, double>& map)
+bool Table::getArray(std::unordered_map<int, double>& map)
 {
   return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
     m_reader->getDoubleMap(m_name.substr(0, m_name.size() - 12), map);
 }
 
-bool Table::getStringArray(std::unordered_map<int, std::string>& map)
+bool Table::getArray(std::unordered_map<int, std::string>& map)
 {
   return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
     m_reader->getStringMap(m_name.substr(0, m_name.size() - 12), map);
@@ -293,6 +293,42 @@ std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
     sidreGroup->createViewString("value", value);
   }
   return addField(sidreGroup, axom::sidre::DataTypeId::CHAR8_STR_ID, fullName, name);
+}
+
+Proxy Table::operator[](const std::string& name)
+{
+  auto has_table = hasTable(name);
+  auto has_field = hasField(name);
+
+  // Ambiguous case - both a table and field exist with the same name
+  if(has_table && has_field)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Ambiguous lookup - both a table and field with name {0} exist",
+      name);
+    SLIC_ERROR(msg);
+    return Proxy();
+  }
+
+  else if(has_table)
+  {
+    return Proxy(*getTable(name));
+  }
+
+  else if(has_field)
+  {
+    return Proxy(*getField(name));
+  }
+
+  // Neither exists
+  else
+  {
+    std::string msg =
+      fmt::format("[Inlet] Neither a table nor a field with name {0} exist",
+                  name);
+    SLIC_ERROR(msg);
+    return Proxy();
+  }
 }
 
 std::shared_ptr<Table> Table::required(bool isRequired)

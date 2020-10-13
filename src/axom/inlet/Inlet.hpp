@@ -23,6 +23,7 @@
 #include "axom/inlet/SchemaCreator.hpp"
 #include "axom/inlet/Table.hpp"
 #include "axom/inlet/Field.hpp"
+#include "axom/inlet/Proxy.hpp"
 #include "axom/inlet/Reader.hpp"
 
 #include "axom/sidre.hpp"
@@ -194,80 +195,47 @@ public:
   //
 
   /*!
-   *****************************************************************************
-   * \brief Gets a Boolean value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
+   *******************************************************************************
+   * \brief Gets a value of arbitrary type out of the datastore
+   * 
+   * Retrieves a value of user-defined type, i.e., not double, int, bool, or string.
+   * 
+   * \param [in] name The name of the subtable representing the root of the object
+   * \return The retrieved value
+   * \tparam The type to retrieve
+   * \pre Requires a specialization of FromInlet<T>
+   * \note This function does not indicate failure in a way that can be handled
+   * by a program - if an object of requested type does not exist at the specified
+   * location, the program will terminate
+   *******************************************************************************
    */
-  bool get(const std::string& name, bool& value)
+  template <typename T>
+  T get(const std::string& name)
   {
-    return m_globalTable->get(name, value);
+    return m_globalTable->get<T>(name);
   }
 
   /*!
    *****************************************************************************
-   * \brief Gets a Double value out of the Datastore.
+   * \brief Return whether a subobject with the given name is present in 
+   * the datastore.
    *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
+   * \see Table::contains
    *****************************************************************************
    */
-  bool get(const std::string& name, double& value)
+  bool contains(const std::string& name)
   {
-    return m_globalTable->get(name, value);
+    return m_globalTable->contains(name);
   }
 
   /*!
-   *****************************************************************************
-   * \brief Gets a Integer value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
+   *******************************************************************************
+   * \brief Obtains a proxy view into the datastore.
+   * 
+   * \see Table::operator[]
+   *******************************************************************************
    */
-  bool get(const std::string& name, int& value)
-  {
-    return m_globalTable->get(name, value);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Gets a String value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
-   */
-  bool get(const std::string& name, std::string& value)
-  {
-    return m_globalTable->get(name, value);
-  }
+  Proxy operator[](const std::string& name) { return (*m_globalTable)[name]; }
 
   /*!
    *****************************************************************************
@@ -465,9 +433,9 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getBoolArray(std::unordered_map<int, bool>& map)
+  bool getArray(std::unordered_map<int, bool>& map)
   {
-    return m_globalTable->getBoolArray(map);
+    return m_globalTable->getArray(map);
   }
 
   /*!
@@ -479,9 +447,9 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getIntArray(std::unordered_map<int, int>& map)
+  bool getArray(std::unordered_map<int, int>& map)
   {
-    return m_globalTable->getIntArray(map);
+    return m_globalTable->getArray(map);
   }
 
   /*!
@@ -493,9 +461,9 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getDoubleArray(std::unordered_map<int, double>& map)
+  bool getArray(std::unordered_map<int, double>& map)
   {
-    return m_globalTable->getDoubleArray(map);
+    return m_globalTable->getArray(map);
   }
 
   /*!
@@ -507,9 +475,9 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getStringArray(std::unordered_map<int, std::string>& map)
+  bool getArray(std::unordered_map<int, std::string>& map)
   {
-    return m_globalTable->getStringArray(map);
+    return m_globalTable->getArray(map);
   }
 
   // TODO add update value functions

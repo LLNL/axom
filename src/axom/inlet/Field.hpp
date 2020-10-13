@@ -26,6 +26,25 @@ namespace inlet
 {
 /*!
  *******************************************************************************
+ * \enum InletType
+ *
+ * \brief Enumeration of basic types for things in inlet
+ *******************************************************************************
+ */
+enum class InletType
+{
+  Nothing,
+  Bool,
+  String,
+  Integer,
+  // TODO: Unsigned integer
+  Double,
+  Object,
+  Array
+};
+
+/*!
+ *******************************************************************************
  * \class Field
  *
  * \brief Provides functions to help define how individual field variables in an
@@ -289,63 +308,24 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Gets a Boolean value.
-   *
-   * Retrieves the Field value.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value exists
+   * \brief Returns a value of primitive type
+   * 
+   * \return The value
+   * \tparam T The type to retrieve
    *****************************************************************************
    */
-  bool get(bool& value);
+  template <typename T>
+  T get();
 
   /*!
    *****************************************************************************
-   * \brief Gets a Double value.
-   *
-   * Retrieves the Field value.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value exists
+   * \brief Returns the type of the stored value
+   * 
+   * \return The type
+   * \see InletType
    *****************************************************************************
    */
-  bool get(double& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Gets an Integer value.
-   *
-   * Retrieves the Field value.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value exists
-   *****************************************************************************
-   */
-  bool get(int& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Gets a String value.
-   *
-   * Retrieves the Field value.  This Field may not have
-   * been actually present in the input file and will be indicated by the return
-   * value. 
-   *
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value exists
-   *****************************************************************************
-   */
-  bool get(std::string& value);
+  InletType type() const;
 
 private:
   /*!
@@ -390,6 +370,19 @@ private:
   template <typename T>
   void setDefaultValue(T value);
 
+  /*!
+   *****************************************************************************
+   * \brief Checks the existence and type of the value for the field
+   *
+   * \param [in] expected The expected type for the value
+   *
+   * \return Non-owning pointer to the Sidre view containing the value
+   * \note Treats a nonexistent value or type mismatch as an error and will
+   * emit a SLIC_ERROR accordingly
+   *****************************************************************************
+  */
+  axom::sidre::View* checkExistenceAndType(const axom::sidre::DataTypeId expected);
+
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
@@ -397,6 +390,18 @@ private:
   bool m_docEnabled;
   std::function<bool()> m_verifier;
 };
+
+template <>
+bool Field::get<bool>();
+
+template <>
+int Field::get<int>();
+
+template <>
+double Field::get<double>();
+
+template <>
+std::string Field::get<std::string>();
 
 }  // end namespace inlet
 }  // end namespace axom

@@ -24,7 +24,7 @@ int main()
   auto vals = inlet->getGlobalTable()->addStringArray("values");
   vals->registerVerifier([&]() -> bool {
     std::unordered_map<int, std::string> map;
-    if(!vals->getStringArray(map))
+    if(!vals->getArray(map))
     {
       std::cout << "Error: Array not found\n";
     }
@@ -52,7 +52,7 @@ int main()
 
   // Print contents of map
   std::unordered_map<int, std::string> map;
-  if(!vals->getStringArray(map))
+  if(!vals->getArray(map))
   {
     std::cout << "\nError: Array not found\n";
   }
