@@ -372,10 +372,9 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Verifiable> addBoolArray(const std::string& name,
-                                           const std::string& description = "",
-                                           const std::string& path_override = "")
+                                           const std::string& description = "")
   {
-    return m_globalTable->addBoolArray(name, description, path_override);
+    return m_globalTable->addBoolArray(name, description);
   }
 
   /*!
@@ -389,10 +388,9 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Verifiable> addIntArray(const std::string& name,
-                                          const std::string& description = "",
-                                          const std::string& path_override = "")
+                                          const std::string& description = "")
   {
-    return m_globalTable->addIntArray(name, description, path_override);
+    return m_globalTable->addIntArray(name, description);
   }
 
   /*!
@@ -405,12 +403,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addDoubleArray(
-    const std::string& name,
-    const std::string& description = "",
-    const std::string& path_override = "")
+  std::shared_ptr<Verifiable> addDoubleArray(const std::string& name,
+                                             const std::string& description = "")
   {
-    return m_globalTable->addDoubleArray(name, description, path_override);
+    return m_globalTable->addDoubleArray(name, description);
   }
 
   /*!
@@ -423,12 +419,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addStringArray(
-    const std::string& name,
-    const std::string& description = "",
-    const std::string& path_override = "")
+  std::shared_ptr<Verifiable> addStringArray(const std::string& name,
+                                             const std::string& description = "")
   {
-    return m_globalTable->addStringArray(name, description, path_override);
+    return m_globalTable->addStringArray(name, description);
   }
 
   /*!

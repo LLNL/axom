@@ -250,10 +250,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addBoolArray(
-    const std::string& name,
-    const std::string& description = "",
-    const std::string& path_override = "");
+  std::shared_ptr<Verifiable> addBoolArray(const std::string& name,
+                                           const std::string& description = "",
+                                           const std::string& pathOverride = "");
 
   /*!
    *****************************************************************************
@@ -267,7 +266,7 @@ public:
    */
   std::shared_ptr<Verifiable> addIntArray(const std::string& name,
                                           const std::string& description = "",
-                                          const std::string& path_override = "");
+                                          const std::string& pathOverride = "");
 
   /*!
    *****************************************************************************
@@ -282,7 +281,7 @@ public:
   std::shared_ptr<Verifiable> addDoubleArray(
     const std::string& name,
     const std::string& description = "",
-    const std::string& path_override = "");
+    const std::string& pathOverride = "");
 
   /*!
    *****************************************************************************
@@ -297,7 +296,7 @@ public:
   std::shared_ptr<Verifiable> addStringArray(
     const std::string& name,
     const std::string& description = "",
-    const std::string& path_override = "");
+    const std::string& pathOverride = "");
 
   /*!
    *****************************************************************************
@@ -684,25 +683,25 @@ private:
     const std::string& description = "",
     bool forArray = false,
     bool num = 0,
-    const std::string& path_override = "");
+    const std::string& pathOverride = "");
   std::shared_ptr<VerifiableScalar> addIntHelper(
     const std::string& name,
     const std::string& description = "",
     bool forArray = false,
     int num = 0,
-    const std::string& path_override = "");
+    const std::string& pathOverride = "");
   std::shared_ptr<VerifiableScalar> addDoubleHelper(
     const std::string& name,
     const std::string& description = "",
     bool forArray = false,
     double num = 0,
-    const std::string& path_override = "");
+    const std::string& pathOverride = "");
   std::shared_ptr<VerifiableScalar> addStringHelper(
     const std::string& name,
     const std::string& description = "",
     bool forArray = false,
     const std::string& str = "",
-    const std::string& path_override = "");
+    const std::string& pathOverride = "");
   /*!
    *****************************************************************************
    * \brief Creates the basic Sidre Group for this Table and stores the given

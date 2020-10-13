@@ -95,15 +95,15 @@ std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
 
 std::shared_ptr<Verifiable> Table::addBoolArray(const std::string& name,
                                                 const std::string& description,
-                                                const std::string& path_override)
+                                                const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
     std::vector<std::shared_ptr<Verifiable>> tables;
-    for(const auto& index_path : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
-      tables.push_back(getTable(index_path.first)
-                         ->addBoolArray(name, description, index_path.second));
+      tables.push_back(getTable(indexPath.first)
+                         ->addBoolArray(name, description, indexPath.second));
     }
     return std::make_shared<AggregateTable>(std::move(tables));
   }
@@ -112,7 +112,7 @@ std::shared_ptr<Verifiable> Table::addBoolArray(const std::string& name,
     auto table = addTable(appendPrefix(name, "_inlet_array"), description);
     std::unordered_map<int, bool> map;
     const std::string& fullName = appendPrefix(m_name, name);
-    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
     if(m_reader->getBoolMap(lookup_path, map))
     {
       for(auto p : map)
@@ -130,15 +130,15 @@ std::shared_ptr<Verifiable> Table::addBoolArray(const std::string& name,
 
 std::shared_ptr<Verifiable> Table::addIntArray(const std::string& name,
                                                const std::string& description,
-                                               const std::string& path_override)
+                                               const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
     std::vector<std::shared_ptr<Verifiable>> tables;
-    for(const auto& index_path : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
-      tables.push_back(getTable(index_path.first)
-                         ->addIntArray(name, description, index_path.second));
+      tables.push_back(getTable(indexPath.first)
+                         ->addIntArray(name, description, indexPath.second));
     }
     return std::make_shared<AggregateTable>(std::move(tables));
   }
@@ -147,7 +147,7 @@ std::shared_ptr<Verifiable> Table::addIntArray(const std::string& name,
     auto table = addTable(appendPrefix(name, "_inlet_array"), description);
     std::unordered_map<int, int> map;
     const std::string& fullName = appendPrefix(m_name, name);
-    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
     if(m_reader->getIntMap(lookup_path, map))
     {
       for(auto p : map)
@@ -165,15 +165,15 @@ std::shared_ptr<Verifiable> Table::addIntArray(const std::string& name,
 
 std::shared_ptr<Verifiable> Table::addDoubleArray(const std::string& name,
                                                   const std::string& description,
-                                                  const std::string& path_override)
+                                                  const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
     std::vector<std::shared_ptr<Verifiable>> tables;
-    for(const auto& index_path : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
-      tables.push_back(getTable(index_path.first)
-                         ->addDoubleArray(name, description, index_path.second));
+      tables.push_back(getTable(indexPath.first)
+                         ->addDoubleArray(name, description, indexPath.second));
     }
     return std::make_shared<AggregateTable>(std::move(tables));
   }
@@ -182,7 +182,7 @@ std::shared_ptr<Verifiable> Table::addDoubleArray(const std::string& name,
     auto table = addTable(appendPrefix(name, "_inlet_array"), description);
     std::unordered_map<int, double> map;
     const std::string& fullName = appendPrefix(m_name, name);
-    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
     if(m_reader->getDoubleMap(lookup_path, map))
     {
       for(auto p : map)
@@ -200,15 +200,15 @@ std::shared_ptr<Verifiable> Table::addDoubleArray(const std::string& name,
 
 std::shared_ptr<Verifiable> Table::addStringArray(const std::string& name,
                                                   const std::string& description,
-                                                  const std::string& path_override)
+                                                  const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
     std::vector<std::shared_ptr<Verifiable>> tables;
-    for(const auto& index_path : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
-      tables.push_back(getTable(index_path.first)
-                         ->addDoubleArray(name, description, index_path.second));
+      tables.push_back(getTable(indexPath.first)
+                         ->addDoubleArray(name, description, indexPath.second));
     }
     return std::make_shared<AggregateTable>(std::move(tables));
   }
@@ -217,7 +217,7 @@ std::shared_ptr<Verifiable> Table::addStringArray(const std::string& name,
     auto table = addTable(appendPrefix(name, "_inlet_array"), description);
     std::unordered_map<int, std::string> map;
     const std::string& fullName = appendPrefix(m_name, name);
-    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
     if(m_reader->getStringMap(lookup_path, map))
     {
       for(auto p : map)
@@ -310,16 +310,16 @@ std::shared_ptr<VerifiableScalar> Table::addBoolHelper(
   const std::string& description,
   bool forArray,
   bool num,
-  const std::string& path_override)
+  const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
     std::vector<std::shared_ptr<VerifiableScalar>> fields;
-    for(const auto& index_path : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
       fields.push_back(
-        getTable(index_path.first)
-          ->addBoolHelper(name, description, forArray, num, index_path.second));
+        getTable(indexPath.first)
+          ->addBoolHelper(name, description, forArray, num, indexPath.second));
     }
     return std::make_shared<AggregateField>(std::move(fields));
   }
@@ -333,7 +333,7 @@ std::shared_ptr<VerifiableScalar> Table::addBoolHelper(
       return std::shared_ptr<Field>(nullptr);
     }
     bool value = num;
-    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
     if(forArray || m_reader->getBool(lookup_path, value))
     {
       sidreGroup->createViewScalar("value", value ? int8(1) : int8(0));
@@ -347,16 +347,16 @@ std::shared_ptr<VerifiableScalar> Table::addDoubleHelper(
   const std::string& description,
   bool forArray,
   double num,
-  const std::string& path_override)
+  const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
     std::vector<std::shared_ptr<VerifiableScalar>> fields;
-    for(const auto& index_path : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
       fields.push_back(
-        getTable(index_path.first)
-          ->addDoubleHelper(name, description, forArray, num, index_path.second));
+        getTable(indexPath.first)
+          ->addDoubleHelper(name, description, forArray, num, indexPath.second));
     }
     return std::make_shared<AggregateField>(std::move(fields));
   }
@@ -370,7 +370,7 @@ std::shared_ptr<VerifiableScalar> Table::addDoubleHelper(
     }
 
     double value = num;
-    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
     if(forArray || m_reader->getDouble(lookup_path, value))
     {
       sidreGroup->createViewScalar("value", value);
@@ -384,16 +384,16 @@ std::shared_ptr<VerifiableScalar> Table::addIntHelper(
   const std::string& description,
   bool forArray,
   int num,
-  const std::string& path_override)
+  const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
     std::vector<std::shared_ptr<VerifiableScalar>> fields;
-    for(const auto& index_path : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
       fields.push_back(
-        getTable(index_path.first)
-          ->addIntHelper(name, description, forArray, num, index_path.second));
+        getTable(indexPath.first)
+          ->addIntHelper(name, description, forArray, num, indexPath.second));
     }
     return std::make_shared<AggregateField>(std::move(fields));
   }
@@ -407,7 +407,7 @@ std::shared_ptr<VerifiableScalar> Table::addIntHelper(
     }
 
     int value = num;
-    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
     if(forArray || m_reader->getInt(lookup_path, value))
     {
       sidreGroup->createViewScalar("value", value);
@@ -421,16 +421,16 @@ std::shared_ptr<VerifiableScalar> Table::addStringHelper(
   const std::string& description,
   bool forArray,
   const std::string& str,
-  const std::string& path_override)
+  const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
     std::vector<std::shared_ptr<VerifiableScalar>> fields;
-    for(const auto& index_path : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
       fields.push_back(
-        getTable(index_path.first)
-          ->addStringHelper(name, description, forArray, str, index_path.second));
+        getTable(indexPath.first)
+          ->addStringHelper(name, description, forArray, str, indexPath.second));
     }
     return std::make_shared<AggregateField>(std::move(fields));
   }
@@ -444,7 +444,7 @@ std::shared_ptr<VerifiableScalar> Table::addStringHelper(
     }
 
     std::string value = str;
-    std::string lookup_path = (path_override.empty()) ? fullName : path_override;
+    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
     if(forArray || m_reader->getString(lookup_path, value))
     {
       sidreGroup->createViewString("value", value);
