@@ -218,16 +218,14 @@ bool LuaReader::getMap(const std::string& id,
     }
   }
 
-  auto it = t.cbegin();
-  while(it != t.cend())
+  for(const auto& entry : t)
   {
     // Gets only indexed items in the table.
-    if((*it).first.get_type() == sol::type::number &&
-       (*it).second.get_type() == type)
+    if(entry.first.get_type() == sol::type::number &&
+       entry.second.get_type() == type)
     {
-      values[(*it).first.as<int>()] = (*it).second.as<T>();
+      values[entry.first.as<int>()] = entry.second.as<T>();
     }
-    ++it;
   }
   return true;
 }
