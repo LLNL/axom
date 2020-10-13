@@ -60,10 +60,9 @@ TEST(inlet_object, simple_struct_by_value)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
 
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
+  auto currField = inlet->addBool("foo/bar", "bar's description");
   EXPECT_TRUE(currField);
 
   currField = inlet->addBool("foo/baz", "baz's description");
@@ -207,10 +206,8 @@ TEST(inlet_object, simple_moveonly_struct_by_value)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
+  auto currField = inlet->addBool("foo/bar", "bar's description");
   EXPECT_TRUE(currField);
 
   currField = inlet->addBool("foo/baz", "baz's description");
@@ -228,10 +225,8 @@ TEST(inlet_object, simple_value_from_bracket)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo", "foo's description");
+  auto currField = inlet->addBool("foo", "foo's description");
   EXPECT_TRUE(currField);
 
   bool foo = (*inlet)["foo"];
@@ -245,16 +240,14 @@ TEST(inlet_object, simple_struct_from_bracket)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
+  auto currField = inlet->addBool("foo/bar", "bar's description");
   EXPECT_TRUE(currField);
 
   currField = inlet->addBool("foo/baz", "baz's description");
   EXPECT_TRUE(currField);
 
-  auto foo = Foo((*inlet)["foo"]);
+  auto foo = (*inlet)["foo"].get<Foo>();
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
 }
@@ -266,10 +259,8 @@ TEST(inlet_object, contains_from_table)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
+  auto currField = inlet->addBool("foo/bar", "bar's description");
   EXPECT_TRUE(currField);
 
   currField = inlet->addBool("foo/baz", "baz's description");
@@ -290,10 +281,8 @@ TEST(inlet_object, contains_from_bracket)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
+  auto currField = inlet->addBool("foo/bar", "bar's description");
   EXPECT_TRUE(currField);
 
   currField = inlet->addBool("foo/baz", "baz's description");
@@ -348,10 +337,8 @@ TEST(inlet_object, primitive_type_checks)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("bar", "bar's description");
+  auto currField = inlet->addBool("bar", "bar's description");
   EXPECT_TRUE(currField);
 
   currField = inlet->addInt("baz", "baz's description");
@@ -390,10 +377,8 @@ TEST(inlet_object, composite_type_checks)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
+  auto currField = inlet->addBool("foo/bar", "bar's description");
   EXPECT_TRUE(currField);
 
   currField = inlet->addBool("foo/baz", "baz's description");
@@ -431,10 +416,8 @@ TEST(inlet_object, implicit_conversion_primitives)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("bar", "bar's description");
+  auto currField = inlet->addBool("bar", "bar's description");
   EXPECT_TRUE(currField);
 
   currField = inlet->addInt("baz", "baz's description");
@@ -475,39 +458,6 @@ TEST(inlet_object, implicit_conversion_primitives)
   EXPECT_EQ(arr, expected_arr);
   arr = (*inlet)["arr"];
   EXPECT_EQ(arr, expected_arr);
-}
-
-TEST(inlet_object, simple_struct_conversion)
-{
-  std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
-
-  // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
-  // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
-
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
-
-  // Check construction/assignment by move (temporary copy)
-  auto foo = Foo((*inlet)["foo"]);
-  EXPECT_TRUE(foo.bar);
-  EXPECT_FALSE(foo.baz);
-  foo = Foo((*inlet)["foo"]);
-  EXPECT_TRUE(foo.bar);
-  EXPECT_FALSE(foo.baz);
-
-  // Check construction/assignment by static cast
-  auto foo2 = static_cast<Foo>((*inlet)["foo"]);
-  EXPECT_TRUE(foo2.bar);
-  EXPECT_FALSE(foo2.baz);
-  foo2 = static_cast<Foo>((*inlet)["foo"]);
-  EXPECT_TRUE(foo2.bar);
-  EXPECT_FALSE(foo2.baz);
 }
 
 //------------------------------------------------------------------------------

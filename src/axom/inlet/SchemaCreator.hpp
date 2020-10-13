@@ -20,6 +20,7 @@
 #include <unordered_map>
 
 #include "axom/inlet/Field.hpp"
+#include "axom/inlet/Verifiable.hpp"
 
 namespace axom
 {
@@ -77,8 +78,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Field> addBool(const std::string& name,
-                                         const std::string& description) = 0;
+  virtual std::shared_ptr<VerifiableScalar> addBool(
+    const std::string& name,
+    const std::string& description) = 0;
 
   /*!
    *****************************************************************************
@@ -95,8 +97,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Field> addDouble(const std::string& name,
-                                           const std::string& description) = 0;
+  virtual std::shared_ptr<VerifiableScalar> addDouble(
+    const std::string& name,
+    const std::string& description) = 0;
 
   /*!
    *****************************************************************************
@@ -113,8 +116,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Field> addInt(const std::string& name,
-                                        const std::string& description) = 0;
+  virtual std::shared_ptr<VerifiableScalar> addInt(
+    const std::string& name,
+    const std::string& description) = 0;
 
   /*!
    *****************************************************************************
@@ -131,8 +135,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Field> addString(const std::string& name,
-                                           const std::string& description) = 0;
+  virtual std::shared_ptr<VerifiableScalar> addString(
+    const std::string& name,
+    const std::string& description) = 0;
   /*!
    *****************************************************************************
    * \brief Return whether a Table with the given name is present in this Table's subtree.
@@ -202,7 +207,7 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Table> addBoolArray(
+  virtual std::shared_ptr<Verifiable> addBoolArray(
     const std::string& name,
     const std::string& description = "",
     const std::string& path_override = "") = 0;
@@ -217,7 +222,7 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Table> addIntArray(
+  virtual std::shared_ptr<Verifiable> addIntArray(
     const std::string& name,
     const std::string& description = "",
     const std::string& path_override = "") = 0;
@@ -232,7 +237,7 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Table> addDoubleArray(
+  virtual std::shared_ptr<Verifiable> addDoubleArray(
     const std::string& name,
     const std::string& description = "",
     const std::string& path_override = "") = 0;
@@ -247,7 +252,7 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  virtual std::shared_ptr<Table> addStringArray(
+  virtual std::shared_ptr<Verifiable> addStringArray(
     const std::string& name,
     const std::string& description = "",
     const std::string& path_override = "") = 0;

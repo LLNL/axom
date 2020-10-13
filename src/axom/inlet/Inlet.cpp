@@ -29,26 +29,26 @@ std::shared_ptr<Table> Inlet::addTable(const std::string& name,
   return m_globalTable->addTable(name, description);
 }
 
-std::shared_ptr<Field> Inlet::addBool(const std::string& name,
-                                      const std::string& description)
+std::shared_ptr<VerifiableScalar> Inlet::addBool(const std::string& name,
+                                                 const std::string& description)
 {
   return m_globalTable->addBool(name, description);
 }
 
-std::shared_ptr<Field> Inlet::addDouble(const std::string& name,
-                                        const std::string& description)
+std::shared_ptr<VerifiableScalar> Inlet::addDouble(const std::string& name,
+                                                   const std::string& description)
 {
   return m_globalTable->addDouble(name, description);
 }
 
-std::shared_ptr<Field> Inlet::addInt(const std::string& name,
-                                     const std::string& description)
+std::shared_ptr<VerifiableScalar> Inlet::addInt(const std::string& name,
+                                                const std::string& description)
 {
   return m_globalTable->addInt(name, description);
 }
 
-std::shared_ptr<Field> Inlet::addString(const std::string& name,
-                                        const std::string& description)
+std::shared_ptr<VerifiableScalar> Inlet::addString(const std::string& name,
+                                                   const std::string& description)
 {
   return m_globalTable->addString(name, description);
 }

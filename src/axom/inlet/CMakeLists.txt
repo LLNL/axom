@@ -22,6 +22,7 @@ set(inlet_headers
     SchemaCreator.hpp
     Table.hpp 
     Proxy.hpp
+    Verifiable.hpp
     DocWriter.hpp
     SphinxDocWriter.hpp 
     inlet_utils.hpp )

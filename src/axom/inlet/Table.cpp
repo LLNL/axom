@@ -93,20 +93,19 @@ std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
   return result;
 }
 
-std::shared_ptr<Table> Table::addBoolArray(const std::string& name,
-                                           const std::string& description,
-                                           const std::string& path_override)
+std::shared_ptr<Verifiable> Table::addBoolArray(const std::string& name,
+                                                const std::string& description,
+                                                const std::string& path_override)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    std::vector<std::shared_ptr<Table>> tables;
+    std::vector<std::shared_ptr<Verifiable>> tables;
     for(const auto& index_path : arrayIndicesWithPaths(name))
     {
       tables.push_back(getTable(index_path.first)
                          ->addBoolArray(name, description, index_path.second));
     }
-    // This is completely wrong
-    return tables[0];
+    return std::make_shared<AggregateTable>(std::move(tables));
   }
   else
   {
@@ -129,20 +128,19 @@ std::shared_ptr<Table> Table::addBoolArray(const std::string& name,
   }
 }
 
-std::shared_ptr<Table> Table::addIntArray(const std::string& name,
-                                          const std::string& description,
-                                          const std::string& path_override)
+std::shared_ptr<Verifiable> Table::addIntArray(const std::string& name,
+                                               const std::string& description,
+                                               const std::string& path_override)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    std::vector<std::shared_ptr<Table>> tables;
+    std::vector<std::shared_ptr<Verifiable>> tables;
     for(const auto& index_path : arrayIndicesWithPaths(name))
     {
       tables.push_back(getTable(index_path.first)
                          ->addIntArray(name, description, index_path.second));
     }
-    // This is completely wrong
-    return tables[0];
+    return std::make_shared<AggregateTable>(std::move(tables));
   }
   else
   {
@@ -165,20 +163,19 @@ std::shared_ptr<Table> Table::addIntArray(const std::string& name,
   }
 }
 
-std::shared_ptr<Table> Table::addDoubleArray(const std::string& name,
-                                             const std::string& description,
-                                             const std::string& path_override)
+std::shared_ptr<Verifiable> Table::addDoubleArray(const std::string& name,
+                                                  const std::string& description,
+                                                  const std::string& path_override)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    std::vector<std::shared_ptr<Table>> tables;
+    std::vector<std::shared_ptr<Verifiable>> tables;
     for(const auto& index_path : arrayIndicesWithPaths(name))
     {
       tables.push_back(getTable(index_path.first)
                          ->addDoubleArray(name, description, index_path.second));
     }
-    // This is completely wrong
-    return tables[0];
+    return std::make_shared<AggregateTable>(std::move(tables));
   }
   else
   {
@@ -201,20 +198,19 @@ std::shared_ptr<Table> Table::addDoubleArray(const std::string& name,
   }
 }
 
-std::shared_ptr<Table> Table::addStringArray(const std::string& name,
-                                             const std::string& description,
-                                             const std::string& path_override)
+std::shared_ptr<Verifiable> Table::addStringArray(const std::string& name,
+                                                  const std::string& description,
+                                                  const std::string& path_override)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    std::vector<std::shared_ptr<Table>> tables;
+    std::vector<std::shared_ptr<Verifiable>> tables;
     for(const auto& index_path : arrayIndicesWithPaths(name))
     {
       tables.push_back(getTable(index_path.first)
                          ->addDoubleArray(name, description, index_path.second));
     }
-    // This is completely wrong
-    return tables[0];
+    return std::make_shared<AggregateTable>(std::move(tables));
   }
   else
   {
@@ -309,15 +305,16 @@ std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup,
   return field;
 }
 
-std::shared_ptr<Field> Table::addBoolHelper(const std::string& name,
-                                            const std::string& description,
-                                            bool forArray,
-                                            bool num,
-                                            const std::string& path_override)
+std::shared_ptr<VerifiableScalar> Table::addBoolHelper(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  bool num,
+  const std::string& path_override)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    std::vector<std::shared_ptr<Field>> fields;
+    std::vector<std::shared_ptr<VerifiableScalar>> fields;
     for(const auto& index_path : arrayIndicesWithPaths(name))
     {
       fields.push_back(
@@ -345,15 +342,16 @@ std::shared_ptr<Field> Table::addBoolHelper(const std::string& name,
   }
 }
 
-std::shared_ptr<Field> Table::addDoubleHelper(const std::string& name,
-                                              const std::string& description,
-                                              bool forArray,
-                                              double num,
-                                              const std::string& path_override)
+std::shared_ptr<VerifiableScalar> Table::addDoubleHelper(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  double num,
+  const std::string& path_override)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    std::vector<std::shared_ptr<Field>> fields;
+    std::vector<std::shared_ptr<VerifiableScalar>> fields;
     for(const auto& index_path : arrayIndicesWithPaths(name))
     {
       fields.push_back(
@@ -381,15 +379,16 @@ std::shared_ptr<Field> Table::addDoubleHelper(const std::string& name,
   }
 }
 
-std::shared_ptr<Field> Table::addIntHelper(const std::string& name,
-                                           const std::string& description,
-                                           bool forArray,
-                                           int num,
-                                           const std::string& path_override)
+std::shared_ptr<VerifiableScalar> Table::addIntHelper(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  int num,
+  const std::string& path_override)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    std::vector<std::shared_ptr<Field>> fields;
+    std::vector<std::shared_ptr<VerifiableScalar>> fields;
     for(const auto& index_path : arrayIndicesWithPaths(name))
     {
       fields.push_back(
@@ -417,15 +416,16 @@ std::shared_ptr<Field> Table::addIntHelper(const std::string& name,
   }
 }
 
-std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
-                                              const std::string& description,
-                                              bool forArray,
-                                              const std::string& str,
-                                              const std::string& path_override)
+std::shared_ptr<VerifiableScalar> Table::addStringHelper(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  const std::string& str,
+  const std::string& path_override)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    std::vector<std::shared_ptr<Field>> fields;
+    std::vector<std::shared_ptr<VerifiableScalar>> fields;
     for(const auto& index_path : arrayIndicesWithPaths(name))
     {
       fields.push_back(
@@ -492,7 +492,7 @@ Proxy Table::operator[](const std::string& name)
   }
 }
 
-std::shared_ptr<Table> Table::required(bool isRequired)
+std::shared_ptr<Verifiable> Table::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Table specific Sidre Datastore Group not set");
@@ -551,7 +551,7 @@ bool Table::required()
   return (bool)intValue;
 }
 
-std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda)
+std::shared_ptr<Verifiable> Table::registerVerifier(std::function<bool(Proxy&)> lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Table "
@@ -579,7 +579,8 @@ bool Table::verify()
     }
   }
   // Verify this Table if a lambda was configured
-  if(m_verifier && !m_verifier())
+  Proxy p(*this);  // Remove when const-correctness allows it
+  if(m_verifier && !m_verifier(p))
   {
     verified = false;
     SLIC_WARNING(fmt::format("[Inlet] Table failed verification: {0}", m_name));

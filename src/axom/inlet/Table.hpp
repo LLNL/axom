@@ -140,7 +140,9 @@ class Proxy;
  * \see Inlet Field
  *******************************************************************************
  */
-class Table : public SchemaCreator, public std::enable_shared_from_this<Table>
+class Table : public SchemaCreator,
+              public std::enable_shared_from_this<Table>,
+              public Verifiable
 {
 public:
   /*!
@@ -247,9 +249,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addBoolArray(const std::string& name,
-                                      const std::string& description = "",
-                                      const std::string& path_override = "");
+  std::shared_ptr<Verifiable> addBoolArray(
+    const std::string& name,
+    const std::string& description = "",
+    const std::string& path_override = "");
 
   /*!
    *****************************************************************************
@@ -261,9 +264,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addIntArray(const std::string& name,
-                                     const std::string& description = "",
-                                     const std::string& path_override = "");
+  std::shared_ptr<Verifiable> addIntArray(const std::string& name,
+                                          const std::string& description = "",
+                                          const std::string& path_override = "");
 
   /*!
    *****************************************************************************
@@ -275,9 +278,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addDoubleArray(const std::string& name,
-                                        const std::string& description = "",
-                                        const std::string& path_override = "");
+  std::shared_ptr<Verifiable> addDoubleArray(
+    const std::string& name,
+    const std::string& description = "",
+    const std::string& path_override = "");
 
   /*!
    *****************************************************************************
@@ -289,9 +293,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addStringArray(const std::string& name,
-                                        const std::string& description = "",
-                                        const std::string& path_override = "");
+  std::shared_ptr<Verifiable> addStringArray(
+    const std::string& name,
+    const std::string& description = "",
+    const std::string& path_override = "");
 
   /*!
    *****************************************************************************
@@ -381,8 +386,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description = "")
+  std::shared_ptr<VerifiableScalar> addBool(const std::string& name,
+                                            const std::string& description = "")
   {
     return addBoolHelper(name, description);
   }
@@ -402,8 +407,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description = "")
+  std::shared_ptr<VerifiableScalar> addDouble(
+    const std::string& name,
+    const std::string& description = "")
   {
     return addDoubleHelper(name, description);
   }
@@ -423,8 +429,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description = "")
+  std::shared_ptr<VerifiableScalar> addInt(const std::string& name,
+                                           const std::string& description = "")
   {
     return addIntHelper(name, description);
   }
@@ -443,8 +449,9 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description = "")
+  std::shared_ptr<VerifiableScalar> addString(
+    const std::string& name,
+    const std::string& description = "")
   {
     return addStringHelper(name, description);
   }
@@ -558,7 +565,7 @@ public:
    * \return Shared pointer to this instance of Table
    *****************************************************************************
    */
-  std::shared_ptr<Table> required(bool isRequired);
+  std::shared_ptr<Verifiable> required(bool isRequired);
 
   /*!
    *****************************************************************************
@@ -580,7 +587,7 @@ public:
    * \param [in] The function object that will be called by Table::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Table> registerVerifier(std::function<bool()> lambda);
+  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Proxy&)> lambda);
 
   /*!
    *****************************************************************************
@@ -671,26 +678,30 @@ public:
   std::shared_ptr<Field> getField(const std::string& fieldName);
 
 private:
-  std::shared_ptr<Field> addBoolHelper(const std::string& name,
-                                       const std::string& description = "",
-                                       bool forArray = false,
-                                       bool num = 0,
-                                       const std::string& path_override = "");
-  std::shared_ptr<Field> addIntHelper(const std::string& name,
-                                      const std::string& description = "",
-                                      bool forArray = false,
-                                      int num = 0,
-                                      const std::string& path_override = "");
-  std::shared_ptr<Field> addDoubleHelper(const std::string& name,
-                                         const std::string& description = "",
-                                         bool forArray = false,
-                                         double num = 0,
-                                         const std::string& path_override = "");
-  std::shared_ptr<Field> addStringHelper(const std::string& name,
-                                         const std::string& description = "",
-                                         bool forArray = false,
-                                         const std::string& str = "",
-                                         const std::string& path_override = "");
+  std::shared_ptr<VerifiableScalar> addBoolHelper(
+    const std::string& name,
+    const std::string& description = "",
+    bool forArray = false,
+    bool num = 0,
+    const std::string& path_override = "");
+  std::shared_ptr<VerifiableScalar> addIntHelper(
+    const std::string& name,
+    const std::string& description = "",
+    bool forArray = false,
+    int num = 0,
+    const std::string& path_override = "");
+  std::shared_ptr<VerifiableScalar> addDoubleHelper(
+    const std::string& name,
+    const std::string& description = "",
+    bool forArray = false,
+    double num = 0,
+    const std::string& path_override = "");
+  std::shared_ptr<VerifiableScalar> addStringHelper(
+    const std::string& name,
+    const std::string& description = "",
+    bool forArray = false,
+    const std::string& str = "",
+    const std::string& path_override = "");
   /*!
    *****************************************************************************
    * \brief Creates the basic Sidre Group for this Table and stores the given
@@ -789,7 +800,91 @@ private:
   bool m_docEnabled;
   std::unordered_map<std::string, std::shared_ptr<Table>> m_tableChildren;
   std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
-  std::function<bool()> m_verifier;
+  std::function<bool(Proxy&)> m_verifier;
+};
+
+/*!
+   *****************************************************************************
+   * \brief A wrapper class that enables constraints on groups of Tables
+   *****************************************************************************
+  */
+class AggregateTable : public std::enable_shared_from_this<AggregateTable>,
+                       public Verifiable
+{
+public:
+  AggregateTable(std::vector<std::shared_ptr<Verifiable>>&& tables)
+    : m_tables(std::move(tables))
+  { }
+
+  bool verify()
+  {
+    return std::all_of(m_tables.begin(), m_tables.end(), [](auto&& table) {
+      return table->verify();
+    });
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Table.
+   *
+   * Set whether this Table is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \param [in] isRequired Boolean value of whether Table is required
+   *
+   * \return Shared pointer to this instance of Table
+   *****************************************************************************
+   */
+  std::shared_ptr<Verifiable> required(bool isRequired)
+  {
+    for(auto& table : m_tables)
+    {
+      table->required(isRequired);
+    }
+    return shared_from_this();
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Return the required status of this Table.
+   *
+   * Return that this Table is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Table is required
+   *****************************************************************************
+   */
+  bool required()
+  {
+    for(auto& table : m_tables)
+    {
+      if(table->required())
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Table's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Table::verify().
+   *****************************************************************************
+  */
+  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Proxy&)> lambda)
+  {
+    for(auto& table : m_tables)
+    {
+      table->registerVerifier(lambda);
+    }
+    return shared_from_this();
+  }
+
+private:
+  std::vector<std::shared_ptr<Verifiable>> m_tables;
 };
 
 }  // end namespace inlet

@@ -76,12 +76,6 @@ public:
     return get<T>();
   }
 
-  template <typename T>
-  explicit operator T()
-  {
-    return get<T>();
-  }
-
   /*!
    *****************************************************************************
    * \brief Return whether a subobject with the given name is present in 
