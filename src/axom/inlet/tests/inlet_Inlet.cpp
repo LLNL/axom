@@ -64,7 +64,13 @@ TEST(inlet_Inlet_basic, getTopLevelBools)
   value = (*inlet)["foo"];
   EXPECT_TRUE(value);
 
+  value = inlet->get<bool>("foo");
+  EXPECT_TRUE(value);
+
   value = (*inlet)["bar"];
+  EXPECT_FALSE(value);
+
+  value = inlet->get<bool>("bar");
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value

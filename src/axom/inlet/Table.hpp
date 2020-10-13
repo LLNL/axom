@@ -58,8 +58,11 @@ namespace detail
  *******************************************************************************
  * \class is_inlet_primitive
  *
- * \brief A type trait for checking if a type is isomorphic to a Lua primitive
+ * \brief A type trait for checking if a type is isomorphic to an Inlet primitive
  * \tparam T The type to check
+ * \note An Inlet primitive is any of the following C++ types: int, double, bool,
+ * std::string.
+ * \see InletType
  *******************************************************************************
  */
 template <typename T>
@@ -75,7 +78,7 @@ struct is_inlet_primitive
  *******************************************************************************
  * \class is_inlet_primitive
  *
- * \brief A type trait for checking if a type is isomorphic to an array of Lua
+ * \brief A type trait for checking if a type is isomorphic to an array of Inlet
  * primitives
  * \tparam T The type to check
  *******************************************************************************
@@ -84,7 +87,7 @@ template <typename T>
 struct is_inlet_primitive_array : std::false_type
 { };
 
-// If it's an unordered map whose value type is a lua primitive,
+// If it's an unordered map whose value type is a Inlet primitive,
 // assume that it's an array
 template <typename T>
 struct is_inlet_primitive_array<std::unordered_map<int, T>>

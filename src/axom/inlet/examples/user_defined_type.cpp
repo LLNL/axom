@@ -97,7 +97,7 @@ struct ThermalSolver
 template <>
 struct FromInlet<ThermalSolver>
 {
-  // This is also implicitly recursive - will call the from_inlet
+  // This is also implicitly recursive - will call the FromInlet
   // functions defined for the subobjects
   ThermalSolver operator()(axom::inlet::Table& base)
   {
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 
   if(!inlet->verify())
   {
-    SLIC_INFO("Inlet failed to verify against provided schema");
+    SLIC_ERROR("Inlet failed to verify against provided schema");
   }
 
   // Read all the data into a thermal solver object
