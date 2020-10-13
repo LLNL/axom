@@ -23,6 +23,7 @@
 #include "axom/inlet/SchemaCreator.hpp"
 #include "axom/inlet/Table.hpp"
 #include "axom/inlet/Field.hpp"
+#include "axom/inlet/Proxy.hpp"
 #include "axom/inlet/Reader.hpp"
 
 #include "axom/sidre.hpp"
