@@ -248,22 +248,8 @@ std::shared_ptr<Field> Field::range(double startVal, double endVal)
 template <>
 bool Field::get<bool>()
 {
-  axom::sidre::View* valueView = m_sidreGroup->getView("value");
-  if(valueView == nullptr)
-  {
-    SLIC_ERROR("[Inlet] Field does not contain a value");
-  }
+  auto valueView = checkExistenceAndType(axom::sidre::INT8_ID);
   // There is no boolean type in conduit/sidre so we use int8
-  if(valueView->getTypeID() != axom::sidre::INT8_ID)
-  {
-    std::string msg = fmt::format(
-      "[Inlet] Boolean named '{0}' was asked for"
-      " but recieved type {1}",
-      name(),
-      valueView->getTypeID());
-    SLIC_ERROR(msg);
-  }
-
   int8 intValue = valueView->getScalar();
   if(intValue < 0 || intValue > 1)
   {
@@ -280,68 +266,21 @@ bool Field::get<bool>()
 template <>
 double Field::get<double>()
 {
-  axom::sidre::View* valueView = m_sidreGroup->getView("value");
-
-  if(valueView == nullptr)
-  {
-    SLIC_ERROR("[Inlet] Field does not contain a value");
-  }
-
-  if(valueView->getTypeID() != axom::sidre::DOUBLE_ID)
-  {
-    std::string msg = fmt::format(
-      "[Inlet] Double named '{0}' was asked for"
-      " but recieved type {1}",
-      name(),
-      valueView->getTypeID());
-    SLIC_ERROR(msg);
-  }
-
+  auto valueView = checkExistenceAndType(axom::sidre::DOUBLE_ID);
   return valueView->getScalar();
 }
 
 template <>
 int Field::get<int>()
 {
-  axom::sidre::View* valueView = m_sidreGroup->getView("value");
-
-  if(valueView == nullptr)
-  {
-    SLIC_ERROR("[Inlet] Field does not contain a value");
-  }
-
-  if(valueView->getTypeID() != axom::sidre::INT_ID)
-  {
-    std::string msg = fmt::format(
-      "[Inlet] Integer named '{0}' was asked for"
-      " but recieved type {1}",
-      name(),
-      valueView->getTypeID());
-    SLIC_ERROR(msg);
-  }
-
+  auto valueView = checkExistenceAndType(axom::sidre::INT_ID);
   return valueView->getScalar();
 }
 
 template <>
 std::string Field::get<std::string>()
 {
-  axom::sidre::View* valueView = m_sidreGroup->getView("value");
-
-  if(valueView == nullptr)
-  {
-    SLIC_ERROR("[Inlet] Field does not contain a value");
-  }
-
-  if(valueView->getTypeID() != axom::sidre::CHAR8_STR_ID)
-  {
-    std::string msg = fmt::format(
-      "[Inlet] String named '{0}' was asked for"
-      " but recieved type {1}",
-      name(),
-      valueView->getTypeID());
-    SLIC_ERROR(msg);
-  }
+  auto valueView = checkExistenceAndType(axom::sidre::CHAR8_STR_ID);
 
   const char* valueStr = valueView->getString();
   std::string value;
@@ -351,6 +290,29 @@ std::string Field::get<std::string>()
   }
   value = std::string(valueStr);
   return value;
+}
+
+axom::sidre::View* Field::checkExistenceAndType(const axom::sidre::DataTypeId expected)
+{
+  axom::sidre::View* valueView = m_sidreGroup->getView("value");
+
+  if(valueView == nullptr)
+  {
+    SLIC_ERROR("[Inlet] Field does not contain a value");
+  }
+
+  if(valueView->getTypeID() != expected)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Field with name '{0}' was expected to be of type {1}"
+      " but was actually of type {2}",
+      name(),
+      expected,
+      valueView->getTypeID());
+    SLIC_ERROR(msg);
+  }
+
+  return valueView;
 }
 
 InletType Field::type() const
