@@ -817,13 +817,13 @@ public:
     : m_tables(std::move(tables))
   { }
 
-  bool verify()
-  {
-    return std::all_of(
-      m_tables.begin(),
-      m_tables.end(),
-      [](std::shared_ptr<Verifiable>& table) { return table->verify(); });
-  }
+  /*!
+   *****************************************************************************
+   * \brief This will be called by Inlet::verify to verify the contents of this
+   *  Table and all child Tables/Fields of this Table.
+   *****************************************************************************
+   */
+  bool verify();
 
   /*!
    *****************************************************************************
@@ -837,14 +837,7 @@ public:
    * \return Shared pointer to this instance of Table
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> required(bool isRequired)
-  {
-    for(auto& table : m_tables)
-    {
-      table->required(isRequired);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<Verifiable> required(bool isRequired);
 
   /*!
    *****************************************************************************
@@ -856,17 +849,7 @@ public:
    * \return Boolean value of whether this Table is required
    *****************************************************************************
    */
-  bool required()
-  {
-    for(auto& table : m_tables)
-    {
-      if(table->required())
-      {
-        return true;
-      }
-    }
-    return false;
-  }
+  bool required();
 
   /*!
    *****************************************************************************
@@ -876,14 +859,7 @@ public:
    * \param [in] The function object that will be called by Table::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Proxy&)> lambda)
-  {
-    for(auto& table : m_tables)
-    {
-      table->registerVerifier(lambda);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Proxy&)> lambda);
 
 private:
   std::vector<std::shared_ptr<Verifiable>> m_tables;

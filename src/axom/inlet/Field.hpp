@@ -7,7 +7,7 @@
  *******************************************************************************
  * \file Field.hpp
  *
- * \brief This file contains the class definition of Inlet's Field class.
+ * \brief This file contains the class definition of Inlet's Field and AggregateField classes.
  *******************************************************************************
  */
 
@@ -466,13 +466,12 @@ public:
 
   ~AggregateField() { }
 
-  bool verify()
-  {
-    return std::all_of(
-      m_fields.begin(),
-      m_fields.end(),
-      [](std::shared_ptr<VerifiableScalar>& field) { return field->verify(); });
-  }
+  /*!
+   *****************************************************************************
+   * \brief Called by Inlet::verify to verify the contents of this Field.
+   *****************************************************************************
+  */
+  bool verify();
 
   /*!
    *****************************************************************************
@@ -486,14 +485,7 @@ public:
    * \return Shared pointer to this instance of this class
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> required(bool isRequired)
-  {
-    for(auto& field : m_fields)
-    {
-      field->required(isRequired);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> required(bool isRequired);
 
   /*!
    *****************************************************************************
@@ -505,17 +497,7 @@ public:
    * \return Boolean value of whether this Field is required
    *****************************************************************************
    */
-  bool required()
-  {
-    for(auto& field : m_fields)
-    {
-      if(field->required())
-      {
-        return true;
-      }
-    }
-    return false;
-  }
+  bool required();
 
   /*!
    *****************************************************************************
@@ -528,14 +510,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> defaultValue(const std::string& value)
-  {
-    for(auto& field : m_fields)
-    {
-      field->defaultValue(value);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> defaultValue(const std::string& value);
 
   /*!
    *****************************************************************************
@@ -548,14 +523,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> defaultValue(const char* value)
-  {
-    for(auto& field : m_fields)
-    {
-      field->defaultValue(value);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> defaultValue(const char* value);
 
   /*!
    *****************************************************************************
@@ -568,14 +536,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> defaultValue(bool value)
-  {
-    for(auto& field : m_fields)
-    {
-      field->defaultValue(value);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> defaultValue(bool value);
 
   /*!
    *****************************************************************************
@@ -588,14 +549,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> defaultValue(int value)
-  {
-    for(auto& field : m_fields)
-    {
-      field->defaultValue(value);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> defaultValue(int value);
 
   /*!
    *****************************************************************************
@@ -608,14 +562,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> defaultValue(double value)
-  {
-    for(auto& field : m_fields)
-    {
-      field->defaultValue(value);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> defaultValue(double value);
 
   /*!
    *****************************************************************************
@@ -630,14 +577,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> range(double startVal, double endVal)
-  {
-    for(auto& field : m_fields)
-    {
-      field->range(startVal, endVal);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> range(double startVal, double endVal);
 
   /*!
    *****************************************************************************
@@ -652,14 +592,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> range(int startVal, int endVal)
-  {
-    for(auto& field : m_fields)
-    {
-      field->range(startVal, endVal);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> range(int startVal, int endVal);
 
   /*!
    *****************************************************************************
@@ -670,14 +603,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> validValues(const std::vector<int>& set)
-  {
-    for(auto& field : m_fields)
-    {
-      field->validValues(set);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> validValues(const std::vector<int>& set);
 
   /*!
    *****************************************************************************
@@ -688,14 +614,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> validValues(const std::vector<double>& set)
-  {
-    for(auto& field : m_fields)
-    {
-      field->validValues(set);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> validValues(const std::vector<double>& set);
 
   /*!
    *****************************************************************************
@@ -706,14 +625,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> validValues(const std::vector<std::string>& set)
-  {
-    for(auto& field : m_fields)
-    {
-      field->validValues(set);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> validValues(const std::vector<std::string>& set);
 
   /*!
    *****************************************************************************
@@ -726,14 +638,7 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<VerifiableScalar> validValues(
-    const std::initializer_list<const char*>& set)
-  {
-    for(auto& field : m_fields)
-    {
-      field->validValues(set);
-    }
-    return shared_from_this();
-  }
+    const std::initializer_list<const char*>& set);
 
   /*!
    *****************************************************************************
@@ -744,14 +649,8 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> validValues(const std::initializer_list<int>& set)
-  {
-    for(auto& field : m_fields)
-    {
-      field->validValues(set);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> validValues(
+    const std::initializer_list<int>& set);
 
   /*!
    *****************************************************************************
@@ -763,15 +662,7 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<VerifiableScalar> validValues(
-    const std::initializer_list<double>& set)
-  {
-    for(auto& field : m_fields)
-    {
-      field->validValues(set);
-    }
-    return shared_from_this();
-  }
-
+    const std::initializer_list<double>& set);
   /*!
    *****************************************************************************
    * \brief Registers the function object that will verify this Field's contents
@@ -780,14 +671,8 @@ public:
    * \param [in] The function object that will be called by Field::verify().
    *****************************************************************************
   */
-  std::shared_ptr<VerifiableScalar> registerVerifier(std::function<bool(Proxy&)> lambda)
-  {
-    for(auto& field : m_fields)
-    {
-      field->registerVerifier(lambda);
-    }
-    return shared_from_this();
-  }
+  std::shared_ptr<VerifiableScalar> registerVerifier(
+    std::function<bool(Proxy&)> lambda);
 
 private:
   std::vector<std::shared_ptr<VerifiableScalar>> m_fields;

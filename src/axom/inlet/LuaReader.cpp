@@ -104,7 +104,6 @@ bool LuaReader::getStringMap(const std::string& id,
 
 bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices)
 {
-  indices.clear();
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
 
@@ -132,7 +131,7 @@ bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices
       return false;
     }
   }
-
+  // std::transform ends up being messier here
   for(const auto& entry : t)
   {
     indices.push_back(entry.first.as<int>());

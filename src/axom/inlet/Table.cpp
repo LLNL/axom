@@ -710,5 +710,44 @@ std::unordered_map<std::string, std::shared_ptr<Field>> Table::getChildFields()
   return m_fieldChildren;
 }
 
+bool AggregateTable::verify()
+{
+  return std::all_of(
+    m_tables.begin(),
+    m_tables.end(),
+    [](std::shared_ptr<Verifiable>& table) { return table->verify(); });
+}
+
+std::shared_ptr<Verifiable> AggregateTable::required(bool isRequired)
+{
+  for(auto& table : m_tables)
+  {
+    table->required(isRequired);
+  }
+  return shared_from_this();
+}
+
+bool AggregateTable::required()
+{
+  for(auto& table : m_tables)
+  {
+    if(table->required())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::shared_ptr<Verifiable> AggregateTable::registerVerifier(
+  std::function<bool(Proxy&)> lambda)
+{
+  for(auto& table : m_tables)
+  {
+    table->registerVerifier(lambda);
+  }
+  return shared_from_this();
+}
+
 }  // end namespace inlet
 }  // end namespace axom

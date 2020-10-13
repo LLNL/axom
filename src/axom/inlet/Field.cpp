@@ -284,13 +284,7 @@ std::string Field::get<std::string>()
   auto valueView = checkExistenceAndType(axom::sidre::CHAR8_STR_ID);
 
   const char* valueStr = valueView->getString();
-  std::string value;
-  if(valueStr == nullptr)
-  {
-    value = std::string("");
-  }
-  value = std::string(valueStr);
-  return value;
+  return (valueStr == nullptr) ? "" : valueStr;
 }
 
 axom::sidre::View* Field::checkExistenceAndType(const axom::sidre::DataTypeId expected)
@@ -599,6 +593,170 @@ std::string Field::name()
 {
   return removePrefix(m_sidreRootGroup->getPathName(),
                       m_sidreGroup->getPathName());
+}
+
+bool AggregateField::verify()
+{
+  return std::all_of(
+    m_fields.begin(),
+    m_fields.end(),
+    [](std::shared_ptr<VerifiableScalar>& field) { return field->verify(); });
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::required(bool isRequired)
+{
+  for(auto& field : m_fields)
+  {
+    field->required(isRequired);
+  }
+  return shared_from_this();
+}
+
+bool AggregateField::required()
+{
+  for(auto& field : m_fields)
+  {
+    if(field->required())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(
+  const std::string& value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(const char* value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(bool value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(int value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(double value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::range(double startVal,
+                                                        double endVal)
+{
+  for(auto& field : m_fields)
+  {
+    field->range(startVal, endVal);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::range(int startVal, int endVal)
+{
+  for(auto& field : m_fields)
+  {
+    field->range(startVal, endVal);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::vector<int>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::vector<double>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::vector<std::string>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::initializer_list<const char*>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::initializer_list<int>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::initializer_list<double>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::registerVerifier(
+  std::function<bool(Proxy&)> lambda)
+{
+  for(auto& field : m_fields)
+  {
+    field->registerVerifier(lambda);
+  }
+  return shared_from_this();
 }
 
 }  // end namespace inlet
