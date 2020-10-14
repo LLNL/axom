@@ -5,12 +5,13 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 #
 
+variables:
+  DO_BUILD: 'yes'
+  DO_TEST: 'yes'
+  DO_CLEAN: 'no'
+
 jobs:
--job: Build_and_Test
-  variables:
-    DO_BUILD: 'yes'
-    DO_TEST: 'yes'
-    DO_CLEAN: 'no'
+- job: Build_and_Test
 
   strategy:
     matrix:
