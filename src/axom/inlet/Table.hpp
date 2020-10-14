@@ -251,8 +251,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Verifiable> addBoolArray(const std::string& name,
-                                           const std::string& description = "",
-                                           const std::string& pathOverride = "");
+                                           const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -265,8 +264,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Verifiable> addIntArray(const std::string& name,
-                                          const std::string& description = "",
-                                          const std::string& pathOverride = "");
+                                          const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -280,8 +278,7 @@ public:
    */
   std::shared_ptr<Verifiable> addDoubleArray(
     const std::string& name,
-    const std::string& description = "",
-    const std::string& pathOverride = "");
+    const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -295,8 +292,7 @@ public:
    */
   std::shared_ptr<Verifiable> addStringArray(
     const std::string& name,
-    const std::string& description = "",
-    const std::string& pathOverride = "");
+    const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -389,7 +385,7 @@ public:
   std::shared_ptr<VerifiableScalar> addBool(const std::string& name,
                                             const std::string& description = "")
   {
-    return addBoolHelper(name, description);
+    return addPrimitive<bool>(name, description);
   }
 
   /*!
@@ -411,7 +407,7 @@ public:
     const std::string& name,
     const std::string& description = "")
   {
-    return addDoubleHelper(name, description);
+    return addPrimitive<double>(name, description);
   }
 
   /*!
@@ -432,7 +428,7 @@ public:
   std::shared_ptr<VerifiableScalar> addInt(const std::string& name,
                                            const std::string& description = "")
   {
-    return addIntHelper(name, description);
+    return addPrimitive<int>(name, description);
   }
   /*!
    *****************************************************************************
@@ -453,8 +449,60 @@ public:
     const std::string& name,
     const std::string& description = "")
   {
-    return addStringHelper(name, description);
+    return addPrimitive<std::string>(name, description);
   }
+
+  /*!
+   *****************************************************************************
+   * \brief Add a Field to the input file schema.
+   *
+   * Adds a Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
+   * value is read and stored in the datastore. 
+   *
+   * \param [in] name Name of the Table expected in the input file
+   * \param [in] description Description of the Table
+   * \param [in] forArray Whether the primitive is in an array, in which
+   * case the provided value should be inserted instead of the one read from
+   * the input deck
+   * \param [in] val A provided value, will be overwritten if found at specified
+   * path in input deck
+   * \param [in] pathOverride The path within the input deck to read from, if
+   * different than the structure of the Sidre datastore
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  std::shared_ptr<VerifiableScalar> addPrimitive(
+    const std::string& name,
+    const std::string& description = "",
+    bool forArray = false,
+    T val = T {},
+    const std::string& pathOverride = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of primitive Fields to the input deck schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   * \param [in] pathOverride The path within the input deck to read from, if
+   * different than the structure of the Sidre datastore
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  std::shared_ptr<Verifiable> addPrimitiveArray(
+    const std::string& name,
+    const std::string& description = "",
+    const std::string& pathOverride = "");
 
   /*!
    *******************************************************************************
@@ -678,30 +726,47 @@ public:
   std::shared_ptr<Field> getField(const std::string& fieldName);
 
 private:
-  std::shared_ptr<VerifiableScalar> addBoolHelper(
-    const std::string& name,
-    const std::string& description = "",
-    bool forArray = false,
-    bool num = 0,
-    const std::string& pathOverride = "");
-  std::shared_ptr<VerifiableScalar> addIntHelper(
-    const std::string& name,
-    const std::string& description = "",
-    bool forArray = false,
-    int num = 0,
-    const std::string& pathOverride = "");
-  std::shared_ptr<VerifiableScalar> addDoubleHelper(
-    const std::string& name,
-    const std::string& description = "",
-    bool forArray = false,
-    double num = 0,
-    const std::string& pathOverride = "");
-  std::shared_ptr<VerifiableScalar> addStringHelper(
-    const std::string& name,
-    const std::string& description = "",
-    bool forArray = false,
-    const std::string& str = "",
-    const std::string& pathOverride = "");
+  /*!
+   *****************************************************************************
+   * \brief Helper method template for adding primitives
+   * 
+   * Adds the value at the templated type to the sidre group
+   * 
+   * \param [inout] sidreGroup The group to add the primitive view to
+   * \param [in] lookupPath The path within the input deck to read from
+   * \param [in] forArray Whether the primitive is in an array, in which
+   * case the provided value should be inserted instead of the one read from
+   * the input deck
+   * \param [in] val A provided value, will be overwritten if found at specified
+   * path in input deck
+   *
+   * \return Type ID for the inserted view
+   *****************************************************************************
+   */
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  axom::sidre::DataTypeId addPrimitiveHelper(axom::sidre::Group* sidreGroup,
+                                             const std::string& lookupPath,
+                                             bool forArray,
+                                             T val);
+
+  /*!
+   *****************************************************************************
+   * \brief Helper method template for adding primitives
+   * 
+   * Reads an array at the provided path into the provided table
+   * 
+   * \param [inout] table The inlet::Table to add the array to 
+   * \param [in] lookupPath The path within the input deck to read from
+   * 
+   *****************************************************************************
+   */
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  void addPrimitiveArrayHelper(Table& table, const std::string& lookupPath);
+
   /*!
    *****************************************************************************
    * \brief Creates the basic Sidre Group for this Table and stores the given
@@ -802,6 +867,51 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
   std::function<bool(Proxy&)> m_verifier;
 };
+
+// To-be-defined template specializations
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  bool val);
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  int val);
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  double val);
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  std::string val);
+
+template <>
+void Table::addPrimitiveArrayHelper<bool>(Table& table,
+                                          const std::string& lookupPath);
+
+template <>
+void Table::addPrimitiveArrayHelper<int>(Table& table,
+                                         const std::string& lookupPath);
+
+template <>
+void Table::addPrimitiveArrayHelper<double>(Table& table,
+                                            const std::string& lookupPath);
+
+template <>
+void Table::addPrimitiveArrayHelper<std::string>(Table& table,
+                                                 const std::string& lookupPath);
 
 /*!
    *****************************************************************************

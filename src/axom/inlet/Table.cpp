@@ -79,158 +79,42 @@ std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
   int* array = view->getArray();
   // Need to go up one level because this is an _inlet_array group
   auto pos = m_name.find_last_of("/");
-  std::string base_name = m_name.substr(0, pos);
+  std::string baseName = m_name.substr(0, pos);
   for(int i = 0; i < view->getNumElements(); i++)
   {
-    auto index_label = std::to_string(array[i]);
+    auto indexLabel = std::to_string(array[i]);
     // The base name reflects the structure of the actual data
     // and is used for the reader call
-    auto full_path = appendPrefix(base_name, index_label);
-    full_path = appendPrefix(full_path, name);
+    auto fullPath = appendPrefix(baseName, indexLabel);
+    fullPath = appendPrefix(fullPath, name);
     // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
-    result.push_back({index_label, full_path});
+    result.push_back({indexLabel, fullPath});
   }
   return result;
 }
 
 std::shared_ptr<Verifiable> Table::addBoolArray(const std::string& name,
-                                                const std::string& description,
-                                                const std::string& pathOverride)
+                                                const std::string& description)
 {
-  if(m_sidreGroup->hasView("_inlet_array_indices"))
-  {
-    std::vector<std::shared_ptr<Verifiable>> tables;
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
-    {
-      tables.push_back(getTable(indexPath.first)
-                         ->addBoolArray(name, description, indexPath.second));
-    }
-    return std::make_shared<AggregateTable>(std::move(tables));
-  }
-  else
-  {
-    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-    std::unordered_map<int, bool> map;
-    const std::string& fullName = appendPrefix(m_name, name);
-    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
-    if(m_reader->getBoolMap(lookup_path, map))
-    {
-      for(auto p : map)
-      {
-        table->addBoolHelper(std::to_string(p.first), "", true, p.second);
-      }
-    }
-    else
-    {
-      SLIC_WARNING(fmt::format("Bool array {0} not found.", lookup_path));
-    }
-    return table;
-  }
+  return addPrimitiveArray<bool>(name, description);
 }
 
 std::shared_ptr<Verifiable> Table::addIntArray(const std::string& name,
-                                               const std::string& description,
-                                               const std::string& pathOverride)
+                                               const std::string& description)
 {
-  if(m_sidreGroup->hasView("_inlet_array_indices"))
-  {
-    std::vector<std::shared_ptr<Verifiable>> tables;
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
-    {
-      tables.push_back(getTable(indexPath.first)
-                         ->addIntArray(name, description, indexPath.second));
-    }
-    return std::make_shared<AggregateTable>(std::move(tables));
-  }
-  else
-  {
-    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-    std::unordered_map<int, int> map;
-    const std::string& fullName = appendPrefix(m_name, name);
-    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
-    if(m_reader->getIntMap(lookup_path, map))
-    {
-      for(auto p : map)
-      {
-        table->addIntHelper(std::to_string(p.first), "", true, p.second);
-      }
-    }
-    else
-    {
-      SLIC_WARNING(fmt::format("Int array {0} not found.", lookup_path));
-    }
-    return table;
-  }
+  return addPrimitiveArray<int>(name, description);
 }
 
 std::shared_ptr<Verifiable> Table::addDoubleArray(const std::string& name,
-                                                  const std::string& description,
-                                                  const std::string& pathOverride)
+                                                  const std::string& description)
 {
-  if(m_sidreGroup->hasView("_inlet_array_indices"))
-  {
-    std::vector<std::shared_ptr<Verifiable>> tables;
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
-    {
-      tables.push_back(getTable(indexPath.first)
-                         ->addDoubleArray(name, description, indexPath.second));
-    }
-    return std::make_shared<AggregateTable>(std::move(tables));
-  }
-  else
-  {
-    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-    std::unordered_map<int, double> map;
-    const std::string& fullName = appendPrefix(m_name, name);
-    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
-    if(m_reader->getDoubleMap(lookup_path, map))
-    {
-      for(auto p : map)
-      {
-        table->addDoubleHelper(std::to_string(p.first), "", true, p.second);
-      }
-    }
-    else
-    {
-      SLIC_WARNING(fmt::format("Double array {0} not found.", lookup_path));
-    }
-    return table;
-  }
+  return addPrimitiveArray<double>(name, description);
 }
 
 std::shared_ptr<Verifiable> Table::addStringArray(const std::string& name,
-                                                  const std::string& description,
-                                                  const std::string& pathOverride)
+                                                  const std::string& description)
 {
-  if(m_sidreGroup->hasView("_inlet_array_indices"))
-  {
-    std::vector<std::shared_ptr<Verifiable>> tables;
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
-    {
-      tables.push_back(getTable(indexPath.first)
-                         ->addDoubleArray(name, description, indexPath.second));
-    }
-    return std::make_shared<AggregateTable>(std::move(tables));
-  }
-  else
-  {
-    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-    std::unordered_map<int, std::string> map;
-    const std::string& fullName = appendPrefix(m_name, name);
-    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
-    if(m_reader->getStringMap(lookup_path, map))
-    {
-      for(auto p : map)
-      {
-        table->addStringHelper(std::to_string(p.first), "", true, p.second);
-      }
-    }
-    else
-    {
-      SLIC_WARNING(fmt::format("String array {0} not found.", lookup_path));
-    }
-    return table;
-  }
+  return addPrimitiveArray<std::string>(name, description);
 }
 
 std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
@@ -241,11 +125,14 @@ std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader->getArrayIndices(fullName, indices))
   {
+    // This is how an array of user-defined type is differentiated
+    // from an array of primitives - the tables have to be allocated
+    // before they are populated as we don't know the schema of the
+    // generic type yet
     auto view =
       table->m_sidreGroup->createViewAndAllocate("_inlet_array_indices",
                                                  axom::sidre::INT_ID,
                                                  indices.size());
-    table->m_sidreGroup->createViewString("_inlet_base_array_name", name);
     int* raw_array = view->getArray();
     std::copy(indices.begin(), indices.end(), raw_array);
     for(const auto idx : indices)
@@ -305,11 +192,14 @@ std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup,
   return field;
 }
 
-std::shared_ptr<VerifiableScalar> Table::addBoolHelper(
+template <typename T,
+          typename SFINAE =
+            typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+std::shared_ptr<VerifiableScalar> Table::addPrimitive(
   const std::string& name,
   const std::string& description,
   bool forArray,
-  bool num,
+  T val,
   const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
@@ -319,7 +209,7 @@ std::shared_ptr<VerifiableScalar> Table::addBoolHelper(
     {
       fields.push_back(
         getTable(indexPath.first)
-          ->addBoolHelper(name, description, forArray, num, indexPath.second));
+          ->addPrimitive<T>(name, description, forArray, val, indexPath.second));
     }
     return std::make_shared<AggregateField>(std::move(fields));
   }
@@ -329,130 +219,219 @@ std::shared_ptr<VerifiableScalar> Table::addBoolHelper(
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     if(sidreGroup == nullptr)
     {
-      //TODO: better idea?
       return std::shared_ptr<Field>(nullptr);
     }
-    bool value = num;
-    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
-    if(forArray || m_reader->getBool(lookup_path, value))
-    {
-      sidreGroup->createViewScalar("value", value ? int8(1) : int8(0));
-    }
-    return addField(sidreGroup, axom::sidre::DataTypeId::INT8_ID, fullName, name);
+
+    std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    auto typeId = addPrimitiveHelper(sidreGroup, lookupPath, forArray, val);
+    return addField(sidreGroup, typeId, fullName, name);
   }
 }
 
-std::shared_ptr<VerifiableScalar> Table::addDoubleHelper(
+// Explicit instantiations
+template std::shared_ptr<VerifiableScalar> Table::addPrimitive<bool>(
   const std::string& name,
   const std::string& description,
   bool forArray,
-  double num,
+  bool val,
+  const std::string& pathOverride);
+
+template std::shared_ptr<VerifiableScalar> Table::addPrimitive<int>(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  int val,
+  const std::string& pathOverride);
+
+template std::shared_ptr<VerifiableScalar> Table::addPrimitive<double>(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  double val,
+  const std::string& pathOverride);
+
+template std::shared_ptr<VerifiableScalar> Table::addPrimitive<std::string>(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  std::string val,
+  const std::string& pathOverride);
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  bool val)
+{
+  if(forArray || m_reader->getBool(lookupPath, val))
+  {
+    sidreGroup->createViewScalar("value", val ? int8(1) : int8(0));
+  }
+  return axom::sidre::DataTypeId::INT8_ID;
+}
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  int val)
+{
+  if(forArray || m_reader->getInt(lookupPath, val))
+  {
+    sidreGroup->createViewScalar("value", val);
+  }
+  return axom::sidre::DataTypeId::INT_ID;
+}
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  double val)
+{
+  if(forArray || m_reader->getDouble(lookupPath, val))
+  {
+    sidreGroup->createViewScalar("value", val);
+  }
+  return axom::sidre::DataTypeId::DOUBLE_ID;
+}
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  std::string val)
+{
+  if(forArray || m_reader->getString(lookupPath, val))
+  {
+    sidreGroup->createViewString("value", val);
+  }
+  return axom::sidre::DataTypeId::CHAR8_STR_ID;
+}
+
+template <typename T,
+          typename SFINAE =
+            typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+std::shared_ptr<Verifiable> Table::addPrimitiveArray(
+  const std::string& name,
+  const std::string& description,
   const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    std::vector<std::shared_ptr<VerifiableScalar>> fields;
+    std::vector<std::shared_ptr<Verifiable>> tables;
     for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
-      fields.push_back(
+      tables.push_back(
         getTable(indexPath.first)
-          ->addDoubleHelper(name, description, forArray, num, indexPath.second));
+          ->addPrimitiveArray<T>(name, description, indexPath.second));
     }
-    return std::make_shared<AggregateField>(std::move(fields));
+    return std::make_shared<AggregateTable>(std::move(tables));
   }
   else
   {
-    std::string fullName = appendPrefix(m_name, name);
-    axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-    if(sidreGroup == nullptr)
-    {
-      return std::shared_ptr<Field>(nullptr);
-    }
-
-    double value = num;
-    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
-    if(forArray || m_reader->getDouble(lookup_path, value))
-    {
-      sidreGroup->createViewScalar("value", value);
-    }
-    return addField(sidreGroup, axom::sidre::DataTypeId::DOUBLE_ID, fullName, name);
+    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+    const std::string& fullName = appendPrefix(m_name, name);
+    std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    addPrimitiveArrayHelper<T>(*table, lookupPath);
+    return table;
   }
 }
 
-std::shared_ptr<VerifiableScalar> Table::addIntHelper(
+// Explicit instantiations
+template std::shared_ptr<Verifiable> Table::addPrimitiveArray<bool>(
   const std::string& name,
   const std::string& description,
-  bool forArray,
-  int num,
-  const std::string& pathOverride)
+  const std::string& pathOverride);
+
+template std::shared_ptr<Verifiable> Table::addPrimitiveArray<int>(
+  const std::string& name,
+  const std::string& description,
+  const std::string& pathOverride);
+
+template std::shared_ptr<Verifiable> Table::addPrimitiveArray<double>(
+  const std::string& name,
+  const std::string& description,
+  const std::string& pathOverride);
+
+template std::shared_ptr<Verifiable> Table::addPrimitiveArray<std::string>(
+  const std::string& name,
+  const std::string& description,
+  const std::string& pathOverride);
+
+template <>
+void Table::addPrimitiveArrayHelper<bool>(Table& table,
+                                          const std::string& lookupPath)
 {
-  if(m_sidreGroup->hasView("_inlet_array_indices"))
+  std::unordered_map<int, bool> map;
+  if(m_reader->getBoolMap(lookupPath, map))
   {
-    std::vector<std::shared_ptr<VerifiableScalar>> fields;
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
+    for(auto p : map)
     {
-      fields.push_back(
-        getTable(indexPath.first)
-          ->addIntHelper(name, description, forArray, num, indexPath.second));
+      table.addPrimitive(std::to_string(p.first), "", true, p.second);
     }
-    return std::make_shared<AggregateField>(std::move(fields));
   }
   else
   {
-    std::string fullName = appendPrefix(m_name, name);
-    axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-    if(sidreGroup == nullptr)
-    {
-      return std::shared_ptr<Field>(nullptr);
-    }
-
-    int value = num;
-    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
-    if(forArray || m_reader->getInt(lookup_path, value))
-    {
-      sidreGroup->createViewScalar("value", value);
-    }
-    return addField(sidreGroup, axom::sidre::DataTypeId::INT_ID, fullName, name);
+    SLIC_WARNING(fmt::format("Bool array {0} not found.", lookupPath));
   }
 }
 
-std::shared_ptr<VerifiableScalar> Table::addStringHelper(
-  const std::string& name,
-  const std::string& description,
-  bool forArray,
-  const std::string& str,
-  const std::string& pathOverride)
+template <>
+void Table::addPrimitiveArrayHelper<int>(Table& table,
+                                         const std::string& lookupPath)
 {
-  if(m_sidreGroup->hasView("_inlet_array_indices"))
+  std::unordered_map<int, int> map;
+  if(m_reader->getIntMap(lookupPath, map))
   {
-    std::vector<std::shared_ptr<VerifiableScalar>> fields;
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
+    for(auto p : map)
     {
-      fields.push_back(
-        getTable(indexPath.first)
-          ->addStringHelper(name, description, forArray, str, indexPath.second));
+      table.addPrimitive(std::to_string(p.first), "", true, p.second);
     }
-    return std::make_shared<AggregateField>(std::move(fields));
   }
   else
   {
-    std::string fullName = appendPrefix(m_name, name);
-    axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-    if(sidreGroup == nullptr)
-    {
-      return std::shared_ptr<Field>(nullptr);
-    }
+    SLIC_WARNING(fmt::format("Int array {0} not found.", lookupPath));
+  }
+}
 
-    std::string value = str;
-    std::string lookup_path = (pathOverride.empty()) ? fullName : pathOverride;
-    if(forArray || m_reader->getString(lookup_path, value))
+template <>
+void Table::addPrimitiveArrayHelper<double>(Table& table,
+                                            const std::string& lookupPath)
+{
+  std::unordered_map<int, double> map;
+  if(m_reader->getDoubleMap(lookupPath, map))
+  {
+    for(auto p : map)
     {
-      sidreGroup->createViewString("value", value);
+      table.addPrimitive(std::to_string(p.first), "", true, p.second);
     }
-    return addField(sidreGroup,
-                    axom::sidre::DataTypeId::CHAR8_STR_ID,
-                    fullName,
-                    name);
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("Double array {0} not found.", lookupPath));
+  }
+}
+
+template <>
+void Table::addPrimitiveArrayHelper<std::string>(Table& table,
+                                                 const std::string& lookupPath)
+{
+  std::unordered_map<int, std::string> map;
+  if(m_reader->getStringMap(lookupPath, map))
+  {
+    for(auto p : map)
+    {
+      table.addPrimitive(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("String array {0} not found.", lookupPath));
   }
 }
 
