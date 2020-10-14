@@ -14,6 +14,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   class was adapted from MFEM's SidreDataCollection and is enabled when Axom is built with MFEM
   *and* the `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` CMake option is enabled.
 - Added `slic::setAbortFunction` to configure a custom callback when SLIC aborts.
+- Added a `batched` option to quest's InOutOctree containment query example application.
+  This uses a kernel to test for containment on an array of points.
+  The query uses OpenMP threading, when available.
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
