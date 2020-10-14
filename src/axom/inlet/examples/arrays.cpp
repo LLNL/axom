@@ -22,12 +22,8 @@ int main()
 
   // Register the verifier, which will verify the array values
   auto vals = inlet->getGlobalTable()->addStringArray("values");
-  vals->registerVerifier([&]() -> bool {
-    std::unordered_map<int, std::string> map;
-    if(!vals->getArray(map))
-    {
-      std::cout << "Error: Array not found\n";
-    }
+  vals->registerVerifier([](axom::inlet::Proxy& table) -> bool {
+    std::unordered_map<int, std::string> map = table;
     bool startFound = false;
     bool stopFound = false;
     for(auto p : map)
@@ -51,18 +47,11 @@ int main()
                   : std::cout << "Verification failed\n";
 
   // Print contents of map
-  std::unordered_map<int, std::string> map;
-  if(!vals->getArray(map))
+  std::unordered_map<int, std::string> map = (*inlet)["values"];
+  std::cout << "\nMap Contents:\n";
+  for(auto p : map)
   {
-    std::cout << "\nError: Array not found\n";
-  }
-  else
-  {
-    std::cout << "\nMap Contents:\n";
-    for(auto p : map)
-    {
-      std::cout << p.first << " " << p.second << std::endl;
-    }
+    std::cout << p.first << " " << p.second << std::endl;
   }
 
   return 0;

@@ -579,7 +579,17 @@ public:
   typename std::enable_if<detail::is_inlet_array<T>::value, T>::type get()
   {
     T result;
-    if(!getTable("_inlet_array")->getArray(result))
+    // This needs to work transparently for both references to the underlying
+    // internal table and references using the same path as the data file
+    if(axom::utilities::string::endsWith(m_name, "_inlet_array"))
+    {
+      if(!getArray(result))
+      {
+        SLIC_ERROR(
+          "[Inlet] Table does not contain a valid array of requested type");
+      }
+    }
+    else if(!getTable("_inlet_array")->getArray(result))
     {
       SLIC_ERROR(
         "[Inlet] Table does not contain a valid array of requested type");
@@ -975,6 +985,6 @@ private:
 };
 
 }  // end namespace inlet
-}  // end namespace axom
+}  // namespace axom
 
 #endif

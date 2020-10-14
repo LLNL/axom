@@ -60,10 +60,8 @@ void findDouble(std::string path, std::shared_ptr<Inlet> inlet)
 
 void defineSchema(std::shared_ptr<Inlet> inlet)
 {
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Add the description to the thermal_solver/mesh/filename Field
-  currField =
+  auto currField =
     inlet->addString("thermal_solver/mesh/filename", "file for thermal solver");
   // Set the field's required property to true
   currField->required(true);

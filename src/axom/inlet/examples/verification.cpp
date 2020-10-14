@@ -24,19 +24,20 @@ int main()
   auto dimField = myInlet->addInt("dimensions")->required(true)->defaultValue(2);
 
   // defines a required table named vector with an internal field named 'x'
-  auto v = myInlet->addTable("vector")->required(true);
+  auto v = myInlet->addTable("vector");
+  v->required(true);
   v->addDouble("x");
   // _inlet_workflow_defining_schema_end
 
   // _inlet_workflow_verification_start
-  v->registerVerifier([&]() -> bool {
+  v->registerVerifier([&myInlet](axom::inlet::Proxy& table) -> bool {
     int dim = (*myInlet)["dimensions"];
-    bool x_present = v->hasField("x") &&
-      ((*myInlet)["vector/x"].type() == axom::inlet::InletType::Double);
-    bool y_present = v->hasField("y") &&
-      ((*myInlet)["vector/y"].type() == axom::inlet::InletType::Double);
-    bool z_present = v->hasField("z") &&
-      ((*myInlet)["vector/z"].type() == axom::inlet::InletType::Double);
+    bool x_present = table.contains("x") &&
+      (table["x"].type() == axom::inlet::InletType::Double);
+    bool y_present = table.contains("y") &&
+      (table["y"].type() == axom::inlet::InletType::Double);
+    bool z_present = table.contains("z") &&
+      (table["z"].type() == axom::inlet::InletType::Double);
     if(dim == 1 && x_present)
     {
       return true;
