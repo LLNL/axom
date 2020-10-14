@@ -1,4 +1,8 @@
+# This script can be run with the following command:
+# docker build --build-arg branch=<your branch here, defaults to develop> -t "axom/tpls:clang-10" - < dockerfile_clang-10
+
 FROM axom/compilers:clang-10
+ARG branch=develop
 
 # Update base image so we don't have to install so many things via Spack
 SHELL ["/bin/bash", "-c"]
@@ -11,7 +15,7 @@ WORKDIR "/home/axom"
 USER axom
 
 # Clone axom
-RUN git clone -b feature/white238/addclang10docker --recursive https://github.com/LLNL/axom.git
+RUN git clone -b $branch --recursive https://github.com/LLNL/axom.git
 
 # Build TPLs
 WORKDIR "/home/axom/axom"
