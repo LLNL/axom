@@ -21,8 +21,25 @@ or_die cd axom
 git submodule init 
 git submodule update 
 
-echo HOST_CONFIG
-echo $HOST_CONFIG
+echo "~~~~ helpful info ~~~~"
+echo "USER="`id -u -n`
+echo "PWD="`pwd`
+echo "HOST_CONFIG=$HOST_CONFIG"
+echo "~~~~~~~~~~~~~~~~~~~~~~"
+
+echo "~~~~~~~~~ls -al /~~~~~~~~~~"
+ls -al /
+echo "~~~~~~~~~~~~~~~~~~~~~~"
+echo "~~~~~~~~~ls -al /home~~~~~~~~~~"
+ls -al /home
+echo "~~~~~~~~~~~~~~~~~~~~~~"
+echo "~~~~~~~~~ls -al /home/axom~~~~~~~~~~"
+ls -al /home/axom
+echo "~~~~~~~~~~~~~~~~~~~~~~"
+echo "~~~~~~~~~ls -al /home/axom/axom~~~~~~~~~~"
+ls -al /home/axom/axom
+echo "~~~~~~~~~~~~~~~~~~~~~~"
+
 
 echo "~~~~~~ RUNNING CMAKE ~~~~~~~~"
 or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake
