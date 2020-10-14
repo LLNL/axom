@@ -87,10 +87,10 @@ TEST(primal_vector, vector_constructors)
     EXPECT_EQ(0, fromInitializerListTooShort[i]);
   }
 
-  primal::Vector<int, 3> fromInitializerNoEquaslSign {10, 20, 30};
+  primal::Vector<int, 3> fromInitializerNoEqualsSign {10, 20, 30};
   for(int i = 0; i < 3; ++i)
   {
-    EXPECT_EQ(10 * (i + 1), fromInitializerNoEquaslSign[i]);
+    EXPECT_EQ(10 * (i + 1), fromInitializerNoEqualsSign[i]);
   }
 }
 
