@@ -83,7 +83,7 @@ public:
     , m_docEnabled(docEnabled)
   { }
 
-  ~Field() = default;
+  virtual ~Field() = default;
 
   /*!
    *****************************************************************************
@@ -464,7 +464,7 @@ public:
     : m_fields(std::move(fields))
   { }
 
-  ~AggregateField() { }
+  virtual ~AggregateField() = default;
 
   /*!
    *****************************************************************************

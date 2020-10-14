@@ -192,9 +192,7 @@ std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup,
   return field;
 }
 
-template <typename T,
-          typename SFINAE =
-            typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+template <typename T, typename SFINAE>
 std::shared_ptr<VerifiableScalar> Table::addPrimitive(
   const std::string& name,
   const std::string& description,
@@ -313,9 +311,7 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
   return axom::sidre::DataTypeId::CHAR8_STR_ID;
 }
 
-template <typename T,
-          typename SFINAE =
-            typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+template <typename T, typename SFINAE>
 std::shared_ptr<Verifiable> Table::addPrimitiveArray(
   const std::string& name,
   const std::string& description,
