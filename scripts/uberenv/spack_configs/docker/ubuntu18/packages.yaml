@@ -40,72 +40,64 @@ packages:
       jpeg: [libjpeg-turbo, libjpeg]
 
   # Spack may grab for mpi & we don't want to use them
-  openmpi:
-    buildable: False
+  mpi:
+    buildable: false
   mpich:
-    buildable: False
-  spectrum-mpi:
-    buildable: False
-  charmpp:
-    buildable: False
-  charm:
-    buildable: False
-  intel-mpi:
-    buildable: False
-  intel-parallel-studio:
-    buildable: False
-  fujitsu-mpi:
-    buildable: False
-  mpilander:
-    buildable: False
-  mpt:
-    buildable: False
-  mpich:
-    paths:
-      mpich@3.3: /usr
-    buildable: False
+    externals:
+    - spec: mpich@3.3
+      prefix: /usr
 
   # System level packages to not build
   autotools:
     buildable: false
-    paths:
-      autotools: /usr
+    externals:
+    - spec: autotools
+      prefix: /usr
   bzip2:
     buildable: false
-    paths:
-      bzip2: /usr
+    externals:
+    - spec: bzip2
+      prefix: /usr
   gettext:
     buildable: false
-    paths:
-      gettext: /usr
+    externals:
+    - spec: gettext
+      prefix: /usr
   m4:
     buildable: false
-    paths:
-      m4: /usr
+    externals:
+    - spec: m4
+      prefix: /usr
   perl:
     buildable: false
-    paths:
-      perl: /usr
+    externals:
+    - spec: perl
+      prefix: /usr
   pkg-config:
     buildable: false
-    paths:
-      pkg-config: /usr
+    externals:
+    - spec: pkg-config
+      prefix: /usr
   tar:
     buildable: false
-    paths:
-      tar: /usr
+    externals:
+    - spec: tar
+      prefix: /usr
   graphviz:
     buildable: false
-    paths:
-      graphviz: /usr
+    externals:
+    - spec: graphviz
+      prefix: /usr
   openblas:
     buildable: false
-    paths:
-      openblas: /usr
+    externals:
+    - spec: openblas
+      prefix: /usr
 
   # Globally lock in version of CMake
   cmake:
     version: [3.10.1]
     buildable: false
-    paths:
-      cmake: /usr
+    externals:
+    - spec: cmake@3.10.1
+      prefix: /usr
