@@ -20,6 +20,7 @@ RUN git clone -b $branch --recursive https://github.com/LLNL/axom.git
 # Build TPLs
 WORKDIR "/home/axom/axom"
 RUN python3 ./scripts/uberenv/uberenv.py --spack-config-dir=./scripts/uberenv/spack_configs/docker/ubuntu18 \
+                                         --project-json=./scripts/uberenv/project.json \
                                          --spec=%clang@10.0.0 --prefix=/home/axom/axom_tpls -k
 
 # Make sure the new hostconfig worked

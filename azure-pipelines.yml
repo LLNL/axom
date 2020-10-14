@@ -108,5 +108,6 @@ jobs:
     submodules: recursive
   - script:  |
       echo " -e HOST_CONFIG $(Compiler_ImageName) ./scripts/azure-pipelines/linux-check.sh"
+      docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
       docker run --rm -v `pwd`:/home/axom/axom -e HOST_CONFIG $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-check.sh
     displayName: '$(TEST_TARGET) Style Check'
