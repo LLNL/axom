@@ -12,14 +12,6 @@ variables:
 
 strategy:
   matrix:
-# Temporarily disabled due to running out of space
-#    linux_gcc6:
-#      VM_ImageName: 'ubuntu-16.04'
-#      Compiler_ImageName: 'axom/tpls:gcc-6'
-#      CMAKE_EXTRA_FLAGS: ''
-#      COMPILER: 'g++'
-#      TEST_TARGET: 'linux_gcc6'
-#      HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-gcc@6.1.0'
     linux_gcc7:
       VM_ImageName: 'ubuntu-16.04'
       Compiler_ImageName: 'axom/tpls:gcc-7'
@@ -41,20 +33,13 @@ strategy:
       COMPILER: 'g++'
       TEST_TARGET: 'linux_gcc8_64bit'
       HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-gcc@8.1.0'
-    linux_clang4:
-       VM_ImageName: 'ubuntu-16.04'
-       Compiler_ImageName: 'axom/tpls:clang-4'
-       CMAKE_EXTRA_FLAGS: ''
-       COMPILER: 'clang++'
-       TEST_TARGET: 'linux_clang4'
-       HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-clang@4.0.0'
     linux_clang6:
-       VM_ImageName: 'ubuntu-16.04'
-       Compiler_ImageName: 'axom/tpls:clang-6'
+       VM_ImageName: 'ubuntu-18.04'
+       Compiler_ImageName: 'axom/tpls:clang-10'
        CMAKE_EXTRA_FLAGS: ''
        COMPILER: 'clang++'
-       TEST_TARGET: 'linux_clang6'
-       HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-clang@6.0.0'
+       TEST_TARGET: 'linux_clang10'
+       HOST_CONFIG: 'docker-linux-ubuntu18.04-ivybridge-clang@10.0.0'
     osx_gcc:
       VM_ImageName: 'macos-10.14'
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
@@ -105,3 +90,20 @@ steps:
     testResultsFiles: '**/Test.xml'
     testRunTitle: '$(TEST_TARGET) Tests'
     failTaskOnFailedTests: true
+
+- job: Check_Style
+  variables:
+    VM_ImageName: 'ubuntu-18.04'
+    Compiler_ImageName: 'axom/tpls:clang-10'
+    TEST_TARGET: 'linux_clang10'
+    HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
+  pool:
+      vmImage: $(VM_ImageName)
+  steps:
+  - checkout: self
+    clean: true
+    submodules: recursive
+  - script:  |
+      echo " -e HOST_CONFIG $(Compiler_ImageName) ./scripts/azure-pipelines/linux-check.sh"
+      docker run --rm -v `pwd`:/home/axom/axom -e HOST_CONFIG $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-check.sh
+    displayName: '$(TEST_TARGET) Style Check'
