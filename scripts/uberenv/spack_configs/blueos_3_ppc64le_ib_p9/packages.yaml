@@ -108,6 +108,10 @@ packages:
     externals:
     - spec: m4
       prefix: /usr
+  # ncurses has a bug in their 6.2 that says that getopt is not present
+  # see: https://github.com/spack/spack/issues/16269
+  ncurses:
+    version: [6.1]
   perl:
     buildable: false
     externals:
