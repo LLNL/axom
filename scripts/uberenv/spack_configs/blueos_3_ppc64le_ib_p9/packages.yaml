@@ -34,13 +34,13 @@ packages:
     externals:
     - spec: spectrum-mpi@release%gcc@7.3.1
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
-    - spec: spectrum-mpi@release%clang@upstream_xlf
+    - spec: spectrum-mpi@release%clang@9.0.0_upstream_xlf
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
     - spec: spectrum-mpi@release%clang@8.0.1_nvcc_xlf
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/
-    - spec: spectrum-mpi@release%xl@coral
+    - spec: spectrum-mpi@release%xl@16.1.1_coral
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
-    - spec: spectrum-mpi@release%xl@nvcc
+    - spec: spectrum-mpi@release%xl@16.1.1_nvcc
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
 # Spack may grab for mpi & we don't want to use them
   mvapich2:
