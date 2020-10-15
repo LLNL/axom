@@ -42,7 +42,7 @@ std::shared_ptr<VerifiableScalar> Field::required(bool isRequired)
   return shared_from_this();
 }
 
-bool Field::required()
+bool Field::isRequired()
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Field specific Sidre Datastore Group not set");
@@ -612,11 +612,11 @@ std::shared_ptr<VerifiableScalar> AggregateField::required(bool isRequired)
   return shared_from_this();
 }
 
-bool AggregateField::required()
+bool AggregateField::isRequired()
 {
   for(auto& field : m_fields)
   {
-    if(field->required())
+    if(field->isRequired())
     {
       return true;
     }

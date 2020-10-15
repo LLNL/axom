@@ -12,8 +12,9 @@
 
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
-using axom::inlet::Table;
 using axom::sidre::DataStore;
+
+namespace inlet = axom::inlet;
 
 struct Mesh
 {
@@ -23,7 +24,7 @@ struct Mesh
 
   // Each class should define a static method that adds the fields it
   // will grab from inlet
-  static void defineSchema(Table& schema)
+  static void defineSchema(inlet::Table& schema)
   {
     schema.addString("filename", "Path to mesh file");
     schema.addInt("serial", "Number of serial refinement iterations");
@@ -36,7 +37,7 @@ struct Mesh
 template <>
 struct FromInlet<Mesh>
 {
-  Mesh operator()(Table& base)
+  Mesh operator()(inlet::Table& base)
   {
     return {base["filename"], base["serial"], base["parallel"]};
   }
@@ -50,7 +51,7 @@ struct LinearSolver
   int max_iter;
   double dt;
   int steps;
-  static void defineSchema(Table& schema)
+  static void defineSchema(inlet::Table& schema)
   {
     schema.addDouble("rel_tol", "Relative convergence criterion");
     schema.addDouble("abs_tol", "Relative convergence criterion");
@@ -64,7 +65,7 @@ struct LinearSolver
 template <>
 struct FromInlet<LinearSolver>
 {
-  LinearSolver operator()(Table& base)
+  LinearSolver operator()(inlet::Table& base)
   {
     LinearSolver lin_solve;
     lin_solve.rel_tol = base["rel_tol"];
@@ -81,7 +82,7 @@ struct BoundaryCondition
 {
   std::unordered_map<int, int> attrs;
   double constant;
-  static void defineSchema(Table& schema)
+  static void defineSchema(inlet::Table& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
     schema.addDouble("constant",
@@ -92,7 +93,7 @@ struct BoundaryCondition
 template <>
 struct FromInlet<BoundaryCondition>
 {
-  BoundaryCondition operator()(Table& base)
+  BoundaryCondition operator()(inlet::Table& base)
   {
     BoundaryCondition bc;
     bc.attrs = base["attrs"];
@@ -109,7 +110,7 @@ struct ThermalSolver
   // defineSchema is intended to be used recursively
   // Tables are created for subobjects and passed to
   // subobject defineSchema implementations
-  static void defineSchema(Table& schema)
+  static void defineSchema(inlet::Table& schema)
   {
     auto mesh_table = schema.addTable("mesh", "Information about the mesh");
     Mesh::defineSchema(*mesh_table);
@@ -127,7 +128,7 @@ struct FromInlet<ThermalSolver>
 {
   // This is also implicitly recursive - will call the FromInlet
   // functions defined for the subobjects
-  ThermalSolver operator()(Table& base)
+  ThermalSolver operator()(inlet::Table& base)
   {
     return {base["mesh"].get<Mesh>(),
             base["solver"].get<LinearSolver>(),

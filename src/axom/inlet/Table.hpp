@@ -228,7 +228,7 @@ public:
    *
    * Adds a Table to the input file schema. Tables hold a varying amount Fields
    * defined by the user.  By default, it is not required unless marked with
-   * Table::required(). This creates the Sidre Group class with the given name and
+   * Table::isRequired(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
    * \param [in] name Name of the Table expected in the input file
@@ -635,7 +635,7 @@ public:
    * \return Boolean value of whether this Table is required
    *****************************************************************************
    */
-  bool required();
+  bool isRequired();
 
   /*!
    *****************************************************************************
@@ -968,7 +968,7 @@ public:
    * \return Boolean value of whether this Table is required
    *****************************************************************************
    */
-  bool required();
+  bool isRequired();
 
   /*!
    *****************************************************************************
@@ -985,6 +985,6 @@ private:
 };
 
 }  // end namespace inlet
-}  // namespace axom
+}  // end namespace axom
 
 #endif

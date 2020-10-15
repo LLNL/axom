@@ -62,11 +62,11 @@ TEST(inlet_object, simple_struct_by_value)
   // Define schema
 
   // Check for existing fields
-  auto currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   Foo foo;
 
@@ -207,11 +207,11 @@ TEST(inlet_object, simple_moveonly_struct_by_value)
 
   // Define schema
   // Check for existing fields
-  auto currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   MoveOnlyFoo foo = inlet->get<MoveOnlyFoo>("foo");
   EXPECT_TRUE(foo.bar);
@@ -226,8 +226,8 @@ TEST(inlet_object, simple_value_from_bracket)
 
   // Define schema
   // Check for existing fields
-  auto currField = inlet->addBool("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
   bool foo = (*inlet)["foo"];
   EXPECT_TRUE(foo);
@@ -241,11 +241,11 @@ TEST(inlet_object, simple_struct_from_bracket)
 
   // Define schema
   // Check for existing fields
-  auto currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   auto foo = (*inlet)["foo"].get<Foo>();
   EXPECT_TRUE(foo.bar);
@@ -260,11 +260,11 @@ TEST(inlet_object, contains_from_table)
 
   // Define schema
   // Check for existing fields
-  auto currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   EXPECT_TRUE(inlet->contains("foo/bar"));
   EXPECT_TRUE(inlet->contains("foo/baz"));
@@ -282,11 +282,11 @@ TEST(inlet_object, contains_from_bracket)
 
   // Define schema
   // Check for existing fields
-  auto currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   EXPECT_TRUE((*inlet)["foo"].contains("bar"));
   EXPECT_TRUE((*inlet)["foo"].contains("baz"));
@@ -338,17 +338,17 @@ TEST(inlet_object, primitive_type_checks)
 
   // Define schema
   // Check for existing fields
-  auto currField = inlet->addBool("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addInt("baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addDouble("quux", "quux's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("quux", "quux's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addString("corge", "corge's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("corge", "corge's description");
+  EXPECT_TRUE(currVerifiable);
 
   EXPECT_EQ((*inlet)["bar"].type(), InletType::Bool);
   bool bar = (*inlet)["bar"];
@@ -378,11 +378,11 @@ TEST(inlet_object, composite_type_checks)
 
   // Define schema
   // Check for existing fields
-  auto currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   auto currArrField = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
   EXPECT_TRUE(currArrField);
@@ -417,17 +417,17 @@ TEST(inlet_object, implicit_conversion_primitives)
 
   // Define schema
   // Check for existing fields
-  auto currField = inlet->addBool("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addInt("baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addDouble("quux", "quux's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("quux", "quux's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addString("corge", "corge's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("corge", "corge's description");
+  EXPECT_TRUE(currVerifiable);
 
   auto currArrField = inlet->getGlobalTable()->addIntArray("arr");
   EXPECT_TRUE(currArrField);

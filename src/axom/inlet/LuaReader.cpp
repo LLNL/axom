@@ -102,35 +102,61 @@ bool LuaReader::getStringMap(const std::string& id,
   return getMap(id, values, sol::type::string);
 }
 
-bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices)
+template <typename Iter>
+bool LuaReader::traverse(Iter begin, Iter end, sol::table& table)
 {
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  // Nothing to traverse
+  if(begin == end)
+  {
+    return true;
+  }
 
-  if(tokens.empty() || !m_lua[tokens[0]].valid())
+  if(!m_lua[*begin].valid())
   {
     return false;
   }
-  sol::table t = m_lua[tokens[0]];
-  for(size_t i = 1; i < tokens.size(); i++)
+
+  table = m_lua[*begin];  // Use the first one to index into the global lua state
+  ++begin;
+
+  // Then use the remaining keys to walk down to the requested table
+  for(auto curr = begin; curr != end; ++curr)
   {
+    auto key = *curr;
     // Use the C versions to avoid the exceptions
     // thrown by std::stoi on conversion failure
     char* ptr;
-    auto as_int = strtol(tokens[i].c_str(), &ptr, 10);
-    if((!*ptr) && t[as_int].valid())
+    auto as_int = strtol(key.c_str(), &ptr, 10);
+    if((!*ptr) && table[as_int].valid())
     {
-      t = t[as_int];
+      table = table[as_int];
     }
-    else if(t[tokens[i]].valid())
+    else if(table[key].valid())
     {
-      t = t[tokens[i]];
+      table = table[key];
     }
     else
     {
       return false;
     }
   }
+  return true;
+}
+
+bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices)
+{
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+
+  sol::table t;
+
+  if(tokens.empty() || !traverse(tokens.begin(), tokens.end(), t))
+  {
+    return false;
+  }
+
+  indices.clear();
+
   // std::transform ends up being messier here
   for(const auto& entry : t)
   {
@@ -144,36 +170,23 @@ bool LuaReader::getValue(const std::string& id, T& value)
 {
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
-  if(tokens.size() == 1 && m_lua[id].valid())
+
+  if(tokens.size() == 1)
   {
-    value = m_lua[id];
-    return true;
+    if(m_lua[tokens[0]].valid())
+    {
+      value = m_lua[tokens[0]];
+      return true;
+    }
+    return false;
   }
 
-  if(!m_lua[tokens[0]].valid())
+  sol::table t;
+  if(!traverse(tokens.begin(), tokens.end() - 1, t))
   {
     return false;
   }
-  sol::table t = m_lua[tokens[0]];
-  for(size_t i = 1; i < tokens.size() - 1; i++)
-  {
-    // Use the C versions to avoid the exceptions
-    // thrown by std::stoi on conversion failure
-    char* ptr;
-    auto as_int = strtol(tokens[i].c_str(), &ptr, 10);
-    if((!*ptr) && t[as_int].valid())
-    {
-      t = t[as_int];
-    }
-    else if(t[tokens[i]].valid())
-    {
-      t = t[tokens[i]];
-    }
-    else
-    {
-      return false;
-    }
-  }
+
   if(t[tokens.back()].valid())
   {
     value = t[tokens.back()];
@@ -192,29 +205,10 @@ bool LuaReader::getMap(const std::string& id,
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
 
-  if(tokens.empty() || !m_lua[tokens[0]].valid())
+  sol::table t;
+  if(tokens.empty() || !traverse(tokens.begin(), tokens.end(), t))
   {
     return false;
-  }
-  sol::table t = m_lua[tokens[0]];
-  for(size_t i = 1; i < tokens.size(); i++)
-  {
-    // Use the C versions to avoid the exceptions
-    // thrown by std::stoi on conversion failure
-    char* ptr;
-    auto as_int = strtol(tokens[i].c_str(), &ptr, 10);
-    if((!*ptr) && t[as_int].valid())
-    {
-      t = t[as_int];
-    }
-    else if(t[tokens[i]].valid())
-    {
-      t = t[tokens[i]];
-    }
-    else
-    {
-      return false;
-    }
   }
 
   for(const auto& entry : t)

@@ -228,6 +228,20 @@ private:
               std::unordered_map<int, T>& values,
               sol::type type);
 
+  /*!
+   *****************************************************************************
+   * \brief Traverses the Lua state using a set of keys
+   * 
+   * \param [in] begin Iterator to the beginning of the container of keys
+   * \param [in] end Iterator to one-past-then-end of the container
+   * \param [out] t The table to traverse
+   * 
+   * \return Whether the traversal was successful
+   *****************************************************************************
+   */
+  template <typename Iter>
+  bool traverse(Iter begin, Iter end, sol::table& table);
+
   sol::state m_lua;
 };
 

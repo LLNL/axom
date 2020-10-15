@@ -496,7 +496,7 @@ std::shared_ptr<Verifiable> Table::required(bool isRequired)
   return shared_from_this();
 }
 
-bool Table::required()
+bool Table::isRequired()
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Table specific Sidre Datastore Group not set");
@@ -702,11 +702,11 @@ std::shared_ptr<Verifiable> AggregateTable::required(bool isRequired)
   return shared_from_this();
 }
 
-bool AggregateTable::required()
+bool AggregateTable::isRequired()
 {
   for(auto& table : m_tables)
   {
-    if(table->required())
+    if(table->isRequired())
     {
       return true;
     }

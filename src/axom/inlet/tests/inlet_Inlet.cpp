@@ -43,15 +43,15 @@ TEST(inlet_Inlet_basic, getTopLevelBools)
   //
 
   // Check for existing fields
-  auto currField = inlet->addBool("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("non/existant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("non/existant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -88,15 +88,15 @@ TEST(inlet_Inlet_basic, getNestedBools)
   //
 
   // Check for existing fields
-  auto currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -127,15 +127,15 @@ TEST(inlet_Inlet_basic, getDoublyNestedBools)
   //
 
   // Check for existing fields
-  auto currField = inlet->addBool("foo/quux/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/quux/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/quux/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/quux/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("foo/quux/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/quux/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -168,18 +168,18 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBools)
   //
 
   // Check for existing fields
-  auto currField =
+  auto currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -210,15 +210,15 @@ TEST(inlet_Inlet_basic, getNestedBoolsThroughTable)
   //
 
   // Check for existing fields
-  auto currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -254,18 +254,18 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughTable)
   //
 
   // Check for existing fields
-  auto currField =
+  auto currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -300,18 +300,18 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughField)
   //
 
   // Check for existing fields
-  auto currField =
+  auto currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -344,15 +344,15 @@ TEST(inlet_Inlet_basic, getTopLevelDoubles)
   //
 
   // Check for existing fields
-  auto currField = inlet->addDouble("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addDouble("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addDouble("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addDouble("nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -383,15 +383,15 @@ TEST(inlet_Inlet_basic, getNestedDoubles)
   //
 
   // Check for existing fields
-  auto currField = inlet->addDouble("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addDouble("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addDouble("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addDouble("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -422,15 +422,15 @@ TEST(inlet_Inlet_basic, getTopLevelInts)
   //
 
   // Check for existing fields
-  auto currField = inlet->addInt("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addInt("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addInt("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addInt("nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -461,15 +461,15 @@ TEST(inlet_Inlet_basic, getNestedInts)
   //
 
   // Check for existing fields
-  auto currField = inlet->addInt("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addInt("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addInt("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addInt("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -500,15 +500,15 @@ TEST(inlet_Inlet_basic, getTopLevelStrings)
   //
 
   // Check for existing fields
-  auto currField = inlet->addString("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addString("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addString("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addString("nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -539,15 +539,15 @@ TEST(inlet_Inlet_basic, getNestedStrings)
   //
 
   // Check for existing fields
-  auto currField = inlet->addString("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addString("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addString("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addString("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -583,18 +583,18 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
   auto table = inlet->addTable("foo", "A table called foo");
   table->required(true);
 
-  auto currField = table->addString("bar", "bar's description");
-  EXPECT_TRUE(currField);
-  currField->required(true);
+  auto currVerifiable = table->addString("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
+  currVerifiable->required(true);
 
-  currField = table->addDouble("so", "so's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = table->addDouble("so", "so's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = table->addInt("re", "re's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = table->addInt("re", "re's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = table->addBool("mi", "mi's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = table->addBool("mi", "mi's description");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -619,16 +619,17 @@ TEST(inlet_Inlet_views, NestedTableViewCheck1)
     "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-  auto currField = inlet->addBool("field1", "this is field #1, a boolean value");
-  currField->required(true);
-  currField = inlet->addInt("field2", "this is field #2, an integer");
-  currField->required(false);
+  auto currVerifiable =
+    inlet->addBool("field1", "this is field #1, a boolean value");
+  currVerifiable->required(true);
+  currVerifiable = inlet->addInt("field2", "this is field #2, an integer");
+  currVerifiable->required(false);
   auto t = inlet->addTable("NewTable", "It's blue");
   t->required(false);
-  currField = t->addString("str", "str's description");
-  currField->required(true);
-  currField = t->addInt("integer", "a whole number");
-  currField->required(false);
+  currVerifiable = t->addString("str", "str's description");
+  currVerifiable->required(true);
+  currVerifiable = t->addInt("integer", "a whole number");
+  currVerifiable->required(false);
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
 
@@ -655,15 +656,16 @@ TEST(inlet_Inlet_views, NestedTableViewCheck2)
     "{ x = 4 } } }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-  auto currField = inlet->addBool("foo", "foo's description");
-  currField->required(true);
-  currField = inlet->addBool("bar", "bar's description");
-  currField->required(false);
+  auto currVerifiable = inlet->addBool("foo", "foo's description");
+  currVerifiable->required(true);
+  currVerifiable = inlet->addBool("bar", "bar's description");
+  currVerifiable->required(false);
 
   auto t = inlet->addTable("Table1", "The first table");
   t->required(false);
-  currField = t->addDouble("float1", "floating point number within table 1");
-  currField->required(true);
+  currVerifiable =
+    t->addDouble("float1", "floating point number within table 1");
+  currVerifiable->required(true);
   t = t->addTable("Table11", "Table within Table 1");
   t = t->addTable("Table111", "Table within Table 11");
   t->addInt("x", "A variable");

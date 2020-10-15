@@ -30,8 +30,12 @@ class Proxy;
  *******************************************************************************
  * \class Verifiable
  *
- * \brief Basic interface for any kind of object - can be required or processed
- * with a lambda
+ * \brief Interface for trivially verifiable objects - namely those that can
+ * be marked as required or checked with a user-provided lambda
+ * 
+ * In practice this interface is used for the Table and AggregateTable classes.
+ * Currently the only supported means of verifying a composite type (table)
+ * are the methods exposed by this interface.
  *******************************************************************************
  */
 class Verifiable
@@ -61,7 +65,7 @@ public:
    * \return Boolean value of whether this object is required
    *****************************************************************************
    */
-  virtual bool required() = 0;
+  virtual bool isRequired() = 0;
 
   /*!
    *****************************************************************************
@@ -88,6 +92,11 @@ public:
  *
  * \brief Basic interface for verifiable scalar values of Inlet primitive type,
  * namely int, double, bool, or std::string
+ * 
+ * In practice this interface is used for the Field and AggregateField types.
+ * In addition to the ability to mark things as required and use user-defined lambdas
+ * (as in Verifiable), default values can be provided, as can ranges of valid
+ * values and discrete sets of valid values.
  *******************************************************************************
  */
 class VerifiableScalar
@@ -117,7 +126,7 @@ public:
    * \return Boolean value of whether this object is required
    *****************************************************************************
    */
-  virtual bool required() = 0;
+  virtual bool isRequired() = 0;
 
   /*!
    *****************************************************************************
