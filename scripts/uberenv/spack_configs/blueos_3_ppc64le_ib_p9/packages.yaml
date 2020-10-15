@@ -112,7 +112,7 @@ packages:
     buildable: false
     externals:
     - spec: ncurses
-      prefix: /user
+      prefix: /usr
   perl:
     buildable: false
     externals:
