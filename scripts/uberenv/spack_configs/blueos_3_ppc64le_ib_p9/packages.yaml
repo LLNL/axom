@@ -108,11 +108,6 @@ packages:
     externals:
     - spec: m4
       prefix: /usr
-  ncurses:
-    buildable: false
-    externals:
-    - spec: ncurses
-      prefix: /usr
   perl:
     buildable: false
     externals:
