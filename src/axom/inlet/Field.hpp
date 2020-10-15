@@ -297,7 +297,7 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<VerifiableScalar> registerVerifier(
-    std::function<bool(Proxy&)> lambda);
+    std::function<bool(Field&)> lambda);
 
   /*!
    *****************************************************************************
@@ -432,7 +432,7 @@ private:
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled;
-  std::function<bool(Proxy&)> m_verifier;
+  std::function<bool(Field&)> m_verifier;
 };
 
 // Prototypes for template specializations
@@ -672,7 +672,7 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<VerifiableScalar> registerVerifier(
-    std::function<bool(Proxy&)> lambda);
+    std::function<bool(Field&)> lambda);
 
 private:
   std::vector<std::shared_ptr<VerifiableScalar>> m_fields;

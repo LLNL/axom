@@ -23,8 +23,9 @@ namespace axom
 {
 namespace inlet
 {
-// Forward declaration
-class Proxy;
+// Forward declarations
+class Field;
+class Table;
 
 /*!
  *******************************************************************************
@@ -76,7 +77,7 @@ public:
    *****************************************************************************
   */
   virtual std::shared_ptr<Verifiable> registerVerifier(
-    std::function<bool(axom::inlet::Proxy&)> lambda) = 0;
+    std::function<bool(axom::inlet::Table&)> lambda) = 0;
 
   /*!
    *****************************************************************************
@@ -137,7 +138,7 @@ public:
    *****************************************************************************
   */
   virtual std::shared_ptr<VerifiableScalar> registerVerifier(
-    std::function<bool(axom::inlet::Proxy&)> lambda) = 0;
+    std::function<bool(axom::inlet::Field&)> lambda) = 0;
 
   /*!
    *****************************************************************************

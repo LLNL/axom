@@ -16,10 +16,12 @@
 #include "axom/inlet/LuaReader.hpp"
 #include "axom/inlet/Inlet.hpp"
 
+using axom::inlet::Field;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
 using axom::inlet::LuaReader;
 using axom::inlet::Proxy;
+using axom::inlet::Table;
 using axom::sidre::DataStore;
 
 std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
@@ -1245,14 +1247,14 @@ TEST(inlet_verify, verifyFieldLambda)
   auto field2 = inlet->addString("field2");
   auto field3 = inlet->addString("NewTable/field3");
 
-  field2->registerVerifier([](Proxy& field) -> bool {
-    std::string str = field;
+  field2->registerVerifier([](Field& field) -> bool {
+    auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_TRUE(inlet->verify());
 
-  field3->registerVerifier([](Proxy& field) -> bool {
-    std::string str = field;
+  field3->registerVerifier([](Field& field) -> bool {
+    auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_FALSE(inlet->verify());
@@ -1271,14 +1273,14 @@ TEST(inlet_verify, verifyTableLambda1)
   auto table1 = inlet->addTable("NewTable");
   auto field3 = table1->addString("field3");
 
-  field2->registerVerifier([](Proxy& field) -> bool {
-    std::string str = field;
+  field2->registerVerifier([](Field& field) -> bool {
+    auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_TRUE(inlet->verify());
 
-  field3->registerVerifier([](Proxy& field) -> bool {
-    std::string str = field;
+  field3->registerVerifier([](Field& field) -> bool {
+    auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'x');
   });
   EXPECT_TRUE(inlet->verify());
@@ -1286,11 +1288,11 @@ TEST(inlet_verify, verifyTableLambda1)
   EXPECT_TRUE(table1->hasField("field3"));
 
   table1->registerVerifier(
-    [](Proxy& table) -> bool { return table.contains("field3"); });
+    [](Table& table) -> bool { return table.contains("field3"); });
   EXPECT_TRUE(inlet->verify());
 
   table1->registerVerifier(
-    [](Proxy& table) -> bool { return table.contains("field22"); });
+    [](Table& table) -> bool { return table.contains("field22"); });
   EXPECT_FALSE(inlet->verify());
 }
 
@@ -1317,7 +1319,7 @@ TEST(inlet_verify, verifyTableLambda2)
   auto globalTable = inlet->getGlobalTable();
   auto material = globalTable->getTable("material");
 
-  globalTable->registerVerifier([](Proxy& table) -> bool {
+  globalTable->registerVerifier([](Table& table) -> bool {
     bool verifySuccess = true;
     if(table.contains("thermal_solver") &&
        !table["material"].contains("thermalview"))
@@ -1390,7 +1392,7 @@ TEST(inlet_verify, verifyTableLambda3)
   v->required(true);
   v->addInt("x");
 
-  v->registerVerifier([&myInlet](Proxy& table) -> bool {
+  v->registerVerifier([&myInlet](Table& table) -> bool {
     int dim = (*myInlet)["dimensions"];
     bool x_present =
       table.contains("x") && (table["x"].type() == InletType::Integer);

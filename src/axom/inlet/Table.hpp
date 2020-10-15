@@ -645,7 +645,7 @@ public:
    * \param [in] The function object that will be called by Table::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Proxy&)> lambda);
+  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Table&)> lambda);
 
   /*!
    *****************************************************************************
@@ -875,7 +875,7 @@ private:
   bool m_docEnabled;
   std::unordered_map<std::string, std::shared_ptr<Table>> m_tableChildren;
   std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
-  std::function<bool(Proxy&)> m_verifier;
+  std::function<bool(Table&)> m_verifier;
 };
 
 // To-be-defined template specializations
@@ -978,7 +978,7 @@ public:
    * \param [in] The function object that will be called by Table::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Proxy&)> lambda);
+  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Table&)> lambda);
 
 private:
   std::vector<std::shared_ptr<Verifiable>> m_tables;

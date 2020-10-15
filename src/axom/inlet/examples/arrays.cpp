@@ -22,8 +22,8 @@ int main()
 
   // Register the verifier, which will verify the array values
   auto vals = inlet->getGlobalTable()->addStringArray("values");
-  vals->registerVerifier([](axom::inlet::Proxy& table) -> bool {
-    std::unordered_map<int, std::string> map = table;
+  vals->registerVerifier([](axom::inlet::Table& table) -> bool {
+    auto map = table.get<std::unordered_map<int, std::string>>();
     bool startFound = false;
     bool stopFound = false;
     for(auto p : map)

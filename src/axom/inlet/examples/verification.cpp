@@ -30,7 +30,7 @@ int main()
   // _inlet_workflow_defining_schema_end
 
   // _inlet_workflow_verification_start
-  v->registerVerifier([&myInlet](axom::inlet::Proxy& table) -> bool {
+  v->registerVerifier([&myInlet](axom::inlet::Table& table) -> bool {
     int dim = (*myInlet)["dimensions"];
     bool x_present = table.contains("x") &&
       (table["x"].type() == axom::inlet::InletType::Double);

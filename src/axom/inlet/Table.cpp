@@ -526,7 +526,7 @@ bool Table::isRequired()
   return (bool)intValue;
 }
 
-std::shared_ptr<Verifiable> Table::registerVerifier(std::function<bool(Proxy&)> lambda)
+std::shared_ptr<Verifiable> Table::registerVerifier(std::function<bool(Table&)> lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Table "
@@ -554,8 +554,7 @@ bool Table::verify()
     }
   }
   // Verify this Table if a lambda was configured
-  Proxy p(*this);  // Remove when const-correctness allows it
-  if(m_verifier && !m_verifier(p))
+  if(m_verifier && !m_verifier(*this))
   {
     verified = false;
     SLIC_WARNING(fmt::format("[Inlet] Table failed verification: {0}", m_name));
@@ -715,7 +714,7 @@ bool AggregateTable::isRequired()
 }
 
 std::shared_ptr<Verifiable> AggregateTable::registerVerifier(
-  std::function<bool(Proxy&)> lambda)
+  std::function<bool(Table&)> lambda)
 {
   for(auto& table : m_tables)
   {

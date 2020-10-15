@@ -459,7 +459,7 @@ std::shared_ptr<VerifiableScalar> Field::validValues(
 }
 
 std::shared_ptr<VerifiableScalar> Field::registerVerifier(
-  std::function<bool(Proxy&)> lambda)
+  std::function<bool(Field&)> lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Field "
@@ -511,8 +511,7 @@ bool Field::verify()
   }
 
   // Lambda verification step
-  Proxy p(*this);  // Remove when const-correctness allows it
-  if(m_verifier && !m_verifier(p))
+  if(m_verifier && !m_verifier(*this))
   {
     SLIC_WARNING(fmt::format("[Inlet] Field failed lambda verification: {0}",
                              m_sidreGroup->getPathName()));
@@ -750,7 +749,7 @@ std::shared_ptr<VerifiableScalar> AggregateField::validValues(
 }
 
 std::shared_ptr<VerifiableScalar> AggregateField::registerVerifier(
-  std::function<bool(Proxy&)> lambda)
+  std::function<bool(Field&)> lambda)
 {
   for(auto& field : m_fields)
   {
