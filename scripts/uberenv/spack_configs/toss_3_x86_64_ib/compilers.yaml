@@ -55,7 +55,7 @@ compilers:
       cxx: /usr/tce/packages/gcc/gcc-8.1.0/bin/g++
       f77:
       fc:
-    spec: gcc@no_fortran
+    spec: gcc@8.1.0_no_fortran
     target: x86_64
 - compiler:
     environment: {}
