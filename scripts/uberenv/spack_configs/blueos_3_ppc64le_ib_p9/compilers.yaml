@@ -49,7 +49,7 @@ compilers:
       cxx: /usr/tce/packages/xl/xl-2019.12.23/bin/xlC
       f77: /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
       fc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
-    spec: xl@coral
+    spec: xl@16.1.1_coral
     target: ppc64le
 - compiler:
     environment: {}
@@ -62,7 +62,7 @@ compilers:
       cxx: /usr/tce/packages/xl/xl-2019.08.20/bin/xlC
       f77: /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
       fc:  /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
-    spec: xl@nvcc
+    spec: xl@16.1.1_nvcc
     target: ppc64le
 
  
