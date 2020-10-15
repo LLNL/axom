@@ -108,6 +108,11 @@ packages:
     externals:
     - spec: m4
       prefix: /usr
+  ncurses:
+    buildable: false
+    externals:
+    - spec: ncurses
+      prefix: /user
   perl:
     buildable: false
     externals:
@@ -120,10 +125,10 @@ packages:
       prefix: /usr
   tar:
     buildable: false
-
     externals:
     - spec: tar
       prefix: /usr
+
 # Globally lock version of third party libraries
   conduit:
     version: [0.5.1]
