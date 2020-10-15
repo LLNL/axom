@@ -473,6 +473,15 @@ private:
       Element::Type. */
   std::string getElementName(mfem::Element::Type elementEnum);
 
+  /** @brief Return an mfem::Geometry::Type for the given
+      string with the conduit blueprint name. */
+  // Why is there mfem::Element::Type and mfem::Geometry::Type? They look the same
+  mfem::Geometry::Type getElementTypeFromName(const std::string& name);
+
+  // Builds a mesh using the current contents of the datastore
+  // Used as part of Load()
+  void buildMesh();
+
   /**
    * \brief A private helper function to set up the views associated with the
       data of a scalar valued grid function in the blueprint style.

@@ -745,6 +745,9 @@ void MFEMSidreDataCollection::Load(const std::string& path,
 
     UpdateStateFromDS();
   }
+
+  // Create a mesh from the datastore that was just read in
+  buildMesh();
 }
 
 void MFEMSidreDataCollection::LoadExternalData(const std::string& path)
@@ -1288,6 +1291,100 @@ std::string MFEMSidreDataCollection::getElementName(mfem::Element::Type elementE
   }
 
   return "unknown";
+}
+
+mfem::Geometry::Type MFEMSidreDataCollection::getElementTypeFromName(
+  const std::string& name)
+{
+  if(name == "point")
+    return mfem::Geometry::POINT;
+  else if(name == "line")
+    return mfem::Geometry::SEGMENT;
+  else if(name == "tri")
+    return mfem::Geometry::TRIANGLE;
+  else if(name == "quad")
+    // FIXME: Good enough to assume quad always means square?
+    return mfem::Geometry::SQUARE;
+  else if(name == "tet")
+    return mfem::Geometry::TETRAHEDRON;
+  else if(name == "hex")
+    // FIXME: Is it good enough to assume that hex always means cube?
+    return mfem::Geometry::CUBE;
+  else
+    return mfem::Geometry::INVALID;
+}
+
+// private method
+void MFEMSidreDataCollection::buildMesh()
+{
+  // assumes m_own_mesh_data
+  // broken for dim != 1
+  double* vertices = m_bp_grp->getView("coordsets/coords/values/x")->getData();
+
+  // Use the x to get the number of vertices
+  int num_vertices =
+    m_bp_grp->getView("coordsets/coords/values/x")->getNumElements();
+
+  // Element indices
+  int* element_indices =
+    m_bp_grp->getView("topologies/mesh/elements/connectivity")->getData<int*>();
+
+  // Name of the element type - convert to mfem::Geometry::Type
+  std::string element_name =
+    m_bp_grp->getView("topologies/mesh/elements/shape")->getString();
+
+  // Element attributes
+  int* element_attributes =
+    m_bp_grp->getView("fields/mesh_material_attribute/values")->getData<int*>();
+
+  // Number of elements
+  int num_elements =
+    m_bp_grp->getView("fields/mesh_material_attribute/values")->getNumElements();
+
+  // Indices of boundary elements
+  int* boundary_indices =
+    m_bp_grp->getView("topologies/boundary/elements/connectivity")->getData<int*>();
+
+  // Name of the element type - convert to mfem::Geometry::Type
+  std::string bdr_element_name =
+    m_bp_grp->getView("topologies/boundary/elements/shape")->getString();
+
+  // Boundary attributes
+  int* boundary_attributes =
+    m_bp_grp->getView("fields/boundary_material_attribute/values")->getData<int*>();
+
+  // Number of boundariy elements
+  int num_boundary_elements =
+    m_bp_grp->getView("fields/boundary_material_attribute/values")->getNumElements();
+
+  int dimension = 1;
+
+  if(m_bp_grp->hasView("coordsets/coords/values/z"))
+  {
+    dimension = 3;
+  }
+
+  else if(m_bp_grp->hasView("coordsets/coords/values/y"))
+  {
+    dimension = 2;
+  }
+
+  mesh = new mfem::Mesh(vertices,
+                        num_vertices,
+                        element_indices,
+                        getElementTypeFromName(element_name),
+                        element_attributes,
+                        num_elements,
+                        boundary_indices,
+                        getElementTypeFromName(bdr_element_name),
+                        boundary_attributes,
+                        num_boundary_elements,
+                        dimension);
+
+  // The DataCollection base is now responsible for deleting the mesh
+  // own_data = true;
+  // FIXME: Can't delete the mesh entirely?
+  // FIXME: Memory leak!!!!!!!!!! - I think it takes ownership of the vertices?
 }
 
 } /* namespace sidre */

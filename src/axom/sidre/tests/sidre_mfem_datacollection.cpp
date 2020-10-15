@@ -121,12 +121,13 @@ TEST(sidre_datacollection, dc_reload)
   sdc_writer.PrepareToSave();
   sdc_writer.Save();
 
-  MFEMSidreDataCollection sdc_reader(COLL_NAME, &mesh, owns_mesh);
+  // MFEMSidreDataCollection sdc_reader(COLL_NAME, &mesh, owns_mesh);
+  MFEMSidreDataCollection sdc_reader(COLL_NAME);
 
   sdc_reader.SetPrefixPath("/tmp/dc_reload_test");
   sdc_reader.Load();
   // In this simulated restart a Load deletes the mesh, so it needs to be loaded in again
-  sdc_reader.SetMesh(&mesh);
+  // sdc_reader.SetMesh(&mesh);
 
   // Simulate the initial setup process, except this
   // time, the gridfunction data will be overwritten
