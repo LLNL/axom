@@ -738,6 +738,8 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   // variables.
   if(m_owns_datastore)
   {
+    // The commented-out line matches the logic used for the datacoll-created datastore
+    // SetGroupPointers(m_datastore_ptr->getRoot()->getGroup(name + "_global/blueprint_index/" + name),
     SetGroupPointers(m_datastore_ptr->getRoot()->getGroup(name + "_global"),
                      m_datastore_ptr->getRoot()->getGroup(name));
 
@@ -1068,7 +1070,8 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
     }
   }
 
-  sidre::Group* grp = f->createGroup(field_name);
+  // This will return the existing field (if external), otherwise, a new group
+  sidre::Group* grp = alloc_group(f, field_name);
 
   // Set the "basis" string using the gf's finite element space, overwrite if
   // necessary.

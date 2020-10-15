@@ -403,10 +403,13 @@ public:
                          IndexType sz,
                          TypeID type = DOUBLE_ID);
 
-  /// Deallocate the named buffer @a buffer_name.
+  /// Deallocate the named buffer @a buffer_name, if allocated.
   void FreeNamedBuffer(const std::string& buffer_name)
   {
-    named_buffers_grp()->destroyViewAndData(buffer_name);
+    if(named_buffers_grp()->hasView(buffer_name))
+    {
+      named_buffers_grp()->destroyViewAndData(buffer_name);
+    }
   }
 
   /// Verifies that the contents of the mesh blueprint data is valid.
