@@ -4,7 +4,7 @@
 "package_final_phase" : "hostconfig",
 "package_source_dir" : "../..",
 "spack_url": "https://github.com/spack/spack",
-"spack_commit": "5fc88a7c65a2ab1255e2524a6a000c16129aee67",
+"spack_commit": "ccf94ded67e688770dc8d0388d8f75d0d6641e1e",
 "vcpkg_url": "https://github.com/microsoft/vcpkg",
 "vcpkg_commit": "b79f7675aaa82eb6c5a96ae764fb1ce379a9d5d6",
 "vcpkg_triplet": "x64-windows"
