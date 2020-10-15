@@ -20,13 +20,14 @@ packages:
       blas: [netlib-lapack]
       lapack: [netlib-lapack]
       mpi: [spectrum-mpi]
+
 # LLNL blueos CUDA
   cuda:
     buildable: false
-
     externals:
     - spec: cuda@10.1.243
       prefix: /usr/tce/packages/cuda/cuda-10.1.243
+
 # LLNL blueos mpi
   spectrum-mpi:
     buildable: false
