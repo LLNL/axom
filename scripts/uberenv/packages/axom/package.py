@@ -424,7 +424,7 @@ class Axom(CMakePackage, CudaPackage):
         elif os.path.exists(apt_clangformatpath):
             cfg.write(cmake_cache_entry("CLANGFORMAT_EXECUTABLE", apt_clangformatpath))
         else:
-            cfg.write("# Unable to find clang-format}\n\n")
+            cfg.write("# Unable to find clang-format\n\n")
 
         ##################################
         # Other machine specifics
