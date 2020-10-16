@@ -97,9 +97,9 @@ TEST(sidre_datacollection, dc_save)
 TEST(sidre_datacollection, dc_reload)
 {
   const std::string field_name = "test_field";
-  // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
-  mfem::H1_FECollection fec(1, 1);
+  // 2D mesh divided into triangles
+  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  mfem::H1_FECollection fec(1, 2);
   mfem::FiniteElementSpace fes(&mesh, &fec);
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
@@ -116,18 +116,28 @@ TEST(sidre_datacollection, dc_reload)
 
   EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
 
+  // Save some basic info about the mesh
+  const int n_verts = sdc_writer.GetMesh()->GetNV();
+  const int n_ele = sdc_writer.GetMesh()->GetNE();
+  const int n_bdr_ele = sdc_writer.GetMesh()->GetNBE();
+
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_writer.SetComm(MPI_COMM_WORLD);
+  #endif
+
   sdc_writer.SetPrefixPath("/tmp/dc_reload_test");
   sdc_writer.SetCycle(0);
-  sdc_writer.PrepareToSave();
   sdc_writer.Save();
 
-  // MFEMSidreDataCollection sdc_reader(COLL_NAME, &mesh, owns_mesh);
+  // No mesh is used here
   MFEMSidreDataCollection sdc_reader(COLL_NAME);
+
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+  #endif
 
   sdc_reader.SetPrefixPath("/tmp/dc_reload_test");
   sdc_reader.Load();
-  // In this simulated restart a Load deletes the mesh, so it needs to be loaded in again
-  // sdc_reader.SetMesh(&mesh);
 
   // Simulate the initial setup process, except this
   // time, the gridfunction data will be overwritten
@@ -136,6 +146,11 @@ TEST(sidre_datacollection, dc_reload)
 
   // Make sure the gridfunction was actually overwritten
   EXPECT_LT(gf_read.ComputeL2Error(three_and_a_half), EPSILON);
+
+  // Make sure the mesh was actually reconstructed
+  EXPECT_EQ(sdc_reader.GetMesh()->GetNV(), n_verts);
+  EXPECT_EQ(sdc_reader.GetMesh()->GetNE(), n_ele);
+  EXPECT_EQ(sdc_reader.GetMesh()->GetNBE(), n_bdr_ele);
 
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
@@ -161,17 +176,13 @@ TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
-  // Replacing data in the mesh with data in the blueprint is not currently
-  // supported for parallel meshes, per a comment in createMeshBlueprintAdjacencies
-
-  /*
 TEST(sidre_datacollection, dc_par_reload)
 {
   const std::string field_name = "test_field";
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
   mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
-  mfem::H1_FECollection fec(1, 1);
+  mfem::H1_FECollection fec(1, 2);
   mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
 
   // The mesh must be owned by Sidre to properly manage data in case of
@@ -189,17 +200,29 @@ TEST(sidre_datacollection, dc_par_reload)
   mfem::ConstantCoefficient three_and_a_half(3.5);
   gf_write.ProjectCoefficient(three_and_a_half);
 
+  // Save some basic info about the mesh
+  const int n_verts = sdc_writer.GetMesh()->GetNV();
+  const int n_ele = sdc_writer.GetMesh()->GetNE();
+  const int n_bdr_ele = sdc_writer.GetMesh()->GetNBE();
+
+  // ParMesh-specific info
+  auto writer_pmesh = dynamic_cast<mfem::ParMesh*>(sdc_writer.GetMesh());
+  ASSERT_NE(writer_pmesh, nullptr);
+  const int n_groups = writer_pmesh->GetNGroups();
+  const int n_face_neighbors = writer_pmesh->GetNFaceNeighbors();
+  const int n_shared_faces = writer_pmesh->GetNSharedFaces();
+
   sdc_writer.SetPrefixPath("/tmp/dc_par_reload_test");
   sdc_writer.SetCycle(0);
-  sdc_writer.PrepareToSave();
   sdc_writer.Save();
 
-  MFEMSidreDataCollection sdc_reader(COLL_NAME, &parmesh, owns_mesh);
+  MFEMSidreDataCollection sdc_reader(COLL_NAME);
+
+  // Needs to be set "manually" in order for everything to be loaded in properly
   sdc_reader.SetComm(MPI_COMM_WORLD);
+
   sdc_reader.SetPrefixPath("/tmp/dc_par_reload_test");
   sdc_reader.Load();
-  // In this simulated restart a Load deletes the mesh, so it needs to be loaded in again
-  sdc_reader.SetMesh(&parmesh);
 
   // Simulate the initial setup process, except this
   // time, the gridfunction data will be overwritten
@@ -209,9 +232,27 @@ TEST(sidre_datacollection, dc_par_reload)
   // Make sure the gridfunction was actually overwritten
   EXPECT_LT(gf_read.ComputeL2Error(three_and_a_half), EPSILON);
 
+  // Make sure the mesh was actually reconstructed
+  EXPECT_EQ(sdc_reader.GetMesh()->GetNV(), n_verts);
+  EXPECT_EQ(sdc_reader.GetMesh()->GetNE(), n_ele);
+  EXPECT_EQ(sdc_reader.GetMesh()->GetNBE(), n_bdr_ele);
+
+  int n_ranks;
+  MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
+  // Currently a mesh cannot be identified as a ParMesh in a vacuously
+  // distributed setup
+  if(n_ranks > 1)
+  {
+    // Make sure the ParMesh was reconstructed
+    auto reader_pmesh = dynamic_cast<mfem::ParMesh*>(sdc_reader.GetMesh());
+    ASSERT_NE(reader_pmesh, nullptr);
+    EXPECT_EQ(reader_pmesh->GetNGroups(), n_groups);
+    EXPECT_EQ(reader_pmesh->GetNFaceNeighbors(), n_face_neighbors);
+    EXPECT_EQ(reader_pmesh->GetNSharedFaces(), n_shared_faces);
+  }
+
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
-*/
 
     //----------------------------------------------------------------------
     #include "axom/slic/core/UnitTestLogger.hpp"

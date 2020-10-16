@@ -428,6 +428,13 @@ private:
   // GF objects. Can we use one flag and just have DC own all objects vs none?
   const bool m_owns_mesh_data;
 
+  // TODO - see above comment about merging ownership flags - this denotes that
+  // the mesh object itself is owned by SidreDC, separate from the ownership of
+  // the data in the mesh as indicated by the above flag.  This is used when a
+  // reload recreates the mesh from the information in the datastore that was
+  // read in.
+  bool m_owns_mesh_obj = false;
+
   // Name to be used for registering the mesh nodes in the
   // MFEMSidreDataCollection.
   // This name is used by SetMesh() and can be overwritten by the method
@@ -478,9 +485,9 @@ private:
   // Why is there mfem::Element::Type and mfem::Geometry::Type? They look the same
   mfem::Geometry::Type getElementTypeFromName(const std::string& name);
 
-  // Builds a mesh using the current contents of the datastore
+  // Reconstructs a mesh using the current contents of the datastore
   // Used as part of Load()
-  void buildMesh();
+  void reconstructMesh();
 
   /**
    * \brief A private helper function to set up the views associated with the

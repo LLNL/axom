@@ -92,6 +92,10 @@ MFEMSidreDataCollection::~MFEMSidreDataCollection()
   {
     delete m_datastore_ptr;
   }
+  if(m_owns_mesh_obj)
+  {
+    delete mesh;
+  }
 }
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
@@ -747,7 +751,7 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   }
 
   // Create a mesh from the datastore that was just read in
-  buildMesh();
+  reconstructMesh();
 }
 
 void MFEMSidreDataCollection::LoadExternalData(const std::string& path)
@@ -1315,10 +1319,13 @@ mfem::Geometry::Type MFEMSidreDataCollection::getElementTypeFromName(
 }
 
 // private method
-void MFEMSidreDataCollection::buildMesh()
+void MFEMSidreDataCollection::reconstructMesh()
 {
   // assumes m_own_mesh_data
-  // broken for dim != 1
+
+  // Sufficient to always grab the underlying data to the x-coords
+  // as the layout of the internal buffer is identical to what MFEM
+  // expects, i.e., x0 y0 z0 x1 y1 z1 regardless of dimension
   double* vertices = m_bp_grp->getView("coordsets/coords/values/x")->getData();
 
   // Use the x to get the number of vertices
@@ -1381,10 +1388,32 @@ void MFEMSidreDataCollection::buildMesh()
                         num_boundary_elements,
                         dimension);
 
-  // The DataCollection base is now responsible for deleting the mesh
-  // own_data = true;
-  // FIXME: Can't delete the mesh entirely?
-  // FIXME: Memory leak!!!!!!!!!! - I think it takes ownership of the vertices?
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  // If it has an adjancencies group, the reloaded state was a ParMesh
+  if(m_bp_grp->hasGroup("adjsets/mesh"))
+  {
+    // I don't think it's possible to save an MPI communicator in the datastore
+    // Though typically they are just integers
+    SLIC_ERROR_IF(m_comm == MPI_COMM_NULL,
+                  "Must set the communicator with SetComm before a ParMesh can "
+                  "be reconstructed");
+
+    // FIXME: Do we need to worry about trying to move anything from the
+    // adjancencies group?
+    mfem::ParMesh* new_pmesh = new mfem::ParMesh(m_comm, *mesh);
+
+    // The ParMesh ctor copies out of the original mesh, so it can be deleted and overwritten
+    delete mesh;
+    mesh = new_pmesh;
+  }
+  #endif
+
+  // The DataCollection dtor is now responsible for deleting the mesh
+  // We can't use owns_data in the base class here because that would
+  // result in the deletion of the GridFunction objects which as of
+  // now can only be externally managed (non-owning pointers are
+  // obtained through RegisterField).
+  m_owns_mesh_obj = true;
 }
 
 } /* namespace sidre */
