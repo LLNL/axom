@@ -31,7 +31,8 @@ class Field;
  * \class VerifiableScalar
  *
  * \brief Basic interface for verifiable scalar values of Inlet primitive type,
- * namely int, double, bool, or std::string
+ * namely int, double, bool, or std::string - implementations can use this
+ * directly (inlet::Field) or forward to all elements of a container (inlet::AggregrateField)
  * 
  * In practice this interface is used for the Field and AggregateField types.
  * In addition to the ability to mark things as required and use user-defined lambdas

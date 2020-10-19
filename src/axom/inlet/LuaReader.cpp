@@ -103,7 +103,7 @@ bool LuaReader::getStringMap(const std::string& id,
 }
 
 template <typename Iter>
-bool LuaReader::traverse(Iter begin, Iter end, sol::table& table)
+bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
 {
   // Nothing to traverse
   if(begin == end)
@@ -125,6 +125,7 @@ bool LuaReader::traverse(Iter begin, Iter end, sol::table& table)
     auto key = *curr;
     // Use the C versions to avoid the exceptions
     // thrown by std::stoi on conversion failure
+    // FIXME: Switch to std::from_chars when C++17 is available
     char* ptr;
     auto as_int = strtol(key.c_str(), &ptr, 10);
     if((!*ptr) && table[as_int].valid())
@@ -150,7 +151,7 @@ bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices
 
   sol::table t;
 
-  if(tokens.empty() || !traverse(tokens.begin(), tokens.end(), t))
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
   {
     return false;
   }
@@ -182,7 +183,8 @@ bool LuaReader::getValue(const std::string& id, T& value)
   }
 
   sol::table t;
-  if(!traverse(tokens.begin(), tokens.end() - 1, t))
+  // Don't traverse through the last token as it doesn't contain a table
+  if(!traverseToTable(tokens.begin(), tokens.end() - 1, t))
   {
     return false;
   }
@@ -206,7 +208,7 @@ bool LuaReader::getMap(const std::string& id,
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
 
   sol::table t;
-  if(tokens.empty() || !traverse(tokens.begin(), tokens.end(), t))
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
   {
     return false;
   }

@@ -202,24 +202,32 @@ std::shared_ptr<VerifiableScalar> Table::addPrimitive(
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
+    // If it has indices, we're adding a primitive field to an array
+    // of structs, so we need to iterate over the subtables
+    // corresponding to elements of the array
     std::vector<std::shared_ptr<VerifiableScalar>> fields;
     for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
+      // Add a primitive to an array element (which is a struct)
       fields.push_back(
         getTable(indexPath.first)
           ->addPrimitive<T>(name, description, forArray, val, indexPath.second));
     }
+    // Create an aggregate field so requirements can be collectively imposed
+    // on all elements of the array
     return std::make_shared<AggregateField>(std::move(fields));
   }
   else
   {
+    // Otherwise actually add a Field
     std::string fullName = appendPrefix(m_name, name);
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     if(sidreGroup == nullptr)
     {
       return std::shared_ptr<Field>(nullptr);
     }
-
+    // If a pathOverride is specified, needed when Inlet-internal groups
+    // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     auto typeId = addPrimitiveHelper(sidreGroup, lookupPath, forArray, val);
     return addField(sidreGroup, typeId, fullName, name);
@@ -319,7 +327,9 @@ std::shared_ptr<Verifiable> Table::addPrimitiveArray(
 {
   if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
+    // Adding an array of primitive field to an array of structs
     std::vector<std::shared_ptr<Verifiable>> tables;
+    // Iterate over each element and forward the call to addPrimitiveArray
     for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
       tables.push_back(
@@ -330,6 +340,7 @@ std::shared_ptr<Verifiable> Table::addPrimitiveArray(
   }
   else
   {
+    // "base case", create a table for the field and fill it in with the helper
     auto table = addTable(appendPrefix(name, "_inlet_array"), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;

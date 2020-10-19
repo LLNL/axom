@@ -230,7 +230,14 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Traverses the Lua state using a set of keys
+   * \brief Obtains the Lua table reached by successive indexing through the
+   * container of keys described by a pair of iterators
+   * 
+   * \note For a set of keys {key1, key2, key3, ...}, this function
+   * is equivalent to
+   * \code{.cpp}
+   * table = m_lua[key1][key2][key3][...];
+   * \endcode
    * 
    * \param [in] begin Iterator to the beginning of the container of keys
    * \param [in] end Iterator to one-past-then-end of the container
@@ -240,7 +247,7 @@ private:
    *****************************************************************************
    */
   template <typename Iter>
-  bool traverse(Iter begin, Iter end, sol::table& table);
+  bool traverseToTable(Iter begin, Iter end, sol::table& table);
 
   sol::state m_lua;
 };
