@@ -15,7 +15,7 @@
 #define INLET_FIELD_HPP
 
 #include "axom/sidre.hpp"
-#include "axom/inlet/Verifiable.hpp"
+#include "axom/inlet/VerifiableScalar.hpp"
 
 #include <memory>
 #include <type_traits>

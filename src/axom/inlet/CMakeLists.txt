@@ -22,6 +22,7 @@ set(inlet_headers
     Table.hpp 
     Proxy.hpp
     Verifiable.hpp
+    VerifiableScalar.hpp
     DocWriter.hpp
     SphinxDocWriter.hpp 
     inlet_utils.hpp )

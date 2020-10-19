@@ -26,6 +26,7 @@
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
 #include "axom/inlet/inlet_utils.hpp"
+#include "axom/inlet/Verifiable.hpp"
 
 #include "axom/sidre.hpp"
 
