@@ -180,6 +180,8 @@ TEST(sidre_datacollection, dc_par_reload)
 {
   const std::string field_name = "test_field";
   // 1D mesh divided into 10 segments
+  // mfem::Mesh mesh(10);
+  // 2D mesh divided into triangles
   mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
   mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
   mfem::H1_FECollection fec(1, 2);
