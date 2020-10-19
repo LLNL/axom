@@ -467,6 +467,11 @@ private:
   // This is stored for convenience.
   Group* m_named_bufs_grp;
 
+  // Used to retain ownership of components of reconstructed GridFunctions
+  std::vector<std::unique_ptr<mfem::FiniteElementCollection>> m_fecolls;
+  std::vector<std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
+  std::vector<std::unique_ptr<mfem::GridFunction>> m_sidre_owned_gfs;
+
   // Private helper functions
 
   void RegisterFieldInBPIndex(const std::string& field_name,
@@ -488,6 +493,10 @@ private:
   // Reconstructs a mesh using the current contents of the datastore
   // Used as part of Load()
   void reconstructMesh();
+
+  // Reconstructs all non-mesh-related fields using the current contents
+  // of the datastore, used as part of Load()
+  void reconstructFields();
 
   /**
    * \brief A private helper function to set up the views associated with the

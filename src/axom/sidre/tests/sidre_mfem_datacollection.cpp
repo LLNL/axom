@@ -94,7 +94,7 @@ TEST(sidre_datacollection, dc_save)
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
-TEST(sidre_datacollection, dc_reload)
+TEST(sidre_datacollection, dc_reload_gf)
 {
   const std::string field_name = "test_field";
   // 2D mesh divided into triangles
@@ -113,6 +113,48 @@ TEST(sidre_datacollection, dc_reload)
 
   mfem::ConstantCoefficient three_and_a_half(3.5);
   gf_write.ProjectCoefficient(three_and_a_half);
+
+  EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
+
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_writer.SetComm(MPI_COMM_WORLD);
+  #endif
+
+  sdc_writer.SetPrefixPath("/tmp/dc_reload_test");
+  sdc_writer.SetCycle(0);
+  sdc_writer.Save();
+
+  // No mesh is used here
+  MFEMSidreDataCollection sdc_reader(COLL_NAME);
+
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+  #endif
+
+  sdc_reader.SetPrefixPath("/tmp/dc_reload_test");
+  sdc_reader.Load();
+
+  // No need to reregister, it already exists
+  auto gf_read = sdc_reader.GetField(field_name);
+
+  // Make sure the gridfunction was actually read in
+  EXPECT_LT(gf_read->ComputeL2Error(three_and_a_half), EPSILON);
+
+  EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_reload_mesh)
+{
+  const std::string field_name = "test_field";
+  // 2D mesh divided into triangles
+  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  mfem::H1_FECollection fec(1, 2);
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc_writer(COLL_NAME, &mesh, owns_mesh);
 
   EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
 
@@ -138,14 +180,6 @@ TEST(sidre_datacollection, dc_reload)
 
   sdc_reader.SetPrefixPath("/tmp/dc_reload_test");
   sdc_reader.Load();
-
-  // Simulate the initial setup process, except this
-  // time, the gridfunction data will be overwritten
-  mfem::GridFunction gf_read(&fes, nullptr);
-  sdc_reader.RegisterField(field_name, &gf_read);
-
-  // Make sure the gridfunction was actually overwritten
-  EXPECT_LT(gf_read.ComputeL2Error(three_and_a_half), EPSILON);
 
   // Make sure the mesh was actually reconstructed
   EXPECT_EQ(sdc_reader.GetMesh()->GetNV(), n_verts);
@@ -176,7 +210,7 @@ TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
-TEST(sidre_datacollection, dc_par_reload)
+TEST(sidre_datacollection, dc_par_reload_gf)
 {
   const std::string field_name = "test_field";
   // 1D mesh divided into 10 segments
@@ -202,6 +236,42 @@ TEST(sidre_datacollection, dc_par_reload)
   mfem::ConstantCoefficient three_and_a_half(3.5);
   gf_write.ProjectCoefficient(three_and_a_half);
 
+  sdc_writer.SetPrefixPath("/tmp/dc_par_reload_test");
+  sdc_writer.SetCycle(0);
+  sdc_writer.Save();
+
+  MFEMSidreDataCollection sdc_reader(COLL_NAME);
+
+  // Needs to be set "manually" in order for everything to be loaded in properly
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+
+  sdc_reader.SetPrefixPath("/tmp/dc_par_reload_test");
+  sdc_reader.Load();
+
+  auto gf_read = sdc_reader.GetField(field_name);
+
+  // Make sure the gridfunction was actually read in
+  EXPECT_LT(gf_read->ComputeL2Error(three_and_a_half), EPSILON);
+
+  EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_par_reload_mesh)
+{
+  const std::string field_name = "test_field";
+  // 1D mesh divided into 10 segments
+  // mfem::Mesh mesh(10);
+  // 2D mesh divided into triangles
+  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
+  mfem::H1_FECollection fec(1, 2);
+  mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
+
+  // The mesh must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc_writer(COLL_NAME, &parmesh, owns_mesh);
+
   // Save some basic info about the mesh
   const int n_verts = sdc_writer.GetMesh()->GetNV();
   const int n_ele = sdc_writer.GetMesh()->GetNE();
@@ -225,14 +295,6 @@ TEST(sidre_datacollection, dc_par_reload)
 
   sdc_reader.SetPrefixPath("/tmp/dc_par_reload_test");
   sdc_reader.Load();
-
-  // Simulate the initial setup process, except this
-  // time, the gridfunction data will be overwritten
-  mfem::ParGridFunction gf_read(&parfes, static_cast<double*>(nullptr));
-  sdc_reader.RegisterField(field_name, &gf_read);
-
-  // Make sure the gridfunction was actually overwritten
-  EXPECT_LT(gf_read.ComputeL2Error(three_and_a_half), EPSILON);
 
   // Make sure the mesh was actually reconstructed
   EXPECT_EQ(sdc_reader.GetMesh()->GetNV(), n_verts);

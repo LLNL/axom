@@ -752,6 +752,9 @@ void MFEMSidreDataCollection::Load(const std::string& path,
 
   // Create a mesh from the datastore that was just read in
   reconstructMesh();
+
+  // Create any fields from the datastore that was just read in
+  reconstructFields();
 }
 
 void MFEMSidreDataCollection::LoadExternalData(const std::string& path)
@@ -1390,6 +1393,10 @@ void MFEMSidreDataCollection::reconstructMesh()
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   // If it has an adjancencies group, the reloaded state was a ParMesh
+
+  // FIXME: This does not work, the mesh read in on a given node is already
+  // only the local part of the mesh, attempting to create a ParMesh with it
+  // will result in the local partition being repartitioned
   if(m_bp_grp->hasGroup("adjsets/mesh"))
   {
     // I don't think it's possible to save an MPI communicator in the datastore
@@ -1414,6 +1421,50 @@ void MFEMSidreDataCollection::reconstructMesh()
   // now can only be externally managed (non-owning pointers are
   // obtained through RegisterField).
   m_owns_mesh_obj = true;
+}
+
+void MFEMSidreDataCollection::reconstructFields()
+{
+  sidre::Group* f = m_bp_grp->getGroup("fields");
+  for(auto idx = f->getFirstValidGroupIndex(); sidre::indexIsValid(idx);
+      idx = f->getNextValidGroupIndex(idx))
+  {
+    Group* field_grp = f->getGroup(idx);
+    // Filter out the non-user-registered attribute fields
+    if(!field_grp->hasView("association"))
+    {
+      // Build the new gridfunction
+
+      // FiniteElementCollection
+      auto basis_name = field_grp->getView("basis")->getString();
+      m_fecolls.emplace_back(mfem::FiniteElementCollection::New(basis_name));
+
+      // FiniteElementSpace - mesh ptr and FEColl ptr
+      m_fespaces.emplace_back(
+        new mfem::FiniteElementSpace(mesh, m_fecolls.back().get()));
+
+      double* values = nullptr;
+      // Scalar grid function
+      if(field_grp->hasView("values"))
+      {
+        values = field_grp->getView("values")->getData();
+      }
+
+      // Vector grid function
+      if(field_grp->hasGroup("values"))
+      {
+        // Sufficient to use address of first component as data is interleaved
+        values = field_grp->getGroup("values")->getView("x0")->getData();
+      }
+
+      m_sidre_owned_gfs.emplace_back(
+        new mfem::GridFunction(m_fespaces.back().get(), values));
+
+      // Register a non-owning pointer with the base subobject
+      DataCollection::RegisterField(field_grp->getName(),
+                                    m_sidre_owned_gfs.back().get());
+    }
+  }
 }
 
 } /* namespace sidre */
