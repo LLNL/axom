@@ -243,7 +243,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Boolean Fields to the input deck schema.
+   * \brief Add an array of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -256,7 +256,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Integer Fields to the input deck schema.
+   * \brief Add an array of Integer Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -269,7 +269,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Double Fields to the input deck schema.
+   * \brief Add an array of Double Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -283,7 +283,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of String Fields to the input deck schema.
+   * \brief Add an array of String Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -297,7 +297,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Fields to the input deck schema.
+   * \brief Add an array of Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -310,7 +310,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get an array represented as an unordered map from the input deck
+   * \brief Get an array represented as an unordered map from the input file
    * of primitive type
    *
    * \param [out] map Unordered map to be populated with array contents
@@ -338,7 +338,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get an array represented as an unordered map from the input deck
+   * \brief Get an array represented as an unordered map from the input file
    * of user-defined type
    *
    * \param [out] map Unordered map to be populated with array contents
@@ -370,7 +370,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Boolean Field to the input deck schema.
+   * \brief Add a Boolean Field to the input file schema.
    *
    * Adds a Boolean Field to the input file schema. It may or may not be required
    * to be present in the input file. This creates the Sidre Group class with the
@@ -466,10 +466,10 @@ public:
    * \param [in] description Description of the Table
    * \param [in] forArray Whether the primitive is in an array, in which
    * case the provided value should be inserted instead of the one read from
-   * the input deck
+   * the input file
    * \param [in] val A provided value, will be overwritten if found at specified
-   * path in input deck
-   * \param [in] pathOverride The path within the input deck to read from, if
+   * path in input file
+   * \param [in] pathOverride The path within the input file to read from, if
    * different than the structure of the Sidre datastore
    *
    * \return Shared pointer to the created Field
@@ -487,11 +487,11 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of primitive Fields to the input deck schema.
+   * \brief Add an array of primitive Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
-   * \param [in] pathOverride The path within the input deck to read from, if
+   * \param [in] pathOverride The path within the input file to read from, if
    * different than the structure of the Sidre datastore
    *
    * \return Shared pointer to the created Field
@@ -744,12 +744,12 @@ private:
    * Adds the value at the templated type to the sidre group
    * 
    * \param [inout] sidreGroup The group to add the primitive view to
-   * \param [in] lookupPath The path within the input deck to read from
+   * \param [in] lookupPath The path within the input file to read from
    * \param [in] forArray Whether the primitive is in an array, in which
    * case the provided value should be inserted instead of the one read from
-   * the input deck
+   * the input file
    * \param [in] val A provided value, will be overwritten if found at specified
-   * path in input deck
+   * path in input file
    *
    * \return Type ID for the inserted view
    *****************************************************************************
@@ -769,7 +769,7 @@ private:
    * Reads an array at the provided path into the provided table
    * 
    * \param [inout] table The inlet::Table to add the array to 
-   * \param [in] lookupPath The path within the input deck to read from
+   * \param [in] lookupPath The path within the input file to read from
    * 
    *****************************************************************************
    */
@@ -858,10 +858,10 @@ private:
    *****************************************************************************
    * \brief This is an internal utility intended to be used with arrays of 
    * user-defined types that returns the a list of pairs, each of which contain
-   * an index (a number) and a fully qualified path within the input deck to
+   * an index (a number) and a fully qualified path within the input file to
    * the array element at the corresponding index.
    * 
-   * \param [in] name The name of the array object in the input deck
+   * \param [in] name The name of the array object in the input file
    *****************************************************************************
    */
   std::vector<std::pair<std::string, std::string>> arrayIndicesWithPaths(

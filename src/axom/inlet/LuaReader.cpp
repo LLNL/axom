@@ -39,7 +39,7 @@ bool LuaReader::parseFile(const std::string& filePath)
   if(!script.valid())
   {
     SLIC_WARNING(
-      fmt::format("Inlet: Given Lua input deck is invalid: {0}", filePath));
+      fmt::format("Inlet: Given Lua input file is invalid: {0}", filePath));
   }
   return script.valid();
 }

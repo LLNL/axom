@@ -363,7 +363,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Boolean Fields to the input deck schema.
+   * \brief Add an array of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -379,7 +379,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Integer Fields to the input deck schema.
+   * \brief Add an array of Integer Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -395,7 +395,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Double Fields to the input deck schema.
+   * \brief Add an array of Double Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -411,7 +411,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of String Fields to the input deck schema.
+   * \brief Add an array of String Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -427,7 +427,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Fields to the input deck schema.
+   * \brief Add an array of Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -443,7 +443,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get a boolean array represented as an unordered map from the input deck
+   * \brief Get a boolean array represented as an unordered map from the input file
    *
    * \param [out] map Unordered map to be populated with array contents
    *
@@ -457,7 +457,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get a int array represented as an unordered map from the input deck
+   * \brief Get a int array represented as an unordered map from the input file
    *
    * \param [out] map Unordered map to be populated with array contents
    *
@@ -471,7 +471,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get a double array represented as an unordered map from the input deck
+   * \brief Get a double array represented as an unordered map from the input file
    *
    * \param [out] map Unordered map to be populated with array contents
    *
@@ -485,7 +485,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get a string array represented as an unordered map from the input deck
+   * \brief Get a string array represented as an unordered map from the input file
    *
    * \param [out] map Unordered map to be populated with array contents
    *
