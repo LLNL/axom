@@ -65,108 +65,86 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
   return currTable;
 }
 
-std::shared_ptr<Table> Table::addBoolArray(const std::string& name,
-                                           const std::string& description)
+std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
+  const std::string& name)
+{
+  std::vector<std::pair<std::string, std::string>> result;
+  if(!m_sidreGroup->hasView("_inlet_array_indices"))
+  {
+    SLIC_ERROR(fmt::format(
+      "[Inlet] Table '{0}' does not contain an array of user-defined objects",
+      m_name));
+  }
+  auto view = m_sidreGroup->getView("_inlet_array_indices");
+  int* array = view->getArray();
+  // Need to go up one level because this is an _inlet_array group
+  auto pos = m_name.find_last_of("/");
+  std::string baseName = m_name.substr(0, pos);
+  for(int i = 0; i < view->getNumElements(); i++)
+  {
+    auto indexLabel = std::to_string(array[i]);
+    // The base name reflects the structure of the actual data
+    // and is used for the reader call
+    auto fullPath = appendPrefix(baseName, indexLabel);
+    fullPath = appendPrefix(fullPath, name);
+    // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+    result.push_back({indexLabel, fullPath});
+  }
+  return result;
+}
+
+std::shared_ptr<Verifiable> Table::addBoolArray(const std::string& name,
+                                                const std::string& description)
+{
+  return addPrimitiveArray<bool>(name, description);
+}
+
+std::shared_ptr<Verifiable> Table::addIntArray(const std::string& name,
+                                               const std::string& description)
+{
+  return addPrimitiveArray<int>(name, description);
+}
+
+std::shared_ptr<Verifiable> Table::addDoubleArray(const std::string& name,
+                                                  const std::string& description)
+{
+  return addPrimitiveArray<double>(name, description);
+}
+
+std::shared_ptr<Verifiable> Table::addStringArray(const std::string& name,
+                                                  const std::string& description)
+{
+  return addPrimitiveArray<std::string>(name, description);
+}
+
+std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
+                                              const std::string& description)
 {
   auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-  std::unordered_map<int, bool> map;
+  std::vector<int> indices;
   const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader->getBoolMap(fullName, map))
+  if(m_reader->getArrayIndices(fullName, indices))
   {
-    for(auto p : map)
+    // This is how an array of user-defined type is differentiated
+    // from an array of primitives - the tables have to be allocated
+    // before they are populated as we don't know the schema of the
+    // generic type yet
+    auto view =
+      table->m_sidreGroup->createViewAndAllocate("_inlet_array_indices",
+                                                 axom::sidre::INT_ID,
+                                                 indices.size());
+    int* raw_array = view->getArray();
+    std::copy(indices.begin(), indices.end(), raw_array);
+    for(const auto idx : indices)
     {
-      table->addBoolHelper(std::to_string(p.first), "", true, p.second);
+      table->addTable(std::to_string(idx), description);
     }
   }
   else
   {
-    SLIC_WARNING(fmt::format("Bool array {0} not found.", fullName));
+    SLIC_WARNING(fmt::format("[Inlet] Array {0} not found.", fullName));
   }
   return table;
-}
-
-std::shared_ptr<Table> Table::addIntArray(const std::string& name,
-                                          const std::string& description)
-{
-  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-  std::unordered_map<int, int> map;
-  const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader->getIntMap(fullName, map))
-  {
-    for(auto p : map)
-    {
-      table->addIntHelper(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("Int array {0} not found.", fullName));
-  }
-  return table;
-}
-
-std::shared_ptr<Table> Table::addDoubleArray(const std::string& name,
-                                             const std::string& description)
-{
-  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-  std::unordered_map<int, double> map;
-  const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader->getDoubleMap(fullName, map))
-  {
-    for(auto p : map)
-    {
-      table->addDoubleHelper(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("Double array {0} not found.", fullName));
-  }
-  return table;
-}
-
-std::shared_ptr<Table> Table::addStringArray(const std::string& name,
-                                             const std::string& description)
-{
-  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
-  std::unordered_map<int, std::string> map;
-  const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader->getStringMap(fullName, map))
-  {
-    for(auto p : map)
-    {
-      table->addStringHelper(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("String array {0} not found.", fullName));
-  }
-  return table;
-}
-
-bool Table::getArray(std::unordered_map<int, bool>& map)
-{
-  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
-    m_reader->getBoolMap(m_name.substr(0, m_name.size() - 12), map);
-}
-
-bool Table::getArray(std::unordered_map<int, int>& map)
-{
-  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
-    m_reader->getIntMap(m_name.substr(0, m_name.size() - 12), map);
-}
-
-bool Table::getArray(std::unordered_map<int, double>& map)
-{
-  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
-    m_reader->getDoubleMap(m_name.substr(0, m_name.size() - 12), map);
-}
-
-bool Table::getArray(std::unordered_map<int, std::string>& map)
-{
-  return axom::utilities::string::endsWith(m_name, "_inlet_array") &&
-    m_reader->getStringMap(m_name.substr(0, m_name.size() - 12), map);
 }
 
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
@@ -214,85 +192,254 @@ std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup,
   return field;
 }
 
-std::shared_ptr<Field> Table::addBoolHelper(const std::string& name,
-                                            const std::string& description,
-                                            bool forArray,
-                                            bool num)
+template <typename T, typename SFINAE>
+std::shared_ptr<VerifiableScalar> Table::addPrimitive(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  T val,
+  const std::string& pathOverride)
 {
-  std::string fullName = appendPrefix(m_name, name);
-  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-  if(sidreGroup == nullptr)
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
   {
-    //TODO: better idea?
-    return std::shared_ptr<Field>(nullptr);
+    // If it has indices, we're adding a primitive field to an array
+    // of structs, so we need to iterate over the subtables
+    // corresponding to elements of the array
+    std::vector<std::shared_ptr<VerifiableScalar>> fields;
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
+    {
+      // Add a primitive to an array element (which is a struct)
+      fields.push_back(
+        getTable(indexPath.first)
+          ->addPrimitive<T>(name, description, forArray, val, indexPath.second));
+    }
+    // Create an aggregate field so requirements can be collectively imposed
+    // on all elements of the array
+    return std::make_shared<AggregateField>(std::move(fields));
   }
-
-  bool value = num;
-  if(forArray || m_reader->getBool(fullName, value))
+  else
   {
-    sidreGroup->createViewScalar("value", value ? int8(1) : int8(0));
+    // Otherwise actually add a Field
+    std::string fullName = appendPrefix(m_name, name);
+    axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
+    if(sidreGroup == nullptr)
+    {
+      return std::shared_ptr<Field>(nullptr);
+    }
+    // If a pathOverride is specified, needed when Inlet-internal groups
+    // are part of fullName
+    std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    auto typeId = addPrimitiveHelper(sidreGroup, lookupPath, forArray, val);
+    return addField(sidreGroup, typeId, fullName, name);
   }
-  return addField(sidreGroup, axom::sidre::DataTypeId::INT8_ID, fullName, name);
 }
 
-std::shared_ptr<Field> Table::addDoubleHelper(const std::string& name,
-                                              const std::string& description,
-                                              bool forArray,
-                                              double num)
-{
-  std::string fullName = appendPrefix(m_name, name);
-  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-  if(sidreGroup == nullptr)
-  {
-    return std::shared_ptr<Field>(nullptr);
-  }
+// Explicit instantiations
+template std::shared_ptr<VerifiableScalar> Table::addPrimitive<bool>(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  bool val,
+  const std::string& pathOverride);
 
-  double value = num;
-  if(forArray || m_reader->getDouble(fullName, value))
+template std::shared_ptr<VerifiableScalar> Table::addPrimitive<int>(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  int val,
+  const std::string& pathOverride);
+
+template std::shared_ptr<VerifiableScalar> Table::addPrimitive<double>(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  double val,
+  const std::string& pathOverride);
+
+template std::shared_ptr<VerifiableScalar> Table::addPrimitive<std::string>(
+  const std::string& name,
+  const std::string& description,
+  bool forArray,
+  std::string val,
+  const std::string& pathOverride);
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  bool val)
+{
+  if(forArray || m_reader->getBool(lookupPath, val))
   {
-    sidreGroup->createViewScalar("value", value);
+    sidreGroup->createViewScalar("value", val ? int8(1) : int8(0));
   }
-  return addField(sidreGroup, axom::sidre::DataTypeId::DOUBLE_ID, fullName, name);
+  return axom::sidre::DataTypeId::INT8_ID;
 }
 
-std::shared_ptr<Field> Table::addIntHelper(const std::string& name,
-                                           const std::string& description,
-                                           bool forArray,
-                                           int num)
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  int val)
 {
-  std::string fullName = appendPrefix(m_name, name);
-  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-  if(sidreGroup == nullptr)
+  if(forArray || m_reader->getInt(lookupPath, val))
   {
-    return std::shared_ptr<Field>(nullptr);
+    sidreGroup->createViewScalar("value", val);
   }
-
-  int value = num;
-  if(forArray || m_reader->getInt(fullName, value))
-  {
-    sidreGroup->createViewScalar("value", value);
-  }
-  return addField(sidreGroup, axom::sidre::DataTypeId::INT_ID, fullName, name);
+  return axom::sidre::DataTypeId::INT_ID;
 }
 
-std::shared_ptr<Field> Table::addStringHelper(const std::string& name,
-                                              const std::string& description,
-                                              bool forArray,
-                                              const std::string& str)
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  double val)
 {
-  std::string fullName = appendPrefix(m_name, name);
-  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-  if(sidreGroup == nullptr)
+  if(forArray || m_reader->getDouble(lookupPath, val))
   {
-    return std::shared_ptr<Field>(nullptr);
+    sidreGroup->createViewScalar("value", val);
   }
+  return axom::sidre::DataTypeId::DOUBLE_ID;
+}
 
-  std::string value = str;
-  if(forArray || m_reader->getString(fullName, value))
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  std::string val)
+{
+  if(forArray || m_reader->getString(lookupPath, val))
   {
-    sidreGroup->createViewString("value", value);
+    sidreGroup->createViewString("value", val);
   }
-  return addField(sidreGroup, axom::sidre::DataTypeId::CHAR8_STR_ID, fullName, name);
+  return axom::sidre::DataTypeId::CHAR8_STR_ID;
+}
+
+template <typename T, typename SFINAE>
+std::shared_ptr<Verifiable> Table::addPrimitiveArray(
+  const std::string& name,
+  const std::string& description,
+  const std::string& pathOverride)
+{
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
+  {
+    // Adding an array of primitive field to an array of structs
+    std::vector<std::shared_ptr<Verifiable>> tables;
+    // Iterate over each element and forward the call to addPrimitiveArray
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
+    {
+      tables.push_back(
+        getTable(indexPath.first)
+          ->addPrimitiveArray<T>(name, description, indexPath.second));
+    }
+    return std::make_shared<AggregateTable>(std::move(tables));
+  }
+  else
+  {
+    // "base case", create a table for the field and fill it in with the helper
+    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+    const std::string& fullName = appendPrefix(m_name, name);
+    std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    addPrimitiveArrayHelper<T>(*table, lookupPath);
+    return table;
+  }
+}
+
+// Explicit instantiations
+template std::shared_ptr<Verifiable> Table::addPrimitiveArray<bool>(
+  const std::string& name,
+  const std::string& description,
+  const std::string& pathOverride);
+
+template std::shared_ptr<Verifiable> Table::addPrimitiveArray<int>(
+  const std::string& name,
+  const std::string& description,
+  const std::string& pathOverride);
+
+template std::shared_ptr<Verifiable> Table::addPrimitiveArray<double>(
+  const std::string& name,
+  const std::string& description,
+  const std::string& pathOverride);
+
+template std::shared_ptr<Verifiable> Table::addPrimitiveArray<std::string>(
+  const std::string& name,
+  const std::string& description,
+  const std::string& pathOverride);
+
+template <>
+void Table::addPrimitiveArrayHelper<bool>(Table& table,
+                                          const std::string& lookupPath)
+{
+  std::unordered_map<int, bool> map;
+  if(m_reader->getBoolMap(lookupPath, map))
+  {
+    for(auto p : map)
+    {
+      table.addPrimitive(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("[Inlet] Bool array {0} not found.", lookupPath));
+  }
+}
+
+template <>
+void Table::addPrimitiveArrayHelper<int>(Table& table,
+                                         const std::string& lookupPath)
+{
+  std::unordered_map<int, int> map;
+  if(m_reader->getIntMap(lookupPath, map))
+  {
+    for(auto p : map)
+    {
+      table.addPrimitive(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("[Inlet] Int array {0} not found.", lookupPath));
+  }
+}
+
+template <>
+void Table::addPrimitiveArrayHelper<double>(Table& table,
+                                            const std::string& lookupPath)
+{
+  std::unordered_map<int, double> map;
+  if(m_reader->getDoubleMap(lookupPath, map))
+  {
+    for(auto p : map)
+    {
+      table.addPrimitive(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("[Inlet] Double array {0} not found.", lookupPath));
+  }
+}
+
+template <>
+void Table::addPrimitiveArrayHelper<std::string>(Table& table,
+                                                 const std::string& lookupPath)
+{
+  std::unordered_map<int, std::string> map;
+  if(m_reader->getStringMap(lookupPath, map))
+  {
+    for(auto p : map)
+    {
+      table.addPrimitive(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("[Inlet] String array {0} not found.", lookupPath));
+  }
 }
 
 Proxy Table::operator[](const std::string& name)
@@ -331,7 +478,7 @@ Proxy Table::operator[](const std::string& name)
   }
 }
 
-std::shared_ptr<Table> Table::required(bool isRequired)
+std::shared_ptr<Verifiable> Table::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Table specific Sidre Datastore Group not set");
@@ -360,7 +507,7 @@ std::shared_ptr<Table> Table::required(bool isRequired)
   return shared_from_this();
 }
 
-bool Table::required()
+bool Table::isRequired()
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Table specific Sidre Datastore Group not set");
@@ -390,7 +537,7 @@ bool Table::required()
   return (bool)intValue;
 }
 
-std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda)
+std::shared_ptr<Verifiable> Table::registerVerifier(std::function<bool(Table&)> lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Table "
@@ -403,8 +550,22 @@ std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda)
 bool Table::verify()
 {
   bool verified = true;
-  // Verify this Table
-  if(m_verifier && !m_verifier())
+  // If this table was required, make sure soemething was defined in it
+  if(m_sidreGroup->hasView("required"))
+  {
+    int8 required = m_sidreGroup->getView("required")->getData();
+    if(required && m_sidreGroup->getNumGroups() == 0)
+    {
+      std::string msg = fmt::format(
+        "[Inlet] Required Table not "
+        "specified: {0}",
+        m_sidreGroup->getPathName());
+      SLIC_WARNING(msg);
+      verified = false;
+    }
+  }
+  // Verify this Table if a lambda was configured
+  if(m_verifier && !m_verifier(*this))
   {
     verified = false;
     SLIC_WARNING(fmt::format("[Inlet] Table failed verification: {0}", m_name));
@@ -532,6 +693,45 @@ std::unordered_map<std::string, std::shared_ptr<Table>> Table::getChildTables()
 std::unordered_map<std::string, std::shared_ptr<Field>> Table::getChildFields()
 {
   return m_fieldChildren;
+}
+
+bool AggregateTable::verify()
+{
+  return std::all_of(
+    m_tables.begin(),
+    m_tables.end(),
+    [](std::shared_ptr<Verifiable>& table) { return table->verify(); });
+}
+
+std::shared_ptr<Verifiable> AggregateTable::required(bool isRequired)
+{
+  for(auto& table : m_tables)
+  {
+    table->required(isRequired);
+  }
+  return shared_from_this();
+}
+
+bool AggregateTable::isRequired()
+{
+  for(auto& table : m_tables)
+  {
+    if(table->isRequired())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::shared_ptr<Verifiable> AggregateTable::registerVerifier(
+  std::function<bool(Table&)> lambda)
+{
+  for(auto& table : m_tables)
+  {
+    table->registerVerifier(lambda);
+  }
+  return shared_from_this();
 }
 
 }  // end namespace inlet

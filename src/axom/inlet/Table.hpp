@@ -25,7 +25,8 @@
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
-#include "axom/inlet/SchemaCreator.hpp"
+#include "axom/inlet/inlet_utils.hpp"
+#include "axom/inlet/Verifiable.hpp"
 
 #include "axom/sidre.hpp"
 
@@ -52,6 +53,10 @@ namespace axom
 {
 namespace inlet
 {
+// Forward declaration for the traits
+
+class Table;
+
 namespace detail
 {
 /*!
@@ -95,6 +100,14 @@ struct is_inlet_primitive_array<std::unordered_map<int, T>>
   static constexpr bool value = is_inlet_primitive<T>::value;
 };
 
+template <typename T>
+struct is_inlet_array : std::false_type
+{ };
+
+template <typename T>
+struct is_inlet_array<std::unordered_map<int, T>> : std::true_type
+{ };
+
 /*!
  *******************************************************************************
  * \class has_FromInlet_specialization
@@ -131,7 +144,7 @@ class Proxy;
  * \see Inlet Field
  *******************************************************************************
  */
-class Table : public SchemaCreator, public std::enable_shared_from_this<Table>
+class Table : public std::enable_shared_from_this<Table>, public Verifiable
 {
 public:
   /*!
@@ -216,7 +229,7 @@ public:
    *
    * Adds a Table to the input file schema. Tables hold a varying amount Fields
    * defined by the user.  By default, it is not required unless marked with
-   * Table::required(). This creates the Sidre Group class with the given name and
+   * Table::isRequired(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
    * \param [in] name Name of the Table expected in the input file
@@ -230,7 +243,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Boolean Fields to the input deck schema.
+   * \brief Add an array of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -238,12 +251,12 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addBoolArray(const std::string& name,
-                                      const std::string& description = "");
+  std::shared_ptr<Verifiable> addBoolArray(const std::string& name,
+                                           const std::string& description = "");
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Integer Fields to the input deck schema.
+   * \brief Add an array of Integer Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -251,12 +264,12 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addIntArray(const std::string& name,
-                                     const std::string& description = "");
+  std::shared_ptr<Verifiable> addIntArray(const std::string& name,
+                                          const std::string& description = "");
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Double Fields to the input deck schema.
+   * \brief Add an array of Double Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -264,12 +277,13 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addDoubleArray(const std::string& name,
-                                        const std::string& description = "");
+  std::shared_ptr<Verifiable> addDoubleArray(
+    const std::string& name,
+    const std::string& description = "");
 
   /*!
    *****************************************************************************
-   * \brief Add an array of String Fields to the input deck schema.
+   * \brief Add an array of String Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -277,56 +291,86 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addStringArray(const std::string& name,
-                                        const std::string& description = "");
+  std::shared_ptr<Verifiable> addStringArray(
+    const std::string& name,
+    const std::string& description = "");
 
   /*!
    *****************************************************************************
-   * \brief Get a boolean array represented as an unordered map from the input deck
+   * \brief Add an array of Fields to the input file schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> addGenericArray(const std::string& name,
+                                         const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Get an array represented as an unordered map from the input file
+   * of primitive type
    *
    * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, bool>& map);
+  template <typename T>
+  typename std::enable_if<detail::is_inlet_primitive<T>::value, bool>::type
+  getArray(std::unordered_map<int, T>& map)
+  {
+    map.clear();
+    if(!axom::utilities::string::endsWith(m_name, "_inlet_array"))
+    {
+      return false;
+    }
+    for(auto& item : m_fieldChildren)
+    {
+      auto pos = item.first.find_last_of("/");
+      int index = std::stoi(item.first.substr(pos + 1));
+      map[index] = item.second->get<T>();
+    }
+    return true;
+  }
 
   /*!
    *****************************************************************************
-   * \brief Get a int array represented as an unordered map from the input deck
+   * \brief Get an array represented as an unordered map from the input file
+   * of user-defined type
    *
    * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, int>& map);
+  template <typename T>
+  typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
+  getArray(std::unordered_map<int, T>& map)
+  {
+    if(m_sidreGroup->hasView("_inlet_array_indices"))
+    {
+      auto view = m_sidreGroup->getView("_inlet_array_indices");
+      int* array = view->getArray();
+      for(int i = 0; i < view->getNumElements(); i++)
+      {
+        auto index_label = std::to_string(array[i]);
+        map[array[i]] = getTable(index_label)->get<T>();
+      }
+    }
+    else
+    {
+      SLIC_WARNING("[Inlet] Table does not contain an array");
+      return false;
+    }
+    return true;
+  }
 
   /*!
    *****************************************************************************
-   * \brief Get a double array represented as an unordered map from the input deck
-   *
-   * \param [out] map Unordered map to be populated with array contents
-   *
-   * \return Whether or not the array was found
-   *****************************************************************************
-   */
-  bool getArray(std::unordered_map<int, double>& map);
-
-  /*!
-   *****************************************************************************
-   * \brief Get a string array represented as an unordered map from the input deck
-   *
-   * \param [out] map Unordered map to be populated with array contents
-   *
-   * \return Whether or not the array was found
-   *****************************************************************************
-   */
-  bool getArray(std::unordered_map<int, std::string>& map);
-
-  /*!
-   *****************************************************************************
-   * \brief Add a Boolean Field to the input deck schema.
+   * \brief Add a Boolean Field to the input file schema.
    *
    * Adds a Boolean Field to the input file schema. It may or may not be required
    * to be present in the input file. This creates the Sidre Group class with the
@@ -339,10 +383,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description = "")
+  std::shared_ptr<VerifiableScalar> addBool(const std::string& name,
+                                            const std::string& description = "")
   {
-    return addBoolHelper(name, description);
+    return addPrimitive<bool>(name, description);
   }
 
   /*!
@@ -360,10 +404,11 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description = "")
+  std::shared_ptr<VerifiableScalar> addDouble(
+    const std::string& name,
+    const std::string& description = "")
   {
-    return addDoubleHelper(name, description);
+    return addPrimitive<double>(name, description);
   }
 
   /*!
@@ -381,10 +426,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description = "")
+  std::shared_ptr<VerifiableScalar> addInt(const std::string& name,
+                                           const std::string& description = "")
   {
-    return addIntHelper(name, description);
+    return addPrimitive<int>(name, description);
   }
   /*!
    *****************************************************************************
@@ -401,11 +446,64 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description = "")
+  std::shared_ptr<VerifiableScalar> addString(
+    const std::string& name,
+    const std::string& description = "")
   {
-    return addStringHelper(name, description);
+    return addPrimitive<std::string>(name, description);
   }
+
+  /*!
+   *****************************************************************************
+   * \brief Add a Field to the input file schema.
+   *
+   * Adds a Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
+   * value is read and stored in the datastore. 
+   *
+   * \param [in] name Name of the Table expected in the input file
+   * \param [in] description Description of the Table
+   * \param [in] forArray Whether the primitive is in an array, in which
+   * case the provided value should be inserted instead of the one read from
+   * the input file
+   * \param [in] val A provided value, will be overwritten if found at specified
+   * path in input file
+   * \param [in] pathOverride The path within the input file to read from, if
+   * different than the structure of the Sidre datastore
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  std::shared_ptr<VerifiableScalar> addPrimitive(
+    const std::string& name,
+    const std::string& description = "",
+    bool forArray = false,
+    T val = T {},
+    const std::string& pathOverride = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of primitive Fields to the input file schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   * \param [in] pathOverride The path within the input file to read from, if
+   * different than the structure of the Sidre datastore
+   *
+   * \return Shared pointer to the created Field
+   *****************************************************************************
+   */
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  std::shared_ptr<Verifiable> addPrimitiveArray(
+    const std::string& name,
+    const std::string& description = "",
+    const std::string& pathOverride = "");
 
   /*!
    *******************************************************************************
@@ -446,7 +544,7 @@ public:
    */
   template <typename T>
   typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
-                            !detail::is_inlet_primitive_array<T>::value,
+                            !detail::is_inlet_array<T>::value,
                           T>::type
   get(const std::string& name = "")
   {
@@ -479,10 +577,20 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_inlet_primitive_array<T>::value, T>::type get()
+  typename std::enable_if<detail::is_inlet_array<T>::value, T>::type get()
   {
     T result;
-    if(!getTable("_inlet_array")->getArray(result))
+    // This needs to work transparently for both references to the underlying
+    // internal table and references using the same path as the data file
+    if(axom::utilities::string::endsWith(m_name, "_inlet_array"))
+    {
+      if(!getArray(result))
+      {
+        SLIC_ERROR(
+          "[Inlet] Table does not contain a valid array of requested type");
+      }
+    }
+    else if(!getTable("_inlet_array")->getArray(result))
     {
       SLIC_ERROR(
         "[Inlet] Table does not contain a valid array of requested type");
@@ -516,7 +624,7 @@ public:
    * \return Shared pointer to this instance of Table
    *****************************************************************************
    */
-  std::shared_ptr<Table> required(bool isRequired);
+  std::shared_ptr<Verifiable> required(bool isRequired);
 
   /*!
    *****************************************************************************
@@ -528,7 +636,7 @@ public:
    * \return Boolean value of whether this Table is required
    *****************************************************************************
    */
-  bool required();
+  bool isRequired();
 
   /*!
    *****************************************************************************
@@ -538,7 +646,7 @@ public:
    * \param [in] The function object that will be called by Table::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Table> registerVerifier(std::function<bool()> lambda);
+  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Table&)> lambda);
 
   /*!
    *****************************************************************************
@@ -629,22 +737,47 @@ public:
   std::shared_ptr<Field> getField(const std::string& fieldName);
 
 private:
-  std::shared_ptr<Field> addBoolHelper(const std::string& name,
-                                       const std::string& description = "",
-                                       bool forArray = false,
-                                       bool num = 0);
-  std::shared_ptr<Field> addIntHelper(const std::string& name,
-                                      const std::string& description = "",
-                                      bool forArray = false,
-                                      int num = 0);
-  std::shared_ptr<Field> addDoubleHelper(const std::string& name,
-                                         const std::string& description = "",
-                                         bool forArray = false,
-                                         double num = 0);
-  std::shared_ptr<Field> addStringHelper(const std::string& name,
-                                         const std::string& description = "",
-                                         bool forArray = false,
-                                         const std::string& str = "");
+  /*!
+   *****************************************************************************
+   * \brief Helper method template for adding primitives
+   * 
+   * Adds the value at the templated type to the sidre group
+   * 
+   * \param [inout] sidreGroup The group to add the primitive view to
+   * \param [in] lookupPath The path within the input file to read from
+   * \param [in] forArray Whether the primitive is in an array, in which
+   * case the provided value should be inserted instead of the one read from
+   * the input file
+   * \param [in] val A provided value, will be overwritten if found at specified
+   * path in input file
+   *
+   * \return Type ID for the inserted view
+   *****************************************************************************
+   */
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  axom::sidre::DataTypeId addPrimitiveHelper(axom::sidre::Group* sidreGroup,
+                                             const std::string& lookupPath,
+                                             bool forArray,
+                                             T val);
+
+  /*!
+   *****************************************************************************
+   * \brief Helper method template for adding primitives
+   * 
+   * Reads an array at the provided path into the provided table
+   * 
+   * \param [inout] table The inlet::Table to add the array to 
+   * \param [in] lookupPath The path within the input file to read from
+   * 
+   *****************************************************************************
+   */
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  void addPrimitiveArrayHelper(Table& table, const std::string& lookupPath);
+
   /*!
    *****************************************************************************
    * \brief Creates the basic Sidre Group for this Table and stores the given
@@ -721,6 +854,19 @@ private:
 
   axom::sidre::View* baseGet(const std::string& name);
 
+  /*!
+   *****************************************************************************
+   * \brief This is an internal utility intended to be used with arrays of 
+   * user-defined types that returns the a list of pairs, each of which contain
+   * an index (a number) and a fully qualified path within the input file to
+   * the array element at the corresponding index.
+   * 
+   * \param [in] name The name of the array object in the input file
+   *****************************************************************************
+   */
+  std::vector<std::pair<std::string, std::string>> arrayIndicesWithPaths(
+    const std::string& name);
+
   std::string m_name;
   std::shared_ptr<Reader> m_reader;
   // Inlet's Root Sidre Group
@@ -730,7 +876,113 @@ private:
   bool m_docEnabled;
   std::unordered_map<std::string, std::shared_ptr<Table>> m_tableChildren;
   std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
-  std::function<bool()> m_verifier;
+  std::function<bool(Table&)> m_verifier;
+};
+
+// To-be-defined template specializations
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  bool val);
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  int val);
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  double val);
+
+template <>
+axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
+  axom::sidre::Group* sidreGroup,
+  const std::string& lookupPath,
+  bool forArray,
+  std::string val);
+
+template <>
+void Table::addPrimitiveArrayHelper<bool>(Table& table,
+                                          const std::string& lookupPath);
+
+template <>
+void Table::addPrimitiveArrayHelper<int>(Table& table,
+                                         const std::string& lookupPath);
+
+template <>
+void Table::addPrimitiveArrayHelper<double>(Table& table,
+                                            const std::string& lookupPath);
+
+template <>
+void Table::addPrimitiveArrayHelper<std::string>(Table& table,
+                                                 const std::string& lookupPath);
+
+/*!
+   *****************************************************************************
+   * \brief A wrapper class that enables constraints on groups of Tables
+   *****************************************************************************
+  */
+class AggregateTable : public std::enable_shared_from_this<AggregateTable>,
+                       public Verifiable
+{
+public:
+  AggregateTable(std::vector<std::shared_ptr<Verifiable>>&& tables)
+    : m_tables(std::move(tables))
+  { }
+
+  /*!
+   *****************************************************************************
+   * \brief This will be called by Inlet::verify to verify the contents of this
+   *  Table and all child Tables/Fields of this Table.
+   *****************************************************************************
+   */
+  bool verify();
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Table.
+   *
+   * Set whether this Table is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \param [in] isRequired Boolean value of whether Table is required
+   *
+   * \return Shared pointer to this instance of Table
+   *****************************************************************************
+   */
+  std::shared_ptr<Verifiable> required(bool isRequired);
+
+  /*!
+   *****************************************************************************
+   * \brief Return the required status of this Table.
+   *
+   * Return that this Table is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Table is required
+   *****************************************************************************
+   */
+  bool isRequired();
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Table's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Table::verify().
+   *****************************************************************************
+  */
+  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Table&)> lambda);
+
+private:
+  std::vector<std::shared_ptr<Verifiable>> m_tables;
 };
 
 }  // end namespace inlet

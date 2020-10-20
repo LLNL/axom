@@ -16,9 +16,12 @@
 #include "axom/inlet/LuaReader.hpp"
 #include "axom/inlet/Inlet.hpp"
 
+using axom::inlet::Field;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
 using axom::inlet::LuaReader;
+using axom::inlet::Proxy;
+using axom::inlet::Table;
 using axom::sidre::DataStore;
 
 std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
@@ -41,18 +44,16 @@ TEST(inlet_Inlet_basic, getTopLevelBools)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("non/existant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("non/existant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -88,18 +89,16 @@ TEST(inlet_Inlet_basic, getNestedBools)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -129,18 +128,16 @@ TEST(inlet_Inlet_basic, getDoublyNestedBools)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/quux/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/quux/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/quux/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/quux/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("foo/quux/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/quux/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -172,21 +169,19 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBools)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField =
+  auto currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -216,18 +211,16 @@ TEST(inlet_Inlet_basic, getNestedBoolsThroughTable)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -262,21 +255,19 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughTable)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField =
+  auto currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -310,21 +301,19 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughField)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField =
+  auto currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField =
+  currVerifiable =
     inlet->addBool("foo/quux/corge/quuz/grault/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -356,18 +345,16 @@ TEST(inlet_Inlet_basic, getTopLevelDoubles)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addDouble("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addDouble("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addDouble("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addDouble("nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -397,18 +384,16 @@ TEST(inlet_Inlet_basic, getNestedDoubles)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addDouble("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addDouble("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addDouble("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addDouble("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -438,18 +423,16 @@ TEST(inlet_Inlet_basic, getTopLevelInts)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addInt("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addInt("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addInt("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addInt("nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -479,18 +462,16 @@ TEST(inlet_Inlet_basic, getNestedInts)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addInt("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addInt("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addInt("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addInt("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -520,18 +501,16 @@ TEST(inlet_Inlet_basic, getTopLevelStrings)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addString("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addString("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addString("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addString("nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -561,18 +540,16 @@ TEST(inlet_Inlet_basic, getNestedStrings)
   // Define schema
   //
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addString("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addString("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addString("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addString("foo/nonexistant", "nothing");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -604,24 +581,22 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
   auto table = inlet->addTable("foo", "A table called foo");
   table->required(true);
 
-  currField = table->addString("bar", "bar's description");
-  EXPECT_TRUE(currField);
-  currField->required(true);
+  auto currVerifiable = table->addString("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
+  currVerifiable->required(true);
 
-  currField = table->addDouble("so", "so's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = table->addDouble("so", "so's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = table->addInt("re", "re's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = table->addInt("re", "re's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = table->addBool("mi", "mi's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = table->addBool("mi", "mi's description");
+  EXPECT_TRUE(currVerifiable);
 
   //
   // Check stored values from get
@@ -646,17 +621,17 @@ TEST(inlet_Inlet_views, NestedTableViewCheck1)
     "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-  std::shared_ptr<axom::inlet::Field> currField;
-  currField = inlet->addBool("field1", "this is field #1, a boolean value");
-  currField->required(true);
-  currField = inlet->addInt("field2", "this is field #2, an integer");
-  currField->required(false);
+  auto currVerifiable =
+    inlet->addBool("field1", "this is field #1, a boolean value");
+  currVerifiable->required(true);
+  currVerifiable = inlet->addInt("field2", "this is field #2, an integer");
+  currVerifiable->required(false);
   auto t = inlet->addTable("NewTable", "It's blue");
   t->required(false);
-  currField = t->addString("str", "str's description");
-  currField->required(true);
-  currField = t->addInt("integer", "a whole number");
-  currField->required(false);
+  currVerifiable = t->addString("str", "str's description");
+  currVerifiable->required(true);
+  currVerifiable = t->addInt("integer", "a whole number");
+  currVerifiable->required(false);
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
 
@@ -683,16 +658,16 @@ TEST(inlet_Inlet_views, NestedTableViewCheck2)
     "{ x = 4 } } }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-  std::shared_ptr<axom::inlet::Field> currField;
-  currField = inlet->addBool("foo", "foo's description");
-  currField->required(true);
-  currField = inlet->addBool("bar", "bar's description");
-  currField->required(false);
+  auto currVerifiable = inlet->addBool("foo", "foo's description");
+  currVerifiable->required(true);
+  currVerifiable = inlet->addBool("bar", "bar's description");
+  currVerifiable->required(false);
 
   auto t = inlet->addTable("Table1", "The first table");
   t->required(false);
-  currField = t->addDouble("float1", "floating point number within table 1");
-  currField->required(true);
+  currVerifiable =
+    t->addDouble("float1", "floating point number within table 1");
+  currVerifiable->required(true);
   t = t->addTable("Table11", "Table within Table 1");
   t = t->addTable("Table111", "Table within Table 11");
   t->addInt("x", "A variable");
@@ -1272,14 +1247,14 @@ TEST(inlet_verify, verifyFieldLambda)
   auto field2 = inlet->addString("field2");
   auto field3 = inlet->addString("NewTable/field3");
 
-  field2->registerVerifier([&]() -> bool {
-    auto str = (*inlet)["field2"].get<std::string>();
+  field2->registerVerifier([](Field& field) -> bool {
+    auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_TRUE(inlet->verify());
 
-  field3->registerVerifier([&]() -> bool {
-    auto str = (*inlet)["NewTable/field3"].get<std::string>();
+  field3->registerVerifier([](Field& field) -> bool {
+    auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_FALSE(inlet->verify());
@@ -1298,24 +1273,26 @@ TEST(inlet_verify, verifyTableLambda1)
   auto table1 = inlet->addTable("NewTable");
   auto field3 = table1->addString("field3");
 
-  field2->registerVerifier([&]() -> bool {
-    auto str = (*inlet)["field2"].get<std::string>();
+  field2->registerVerifier([](Field& field) -> bool {
+    auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_TRUE(inlet->verify());
 
-  field3->registerVerifier([&]() -> bool {
-    auto str = (*inlet)["NewTable/field3"].get<std::string>();
+  field3->registerVerifier([](Field& field) -> bool {
+    auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'x');
   });
   EXPECT_TRUE(inlet->verify());
 
   EXPECT_TRUE(table1->hasField("field3"));
 
-  table1->registerVerifier([&]() -> bool { return table1->hasField("field3"); });
+  table1->registerVerifier(
+    [](Table& table) -> bool { return table.contains("field3"); });
   EXPECT_TRUE(inlet->verify());
 
-  table1->registerVerifier([&]() -> bool { return table1->hasField("field22"); });
+  table1->registerVerifier(
+    [](Table& table) -> bool { return table.contains("field22"); });
   EXPECT_FALSE(inlet->verify());
 }
 
@@ -1342,14 +1319,14 @@ TEST(inlet_verify, verifyTableLambda2)
   auto globalTable = inlet->getGlobalTable();
   auto material = globalTable->getTable("material");
 
-  globalTable->registerVerifier([&]() -> bool {
+  globalTable->registerVerifier([](Table& table) -> bool {
     bool verifySuccess = true;
-    if(globalTable->hasTable("thermal_solver") &&
-       !material->hasField("thermalview"))
+    if(table.contains("thermal_solver") &&
+       !table["material"].contains("thermalview"))
     {
       verifySuccess = false;
     }
-    if(globalTable->hasTable("solid_solver") && !material->hasField("solidview"))
+    if(table.contains("solid_solver") && !table["material"].contains("solidview"))
     {
       verifySuccess = false;
     }
@@ -1411,17 +1388,18 @@ TEST(inlet_verify, verifyTableLambda3)
   DataStore ds;
   auto myInlet = createBasicInlet(&ds, testString);
   myInlet->addInt("dimensions")->required(true);
-  auto v = myInlet->addTable("vector")->required(true);
+  auto v = myInlet->addTable("vector");
+  v->required(true);
   v->addInt("x");
 
-  v->registerVerifier([&]() -> bool {
+  v->registerVerifier([&myInlet](Table& table) -> bool {
     int dim = (*myInlet)["dimensions"];
     bool x_present =
-      v->hasField("x") && ((*myInlet)["vector/x"].type() == InletType::Integer);
+      table.contains("x") && (table["x"].type() == InletType::Integer);
     bool y_present =
-      v->hasField("y") && ((*myInlet)["vector/y"].type() == InletType::Integer);
+      table.contains("y") && (table["y"].type() == InletType::Integer);
     bool z_present =
-      v->hasField("z") && ((*myInlet)["vector/z"].type() == InletType::Integer);
+      table.contains("z") && (table["z"].type() == InletType::Integer);
     if(dim == 1 && x_present)
     {
       return true;
@@ -1456,10 +1434,6 @@ TEST(inletArrays, getArray)
     "              arr4 = { [12] = 2.4 } }";
   auto inlet = createBasicInlet(&ds, testString);
 
-  std::unordered_map<int, bool> boolMap;
-  std::unordered_map<int, int> intMap;
-  std::unordered_map<int, double> doubleMap;
-  std::unordered_map<int, std::string> strMap;
   auto arr1 = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
   auto arr2 = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
   auto arr3 = inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
@@ -1470,16 +1444,17 @@ TEST(inletArrays, getArray)
   std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
   std::unordered_map<int, std::string> expectedStrs {{33, "hello"}, {2, "bye"}};
 
-  EXPECT_TRUE(arr1->getArray(intMap));
+  std::unordered_map<int, int> intMap = (*inlet)["luaArrays/arr1"];
+  std::unordered_map<int, bool> boolMap = (*inlet)["luaArrays/arr2"];
+  std::unordered_map<int, std::string> strMap = (*inlet)["luaArrays/arr3"];
+  std::unordered_map<int, double> doubleMap = (*inlet)["luaArrays/arr4"];
+
   EXPECT_EQ(intMap, expectedInts);
 
-  EXPECT_TRUE(arr2->getArray(boolMap));
   EXPECT_EQ(boolMap, expectedBools);
 
-  EXPECT_TRUE(arr3->getArray(strMap));
   EXPECT_EQ(strMap, expectedStrs);
 
-  EXPECT_TRUE(arr4->getArray(doubleMap));
   EXPECT_EQ(doubleMap, expectedDoubles);
 }
 

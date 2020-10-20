@@ -7,7 +7,7 @@
  *******************************************************************************
  * \file Field.hpp
  *
- * \brief This file contains the class definition of Inlet's Field class.
+ * \brief This file contains the class definition of Inlet's Field and AggregateField classes.
  *******************************************************************************
  */
 
@@ -15,6 +15,7 @@
 #define INLET_FIELD_HPP
 
 #include "axom/sidre.hpp"
+#include "axom/inlet/VerifiableScalar.hpp"
 
 #include <memory>
 #include <type_traits>
@@ -54,7 +55,7 @@ enum class InletType
  * \see Inlet Table
  *******************************************************************************
  */
-class Field : public std::enable_shared_from_this<Field>
+class Field : public std::enable_shared_from_this<Field>, public VerifiableScalar
 {
 public:
   /*!
@@ -82,6 +83,8 @@ public:
     , m_docEnabled(docEnabled)
   { }
 
+  virtual ~Field() = default;
+
   /*!
    *****************************************************************************
    * \brief Returns pointer to the Sidre Group class for this Field.
@@ -106,7 +109,7 @@ public:
    * \return Shared pointer to this instance of this class
    *****************************************************************************
    */
-  std::shared_ptr<Field> required(bool isRequired);
+  std::shared_ptr<VerifiableScalar> required(bool isRequired);
 
   /*!
    *****************************************************************************
@@ -118,7 +121,7 @@ public:
    * \return Boolean value of whether this Field is required
    *****************************************************************************
    */
-  bool required();
+  bool isRequired();
 
   /*!
    *****************************************************************************
@@ -131,7 +134,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(const std::string& value);
+  std::shared_ptr<VerifiableScalar> defaultValue(const std::string& value);
 
   /*!
    *****************************************************************************
@@ -144,7 +147,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(const char* value);
+  std::shared_ptr<VerifiableScalar> defaultValue(const char* value);
 
   /*!
    *****************************************************************************
@@ -157,7 +160,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(bool value);
+  std::shared_ptr<VerifiableScalar> defaultValue(bool value);
 
   /*!
    *****************************************************************************
@@ -170,7 +173,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(int value);
+  std::shared_ptr<VerifiableScalar> defaultValue(int value);
 
   /*!
    *****************************************************************************
@@ -183,7 +186,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(double value);
+  std::shared_ptr<VerifiableScalar> defaultValue(double value);
 
   /*!
    *****************************************************************************
@@ -198,7 +201,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> range(double startVal, double endVal);
+  std::shared_ptr<VerifiableScalar> range(double startVal, double endVal);
 
   /*!
    *****************************************************************************
@@ -213,7 +216,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> range(int startVal, int endVal);
+  std::shared_ptr<VerifiableScalar> range(int startVal, int endVal);
 
   /*!
    *****************************************************************************
@@ -224,7 +227,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<int>& set);
+  std::shared_ptr<VerifiableScalar> validValues(const std::vector<int>& set);
 
   /*!
    *****************************************************************************
@@ -235,7 +238,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<double>& set);
+  std::shared_ptr<VerifiableScalar> validValues(const std::vector<double>& set);
 
   /*!
    *****************************************************************************
@@ -246,7 +249,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<std::string>& set);
+  std::shared_ptr<VerifiableScalar> validValues(const std::vector<std::string>& set);
 
   /*!
    *****************************************************************************
@@ -258,7 +261,8 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::initializer_list<const char*>& set);
+  std::shared_ptr<VerifiableScalar> validValues(
+    const std::initializer_list<const char*>& set);
 
   /*!
    *****************************************************************************
@@ -269,7 +273,8 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::initializer_list<int>& set);
+  std::shared_ptr<VerifiableScalar> validValues(
+    const std::initializer_list<int>& set);
 
   /*!
    *****************************************************************************
@@ -280,7 +285,8 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::initializer_list<double>& set);
+  std::shared_ptr<VerifiableScalar> validValues(
+    const std::initializer_list<double>& set);
 
   /*!
    *****************************************************************************
@@ -290,7 +296,8 @@ public:
    * \param [in] The function object that will be called by Field::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda);
+  std::shared_ptr<VerifiableScalar> registerVerifier(
+    std::function<bool(Field&)> lambda);
 
   /*!
    *****************************************************************************
@@ -372,6 +379,43 @@ private:
 
   /*!
    *****************************************************************************
+   * \brief Checks the validity of a field value
+   *
+   * \param [in] view The view to verify
+   *
+   * \return Whether the value satisfied all constraints
+   *****************************************************************************
+  */
+  bool verifyValue(axom::sidre::View& view);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is within the range.
+   * 
+   * \param [in] view The view containing the value that will be checked.
+   * 
+   * \return true if the given value was within its respective range, else false.
+   * \pre T must define bool operator<=(T, T)
+   *****************************************************************************
+   */
+  template <typename T>
+  bool checkRange(axom::sidre::View& view);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is found in the list of valid values.
+   * 
+   * \param [in] view The view containing the value that will be checked.
+   * 
+   * \return true if the given target was found in its respective valid values, 
+   *  else false.
+   *****************************************************************************
+   */
+  template <typename T>
+  bool searchValidValues(axom::sidre::View& view);
+
+  /*!
+   *****************************************************************************
    * \brief Checks the existence and type of the value for the field
    *
    * \param [in] expected The expected type for the value
@@ -388,9 +432,10 @@ private:
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled;
-  std::function<bool()> m_verifier;
+  std::function<bool(Field&)> m_verifier;
 };
 
+// Prototypes for template specializations
 template <>
 bool Field::get<bool>();
 
@@ -402,6 +447,236 @@ double Field::get<double>();
 
 template <>
 std::string Field::get<std::string>();
+
+template <>
+inline bool Field::searchValidValues<std::string>(axom::sidre::View& view);
+
+/*!
+   *****************************************************************************
+   * \brief A wrapper class that enables constraints on groups of Fields
+   *****************************************************************************
+  */
+class AggregateField : public std::enable_shared_from_this<AggregateField>,
+                       public VerifiableScalar
+{
+public:
+  AggregateField(std::vector<std::shared_ptr<VerifiableScalar>>&& fields)
+    : m_fields(std::move(fields))
+  { }
+
+  virtual ~AggregateField() = default;
+
+  /*!
+   *****************************************************************************
+   * \brief Called by Inlet::verify to verify the contents of this Field.
+   *****************************************************************************
+  */
+  bool verify();
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Field.
+   *
+   * Set whether this Field is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \param [in] isRequired Boolean value of whether Field is required
+   *
+   * \return Shared pointer to this instance of this class
+   *****************************************************************************
+   */
+  std::shared_ptr<VerifiableScalar> required(bool isRequired);
+
+  /*!
+   *****************************************************************************
+   * \brief Return the required status of this Field.
+   *
+   * Return that this Field is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Field is required
+   *****************************************************************************
+   */
+  bool isRequired();
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> defaultValue(const std::string& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> defaultValue(const char* value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default boolean value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> defaultValue(bool value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default integer value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> defaultValue(int value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default double value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> defaultValue(double value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input file.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> range(double startVal, double endVal);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input file.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> range(int startVal, int endVal);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An vector containing the set of allowed integer values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> validValues(const std::vector<int>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An vector containing the set of allowed double values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> validValues(const std::vector<double>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set A vector containing the set of allowed string values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> validValues(const std::vector<std::string>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the set of allowed C-string 
+   * values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> validValues(
+    const std::initializer_list<const char*>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid integer values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> validValues(
+    const std::initializer_list<int>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid double values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> validValues(
+    const std::initializer_list<double>& set);
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Field's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Field::verify().
+   *****************************************************************************
+  */
+  std::shared_ptr<VerifiableScalar> registerVerifier(
+    std::function<bool(Field&)> lambda);
+
+private:
+  std::vector<std::shared_ptr<VerifiableScalar>> m_fields;
+};
 
 }  // end namespace inlet
 }  // end namespace axom

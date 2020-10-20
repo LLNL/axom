@@ -6,13 +6,15 @@
 #include "axom/inlet.hpp"
 
 #include <iostream>
+#include <unordered_map>
 #include "CLI11/CLI11.hpp"
 #include "axom/slic/core/UnitTestLogger.hpp"
 
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
-using axom::inlet::SchemaCreator;
 using axom::sidre::DataStore;
+
+namespace inlet = axom::inlet;
 
 struct Mesh
 {
@@ -22,7 +24,7 @@ struct Mesh
 
   // Each class should define a static method that adds the fields it
   // will grab from inlet
-  static void defineSchema(SchemaCreator& schema)
+  static void defineSchema(inlet::Table& schema)
   {
     schema.addString("filename", "Path to mesh file");
     schema.addInt("serial", "Number of serial refinement iterations");
@@ -32,10 +34,20 @@ struct Mesh
 
 // Additionally, each class should specialize this struct as follows
 // in the global namespace so that Inlet can access it
+/**
+ * Example Lua definition:
+ * \code{.lua}
+ * mesh = {
+ *    filename = 'data/square.mesh',
+ *    serial = 12,
+ *    parallel = 7
+ * }
+ * \endcode
+ */
 template <>
 struct FromInlet<Mesh>
 {
-  Mesh operator()(axom::inlet::Table& base)
+  Mesh operator()(inlet::Table& base)
   {
     return {base["filename"], base["serial"], base["parallel"]};
   }
@@ -49,7 +61,7 @@ struct LinearSolver
   int max_iter;
   double dt;
   int steps;
-  static void defineSchema(SchemaCreator& schema)
+  static void defineSchema(inlet::Table& schema)
   {
     schema.addDouble("rel_tol", "Relative convergence criterion");
     schema.addDouble("abs_tol", "Relative convergence criterion");
@@ -60,10 +72,23 @@ struct LinearSolver
   }
 };
 
+/**
+ * Example Lua definition:
+ * \code{.lua}
+ * solver = {
+ *    rel_tol = 1.e-6,
+ *    abs_tol = 1.e-12,
+ *    print_level = 0,
+ *    max_iter = 100,
+ *    dt = 1.0,
+ *    steps = 1 
+ * }
+ * \endcode
+ */
 template <>
 struct FromInlet<LinearSolver>
 {
-  LinearSolver operator()(axom::inlet::Table& base)
+  LinearSolver operator()(inlet::Table& base)
   {
     LinearSolver lin_solve;
     lin_solve.rel_tol = base["rel_tol"];
@@ -76,14 +101,50 @@ struct FromInlet<LinearSolver>
   }
 };
 
+struct BoundaryCondition
+{
+  std::unordered_map<int, int> attrs;
+  double constant;
+  static void defineSchema(inlet::Table& schema)
+  {
+    schema.addIntArray("attrs", "List of boundary attributes");
+    schema.addDouble("constant",
+                     "The scalar to fix the value of the solution to");
+  }
+};
+
+/**
+ * Example Lua definition:
+ * \code{.lua}
+ * bc = {
+ *   attrs = {
+ *      3, 4, 6, 9
+ *   }
+ *   constant = 12.55
+ * }
+ * \endcode
+ */
+template <>
+struct FromInlet<BoundaryCondition>
+{
+  BoundaryCondition operator()(inlet::Table& base)
+  {
+    BoundaryCondition bc;
+    bc.attrs = base["attrs"];
+    bc.constant = base["constant"];
+    return bc;
+  }
+};
+
 struct ThermalSolver
 {
   Mesh mesh;
   LinearSolver solver;
+  std::unordered_map<int, BoundaryCondition> bcs;
   // defineSchema is intended to be used recursively
   // Tables are created for subobjects and passed to
   // subobject defineSchema implementations
-  static void defineSchema(SchemaCreator& schema)
+  static void defineSchema(inlet::Table& schema)
   {
     auto mesh_table = schema.addTable("mesh", "Information about the mesh");
     Mesh::defineSchema(*mesh_table);
@@ -91,17 +152,45 @@ struct ThermalSolver
       schema.addTable("solver",
                       "Information about the iterative solver used for Ku = f");
     LinearSolver::defineSchema(*solver_table);
+
+    // Schema only needs to be defined once, will propagate through to each
+    // element of the array, namely, the subtable at each found index in the input file
+    auto bc_table = schema.addGenericArray("bcs", "List of boundary conditions");
+    BoundaryCondition::defineSchema(*bc_table);
   }
 };
 
+/**
+ * Example Lua definition:
+ * \code{.lua}
+ * thermal_solver = {
+ *    mesh = {
+ *      -- see above FromInlet<Mesh>
+ *    },
+ *    solver = {
+ *      -- see above FromInlet<LinearSolver>
+ *    },
+ *    bcs = {
+ *        [1] = {
+ *          -- see above FromInlet<BoundaryCondition>
+ *        },
+ *        [2] = {
+ *          -- see above FromInlet<BoundaryCondition>
+ *        },
+ *    }
+ * }
+ * \endcode
+ */
 template <>
 struct FromInlet<ThermalSolver>
 {
   // This is also implicitly recursive - will call the FromInlet
   // functions defined for the subobjects
-  ThermalSolver operator()(axom::inlet::Table& base)
+  ThermalSolver operator()(inlet::Table& base)
   {
-    return {base["mesh"].get<Mesh>(), base["solver"].get<LinearSolver>()};
+    return {base["mesh"].get<Mesh>(),
+            base["solver"].get<LinearSolver>(),
+            base["bcs"].get<std::unordered_map<int, BoundaryCondition>>()};
   }
 };
 

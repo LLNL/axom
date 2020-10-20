@@ -5,6 +5,7 @@
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/inlet_utils.hpp"
+#include "axom/inlet/Proxy.hpp"
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
@@ -13,7 +14,7 @@ namespace axom
 {
 namespace inlet
 {
-std::shared_ptr<Field> Field::required(bool isRequired)
+std::shared_ptr<VerifiableScalar> Field::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Field specific Sidre Datastore Group not set");
@@ -41,7 +42,7 @@ std::shared_ptr<Field> Field::required(bool isRequired)
   return shared_from_this();
 }
 
-bool Field::required()
+bool Field::isRequired()
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Field specific Sidre Datastore Group not set");
@@ -120,7 +121,7 @@ void Field::setDefaultValue<std::string>(std::string value)
   }
 }
 
-std::shared_ptr<Field> Field::defaultValue(const char* value)
+std::shared_ptr<VerifiableScalar> Field::defaultValue(const char* value)
 {
   std::string str = "";
   if(value)
@@ -131,7 +132,7 @@ std::shared_ptr<Field> Field::defaultValue(const char* value)
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::defaultValue(const std::string& value)
+std::shared_ptr<VerifiableScalar> Field::defaultValue(const std::string& value)
 {
   if(m_type != axom::sidre::DataTypeId::CHAR8_STR_ID)
   {
@@ -142,7 +143,7 @@ std::shared_ptr<Field> Field::defaultValue(const std::string& value)
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::defaultValue(bool value)
+std::shared_ptr<VerifiableScalar> Field::defaultValue(bool value)
 {
   if(m_type != axom::sidre::DataTypeId::INT8_ID)
   {
@@ -153,7 +154,7 @@ std::shared_ptr<Field> Field::defaultValue(bool value)
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::defaultValue(int value)
+std::shared_ptr<VerifiableScalar> Field::defaultValue(int value)
 {
   switch(m_type)
   {
@@ -171,7 +172,7 @@ std::shared_ptr<Field> Field::defaultValue(int value)
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::defaultValue(double value)
+std::shared_ptr<VerifiableScalar> Field::defaultValue(double value)
 {
   if(m_type != axom::sidre::DataTypeId::DOUBLE_ID)
   {
@@ -212,7 +213,7 @@ void Field::setRange(T startVal, T endVal)
   }
 }
 
-std::shared_ptr<Field> Field::range(int startVal, int endVal)
+std::shared_ptr<VerifiableScalar> Field::range(int startVal, int endVal)
 {
   switch(m_type)
   {
@@ -230,7 +231,7 @@ std::shared_ptr<Field> Field::range(int startVal, int endVal)
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::range(double startVal, double endVal)
+std::shared_ptr<VerifiableScalar> Field::range(double startVal, double endVal)
 {
   switch(m_type)
   {
@@ -283,13 +284,7 @@ std::string Field::get<std::string>()
   auto valueView = checkExistenceAndType(axom::sidre::CHAR8_STR_ID);
 
   const char* valueStr = valueView->getString();
-  std::string value;
-  if(valueStr == nullptr)
-  {
-    value = std::string("");
-  }
-  value = std::string(valueStr);
-  return value;
+  return (valueStr == nullptr) ? "" : valueStr;
 }
 
 axom::sidre::View* Field::checkExistenceAndType(const axom::sidre::DataTypeId expected)
@@ -374,7 +369,7 @@ void Field::setScalarValidValues(std::vector<T> set)
   }
 }
 
-std::shared_ptr<Field> Field::validValues(const std::vector<int>& set)
+std::shared_ptr<VerifiableScalar> Field::validValues(const std::vector<int>& set)
 {
   switch(m_type)
   {
@@ -392,7 +387,7 @@ std::shared_ptr<Field> Field::validValues(const std::vector<int>& set)
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::validValues(const std::vector<double>& set)
+std::shared_ptr<VerifiableScalar> Field::validValues(const std::vector<double>& set)
 {
   switch(m_type)
   {
@@ -407,11 +402,12 @@ std::shared_ptr<Field> Field::validValues(const std::vector<double>& set)
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::validValues(const std::vector<std::string>& set)
+std::shared_ptr<VerifiableScalar> Field::validValues(
+  const std::vector<std::string>& set)
 {
   if(m_type != axom::sidre::DataTypeId::CHAR8_STR_ID)
   {
-    SLIC_WARNING("Field value type did not match STRING");
+    SLIC_WARNING("[Inlet] Field value type did not match STRING");
     setWarningFlag(m_sidreRootGroup);
   }
   if(m_sidreGroup->hasView("validValues") ||
@@ -444,23 +440,26 @@ std::shared_ptr<Field> Field::validValues(const std::vector<std::string>& set)
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::validValues(
+std::shared_ptr<VerifiableScalar> Field::validValues(
   const std::initializer_list<const char*>& set)
 {
   return validValues(std::vector<std::string>(set.begin(), set.end()));
 }
 
-std::shared_ptr<Field> Field::validValues(const std::initializer_list<int>& set)
+std::shared_ptr<VerifiableScalar> Field::validValues(
+  const std::initializer_list<int>& set)
 {
   return validValues(std::vector<int>(set));
 }
 
-std::shared_ptr<Field> Field::validValues(const std::initializer_list<double>& set)
+std::shared_ptr<VerifiableScalar> Field::validValues(
+  const std::initializer_list<double>& set)
 {
   return validValues(std::vector<double>(set));
 }
 
-std::shared_ptr<Field> Field::registerVerifier(std::function<bool()> lambda)
+std::shared_ptr<VerifiableScalar> Field::registerVerifier(
+  std::function<bool(Field&)> lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Field "
@@ -472,19 +471,291 @@ std::shared_ptr<Field> Field::registerVerifier(std::function<bool()> lambda)
 
 bool Field::verify()
 {
-  if(m_verifier && !m_verifier())
+  // If this field was required, make sure soemething was defined in it
+  if(m_sidreGroup->hasView("required"))
   {
-    SLIC_WARNING(fmt::format("[Inlet] Field failed verification: {0}",
+    int8 required = m_sidreGroup->getView("required")->getData();
+    if(required && !m_sidreGroup->hasView("value"))
+    {
+      std::string msg = fmt::format(
+        "[Inlet] Required Field not "
+        "specified: {0}",
+        m_sidreGroup->getPathName());
+      SLIC_WARNING(msg);
+      return false;
+    }
+  }
+
+  // Verify the provided value
+  if(m_sidreGroup->hasView("value") &&
+     !verifyValue(*m_sidreGroup->getView("value")))
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Value did not meet range/valid "
+      "value(s) constraints: {0}",
+      m_sidreGroup->getPathName());
+    SLIC_WARNING(msg);
+    return false;
+  }
+
+  // Verify the default value
+  if(m_sidreGroup->hasView("defaultValue") &&
+     !verifyValue(*m_sidreGroup->getView("defaultValue")))
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Default value did not meet range/valid "
+      "value(s) constraints: {0}",
+      m_sidreGroup->getPathName());
+    SLIC_WARNING(msg);
+    return false;
+  }
+
+  // Lambda verification step
+  if(m_verifier && !m_verifier(*this))
+  {
+    SLIC_WARNING(fmt::format("[Inlet] Field failed lambda verification: {0}",
                              m_sidreGroup->getPathName()));
     return false;
   }
   return true;
 }
 
+bool Field::verifyValue(axom::sidre::View& view)
+{
+  auto type = view.getTypeID();
+  if(m_sidreGroup->hasView("validValues"))
+  {
+    if(type == axom::sidre::INT_ID)
+    {
+      return searchValidValues<int>(view);
+    }
+    else
+    {
+      return searchValidValues<double>(view);
+    }
+  }
+  else if(m_sidreGroup->hasView("range"))
+  {
+    if(type == axom::sidre::INT_ID)
+    {
+      return checkRange<int>(view);
+    }
+    else
+    {
+      return checkRange<double>(view);
+    }
+  }
+  else if(m_sidreGroup->hasGroup("validStringValues"))
+  {
+    return searchValidValues<std::string>(view);
+  }
+  return true;
+}
+
+template <typename T>
+bool Field::checkRange(axom::sidre::View& view)
+{
+  T val = view.getScalar();
+  T* range = m_sidreGroup->getView("range")->getArray();
+  return range[0] <= val && val <= range[1];
+}
+
+template <typename T>
+bool Field::searchValidValues(axom::sidre::View& view)
+{
+  T target = view.getScalar();
+  auto valid_vals = m_sidreGroup->getView("validValues");
+  T* valuesArray = valid_vals->getArray();
+  size_t size = valid_vals->getBuffer()->getNumElements();
+  T* result = std::find(valuesArray, valuesArray + size, target);
+  return result != valuesArray + size;
+}
+
+template <>
+bool Field::searchValidValues<std::string>(axom::sidre::View& view)
+{
+  auto string_group = m_sidreGroup->getGroup("validStringValues");
+  std::string value = view.getString();
+  auto idx = string_group->getFirstValidViewIndex();
+  while(axom::sidre::indexIsValid(idx))
+  {
+    if(string_group->getView(idx)->getString() == value)
+    {
+      return true;
+    }
+    idx = string_group->getNextValidViewIndex(idx);
+  }
+  return false;
+}
+
 std::string Field::name()
 {
   return removePrefix(m_sidreRootGroup->getPathName(),
                       m_sidreGroup->getPathName());
+}
+
+bool AggregateField::verify()
+{
+  return std::all_of(
+    m_fields.begin(),
+    m_fields.end(),
+    [](std::shared_ptr<VerifiableScalar>& field) { return field->verify(); });
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::required(bool isRequired)
+{
+  for(auto& field : m_fields)
+  {
+    field->required(isRequired);
+  }
+  return shared_from_this();
+}
+
+bool AggregateField::isRequired()
+{
+  for(auto& field : m_fields)
+  {
+    if(field->isRequired())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(
+  const std::string& value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(const char* value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(bool value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(int value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::defaultValue(double value)
+{
+  for(auto& field : m_fields)
+  {
+    field->defaultValue(value);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::range(double startVal,
+                                                        double endVal)
+{
+  for(auto& field : m_fields)
+  {
+    field->range(startVal, endVal);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::range(int startVal, int endVal)
+{
+  for(auto& field : m_fields)
+  {
+    field->range(startVal, endVal);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::vector<int>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::vector<double>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::vector<std::string>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::initializer_list<const char*>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::initializer_list<int>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::validValues(
+  const std::initializer_list<double>& set)
+{
+  for(auto& field : m_fields)
+  {
+    field->validValues(set);
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<VerifiableScalar> AggregateField::registerVerifier(
+  std::function<bool(Field&)> lambda)
+{
+  for(auto& field : m_fields)
+  {
+    field->registerVerifier(lambda);
+  }
+  return shared_from_this();
 }
 
 }  // end namespace inlet

@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 
+#include <array>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -35,6 +36,11 @@ struct Foo
 {
   bool bar;
   bool baz;
+
+  bool operator==(const Foo& other) const
+  {
+    return bar == other.bar && baz == other.baz;
+  }
 };
 
 template <>
@@ -54,20 +60,123 @@ TEST(inlet_object, simple_struct_by_value)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
 
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   Foo foo;
 
   foo = inlet->get<Foo>("foo");
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
+}
+
+TEST(inlet_object, simple_array_of_struct_by_value)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true; baz = false}, "
+    "        [7] = { bar = false; baz = true} }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+
+  arr_table->addBool("bar", "bar's description");
+  arr_table->addBool("baz", "baz's description");
+  std::unordered_map<int, Foo> expected_foos = {{4, {true, false}},
+                                                {7, {false, true}}};
+  std::unordered_map<int, Foo> foos;
+  EXPECT_TRUE(arr_table->getArray(foos));
+  EXPECT_EQ(foos, expected_foos);
+}
+
+TEST(inlet_object, simple_array_of_struct_implicit_idx)
+{
+  std::string testString =
+    "foo = { { bar = true; baz = false}, "
+    "        { bar = false; baz = true} }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+
+  arr_table->addBool("bar", "bar's description");
+  arr_table->addBool("baz", "baz's description");
+  std::unordered_map<int, Foo> expected_foos = {{1, {true, false}},
+                                                {2, {false, true}}};
+  std::unordered_map<int, Foo> foos;
+  EXPECT_TRUE(arr_table->getArray(foos));
+  EXPECT_EQ(foos, expected_foos);
+}
+
+TEST(inlet_object, simple_array_of_struct_verify_optional)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false;} }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+
+  arr_table->addBool("bar", "bar's description")->required(true);
+  arr_table->addBool("baz", "baz's description")->required(false);
+
+  EXPECT_TRUE(inlet->verify());
+}
+
+TEST(inlet_object, simple_array_of_struct_verify_reqd)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false;} }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+
+  arr_table->addBool("bar", "bar's description")->required(true);
+  arr_table->addBool("baz", "baz's description")->required(true);
+
+  EXPECT_FALSE(inlet->verify());
+}
+
+struct FooWithArray
+{
+  std::unordered_map<int, int> arr;
+  bool operator==(const FooWithArray& other) const { return arr == other.arr; }
+};
+
+template <>
+struct FromInlet<FooWithArray>
+{
+  FooWithArray operator()(axom::inlet::Table& base)
+  {
+    FooWithArray f = {base["arr"]};
+    return f;
+  }
+};
+
+TEST(inlet_object, array_of_struct_containing_array)
+{
+  std::string testString =
+    "foo = { [4] = { arr = { [1] = 3 }; }, "
+    "        [7] = { arr = { [6] = 2 }; } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+
+  arr_table->addIntArray("arr", "arr's description");
+  std::unordered_map<int, FooWithArray> expected_foos = {{4, {{{1, 3}}}},
+                                                         {7, {{{6, 2}}}}};
+  std::unordered_map<int, FooWithArray> foos_with_arr;
+  EXPECT_TRUE(arr_table->getArray(foos_with_arr));
+  EXPECT_EQ(foos_with_arr, expected_foos);
 }
 
 struct MoveOnlyFoo
@@ -97,14 +206,12 @@ TEST(inlet_object, simple_moveonly_struct_by_value)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   MoveOnlyFoo foo = inlet->get<MoveOnlyFoo>("foo");
   EXPECT_TRUE(foo.bar);
@@ -118,11 +225,9 @@ TEST(inlet_object, simple_value_from_bracket)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo", "foo's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo", "foo's description");
+  EXPECT_TRUE(currVerifiable);
 
   bool foo = (*inlet)["foo"];
   EXPECT_TRUE(foo);
@@ -135,16 +240,14 @@ TEST(inlet_object, simple_struct_from_bracket)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
-  auto foo = Foo((*inlet)["foo"]);
+  auto foo = (*inlet)["foo"].get<Foo>();
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
 }
@@ -156,14 +259,12 @@ TEST(inlet_object, contains_from_table)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   EXPECT_TRUE(inlet->contains("foo/bar"));
   EXPECT_TRUE(inlet->contains("foo/baz"));
@@ -180,14 +281,12 @@ TEST(inlet_object, contains_from_bracket)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   EXPECT_TRUE((*inlet)["foo"].contains("bar"));
   EXPECT_TRUE((*inlet)["foo"].contains("baz"));
@@ -238,20 +337,18 @@ TEST(inlet_object, primitive_type_checks)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addInt("baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addDouble("quux", "quux's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("quux", "quux's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addString("corge", "corge's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("corge", "corge's description");
+  EXPECT_TRUE(currVerifiable);
 
   EXPECT_EQ((*inlet)["bar"].type(), InletType::Bool);
   bool bar = (*inlet)["bar"];
@@ -280,14 +377,12 @@ TEST(inlet_object, composite_type_checks)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
   auto currArrField = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
   EXPECT_TRUE(currArrField);
@@ -321,20 +416,18 @@ TEST(inlet_object, implicit_conversion_primitives)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Check for existing fields
-  currField = inlet->addBool("bar", "bar's description");
-  EXPECT_TRUE(currField);
+  auto currVerifiable = inlet->addBool("bar", "bar's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addInt("baz", "baz's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addInt("baz", "baz's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addDouble("quux", "quux's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addDouble("quux", "quux's description");
+  EXPECT_TRUE(currVerifiable);
 
-  currField = inlet->addString("corge", "corge's description");
-  EXPECT_TRUE(currField);
+  currVerifiable = inlet->addString("corge", "corge's description");
+  EXPECT_TRUE(currVerifiable);
 
   auto currArrField = inlet->getGlobalTable()->addIntArray("arr");
   EXPECT_TRUE(currArrField);
@@ -365,39 +458,6 @@ TEST(inlet_object, implicit_conversion_primitives)
   EXPECT_EQ(arr, expected_arr);
   arr = (*inlet)["arr"];
   EXPECT_EQ(arr, expected_arr);
-}
-
-TEST(inlet_object, simple_struct_conversion)
-{
-  std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
-
-  // Define schema
-  std::shared_ptr<axom::inlet::Field> currField;
-
-  // Check for existing fields
-  currField = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currField);
-
-  currField = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currField);
-
-  // Check construction/assignment by move (temporary copy)
-  auto foo = Foo((*inlet)["foo"]);
-  EXPECT_TRUE(foo.bar);
-  EXPECT_FALSE(foo.baz);
-  foo = Foo((*inlet)["foo"]);
-  EXPECT_TRUE(foo.bar);
-  EXPECT_FALSE(foo.baz);
-
-  // Check construction/assignment by static cast
-  auto foo2 = static_cast<Foo>((*inlet)["foo"]);
-  EXPECT_TRUE(foo2.bar);
-  EXPECT_FALSE(foo2.baz);
-  foo2 = static_cast<Foo>((*inlet)["foo"]);
-  EXPECT_TRUE(foo2.bar);
-  EXPECT_FALSE(foo2.baz);
 }
 
 //------------------------------------------------------------------------------
