@@ -34,6 +34,16 @@ struct Mesh
 
 // Additionally, each class should specialize this struct as follows
 // in the global namespace so that Inlet can access it
+/**
+ * Example Lua definition:
+ * \code{.lua}
+ * mesh = {
+ *    filename = 'data/square.mesh',
+ *    serial = 12,
+ *    parallel = 7
+ * }
+ * \endcode
+ */
 template <>
 struct FromInlet<Mesh>
 {
@@ -62,6 +72,19 @@ struct LinearSolver
   }
 };
 
+/**
+ * Example Lua definition:
+ * \code{.lua}
+ * solver = {
+ *    rel_tol = 1.e-6,
+ *    abs_tol = 1.e-12,
+ *    print_level = 0,
+ *    max_iter = 100,
+ *    dt = 1.0,
+ *    steps = 1 
+ * }
+ * \endcode
+ */
 template <>
 struct FromInlet<LinearSolver>
 {
@@ -90,6 +113,17 @@ struct BoundaryCondition
   }
 };
 
+/**
+ * Example Lua definition:
+ * \code{.lua}
+ * bc = {
+ *   attrs = {
+ *      3, 4, 6, 9
+ *   }
+ *   constant = 12.55
+ * }
+ * \endcode
+ */
 template <>
 struct FromInlet<BoundaryCondition>
 {
@@ -118,11 +152,35 @@ struct ThermalSolver
       schema.addTable("solver",
                       "Information about the iterative solver used for Ku = f");
     LinearSolver::defineSchema(*solver_table);
+
+    // Schema only needs to be defined once, will propagate through to each
+    // element of the array, namely, the subtable at each found index in the input file
     auto bc_table = schema.addGenericArray("bcs", "List of boundary conditions");
     BoundaryCondition::defineSchema(*bc_table);
   }
 };
 
+/**
+ * Example Lua definition:
+ * \code{.lua}
+ * thermal_solver = {
+ *    mesh = {
+ *      -- see above FromInlet<Mesh>
+ *    },
+ *    solver = {
+ *      -- see above FromInlet<LinearSolver>
+ *    },
+ *    bcs = {
+ *        [1] = {
+ *          -- see above FromInlet<BoundaryCondition>
+ *        },
+ *        [2] = {
+ *          -- see above FromInlet<BoundaryCondition>
+ *        },
+ *    }
+ * }
+ * \endcode
+ */
 template <>
 struct FromInlet<ThermalSolver>
 {
