@@ -407,7 +407,7 @@ std::shared_ptr<VerifiableScalar> Field::validValues(
 {
   if(m_type != axom::sidre::DataTypeId::CHAR8_STR_ID)
   {
-    SLIC_WARNING("Field value type did not match STRING");
+    SLIC_WARNING("[Inlet] Field value type did not match STRING");
     setWarningFlag(m_sidreRootGroup);
   }
   if(m_sidreGroup->hasView("validValues") ||

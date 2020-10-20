@@ -72,7 +72,7 @@ std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
   if(!m_sidreGroup->hasView("_inlet_array_indices"))
   {
     SLIC_ERROR(fmt::format(
-      "Table '{0}' does not contain an array of user-defined objects",
+      "[Inlet] Table '{0}' does not contain an array of user-defined objects",
       m_name));
   }
   auto view = m_sidreGroup->getView("_inlet_array_indices");
@@ -142,7 +142,7 @@ std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
   }
   else
   {
-    SLIC_WARNING(fmt::format("Array {0} not found.", fullName));
+    SLIC_WARNING(fmt::format("[Inlet] Array {0} not found.", fullName));
   }
   return table;
 }
@@ -384,7 +384,7 @@ void Table::addPrimitiveArrayHelper<bool>(Table& table,
   }
   else
   {
-    SLIC_WARNING(fmt::format("Bool array {0} not found.", lookupPath));
+    SLIC_WARNING(fmt::format("[Inlet] Bool array {0} not found.", lookupPath));
   }
 }
 
@@ -402,7 +402,7 @@ void Table::addPrimitiveArrayHelper<int>(Table& table,
   }
   else
   {
-    SLIC_WARNING(fmt::format("Int array {0} not found.", lookupPath));
+    SLIC_WARNING(fmt::format("[Inlet] Int array {0} not found.", lookupPath));
   }
 }
 
@@ -420,7 +420,7 @@ void Table::addPrimitiveArrayHelper<double>(Table& table,
   }
   else
   {
-    SLIC_WARNING(fmt::format("Double array {0} not found.", lookupPath));
+    SLIC_WARNING(fmt::format("[Inlet] Double array {0} not found.", lookupPath));
   }
 }
 
@@ -438,7 +438,7 @@ void Table::addPrimitiveArrayHelper<std::string>(Table& table,
   }
   else
   {
-    SLIC_WARNING(fmt::format("String array {0} not found.", lookupPath));
+    SLIC_WARNING(fmt::format("[Inlet] String array {0} not found.", lookupPath));
   }
 }
 

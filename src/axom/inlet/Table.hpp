@@ -362,7 +362,7 @@ public:
     }
     else
     {
-      SLIC_WARNING("Table does not contain an array");
+      SLIC_WARNING("[Inlet] Table does not contain an array");
       return false;
     }
     return true;
