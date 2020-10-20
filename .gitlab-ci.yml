@@ -21,8 +21,7 @@ build_rzgenie:
     - .rzgenie_template
   stage: build
   script:
-    - python scripts/uberenv/uberenv.py --prefix /usr/workspace/${GITLAB_USER_LOGIN}/axom_TPL --spec +debug+devtools%clang --spack-config-dir scripts/uberenv/spack_configs/toss_3_x86_64_ib/
-    - ./config-build.py -hc rzgenie-toss_3_x86_64_ib-clang@10.0.0.cmake
+    - ./config-build.py -hc host-configs/rzgenie-toss_3_x86_64_ib-clang@10.0.0.cmake
     - cd build-rzgenie-toss_3_x86_64_ib-clang@10.0.0-debug
     - make -j
     - GTEST_OUTPUT="xml:./" make test
