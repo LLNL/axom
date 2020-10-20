@@ -44,7 +44,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
     found = currName.find("/");
   }
 
-  std::string currTableName =
+  const auto currTableName =
     appendPrefix(currTable->m_name, currName.substr(0, found));
 
   if(!currTable->hasChildTable(currName))
@@ -75,14 +75,14 @@ std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
       "[Inlet] Table '{0}' does not contain an array of user-defined objects",
       m_name));
   }
-  auto view = m_sidreGroup->getView("_inlet_array_indices");
-  int* array = view->getArray();
+  const auto view = m_sidreGroup->getView("_inlet_array_indices");
+  const int* array = view->getArray();
   // Need to go up one level because this is an _inlet_array group
-  auto pos = m_name.find_last_of("/");
-  std::string baseName = m_name.substr(0, pos);
+  const auto pos = m_name.find_last_of("/");
+  const std::string baseName = m_name.substr(0, pos);
   for(int i = 0; i < view->getNumElements(); i++)
   {
-    auto indexLabel = std::to_string(array[i]);
+    const auto indexLabel = std::to_string(array[i]);
     // The base name reflects the structure of the actual data
     // and is used for the reader call
     auto fullPath = appendPrefix(baseName, indexLabel);
@@ -120,6 +120,13 @@ std::shared_ptr<Verifiable> Table::addStringArray(const std::string& name,
 std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
                                               const std::string& description)
 {
+  if(m_sidreGroup->hasView("_inlet_array_indices"))
+  {
+    SLIC_ERROR(
+      fmt::format("[Inlet] Adding array of structs to array of structs {0} is "
+                  "not supported",
+                  m_name));
+  }
   auto table = addTable(appendPrefix(name, "_inlet_array"), description);
   std::vector<int> indices;
   const std::string& fullName = appendPrefix(m_name, name);
@@ -177,7 +184,7 @@ std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup,
                                        const std::string& fullName,
                                        const std::string& name)
 {
-  size_t found = name.find_last_of("/");
+  const size_t found = name.find_last_of("/");
   auto currTable = shared_from_this();
   if(found != std::string::npos)
   {
@@ -377,7 +384,7 @@ void Table::addPrimitiveArrayHelper<bool>(Table& table,
   std::unordered_map<int, bool> map;
   if(m_reader->getBoolMap(lookupPath, map))
   {
-    for(auto p : map)
+    for(const auto& p : map)
     {
       table.addPrimitive(std::to_string(p.first), "", true, p.second);
     }
@@ -395,7 +402,7 @@ void Table::addPrimitiveArrayHelper<int>(Table& table,
   std::unordered_map<int, int> map;
   if(m_reader->getIntMap(lookupPath, map))
   {
-    for(auto p : map)
+    for(const auto& p : map)
     {
       table.addPrimitive(std::to_string(p.first), "", true, p.second);
     }
@@ -413,7 +420,7 @@ void Table::addPrimitiveArrayHelper<double>(Table& table,
   std::unordered_map<int, double> map;
   if(m_reader->getDoubleMap(lookupPath, map))
   {
-    for(auto p : map)
+    for(const auto& p : map)
     {
       table.addPrimitive(std::to_string(p.first), "", true, p.second);
     }
@@ -431,7 +438,7 @@ void Table::addPrimitiveArrayHelper<std::string>(Table& table,
   std::unordered_map<int, std::string> map;
   if(m_reader->getStringMap(lookupPath, map))
   {
-    for(auto p : map)
+    for(const auto& p : map)
     {
       table.addPrimitive(std::to_string(p.first), "", true, p.second);
     }
@@ -444,13 +451,13 @@ void Table::addPrimitiveArrayHelper<std::string>(Table& table,
 
 Proxy Table::operator[](const std::string& name) const
 {
-  auto has_table = hasTable(name);
-  auto has_field = hasField(name);
+  const auto has_table = hasTable(name);
+  const auto has_field = hasField(name);
 
   // Ambiguous case - both a table and field exist with the same name
   if(has_table && has_field)
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Ambiguous lookup - both a table and field with name {0} exist",
       name);
     SLIC_ERROR(msg);
@@ -485,7 +492,7 @@ std::shared_ptr<Verifiable> Table::required(bool isRequired)
 
   if(m_sidreGroup->hasView("required"))
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Table has already defined "
       "required value: {0}",
       m_sidreGroup->getName());
@@ -516,16 +523,16 @@ bool Table::isRequired() const
   {
     return false;
   }
-  axom::sidre::View* valueView = m_sidreGroup->getView("required");
+  const axom::sidre::View* valueView = m_sidreGroup->getView("required");
   if(valueView == nullptr)
   {
     //TODO: is this possible after it says it has the view?
     return false;
   }
-  int8 intValue = valueView->getScalar();
+  const int8 intValue = valueView->getScalar();
   if(intValue < 0 || intValue > 1)
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Invalid integer value stored in "
       " boolean value named {0}",
       m_sidreGroup->getName());
@@ -557,7 +564,7 @@ bool Table::verify() const
     int8 required = m_sidreGroup->getView("required")->getData();
     if(required && m_sidreGroup->getNumGroups() == 0)
     {
-      std::string msg = fmt::format(
+      const std::string msg = fmt::format(
         "[Inlet] Required Table not "
         "specified: {0}",
         m_sidreGroup->getPathName());
@@ -572,7 +579,7 @@ bool Table::verify() const
     SLIC_WARNING(fmt::format("[Inlet] Table failed verification: {0}", m_name));
   }
   // Verify the child Fields of this Table
-  for(auto field : m_fieldChildren)
+  for(const auto& field : m_fieldChildren)
   {
     if(!field.second->verify())
     {
@@ -580,7 +587,7 @@ bool Table::verify() const
     }
   }
   // Verify the child Tables of this Table
-  for(auto table : m_tableChildren)
+  for(const auto& table : m_tableChildren)
   {
     if(!table.second->verify())
     {
@@ -664,7 +671,7 @@ std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName) con
 
 std::shared_ptr<Field> Table::getFieldInternal(const std::string& fieldName) const
 {
-  size_t found = fieldName.find_last_of("/");
+  const size_t found = fieldName.find_last_of("/");
   if(found == std::string::npos)
   {
     if(hasChildField(fieldName))

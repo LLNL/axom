@@ -386,7 +386,7 @@ private:
    * \return Whether the value satisfied all constraints
    *****************************************************************************
   */
-  bool verifyValue(axom::sidre::View& view) const;
+  bool verifyValue(const axom::sidre::View& view) const;
 
   /*!
    *****************************************************************************
@@ -399,7 +399,7 @@ private:
    *****************************************************************************
    */
   template <typename T>
-  bool checkRange(axom::sidre::View& view) const;
+  bool checkRange(const axom::sidre::View& view) const;
 
   /*!
    *****************************************************************************
@@ -412,7 +412,7 @@ private:
    *****************************************************************************
    */
   template <typename T>
-  bool searchValidValues(axom::sidre::View& view) const;
+  bool searchValidValues(const axom::sidre::View& view) const;
 
   /*!
    *****************************************************************************
@@ -425,7 +425,7 @@ private:
    * emit a SLIC_ERROR accordingly
    *****************************************************************************
   */
-  axom::sidre::View* checkExistenceAndType(
+  const axom::sidre::View* checkExistenceAndType(
     const axom::sidre::DataTypeId expected) const;
 
   // This Field's sidre group
@@ -450,7 +450,7 @@ template <>
 std::string Field::get<std::string>() const;
 
 template <>
-inline bool Field::searchValidValues<std::string>(axom::sidre::View& view) const;
+inline bool Field::searchValidValues<std::string>(const axom::sidre::View& view) const;
 
 /*!
    *****************************************************************************

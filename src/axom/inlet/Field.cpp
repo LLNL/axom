@@ -21,7 +21,7 @@ std::shared_ptr<VerifiableScalar> Field::required(bool isRequired)
 
   if(m_sidreGroup->hasView("required"))
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Field has already defined "
       "required value: {0}",
       m_sidreGroup->getPathName());
@@ -59,7 +59,7 @@ bool Field::isRequired() const
   int8 intValue = valueView->getScalar();
   if(intValue < 0 || intValue > 1)
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Invalid integer value stored in "
       "boolean value named {0}",
       m_sidreGroup->getPathName());
@@ -76,7 +76,7 @@ void Field::setDefaultValue(T value)
 {
   if(m_sidreGroup->hasView("defaultValue"))
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Field has already defined "
       "default value: {0}",
       m_sidreGroup->getPathName());
@@ -101,7 +101,7 @@ void Field::setDefaultValue<std::string>(std::string value)
 {
   if(m_sidreGroup->hasView("defaultValue"))
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Field has already defined "
       "default value: {0}",
       m_sidreGroup->getPathName());
@@ -188,7 +188,7 @@ void Field::setRange(T startVal, T endVal)
 {
   if(m_sidreGroup->hasView("range"))
   {
-    std::string msg =
+    const std::string msg =
       fmt::format("[Inlet] Inlet Field has already defined range: {0}",
                   m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
@@ -197,7 +197,7 @@ void Field::setRange(T startVal, T endVal)
   else if(m_sidreGroup->hasView("validValues") ||
           m_sidreGroup->hasView("validStringValues"))
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Cannot set range for Inlet Field "
       "after setting valid values: {0}",
       m_sidreGroup->getPathName());
@@ -249,12 +249,12 @@ std::shared_ptr<VerifiableScalar> Field::range(double startVal, double endVal)
 template <>
 bool Field::get<bool>() const
 {
-  auto valueView = checkExistenceAndType(axom::sidre::INT8_ID);
+  const auto valueView = checkExistenceAndType(axom::sidre::INT8_ID);
   // There is no boolean type in conduit/sidre so we use int8
-  int8 intValue = valueView->getScalar();
+  const int8 intValue = valueView->getScalar();
   if(intValue < 0 || intValue > 1)
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Invalid integer value stored in "
       " boolean value named {0}",
       name());
@@ -267,30 +267,30 @@ bool Field::get<bool>() const
 template <>
 double Field::get<double>() const
 {
-  auto valueView = checkExistenceAndType(axom::sidre::DOUBLE_ID);
+  const auto valueView = checkExistenceAndType(axom::sidre::DOUBLE_ID);
   return valueView->getScalar();
 }
 
 template <>
 int Field::get<int>() const
 {
-  auto valueView = checkExistenceAndType(axom::sidre::INT_ID);
+  const auto valueView = checkExistenceAndType(axom::sidre::INT_ID);
   return valueView->getScalar();
 }
 
 template <>
 std::string Field::get<std::string>() const
 {
-  auto valueView = checkExistenceAndType(axom::sidre::CHAR8_STR_ID);
+  const auto valueView = checkExistenceAndType(axom::sidre::CHAR8_STR_ID);
 
   const char* valueStr = valueView->getString();
   return (valueStr == nullptr) ? "" : valueStr;
 }
 
-axom::sidre::View* Field::checkExistenceAndType(
+const axom::sidre::View* Field::checkExistenceAndType(
   const axom::sidre::DataTypeId expected) const
 {
-  axom::sidre::View* valueView = m_sidreGroup->getView("value");
+  const axom::sidre::View* valueView = m_sidreGroup->getView("value");
 
   if(valueView == nullptr)
   {
@@ -299,7 +299,7 @@ axom::sidre::View* Field::checkExistenceAndType(
 
   if(valueView->getTypeID() != expected)
   {
-    std::string msg = fmt::format(
+    const std::string msg = fmt::format(
       "[Inlet] Field with name '{0}' was expected to be of type {1}"
       " but was actually of type {2}",
       name(),
@@ -521,9 +521,9 @@ bool Field::verify() const
   return true;
 }
 
-bool Field::verifyValue(axom::sidre::View& view) const
+bool Field::verifyValue(const axom::sidre::View& view) const
 {
-  auto type = view.getTypeID();
+  const auto type = view.getTypeID();
   if(m_sidreGroup->hasView("validValues"))
   {
     if(type == axom::sidre::INT_ID)
@@ -554,29 +554,29 @@ bool Field::verifyValue(axom::sidre::View& view) const
 }
 
 template <typename T>
-bool Field::checkRange(axom::sidre::View& view) const
+bool Field::checkRange(const axom::sidre::View& view) const
 {
-  T val = view.getScalar();
-  T* range = m_sidreGroup->getView("range")->getArray();
+  const T val = view.getScalar();
+  const T* range = m_sidreGroup->getView("range")->getArray();
   return range[0] <= val && val <= range[1];
 }
 
 template <typename T>
-bool Field::searchValidValues(axom::sidre::View& view) const
+bool Field::searchValidValues(const axom::sidre::View& view) const
 {
-  T target = view.getScalar();
-  auto valid_vals = m_sidreGroup->getView("validValues");
-  T* valuesArray = valid_vals->getArray();
-  size_t size = valid_vals->getBuffer()->getNumElements();
-  T* result = std::find(valuesArray, valuesArray + size, target);
+  const T target = view.getScalar();
+  const auto valid_vals = m_sidreGroup->getView("validValues");
+  const T* valuesArray = valid_vals->getArray();
+  const size_t size = valid_vals->getBuffer()->getNumElements();
+  const T* result = std::find(valuesArray, valuesArray + size, target);
   return result != valuesArray + size;
 }
 
 template <>
-bool Field::searchValidValues<std::string>(axom::sidre::View& view) const
+bool Field::searchValidValues<std::string>(const axom::sidre::View& view) const
 {
-  auto string_group = m_sidreGroup->getGroup("validStringValues");
-  std::string value = view.getString();
+  const auto string_group = m_sidreGroup->getGroup("validStringValues");
+  const std::string value = view.getString();
   auto idx = string_group->getFirstValidViewIndex();
   while(axom::sidre::indexIsValid(idx))
   {
