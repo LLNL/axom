@@ -42,7 +42,7 @@ std::shared_ptr<VerifiableScalar> Field::required(bool isRequired)
   return shared_from_this();
 }
 
-bool Field::isRequired()
+bool Field::isRequired() const
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Field specific Sidre Datastore Group not set");
@@ -247,7 +247,7 @@ std::shared_ptr<VerifiableScalar> Field::range(double startVal, double endVal)
 }
 
 template <>
-bool Field::get<bool>()
+bool Field::get<bool>() const
 {
   auto valueView = checkExistenceAndType(axom::sidre::INT8_ID);
   // There is no boolean type in conduit/sidre so we use int8
@@ -265,21 +265,21 @@ bool Field::get<bool>()
 }
 
 template <>
-double Field::get<double>()
+double Field::get<double>() const
 {
   auto valueView = checkExistenceAndType(axom::sidre::DOUBLE_ID);
   return valueView->getScalar();
 }
 
 template <>
-int Field::get<int>()
+int Field::get<int>() const
 {
   auto valueView = checkExistenceAndType(axom::sidre::INT_ID);
   return valueView->getScalar();
 }
 
 template <>
-std::string Field::get<std::string>()
+std::string Field::get<std::string>() const
 {
   auto valueView = checkExistenceAndType(axom::sidre::CHAR8_STR_ID);
 
@@ -287,7 +287,8 @@ std::string Field::get<std::string>()
   return (valueStr == nullptr) ? "" : valueStr;
 }
 
-axom::sidre::View* Field::checkExistenceAndType(const axom::sidre::DataTypeId expected)
+axom::sidre::View* Field::checkExistenceAndType(
+  const axom::sidre::DataTypeId expected) const
 {
   axom::sidre::View* valueView = m_sidreGroup->getView("value");
 
@@ -459,7 +460,7 @@ std::shared_ptr<VerifiableScalar> Field::validValues(
 }
 
 std::shared_ptr<VerifiableScalar> Field::registerVerifier(
-  std::function<bool(Field&)> lambda)
+  std::function<bool(const Field&)> lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Field "
@@ -469,7 +470,7 @@ std::shared_ptr<VerifiableScalar> Field::registerVerifier(
   return shared_from_this();
 }
 
-bool Field::verify()
+bool Field::verify() const
 {
   // If this field was required, make sure soemething was defined in it
   if(m_sidreGroup->hasView("required"))
@@ -520,7 +521,7 @@ bool Field::verify()
   return true;
 }
 
-bool Field::verifyValue(axom::sidre::View& view)
+bool Field::verifyValue(axom::sidre::View& view) const
 {
   auto type = view.getTypeID();
   if(m_sidreGroup->hasView("validValues"))
@@ -553,7 +554,7 @@ bool Field::verifyValue(axom::sidre::View& view)
 }
 
 template <typename T>
-bool Field::checkRange(axom::sidre::View& view)
+bool Field::checkRange(axom::sidre::View& view) const
 {
   T val = view.getScalar();
   T* range = m_sidreGroup->getView("range")->getArray();
@@ -561,7 +562,7 @@ bool Field::checkRange(axom::sidre::View& view)
 }
 
 template <typename T>
-bool Field::searchValidValues(axom::sidre::View& view)
+bool Field::searchValidValues(axom::sidre::View& view) const
 {
   T target = view.getScalar();
   auto valid_vals = m_sidreGroup->getView("validValues");
@@ -572,7 +573,7 @@ bool Field::searchValidValues(axom::sidre::View& view)
 }
 
 template <>
-bool Field::searchValidValues<std::string>(axom::sidre::View& view)
+bool Field::searchValidValues<std::string>(axom::sidre::View& view) const
 {
   auto string_group = m_sidreGroup->getGroup("validStringValues");
   std::string value = view.getString();
@@ -588,18 +589,19 @@ bool Field::searchValidValues<std::string>(axom::sidre::View& view)
   return false;
 }
 
-std::string Field::name()
+std::string Field::name() const
 {
   return removePrefix(m_sidreRootGroup->getPathName(),
                       m_sidreGroup->getPathName());
 }
 
-bool AggregateField::verify()
+bool AggregateField::verify() const
 {
-  return std::all_of(
-    m_fields.begin(),
-    m_fields.end(),
-    [](std::shared_ptr<VerifiableScalar>& field) { return field->verify(); });
+  return std::all_of(m_fields.begin(),
+                     m_fields.end(),
+                     [](const std::shared_ptr<VerifiableScalar>& field) {
+                       return field->verify();
+                     });
 }
 
 std::shared_ptr<VerifiableScalar> AggregateField::required(bool isRequired)
@@ -611,7 +613,7 @@ std::shared_ptr<VerifiableScalar> AggregateField::required(bool isRequired)
   return shared_from_this();
 }
 
-bool AggregateField::isRequired()
+bool AggregateField::isRequired() const
 {
   for(auto& field : m_fields)
   {
@@ -749,7 +751,7 @@ std::shared_ptr<VerifiableScalar> AggregateField::validValues(
 }
 
 std::shared_ptr<VerifiableScalar> AggregateField::registerVerifier(
-  std::function<bool(Field&)> lambda)
+  std::function<bool(const Field&)> lambda)
 {
   for(auto& field : m_fields)
   {

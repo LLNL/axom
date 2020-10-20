@@ -124,8 +124,9 @@ struct has_FromInlet_specialization : std::false_type
 template <typename T>
 struct has_FromInlet_specialization<
   T,
-  typename std::enable_if<
-    std::is_same<T, decltype(std::declval<FromInlet<T>&>()(std::declval<Table&>()))>::value>::type>
+  typename std::enable_if<std::is_same<T,
+                                       decltype(std::declval<FromInlet<T>&>()(
+                                         std::declval<const Table&>()))>::value>::type>
   : std::true_type
 { };
 
@@ -320,7 +321,7 @@ public:
    */
   template <typename T>
   typename std::enable_if<detail::is_inlet_primitive<T>::value, bool>::type
-  getArray(std::unordered_map<int, T>& map)
+  getArray(std::unordered_map<int, T>& map) const
   {
     map.clear();
     if(!axom::utilities::string::endsWith(m_name, "_inlet_array"))
@@ -348,7 +349,7 @@ public:
    */
   template <typename T>
   typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
-  getArray(std::unordered_map<int, T>& map)
+  getArray(std::unordered_map<int, T>& map) const
   {
     if(m_sidreGroup->hasView("_inlet_array_indices"))
     {
@@ -517,7 +518,7 @@ public:
    */
   template <typename T>
   typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type get(
-    const std::string& name)
+    const std::string& name) const
   {
     if(!hasField(name))
     {
@@ -546,7 +547,7 @@ public:
   typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
                             !detail::is_inlet_array<T>::value,
                           T>::type
-  get(const std::string& name = "")
+  get(const std::string& name = "") const
   {
     static_assert(detail::has_FromInlet_specialization<T>::value,
                   "To read a user-defined type, specialize FromInlet<T>");
@@ -577,7 +578,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_inlet_array<T>::value, T>::type get()
+  typename std::enable_if<detail::is_inlet_array<T>::value, T>::type get() const
   {
     T result;
     // This needs to work transparently for both references to the underlying
@@ -610,7 +611,7 @@ public:
    * \return The retrieved array
    *******************************************************************************
    */
-  Proxy operator[](const std::string& name);
+  Proxy operator[](const std::string& name) const;
 
   /*!
    *****************************************************************************
@@ -624,7 +625,7 @@ public:
    * \return Shared pointer to this instance of Table
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> required(bool isRequired);
+  std::shared_ptr<Verifiable> required(bool isRequired = true);
 
   /*!
    *****************************************************************************
@@ -636,7 +637,7 @@ public:
    * \return Boolean value of whether this Table is required
    *****************************************************************************
    */
-  bool isRequired();
+  bool isRequired() const;
 
   /*!
    *****************************************************************************
@@ -646,7 +647,8 @@ public:
    * \param [in] The function object that will be called by Table::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Table&)> lambda);
+  std::shared_ptr<Verifiable> registerVerifier(
+    std::function<bool(const Table&)> lambda);
 
   /*!
    *****************************************************************************
@@ -654,7 +656,7 @@ public:
    *  Table and all child Tables/Fields of this Table.
    *****************************************************************************
   */
-  bool verify();
+  bool verify() const;
 
   /*!
    *****************************************************************************
@@ -663,7 +665,7 @@ public:
    * \return Boolean value indicating whether this Table's subtree contains this Table.
    *****************************************************************************
    */
-  bool hasTable(const std::string& tableName);
+  bool hasTable(const std::string& tableName) const;
 
   /*!
    *****************************************************************************
@@ -673,7 +675,7 @@ public:
    * \return Boolean value indicating whether this Table's subtree contains this Field.
    *****************************************************************************
    */
-  bool hasField(const std::string& fieldName);
+  bool hasField(const std::string& fieldName) const;
 
   /*!
    *****************************************************************************
@@ -684,7 +686,7 @@ public:
    * Field or Table with the given name.
    *****************************************************************************
    */
-  bool contains(const std::string& name)
+  bool contains(const std::string& name) const
   {
     return hasTable(name) || hasField(name);
   }
@@ -695,7 +697,7 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields();
+  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields() const;
 
   /*!
    *****************************************************************************
@@ -703,14 +705,14 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables();
+  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables() const;
 
   /*!
    *****************************************************************************
    * \return The full name of this Table.
    *****************************************************************************
    */
-  std::string name();
+  std::string name() const;
 
   /*!
    *****************************************************************************
@@ -722,7 +724,7 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTable(const std::string& tableName);
+  std::shared_ptr<Table> getTable(const std::string& tableName) const;
 
   /*!
    *****************************************************************************
@@ -734,7 +736,7 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getField(const std::string& fieldName);
+  std::shared_ptr<Field> getField(const std::string& fieldName) const;
 
 private:
   /*!
@@ -818,7 +820,7 @@ private:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTableInternal(const std::string& tableName);
+  std::shared_ptr<Table> getTableInternal(const std::string& tableName) const;
 
   /*!
    *****************************************************************************
@@ -830,7 +832,7 @@ private:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getFieldInternal(const std::string& fieldName);
+  std::shared_ptr<Field> getFieldInternal(const std::string& fieldName) const;
 
   /*!
    *****************************************************************************
@@ -840,7 +842,7 @@ private:
    * \return Boolean value of whether this Table has the child Table.
    *****************************************************************************
    */
-  bool hasChildTable(const std::string& tableName);
+  bool hasChildTable(const std::string& tableName) const;
 
   /*!
    *****************************************************************************
@@ -850,9 +852,9 @@ private:
    * \return Boolean value of whether this Table has the child Field.
    *****************************************************************************
    */
-  bool hasChildField(const std::string& fieldName);
+  bool hasChildField(const std::string& fieldName) const;
 
-  axom::sidre::View* baseGet(const std::string& name);
+  axom::sidre::View* baseGet(const std::string& name) const;
 
   /*!
    *****************************************************************************
@@ -865,7 +867,7 @@ private:
    *****************************************************************************
    */
   std::vector<std::pair<std::string, std::string>> arrayIndicesWithPaths(
-    const std::string& name);
+    const std::string& name) const;
 
   std::string m_name;
   std::shared_ptr<Reader> m_reader;
@@ -876,7 +878,7 @@ private:
   bool m_docEnabled;
   std::unordered_map<std::string, std::shared_ptr<Table>> m_tableChildren;
   std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
-  std::function<bool(Table&)> m_verifier;
+  std::function<bool(const Table&)> m_verifier;
 };
 
 // To-be-defined template specializations
@@ -943,7 +945,7 @@ public:
    *  Table and all child Tables/Fields of this Table.
    *****************************************************************************
    */
-  bool verify();
+  bool verify() const;
 
   /*!
    *****************************************************************************
@@ -957,7 +959,7 @@ public:
    * \return Shared pointer to this instance of Table
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> required(bool isRequired);
+  std::shared_ptr<Verifiable> required(bool isRequired = true);
 
   /*!
    *****************************************************************************
@@ -969,7 +971,7 @@ public:
    * \return Boolean value of whether this Table is required
    *****************************************************************************
    */
-  bool isRequired();
+  bool isRequired() const;
 
   /*!
    *****************************************************************************
@@ -979,7 +981,8 @@ public:
    * \param [in] The function object that will be called by Table::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Verifiable> registerVerifier(std::function<bool(Table&)> lambda);
+  std::shared_ptr<Verifiable> registerVerifier(
+    std::function<bool(const Table&)> lambda);
 
 private:
   std::vector<std::shared_ptr<Verifiable>> m_tables;

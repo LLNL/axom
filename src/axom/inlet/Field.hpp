@@ -109,7 +109,7 @@ public:
    * \return Shared pointer to this instance of this class
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> required(bool isRequired);
+  std::shared_ptr<VerifiableScalar> required(bool isRequired = true);
 
   /*!
    *****************************************************************************
@@ -121,7 +121,7 @@ public:
    * \return Boolean value of whether this Field is required
    *****************************************************************************
    */
-  bool isRequired();
+  bool isRequired() const;
 
   /*!
    *****************************************************************************
@@ -297,21 +297,21 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<VerifiableScalar> registerVerifier(
-    std::function<bool(Field&)> lambda);
+    std::function<bool(const Field&)> lambda);
 
   /*!
    *****************************************************************************
    * \brief Called by Inlet::verify to verify the contents of this Field.
    *****************************************************************************
   */
-  bool verify();
+  bool verify() const;
 
   /*!
    *****************************************************************************
    * \return The full name for this Field.
    *****************************************************************************
   */
-  std::string name();
+  std::string name() const;
 
   /*!
    *****************************************************************************
@@ -322,7 +322,7 @@ public:
    *****************************************************************************
    */
   template <typename T>
-  T get();
+  T get() const;
 
   /*!
    *****************************************************************************
@@ -386,7 +386,7 @@ private:
    * \return Whether the value satisfied all constraints
    *****************************************************************************
   */
-  bool verifyValue(axom::sidre::View& view);
+  bool verifyValue(axom::sidre::View& view) const;
 
   /*!
    *****************************************************************************
@@ -399,7 +399,7 @@ private:
    *****************************************************************************
    */
   template <typename T>
-  bool checkRange(axom::sidre::View& view);
+  bool checkRange(axom::sidre::View& view) const;
 
   /*!
    *****************************************************************************
@@ -412,7 +412,7 @@ private:
    *****************************************************************************
    */
   template <typename T>
-  bool searchValidValues(axom::sidre::View& view);
+  bool searchValidValues(axom::sidre::View& view) const;
 
   /*!
    *****************************************************************************
@@ -425,31 +425,32 @@ private:
    * emit a SLIC_ERROR accordingly
    *****************************************************************************
   */
-  axom::sidre::View* checkExistenceAndType(const axom::sidre::DataTypeId expected);
+  axom::sidre::View* checkExistenceAndType(
+    const axom::sidre::DataTypeId expected) const;
 
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled;
-  std::function<bool(Field&)> m_verifier;
+  std::function<bool(const Field&)> m_verifier;
 };
 
 // Prototypes for template specializations
 template <>
-bool Field::get<bool>();
+bool Field::get<bool>() const;
 
 template <>
-int Field::get<int>();
+int Field::get<int>() const;
 
 template <>
-double Field::get<double>();
+double Field::get<double>() const;
 
 template <>
-std::string Field::get<std::string>();
+std::string Field::get<std::string>() const;
 
 template <>
-inline bool Field::searchValidValues<std::string>(axom::sidre::View& view);
+inline bool Field::searchValidValues<std::string>(axom::sidre::View& view) const;
 
 /*!
    *****************************************************************************
@@ -471,7 +472,7 @@ public:
    * \brief Called by Inlet::verify to verify the contents of this Field.
    *****************************************************************************
   */
-  bool verify();
+  bool verify() const;
 
   /*!
    *****************************************************************************
@@ -497,7 +498,7 @@ public:
    * \return Boolean value of whether this Field is required
    *****************************************************************************
    */
-  bool isRequired();
+  bool isRequired() const;
 
   /*!
    *****************************************************************************
@@ -672,7 +673,7 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<VerifiableScalar> registerVerifier(
-    std::function<bool(Field&)> lambda);
+    std::function<bool(const Field&)> lambda);
 
 private:
   std::vector<std::shared_ptr<VerifiableScalar>> m_fields;

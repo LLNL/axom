@@ -17,6 +17,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added a `batched` option to quest's InOutOctree containment query example application.
   This uses a kernel to test for containment on an array of points.
   The query uses OpenMP threading, when available.
+- Inlet: Added support for user-defined conversions from Inlet tables to user-defined
+  types, and support for arrays of user-defined types
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -25,6 +27,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Fixed `SchemaCreator` to an abstract class and added missing functions
 - Inlet: Added ability to access the `Reader` class from `Inlet` and Sol Lua state
   from the `LuaReader` class
+- Inlet: Switched accessor interface to match that of the STL with operator[] and
+  T get<T>()
 
 
 ## [Version 0.4.0] - Release date 2020-09-22
