@@ -15,7 +15,7 @@ int main()
 
   // Initialize Inlet
   auto lr = std::make_shared<axom::inlet::LuaReader>();
-  lr->parseString("dimensions = 2; vector = { x = 1; y = 2; z = 3; }");
+  lr->parseString("dimensions = 2; vector = { x = 1.0; y = 2.0; z = 3.0; }");
   axom::sidre::DataStore ds;
   auto myInlet = std::make_shared<axom::inlet::Inlet>(lr, ds.getRoot());
 
@@ -25,17 +25,18 @@ int main()
 
   // defines a required table named vector with an internal field named 'x'
   auto v = myInlet->addTable("vector")->required(true);
-  v->addInt("x");
+  v->addDouble("x");
   // _inlet_workflow_defining_schema_end
 
   // _inlet_workflow_verification_start
   v->registerVerifier([&]() -> bool {
-    int dim;
-    myInlet->get("dimensions", dim);
-    int value;  // field value doesnt matter just that it is present in input file
-    bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
-    bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
-    bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
+    int dim = (*myInlet)["dimensions"];
+    bool x_present = v->hasField("x") &&
+      ((*myInlet)["vector/x"].type() == axom::inlet::InletType::Double);
+    bool y_present = v->hasField("y") &&
+      ((*myInlet)["vector/y"].type() == axom::inlet::InletType::Double);
+    bool z_present = v->hasField("z") &&
+      ((*myInlet)["vector/z"].type() == axom::inlet::InletType::Double);
     if(dim == 1 && x_present)
     {
       return true;
@@ -60,7 +61,7 @@ int main()
   SLIC_INFO(msg);
 
   // Add required dimension to schema
-  v->addInt("y");
+  v->addDouble("y");
 
   // We expect the verification to succeed because vector now contains
   // both x and y to match the 2 dimensions
@@ -71,23 +72,22 @@ int main()
   // _inlet_workflow_verification_end
 
   // _inlet_workflow_accessing_data_start
-  int dim, x, y;
-  bool dim_found, x_found, y_found;
 
   // Get dimensions if it was present in input file
-  dim_found = myInlet->get("dimensions", dim);
-  if(dim_found)
+  auto proxy = (*myInlet)["dimensions"];
+  if(proxy.type() == axom::inlet::InletType::Integer)
   {
-    msg = "Dimensions = " + std::to_string(dim) + "\n";
+    msg = "Dimensions = " + std::to_string(proxy.get<int>()) + "\n";
     SLIC_INFO(msg);
   }
 
   // Get vector information if it was present in input file
-  x_found = myInlet->get("vector/x", x);
-  y_found = myInlet->get("vector/y", y);
+  bool x_found = (*myInlet)["vector/x"].type() == axom::inlet::InletType::Double;
+  bool y_found = (*myInlet)["vector/y"].type() == axom::inlet::InletType::Double;
   if(x_found && y_found)
   {
-    msg = "Vector = " + std::to_string(x) + "," + std::to_string(y) + "\n";
+    msg = "Vector = " + std::to_string((*myInlet)["vector/x"].get<double>()) +
+      "," + std::to_string((*myInlet)["vector/y"].get<double>()) + "\n";
     SLIC_INFO(msg);
   }
   // _inlet_workflow_accessing_data_end

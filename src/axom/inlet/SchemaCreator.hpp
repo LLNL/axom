@@ -257,7 +257,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  virtual bool getBoolArray(std::unordered_map<int, bool>& map) = 0;
+  virtual bool getArray(std::unordered_map<int, bool>& map) = 0;
 
   /*!
    *****************************************************************************
@@ -268,7 +268,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  virtual bool getIntArray(std::unordered_map<int, int>& map) = 0;
+  virtual bool getArray(std::unordered_map<int, int>& map) = 0;
 
   /*!
    *****************************************************************************
@@ -279,7 +279,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  virtual bool getDoubleArray(std::unordered_map<int, double>& map) = 0;
+  virtual bool getArray(std::unordered_map<int, double>& map) = 0;
 
   /*!
    *****************************************************************************
@@ -290,7 +290,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  virtual bool getStringArray(std::unordered_map<int, std::string>& map) = 0;
+  virtual bool getArray(std::unordered_map<int, std::string>& map) = 0;
 };
 
 }  // end namespace inlet

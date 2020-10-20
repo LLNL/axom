@@ -245,6 +245,105 @@ std::shared_ptr<Field> Field::range(double startVal, double endVal)
   return shared_from_this();
 }
 
+template <>
+bool Field::get<bool>()
+{
+  auto valueView = checkExistenceAndType(axom::sidre::INT8_ID);
+  // There is no boolean type in conduit/sidre so we use int8
+  int8 intValue = valueView->getScalar();
+  if(intValue < 0 || intValue > 1)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Invalid integer value stored in "
+      " boolean value named {0}",
+      name());
+    SLIC_ERROR(msg);
+  }
+
+  return static_cast<bool>(intValue);
+}
+
+template <>
+double Field::get<double>()
+{
+  auto valueView = checkExistenceAndType(axom::sidre::DOUBLE_ID);
+  return valueView->getScalar();
+}
+
+template <>
+int Field::get<int>()
+{
+  auto valueView = checkExistenceAndType(axom::sidre::INT_ID);
+  return valueView->getScalar();
+}
+
+template <>
+std::string Field::get<std::string>()
+{
+  auto valueView = checkExistenceAndType(axom::sidre::CHAR8_STR_ID);
+
+  const char* valueStr = valueView->getString();
+  std::string value;
+  if(valueStr == nullptr)
+  {
+    value = std::string("");
+  }
+  value = std::string(valueStr);
+  return value;
+}
+
+axom::sidre::View* Field::checkExistenceAndType(const axom::sidre::DataTypeId expected)
+{
+  axom::sidre::View* valueView = m_sidreGroup->getView("value");
+
+  if(valueView == nullptr)
+  {
+    SLIC_ERROR("[Inlet] Field does not contain a value");
+  }
+
+  if(valueView->getTypeID() != expected)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Field with name '{0}' was expected to be of type {1}"
+      " but was actually of type {2}",
+      name(),
+      expected,
+      valueView->getTypeID());
+    SLIC_ERROR(msg);
+  }
+
+  return valueView;
+}
+
+InletType Field::type() const
+{
+  axom::sidre::View* valueView = m_sidreGroup->getView("value");
+  if(valueView == nullptr)
+  {
+    return InletType::Nothing;
+  }
+
+  switch(valueView->getTypeID())
+  {
+  case axom::sidre::NO_TYPE_ID:
+    return InletType::Nothing;
+  case axom::sidre::INT8_ID:
+    return InletType::Bool;
+  case axom::sidre::INT_ID:
+    return InletType::Integer;
+  case axom::sidre::CHAR8_STR_ID:
+    return InletType::String;
+  case axom::sidre::DOUBLE_ID:
+    return InletType::Double;
+  default:
+    std::string msg = fmt::format(
+      "Type ID {0} for field not recognized, returning InletType::Nothing",
+      valueView->getTypeID());
+    SLIC_WARNING(msg);
+    return InletType::Nothing;
+  }
+}
+
 template <typename T>
 void Field::setScalarValidValues(std::vector<T> set)
 {

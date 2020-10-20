@@ -19,6 +19,9 @@
 #include <functional>
 #include <unordered_map>
 #include <tuple>
+#include <type_traits>
+
+#include "fmt/fmt.hpp"
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
@@ -26,10 +29,97 @@
 
 #include "axom/sidre.hpp"
 
+/*!
+ *******************************************************************************
+ * \brief Prototype for user-defined types wishing to define a by-value read
+ * from inlet with axom::inlet::Table::get(const std::string&)
+ * 
+ * This is the only way of reading in a non-default-constructible type from
+ * Inlet.
+ * 
+ * \see axom::inlet::Table::get(const std::string&)
+ *******************************************************************************
+ */
+template <typename T>
+struct FromInlet
+{
+  // "Poison" the base implementation so it cannot be used
+  // and so it can be checked in a SFINAE context
+  FromInlet() = delete;
+};
+
 namespace axom
 {
 namespace inlet
 {
+namespace detail
+{
+/*!
+ *******************************************************************************
+ * \class is_inlet_primitive
+ *
+ * \brief A type trait for checking if a type is isomorphic to an Inlet primitive
+ * \tparam T The type to check
+ * \note An Inlet primitive is any of the following C++ types: int, double, bool,
+ * std::string.
+ * \see InletType
+ *******************************************************************************
+ */
+template <typename T>
+struct is_inlet_primitive
+{
+  using BaseType = typename std::decay<T>::type;
+  static constexpr bool value = std::is_same<BaseType, bool>::value ||
+    std::is_same<BaseType, int>::value || std::is_same<BaseType, double>::value ||
+    std::is_same<BaseType, std::string>::value;
+};
+
+/*!
+ *******************************************************************************
+ * \class is_inlet_primitive
+ *
+ * \brief A type trait for checking if a type is isomorphic to an array of Inlet
+ * primitives
+ * \tparam T The type to check
+ *******************************************************************************
+ */
+template <typename T>
+struct is_inlet_primitive_array : std::false_type
+{ };
+
+// If it's an unordered map whose value type is a Inlet primitive,
+// assume that it's an array
+template <typename T>
+struct is_inlet_primitive_array<std::unordered_map<int, T>>
+{
+  static constexpr bool value = is_inlet_primitive<T>::value;
+};
+
+/*!
+ *******************************************************************************
+ * \class has_FromInlet_specialization
+ *
+ * \brief A type trait for checking if a type has specialized FromInlet
+ * with the required T operator()(axom::inlet::Table&)
+ * \tparam T The type to check
+ *******************************************************************************
+ */
+template <typename T, typename SFINAE = void>
+struct has_FromInlet_specialization : std::false_type
+{ };
+
+template <typename T>
+struct has_FromInlet_specialization<
+  T,
+  typename std::enable_if<
+    std::is_same<T, decltype(std::declval<FromInlet<T>&>()(std::declval<Table&>()))>::value>::type>
+  : std::true_type
+{ };
+
+}  // namespace detail
+
+class Proxy;
+
 /*!
  *******************************************************************************
  * \class Table
@@ -199,7 +289,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getBoolArray(std::unordered_map<int, bool>& map);
+  bool getArray(std::unordered_map<int, bool>& map);
 
   /*!
    *****************************************************************************
@@ -210,7 +300,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getIntArray(std::unordered_map<int, int>& map);
+  bool getArray(std::unordered_map<int, int>& map);
 
   /*!
    *****************************************************************************
@@ -221,7 +311,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getDoubleArray(std::unordered_map<int, double>& map);
+  bool getArray(std::unordered_map<int, double>& map);
 
   /*!
    *****************************************************************************
@@ -232,7 +322,7 @@ public:
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getStringArray(std::unordered_map<int, std::string>& map);
+  bool getArray(std::unordered_map<int, std::string>& map);
 
   /*!
    *****************************************************************************
@@ -318,6 +408,103 @@ public:
   }
 
   /*!
+   *******************************************************************************
+   * \brief Returns a stored value of primitive type.
+   * 
+   * Retrieves a value of primitive type.
+   * 
+   * \param [in] name Name of the Field value to be gotten
+   * \return The retrieved value
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type get(
+    const std::string& name)
+  {
+    if(!hasField(name))
+    {
+      const std::string msg = fmt::format(
+        "[Inlet] Field with specified path"
+        "does not exist: {0}",
+        name);
+      SLIC_ERROR(msg);
+    }
+    return getField(name)->get<T>();
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Returns a stored value of user-defined type.
+   * 
+   * Retrieves a value of user-defined type.
+   * 
+   * \param [in] name The name of the subtable representing the root of the object
+   * If nothing is passed, the calling table is interpreted as the roof of the object
+   * \return The retrieved value
+   * \pre Requires a specialization of FromInlet for T
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
+                            !detail::is_inlet_primitive_array<T>::value,
+                          T>::type
+  get(const std::string& name = "")
+  {
+    static_assert(detail::has_FromInlet_specialization<T>::value,
+                  "To read a user-defined type, specialize FromInlet<T>");
+    FromInlet<T> from_inlet;
+    if(name.empty())
+    {
+      return from_inlet(*this);
+    }
+    else
+    {
+      if(!hasTable(name))
+      {
+        std::string msg =
+          fmt::format("[Inlet] Table with name {0} does not exist", name);
+        SLIC_ERROR(msg);
+      }
+      return from_inlet(*getTable(name));
+    }
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Returns a stored array of primitive types.
+   * 
+   * Retrieves a value of user-defined type.
+   * 
+   * \return The retrieved array
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<detail::is_inlet_primitive_array<T>::value, T>::type get()
+  {
+    T result;
+    if(!getTable("_inlet_array")->getArray(result))
+    {
+      SLIC_ERROR(
+        "[Inlet] Table does not contain a valid array of requested type");
+    }
+    return result;
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Obtains a proxy view into the table for either a Field/Table subobject
+   * 
+   * Returns a reference via a lightweight proxy object to the element in the 
+   * datastore at the index specified by the name.  This can be a field 
+   * or a table.
+   * 
+   * \param [in] name The name of the subobject
+   * \return The retrieved array
+   *******************************************************************************
+   */
+  Proxy operator[](const std::string& name);
+
+  /*!
    *****************************************************************************
    * \brief Set the required status of this Table.
    *
@@ -379,6 +566,20 @@ public:
    *****************************************************************************
    */
   bool hasField(const std::string& fieldName);
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Table or Field with the given name is present in 
+   * this Table's subtree.
+   *
+   * \return Boolean value indicating whether this Table's subtree contains a
+   * Field or Table with the given name.
+   *****************************************************************************
+   */
+  bool contains(const std::string& name)
+  {
+    return hasTable(name) || hasField(name);
+  }
 
   /*!
    *****************************************************************************
@@ -517,6 +718,8 @@ private:
    *****************************************************************************
    */
   bool hasChildField(const std::string& fieldName);
+
+  axom::sidre::View* baseGet(const std::string& name);
 
   std::string m_name;
   std::shared_ptr<Reader> m_reader;

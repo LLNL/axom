@@ -191,7 +191,7 @@ TEST(primal_point, point_initializerList_constructor)
     EXPECT_EQ(10 * (i + 1), listTooLong[i]);
   }
 
-  primal::Point<int, 3> noEqualsSign{10, 20, 30};
+  primal::Point<int, 3> noEqualsSign {10, 20, 30};
   for(int i = 0; i < 3; ++i)
   {
     EXPECT_EQ(10 * (i + 1), noEqualsSign[i]);

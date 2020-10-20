@@ -1,32 +1,36 @@
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# SYS_TYPE: toss_3_x86_64_ib
-# Compiler Spec: gcc@no_fortran
+# SYS_TYPE: linux-ubuntu18.04-ivybridge
+# Compiler Spec: clang@10.0.0
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/tce/packages/cmake/cmake-3.14.5/bin/cmake
+# CMake executable path: /usr/bin/cmake
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
 
-set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE PATH "")
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE PATH "")
 
-set(ENABLE_FORTRAN OFF CACHE BOOL "")
+set(ENABLE_FORTRAN ON CACHE BOOL "")
+
+set(CMAKE_Fortran_COMPILER "/usr/bin/gfortran" CACHE PATH "")
+
+set(BLT_EXE_LINKER_FLAGS " -Wl,-rpath,/usr/lib" CACHE PATH "Adds a missing libstdc++ rpath")
 
 #------------------------------------------------------------------------------
 # TPLs
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_09_18_18_11_40/gcc-no_fortran" CACHE PATH "")
+set(TPL_ROOT "/home/axom/axom_tpls/clang-10.0.0" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.1.0" CACHE PATH "")
+# MFEM not built
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
 
@@ -44,34 +48,21 @@ set(UMPIRE_DIR "${TPL_ROOT}/umpire-4.0.1" CACHE PATH "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0/bin/mpicxx" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/bin/mpic++" CACHE PATH "")
 
-set(MPIEXEC_EXECUTABLE "/usr/bin/srun" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+set(MPIEXEC_EXECUTABLE "/usr/bin/mpirun" CACHE PATH "")
+
+set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # Devtools
 #------------------------------------------------------------------------------
 
-# Root directory for generated developer tools
-set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/2020_08_21_22_18_57/gcc-8.1.0" CACHE PATH "")
-
-set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/python3.7" CACHE PATH "")
-
-set(ENABLE_DOCS ON CACHE BOOL "")
-
-set(DOXYGEN_EXECUTABLE "${DEVTOOLS_ROOT}/doxygen-1.8.14/bin/doxygen" CACHE PATH "")
-
-set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/sphinx-build" CACHE PATH "")
-
-set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/shroud" CACHE PATH "")
-
-set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
-
-set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-1.87/bin/cppcheck" CACHE PATH "")
+set(ENABLE_DOCS OFF CACHE BOOL "")
 
 #------------------------------------------------------------------------------
 # Other machine specifics

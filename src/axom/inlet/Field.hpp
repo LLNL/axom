@@ -26,6 +26,25 @@ namespace inlet
 {
 /*!
  *******************************************************************************
+ * \enum InletType
+ *
+ * \brief Enumeration of basic types for things in inlet
+ *******************************************************************************
+ */
+enum class InletType
+{
+  Nothing,
+  Bool,
+  String,
+  Integer,
+  // TODO: Unsigned integer
+  Double,
+  Object,
+  Array
+};
+
+/*!
+ *******************************************************************************
  * \class Field
  *
  * \brief Provides functions to help define how individual field variables in an
@@ -287,6 +306,27 @@ public:
   */
   std::string name();
 
+  /*!
+   *****************************************************************************
+   * \brief Returns a value of primitive type
+   * 
+   * \return The value
+   * \tparam T The type to retrieve
+   *****************************************************************************
+   */
+  template <typename T>
+  T get();
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the type of the stored value
+   * 
+   * \return The type
+   * \see InletType
+   *****************************************************************************
+   */
+  InletType type() const;
+
 private:
   /*!
    *****************************************************************************
@@ -330,6 +370,19 @@ private:
   template <typename T>
   void setDefaultValue(T value);
 
+  /*!
+   *****************************************************************************
+   * \brief Checks the existence and type of the value for the field
+   *
+   * \param [in] expected The expected type for the value
+   *
+   * \return Non-owning pointer to the Sidre view containing the value
+   * \note Treats a nonexistent value or type mismatch as an error and will
+   * emit a SLIC_ERROR accordingly
+   *****************************************************************************
+  */
+  axom::sidre::View* checkExistenceAndType(const axom::sidre::DataTypeId expected);
+
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
@@ -337,6 +390,18 @@ private:
   bool m_docEnabled;
   std::function<bool()> m_verifier;
 };
+
+template <>
+bool Field::get<bool>();
+
+template <>
+int Field::get<int>();
+
+template <>
+double Field::get<double>();
+
+template <>
+std::string Field::get<std::string>();
 
 }  // end namespace inlet
 }  // end namespace axom
