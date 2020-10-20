@@ -66,7 +66,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
 }
 
 std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
-  const std::string& name)
+  const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
   if(!m_sidreGroup->hasView("_inlet_array_indices"))
@@ -442,7 +442,7 @@ void Table::addPrimitiveArrayHelper<std::string>(Table& table,
   }
 }
 
-Proxy Table::operator[](const std::string& name)
+Proxy Table::operator[](const std::string& name) const
 {
   auto has_table = hasTable(name);
   auto has_field = hasField(name);
@@ -507,7 +507,7 @@ std::shared_ptr<Verifiable> Table::required(bool isRequired)
   return shared_from_this();
 }
 
-bool Table::isRequired()
+bool Table::isRequired() const
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Table specific Sidre Datastore Group not set");
@@ -537,7 +537,8 @@ bool Table::isRequired()
   return (bool)intValue;
 }
 
-std::shared_ptr<Verifiable> Table::registerVerifier(std::function<bool(Table&)> lambda)
+std::shared_ptr<Verifiable> Table::registerVerifier(
+  std::function<bool(const Table&)> lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Table "
@@ -547,7 +548,7 @@ std::shared_ptr<Verifiable> Table::registerVerifier(std::function<bool(Table&)> 
   return shared_from_this();
 }
 
-bool Table::verify()
+bool Table::verify() const
 {
   bool verified = true;
   // If this table was required, make sure soemething was defined in it
@@ -590,29 +591,29 @@ bool Table::verify()
   return verified;
 }
 
-bool Table::hasChildTable(const std::string& tableName)
+bool Table::hasChildTable(const std::string& tableName) const
 {
   return m_tableChildren.find(appendPrefix(m_name, tableName)) !=
     m_tableChildren.end();
 }
 
-bool Table::hasChildField(const std::string& fieldName)
+bool Table::hasChildField(const std::string& fieldName) const
 {
   return m_fieldChildren.find(appendPrefix(m_name, fieldName)) !=
     m_fieldChildren.end();
 }
 
-bool Table::hasTable(const std::string& tableName)
+bool Table::hasTable(const std::string& tableName) const
 {
   return static_cast<bool>(getTableInternal(tableName));
 }
 
-bool Table::hasField(const std::string& fieldName)
+bool Table::hasField(const std::string& fieldName) const
 {
   return static_cast<bool>(getFieldInternal(fieldName));
 }
 
-std::shared_ptr<Table> Table::getTable(const std::string& tableName)
+std::shared_ptr<Table> Table::getTable(const std::string& tableName) const
 {
   auto table = getTableInternal(tableName);
   if(!table)
@@ -622,7 +623,7 @@ std::shared_ptr<Table> Table::getTable(const std::string& tableName)
   return table;
 }
 
-std::shared_ptr<Field> Table::getField(const std::string& fieldName)
+std::shared_ptr<Field> Table::getField(const std::string& fieldName) const
 {
   auto field = getFieldInternal(fieldName);
   if(!field)
@@ -632,7 +633,7 @@ std::shared_ptr<Field> Table::getField(const std::string& fieldName)
   return field;
 }
 
-std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName)
+std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName) const
 {
   std::string name = tableName;
   size_t found = name.find("/");
@@ -644,7 +645,7 @@ std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName)
     if(currTable->hasChildTable(currName))
     {
       currTable =
-        currTable->m_tableChildren[appendPrefix(currTable->m_name, currName)];
+        currTable->m_tableChildren.at(appendPrefix(currTable->m_name, currName));
     }
     else
     {
@@ -656,19 +657,19 @@ std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName)
 
   if(currTable->hasChildTable(name))
   {
-    return currTable->m_tableChildren[appendPrefix(currTable->m_name, name)];
+    return currTable->m_tableChildren.at(appendPrefix(currTable->m_name, name));
   }
   return nullptr;
 }
 
-std::shared_ptr<Field> Table::getFieldInternal(const std::string& fieldName)
+std::shared_ptr<Field> Table::getFieldInternal(const std::string& fieldName) const
 {
   size_t found = fieldName.find_last_of("/");
   if(found == std::string::npos)
   {
     if(hasChildField(fieldName))
     {
-      return m_fieldChildren[appendPrefix(m_name, fieldName)];
+      return m_fieldChildren.at(appendPrefix(m_name, fieldName));
     }
   }
   else
@@ -677,30 +678,30 @@ std::shared_ptr<Field> Table::getFieldInternal(const std::string& fieldName)
     auto table = getTableInternal(fieldName.substr(0, found));
     if(table && table->hasChildField(name))
     {
-      return table->m_fieldChildren[appendPrefix(table->m_name, name)];
+      return table->m_fieldChildren.at(appendPrefix(table->m_name, name));
     }
   }
   return nullptr;
 }
 
-std::string Table::name() { return m_name; }
+std::string Table::name() const { return m_name; }
 
-std::unordered_map<std::string, std::shared_ptr<Table>> Table::getChildTables()
+std::unordered_map<std::string, std::shared_ptr<Table>> Table::getChildTables() const
 {
   return m_tableChildren;
 }
 
-std::unordered_map<std::string, std::shared_ptr<Field>> Table::getChildFields()
+std::unordered_map<std::string, std::shared_ptr<Field>> Table::getChildFields() const
 {
   return m_fieldChildren;
 }
 
-bool AggregateTable::verify()
+bool AggregateTable::verify() const
 {
   return std::all_of(
     m_tables.begin(),
     m_tables.end(),
-    [](std::shared_ptr<Verifiable>& table) { return table->verify(); });
+    [](const std::shared_ptr<Verifiable>& table) { return table->verify(); });
 }
 
 std::shared_ptr<Verifiable> AggregateTable::required(bool isRequired)
@@ -712,7 +713,7 @@ std::shared_ptr<Verifiable> AggregateTable::required(bool isRequired)
   return shared_from_this();
 }
 
-bool AggregateTable::isRequired()
+bool AggregateTable::isRequired() const
 {
   for(auto& table : m_tables)
   {
@@ -725,7 +726,7 @@ bool AggregateTable::isRequired()
 }
 
 std::shared_ptr<Verifiable> AggregateTable::registerVerifier(
-  std::function<bool(Table&)> lambda)
+  std::function<bool(const Table&)> lambda)
 {
   for(auto& table : m_tables)
   {

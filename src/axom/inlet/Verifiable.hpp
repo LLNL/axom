@@ -51,7 +51,7 @@ public:
    * \return Shared pointer to calling object, for chaining
    *****************************************************************************
    */
-  virtual std::shared_ptr<Verifiable> required(bool isRequired) = 0;
+  virtual std::shared_ptr<Verifiable> required(bool isRequired = true) = 0;
 
   /*!
    *****************************************************************************
@@ -63,7 +63,7 @@ public:
    * \return Boolean value of whether this object is required
    *****************************************************************************
    */
-  virtual bool isRequired() = 0;
+  virtual bool isRequired() const = 0;
 
   /*!
    *****************************************************************************
@@ -74,14 +74,14 @@ public:
    *****************************************************************************
   */
   virtual std::shared_ptr<Verifiable> registerVerifier(
-    std::function<bool(axom::inlet::Table&)> lambda) = 0;
+    std::function<bool(const axom::inlet::Table&)> lambda) = 0;
 
   /*!
    *****************************************************************************
    * \brief Verifies the object to make sure it satisfies the imposed requirements
    *****************************************************************************
   */
-  virtual bool verify() = 0;
+  virtual bool verify() const = 0;
 };
 
 }  // namespace inlet

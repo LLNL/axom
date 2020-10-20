@@ -46,7 +46,7 @@ struct Foo
 template <>
 struct FromInlet<Foo>
 {
-  Foo operator()(axom::inlet::Table& base)
+  Foo operator()(const axom::inlet::Table& base)
   {
     Foo f {base["bar"], base["baz"]};
     return f;
@@ -154,7 +154,7 @@ struct FooWithArray
 template <>
 struct FromInlet<FooWithArray>
 {
-  FooWithArray operator()(axom::inlet::Table& base)
+  FooWithArray operator()(const axom::inlet::Table& base)
   {
     FooWithArray f = {base["arr"]};
     return f;
@@ -192,7 +192,7 @@ struct MoveOnlyFoo
 template <>
 struct FromInlet<MoveOnlyFoo>
 {
-  MoveOnlyFoo operator()(axom::inlet::Table& base)
+  MoveOnlyFoo operator()(const axom::inlet::Table& base)
   {
     MoveOnlyFoo f(base["bar"], base["baz"]);
     return f;

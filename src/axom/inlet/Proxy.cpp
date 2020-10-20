@@ -29,7 +29,7 @@ InletType Proxy::type() const
   return m_field->type();
 }
 
-bool Proxy::contains(const std::string& name)
+bool Proxy::contains(const std::string& name) const
 {
   if(m_table == nullptr)
   {
@@ -38,7 +38,7 @@ bool Proxy::contains(const std::string& name)
   return m_table->contains(name);
 }
 
-Proxy Proxy::operator[](const std::string& name)
+Proxy Proxy::operator[](const std::string& name) const
 {
   if(m_table == nullptr)
   {
