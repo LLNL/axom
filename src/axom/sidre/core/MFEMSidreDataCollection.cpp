@@ -1395,10 +1395,38 @@ class SidreParMeshWrapper : public mfem::ParMesh
     auto num_groups = groups_grp->getNumGroups();
     std::vector<GroupInfo> result(num_groups);
 
-    int group_idx = 0;
+    // We keep a set of already-processed vertices,
+    // if all vertices in an edge/face are in the set,
+    // then we say that the edge/face is shared.
+    // Iteration is done in backwards order, so the last
+    // group will have only shared edges/faces if they are
+    // in the set of shared vertices for that one last group.
+    // But the penultimate group will check its own shared vertices
+    // the shared vertices of the last group, et cetera.
+
+    // We use a set structure for faster lookup
+    std::unordered_set<int> shared_vertices;
+
+    // Don't have duplicate entries of a shared edge or
+    // face across multiple groups
+    std::unordered_set<int> already_processed_edges;
+    std::unordered_set<int> already_processed_faces;
+
+    // We have to go backwards for some reason?
+    int group_idx = num_groups - 1;
+
+    std::vector<sidre::IndexType> groups_grp_idxs;
     for(auto idx = groups_grp->getFirstValidGroupIndex();
         sidre::indexIsValid(idx);
         idx = groups_grp->getNextValidGroupIndex(idx))
+    {
+      groups_grp_idxs.push_back(idx);
+    }
+
+    // Yes, this isn't needed, but there aren't that many groups anyways
+    std::reverse(groups_grp_idxs.begin(), groups_grp_idxs.end());
+
+    for(const auto& idx : groups_grp_idxs)
     {
       auto group_grp = groups_grp->getGroup(idx);
       auto& grp_info = result[group_idx];
@@ -1419,9 +1447,8 @@ class SidreParMeshWrapper : public mfem::ParMesh
       if(dimension >= 2)
       {
         // Convert to a hash table for faster lookup/search
-        const std::unordered_set<int> shared_vertices(
-          grp_info.shared_verts,
-          grp_info.shared_verts + grp_info.num_shared_verts);
+        shared_vertices.insert(grp_info.shared_verts,
+                               grp_info.shared_verts + grp_info.num_shared_verts);
 
         // Scratchpad array for storing vertices of an edge/face
         mfem::Array<int> verts;
@@ -1430,10 +1457,12 @@ class SidreParMeshWrapper : public mfem::ParMesh
         for(int i = 0; i < GetNEdges(); i++)
         {
           GetEdgeVertices(i, verts);
-          // Check if it's a shared edge
-          if(shared_vertices.count(verts[0]) && shared_vertices.count(verts[1]))
+          // Check if it hasn't been assigned yet and it's a shared edge
+          if(!already_processed_edges.count(i) &&
+             shared_vertices.count(verts[0]) && shared_vertices.count(verts[1]))
           {
             grp_info.shared_edges.push_back(i);
+            already_processed_edges.insert(i);
           }
         }
         // Fill in the faces, if applicable
@@ -1443,19 +1472,21 @@ class SidreParMeshWrapper : public mfem::ParMesh
           for(int i = 0; i < GetNumFaces(); i++)
           {
             GetFaceVertices(i, verts);
-            // Check if it's a shared face
-            if(std::all_of(verts.begin(),
+            // Check if it hasn't been assigned yet and it's a shared face
+            if(!already_processed_faces.count(i) &&
+               std::all_of(verts.begin(),
                            verts.end(),
                            [&shared_vertices](const int vert) {
                              return shared_vertices.count(vert);
                            }))
             {
               grp_info.shared_faces.push_back(i);
+              already_processed_faces.insert(i);
             }
           }
         }
       }
-      group_idx++;
+      group_idx--;  // Backwards?
     }
     return result;
   }

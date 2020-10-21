@@ -217,7 +217,7 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   // mfem::Mesh mesh(10);
   // 2D mesh divided into triangles
   // mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
-  mfem::Mesh mesh(3, 3, 3, mfem::Element::TETRAHEDRON);
+  mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
   mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
