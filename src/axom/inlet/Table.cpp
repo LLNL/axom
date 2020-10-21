@@ -13,6 +13,9 @@ namespace axom
 {
 namespace inlet
 {
+const std::string Table::INTERNAL_ARRAY_GROUP = "_inlet_array";
+const std::string Table::INTERNAL_ARRAY_INDEX_VIEW = "_inlet_array_indices";
+
 std::shared_ptr<Table> Table::addTable(const std::string& name,
                                        const std::string& description)
 {
@@ -23,7 +26,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
 
   while(found != std::string::npos)
   {
-    const std::string& currTableName =
+    const std::string currTableName =
       appendPrefix(currTable->m_name, currName.substr(0, found));
     // The current table will prepend its own prefix - just pass the basename
     if(!currTable->hasChildTable(currName.substr(0, found)))
@@ -44,7 +47,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
     found = currName.find("/");
   }
 
-  const auto currTableName =
+  const std::string currTableName =
     appendPrefix(currTable->m_name, currName.substr(0, found));
 
   if(!currTable->hasChildTable(currName))
@@ -69,13 +72,13 @@ std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
-  if(!m_sidreGroup->hasView("_inlet_array_indices"))
+  if(!m_sidreGroup->hasView(INTERNAL_ARRAY_INDEX_VIEW))
   {
     SLIC_ERROR(fmt::format(
       "[Inlet] Table '{0}' does not contain an array of user-defined objects",
       m_name));
   }
-  const auto view = m_sidreGroup->getView("_inlet_array_indices");
+  const auto view = m_sidreGroup->getView(INTERNAL_ARRAY_INDEX_VIEW);
   const int* array = view->getArray();
   // Need to go up one level because this is an _inlet_array group
   const auto pos = m_name.find_last_of("/");
@@ -120,14 +123,14 @@ std::shared_ptr<Verifiable> Table::addStringArray(const std::string& name,
 std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
                                               const std::string& description)
 {
-  if(m_sidreGroup->hasView("_inlet_array_indices"))
+  if(m_sidreGroup->hasView(INTERNAL_ARRAY_INDEX_VIEW))
   {
     SLIC_ERROR(
       fmt::format("[Inlet] Adding array of structs to array of structs {0} is "
                   "not supported",
                   m_name));
   }
-  auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+  auto table = addTable(appendPrefix(name, INTERNAL_ARRAY_GROUP), description);
   std::vector<int> indices;
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader->getArrayIndices(fullName, indices))
@@ -137,7 +140,7 @@ std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
     // before they are populated as we don't know the schema of the
     // generic type yet
     auto view =
-      table->m_sidreGroup->createViewAndAllocate("_inlet_array_indices",
+      table->m_sidreGroup->createViewAndAllocate(INTERNAL_ARRAY_INDEX_VIEW,
                                                  axom::sidre::INT_ID,
                                                  indices.size());
     int* raw_array = view->getArray();
@@ -207,7 +210,7 @@ std::shared_ptr<VerifiableScalar> Table::addPrimitive(
   T val,
   const std::string& pathOverride)
 {
-  if(m_sidreGroup->hasView("_inlet_array_indices"))
+  if(m_sidreGroup->hasView(INTERNAL_ARRAY_INDEX_VIEW))
   {
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
@@ -332,7 +335,7 @@ std::shared_ptr<Verifiable> Table::addPrimitiveArray(
   const std::string& description,
   const std::string& pathOverride)
 {
-  if(m_sidreGroup->hasView("_inlet_array_indices"))
+  if(m_sidreGroup->hasView(INTERNAL_ARRAY_INDEX_VIEW))
   {
     // Adding an array of primitive field to an array of structs
     std::vector<std::shared_ptr<Verifiable>> tables;
@@ -348,7 +351,7 @@ std::shared_ptr<Verifiable> Table::addPrimitiveArray(
   else
   {
     // "base case", create a table for the field and fill it in with the helper
-    auto table = addTable(appendPrefix(name, "_inlet_array"), description);
+    auto table = addTable(appendPrefix(name, INTERNAL_ARRAY_GROUP), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     addPrimitiveArrayHelper<T>(*table, lookupPath);
