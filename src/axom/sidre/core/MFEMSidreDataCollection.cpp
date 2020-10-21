@@ -1660,7 +1660,7 @@ public:
         SLIC_ERROR_IF(n_shared_edges > static_cast<std::size_t>(
                                          group_sedge.Size_of_connections()),
                       "incorrect number of total_shared_edges");
-        group_svert.GetI()[group_idx] = n_shared_edges;
+        group_sedge.GetI()[group_idx] = n_shared_edges;
 
         for(const auto shared_edge_idx : group_info.shared_edges)
         {
