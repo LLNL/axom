@@ -10,6 +10,7 @@
   #include <string>
   #include <iomanip>  // for setw, setfill
   #include <cstdio>   // for snprintf()
+  #include <unordered_set>
 
   #include "conduit_blueprint.hpp"
 
@@ -1320,6 +1321,396 @@ mfem::Geometry::Type MFEMSidreDataCollection::getElementTypeFromName(
   else
     return mfem::Geometry::INVALID;
 }
+  #include <unistd.h>
+// Implemented because no current ParMesh constructor supports
+// Virtual inheritance is no good here
+class SidreParMeshWrapper : public mfem::ParMesh
+{
+  void CreateMesh(double* _vertices,
+                  int num_vertices,
+                  int* element_indices,
+                  mfem::Geometry::Type element_type,
+                  int* element_attributes,
+                  int num_elements,
+                  int* boundary_indices,
+                  mfem::Geometry::Type boundary_type,
+                  int* boundary_attributes,
+                  int num_boundary_elements,
+                  int dimension,
+                  int space_dimension)
+  {
+    if(space_dimension == -1)
+    {
+      space_dimension = dimension;
+    }
+
+    InitMesh(dimension,
+             space_dimension,
+             /*num_vertices*/ 0,
+             num_elements,
+             num_boundary_elements);
+
+    int element_index_stride = mfem::Geometry::NumVerts[element_type];
+    int boundary_index_stride =
+      num_boundary_elements > 0 ? mfem::Geometry::NumVerts[boundary_type] : 0;
+
+    // assuming Vertex is POD
+    vertices.MakeRef(reinterpret_cast<mfem::Vertex*>(_vertices), num_vertices);
+    NumOfVertices = num_vertices;
+
+    for(int i = 0; i < num_elements; i++)
+    {
+      elements[i] = NewElement(element_type);
+      elements[i]->SetVertices(element_indices + i * element_index_stride);
+      elements[i]->SetAttribute(element_attributes[i]);
+    }
+    NumOfElements = num_elements;
+
+    for(int i = 0; i < num_boundary_elements; i++)
+    {
+      boundary[i] = NewElement(boundary_type);
+      boundary[i]->SetVertices(boundary_indices + i * boundary_index_stride);
+      boundary[i]->SetAttribute(boundary_attributes[i]);
+    }
+    NumOfBdrElements = num_boundary_elements;
+
+    FinalizeTopology();
+  }
+
+  struct GroupInfo
+  {
+    // Avoid making a copy, could also write a basic array_view
+    // std::vector<int> shared_verts;
+    int* shared_verts;
+    int num_shared_verts;
+    std::vector<int> shared_edges;
+    std::vector<int> shared_faces;
+    std::string name;
+    // We can make a copy of this, will be small
+    std::vector<int> neighbors;
+  };
+
+  std::vector<GroupInfo> getGroupInfo(Group* groups_grp, const int dimension)
+  {
+    auto num_groups = groups_grp->getNumGroups();
+    std::vector<GroupInfo> result(num_groups);
+
+    int group_idx = 0;
+    for(auto idx = groups_grp->getFirstValidGroupIndex();
+        sidre::indexIsValid(idx);
+        idx = groups_grp->getNextValidGroupIndex(idx))
+    {
+      auto group_grp = groups_grp->getGroup(idx);
+      auto& grp_info = result[group_idx];
+      grp_info.name = group_grp->getName();
+
+      // Copy the neighbors array
+      auto group_neighbors = group_grp->getView("neighbors");
+      int* neighbors_array = group_neighbors->getArray();
+      std::size_t num_neighbors = group_neighbors->getNumElements();
+      grp_info.neighbors.assign(neighbors_array, neighbors_array + num_neighbors);
+
+      // Fill in the vertices
+      auto group_values = group_grp->getView("values");
+      grp_info.shared_verts = group_values->getArray();
+      grp_info.num_shared_verts = group_values->getNumElements();
+
+      // Fill in the edges, if applicable
+      if(dimension >= 2)
+      {
+        // Convert to a hash table for faster lookup/search
+        const std::unordered_set<int> shared_vertices(
+          grp_info.shared_verts,
+          grp_info.shared_verts + grp_info.num_shared_verts);
+
+        // Scratchpad array for storing vertices of an edge/face
+        mfem::Array<int> verts;
+
+        // Add all the shared edges
+        for(int i = 0; i < GetNEdges(); i++)
+        {
+          GetEdgeVertices(i, verts);
+          // Check if it's a shared edge
+          if(shared_vertices.count(verts[0]) && shared_vertices.count(verts[1]))
+          {
+            grp_info.shared_edges.push_back(i);
+          }
+        }
+        // Fill in the faces, if applicable
+        if(dimension >= 3)
+        {
+          // Add all the shared faces
+          for(int i = 0; i < GetNumFaces(); i++)
+          {
+            GetFaceVertices(i, verts);
+            // Check if it's a shared face
+            if(std::all_of(verts.begin(),
+                           verts.end(),
+                           [&shared_vertices](const int vert) {
+                             return shared_vertices.count(vert);
+                           }))
+            {
+              grp_info.shared_faces.push_back(i);
+            }
+          }
+        }
+      }
+      group_idx++;
+    }
+    return result;
+  }
+
+public:
+  SidreParMeshWrapper(Group* bp_grp,
+                      double* vertices,
+                      int num_vertices,
+                      int* element_indices,
+                      mfem::Geometry::Type element_type,
+                      int* element_attributes,
+                      int num_elements,
+                      int* boundary_indices,
+                      mfem::Geometry::Type boundary_type,
+                      int* boundary_attributes,
+                      int num_boundary_elements,
+                      int dimension,
+                      int space_dimension = -1)
+  {
+    MyComm = MPI_COMM_WORLD;  // FIXME parameter
+    gtopo.SetComm(MPI_COMM_WORLD);
+    CreateMesh(vertices,
+               num_vertices,
+               element_indices,
+               element_type,
+               element_attributes,
+               num_elements,
+               boundary_indices,
+               boundary_type,
+               boundary_attributes,
+               num_boundary_elements,
+               dimension,
+               space_dimension);
+
+    MPI_Comm_size(MyComm, &NRanks);
+    MPI_Comm_rank(MyComm, &MyRank);
+
+    ReduceMeshGen();  // determine the global 'meshgen'
+
+    // FIXME: The word "group" is ridiculously overloaded in this context
+    // Can we do any better with variable naming?
+    // A group can refer to a communication group or a Sidre group
+
+    if(!bp_grp->hasGroup("adjsets"))
+    {
+      SLIC_ERROR("Does not contain any adjacency sets");
+    }
+    // {
+    // volatile int i = 0;
+    // char hostname[256];
+    // printf("PID %d ready for attach\n", getpid());
+    // fflush(stdout);
+    // while (0 == i)
+    //     sleep(5);
+    // }
+
+    auto groups_grp = bp_grp->getGroup("adjsets/mesh/groups");
+    auto num_groups = groups_grp->getNumGroups();
+
+    auto groups_info = getGroupInfo(groups_grp, dimension);
+
+    // TODO: Initialize the GroupTopology object
+    int group_master_rank;   // The rank of the group master for a given group
+    int group_master_group;  // The group number in the master for a given group
+    mfem::ListOfIntegerSets group_integer_sets;
+
+    // FIXME: This logic is probably completely wrong
+
+    // The first group always contains only the current rank
+    mfem::IntegerSet integer_set_0;
+    mfem::Array<int>& array_0 = integer_set_0;  // Bind a ref so we can modify it
+    array_0.Append(MyRank);
+    group_integer_sets.Insert(integer_set_0);
+
+    for(const auto& group_info : groups_info)
+    {
+      const int rc = std::sscanf(group_info.name.c_str(),
+                                 "g%d_%d",
+                                 &group_master_rank,
+                                 &group_master_group);
+      SLIC_ERROR_IF(rc != 2, "SidreDC: Failed to parse adjacency group name");
+
+      mfem::IntegerSet integer_set;
+      mfem::Array<int>& array = integer_set;  // Bind a ref so we can modify it
+
+      // On a given rank, the group ID corresponding to the current rank
+      // is a member of each group
+      array.Append(MyRank);
+
+      // TODO: Determine if the number of ranks used to build the blueprint differs
+      // from the current number of ranks
+      for(const auto neighbor : group_info.neighbors)
+      {
+        array.Append(neighbor);
+      }
+      group_integer_sets.Insert(integer_set);
+    }
+
+    gtopo.Create(group_integer_sets, 823);  // 822 or 823?
+
+    std::size_t total_shared_vertices = 0;
+    std::size_t total_shared_edges = 0;
+    std::size_t total_shared_faces = 0;
+
+    for(const auto& group_info : groups_info)
+    {
+      total_shared_vertices += group_info.num_shared_verts;
+      total_shared_edges += group_info.shared_edges.size();
+      total_shared_faces += group_info.shared_faces.size();
+    }
+
+    // Resizing for shared vertex data
+    svert_lvert.SetSize(total_shared_vertices);
+    group_svert.SetDims(num_groups, total_shared_vertices);
+
+    if(dimension >= 2)
+    {
+      // Resizing for shared edge data
+      sedge_ledge.SetSize(total_shared_edges);
+      shared_edges.SetSize(total_shared_edges);
+      group_sedge.SetDims(num_groups, total_shared_edges);
+    }
+    if(dimension >= 3)
+    {
+      // Resizing for shared face data
+      sface_lface.SetSize(total_shared_faces);
+      group_stria.MakeI(num_groups);
+      group_squad.MakeI(num_groups);
+    }
+    else
+    {
+      group_stria.SetSize(num_groups, 0);  // create empty group_stria
+      group_squad.SetSize(num_groups, 0);  // create empty group_squad
+    }
+    // Do we need to subtract 1 here?
+
+    std::size_t group_idx = 1;  // The ID of the current group
+    std::size_t global_shared_vert_idx = 0;
+    std::size_t global_shared_edge_idx = 0;
+
+    for(const auto& group_info : groups_info)
+    {
+      // Add shared vertices
+      auto n_shared_verts = group_info.num_shared_verts;
+      n_shared_verts +=
+        global_shared_vert_idx;  // Get the index into the global table
+      SLIC_ERROR_IF(n_shared_verts > group_svert.Size_of_connections(),
+                    "incorrect number of total_shared_vertices");
+      group_svert.GetI()[group_idx] = n_shared_verts;
+
+      for(int i = 0; i < group_info.num_shared_verts; i++)
+      {
+        group_svert.GetJ()[global_shared_vert_idx] = global_shared_vert_idx;
+        svert_lvert[global_shared_vert_idx] = group_info.shared_verts[i];
+        global_shared_vert_idx++;
+      }
+
+      if(dimension >= 2)
+      {
+        // Scratchpad array for storing vertices of an edge/face
+        mfem::Array<int> verts;
+
+        if(MyRank == 0)
+        {
+          SLIC_INFO("Number of shared edges: " << group_info.shared_edges.size());
+        }
+
+        // Add all the shared edges
+        auto n_shared_edges = group_info.shared_edges.size();
+        n_shared_edges += global_shared_edge_idx;
+        SLIC_ERROR_IF(n_shared_edges > static_cast<std::size_t>(
+                                         group_sedge.Size_of_connections()),
+                      "incorrect number of total_shared_edges");
+        group_svert.GetI()[group_idx] = n_shared_edges;
+
+        for(const auto shared_edge_idx : group_info.shared_edges)
+        {
+          GetEdgeVertices(shared_edge_idx, verts);
+          group_sedge.GetJ()[global_shared_edge_idx] = global_shared_edge_idx;
+          shared_edges[global_shared_edge_idx] =
+            new mfem::Segment(verts[0], verts[1], 1);
+          global_shared_edge_idx++;
+          if(MyRank == 0)
+          {
+            SLIC_INFO("Shared edge with verts: " << verts[0] << " " << verts[1]);
+          }
+        }
+
+        if(dimension >= 3)
+        {
+          // Add all the shared faces
+          std::size_t triangles_added = 0;
+          std::size_t quadrilaterals_added = 0;
+
+          if(MyRank == 0)
+          {
+            SLIC_INFO(
+              "Number of shared faces: " << group_info.shared_faces.size());
+          }
+
+          for(const auto shared_face_idx : group_info.shared_faces)
+          {
+            GetFaceVertices(shared_face_idx, verts);
+            switch(GetFaceBaseGeometry(shared_face_idx))
+            {
+            case mfem::Geometry::TRIANGLE:
+              shared_trias.Append({verts[0], verts[1], verts[2]});
+              if(MyRank == 0)
+              {
+                SLIC_INFO("Shared triangle with verts: "
+                          << verts[0] << " " << verts[1] << " " << verts[2]);
+              }
+              triangles_added++;
+              break;
+            case mfem::Geometry::SQUARE:
+              shared_quads.Append({verts[0], verts[1], verts[2], verts[3]});
+              quadrilaterals_added++;
+              break;
+            default:
+              SLIC_ERROR("Face " << shared_face_idx << " had invalid geometry");
+            }
+          }
+          group_stria.AddColumnsInRow(group_idx - 1, triangles_added);
+          group_squad.AddColumnsInRow(group_idx - 1, quadrilaterals_added);
+        }
+      }
+
+      group_idx++;
+    }
+
+    if(dimension >= 3)
+    {
+      SLIC_ERROR_IF(
+        shared_trias.Size() + shared_quads.Size() != sface_lface.Size(),
+        "incorrect number of total_shared_faces");
+      // Define the J arrays of group_stria and group_squad -- they just contain
+      // consecutive numbers starting from 0 up to shared_trias.Size()-1 and
+      // shared_quads.Size()-1, respectively.
+      group_stria.MakeJ();
+      for(int i = 0; i < shared_trias.Size(); i++)
+      {
+        group_stria.GetJ()[i] = i;
+      }
+      group_squad.MakeJ();
+      for(int i = 0; i < shared_quads.Size(); i++)
+      {
+        group_squad.GetJ()[i] = i;
+      }
+    }
+
+    const bool fix_orientation = false;
+    const bool refine = false;
+    Finalize(refine, fix_orientation);
+  }
+};
 
 // private method
 void MFEMSidreDataCollection::reconstructMesh()
@@ -1379,20 +1770,8 @@ void MFEMSidreDataCollection::reconstructMesh()
     dimension = 2;
   }
 
-  mesh = new mfem::Mesh(vertices,
-                        num_vertices,
-                        element_indices,
-                        getElementTypeFromName(element_name),
-                        element_attributes,
-                        num_elements,
-                        boundary_indices,
-                        getElementTypeFromName(bdr_element_name),
-                        boundary_attributes,
-                        num_boundary_elements,
-                        dimension);
-
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  // If it has an adjancencies group, the reloaded state was a ParMesh
+  // If it has an adjacencies group, the reloaded state was a ParMesh
 
   // FIXME: This does not work, the mesh read in on a given node is already
   // only the local part of the mesh, attempting to create a ParMesh with it
@@ -1405,15 +1784,34 @@ void MFEMSidreDataCollection::reconstructMesh()
                   "Must set the communicator with SetComm before a ParMesh can "
                   "be reconstructed");
 
-    // FIXME: Do we need to worry about trying to move anything from the
-    // adjancencies group?
-    mfem::ParMesh* new_pmesh = new mfem::ParMesh(m_comm, *mesh);
-
-    // The ParMesh ctor copies out of the original mesh, so it can be deleted and overwritten
-    delete mesh;
-    mesh = new_pmesh;
+    mesh = new SidreParMeshWrapper(m_bp_grp,
+                                   vertices,
+                                   num_vertices,
+                                   element_indices,
+                                   getElementTypeFromName(element_name),
+                                   element_attributes,
+                                   num_elements,
+                                   boundary_indices,
+                                   getElementTypeFromName(bdr_element_name),
+                                   boundary_attributes,
+                                   num_boundary_elements,
+                                   dimension);
   }
+  else
   #endif
+  {
+    mesh = new mfem::Mesh(vertices,
+                          num_vertices,
+                          element_indices,
+                          getElementTypeFromName(element_name),
+                          element_attributes,
+                          num_elements,
+                          boundary_indices,
+                          getElementTypeFromName(bdr_element_name),
+                          boundary_attributes,
+                          num_boundary_elements,
+                          dimension);
+  }
 
   // The DataCollection dtor is now responsible for deleting the mesh
   // We can't use owns_data in the base class here because that would

@@ -99,7 +99,7 @@ TEST(sidre_datacollection, dc_reload_gf)
   const std::string field_name = "test_field";
   // 2D mesh divided into triangles
   mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
-  mfem::H1_FECollection fec(1, 2);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::FiniteElementSpace fes(&mesh, &fec);
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
@@ -148,7 +148,7 @@ TEST(sidre_datacollection, dc_reload_mesh)
   const std::string field_name = "test_field";
   // 2D mesh divided into triangles
   mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
-  mfem::H1_FECollection fec(1, 2);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::FiniteElementSpace fes(&mesh, &fec);
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
@@ -216,15 +216,21 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   // 1D mesh divided into 10 segments
   // mfem::Mesh mesh(10);
   // 2D mesh divided into triangles
-  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  // mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  mfem::Mesh mesh(3, 3, 3, mfem::Element::TETRAHEDRON);
   mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
-  mfem::H1_FECollection fec(1, 2);
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  std::ofstream fout("mesh_par_" + std::to_string(rank));
+  parmesh.ParPrint(fout);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
 
   // The mesh must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
   bool owns_mesh = true;
   MFEMSidreDataCollection sdc_writer(COLL_NAME, &parmesh, owns_mesh);
+  // sdc_writer.GetBPGroup()->getGroup("adjsets/mesh/groups")->print(fout);
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
@@ -248,6 +254,9 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   sdc_reader.SetPrefixPath("/tmp/dc_par_reload_test");
   sdc_reader.Load();
 
+  std::ofstream fout_rel("mesh_par_reload_" + std::to_string(rank));
+  dynamic_cast<mfem::ParMesh*>(sdc_reader.GetMesh())->ParPrint(fout_rel);
+
   auto gf_read = sdc_reader.GetField(field_name);
 
   // Make sure the gridfunction was actually read in
@@ -264,7 +273,7 @@ TEST(sidre_datacollection, dc_par_reload_mesh)
   // 2D mesh divided into triangles
   mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
   mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
-  mfem::H1_FECollection fec(1, 2);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
 
   // The mesh must be owned by Sidre to properly manage data in case of
