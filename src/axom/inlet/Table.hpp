@@ -324,7 +324,7 @@ public:
   getArray(std::unordered_map<int, T>& map) const
   {
     map.clear();
-    if(!axom::utilities::string::endsWith(m_name, INTERNAL_ARRAY_GROUP))
+    if(!axom::utilities::string::endsWith(m_name, ARRAY_GROUP_NAME))
     {
       return false;
     }
@@ -583,7 +583,7 @@ public:
     T result;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
-    if(axom::utilities::string::endsWith(m_name, INTERNAL_ARRAY_GROUP))
+    if(axom::utilities::string::endsWith(m_name, ARRAY_GROUP_NAME))
     {
       if(!getArray(result))
       {
@@ -591,7 +591,7 @@ public:
           "[Inlet] Table does not contain a valid array of requested type");
       }
     }
-    else if(!getTable(INTERNAL_ARRAY_GROUP)->getArray(result))
+    else if(!getTable(ARRAY_GROUP_NAME)->getArray(result))
     {
       SLIC_ERROR(
         "[Inlet] Table does not contain a valid array of requested type");
@@ -880,8 +880,8 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
   std::function<bool(const Table&)> m_verifier;
 
-  static const std::string INTERNAL_ARRAY_GROUP;
-  static const std::string INTERNAL_ARRAY_INDEX_VIEW;
+  static const std::string ARRAY_GROUP_NAME;
+  static const std::string ARRAY_INDICIES_VIEW_NAME;
 };
 
 // To-be-defined template specializations
