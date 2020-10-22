@@ -19,7 +19,7 @@ using axom::sidre::MFEMSidreDataCollection;
 
 const std::string COLL_NAME = "test_collection";
 const double EPSILON = 1.0e-6;
-
+/*
 TEST(sidre_datacollection, dc_alloc_no_mesh)
 {
   MFEMSidreDataCollection sdc(COLL_NAME);
@@ -188,8 +188,10 @@ TEST(sidre_datacollection, dc_reload_mesh)
 
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
+*/
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+/*
 TEST(sidre_datacollection, dc_alloc_owning_parmesh)
 {
   // 1D mesh divided into 10 segments
@@ -209,6 +211,7 @@ TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
   MFEMSidreDataCollection sdc(COLL_NAME, &parmesh, owns_mesh);
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
+*/
 
 TEST(sidre_datacollection, dc_par_reload_gf)
 {
@@ -230,7 +233,7 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   // a simulated restart (save -> load)
   bool owns_mesh = true;
   MFEMSidreDataCollection sdc_writer(COLL_NAME, &parmesh, owns_mesh);
-  // sdc_writer.GetBPGroup()->getGroup("adjsets/mesh/groups")->print(fout);
+  sdc_writer.GetBPGroup()->getGroup("adjsets/mesh/groups")->print(fout);
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)

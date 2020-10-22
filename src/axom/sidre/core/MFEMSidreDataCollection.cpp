@@ -16,6 +16,8 @@
 
   #include "MFEMSidreDataCollection.hpp"
 
+  #include <unistd.h>
+
 using mfem::Array;
 using mfem::GridFunction;
 using mfem::Mesh;
@@ -513,14 +515,31 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
       m_bp_index_grp->createGroup("adjsets");
     }
   }
+  SLIC_INFO("on rank " << myid << " writing " << pmesh->GetNGroups()
+                       << " groups");
+
+  // {
+  //   volatile int i = 0;
+  //   printf("PID %d ready for attach\n", getpid());
+  //   fflush(stdout);
+  //   while (0 == i)
+  //       sleep(5);
+  // }
 
   for(int gi = 1; gi < pmesh->GetNGroups(); ++gi)
   {
     int num_gneighbors = pmesh->gtopo.GetGroupSize(gi);
     int num_gvertices = pmesh->GroupNVertices(gi);
+    if(myid == 1)
+    {
+      SLIC_INFO("Writing group number " << gi << " with " << num_gneighbors
+                                        << " neighbors and " << num_gvertices
+                                        << " vertices");
+    }
 
     // Skip creation of empty groups
-    if(num_gneighbors > 1 && num_gvertices > 0)
+    // if(num_gneighbors > 1 && num_gvertices > 0)
+    if(true)  // For some reason MFEM uses empty groups
     {
       std::snprintf(group_str,
                     GRP_SZ,
@@ -1321,7 +1340,6 @@ mfem::Geometry::Type MFEMSidreDataCollection::getElementTypeFromName(
   else
     return mfem::Geometry::INVALID;
 }
-  #include <unistd.h>
 // Implemented because no current ParMesh constructor supports
 // Virtual inheritance is no good here
 class SidreParMeshWrapper : public mfem::ParMesh
@@ -1390,6 +1408,48 @@ class SidreParMeshWrapper : public mfem::ParMesh
     std::vector<int> neighbors;
   };
 
+  void CreateGroupTopology(const std::vector<GroupInfo>& groups_info)
+  {
+    // TODO: Initialize the GroupTopology object
+    int group_master_rank;   // The rank of the group master for a given group
+    int group_master_group;  // The group number in the master for a given group
+    mfem::ListOfIntegerSets group_integer_sets;
+
+    // FIXME: This logic is probably completely wrong
+
+    // The first group always contains only the current rank
+    mfem::IntegerSet integer_set_0;
+    mfem::Array<int>& array_0 = integer_set_0;  // Bind a ref so we can modify it
+    array_0.Append(MyRank);
+    group_integer_sets.Insert(integer_set_0);
+
+    for(const auto& group_info : groups_info)
+    {
+      // const int rc = std::sscanf(group_info.name.c_str(),
+      //                            "g%d_%d",
+      //                            &group_master_rank,
+      //                            &group_master_group);
+      // SLIC_ERROR_IF(rc != 2, "SidreDC: Failed to parse adjacency group name");
+
+      mfem::IntegerSet integer_set;
+      mfem::Array<int>& array = integer_set;  // Bind a ref so we can modify it
+
+      // On a given rank, the group ID corresponding to the current rank
+      // is a member of each group
+      array.Append(MyRank);
+
+      // TODO: Determine if the number of ranks used to build the blueprint differs
+      // from the current number of ranks
+      for(const auto neighbor : group_info.neighbors)
+      {
+        array.Append(neighbor);
+      }
+      group_integer_sets.Insert(integer_set);
+    }
+
+    gtopo.Create(group_integer_sets, 823);  // 822 or 823?
+  }
+
   std::vector<GroupInfo> getGroupInfo(Group* groups_grp, const int dimension)
   {
     auto num_groups = groups_grp->getNumGroups();
@@ -1412,9 +1472,6 @@ class SidreParMeshWrapper : public mfem::ParMesh
     std::unordered_set<int> already_processed_edges;
     std::unordered_set<int> already_processed_faces;
 
-    // We have to go backwards for some reason?
-    int group_idx = num_groups - 1;
-
     std::vector<sidre::IndexType> groups_grp_idxs;
     for(auto idx = groups_grp->getFirstValidGroupIndex();
         sidre::indexIsValid(idx);
@@ -1423,9 +1480,8 @@ class SidreParMeshWrapper : public mfem::ParMesh
       groups_grp_idxs.push_back(idx);
     }
 
-    // Yes, this isn't needed, but there aren't that many groups anyways
-    std::reverse(groups_grp_idxs.begin(), groups_grp_idxs.end());
-
+    // Make a first pass to copy the shared vertices and neighbors
+    int group_idx = 0;
     for(const auto& idx : groups_grp_idxs)
     {
       auto group_grp = groups_grp->getGroup(idx);
@@ -1442,6 +1498,21 @@ class SidreParMeshWrapper : public mfem::ParMesh
       auto group_values = group_grp->getView("values");
       grp_info.shared_verts = group_values->getArray();
       grp_info.num_shared_verts = group_values->getNumElements();
+      group_idx++;
+    }
+
+    // Now we can construct the group topology
+    CreateGroupTopology(result);
+
+    // Yes, this isn't needed, but there aren't that many groups anyways
+    std::reverse(groups_grp_idxs.begin(), groups_grp_idxs.end());
+    // We have to go backwards for some reason?
+    group_idx = num_groups - 1;
+
+    for(const auto& idx : groups_grp_idxs)
+    {
+      auto group_grp = groups_grp->getGroup(idx);
+      auto& grp_info = result[group_idx];
 
       // Fill in the edges, if applicable
       if(dimension >= 2)
@@ -1449,6 +1520,71 @@ class SidreParMeshWrapper : public mfem::ParMesh
         // Convert to a hash table for faster lookup/search
         shared_vertices.insert(grp_info.shared_verts,
                                grp_info.shared_verts + grp_info.num_shared_verts);
+
+        std::unordered_set<int> neighbor_vertices(
+          grp_info.shared_verts,
+          grp_info.shared_verts + grp_info.num_shared_verts);
+
+        // for (const auto neighbor : grp_info.neighbors)
+        // {
+        //   // FIXME: Probably wrong
+        //   auto real_idx = neighbor;
+        //   // Don't re-add one's own shared vertices
+        //   if (real_idx != group_idx && real_idx < result.size())
+        //   {
+        //     neighbor_vertices.insert(result[real_idx].shared_verts, result[real_idx].shared_verts + result[real_idx].num_shared_verts);
+        //   }
+        // }
+
+        // for (const auto& result_grp : result)
+        // {
+        //   for (const auto neighbor : result_grp.neighbors)
+        //   {
+        //     auto real_idx = neighbor - 1;
+        //     if (real_idx < result.size())
+        //     {
+        //       neighbor_vertices.insert(result[real_idx].shared_verts, result[real_idx].shared_verts + result[real_idx].num_shared_verts);
+        //     }
+        //   }
+        // }
+        // for (int i = 0; i < result.size(); i++)
+        // {
+        //   const auto& neighbors_to_check = result[i].neighbors;
+        //   if (std::find(neighbors_to_check.begin(), neighbors_to_check.end(), group_idx) != neighbors_to_check.end())
+        //   {
+        //     neighbor_vertices.insert(result[i].shared_verts, result[i].shared_verts + result[i].num_shared_verts);
+        //   }
+        // }
+        // const int* gtopo_grp = gtopo.GetGroup(group_idx);
+        // for(int i = 0; i < gtopo.GetGroupSize(group_idx); i++)
+        // {
+        //   const int nb_idx = gtopo_grp[i];
+        //   neighbor_vertices.insert(
+        //     result[nb_idx].shared_verts,
+        //     result[nb_idx].shared_verts + result[nb_idx].num_shared_verts);
+        // }
+
+        // To be able to use another group's vertices,
+        // my neighbors must be a subset of the neighbors of that group
+        for(const auto& result_grp : result)
+        {
+          if(std::all_of(grp_info.neighbors.begin(),
+                         grp_info.neighbors.end(),
+                         [&result_grp](const int neighbor) {
+                           // This is just a search, returns true if the neighbor was found
+                           return std::find(result_grp.neighbors.begin(),
+                                            result_grp.neighbors.end(),
+                                            neighbor) !=
+                             result_grp.neighbors.end();
+                         }))
+          {
+            SLIC_INFO("On rank " << MyRank << ", group " << result_grp.name
+                                 << " can be used by " << grp_info.name);
+            neighbor_vertices.insert(
+              result_grp.shared_verts,
+              result_grp.shared_verts + result_grp.num_shared_verts);
+          }
+        }
 
         // Scratchpad array for storing vertices of an edge/face
         mfem::Array<int> verts;
@@ -1459,7 +1595,9 @@ class SidreParMeshWrapper : public mfem::ParMesh
           GetEdgeVertices(i, verts);
           // Check if it hasn't been assigned yet and it's a shared edge
           if(!already_processed_edges.count(i) &&
-             shared_vertices.count(verts[0]) && shared_vertices.count(verts[1]))
+             shared_vertices.count(verts[0]) && shared_vertices.count(verts[1]) &&
+             neighbor_vertices.count(verts[0]) &&
+             neighbor_vertices.count(verts[1]))
           {
             grp_info.shared_edges.push_back(i);
             already_processed_edges.insert(i);
@@ -1478,6 +1616,11 @@ class SidreParMeshWrapper : public mfem::ParMesh
                            verts.end(),
                            [&shared_vertices](const int vert) {
                              return shared_vertices.count(vert);
+                           }) &&
+               std::all_of(verts.begin(),
+                           verts.end(),
+                           [&neighbor_vertices](const int vert) {
+                             return neighbor_vertices.count(vert);
                            }))
             {
               grp_info.shared_faces.push_back(i);
@@ -1547,45 +1690,6 @@ public:
     auto num_groups = groups_grp->getNumGroups();
 
     auto groups_info = getGroupInfo(groups_grp, dimension);
-
-    // TODO: Initialize the GroupTopology object
-    int group_master_rank;   // The rank of the group master for a given group
-    int group_master_group;  // The group number in the master for a given group
-    mfem::ListOfIntegerSets group_integer_sets;
-
-    // FIXME: This logic is probably completely wrong
-
-    // The first group always contains only the current rank
-    mfem::IntegerSet integer_set_0;
-    mfem::Array<int>& array_0 = integer_set_0;  // Bind a ref so we can modify it
-    array_0.Append(MyRank);
-    group_integer_sets.Insert(integer_set_0);
-
-    for(const auto& group_info : groups_info)
-    {
-      const int rc = std::sscanf(group_info.name.c_str(),
-                                 "g%d_%d",
-                                 &group_master_rank,
-                                 &group_master_group);
-      SLIC_ERROR_IF(rc != 2, "SidreDC: Failed to parse adjacency group name");
-
-      mfem::IntegerSet integer_set;
-      mfem::Array<int>& array = integer_set;  // Bind a ref so we can modify it
-
-      // On a given rank, the group ID corresponding to the current rank
-      // is a member of each group
-      array.Append(MyRank);
-
-      // TODO: Determine if the number of ranks used to build the blueprint differs
-      // from the current number of ranks
-      for(const auto neighbor : group_info.neighbors)
-      {
-        array.Append(neighbor);
-      }
-      group_integer_sets.Insert(integer_set);
-    }
-
-    gtopo.Create(group_integer_sets, 823);  // 822 or 823?
 
     std::size_t total_shared_vertices = 0;
     std::size_t total_shared_edges = 0;
