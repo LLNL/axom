@@ -274,8 +274,12 @@ TEST(sidre_datacollection, dc_par_reload_mesh)
   // 1D mesh divided into 10 segments
   // mfem::Mesh mesh(10);
   // 2D mesh divided into triangles
-  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  mfem::Mesh mesh(3, 3, 3, mfem::Element::TETRAHEDRON);
   mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  std::ofstream fout("mesh_par_" + std::to_string(rank));
+  parmesh.ParPrint(fout);
   mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
 
@@ -312,6 +316,9 @@ TEST(sidre_datacollection, dc_par_reload_mesh)
   EXPECT_EQ(sdc_reader.GetMesh()->GetNV(), n_verts);
   EXPECT_EQ(sdc_reader.GetMesh()->GetNE(), n_ele);
   EXPECT_EQ(sdc_reader.GetMesh()->GetNBE(), n_bdr_ele);
+
+  std::ofstream fout_rel("mesh_par_reload_" + std::to_string(rank));
+  dynamic_cast<mfem::ParMesh*>(sdc_reader.GetMesh())->ParPrint(fout_rel);
 
   int n_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);

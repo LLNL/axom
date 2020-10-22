@@ -1472,6 +1472,8 @@ class SidreParMeshWrapper : public mfem::ParMesh
       {
         array.Append(neighbor);  // Each of these neighbors is a rank ID
       }
+
+      array.Sort();  // Not strictly necessary but it makes the diff nicer
       group_integer_sets.Insert(integer_set);
     }
 
@@ -1625,7 +1627,8 @@ class SidreParMeshWrapper : public mfem::ParMesh
                          verts.end(),
                          [&neighbor_vertices](const int vert) {
                            return neighbor_vertices.count(vert);
-                         }))
+                         }) &&
+             !FaceIsTrueInterior(i))
           {
             grp_info.shared_faces.push_back(i);
             already_processed_faces.insert(i);
