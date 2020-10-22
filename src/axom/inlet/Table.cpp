@@ -13,8 +13,8 @@ namespace axom
 {
 namespace inlet
 {
-const std::string Table::INTERNAL_ARRAY_GROUP = "_inlet_array";
-const std::string Table::INTERNAL_ARRAY_INDEX_VIEW = "_inlet_array_indices";
+const std::string Table::ARRAY_GROUP_NAME = "_inlet_array";
+const std::string Table::ARRAY_INDICIES_VIEW_NAME = "_inlet_array_indices";
 
 std::shared_ptr<Table> Table::addTable(const std::string& name,
                                        const std::string& description)
@@ -72,13 +72,13 @@ std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
-  if(!m_sidreGroup->hasView(INTERNAL_ARRAY_INDEX_VIEW))
+  if(!m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {
     SLIC_ERROR(fmt::format(
       "[Inlet] Table '{0}' does not contain an array of user-defined objects",
       m_name));
   }
-  const auto view = m_sidreGroup->getView(INTERNAL_ARRAY_INDEX_VIEW);
+  const auto view = m_sidreGroup->getView(ARRAY_INDICIES_VIEW_NAME);
   const int* array = view->getArray();
   // Need to go up one level because this is an _inlet_array group
   const auto pos = m_name.find_last_of("/");
@@ -123,14 +123,14 @@ std::shared_ptr<Verifiable> Table::addStringArray(const std::string& name,
 std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
                                               const std::string& description)
 {
-  if(m_sidreGroup->hasView(INTERNAL_ARRAY_INDEX_VIEW))
+  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {
     SLIC_ERROR(
       fmt::format("[Inlet] Adding array of structs to array of structs {0} is "
                   "not supported",
                   m_name));
   }
-  auto table = addTable(appendPrefix(name, INTERNAL_ARRAY_GROUP), description);
+  auto table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
   std::vector<int> indices;
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader->getArrayIndices(fullName, indices))
@@ -140,7 +140,7 @@ std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
     // before they are populated as we don't know the schema of the
     // generic type yet
     auto view =
-      table->m_sidreGroup->createViewAndAllocate(INTERNAL_ARRAY_INDEX_VIEW,
+      table->m_sidreGroup->createViewAndAllocate(ARRAY_INDICIES_VIEW_NAME,
                                                  axom::sidre::INT_ID,
                                                  indices.size());
     int* raw_array = view->getArray();
@@ -210,7 +210,7 @@ std::shared_ptr<VerifiableScalar> Table::addPrimitive(
   T val,
   const std::string& pathOverride)
 {
-  if(m_sidreGroup->hasView(INTERNAL_ARRAY_INDEX_VIEW))
+  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
@@ -335,7 +335,7 @@ std::shared_ptr<Verifiable> Table::addPrimitiveArray(
   const std::string& description,
   const std::string& pathOverride)
 {
-  if(m_sidreGroup->hasView(INTERNAL_ARRAY_INDEX_VIEW))
+  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {
     // Adding an array of primitive field to an array of structs
     std::vector<std::shared_ptr<Verifiable>> tables;
@@ -351,7 +351,7 @@ std::shared_ptr<Verifiable> Table::addPrimitiveArray(
   else
   {
     // "base case", create a table for the field and fill it in with the helper
-    auto table = addTable(appendPrefix(name, INTERNAL_ARRAY_GROUP), description);
+    auto table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     addPrimitiveArrayHelper<T>(*table, lookupPath);
@@ -454,8 +454,8 @@ void Table::addPrimitiveArrayHelper<std::string>(Table& table,
 
 Proxy Table::operator[](const std::string& name) const
 {
-  const auto has_table = hasTable(name);
-  const auto has_field = hasField(name);
+  const bool has_table = hasTable(name);
+  const bool has_field = hasField(name);
 
   // Ambiguous case - both a table and field exist with the same name
   if(has_table && has_field)
