@@ -1340,10 +1340,25 @@ mfem::Geometry::Type MFEMSidreDataCollection::getElementTypeFromName(
   else
     return mfem::Geometry::INVALID;
 }
-// Implemented because no current ParMesh constructor supports
-// Virtual inheritance is no good here
+
+/**
+ * @brief Wrapper class to enable the reconstruction of a ParMesh from a
+ * Conduit blueprint
+ * 
+ * @note This is only needed because mfem::ParMesh doesn't provide a
+ * constructor that allows us to set all the required information.
+ */
 class SidreParMeshWrapper : public mfem::ParMesh
 {
+  /**
+   * @brief Clone of mfem::Mesh constructor that allows data fields
+   * to be set directly
+   * 
+   * Needed because the mfem::Mesh base subobject cannot be constructed
+   * directly, so we need to set the data fields "manually"
+   * 
+   * @see mfem::Mesh::Mesh(double, int, int*, ...)
+   */
   void CreateMesh(double* _vertices,
                   int num_vertices,
                   int* element_indices,
@@ -1357,6 +1372,10 @@ class SidreParMeshWrapper : public mfem::ParMesh
                   int dimension,
                   int space_dimension)
   {
+    // NOTE: This is all copied directly from the mfem::Mesh constructor
+    // It needs to be called directly though because we have to "manually"
+    // initialize the indirect base subobject - fortunately all relevant
+    // variables are "protected"
     if(space_dimension == -1)
     {
       space_dimension = dimension;
@@ -1395,27 +1414,36 @@ class SidreParMeshWrapper : public mfem::ParMesh
     FinalizeTopology();
   }
 
+  /**
+   * @brief A data class containing all relevant information needed on geometric
+   * communication groups within an mfem::ParMesh
+   */
   struct GroupInfo
   {
-    // Avoid making a copy, could also write a basic array_view
-    // std::vector<int> shared_verts;
-    int* shared_verts;
-    int num_shared_verts;
-    std::vector<int> shared_edges;
-    std::vector<int> shared_faces;
-    std::string name;
+    // Avoid making a copy, could also write a basic span
+    // TODO: Replace with std::span when C++20 is available
+    int* shared_verts;     // The raw array of indices of shared vertices
+    int num_shared_verts;  // The number of shared vertices
+    std::vector<int> shared_edges;  // Indices of edges that are shared with other groups
+    std::vector<int> shared_faces;  // Indices of faces that are shared with other groups
+    std::string name;  // Name of the group, of the form master_rank, master_group_id
     // We can make a copy of this, will be small
-    std::vector<int> neighbors;
+    // Should this be a set?
+    std::vector<int> neighbors;  // Rank IDs of the neighboring nodes/processes
   };
 
+  /**
+   * @brief Initializes the mfem::GroupTopology object
+   * @param [in] groups_info The communication group information
+   * @pre The shared vertex and neighbor fields of each GroupInfo must be populated
+   * @post The gtopo member of the base subobject is initialized
+   */
   void CreateGroupTopology(const std::vector<GroupInfo>& groups_info)
   {
-    // TODO: Initialize the GroupTopology object
-    int group_master_rank;   // The rank of the group master for a given group
-    int group_master_group;  // The group number in the master for a given group
+    // I don't think we need this information at any point
+    // int group_master_rank;   // The rank of the group master for a given group
+    // int group_master_group;  // The group number in the master for a given group
     mfem::ListOfIntegerSets group_integer_sets;
-
-    // FIXME: This logic is probably completely wrong
 
     // The first group always contains only the current rank
     mfem::IntegerSet integer_set_0;
@@ -1442,14 +1470,26 @@ class SidreParMeshWrapper : public mfem::ParMesh
       // from the current number of ranks
       for(const auto neighbor : group_info.neighbors)
       {
-        array.Append(neighbor);
+        array.Append(neighbor);  // Each of these neighbors is a rank ID
       }
       group_integer_sets.Insert(integer_set);
     }
 
-    gtopo.Create(group_integer_sets, 823);  // 822 or 823?
+    gtopo.Create(group_integer_sets,
+                 823);  // 822 or 823? No clue what either refers to
   }
 
+  /**
+   * @brief Retrieves the information for each of the groups in the adjacency
+   * set and stores it in a GroupInfo object
+   * 
+   * @param [in] groups_grp The blueprint group corresponding to the communication
+   * groups, i.e. <blueprint_root>/adjsets/mesh/groups
+   * @param [in] dimension The dimension of the mesh
+   * 
+   * @return The fully populated vector of GroupInfo objects
+   * @post Calls CreateGroupTopology to initialize the gtopo member
+   */
   std::vector<GroupInfo> getGroupInfo(Group* groups_grp, const int dimension)
   {
     auto num_groups = groups_grp->getNumGroups();
@@ -1467,11 +1507,13 @@ class SidreParMeshWrapper : public mfem::ParMesh
     // We use a set structure for faster lookup
     std::unordered_set<int> shared_vertices;
 
-    // Don't have duplicate entries of a shared edge or
+    // Don't want duplicate entries of a shared edge or
     // face across multiple groups
     std::unordered_set<int> already_processed_edges;
     std::unordered_set<int> already_processed_faces;
 
+    // Iterate over the *sidre* group to find the sidre::IndexType
+    // indices for each *geometric* group
     std::vector<sidre::IndexType> groups_grp_idxs;
     for(auto idx = groups_grp->getFirstValidGroupIndex();
         sidre::indexIsValid(idx);
@@ -1480,7 +1522,7 @@ class SidreParMeshWrapper : public mfem::ParMesh
       groups_grp_idxs.push_back(idx);
     }
 
-    // Make a first pass to copy the shared vertices and neighbors
+    // Make a first pass to initialize the shared vertices and neighbors
     int group_idx = 0;
     for(const auto& idx : groups_grp_idxs)
     {
@@ -1504,137 +1546,105 @@ class SidreParMeshWrapper : public mfem::ParMesh
     // Now we can construct the group topology
     CreateGroupTopology(result);
 
-    // Yes, this isn't needed, but there aren't that many groups anyways
-    std::reverse(groups_grp_idxs.begin(), groups_grp_idxs.end());
-    // We have to go backwards for some reason?
-    group_idx = num_groups - 1;
-
-    for(const auto& idx : groups_grp_idxs)
+    // We don't need to set up shared/edges or faces for a 1D mesh
+    if(dimension < 2)
     {
-      auto group_grp = groups_grp->getGroup(idx);
-      auto& grp_info = result[group_idx];
+      return result;
+    }
 
-      // Fill in the edges, if applicable
-      if(dimension >= 2)
+    // Walk through the *geometric* groups in reverse
+    // and determine the shared edges and faces
+    // boost::adaptors::reverse would be nice here
+    for(auto grp_info_iter = result.rbegin(); grp_info_iter != result.rend();
+        ++grp_info_iter)
+    {
+      auto& grp_info = *grp_info_iter;  // Just for convenience
+
+      // Convert to a hash table for faster lookup/search
+      shared_vertices.insert(grp_info.shared_verts,
+                             grp_info.shared_verts + grp_info.num_shared_verts);
+
+      std::unordered_set<int> neighbor_vertices(
+        grp_info.shared_verts,
+        grp_info.shared_verts + grp_info.num_shared_verts);
+
+      // To be able to use another group's vertices,
+      // my neighbors must be a subset of the neighbors of that group
+      // FIXME: This is not quite correct, I think we need to figure out
+      // which neighbor an edge corresponds to and also check that
+      for(const auto& result_grp : result)
       {
-        // Convert to a hash table for faster lookup/search
-        shared_vertices.insert(grp_info.shared_verts,
-                               grp_info.shared_verts + grp_info.num_shared_verts);
-
-        std::unordered_set<int> neighbor_vertices(
-          grp_info.shared_verts,
-          grp_info.shared_verts + grp_info.num_shared_verts);
-
-        // for (const auto neighbor : grp_info.neighbors)
-        // {
-        //   // FIXME: Probably wrong
-        //   auto real_idx = neighbor;
-        //   // Don't re-add one's own shared vertices
-        //   if (real_idx != group_idx && real_idx < result.size())
-        //   {
-        //     neighbor_vertices.insert(result[real_idx].shared_verts, result[real_idx].shared_verts + result[real_idx].num_shared_verts);
-        //   }
-        // }
-
-        // for (const auto& result_grp : result)
-        // {
-        //   for (const auto neighbor : result_grp.neighbors)
-        //   {
-        //     auto real_idx = neighbor - 1;
-        //     if (real_idx < result.size())
-        //     {
-        //       neighbor_vertices.insert(result[real_idx].shared_verts, result[real_idx].shared_verts + result[real_idx].num_shared_verts);
-        //     }
-        //   }
-        // }
-        // for (int i = 0; i < result.size(); i++)
-        // {
-        //   const auto& neighbors_to_check = result[i].neighbors;
-        //   if (std::find(neighbors_to_check.begin(), neighbors_to_check.end(), group_idx) != neighbors_to_check.end())
-        //   {
-        //     neighbor_vertices.insert(result[i].shared_verts, result[i].shared_verts + result[i].num_shared_verts);
-        //   }
-        // }
-        // const int* gtopo_grp = gtopo.GetGroup(group_idx);
-        // for(int i = 0; i < gtopo.GetGroupSize(group_idx); i++)
-        // {
-        //   const int nb_idx = gtopo_grp[i];
-        //   neighbor_vertices.insert(
-        //     result[nb_idx].shared_verts,
-        //     result[nb_idx].shared_verts + result[nb_idx].num_shared_verts);
-        // }
-
-        // To be able to use another group's vertices,
-        // my neighbors must be a subset of the neighbors of that group
-        for(const auto& result_grp : result)
+        if(std::all_of(grp_info.neighbors.begin(),
+                       grp_info.neighbors.end(),
+                       [&result_grp](const int neighbor) {
+                         // This is just a search, returns true if the neighbor was found
+                         return std::find(result_grp.neighbors.begin(),
+                                          result_grp.neighbors.end(),
+                                          neighbor) != result_grp.neighbors.end();
+                       }))
         {
-          if(std::all_of(grp_info.neighbors.begin(),
-                         grp_info.neighbors.end(),
-                         [&result_grp](const int neighbor) {
-                           // This is just a search, returns true if the neighbor was found
-                           return std::find(result_grp.neighbors.begin(),
-                                            result_grp.neighbors.end(),
-                                            neighbor) !=
-                             result_grp.neighbors.end();
+          SLIC_INFO("On rank " << MyRank << ", group " << result_grp.name
+                               << " can be used by " << grp_info.name);
+          neighbor_vertices.insert(
+            result_grp.shared_verts,
+            result_grp.shared_verts + result_grp.num_shared_verts);
+        }
+      }
+
+      // Scratchpad array for storing vertices of an edge/face
+      mfem::Array<int> verts;
+
+      // Add all the shared edges
+      for(int i = 0; i < GetNEdges(); i++)
+      {
+        GetEdgeVertices(i, verts);
+        // Check if it hasn't been assigned yet and it's a shared edge
+        if(!already_processed_edges.count(i) &&
+           shared_vertices.count(verts[0]) && shared_vertices.count(verts[1]) &&
+           neighbor_vertices.count(verts[0]) && neighbor_vertices.count(verts[1]))
+        {
+          grp_info.shared_edges.push_back(i);
+          already_processed_edges.insert(i);
+        }
+      }
+      // Fill in the faces, if applicable
+      if(dimension >= 3)
+      {
+        // Add all the shared faces
+        for(int i = 0; i < GetNumFaces(); i++)
+        {
+          GetFaceVertices(i, verts);
+          // Check if it hasn't been assigned yet and it's a shared face
+          if(!already_processed_faces.count(i) &&
+             std::all_of(verts.begin(),
+                         verts.end(),
+                         [&shared_vertices](const int vert) {
+                           return shared_vertices.count(vert);
+                         }) &&
+             std::all_of(verts.begin(),
+                         verts.end(),
+                         [&neighbor_vertices](const int vert) {
+                           return neighbor_vertices.count(vert);
                          }))
           {
-            SLIC_INFO("On rank " << MyRank << ", group " << result_grp.name
-                                 << " can be used by " << grp_info.name);
-            neighbor_vertices.insert(
-              result_grp.shared_verts,
-              result_grp.shared_verts + result_grp.num_shared_verts);
-          }
-        }
-
-        // Scratchpad array for storing vertices of an edge/face
-        mfem::Array<int> verts;
-
-        // Add all the shared edges
-        for(int i = 0; i < GetNEdges(); i++)
-        {
-          GetEdgeVertices(i, verts);
-          // Check if it hasn't been assigned yet and it's a shared edge
-          if(!already_processed_edges.count(i) &&
-             shared_vertices.count(verts[0]) && shared_vertices.count(verts[1]) &&
-             neighbor_vertices.count(verts[0]) &&
-             neighbor_vertices.count(verts[1]))
-          {
-            grp_info.shared_edges.push_back(i);
-            already_processed_edges.insert(i);
-          }
-        }
-        // Fill in the faces, if applicable
-        if(dimension >= 3)
-        {
-          // Add all the shared faces
-          for(int i = 0; i < GetNumFaces(); i++)
-          {
-            GetFaceVertices(i, verts);
-            // Check if it hasn't been assigned yet and it's a shared face
-            if(!already_processed_faces.count(i) &&
-               std::all_of(verts.begin(),
-                           verts.end(),
-                           [&shared_vertices](const int vert) {
-                             return shared_vertices.count(vert);
-                           }) &&
-               std::all_of(verts.begin(),
-                           verts.end(),
-                           [&neighbor_vertices](const int vert) {
-                             return neighbor_vertices.count(vert);
-                           }))
-            {
-              grp_info.shared_faces.push_back(i);
-              already_processed_faces.insert(i);
-            }
+            grp_info.shared_faces.push_back(i);
+            already_processed_faces.insert(i);
           }
         }
       }
-      group_idx--;  // Backwards?
     }
     return result;
   }
 
 public:
+  /**
+   * @brief Constructs a new parallel mesh, intended to be assigned
+   * to an mfem::ParMesh*
+   * 
+   * @param [in] bp_grp The root group of the Conduit Blueprint structure
+   * 
+   * The remaining parameters are used to construct the mfem::Mesh base subobject
+   */
   SidreParMeshWrapper(Group* bp_grp,
                       double* vertices,
                       int num_vertices,
