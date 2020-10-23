@@ -55,7 +55,7 @@ enum class InletType
  * \see Inlet Table
  *******************************************************************************
  */
-class Field : public std::enable_shared_from_this<Field>, public VerifiableScalar
+class Field : public VerifiableScalar
 {
 public:
   /*!
@@ -109,7 +109,7 @@ public:
    * \return Shared pointer to this instance of this class
    *****************************************************************************
    */
-  VerifiableScalar& required(bool isRequired = true);
+  Field& required(bool isRequired = true);
 
   /*!
    *****************************************************************************
@@ -134,7 +134,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(const std::string& value);
+  Field& defaultValue(const std::string& value);
 
   /*!
    *****************************************************************************
@@ -147,7 +147,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(const char* value);
+  Field& defaultValue(const char* value);
 
   /*!
    *****************************************************************************
@@ -160,7 +160,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(bool value);
+  Field& defaultValue(bool value);
 
   /*!
    *****************************************************************************
@@ -173,7 +173,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(int value);
+  Field& defaultValue(int value);
 
   /*!
    *****************************************************************************
@@ -186,7 +186,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(double value);
+  Field& defaultValue(double value);
 
   /*!
    *****************************************************************************
@@ -201,7 +201,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& range(double startVal, double endVal);
+  Field& range(double startVal, double endVal);
 
   /*!
    *****************************************************************************
@@ -216,7 +216,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& range(int startVal, int endVal);
+  Field& range(int startVal, int endVal);
 
   /*!
    *****************************************************************************
@@ -227,7 +227,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::vector<int>& set);
+  Field& validValues(const std::vector<int>& set);
 
   /*!
    *****************************************************************************
@@ -238,7 +238,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::vector<double>& set);
+  Field& validValues(const std::vector<double>& set);
 
   /*!
    *****************************************************************************
@@ -249,7 +249,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::vector<std::string>& set);
+  Field& validValues(const std::vector<std::string>& set);
 
   /*!
    *****************************************************************************
@@ -261,7 +261,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::initializer_list<const char*>& set);
+  Field& validValues(const std::initializer_list<const char*>& set);
 
   /*!
    *****************************************************************************
@@ -272,7 +272,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::initializer_list<int>& set);
+  Field& validValues(const std::initializer_list<int>& set);
 
   /*!
    *****************************************************************************
@@ -283,7 +283,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::initializer_list<double>& set);
+  Field& validValues(const std::initializer_list<double>& set);
 
   /*!
    *****************************************************************************
@@ -293,7 +293,7 @@ public:
    * \param [in] The function object that will be called by Field::verify().
    *****************************************************************************
   */
-  VerifiableScalar& registerVerifier(std::function<bool(const Field&)> lambda);
+  Field& registerVerifier(std::function<bool(const Field&)> lambda);
 
   /*!
    *****************************************************************************
@@ -453,8 +453,7 @@ inline bool Field::searchValidValues<std::string>(const axom::sidre::View& view)
    * \brief A wrapper class that enables constraints on groups of Fields
    *****************************************************************************
   */
-class AggregateField : public std::enable_shared_from_this<AggregateField>,
-                       public VerifiableScalar
+class AggregateField : public VerifiableScalar
 {
 public:
   AggregateField(std::vector<std::reference_wrapper<VerifiableScalar>>&& fields)
@@ -482,7 +481,7 @@ public:
    * \return Shared pointer to this instance of this class
    *****************************************************************************
    */
-  VerifiableScalar& required(bool isRequired);
+  AggregateField& required(bool isRequired);
 
   /*!
    *****************************************************************************
@@ -507,7 +506,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(const std::string& value);
+  AggregateField& defaultValue(const std::string& value);
 
   /*!
    *****************************************************************************
@@ -520,7 +519,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(const char* value);
+  AggregateField& defaultValue(const char* value);
 
   /*!
    *****************************************************************************
@@ -533,7 +532,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(bool value);
+  AggregateField& defaultValue(bool value);
 
   /*!
    *****************************************************************************
@@ -546,7 +545,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(int value);
+  AggregateField& defaultValue(int value);
 
   /*!
    *****************************************************************************
@@ -559,7 +558,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& defaultValue(double value);
+  AggregateField& defaultValue(double value);
 
   /*!
    *****************************************************************************
@@ -574,7 +573,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& range(double startVal, double endVal);
+  AggregateField& range(double startVal, double endVal);
 
   /*!
    *****************************************************************************
@@ -589,7 +588,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& range(int startVal, int endVal);
+  AggregateField& range(int startVal, int endVal);
 
   /*!
    *****************************************************************************
@@ -600,7 +599,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::vector<int>& set);
+  AggregateField& validValues(const std::vector<int>& set);
 
   /*!
    *****************************************************************************
@@ -611,7 +610,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::vector<double>& set);
+  AggregateField& validValues(const std::vector<double>& set);
 
   /*!
    *****************************************************************************
@@ -622,7 +621,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::vector<std::string>& set);
+  AggregateField& validValues(const std::vector<std::string>& set);
 
   /*!
    *****************************************************************************
@@ -634,7 +633,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::initializer_list<const char*>& set);
+  AggregateField& validValues(const std::initializer_list<const char*>& set);
 
   /*!
    *****************************************************************************
@@ -645,7 +644,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::initializer_list<int>& set);
+  AggregateField& validValues(const std::initializer_list<int>& set);
 
   /*!
    *****************************************************************************
@@ -656,7 +655,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  VerifiableScalar& validValues(const std::initializer_list<double>& set);
+  AggregateField& validValues(const std::initializer_list<double>& set);
   /*!
    *****************************************************************************
    * \brief Registers the function object that will verify this Field's contents
@@ -665,7 +664,7 @@ public:
    * \param [in] The function object that will be called by Field::verify().
    *****************************************************************************
   */
-  VerifiableScalar& registerVerifier(std::function<bool(const Field&)> lambda);
+  AggregateField& registerVerifier(std::function<bool(const Field&)> lambda);
 
 private:
   std::vector<std::reference_wrapper<VerifiableScalar>> m_fields;
