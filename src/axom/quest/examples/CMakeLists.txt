@@ -62,6 +62,16 @@ if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
     endif()
 endif()
 
+if(MFEM_FOUND)
+    blt_add_executable(
+        NAME       quest_signed_distance_mfem_ex
+        SOURCES    quest_signed_distance_mfem.cpp
+        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON ${quest_example_depends} cli11 mfem
+        FOLDER      axom/quest/examples
+        )
+endif()
+
 if (ENABLE_FORTRAN)
 
     blt_add_executable(
