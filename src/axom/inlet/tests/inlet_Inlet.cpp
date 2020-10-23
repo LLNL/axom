@@ -1036,11 +1036,11 @@ TEST(inlet_Inlet_verify, verifyDoubleRange)
   auto inlet1 = createBasicInlet(&ds1, testString1);
 
   auto field1 = inlet1->addDouble("field2");
-  field1->defaultValue(5)->range(0, 60);  // ints will get casted to double
+  field1->defaultValue(5).range(0, 60);  // ints will get casted to double
   EXPECT_TRUE(inlet1->verify());
 
   field1 = inlet1->addDouble("field3");
-  field1->defaultValue(-12)->range(-10.5, 13.23);
+  field1->defaultValue(-12).range(-10.5, 13.23);
   EXPECT_FALSE(inlet1->verify());
 }
 
@@ -1074,15 +1074,15 @@ TEST(inlet_Inlet_verify, verifyIntRange)
   DataStore ds1;
   auto inlet1 = createBasicInlet(&ds1, testString1);
   field = inlet1->addInt("field2");
-  field->range(0, 56)->defaultValue(32);
+  field->range(0, 56).defaultValue(32);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addInt("field3");
-  field->range(-12, 13)->defaultValue(-3);
+  field->range(-12, 13).defaultValue(-3);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addInt("NewTable/field4");
-  field->range(1, 23)->defaultValue(24);
+  field->range(1, 23).defaultValue(24);
   EXPECT_FALSE(inlet1->verify());
 }
 
@@ -1119,19 +1119,19 @@ TEST(inlet_Inlet_verify, verifyValidIntValues)
   auto inlet1 = createBasicInlet(&ds1, testString1);
 
   field = inlet1->addInt("field2");
-  field->validValues({1, 2, 3, 56, 57, 58})->defaultValue(2);
+  field->validValues({1, 2, 3, 56, 57, 58}).defaultValue(2);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addInt("field3");
-  field->validValues(nums)->defaultValue(21);
+  field->validValues(nums).defaultValue(21);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addInt("NewTable/field4");
-  field->validValues({44, 40, 48, 22})->defaultValue(48);
+  field->validValues({44, 40, 48, 22}).defaultValue(48);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addInt("NewTable/field5");
-  field->validValues(nums)->defaultValue(90);
+  field->validValues(nums).defaultValue(90);
   EXPECT_FALSE(inlet1->verify());
 }
 
@@ -1170,19 +1170,19 @@ TEST(inlet_Inlet_verify, verifyValidDoubleValues)
   auto inlet1 = createBasicInlet(&ds1, testString1);
 
   field = inlet1->addDouble("field2");
-  field->validValues({1, 2, 3, 56, 57, 58})->defaultValue(2.);
+  field->validValues({1, 2, 3, 56, 57, 58}).defaultValue(2.);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addDouble("field3");
-  field->validValues(nums)->defaultValue(21);
+  field->validValues(nums).defaultValue(21);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addDouble("NewTable/field4");
-  field->validValues({44.05, 40.13, 48.28, 22.})->defaultValue(48.28);
+  field->validValues({44.05, 40.13, 48.28, 22.}).defaultValue(48.28);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addDouble("NewTable/field5");
-  field->validValues(nums)->defaultValue(90.1);
+  field->validValues(nums).defaultValue(90.1);
   EXPECT_FALSE(inlet1->verify());
 }
 
@@ -1219,11 +1219,11 @@ TEST(inlet_Inlet_verify, verifyValidStringValues)
   auto inlet1 = createBasicInlet(&ds1, testString1);
 
   field = inlet1->addString("field2");
-  field->validValues({"abc", "defg", "hijk", "lm"})->defaultValue("defg");
+  field->validValues({"abc", "defg", "hijk", "lm"}).defaultValue("defg");
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addString("field3");
-  field->validValues(strs)->defaultValue("wx");
+  field->validValues(strs).defaultValue("wx");
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addString("NewTable/field4");
@@ -1231,7 +1231,7 @@ TEST(inlet_Inlet_verify, verifyValidStringValues)
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addString("NewTable/field5");
-  field->validValues(strs)->defaultValue("zyx");
+  field->validValues(strs).defaultValue("zyx");
   EXPECT_FALSE(inlet1->verify());
 }
 
@@ -1247,13 +1247,13 @@ TEST(inlet_verify, verifyFieldLambda)
   auto field2 = inlet->addString("field2");
   auto field3 = inlet->addString("NewTable/field3");
 
-  field2->registerVerifier([](Field& field) -> bool {
+  field2->registerVerifier([](const Field& field) -> bool {
     auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_TRUE(inlet->verify());
 
-  field3->registerVerifier([](Field& field) -> bool {
+  field3->registerVerifier([](const Field& field) -> bool {
     auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'a');
   });
@@ -1273,13 +1273,13 @@ TEST(inlet_verify, verifyTableLambda1)
   auto table1 = inlet->addTable("NewTable");
   auto field3 = table1->addString("field3");
 
-  field2->registerVerifier([](Field& field) -> bool {
+  field2->registerVerifier([](const Field& field) -> bool {
     auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_TRUE(inlet->verify());
 
-  field3->registerVerifier([](Field& field) -> bool {
+  field3->registerVerifier([](const Field& field) -> bool {
     auto str = field.get<std::string>();
     return (str.size() >= 1 && str[0] == 'x');
   });
@@ -1288,11 +1288,11 @@ TEST(inlet_verify, verifyTableLambda1)
   EXPECT_TRUE(table1->hasField("field3"));
 
   table1->registerVerifier(
-    [](Table& table) -> bool { return table.contains("field3"); });
+    [](const Table& table) -> bool { return table.contains("field3"); });
   EXPECT_TRUE(inlet->verify());
 
   table1->registerVerifier(
-    [](Table& table) -> bool { return table.contains("field22"); });
+    [](const Table& table) -> bool { return table.contains("field22"); });
   EXPECT_FALSE(inlet->verify());
 }
 
@@ -1319,7 +1319,7 @@ TEST(inlet_verify, verifyTableLambda2)
   auto globalTable = inlet->getGlobalTable();
   auto material = globalTable->getTable("material");
 
-  globalTable->registerVerifier([](Table& table) -> bool {
+  globalTable->registerVerifier([](const Table& table) -> bool {
     bool verifySuccess = true;
     if(table.contains("thermal_solver") &&
        !table["material"].contains("thermalview"))
@@ -1392,7 +1392,7 @@ TEST(inlet_verify, verifyTableLambda3)
   v->required(true);
   v->addInt("x");
 
-  v->registerVerifier([&myInlet](Table& table) -> bool {
+  v->registerVerifier([&myInlet](const Table& table) -> bool {
     int dim = (*myInlet)["dimensions"];
     bool x_present =
       table.contains("x") && (table["x"].type() == InletType::Integer);

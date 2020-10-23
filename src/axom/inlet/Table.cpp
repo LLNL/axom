@@ -215,13 +215,13 @@ std::shared_ptr<VerifiableScalar> Table::addPrimitive(
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
     // corresponding to elements of the array
-    std::vector<std::shared_ptr<VerifiableScalar>> fields;
+    std::vector<std::reference_wrapper<VerifiableScalar>> fields;
     for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
       // Add a primitive to an array element (which is a struct)
-      fields.push_back(
+      fields.push_back(*(
         getTable(indexPath.first)
-          ->addPrimitive<T>(name, description, forArray, val, indexPath.second));
+          ->addPrimitive<T>(name, description, forArray, val, indexPath.second)));
     }
     // Create an aggregate field so requirements can be collectively imposed
     // on all elements of the array
