@@ -55,7 +55,7 @@ public:
    * \return Shared pointer to calling object, for chaining
    *****************************************************************************
    */
-  virtual std::shared_ptr<VerifiableScalar> required(bool isRequired = true) = 0;
+  virtual VerifiableScalar& required(bool isRequired = true) = 0;
 
   /*!
    *****************************************************************************
@@ -77,7 +77,7 @@ public:
    * \param [in] The function object.
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> registerVerifier(
+  virtual VerifiableScalar& registerVerifier(
     std::function<bool(const axom::inlet::Field&)> lambda) = 0;
 
   /*!
@@ -91,8 +91,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> defaultValue(
-    const std::string& value) = 0;
+  virtual VerifiableScalar& defaultValue(const std::string& value) = 0;
   /*!
    *****************************************************************************
    * \brief Set the default value of this object.
@@ -104,7 +103,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> defaultValue(const char* value) = 0;
+  virtual VerifiableScalar& defaultValue(const char* value) = 0;
 
   /*!
    *****************************************************************************
@@ -117,7 +116,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> defaultValue(bool value) = 0;
+  virtual VerifiableScalar& defaultValue(bool value) = 0;
 
   /*!
    *****************************************************************************
@@ -130,7 +129,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> defaultValue(int value) = 0;
+  virtual VerifiableScalar& defaultValue(int value) = 0;
 
   /*!
    *****************************************************************************
@@ -143,7 +142,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> defaultValue(double value) = 0;
+  virtual VerifiableScalar& defaultValue(double value) = 0;
 
   /*!
    *****************************************************************************
@@ -158,8 +157,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> range(double startVal,
-                                                  double endVal) = 0;
+  virtual VerifiableScalar& range(double startVal, double endVal) = 0;
 
   /*!
    *****************************************************************************
@@ -174,7 +172,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> range(int startVal, int endVal) = 0;
+  virtual VerifiableScalar& range(int startVal, int endVal) = 0;
 
   /*!
    *****************************************************************************
@@ -185,8 +183,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> validValues(
-    const std::vector<int>& set) = 0;
+  virtual VerifiableScalar& validValues(const std::vector<int>& set) = 0;
 
   /*!
    *****************************************************************************
@@ -197,8 +194,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> validValues(
-    const std::vector<double>& set) = 0;
+  virtual VerifiableScalar& validValues(const std::vector<double>& set) = 0;
 
   /*!
    *****************************************************************************
@@ -209,8 +205,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> validValues(
-    const std::vector<std::string>& set) = 0;
+  virtual VerifiableScalar& validValues(const std::vector<std::string>& set) = 0;
 
   /*!
    *****************************************************************************
@@ -222,7 +217,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> validValues(
+  virtual VerifiableScalar& validValues(
     const std::initializer_list<const char*>& set) = 0;
 
   /*!
@@ -234,8 +229,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> validValues(
-    const std::initializer_list<int>& set) = 0;
+  virtual VerifiableScalar& validValues(const std::initializer_list<int>& set) = 0;
 
   /*!
    *****************************************************************************
@@ -246,8 +240,7 @@ public:
    * \return Shared pointer to calling object for chaining
    *****************************************************************************
   */
-  virtual std::shared_ptr<VerifiableScalar> validValues(
-    const std::initializer_list<double>& set) = 0;
+  virtual VerifiableScalar& validValues(const std::initializer_list<double>& set) = 0;
 
   /*!
    *****************************************************************************
