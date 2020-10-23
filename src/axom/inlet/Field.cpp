@@ -14,7 +14,7 @@ namespace axom
 {
 namespace inlet
 {
-VerifiableScalar& Field::required(bool isRequired)
+Field& Field::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Field specific Sidre Datastore Group not set");
@@ -121,7 +121,7 @@ void Field::setDefaultValue<std::string>(std::string value)
   }
 }
 
-VerifiableScalar& Field::defaultValue(const char* value)
+Field& Field::defaultValue(const char* value)
 {
   std::string str = "";
   if(value)
@@ -132,7 +132,7 @@ VerifiableScalar& Field::defaultValue(const char* value)
   return *this;
 }
 
-VerifiableScalar& Field::defaultValue(const std::string& value)
+Field& Field::defaultValue(const std::string& value)
 {
   if(m_type != axom::sidre::DataTypeId::CHAR8_STR_ID)
   {
@@ -143,7 +143,7 @@ VerifiableScalar& Field::defaultValue(const std::string& value)
   return *this;
 }
 
-VerifiableScalar& Field::defaultValue(bool value)
+Field& Field::defaultValue(bool value)
 {
   if(m_type != axom::sidre::DataTypeId::INT8_ID)
   {
@@ -154,7 +154,7 @@ VerifiableScalar& Field::defaultValue(bool value)
   return *this;
 }
 
-VerifiableScalar& Field::defaultValue(int value)
+Field& Field::defaultValue(int value)
 {
   switch(m_type)
   {
@@ -172,7 +172,7 @@ VerifiableScalar& Field::defaultValue(int value)
   return *this;
 }
 
-VerifiableScalar& Field::defaultValue(double value)
+Field& Field::defaultValue(double value)
 {
   if(m_type != axom::sidre::DataTypeId::DOUBLE_ID)
   {
@@ -213,7 +213,7 @@ void Field::setRange(T startVal, T endVal)
   }
 }
 
-VerifiableScalar& Field::range(int startVal, int endVal)
+Field& Field::range(int startVal, int endVal)
 {
   switch(m_type)
   {
@@ -231,7 +231,7 @@ VerifiableScalar& Field::range(int startVal, int endVal)
   return *this;
 }
 
-VerifiableScalar& Field::range(double startVal, double endVal)
+Field& Field::range(double startVal, double endVal)
 {
   switch(m_type)
   {
@@ -370,7 +370,7 @@ void Field::setScalarValidValues(std::vector<T> set)
   }
 }
 
-VerifiableScalar& Field::validValues(const std::vector<int>& set)
+Field& Field::validValues(const std::vector<int>& set)
 {
   switch(m_type)
   {
@@ -388,7 +388,7 @@ VerifiableScalar& Field::validValues(const std::vector<int>& set)
   return *this;
 }
 
-VerifiableScalar& Field::validValues(const std::vector<double>& set)
+Field& Field::validValues(const std::vector<double>& set)
 {
   switch(m_type)
   {
@@ -403,7 +403,7 @@ VerifiableScalar& Field::validValues(const std::vector<double>& set)
   return *this;
 }
 
-VerifiableScalar& Field::validValues(const std::vector<std::string>& set)
+Field& Field::validValues(const std::vector<std::string>& set)
 {
   if(m_type != axom::sidre::DataTypeId::CHAR8_STR_ID)
   {
@@ -440,22 +440,22 @@ VerifiableScalar& Field::validValues(const std::vector<std::string>& set)
   return *this;
 }
 
-VerifiableScalar& Field::validValues(const std::initializer_list<const char*>& set)
+Field& Field::validValues(const std::initializer_list<const char*>& set)
 {
   return validValues(std::vector<std::string>(set.begin(), set.end()));
 }
 
-VerifiableScalar& Field::validValues(const std::initializer_list<int>& set)
+Field& Field::validValues(const std::initializer_list<int>& set)
 {
   return validValues(std::vector<int>(set));
 }
 
-VerifiableScalar& Field::validValues(const std::initializer_list<double>& set)
+Field& Field::validValues(const std::initializer_list<double>& set)
 {
   return validValues(std::vector<double>(set));
 }
 
-VerifiableScalar& Field::registerVerifier(std::function<bool(const Field&)> lambda)
+Field& Field::registerVerifier(std::function<bool(const Field&)> lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Field "
@@ -598,7 +598,7 @@ bool AggregateField::verify() const
     [](const VerifiableScalar& field) { return field.verify(); });
 }
 
-VerifiableScalar& AggregateField::required(bool isRequired)
+AggregateField& AggregateField::required(bool isRequired)
 {
   for(auto& field : m_fields)
   {
@@ -615,7 +615,7 @@ bool AggregateField::isRequired() const
     [](const VerifiableScalar& field) { return field.isRequired(); });
 }
 
-VerifiableScalar& AggregateField::defaultValue(const std::string& value)
+AggregateField& AggregateField::defaultValue(const std::string& value)
 {
   for(auto& field : m_fields)
   {
@@ -624,7 +624,7 @@ VerifiableScalar& AggregateField::defaultValue(const std::string& value)
   return *this;
 }
 
-VerifiableScalar& AggregateField::defaultValue(const char* value)
+AggregateField& AggregateField::defaultValue(const char* value)
 {
   for(auto& field : m_fields)
   {
@@ -633,7 +633,7 @@ VerifiableScalar& AggregateField::defaultValue(const char* value)
   return *this;
 }
 
-VerifiableScalar& AggregateField::defaultValue(bool value)
+AggregateField& AggregateField::defaultValue(bool value)
 {
   for(auto& field : m_fields)
   {
@@ -642,7 +642,7 @@ VerifiableScalar& AggregateField::defaultValue(bool value)
   return *this;
 }
 
-VerifiableScalar& AggregateField::defaultValue(int value)
+AggregateField& AggregateField::defaultValue(int value)
 {
   for(auto& field : m_fields)
   {
@@ -651,7 +651,7 @@ VerifiableScalar& AggregateField::defaultValue(int value)
   return *this;
 }
 
-VerifiableScalar& AggregateField::defaultValue(double value)
+AggregateField& AggregateField::defaultValue(double value)
 {
   for(auto& field : m_fields)
   {
@@ -660,7 +660,7 @@ VerifiableScalar& AggregateField::defaultValue(double value)
   return *this;
 }
 
-VerifiableScalar& AggregateField::range(double startVal, double endVal)
+AggregateField& AggregateField::range(double startVal, double endVal)
 {
   for(auto& field : m_fields)
   {
@@ -669,7 +669,7 @@ VerifiableScalar& AggregateField::range(double startVal, double endVal)
   return *this;
 }
 
-VerifiableScalar& AggregateField::range(int startVal, int endVal)
+AggregateField& AggregateField::range(int startVal, int endVal)
 {
   for(auto& field : m_fields)
   {
@@ -678,7 +678,7 @@ VerifiableScalar& AggregateField::range(int startVal, int endVal)
   return *this;
 }
 
-VerifiableScalar& AggregateField::validValues(const std::vector<int>& set)
+AggregateField& AggregateField::validValues(const std::vector<int>& set)
 {
   for(auto& field : m_fields)
   {
@@ -687,7 +687,7 @@ VerifiableScalar& AggregateField::validValues(const std::vector<int>& set)
   return *this;
 }
 
-VerifiableScalar& AggregateField::validValues(const std::vector<double>& set)
+AggregateField& AggregateField::validValues(const std::vector<double>& set)
 {
   for(auto& field : m_fields)
   {
@@ -696,7 +696,7 @@ VerifiableScalar& AggregateField::validValues(const std::vector<double>& set)
   return *this;
 }
 
-VerifiableScalar& AggregateField::validValues(const std::vector<std::string>& set)
+AggregateField& AggregateField::validValues(const std::vector<std::string>& set)
 {
   for(auto& field : m_fields)
   {
@@ -705,7 +705,7 @@ VerifiableScalar& AggregateField::validValues(const std::vector<std::string>& se
   return *this;
 }
 
-VerifiableScalar& AggregateField::validValues(
+AggregateField& AggregateField::validValues(
   const std::initializer_list<const char*>& set)
 {
   for(auto& field : m_fields)
@@ -715,7 +715,7 @@ VerifiableScalar& AggregateField::validValues(
   return *this;
 }
 
-VerifiableScalar& AggregateField::validValues(const std::initializer_list<int>& set)
+AggregateField& AggregateField::validValues(const std::initializer_list<int>& set)
 {
   for(auto& field : m_fields)
   {
@@ -724,8 +724,7 @@ VerifiableScalar& AggregateField::validValues(const std::initializer_list<int>& 
   return *this;
 }
 
-VerifiableScalar& AggregateField::validValues(
-  const std::initializer_list<double>& set)
+AggregateField& AggregateField::validValues(const std::initializer_list<double>& set)
 {
   for(auto& field : m_fields)
   {
@@ -734,7 +733,7 @@ VerifiableScalar& AggregateField::validValues(
   return *this;
 }
 
-VerifiableScalar& AggregateField::registerVerifier(
+AggregateField& AggregateField::registerVerifier(
   std::function<bool(const Field&)> lambda)
 {
   for(auto& field : m_fields)
