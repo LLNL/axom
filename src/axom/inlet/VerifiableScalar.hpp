@@ -43,6 +43,8 @@ class Field;
 class VerifiableScalar
 {
 public:
+  // Should not be reassignable
+  VerifiableScalar& operator=(const VerifiableScalar&) = delete;
   /*!
    *****************************************************************************
    * \brief Set the required status of this object.
