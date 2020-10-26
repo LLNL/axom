@@ -1554,6 +1554,47 @@ class SidreParMeshWrapper : public mfem::ParMesh
       return result;
     }
 
+    // Get the list of boundary edges
+    std::unordered_set<int> bdr_edges;
+
+    std::unordered_set<int> not_bdr_edges;
+    // Working arrays
+    mfem::Array<int> tmp_bdr_edges;
+    mfem::Array<int> tmp_bdr_orientations;
+    // FIXME: This doesn't work in 3D, because an arbitrary number of elements can share an edge
+    for(int i = 0; i < GetNE(); i++)
+    {
+      GetElementEdges(i, tmp_bdr_edges, tmp_bdr_orientations);
+      for(const auto bdr_edge : tmp_bdr_edges)
+      {
+        // If the edge is already found (part of another element)
+        // it can't be a boundary edge
+        if(bdr_edges.count(bdr_edge))
+        {
+          // So we remove it
+          bdr_edges.erase(bdr_edge);
+          // And mark it as invalid
+          not_bdr_edges.insert(bdr_edge);
+        }
+        // Otherwise, if it hasn't been ruled out, we can insert it
+        else if(!not_bdr_edges.count(bdr_edge))
+        {
+          bdr_edges.insert(bdr_edge);
+        }
+      }
+    }
+
+    for(const auto edge : bdr_edges)
+    {
+      mfem::Array<int> verts;
+      GetEdgeVertices(edge, verts);
+      if(MyRank == 1) SLIC_INFO("bdr edge " << verts[0] << " " << verts[1]);
+    }
+
+    auto edgeIsNotInterior = [&bdr_edges](const int edge_idx) {
+      return bdr_edges.count(edge_idx);
+    };
+
     // Walk through the *geometric* groups in reverse
     // and determine the shared edges and faces
     // boost::adaptors::reverse would be nice here
@@ -1601,9 +1642,9 @@ class SidreParMeshWrapper : public mfem::ParMesh
       {
         GetEdgeVertices(i, verts);
         // Check if it hasn't been assigned yet and it's a shared edge
-        if(!already_processed_edges.count(i) &&
-           shared_vertices.count(verts[0]) && shared_vertices.count(verts[1]) &&
-           neighbor_vertices.count(verts[0]) && neighbor_vertices.count(verts[1]))
+        if(!already_processed_edges.count(i) && shared_vertices.count(verts[0]) &&
+           shared_vertices.count(verts[1]) && neighbor_vertices.count(verts[0]) &&
+           neighbor_vertices.count(verts[1]) && edgeIsNotInterior(i))
         {
           grp_info.shared_edges.push_back(i);
           already_processed_edges.insert(i);
