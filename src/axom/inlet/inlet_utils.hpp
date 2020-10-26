@@ -54,6 +54,19 @@ std::string removePrefix(const std::string& prefix, const std::string& name);
 
 namespace cpp11_compat
 {
+
+/*!
+*****************************************************************************
+* \brief This function provides backwards compatibility for std::make_unique,
+* which is not implemented until C++14.  It should be removed when either
+* Axom or the Inlet component is no longer required to support C++11
+*
+* \tparam T The type to construct
+* \tparam Args The variadic argument list to forward to T's constructor
+*
+* \return A unique ptr constructed with the given arguments
+*****************************************************************************
+*/
 template <typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args)
 {

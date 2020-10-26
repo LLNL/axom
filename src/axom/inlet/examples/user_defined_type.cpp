@@ -208,7 +208,7 @@ int main(int argc, char** argv)
   CLI11_PARSE(app, argc, argv);
 
   DataStore ds;
-  auto lr = axom::inlet::cpp11_compat::make_unique<LuaReader>();
+  auto lr = std::make_unique<LuaReader>();
   lr->parseFile(inputFileName);
   Inlet inlet(std::move(lr), ds.getRoot());
 
