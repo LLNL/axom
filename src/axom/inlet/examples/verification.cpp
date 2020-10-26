@@ -14,7 +14,7 @@ int main()
   axom::slic::UnitTestLogger logger;
 
   // Initialize Inlet
-  auto lr = axom::inlet::cpp11_compat::make_unique<axom::inlet::LuaReader>();
+  auto lr = std::make_unique<axom::inlet::LuaReader>();
   lr->parseString("dimensions = 2; vector = { x = 1.0; y = 2.0; z = 3.0; }");
   axom::sidre::DataStore ds;
   axom::inlet::Inlet myInlet(std::move(lr), ds.getRoot());

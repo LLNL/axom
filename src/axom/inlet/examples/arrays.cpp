@@ -10,7 +10,7 @@
 
 int main()
 {
-  auto lr = axom::inlet::cpp11_compat::make_unique<axom::inlet::LuaReader>();
+  auto lr = std::make_unique<axom::inlet::LuaReader>();
 
   // Parse example input file
   lr->parseString("values = { [1] = 'start', [2] = 'stop', [3] = 'pause' }");
