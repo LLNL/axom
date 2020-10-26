@@ -192,13 +192,14 @@ int main(int argc, char** argv)
   // Create inlet and parse input file data into the inlet
 
   DataStore ds;
-  auto lr = std::make_unique<LuaReader>();
+  auto lr = axom::inlet::cpp11_compat::make_unique<LuaReader>();
   lr->parseFile(inputFileName);
   Inlet inlet(std::move(lr), ds.getRoot(), docsEnabled);
 
   // _inlet_documentation_generation_start
   auto docWriter =
-    std::make_unique<SphinxDocWriter>("example_doc.rst", inlet.sidreGroup());
+    axom::inlet::cpp11_compat::make_unique<SphinxDocWriter>("example_doc.rst",
+                                                            inlet.sidreGroup());
   inlet.registerDocWriter(std::move(docWriter));
   // _inlet_documentation_generation_end
 

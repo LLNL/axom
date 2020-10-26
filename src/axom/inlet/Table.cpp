@@ -34,11 +34,11 @@ Table& Table::addTable(const std::string& name, const std::string& description)
       // or do we need std::piecewise_construct/std::forward_as_tuple?
       const auto& emplace_result = currTable->m_tableChildren.emplace(
         currTableName,
-        std::make_unique<Table>(currTableName,
-                                "",
-                                m_reader,
-                                m_sidreRootGroup,
-                                m_docEnabled));
+        cpp11_compat::make_unique<Table>(currTableName,
+                                         "",
+                                         m_reader,
+                                         m_sidreRootGroup,
+                                         m_docEnabled));
       // emplace_result is a pair whose first element is an iterator to the inserted element
       currTable = emplace_result.first->second.get();
     }
@@ -57,11 +57,11 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   {
     const auto& emplace_result = currTable->m_tableChildren.emplace(
       currTableName,
-      std::make_unique<Table>(currTableName,
-                              description,
-                              m_reader,
-                              m_sidreRootGroup,
-                              m_docEnabled));
+      cpp11_compat::make_unique<Table>(currTableName,
+                                       description,
+                                       m_reader,
+                                       m_sidreRootGroup,
+                                       m_docEnabled));
     currTable = emplace_result.first->second.get();
   }
   else
@@ -199,7 +199,10 @@ Field& Table::addField(axom::sidre::Group* sidreGroup,
   }
   const auto& emplace_result = currTable->m_fieldChildren.emplace(
     fullName,
-    std::make_unique<Field>(sidreGroup, m_sidreRootGroup, type, m_docEnabled));
+    cpp11_compat::make_unique<Field>(sidreGroup,
+                                     m_sidreRootGroup,
+                                     type,
+                                     m_docEnabled));
   // emplace_result is a pair whose first element is an iterator to the inserted element
   return *(emplace_result.first->second);
 }

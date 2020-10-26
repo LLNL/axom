@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include <memory>
+#include <utility>
+
 #include "axom/sidre.hpp"
 #include "fmt/fmt.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
@@ -48,6 +51,16 @@ std::string appendPrefix(const std::string& prefix, const std::string& name);
 *****************************************************************************
 */
 std::string removePrefix(const std::string& prefix, const std::string& name);
+
+namespace cpp11_compat
+{
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+}  // namespace cpp11_compat
 
 }  // namespace inlet
 }  // namespace axom
