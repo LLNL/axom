@@ -731,14 +731,9 @@ AggregateTable& AggregateTable::required(bool isRequired)
 
 bool AggregateTable::isRequired() const
 {
-  for(auto& table : m_tables)
-  {
-    if(table.get().isRequired())
-    {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(m_tables.begin(),
+                     m_tables.end(),
+                     [](const Verifiable& table) { return table.isRequired(); });
 }
 
 AggregateTable& AggregateTable::registerVerifier(

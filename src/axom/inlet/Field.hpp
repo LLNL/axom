@@ -336,8 +336,6 @@ private:
    * \brief Set the valid values for this Field.
    *
    * \param [in] set A vector containing the set of allowed scalar values
-   *
-   * \return Reference to this Field instance
    *****************************************************************************
   */
   template <typename T>
@@ -352,8 +350,6 @@ private:
    * \param [in] startVal The start of the range
    * 
    * \param [in] endVal The end of the range
-   *
-   * \return Reference to this Field instance
    *****************************************************************************
   */
   template <typename T>
@@ -366,8 +362,6 @@ private:
    * Set the default value for the Field in the input file.
    *
    * \param [in] value The default value
-   *
-   * \return Reference to this Field instance
    *****************************************************************************
   */
   template <typename T>
@@ -662,6 +656,8 @@ public:
    * during the verification stage.
    * 
    * \param [in] The function object that will be called by Field::verify().
+   * 
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& registerVerifier(std::function<bool(const Field&)> lambda);
