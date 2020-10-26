@@ -515,8 +515,8 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
       m_bp_index_grp->createGroup("adjsets");
     }
   }
-  SLIC_INFO("on rank " << myid << " writing " << pmesh->GetNGroups()
-                       << " groups");
+  // SLIC_INFO("on rank " << myid << " writing " << pmesh->GetNGroups()
+  //                      << " groups");
 
   // {
   //   volatile int i = 0;
@@ -530,12 +530,12 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
   {
     int num_gneighbors = pmesh->gtopo.GetGroupSize(gi);
     int num_gvertices = pmesh->GroupNVertices(gi);
-    if(myid == 1)
-    {
-      SLIC_INFO("Writing group number " << gi << " with " << num_gneighbors
-                                        << " neighbors and " << num_gvertices
-                                        << " vertices");
-    }
+    // if(myid == 1)
+    // {
+    //   SLIC_INFO("Writing group number " << gi << " with " << num_gneighbors
+    //                                     << " neighbors and " << num_gvertices
+    //                                     << " vertices");
+    // }
 
     // Skip creation of empty groups
     // if(num_gneighbors > 1 && num_gvertices > 0)
@@ -1561,25 +1561,57 @@ class SidreParMeshWrapper : public mfem::ParMesh
     // Working arrays
     mfem::Array<int> tmp_bdr_edges;
     mfem::Array<int> tmp_bdr_orientations;
-    // FIXME: This doesn't work in 3D, because an arbitrary number of elements can share an edge
-    for(int i = 0; i < GetNE(); i++)
+    if(dimension == 2)
     {
-      GetElementEdges(i, tmp_bdr_edges, tmp_bdr_orientations);
-      for(const auto bdr_edge : tmp_bdr_edges)
+      // FIXME: This doesn't work in 3D, because an arbitrary number of elements can share an edge
+      for(int i = 0; i < GetNE(); i++)
       {
-        // If the edge is already found (part of another element)
-        // it can't be a boundary edge
-        if(bdr_edges.count(bdr_edge))
+        GetElementEdges(i, tmp_bdr_edges, tmp_bdr_orientations);
+        for(const auto bdr_edge : tmp_bdr_edges)
         {
-          // So we remove it
-          bdr_edges.erase(bdr_edge);
-          // And mark it as invalid
-          not_bdr_edges.insert(bdr_edge);
+          // If the edge is already found (part of another element)
+          // it can't be a boundary edge
+          if(bdr_edges.count(bdr_edge))
+          {
+            // So we remove it
+            bdr_edges.erase(bdr_edge);
+            // And mark it as invalid
+            not_bdr_edges.insert(bdr_edge);
+          }
+          // Otherwise, if it hasn't been ruled out, we can insert it
+          else if(!not_bdr_edges.count(bdr_edge))
+          {
+            bdr_edges.insert(bdr_edge);
+          }
         }
-        // Otherwise, if it hasn't been ruled out, we can insert it
-        else if(!not_bdr_edges.count(bdr_edge))
+      }
+    }
+
+    // We can be a little smarter in 3D
+    // FIXME: We already iterate over faces when we identify shared faces, so this could be
+    // sped up a bit at the cost of organization
+    else if(dimension == 3)
+    {
+      for(int i = 0; i < GetNFaces(); i++)
+      {
+        // The mesh has already been constructed enough
+        // (i.e. the base subobject) that we can identify interior faces
+        // So for each exterior face...
+        if(!FaceIsTrueInterior(i))
         {
-          bdr_edges.insert(bdr_edge);
+          // ...we can grab its edges (all of which must be shared)
+          GetFaceEdges(i, tmp_bdr_edges, tmp_bdr_orientations);
+          bdr_edges.insert(tmp_bdr_edges.begin(), tmp_bdr_edges.end());
+          // if (MyRank == 1)
+          // {
+          //   SLIC_INFO("bdr element " << i << " has edges");
+          //   for (auto edge : tmp_bdr_edges)
+          //   {
+          //     mfem::Array<int> verts;
+          //     GetEdgeVertices(edge, verts);
+          //     SLIC_INFO("possible bdr edge " << verts[0] << " " << verts[1]);
+          //   }
+          // }
         }
       }
     }
@@ -1588,7 +1620,7 @@ class SidreParMeshWrapper : public mfem::ParMesh
     {
       mfem::Array<int> verts;
       GetEdgeVertices(edge, verts);
-      if(MyRank == 1) SLIC_INFO("bdr edge " << verts[0] << " " << verts[1]);
+      // if(MyRank == 1) SLIC_INFO("bdr edge " << verts[0] << " " << verts[1]);
     }
 
     auto edgeIsNotInterior = [&bdr_edges](const int edge_idx) {
@@ -1626,8 +1658,8 @@ class SidreParMeshWrapper : public mfem::ParMesh
                                           neighbor) != result_grp.neighbors.end();
                        }))
         {
-          SLIC_INFO("On rank " << MyRank << ", group " << result_grp.name
-                               << " can be used by " << grp_info.name);
+          // SLIC_INFO("On rank " << MyRank << ", group " << result_grp.name
+          //                      << " can be used by " << grp_info.name);
           neighbor_vertices.insert(
             result_grp.shared_verts,
             result_grp.shared_verts + result_grp.num_shared_verts);
@@ -1733,7 +1765,6 @@ public:
     }
     // {
     // volatile int i = 0;
-    // char hostname[256];
     // printf("PID %d ready for attach\n", getpid());
     // fflush(stdout);
     // while (0 == i)
@@ -1807,10 +1838,10 @@ public:
         // Scratchpad array for storing vertices of an edge/face
         mfem::Array<int> verts;
 
-        if(MyRank == 0)
-        {
-          SLIC_INFO("Number of shared edges: " << group_info.shared_edges.size());
-        }
+        // if(MyRank == 0)
+        // {
+        //   SLIC_INFO("Number of shared edges: " << group_info.shared_edges.size());
+        // }
 
         // Add all the shared edges
         auto n_shared_edges = group_info.shared_edges.size();
@@ -1827,10 +1858,10 @@ public:
           shared_edges[global_shared_edge_idx] =
             new mfem::Segment(verts[0], verts[1], 1);
           global_shared_edge_idx++;
-          if(MyRank == 0)
-          {
-            SLIC_INFO("Shared edge with verts: " << verts[0] << " " << verts[1]);
-          }
+          // if(MyRank == 0)
+          // {
+          //   SLIC_INFO("Shared edge with verts: " << verts[0] << " " << verts[1]);
+          // }
         }
 
         if(dimension >= 3)
@@ -1839,11 +1870,11 @@ public:
           std::size_t triangles_added = 0;
           std::size_t quadrilaterals_added = 0;
 
-          if(MyRank == 0)
-          {
-            SLIC_INFO(
-              "Number of shared faces: " << group_info.shared_faces.size());
-          }
+          // if(MyRank == 0)
+          // {
+          //   SLIC_INFO(
+          //     "Number of shared faces: " << group_info.shared_faces.size());
+          // }
 
           for(const auto shared_face_idx : group_info.shared_faces)
           {
@@ -1852,11 +1883,11 @@ public:
             {
             case mfem::Geometry::TRIANGLE:
               shared_trias.Append({verts[0], verts[1], verts[2]});
-              if(MyRank == 0)
-              {
-                SLIC_INFO("Shared triangle with verts: "
-                          << verts[0] << " " << verts[1] << " " << verts[2]);
-              }
+              // if(MyRank == 0)
+              // {
+              //   SLIC_INFO("Shared triangle with verts: "
+              //             << verts[0] << " " << verts[1] << " " << verts[2]);
+              // }
               triangles_added++;
               break;
             case mfem::Geometry::SQUARE:
