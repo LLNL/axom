@@ -17,21 +17,20 @@ int main()
   auto lr = std::make_shared<axom::inlet::LuaReader>();
   lr->parseString("dimensions = 2; vector = { x = 1.0; y = 2.0; z = 3.0; }");
   axom::sidre::DataStore ds;
-  auto myInlet = std::make_shared<axom::inlet::Inlet>(lr, ds.getRoot());
+  axom::inlet::Inlet myInlet(lr, ds.getRoot());
 
   // _inlet_workflow_defining_schema_start
   // defines a required global field named "dimensions" with a default value of 2
-  auto dimField = myInlet->addInt("dimensions")->required(true)->defaultValue(2);
+  myInlet.addInt("dimensions").required(true).defaultValue(2);
 
   // defines a required table named vector with an internal field named 'x'
-  auto v = myInlet->addTable("vector");
-  v->required(true);
-  v->addDouble("x");
+  auto& v = myInlet.addTable("vector").required(true);
+  v.addDouble("x");
   // _inlet_workflow_defining_schema_end
 
   // _inlet_workflow_verification_start
-  v->registerVerifier([&myInlet](axom::inlet::Table& table) -> bool {
-    int dim = (*myInlet)["dimensions"];
+  v.registerVerifier([&myInlet](const axom::inlet::Table& table) -> bool {
+    int dim = myInlet["dimensions"];
     bool x_present = table.contains("x") &&
       (table["x"].type() == axom::inlet::InletType::Double);
     bool y_present = table.contains("y") &&
@@ -57,25 +56,25 @@ int main()
   // We expect verification to be unsuccessful since the only Field
   // in vector is x but 2 dimensions are expected
   SLIC_INFO("This should fail due to a missing dimension:");
-  myInlet->verify() ? msg = "Verification was successful\n"
-                    : msg = "Verification was unsuccessful\n";
+  myInlet.verify() ? msg = "Verification was successful\n"
+                   : msg = "Verification was unsuccessful\n";
   SLIC_INFO(msg);
 
   // Add required dimension to schema
-  v->addDouble("y");
+  v.addDouble("y");
 
   // We expect the verification to succeed because vector now contains
   // both x and y to match the 2 dimensions
   SLIC_INFO("After adding the required dimension:");
-  myInlet->verify() ? msg = "Verification was successful\n"
-                    : msg = "Verification was unsuccessful\n";
+  myInlet.verify() ? msg = "Verification was successful\n"
+                   : msg = "Verification was unsuccessful\n";
   SLIC_INFO(msg);
   // _inlet_workflow_verification_end
 
   // _inlet_workflow_accessing_data_start
 
   // Get dimensions if it was present in input file
-  auto proxy = (*myInlet)["dimensions"];
+  auto proxy = myInlet["dimensions"];
   if(proxy.type() == axom::inlet::InletType::Integer)
   {
     msg = "Dimensions = " + std::to_string(proxy.get<int>()) + "\n";
@@ -83,12 +82,12 @@ int main()
   }
 
   // Get vector information if it was present in input file
-  bool x_found = (*myInlet)["vector/x"].type() == axom::inlet::InletType::Double;
-  bool y_found = (*myInlet)["vector/y"].type() == axom::inlet::InletType::Double;
+  bool x_found = myInlet["vector/x"].type() == axom::inlet::InletType::Double;
+  bool y_found = myInlet["vector/y"].type() == axom::inlet::InletType::Double;
   if(x_found && y_found)
   {
-    msg = "Vector = " + std::to_string((*myInlet)["vector/x"].get<double>()) +
-      "," + std::to_string((*myInlet)["vector/y"].get<double>()) + "\n";
+    msg = "Vector = " + std::to_string(myInlet["vector/x"].get<double>()) +
+      "," + std::to_string(myInlet["vector/y"].get<double>()) + "\n";
     SLIC_INFO(msg);
   }
   // _inlet_workflow_accessing_data_end
