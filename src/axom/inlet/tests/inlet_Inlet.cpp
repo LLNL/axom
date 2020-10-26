@@ -28,7 +28,7 @@ Inlet createBasicInlet(DataStore* ds,
                        const std::string& luaString,
                        bool enableDocs = true)
 {
-  auto lr = std::make_unique<LuaReader>();
+  auto lr = axom::inlet::cpp11_compat::make_unique<LuaReader>();
   lr->parseString(luaString);
 
   return Inlet(std::move(lr), ds->getRoot(), enableDocs);
