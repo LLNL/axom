@@ -137,7 +137,7 @@ Table& Table::addGenericArray(const std::string& name,
   auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
   std::vector<int> indices;
   const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader->getArrayIndices(fullName, indices))
+  if(m_reader.getArrayIndices(fullName, indices))
   {
     // This is how an array of user-defined type is differentiated
     // from an array of primitives - the tables have to be allocated
@@ -164,7 +164,6 @@ Table& Table::addGenericArray(const std::string& name,
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
                                             const std::string& description)
 {
-  SLIC_ASSERT_MSG(m_reader != nullptr, "[Inlet] Reader class not set");
   SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
                   "[Inlet] Sidre Datastore Group not set");
 
@@ -198,11 +197,6 @@ Field& Table::addField(axom::sidre::Group* sidreGroup,
     // This will add any intermediate Tables (if not present) before adding the field
     currTable = &addTable(name.substr(0, found));
   }
-  // auto field = std::make_shared<axom::inlet::Field>(sidreGroup,
-  //                                                   m_sidreRootGroup,
-  //                                                   type,
-  //                                                   m_docEnabled);
-  // currTable->m_fieldChildren[fullName] = field;
   const auto& emplace_result = currTable->m_fieldChildren.emplace(
     fullName,
     std::make_unique<Field>(sidreGroup, m_sidreRootGroup, type, m_docEnabled));
@@ -289,7 +283,7 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
   bool forArray,
   bool val)
 {
-  if(forArray || m_reader->getBool(lookupPath, val))
+  if(forArray || m_reader.getBool(lookupPath, val))
   {
     sidreGroup->createViewScalar("value", val ? int8(1) : int8(0));
   }
@@ -303,7 +297,7 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
   bool forArray,
   int val)
 {
-  if(forArray || m_reader->getInt(lookupPath, val))
+  if(forArray || m_reader.getInt(lookupPath, val))
   {
     sidreGroup->createViewScalar("value", val);
   }
@@ -317,7 +311,7 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
   bool forArray,
   double val)
 {
-  if(forArray || m_reader->getDouble(lookupPath, val))
+  if(forArray || m_reader.getDouble(lookupPath, val))
   {
     sidreGroup->createViewScalar("value", val);
   }
@@ -331,7 +325,7 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
   bool forArray,
   std::string val)
 {
-  if(forArray || m_reader->getString(lookupPath, val))
+  if(forArray || m_reader.getString(lookupPath, val))
   {
     sidreGroup->createViewString("value", val);
   }
@@ -396,7 +390,7 @@ void Table::addPrimitiveArrayHelper<bool>(Table& table,
                                           const std::string& lookupPath)
 {
   std::unordered_map<int, bool> map;
-  if(m_reader->getBoolMap(lookupPath, map))
+  if(m_reader.getBoolMap(lookupPath, map))
   {
     for(const auto& p : map)
     {
@@ -414,7 +408,7 @@ void Table::addPrimitiveArrayHelper<int>(Table& table,
                                          const std::string& lookupPath)
 {
   std::unordered_map<int, int> map;
-  if(m_reader->getIntMap(lookupPath, map))
+  if(m_reader.getIntMap(lookupPath, map))
   {
     for(const auto& p : map)
     {
@@ -432,7 +426,7 @@ void Table::addPrimitiveArrayHelper<double>(Table& table,
                                             const std::string& lookupPath)
 {
   std::unordered_map<int, double> map;
-  if(m_reader->getDoubleMap(lookupPath, map))
+  if(m_reader.getDoubleMap(lookupPath, map))
   {
     for(const auto& p : map)
     {
@@ -450,7 +444,7 @@ void Table::addPrimitiveArrayHelper<std::string>(Table& table,
                                                  const std::string& lookupPath)
 {
   std::unordered_map<int, std::string> map;
-  if(m_reader->getStringMap(lookupPath, map))
+  if(m_reader.getStringMap(lookupPath, map))
   {
     for(const auto& p : map)
     {

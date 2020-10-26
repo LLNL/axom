@@ -26,10 +26,10 @@ Inlet createBasicInlet(DataStore* ds,
                        const std::string& luaString,
                        bool enableDocs = true)
 {
-  auto lr = std::make_shared<LuaReader>();
+  auto lr = std::make_unique<LuaReader>();
   lr->parseString(luaString);
 
-  return Inlet(lr, ds->getRoot(), enableDocs);
+  return Inlet(std::move(lr), ds->getRoot(), enableDocs);
 }
 
 struct Foo

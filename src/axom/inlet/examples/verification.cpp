@@ -14,10 +14,10 @@ int main()
   axom::slic::UnitTestLogger logger;
 
   // Initialize Inlet
-  auto lr = std::make_shared<axom::inlet::LuaReader>();
+  auto lr = std::make_unique<axom::inlet::LuaReader>();
   lr->parseString("dimensions = 2; vector = { x = 1.0; y = 2.0; z = 3.0; }");
   axom::sidre::DataStore ds;
-  axom::inlet::Inlet myInlet(lr, ds.getRoot());
+  axom::inlet::Inlet myInlet(std::move(lr), ds.getRoot());
 
   // _inlet_workflow_defining_schema_start
   // defines a required global field named "dimensions" with a default value of 2
