@@ -146,17 +146,18 @@ struct ThermalSolver
   // subobject defineSchema implementations
   static void defineSchema(inlet::Table& schema)
   {
-    auto mesh_table = schema.addTable("mesh", "Information about the mesh");
-    Mesh::defineSchema(*mesh_table);
-    auto solver_table =
+    auto& mesh_table = schema.addTable("mesh", "Information about the mesh");
+    Mesh::defineSchema(mesh_table);
+    auto& solver_table =
       schema.addTable("solver",
                       "Information about the iterative solver used for Ku = f");
-    LinearSolver::defineSchema(*solver_table);
+    LinearSolver::defineSchema(solver_table);
 
     // Schema only needs to be defined once, will propagate through to each
     // element of the array, namely, the subtable at each found index in the input file
-    auto bc_table = schema.addGenericArray("bcs", "List of boundary conditions");
-    BoundaryCondition::defineSchema(*bc_table);
+    auto& bc_table =
+      schema.addGenericArray("bcs", "List of boundary conditions");
+    BoundaryCondition::defineSchema(bc_table);
   }
 };
 
@@ -209,20 +210,20 @@ int main(int argc, char** argv)
   DataStore ds;
   auto lr = std::make_shared<LuaReader>();
   lr->parseFile(inputFileName);
-  auto inlet = std::make_shared<Inlet>(lr, ds.getRoot());
+  Inlet inlet(lr, ds.getRoot());
 
   // Create a table off the global table for the thermal_solver object
   // then define its schema
-  auto thermal_solver_table =
-    inlet->addTable("thermal_solver",
-                    "Configuration for a thermal conduction module");
-  ThermalSolver::defineSchema(*thermal_solver_table);
+  auto& thermal_solver_table =
+    inlet.addTable("thermal_solver",
+                   "Configuration for a thermal conduction module");
+  ThermalSolver::defineSchema(thermal_solver_table);
 
-  if(!inlet->verify())
+  if(!inlet.verify())
   {
     SLIC_ERROR("Inlet failed to verify against provided schema");
   }
 
   // Read all the data into a thermal solver object
-  auto thermal_solver = (*inlet)["thermal_solver"].get<ThermalSolver>();
+  auto thermal_solver = inlet["thermal_solver"].get<ThermalSolver>();
 }

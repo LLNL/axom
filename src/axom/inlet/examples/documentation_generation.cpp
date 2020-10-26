@@ -10,15 +10,16 @@
 
 #include "CLI11/CLI11.hpp"
 #include <iostream>
+#include <limits>
 
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
 using axom::inlet::SphinxDocWriter;
 using axom::sidre::DataStore;
 
-void findStr(std::string path, std::shared_ptr<Inlet> inlet)
+void findStr(std::string path, const Inlet& inlet)
 {
-  auto proxy = (*inlet)[path];
+  auto proxy = inlet[path];
   if(proxy.type() == axom::inlet::InletType::String)
   {
     std::cout << "found " << proxy.get<std::string>();
@@ -30,9 +31,9 @@ void findStr(std::string path, std::shared_ptr<Inlet> inlet)
   std::cout << std::endl;
 }
 
-void findInt(std::string path, std::shared_ptr<Inlet> inlet)
+void findInt(std::string path, const Inlet& inlet)
 {
-  auto proxy = (*inlet)[path];
+  auto proxy = inlet[path];
   if(proxy.type() == axom::inlet::InletType::Integer)
   {
     std::cout << "found " << proxy.get<int>();
@@ -44,9 +45,9 @@ void findInt(std::string path, std::shared_ptr<Inlet> inlet)
   std::cout << std::endl;
 }
 
-void findDouble(std::string path, std::shared_ptr<Inlet> inlet)
+void findDouble(std::string path, const Inlet& inlet)
 {
-  auto proxy = (*inlet)[path];
+  auto proxy = inlet[path];
   if(proxy.type() == axom::inlet::InletType::Double)
   {
     std::cout << "found " << proxy.get<double>();
@@ -58,91 +59,90 @@ void findDouble(std::string path, std::shared_ptr<Inlet> inlet)
   std::cout << std::endl;
 }
 
-void defineSchema(std::shared_ptr<Inlet> inlet)
+void defineSchema(Inlet& inlet)
 {
   // Add the description to the thermal_solver/mesh/filename Field
-  auto currVerifiable =
-    inlet->addString("thermal_solver/mesh/filename", "file for thermal solver");
+  auto& filename_field =
+    inlet.addString("thermal_solver/mesh/filename", "file for thermal solver");
   // Set the field's required property to true
-  currVerifiable->required(true);
+  filename_field.required();
 
-  currVerifiable = inlet->addInt("thermal_solver/mesh/serial", "serial value");
-  currVerifiable->range(0, INT_MAX);
-  currVerifiable->defaultValue(1);
+  inlet.addInt("thermal_solver/mesh/serial", "serial value")
+    .range(0, std::numeric_limits<int>::max())
+    .defaultValue(1);
 
   // The description for thermal_solver/mesh/parallel is left unspecified
-  currVerifiable = inlet->addInt("thermal_solver/mesh/parallel");
-  currVerifiable->range(1, INT_MAX);
-  currVerifiable->defaultValue(1);
+  inlet.addInt("thermal_solver/mesh/parallel")
+    .range(1, std::numeric_limits<int>::max())
+    .defaultValue(1);
 
-  currVerifiable = inlet->addInt("thermal_solver/order", "thermal solver order");
-  currVerifiable->required(true);
-  currVerifiable->range(1, INT_MAX);
+  inlet.addInt("thermal_solver/order", "thermal solver order")
+    .required()
+    .range(1, std::numeric_limits<int>::max());
 
-  currVerifiable =
-    inlet->addString("thermal_solver/timestepper", "thermal solver timestepper");
-  currVerifiable->defaultValue("quasistatic");
-  currVerifiable->validValues({"quasistatic", "forwardeuler", "backwardeuler"});
+  auto& timestep_field =
+    inlet.addString("thermal_solver/timestepper", "thermal solver timestepper");
+  timestep_field.defaultValue("quasistatic")
+    .validValues({"quasistatic", "forwardeuler", "backwardeuler"});
 
-  currVerifiable =
-    inlet->addString("thermal_solver/u0/type", "description for u0 type");
-  currVerifiable->defaultValue("constant");
-  currVerifiable->validValues({"constant", "function"});
+  auto& coef_type_field =
+    inlet.addString("thermal_solver/u0/type", "description for u0 type");
+  coef_type_field.defaultValue("constant").validValues({"constant", "function"});
 
-  currVerifiable =
-    inlet->addString("thermal_solver/u0/func", "description for u0 func");
-  currVerifiable->required(true);
+  inlet.addString("thermal_solver/u0/func", "description for u0 func").required();
 
-  currVerifiable =
-    inlet->addString("thermal_solver/kappa/type", "description for kappa type");
-  currVerifiable->required(true);
-  currVerifiable->validValues({"constant", "function"});
+  inlet.addString("thermal_solver/kappa/type", "description for kappa type")
+    .required()
+    .validValues({"constant", "function"});
 
-  currVerifiable = inlet->addDouble("thermal_solver/kappa/constant",
-                                    "description for kappa constant");
-  currVerifiable->required(true);
+  inlet
+    .addDouble("thermal_solver/kappa/constant", "description for kappa constant")
+    .required();
 
   // Add description to solver table by using the addTable function
-  auto table =
-    inlet->addTable("thermal_solver/solver",
-                    "This is the solver sub-table in the thermal_solver table");
+  auto& table =
+    inlet.addTable("thermal_solver/solver",
+                   "This is the solver sub-table in the thermal_solver table");
 
   // You can also add fields through a table
 
-  currVerifiable = table->addDouble("rel_tol", "description for solver rel tol");
-  currVerifiable->required(false);
-  currVerifiable->defaultValue(1.e-6);
-  currVerifiable->range(0.0, __DBL_MAX__);
+  auto& rel_tol_field =
+    table.addDouble("rel_tol", "description for solver rel tol");
+  rel_tol_field.required(false);
+  rel_tol_field.defaultValue(1.e-6);
+  rel_tol_field.range(0.0, std::numeric_limits<double>::max());
 
-  currVerifiable = table->addDouble("abs_tol", "description for solver abs tol");
-  currVerifiable->required(true);
-  currVerifiable->defaultValue(1.e-12);
-  currVerifiable->range(0.0, __DBL_MAX__);
+  auto& abs_tol_field =
+    table.addDouble("abs_tol", "description for solver abs tol");
+  abs_tol_field.required(true);
+  abs_tol_field.defaultValue(1.e-12);
+  abs_tol_field.range(0.0, std::numeric_limits<double>::max());
 
-  currVerifiable =
-    table->addInt("print_level", "description for solver print level");
-  currVerifiable->required(true);
-  currVerifiable->defaultValue(0);
-  currVerifiable->range(0, 3);
+  auto& print_level_field =
+    table.addInt("print_level", "description for solver print level");
+  print_level_field.required(true);
+  print_level_field.defaultValue(0);
+  print_level_field.range(0, 3);
 
-  currVerifiable = table->addInt("max_iter", "description for solver max iter");
-  currVerifiable->required(false);
-  currVerifiable->defaultValue(100);
-  currVerifiable->range(1, INT_MAX);
+  auto& max_iter_field =
+    table.addInt("max_iter", "description for solver max iter");
+  max_iter_field.required(false);
+  max_iter_field.defaultValue(100);
+  max_iter_field.range(1, std::numeric_limits<int>::max());
 
-  currVerifiable = table->addDouble("dt", "description for solver dt");
-  currVerifiable->required(true);
-  currVerifiable->defaultValue(1);
-  currVerifiable->range(0.0, __DBL_MAX__);
+  auto& dt_field = table.addDouble("dt", "description for solver dt");
+  dt_field.required(true);
+  dt_field.defaultValue(1);
+  dt_field.range(0.0, std::numeric_limits<double>::max());
 
-  currVerifiable = table->addInt("steps", "description for solver steps");
-  currVerifiable->required(true);
-  currVerifiable->defaultValue(1);
-  currVerifiable->range(1, INT_MAX);
+  auto& steps_field = table.addInt("steps", "description for solver steps");
+  steps_field.required(true);
+  steps_field.defaultValue(1);
+  steps_field.range(1, std::numeric_limits<int>::max());
 }
 
 // Checking the contents of the passed inlet
-void checkValues(std::shared_ptr<Inlet> inlet)
+void checkValues(const Inlet& inlet)
 {
   findStr("thermal_solver/mesh/filename", inlet);
   findStr("thermal_solver/timestepper", inlet);
@@ -163,7 +163,7 @@ void checkValues(std::shared_ptr<Inlet> inlet)
   findDouble("thermal_solver/kappa/constant", inlet);
 
   // Verify that contents of Inlet meet the requirements of the specified schema
-  if(inlet->verify())
+  if(inlet.verify())
   {
     SLIC_INFO("Inlet verify successful.");
   }
@@ -194,19 +194,19 @@ int main(int argc, char** argv)
   DataStore ds;
   auto lr = std::make_shared<LuaReader>();
   lr->parseFile(inputFileName);
-  auto inlet = std::make_shared<Inlet>(lr, ds.getRoot(), docsEnabled);
+  Inlet inlet(lr, ds.getRoot(), docsEnabled);
 
   // _inlet_documentation_generation_start
   auto docWriter =
-    std::make_shared<SphinxDocWriter>("example_doc.rst", inlet->sidreGroup());
-  inlet->registerDocWriter(docWriter);
+    std::make_shared<SphinxDocWriter>("example_doc.rst", inlet.sidreGroup());
+  inlet.registerDocWriter(docWriter);
   // _inlet_documentation_generation_end
 
   defineSchema(inlet);
   checkValues(inlet);
 
   // Generate the documentation
-  inlet->writeDoc();
+  inlet.writeDoc();
 
   if(docsEnabled)
   {

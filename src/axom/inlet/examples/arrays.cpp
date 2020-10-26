@@ -18,11 +18,11 @@ int main()
   axom::sidre::DataStore ds;
 
   // Initialize Inlet
-  auto inlet = std::make_shared<axom::inlet::Inlet>(lr, ds.getRoot());
+  axom::inlet::Inlet inlet(lr, ds.getRoot());
 
   // Register the verifier, which will verify the array values
-  auto vals = inlet->getGlobalTable()->addStringArray("values");
-  vals->registerVerifier([](axom::inlet::Table& table) -> bool {
+  auto& vals = inlet.getGlobalTable().addStringArray("values");
+  vals.registerVerifier([](const axom::inlet::Table& table) -> bool {
     auto map = table.get<std::unordered_map<int, std::string>>();
     bool startFound = false;
     bool stopFound = false;
@@ -43,11 +43,11 @@ int main()
   });
 
   // We expect verfication to pass since values array has 3 elements
-  inlet->verify() ? std::cout << "Verification passed\n"
-                  : std::cout << "Verification failed\n";
+  inlet.verify() ? std::cout << "Verification passed\n"
+                 : std::cout << "Verification failed\n";
 
   // Print contents of map
-  std::unordered_map<int, std::string> map = (*inlet)["values"];
+  std::unordered_map<int, std::string> map = inlet["values"];
   std::cout << "\nMap Contents:\n";
   for(auto p : map)
   {
