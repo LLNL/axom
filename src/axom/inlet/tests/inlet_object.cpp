@@ -22,14 +22,14 @@ using axom::inlet::InletType;
 using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
 
-std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
-                                        const std::string& luaString,
-                                        bool enableDocs = true)
+Inlet createBasicInlet(DataStore* ds,
+                       const std::string& luaString,
+                       bool enableDocs = true)
 {
   auto lr = std::make_shared<LuaReader>();
   lr->parseString(luaString);
 
-  return std::make_shared<Inlet>(lr, ds->getRoot(), enableDocs);
+  return Inlet(lr, ds->getRoot(), enableDocs);
 }
 
 struct Foo
@@ -60,17 +60,12 @@ TEST(inlet_object, simple_struct_by_value)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-
-  // Check for existing fields
-  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currVerifiable);
-
-  currVerifiable = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/bar", "bar's description");
+  inlet.addBool("foo/baz", "baz's description");
 
   Foo foo;
 
-  foo = inlet->get<Foo>("foo");
+  foo = inlet.get<Foo>("foo");
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
 }
@@ -83,14 +78,14 @@ TEST(inlet_object, simple_array_of_struct_by_value)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
 
-  arr_table->addBool("bar", "bar's description");
-  arr_table->addBool("baz", "baz's description");
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
   std::unordered_map<int, Foo> expected_foos = {{4, {true, false}},
                                                 {7, {false, true}}};
   std::unordered_map<int, Foo> foos;
-  EXPECT_TRUE(arr_table->getArray(foos));
+  EXPECT_TRUE(arr_table.getArray(foos));
   EXPECT_EQ(foos, expected_foos);
 }
 
@@ -102,14 +97,14 @@ TEST(inlet_object, simple_array_of_struct_implicit_idx)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
 
-  arr_table->addBool("bar", "bar's description");
-  arr_table->addBool("baz", "baz's description");
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
   std::unordered_map<int, Foo> expected_foos = {{1, {true, false}},
                                                 {2, {false, true}}};
   std::unordered_map<int, Foo> foos;
-  EXPECT_TRUE(arr_table->getArray(foos));
+  EXPECT_TRUE(arr_table.getArray(foos));
   EXPECT_EQ(foos, expected_foos);
 }
 
@@ -121,12 +116,12 @@ TEST(inlet_object, simple_array_of_struct_verify_optional)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
 
-  arr_table->addBool("bar", "bar's description")->required(true);
-  arr_table->addBool("baz", "baz's description")->required(false);
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(false);
 
-  EXPECT_TRUE(inlet->verify());
+  EXPECT_TRUE(inlet.verify());
 }
 
 TEST(inlet_object, simple_array_of_struct_verify_reqd)
@@ -137,12 +132,12 @@ TEST(inlet_object, simple_array_of_struct_verify_reqd)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
 
-  arr_table->addBool("bar", "bar's description")->required(true);
-  arr_table->addBool("baz", "baz's description")->required(true);
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(true);
 
-  EXPECT_FALSE(inlet->verify());
+  EXPECT_FALSE(inlet.verify());
 }
 
 struct FooWithArray
@@ -169,13 +164,13 @@ TEST(inlet_object, array_of_struct_containing_array)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto arr_table = inlet->getGlobalTable()->addGenericArray("foo");
+  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
 
-  arr_table->addIntArray("arr", "arr's description");
+  arr_table.addIntArray("arr", "arr's description");
   std::unordered_map<int, FooWithArray> expected_foos = {{4, {{{1, 3}}}},
                                                          {7, {{{6, 2}}}}};
   std::unordered_map<int, FooWithArray> foos_with_arr;
-  EXPECT_TRUE(arr_table->getArray(foos_with_arr));
+  EXPECT_TRUE(arr_table.getArray(foos_with_arr));
   EXPECT_EQ(foos_with_arr, expected_foos);
 }
 
@@ -207,13 +202,11 @@ TEST(inlet_object, simple_moveonly_struct_by_value)
 
   // Define schema
   // Check for existing fields
-  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/bar", "bar's description");
 
-  currVerifiable = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/baz", "baz's description");
 
-  MoveOnlyFoo foo = inlet->get<MoveOnlyFoo>("foo");
+  MoveOnlyFoo foo = inlet.get<MoveOnlyFoo>("foo");
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
 }
@@ -226,10 +219,9 @@ TEST(inlet_object, simple_value_from_bracket)
 
   // Define schema
   // Check for existing fields
-  auto currVerifiable = inlet->addBool("foo", "foo's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo", "foo's description");
 
-  bool foo = (*inlet)["foo"];
+  bool foo = inlet["foo"];
   EXPECT_TRUE(foo);
 }
 
@@ -241,13 +233,11 @@ TEST(inlet_object, simple_struct_from_bracket)
 
   // Define schema
   // Check for existing fields
-  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/bar", "bar's description");
 
-  currVerifiable = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/baz", "baz's description");
 
-  auto foo = (*inlet)["foo"].get<Foo>();
+  auto foo = inlet["foo"].get<Foo>();
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
 }
@@ -260,18 +250,16 @@ TEST(inlet_object, contains_from_table)
 
   // Define schema
   // Check for existing fields
-  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/bar", "bar's description");
 
-  currVerifiable = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/baz", "baz's description");
 
-  EXPECT_TRUE(inlet->contains("foo/bar"));
-  EXPECT_TRUE(inlet->contains("foo/baz"));
+  EXPECT_TRUE(inlet.contains("foo/bar"));
+  EXPECT_TRUE(inlet.contains("foo/baz"));
 
-  auto foo_table = inlet->getTable("foo");
-  EXPECT_TRUE(foo_table->contains("bar"));
-  EXPECT_TRUE(foo_table->contains("baz"));
+  auto& foo_table = inlet.getTable("foo");
+  EXPECT_TRUE(foo_table.contains("bar"));
+  EXPECT_TRUE(foo_table.contains("baz"));
 }
 
 TEST(inlet_object, contains_from_bracket)
@@ -282,14 +270,12 @@ TEST(inlet_object, contains_from_bracket)
 
   // Define schema
   // Check for existing fields
-  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/bar", "bar's description");
 
-  currVerifiable = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/baz", "baz's description");
 
-  EXPECT_TRUE((*inlet)["foo"].contains("bar"));
-  EXPECT_TRUE((*inlet)["foo"].contains("baz"));
+  EXPECT_TRUE(inlet["foo"].contains("bar"));
+  EXPECT_TRUE(inlet["foo"].contains("baz"));
 }
 
 TEST(inlet_object, array_from_bracket)
@@ -306,26 +292,26 @@ TEST(inlet_object, array_from_bracket)
   std::unordered_map<int, bool> boolMap;
   std::unordered_map<int, std::string> strMap;
   std::unordered_map<int, double> doubleMap;
-  auto arr1_field = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
-  auto arr2_field = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
-  auto arr3_field = inlet->getGlobalTable()->addStringArray("luaArrays/arr3");
-  auto arr4_field = inlet->getGlobalTable()->addDoubleArray("luaArrays/arr4");
+  inlet.getGlobalTable().addIntArray("luaArrays/arr1");
+  inlet.getGlobalTable().addBoolArray("luaArrays/arr2");
+  inlet.getGlobalTable().addStringArray("luaArrays/arr3");
+  inlet.getGlobalTable().addDoubleArray("luaArrays/arr4");
 
   std::unordered_map<int, int> expectedInts {{1, 4}};
   std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
   std::unordered_map<int, std::string> expectedStrs {{33, "hello"}, {2, "bye"}};
   std::unordered_map<int, double> expectedDoubles {{12, 2.4}};
 
-  intMap = (*inlet)["luaArrays/arr1"].get<std::unordered_map<int, int>>();
+  intMap = inlet["luaArrays/arr1"].get<std::unordered_map<int, int>>();
   EXPECT_EQ(intMap, expectedInts);
 
-  boolMap = (*inlet)["luaArrays/arr2"].get<std::unordered_map<int, bool>>();
+  boolMap = inlet["luaArrays/arr2"].get<std::unordered_map<int, bool>>();
   EXPECT_EQ(boolMap, expectedBools);
 
-  strMap = (*inlet)["luaArrays/arr3"].get<std::unordered_map<int, std::string>>();
+  strMap = inlet["luaArrays/arr3"].get<std::unordered_map<int, std::string>>();
   EXPECT_EQ(strMap, expectedStrs);
 
-  doubleMap = (*inlet)["luaArrays/arr4"].get<std::unordered_map<int, double>>();
+  doubleMap = inlet["luaArrays/arr4"].get<std::unordered_map<int, double>>();
   EXPECT_EQ(doubleMap, expectedDoubles);
 }
 
@@ -338,32 +324,28 @@ TEST(inlet_object, primitive_type_checks)
 
   // Define schema
   // Check for existing fields
-  auto currVerifiable = inlet->addBool("bar", "bar's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("bar", "bar's description");
 
-  currVerifiable = inlet->addInt("baz", "baz's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addInt("baz", "baz's description");
 
-  currVerifiable = inlet->addDouble("quux", "quux's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addDouble("quux", "quux's description");
 
-  currVerifiable = inlet->addString("corge", "corge's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addString("corge", "corge's description");
 
-  EXPECT_EQ((*inlet)["bar"].type(), InletType::Bool);
-  bool bar = (*inlet)["bar"];
+  EXPECT_EQ(inlet["bar"].type(), InletType::Bool);
+  bool bar = inlet["bar"];
   EXPECT_EQ(bar, true);
 
-  EXPECT_EQ((*inlet)["baz"].type(), InletType::Integer);
-  int baz = (*inlet)["baz"];
+  EXPECT_EQ(inlet["baz"].type(), InletType::Integer);
+  int baz = inlet["baz"];
   EXPECT_EQ(baz, 12);
 
-  EXPECT_EQ((*inlet)["quux"].type(), InletType::Double);
-  double quux = (*inlet)["quux"];
+  EXPECT_EQ(inlet["quux"].type(), InletType::Double);
+  double quux = inlet["quux"];
   EXPECT_DOUBLE_EQ(quux, 2.5);
 
-  EXPECT_EQ((*inlet)["corge"].type(), InletType::String);
-  std::string corge = (*inlet)["corge"];
+  EXPECT_EQ(inlet["corge"].type(), InletType::String);
+  std::string corge = inlet["corge"];
   EXPECT_EQ(corge, "hello");
 }
 
@@ -378,19 +360,14 @@ TEST(inlet_object, composite_type_checks)
 
   // Define schema
   // Check for existing fields
-  auto currVerifiable = inlet->addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/bar", "bar's description");
 
-  currVerifiable = inlet->addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("foo/baz", "baz's description");
 
-  auto currArrField = inlet->getGlobalTable()->addIntArray("luaArrays/arr1");
-  EXPECT_TRUE(currArrField);
+  inlet.getGlobalTable().addIntArray("luaArrays/arr1");
+  inlet.getGlobalTable().addBoolArray("luaArrays/arr2");
 
-  currArrField = inlet->getGlobalTable()->addBoolArray("luaArrays/arr2");
-  EXPECT_TRUE(currArrField);
-
-  auto arr_table = (*inlet)["luaArrays"];
+  auto arr_table = inlet["luaArrays"];
   // The table containing the two arrays is not an array, but an object
   EXPECT_EQ(arr_table.type(), InletType::Object);
 
@@ -398,7 +375,7 @@ TEST(inlet_object, composite_type_checks)
   EXPECT_EQ(arr_table["arr1"].type(), InletType::Array);
   EXPECT_EQ(arr_table["arr2"].type(), InletType::Array);
 
-  auto foo_table = (*inlet)["foo"];
+  auto foo_table = inlet["foo"];
   // Similarly, the table containing the two bools is an object
   EXPECT_EQ(foo_table.type(), InletType::Object);
 
@@ -416,47 +393,38 @@ TEST(inlet_object, implicit_conversion_primitives)
   auto inlet = createBasicInlet(&ds, testString);
 
   // Define schema
-  // Check for existing fields
-  auto currVerifiable = inlet->addBool("bar", "bar's description");
-  EXPECT_TRUE(currVerifiable);
+  inlet.addBool("bar", "bar's description");
+  inlet.addInt("baz", "baz's description");
+  inlet.addDouble("quux", "quux's description");
+  inlet.addString("corge", "corge's description");
 
-  currVerifiable = inlet->addInt("baz", "baz's description");
-  EXPECT_TRUE(currVerifiable);
-
-  currVerifiable = inlet->addDouble("quux", "quux's description");
-  EXPECT_TRUE(currVerifiable);
-
-  currVerifiable = inlet->addString("corge", "corge's description");
-  EXPECT_TRUE(currVerifiable);
-
-  auto currArrField = inlet->getGlobalTable()->addIntArray("arr");
-  EXPECT_TRUE(currArrField);
+  inlet.getGlobalTable().addIntArray("arr");
 
   // Attempt both construction and assignment
-  bool bar = (*inlet)["bar"];
+  bool bar = inlet["bar"];
   EXPECT_EQ(bar, true);
-  bar = (*inlet)["bar"];
+  bar = inlet["bar"];
   EXPECT_EQ(bar, true);
 
-  int baz = (*inlet)["baz"];
+  int baz = inlet["baz"];
   EXPECT_EQ(baz, 12);
-  baz = (*inlet)["baz"];
+  baz = inlet["baz"];
   EXPECT_EQ(baz, 12);
 
-  double quux = (*inlet)["quux"];
+  double quux = inlet["quux"];
   EXPECT_DOUBLE_EQ(quux, 2.5);
-  quux = (*inlet)["quux"];
+  quux = inlet["quux"];
   EXPECT_DOUBLE_EQ(quux, 2.5);
 
-  std::string corge = (*inlet)["corge"];
+  std::string corge = inlet["corge"];
   EXPECT_EQ(corge, "hello");
-  corge = (*inlet)["corge"];
+  corge = inlet["corge"];
   EXPECT_EQ(corge, "hello");
 
   std::unordered_map<int, int> expected_arr {{1, 4}, {2, 6}, {7, 10}};
-  std::unordered_map<int, int> arr = (*inlet)["arr"];
+  std::unordered_map<int, int> arr = inlet["arr"];
   EXPECT_EQ(arr, expected_arr);
-  arr = (*inlet)["arr"];
+  arr = inlet["arr"];
   EXPECT_EQ(arr, expected_arr);
 }
 

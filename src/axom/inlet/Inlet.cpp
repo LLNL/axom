@@ -23,34 +23,33 @@ namespace axom
 {
 namespace inlet
 {
-std::shared_ptr<Table> Inlet::addTable(const std::string& name,
-                                       const std::string& description)
+Table& Inlet::addTable(const std::string& name, const std::string& description)
 {
-  return m_globalTable->addTable(name, description);
+  return m_globalTable.addTable(name, description);
 }
 
-std::shared_ptr<VerifiableScalar> Inlet::addBool(const std::string& name,
-                                                 const std::string& description)
+VerifiableScalar& Inlet::addBool(const std::string& name,
+                                 const std::string& description)
 {
-  return m_globalTable->addBool(name, description);
+  return m_globalTable.addBool(name, description);
 }
 
-std::shared_ptr<VerifiableScalar> Inlet::addDouble(const std::string& name,
-                                                   const std::string& description)
+VerifiableScalar& Inlet::addDouble(const std::string& name,
+                                   const std::string& description)
 {
-  return m_globalTable->addDouble(name, description);
+  return m_globalTable.addDouble(name, description);
 }
 
-std::shared_ptr<VerifiableScalar> Inlet::addInt(const std::string& name,
-                                                const std::string& description)
+VerifiableScalar& Inlet::addInt(const std::string& name,
+                                const std::string& description)
 {
-  return m_globalTable->addInt(name, description);
+  return m_globalTable.addInt(name, description);
 }
 
-std::shared_ptr<VerifiableScalar> Inlet::addString(const std::string& name,
-                                                   const std::string& description)
+VerifiableScalar& Inlet::addString(const std::string& name,
+                                   const std::string& description)
 {
-  return m_globalTable->addString(name, description);
+  return m_globalTable.addString(name, description);
 }
 
 void Inlet::registerDocWriter(std::shared_ptr<DocWriter> writer)
@@ -66,7 +65,7 @@ void Inlet::writeDoc()
   }
 }
 
-bool Inlet::verify() { return m_globalTable->verify(); }
+bool Inlet::verify() const { return m_globalTable.verify(); }
 
 }  // end namespace inlet
 }  // end namespace axom

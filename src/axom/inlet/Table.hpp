@@ -135,6 +135,67 @@ struct has_FromInlet_specialization<
 class Proxy;
 
 /*!
+   *****************************************************************************
+   * \brief A wrapper class that enables constraints on groups of Tables
+   *****************************************************************************
+  */
+class AggregateTable : public std::enable_shared_from_this<AggregateTable>,
+                       public Verifiable
+{
+public:
+  AggregateTable(std::vector<std::reference_wrapper<Verifiable>>&& tables)
+    : m_tables(std::move(tables))
+  { }
+
+  /*!
+   *****************************************************************************
+   * \brief This will be called by Inlet::verify to verify the contents of this
+   *  Table and all child Tables/Fields of this Table.
+   *****************************************************************************
+   */
+  bool verify() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Table.
+   *
+   * Set whether this Table is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \param [in] isRequired Boolean value of whether Table is required
+   *
+   * \return Shared pointer to this instance of Table
+   *****************************************************************************
+   */
+  AggregateTable& required(bool isRequired = true);
+
+  /*!
+   *****************************************************************************
+   * \brief Return the required status of this Table.
+   *
+   * Return that this Table is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Table is required
+   *****************************************************************************
+   */
+  bool isRequired() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Table's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Table::verify().
+   *****************************************************************************
+  */
+  AggregateTable& registerVerifier(std::function<bool(const Table&)> lambda);
+
+private:
+  std::vector<std::reference_wrapper<Verifiable>> m_tables;
+};
+
+/*!
  *******************************************************************************
  * \class Table
  *
@@ -206,6 +267,10 @@ public:
     }
   }
 
+  // Tables must be move-only - delete the implicit shallow copy constructor
+  Table(const Table&) = delete;
+  Table(Table&&) = default;
+
   virtual ~Table() = default;
 
   /*!
@@ -239,8 +304,7 @@ public:
    * \return Shared pointer to the created Table
    *****************************************************************************
    */
-  std::shared_ptr<Table> addTable(const std::string& name,
-                                  const std::string& description = "");
+  Table& addTable(const std::string& name, const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -252,8 +316,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addBoolArray(const std::string& name,
-                                           const std::string& description = "");
+  Verifiable& addBoolArray(const std::string& name,
+                           const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -265,8 +329,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addIntArray(const std::string& name,
-                                          const std::string& description = "");
+  Verifiable& addIntArray(const std::string& name,
+                          const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -278,9 +342,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addDoubleArray(
-    const std::string& name,
-    const std::string& description = "");
+  Verifiable& addDoubleArray(const std::string& name,
+                             const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -292,9 +355,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addStringArray(
-    const std::string& name,
-    const std::string& description = "");
+  Verifiable& addStringArray(const std::string& name,
+                             const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -306,8 +368,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addGenericArray(const std::string& name,
-                                         const std::string& description = "");
+  Table& addGenericArray(const std::string& name,
+                         const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -358,7 +420,7 @@ public:
       for(int i = 0; i < view->getNumElements(); i++)
       {
         auto index_label = std::to_string(array[i]);
-        map[array[i]] = getTable(index_label)->get<T>();
+        map[array[i]] = getTable(index_label).get<T>();
       }
     }
     else
@@ -384,8 +446,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> addBool(const std::string& name,
-                                            const std::string& description = "")
+  VerifiableScalar& addBool(const std::string& name,
+                            const std::string& description = "")
   {
     return addPrimitive<bool>(name, description);
   }
@@ -405,9 +467,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> addDouble(
-    const std::string& name,
-    const std::string& description = "")
+  VerifiableScalar& addDouble(const std::string& name,
+                              const std::string& description = "")
   {
     return addPrimitive<double>(name, description);
   }
@@ -427,8 +488,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> addInt(const std::string& name,
-                                           const std::string& description = "")
+  VerifiableScalar& addInt(const std::string& name,
+                           const std::string& description = "")
   {
     return addPrimitive<int>(name, description);
   }
@@ -447,9 +508,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> addString(
-    const std::string& name,
-    const std::string& description = "")
+  VerifiableScalar& addString(const std::string& name,
+                              const std::string& description = "")
   {
     return addPrimitive<std::string>(name, description);
   }
@@ -479,12 +539,11 @@ public:
   template <typename T,
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
-  std::shared_ptr<VerifiableScalar> addPrimitive(
-    const std::string& name,
-    const std::string& description = "",
-    bool forArray = false,
-    T val = T {},
-    const std::string& pathOverride = "");
+  VerifiableScalar& addPrimitive(const std::string& name,
+                                 const std::string& description = "",
+                                 bool forArray = false,
+                                 T val = T {},
+                                 const std::string& pathOverride = "");
 
   /*!
    *****************************************************************************
@@ -501,10 +560,9 @@ public:
   template <typename T,
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
-  std::shared_ptr<Verifiable> addPrimitiveArray(
-    const std::string& name,
-    const std::string& description = "",
-    const std::string& pathOverride = "");
+  Verifiable& addPrimitiveArray(const std::string& name,
+                                const std::string& description = "",
+                                const std::string& pathOverride = "");
 
   /*!
    *******************************************************************************
@@ -528,7 +586,7 @@ public:
         name);
       SLIC_ERROR(msg);
     }
-    return getField(name)->get<T>();
+    return getField(name).get<T>();
   }
 
   /*!
@@ -564,7 +622,7 @@ public:
           fmt::format("[Inlet] Table with name {0} does not exist", name);
         SLIC_ERROR(msg);
       }
-      return from_inlet(*getTable(name));
+      return from_inlet(getTable(name));
     }
   }
 
@@ -591,7 +649,7 @@ public:
           "[Inlet] Table does not contain a valid array of requested type");
       }
     }
-    else if(!getTable(ARRAY_GROUP_NAME)->getArray(result))
+    else if(!getTable(ARRAY_GROUP_NAME).getArray(result))
     {
       SLIC_ERROR(
         "[Inlet] Table does not contain a valid array of requested type");
@@ -625,7 +683,7 @@ public:
    * \return Shared pointer to this instance of Table
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> required(bool isRequired = true);
+  Table& required(bool isRequired = true);
 
   /*!
    *****************************************************************************
@@ -647,8 +705,7 @@ public:
    * \param [in] The function object that will be called by Table::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Verifiable> registerVerifier(
-    std::function<bool(const Table&)> lambda);
+  Table& registerVerifier(std::function<bool(const Table&)> lambda);
 
   /*!
    *****************************************************************************
@@ -697,7 +754,7 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields() const;
+  const std::unordered_map<std::string, std::unique_ptr<Field>>& getChildFields() const;
 
   /*!
    *****************************************************************************
@@ -705,7 +762,7 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables() const;
+  const std::unordered_map<std::string, std::unique_ptr<Table>>& getChildTables() const;
 
   /*!
    *****************************************************************************
@@ -724,7 +781,7 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTable(const std::string& tableName) const;
+  Table& getTable(const std::string& tableName) const;
 
   /*!
    *****************************************************************************
@@ -736,7 +793,7 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getField(const std::string& fieldName) const;
+  Field& getField(const std::string& fieldName) const;
 
 private:
   /*!
@@ -805,10 +862,10 @@ private:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> addField(axom::sidre::Group* sidreGroup,
-                                  axom::sidre::DataTypeId type,
-                                  const std::string& fullName,
-                                  const std::string& name);
+  Field& addField(axom::sidre::Group* sidreGroup,
+                  axom::sidre::DataTypeId type,
+                  const std::string& fullName,
+                  const std::string& name);
 
   /*!
    *****************************************************************************
@@ -820,7 +877,7 @@ private:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTableInternal(const std::string& tableName) const;
+  Table* getTableInternal(const std::string& tableName) const;
 
   /*!
    *****************************************************************************
@@ -832,7 +889,7 @@ private:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getFieldInternal(const std::string& fieldName) const;
+  Field* getFieldInternal(const std::string& fieldName) const;
 
   /*!
    *****************************************************************************
@@ -876,9 +933,14 @@ private:
   // This Table's Sidre Group
   axom::sidre::Group* m_sidreGroup;
   bool m_docEnabled;
-  std::unordered_map<std::string, std::shared_ptr<Table>> m_tableChildren;
-  std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
+  std::unordered_map<std::string, std::unique_ptr<Table>> m_tableChildren;
+  std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
   std::function<bool(const Table&)> m_verifier;
+
+  // Used for ownership only - need to take ownership of these so Tables
+  // and AggregateTables have identical lifetime
+  std::vector<AggregateTable> m_aggregate_tables;
+  std::vector<AggregateField> m_aggregate_fields;
 
   static const std::string ARRAY_GROUP_NAME;
   static const std::string ARRAY_INDICIES_VIEW_NAME;
@@ -928,68 +990,6 @@ void Table::addPrimitiveArrayHelper<double>(Table& table,
 template <>
 void Table::addPrimitiveArrayHelper<std::string>(Table& table,
                                                  const std::string& lookupPath);
-
-/*!
-   *****************************************************************************
-   * \brief A wrapper class that enables constraints on groups of Tables
-   *****************************************************************************
-  */
-class AggregateTable : public std::enable_shared_from_this<AggregateTable>,
-                       public Verifiable
-{
-public:
-  AggregateTable(std::vector<std::shared_ptr<Verifiable>>&& tables)
-    : m_tables(std::move(tables))
-  { }
-
-  /*!
-   *****************************************************************************
-   * \brief This will be called by Inlet::verify to verify the contents of this
-   *  Table and all child Tables/Fields of this Table.
-   *****************************************************************************
-   */
-  bool verify() const;
-
-  /*!
-   *****************************************************************************
-   * \brief Set the required status of this Table.
-   *
-   * Set whether this Table is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \param [in] isRequired Boolean value of whether Table is required
-   *
-   * \return Shared pointer to this instance of Table
-   *****************************************************************************
-   */
-  std::shared_ptr<Verifiable> required(bool isRequired = true);
-
-  /*!
-   *****************************************************************************
-   * \brief Return the required status of this Table.
-   *
-   * Return that this Table is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \return Boolean value of whether this Table is required
-   *****************************************************************************
-   */
-  bool isRequired() const;
-
-  /*!
-   *****************************************************************************
-   * \brief Registers the function object that will verify this Table's contents
-   * during the verification stage.
-   * 
-   * \param [in] The function object that will be called by Table::verify().
-   *****************************************************************************
-  */
-  std::shared_ptr<Verifiable> registerVerifier(
-    std::function<bool(const Table&)> lambda);
-
-private:
-  std::vector<std::shared_ptr<Verifiable>> m_tables;
-};
 
 }  // end namespace inlet
 }  // end namespace axom

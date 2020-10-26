@@ -65,10 +65,13 @@ public:
         bool docEnabled = true)
     : m_reader(reader)
     , m_sidreRootGroup(sidreRootGroup)
-    , m_globalTable(
-        std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled))
+    , m_globalTable("", "", m_reader, m_sidreRootGroup, docEnabled)
     , m_docEnabled(docEnabled)
   { }
+
+  // Inlet objects must be move only - delete the implicit shallow copy constructor
+  Inlet(const Inlet&) = delete;
+  Inlet(Inlet&&) = default;
 
   virtual ~Inlet() = default;
 
@@ -114,8 +117,7 @@ public:
    * \return Shared pointer to the created Table
    *****************************************************************************
    */
-  std::shared_ptr<Table> addTable(const std::string& name,
-                                  const std::string& description = "");
+  Table& addTable(const std::string& name, const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -132,8 +134,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> addBool(const std::string& name,
-                                            const std::string& description = "");
+  VerifiableScalar& addBool(const std::string& name,
+                            const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -150,9 +152,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> addDouble(
-    const std::string& name,
-    const std::string& description = "");
+  VerifiableScalar& addDouble(const std::string& name,
+                              const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -169,8 +170,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> addInt(const std::string& name,
-                                           const std::string& description = "");
+  VerifiableScalar& addInt(const std::string& name,
+                           const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -187,9 +188,8 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<VerifiableScalar> addString(
-    const std::string& name,
-    const std::string& description = "");
+  VerifiableScalar& addString(const std::string& name,
+                              const std::string& description = "");
 
   //
   // Functions that get the values out of the datastore
@@ -211,9 +211,9 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  T get(const std::string& name)
+  T get(const std::string& name) const
   {
-    return m_globalTable->get<T>(name);
+    return m_globalTable.get<T>(name);
   }
 
   /*!
@@ -224,9 +224,9 @@ public:
    * \see Table::contains
    *****************************************************************************
    */
-  bool contains(const std::string& name)
+  bool contains(const std::string& name) const
   {
-    return m_globalTable->contains(name);
+    return m_globalTable.contains(name);
   }
 
   /*!
@@ -236,7 +236,10 @@ public:
    * \see Table::operator[]
    *******************************************************************************
    */
-  Proxy operator[](const std::string& name) { return (*m_globalTable)[name]; }
+  Proxy operator[](const std::string& name) const
+  {
+    return m_globalTable[name];
+  }
 
   /*!
    *****************************************************************************
@@ -276,14 +279,14 @@ public:
    *
    *****************************************************************************
    */
-  bool verify();
+  bool verify() const;
 
   /*!
    *****************************************************************************
    * \return The global Table.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getGlobalTable() { return m_globalTable; }
+  Table& getGlobalTable() { return m_globalTable; }
 
   /*!
    *****************************************************************************
@@ -295,9 +298,9 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTable(const std::string& name)
+  Table& getTable(const std::string& name) const
   {
-    return m_globalTable->getTable(name);
+    return m_globalTable.getTable(name);
   }
 
   /*!
@@ -310,9 +313,9 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getField(const std::string& name)
+  Field& getField(const std::string& name) const
   {
-    return m_globalTable->getField(name);
+    return m_globalTable.getField(name);
   }
 
   /*!
@@ -322,9 +325,9 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Table.
    *****************************************************************************
    */
-  bool hasTable(const std::string& name)
+  bool hasTable(const std::string& name) const
   {
-    return m_globalTable->hasTable(name);
+    return m_globalTable.hasTable(name);
   }
 
   /*!
@@ -334,9 +337,9 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Field.
    *****************************************************************************
    */
-  bool hasField(const std::string& name)
+  bool hasField(const std::string& name) const
   {
-    return m_globalTable->hasField(name);
+    return m_globalTable.hasField(name);
   }
 
   /*!
@@ -345,9 +348,9 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields()
+  const std::unordered_map<std::string, std::unique_ptr<Field>>& getChildFields() const
   {
-    return m_globalTable->getChildFields();
+    return m_globalTable.getChildFields();
   }
 
   /*!
@@ -356,9 +359,9 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables()
+  const std::unordered_map<std::string, std::unique_ptr<Table>>& getChildTables() const
   {
-    return m_globalTable->getChildTables();
+    return m_globalTable.getChildTables();
   }
 
   /*!
@@ -371,10 +374,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addBoolArray(const std::string& name,
-                                           const std::string& description = "")
+  Verifiable& addBoolArray(const std::string& name,
+                           const std::string& description = "")
   {
-    return m_globalTable->addBoolArray(name, description);
+    return m_globalTable.addBoolArray(name, description);
   }
 
   /*!
@@ -387,10 +390,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addIntArray(const std::string& name,
-                                          const std::string& description = "")
+  Verifiable& addIntArray(const std::string& name,
+                          const std::string& description = "")
   {
-    return m_globalTable->addIntArray(name, description);
+    return m_globalTable.addIntArray(name, description);
   }
 
   /*!
@@ -403,10 +406,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addDoubleArray(const std::string& name,
-                                             const std::string& description = "")
+  Verifiable& addDoubleArray(const std::string& name,
+                             const std::string& description = "")
   {
-    return m_globalTable->addDoubleArray(name, description);
+    return m_globalTable.addDoubleArray(name, description);
   }
 
   /*!
@@ -419,10 +422,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Verifiable> addStringArray(const std::string& name,
-                                             const std::string& description = "")
+  Verifiable& addStringArray(const std::string& name,
+                             const std::string& description = "")
   {
-    return m_globalTable->addStringArray(name, description);
+    return m_globalTable.addStringArray(name, description);
   }
 
   /*!
@@ -435,10 +438,10 @@ public:
    * \return Shared pointer to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addGenericArray(const std::string& name,
-                                         const std::string& description = "")
+  Table& addGenericArray(const std::string& name,
+                         const std::string& description = "")
   {
-    return m_globalTable->addGenericArray(name, description);
+    return m_globalTable.addGenericArray(name, description);
   }
 
   /*!
@@ -452,7 +455,7 @@ public:
    */
   bool getArray(std::unordered_map<int, bool>& map)
   {
-    return m_globalTable->getArray(map);
+    return m_globalTable.getArray(map);
   }
 
   /*!
@@ -466,7 +469,7 @@ public:
    */
   bool getArray(std::unordered_map<int, int>& map)
   {
-    return m_globalTable->getArray(map);
+    return m_globalTable.getArray(map);
   }
 
   /*!
@@ -480,7 +483,7 @@ public:
    */
   bool getArray(std::unordered_map<int, double>& map)
   {
-    return m_globalTable->getArray(map);
+    return m_globalTable.getArray(map);
   }
 
   /*!
@@ -494,14 +497,14 @@ public:
    */
   bool getArray(std::unordered_map<int, std::string>& map)
   {
-    return m_globalTable->getArray(map);
+    return m_globalTable.getArray(map);
   }
 
   // TODO add update value functions
 private:
   std::shared_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
-  std::shared_ptr<Table> m_globalTable;
+  Table m_globalTable;
   std::shared_ptr<DocWriter> m_docWriter;
   bool m_docEnabled;
 };

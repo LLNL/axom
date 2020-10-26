@@ -16,13 +16,12 @@ namespace inlet
 const std::string Table::ARRAY_GROUP_NAME = "_inlet_array";
 const std::string Table::ARRAY_INDICIES_VIEW_NAME = "_inlet_array_indices";
 
-std::shared_ptr<Table> Table::addTable(const std::string& name,
-                                       const std::string& description)
+Table& Table::addTable(const std::string& name, const std::string& description)
 {
   // Create intermediate Tables if they don't already exist
   std::string currName = name;
   size_t found = currName.find("/");
-  auto currTable = shared_from_this();
+  auto currTable = this;
 
   while(found != std::string::npos)
   {
@@ -31,17 +30,21 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
     // The current table will prepend its own prefix - just pass the basename
     if(!currTable->hasChildTable(currName.substr(0, found)))
     {
-      auto table = std::make_shared<Table>(currTableName,
-                                           "",
-                                           m_reader,
-                                           m_sidreRootGroup,
-                                           m_docEnabled);
-      currTable->m_tableChildren[currTableName] = table;
-      currTable = table;
+      // Will the copy always be elided here with a move ctor
+      // or do we need std::piecewise_construct/std::forward_as_tuple?
+      const auto& emplace_result = currTable->m_tableChildren.emplace(
+        currTableName,
+        std::make_unique<Table>(currTableName,
+                                "",
+                                m_reader,
+                                m_sidreRootGroup,
+                                m_docEnabled));
+      // emplace_result is a pair whose first element is an iterator to the inserted element
+      currTable = emplace_result.first->second.get();
     }
     else
     {
-      currTable = currTable->m_tableChildren[currTableName];
+      currTable = currTable->m_tableChildren[currTableName].get();
     }
     currName = currName.substr(found + 1);
     found = currName.find("/");
@@ -52,20 +55,21 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
 
   if(!currTable->hasChildTable(currName))
   {
-    auto table = std::make_shared<Table>(currTableName,
-                                         description,
-                                         m_reader,
-                                         m_sidreRootGroup,
-                                         m_docEnabled);
-    currTable->m_tableChildren[currTableName] = table;
-    currTable = table;
+    const auto& emplace_result = currTable->m_tableChildren.emplace(
+      currTableName,
+      std::make_unique<Table>(currTableName,
+                              description,
+                              m_reader,
+                              m_sidreRootGroup,
+                              m_docEnabled));
+    currTable = emplace_result.first->second.get();
   }
   else
   {
-    currTable = currTable->m_tableChildren[currTableName];
+    currTable = currTable->m_tableChildren[currTableName].get();
   }
 
-  return currTable;
+  return *currTable;
 }
 
 std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
@@ -96,32 +100,32 @@ std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
   return result;
 }
 
-std::shared_ptr<Verifiable> Table::addBoolArray(const std::string& name,
-                                                const std::string& description)
+Verifiable& Table::addBoolArray(const std::string& name,
+                                const std::string& description)
 {
   return addPrimitiveArray<bool>(name, description);
 }
 
-std::shared_ptr<Verifiable> Table::addIntArray(const std::string& name,
-                                               const std::string& description)
+Verifiable& Table::addIntArray(const std::string& name,
+                               const std::string& description)
 {
   return addPrimitiveArray<int>(name, description);
 }
 
-std::shared_ptr<Verifiable> Table::addDoubleArray(const std::string& name,
-                                                  const std::string& description)
+Verifiable& Table::addDoubleArray(const std::string& name,
+                                  const std::string& description)
 {
   return addPrimitiveArray<double>(name, description);
 }
 
-std::shared_ptr<Verifiable> Table::addStringArray(const std::string& name,
-                                                  const std::string& description)
+Verifiable& Table::addStringArray(const std::string& name,
+                                  const std::string& description)
 {
   return addPrimitiveArray<std::string>(name, description);
 }
 
-std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
-                                              const std::string& description)
+Table& Table::addGenericArray(const std::string& name,
+                              const std::string& description)
 {
   if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {
@@ -130,7 +134,7 @@ std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
                   "not supported",
                   m_name));
   }
-  auto table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
+  auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
   std::vector<int> indices;
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader->getArrayIndices(fullName, indices))
@@ -140,14 +144,14 @@ std::shared_ptr<Table> Table::addGenericArray(const std::string& name,
     // before they are populated as we don't know the schema of the
     // generic type yet
     auto view =
-      table->m_sidreGroup->createViewAndAllocate(ARRAY_INDICIES_VIEW_NAME,
-                                                 axom::sidre::INT_ID,
-                                                 indices.size());
+      table.m_sidreGroup->createViewAndAllocate(ARRAY_INDICIES_VIEW_NAME,
+                                                axom::sidre::INT_ID,
+                                                indices.size());
     int* raw_array = view->getArray();
     std::copy(indices.begin(), indices.end(), raw_array);
     for(const auto idx : indices)
     {
-      table->addTable(std::to_string(idx), description);
+      table.addTable(std::to_string(idx), description);
     }
   }
   else
@@ -182,33 +186,36 @@ axom::sidre::Group* Table::createSidreGroup(const std::string& name,
   return sidreGroup;
 }
 
-std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup,
-                                       axom::sidre::DataTypeId type,
-                                       const std::string& fullName,
-                                       const std::string& name)
+Field& Table::addField(axom::sidre::Group* sidreGroup,
+                       axom::sidre::DataTypeId type,
+                       const std::string& fullName,
+                       const std::string& name)
 {
   const size_t found = name.find_last_of("/");
-  auto currTable = shared_from_this();
+  auto currTable = this;
   if(found != std::string::npos)
   {
     // This will add any intermediate Tables (if not present) before adding the field
-    currTable = addTable(name.substr(0, found));
+    currTable = &addTable(name.substr(0, found));
   }
-  auto field = std::make_shared<axom::inlet::Field>(sidreGroup,
-                                                    m_sidreRootGroup,
-                                                    type,
-                                                    m_docEnabled);
-  currTable->m_fieldChildren[fullName] = field;
-  return field;
+  // auto field = std::make_shared<axom::inlet::Field>(sidreGroup,
+  //                                                   m_sidreRootGroup,
+  //                                                   type,
+  //                                                   m_docEnabled);
+  // currTable->m_fieldChildren[fullName] = field;
+  const auto& emplace_result = currTable->m_fieldChildren.emplace(
+    fullName,
+    std::make_unique<Field>(sidreGroup, m_sidreRootGroup, type, m_docEnabled));
+  // emplace_result is a pair whose first element is an iterator to the inserted element
+  return *(emplace_result.first->second);
 }
 
 template <typename T, typename SFINAE>
-std::shared_ptr<VerifiableScalar> Table::addPrimitive(
-  const std::string& name,
-  const std::string& description,
-  bool forArray,
-  T val,
-  const std::string& pathOverride)
+VerifiableScalar& Table::addPrimitive(const std::string& name,
+                                      const std::string& description,
+                                      bool forArray,
+                                      T val,
+                                      const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {
@@ -219,23 +226,25 @@ std::shared_ptr<VerifiableScalar> Table::addPrimitive(
     for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
       // Add a primitive to an array element (which is a struct)
-      fields.push_back(*(
+      fields.push_back(
         getTable(indexPath.first)
-          ->addPrimitive<T>(name, description, forArray, val, indexPath.second)));
+          .addPrimitive<T>(name, description, forArray, val, indexPath.second));
     }
     // Create an aggregate field so requirements can be collectively imposed
     // on all elements of the array
-    return std::make_shared<AggregateField>(std::move(fields));
+    m_aggregate_fields.emplace_back(std::move(fields));
+
+    // Remove when C++17 is available
+    return m_aggregate_fields.back();
   }
   else
   {
     // Otherwise actually add a Field
     std::string fullName = appendPrefix(m_name, name);
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
-    if(sidreGroup == nullptr)
-    {
-      return std::shared_ptr<Field>(nullptr);
-    }
+    SLIC_ERROR_IF(
+      sidreGroup == nullptr,
+      fmt::format("Failed to create Sidre group with name {0}", fullName));
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
@@ -245,28 +254,28 @@ std::shared_ptr<VerifiableScalar> Table::addPrimitive(
 }
 
 // Explicit instantiations
-template std::shared_ptr<VerifiableScalar> Table::addPrimitive<bool>(
+template VerifiableScalar& Table::addPrimitive<bool>(
   const std::string& name,
   const std::string& description,
   bool forArray,
   bool val,
   const std::string& pathOverride);
 
-template std::shared_ptr<VerifiableScalar> Table::addPrimitive<int>(
+template VerifiableScalar& Table::addPrimitive<int>(
   const std::string& name,
   const std::string& description,
   bool forArray,
   int val,
   const std::string& pathOverride);
 
-template std::shared_ptr<VerifiableScalar> Table::addPrimitive<double>(
+template VerifiableScalar& Table::addPrimitive<double>(
   const std::string& name,
   const std::string& description,
   bool forArray,
   double val,
   const std::string& pathOverride);
 
-template std::shared_ptr<VerifiableScalar> Table::addPrimitive<std::string>(
+template VerifiableScalar& Table::addPrimitive<std::string>(
   const std::string& name,
   const std::string& description,
   bool forArray,
@@ -330,52 +339,54 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
 }
 
 template <typename T, typename SFINAE>
-std::shared_ptr<Verifiable> Table::addPrimitiveArray(
-  const std::string& name,
-  const std::string& description,
-  const std::string& pathOverride)
+Verifiable& Table::addPrimitiveArray(const std::string& name,
+                                     const std::string& description,
+                                     const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {
     // Adding an array of primitive field to an array of structs
-    std::vector<std::shared_ptr<Verifiable>> tables;
+    std::vector<std::reference_wrapper<Verifiable>> tables;
     // Iterate over each element and forward the call to addPrimitiveArray
     for(const auto& indexPath : arrayIndicesWithPaths(name))
     {
       tables.push_back(
         getTable(indexPath.first)
-          ->addPrimitiveArray<T>(name, description, indexPath.second));
+          .addPrimitiveArray<T>(name, description, indexPath.second));
     }
-    return std::make_shared<AggregateTable>(std::move(tables));
+
+    m_aggregate_tables.emplace_back(std::move(tables));
+
+    // Remove when C++17 is available
+    return m_aggregate_tables.back();
   }
   else
   {
     // "base case", create a table for the field and fill it in with the helper
-    auto table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
+    auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
-    addPrimitiveArrayHelper<T>(*table, lookupPath);
+    addPrimitiveArrayHelper<T>(table, lookupPath);
     return table;
   }
 }
 
 // Explicit instantiations
-template std::shared_ptr<Verifiable> Table::addPrimitiveArray<bool>(
+template Verifiable& Table::addPrimitiveArray<bool>(
   const std::string& name,
   const std::string& description,
   const std::string& pathOverride);
 
-template std::shared_ptr<Verifiable> Table::addPrimitiveArray<int>(
+template Verifiable& Table::addPrimitiveArray<int>(const std::string& name,
+                                                   const std::string& description,
+                                                   const std::string& pathOverride);
+
+template Verifiable& Table::addPrimitiveArray<double>(
   const std::string& name,
   const std::string& description,
   const std::string& pathOverride);
 
-template std::shared_ptr<Verifiable> Table::addPrimitiveArray<double>(
-  const std::string& name,
-  const std::string& description,
-  const std::string& pathOverride);
-
-template std::shared_ptr<Verifiable> Table::addPrimitiveArray<std::string>(
+template Verifiable& Table::addPrimitiveArray<std::string>(
   const std::string& name,
   const std::string& description,
   const std::string& pathOverride);
@@ -469,12 +480,12 @@ Proxy Table::operator[](const std::string& name) const
 
   else if(has_table)
   {
-    return Proxy(*getTable(name));
+    return Proxy(getTable(name));
   }
 
   else if(has_field)
   {
-    return Proxy(*getField(name));
+    return Proxy(getField(name));
   }
 
   // Neither exists
@@ -488,7 +499,7 @@ Proxy Table::operator[](const std::string& name) const
   }
 }
 
-std::shared_ptr<Verifiable> Table::required(bool isRequired)
+Table& Table::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Table specific Sidre Datastore Group not set");
@@ -502,7 +513,7 @@ std::shared_ptr<Verifiable> Table::required(bool isRequired)
 
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
-    return shared_from_this();
+    return *this;
   }
 
   if(isRequired)
@@ -514,7 +525,7 @@ std::shared_ptr<Verifiable> Table::required(bool isRequired)
     m_sidreGroup->createViewScalar("required", (int8)0);
   }
 
-  return shared_from_this();
+  return *this;
 }
 
 bool Table::isRequired() const
@@ -547,15 +558,14 @@ bool Table::isRequired() const
   return (bool)intValue;
 }
 
-std::shared_ptr<Verifiable> Table::registerVerifier(
-  std::function<bool(const Table&)> lambda)
+Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Table "
                               "already set: {0}",
                               m_name));
   m_verifier = lambda;
-  return shared_from_this();
+  return *this;
 }
 
 bool Table::verify() const
@@ -623,31 +633,31 @@ bool Table::hasField(const std::string& fieldName) const
   return static_cast<bool>(getFieldInternal(fieldName));
 }
 
-std::shared_ptr<Table> Table::getTable(const std::string& tableName) const
+Table& Table::getTable(const std::string& tableName) const
 {
   auto table = getTableInternal(tableName);
   if(!table)
   {
-    SLIC_WARNING(fmt::format("[Inlet] Table not found: {0}", tableName));
+    SLIC_ERROR(fmt::format("[Inlet] Table not found: {0}", tableName));
   }
-  return table;
+  return *table;
 }
 
-std::shared_ptr<Field> Table::getField(const std::string& fieldName) const
+Field& Table::getField(const std::string& fieldName) const
 {
   auto field = getFieldInternal(fieldName);
   if(!field)
   {
-    SLIC_WARNING(fmt::format("[Inlet] Field not found: {0}", fieldName));
+    SLIC_ERROR(fmt::format("[Inlet] Field not found: {0}", fieldName));
   }
-  return field;
+  return *field;
 }
 
-std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName) const
+Table* Table::getTableInternal(const std::string& tableName) const
 {
   std::string name = tableName;
   size_t found = name.find("/");
-  auto currTable = shared_from_this();
+  auto currTable = this;
 
   while(found != std::string::npos)
   {
@@ -655,7 +665,8 @@ std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName) con
     if(currTable->hasChildTable(currName))
     {
       currTable =
-        currTable->m_tableChildren.at(appendPrefix(currTable->m_name, currName));
+        currTable->m_tableChildren.at(appendPrefix(currTable->m_name, currName))
+          .get();
     }
     else
     {
@@ -667,19 +678,19 @@ std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName) con
 
   if(currTable->hasChildTable(name))
   {
-    return currTable->m_tableChildren.at(appendPrefix(currTable->m_name, name));
+    return currTable->m_tableChildren.at(appendPrefix(currTable->m_name, name)).get();
   }
   return nullptr;
 }
 
-std::shared_ptr<Field> Table::getFieldInternal(const std::string& fieldName) const
+Field* Table::getFieldInternal(const std::string& fieldName) const
 {
   const size_t found = fieldName.find_last_of("/");
   if(found == std::string::npos)
   {
     if(hasChildField(fieldName))
     {
-      return m_fieldChildren.at(appendPrefix(m_name, fieldName));
+      return m_fieldChildren.at(appendPrefix(m_name, fieldName)).get();
     }
   }
   else
@@ -688,7 +699,7 @@ std::shared_ptr<Field> Table::getFieldInternal(const std::string& fieldName) con
     auto table = getTableInternal(fieldName.substr(0, found));
     if(table && table->hasChildField(name))
     {
-      return table->m_fieldChildren.at(appendPrefix(table->m_name, name));
+      return table->m_fieldChildren.at(appendPrefix(table->m_name, name)).get();
     }
   }
   return nullptr;
@@ -696,38 +707,39 @@ std::shared_ptr<Field> Table::getFieldInternal(const std::string& fieldName) con
 
 std::string Table::name() const { return m_name; }
 
-std::unordered_map<std::string, std::shared_ptr<Table>> Table::getChildTables() const
+const std::unordered_map<std::string, std::unique_ptr<Table>>&
+Table::getChildTables() const
 {
   return m_tableChildren;
 }
 
-std::unordered_map<std::string, std::shared_ptr<Field>> Table::getChildFields() const
+const std::unordered_map<std::string, std::unique_ptr<Field>>&
+Table::getChildFields() const
 {
   return m_fieldChildren;
 }
 
 bool AggregateTable::verify() const
 {
-  return std::all_of(
-    m_tables.begin(),
-    m_tables.end(),
-    [](const std::shared_ptr<Verifiable>& table) { return table->verify(); });
+  return std::all_of(m_tables.begin(),
+                     m_tables.end(),
+                     [](const Verifiable& table) { return table.verify(); });
 }
 
-std::shared_ptr<Verifiable> AggregateTable::required(bool isRequired)
+AggregateTable& AggregateTable::required(bool isRequired)
 {
   for(auto& table : m_tables)
   {
-    table->required(isRequired);
+    table.get().required(isRequired);
   }
-  return shared_from_this();
+  return *this;
 }
 
 bool AggregateTable::isRequired() const
 {
   for(auto& table : m_tables)
   {
-    if(table->isRequired())
+    if(table.get().isRequired())
     {
       return true;
     }
@@ -735,14 +747,14 @@ bool AggregateTable::isRequired() const
   return false;
 }
 
-std::shared_ptr<Verifiable> AggregateTable::registerVerifier(
+AggregateTable& AggregateTable::registerVerifier(
   std::function<bool(const Table&)> lambda)
 {
   for(auto& table : m_tables)
   {
-    table->registerVerifier(lambda);
+    table.get().registerVerifier(lambda);
   }
-  return shared_from_this();
+  return *this;
 }
 
 }  // end namespace inlet

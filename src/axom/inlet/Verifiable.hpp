@@ -14,7 +14,6 @@
 #ifndef INLET_VERIFIABLE_HPP
 #define INLET_VERIFIABLE_HPP
 
-#include <memory>
 #include <functional>
 
 namespace axom
@@ -39,6 +38,8 @@ class Table;
 class Verifiable
 {
 public:
+  // Should not be reassignable
+  Verifiable& operator=(const Verifiable&) = delete;
   /*!
    *****************************************************************************
    * \brief Set the required status of this object.
@@ -51,7 +52,7 @@ public:
    * \return Shared pointer to calling object, for chaining
    *****************************************************************************
    */
-  virtual std::shared_ptr<Verifiable> required(bool isRequired = true) = 0;
+  virtual Verifiable& required(bool isRequired = true) = 0;
 
   /*!
    *****************************************************************************
@@ -73,7 +74,7 @@ public:
    * \param [in] The function object.
    *****************************************************************************
   */
-  virtual std::shared_ptr<Verifiable> registerVerifier(
+  virtual Verifiable& registerVerifier(
     std::function<bool(const axom::inlet::Table&)> lambda) = 0;
 
   /*!
