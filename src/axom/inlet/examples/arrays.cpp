@@ -10,7 +10,7 @@
 
 int main()
 {
-  auto lr = std::make_shared<axom::inlet::LuaReader>();
+  auto lr = std::make_unique<axom::inlet::LuaReader>();
 
   // Parse example input file
   lr->parseString("values = { [1] = 'start', [2] = 'stop', [3] = 'pause' }");
@@ -18,7 +18,7 @@ int main()
   axom::sidre::DataStore ds;
 
   // Initialize Inlet
-  axom::inlet::Inlet inlet(lr, ds.getRoot());
+  axom::inlet::Inlet inlet(std::move(lr), ds.getRoot());
 
   // Register the verifier, which will verify the array values
   auto& vals = inlet.getGlobalTable().addStringArray("values");

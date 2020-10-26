@@ -164,7 +164,7 @@ public:
    *
    * \param [in] isRequired Boolean value of whether Table is required
    *
-   * \return Shared pointer to this instance of Table
+   * \return Reference to this instance of Table
    *****************************************************************************
    */
   AggregateTable& required(bool isRequired = true);
@@ -219,7 +219,7 @@ public:
    *
    * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
-   * \param [in] reader Shared pointer to the input file Reader class.
+   * \param [in] reader Reference to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether or not documentation
    * generation is enabled for input feck this Table instance belongs to.
@@ -227,7 +227,7 @@ public:
    */
   Table(const std::string& name,
         const std::string& description,
-        std::shared_ptr<Reader> reader,
+        Reader& reader,
         axom::sidre::Group* sidreRootGroup,
         bool docEnabled = true)
     : m_name(name)
@@ -235,7 +235,6 @@ public:
     , m_sidreRootGroup(sidreRootGroup)
     , m_docEnabled(docEnabled)
   {
-    SLIC_ASSERT_MSG(m_reader, "Inlet's Reader class not valid");
     SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
                     "Inlet's Sidre Datastore class not set");
 
@@ -301,7 +300,7 @@ public:
    * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
-   * \return Shared pointer to the created Table
+   * \return Reference to the created Table
    *****************************************************************************
    */
   Table& addTable(const std::string& name, const std::string& description = "");
@@ -313,7 +312,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Verifiable& addBoolArray(const std::string& name,
@@ -326,7 +325,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Verifiable& addIntArray(const std::string& name,
@@ -339,7 +338,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Verifiable& addDoubleArray(const std::string& name,
@@ -352,7 +351,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Verifiable& addStringArray(const std::string& name,
@@ -365,7 +364,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Table& addGenericArray(const std::string& name,
@@ -443,7 +442,7 @@ public:
    * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   VerifiableScalar& addBool(const std::string& name,
@@ -464,7 +463,7 @@ public:
    * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   VerifiableScalar& addDouble(const std::string& name,
@@ -485,7 +484,7 @@ public:
    * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   VerifiableScalar& addInt(const std::string& name,
@@ -505,7 +504,7 @@ public:
    * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   VerifiableScalar& addString(const std::string& name,
@@ -533,7 +532,7 @@ public:
    * \param [in] pathOverride The path within the input file to read from, if
    * different than the structure of the Sidre datastore
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   template <typename T,
@@ -554,7 +553,7 @@ public:
    * \param [in] pathOverride The path within the input file to read from, if
    * different than the structure of the Sidre datastore
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   template <typename T,
@@ -680,7 +679,7 @@ public:
    *
    * \param [in] isRequired Boolean value of whether Table is required
    *
-   * \return Shared pointer to this instance of Table
+   * \return Reference to this instance of Table
    *****************************************************************************
    */
   Table& required(bool isRequired = true);
@@ -927,7 +926,7 @@ private:
     const std::string& name) const;
 
   std::string m_name;
-  std::shared_ptr<Reader> m_reader;
+  Reader& m_reader;
   // Inlet's Root Sidre Group
   axom::sidre::Group* m_sidreRootGroup;
   // This Table's Sidre Group

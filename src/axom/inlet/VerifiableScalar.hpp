@@ -54,7 +54,7 @@ public:
    *
    * \param [in] isRequired Boolean value of whether object is required
    *
-   * \return Shared pointer to calling object, for chaining
+   * \return Reference to calling object, for chaining
    *****************************************************************************
    */
   virtual VerifiableScalar& required(bool isRequired = true) = 0;
@@ -90,7 +90,7 @@ public:
    *
    * \param [in] value The default string value
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& defaultValue(const std::string& value) = 0;
@@ -102,7 +102,7 @@ public:
    *
    * \param [in] value The default string value
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& defaultValue(const char* value) = 0;
@@ -115,7 +115,7 @@ public:
    *
    * \param [in] value The default boolean value
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& defaultValue(bool value) = 0;
@@ -128,7 +128,7 @@ public:
    *
    * \param [in] value The default integer value
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& defaultValue(int value) = 0;
@@ -141,7 +141,7 @@ public:
    *
    * \param [in] value The default double value
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& defaultValue(double value) = 0;
@@ -156,7 +156,7 @@ public:
    * 
    * \param [in] endVal The end of the range
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& range(double startVal, double endVal) = 0;
@@ -171,7 +171,7 @@ public:
    * 
    * \param [in] endVal The end of the range
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& range(int startVal, int endVal) = 0;
@@ -182,7 +182,7 @@ public:
    *
    * \param [in] set An vector containing the set of allowed integer values
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& validValues(const std::vector<int>& set) = 0;
@@ -193,7 +193,7 @@ public:
    *
    * \param [in] set An vector containing the set of allowed double values
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& validValues(const std::vector<double>& set) = 0;
@@ -204,7 +204,7 @@ public:
    *
    * \param [in] set A vector containing the set of allowed string values
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& validValues(const std::vector<std::string>& set) = 0;
@@ -216,7 +216,7 @@ public:
    * \param [in] set An initializer list containing the set of allowed C-string 
    * values
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& validValues(
@@ -228,7 +228,7 @@ public:
    *
    * \param [in] set An initializer list containing the valid integer values
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& validValues(const std::initializer_list<int>& set) = 0;
@@ -239,7 +239,7 @@ public:
    *
    * \param [in] set An initializer list containing the valid double values
    *
-   * \return Shared pointer to calling object for chaining
+   * \return Reference to calling object for chaining
    *****************************************************************************
   */
   virtual VerifiableScalar& validValues(const std::initializer_list<double>& set) = 0;

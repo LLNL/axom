@@ -49,7 +49,7 @@ public:
    *
    * \param [in] isRequired Boolean value of whether object is required
    *
-   * \return Shared pointer to calling object, for chaining
+   * \return Reference to calling object, for chaining
    *****************************************************************************
    */
   virtual Verifiable& required(bool isRequired = true) = 0;

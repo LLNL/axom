@@ -208,9 +208,9 @@ int main(int argc, char** argv)
   CLI11_PARSE(app, argc, argv);
 
   DataStore ds;
-  auto lr = std::make_shared<LuaReader>();
+  auto lr = std::make_unique<LuaReader>();
   lr->parseFile(inputFileName);
-  Inlet inlet(lr, ds.getRoot());
+  Inlet inlet(std::move(lr), ds.getRoot());
 
   // Create a table off the global table for the thermal_solver object
   // then define its schema

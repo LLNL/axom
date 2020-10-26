@@ -54,18 +54,18 @@ public:
    * Creates an Inlet class that can then be used with the given Reader and will
    * store data under the given Sidre Group.
    *
-   * \param [in] reader Shared pointer to the input file Reader class.
+   * \param [in] reader Reference to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether documentation generation
    * is enabled. This also toggles the storing of documentation-specific information.
    *****************************************************************************
    */
-  Inlet(std::shared_ptr<Reader> reader,
+  Inlet(std::unique_ptr<Reader> reader,
         axom::sidre::Group* sidreRootGroup,
         bool docEnabled = true)
-    : m_reader(reader)
+    : m_reader(std::move(reader))
     , m_sidreRootGroup(sidreRootGroup)
-    , m_globalTable("", "", m_reader, m_sidreRootGroup, docEnabled)
+    , m_globalTable("", "", *m_reader, m_sidreRootGroup, docEnabled)
     , m_docEnabled(docEnabled)
   { }
 
@@ -77,14 +77,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the shared pointer to the Reader class.
+   * \brief Returns the reference to the Reader class.
    *
    * Provides access to the Reader class that is used to access the input file.
    *
-   * \return Shared pointer to this instances' Reader class
+   * \return Reference to this instances' Reader class
    *****************************************************************************
    */
-  std::shared_ptr<Reader> reader() { return m_reader; };
+  Reader& reader() { return *m_reader; };
 
   /*!
    *****************************************************************************
@@ -114,7 +114,7 @@ public:
    * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
-   * \return Shared pointer to the created Table
+   * \return Reference to the created Table
    *****************************************************************************
    */
   Table& addTable(const std::string& name, const std::string& description = "");
@@ -131,7 +131,7 @@ public:
    * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   VerifiableScalar& addBool(const std::string& name,
@@ -149,7 +149,7 @@ public:
    * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   VerifiableScalar& addDouble(const std::string& name,
@@ -167,7 +167,7 @@ public:
    * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   VerifiableScalar& addInt(const std::string& name,
@@ -185,7 +185,7 @@ public:
    * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   VerifiableScalar& addString(const std::string& name,
@@ -252,7 +252,7 @@ public:
    *
    *****************************************************************************
    */
-  void registerDocWriter(std::shared_ptr<DocWriter> writer);
+  void registerDocWriter(std::unique_ptr<DocWriter> writer);
 
   /*!
    *****************************************************************************
@@ -371,7 +371,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Verifiable& addBoolArray(const std::string& name,
@@ -387,7 +387,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Verifiable& addIntArray(const std::string& name,
@@ -403,7 +403,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Verifiable& addDoubleArray(const std::string& name,
@@ -419,7 +419,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Verifiable& addStringArray(const std::string& name,
@@ -435,7 +435,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
   Table& addGenericArray(const std::string& name,
@@ -502,10 +502,10 @@ public:
 
   // TODO add update value functions
 private:
-  std::shared_ptr<Reader> m_reader;
+  std::unique_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   Table m_globalTable;
-  std::shared_ptr<DocWriter> m_docWriter;
+  std::unique_ptr<DocWriter> m_docWriter;
   bool m_docEnabled;
 };
 

@@ -106,7 +106,7 @@ public:
    *
    * \param [in] isRequired Boolean value of whether Field is required
    *
-   * \return Shared pointer to this instance of this class
+   * \return Reference to this instance of this class
    *****************************************************************************
    */
   Field& required(bool isRequired = true);
@@ -131,7 +131,7 @@ public:
    *
    * \param [in] value The default string value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& defaultValue(const std::string& value);
@@ -144,7 +144,7 @@ public:
    *
    * \param [in] value The default string value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& defaultValue(const char* value);
@@ -157,7 +157,7 @@ public:
    *
    * \param [in] value The default boolean value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& defaultValue(bool value);
@@ -170,7 +170,7 @@ public:
    *
    * \param [in] value The default integer value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& defaultValue(int value);
@@ -183,7 +183,7 @@ public:
    *
    * \param [in] value The default double value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& defaultValue(double value);
@@ -198,7 +198,7 @@ public:
    * 
    * \param [in] endVal The end of the range
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& range(double startVal, double endVal);
@@ -213,7 +213,7 @@ public:
    * 
    * \param [in] endVal The end of the range
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& range(int startVal, int endVal);
@@ -224,7 +224,7 @@ public:
    *
    * \param [in] set An vector containing the set of allowed integer values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& validValues(const std::vector<int>& set);
@@ -235,7 +235,7 @@ public:
    *
    * \param [in] set An vector containing the set of allowed double values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& validValues(const std::vector<double>& set);
@@ -246,7 +246,7 @@ public:
    *
    * \param [in] set A vector containing the set of allowed string values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& validValues(const std::vector<std::string>& set);
@@ -258,7 +258,7 @@ public:
    * \param [in] set An initializer list containing the set of allowed C-string 
    * values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& validValues(const std::initializer_list<const char*>& set);
@@ -269,7 +269,7 @@ public:
    *
    * \param [in] set An initializer list containing the valid integer values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& validValues(const std::initializer_list<int>& set);
@@ -280,7 +280,7 @@ public:
    *
    * \param [in] set An initializer list containing the valid double values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   Field& validValues(const std::initializer_list<double>& set);
@@ -337,7 +337,7 @@ private:
    *
    * \param [in] set A vector containing the set of allowed scalar values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   template <typename T>
@@ -353,7 +353,7 @@ private:
    * 
    * \param [in] endVal The end of the range
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   template <typename T>
@@ -367,7 +367,7 @@ private:
    *
    * \param [in] value The default value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   template <typename T>
@@ -478,7 +478,7 @@ public:
    *
    * \param [in] isRequired Boolean value of whether Field is required
    *
-   * \return Shared pointer to this instance of this class
+   * \return Reference to this instance of this class
    *****************************************************************************
    */
   AggregateField& required(bool isRequired);
@@ -503,7 +503,7 @@ public:
    *
    * \param [in] value The default string value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& defaultValue(const std::string& value);
@@ -516,7 +516,7 @@ public:
    *
    * \param [in] value The default string value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& defaultValue(const char* value);
@@ -529,7 +529,7 @@ public:
    *
    * \param [in] value The default boolean value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& defaultValue(bool value);
@@ -542,7 +542,7 @@ public:
    *
    * \param [in] value The default integer value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& defaultValue(int value);
@@ -555,7 +555,7 @@ public:
    *
    * \param [in] value The default double value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& defaultValue(double value);
@@ -570,7 +570,7 @@ public:
    * 
    * \param [in] endVal The end of the range
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& range(double startVal, double endVal);
@@ -585,7 +585,7 @@ public:
    * 
    * \param [in] endVal The end of the range
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& range(int startVal, int endVal);
@@ -596,7 +596,7 @@ public:
    *
    * \param [in] set An vector containing the set of allowed integer values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& validValues(const std::vector<int>& set);
@@ -607,7 +607,7 @@ public:
    *
    * \param [in] set An vector containing the set of allowed double values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& validValues(const std::vector<double>& set);
@@ -618,7 +618,7 @@ public:
    *
    * \param [in] set A vector containing the set of allowed string values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& validValues(const std::vector<std::string>& set);
@@ -630,7 +630,7 @@ public:
    * \param [in] set An initializer list containing the set of allowed C-string 
    * values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& validValues(const std::initializer_list<const char*>& set);
@@ -641,7 +641,7 @@ public:
    *
    * \param [in] set An initializer list containing the valid integer values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& validValues(const std::initializer_list<int>& set);
@@ -652,7 +652,7 @@ public:
    *
    * \param [in] set An initializer list containing the valid double values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
   AggregateField& validValues(const std::initializer_list<double>& set);

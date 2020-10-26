@@ -52,9 +52,9 @@ VerifiableScalar& Inlet::addString(const std::string& name,
   return m_globalTable.addString(name, description);
 }
 
-void Inlet::registerDocWriter(std::shared_ptr<DocWriter> writer)
+void Inlet::registerDocWriter(std::unique_ptr<DocWriter> writer)
 {
-  m_docWriter = writer;
+  m_docWriter = std::move(writer);
 }
 
 void Inlet::writeDoc()
