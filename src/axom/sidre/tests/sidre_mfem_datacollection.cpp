@@ -211,13 +211,58 @@ TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
-void testParallelMeshReload(mfem::Mesh& base_mesh)
+struct ParMeshGroupData
+{
+  int n_verts;
+  int n_edges;
+  int n_triangles;
+  int n_quads;
+  void check(const ParMeshGroupData& other)
+  {
+    EXPECT_EQ(n_verts, other.n_verts);
+    EXPECT_EQ(n_edges, other.n_edges);
+    EXPECT_EQ(n_triangles, other.n_triangles);
+    EXPECT_EQ(n_quads, other.n_quads);
+  }
+};
+
+static std::vector<ParMeshGroupData> getGroupData(const mfem::ParMesh& parmesh)
+{
+  std::vector<ParMeshGroupData> result(parmesh.GetNGroups());
+  // remove when marked const in MFEM
+  auto& non_const_parmesh = const_cast<mfem::ParMesh&>(parmesh);
+
+  for(std::size_t i = 0; i < result.size(); i++)
+  {
+    result[i] = ParMeshGroupData {non_const_parmesh.GroupNVertices(i),
+                                  non_const_parmesh.GroupNEdges(i),
+                                  non_const_parmesh.GroupNTriangles(i),
+                                  non_const_parmesh.GroupNQuadrilaterals(i)};
+  }
+
+  return result;
+}
+
+static void testParallelMeshReload(mfem::Mesh& base_mesh, bool debug_print = false)
 {
   mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh);
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  // std::ofstream fout("mesh_par_" + std::to_string(rank));
-  // parmesh.ParPrint(fout);
+  int n_ranks;
+  MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
+
+  std::ofstream fout;
+  if(debug_print)
+  {
+    fout.open("mesh_par_" + std::to_string(rank));
+    parmesh.ParPrint(fout);
+    if(rank == 0)
+    {
+      // Prints local mesh on rank 0
+      std::ofstream vtkstream("parmesh.vtk");
+      parmesh.PrintVTK(vtkstream);
+    }
+  }
 
   mfem::H1_FECollection fec(1, base_mesh.Dimension());
   mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
@@ -226,10 +271,10 @@ void testParallelMeshReload(mfem::Mesh& base_mesh)
   // a simulated restart (save -> load)
   const bool owns_mesh = true;
   MFEMSidreDataCollection sdc_writer(COLL_NAME, &parmesh, owns_mesh);
-  // if(sdc_writer.GetBPGroup()->hasGroup("adjsets"))
-  // {
-  //   sdc_writer.GetBPGroup()->getGroup("adjsets/mesh/groups")->print(fout);
-  // }
+  if(debug_print && sdc_writer.GetBPGroup()->hasGroup("adjsets"))
+  {
+    sdc_writer.GetBPGroup()->getGroup("adjsets/mesh/groups")->print(fout);
+  }
 
   // Save some basic info about the mesh
   const int n_verts = sdc_writer.GetMesh()->GetNV();
@@ -242,6 +287,9 @@ void testParallelMeshReload(mfem::Mesh& base_mesh)
   const int n_groups = writer_pmesh->GetNGroups();
   const int n_face_neighbors = writer_pmesh->GetNFaceNeighbors();
   const int n_shared_faces = writer_pmesh->GetNSharedFaces();
+
+  // Group-specific info
+  auto writer_group_data = getGroupData(*writer_pmesh);
 
   sdc_writer.SetPrefixPath("/tmp/dc_par_reload_test");
   sdc_writer.SetCycle(0);
@@ -260,15 +308,16 @@ void testParallelMeshReload(mfem::Mesh& base_mesh)
   EXPECT_EQ(sdc_reader.GetMesh()->GetNE(), n_ele);
   EXPECT_EQ(sdc_reader.GetMesh()->GetNBE(), n_bdr_ele);
 
-  std::ofstream fout_rel("mesh_par_reload_" + std::to_string(rank));
-  // auto reader_pmesh = dynamic_cast<mfem::ParMesh*>(sdc_reader.GetMesh());
-  // if (reader_pmesh)
-  // {
-  //   reader_pmesh->ParPrint(fout_rel);
-  // }
+  if(debug_print)
+  {
+    std::ofstream fout_rel("mesh_par_reload_" + std::to_string(rank));
+    auto reader_pmesh = dynamic_cast<mfem::ParMesh*>(sdc_reader.GetMesh());
+    if(reader_pmesh)
+    {
+      reader_pmesh->ParPrint(fout_rel);
+    }
+  }
 
-  int n_ranks;
-  MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
   // Currently a mesh cannot be identified as a ParMesh in a vacuously
   // distributed setup
   if(n_ranks > 1)
@@ -279,6 +328,15 @@ void testParallelMeshReload(mfem::Mesh& base_mesh)
     EXPECT_EQ(reader_pmesh->GetNGroups(), n_groups);
     EXPECT_EQ(reader_pmesh->GetNFaceNeighbors(), n_face_neighbors);
     EXPECT_EQ(reader_pmesh->GetNSharedFaces(), n_shared_faces);
+
+    auto reader_group_data = getGroupData(*reader_pmesh);
+    EXPECT_EQ(writer_group_data.size(), reader_group_data.size());
+    // std::equal would be nice here, but we would lose the gtest
+    // diagnostics I think
+    for(std::size_t i = 0; i < writer_group_data.size(); i++)
+    {
+      writer_group_data[i].check(reader_group_data[i]);
+    }
   }
 
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
@@ -350,7 +408,7 @@ TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_tet)
 {
   // 3D mesh divided into tetrahedra
   mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
-  testParallelMeshReload(mesh);
+  testParallelMeshReload(mesh, true);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_tet)
