@@ -2057,9 +2057,20 @@ void MFEMSidreDataCollection::reconstructFields()
       auto basis_name = field_grp->getView("basis")->getString();
       m_fecolls.emplace_back(mfem::FiniteElementCollection::New(basis_name));
 
-      // FiniteElementSpace - mesh ptr and FEColl ptr
-      m_fespaces.emplace_back(
-        new mfem::FiniteElementSpace(mesh, m_fecolls.back().get()));
+  // FiniteElementSpace - mesh ptr and FEColl ptr
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+      auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+      if(parmesh)
+      {
+        m_fespaces.emplace_back(
+          new mfem::ParFiniteElementSpace(parmesh, m_fecolls.back().get()));
+      }
+      else
+  #endif
+      {
+        m_fespaces.emplace_back(
+          new mfem::FiniteElementSpace(mesh, m_fecolls.back().get()));
+      }
 
       double* values = nullptr;
       // Scalar grid function
@@ -2074,9 +2085,19 @@ void MFEMSidreDataCollection::reconstructFields()
         // Sufficient to use address of first component as data is interleaved
         values = field_grp->getGroup("values")->getView("x0")->getData();
       }
-
-      m_sidre_owned_gfs.emplace_back(
-        new mfem::GridFunction(m_fespaces.back().get(), values));
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+      auto parfes =
+        dynamic_cast<mfem::ParFiniteElementSpace*>(m_fespaces.back().get());
+      if(parfes)
+      {
+        m_sidre_owned_gfs.emplace_back(new mfem::ParGridFunction(parfes, values));
+      }
+      else
+  #endif
+      {
+        m_sidre_owned_gfs.emplace_back(
+          new mfem::GridFunction(m_fespaces.back().get(), values));
+      }
 
       // Register a non-owning pointer with the base subobject
       DataCollection::RegisterField(field_grp->getName(),
