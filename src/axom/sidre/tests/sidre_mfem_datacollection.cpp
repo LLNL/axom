@@ -245,7 +245,7 @@ static std::vector<ParMeshGroupData> getGroupData(const mfem::ParMesh& parmesh)
 
 static void testParallelMeshReload(mfem::Mesh& base_mesh, bool debug_print = false)
 {
-  mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh);
+  mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh, nullptr, 4);
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int n_ranks;
@@ -255,12 +255,19 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh, bool debug_print = fal
   if(debug_print)
   {
     fout.open("mesh_par_" + std::to_string(rank));
-    parmesh.ParPrint(fout);
+    parmesh.PrintSharedEntities("mesh_par");
     if(rank == 0)
     {
       // Prints local mesh on rank 0
       std::ofstream vtkstream("parmesh.vtk");
       parmesh.PrintVTK(vtkstream);
+      std::ofstream part("partitioning.txt");
+      auto partitioning = base_mesh.GeneratePartitioning(n_ranks, 5);
+      for (int i = 0; i < base_mesh.GetNE(); i++)
+      {
+        part << "Element " << i << ": " << partitioning[i] << "\n";
+      }
+      delete[] partitioning;
     }
   }
 
@@ -310,11 +317,10 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh, bool debug_print = fal
 
   if(debug_print)
   {
-    std::ofstream fout_rel("mesh_par_reload_" + std::to_string(rank));
     auto reader_pmesh = dynamic_cast<mfem::ParMesh*>(sdc_reader.GetMesh());
     if(reader_pmesh)
     {
-      reader_pmesh->ParPrint(fout_rel);
+      reader_pmesh->PrintSharedEntities("mesh_par_reload_");
     }
   }
 
