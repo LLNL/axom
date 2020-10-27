@@ -139,8 +139,7 @@ class Proxy;
    * \brief A wrapper class that enables constraints on groups of Tables
    *****************************************************************************
   */
-class AggregateTable : public std::enable_shared_from_this<AggregateTable>,
-                       public Verifiable
+class AggregateTable : public Verifiable
 {
 public:
   AggregateTable(std::vector<std::reference_wrapper<Verifiable>>&& tables)
@@ -206,7 +205,7 @@ private:
  * \see Inlet Field
  *******************************************************************************
  */
-class Table : public std::enable_shared_from_this<Table>, public Verifiable
+class Table : public Verifiable
 {
 public:
   /*!
