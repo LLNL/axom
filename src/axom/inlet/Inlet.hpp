@@ -54,7 +54,7 @@ public:
    * Creates an Inlet class that can then be used with the given Reader and will
    * store data under the given Sidre Group.
    *
-   * \param [in] reader Reference to the input file Reader class.
+   * \param [in] reader Unique (owning) pointer to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether documentation generation
    * is enabled. This also toggles the storing of documentation-specific information.
@@ -248,7 +248,7 @@ public:
    * Sets the associated DocWriter. If the DocWriter is already set, it will be
    * replaced by the one that was most recently set.
    *
-   * \param [in] writer A pointer to a DocWriter object
+   * \param [in] writer An owning pointer to a DocWriter object
    *
    *****************************************************************************
    */

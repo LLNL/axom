@@ -54,7 +54,6 @@ std::string removePrefix(const std::string& prefix, const std::string& name);
 
 namespace cpp11_compat
 {
-
 /*!
 *****************************************************************************
 * \brief This function provides backwards compatibility for std::make_unique,
