@@ -29,6 +29,8 @@ packages:
       prefix: /usr/tce/packages/cuda/cuda-10.1.243
 
 # LLNL blueos mpi
+  mpi:
+    buildable: false
   spectrum-mpi:
     buildable: false
     externals:
@@ -42,36 +44,15 @@ packages:
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
     - spec: spectrum-mpi@release%xl@16.1.1_nvcc
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
-# Spack may grab for mpi & we don't want to use them
-  mvapich2:
-    buildable: false
-  openmpi:
-    buildable: false
-  mpich:
-    buildable: false
-  charmpp:
-    buildable: false
-  charm:
-    buildable: false
-  intel-mpi:
-    buildable: false
-  intel-parallel-studio:
-    buildable: false
-  fujitsu-mpi:
-    buildable: false
-  mpilander:
-    buildable: false
-  mpt:
-    buildable: false
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
   netlib-lapack:
     buildable: false
-
     externals:
     - spec: netlib-lapack@3.6.1
       prefix: /usr
+
 # System level packages to not build
   autoconf:
     buildable: false
