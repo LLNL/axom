@@ -2,7 +2,7 @@
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
 # SYS_TYPE: blueos_3_ppc64le_ib_p9
-# Compiler Spec: clang@upstream_xlf
+# Compiler Spec: clang@9.0.0_upstream_xlf
 #------------------------------------------------------------------------------
 # CMake executable path: /usr/tce/packages/cmake/cmake-3.14.5/bin/cmake
 #------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACH
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2020_09_19_17_03_53/clang-upstream_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2020_10_15_14_43_31/clang-9.0.0_upstream_xlf" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
@@ -75,9 +75,9 @@ set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/sphinx-build" CACHE PAT
 
 set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/shroud" CACHE PATH "")
 
-set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
-
 set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-1.87/bin/cppcheck" CACHE PATH "")
+
+set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # Other machine specifics
