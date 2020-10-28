@@ -263,7 +263,7 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh, bool debug_print = fal
       parmesh.PrintVTK(vtkstream);
       std::ofstream part("partitioning.txt");
       auto partitioning = base_mesh.GeneratePartitioning(n_ranks, 5);
-      for (int i = 0; i < base_mesh.GetNE(); i++)
+      for(int i = 0; i < base_mesh.GetNE(); i++)
       {
         part << "Element " << i << ": " << partitioning[i] << "\n";
       }
@@ -414,7 +414,7 @@ TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_tet)
 {
   // 3D mesh divided into tetrahedra
   mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
-  testParallelMeshReload(mesh, true);
+  testParallelMeshReload(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_tet)

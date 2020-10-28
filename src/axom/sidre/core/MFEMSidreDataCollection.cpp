@@ -526,6 +526,11 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
   //       sleep(5);
   // }
 
+  mfem::Array<int> tmp_verts;
+  int tmp_edge;
+  int tmp_face;
+  int tmp_orientation;
+
   for(int gi = 1; gi < pmesh->GetNGroups(); ++gi)
   {
     int num_gneighbors = pmesh->gtopo.GetGroupSize(gi);
@@ -576,6 +581,46 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
       for(int vi = 0; vi < num_gvertices; ++vi)
       {
         gvertices_data[vi] = pmesh->GroupVertex(gi, vi);
+      }
+
+      int num_gedges = pmesh->GroupNEdges(gi);
+      // Store the two vertices for each edge instead of edge IDs for generality
+      sidre::View* gedges_view =
+        group_grp->createViewAndAllocate("edges", sidre::INT_ID, num_gedges * 2);
+      int* gedges_data = gedges_view->getData<int*>();
+
+      for(int ei = 0; ei < num_gedges; ++ei)
+      {
+        pmesh->GroupEdge(gi, ei, tmp_edge, tmp_orientation);
+        pmesh->GetEdgeVertices(tmp_edge, tmp_verts);
+        std::copy(tmp_verts.begin(), tmp_verts.end(), &gedges_data[2 * ei]);
+      }
+
+      int num_gtris = pmesh->GroupNTriangles(gi);
+      // Store the three vertices for each face instead of face IDs for generality
+      sidre::View* gtris_view = group_grp->createViewAndAllocate("triangles",
+                                                                 sidre::INT_ID,
+                                                                 num_gtris * 3);
+      int* gtris_data = gtris_view->getData<int*>();
+      for(int ti = 0; ti < num_gtris; ++ti)
+      {
+        pmesh->GroupTriangle(gi, ti, tmp_face, tmp_orientation);
+        pmesh->GetFaceVertices(tmp_face, tmp_verts);
+        std::copy(tmp_verts.begin(), tmp_verts.end(), &gtris_data[3 * ti]);
+      }
+
+      int num_gquads = pmesh->GroupNQuadrilaterals(gi);
+      // Store the four vertices for each face instead of face IDs for generality
+      sidre::View* gquads_view =
+        group_grp->createViewAndAllocate("quadrilaterals",
+                                         sidre::INT_ID,
+                                         num_gquads * 4);
+      int* gquads_data = gquads_view->getData<int*>();
+      for(int qi = 0; qi < num_gquads; ++qi)
+      {
+        pmesh->GroupQuadrilateral(gi, qi, tmp_face, tmp_orientation);
+        pmesh->GetFaceVertices(tmp_face, tmp_verts);
+        std::copy(tmp_verts.begin(), tmp_verts.end(), &gquads_data[4 * qi]);
       }
     }
   }
@@ -1430,6 +1475,15 @@ class SidreParMeshWrapper : public mfem::ParMesh
     // We can make a copy of this, will be small
     // Should this be a set?
     std::vector<int> neighbors;  // Rank IDs of the neighboring nodes/processes
+
+    int* raw_shared_edges;
+    int num_raw_shared_edges;
+
+    int* raw_shared_triangles;
+    int num_raw_shared_triangles;
+
+    int* raw_shared_quadrilaterals;
+    int num_raw_shared_quadrilaterals;
   };
 
   /**
@@ -1453,12 +1507,6 @@ class SidreParMeshWrapper : public mfem::ParMesh
 
     for(const auto& group_info : groups_info)
     {
-      // const int rc = std::sscanf(group_info.name.c_str(),
-      //                            "g%d_%d",
-      //                            &group_master_rank,
-      //                            &group_master_group);
-      // SLIC_ERROR_IF(rc != 2, "SidreDC: Failed to parse adjacency group name");
-
       mfem::IntegerSet integer_set;
       mfem::Array<int>& array = integer_set;  // Bind a ref so we can modify it
 
@@ -1487,12 +1535,10 @@ class SidreParMeshWrapper : public mfem::ParMesh
    * 
    * @param [in] groups_grp The blueprint group corresponding to the communication
    * groups, i.e. <blueprint_root>/adjsets/mesh/groups
-   * @param [in] dimension The dimension of the mesh
    * 
    * @return The fully populated vector of GroupInfo objects
-   * @post Calls CreateGroupTopology to initialize the gtopo member
    */
-  std::vector<GroupInfo> getGroupInfo(Group* groups_grp, const int dimension)
+  std::vector<GroupInfo> getGroupInfo(Group* groups_grp)
   {
     auto num_groups = groups_grp->getNumGroups();
     std::vector<GroupInfo> result(num_groups);
@@ -1534,181 +1580,32 @@ class SidreParMeshWrapper : public mfem::ParMesh
 
       // Copy the neighbors array
       auto group_neighbors = group_grp->getView("neighbors");
-      int* neighbors_array = group_neighbors->getArray();
+      int* neighbors_array = group_neighbors->getData<int*>();
       std::size_t num_neighbors = group_neighbors->getNumElements();
       grp_info.neighbors.assign(neighbors_array, neighbors_array + num_neighbors);
 
       // Fill in the vertices
       auto group_values = group_grp->getView("values");
-      grp_info.shared_verts = group_values->getArray();
+      grp_info.shared_verts = group_values->getData<int*>();
       grp_info.num_shared_verts = group_values->getNumElements();
+
+      // Fill in the edges
+      auto group_edges = group_grp->getView("edges");
+      grp_info.raw_shared_edges = group_edges->getData<int*>();
+      grp_info.num_raw_shared_edges = group_edges->getNumElements();
+
+      auto group_tris = group_grp->getView("triangles");
+      grp_info.raw_shared_triangles = group_tris->getData<int*>();
+      grp_info.num_raw_shared_triangles = group_tris->getNumElements();
+
+      auto group_quads = group_grp->getView("quadrilaterals");
+      grp_info.raw_shared_quadrilaterals = group_quads->getData<int*>();
+      grp_info.num_raw_shared_quadrilaterals = group_quads->getNumElements();
       group_idx++;
     }
 
     // Now we can construct the group topology
     CreateGroupTopology(result);
-
-    // We don't need to set up shared/edges or faces for a 1D mesh
-    if(dimension < 2)
-    {
-      return result;
-    }
-
-    // Get the list of boundary edges
-    std::unordered_set<int> bdr_edges;
-
-    std::unordered_set<int> not_bdr_edges;
-    // Working arrays
-    mfem::Array<int> tmp_bdr_edges;
-    mfem::Array<int> tmp_bdr_orientations;
-    if(dimension == 2)
-    {
-      // FIXME: This doesn't work in 3D, because an arbitrary number of elements can share an edge
-      for(int i = 0; i < GetNE(); i++)
-      {
-        GetElementEdges(i, tmp_bdr_edges, tmp_bdr_orientations);
-        for(const auto bdr_edge : tmp_bdr_edges)
-        {
-          // If the edge is already found (part of another element)
-          // it can't be a boundary edge
-          if(bdr_edges.count(bdr_edge))
-          {
-            // So we remove it
-            bdr_edges.erase(bdr_edge);
-            // And mark it as invalid
-            not_bdr_edges.insert(bdr_edge);
-          }
-          // Otherwise, if it hasn't been ruled out, we can insert it
-          else if(!not_bdr_edges.count(bdr_edge))
-          {
-            bdr_edges.insert(bdr_edge);
-          }
-        }
-      }
-    }
-
-    // We can be a little smarter in 3D
-    // FIXME: We already iterate over faces when we identify shared faces, so this could be
-    // sped up a bit at the cost of organization
-    else if(dimension == 3)
-    {
-      for(int i = 0; i < GetNFaces(); i++)
-      {
-        // The mesh has already been constructed enough
-        // (i.e. the base subobject) that we can identify interior faces
-        // So for each exterior face...
-        if(!FaceIsTrueInterior(i))
-        {
-          // ...we can grab its edges (all of which must be shared)
-          GetFaceEdges(i, tmp_bdr_edges, tmp_bdr_orientations);
-          bdr_edges.insert(tmp_bdr_edges.begin(), tmp_bdr_edges.end());
-          // if (MyRank == 1)
-          // {
-          //   SLIC_INFO("bdr element " << i << " has edges");
-          //   for (auto edge : tmp_bdr_edges)
-          //   {
-          //     mfem::Array<int> verts;
-          //     GetEdgeVertices(edge, verts);
-          //     SLIC_INFO("possible bdr edge " << verts[0] << " " << verts[1]);
-          //   }
-          // }
-        }
-      }
-    }
-
-    for(const auto edge : bdr_edges)
-    {
-      mfem::Array<int> verts;
-      GetEdgeVertices(edge, verts);
-      // if(MyRank == 1) SLIC_INFO("bdr edge " << verts[0] << " " << verts[1]);
-    }
-
-    auto edgeIsNotInterior = [&bdr_edges](const int edge_idx) {
-      return bdr_edges.count(edge_idx);
-    };
-
-    // Walk through the *geometric* groups in reverse
-    // and determine the shared edges and faces
-    // boost::adaptors::reverse would be nice here
-    for(auto grp_info_iter = result.rbegin(); grp_info_iter != result.rend();
-        ++grp_info_iter)
-    {
-      auto& grp_info = *grp_info_iter;  // Just for convenience
-
-      // Convert to a hash table for faster lookup/search
-      shared_vertices.insert(grp_info.shared_verts,
-                             grp_info.shared_verts + grp_info.num_shared_verts);
-
-      std::unordered_set<int> neighbor_vertices(
-        grp_info.shared_verts,
-        grp_info.shared_verts + grp_info.num_shared_verts);
-
-      // To be able to use another group's vertices,
-      // my neighbors must be a subset of the neighbors of that group
-      // FIXME: This is not quite correct, I think we need to figure out
-      // which neighbor an edge corresponds to and also check that
-      for(const auto& result_grp : result)
-      {
-        if(std::all_of(grp_info.neighbors.begin(),
-                       grp_info.neighbors.end(),
-                       [&result_grp](const int neighbor) {
-                         // This is just a search, returns true if the neighbor was found
-                         return std::find(result_grp.neighbors.begin(),
-                                          result_grp.neighbors.end(),
-                                          neighbor) != result_grp.neighbors.end();
-                       }))
-        {
-          // SLIC_INFO("On rank " << MyRank << ", group " << result_grp.name
-          //                      << " can be used by " << grp_info.name);
-          neighbor_vertices.insert(
-            result_grp.shared_verts,
-            result_grp.shared_verts + result_grp.num_shared_verts);
-        }
-      }
-
-      // Scratchpad array for storing vertices of an edge/face
-      mfem::Array<int> verts;
-
-      // Add all the shared edges
-      for(int i = 0; i < GetNEdges(); i++)
-      {
-        GetEdgeVertices(i, verts);
-        // Check if it hasn't been assigned yet and it's a shared edge
-        if(!already_processed_edges.count(i) && shared_vertices.count(verts[0]) &&
-           shared_vertices.count(verts[1]) && neighbor_vertices.count(verts[0]) &&
-           neighbor_vertices.count(verts[1]) && edgeIsNotInterior(i))
-        {
-          grp_info.shared_edges.push_back(i);
-          already_processed_edges.insert(i);
-        }
-      }
-      // Fill in the faces, if applicable
-      if(dimension >= 3)
-      {
-        // Add all the shared faces
-        for(int i = 0; i < GetNumFaces(); i++)
-        {
-          GetFaceVertices(i, verts);
-          // Check if it hasn't been assigned yet and it's a shared face
-          if(!already_processed_faces.count(i) &&
-             std::all_of(verts.begin(),
-                         verts.end(),
-                         [&shared_vertices](const int vert) {
-                           return shared_vertices.count(vert);
-                         }) &&
-             std::all_of(verts.begin(),
-                         verts.end(),
-                         [&neighbor_vertices](const int vert) {
-                           return neighbor_vertices.count(vert);
-                         }) &&
-             !FaceIsTrueInterior(i))
-          {
-            grp_info.shared_faces.push_back(i);
-            already_processed_faces.insert(i);
-          }
-        }
-      }
-    }
     return result;
   }
 
@@ -1774,7 +1671,10 @@ public:
     auto groups_grp = bp_grp->getGroup("adjsets/mesh/groups");
     auto num_groups = groups_grp->getNumGroups();
 
-    auto groups_info = getGroupInfo(groups_grp, dimension);
+    auto groups_info = getGroupInfo(groups_grp);
+
+    // Set up the gtopo object
+    CreateGroupTopology(groups_info);
 
     std::size_t total_shared_vertices = 0;
     std::size_t total_shared_edges = 0;
@@ -1783,8 +1683,9 @@ public:
     for(const auto& group_info : groups_info)
     {
       total_shared_vertices += group_info.num_shared_verts;
-      total_shared_edges += group_info.shared_edges.size();
-      total_shared_faces += group_info.shared_faces.size();
+      total_shared_edges += group_info.num_raw_shared_edges / 2;
+      total_shared_faces += group_info.num_raw_shared_triangles / 3;
+      total_shared_faces += group_info.num_raw_shared_quadrilaterals / 4;
     }
 
     // Resizing for shared vertex data
@@ -1838,68 +1739,42 @@ public:
         // Scratchpad array for storing vertices of an edge/face
         mfem::Array<int> verts;
 
-        // if(MyRank == 0)
-        // {
-        //   SLIC_INFO("Number of shared edges: " << group_info.shared_edges.size());
-        // }
-
-        // Add all the shared edges
-        auto n_shared_edges = group_info.shared_edges.size();
+        auto n_shared_edges = group_info.num_raw_shared_edges / 2;
         n_shared_edges += global_shared_edge_idx;
-        SLIC_ERROR_IF(n_shared_edges > static_cast<std::size_t>(
-                                         group_sedge.Size_of_connections()),
+        SLIC_ERROR_IF(n_shared_edges > group_sedge.Size_of_connections(),
                       "incorrect number of total_shared_edges");
         group_sedge.GetI()[group_idx] = n_shared_edges;
 
-        for(const auto shared_edge_idx : group_info.shared_edges)
+        int* edges = group_info.raw_shared_edges;
+
+        for(int i = 0; i < group_info.num_raw_shared_edges; i += 2)
         {
-          GetEdgeVertices(shared_edge_idx, verts);
           group_sedge.GetJ()[global_shared_edge_idx] = global_shared_edge_idx;
           shared_edges[global_shared_edge_idx] =
-            new mfem::Segment(verts[0], verts[1], 1);
+            new mfem::Segment(edges[i], edges[i + 1], 1);
           global_shared_edge_idx++;
-          // if(MyRank == 0)
-          // {
-          //   SLIC_INFO("Shared edge with verts: " << verts[0] << " " << verts[1]);
-          // }
         }
 
         if(dimension >= 3)
         {
           // Add all the shared faces
-          std::size_t triangles_added = 0;
-          std::size_t quadrilaterals_added = 0;
-
-          // if(MyRank == 0)
-          // {
-          //   SLIC_INFO(
-          //     "Number of shared faces: " << group_info.shared_faces.size());
-          // }
-
-          for(const auto shared_face_idx : group_info.shared_faces)
+          int* tris = group_info.raw_shared_triangles;
+          for(int i = 0; i < group_info.num_raw_shared_triangles; i += 3)
           {
-            GetFaceVertices(shared_face_idx, verts);
-            switch(GetFaceBaseGeometry(shared_face_idx))
-            {
-            case mfem::Geometry::TRIANGLE:
-              shared_trias.Append({verts[0], verts[1], verts[2]});
-              // if(MyRank == 0)
-              // {
-              //   SLIC_INFO("Shared triangle with verts: "
-              //             << verts[0] << " " << verts[1] << " " << verts[2]);
-              // }
-              triangles_added++;
-              break;
-            case mfem::Geometry::SQUARE:
-              shared_quads.Append({verts[0], verts[1], verts[2], verts[3]});
-              quadrilaterals_added++;
-              break;
-            default:
-              SLIC_ERROR("Face " << shared_face_idx << " had invalid geometry");
-            }
+            shared_trias.Append({tris[i], tris[i + 1], tris[i + 2]});
           }
-          group_stria.AddColumnsInRow(group_idx - 1, triangles_added);
-          group_squad.AddColumnsInRow(group_idx - 1, quadrilaterals_added);
+
+          int* quads = group_info.raw_shared_quadrilaterals;
+          for(int i = 0; i < group_info.num_raw_shared_quadrilaterals; i += 4)
+          {
+            shared_quads.Append(
+              {quads[i], quads[i + 1], quads[i + 2], quads[i + 3]});
+          }
+          group_stria.AddColumnsInRow(group_idx - 1,
+                                      group_info.num_raw_shared_triangles / 3);
+          group_squad.AddColumnsInRow(
+            group_idx - 1,
+            group_info.num_raw_shared_quadrilaterals / 4);
         }
       }
 
