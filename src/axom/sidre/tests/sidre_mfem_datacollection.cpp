@@ -280,7 +280,7 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh, bool debug_print = fal
   MFEMSidreDataCollection sdc_writer(COLL_NAME, &parmesh, owns_mesh);
   if(debug_print && sdc_writer.GetBPGroup()->hasGroup("adjsets"))
   {
-    sdc_writer.GetBPGroup()->getGroup("adjsets/mesh/groups")->print(fout);
+    sdc_writer.GetBPGroup()->print(fout);
   }
 
   // Save some basic info about the mesh

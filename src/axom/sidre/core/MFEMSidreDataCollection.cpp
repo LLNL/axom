@@ -515,16 +515,6 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
       m_bp_index_grp->createGroup("adjsets");
     }
   }
-  // SLIC_INFO("on rank " << myid << " writing " << pmesh->GetNGroups()
-  //                      << " groups");
-
-  // {
-  //   volatile int i = 0;
-  //   printf("PID %d ready for attach\n", getpid());
-  //   fflush(stdout);
-  //   while (0 == i)
-  //       sleep(5);
-  // }
 
   mfem::Array<int> tmp_verts;
   int tmp_edge;
@@ -535,12 +525,6 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
   {
     int num_gneighbors = pmesh->gtopo.GetGroupSize(gi);
     int num_gvertices = pmesh->GroupNVertices(gi);
-    // if(myid == 1)
-    // {
-    //   SLIC_INFO("Writing group number " << gi << " with " << num_gneighbors
-    //                                     << " neighbors and " << num_gvertices
-    //                                     << " vertices");
-    // }
 
     // Skip creation of empty groups
     // if(num_gneighbors > 1 && num_gvertices > 0)
@@ -1465,25 +1449,79 @@ class SidreParMeshWrapper : public mfem::ParMesh
    */
   struct GroupInfo
   {
-    // Avoid making a copy, could also write a basic span
+    /**
+     * @brief A span over a list of vectors arranged contiguously (not interleaved)
+     * Allows for convenient iteration over the list without having to manage
+     * sizes and offsets in multiple places
+     */
     // TODO: Replace with std::span when C++20 is available
+    class VectorSpan
+    {
+    public:
+      /**
+         * @brief Constructs a new VectorSpan
+         * @param [in] data The data to build a view over
+         * @param [in] num_scalars The length of the data array
+         * @param [in] num_components The number of components in each vector
+         */
+      VectorSpan(const int* data, const int num_scalars, const int num_components)
+        : m_data(data)
+        , m_num_vectors(num_scalars / num_components)
+        , m_num_components(num_components)
+      { }
+
+      VectorSpan() = default;
+
+      int size() const { return m_num_vectors; }
+
+      const int* operator[](const int index) const
+      {
+        return m_data + (index * m_num_components);
+      }
+
+      class VectorSpanIterator
+      {
+      public:
+        VectorSpanIterator(const int* start, const int stride)
+          : m_ptr(start)
+          , m_stride(stride)
+        { }
+
+        bool operator!=(const VectorSpanIterator& other)
+        {
+          return m_ptr != other.m_ptr;
+        }
+        void operator++() { m_ptr += m_stride; }
+        const int* operator*() const { return m_ptr; }
+
+      private:
+        const int* m_ptr;
+        const int m_stride;
+      };
+
+      auto begin() const
+      {
+        return VectorSpanIterator(m_data, m_num_components);
+      }
+      auto end() const
+      {
+        return VectorSpanIterator(m_data + (m_num_vectors * m_num_components),
+                                  m_num_components);
+      }
+
+    private:
+      const int* m_data;
+      int m_num_vectors;
+      int m_num_components;
+    };
     int* shared_verts;     // The raw array of indices of shared vertices
     int num_shared_verts;  // The number of shared vertices
-    std::vector<int> shared_edges;  // Indices of edges that are shared with other groups
-    std::vector<int> shared_faces;  // Indices of faces that are shared with other groups
     std::string name;  // Name of the group, of the form master_rank, master_group_id
-    // We can make a copy of this, will be small
-    // Should this be a set?
     std::vector<int> neighbors;  // Rank IDs of the neighboring nodes/processes
 
-    int* raw_shared_edges;
-    int num_raw_shared_edges;
-
-    int* raw_shared_triangles;
-    int num_raw_shared_triangles;
-
-    int* raw_shared_quadrilaterals;
-    int num_raw_shared_quadrilaterals;
+    VectorSpan shared_edges;
+    VectorSpan shared_triangles;
+    VectorSpan shared_quadrilaterals;
   };
 
   /**
@@ -1494,9 +1532,6 @@ class SidreParMeshWrapper : public mfem::ParMesh
    */
   void CreateGroupTopology(const std::vector<GroupInfo>& groups_info)
   {
-    // I don't think we need this information at any point
-    // int group_master_rank;   // The rank of the group master for a given group
-    // int group_master_group;  // The group number in the master for a given group
     mfem::ListOfIntegerSets group_integer_sets;
 
     // The first group always contains only the current rank
@@ -1543,23 +1578,6 @@ class SidreParMeshWrapper : public mfem::ParMesh
     auto num_groups = groups_grp->getNumGroups();
     std::vector<GroupInfo> result(num_groups);
 
-    // We keep a set of already-processed vertices,
-    // if all vertices in an edge/face are in the set,
-    // then we say that the edge/face is shared.
-    // Iteration is done in backwards order, so the last
-    // group will have only shared edges/faces if they are
-    // in the set of shared vertices for that one last group.
-    // But the penultimate group will check its own shared vertices
-    // the shared vertices of the last group, et cetera.
-
-    // We use a set structure for faster lookup
-    std::unordered_set<int> shared_vertices;
-
-    // Don't want duplicate entries of a shared edge or
-    // face across multiple groups
-    std::unordered_set<int> already_processed_edges;
-    std::unordered_set<int> already_processed_faces;
-
     // Iterate over the *sidre* group to find the sidre::IndexType
     // indices for each *geometric* group
     std::vector<sidre::IndexType> groups_grp_idxs;
@@ -1591,16 +1609,23 @@ class SidreParMeshWrapper : public mfem::ParMesh
 
       // Fill in the edges
       auto group_edges = group_grp->getView("edges");
-      grp_info.raw_shared_edges = group_edges->getData<int*>();
-      grp_info.num_raw_shared_edges = group_edges->getNumElements();
+      grp_info.shared_edges =
+        GroupInfo::VectorSpan(group_edges->getData<int*>(),
+                              group_edges->getNumElements(),
+                              2);
 
       auto group_tris = group_grp->getView("triangles");
-      grp_info.raw_shared_triangles = group_tris->getData<int*>();
-      grp_info.num_raw_shared_triangles = group_tris->getNumElements();
+      grp_info.shared_triangles =
+        GroupInfo::VectorSpan(group_tris->getData<int*>(),
+                              group_tris->getNumElements(),
+                              3);
 
       auto group_quads = group_grp->getView("quadrilaterals");
-      grp_info.raw_shared_quadrilaterals = group_quads->getData<int*>();
-      grp_info.num_raw_shared_quadrilaterals = group_quads->getNumElements();
+      grp_info.shared_quadrilaterals =
+        GroupInfo::VectorSpan(group_quads->getData<int*>(),
+                              group_quads->getNumElements(),
+                              4);
+
       group_idx++;
     }
 
@@ -1683,9 +1708,9 @@ public:
     for(const auto& group_info : groups_info)
     {
       total_shared_vertices += group_info.num_shared_verts;
-      total_shared_edges += group_info.num_raw_shared_edges / 2;
-      total_shared_faces += group_info.num_raw_shared_triangles / 3;
-      total_shared_faces += group_info.num_raw_shared_quadrilaterals / 4;
+      total_shared_edges += group_info.shared_edges.size();
+      total_shared_faces += group_info.shared_triangles.size();
+      total_shared_faces += group_info.shared_quadrilaterals.size();
     }
 
     // Resizing for shared vertex data
@@ -1739,42 +1764,36 @@ public:
         // Scratchpad array for storing vertices of an edge/face
         mfem::Array<int> verts;
 
-        auto n_shared_edges = group_info.num_raw_shared_edges / 2;
+        auto n_shared_edges = group_info.shared_edges.size();
         n_shared_edges += global_shared_edge_idx;
         SLIC_ERROR_IF(n_shared_edges > group_sedge.Size_of_connections(),
                       "incorrect number of total_shared_edges");
         group_sedge.GetI()[group_idx] = n_shared_edges;
 
-        int* edges = group_info.raw_shared_edges;
-
-        for(int i = 0; i < group_info.num_raw_shared_edges; i += 2)
+        for(const auto edge : group_info.shared_edges)
         {
           group_sedge.GetJ()[global_shared_edge_idx] = global_shared_edge_idx;
-          shared_edges[global_shared_edge_idx] =
-            new mfem::Segment(edges[i], edges[i + 1], 1);
+          shared_edges[global_shared_edge_idx] = new mfem::Segment(edge, 1);
           global_shared_edge_idx++;
         }
 
         if(dimension >= 3)
         {
           // Add all the shared faces
-          int* tris = group_info.raw_shared_triangles;
-          for(int i = 0; i < group_info.num_raw_shared_triangles; i += 3)
+          for(const auto triangle : group_info.shared_triangles)
           {
-            shared_trias.Append({tris[i], tris[i + 1], tris[i + 2]});
+            shared_trias.Append({triangle[0], triangle[1], triangle[2]});
           }
 
-          int* quads = group_info.raw_shared_quadrilaterals;
-          for(int i = 0; i < group_info.num_raw_shared_quadrilaterals; i += 4)
+          for(const auto quad : group_info.shared_quadrilaterals)
           {
-            shared_quads.Append(
-              {quads[i], quads[i + 1], quads[i + 2], quads[i + 3]});
+            shared_quads.Append({quad[0], quad[1], quad[2], quad[3]});
           }
+
           group_stria.AddColumnsInRow(group_idx - 1,
-                                      group_info.num_raw_shared_triangles / 3);
-          group_squad.AddColumnsInRow(
-            group_idx - 1,
-            group_info.num_raw_shared_quadrilaterals / 4);
+                                      group_info.shared_triangles.size());
+          group_squad.AddColumnsInRow(group_idx - 1,
+                                      group_info.shared_quadrilaterals.size());
         }
       }
 
@@ -1810,16 +1829,35 @@ public:
 // private method
 void MFEMSidreDataCollection::reconstructMesh()
 {
-  // assumes m_own_mesh_data
+  // mfem::ConduitDataCollection::BlueprintMeshToMesh would be useful here, but
+  // we need all the parameters to construct a ParMesh (the Mesh base subobject
+  // is initialized manually)
 
+  SLIC_ERROR_IF(
+    !verifyMeshBlueprint(),
+    "Cannot reconstruct mesh, data does not satisfy Conduit Blueprint");
+
+  SLIC_ERROR_IF(!m_bp_grp->hasView("coordsets/coords/values/x"),
+                "Cannot reconstruct a mesh without a Cartesian coordinate set");
+
+  View* vertex_view = m_bp_grp->getView("coordsets/coords/values/x");
+  SLIC_ERROR_IF(vertex_view->isExternal(),
+                "Cannot reconstruct a mesh that was built using external data");
+
+  // Assumes that Vertex is a standard layout type with only an array member
+  const std::size_t EXPECTED_STRIDE = sizeof(mfem::Vertex) / sizeof(double);
+  if((vertex_view->getTypeID() != DataTypeId::DOUBLE_ID) ||
+     (vertex_view->getStride() != EXPECTED_STRIDE))
+  {
+    SLIC_ERROR("Vertex array must consist of interleaved doubles");
+  }
   // Sufficient to always grab the underlying data to the x-coords
   // as the layout of the internal buffer is identical to what MFEM
   // expects, i.e., x0 y0 z0 x1 y1 z1 regardless of dimension
-  double* vertices = m_bp_grp->getView("coordsets/coords/values/x")->getData();
+  double* vertices = vertex_view->getData();
 
   // Use the x to get the number of vertices
-  int num_vertices =
-    m_bp_grp->getView("coordsets/coords/values/x")->getNumElements();
+  int num_vertices = vertex_view->getNumElements();
 
   // Element indices
   int* element_indices =
