@@ -1442,6 +1442,79 @@ class SidreParMeshWrapper : public mfem::ParMesh
 
     FinalizeTopology();
   }
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  /**
+   * @brief A span over a list of vectors arranged contiguously (not interleaved)
+   * Allows for convenient iteration over the list without having to manage
+   * sizes and offsets in multiple places
+   */
+  // TODO: Replace with std::span when C++20 is available
+  class VectorSpan
+  {
+  public:
+    /**
+       * @brief Constructs a new VectorSpan
+       * @param [in] data The data to build a view over
+       * @param [in] num_scalars The length of the data array
+       * @param [in] num_components The number of components in each vector
+       */
+    VectorSpan(const int* data,
+               const IndexType num_scalars,
+               const IndexType num_components)
+      : m_data(data)
+      , m_num_vectors(num_scalars / num_components)
+      , m_num_components(num_components)
+    {
+      SLIC_ERROR_IF(num_scalars % num_components != 0,
+                    "VectorSpan number of components does not evenly divide "
+                    "length of array");
+    }
+
+    VectorSpan() = default;
+
+    /**
+     * @brief Returns the number of vectors referenced in the span
+     */
+    int size() const { return m_num_vectors; }
+
+    /**
+     * @brief Helper class to iterate over the vector span
+     */
+    class VectorSpanIterator
+    {
+    public:
+      VectorSpanIterator(const int* start, const IndexType stride)
+        : m_ptr(start)
+        , m_stride(stride)
+      { }
+
+      bool operator!=(const VectorSpanIterator& other)
+      {
+        return m_ptr != other.m_ptr;
+      }
+      void operator++()
+      {
+        m_ptr += m_stride;
+      }  // Moves the pointer forward by the stride
+      const int* operator*() const { return m_ptr; }
+
+    private:
+      const int* m_ptr;
+      const IndexType m_stride;
+    };
+
+    auto begin() const { return VectorSpanIterator(m_data, m_num_components); }
+    auto end() const
+    {
+      return VectorSpanIterator(m_data + (m_num_vectors * m_num_components),
+                                m_num_components);
+    }
+
+  private:
+    const int* m_data = nullptr;
+    IndexType m_num_vectors;
+    IndexType m_num_components;
+  };
 
   /**
    * @brief A data class containing all relevant information needed on geometric
@@ -1449,79 +1522,11 @@ class SidreParMeshWrapper : public mfem::ParMesh
    */
   struct GroupInfo
   {
-    /**
-     * @brief A span over a list of vectors arranged contiguously (not interleaved)
-     * Allows for convenient iteration over the list without having to manage
-     * sizes and offsets in multiple places
-     */
-    // TODO: Replace with std::span when C++20 is available
-    class VectorSpan
-    {
-    public:
-      /**
-         * @brief Constructs a new VectorSpan
-         * @param [in] data The data to build a view over
-         * @param [in] num_scalars The length of the data array
-         * @param [in] num_components The number of components in each vector
-         */
-      VectorSpan(const int* data, const int num_scalars, const int num_components)
-        : m_data(data)
-        , m_num_vectors(num_scalars / num_components)
-        , m_num_components(num_components)
-      { }
-
-      VectorSpan() = default;
-
-      int size() const { return m_num_vectors; }
-
-      const int* operator[](const int index) const
-      {
-        return m_data + (index * m_num_components);
-      }
-
-      class VectorSpanIterator
-      {
-      public:
-        VectorSpanIterator(const int* start, const int stride)
-          : m_ptr(start)
-          , m_stride(stride)
-        { }
-
-        bool operator!=(const VectorSpanIterator& other)
-        {
-          return m_ptr != other.m_ptr;
-        }
-        void operator++() { m_ptr += m_stride; }
-        const int* operator*() const { return m_ptr; }
-
-      private:
-        const int* m_ptr;
-        const int m_stride;
-      };
-
-      auto begin() const
-      {
-        return VectorSpanIterator(m_data, m_num_components);
-      }
-      auto end() const
-      {
-        return VectorSpanIterator(m_data + (m_num_vectors * m_num_components),
-                                  m_num_components);
-      }
-
-    private:
-      const int* m_data;
-      int m_num_vectors;
-      int m_num_components;
-    };
-    int* shared_verts;     // The raw array of indices of shared vertices
-    int num_shared_verts;  // The number of shared vertices
-    std::string name;  // Name of the group, of the form master_rank, master_group_id
+    VectorSpan shared_verts;  // Indices of shared vertices
+    VectorSpan shared_edges;  // Pairs of vertex indices corresponding to shared edges
+    VectorSpan shared_triangles;  // 3-tuples of vertex indices corresponding to shared triangular faces
+    VectorSpan shared_quadrilaterals;  // 4-tuples of vertex indices corresponding to shared quadrilateral faces
     std::vector<int> neighbors;  // Rank IDs of the neighboring nodes/processes
-
-    VectorSpan shared_edges;
-    VectorSpan shared_triangles;
-    VectorSpan shared_quadrilaterals;
   };
 
   /**
@@ -1578,23 +1583,15 @@ class SidreParMeshWrapper : public mfem::ParMesh
     auto num_groups = groups_grp->getNumGroups();
     std::vector<GroupInfo> result(num_groups);
 
-    // Iterate over the *sidre* group to find the sidre::IndexType
-    // indices for each *geometric* group
-    std::vector<sidre::IndexType> groups_grp_idxs;
+    // Iterate over both the *sidre* groups group
+    // to fill in the *geometric* group data
+    int group_idx = 0;
     for(auto idx = groups_grp->getFirstValidGroupIndex();
         sidre::indexIsValid(idx);
         idx = groups_grp->getNextValidGroupIndex(idx))
     {
-      groups_grp_idxs.push_back(idx);
-    }
-
-    // Make a first pass to initialize the shared vertices and neighbors
-    int group_idx = 0;
-    for(const auto& idx : groups_grp_idxs)
-    {
       auto group_grp = groups_grp->getGroup(idx);
       auto& grp_info = result[group_idx];
-      grp_info.name = group_grp->getName();
 
       // Copy the neighbors array
       auto group_neighbors = group_grp->getView("neighbors");
@@ -1602,35 +1599,29 @@ class SidreParMeshWrapper : public mfem::ParMesh
       std::size_t num_neighbors = group_neighbors->getNumElements();
       grp_info.neighbors.assign(neighbors_array, neighbors_array + num_neighbors);
 
-      // Fill in the vertices
-      auto group_values = group_grp->getView("values");
-      grp_info.shared_verts = group_values->getData<int*>();
-      grp_info.num_shared_verts = group_values->getNumElements();
+      // This group's shared vertices
+      auto verts = group_grp->getView("values");
+      grp_info.shared_verts = {verts->getData<int*>(), verts->getNumElements(), 1};
 
-      // Fill in the edges
-      auto group_edges = group_grp->getView("edges");
-      grp_info.shared_edges =
-        GroupInfo::VectorSpan(group_edges->getData<int*>(),
-                              group_edges->getNumElements(),
-                              2);
+      // This group's shared edges
+      auto edges = group_grp->getView("edges");
+      grp_info.shared_edges = {edges->getData<int*>(), edges->getNumElements(), 2};
 
-      auto group_tris = group_grp->getView("triangles");
-      grp_info.shared_triangles =
-        GroupInfo::VectorSpan(group_tris->getData<int*>(),
-                              group_tris->getNumElements(),
-                              3);
+      // This group's shared triangular faces
+      auto tris = group_grp->getView("triangles");
+      grp_info.shared_triangles = {tris->getData<int*>(),
+                                   tris->getNumElements(),
+                                   3};
 
-      auto group_quads = group_grp->getView("quadrilaterals");
-      grp_info.shared_quadrilaterals =
-        GroupInfo::VectorSpan(group_quads->getData<int*>(),
-                              group_quads->getNumElements(),
-                              4);
+      // This group's shared quadrilateral faces
+      auto quads = group_grp->getView("quadrilaterals");
+      grp_info.shared_quadrilaterals = {quads->getData<int*>(),
+                                        quads->getNumElements(),
+                                        4};
 
       group_idx++;
     }
 
-    // Now we can construct the group topology
-    CreateGroupTopology(result);
     return result;
   }
 
@@ -1640,10 +1631,12 @@ public:
    * to an mfem::ParMesh*
    * 
    * @param [in] bp_grp The root group of the Conduit Blueprint structure
+   * @param [in] comm The MPI communicator to use with the new mesh
    * 
    * The remaining parameters are used to construct the mfem::Mesh base subobject
    */
   SidreParMeshWrapper(Group* bp_grp,
+                      MPI_Comm comm,
                       double* vertices,
                       int num_vertices,
                       int* element_indices,
@@ -1657,8 +1650,8 @@ public:
                       int dimension,
                       int space_dimension = -1)
   {
-    MyComm = MPI_COMM_WORLD;  // FIXME parameter
-    gtopo.SetComm(MPI_COMM_WORLD);
+    MyComm = comm;
+    gtopo.SetComm(comm);
     CreateMesh(vertices,
                num_vertices,
                element_indices,
@@ -1707,7 +1700,7 @@ public:
 
     for(const auto& group_info : groups_info)
     {
-      total_shared_vertices += group_info.num_shared_verts;
+      total_shared_vertices += group_info.shared_verts.size();
       total_shared_edges += group_info.shared_edges.size();
       total_shared_faces += group_info.shared_triangles.size();
       total_shared_faces += group_info.shared_quadrilaterals.size();
@@ -1745,17 +1738,17 @@ public:
     for(const auto& group_info : groups_info)
     {
       // Add shared vertices
-      auto n_shared_verts = group_info.num_shared_verts;
+      auto n_shared_verts = group_info.shared_verts.size();
       n_shared_verts +=
         global_shared_vert_idx;  // Get the index into the global table
       SLIC_ERROR_IF(n_shared_verts > group_svert.Size_of_connections(),
                     "incorrect number of total_shared_vertices");
       group_svert.GetI()[group_idx] = n_shared_verts;
 
-      for(int i = 0; i < group_info.num_shared_verts; i++)
+      for(const auto vert : group_info.shared_verts)
       {
         group_svert.GetJ()[global_shared_vert_idx] = global_shared_vert_idx;
-        svert_lvert[global_shared_vert_idx] = group_info.shared_verts[i];
+        svert_lvert[global_shared_vert_idx] = *vert;
         global_shared_vert_idx++;
       }
 
@@ -1826,6 +1819,8 @@ public:
   }
 };
 
+  #endif  // defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+
 // private method
 void MFEMSidreDataCollection::reconstructMesh()
 {
@@ -1859,6 +1854,9 @@ void MFEMSidreDataCollection::reconstructMesh()
   // Use the x to get the number of vertices
   int num_vertices = vertex_view->getNumElements();
 
+  SLIC_ERROR_IF(!m_bp_grp->hasGroup("topologies/mesh/elements"),
+                "Cannot reconstruct mesh without mesh topology");
+
   // Element indices
   int* element_indices =
     m_bp_grp->getView("topologies/mesh/elements/connectivity")->getData<int*>();
@@ -1867,13 +1865,17 @@ void MFEMSidreDataCollection::reconstructMesh()
   std::string element_name =
     m_bp_grp->getView("topologies/mesh/elements/shape")->getString();
 
+  View* element_attribute_view =
+    m_bp_grp->getView("fields/mesh_material_attribute/values");
+
   // Element attributes
-  int* element_attributes =
-    m_bp_grp->getView("fields/mesh_material_attribute/values")->getData<int*>();
+  int* element_attributes = element_attribute_view->getData<int*>();
 
   // Number of elements
-  int num_elements =
-    m_bp_grp->getView("fields/mesh_material_attribute/values")->getNumElements();
+  int num_elements = element_attribute_view->getNumElements();
+
+  SLIC_ERROR_IF(!m_bp_grp->hasGroup("topologies/boundary/elements"),
+                "Cannot reconstruct mesh without boundary topology");
 
   // Indices of boundary elements
   int* boundary_indices =
@@ -1883,13 +1885,14 @@ void MFEMSidreDataCollection::reconstructMesh()
   std::string bdr_element_name =
     m_bp_grp->getView("topologies/boundary/elements/shape")->getString();
 
-  // Boundary attributes
-  int* boundary_attributes =
-    m_bp_grp->getView("fields/boundary_material_attribute/values")->getData<int*>();
+  View* bdr_attribute_view =
+    m_bp_grp->getView("fields/boundary_material_attribute/values");
 
-  // Number of boundariy elements
-  int num_boundary_elements =
-    m_bp_grp->getView("fields/boundary_material_attribute/values")->getNumElements();
+  // Boundary attributes
+  int* boundary_attributes = bdr_attribute_view->getData<int*>();
+
+  // Number of boundary elements
+  int num_boundary_elements = bdr_attribute_view->getNumElements();
 
   int dimension = 1;
 
@@ -1905,19 +1908,14 @@ void MFEMSidreDataCollection::reconstructMesh()
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   // If it has an adjacencies group, the reloaded state was a ParMesh
-
-  // FIXME: This does not work, the mesh read in on a given node is already
-  // only the local part of the mesh, attempting to create a ParMesh with it
-  // will result in the local partition being repartitioned
   if(m_bp_grp->hasGroup("adjsets/mesh"))
   {
-    // I don't think it's possible to save an MPI communicator in the datastore
-    // Though typically they are just integers
     SLIC_ERROR_IF(m_comm == MPI_COMM_NULL,
                   "Must set the communicator with SetComm before a ParMesh can "
                   "be reconstructed");
 
     mesh = new SidreParMeshWrapper(m_bp_grp,
+                                   m_comm,
                                    vertices,
                                    num_vertices,
                                    element_indices,
