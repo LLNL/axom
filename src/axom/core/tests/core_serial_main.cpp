@@ -5,6 +5,8 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"  // for compile-time definitions
+
 #include "core_array.hpp"
 #include "core_execution_for_all.hpp"
 #include "core_execution_space.hpp"
