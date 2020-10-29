@@ -165,13 +165,9 @@ namespace sidre
 
     @note QuadratureFunction%s (q-fields) are not supported.
 
-    @note MFEMSidreDataCollection does not manage the FiniteElementSpace%s and
-    FiniteElementCollection%s associated with registered GridFunction%s.
-    Therefore, field registration is left to the user of MFEMSidreDataCollection
-       and
-    there are no methods that automatically register GridFunction%s using just
-    the content of the Sidre DataStore. Such capabilities can be implemented in
-    a derived class, adding any desired object management routines.
+    @note MFEMSidreDataCollection will attempt to reconstruct meshes and fields
+    on a restart, and will automatically register them.  This functionality is
+    experimental.
 
     @warning This class is still _experimental_, meaning that in future
     releases, it may not be backward compatible, and the output files generated
@@ -342,7 +338,7 @@ public:
   void Save(const std::string& filename, const std::string& protocol);
 
   /// Load the Sidre DataStore from file.
-  /** No mesh or fields are read from the loaded DataStore.
+  /** The mesh and fields will be read from the loaded datastore
 
       If the data collection created the datastore, it knows the layout of
       where the domain and global groups are, and can restore them after the

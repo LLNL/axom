@@ -16,8 +16,6 @@
 
   #include "MFEMSidreDataCollection.hpp"
 
-  #include <unistd.h>
-
 using mfem::Array;
 using mfem::GridFunction;
 using mfem::Mesh;
@@ -591,7 +589,7 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
       // edge/face indices correspond to vertex indices
       if(dim >= 2)
       {
-        // Don't create the group if there are no s
+        // Don't create the group if there are no elements
         if(num_gedges > 0)
         {
           sidre::View* gedges_view =
@@ -658,9 +656,8 @@ bool MFEMSidreDataCollection::verifyMeshBlueprint()
   bool result = conduit::blueprint::mesh::verify(mesh_node, verify_info);
   // conduit::Node::to_string only available in latest version
   SLIC_WARNING_IF(!result,
-                  "MFEMSidreDataCollection blueprint verification failed: " /*<<
-                                                                               verify_info.to_string()
-                                                                               */                          );
+                  "MFEMSidreDataCollection blueprint verification failed: "
+                    /*<< verify_info.to_string()*/);
   return result;
 }
 
@@ -828,7 +825,9 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   // variables.
   if(m_owns_datastore)
   {
-    SetGroupPointers(m_datastore_ptr->getRoot()->getGroup(name + "_global"),
+    // Use the same path format as was used to create the datastore
+    SetGroupPointers(m_datastore_ptr->getRoot()->getGroup(
+                       name + "_global/blueprint_index/" + name),
                      m_datastore_ptr->getRoot()->getGroup(name));
 
     UpdateStateFromDS();
@@ -1714,6 +1713,9 @@ public:
                dimension,
                space_dimension);
 
+    SLIC_ERROR_IF(!bp_grp->hasGroup("adjsets"),
+                  "Cannot reconstruct a ParMesh without adjacency sets");
+
     MPI_Comm_size(MyComm, &NRanks);
     MPI_Comm_rank(MyComm, &MyRank);
 
@@ -1726,18 +1728,6 @@ public:
     // FIXME: The word "group" is overloaded in this context
     // Can we do any better with variable naming?
     // A group can refer to a communication group or a Sidre group
-
-    if(!bp_grp->hasGroup("adjsets"))
-    {
-      SLIC_ERROR("Does not contain any adjacency sets");
-    }
-    // {
-    // volatile int i = 0;
-    // printf("PID %d ready for attach\n", getpid());
-    // fflush(stdout);
-    // while (0 == i)
-    //     sleep(5);
-    // }
 
     auto groups_grp = bp_grp->getGroup("adjsets/mesh/groups");
     auto num_groups = groups_grp->getNumGroups();
@@ -1905,41 +1895,33 @@ void MFEMSidreDataCollection::reconstructMesh()
   SLIC_ERROR_IF(!m_bp_grp->hasGroup("topologies/mesh/elements"),
                 "Cannot reconstruct mesh without mesh topology");
 
-  // Element indices
   int* element_indices =
     m_bp_grp->getView("topologies/mesh/elements/connectivity")->getData<int*>();
 
-  // Name of the element type - convert to mfem::Geometry::Type
+  // Name of the element type - convert to mfem::Geometry::Type later
   std::string element_name =
     m_bp_grp->getView("topologies/mesh/elements/shape")->getString();
 
   View* element_attribute_view =
     m_bp_grp->getView("fields/mesh_material_attribute/values");
 
-  // Element attributes
   int* element_attributes = element_attribute_view->getData<int*>();
-
-  // Number of elements
   int num_elements = element_attribute_view->getNumElements();
 
   SLIC_ERROR_IF(!m_bp_grp->hasGroup("topologies/boundary/elements"),
                 "Cannot reconstruct mesh without boundary topology");
 
-  // Indices of boundary elements
   int* boundary_indices =
     m_bp_grp->getView("topologies/boundary/elements/connectivity")->getData<int*>();
 
-  // Name of the element type - convert to mfem::Geometry::Type
+  // Name of the element type - convert to mfem::Geometry::Type later
   std::string bdr_element_name =
     m_bp_grp->getView("topologies/boundary/elements/shape")->getString();
 
   View* bdr_attribute_view =
     m_bp_grp->getView("fields/boundary_material_attribute/values");
 
-  // Boundary attributes
   int* boundary_attributes = bdr_attribute_view->getData<int*>();
-
-  // Number of boundary elements
   int num_boundary_elements = bdr_attribute_view->getNumElements();
 
   int dimension = 1;
@@ -2008,8 +1990,6 @@ void MFEMSidreDataCollection::reconstructFields()
     // Filter out the non-user-registered attribute fields
     if(!field_grp->hasView("association"))
     {
-      // Build the new gridfunction
-
       // FiniteElementCollection
       auto basis_name = field_grp->getView("basis")->getString();
       m_fecolls.emplace_back(mfem::FiniteElementCollection::New(basis_name));
@@ -2037,10 +2017,15 @@ void MFEMSidreDataCollection::reconstructFields()
       }
 
       // Vector grid function
-      if(field_grp->hasGroup("values"))
+      else if(field_grp->hasGroup("values"))
       {
         // Sufficient to use address of first component as data is interleaved
         values = field_grp->getGroup("values")->getView("x0")->getData();
+      }
+
+      else
+      {
+        SLIC_ERROR("Cannot reconstruct grid function - field values not found");
       }
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
       auto parfes =
