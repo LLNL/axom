@@ -126,22 +126,3 @@ TEST(spio_scr, spio_scr_writeread)
   SCR_Finalize();
 }
 #endif
-
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;  // create & initialize test logger,
-
-  MPI_Init(&argc, &argv);
-  result = RUN_ALL_TESTS();
-  MPI_Finalize();
-
-  return result;
-}
