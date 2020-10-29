@@ -8,16 +8,14 @@
 #include "axom/core/numerics/Matrix.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 
-namespace numerics = axom::numerics;
-
 TEST(numerics_determinants, determinant_of_In)
 {
   const int N = 25;
 
   for(int i = 2; i < N; ++i)
   {
-    numerics::Matrix<double> In = numerics::Matrix<double>::identity(i);
-    double det = numerics::determinant(In);
+    axom::numerics::Matrix<double> In = axom::numerics::Matrix<double>::identity(i);
+    double det = axom::numerics::determinant(In);
     EXPECT_DOUBLE_EQ(1.0, det);
   }
 }
@@ -28,7 +26,7 @@ TEST(numerics_determinants, determinant5x5)
   const int N = 5;
   const double EPS = 1e-11;
 
-  numerics::Matrix<double> A(N, N);
+  axom::numerics::Matrix<double> A(N, N);
   A(0, 0) = 1;
   A(0, 1) = 2;
   A(0, 2) = 4;
@@ -55,7 +53,7 @@ TEST(numerics_determinants, determinant5x5)
   A(4, 3) = 1;
   A(4, 4) = 1;
 
-  double computed_det = numerics::determinant(A);
+  double computed_det = axom::numerics::determinant(A);
   double expected_det = -34.0;
   EXPECT_NEAR(expected_det, computed_det, EPS);
 }

@@ -10,7 +10,6 @@
 // C/C++ includes
 #include <sstream>  // for std::ostringstream
 
-namespace numerics = axom::numerics;
 using IndexType = axom::IndexType;
 
 //-----------------------------------------------------------------------------
@@ -18,7 +17,7 @@ using IndexType = axom::IndexType;
 //-----------------------------------------------------------------------------
 namespace
 {
-void testConstAccess(const numerics::Matrix<double>& A)
+void testConstAccess(const axom::numerics::Matrix<double>& A)
 {
   const int MROWS = 10;
   const int NCOLS = 10;
@@ -36,7 +35,7 @@ void testConstAccess(const numerics::Matrix<double>& A)
 }
 
 //------------------------------------------------------------------------------
-void testCopyConstructor(numerics::Matrix<double> A)
+void testCopyConstructor(axom::numerics::Matrix<double> A)
 {
   const int MROWS = 10;
   const int NCOLS = 10;
@@ -54,7 +53,7 @@ void testCopyConstructor(numerics::Matrix<double> A)
 }
 
 //------------------------------------------------------------------------------
-void testExternalBufferPassByValue(numerics::Matrix<int> A)
+void testExternalBufferPassByValue(axom::numerics::Matrix<int> A)
 {
   const int FILL_VAL = 42;
 
@@ -83,7 +82,7 @@ TEST(numerics_matrix, basic_constructor)
   const int MROWS = 5;
   const int NCOLS = 10;
 
-  numerics::Matrix<double> A(MROWS, NCOLS);
+  axom::numerics::Matrix<double> A(MROWS, NCOLS);
   EXPECT_EQ(MROWS, A.getNumRows());
   EXPECT_EQ(NCOLS, A.getNumColumns());
   EXPECT_FALSE(A.isSquare());
@@ -104,7 +103,7 @@ TEST(numerics_matrix, basic_constructor_with_value)
   const int NCOLS = 10;
   const double FILL_VAL = 2.5;
 
-  numerics::Matrix<double> A(MROWS, NCOLS, FILL_VAL);
+  axom::numerics::Matrix<double> A(MROWS, NCOLS, FILL_VAL);
   EXPECT_EQ(MROWS, A.getNumRows());
   EXPECT_EQ(NCOLS, A.getNumColumns());
   EXPECT_FALSE(A.isSquare());
@@ -125,7 +124,7 @@ TEST(numerics_matrix, array_constructor)
   const int NCOLS = 2;
   int data[4] = {1, 2, 3, 4};
 
-  numerics::Matrix<int> A(MROWS, NCOLS, data);
+  axom::numerics::Matrix<int> A(MROWS, NCOLS, data);
   EXPECT_EQ(MROWS, A.getNumRows());
   EXPECT_EQ(NCOLS, A.getNumColumns());
 
@@ -148,7 +147,7 @@ TEST(numerics_matrix, array_constructor_with_external_buffer)
   int data[8] = {1, 1, 1, 1, 2, 2, 2, 2};
   // BEGIN SCOPE
   {
-    numerics::Matrix<int> A(MROWS, NCOLS, data, true);
+    axom::numerics::Matrix<int> A(MROWS, NCOLS, data, true);
     EXPECT_TRUE(A.usesExternalBuffer());
 
     for(int i = 0; i < NCOLS; ++i)
@@ -174,12 +173,12 @@ TEST(numerics_matrix, array_constructor_with_external_buffer)
   // test assignment
   // BEGIN SCOPE
   {
-    numerics::Matrix<int> A(MROWS, NCOLS, data, true);
+    axom::numerics::Matrix<int> A(MROWS, NCOLS, data, true);
     EXPECT_TRUE(A.usesExternalBuffer());
     A.swapColumns(0, 1);
 
     // deep copy A into B
-    numerics::Matrix<int> B = A;
+    axom::numerics::Matrix<int> B = A;
     EXPECT_FALSE(B.usesExternalBuffer());
 
     const int nrows = B.getNumRows();
@@ -220,7 +219,7 @@ TEST(numerics_matrix, array_constructor_with_external_buffer)
   // test copy constructor
   // BEGIN SCOPE
   {
-    numerics::Matrix<int> A(MROWS, NCOLS, data, true);
+    axom::numerics::Matrix<int> A(MROWS, NCOLS, data, true);
     EXPECT_TRUE(A.usesExternalBuffer());
 
     testExternalBufferPassByValue(A);
@@ -243,7 +242,7 @@ TEST(numerics_matrix, is_square)
   const int MROWS = 10;
   const int NCOLS = 10;
 
-  numerics::Matrix<double> A(MROWS, NCOLS);
+  axom::numerics::Matrix<double> A(MROWS, NCOLS);
   EXPECT_TRUE(A.isSquare());
 }
 
@@ -253,7 +252,7 @@ TEST(numerics_matrix, random_access_operators)
   const int MROWS = 10;
   const int NCOLS = 10;
 
-  numerics::Matrix<double> A(MROWS, NCOLS);
+  axom::numerics::Matrix<double> A(MROWS, NCOLS);
 
   for(int irow = 0; irow < MROWS; ++irow)
   {
@@ -274,7 +273,7 @@ TEST(numerics_matrix, copy_constructor)
   const int MROWS = 10;
   const int NCOLS = 10;
 
-  numerics::Matrix<double> A(MROWS, NCOLS);
+  axom::numerics::Matrix<double> A(MROWS, NCOLS);
 
   for(int irow = 0; irow < MROWS; ++irow)
   {
@@ -295,10 +294,10 @@ TEST(numerics_matrix, assignment)
   const int MROWS = 3;
   const int NCOLS = 3;
 
-  numerics::Matrix<int> A(MROWS, NCOLS);
+  axom::numerics::Matrix<int> A(MROWS, NCOLS);
   A.fill(3);
 
-  numerics::Matrix<int> B(2, 2);
+  axom::numerics::Matrix<int> B(2, 2);
   B.fill(1);
 
   B = A;
@@ -319,7 +318,7 @@ TEST(numerics_matrix, assignment)
 TEST(numerics_matrix, getColumn)
 {
   const int N = 3;
-  numerics::Matrix<int> M = numerics::Matrix<int>::identity(N);
+  axom::numerics::Matrix<int> M = axom::numerics::Matrix<int>::identity(N);
   EXPECT_EQ(N, M.getNumRows());
   EXPECT_EQ(N, M.getNumColumns());
 
@@ -339,7 +338,7 @@ TEST(numerics_matrix, getColumn)
 TEST(numerics_matrix, getRow)
 {
   const int N = 3;
-  numerics::Matrix<int> A(N, N);
+  axom::numerics::Matrix<int> A(N, N);
 
   int row_sums[] = {0, 0, 0};
 
@@ -373,7 +372,7 @@ TEST(numerics_matrix, getRow)
 TEST(numerics_matrix, getDiagonal)
 {
   const int N = 3;
-  numerics::Matrix<int> M = numerics::Matrix<int>::identity(N);
+  axom::numerics::Matrix<int> M = axom::numerics::Matrix<int>::identity(N);
   EXPECT_EQ(N, M.getNumRows());
   EXPECT_EQ(N, M.getNumColumns());
   EXPECT_EQ(N, M.getDiagonalSize());
@@ -412,7 +411,7 @@ TEST(numerics_matrix, getDiagonal)
 TEST(numerics_matrix, fillDiagonal)
 {
   const int N = 3;
-  numerics::Matrix<int> M = numerics::Matrix<int>::identity(N);
+  axom::numerics::Matrix<int> M = axom::numerics::Matrix<int>::identity(N);
   EXPECT_EQ(N, M.getNumRows());
   EXPECT_EQ(N, M.getNumColumns());
   EXPECT_EQ(N, M.getDiagonalSize());
@@ -437,7 +436,7 @@ TEST(numerics_matrix, fillRow)
   const int TARGET_ROW = 1;
 
   const int N = 3;
-  numerics::Matrix<int> M = numerics::Matrix<int>::identity(N);
+  axom::numerics::Matrix<int> M = axom::numerics::Matrix<int>::identity(N);
   EXPECT_EQ(N, M.getNumRows());
   EXPECT_EQ(N, M.getNumColumns());
 
@@ -456,7 +455,7 @@ TEST(numerics_matrix, fillColumn)
   const int TARGET_COL = 1;
 
   const int N = 3;
-  numerics::Matrix<int> M = numerics::Matrix<int>::identity(N);
+  axom::numerics::Matrix<int> M = axom::numerics::Matrix<int>::identity(N);
   EXPECT_EQ(N, M.getNumRows());
   EXPECT_EQ(N, M.getNumColumns());
 
@@ -474,7 +473,7 @@ TEST(numerics_matrix, fill)
   const int FILL_VAL = 3;
 
   const int N = 3;
-  numerics::Matrix<int> M = numerics::Matrix<int>::identity(N);
+  axom::numerics::Matrix<int> M = axom::numerics::Matrix<int>::identity(N);
   EXPECT_EQ(N, M.getNumRows());
   EXPECT_EQ(N, M.getNumColumns());
 
@@ -494,7 +493,7 @@ TEST(numerics_matrix, swapRows)
 {
   const int M = 2;
   const int N = 3;
-  numerics::Matrix<int> A = numerics::Matrix<int>::zeros(M, N);
+  axom::numerics::Matrix<int> A = axom::numerics::Matrix<int>::zeros(M, N);
 
   EXPECT_EQ(2, M);
   int FILL_VAL[2] = {3, 9};
@@ -521,7 +520,7 @@ TEST(numerics_matrix, swapColumns)
   const int N = 4;
 
   // setup a test matrix
-  numerics::Matrix<int> A(M, N);
+  axom::numerics::Matrix<int> A(M, N);
   for(IndexType i = 0; i < N; ++i)
   {
     A.fillColumn(i, i + 1);
@@ -543,7 +542,7 @@ TEST(numerics_matrix, swapColumns)
 //------------------------------------------------------------------------------
 TEST(numerics_matrix, output_stream)
 {
-  numerics::Matrix<int> A(2, 3);
+  axom::numerics::Matrix<int> A(2, 3);
   A(0, 0) = 1;
   A(0, 1) = 2;
   A(0, 2) = 3;
