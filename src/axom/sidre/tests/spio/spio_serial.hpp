@@ -19,16 +19,6 @@ using axom::sidre::IOManager;
 
 using axom::int64;
 
-namespace
-{
-#ifdef AXOM_USE_HDF5
-const std::string PROTOCOL = "sidre_hdf5";
-#else
-const std::string PROTOCOL = "sidre_json";
-#endif
-const std::string ROOT_EXT = ".root";
-}  // namespace
-
 //------------------------------------------------------------------------------
 
 TEST(spio_serial, basic_writeread)
@@ -185,23 +175,4 @@ TEST(spio_serial, write_read_write)
   //      minor: Unable to open file
   IOManager writer_b(MPI_COMM_WORLD);
   writer_b.write(ds_r.getRoot(), num_files, filename, PROTOCOL);
-}
-
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;  // create & initialize test logger,
-
-  MPI_Init(&argc, &argv);
-  result = RUN_ALL_TESTS();
-  MPI_Finalize();
-
-  return result;
 }

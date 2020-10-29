@@ -42,18 +42,7 @@ using axom::sidre::Group;
 using axom::sidre::IOManager;
 using axom::sidre::View;
 
-namespace
-{
-#ifdef AXOM_USE_HDF5
-const std::string PROTOCOL = "sidre_hdf5";
-const std::string ROOT_EXT = ".root";
-#else
-// Note: 'sidre_json' does not work for this test
-// since it doesn't preserve bitwidth sizes (e.g. int)
-const std::string PROTOCOL = "sidre_conduit_json";
-const std::string ROOT_EXT = ".root";
-#endif
-
+namespace {
 /** Returns the number of output files for spio  */
 int numOutputFiles(int numRanks)
 {
@@ -1016,22 +1005,4 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   }
 
 #endif
-}
-
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
-//----------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  int result = 0;
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;  // create & initialize test logger,
-
-  MPI_Init(&argc, &argv);
-  result = RUN_ALL_TESTS();
-  MPI_Finalize();
-
-  return result;
 }
