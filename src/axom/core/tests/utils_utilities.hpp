@@ -116,8 +116,11 @@ TEST(utils_Utilities, minmax)
     int a = 5;
     int b = 7;
 
-    EXPECT_EQ(a, axom::utilities::min(a, b));
-    EXPECT_EQ(b, axom::utilities::max(a, b));
+    int temp_min = axom::utilities::min(a, b);
+    int temp_max = axom::utilities::max(a, b);
+
+    EXPECT_EQ(a, temp_min);
+    EXPECT_EQ(b, temp_max);
   }
 
   // Test simple min, max comparisons on doubles
@@ -125,7 +128,10 @@ TEST(utils_Utilities, minmax)
     double a = 5.2;
     double b = -1.7;
 
-    EXPECT_EQ(b, axom::utilities::min(a, b));
-    EXPECT_EQ(a, axom::utilities::max(a, b));
+    int temp_min = axom::utilities::min(a, b);
+    int temp_max = axom::utilities::max(a, b);
+
+    EXPECT_EQ(b, temp_min);
+    EXPECT_EQ(a, temp_max);
   }
 }
