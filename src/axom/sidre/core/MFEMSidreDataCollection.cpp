@@ -1732,42 +1732,38 @@ public:
     // Do we need to subtract 1 here?
 
     std::size_t group_idx = 1;  // The ID of the current group
-    std::size_t global_shared_vert_idx = 0;
-    std::size_t global_shared_edge_idx = 0;
+    std::size_t total_verts_added = 0;
+    std::size_t total_edges_added = 0;
 
     for(const auto& group_info : groups_info)
     {
       // Add shared vertices
       auto n_shared_verts = group_info.shared_verts.size();
-      n_shared_verts +=
-        global_shared_vert_idx;  // Get the index into the global table
+      n_shared_verts += total_verts_added;  // Get the index into the global table
       SLIC_ERROR_IF(n_shared_verts > group_svert.Size_of_connections(),
                     "incorrect number of total_shared_vertices");
       group_svert.GetI()[group_idx] = n_shared_verts;
 
       for(const auto vert : group_info.shared_verts)
       {
-        group_svert.GetJ()[global_shared_vert_idx] = global_shared_vert_idx;
-        svert_lvert[global_shared_vert_idx] = *vert;
-        global_shared_vert_idx++;
+        group_svert.GetJ()[total_verts_added] = total_verts_added;
+        svert_lvert[total_verts_added] = *vert;
+        total_verts_added++;
       }
 
       if(dimension >= 2)
       {
-        // Scratchpad array for storing vertices of an edge/face
-        mfem::Array<int> verts;
-
         auto n_shared_edges = group_info.shared_edges.size();
-        n_shared_edges += global_shared_edge_idx;
+        n_shared_edges += total_edges_added;
         SLIC_ERROR_IF(n_shared_edges > group_sedge.Size_of_connections(),
                       "incorrect number of total_shared_edges");
         group_sedge.GetI()[group_idx] = n_shared_edges;
 
         for(const auto edge : group_info.shared_edges)
         {
-          group_sedge.GetJ()[global_shared_edge_idx] = global_shared_edge_idx;
-          shared_edges[global_shared_edge_idx] = new mfem::Segment(edge, 1);
-          global_shared_edge_idx++;
+          group_sedge.GetJ()[total_edges_added] = total_edges_added;
+          shared_edges[total_edges_added] = new mfem::Segment(edge, 1);
+          total_edges_added++;
         }
 
         if(dimension >= 3)

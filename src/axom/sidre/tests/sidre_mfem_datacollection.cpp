@@ -243,9 +243,17 @@ static std::vector<ParMeshGroupData> getGroupData(const mfem::ParMesh& parmesh)
   return result;
 }
 
-static void testParallelMeshReload(mfem::Mesh& base_mesh, bool debug_print = false)
+/**
+ * @brief Helper method for testing that a parallel mesh is reconstructed correctly
+ * @param [in] base_mesh The serial mesh object to distribute, save, and then reload
+ * @param [in] part_method The partitioning method to use - in [0, 5]
+ * @param [in] debug_print Whether to save pre- and post-reload mesh data to files for debugging
+ */
+static void testParallelMeshReload(mfem::Mesh& base_mesh,
+                                   const int part_method = 1,
+                                   bool debug_print = false)
 {
-  mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh, nullptr, 4);
+  mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh, nullptr, part_method);
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int n_ranks;
@@ -348,6 +356,20 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh, bool debug_print = fal
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
+/**
+ * @brief Wrapper for testing mesh reconstruction across all partitioning methods
+ * @param [in] base_mesh The serial mesh object to distribute, save, and then reload
+ * @param [in] debug_print Whether to save pre- and post-reload mesh data to files for debugging
+ */
+static void testParallelMeshReloadAllPartitionings(mfem::Mesh& base_mesh,
+                                                   bool debug_print = false)
+{
+  for(int part_method = 0; part_method <= 5; part_method++)
+  {
+    testParallelMeshReload(base_mesh, part_method, debug_print);
+  }
+}
+
 TEST(sidre_datacollection, dc_par_reload_gf)
 {
   const std::string field_name = "test_field";
@@ -387,6 +409,14 @@ TEST(sidre_datacollection, dc_par_reload_gf)
 
   auto gf_read = sdc_reader.GetField(field_name);
 
+  // Can only reconstruct if more than trivially parallel
+  int n_ranks;
+  MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
+  if(n_ranks > 1)
+  {
+    EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(gf_read));
+  }
+
   // Make sure the gridfunction was actually read in
   EXPECT_LT(gf_read->ComputeL2Error(three_and_a_half), EPSILON);
 
@@ -400,42 +430,42 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_small)
 {
   // 2D mesh divided into triangles
   mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
-  testParallelMeshReload(mesh);
+  testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_large)
 {
   // 2D mesh divided into triangles
   mfem::Mesh mesh(100, 100, mfem::Element::TRIANGLE);
-  testParallelMeshReload(mesh);
+  testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_tet)
 {
   // 3D mesh divided into tetrahedra
   mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
-  testParallelMeshReload(mesh);
+  testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_tet)
 {
   // 3D mesh divided into tetrahedra
   mfem::Mesh mesh(10, 10, 10, mfem::Element::TETRAHEDRON);
-  testParallelMeshReload(mesh);
+  testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_hex)
 {
   // 3D mesh divided into hexahedra
   mfem::Mesh mesh(2, 2, 2, mfem::Element::HEXAHEDRON);
-  testParallelMeshReload(mesh);
+  testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_hex)
 {
   // 3D mesh divided into hexahedra
   mfem::Mesh mesh(10, 10, 10, mfem::Element::HEXAHEDRON);
-  testParallelMeshReload(mesh);
+  testParallelMeshReloadAllPartitionings(mesh);
 }
 
     //----------------------------------------------------------------------
