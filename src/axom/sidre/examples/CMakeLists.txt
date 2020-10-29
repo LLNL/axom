@@ -18,7 +18,8 @@ if(ENABLE_MPI)
     set (example_parallel_sources
          sidre_array.cpp
          sidre_createdatastore.cpp
-         sidre_external_array.cpp)
+         sidre_external_array.cpp
+         sidre_generateindex.cpp)
 else()
     list(APPEND example_sources sidre_createdatastore.cpp)
 endif()
@@ -91,6 +92,11 @@ if(ENABLE_MPI)
 
     blt_add_test( NAME sidre_createdatastore_parallel
                   COMMAND sidre_createdatastore_ex
+                  NUM_MPI_TASKS 4
+                  )
+
+    blt_add_test( NAME sidre_generateindex_parallel
+                  COMMAND sidre_generateindex_ex
                   NUM_MPI_TASKS 4
                   )
 

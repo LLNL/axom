@@ -394,6 +394,15 @@ public:
                               int num_domains);
 
 #ifdef AXOM_USE_MPI
+  /*!
+   * \brief Generate a Conduit Blueprint index from a distributed mesh
+   *        stored in this Datastore
+   *
+   * \param comm            communicator for the mesh distribution
+   * \param domain_path     path where domains are located
+   * \param mesh_name       name for the mesh to be described
+   * \param index_path      path where index written
+   */
   bool generateBlueprintIndex(MPI_Comm comm,
                               const std::string& domain_path,
                               const std::string& mesh_name,

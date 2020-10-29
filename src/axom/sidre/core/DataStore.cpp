@@ -628,11 +628,27 @@ bool DataStore::generateBlueprintIndex(MPI_Comm comm,
                                        const std::string& mesh_name,
                                        const std::string& index_path)
 {
-  Group* domain =
-    (domain_path == "/") ? getRoot() : getRoot()->getGroup(domain_path);
+  Group* domain;
+  if (domain_path == "/")
+  {
+    domain = getRoot();
+  }
+  else if (getRoot()->hasGroup(domain_path))
+  {
+    domain = getRoot()->getGroup(domain_path);
+  }
+  else
+  {
+    //There could be ranks with no domains--the MPI blueprint
+    //functions can handle this.
+    domain = nullptr;
+  }
 
   conduit::Node mesh_node;
-  domain->createNativeLayout(mesh_node);
+  if (domain)
+  {
+    domain->createNativeLayout(mesh_node);
+  }
 
   Group* bpindex = getRoot()->hasGroup(index_path)
     ? getRoot()->getGroup(index_path)
