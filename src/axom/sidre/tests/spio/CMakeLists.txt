@@ -62,25 +62,13 @@ endforeach()
 # Add Fortran tests
 #------------------------------------------------------------------------------
 if(ENABLE_FORTRAN)
-    blt_add_executable(NAME spio_basicWriteRead_F_test
-                       SOURCES F_spio_basicWriteRead.F
-                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON ${spio_test_depends}
-                       FOLDER axom/sidre/tests
-                       )
-    blt_add_test(NAME F_spio_basicWriteRead
-                 COMMAND spio_basicWriteRead_F_test
-                 NUM_MPI_TASKS 1
-                 )
-
-    set(spio_fortran_tests
-        F_spio_blueprintIndex.F  
-        F_spio_parallelWriteRead.F
-        F_spio_irregularWriteRead.F
-        F_spio_externalWriteRead.F
+    # Non-Fruit parallel tests with 1 MPI task
+    set(spio_one_fortran_tests
+        F_spio_basicWriteRead.F
+        F_spio_blueprintIndex.F
         )
 
-    foreach(test ${spio_fortran_tests})
+    foreach(test ${spio_one_fortran_tests})
         get_filename_component( test_name ${test} NAME_WE )
         string(SUBSTRING "${test_name}" 2 -1 test_name) # remove F_
         blt_add_executable( NAME       ${test_name}_F_test
@@ -89,12 +77,35 @@ if(ENABLE_FORTRAN)
                             DEPENDS_ON ${spio_test_depends}
                             FOLDER     axom/sidre/tests
                             )
-        blt_add_test( NAME    ${test_name}
+        blt_add_test( NAME    ${test_name}_F
+                      COMMAND ${test_name}_F_test
+                      NUM_MPI_TASKS 1
+                      )
+    endforeach()
+
+    # Non-Fruit parallel tests with 4 MPI task
+    set(spio_four_fortran_tests
+        F_spio_parallelWriteRead.F
+        F_spio_irregularWriteRead.F
+        F_spio_externalWriteRead.F
+        )
+
+    foreach(test ${spio_four_fortran_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        string(SUBSTRING "${test_name}" 2 -1 test_name) # remove F_
+        blt_add_executable( NAME       ${test_name}_F_test
+                            SOURCES    ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON ${spio_test_depends}
+                            FOLDER     axom/sidre/tests
+                            )
+        blt_add_test( NAME    ${test_name}_F
                       COMMAND ${test_name}_F_test
                       NUM_MPI_TASKS 4
                       )
     endforeach()
 
+    # Fruit parallel tests with 4 MPI task
     set(spio_fruit_tests
         F_spio_preserveWriteRead.F
         )
@@ -108,7 +119,7 @@ if(ENABLE_FORTRAN)
                             DEPENDS_ON ${spio_test_depends} fruit
                             FOLDER     axom/sidre/tests
                             )
-        blt_add_test( NAME    ${test_name}
+        blt_add_test( NAME    ${test_name}_F
                       COMMAND ${test_name}_F_test
                       NUM_MPI_TASKS 4
                       )
