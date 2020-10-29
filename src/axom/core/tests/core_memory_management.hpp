@@ -18,8 +18,8 @@
 //------------------------------------------------------------------------------
 
 // This value is such that the 64Kb limit on device constant memory is not hit
-// in check_alloc_realloc_free when reallocating to 3 * SIZE.
-constexpr int SIZE = 5345;
+// in check_alloc_realloc_free when reallocating to 3 * ARRAY_SIZE.
+constexpr int ARRAY_SIZE = 5345;
 
 class CopyTest
   : public ::testing::TestWithParam<::testing::tuple<std::string, std::string>>
@@ -36,11 +36,11 @@ public:
 
     if(src_string == "NEW")
     {
-      src_array = new int[SIZE];
+      src_array = new int[ARRAY_SIZE];
     }
     else if(src_string == "MALLOC")
     {
-      src_array = static_cast<int*>(std::malloc(SIZE * sizeof(int)));
+      src_array = static_cast<int*>(std::malloc(ARRAY_SIZE * sizeof(int)));
     }
     else if(src_string == "STATIC")
     {
@@ -51,17 +51,17 @@ public:
     {
       auto source_allocator = rm.getAllocator(src_string);
       src_array =
-        static_cast<int*>(source_allocator.allocate(SIZE * sizeof(int)));
+        static_cast<int*>(source_allocator.allocate(ARRAY_SIZE * sizeof(int)));
     }
 #endif
 
     if(dst_string == "NEW")
     {
-      dst_array = new int[SIZE];
+      dst_array = new int[ARRAY_SIZE];
     }
     else if(dst_string == "MALLOC")
     {
-      dst_array = static_cast<int*>(std::malloc(SIZE * sizeof(int)));
+      dst_array = static_cast<int*>(std::malloc(ARRAY_SIZE * sizeof(int)));
     }
     else if(dst_string == "STATIC")
     {
@@ -72,7 +72,7 @@ public:
     {
       auto source_allocator = rm.getAllocator(dst_string);
       dst_array =
-        static_cast<int*>(source_allocator.allocate(SIZE * sizeof(int)));
+        static_cast<int*>(source_allocator.allocate(ARRAY_SIZE * sizeof(int)));
     }
 #endif
   }
@@ -119,11 +119,11 @@ public:
 
   int* src_array = nullptr;
   int* dst_array = nullptr;
-  int host_array[SIZE];
+  int host_array[ARRAY_SIZE];
 
 private:
-  int m_static_src_array[SIZE];
-  int m_static_dst_array[SIZE];
+  int m_static_src_array[ARRAY_SIZE];
+  int m_static_dst_array[ARRAY_SIZE];
 };
 
 #ifdef AXOM_USE_UMPIRE
@@ -133,7 +133,7 @@ void check_alloc_and_free(int allocatorID = axom::getDefaultAllocatorID(),
 void check_alloc_and_free(bool hostAccessible = true)
 #endif
 {
-  for(int size = 0; size <= SIZE; size = size * 2 + 1)
+  for(int size = 0; size <= ARRAY_SIZE; size = size * 2 + 1)
   {
 #ifdef AXOM_USE_UMPIRE
     int* buffer = axom::allocate<int>(size, allocatorID);
@@ -172,7 +172,7 @@ void check_alloc_realloc_free(int allocatorID = axom::getDefaultAllocatorID(),
 void check_alloc_realloc_free(bool hostAccessible = true)
 #endif
 {
-  for(int size = 0; size <= SIZE; size = size * 2 + 1)
+  for(int size = 0; size <= ARRAY_SIZE; size = size * 2 + 1)
   {
     int buffer_size = size;
 
@@ -398,22 +398,22 @@ TEST(core_memory_management, alloc_realloc_free)
 TEST_P(CopyTest, Copy)
 {
   std::cout << "SRC = " << src_string << ", DST = " << dst_string << std::endl;
-  for(int i = 0; i < SIZE; ++i)
+  for(int i = 0; i < ARRAY_SIZE; ++i)
   {
     host_array[i] = i;
   }
 
-  axom::copy(src_array, host_array, SIZE * sizeof(int));
-  axom::copy(dst_array, src_array, SIZE * sizeof(int));
+  axom::copy(src_array, host_array, ARRAY_SIZE * sizeof(int));
+  axom::copy(dst_array, src_array, ARRAY_SIZE * sizeof(int));
 
-  for(int i = 0; i < SIZE; ++i)
+  for(int i = 0; i < ARRAY_SIZE; ++i)
   {
     host_array[i] = -i;
   }
 
-  axom::copy(host_array, src_array, SIZE * sizeof(int));
+  axom::copy(host_array, src_array, ARRAY_SIZE * sizeof(int));
 
-  for(int i = 0; i < SIZE; ++i)
+  for(int i = 0; i < ARRAY_SIZE; ++i)
   {
     ASSERT_EQ(host_array[i], i);
   }
