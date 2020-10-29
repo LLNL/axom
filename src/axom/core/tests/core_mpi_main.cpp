@@ -7,6 +7,8 @@
 
 #include "mpi.h"
 
+#include "axom/config.hpp"  // for compile-time definitions
+
 #include "core_types.hpp"
 
 int main(int argc, char* argv[])
