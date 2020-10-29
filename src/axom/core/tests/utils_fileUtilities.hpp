@@ -11,7 +11,7 @@
 
 namespace fs = axom::utilities::filesystem;
 
-TEST(core_fileUtilities, getCWD_smoke)
+TEST(utils_fileUtilities, getCWD_smoke)
 {
   // This test just checks that we can call the getCWD function
   // It does not in any way confirm the results
@@ -25,7 +25,7 @@ TEST(core_fileUtilities, getCWD_smoke)
   SUCCEED();
 }
 
-TEST(core_fileUtilities, joinPath)
+TEST(utils_fileUtilities, joinPath)
 {
   std::cout << "Testing joinPath() function" << std::endl;
 
@@ -43,7 +43,7 @@ TEST(core_fileUtilities, joinPath)
   EXPECT_EQ("abc/def/ghi", fs::joinPath(fdir, fnameWithSubdir));
 }
 
-TEST(core_fileUtilities, pathExists)
+TEST(utils_fileUtilities, pathExists)
 {
   std::cout << "Testing pathExists() function" << std::endl;
 
@@ -72,7 +72,7 @@ TEST(core_fileUtilities, pathExists)
   }
 }
 
-TEST(core_fileUtilities, changeCWD_smoke)
+TEST(utils_fileUtilities, changeCWD_smoke)
 {
   std::cout << "Testing 'changeCWD()'" << std::endl;
 

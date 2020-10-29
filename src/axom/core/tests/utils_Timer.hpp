@@ -18,7 +18,7 @@ void sleep(int numSeconds)
   #include <unistd.h>  // for sleep()
 #endif
 
-TEST(core_Timer, timer_check)
+TEST(utils_Timer, timer_check)
 {
   axom::utilities::Timer t;
 
@@ -41,7 +41,7 @@ TEST(core_Timer, timer_check)
   ASSERT_DOUBLE_EQ(0., t.elapsed());
 }
 
-TEST(core_Timer, timer_check_duration)
+TEST(utils_Timer, timer_check_duration)
 {
   axom::utilities::Timer t;
   t.start();
