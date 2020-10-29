@@ -7,6 +7,8 @@
 
 #include "mpi.h"
 
+#include "axom/config.hpp"  // for compile-time definitions
+
 namespace
 {
 #ifdef AXOM_USE_HDF5
