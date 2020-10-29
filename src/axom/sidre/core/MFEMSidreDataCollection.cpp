@@ -516,6 +516,8 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
     }
   }
 
+  int dim = mesh->SpaceDimension();
+
   mfem::Array<int> tmp_verts;
   int tmp_edge;
   int tmp_face;
@@ -523,12 +525,29 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
 
   for(int gi = 1; gi < pmesh->GetNGroups(); ++gi)
   {
+    // MFEM will build groups with zero shared vertices but still some shared
+    // edges or faces, so we need to check all possible elements
+
+    // Shared element views are not created if they would be empty though,
+    // as this causes issues during a reload
     int num_gneighbors = pmesh->gtopo.GetGroupSize(gi);
     int num_gvertices = pmesh->GroupNVertices(gi);
+    int num_gedges = pmesh->GroupNEdges(gi);
+    int num_gtris = pmesh->GroupNTriangles(gi);
+    int num_gquads = pmesh->GroupNQuadrilaterals(gi);
 
-    // Skip creation of empty groups
-    // if(num_gneighbors > 1 && num_gvertices > 0)
-    if(true)  // For some reason MFEM uses empty groups
+    bool has_shared_elements = num_gvertices > 0;
+    if(dim >= 2)
+    {
+      has_shared_elements |= num_gedges > 0;
+      if(dim >= 3)
+      {
+        has_shared_elements |= num_gtris > 0;
+        has_shared_elements |= num_gquads > 0;
+      }
+    }
+
+    if(has_shared_elements && (num_gneighbors > 1))
     {
       std::snprintf(group_str,
                     GRP_SZ,
@@ -537,74 +556,99 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
                     pmesh->gtopo.GetGroupMasterGroup(gi));
       sidre::Group* group_grp = adjset_grp->createGroup(group_str);
 
-      sidre::View* gneighbors_view =
-        group_grp->createViewAndAllocate("neighbors",
-                                         sidre::INT_ID,
-                                         num_gneighbors - 1);
-      int* gneighbors_data = gneighbors_view->getData<int*>();
-
-      // skip local domain when adding Blueprint neighbors
-      const int* gneighbors = pmesh->gtopo.GetGroup(gi);
-      for(int ni = 0, noff = 0; ni < num_gneighbors; ++ni)
+      if(num_gneighbors > 1)
       {
-        if(gneighbors[ni] == 0)
+        sidre::View* gneighbors_view =
+          group_grp->createViewAndAllocate("neighbors",
+                                           sidre::INT_ID,
+                                           num_gneighbors - 1);
+        int* gneighbors_data = gneighbors_view->getData<int*>();
+
+        // skip local domain when adding Blueprint neighbors
+        const int* gneighbors = pmesh->gtopo.GetGroup(gi);
+        for(int ni = 0, noff = 0; ni < num_gneighbors; ++ni)
         {
-          noff++;
+          if(gneighbors[ni] == 0)
+          {
+            noff++;
+          }
+          else
+          {
+            gneighbors_data[ni - noff] =
+              pmesh->gtopo.GetNeighborRank(gneighbors[ni]);
+          }
         }
-        else
+      }
+
+      if(num_gvertices > 0)
+      {
+        sidre::View* gvertices_view =
+          group_grp->createViewAndAllocate("values", sidre::INT_ID, num_gvertices);
+        int* gvertices_data = gvertices_view->getData<int*>();
+
+        for(int vi = 0; vi < num_gvertices; ++vi)
         {
-          gneighbors_data[ni - noff] =
-            pmesh->gtopo.GetNeighborRank(gneighbors[ni]);
+          gvertices_data[vi] = pmesh->GroupVertex(gi, vi);
         }
       }
 
-      sidre::View* gvertices_view =
-        group_grp->createViewAndAllocate("values", sidre::INT_ID, num_gvertices);
-      int* gvertices_data = gvertices_view->getData<int*>();
-
-      for(int vi = 0; vi < num_gvertices; ++vi)
+      // For all these higher-order elements, we store a flat list of tuples of
+      // vertex indices instead of MFEM's internal edge/face indices for generality
+      // This uses more space but technically the Blueprint does not standardize how
+      // edge/face indices correspond to vertex indices
+      if(dim >= 2)
       {
-        gvertices_data[vi] = pmesh->GroupVertex(gi, vi);
-      }
+        // Don't create the group if there are no s
+        if(num_gedges > 0)
+        {
+          sidre::View* gedges_view =
+            group_grp->createViewAndAllocate("edges",
+                                             sidre::INT_ID,
+                                             num_gedges * 2);
+          int* gedges_data = gedges_view->getData<int*>();
 
-      int num_gedges = pmesh->GroupNEdges(gi);
-      // Store the two vertices for each edge instead of edge IDs for generality
-      sidre::View* gedges_view =
-        group_grp->createViewAndAllocate("edges", sidre::INT_ID, num_gedges * 2);
-      int* gedges_data = gedges_view->getData<int*>();
+          for(int ei = 0; ei < num_gedges; ++ei)
+          {
+            pmesh->GroupEdge(gi, ei, tmp_edge, tmp_orientation);
+            pmesh->GetEdgeVertices(tmp_edge, tmp_verts);
+            // Copy into array such that vertices for a given edge are contiguous
+            // that is, v0 of e0, v1 of e0, v0 of e1, v1 of e1, v0 of e2, etc
+            std::copy(tmp_verts.begin(), tmp_verts.end(), &gedges_data[2 * ei]);
+          }
+        }
 
-      for(int ei = 0; ei < num_gedges; ++ei)
-      {
-        pmesh->GroupEdge(gi, ei, tmp_edge, tmp_orientation);
-        pmesh->GetEdgeVertices(tmp_edge, tmp_verts);
-        std::copy(tmp_verts.begin(), tmp_verts.end(), &gedges_data[2 * ei]);
-      }
+        if(dim >= 3)
+        {
+          if(num_gtris > 0)
+          {
+            sidre::View* gtris_view =
+              group_grp->createViewAndAllocate("triangles",
+                                               sidre::INT_ID,
+                                               num_gtris * 3);
+            int* gtris_data = gtris_view->getData<int*>();
+            for(int ti = 0; ti < num_gtris; ++ti)
+            {
+              pmesh->GroupTriangle(gi, ti, tmp_face, tmp_orientation);
+              pmesh->GetFaceVertices(tmp_face, tmp_verts);
+              std::copy(tmp_verts.begin(), tmp_verts.end(), &gtris_data[3 * ti]);
+            }
+          }
 
-      int num_gtris = pmesh->GroupNTriangles(gi);
-      // Store the three vertices for each face instead of face IDs for generality
-      sidre::View* gtris_view = group_grp->createViewAndAllocate("triangles",
-                                                                 sidre::INT_ID,
-                                                                 num_gtris * 3);
-      int* gtris_data = gtris_view->getData<int*>();
-      for(int ti = 0; ti < num_gtris; ++ti)
-      {
-        pmesh->GroupTriangle(gi, ti, tmp_face, tmp_orientation);
-        pmesh->GetFaceVertices(tmp_face, tmp_verts);
-        std::copy(tmp_verts.begin(), tmp_verts.end(), &gtris_data[3 * ti]);
-      }
-
-      int num_gquads = pmesh->GroupNQuadrilaterals(gi);
-      // Store the four vertices for each face instead of face IDs for generality
-      sidre::View* gquads_view =
-        group_grp->createViewAndAllocate("quadrilaterals",
-                                         sidre::INT_ID,
-                                         num_gquads * 4);
-      int* gquads_data = gquads_view->getData<int*>();
-      for(int qi = 0; qi < num_gquads; ++qi)
-      {
-        pmesh->GroupQuadrilateral(gi, qi, tmp_face, tmp_orientation);
-        pmesh->GetFaceVertices(tmp_face, tmp_verts);
-        std::copy(tmp_verts.begin(), tmp_verts.end(), &gquads_data[4 * qi]);
+          if(num_gquads > 0)
+          {
+            sidre::View* gquads_view =
+              group_grp->createViewAndAllocate("quadrilaterals",
+                                               sidre::INT_ID,
+                                               num_gquads * 4);
+            int* gquads_data = gquads_view->getData<int*>();
+            for(int qi = 0; qi < num_gquads; ++qi)
+            {
+              pmesh->GroupQuadrilateral(gi, qi, tmp_face, tmp_orientation);
+              pmesh->GetFaceVertices(tmp_face, tmp_verts);
+              std::copy(tmp_verts.begin(), tmp_verts.end(), &gquads_data[4 * qi]);
+            }
+          }
+        }
       }
     }
   }
@@ -1511,9 +1555,10 @@ class SidreParMeshWrapper : public mfem::ParMesh
     }
 
   private:
+    // Use reasonable defaults to avoid extra logic for empty spans
     const int* m_data = nullptr;
-    IndexType m_num_vectors;
-    IndexType m_num_components;
+    IndexType m_num_vectors = 0;
+    IndexType m_num_components = 0;
   };
 
   /**
@@ -1600,25 +1645,40 @@ class SidreParMeshWrapper : public mfem::ParMesh
       grp_info.neighbors.assign(neighbors_array, neighbors_array + num_neighbors);
 
       // This group's shared vertices
-      auto verts = group_grp->getView("values");
-      grp_info.shared_verts = {verts->getData<int*>(), verts->getNumElements(), 1};
+      if(group_grp->hasView("values"))
+      {
+        auto verts = group_grp->getView("values");
+        grp_info.shared_verts = {verts->getData<int*>(),
+                                 verts->getNumElements(),
+                                 1};
+      }
 
       // This group's shared edges
-      auto edges = group_grp->getView("edges");
-      grp_info.shared_edges = {edges->getData<int*>(), edges->getNumElements(), 2};
+      if(group_grp->hasView("edges"))
+      {
+        auto edges = group_grp->getView("edges");
+        grp_info.shared_edges = {edges->getData<int*>(),
+                                 edges->getNumElements(),
+                                 2};
+      }
 
       // This group's shared triangular faces
-      auto tris = group_grp->getView("triangles");
-      grp_info.shared_triangles = {tris->getData<int*>(),
-                                   tris->getNumElements(),
-                                   3};
+      if(group_grp->hasView("triangles"))
+      {
+        auto tris = group_grp->getView("triangles");
+        grp_info.shared_triangles = {tris->getData<int*>(),
+                                     tris->getNumElements(),
+                                     3};
+      }
 
       // This group's shared quadrilateral faces
-      auto quads = group_grp->getView("quadrilaterals");
-      grp_info.shared_quadrilaterals = {quads->getData<int*>(),
-                                        quads->getNumElements(),
-                                        4};
-
+      if(group_grp->hasView("quadrilaterals"))
+      {
+        auto quads = group_grp->getView("quadrilaterals");
+        grp_info.shared_quadrilaterals = {quads->getData<int*>(),
+                                          quads->getNumElements(),
+                                          4};
+      }
       group_idx++;
     }
 
@@ -1667,6 +1727,10 @@ public:
 
     MPI_Comm_size(MyComm, &NRanks);
     MPI_Comm_rank(MyComm, &MyRank);
+
+    // NOTE: The remaining logic is borrowed heavily from the mfem::ParMesh
+    // constructors, since it's setting up the internal data structures used
+    // to keep track of communication groups and shared elements
 
     ReduceMeshGen();  // determine the global 'meshgen'
 
