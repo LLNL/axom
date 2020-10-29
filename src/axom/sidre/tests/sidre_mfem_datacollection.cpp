@@ -457,7 +457,7 @@ TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_tet)
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_hex)
 {
   // 3D mesh divided into hexahedra
-  mfem::Mesh mesh(2, 2, 2, mfem::Element::HEXAHEDRON);
+  mfem::Mesh mesh(3, 3, 3, mfem::Element::HEXAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
 }
 

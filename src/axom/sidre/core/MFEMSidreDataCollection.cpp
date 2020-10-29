@@ -95,10 +95,6 @@ MFEMSidreDataCollection::~MFEMSidreDataCollection()
   {
     delete m_datastore_ptr;
   }
-  if(m_owns_mesh_obj)
-  {
-    delete mesh;
-  }
 }
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
@@ -556,27 +552,24 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
                     pmesh->gtopo.GetGroupMasterGroup(gi));
       sidre::Group* group_grp = adjset_grp->createGroup(group_str);
 
-      if(num_gneighbors > 1)
-      {
-        sidre::View* gneighbors_view =
-          group_grp->createViewAndAllocate("neighbors",
-                                           sidre::INT_ID,
-                                           num_gneighbors - 1);
-        int* gneighbors_data = gneighbors_view->getData<int*>();
+      sidre::View* gneighbors_view =
+        group_grp->createViewAndAllocate("neighbors",
+                                         sidre::INT_ID,
+                                         num_gneighbors - 1);
+      int* gneighbors_data = gneighbors_view->getData<int*>();
 
-        // skip local domain when adding Blueprint neighbors
-        const int* gneighbors = pmesh->gtopo.GetGroup(gi);
-        for(int ni = 0, noff = 0; ni < num_gneighbors; ++ni)
+      // skip local domain when adding Blueprint neighbors
+      const int* gneighbors = pmesh->gtopo.GetGroup(gi);
+      for(int ni = 0, noff = 0; ni < num_gneighbors; ++ni)
+      {
+        if(gneighbors[ni] == 0)
         {
-          if(gneighbors[ni] == 0)
-          {
-            noff++;
-          }
-          else
-          {
-            gneighbors_data[ni - noff] =
-              pmesh->gtopo.GetNeighborRank(gneighbors[ni]);
-          }
+          noff++;
+        }
+        else
+        {
+          gneighbors_data[ni - noff] =
+            pmesh->gtopo.GetNeighborRank(gneighbors[ni]);
         }
       }
 
@@ -835,8 +828,6 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   // variables.
   if(m_owns_datastore)
   {
-    // The commented-out line matches the logic used for the datacoll-created datastore
-    // SetGroupPointers(m_datastore_ptr->getRoot()->getGroup(name + "_global/blueprint_index/" + name),
     SetGroupPointers(m_datastore_ptr->getRoot()->getGroup(name + "_global"),
                      m_datastore_ptr->getRoot()->getGroup(name));
 
@@ -1403,17 +1394,16 @@ mfem::Geometry::Type MFEMSidreDataCollection::getElementTypeFromName(
   else if(name == "tri")
     return mfem::Geometry::TRIANGLE;
   else if(name == "quad")
-    // FIXME: Good enough to assume quad always means square?
     return mfem::Geometry::SQUARE;
   else if(name == "tet")
     return mfem::Geometry::TETRAHEDRON;
   else if(name == "hex")
-    // FIXME: Is it good enough to assume that hex always means cube?
     return mfem::Geometry::CUBE;
   else
     return mfem::Geometry::INVALID;
 }
 
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 /**
  * @brief Wrapper class to enable the reconstruction of a ParMesh from a
  * Conduit blueprint
@@ -1486,7 +1476,6 @@ class SidreParMeshWrapper : public mfem::ParMesh
 
     FinalizeTopology();
   }
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   /**
    * @brief A span over a list of vectors arranged contiguously (not interleaved)
    * Allows for convenient iteration over the list without having to manage
@@ -1734,7 +1723,7 @@ public:
 
     ReduceMeshGen();  // determine the global 'meshgen'
 
-    // FIXME: The word "group" is ridiculously overloaded in this context
+    // FIXME: The word "group" is overloaded in this context
     // Can we do any better with variable naming?
     // A group can refer to a communication group or a Sidre group
 
@@ -1793,7 +1782,6 @@ public:
       group_stria.SetSize(num_groups, 0);  // create empty group_stria
       group_squad.SetSize(num_groups, 0);  // create empty group_squad
     }
-    // Do we need to subtract 1 here?
 
     std::size_t group_idx = 1;  // The ID of the current group
     std::size_t total_verts_added = 0;
@@ -1974,42 +1962,40 @@ void MFEMSidreDataCollection::reconstructMesh()
                   "Must set the communicator with SetComm before a ParMesh can "
                   "be reconstructed");
 
-    mesh = new SidreParMeshWrapper(m_bp_grp,
-                                   m_comm,
-                                   vertices,
-                                   num_vertices,
-                                   element_indices,
-                                   getElementTypeFromName(element_name),
-                                   element_attributes,
-                                   num_elements,
-                                   boundary_indices,
-                                   getElementTypeFromName(bdr_element_name),
-                                   boundary_attributes,
-                                   num_boundary_elements,
-                                   dimension);
+    m_owned_mesh = std::unique_ptr<SidreParMeshWrapper>(
+      new SidreParMeshWrapper(m_bp_grp,
+                              m_comm,
+                              vertices,
+                              num_vertices,
+                              element_indices,
+                              getElementTypeFromName(element_name),
+                              element_attributes,
+                              num_elements,
+                              boundary_indices,
+                              getElementTypeFromName(bdr_element_name),
+                              boundary_attributes,
+                              num_boundary_elements,
+                              dimension));
   }
   else
   #endif
   {
-    mesh = new mfem::Mesh(vertices,
-                          num_vertices,
-                          element_indices,
-                          getElementTypeFromName(element_name),
-                          element_attributes,
-                          num_elements,
-                          boundary_indices,
-                          getElementTypeFromName(bdr_element_name),
-                          boundary_attributes,
-                          num_boundary_elements,
-                          dimension);
+    m_owned_mesh = std::unique_ptr<mfem::Mesh>(
+      new mfem::Mesh(vertices,
+                     num_vertices,
+                     element_indices,
+                     getElementTypeFromName(element_name),
+                     element_attributes,
+                     num_elements,
+                     boundary_indices,
+                     getElementTypeFromName(bdr_element_name),
+                     boundary_attributes,
+                     num_boundary_elements,
+                     dimension));
   }
-
-  // The DataCollection dtor is now responsible for deleting the mesh
-  // We can't use owns_data in the base class here because that would
-  // result in the deletion of the GridFunction objects which as of
-  // now can only be externally managed (non-owning pointers are
-  // obtained through RegisterField).
-  m_owns_mesh_obj = true;
+  // Now that we've initialized an owning pointer, set the base subobject's
+  // mesh pointer as a non-owning pointer
+  mesh = m_owned_mesh.get();
 }
 
 void MFEMSidreDataCollection::reconstructFields()
@@ -2061,18 +2047,18 @@ void MFEMSidreDataCollection::reconstructFields()
         dynamic_cast<mfem::ParFiniteElementSpace*>(m_fespaces.back().get());
       if(parfes)
       {
-        m_sidre_owned_gfs.emplace_back(new mfem::ParGridFunction(parfes, values));
+        m_owned_gridfuncs.emplace_back(new mfem::ParGridFunction(parfes, values));
       }
       else
   #endif
       {
-        m_sidre_owned_gfs.emplace_back(
+        m_owned_gridfuncs.emplace_back(
           new mfem::GridFunction(m_fespaces.back().get(), values));
       }
 
       // Register a non-owning pointer with the base subobject
       DataCollection::RegisterField(field_grp->getName(),
-                                    m_sidre_owned_gfs.back().get());
+                                    m_owned_gridfuncs.back().get());
     }
   }
 }

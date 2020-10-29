@@ -428,13 +428,6 @@ private:
   // GF objects. Can we use one flag and just have DC own all objects vs none?
   const bool m_owns_mesh_data;
 
-  // TODO - see above comment about merging ownership flags - this denotes that
-  // the mesh object itself is owned by SidreDC, separate from the ownership of
-  // the data in the mesh as indicated by the above flag.  This is used when a
-  // reload recreates the mesh from the information in the datastore that was
-  // read in.
-  bool m_owns_mesh_obj = false;
-
   // Name to be used for registering the mesh nodes in the
   // MFEMSidreDataCollection.
   // This name is used by SetMesh() and can be overwritten by the method
@@ -467,10 +460,15 @@ private:
   // This is stored for convenience.
   Group* m_named_bufs_grp;
 
-  // Used to retain ownership of components of reconstructed GridFunctions
+  // Used to retain ownership of components of reconstructed Meshes and GridFuncs
+  // Instead of using flags to keep track of ownership between this class
+  // and the mfem::DataCollection subobject, always have the subobject
+  // retain a non-owning pointer and manage memory via unique_ptr in
+  // this class for consistency
+  std::unique_ptr<mfem::Mesh> m_owned_mesh;
   std::vector<std::unique_ptr<mfem::FiniteElementCollection>> m_fecolls;
   std::vector<std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
-  std::vector<std::unique_ptr<mfem::GridFunction>> m_sidre_owned_gfs;
+  std::vector<std::unique_ptr<mfem::GridFunction>> m_owned_gridfuncs;
 
   // Private helper functions
 
