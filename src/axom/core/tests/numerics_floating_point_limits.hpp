@@ -49,17 +49,3 @@ TEST(numerics_floating_point_limits, consistency_with_standard_numeric_limits)
   check_type_limits<double>("double");
   check_type_limits<long double>("long double");
 }
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
-}

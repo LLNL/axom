@@ -111,15 +111,3 @@ TEST(core_execution_for_all, cuda_exec_async)
 }
 
 #endif
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  result = RUN_ALL_TESTS();
-
-  return result;
-}

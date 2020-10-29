@@ -36,7 +36,7 @@ void check_random_real(int offset)
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
-TEST(core_Utilities, log2)
+TEST(utils_Utilities, log2)
 {
   std::cout << "Testing log2 functions." << std::endl;
 
@@ -70,7 +70,7 @@ TEST(core_Utilities, log2)
 }
 
 //------------------------------------------------------------------------------
-TEST(core_Utilities, random_real)
+TEST(utils_Utilities, random_real)
 {
   std::cout << "Testing random_real functions (non-deterministic)." << std::endl;
 
@@ -83,7 +83,7 @@ TEST(core_Utilities, random_real)
 }
 
 //------------------------------------------------------------------------------
-TEST(core_Utilities, random_real_with_seed)
+TEST(utils_Utilities, random_real_with_seed)
 {
   std::cout << "Testing random_real functions (deterministic)." << std::endl;
   constexpr unsigned int seed = 123456789;
@@ -107,7 +107,7 @@ TEST(core_Utilities, random_real_with_seed)
 }
 
 //------------------------------------------------------------------------------
-TEST(core_Utilities, minmax)
+TEST(utils_Utilities, minmax)
 {
   std::cout << "Testing min and max functions." << std::endl;
 

@@ -111,11 +111,3 @@ TEST(numerics_eigen_sort, sort_eigenvalues_and_eigenvectors)
     }
   }
 }
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  int result = RUN_ALL_TESTS();
-  return result;
-}

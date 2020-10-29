@@ -483,11 +483,3 @@ TEST(core_memory_management, basic_alloc_realloc_dealloc)
   axom::deallocate<int>(buf);
   EXPECT_EQ(buf, nullptr);
 }
-
-//------------------------------------------------------------------------------
-int main(int argc, char** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  int result = RUN_ALL_TESTS();
-  return (result);
-}

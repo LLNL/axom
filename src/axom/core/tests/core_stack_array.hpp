@@ -112,7 +112,7 @@ std::ostream& operator<<(std::ostream& stream, const Tensor& t)
   return stream;
 }
 
-TEST(StackArray, storage)
+TEST(core_stack_array, storage)
 {
   constexpr int N = 100; /* Number of values to store */
   internal::test_storage<int, N>([](int i) { return i; });
@@ -122,7 +122,7 @@ TEST(StackArray, storage)
   internal::test_storage<std::string, N>([](int i) { return std::to_string(i); });
 }
 
-TEST(StackArray, copy)
+TEST(core_stack_array, copy)
 {
   constexpr int N = 100; /* Number of values to store */
   internal::test_copy<int, N>([](int i) { return i; });
@@ -132,7 +132,7 @@ TEST(StackArray, copy)
   internal::test_copy<std::string, N>([](int i) { return std::to_string(i); });
 }
 
-TEST(StackArray, list_initilization)
+TEST(core_stack_array, list_initilization)
 {
   internal::test_list_initilization<int>([](int i) { return i; });
 
@@ -143,17 +143,3 @@ TEST(StackArray, list_initilization)
 }
 
 } /* namespace axom */
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
-}
