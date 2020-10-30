@@ -103,7 +103,8 @@ bool check_eigen_decomposition(const axom::numerics::Matrix<T>& A,
 
   double p1norm = axom::numerics::matrix_norm(test, axom::numerics::P1_NORM);
   double inftynorm = axom::numerics::matrix_norm(test, axom::numerics::INF_NORM);
-  double frobnorm = axom::numerics::matrix_norm(test, axom::numerics::FROBENIUS_NORM);
+  double frobnorm =
+    axom::numerics::matrix_norm(test, axom::numerics::FROBENIUS_NORM);
 
   status = status && axom::utilities::isNearlyEqual(p1norm, 0.0, TOL);
   if(do_gtest_checks)
@@ -173,12 +174,13 @@ TEST(numerics_jacobi_eigensolve, random_symmetric_matrix)
     axom::numerics::Matrix<double> V(N, N);
 
     int numIterations = 0;
-    int rc = axom::numerics::jacobi_eigensolve(A_test,
-                                         V,
-                                         lambdas,
-                                         axom::numerics::JACOBI_DEFAULT_MAX_ITERATIONS,
-                                         &numIterations,
-                                         axom::numerics::JACOBI_DEFAULT_TOLERANCE);
+    int rc = axom::numerics::jacobi_eigensolve(
+      A_test,
+      V,
+      lambdas,
+      axom::numerics::JACOBI_DEFAULT_MAX_ITERATIONS,
+      &numIterations,
+      axom::numerics::JACOBI_DEFAULT_TOLERANCE);
 
     EXPECT_EQ(rc, axom::numerics::JACOBI_EIGENSOLVE_SUCCESS);
     EXPECT_TRUE(numIterations > 0);
