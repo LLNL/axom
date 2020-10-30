@@ -51,7 +51,7 @@ inline AXOM_HOST_DEVICE T abs(const T& x)
  * \return max(x, y) the max value of x and y.
  */
 template <typename T>
-inline AXOM_HOST_DEVICE T max(const T& x, const T& y)
+inline AXOM_HOST_DEVICE const T& max(const T& x, const T& y)
 {
   return (y < x) ? x : y;
 }
@@ -63,7 +63,7 @@ inline AXOM_HOST_DEVICE T max(const T& x, const T& y)
  * \return min(x, y) the min value of x and y.
  */
 template <typename T>
-inline AXOM_HOST_DEVICE T min(const T& x, const T& y)
+inline AXOM_HOST_DEVICE const T& min(const T& x, const T& y)
 {
   return (y < x) ? y : x;
 }
