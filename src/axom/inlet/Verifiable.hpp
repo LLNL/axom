@@ -38,6 +38,8 @@ class Table;
 class Verifiable
 {
 public:
+  virtual ~Verifiable() = default;
+
   // Should not be reassignable
   Verifiable& operator=(const Verifiable&) = delete;
   /*!
