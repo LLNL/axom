@@ -30,7 +30,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Switched accessor interface to match that of the STL with operator[] and
   T get<T>()
 - Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
-  and `std::unique_ptr<T>` in owning contexts 
+  and `std::unique_ptr<T>` in owning contexts
+
+### Fixed
+- Updated to new BLT version that does not fail when ClangFormat returns an empty
+  version string.  BLT/Axom now issues a warning and disables the `style` build
+  target if version is unknown or wrong.
 
 
 ## [Version 0.4.0] - Release date 2020-09-22
