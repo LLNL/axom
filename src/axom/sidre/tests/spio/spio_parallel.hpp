@@ -42,7 +42,8 @@ using axom::sidre::Group;
 using axom::sidre::IOManager;
 using axom::sidre::View;
 
-namespace {
+namespace
+{
 /** Returns the number of output files for spio  */
 int numOutputFiles(int numRanks)
 {
