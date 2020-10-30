@@ -23,30 +23,30 @@
 // MFEM includes - needed to set up simulation
 #include "mfem.hpp"
 
-#include "axom/core/utilities/FileUtilities.hpp"
-
 // Abstraction for an object that may or may not retain ownership of an object
-// via an owning- or non-owning-pointer
+// via an owning- or non-owning-pointer - this allows for owning and non-owning
+// versions of an object to be accessed uniformly.
 template <typename T>
 class MaybeOwner
 {
 public:
-  // Would also be useful to have a make_MaybeOwner ctor that forwards args
+  // Sets up an owning pointer via a moved unique_ptr
   MaybeOwner& operator=(std::unique_ptr<T>&& ptr)
   {
     m_non_owning = nullptr;
     m_owning = std::move(ptr);
     return *this;
   }
-  // Call move constructor - really doesn't need to be on the heap though
-  // Use std::optional when available
+
+  // Sets up an owning pointer via a moved object
   MaybeOwner& operator=(T&& obj)
   {
     m_non_owning = nullptr;
     m_owning.reset(new T(std::move(obj)));  // Calls move constructor
     return *this;
   }
-  // Avoid null check
+
+  // Sets up a non-owning pointer via a reference
   MaybeOwner& operator=(T& obj)
   {
     m_owning.reset();
@@ -54,6 +54,7 @@ public:
     return *this;
   }
 
+  // Sets up a non-owning pointer
   MaybeOwner& operator=(T* ptr)
   {
     SLIC_ERROR_IF(!ptr, "Attempted to set a MaybeOwner to a nullptr");
@@ -74,8 +75,13 @@ public:
     return (m_owning) ? *m_owning : *m_non_owning;
   }
 
+  // Provided for convienence for MFEM function calls which sometimes
+  // require pointers and sometimes require references
   operator T&() { return get(); }
   operator const T&() const { return get(); }
+
+  operator T*() { return &get(); }
+  operator const T*() const { return &get(); }
 
 private:
   std::unique_ptr<T> m_owning;  // "nullptr" - value-initialized ptr member - by default
@@ -90,20 +96,30 @@ private:
 };
 
 // Stores the state of the simulation - a mesh, fields, and associated objects
-struct SimulationState
+class SimulationState
 {
-  SimulationState(axom::sidre::MFEMSidreDataCollection& dc) : datacoll(dc)
+public:
+  // Initializes the simulation, using an existing file with specified cycle if
+  // cycle_to_load is specified (>= 0)
+  SimulationState(axom::sidre::MFEMSidreDataCollection& dc,
+                  const int cycle_to_load)
+    : datacoll(dc)
   {
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+    MPI_Comm_rank(dc.GetComm(), &m_rank);
+#endif
     // FIXME: Hardcoded, may not even work for a restart of a restart
     const std::string saved_data_filename =
       dc.GetCollectionName() + "_000000.root";
 
     // Check if this is a restart run
-    if(axom::utilities::filesystem::pathExists(saved_data_filename))
+    if(cycle_to_load >= 0)
     {
-      SLIC_INFO("Reading in existing data and restarting...");
       // If it is, we can load everything in and "unwrap" to fill in the state
-      dc.Load();
+      dc.Load(cycle_to_load);
+      SLIC_INFO_IF(!m_rank,
+                   "Reading in existing data and restarting from iteration "
+                     << dc.GetCycle() << " at time " << dc.GetTime());
       // The Mesh, GridFunction, etc, objects already exist and can be accessed
       mesh = dc.GetMesh();
       soln_field = dc.GetField("solution");
@@ -114,7 +130,7 @@ struct SimulationState
     // In a realistic simulation this is where an input file might be used
     else
     {
-      SLIC_INFO("Starting a new simulation");
+      SLIC_INFO_IF(!m_rank, "Starting a new simulation");
       // Everything gets created on the heap so its lifetime can be managed by
       // the MaybeOwners - needs to persist after this function
 
@@ -127,7 +143,7 @@ struct SimulationState
 #endif
       mesh = std::move(tmp_mesh);
       // Set up the DataCollection with the newly created mesh
-      dc.SetMesh(&mesh.get());
+      dc.SetMesh(mesh);
 
       // Set up the FiniteElementSpace - needed for the grid functions
       // Initialize with H1 elements of order 1
@@ -136,10 +152,10 @@ struct SimulationState
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
       auto par_mesh = dynamic_cast<mfem::ParMesh*>(&mesh.get());
       fespace = std::unique_ptr<mfem::ParFiniteElementSpace>(
-        new mfem::ParFiniteElementSpace(par_mesh, &fecoll.get()));
+        new mfem::ParFiniteElementSpace(par_mesh, fecoll));
 #else
       fespace = std::unique_ptr<mfem::FiniteElementSpace>(
-        new mfem::FiniteElementSpace(&mesh.get(), &fecoll.get()));
+        new mfem::FiniteElementSpace(mesh, fecoll));
 #endif
 
       // Initialize the solution field
@@ -154,9 +170,9 @@ struct SimulationState
         new mfem::ParGridFunction(par_fespace, static_cast<double*>(nullptr)));
 #else
       soln_field = std::unique_ptr<mfem::GridFunction>(
-        new mfem::GridFunction(&fespace.get(), nullptr));
+        new mfem::GridFunction(fespace, nullptr));
 #endif
-      dc.RegisterField("solution", &soln_field.get());
+      dc.RegisterField("solution", soln_field);
 
       // Intialize to zero as our "initial conditions"
       soln_field.get() = 0.0;
@@ -167,6 +183,7 @@ struct SimulationState
     }
   }
 
+  // A simulated
   void step(double dt)
   {
     // Update simulation state variables
@@ -175,18 +192,26 @@ struct SimulationState
     datacoll.SetTime(t);
 
     const int cycle = datacoll.GetCycle();
-    datacoll.SetTime(cycle + 1);
+    datacoll.SetCycle(cycle + 1);
 
     // Calculate the next iteration of the solution field...
     // For simplicity, every element in the field is set to the current time
     soln_field.get() = t;
   }
 
+private:
+  // FEM-related objects needed as part of a simulation
   MaybeOwner<mfem::Mesh> mesh;
   MaybeOwner<const mfem::FiniteElementCollection> fecoll;
   MaybeOwner<mfem::FiniteElementSpace> fespace;
   MaybeOwner<mfem::GridFunction> soln_field;
+
+  // A reference to the datacollection so it can be updated with time/cycle
+  // information on each time step
   axom::sidre::MFEMSidreDataCollection& datacoll;
+
+  // The MPI rank, used to display messages on just one node
+  int m_rank = 0;
 };
 
 int main(int argc, char* argv[])
@@ -205,8 +230,15 @@ int main(int argc, char* argv[])
   dc.SetComm(MPI_COMM_WORLD);
 #endif
 
+  // Command-line argument to load in a specific cycle
+  int cycle_to_load = -1;
+  if(argc > 1)
+  {
+    cycle_to_load = std::stoi(argv[1]);
+  }
+
   // Initialize the simulation data structures
-  SimulationState sim_state(dc);
+  SimulationState sim_state(dc, cycle_to_load);
 
   // This is where the time-dependent operator would be set up...
 
@@ -221,7 +253,7 @@ int main(int argc, char* argv[])
   {
     sim_state.step(dt);
 
-    // then save it
+    // then save it at each iteration
     dc.Save("sidre_mfem_datacoll_restart_ex", "sidre_hdf5");
   }
 

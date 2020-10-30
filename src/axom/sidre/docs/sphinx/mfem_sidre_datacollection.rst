@@ -79,4 +79,5 @@ Experimental support for complete reconstruction of a simulation's mesh and fiel
 the data read in will be used to reconstruct MFEM objects than can be accessed with the ``GetField`` and
 ``GetMesh`` methods.  
 
-This functionality is demonstrated in the ``sidre_mfem_datacollection_restart`` example.
+This functionality is demonstrated in the ``sidre_mfem_datacollection_restart`` example, which is a stripped-down
+example of how a simulation code might utilize the automatic reconstruction logic when loading in a datastore.
