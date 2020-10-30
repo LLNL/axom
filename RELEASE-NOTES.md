@@ -19,6 +19,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   The query uses OpenMP threading, when available.
 - Inlet: Added support for user-defined conversions from Inlet tables to user-defined
   types, and support for arrays of user-defined types
+- Added compiler define `NOMINMAX` to `axom/config.hpp.in` to avoid problems with
+  the Windows `min` and `max` macros.
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
