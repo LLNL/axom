@@ -40,6 +40,7 @@ namespace inlet
 class DocWriter
 {
 public:
+  virtual ~DocWriter() = default;
   /*!
    *****************************************************************************
    * \brief Write documentation for the input file to a given file
