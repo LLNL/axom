@@ -11,6 +11,7 @@
   #include <iomanip>  // for setw, setfill
   #include <cstdio>   // for snprintf()
   #include <unordered_set>
+  #include <type_traits>  // for checking layout
 
   #include "conduit_blueprint.hpp"
 
@@ -1457,7 +1458,9 @@ class SidreParMeshWrapper : public mfem::ParMesh
     int boundary_index_stride =
       num_boundary_elements > 0 ? mfem::Geometry::NumVerts[boundary_type] : 0;
 
-    // assuming Vertex is POD
+    static_assert(
+      std::is_standard_layout<mfem::Vertex>::value,
+      "mfem::Vertex must have standard layout for reinterpret_casting");
     vertices.MakeRef(reinterpret_cast<mfem::Vertex*>(_vertices), num_vertices);
     NumOfVertices = num_vertices;
 
@@ -1882,6 +1885,9 @@ void MFEMSidreDataCollection::reconstructMesh()
                 "Cannot reconstruct a mesh that was built using external data");
 
   // Assumes that Vertex is a standard layout type with only an array member
+  static_assert(std::is_standard_layout<mfem::Vertex>::value,
+                "mfem::Vertex must have standard layout to determine size of "
+                "its array member");
   const std::size_t EXPECTED_STRIDE = sizeof(mfem::Vertex) / sizeof(double);
   if((vertex_view->getTypeID() != DataTypeId::DOUBLE_ID) ||
      (vertex_view->getStride() != EXPECTED_STRIDE))
