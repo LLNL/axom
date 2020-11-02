@@ -8,8 +8,8 @@
 #ifdef AXOM_USE_MFEM
 
   #include <string>
-  #include <iomanip>  // for setw, setfill
-  #include <cstdio>   // for snprintf()
+  #include <iomanip>      // for setw, setfill
+  #include <cstdio>       // for snprintf()
   #include <type_traits>  // for checking layout
 
   #include "conduit_blueprint.hpp"
