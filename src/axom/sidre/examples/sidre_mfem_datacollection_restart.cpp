@@ -4,11 +4,19 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * @file sidre_mfem_datacollection.cpp
+ * @file sidre_mfem_datacollection_restart.cpp
  * @brief This example code is a basic demonstration of Sidre's
- * MFEMSidreDataCollection class for visualizing a time-marching
- * simulation.  It is a more thorough version of the snippet
- * provided in Sidre's Sphinx documentation.
+ * MFEMSidreDataCollection class for restarting a simulation.
+ * 
+ * To reload from a file, the cycle number to reload can be
+ * specified as a command-line argument.
+ * 
+ * For example, run
+ * @code{.sh}
+ * ./sidre_mfem_datacollection_restart # generates cycles 0-9
+ * # then...
+ * ./sidre_mfem_datacollection_restart 9 # loads cycle 9 and continues
+ * @endcode
  */
 
 // Datacollection header
@@ -77,6 +85,7 @@ public:
 
   // Provided for convienence for MFEM function calls which sometimes
   // require pointers and sometimes require references
+  // Typically not advisable but helps with readability in this example
   operator T&() { return get(); }
   operator const T&() const { return get(); }
 
@@ -108,10 +117,6 @@ public:
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
     MPI_Comm_rank(dc.GetComm(), &m_rank);
 #endif
-    // FIXME: Hardcoded, may not even work for a restart of a restart
-    const std::string saved_data_filename =
-      dc.GetCollectionName() + "_000000.root";
-
     // Check if this is a restart run
     if(cycle_to_load >= 0)
     {
@@ -183,7 +188,7 @@ public:
     }
   }
 
-  // A simulated
+  // A simulated "step" of the simulation
   void step(double dt)
   {
     // Update simulation state variables
@@ -201,6 +206,7 @@ public:
 
 private:
   // FEM-related objects needed as part of a simulation
+  // In a real simulation these would be exposed via accessors
   MaybeOwner<mfem::Mesh> mesh;
   MaybeOwner<const mfem::FiniteElementCollection> fecoll;
   MaybeOwner<mfem::FiniteElementSpace> fespace;
@@ -230,7 +236,7 @@ int main(int argc, char* argv[])
   dc.SetComm(MPI_COMM_WORLD);
 #endif
 
-  // Command-line argument to load in a specific cycle
+  // Command-line argument to load in a specific cycle - optional
   int cycle_to_load = -1;
   if(argc > 1)
   {

@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * @file sidre_mfem_datacollection.cpp
+ * @file sidre_mfem_datacollection_vis.cpp
  * @brief This example code is a basic demonstration of Sidre's
  * MFEMSidreDataCollection class for visualizing a time-marching
  * simulation.  It is a more thorough version of the snippet
