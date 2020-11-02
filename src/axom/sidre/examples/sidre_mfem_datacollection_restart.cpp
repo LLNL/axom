@@ -115,76 +115,20 @@ public:
     : datacoll(dc)
   {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    MPI_Comm_rank(dc.GetComm(), &m_rank);
+    MPI_Comm_rank(datacoll.GetComm(), &m_rank);
 #endif
     // Check if this is a restart run
     if(cycle_to_load >= 0)
     {
       // If it is, we can load everything in and "unwrap" to fill in the state
-      dc.Load(cycle_to_load);
-      SLIC_INFO_IF(!m_rank,
-                   "Reading in existing data and restarting from iteration "
-                     << dc.GetCycle() << " at time " << dc.GetTime());
-      // The Mesh, GridFunction, etc, objects already exist and can be accessed
-      mesh = dc.GetMesh();
-      soln_field = dc.GetField("solution");
-      fespace = soln_field.get().FESpace();
-      fecoll = fespace.get().FEColl();
+      datacoll.Load(cycle_to_load);
+      reloadSim();
     }
     // Otherwise it's a nominal run so we have to create everything
     // In a realistic simulation this is where an input file might be used
     else
     {
-      SLIC_INFO_IF(!m_rank, "Starting a new simulation");
-      // Everything gets created on the heap so its lifetime can be managed by
-      // the MaybeOwners - needs to persist after this function
-
-      // Built a 2D mesh with 100 square elements
-      std::unique_ptr<mfem::Mesh> tmp_mesh(
-        new mfem::Mesh(10, 10, mfem::Element::QUADRILATERAL));
-
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-      tmp_mesh.reset(new mfem::ParMesh(MPI_COMM_WORLD, *tmp_mesh));
-#endif
-      mesh = std::move(tmp_mesh);
-      // Set up the DataCollection with the newly created mesh
-      dc.SetMesh(mesh);
-
-      // Set up the FiniteElementSpace - needed for the grid functions
-      // Initialize with H1 elements of order 1
-      fecoll = std::unique_ptr<mfem::H1_FECollection>(
-        new mfem::H1_FECollection(/*order=*/1, mesh.get().Dimension()));
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-      auto par_mesh = dynamic_cast<mfem::ParMesh*>(&mesh.get());
-      fespace = std::unique_ptr<mfem::ParFiniteElementSpace>(
-        new mfem::ParFiniteElementSpace(par_mesh, fecoll));
-#else
-      fespace = std::unique_ptr<mfem::FiniteElementSpace>(
-        new mfem::FiniteElementSpace(mesh, fecoll));
-#endif
-
-      // Initialize the solution field
-      std::unique_ptr<mfem::GridFunction> tmp_soln_field;
-
-      // Set the data to nullptr so the datacollection will initialize it with
-      // its own managed data (needed for a restart)
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-      auto par_fespace =
-        dynamic_cast<mfem::ParFiniteElementSpace*>(&fespace.get());
-      soln_field = std::unique_ptr<mfem::ParGridFunction>(
-        new mfem::ParGridFunction(par_fespace, static_cast<double*>(nullptr)));
-#else
-      soln_field = std::unique_ptr<mfem::GridFunction>(
-        new mfem::GridFunction(fespace, nullptr));
-#endif
-      dc.RegisterField("solution", soln_field);
-
-      // Intialize to zero as our "initial conditions"
-      soln_field.get() = 0.0;
-
-      // Set t = 0 state info
-      dc.SetCycle(0);   // Iteration counter
-      dc.SetTime(0.0);  // Simulation time
+      setupNewSim();
     }
   }
 
@@ -205,6 +149,73 @@ public:
   }
 
 private:
+  // Simulation state setup
+  void setupNewSim()
+  {
+    SLIC_INFO_IF(!m_rank, "Starting a new simulation");
+    // Everything gets created on the heap so its lifetime can be managed by
+    // the MaybeOwners - needs to persist after this function
+
+    // Built a 2D mesh with 100 square elements
+    std::unique_ptr<mfem::Mesh> tmp_mesh(
+      new mfem::Mesh(10, 10, mfem::Element::QUADRILATERAL));
+
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+    tmp_mesh.reset(new mfem::ParMesh(MPI_COMM_WORLD, *tmp_mesh));
+#endif
+    mesh = std::move(tmp_mesh);
+    // Set up the DataCollection with the newly created mesh
+    datacoll.SetMesh(mesh);
+
+    // Set up the FiniteElementSpace - needed for the grid functions
+    // Initialize with H1 elements of order 1
+    fecoll = std::unique_ptr<mfem::H1_FECollection>(
+      new mfem::H1_FECollection(/*order=*/1, mesh.get().Dimension()));
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+    auto par_mesh = dynamic_cast<mfem::ParMesh*>(&mesh.get());
+    fespace = std::unique_ptr<mfem::ParFiniteElementSpace>(
+      new mfem::ParFiniteElementSpace(par_mesh, fecoll));
+#else
+    fespace = std::unique_ptr<mfem::FiniteElementSpace>(
+      new mfem::FiniteElementSpace(mesh, fecoll));
+#endif
+
+    // Initialize the solution field
+    std::unique_ptr<mfem::GridFunction> tmp_soln_field;
+
+    // Set the data to nullptr so the datacollection will initialize it with
+    // its own managed data (needed for a restart)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+    auto par_fespace = dynamic_cast<mfem::ParFiniteElementSpace*>(&fespace.get());
+    soln_field = std::unique_ptr<mfem::ParGridFunction>(
+      new mfem::ParGridFunction(par_fespace, static_cast<double*>(nullptr)));
+#else
+    soln_field = std::unique_ptr<mfem::GridFunction>(
+      new mfem::GridFunction(fespace, nullptr));
+#endif
+    datacoll.RegisterField("solution", soln_field);
+
+    // Intialize to zero as our "initial conditions"
+    soln_field.get() = 0.0;
+
+    // Set t = 0 state info
+    datacoll.SetCycle(0);   // Iteration counter
+    datacoll.SetTime(0.0);  // Simulation time
+  }
+
+  // Sets up the MaybeOwners with non-owning pointers
+  void reloadSim()
+  {
+    SLIC_INFO_IF(!m_rank,
+                 "Reading in existing data and restarting from iteration "
+                   << datacoll.GetCycle() << " at time " << datacoll.GetTime());
+    // The Mesh, GridFunction, etc, objects already exist and can be accessed
+    mesh = datacoll.GetMesh();
+    soln_field = datacoll.GetField("solution");
+    fespace = soln_field.get().FESpace();
+    fecoll = fespace.get().FEColl();
+  }
+
   // FEM-related objects needed as part of a simulation
   // In a real simulation these would be exposed via accessors
   MaybeOwner<mfem::Mesh> mesh;
