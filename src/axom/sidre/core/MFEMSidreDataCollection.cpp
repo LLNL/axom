@@ -548,12 +548,12 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
                     "groups/g%d_%d",
                     pmesh->gtopo.GetGroupMasterRank(gi),
                     pmesh->gtopo.GetGroupMasterGroup(gi));
-      sidre::Group* adjset_grp = adjset_grp->createGroup(group_str);
+      sidre::Group* group_grp = adjset_grp->createGroup(group_str);
 
       sidre::View* gneighbors_view =
-        adjset_grp->createViewAndAllocate("neighbors",
-                                          sidre::INT_ID,
-                                          num_gneighbors - 1);
+        group_grp->createViewAndAllocate("neighbors",
+                                         sidre::INT_ID,
+                                         num_gneighbors - 1);
       int* gneighbors_data = gneighbors_view->getData<int*>();
 
       // skip local domain when adding Blueprint neighbors
@@ -574,7 +574,7 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
       if(num_gvertices > 0)
       {
         sidre::View* gvertices_view =
-          adjset_grp->createViewAndAllocate("values", sidre::INT_ID, num_gvertices);
+          group_grp->createViewAndAllocate("values", sidre::INT_ID, num_gvertices);
         int* gvertices_data = gvertices_view->getData<int*>();
 
         for(int vi = 0; vi < num_gvertices; ++vi)
@@ -593,9 +593,9 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
         if(num_gedges > 0)
         {
           sidre::View* gedges_view =
-            adjset_grp->createViewAndAllocate("edges",
-                                              sidre::INT_ID,
-                                              num_gedges * 2);
+            group_grp->createViewAndAllocate("edges",
+                                             sidre::INT_ID,
+                                             num_gedges * 2);
           int* gedges_data = gedges_view->getData<int*>();
 
           for(int ei = 0; ei < num_gedges; ++ei)
@@ -613,9 +613,9 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
           if(num_gtris > 0)
           {
             sidre::View* gtris_view =
-              adjset_grp->createViewAndAllocate("triangles",
-                                                sidre::INT_ID,
-                                                num_gtris * 3);
+              group_grp->createViewAndAllocate("triangles",
+                                               sidre::INT_ID,
+                                               num_gtris * 3);
             int* gtris_data = gtris_view->getData<int*>();
             for(int ti = 0; ti < num_gtris; ++ti)
             {
@@ -628,9 +628,9 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
           if(num_gquads > 0)
           {
             sidre::View* gquads_view =
-              adjset_grp->createViewAndAllocate("quadrilaterals",
-                                                sidre::INT_ID,
-                                                num_gquads * 4);
+              group_grp->createViewAndAllocate("quadrilaterals",
+                                               sidre::INT_ID,
+                                               num_gquads * 4);
             int* gquads_data = gquads_view->getData<int*>();
             for(int qi = 0; qi < num_gquads; ++qi)
             {
