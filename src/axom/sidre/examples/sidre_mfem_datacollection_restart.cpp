@@ -22,7 +22,7 @@
 // Datacollection header
 #include "axom/sidre/core/MFEMSidreDataCollection.hpp"
 
-#include <memory>
+#include <memory>  // for unique_ptr
 
 #ifdef AXOM_USE_MPI
   #include "mpi.h"

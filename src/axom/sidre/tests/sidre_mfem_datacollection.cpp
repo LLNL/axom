@@ -228,16 +228,17 @@ struct ParMeshGroupData
 
 static std::vector<ParMeshGroupData> getGroupData(const mfem::ParMesh& parmesh)
 {
-  std::vector<ParMeshGroupData> result(parmesh.GetNGroups());
+  // Zeroth group doesn't matter
+  std::vector<ParMeshGroupData> result(parmesh.GetNGroups() - 1);
   // remove when marked const in MFEM
   auto& non_const_parmesh = const_cast<mfem::ParMesh&>(parmesh);
 
-  for(std::size_t i = 0; i < result.size(); i++)
+  for(std::size_t i = 1; i < result.size(); i++)
   {
-    result[i] = ParMeshGroupData {non_const_parmesh.GroupNVertices(i),
-                                  non_const_parmesh.GroupNEdges(i),
-                                  non_const_parmesh.GroupNTriangles(i),
-                                  non_const_parmesh.GroupNQuadrilaterals(i)};
+    result[i - 1] = ParMeshGroupData {non_const_parmesh.GroupNVertices(i),
+                                      non_const_parmesh.GroupNEdges(i),
+                                      non_const_parmesh.GroupNTriangles(i),
+                                      non_const_parmesh.GroupNQuadrilaterals(i)};
   }
 
   return result;
@@ -269,13 +270,6 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
       // Prints local mesh on rank 0
       std::ofstream vtkstream("parmesh.vtk");
       parmesh.PrintVTK(vtkstream);
-      std::ofstream part("partitioning.txt");
-      auto partitioning = base_mesh.GeneratePartitioning(n_ranks, 5);
-      for(int i = 0; i < base_mesh.GetNE(); i++)
-      {
-        part << "Element " << i << ": " << partitioning[i] << "\n";
-      }
-      delete[] partitioning;
     }
   }
 

@@ -817,10 +817,6 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     m_bp_grp->load(path, protocol);
   }
 
-  SLIC_ERROR_IF(m_bp_grp->getNumGroups() == 0,
-                "Loaded datastore is empty, was the datastore created on a "
-                "different number of nodes?");
-
   // If the data collection created the datastore, it knows the layout of where
   // the domain and global groups are, and can restore them after the Load().
   //
@@ -833,6 +829,9 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     SetGroupPointers(m_datastore_ptr->getRoot()->getGroup(
                        name + "_global/blueprint_index/" + name),
                      m_datastore_ptr->getRoot()->getGroup(name));
+    SLIC_ERROR_IF(m_bp_grp->getNumGroups() == 0,
+                  "Loaded datastore is empty, was the datastore created on a "
+                  "different number of nodes?");
 
     UpdateStateFromDS();
   }
