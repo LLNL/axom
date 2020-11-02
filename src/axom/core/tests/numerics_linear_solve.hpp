@@ -8,15 +8,14 @@
 #include "axom/core/numerics/Matrix.hpp"
 #include "axom/core/numerics/linear_solve.hpp"
 
-namespace numerics = axom::numerics;
-
 TEST(numerics_linear_solve, linear_solve_with_identity_matrix)
 {
   const int N = 25;
 
   for(int i = 1; i < N; ++i)
   {
-    numerics::Matrix<double> A = numerics::Matrix<double>::identity(i);
+    axom::numerics::Matrix<double> A =
+      axom::numerics::Matrix<double>::identity(i);
 
     // form right-hand side
     double* b = new double[i];
@@ -29,7 +28,7 @@ TEST(numerics_linear_solve, linear_solve_with_identity_matrix)
     double* x = new double[i];
 
     // solve
-    int rc = numerics::linear_solve(A, b, x);
+    int rc = axom::numerics::linear_solve(A, b, x);
     EXPECT_EQ(0, rc);
 
     // check answer
@@ -47,7 +46,7 @@ TEST(numerics_linear_solve, linear_solve_with_identity_matrix)
 TEST(numerics_linear_solve, linear_solve2x2)
 {
   const int N = 2;
-  numerics::Matrix<double> A(N, N);
+  axom::numerics::Matrix<double> A(N, N);
 
   // clang-format off
   A(0, 0) = 2; A(0, 1) = 1;
@@ -57,7 +56,7 @@ TEST(numerics_linear_solve, linear_solve2x2)
   double b[2] = {1, 14};
   double x[2];
 
-  int rc = numerics::linear_solve(A, b, x);
+  int rc = axom::numerics::linear_solve(A, b, x);
   EXPECT_EQ(0, rc);
 
   EXPECT_DOUBLE_EQ(-2, x[0]);
@@ -68,7 +67,7 @@ TEST(numerics_linear_solve, linear_solve2x2)
 TEST(numerics_linear_solve, linear_solve3x3)
 {
   const int N = 3;
-  numerics::Matrix<double> A(N, N);
+  axom::numerics::Matrix<double> A(N, N);
 
   // clang-format off
   A(0, 0) = 4; A(0, 1) = 5; A(0, 2) =-2;
@@ -79,7 +78,7 @@ TEST(numerics_linear_solve, linear_solve3x3)
   double b[3] = {-14, 42, 28};
   double x[3];
 
-  int rc = numerics::linear_solve(A, b, x);
+  int rc = axom::numerics::linear_solve(A, b, x);
   EXPECT_EQ(0, rc);
 
   EXPECT_DOUBLE_EQ(4, x[0]);
@@ -91,10 +90,10 @@ TEST(numerics_linear_solve, linear_solve3x3)
 TEST(numerics_linear_solve, linear_solve_singular)
 {
   const int N = 3;
-  numerics::Matrix<double> A = numerics::Matrix<double>::zeros(N, N);
+  axom::numerics::Matrix<double> A = axom::numerics::Matrix<double>::zeros(N, N);
   double b[3] = {-14, 42, 28};
   double x[3];
 
-  int rc = numerics::linear_solve(A, b, x);
+  int rc = axom::numerics::linear_solve(A, b, x);
   EXPECT_NE(0, rc);
 }

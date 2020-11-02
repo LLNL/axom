@@ -10,9 +10,6 @@
 // gtest includes
 #include "gtest/gtest.h"
 
-// namespace aliases
-namespace numerics = axom::numerics;
-
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
@@ -32,10 +29,10 @@ TEST(numerics_eigen_sort, null_eigenvalues_vector)
     8,
     9  // column 3
   };
-  numerics::Matrix<int> M(3, 3, matrix_data, ZERO_COPY);
+  axom::numerics::Matrix<int> M(3, 3, matrix_data, ZERO_COPY);
 
   int* l = nullptr;
-  EXPECT_FALSE(numerics::eigen_sort(l, M));
+  EXPECT_FALSE(axom::numerics::eigen_sort(l, M));
 }
 
 //------------------------------------------------------------------------------
@@ -59,7 +56,7 @@ TEST(numerics_eigen_sort, sort_eigenvalues_and_eigenvectors)
     8,
     9  // column 3
   };
-  numerics::Matrix<int> M(N, N, matrix_data, ZERO_COPY);
+  axom::numerics::Matrix<int> M(N, N, matrix_data, ZERO_COPY);
 
   // STEP 2: constructed sorted matrix of eigen vectors
   int sorted_matrix_data[9 /* 3 x 3 */] = {
@@ -73,10 +70,10 @@ TEST(numerics_eigen_sort, sort_eigenvalues_and_eigenvectors)
     2,
     3  // column 3
   };
-  numerics::Matrix<int> sortedM(N, N, sorted_matrix_data, ZERO_COPY);
+  axom::numerics::Matrix<int> sortedM(N, N, sorted_matrix_data, ZERO_COPY);
 
   // STEP 3: call eigen_sort
-  EXPECT_TRUE(numerics::eigen_sort(l, M));
+  EXPECT_TRUE(axom::numerics::eigen_sort(l, M));
 
   // STEP 4: check eigen values & eigen vectors
   for(int i = 0; i < N; ++i)
@@ -94,7 +91,7 @@ TEST(numerics_eigen_sort, sort_eigenvalues_and_eigenvectors)
   }
 
   // STEP 5: check calling eigen_sort() on already sorted data
-  EXPECT_TRUE(numerics::eigen_sort(l, M));
+  EXPECT_TRUE(axom::numerics::eigen_sort(l, M));
 
   // STEP 6: check eigen values and eigen vectors again
   for(int i = 0; i < N; ++i)
@@ -110,12 +107,4 @@ TEST(numerics_eigen_sort, sort_eigenvalues_and_eigenvectors)
       EXPECT_EQ(eigen_vector[j], expected_eigen_vector[j]);
     }
   }
-}
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  int result = RUN_ALL_TESTS();
-  return result;
 }

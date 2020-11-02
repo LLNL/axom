@@ -27,7 +27,7 @@ int count_mismatches(double* standard, double* test, int n, double thresh)
   return mcount;
 }
 
-TEST(numerics_polynomial_solve, solve_linear)
+TEST(numerics_polynomial_solvers, solve_linear)
 {
   double coeff[2];
   double roots[1];
@@ -100,7 +100,7 @@ TEST(numerics_polynomial_solve, solve_linear)
   }
 }
 
-TEST(numerics_polynomial_solve, solve_quadratic)
+TEST(numerics_polynomial_solvers, solve_quadratic)
 {
   double coeff[3];
   double roots[2];
@@ -191,7 +191,7 @@ TEST(numerics_polynomial_solve, solve_quadratic)
   }
 }
 
-TEST(numerics_polynomial_solve, solve_cubic)
+TEST(numerics_polynomial_solvers, solve_cubic)
 {
   double coeff[4];
   double roots[3];
@@ -296,12 +296,4 @@ TEST(numerics_polynomial_solve, solve_cubic)
     EXPECT_EQ(n, 3);
     EXPECT_EQ(count_mismatches(expected, roots, 3), 0);
   }
-}
-
-int main(int argc, char* argv[])
-{
-  ::testing::InitGoogleTest(&argc, argv);
-
-  int result = RUN_ALL_TESTS();
-  return result;
 }

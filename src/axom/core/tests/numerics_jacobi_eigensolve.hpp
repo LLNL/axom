@@ -15,9 +15,6 @@
 // C/C++ includes
 #include <sstream>  // for std::ostringstream
 
-// namespace aliases
-namespace numerics = axom::numerics;
-namespace utilities = axom::utilities;
 using IndexType = axom::IndexType;
 
 //------------------------------------------------------------------------------
@@ -37,7 +34,7 @@ namespace
  * \pre lo < hi
  */
 template <typename T>
-void random_symmetric_matrix_init(numerics::Matrix<T>& A, T lo, T hi)
+void random_symmetric_matrix_init(axom::numerics::Matrix<T>& A, T lo, T hi)
 {
   EXPECT_TRUE(A.isSquare());
 
@@ -48,7 +45,7 @@ void random_symmetric_matrix_init(numerics::Matrix<T>& A, T lo, T hi)
   {
     for(IndexType j = 0; j <= i; ++j)
     {
-      A(i, j) = utilities::random_real(lo, hi, seed);
+      A(i, j) = axom::utilities::random_real(lo, hi, seed);
       A(j, i) = A(i, j);
     }  // END for all j
   }    // END for all i
@@ -71,8 +68,8 @@ void random_symmetric_matrix_init(numerics::Matrix<T>& A, T lo, T hi)
  * \pre lambdas != nullptr
  */
 template <typename T>
-bool check_eigen_decomposition(const numerics::Matrix<T>& A,
-                               const numerics::Matrix<T>& V,
+bool check_eigen_decomposition(const axom::numerics::Matrix<T>& A,
+                               const axom::numerics::Matrix<T>& V,
                                const T* lambdas,
                                bool do_gtest_checks = true)
 {
@@ -87,16 +84,16 @@ bool check_eigen_decomposition(const numerics::Matrix<T>& A,
   const int N = A.getNumRows();
 
   // compute A*V - V*lambda
-  numerics::Matrix<double> tmp(N, N);
-  numerics::Matrix<double> test(N, N);
-  numerics::matrix_multiply(A, V, tmp);
+  axom::numerics::Matrix<double> tmp(N, N);
+  axom::numerics::Matrix<double> test(N, N);
+  axom::numerics::matrix_multiply(A, V, tmp);
 
   for(IndexType i = 0; i < N; ++i)
   {
     for(IndexType j = 0; j < N; ++j)
     {
       test(i, j) = tmp(i, j) - V(i, j) * lambdas[j];
-      status = status && utilities::isNearlyEqual(test(i, j), 0.0, TOL);
+      status = status && axom::utilities::isNearlyEqual(test(i, j), 0.0, TOL);
       if(do_gtest_checks)
       {
         EXPECT_TRUE(status);
@@ -104,23 +101,24 @@ bool check_eigen_decomposition(const numerics::Matrix<T>& A,
     }
   }
 
-  double p1norm = numerics::matrix_norm(test, numerics::P1_NORM);
-  double inftynorm = numerics::matrix_norm(test, numerics::INF_NORM);
-  double frobnorm = numerics::matrix_norm(test, numerics::FROBENIUS_NORM);
+  double p1norm = axom::numerics::matrix_norm(test, axom::numerics::P1_NORM);
+  double inftynorm = axom::numerics::matrix_norm(test, axom::numerics::INF_NORM);
+  double frobnorm =
+    axom::numerics::matrix_norm(test, axom::numerics::FROBENIUS_NORM);
 
-  status = status && utilities::isNearlyEqual(p1norm, 0.0, TOL);
+  status = status && axom::utilities::isNearlyEqual(p1norm, 0.0, TOL);
   if(do_gtest_checks)
   {
     EXPECT_TRUE(status);
   }
 
-  status = status && utilities::isNearlyEqual(inftynorm, 0.0, TOL);
+  status = status && axom::utilities::isNearlyEqual(inftynorm, 0.0, TOL);
   if(do_gtest_checks)
   {
     EXPECT_TRUE(status);
   }
 
-  status = status && utilities::isNearlyEqual(frobnorm, 0.0, TOL);
+  status = status && axom::utilities::isNearlyEqual(frobnorm, 0.0, TOL);
   if(do_gtest_checks)
   {
     EXPECT_TRUE(status);
@@ -140,16 +138,16 @@ TEST(numerics_jacobi_eigensolve, check_non_convergence)
   constexpr int MAX_ITERS = 1;  // set to 1 so that it does not converge
 
   double lambdas[40];
-  numerics::Matrix<double> V(N, N);
+  axom::numerics::Matrix<double> V(N, N);
 
   // create 40 x 40 random symmetric matrix A
-  numerics::Matrix<double> A(N, N);
+  axom::numerics::Matrix<double> A(N, N);
   random_symmetric_matrix_init(A, 0.0, 1.0);
 
   int numIters = 0;
-  int rc = numerics::jacobi_eigensolve(A, V, lambdas, MAX_ITERS, &numIters);
+  int rc = axom::numerics::jacobi_eigensolve(A, V, lambdas, MAX_ITERS, &numIters);
   EXPECT_EQ(numIters, MAX_ITERS);
-  EXPECT_EQ(rc, numerics::JACOBI_EIGENSOLVE_FAILURE);
+  EXPECT_EQ(rc, axom::numerics::JACOBI_EIGENSOLVE_FAILURE);
 
   bool converged = check_eigen_decomposition(A, V, lambdas, false);
   EXPECT_FALSE(converged);
@@ -169,21 +167,22 @@ TEST(numerics_jacobi_eigensolve, random_symmetric_matrix)
     oss << "checking [" << N << " x " << N << "] matrix";
     SCOPED_TRACE(oss.str());
 
-    numerics::Matrix<double> A_test(N, N);
+    axom::numerics::Matrix<double> A_test(N, N);
     random_symmetric_matrix_init(A_test, 0.0, 1.0);
 
     double* lambdas = new double[N];
-    numerics::Matrix<double> V(N, N);
+    axom::numerics::Matrix<double> V(N, N);
 
     int numIterations = 0;
-    int rc = numerics::jacobi_eigensolve(A_test,
-                                         V,
-                                         lambdas,
-                                         numerics::JACOBI_DEFAULT_MAX_ITERATIONS,
-                                         &numIterations,
-                                         numerics::JACOBI_DEFAULT_TOLERANCE);
+    int rc = axom::numerics::jacobi_eigensolve(
+      A_test,
+      V,
+      lambdas,
+      axom::numerics::JACOBI_DEFAULT_MAX_ITERATIONS,
+      &numIterations,
+      axom::numerics::JACOBI_DEFAULT_TOLERANCE);
 
-    EXPECT_EQ(rc, numerics::JACOBI_EIGENSOLVE_SUCCESS);
+    EXPECT_EQ(rc, axom::numerics::JACOBI_EIGENSOLVE_SUCCESS);
     EXPECT_TRUE(numIterations > 0);
     EXPECT_TRUE(numIterations < 16);
 
@@ -195,12 +194,4 @@ TEST(numerics_jacobi_eigensolve, random_symmetric_matrix)
     lambdas = nullptr;
 
   }  // END for all matrix sizes
-}
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  int result = RUN_ALL_TESTS();
-  return result;
 }

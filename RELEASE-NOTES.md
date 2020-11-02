@@ -19,6 +19,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   The query uses OpenMP threading, when available.
 - Inlet: Added support for user-defined conversions from Inlet tables to user-defined
   types, and support for arrays of user-defined types
+- Added compiler define `NOMINMAX` to `axom/config.hpp.in` to avoid problems with
+  the Windows `min` and `max` macros.
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -33,6 +35,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and `std::unique_ptr<T>` in owning contexts 
 - The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
   datastore is `Load` ed in
+- Unified core and SPIO unit tests into fewer executables to limit size of build directory
+
+### Fixed
+- Updated to new BLT version that does not fail when ClangFormat returns an empty
+  version string.  BLT/Axom now issues a warning and disables the `style` build
+  target if version is unknown or wrong.
 
 
 ## [Version 0.4.0] - Release date 2020-09-22
