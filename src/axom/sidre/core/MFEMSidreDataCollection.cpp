@@ -549,12 +549,12 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
                     "groups/g%d_%d",
                     pmesh->gtopo.GetGroupMasterRank(gi),
                     pmesh->gtopo.GetGroupMasterGroup(gi));
-      sidre::Group* group_grp = adjset_grp->createGroup(group_str);
+      sidre::Group* adjset_grp = adjset_grp->createGroup(group_str);
 
       sidre::View* gneighbors_view =
-        group_grp->createViewAndAllocate("neighbors",
-                                         sidre::INT_ID,
-                                         num_gneighbors - 1);
+        adjset_grp->createViewAndAllocate("neighbors",
+                                          sidre::INT_ID,
+                                          num_gneighbors - 1);
       int* gneighbors_data = gneighbors_view->getData<int*>();
 
       // skip local domain when adding Blueprint neighbors
@@ -575,7 +575,7 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
       if(num_gvertices > 0)
       {
         sidre::View* gvertices_view =
-          group_grp->createViewAndAllocate("values", sidre::INT_ID, num_gvertices);
+          adjset_grp->createViewAndAllocate("values", sidre::INT_ID, num_gvertices);
         int* gvertices_data = gvertices_view->getData<int*>();
 
         for(int vi = 0; vi < num_gvertices; ++vi)
@@ -594,9 +594,9 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
         if(num_gedges > 0)
         {
           sidre::View* gedges_view =
-            group_grp->createViewAndAllocate("edges",
-                                             sidre::INT_ID,
-                                             num_gedges * 2);
+            adjset_grp->createViewAndAllocate("edges",
+                                              sidre::INT_ID,
+                                              num_gedges * 2);
           int* gedges_data = gedges_view->getData<int*>();
 
           for(int ei = 0; ei < num_gedges; ++ei)
@@ -614,9 +614,9 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
           if(num_gtris > 0)
           {
             sidre::View* gtris_view =
-              group_grp->createViewAndAllocate("triangles",
-                                               sidre::INT_ID,
-                                               num_gtris * 3);
+              adjset_grp->createViewAndAllocate("triangles",
+                                                sidre::INT_ID,
+                                                num_gtris * 3);
             int* gtris_data = gtris_view->getData<int*>();
             for(int ti = 0; ti < num_gtris; ++ti)
             {
@@ -629,9 +629,9 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
           if(num_gquads > 0)
           {
             sidre::View* gquads_view =
-              group_grp->createViewAndAllocate("quadrilaterals",
-                                               sidre::INT_ID,
-                                               num_gquads * 4);
+              adjset_grp->createViewAndAllocate("quadrilaterals",
+                                                sidre::INT_ID,
+                                                num_gquads * 4);
             int* gquads_data = gquads_view->getData<int*>();
             for(int qi = 0; qi < num_gquads; ++qi)
             {
@@ -1613,63 +1613,63 @@ class SidreParMeshWrapper : public mfem::ParMesh
    * @brief Retrieves the information for each of the groups in the adjacency
    * set and stores it in a GroupInfo object
    * 
-   * @param [in] groups_grp The blueprint group corresponding to the communication
+   * @param [in] mesh_adjset_groups The blueprint group corresponding to the communication
    * groups, i.e. <blueprint_root>/adjsets/mesh/groups
    * 
    * @return The fully populated vector of GroupInfo objects
    */
-  std::vector<GroupInfo> getGroupInfo(Group* groups_grp)
+  std::vector<GroupInfo> getGroupInfo(Group* mesh_adjset_groups)
   {
-    auto num_groups = groups_grp->getNumGroups();
+    auto num_groups = mesh_adjset_groups->getNumGroups();
     std::vector<GroupInfo> result(num_groups);
 
     // Iterate over both the *sidre* groups group
     // to fill in the *geometric* group data
     int group_idx = 0;
-    for(auto idx = groups_grp->getFirstValidGroupIndex();
+    for(auto idx = mesh_adjset_groups->getFirstValidGroupIndex();
         sidre::indexIsValid(idx);
-        idx = groups_grp->getNextValidGroupIndex(idx))
+        idx = mesh_adjset_groups->getNextValidGroupIndex(idx))
     {
-      auto group_grp = groups_grp->getGroup(idx);
+      auto adjset_grp = mesh_adjset_groups->getGroup(idx);
       auto& grp_info = result[group_idx];
 
       // Copy the neighbors array
-      auto group_neighbors = group_grp->getView("neighbors");
+      auto group_neighbors = adjset_grp->getView("neighbors");
       int* neighbors_array = group_neighbors->getData<int*>();
       std::size_t num_neighbors = group_neighbors->getNumElements();
       grp_info.neighbors.assign(neighbors_array, neighbors_array + num_neighbors);
 
       // This group's shared vertices
-      if(group_grp->hasView("values"))
+      if(adjset_grp->hasView("values"))
       {
-        auto verts = group_grp->getView("values");
+        auto verts = adjset_grp->getView("values");
         grp_info.shared_verts = {verts->getData<int*>(),
                                  verts->getNumElements(),
                                  1};
       }
 
       // This group's shared edges
-      if(group_grp->hasView("edges"))
+      if(adjset_grp->hasView("edges"))
       {
-        auto edges = group_grp->getView("edges");
+        auto edges = adjset_grp->getView("edges");
         grp_info.shared_edges = {edges->getData<int*>(),
                                  edges->getNumElements(),
                                  2};
       }
 
       // This group's shared triangular faces
-      if(group_grp->hasView("triangles"))
+      if(adjset_grp->hasView("triangles"))
       {
-        auto tris = group_grp->getView("triangles");
+        auto tris = adjset_grp->getView("triangles");
         grp_info.shared_triangles = {tris->getData<int*>(),
                                      tris->getNumElements(),
                                      3};
       }
 
       // This group's shared quadrilateral faces
-      if(group_grp->hasView("quadrilaterals"))
+      if(adjset_grp->hasView("quadrilaterals"))
       {
-        auto quads = group_grp->getView("quadrilaterals");
+        auto quads = adjset_grp->getView("quadrilaterals");
         grp_info.shared_quadrilaterals = {quads->getData<int*>(),
                                           quads->getNumElements(),
                                           4};
@@ -1736,10 +1736,10 @@ public:
     // Can we do any better with variable naming?
     // A group can refer to a communication group or a Sidre group
 
-    auto groups_grp = bp_grp->getGroup("adjsets/mesh/groups");
-    auto num_groups = groups_grp->getNumGroups();
+    auto mesh_adjset_groups = bp_grp->getGroup("adjsets/mesh/groups");
+    auto num_groups = mesh_adjset_groups->getNumGroups();
 
-    auto groups_info = getGroupInfo(groups_grp);
+    auto groups_info = getGroupInfo(mesh_adjset_groups);
 
     // Set up the gtopo object
     CreateGroupTopology(groups_info);
