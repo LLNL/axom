@@ -10,7 +10,6 @@
   #include <string>
   #include <iomanip>  // for setw, setfill
   #include <cstdio>   // for snprintf()
-  #include <unordered_set>
   #include <type_traits>  // for checking layout
 
   #include "conduit_blueprint.hpp"
