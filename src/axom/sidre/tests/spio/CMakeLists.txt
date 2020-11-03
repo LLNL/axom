@@ -36,7 +36,8 @@ endif()
 # Add gtest C++ tests
 #------------------------------------------------------------------------------
 blt_add_executable( NAME       spio_tests
-                    SOURCES    spio_main.cpp ${gtest_spio_parallel_tests} ${gtest_spio_serial_tests}
+                    SOURCES    spio_main.cpp
+                    HEADERS    ${gtest_spio_parallel_tests} ${gtest_spio_serial_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON ${spio_test_depends} gtest
                     FOLDER     axom/sidre/tests

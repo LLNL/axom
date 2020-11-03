@@ -15,7 +15,8 @@ set(lumberjack_serial_tests
     lumberjack_TextEqualityCombiner.hpp )
 
 blt_add_executable(NAME       lumberjack_serial_tests
-                   SOURCES    lumberjack_serial_main.cpp ${lumberjack_serial_tests}
+                   SOURCES    lumberjack_serial_main.cpp
+                   HEADERS    ${lumberjack_serial_tests}
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                    DEPENDS_ON lumberjack gtest 
                    FOLDER     axom/lumberjack/tests )
@@ -35,7 +36,8 @@ set(lumberjack_mpi_tests
     lumberjack_RootCommunicator.hpp )
 
 blt_add_executable(NAME       lumberjack_mpi_tests
-                   SOURCES    lumberjack_mpi_main.cpp ${lumberjack_mpi_tests}
+                   SOURCES    lumberjack_mpi_main.cpp
+                   HEADERS    ${lumberjack_mpi_tests}
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                    DEPENDS_ON lumberjack mpi gtest 
                    FOLDER     axom/lumberjack/tests )
