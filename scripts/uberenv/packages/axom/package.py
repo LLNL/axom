@@ -51,14 +51,14 @@ class Axom(CMakePackage, CudaPackage):
     homepage = "https://github.com/LLNL/axom"
     git      = "https://github.com/LLNL/axom.git"
 
-    version('main', branch='main', submodules='True')
-    version('develop', branch='develop', submodules='True')
-    version('0.4.0', tag='v0.4.0', submodules='True')
-    version('0.3.3', tag='v0.3.3', submodules='True')
-    version('0.3.2', tag='v0.3.2', submodules='True')
-    version('0.3.1', tag='v0.3.1', submodules='True')
-    version('0.3.0', tag='v0.3.0', submodules='True')
-    version('0.2.9', tag='v0.2.9', submodules='True')
+    version('main', branch='main', submodules=True)
+    version('develop', branch='develop', submodules=True)
+    version('0.4.0', tag='v0.4.0', submodules=True)
+    version('0.3.3', tag='v0.3.3', submodules=True)
+    version('0.3.2', tag='v0.3.2', submodules=True)
+    version('0.3.1', tag='v0.3.1', submodules=True)
+    version('0.3.0', tag='v0.3.0', submodules=True)
+    version('0.2.9', tag='v0.2.9', submodules=True)
 
     phases = ["hostconfig", "cmake", "build", "install"]
     root_cmakelists_dir = 'src'
@@ -70,6 +70,8 @@ class Axom(CMakePackage, CudaPackage):
             description='Enable build of shared libraries')
     variant('debug',    default=False,
             description='Build debug instead of optimized version')
+
+    variant('cpp14',  default=True, description="Build with C++14 support")
 
     variant('fortran',  default=True, description="Build with Fortran support")
 
@@ -103,7 +105,7 @@ class Axom(CMakePackage, CudaPackage):
     depends_on("conduit~hdf5", when="~hdf5")
 
     # HDF5 needs to be the same as Conduit's
-    depends_on("hdf5@1.8.19:1.8.999~mpi~cxx~shared~fortran", when="+hdf5")
+    depends_on("hdf5@1.8.19:1.8.999~cxx~shared~fortran", when="+hdf5")
 
     depends_on("lua", when="+lua")
 
@@ -243,6 +245,9 @@ class Axom(CMakePackage, CudaPackage):
             if flags:
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS", flags,
                                             description))
+
+        if "+cpp14" in spec:
+            cfg.write(cmake_cache_entry("BLT_CXX_STD", "c++14", ""))
 
         # TPL locations
         cfg.write("#------------------{0}\n".format("-" * 60))
