@@ -55,7 +55,8 @@ if (NOT ENABLE_MPI)
 endif()
 
 blt_add_executable( NAME       core_serial_tests
-                    SOURCES    core_serial_main.cpp ${gtest_utils_tests}
+                    SOURCES    core_serial_main.cpp
+                    HEADERS    ${gtest_utils_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON ${utils_tests_depends}
                     FOLDER     axom/core/tests )
@@ -75,7 +76,8 @@ if (ENABLE_MPI)
        )
 
   blt_add_executable( NAME       core_mpi_tests
-                      SOURCES    core_mpi_main.cpp ${core_mpi_tests}
+                      SOURCES    core_mpi_main.cpp
+                      HEADERS    ${core_mpi_tests}
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                       DEPENDS_ON ${utils_tests_depends} mpi
                       FOLDER     axom/core/tests )
