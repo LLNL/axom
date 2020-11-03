@@ -112,7 +112,9 @@ else()
 
     # Check if MFEM was built with CUDA
     if(mfem_cfg_file_txt MATCHES "MFEM_USE_CUDA += YES")
-        message(STATUS "Adding MFEM CUDA includes/libraries")
+        if(NOT ENABLE_CUDA)
+            message(WARNING "MFEM was built with CUDA but CUDA is not enabled")
+        endif()
         list(APPEND MFEM_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
         list(APPEND MFEM_LIBRARIES ${CMAKE_CUDA_LINK_FLAGS})
         list(APPEND MFEM_LIBRARIES ${CUDA_LIBRARIES})
