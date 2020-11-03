@@ -16,7 +16,7 @@ set(lumberjack_serial_tests
 
 blt_add_executable(NAME       lumberjack_serial_tests
                    SOURCES    lumberjack_serial_main.cpp
-                   INCLUDES   ${lumberjack_serial_tests}
+                   HEADERS    ${lumberjack_serial_tests}
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                    DEPENDS_ON lumberjack gtest 
                    FOLDER     axom/lumberjack/tests )
@@ -37,7 +37,7 @@ set(lumberjack_mpi_tests
 
 blt_add_executable(NAME       lumberjack_mpi_tests
                    SOURCES    lumberjack_mpi_main.cpp
-                   INCLUDES   ${lumberjack_mpi_tests}
+                   HEADERS    ${lumberjack_mpi_tests}
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                    DEPENDS_ON lumberjack mpi gtest 
                    FOLDER     axom/lumberjack/tests )
