@@ -107,10 +107,10 @@ endif()
 #------------------------------------------------------------------------------
 if (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
-    blt_register_library( NAME      mfem
-                          INCLUDES  ${MFEM_INCLUDE_DIRS}
-                          LIBRARIES ${MFEM_LIBRARIES}
-                          TREAT_INCLUDES_AS_SYSTEM ON)
+    blt_import_library( NAME      mfem
+                        INCLUDES  ${MFEM_INCLUDE_DIRS}
+                        LIBRARIES ${MFEM_LIBRARIES}
+                        TREAT_INCLUDES_AS_SYSTEM ON)
 else()
     message(STATUS "MFEM support is OFF")
 endif()
@@ -140,10 +140,10 @@ endif()
 #------------------------------------------------------------------------------
 if (SCR_DIR)
     include(cmake/thirdparty/FindSCR.cmake)
-    blt_register_library( NAME      scr
-                          INCLUDES  ${SCR_INCLUDE_DIRS}
-                          LIBRARIES ${SCR_LIBRARY}
-                          TREAT_INCLUDES_AS_SYSTEM ON)
+    blt_import_library( NAME      scr
+                        INCLUDES  ${SCR_INCLUDE_DIRS}
+                        LIBRARIES ${SCR_LIBRARY}
+                        TREAT_INCLUDES_AS_SYSTEM ON)
 else()
     message(STATUS "SCR support is OFF")
 endif()
@@ -180,7 +180,7 @@ endforeach()
 #------------------------------------------------------------------------------
 if (LUA_DIR)
     include(cmake/thirdparty/FindLUA.cmake)
-    blt_register_library(
+    blt_import_library(
         NAME          lua
         INCLUDES      ${LUA_INCLUDE_DIR}
         LIBRARIES     ${LUA_LIBRARY}
@@ -189,4 +189,3 @@ else()
     message(STATUS "LUA support is OFF")
     set(LUA_FOUND OFF CACHE BOOL "")
 endif()
-
