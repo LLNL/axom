@@ -112,6 +112,8 @@ program spio_blueprint_index
 
   call writer%write_blueprint_index_to_root_file(cds, "domain_data/domain/mesh", "fbp.root", "mesh")
 
+  call mpi_finalize(mpierr)
+
   if (return_val .ne. 0) then
      call exit(1)
   endif
