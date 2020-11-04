@@ -43,16 +43,7 @@ blt_add_library(NAME       axom
                 SOURCES    Axom.cpp
                 DEPENDS_ON ${AXOM_COMPONENTS_ENABLED})
 
-# Dependencies of Axom that are defined as CMake targets instead of BLT targets
-# need to be exported to axom-targets.cmake - as opposed to importing them "manually"
-# in axom-config.cmake (via axom-config.cmake.in)
-set(axom_dependency_targets "")
-blt_list_append(TO axom_dependency_targets ELEMENTS cuda IF ENABLE_CUDA)
-blt_list_append(TO axom_dependency_targets ELEMENTS mpi IF ENABLE_MPI)
-blt_list_append(TO axom_dependency_targets ELEMENTS hdf5 IF HDF5_FOUND)
-blt_list_append(TO axom_dependency_targets ELEMENTS mfem IF MFEM_FOUND)
-
-install(TARGETS              axom ${axom_dependency_targets}
+install(TARGETS              axom
         EXPORT               axom-targets
         DESTINATION          lib)
 install(EXPORT axom-targets DESTINATION lib/cmake)
