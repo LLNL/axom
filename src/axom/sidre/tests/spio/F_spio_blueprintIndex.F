@@ -62,7 +62,7 @@ program spio_blueprint_index
   call yview%get_data(y_vals)
   call zview%get_data(z_vals)
 
-  do i = 0, node_count
+  do i = 1, node_count
     x_vals(i) = real(modulo(((i+1) / 2),2))
     y_vals(i) = real(modulo((i / 2),2))
     z_vals(i) = real(i / 4)
@@ -77,10 +77,10 @@ program spio_blueprint_index
   connectivity = elts%create_view_and_allocate("connectivity", SIDRE_INT_ID, 16)
 
   call connectivity%get_data(conn_vals);
-  do i = 0, 7
+  do i = 1, 7
     conn_vals(i) = i
   enddo
-  do i = 8, 15
+  do i = 8, 16
     conn_vals(i) = i - 4
   enddo
 
@@ -92,7 +92,7 @@ program spio_blueprint_index
 
   call nvals%get_data(node_vals)
 
-  do i = 0, node_count
+  do i = 1, node_count
     node_vals(i) = int(x_vals(i) + y_vals(i) + z_vals(i))
   enddo
 
@@ -103,8 +103,8 @@ program spio_blueprint_index
   evals = eltgrp%create_view_and_allocate("values", SIDRE_DOUBLE_ID, elt_count)
 
   call evals%get_data(elt_vals)
-  elt_vals(0) = 2.65;
-  elt_vals(1) = 1.96;
+  elt_vals(1) = 2.65;
+  elt_vals(2) = 1.96;
 
   writer = IOManager(MPI_COMM_WORLD)
 
