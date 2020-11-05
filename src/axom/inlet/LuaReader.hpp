@@ -208,6 +208,18 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Get a function from the input deck
+   *
+   * \param [in]  id    The identifier to the function that will be retrieved
+   * \param [in]  func    The identifier to the function that will be retrieved
+   *
+   * \return true if the function was retrieved from the file
+   *****************************************************************************
+   */
+  std::function<double(const primal::Vector3D&)> getFunction(const std::string& id);
+
+  /*!
+   *****************************************************************************
    * \brief Returns the Sol Lua state
    *
    * This allows the user to access functionality that was not provided by Inlet.
@@ -248,6 +260,8 @@ private:
    */
   template <typename Iter>
   bool traverseToTable(Iter begin, Iter end, sol::table& table);
+
+  sol::protected_function getFunctionInternal(const std::string& id);
 
   sol::state m_lua;
 };

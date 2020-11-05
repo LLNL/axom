@@ -166,6 +166,48 @@ bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices
   return true;
 }
 
+sol::protected_function LuaReader::getFunctionInternal(const std::string& id)
+{
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+
+  sol::protected_function lua_func;
+
+  if(tokens.size() == 1)
+  {
+    if(m_lua[tokens[0]].valid())
+    {
+      lua_func = m_lua[tokens[0]];
+    }
+  }
+  else
+  {
+    sol::table t;
+    // Don't traverse through the last token as it doesn't contain a table
+    if(traverseToTable(tokens.begin(), tokens.end() - 1, t) &&
+       t[tokens.back()].valid())
+    {
+      lua_func = t[tokens.back()];
+    }
+  }
+  return lua_func;
+}
+
+std::function<double(const primal::Vector3D&)> LuaReader::getFunction(
+  const std::string& id)
+{
+  std::function<double(const primal::Vector3D&)> result;
+  if(auto lua_func = getFunctionInternal(id))
+  {
+    result = [lua_func](const primal::Vector3D& vec) {
+      auto tentative_result = lua_func(vec[0], vec[1], vec[2]);
+      SLIC_ERROR_IF(!tentative_result.valid(), "[Inlet] Function call failed");
+      return tentative_result;
+    };
+  }
+  return result;
+}
+
 template <typename T>
 bool LuaReader::getValue(const std::string& id, T& value)
 {

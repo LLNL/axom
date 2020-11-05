@@ -10,7 +10,7 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Inlet
-                        COMPONENTS SLIC Sidre )
+                        COMPONENTS SLIC Sidre PRIMAL )
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
