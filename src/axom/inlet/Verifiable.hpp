@@ -20,8 +20,6 @@ namespace axom
 {
 namespace inlet
 {
-// Forward declarations
-class Table;
 
 /*!
  *******************************************************************************
@@ -30,18 +28,22 @@ class Table;
  * \brief Interface for trivially verifiable objects - namely those that can
  * be marked as required or checked with a user-provided lambda
  * 
+ * \tparam BaseType The "base" type of the object, used for the argument type
+ * of a verifying predicate
+ * 
  * In practice this interface is used for the Table and AggregateTable classes.
  * Currently the only supported means of verifying a composite type (table)
  * are the methods exposed by this interface.
  *******************************************************************************
  */
+template <typename BaseType>
 class Verifiable
 {
 public:
   virtual ~Verifiable() = default;
 
   // Should not be reassignable
-  Verifiable& operator=(const Verifiable&) = delete;
+  Verifiable<BaseType>& operator=(const Verifiable<BaseType>&) = delete;
   /*!
    *****************************************************************************
    * \brief Set the required status of this object.
@@ -54,7 +56,7 @@ public:
    * \return Reference to calling object, for chaining
    *****************************************************************************
    */
-  virtual Verifiable& required(bool isRequired = true) = 0;
+  virtual Verifiable<BaseType>& required(bool isRequired = true) = 0;
 
   /*!
    *****************************************************************************
@@ -76,8 +78,8 @@ public:
    * \param [in] The function object.
    *****************************************************************************
   */
-  virtual Verifiable& registerVerifier(
-    std::function<bool(const axom::inlet::Table&)> lambda) = 0;
+  virtual Verifiable<BaseType>& registerVerifier(
+    std::function<bool(const BaseType&)> lambda) = 0;
 
   /*!
    *****************************************************************************

@@ -374,7 +374,7 @@ public:
    * \return Reference to the created Field
    *****************************************************************************
    */
-  Verifiable& addBoolArray(const std::string& name,
+  Verifiable<Table>& addBoolArray(const std::string& name,
                            const std::string& description = "")
   {
     return m_globalTable.addBoolArray(name, description);
@@ -390,7 +390,7 @@ public:
    * \return Reference to the created Field
    *****************************************************************************
    */
-  Verifiable& addIntArray(const std::string& name,
+  Verifiable<Table>& addIntArray(const std::string& name,
                           const std::string& description = "")
   {
     return m_globalTable.addIntArray(name, description);
@@ -406,7 +406,7 @@ public:
    * \return Reference to the created Field
    *****************************************************************************
    */
-  Verifiable& addDoubleArray(const std::string& name,
+  Verifiable<Table>& addDoubleArray(const std::string& name,
                              const std::string& description = "")
   {
     return m_globalTable.addDoubleArray(name, description);
@@ -422,7 +422,7 @@ public:
    * \return Reference to the created Field
    *****************************************************************************
    */
-  Verifiable& addStringArray(const std::string& name,
+  Verifiable<Table>& addStringArray(const std::string& name,
                              const std::string& description = "")
   {
     return m_globalTable.addStringArray(name, description);

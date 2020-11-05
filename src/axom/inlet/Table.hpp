@@ -24,6 +24,7 @@
 #include "fmt/fmt.hpp"
 
 #include "axom/inlet/Field.hpp"
+#include "axom/inlet/Function.hpp"
 #include "axom/inlet/Reader.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 #include "axom/inlet/Verifiable.hpp"
@@ -139,7 +140,7 @@ class Proxy;
    * \brief A wrapper class that enables constraints on groups of Tables
    *****************************************************************************
   */
-class AggregateTable : public Verifiable
+class AggregateTable : public Verifiable<Table>
 {
 public:
   AggregateTable(std::vector<std::reference_wrapper<Verifiable>>&& tables)
@@ -205,7 +206,7 @@ private:
  * \see Inlet Field
  *******************************************************************************
  */
-class Table : public Verifiable
+class Table : public Verifiable<Table>
 {
 public:
   /*!
@@ -314,7 +315,7 @@ public:
    * \return Reference to the created Field
    *****************************************************************************
    */
-  Verifiable& addBoolArray(const std::string& name,
+  Verifiable<Table>& addBoolArray(const std::string& name,
                            const std::string& description = "");
 
   /*!
@@ -327,7 +328,7 @@ public:
    * \return Reference to the created Field
    *****************************************************************************
    */
-  Verifiable& addIntArray(const std::string& name,
+  Verifiable<Table>& addIntArray(const std::string& name,
                           const std::string& description = "");
 
   /*!
@@ -340,7 +341,7 @@ public:
    * \return Reference to the created Field
    *****************************************************************************
    */
-  Verifiable& addDoubleArray(const std::string& name,
+  Verifiable<Table>& addDoubleArray(const std::string& name,
                              const std::string& description = "");
 
   /*!
@@ -353,7 +354,7 @@ public:
    * \return Reference to the created Field
    *****************************************************************************
    */
-  Verifiable& addStringArray(const std::string& name,
+  Verifiable<Table>& addStringArray(const std::string& name,
                              const std::string& description = "");
 
   /*!
@@ -558,7 +559,7 @@ public:
   template <typename T,
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
-  Verifiable& addPrimitiveArray(const std::string& name,
+  Verifiable<Table>& addPrimitiveArray(const std::string& name,
                                 const std::string& description = "",
                                 const std::string& pathOverride = "");
 
@@ -933,6 +934,7 @@ private:
   bool m_docEnabled;
   std::unordered_map<std::string, std::unique_ptr<Table>> m_tableChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
+  std::unordered_map<std::string, std::unique_ptr<Function>> m_functionChildren;
   std::function<bool(const Table&)> m_verifier;
 
   // Used for ownership only - need to take ownership of these so Tables

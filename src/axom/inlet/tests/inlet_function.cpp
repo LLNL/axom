@@ -42,16 +42,6 @@ TEST(inlet_function, simple_vec_to_double_raw)
 
   double result = func({1, 2, 3});
   EXPECT_FLOAT_EQ(result, 6);
-
-  // // Define schema
-  // inlet.addBool("foo/bar", "bar's description");
-  // inlet.addBool("foo/baz", "baz's description");
-
-  // Foo foo;
-
-  // foo = inlet.get<Foo>("foo");
-  // EXPECT_TRUE(foo.bar);
-  // EXPECT_FALSE(foo.baz);
 }
 
 //------------------------------------------------------------------------------

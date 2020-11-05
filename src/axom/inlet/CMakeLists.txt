@@ -17,6 +17,7 @@ axom_component_requires(NAME       Inlet
 #------------------------------------------------------------------------------
 set(inlet_headers
     Field.hpp
+    Function.hpp
     Inlet.hpp
     Reader.hpp
     Table.hpp 
