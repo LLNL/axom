@@ -194,11 +194,16 @@ endif()
 # need to be exported to axom-targets.cmake - as opposed to importing them "manually"
 # in axom-config.cmake (via axom-config.cmake.in)
 set(axom_dependency_targets "")
+# BLT-provided TPLs
 blt_list_append(TO axom_dependency_targets ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append(TO axom_dependency_targets ELEMENTS mpi IF ENABLE_MPI)
+blt_list_append(TO axom_dependency_targets ELEMENTS openmp IF ENABLE_OPENMP)
+
+# Axom-specific TPLs
 blt_list_append(TO axom_dependency_targets ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO axom_dependency_targets ELEMENTS lua IF LUA_FOUND)
 blt_list_append(TO axom_dependency_targets ELEMENTS mfem IF MFEM_FOUND)
+
 install(TARGETS ${axom_dependency_targets}
         EXPORT axom-targets
         DESTINATION lib)
