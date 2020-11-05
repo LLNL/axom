@@ -46,7 +46,9 @@ blt_add_library(NAME       axom
 install(TARGETS              axom
         EXPORT               axom-targets
         DESTINATION          lib)
-install(EXPORT axom-targets DESTINATION lib/cmake)
+install(EXPORT axom-targets
+        DESTINATION lib/cmake
+        NAMESPACE axom::)
 
 
 #------------------------------------------------------------------------------
