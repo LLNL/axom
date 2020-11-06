@@ -316,7 +316,7 @@ public:
    *****************************************************************************
    */
   Verifiable<Table>& addBoolArray(const std::string& name,
-                           const std::string& description = "");
+                                  const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -329,7 +329,7 @@ public:
    *****************************************************************************
    */
   Verifiable<Table>& addIntArray(const std::string& name,
-                          const std::string& description = "");
+                                 const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -342,7 +342,7 @@ public:
    *****************************************************************************
    */
   Verifiable<Table>& addDoubleArray(const std::string& name,
-                             const std::string& description = "");
+                                    const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -355,7 +355,7 @@ public:
    *****************************************************************************
    */
   Verifiable<Table>& addStringArray(const std::string& name,
-                             const std::string& description = "");
+                                    const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -560,8 +560,8 @@ public:
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
   Verifiable<Table>& addPrimitiveArray(const std::string& name,
-                                const std::string& description = "",
-                                const std::string& pathOverride = "");
+                                       const std::string& description = "",
+                                       const std::string& pathOverride = "");
 
   /*!
    *******************************************************************************

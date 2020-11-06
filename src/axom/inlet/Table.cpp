@@ -101,25 +101,25 @@ std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
 }
 
 Verifiable<Table>& Table::addBoolArray(const std::string& name,
-                                const std::string& description)
+                                       const std::string& description)
 {
   return addPrimitiveArray<bool>(name, description);
 }
 
 Verifiable<Table>& Table::addIntArray(const std::string& name,
-                               const std::string& description)
+                                      const std::string& description)
 {
   return addPrimitiveArray<int>(name, description);
 }
 
 Verifiable<Table>& Table::addDoubleArray(const std::string& name,
-                                  const std::string& description)
+                                         const std::string& description)
 {
   return addPrimitiveArray<double>(name, description);
 }
 
 Verifiable<Table>& Table::addStringArray(const std::string& name,
-                                  const std::string& description)
+                                         const std::string& description)
 {
   return addPrimitiveArray<std::string>(name, description);
 }
@@ -337,8 +337,8 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
 
 template <typename T, typename SFINAE>
 Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
-                                     const std::string& description,
-                                     const std::string& pathOverride)
+                                            const std::string& description,
+                                            const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {
@@ -374,9 +374,10 @@ template Verifiable<Table>& Table::addPrimitiveArray<bool>(
   const std::string& description,
   const std::string& pathOverride);
 
-template Verifiable<Table>& Table::addPrimitiveArray<int>(const std::string& name,
-                                                   const std::string& description,
-                                                   const std::string& pathOverride);
+template Verifiable<Table>& Table::addPrimitiveArray<int>(
+  const std::string& name,
+  const std::string& description,
+  const std::string& pathOverride);
 
 template Verifiable<Table>& Table::addPrimitiveArray<double>(
   const std::string& name,
@@ -718,9 +719,10 @@ Table::getChildFields() const
 
 bool AggregateTable::verify() const
 {
-  return std::all_of(m_tables.begin(),
-                     m_tables.end(),
-                     [](const Verifiable<Table>& table) { return table.verify(); });
+  return std::all_of(
+    m_tables.begin(),
+    m_tables.end(),
+    [](const Verifiable<Table>& table) { return table.verify(); });
 }
 
 AggregateTable& AggregateTable::required(bool isRequired)
@@ -734,9 +736,10 @@ AggregateTable& AggregateTable::required(bool isRequired)
 
 bool AggregateTable::isRequired() const
 {
-  return std::any_of(m_tables.begin(),
-                     m_tables.end(),
-                     [](const Verifiable<Table>& table) { return table.isRequired(); });
+  return std::any_of(
+    m_tables.begin(),
+    m_tables.end(),
+    [](const Verifiable<Table>& table) { return table.isRequired(); });
 }
 
 AggregateTable& AggregateTable::registerVerifier(

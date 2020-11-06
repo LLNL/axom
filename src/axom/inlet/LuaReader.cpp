@@ -193,8 +193,9 @@ sol::protected_function LuaReader::getFunctionInternal(const std::string& id)
   return lua_func;
 }
 
-std::function<double(const primal::Vector3D&)> LuaReader::getFunction(
-  const std::string& id)
+InletFunctionWrapper LuaReader::getFunction(const std::string& id,
+                                            const InletFunctionType ret_type,
+                                            const InletFunctionType arg_type)
 {
   std::function<double(const primal::Vector3D&)> result;
   if(auto lua_func = getFunctionInternal(id))

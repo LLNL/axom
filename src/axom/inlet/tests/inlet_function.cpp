@@ -38,9 +38,11 @@ TEST(inlet_function, simple_vec_to_double_raw)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto func = inlet.reader().getFunction("foo");
+  auto func = inlet.reader().getFunction("foo",
+                                         axom::inlet::InletFunctionType::Double,
+                                         axom::inlet::InletFunctionType::Vec3D);
 
-  double result = func({1, 2, 3});
+  auto result = func.call<double>(axom::primal::Vector3D {1, 2, 3});
   EXPECT_FLOAT_EQ(result, 6);
 }
 

@@ -211,12 +211,15 @@ public:
    * \brief Get a function from the input deck
    *
    * \param [in]  id    The identifier to the function that will be retrieved
-   * \param [in]  func    The identifier to the function that will be retrieved
+   * \param [in]  ret_type    The return type of the function
+   * \param [in]  arg_type    The argument type of the function (currently only
    *
-   * \return true if the function was retrieved from the file
+   * \return The function, compares false if not found
    *****************************************************************************
    */
-  std::function<double(const primal::Vector3D&)> getFunction(const std::string& id);
+  InletFunctionWrapper getFunction(const std::string& id,
+                                   const InletFunctionType ret_type,
+                                   const InletFunctionType arg_type);
 
   /*!
    *****************************************************************************

@@ -375,7 +375,7 @@ public:
    *****************************************************************************
    */
   Verifiable<Table>& addBoolArray(const std::string& name,
-                           const std::string& description = "")
+                                  const std::string& description = "")
   {
     return m_globalTable.addBoolArray(name, description);
   }
@@ -391,7 +391,7 @@ public:
    *****************************************************************************
    */
   Verifiable<Table>& addIntArray(const std::string& name,
-                          const std::string& description = "")
+                                 const std::string& description = "")
   {
     return m_globalTable.addIntArray(name, description);
   }
@@ -407,7 +407,7 @@ public:
    *****************************************************************************
    */
   Verifiable<Table>& addDoubleArray(const std::string& name,
-                             const std::string& description = "")
+                                    const std::string& description = "")
   {
     return m_globalTable.addDoubleArray(name, description);
   }
@@ -423,7 +423,7 @@ public:
    *****************************************************************************
    */
   Verifiable<Table>& addStringArray(const std::string& name,
-                             const std::string& description = "")
+                                    const std::string& description = "")
   {
     return m_globalTable.addStringArray(name, description);
   }

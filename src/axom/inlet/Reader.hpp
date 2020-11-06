@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "axom/primal/geometry/Vector.hpp"
+#include "axom/inlet/Function.hpp"
 
 namespace axom
 {
@@ -220,12 +220,16 @@ public:
    * \brief Get a function from the input deck
    *
    * \param [in]  id    The identifier to the function that will be retrieved
+   * \param [in]  ret_type    The return type of the function
+   * \param [in]  arg_type    The argument type of the function (currently only
+   * single-argument functions are supported)
    *
    * \return The function, compares false if not found
    *****************************************************************************
    */
-  virtual std::function<double(const primal::Vector3D&)> getFunction(
-    const std::string& id) = 0;
+  virtual InletFunctionWrapper getFunction(const std::string& id,
+                                           const InletFunctionType ret_type,
+                                           const InletFunctionType arg_type) = 0;
 };
 
 }  // end namespace inlet
