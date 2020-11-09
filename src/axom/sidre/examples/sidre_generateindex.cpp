@@ -15,29 +15,11 @@
 /*
  * Summary of the functions called by main this example:
  *
- * create_datastore           -- Builds a DataStore containing various Groups,
- *                               Views, Buffers, and Attributes
- *
  * create_tiny_datastore      -- Builds a DataStore that holds a small 3D mesh
  *                               conforming to the conduit mesh blueprint
  *
- * access_datastore           -- Exercises access methods that get data from
- *                               the DataStore created by create_datastore
- *
- * save_as_blueprint          -- Generates a blueprint index and writes data
- *                               to file using direct calls to conduit
- *
- * generate_blueprint         -- Generates a blueprint index and writes data
- *                               to file using Sidre DataStore and Group calls
- *
- * generate_blueprint_to_path -- Similar to above, but uses path arguments to
- *                               find data deeper in Sidre hierarchy
- *
  * generate_spio_blueprint    -- Uses SPIO/IOManager calls to write data to
  *                               file and generate blueprint index
- *
- * generate_blueprint_to_path -- Similar to above, but uses path arguments to
- *                               find data deeper in Sidre hierarchy
  */
 
 /* This example code contains snippets used in the Sidre Sphinx documentation.
@@ -300,7 +282,6 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
-//  std::string domain_name = fmt:sprintf("%s_%06d", "domain", my_rank);
   std::string domain_name = "domain";
   std::string holder_name = "domain_data";
   std::string domain_location = holder_name + "/" + domain_name;
@@ -361,56 +342,6 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
   }
   // _blueprint_generate_spio_end
 }
-
-void generate_spio_blueprint_to_path(DataStore* ds)
-{
-  // _blueprint_spio_path_start
-  std::string domain_name = "domain";
-  std::string domain_location = "domain_data/level/domains/" + domain_name;
-  std::string mesh_name = "spiopathmesh";
-  std::string domain_mesh = domain_location + "/" + mesh_name;
-
-  Group* mroot = ds->getRoot()->createGroup(domain_location);
-  Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
-  Group* topos = mroot->createGroup(mesh_name + "/topologies");
-  // no material sets in this example
-  Group* fields = mroot->createGroup(mesh_name + "/fields");
-  // no adjacency sets in this (single-domain) example
-  // _blueprint_spio_path_end
-
-  setup_blueprint_external_coords(ds, coords);
-
-  setup_blueprint_topos(ds, topos);
-
-  setup_blueprint_external_fields(ds, fields);
-
-  // _blueprint_generate_spio_path_start
-  IOManager writer(MPI_COMM_WORLD);
-
-  conduit::Node info, mesh_node, root_node;
-  ds->getRoot()->createNativeLayout(mesh_node);
-  std::string bp_protocol = "mesh";
-  if(conduit::blueprint::mpi::verify(bp_protocol,
-                                     mesh_node[domain_mesh],
-                                     info,
-                                     MPI_COMM_WORLD))
-  {
-    std::string bp_rootfile("pathbpspio.root");
-  #if defined(AXOM_USE_HDF5)
-    std::string protocol = "sidre_hdf5";
-  #else
-    std::string protocol = "sidre_json";
-  #endif
-
-    writer.write(ds->getRoot()->getGroup("domain_data"), 1, "pathbpspio", protocol);
-
-    writer.writeBlueprintIndexToRootFile(ds,
-                                         domain_mesh,
-                                         bp_rootfile,
-                                         "level/domains/domain/" + mesh_name);
-  }
-  // _blueprint_generate_spio_path_end
-}
 #endif
 
 int main(int argc, char** argv)
@@ -428,7 +359,6 @@ int main(int argc, char** argv)
   DataStore* spds = create_tiny_datastore();
   generate_spio_blueprint(sds, true);   //dense
   generate_spio_blueprint(spds, false); //sparse
-//  generate_spio_blueprint_to_path(spds);
   MPI_Finalize();
 #endif
 
