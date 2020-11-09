@@ -79,7 +79,8 @@ public:
   template <typename T,
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value ||
-                                      detail::is_inlet_primitive_array<T>::value>::type>
+                                      detail::is_inlet_primitive_array<T>::value ||
+                                      detail::is_std_function<T>::value>::type>
   operator T() const
   {
     return get<T>();
@@ -147,7 +148,7 @@ public:
    * 
    * \tparam T The type of the object to retrieve
    * \return The retrieved object
-   * \pre The Proxy must refer to a table object
+   * \pre The Proxy must refer to a function object
    *******************************************************************************
    */
   template <typename T>
@@ -157,6 +158,27 @@ public:
                     "[Inlet] Tried to read a function from a Proxy "
                     "containing a field or table");
     return m_func->get<typename detail::std_function_signature<T>::type>();
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Calls the function
+   * 
+   * \param [in] args The parameter pack for the function's arguments
+   * \tparam Ret The user-specified return type, needed to fully disambiguate the
+   * function to call
+   * \tparam Args The types of the user-specified arguments, deduced automatically
+   * 
+   * \return The function's result
+   *******************************************************************************
+   */
+  template <typename Ret, typename... Args>
+  Ret call(Args&&... args) const
+  {
+    SLIC_ASSERT_MSG(m_func != nullptr,
+                    "[Inlet] Tried to call a Proxy "
+                    "containing a field or table");
+    return m_func->call<Ret>(std::forward<Args>(args)...);
   }
 
   /*!

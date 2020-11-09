@@ -78,7 +78,7 @@ TEST(inlet_object, simple_array_of_struct_by_value)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");

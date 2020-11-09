@@ -678,6 +678,15 @@ bool Table::verify() const
     }
   }
 
+  // Verify the child Functions of this Table
+  for(const auto& function : m_functionChildren)
+  {
+    if(!function.second->verify())
+    {
+      verified = false;
+    }
+  }
+
   return verified;
 }
 

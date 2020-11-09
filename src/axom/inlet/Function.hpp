@@ -184,7 +184,7 @@ public:
    * \param [in] args The parameter pack for the function's arguments
    * \tparam Ret The user-specified return type, needed to fully disambiguate the
    * function to call
-   * \tparam Args The types of the user-specified arguments, deduced
+   * \tparam Args The types of the user-specified arguments, deduced automatically
    * 
    * \return The function's result
    *******************************************************************************
@@ -203,9 +203,11 @@ public:
   template <typename FuncType>
   std::function<FuncType> get() const
   {
-    return *std::get<std::unique_ptr<
+    const auto& ptr = std::get<std::unique_ptr<
       std::function<typename detail::cleanup_function_signature<FuncType>::type>>>(
       m_funcs);
+    SLIC_ERROR_IF(!ptr, "[Inlet] Function with requested type does not exist");
+    return *ptr;
   }
 
   /*!
