@@ -14,7 +14,7 @@
 #ifndef INLET_FUNCTION_HPP
 #define INLET_FUNCTION_HPP
 
-// #include <memory>
+#include <memory>
 // #include <string>
 #include <functional>
 // #include <unordered_map>
@@ -28,6 +28,7 @@
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Verifiable.hpp"
+#include "axom/inlet/inlet_utils.hpp"
 
 #include "axom/sidre.hpp"
 
@@ -44,6 +45,16 @@ enum class InletFunctionType
 
 namespace detail
 {
+/*!
+ *******************************************************************************
+ * \class inlet_function_type
+ *
+ * \brief A type trait for mapping values of the InletFunctionType enum to types
+ * \tparam InletFunctionType The value of the enum, a non-type template parameter
+ * 
+ * Specializations must be defined for each member of InletFunctionType
+ *******************************************************************************
+ */
 template <InletFunctionType>
 struct inlet_function_type;
 
@@ -65,7 +76,20 @@ struct inlet_function_type<InletFunctionType::Double>
   using type = double;
 };
 
-// Makes non-primitive parameters (not bool/int/double) const references
+/*!
+ *******************************************************************************
+ * \class inlet_function_arg_type
+ *
+ * \brief A type trait for modifying function argument types to enforce const
+ * correctness and to avoid copies
+ * \tparam Arg The argument type
+ * 
+ * Maps a type "Arg" to "const Arg&" if that type does not satisfy std::is_arithmetic,
+ * which matches Inlet primitive types bool, int, and double, but not vectors or
+ * std::strings - though only vectors and doubles are currently supported as arg
+ * types
+ *******************************************************************************
+ */
 template <typename Arg>
 struct inlet_function_arg_type
 {
@@ -75,48 +99,116 @@ struct inlet_function_arg_type
     typename std::add_lvalue_reference<typename std::add_const<Arg>::type>::type>::type;
 };
 
-template <InletFunctionType Result, InletFunctionType Arg>
+/*!
+ *******************************************************************************
+ * \class inlet_function_signature
+ *
+ * \brief A type trait for building a function signature type
+ * \tparam Result The function's return type
+ * \tparam Args The parameter pack for the function's arguments - currently only
+ * single-argument functions are supported
+ * 
+ * Creates a function signature usable as the template parameter to std::function
+ * given a set of InletFunctionTypes
+ *******************************************************************************
+ */
+template <InletFunctionType Result, InletFunctionType... Args>
 struct inlet_function_signature
 {
   using type = typename inlet_function_type<Result>::type(
-    typename inlet_function_arg_type<typename inlet_function_type<Arg>::type>::type);
+    typename inlet_function_arg_type<typename inlet_function_type<Args...>::type>::type);
 };
 
+}  // end namespace detail
+
+/*!
+ *******************************************************************************
+ * \class FunctionWrapper
+ *
+ * \brief A sum type for callables with arbitrary signature
+ * \tparam FunctionTypes The types of supported functions - can be generated
+ * with detail::inlet_function_signature
+ * 
+ * This provides an interface not templated on a specific function signature
+ * for uniform retrieval through the Reader interface
+ *******************************************************************************
+ */
 template <typename... FunctionTypes>
 class FunctionWrapper
 {
 public:
-  FunctionWrapper() = default;
-
+  /*!
+   *******************************************************************************
+   * \brief Primary constructor, initializes a member of the "variant"
+   * 
+   * \param [in] func The function to initialize with
+   * \tparam FuncType The function's signature
+   * 
+   * \note "Empty" functions are allowable and result in the object comparing
+   * false when converted to bool
+   *******************************************************************************
+   */
   template <typename FuncType>
   FunctionWrapper(std::function<FuncType>&& func)
   {
     m_function_valid = static_cast<bool>(func);
-    std::get<std::function<FuncType>>(m_funcs) = std::move(func);
+    std::get<std::unique_ptr<std::function<FuncType>>>(m_funcs) =
+      cpp11_compat::make_unique<std::function<FuncType>>(std::move(func));
   }
 
+  /*!
+   *******************************************************************************
+   * \brief Default constructor
+   * 
+   * Should never be called as it is only required when a return occurs after a 
+   * SLIC_ERROR which does not indicate termination to the compiler.  If exceptions
+   * are ever switched to this function and its calls should be removed.
+   *******************************************************************************
+   */
+  FunctionWrapper() = default;
   FunctionWrapper(FunctionWrapper&& other) = default;
 
-  template <typename Ret,
-            typename... Args,
-            typename SFINAE = decltype(std::get<std::function<Ret(Args...)>>(
-              std::declval<std::tuple<std::function<FunctionTypes>...>>()))>
+  /*!
+   *******************************************************************************
+   * \brief Calls the function
+   * 
+   * \param [in] args The parameter pack for the function's arguments
+   * \tparam Ret The user-specified return type, needed to fully disambiguate the
+   * function to call
+   * \tparam Args The types of the user-specified arguments, deduced
+   * 
+   * \return The function's result
+   *******************************************************************************
+   */
+  template <typename Ret, typename... Args>
   Ret call(Args&&... args) const
   {
-    using ArgTypes = typename inlet_function_arg_type<Args...>::type;
-    const auto& func = std::get<std::function<Ret(ArgTypes)>>(m_funcs);
+    using ArgTypes = typename detail::inlet_function_arg_type<Args...>::type;
+    const auto& func =
+      *std::get<std::unique_ptr<std::function<Ret(ArgTypes)>>>(m_funcs);
     SLIC_ERROR_IF(!func || !m_function_valid,
                   "[Inlet] Function with requested type does not exist");
     return func(std::forward<ArgTypes>(args)...);
   }
 
+  /*!
+   *******************************************************************************
+   * \brief Checks whether the function exists
+   *******************************************************************************
+   */
   operator bool() const { return m_function_valid; }
 
 private:
-  std::tuple<std::function<FunctionTypes>...> m_funcs;
+  // This is on the heap to reduce size - each pointer is only 8 bytes vs 32 bytes
+  // for a std::function, and it is guaranteed that only one of the pointers will
+  // actually point to something
+  std::tuple<std::unique_ptr<std::function<FunctionTypes>>...> m_funcs;
   bool m_function_valid = false;
 };
 
+// The set of supported type signatures to be used in the "variant" type
+namespace detail
+{
 // This could definitely be done with more metaprogramming, which may be the only option
 // as the number of argumetns increases
 
