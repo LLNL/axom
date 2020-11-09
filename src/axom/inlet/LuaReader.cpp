@@ -166,96 +166,114 @@ bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices
   return true;
 }
 
-sol::protected_function LuaReader::getFunctionInternal(const std::string& id)
-{
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
-
-  sol::protected_function lua_func;
-
-  if(tokens.size() == 1)
-  {
-    if(m_lua[tokens[0]].valid())
-    {
-      lua_func = m_lua[tokens[0]];
-    }
-  }
-  else
-  {
-    sol::table t;
-    // Don't traverse through the last token as it doesn't contain a table
-    if(traverseToTable(tokens.begin(), tokens.end() - 1, t) &&
-       t[tokens.back()].valid())
-    {
-      lua_func = t[tokens.back()];
-    }
-  }
-  return lua_func;
-}
-
+// A set of pure functions for handling the conversion of Lua functions to C++
+// callables
 namespace detail
 {
+/*!
+ *****************************************************************************
+ * \brief Templated function for calling a sol function, used to allow for 
+ * calling with nonprimitive types that need to be "unpacked", specifically, vectors
+ *
+ * \param [in] func The sol function of unknown concrete type
+ * \tparam Arg The argument type of the function
+ *
+ * \return A checkable version of the function's result
+ *****************************************************************************
+ */
 template <typename Arg>
-sol::protected_function_result callWith(sol::protected_function func,
+sol::protected_function_result callWith(const sol::protected_function& func,
                                         const Arg& arg)
 {
   auto tentative_result = func(arg);
-  SLIC_ERROR_IF(!tentative_result.valid(), "[Inlet] Lua function call failed");
+  SLIC_ERROR_IF(
+    !tentative_result.valid(),
+    "[Inlet] Lua function call failed, argument types possibly incorrect");
   return tentative_result;
 }
 
-sol::protected_function_result callWith(sol::protected_function func,
+sol::protected_function_result callWith(const sol::protected_function& func,
                                         const primal::Vector2D& vec)
 {
-  auto tentative_result = func(vec[0], vec[1]);
-  SLIC_ERROR_IF(!tentative_result.valid(), "[Inlet] Lua function call failed");
-  return tentative_result;
+  return callWith(func, std::make_tuple(vec[0], vec[1]));
 }
 
-sol::protected_function_result callWith(sol::protected_function func,
+sol::protected_function_result callWith(const sol::protected_function& func,
                                         const primal::Vector3D& vec)
 {
-  auto tentative_result = func(vec[0], vec[1], vec[2]);
-  SLIC_ERROR_IF(!tentative_result.valid(), "[Inlet] Lua function call failed");
-  return tentative_result;
+  return callWith(func, std::make_tuple(vec[0], vec[1], vec[2]));
 }
 
+/*!
+ *****************************************************************************
+ * \brief Templated function for extracting a concrete type from a sol function
+ * result, used to allow for returning nonprimitive types, specifically, vectors
+ *
+ * \param [in] res The sol result of unknown concrete type
+ * \tparam Ret The return type of the function
+ *
+ * \return The function's result
+ *****************************************************************************
+ */
 template <typename Ret>
 Ret extractResult(sol::protected_function_result&& res)
 {
-  return res;
+  sol::optional<Ret> option = res;
+  SLIC_ERROR_IF(
+    !option,
+    "[Inlet] Lua function call failed, return types possibly incorrect");
+  return option.value();
 }
 
 template <>
 primal::Vector2D extractResult<primal::Vector2D>(sol::protected_function_result&& res)
 {
-  primal::Vector2D result;
-  std::tuple<int, int> tup = res;
-  result[0] = std::get<0>(tup);
-  result[1] = std::get<1>(tup);
-  return result;
+  auto tup = extractResult<std::tuple<double, double>>(std::move(res));
+  return {std::get<0>(tup), std::get<1>(tup)};
 }
 
 template <>
 primal::Vector3D extractResult<primal::Vector3D>(sol::protected_function_result&& res)
 {
-  primal::Vector3D result;
-  std::tuple<int, int, int> tup = res;
-  result[0] = std::get<0>(tup);
-  result[1] = std::get<1>(tup);
-  result[2] = std::get<2>(tup);
-  return result;
+  auto tup = extractResult<std::tuple<double, double, double>>(std::move(res));
+  return {std::get<0>(tup), std::get<1>(tup), std::get<2>(tup)};
 }
 
+/*!
+ *****************************************************************************
+ * \brief Creates a std::function given a Lua function and template parameters
+ * corresponding to the function signature
+ *
+ * \param [in] func The sol object containing the lua function of unknown signature
+ * \tparam Ret The return type of the function
+ * \tparam Arg The argument type of the function (currently only single-argument
+ * functions are supported)
+ *
+ * \return A std::function that wraps the lua function
+ *****************************************************************************
+ */
 template <typename Ret, typename Arg>
 std::function<Ret(typename inlet_function_arg_type<Arg>::type)> buildStdFunction(
   sol::protected_function&& func)
 {
-  return [func](typename inlet_function_arg_type<Arg>::type arg) {
-    return extractResult<Ret>(callWith(std::move(func), arg));
-  };
+  // Generalized lambda capture needed to move into lambda
+  return
+    [func(std::move(func))](typename inlet_function_arg_type<Arg>::type arg) {
+      return extractResult<Ret>(callWith(func, arg));
+    };
 }
 
+/*!
+ *****************************************************************************
+ * \brief Interface to templated retrieval functions for binding the type 
+ * of a single argument
+ *
+ * \param [in] func The sol object containing the lua function of unknown signature
+ * \param [in] arg_type The type of the argument to use when creating a std::function
+ *
+ * \return A callable wrapper
+ *****************************************************************************
+ */
 template <InletFunctionType Ret>
 InletFunctionWrapper bindArgType(sol::protected_function&& func,
                                  const InletFunctionType arg_type)
@@ -275,6 +293,28 @@ InletFunctionWrapper bindArgType(sol::protected_function&& func,
     SLIC_ERROR("[Inlet] Unexpected function argument type");
   }
   return {};  // Never reached but needed as errors do not imply control flow as with exceptions
+}
+
+/*!
+ *****************************************************************************
+ * \brief Performs a type-checked access to a Lua table
+ *
+ * \param [in]  proxy The sol::proxy object to retrieve from
+ * \param [out] val The value to write to, if it is of the correct type
+ *
+ * \return true if the value was retrieved from the lua state
+ *****************************************************************************
+ */
+template <typename Proxy, typename Value>
+bool checkedGet(const Proxy& proxy, Value& val)
+{
+  sol::optional<Value> option = proxy;
+  if(option)
+  {
+    val = option.value();
+    return true;
+  }
+  return false;
 }
 
 }  // end namespace detail
@@ -314,8 +354,7 @@ bool LuaReader::getValue(const std::string& id, T& value)
   {
     if(m_lua[tokens[0]].valid())
     {
-      value = m_lua[tokens[0]];
-      return true;
+      return detail::checkedGet(m_lua[tokens[0]], value);
     }
     return false;
   }
@@ -329,8 +368,7 @@ bool LuaReader::getValue(const std::string& id, T& value)
 
   if(t[tokens.back()].valid())
   {
-    value = t[tokens.back()];
-    return true;
+    return detail::checkedGet(t[tokens.back()], value);
   }
 
   return false;
@@ -361,6 +399,34 @@ bool LuaReader::getMap(const std::string& id,
     }
   }
   return true;
+}
+
+sol::protected_function LuaReader::getFunctionInternal(const std::string& id)
+{
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+
+  sol::protected_function lua_func;
+
+  if(tokens.size() == 1)
+  {
+    if(m_lua[tokens[0]].valid())
+    {
+      lua_func = m_lua[tokens[0]];
+      detail::checkedGet(m_lua[tokens[0]], lua_func);
+    }
+  }
+  else
+  {
+    sol::table t;
+    // Don't traverse through the last token as it doesn't contain a table
+    if(traverseToTable(tokens.begin(), tokens.end() - 1, t) &&
+       t[tokens.back()].valid())
+    {
+      detail::checkedGet(t[tokens.back()], lua_func);
+    }
+  }
+  return lua_func;
 }
 
 }  // end namespace inlet

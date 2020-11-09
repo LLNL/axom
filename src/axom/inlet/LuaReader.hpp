@@ -264,6 +264,15 @@ private:
   template <typename Iter>
   bool traverseToTable(Iter begin, Iter end, sol::table& table);
 
+  /*!
+   *****************************************************************************
+   * \brief Traverses the Lua state to retrieve a sol function object
+   *
+   * \param [in]  id    The identifier to the function that will be retrieved
+   *
+   * \return The function, compares false if not found
+   *****************************************************************************
+   */
   sol::protected_function getFunctionInternal(const std::string& id);
 
   sol::state m_lua;
