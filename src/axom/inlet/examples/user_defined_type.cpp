@@ -104,12 +104,14 @@ struct FromInlet<LinearSolver>
 struct BoundaryCondition
 {
   std::unordered_map<int, int> attrs;
-  double constant;
+  std::function<double(axom::primal::Vector3D)> coef;
   static void defineSchema(inlet::Table& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
-    schema.addDouble("constant",
-                     "The scalar to fix the value of the solution to");
+    schema.addFunction("coef",
+                       inlet::InletFunctionType::Double,
+                       inlet::InletFunctionType::Vec3D,
+                       "The function representing the BC coefficient");
   }
 };
 
@@ -120,7 +122,9 @@ struct BoundaryCondition
  *   attrs = {
  *      3, 4, 6, 9
  *   }
- *   constant = 12.55
+ *   coef = function (x, y, z)
+ *     return x * 0.12
+ *   end
  * }
  * \endcode
  */
@@ -131,7 +135,7 @@ struct FromInlet<BoundaryCondition>
   {
     BoundaryCondition bc;
     bc.attrs = base["attrs"];
-    bc.constant = base["constant"];
+    bc.coef = base["coef"];
     return bc;
   }
 };

@@ -24,10 +24,15 @@ thermal_solver.solver = {
 thermal_solver.bcs = {
   [1] = {
     attrs = { [1] = 3, [2] = 4, [3] = 7},
-    constant = 12.2
+    coef = function (x, y, z)
+      -- inlet doesn't support sum types so a constant is defined as a function
+      return 12.55
+    end
   },
   [4] = {
     attrs = { [7] = 4, [12] = 6, [9] = 1},
-    constant = -23.1
+    coef = function (x, y, z)
+      return x * 0.12
+    end
   }
 }
