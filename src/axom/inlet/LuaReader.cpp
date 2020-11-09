@@ -324,24 +324,24 @@ InletFunctionWrapper LuaReader::getFunction(const std::string& id,
                                             const InletFunctionType arg_type)
 {
   auto lua_func = getFunctionInternal(id);
-  SLIC_ERROR_IF(
-    !lua_func,
-    "[Inlet] Function did not exist at the specified path in the input file");
-  switch(ret_type)
+  if(lua_func)
   {
-  case InletFunctionType::Vec2D:
-    return detail::bindArgType<InletFunctionType::Vec2D>(std::move(lua_func),
-                                                         arg_type);
-  case InletFunctionType::Vec3D:
-    return detail::bindArgType<InletFunctionType::Vec3D>(std::move(lua_func),
-                                                         arg_type);
-  case InletFunctionType::Double:
-    return detail::bindArgType<InletFunctionType::Double>(std::move(lua_func),
-                                                          arg_type);
-  default:
-    SLIC_ERROR("[Inlet] Unexpected function return type");
+    switch(ret_type)
+    {
+    case InletFunctionType::Vec2D:
+      return detail::bindArgType<InletFunctionType::Vec2D>(std::move(lua_func),
+                                                           arg_type);
+    case InletFunctionType::Vec3D:
+      return detail::bindArgType<InletFunctionType::Vec3D>(std::move(lua_func),
+                                                           arg_type);
+    case InletFunctionType::Double:
+      return detail::bindArgType<InletFunctionType::Double>(std::move(lua_func),
+                                                            arg_type);
+    default:
+      SLIC_ERROR("[Inlet] Unexpected function return type");
+    }
   }
-  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
+  return {};  // Return an empty function to indicate that the function was not found
 }
 
 template <typename T>

@@ -791,10 +791,7 @@ public:
    * Field or Table with the given name.
    *****************************************************************************
    */
-  bool contains(const std::string& name) const
-  {
-    return hasTable(name) || hasField(name) || hasFunction(name);
-  }
+  bool contains(const std::string& name) const;
 
   /*!
    *****************************************************************************

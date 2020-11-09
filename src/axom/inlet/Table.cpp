@@ -829,6 +829,25 @@ Function* Table::getFunctionInternal(const std::string& funcName) const
 
 std::string Table::name() const { return m_name; }
 
+bool Table::contains(const std::string& name) const
+{
+  if(hasTable(name))
+  {
+    return true;
+  }
+  else if(auto field = getFieldInternal(name))
+  {
+    // call operator bool on the field itself
+    return static_cast<bool>(*field);
+  }
+  else if(auto function = getFunctionInternal(name))
+  {
+    // call operator bool on the function itself
+    return static_cast<bool>(*function);
+  }
+  return false;
+}
+
 const std::unordered_map<std::string, std::unique_ptr<Table>>&
 Table::getChildTables() const
 {

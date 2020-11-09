@@ -104,13 +104,23 @@ struct FromInlet<LinearSolver>
 struct BoundaryCondition
 {
   std::unordered_map<int, int> attrs;
+  // std::functions are nullable - coef/vec_coef act as a sum type here
   std::function<double(axom::primal::Vector3D)> coef;
+  std::function<axom::primal::Vector3D(axom::primal::Vector3D)> vec_coef;
   static void defineSchema(inlet::Table& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
+    // Inlet does not support sum types, so both options are added to the schema
+    // Supported function parameter/return types are Double, Vec2D, and Vec3D
+    // Only single-argument functions are currently supported
+    schema.addFunction("vec_coef",
+                       inlet::InletFunctionType::Vec3D,  // Return type
+                       inlet::InletFunctionType::Vec3D,  // Argument type
+                       "The function representing the BC coefficient");
+
     schema.addFunction("coef",
-                       inlet::InletFunctionType::Double,
-                       inlet::InletFunctionType::Vec3D,
+                       inlet::InletFunctionType::Double,  // Return type
+                       inlet::InletFunctionType::Vec3D,   // Argument type
                        "The function representing the BC coefficient");
   }
 };
@@ -126,6 +136,14 @@ struct BoundaryCondition
  *     return x * 0.12
  *   end
  * }
+ * -- or, for vector coefficients:
+ * [8] = {
+ *   attrs = { [4] = 14, [8] = 62, [6] = 11},
+ *   vec_coef = function (x, y, z)
+ *     scale = 0.12
+ *     return x * scale, y * scale, z * scale
+ *   end
+ * }
  * \endcode
  */
 template <>
@@ -135,7 +153,14 @@ struct FromInlet<BoundaryCondition>
   {
     BoundaryCondition bc;
     bc.attrs = base["attrs"];
-    bc.coef = base["coef"];
+    if(base.contains("vec_coef"))
+    {
+      bc.vec_coef = base["vec_coef"];
+    }
+    else
+    {
+      bc.coef = base["coef"];
+    }
     return bc;
   }
 };

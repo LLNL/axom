@@ -165,15 +165,6 @@ public:
       cpp11_compat::make_unique<std::function<FuncType>>(std::move(func));
   }
 
-  /*!
-   *******************************************************************************
-   * \brief Default constructor
-   * 
-   * Should never be called as it is only required when a return occurs after a 
-   * SLIC_ERROR which does not indicate termination to the compiler.  If exceptions
-   * are ever switched to this function and its calls should be removed.
-   *******************************************************************************
-   */
   FunctionWrapper() = default;
   FunctionWrapper(FunctionWrapper&& other) = default;
 
@@ -306,6 +297,13 @@ public:
   {
     return m_func.call<Ret>(std::forward<Args>(args)...);
   }
+
+  /*!
+   *******************************************************************************
+   * \brief Checks whether the function exists
+   *******************************************************************************
+   */
+  operator bool() const { return static_cast<bool>(m_func); }
 
   /*!
    *****************************************************************************

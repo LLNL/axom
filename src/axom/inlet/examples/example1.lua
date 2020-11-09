@@ -25,7 +25,7 @@ thermal_solver.bcs = {
   [1] = {
     attrs = { [1] = 3, [2] = 4, [3] = 7},
     coef = function (x, y, z)
-      -- inlet doesn't support sum types so a constant is defined as a function
+      -- Constant is defined as a function
       return 12.55
     end
   },
@@ -33,6 +33,13 @@ thermal_solver.bcs = {
     attrs = { [7] = 4, [12] = 6, [9] = 1},
     coef = function (x, y, z)
       return x * 0.12
+    end
+  },
+  [8] = {
+    attrs = { [4] = 14, [8] = 62, [6] = 11},
+    vec_coef = function (x, y, z)
+      scale = 0.12
+      return x * scale, y * scale, z * scale
     end
   }
 }
