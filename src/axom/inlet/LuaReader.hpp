@@ -196,6 +196,18 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Get the list of indices for an array
+   *
+   * \param [in]  id    The identifier to the array that will be retrieved
+   * \param [out] map The values of the indices that were retrieved
+   *
+   * \return true if the array was able to be retrieved from the file
+   *****************************************************************************
+   */
+  bool getArrayIndices(const std::string& id, std::vector<int>& indices);
+
+  /*!
+   *****************************************************************************
    * \brief Returns the Sol Lua state
    *
    * This allows the user to access functionality that was not provided by Inlet.
@@ -215,6 +227,27 @@ private:
   bool getMap(const std::string& id,
               std::unordered_map<int, T>& values,
               sol::type type);
+
+  /*!
+   *****************************************************************************
+   * \brief Obtains the Lua table reached by successive indexing through the
+   * container of keys described by a pair of iterators
+   * 
+   * \note For a set of keys {key1, key2, key3, ...}, this function
+   * is equivalent to
+   * \code{.cpp}
+   * table = m_lua[key1][key2][key3][...];
+   * \endcode
+   * 
+   * \param [in] begin Iterator to the beginning of the container of keys
+   * \param [in] end Iterator to one-past-then-end of the container
+   * \param [out] t The table to traverse
+   * 
+   * \return Whether the traversal was successful
+   *****************************************************************************
+   */
+  template <typename Iter>
+  bool traverseToTable(Iter begin, Iter end, sol::table& table);
 
   sol::state m_lua;
 };

@@ -39,14 +39,16 @@ set_source_files_properties(${lulesh_sources} ${lulesh_headers}
 if ( lulesh_depends_on )
     blt_add_executable(
         NAME        slam_lulesh_orig_ex
-        SOURCES     ${lulesh_sources} ${lulesh_headers}
+        SOURCES     ${lulesh_sources}
+        HEADERS     ${lulesh_headers}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${lulesh_depends_on}
         FOLDER      axom/slam/examples )
 else()
     blt_add_executable(
         NAME        slam_lulesh_orig_ex
-        SOURCES     ${lulesh_sources} ${lulesh_headers}
+        SOURCES     ${lulesh_sources}
+        HEADERS     ${lulesh_headers}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         FOLDER      axom/slam/examples )
 endif()

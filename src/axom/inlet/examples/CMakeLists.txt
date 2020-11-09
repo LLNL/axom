@@ -11,26 +11,28 @@
 #------------------------------------------------------------------------------
 
 if (SOL_FOUND)
-    blt_add_executable( NAME       inlet_array_example 
-                        SOURCES    arrays.cpp
-                        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                        DEPENDS_ON inlet
-                        FOLDER     axom/inlet/examples )
+   set(inlet_examples
+        arrays.cpp
+        verification.cpp
+        user_defined_type.cpp
+        documentation_generation.cpp )
 
-    blt_add_executable( NAME       inlet_verification_example 
-                        SOURCES    verification.cpp
-                        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                        DEPENDS_ON inlet
-                        FOLDER     axom/inlet/examples )
-    blt_add_test( NAME    inlet_verification 
-                  COMMAND inlet_verification_example )
+    foreach(example ${inlet_examples})
+        get_filename_component( ex_name ${example} NAME_WE )
+        blt_add_executable( NAME       inlet_${ex_name}_ex
+                            SOURCES    ${example}
+                            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                            DEPENDS_ON inlet
+                            FOLDER     axom/inlet/examples )
+    endforeach()
 
-    blt_add_executable( NAME       inlet_documentation_generation_example 
-                        SOURCES    documentation_generation.cpp
-                        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                        DEPENDS_ON inlet
-                        FOLDER     axom/inlet/examples )
-    blt_add_test( NAME    inlet_documentation_generation 
-                  COMMAND inlet_documentation_generation_example --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
+    blt_add_test( NAME    inlet_verification_ex
+                  COMMAND inlet_verification_ex )
+
+    blt_add_test( NAME    inlet_documentation_generation_ex
+                  COMMAND inlet_documentation_generation_ex --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
+
+    blt_add_test( NAME inlet_user_defined_type_ex
+                  COMMAND inlet_user_defined_type_ex --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua)
 
 endif()

@@ -7,7 +7,7 @@
  *******************************************************************************
  * \file Field.hpp
  *
- * \brief This file contains the class definition of Inlet's Field class.
+ * \brief This file contains the class definition of Inlet's Field and AggregateField classes.
  *******************************************************************************
  */
 
@@ -15,6 +15,7 @@
 #define INLET_FIELD_HPP
 
 #include "axom/sidre.hpp"
+#include "axom/inlet/VerifiableScalar.hpp"
 
 #include <memory>
 #include <type_traits>
@@ -26,6 +27,25 @@ namespace inlet
 {
 /*!
  *******************************************************************************
+ * \enum InletType
+ *
+ * \brief Enumeration of basic types for things in inlet
+ *******************************************************************************
+ */
+enum class InletType
+{
+  Nothing,
+  Bool,
+  String,
+  Integer,
+  // TODO: Unsigned integer
+  Double,
+  Object,
+  Array
+};
+
+/*!
+ *******************************************************************************
  * \class Field
  *
  * \brief Provides functions to help define how individual field variables in an
@@ -35,7 +55,7 @@ namespace inlet
  * \see Inlet Table
  *******************************************************************************
  */
-class Field : public std::enable_shared_from_this<Field>
+class Field : public VerifiableScalar
 {
 public:
   /*!
@@ -63,6 +83,8 @@ public:
     , m_docEnabled(docEnabled)
   { }
 
+  virtual ~Field() = default;
+
   /*!
    *****************************************************************************
    * \brief Returns pointer to the Sidre Group class for this Field.
@@ -84,10 +106,10 @@ public:
    *
    * \param [in] isRequired Boolean value of whether Field is required
    *
-   * \return Shared pointer to this instance of this class
+   * \return Reference to this instance of this class
    *****************************************************************************
    */
-  std::shared_ptr<Field> required(bool isRequired);
+  Field& required(bool isRequired = true);
 
   /*!
    *****************************************************************************
@@ -99,7 +121,7 @@ public:
    * \return Boolean value of whether this Field is required
    *****************************************************************************
    */
-  bool required();
+  bool isRequired() const;
 
   /*!
    *****************************************************************************
@@ -109,10 +131,10 @@ public:
    *
    * \param [in] value The default string value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(const std::string& value);
+  Field& defaultValue(const std::string& value);
 
   /*!
    *****************************************************************************
@@ -122,10 +144,10 @@ public:
    *
    * \param [in] value The default string value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(const char* value);
+  Field& defaultValue(const char* value);
 
   /*!
    *****************************************************************************
@@ -135,10 +157,10 @@ public:
    *
    * \param [in] value The default boolean value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(bool value);
+  Field& defaultValue(bool value);
 
   /*!
    *****************************************************************************
@@ -148,10 +170,10 @@ public:
    *
    * \param [in] value The default integer value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(int value);
+  Field& defaultValue(int value);
 
   /*!
    *****************************************************************************
@@ -161,10 +183,10 @@ public:
    *
    * \param [in] value The default double value
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> defaultValue(double value);
+  Field& defaultValue(double value);
 
   /*!
    *****************************************************************************
@@ -176,10 +198,10 @@ public:
    * 
    * \param [in] endVal The end of the range
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> range(double startVal, double endVal);
+  Field& range(double startVal, double endVal);
 
   /*!
    *****************************************************************************
@@ -191,10 +213,10 @@ public:
    * 
    * \param [in] endVal The end of the range
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> range(int startVal, int endVal);
+  Field& range(int startVal, int endVal);
 
   /*!
    *****************************************************************************
@@ -202,10 +224,10 @@ public:
    *
    * \param [in] set An vector containing the set of allowed integer values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<int>& set);
+  Field& validValues(const std::vector<int>& set);
 
   /*!
    *****************************************************************************
@@ -213,10 +235,10 @@ public:
    *
    * \param [in] set An vector containing the set of allowed double values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<double>& set);
+  Field& validValues(const std::vector<double>& set);
 
   /*!
    *****************************************************************************
@@ -224,10 +246,10 @@ public:
    *
    * \param [in] set A vector containing the set of allowed string values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<std::string>& set);
+  Field& validValues(const std::vector<std::string>& set);
 
   /*!
    *****************************************************************************
@@ -236,10 +258,10 @@ public:
    * \param [in] set An initializer list containing the set of allowed C-string 
    * values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::initializer_list<const char*>& set);
+  Field& validValues(const std::initializer_list<const char*>& set);
 
   /*!
    *****************************************************************************
@@ -247,10 +269,10 @@ public:
    *
    * \param [in] set An initializer list containing the valid integer values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::initializer_list<int>& set);
+  Field& validValues(const std::initializer_list<int>& set);
 
   /*!
    *****************************************************************************
@@ -258,10 +280,10 @@ public:
    *
    * \param [in] set An initializer list containing the valid double values
    *
-   * \return Shared pointer to this Field instance
+   * \return Reference to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::initializer_list<double>& set);
+  Field& validValues(const std::initializer_list<double>& set);
 
   /*!
    *****************************************************************************
@@ -271,21 +293,42 @@ public:
    * \param [in] The function object that will be called by Field::verify().
    *****************************************************************************
   */
-  std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda);
+  Field& registerVerifier(std::function<bool(const Field&)> lambda);
 
   /*!
    *****************************************************************************
    * \brief Called by Inlet::verify to verify the contents of this Field.
    *****************************************************************************
   */
-  bool verify();
+  bool verify() const;
 
   /*!
    *****************************************************************************
    * \return The full name for this Field.
    *****************************************************************************
   */
-  std::string name();
+  std::string name() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns a value of primitive type
+   * 
+   * \return The value
+   * \tparam T The type to retrieve
+   *****************************************************************************
+   */
+  template <typename T>
+  T get() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the type of the stored value
+   * 
+   * \return The type
+   * \see InletType
+   *****************************************************************************
+   */
+  InletType type() const;
 
 private:
   /*!
@@ -293,8 +336,6 @@ private:
    * \brief Set the valid values for this Field.
    *
    * \param [in] set A vector containing the set of allowed scalar values
-   *
-   * \return Shared pointer to this Field instance
    *****************************************************************************
   */
   template <typename T>
@@ -309,8 +350,6 @@ private:
    * \param [in] startVal The start of the range
    * 
    * \param [in] endVal The end of the range
-   *
-   * \return Shared pointer to this Field instance
    *****************************************************************************
   */
   template <typename T>
@@ -323,19 +362,308 @@ private:
    * Set the default value for the Field in the input file.
    *
    * \param [in] value The default value
-   *
-   * \return Shared pointer to this Field instance
    *****************************************************************************
   */
   template <typename T>
   void setDefaultValue(T value);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks the validity of a field value
+   *
+   * \param [in] view The view to verify
+   *
+   * \return Whether the value satisfied all constraints
+   *****************************************************************************
+  */
+  bool verifyValue(const axom::sidre::View& view) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is within the range.
+   * 
+   * \param [in] view The view containing the value that will be checked.
+   * 
+   * \return true if the given value was within its respective range, else false.
+   * \pre T must define bool operator<=(T, T)
+   *****************************************************************************
+   */
+  template <typename T>
+  bool checkRange(const axom::sidre::View& view) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is found in the list of valid values.
+   * 
+   * \param [in] view The view containing the value that will be checked.
+   * 
+   * \return true if the given target was found in its respective valid values, 
+   *  else false.
+   *****************************************************************************
+   */
+  template <typename T>
+  bool searchValidValues(const axom::sidre::View& view) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Checks the existence and type of the value for the field
+   *
+   * \param [in] expected The expected type for the value
+   *
+   * \return Non-owning pointer to the Sidre view containing the value
+   * \note Treats a nonexistent value or type mismatch as an error and will
+   * emit a SLIC_ERROR accordingly
+   *****************************************************************************
+  */
+  const axom::sidre::View* checkExistenceAndType(
+    const axom::sidre::DataTypeId expected) const;
 
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled;
-  std::function<bool()> m_verifier;
+  std::function<bool(const Field&)> m_verifier;
+};
+
+// Prototypes for template specializations
+template <>
+bool Field::get<bool>() const;
+
+template <>
+int Field::get<int>() const;
+
+template <>
+double Field::get<double>() const;
+
+template <>
+std::string Field::get<std::string>() const;
+
+template <>
+inline bool Field::searchValidValues<std::string>(const axom::sidre::View& view) const;
+
+/*!
+   *****************************************************************************
+   * \brief A wrapper class that enables constraints on groups of Fields
+   *****************************************************************************
+  */
+class AggregateField : public VerifiableScalar
+{
+public:
+  AggregateField(std::vector<std::reference_wrapper<VerifiableScalar>>&& fields)
+    : m_fields(std::move(fields))
+  { }
+
+  virtual ~AggregateField() = default;
+
+  /*!
+   *****************************************************************************
+   * \brief Called by Inlet::verify to verify the contents of this Field.
+   *****************************************************************************
+  */
+  bool verify() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Field.
+   *
+   * Set whether this Field is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \param [in] isRequired Boolean value of whether Field is required
+   *
+   * \return Reference to this instance of this class
+   *****************************************************************************
+   */
+  AggregateField& required(bool isRequired);
+
+  /*!
+   *****************************************************************************
+   * \brief Return the required status of this Field.
+   *
+   * Return that this Field is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Field is required
+   *****************************************************************************
+   */
+  bool isRequired() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& defaultValue(const std::string& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& defaultValue(const char* value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default boolean value
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& defaultValue(bool value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default integer value
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& defaultValue(int value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input file.
+   *
+   * \param [in] value The default double value
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& defaultValue(double value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input file.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& range(double startVal, double endVal);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input file.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& range(int startVal, int endVal);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An vector containing the set of allowed integer values
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& validValues(const std::vector<int>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An vector containing the set of allowed double values
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& validValues(const std::vector<double>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set A vector containing the set of allowed string values
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& validValues(const std::vector<std::string>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the set of allowed C-string 
+   * values
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& validValues(const std::initializer_list<const char*>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid integer values
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& validValues(const std::initializer_list<int>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid double values
+   *
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& validValues(const std::initializer_list<double>& set);
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Field's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Field::verify().
+   * 
+   * \return Reference to this Field instance
+   *****************************************************************************
+  */
+  AggregateField& registerVerifier(std::function<bool(const Field&)> lambda);
+
+private:
+  std::vector<std::reference_wrapper<VerifiableScalar>> m_fields;
 };
 
 }  // end namespace inlet

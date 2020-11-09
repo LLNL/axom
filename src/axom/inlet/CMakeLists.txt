@@ -19,8 +19,10 @@ set(inlet_headers
     Field.hpp
     Inlet.hpp
     Reader.hpp
-    SchemaCreator.hpp
     Table.hpp 
+    Proxy.hpp
+    Verifiable.hpp
+    VerifiableScalar.hpp
     DocWriter.hpp
     SphinxDocWriter.hpp 
     inlet_utils.hpp )
@@ -29,6 +31,7 @@ set(inlet_sources
     Field.cpp
     Inlet.cpp
     Table.cpp
+    Proxy.cpp
     SphinxDocWriter.cpp 
     inlet_utils.cpp )
 

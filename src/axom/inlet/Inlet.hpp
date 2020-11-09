@@ -20,9 +20,9 @@
 #include <vector>
 #include <functional>
 
-#include "axom/inlet/SchemaCreator.hpp"
 #include "axom/inlet/Table.hpp"
 #include "axom/inlet/Field.hpp"
+#include "axom/inlet/Proxy.hpp"
 #include "axom/inlet/Reader.hpp"
 
 #include "axom/sidre.hpp"
@@ -44,7 +44,7 @@ namespace inlet
  * \see Table Field
  *******************************************************************************
  */
-class Inlet : public SchemaCreator
+class Inlet
 {
 public:
   /*!
@@ -54,34 +54,37 @@ public:
    * Creates an Inlet class that can then be used with the given Reader and will
    * store data under the given Sidre Group.
    *
-   * \param [in] reader Shared pointer to the input file Reader class.
+   * \param [in] reader Unique (owning) pointer to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether documentation generation
    * is enabled. This also toggles the storing of documentation-specific information.
    *****************************************************************************
    */
-  Inlet(std::shared_ptr<Reader> reader,
+  Inlet(std::unique_ptr<Reader> reader,
         axom::sidre::Group* sidreRootGroup,
         bool docEnabled = true)
-    : m_reader(reader)
+    : m_reader(std::move(reader))
     , m_sidreRootGroup(sidreRootGroup)
-    , m_globalTable(
-        std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled))
+    , m_globalTable("", "", *m_reader, m_sidreRootGroup, docEnabled)
     , m_docEnabled(docEnabled)
   { }
+
+  // Inlet objects must be move only - delete the implicit shallow copy constructor
+  Inlet(const Inlet&) = delete;
+  Inlet(Inlet&&) = default;
 
   virtual ~Inlet() = default;
 
   /*!
    *****************************************************************************
-   * \brief Returns the shared pointer to the Reader class.
+   * \brief Returns the reference to the Reader class.
    *
    * Provides access to the Reader class that is used to access the input file.
    *
-   * \return Shared pointer to this instances' Reader class
+   * \return Reference to this instances' Reader class
    *****************************************************************************
    */
-  std::shared_ptr<Reader> reader() { return m_reader; };
+  Reader& reader() { return *m_reader; };
 
   /*!
    *****************************************************************************
@@ -105,17 +108,16 @@ public:
    *
    * Adds a Table to the input file schema. Tables hold a varying amount Fields
    * defined by the user.  By default, it is not required unless marked with
-   * Table::required(). This creates the Sidre Group class with the given name and
+   * Table::isRequired(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
    * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
-   * \return Shared pointer to the created Table
+   * \return Reference to the created Table
    *****************************************************************************
    */
-  std::shared_ptr<Table> addTable(const std::string& name,
-                                  const std::string& description = "");
+  Table& addTable(const std::string& name, const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -129,11 +131,11 @@ public:
    * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description = "");
+  VerifiableScalar& addBool(const std::string& name,
+                            const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -147,11 +149,11 @@ public:
    * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description = "");
+  VerifiableScalar& addDouble(const std::string& name,
+                              const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -165,11 +167,11 @@ public:
    * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description = "");
+  VerifiableScalar& addInt(const std::string& name,
+                           const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -183,79 +185,61 @@ public:
    * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description = "");
+  VerifiableScalar& addString(const std::string& name,
+                              const std::string& description = "");
 
   //
   // Functions that get the values out of the datastore
   //
 
   /*!
-   *****************************************************************************
-   * \brief Gets a Boolean value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
+   *******************************************************************************
+   * \brief Gets a value of arbitrary type out of the datastore
+   * 
+   * Retrieves a value of user-defined type, i.e., not double, int, bool, or string.
+   * 
+   * \param [in] name The name of the subtable representing the root of the object
+   * \return The retrieved value
+   * \tparam The type to retrieve
+   * \pre Requires a specialization of FromInlet<T>
+   * \note This function does not indicate failure in a way that can be handled
+   * by a program - if an object of requested type does not exist at the specified
+   * location, the program will terminate
+   *******************************************************************************
    */
-  bool get(const std::string& name, bool& value);
+  template <typename T>
+  T get(const std::string& name) const
+  {
+    return m_globalTable.get<T>(name);
+  }
 
   /*!
    *****************************************************************************
-   * \brief Gets a Double value out of the Datastore.
+   * \brief Return whether a subobject with the given name is present in 
+   * the datastore.
    *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
+   * \see Table::contains
    *****************************************************************************
    */
-  bool get(const std::string& name, double& value);
+  bool contains(const std::string& name) const
+  {
+    return m_globalTable.contains(name);
+  }
 
   /*!
-   *****************************************************************************
-   * \brief Gets a Integer value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
+   *******************************************************************************
+   * \brief Obtains a proxy view into the datastore.
+   * 
+   * \see Table::operator[]
+   *******************************************************************************
    */
-  bool get(const std::string& name, int& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Gets a String value out of the Datastore.
-   *
-   * Retrieves the Field value out of the DataStore.  This Field may not have
-   * been actually present in the input file and will be indicted by the return
-   * value. 
-   *
-   * \param [in] name Name of the Field value to be gotten
-   * \param [out] value Value to be filled
-   *
-   * \return True if the value was found in the Datastore
-   *****************************************************************************
-   */
-  bool get(const std::string& name, std::string& value);
+  Proxy operator[](const std::string& name) const
+  {
+    return m_globalTable[name];
+  }
 
   /*!
    *****************************************************************************
@@ -264,11 +248,11 @@ public:
    * Sets the associated DocWriter. If the DocWriter is already set, it will be
    * replaced by the one that was most recently set.
    *
-   * \param [in] writer A pointer to a DocWriter object
+   * \param [in] writer An owning pointer to a DocWriter object
    *
    *****************************************************************************
    */
-  void registerDocWriter(std::shared_ptr<DocWriter> writer);
+  void registerDocWriter(std::unique_ptr<DocWriter> writer);
 
   /*!
    *****************************************************************************
@@ -295,14 +279,14 @@ public:
    *
    *****************************************************************************
    */
-  bool verify();
+  bool verify() const;
 
   /*!
    *****************************************************************************
    * \return The global Table.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getGlobalTable() { return m_globalTable; }
+  Table& getGlobalTable() { return m_globalTable; }
 
   /*!
    *****************************************************************************
@@ -314,9 +298,9 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTable(const std::string& name)
+  Table& getTable(const std::string& name) const
   {
-    return m_globalTable->getTable(name);
+    return m_globalTable.getTable(name);
   }
 
   /*!
@@ -329,9 +313,9 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getField(const std::string& name)
+  Field& getField(const std::string& name) const
   {
-    return m_globalTable->getField(name);
+    return m_globalTable.getField(name);
   }
 
   /*!
@@ -341,9 +325,9 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Table.
    *****************************************************************************
    */
-  bool hasTable(const std::string& name)
+  bool hasTable(const std::string& name) const
   {
-    return m_globalTable->hasTable(name);
+    return m_globalTable.hasTable(name);
   }
 
   /*!
@@ -353,9 +337,9 @@ public:
    * \return Boolean value indicating whether this Inlet contains the Field.
    *****************************************************************************
    */
-  bool hasField(const std::string& name)
+  bool hasField(const std::string& name) const
   {
-    return m_globalTable->hasField(name);
+    return m_globalTable.hasField(name);
   }
 
   /*!
@@ -364,9 +348,9 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields()
+  const std::unordered_map<std::string, std::unique_ptr<Field>>& getChildFields() const
   {
-    return m_globalTable->getChildFields();
+    return m_globalTable.getChildFields();
   }
 
   /*!
@@ -375,248 +359,153 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables()
+  const std::unordered_map<std::string, std::unique_ptr<Table>>& getChildTables() const
   {
-    return m_globalTable->getChildTables();
+    return m_globalTable.getChildTables();
   }
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Boolean Fields to the input deck schema.
+   * \brief Add an array of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addBoolArray(const std::string& name,
-                                      const std::string& description = "")
+  Verifiable& addBoolArray(const std::string& name,
+                           const std::string& description = "")
   {
-    return m_globalTable->addBoolArray(name, description);
+    return m_globalTable.addBoolArray(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Integer Fields to the input deck schema.
+   * \brief Add an array of Integer Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addIntArray(const std::string& name,
-                                     const std::string& description = "")
+  Verifiable& addIntArray(const std::string& name,
+                          const std::string& description = "")
   {
-    return m_globalTable->addIntArray(name, description);
+    return m_globalTable.addIntArray(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Double Fields to the input deck schema.
+   * \brief Add an array of Double Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addDoubleArray(const std::string& name,
-                                        const std::string& description = "")
+  Verifiable& addDoubleArray(const std::string& name,
+                             const std::string& description = "")
   {
-    return m_globalTable->addDoubleArray(name, description);
+    return m_globalTable.addDoubleArray(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Add an array of String Fields to the input deck schema.
+   * \brief Add an array of String Fields to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Shared pointer to the created Field
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  std::shared_ptr<Table> addStringArray(const std::string& name,
-                                        const std::string& description = "")
+  Verifiable& addStringArray(const std::string& name,
+                             const std::string& description = "")
   {
-    return m_globalTable->addStringArray(name, description);
+    return m_globalTable.addStringArray(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a boolean array represented as an unordered map from the input deck
+   * \brief Add an array of Fields to the input file schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   *
+   * \return Reference to the created Field
+   *****************************************************************************
+   */
+  Table& addGenericArray(const std::string& name,
+                         const std::string& description = "")
+  {
+    return m_globalTable.addGenericArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a boolean array represented as an unordered map from the input file
    *
    * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getBoolArray(std::unordered_map<int, bool>& map)
+  bool getArray(std::unordered_map<int, bool>& map)
   {
-    return m_globalTable->getBoolArray(map);
+    return m_globalTable.getArray(map);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a int array represented as an unordered map from the input deck
+   * \brief Get a int array represented as an unordered map from the input file
    *
    * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getIntArray(std::unordered_map<int, int>& map)
+  bool getArray(std::unordered_map<int, int>& map)
   {
-    return m_globalTable->getIntArray(map);
+    return m_globalTable.getArray(map);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a double array represented as an unordered map from the input deck
+   * \brief Get a double array represented as an unordered map from the input file
    *
    * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getDoubleArray(std::unordered_map<int, double>& map)
+  bool getArray(std::unordered_map<int, double>& map)
   {
-    return m_globalTable->getDoubleArray(map);
+    return m_globalTable.getArray(map);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a string array represented as an unordered map from the input deck
+   * \brief Get a string array represented as an unordered map from the input file
    *
    * \param [out] map Unordered map to be populated with array contents
    *
    * \return Whether or not the array was found
    *****************************************************************************
    */
-  bool getStringArray(std::unordered_map<int, std::string>& map)
+  bool getArray(std::unordered_map<int, std::string>& map)
   {
-    return m_globalTable->getStringArray(map);
+    return m_globalTable.getArray(map);
   }
 
   // TODO add update value functions
 private:
-  /*!
-   *****************************************************************************
-   * \brief Verifies the contents of the sidreGroup according to Inlet 
-   * requirements.
-   *
-   * This is the recursive internal helper for verify().
-   * 
-   * \param [in] sidreGroup The root of the sub-group to be verified.
-   *
-   * \param [out] verifySuccess Indicates whether the verification was 
-   * successful: true if successful and false if not.
-   *****************************************************************************
-   */
-  void verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess);
-
-  /*!
-   *****************************************************************************
-   * \brief Verifies the value of a Field.
-   *
-   * This checks whether the value in the Field is within the specified range or
-   * contained in allowed values.
-   * 
-   * \param [in] sidreGroup The Sidre Group containing the value to be verified.
-   *
-   * \return boolean value indicating whether the verification was 
-   * successful: true if successful and false if not.
-   *****************************************************************************
-   */
-  bool verifyValue(axom::sidre::Group* sidreGroup);
-
-  /*!
-   *****************************************************************************
-   * \brief Verifies the default value of a Field.
-   *
-   * This checks whether the default value in the Field is within the specified 
-   * range or is one of the allowed values.
-   * 
-   * \param [in] sidreGroup The Sidre Group containing the default value to be 
-   * verified.
-   *
-   * \return boolean value indicating whether the verification was 
-   * successful: true if successful and false if not.
-   *****************************************************************************
-   */
-  bool verifyDefaultValue(axom::sidre::Group* sidreGroup);
-
-  /*!
-   *****************************************************************************
-   * \brief Checks if the given value is within the range.
-   * 
-   * \param [in] sidreGroup The Sidre Group containing the range.
-   * \param [in] value The integer value that will be checked.
-   * 
-   * \return true if the given value was within its respective range, else false.
-   *****************************************************************************
-   */
-  bool checkRange(axom::sidre::Group* sidreGroup, int value);
-
-  /*!
-   *****************************************************************************
-   * \brief Checks if the given value is within the range.
-   * 
-   * \param [in] sidreGroup The Sidre Group containing the range.
-   * \param [in] value The double value that will be checked.
-   * 
-   * \return true if the given value was within its respective range, else false.
-   *****************************************************************************
-   */
-  bool checkRange(axom::sidre::Group* sidreGroup, double value);
-
-  /*!
-   *****************************************************************************
-   * \brief Checks if the given value is found in the list of valid values.
-   * 
-   * \param [in] sidreGroup The Sidre Group containing the valid values.
-   * \param [in] value The target integer value that will be searched for.
-   * 
-   * \return true if the given target was found in its respective valid values, 
-   *  else false.
-   *****************************************************************************
-   */
-  bool searchValidValues(axom::sidre::Group* sidreGroup, int value);
-
-  /*!
-   *****************************************************************************
-   * \brief Checks if the given value is found in the list of valid values.
-   * 
-   * \param [in] sidreGroup The Sidre Group containing the valid values.
-   * \param [in] value The target double value that will be searched for.
-   * 
-   * \return true if the given target was found in its respective valid values, 
-   *  else false.
-   *****************************************************************************
-   */
-  bool searchValidValues(axom::sidre::Group* sidreGroup, double value);
-
-  /*!
-   *****************************************************************************
-   * \brief Checks if the given value is found in the list of valid values.
-   * 
-   * \param [in] sidreGroup The Sidre Group containing the valid values.
-   * \param [in] value The target string value that will be searched for.
-   * 
-   * \return true if the given target was found in its respective list of valid
-   * values, else false.
-   *****************************************************************************
-   */
-  bool searchValidValues(axom::sidre::Group* sidreGroup, std::string value);
-
-  axom::sidre::View* baseGet(const std::string& name);
-
-  std::shared_ptr<Reader> m_reader;
+  std::unique_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
-  std::shared_ptr<Table> m_globalTable;
-  std::shared_ptr<DocWriter> m_docWriter;
+  Table m_globalTable;
+  std::unique_ptr<DocWriter> m_docWriter;
   bool m_docEnabled;
 };
 

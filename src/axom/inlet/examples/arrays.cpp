@@ -10,7 +10,7 @@
 
 int main()
 {
-  auto lr = std::make_shared<axom::inlet::LuaReader>();
+  auto lr = std::make_unique<axom::inlet::LuaReader>();
 
   // Parse example input file
   lr->parseString("values = { [1] = 'start', [2] = 'stop', [3] = 'pause' }");
@@ -18,16 +18,12 @@ int main()
   axom::sidre::DataStore ds;
 
   // Initialize Inlet
-  auto inlet = std::make_shared<axom::inlet::Inlet>(lr, ds.getRoot());
+  axom::inlet::Inlet inlet(std::move(lr), ds.getRoot());
 
   // Register the verifier, which will verify the array values
-  auto vals = inlet->getGlobalTable()->addStringArray("values");
-  vals->registerVerifier([&]() -> bool {
-    std::unordered_map<int, std::string> map;
-    if(!vals->getStringArray(map))
-    {
-      std::cout << "Error: Array not found\n";
-    }
+  auto& vals = inlet.getGlobalTable().addStringArray("values");
+  vals.registerVerifier([](const axom::inlet::Table& table) -> bool {
+    auto map = table.get<std::unordered_map<int, std::string>>();
     bool startFound = false;
     bool stopFound = false;
     for(auto p : map)
@@ -47,22 +43,15 @@ int main()
   });
 
   // We expect verfication to pass since values array has 3 elements
-  inlet->verify() ? std::cout << "Verification passed\n"
-                  : std::cout << "Verification failed\n";
+  inlet.verify() ? std::cout << "Verification passed\n"
+                 : std::cout << "Verification failed\n";
 
   // Print contents of map
-  std::unordered_map<int, std::string> map;
-  if(!vals->getStringArray(map))
+  std::unordered_map<int, std::string> map = inlet["values"];
+  std::cout << "\nMap Contents:\n";
+  for(auto p : map)
   {
-    std::cout << "\nError: Array not found\n";
-  }
-  else
-  {
-    std::cout << "\nMap Contents:\n";
-    for(auto p : map)
-    {
-      std::cout << p.first << " " << p.second << std::endl;
-    }
+    std::cout << p.first << " " << p.second << std::endl;
   }
 
   return 0;
