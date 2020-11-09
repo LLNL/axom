@@ -82,13 +82,12 @@ struct inlet_function_signature
     typename inlet_function_arg_type<typename inlet_function_type<Arg>::type>::type);
 };
 
-using Vec3_Double =
-  inlet_function_signature<InletFunctionType::Double, InletFunctionType::Vec3D>::type;
-
 template <typename... FunctionTypes>
 class FunctionWrapper
 {
 public:
+  FunctionWrapper() = default;
+
   template <typename FuncType>
   FunctionWrapper(std::function<FuncType>&& func)
   {
@@ -102,11 +101,13 @@ public:
             typename... Args,
             typename SFINAE = decltype(std::get<std::function<Ret(Args...)>>(
               std::declval<std::tuple<std::function<FunctionTypes>...>>()))>
-  Ret call(Args const&... args) const
+  Ret call(Args&&... args) const
   {
-    const auto& func = std::get<std::function<Ret(Args const&...)>>(m_funcs);
-    SLIC_ERROR_IF(!func, "[Inlet] Function with requested type does not exist");
-    return func(std::forward<Args const&>(args)...);
+    using ArgTypes = typename inlet_function_arg_type<Args...>::type;
+    const auto& func = std::get<std::function<Ret(ArgTypes)>>(m_funcs);
+    SLIC_ERROR_IF(!func || !m_function_valid,
+                  "[Inlet] Function with requested type does not exist");
+    return func(std::forward<ArgTypes>(args)...);
   }
 
   operator bool() const { return m_function_valid; }
@@ -116,9 +117,49 @@ private:
   bool m_function_valid = false;
 };
 
+// This could definitely be done with more metaprogramming, which may be the only option
+// as the number of argumetns increases
+
+using Vec2_Vec3 =
+  inlet_function_signature<InletFunctionType::Vec2D, InletFunctionType::Vec3D>::type;
+
+using Vec2_Vec2 =
+  inlet_function_signature<InletFunctionType::Vec2D, InletFunctionType::Vec2D>::type;
+
+using Vec2_Double =
+  inlet_function_signature<InletFunctionType::Vec2D, InletFunctionType::Double>::type;
+
+using Vec3_Vec3 =
+  inlet_function_signature<InletFunctionType::Vec3D, InletFunctionType::Vec3D>::type;
+
+using Vec3_Vec2 =
+  inlet_function_signature<InletFunctionType::Vec3D, InletFunctionType::Vec2D>::type;
+
+using Vec3_Double =
+  inlet_function_signature<InletFunctionType::Vec3D, InletFunctionType::Double>::type;
+
+using Double_Vec3 =
+  inlet_function_signature<InletFunctionType::Double, InletFunctionType::Vec3D>::type;
+
+using Double_Vec2 =
+  inlet_function_signature<InletFunctionType::Double, InletFunctionType::Vec2D>::type;
+
+using Double_Double =
+  inlet_function_signature<InletFunctionType::Double, InletFunctionType::Double>::type;
+
+using BasicFunctionWrapper = FunctionWrapper<Vec2_Vec3,
+                                             Vec2_Vec2,
+                                             Vec2_Double,
+                                             Vec3_Vec3,
+                                             Vec3_Vec2,
+                                             Vec3_Double,
+                                             Double_Vec3,
+                                             Double_Vec2,
+                                             Double_Double>;
+
 }  // end namespace detail
 
-using InletFunctionWrapper = detail::FunctionWrapper<detail::Vec3_Double>;
+using InletFunctionWrapper = detail::BasicFunctionWrapper;
 
 class Function : public Verifiable<Function>
 {

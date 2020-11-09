@@ -193,20 +193,115 @@ sol::protected_function LuaReader::getFunctionInternal(const std::string& id)
   return lua_func;
 }
 
+namespace detail
+{
+template <typename Arg>
+sol::protected_function_result callWith(sol::protected_function func,
+                                        const Arg& arg)
+{
+  auto tentative_result = func(arg);
+  SLIC_ERROR_IF(!tentative_result.valid(), "[Inlet] Lua function call failed");
+  return tentative_result;
+}
+
+sol::protected_function_result callWith(sol::protected_function func,
+                                        const primal::Vector2D& vec)
+{
+  auto tentative_result = func(vec[0], vec[1]);
+  SLIC_ERROR_IF(!tentative_result.valid(), "[Inlet] Lua function call failed");
+  return tentative_result;
+}
+
+sol::protected_function_result callWith(sol::protected_function func,
+                                        const primal::Vector3D& vec)
+{
+  auto tentative_result = func(vec[0], vec[1], vec[2]);
+  SLIC_ERROR_IF(!tentative_result.valid(), "[Inlet] Lua function call failed");
+  return tentative_result;
+}
+
+template <typename Ret>
+Ret extractResult(sol::protected_function_result&& res)
+{
+  return res;
+}
+
+template <>
+primal::Vector2D extractResult<primal::Vector2D>(sol::protected_function_result&& res)
+{
+  primal::Vector2D result;
+  std::tuple<int, int> tup = res;
+  result[0] = std::get<0>(tup);
+  result[1] = std::get<1>(tup);
+  return result;
+}
+
+template <>
+primal::Vector3D extractResult<primal::Vector3D>(sol::protected_function_result&& res)
+{
+  primal::Vector3D result;
+  std::tuple<int, int, int> tup = res;
+  result[0] = std::get<0>(tup);
+  result[1] = std::get<1>(tup);
+  result[2] = std::get<2>(tup);
+  return result;
+}
+
+template <typename Ret, typename Arg>
+std::function<Ret(typename inlet_function_arg_type<Arg>::type)> buildStdFunction(
+  sol::protected_function&& func)
+{
+  return [func](typename inlet_function_arg_type<Arg>::type arg) {
+    return extractResult<Ret>(callWith(std::move(func), arg));
+  };
+}
+
+template <InletFunctionType Ret>
+InletFunctionWrapper bindArgType(sol::protected_function&& func,
+                                 const InletFunctionType arg_type)
+{
+  switch(arg_type)
+  {
+  case InletFunctionType::Vec2D:
+    return buildStdFunction<typename inlet_function_type<Ret>::type, primal::Vector2D>(
+      std::move(func));
+  case InletFunctionType::Vec3D:
+    return buildStdFunction<typename inlet_function_type<Ret>::type, primal::Vector3D>(
+      std::move(func));
+  case InletFunctionType::Double:
+    return buildStdFunction<typename inlet_function_type<Ret>::type, double>(
+      std::move(func));
+  default:
+    SLIC_ERROR("[Inlet] Unexpected function argument type");
+  }
+  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
+}
+
+}  // end namespace detail
+
 InletFunctionWrapper LuaReader::getFunction(const std::string& id,
                                             const InletFunctionType ret_type,
                                             const InletFunctionType arg_type)
 {
-  std::function<double(const primal::Vector3D&)> result;
-  if(auto lua_func = getFunctionInternal(id))
+  auto lua_func = getFunctionInternal(id);
+  SLIC_ERROR_IF(
+    !lua_func,
+    "[Inlet] Function did not exist at the specified path in the input file");
+  switch(ret_type)
   {
-    result = [lua_func](const primal::Vector3D& vec) {
-      auto tentative_result = lua_func(vec[0], vec[1], vec[2]);
-      SLIC_ERROR_IF(!tentative_result.valid(), "[Inlet] Function call failed");
-      return tentative_result;
-    };
+  case InletFunctionType::Vec2D:
+    return detail::bindArgType<InletFunctionType::Vec2D>(std::move(lua_func),
+                                                         arg_type);
+  case InletFunctionType::Vec3D:
+    return detail::bindArgType<InletFunctionType::Vec3D>(std::move(lua_func),
+                                                         arg_type);
+  case InletFunctionType::Double:
+    return detail::bindArgType<InletFunctionType::Double>(std::move(lua_func),
+                                                          arg_type);
+  default:
+    SLIC_ERROR("[Inlet] Unexpected function return type");
   }
-  return result;
+  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
 }
 
 template <typename T>

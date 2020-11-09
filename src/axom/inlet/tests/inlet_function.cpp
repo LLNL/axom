@@ -32,7 +32,7 @@ Inlet createBasicInlet(DataStore* ds,
   return Inlet(std::move(lr), ds->getRoot(), enableDocs);
 }
 
-TEST(inlet_function, simple_vec_to_double_raw)
+TEST(inlet_function, simple_vec3_to_double_raw)
 {
   std::string testString = "function foo (x, y, z) return x + y + z end";
   DataStore ds;
@@ -42,8 +42,27 @@ TEST(inlet_function, simple_vec_to_double_raw)
                                          axom::inlet::InletFunctionType::Double,
                                          axom::inlet::InletFunctionType::Vec3D);
 
+  EXPECT_TRUE(func);
   auto result = func.call<double>(axom::primal::Vector3D {1, 2, 3});
   EXPECT_FLOAT_EQ(result, 6);
+}
+
+TEST(inlet_function, simple_vec3_to_vec3_raw)
+{
+  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto func = inlet.reader().getFunction("foo",
+                                         axom::inlet::InletFunctionType::Vec3D,
+                                         axom::inlet::InletFunctionType::Vec3D);
+
+  EXPECT_TRUE(func);
+  auto result =
+    func.call<axom::primal::Vector3D>(axom::primal::Vector3D {1, 2, 3});
+  EXPECT_FLOAT_EQ(result[0], 2);
+  EXPECT_FLOAT_EQ(result[1], 4);
+  EXPECT_FLOAT_EQ(result[2], 6);
 }
 
 //------------------------------------------------------------------------------
