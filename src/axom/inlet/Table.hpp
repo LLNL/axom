@@ -109,6 +109,24 @@ template <typename T>
 struct is_inlet_array<std::unordered_map<int, T>> : std::true_type
 { };
 
+template <typename T>
+struct is_std_function : std::false_type
+{ };
+
+template <typename T>
+struct is_std_function<std::function<T>> : std::true_type
+{ };
+
+template <typename FuncType>
+struct std_function_signature
+{ };
+
+template <typename FuncType>
+struct std_function_signature<std::function<FuncType>>
+{
+  using type = FuncType;
+};
+
 /*!
  *******************************************************************************
  * \class has_FromInlet_specialization
@@ -564,6 +582,27 @@ public:
                                        const std::string& pathOverride = "");
 
   /*!
+   *****************************************************************************
+   * \brief Get a function from the input deck
+   *
+   * \param [in]  name Name of the function
+   * \param [in]  ret_type    The return type of the function
+   * \param [in]  arg_type    The argument type of the function (currently only
+   * single-argument functions are supported)
+   * \param [in] description Description of the Field
+   * \param [in] pathOverride The path within the input file to read from, if
+   * different than the structure of the Sidre datastore
+   *
+   * \return Reference to the created Function
+   *****************************************************************************
+   */
+  Verifiable<Function>& addFunction(const std::string& name,
+                                    const InletFunctionType ret_type,
+                                    const InletFunctionType arg_type,
+                                    const std::string& description = "",
+                                    const std::string& pathOverride = "");
+
+  /*!
    *******************************************************************************
    * \brief Returns a stored value of primitive type.
    * 
@@ -735,6 +774,16 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Return whether a Function with the given name is present in this Table's
+   *  subtree.
+   *
+   * \return Boolean value indicating whether this Table's subtree contains this Function.
+   *****************************************************************************
+   */
+  bool hasFunction(const std::string& fieldName) const;
+
+  /*!
+   *****************************************************************************
    * \brief Return whether a Table or Field with the given name is present in 
    * this Table's subtree.
    *
@@ -744,7 +793,7 @@ public:
    */
   bool contains(const std::string& name) const
   {
-    return hasTable(name) || hasField(name);
+    return hasTable(name) || hasField(name) || hasFunction(name);
   }
 
   /*!
@@ -776,8 +825,7 @@ public:
    * 
    * \param [in] The string indicating the target name of the Table to be searched for.
    * 
-   * \return The Table matching the target name. If no such Table is found,
-   * a nullptr is returned.
+   * \return The Table matching the target name.
    *****************************************************************************
    */
   Table& getTable(const std::string& tableName) const;
@@ -788,11 +836,21 @@ public:
    * 
    * \param [in] The string indicating the target name of the Field to be searched for.
    * 
-   * \return The Field matching the target name. If no such Field is found,
-   * a nullptr is returned.
+   * \return The Field matching the target name.
    *****************************************************************************
    */
   Field& getField(const std::string& fieldName) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Function.
+   * 
+   * \param [in] The string indicating the target name of the Function to be searched for.
+   * 
+   * \return The Function matching the target name.
+   *****************************************************************************
+   */
+  Function& getFunction(const std::string& funcName) const;
 
 private:
   /*!
@@ -857,14 +915,31 @@ private:
    * \param [in] The Table sequence for the Table this Field will be added to, 
    * relative to this Table.
    * 
-   * \return The child Field matching the target name. If no such Field is found,
-   * a nullptr is returned.
+   * \return The child Field matching the target name.
    *****************************************************************************
    */
   Field& addField(axom::sidre::Group* sidreGroup,
                   axom::sidre::DataTypeId type,
                   const std::string& fullName,
                   const std::string& name);
+
+  /*!
+   *****************************************************************************
+   * \brief Adds the Function.
+   * 
+   * \param [in] The Sidre Group corresponding to the Function that will be added.
+   * \param [in] func The actual callable to store
+   * \param [in] The complete Table sequence for the Table this Function will be added to.
+   * \param [in] The Table sequence for the Table this Function will be added to, 
+   * relative to this Table.
+   * 
+   * \return The child Function matching the target name.
+   *****************************************************************************
+   */
+  Function& addFunctionInternal(axom::sidre::Group* sidreGroup,
+                                InletFunctionWrapper&& func,
+                                const std::string& fullName,
+                                const std::string& name);
 
   /*!
    *****************************************************************************
@@ -884,11 +959,23 @@ private:
    * 
    * \param [in] The string indicating the target name of the Field to be searched for.
    * 
-   * \return The Field matching the target name. If no such Table is found,
+   * \return The Field matching the target name. If no such Field is found,
    * a nullptr is returned.
    *****************************************************************************
    */
   Field* getFieldInternal(const std::string& fieldName) const;
+
+  /*!
+   *****************************************************************************
+   * \brief This is the internal implementation of getFunction. It retrieves the matching Function.
+   * 
+   * \param [in] The string indicating the target name of the Function to be searched for.
+   * 
+   * \return The Function matching the target name. If no such Function is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  Function* getFunctionInternal(const std::string& funcName) const;
 
   /*!
    *****************************************************************************
@@ -909,6 +996,16 @@ private:
    *****************************************************************************
    */
   bool hasChildField(const std::string& fieldName) const;
+
+  /*!
+   *****************************************************************************
+   * \brief This is an internal helper. It return whether this Table has a child 
+   * Function with the given name.
+   *
+   * \return Boolean value of whether this Table has the child Function.
+   *****************************************************************************
+   */
+  bool hasChildFunction(const std::string& funcName) const;
 
   axom::sidre::View* baseGet(const std::string& name) const;
 
@@ -941,6 +1038,7 @@ private:
   // and AggregateTables have identical lifetime
   std::vector<AggregateTable> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
+  std::vector<AggregateFunction> m_aggregate_funcs;
 
   static const std::string ARRAY_GROUP_NAME;
   static const std::string ARRAY_INDICIES_VIEW_NAME;

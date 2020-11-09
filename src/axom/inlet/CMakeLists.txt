@@ -30,6 +30,7 @@ set(inlet_headers
 
 set(inlet_sources
     Field.cpp
+    Function.cpp
     Inlet.cpp
     Table.cpp
     Proxy.cpp

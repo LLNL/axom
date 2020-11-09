@@ -119,6 +119,15 @@ struct inlet_function_signature
     typename inlet_function_arg_type<typename inlet_function_type<Args...>::type>::type);
 };
 
+template <typename>
+struct cleanup_function_signature;
+
+template <typename Ret, typename... Args>
+struct cleanup_function_signature<Ret(Args...)>
+{
+  using type = Ret(typename detail::inlet_function_arg_type<Args...>::type);
+};
+
 }  // end namespace detail
 
 /*!
@@ -189,6 +198,14 @@ public:
     SLIC_ERROR_IF(!func || !m_function_valid,
                   "[Inlet] Function with requested type does not exist");
     return func(std::forward<ArgTypes>(args)...);
+  }
+
+  template <typename FuncType>
+  std::function<FuncType> get() const
+  {
+    return *std::get<std::unique_ptr<
+      std::function<typename detail::cleanup_function_signature<FuncType>::type>>>(
+      m_funcs);
   }
 
   /*!
@@ -263,7 +280,7 @@ public:
     : m_sidreGroup(sidreGroup)
     , m_sidreRootGroup(root)
     , m_docEnabled(docEnabled)
-    , m_functions(std::move(func))
+    , m_func(std::move(func))
   { }
 
   // InletType type() const { return InletType::Function; }
@@ -277,7 +294,67 @@ public:
    *****************************************************************************
    */
   template <typename FuncType>
-  std::function<FuncType> get() const;
+  std::function<FuncType> get() const
+  {
+    return m_func.get<FuncType>();
+  }
+
+  template <typename Ret, typename... Args>
+  Ret call(Args&&... args) const
+  {
+    return m_func.call<Ret>(std::forward<Args>(args)...);
+  }
+
+  /*!
+   *****************************************************************************
+   * \return The full name for this Function.
+   *****************************************************************************
+  */
+  std::string name() const;
+
+  /*!
+   *****************************************************************************
+   * \brief This will be called by Inlet::verify to verify the contents of this
+   *  Function
+   *****************************************************************************
+   */
+  bool verify() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Table.
+   *
+   * Set whether this Table is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \param [in] isRequired Boolean value of whether Table is required
+   *
+   * \return Reference to this instance of Table
+   *****************************************************************************
+   */
+  Function& required(bool isRequired = true);
+
+  /*!
+   *****************************************************************************
+   * \brief Return the required status of this Table.
+   *
+   * Return that this Function is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Function is required
+   *****************************************************************************
+   */
+  bool isRequired() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this function
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Table::verify().
+   *****************************************************************************
+  */
+  Function& registerVerifier(std::function<bool(const Function&)> lambda);
 
 private:
   // This function's sidre group
@@ -285,7 +362,67 @@ private:
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   bool m_docEnabled;
   std::function<bool(const Function&)> m_verifier;
-  InletFunctionWrapper m_functions;
+  InletFunctionWrapper m_func;
+};
+
+/*!
+   *****************************************************************************
+   * \brief A wrapper class that enables constraints on groups of Functions
+   *****************************************************************************
+  */
+class AggregateFunction : public Verifiable<Function>
+{
+public:
+  AggregateFunction(std::vector<std::reference_wrapper<Verifiable>>&& funcs)
+    : m_funcs(std::move(funcs))
+  { }
+
+  /*!
+   *****************************************************************************
+   * \brief This will be called by Inlet::verify to verify the contents of this
+   *  Function
+   *****************************************************************************
+   */
+  bool verify() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Function.
+   *
+   * Set whether this Function is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \param [in] isRequired Boolean value of whether Function is required
+   *
+   * \return Reference to this instance of Function
+   *****************************************************************************
+   */
+  AggregateFunction& required(bool isRequired = true);
+
+  /*!
+   *****************************************************************************
+   * \brief Return the required status of this Function.
+   *
+   * Return that this Function is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Function is required
+   *****************************************************************************
+   */
+  bool isRequired() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this function
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Table::verify().
+   *****************************************************************************
+  */
+  AggregateFunction& registerVerifier(std::function<bool(const Function&)> lambda);
+
+private:
+  std::vector<std::reference_wrapper<Verifiable>> m_funcs;
 };
 
 }  // end namespace inlet

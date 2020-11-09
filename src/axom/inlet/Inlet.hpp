@@ -446,6 +446,27 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Get a function from the input deck
+   *
+   * \param [in]  name Name of the function
+   * \param [in]  ret_type    The return type of the function
+   * \param [in]  arg_type    The argument type of the function (currently only
+   * single-argument functions are supported)
+   * \param [in] description Description of the Field
+   *
+   * \return Reference to the created Function
+   *****************************************************************************
+   */
+  Verifiable<Function>& addFunction(const std::string& name,
+                                    const InletFunctionType ret_type,
+                                    const InletFunctionType arg_type,
+                                    const std::string& description = "")
+  {
+    return m_globalTable.addFunction(name, ret_type, arg_type, description);
+  }
+
+  /*!
+   *****************************************************************************
    * \brief Get a boolean array represented as an unordered map from the input file
    *
    * \param [out] map Unordered map to be populated with array contents

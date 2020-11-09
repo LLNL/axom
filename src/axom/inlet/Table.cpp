@@ -207,6 +207,28 @@ Field& Table::addField(axom::sidre::Group* sidreGroup,
   return *(emplace_result.first->second);
 }
 
+Function& Table::addFunctionInternal(axom::sidre::Group* sidreGroup,
+                                     InletFunctionWrapper&& func,
+                                     const std::string& fullName,
+                                     const std::string& name)
+{
+  const size_t found = name.find_last_of("/");
+  auto currTable = this;
+  if(found != std::string::npos)
+  {
+    // This will add any intermediate Tables (if not present) before adding the field
+    currTable = &addTable(name.substr(0, found));
+  }
+  const auto& emplace_result = currTable->m_functionChildren.emplace(
+    fullName,
+    cpp11_compat::make_unique<Function>(sidreGroup,
+                                        m_sidreRootGroup,
+                                        std::move(func),
+                                        m_docEnabled));
+  // emplace_result is a pair whose first element is an iterator to the inserted element
+  return *(emplace_result.first->second);
+}
+
 template <typename T, typename SFINAE>
 VerifiableScalar& Table::addPrimitive(const std::string& name,
                                       const std::string& description,
@@ -461,16 +483,61 @@ void Table::addPrimitiveArrayHelper<std::string>(Table& table,
   }
 }
 
+Verifiable<Function>& Table::addFunction(const std::string& name,
+                                         const InletFunctionType ret_type,
+                                         const InletFunctionType arg_type,
+                                         const std::string& description,
+                                         const std::string& pathOverride)
+{
+  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+  {
+    // If it has indices, we're adding a primitive field to an array
+    // of structs, so we need to iterate over the subtables
+    // corresponding to elements of the array
+    std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
+    for(const auto& indexPath : arrayIndicesWithPaths(name))
+    {
+      // Add a primitive to an array element (which is a struct)
+      funcs.push_back(
+        getTable(indexPath.first)
+          .addFunction(name, ret_type, arg_type, description, indexPath.second));
+    }
+    // Create an aggregate field so requirements can be collectively imposed
+    // on all elements of the array
+    m_aggregate_funcs.emplace_back(std::move(funcs));
+
+    // Remove when C++17 is available
+    return m_aggregate_funcs.back();
+  }
+  else
+  {
+    // Otherwise actually add a Field
+    std::string fullName = appendPrefix(m_name, name);
+    axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
+    SLIC_ERROR_IF(
+      sidreGroup == nullptr,
+      fmt::format("Failed to create Sidre group with name {0}", fullName));
+    // If a pathOverride is specified, needed when Inlet-internal groups
+    // are part of fullName
+    std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    auto func = m_reader.getFunction(lookupPath, ret_type, arg_type);
+    return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
+  }
+}
+
 Proxy Table::operator[](const std::string& name) const
 {
   const bool has_table = hasTable(name);
   const bool has_field = hasField(name);
+  const bool has_func = hasFunction(name);
 
   // Ambiguous case - both a table and field exist with the same name
-  if(has_table && has_field)
+  if((has_table && has_field) || (has_field && has_func) ||
+     (has_table && has_func))
   {
     const std::string msg = fmt::format(
-      "[Inlet] Ambiguous lookup - both a table and field with name {0} exist",
+      "[Inlet] Ambiguous lookup - more than one of a table/field/function with "
+      "name {0} exist",
       name);
     SLIC_ERROR(msg);
     return Proxy();
@@ -486,12 +553,17 @@ Proxy Table::operator[](const std::string& name) const
     return Proxy(getField(name));
   }
 
+  else if(has_func)
+  {
+    return Proxy(getFunction(name));
+  }
+
   // Neither exists
   else
   {
-    std::string msg =
-      fmt::format("[Inlet] Neither a table nor a field with name {0} exist",
-                  name);
+    std::string msg = fmt::format(
+      "[Inlet] Neither a table nor a field nor a function with name {0} exist",
+      name);
     SLIC_ERROR(msg);
     return Proxy();
   }
@@ -621,6 +693,12 @@ bool Table::hasChildField(const std::string& fieldName) const
     m_fieldChildren.end();
 }
 
+bool Table::hasChildFunction(const std::string& funcName) const
+{
+  return m_functionChildren.find(appendPrefix(m_name, funcName)) !=
+    m_functionChildren.end();
+}
+
 bool Table::hasTable(const std::string& tableName) const
 {
   return static_cast<bool>(getTableInternal(tableName));
@@ -629,6 +707,11 @@ bool Table::hasTable(const std::string& tableName) const
 bool Table::hasField(const std::string& fieldName) const
 {
   return static_cast<bool>(getFieldInternal(fieldName));
+}
+
+bool Table::hasFunction(const std::string& fieldName) const
+{
+  return static_cast<bool>(getFunctionInternal(fieldName));
 }
 
 Table& Table::getTable(const std::string& tableName) const
@@ -649,6 +732,16 @@ Field& Table::getField(const std::string& fieldName) const
     SLIC_ERROR(fmt::format("[Inlet] Field not found: {0}", fieldName));
   }
   return *field;
+}
+
+Function& Table::getFunction(const std::string& funcName) const
+{
+  auto func = getFunctionInternal(funcName);
+  if(!func)
+  {
+    SLIC_ERROR(fmt::format("[Inlet] Function not found: {0}", funcName));
+  }
+  return *func;
 }
 
 Table* Table::getTableInternal(const std::string& tableName) const
@@ -698,6 +791,28 @@ Field* Table::getFieldInternal(const std::string& fieldName) const
     if(table && table->hasChildField(name))
     {
       return table->m_fieldChildren.at(appendPrefix(table->m_name, name)).get();
+    }
+  }
+  return nullptr;
+}
+
+Function* Table::getFunctionInternal(const std::string& funcName) const
+{
+  const size_t found = funcName.find_last_of("/");
+  if(found == std::string::npos)
+  {
+    if(hasChildFunction(funcName))
+    {
+      return m_functionChildren.at(appendPrefix(m_name, funcName)).get();
+    }
+  }
+  else
+  {
+    const std::string& name = funcName.substr(found + 1);
+    auto table = getTableInternal(funcName.substr(0, found));
+    if(table && table->hasChildFunction(name))
+    {
+      return table->m_functionChildren.at(appendPrefix(table->m_name, name)).get();
     }
   }
   return nullptr;
