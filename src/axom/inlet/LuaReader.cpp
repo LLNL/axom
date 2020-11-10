@@ -268,68 +268,66 @@ buildStdFunction(sol::protected_function&& func)
 
 /*!
  *****************************************************************************
- * \brief Interface to templated retrieval functions for binding the type 
- * of a single argument
+ * \brief The maximum number of user-specified arguments in a lua function 
+ * prior to vector expansion (Vec3D to x,y,z, for example)
+ *
+ * \note Be very cautious when increasing this, as it will result in exponential
+ * function generation - specifically, O(m^n) where n is this MAX_NUM_ARGS
+ * and m is the number of elements in the FunctionType enumeration
+ *****************************************************************************
+ */
+static constexpr std::size_t MAX_NUM_ARGS = 2u;
+
+/*!
+ *****************************************************************************
+ * \brief Adds argument types to a parameter pack based on the contents
+ * of a std::vector of type tags
  *
  * \param [in] func The sol object containing the lua function of unknown signature
- * \param [in] arg_type The type of the argument to use when creating a std::function
+ * \param [in] arg_types The vector of argument types
+ * 
+ * \tparam I The number of arguments processed, or "stack size", used to mitigate
+ * infinite compile-time recursion
+ * \tparam Ret The function's return type
+ * \tparam Args... The function's current arguments (already processed), remaining
+ * arguments are in the arg_types vector
  *
  * \return A callable wrapper
  *****************************************************************************
  */
-template <typename Ret>
-InletFunctionWrapper bindArgType(sol::protected_function&& func,
-                                 const InletFunctionType arg_type)
+template <std::size_t I, typename Ret, typename... Args>
+typename std::enable_if<(I > MAX_NUM_ARGS), FunctionVariant>::type bindArgType(
+  sol::protected_function&&,
+  const std::vector<FunctionType>&)
 {
-  switch(arg_type)
-  {
-  case InletFunctionType::Vec2D:
-    return buildStdFunction<Ret, primal::Vector2D>(std::move(func));
-  case InletFunctionType::Vec3D:
-    return buildStdFunction<Ret, primal::Vector3D>(std::move(func));
-  case InletFunctionType::Double:
-    return buildStdFunction<Ret, double>(std::move(func));
-  default:
-    SLIC_ERROR("[Inlet] Unexpected function argument type");
-  }
-  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
+  SLIC_ERROR("[Inlet] Maximum number of function arguments exceeded: " << I);
+  return {};
 }
 
-template <typename Ret, typename FirstArg>
-InletFunctionWrapper bindSecondArgType(sol::protected_function&& func,
-                                       const InletFunctionType arg_type)
+template <std::size_t I, typename Ret, typename... Args>
+typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
+  sol::protected_function&& func,
+  const std::vector<FunctionType>& arg_types)
 {
-  switch(arg_type)
+  if(arg_types.size() == I)
   {
-  case InletFunctionType::Vec2D:
-    return buildStdFunction<Ret, FirstArg, primal::Vector2D>(std::move(func));
-  case InletFunctionType::Vec3D:
-    return buildStdFunction<Ret, FirstArg, primal::Vector3D>(std::move(func));
-  case InletFunctionType::Double:
-    return buildStdFunction<Ret, FirstArg, double>(std::move(func));
-  default:
-    SLIC_ERROR("[Inlet] Unexpected function argument type");
+    return buildStdFunction<Ret, Args...>(std::move(func));
   }
-  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
-}
-
-template <typename Ret>
-InletFunctionWrapper bindFirstArgType(sol::protected_function&& func,
-                                      const InletFunctionType first_arg_type,
-                                      const InletFunctionType second_arg_type)
-{
-  switch(first_arg_type)
+  else
   {
-  case InletFunctionType::Vec2D:
-    return bindSecondArgType<Ret, primal::Vector2D>(std::move(func),
-                                                    second_arg_type);
-  case InletFunctionType::Vec3D:
-    return bindSecondArgType<Ret, primal::Vector3D>(std::move(func),
-                                                    second_arg_type);
-  case InletFunctionType::Double:
-    return bindSecondArgType<Ret, double>(std::move(func), second_arg_type);
-  default:
-    SLIC_ERROR("[Inlet] Unexpected function argument type");
+    switch(arg_types[I])
+    {
+    case FunctionType::Vec2D:
+      return bindArgType<I + 1, Ret, Args..., primal::Vector2D>(std::move(func),
+                                                                arg_types);
+    case FunctionType::Vec3D:
+      return bindArgType<I + 1, Ret, Args..., primal::Vector3D>(std::move(func),
+                                                                arg_types);
+    case FunctionType::Double:
+      return bindArgType<I + 1, Ret, Args..., double>(std::move(func), arg_types);
+    default:
+      SLIC_ERROR("[Inlet] Unexpected function argument type");
+    }
   }
   return {};  // Never reached but needed as errors do not imply control flow as with exceptions
 }
@@ -358,52 +356,25 @@ bool checkedGet(const Proxy& proxy, Value& val)
 
 }  // end namespace detail
 
-InletFunctionWrapper LuaReader::getFunction(
-  const std::string& id,
-  const InletFunctionType ret_type,
-  const std::vector<InletFunctionType>& arg_types)
+FunctionVariant LuaReader::getFunction(const std::string& id,
+                                       const FunctionType ret_type,
+                                       const std::vector<FunctionType>& arg_types)
 {
   auto lua_func = getFunctionInternal(id);
   if(lua_func)
   {
-    if(arg_types.size() == 1)
+    switch(ret_type)
     {
-      const auto arg_type = arg_types[0];
-      switch(ret_type)
-      {
-      case InletFunctionType::Vec2D:
-        return detail::bindArgType<primal::Vector2D>(std::move(lua_func),
-                                                     arg_type);
-      case InletFunctionType::Vec3D:
-        return detail::bindArgType<primal::Vector3D>(std::move(lua_func),
-                                                     arg_type);
-      case InletFunctionType::Double:
-        return detail::bindArgType<double>(std::move(lua_func), arg_type);
-      default:
-        SLIC_ERROR("[Inlet] Unexpected function return type");
-      }
-    }
-    else if(arg_types.size() == 2)
-    {
-      const auto first_arg_type = arg_types[0];
-      const auto second_arg_type = arg_types[1];
-      switch(ret_type)
-      {
-      case InletFunctionType::Vec2D:
-        return detail::bindFirstArgType<primal::Vector2D>(std::move(lua_func),
-                                                          first_arg_type,
-                                                          second_arg_type);
-      case InletFunctionType::Vec3D:
-        return detail::bindFirstArgType<primal::Vector3D>(std::move(lua_func),
-                                                          first_arg_type,
-                                                          second_arg_type);
-      case InletFunctionType::Double:
-        return detail::bindFirstArgType<double>(std::move(lua_func),
-                                                first_arg_type,
-                                                second_arg_type);
-      default:
-        SLIC_ERROR("[Inlet] Unexpected function return type");
-      }
+    case FunctionType::Vec2D:
+      return detail::bindArgType<0u, primal::Vector2D>(std::move(lua_func),
+                                                       arg_types);
+    case FunctionType::Vec3D:
+      return detail::bindArgType<0u, primal::Vector3D>(std::move(lua_func),
+                                                       arg_types);
+    case FunctionType::Double:
+      return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
+    default:
+      SLIC_ERROR("[Inlet] Unexpected function return type");
     }
   }
   return {};  // Return an empty function to indicate that the function was not found

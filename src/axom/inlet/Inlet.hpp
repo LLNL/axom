@@ -458,8 +458,8 @@ public:
    *****************************************************************************
    */
   Verifiable<Function>& addFunction(const std::string& name,
-                                    const InletFunctionType ret_type,
-                                    const std::vector<InletFunctionType>& arg_types,
+                                    const FunctionType ret_type,
+                                    const std::vector<FunctionType>& arg_types,
                                     const std::string& description = "")
   {
     return m_globalTable.addFunction(name, ret_type, arg_types, description);

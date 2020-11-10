@@ -113,13 +113,13 @@ struct BoundaryCondition
     // Inlet does not support sum types, so both options are added to the schema
     // Supported function parameter/return types are Double, Vec2D, and Vec3D
     schema.addFunction("vec_coef",
-                       inlet::InletFunctionType::Vec3D,    // Return type
-                       {inlet::InletFunctionType::Vec3D},  // Argument types
+                       inlet::FunctionType::Vec3D,    // Return type
+                       {inlet::FunctionType::Vec3D},  // Argument types
                        "The function representing the BC coefficient");
 
     schema.addFunction("coef",
-                       inlet::InletFunctionType::Double,   // Return type
-                       {inlet::InletFunctionType::Vec3D},  // Argument types
+                       inlet::FunctionType::Double,   // Return type
+                       {inlet::FunctionType::Vec3D},  // Argument types
                        "The function representing the BC coefficient");
   }
 };

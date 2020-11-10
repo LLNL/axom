@@ -218,9 +218,9 @@ public:
    * \return The function, compares false if not found
    *****************************************************************************
    */
-  InletFunctionWrapper getFunction(const std::string& id,
-                                   const InletFunctionType ret_type,
-                                   const std::vector<InletFunctionType>& arg_types);
+  FunctionVariant getFunction(const std::string& id,
+                              const FunctionType ret_type,
+                              const std::vector<FunctionType>& arg_types);
 
   /*!
    *****************************************************************************

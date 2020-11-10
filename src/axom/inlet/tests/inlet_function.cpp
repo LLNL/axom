@@ -17,8 +17,8 @@
 #include "axom/inlet/LuaReader.hpp"
 #include "axom/inlet/Inlet.hpp"
 
+using axom::inlet::FunctionType;
 using axom::inlet::Inlet;
-using axom::inlet::InletFunctionType;
 using axom::inlet::InletType;
 using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
@@ -39,9 +39,8 @@ TEST(inlet_function, simple_vec3_to_double_raw)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto func = inlet.reader().getFunction("foo",
-                                         InletFunctionType::Double,
-                                         {InletFunctionType::Vec3D});
+  auto func =
+    inlet.reader().getFunction("foo", FunctionType::Double, {FunctionType::Vec3D});
 
   EXPECT_TRUE(func);
   auto result = func.call<double>(axom::primal::Vector3D {1, 2, 3});
@@ -54,9 +53,8 @@ TEST(inlet_function, simple_vec3_to_vec3_raw)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto func = inlet.reader().getFunction("foo",
-                                         InletFunctionType::Vec3D,
-                                         {InletFunctionType::Vec3D});
+  auto func =
+    inlet.reader().getFunction("foo", FunctionType::Vec3D, {FunctionType::Vec3D});
 
   EXPECT_TRUE(func);
   auto result =
@@ -73,8 +71,8 @@ TEST(inlet_function, simple_vec3_to_double_through_table)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    InletFunctionType::Double,
-                    {InletFunctionType::Vec3D},
+                    FunctionType::Double,
+                    {FunctionType::Vec3D},
                     "foo's description");
 
   auto callable =
@@ -90,8 +88,8 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    InletFunctionType::Vec3D,
-                    {InletFunctionType::Vec3D},
+                    FunctionType::Vec3D,
+                    {FunctionType::Vec3D},
                     "foo's description");
 
   auto callable =
@@ -110,8 +108,8 @@ TEST(inlet_function, simple_vec3_to_double_through_table_call)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    InletFunctionType::Double,
-                    {InletFunctionType::Vec3D},
+                    FunctionType::Double,
+                    {FunctionType::Vec3D},
                     "foo's description");
 
   auto result = inlet["foo"].call<double>(axom::primal::Vector3D {1, 2, 3});
@@ -125,8 +123,8 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table_call)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    InletFunctionType::Vec3D,
-                    {InletFunctionType::Vec3D},
+                    FunctionType::Vec3D,
+                    {FunctionType::Vec3D},
                     "foo's description");
 
   auto result =
@@ -144,8 +142,8 @@ TEST(inlet_function, simple_vec3_double_to_double_through_table_call)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    InletFunctionType::Double,
-                    {InletFunctionType::Vec3D, InletFunctionType::Double},
+                    FunctionType::Double,
+                    {FunctionType::Vec3D, FunctionType::Double},
                     "foo's description");
 
   auto result = inlet["foo"].call<double>(axom::primal::Vector3D {1, 2, 3}, 2.0);
@@ -159,8 +157,8 @@ TEST(inlet_function, simple_vec3_double_to_vec3_through_table_call)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    InletFunctionType::Vec3D,
-                    {InletFunctionType::Vec3D, InletFunctionType::Double},
+                    FunctionType::Vec3D,
+                    {FunctionType::Vec3D, FunctionType::Double},
                     "foo's description");
 
   auto result =
@@ -179,8 +177,8 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_pass)
 
   auto& func = inlet
                  .addFunction("foo",
-                              InletFunctionType::Vec3D,
-                              {InletFunctionType::Vec3D},
+                              FunctionType::Vec3D,
+                              {FunctionType::Vec3D},
                               "foo's description")
                  .required();
   func.registerVerifier([](const axom::inlet::Function& func) {
@@ -200,8 +198,8 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_fail)
 
   auto& func = inlet
                  .addFunction("foo",
-                              InletFunctionType::Vec3D,
-                              {InletFunctionType::Vec3D},
+                              FunctionType::Vec3D,
+                              {FunctionType::Vec3D},
                               "foo's description")
                  .required();
   func.registerVerifier([](const axom::inlet::Function& func) {
@@ -240,8 +238,8 @@ TEST(inlet_function, simple_vec3_to_vec3_struct)
   inlet.addBool("foo/bar", "bar's description");
   inlet
     .addFunction("foo/baz",
-                 InletFunctionType::Vec3D,
-                 {InletFunctionType::Vec3D},
+                 FunctionType::Vec3D,
+                 {FunctionType::Vec3D},
                  "baz's description")
     .required();
   Foo foo = inlet["foo"].get<Foo>();
@@ -267,8 +265,8 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
   arr_table.addBool("bar", "bar's description");
   arr_table
     .addFunction("baz",
-                 InletFunctionType::Vec3D,
-                 {InletFunctionType::Vec3D},
+                 FunctionType::Vec3D,
+                 {FunctionType::Vec3D},
                  "baz's description")
     .required();
 

@@ -598,8 +598,8 @@ public:
    *****************************************************************************
    */
   Verifiable<Function>& addFunction(const std::string& name,
-                                    const InletFunctionType ret_type,
-                                    const std::vector<InletFunctionType>& arg_types,
+                                    const FunctionType ret_type,
+                                    const std::vector<FunctionType>& arg_types,
                                     const std::string& description = "",
                                     const std::string& pathOverride = "");
 
@@ -935,7 +935,7 @@ private:
    *****************************************************************************
    */
   Function& addFunctionInternal(axom::sidre::Group* sidreGroup,
-                                InletFunctionWrapper&& func,
+                                FunctionVariant&& func,
                                 const std::string& fullName,
                                 const std::string& name);
 

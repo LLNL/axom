@@ -208,7 +208,7 @@ Field& Table::addField(axom::sidre::Group* sidreGroup,
 }
 
 Function& Table::addFunctionInternal(axom::sidre::Group* sidreGroup,
-                                     InletFunctionWrapper&& func,
+                                     FunctionVariant&& func,
                                      const std::string& fullName,
                                      const std::string& name)
 {
@@ -483,12 +483,11 @@ void Table::addPrimitiveArrayHelper<std::string>(Table& table,
   }
 }
 
-Verifiable<Function>& Table::addFunction(
-  const std::string& name,
-  const InletFunctionType ret_type,
-  const std::vector<InletFunctionType>& arg_types,
-  const std::string& description,
-  const std::string& pathOverride)
+Verifiable<Function>& Table::addFunction(const std::string& name,
+                                         const FunctionType ret_type,
+                                         const std::vector<FunctionType>& arg_types,
+                                         const std::string& description,
+                                         const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {

@@ -38,25 +38,25 @@ struct BoundaryCondition
     // for vector/scalar coefficients and for time-dependent versions of each
     // Supported function parameter/return types are Double, Vec2D, and Vec3D
     schema.addFunction("vec_coef",
-                       inlet::InletFunctionType::Vec3D,    // Return type
-                       {inlet::InletFunctionType::Vec3D},  // Argument type
+                       inlet::FunctionType::Vec3D,    // Return type
+                       {inlet::FunctionType::Vec3D},  // Argument type
                        "The function representing the BC coefficient");
 
     schema.addFunction("coef",
-                       inlet::InletFunctionType::Double,   // Return type
-                       {inlet::InletFunctionType::Vec3D},  // Argument type
+                       inlet::FunctionType::Double,   // Return type
+                       {inlet::FunctionType::Vec3D},  // Argument type
                        "The function representing the BC coefficient");
 
     schema.addFunction("vec_coef_t",
-                       inlet::InletFunctionType::Vec3D,
-                       {inlet::InletFunctionType::Vec3D,
-                        inlet::InletFunctionType::Double},  // Argument types
+                       inlet::FunctionType::Vec3D,
+                       {inlet::FunctionType::Vec3D,
+                        inlet::FunctionType::Double},  // Argument types
                        "The function representing the BC coefficient");
 
     schema.addFunction("coef_t",
-                       inlet::InletFunctionType::Double,
-                       {inlet::InletFunctionType::Vec3D,
-                        inlet::InletFunctionType::Double},  // Argument types
+                       inlet::FunctionType::Double,
+                       {inlet::FunctionType::Vec3D,
+                        inlet::FunctionType::Double},  // Argument types
                        "The function representing the BC coefficient");
   }
 };

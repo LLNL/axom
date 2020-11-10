@@ -227,10 +227,9 @@ public:
    * \return The function, compares false if not found
    *****************************************************************************
    */
-  virtual InletFunctionWrapper getFunction(
-    const std::string& id,
-    const InletFunctionType ret_type,
-    const std::vector<InletFunctionType>& arg_types) = 0;
+  virtual FunctionVariant getFunction(const std::string& id,
+                                      const FunctionType ret_type,
+                                      const std::vector<FunctionType>& arg_types) = 0;
 };
 
 }  // end namespace inlet

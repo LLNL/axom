@@ -34,7 +34,15 @@ namespace axom
 {
 namespace inlet
 {
-enum class InletFunctionType
+/*!
+ *******************************************************************************
+ * \brief The tags used to describe function signatures in the input file
+ * 
+ * \note Additions to this enumeration should be propagated to LuaReader
+ * and inlet_function_arg_type, if necessary
+ *******************************************************************************
+ */
+enum class FunctionType
 {
   Vec2D,
   Vec3D,
@@ -210,15 +218,6 @@ struct tuple_to_inlet_signature<std::tuple<Ret, Args...>>
   using type = Ret(typename inlet_function_arg_type<Args>::type...);
 };
 
-// Get the permutations for one- and two-argument functions
-using one_arg_tuples =
-  type_permutations<2u, primal::Vector2D, primal::Vector3D, double>;
-using two_arg_tuples =
-  type_permutations<3u, primal::Vector2D, primal::Vector3D, double>;
-// Then add them together so one- and two-argument functions can be supported
-using one_or_two_arg_tuples = decltype(
-  std::tuple_cat(std::declval<one_arg_tuples>(), std::declval<two_arg_tuples>()));
-
 }  // end namespace detail
 
 /*!
@@ -329,18 +328,31 @@ struct tuples_to_wrapper<std::tuple<Tuples...>>
     FunctionWrapper<typename tuple_to_inlet_signature<Tuples>::type...>;
 };
 
-using BasicFunctionWrapper = tuples_to_wrapper<one_or_two_arg_tuples>::type;
+// Get the permutations for zero-, one-, and two-argument functions
+using zero_arg_tuples =
+  type_permutations<1u, primal::Vector2D, primal::Vector3D, double>;
+using one_arg_tuples =
+  type_permutations<2u, primal::Vector2D, primal::Vector3D, double>;
+using two_arg_tuples =
+  type_permutations<3u, primal::Vector2D, primal::Vector3D, double>;
+// Then add them together so zero-, one-, and two-argument can be supported
+using up_to_two_arg_tuples =
+  decltype(std::tuple_cat(std::declval<zero_arg_tuples>(),
+                          std::declval<one_arg_tuples>(),
+                          std::declval<two_arg_tuples>()));
+
+using BasicFunctionWrapper = tuples_to_wrapper<up_to_two_arg_tuples>::type;
 
 }  // end namespace detail
 
-using InletFunctionWrapper = detail::BasicFunctionWrapper;
+using FunctionVariant = detail::BasicFunctionWrapper;
 
 class Function : public Verifiable<Function>
 {
 public:
   Function(axom::sidre::Group* sidreGroup,
            axom::sidre::Group* root,
-           InletFunctionWrapper&& func,
+           FunctionVariant&& func,
            bool docEnabled = true)
     : m_sidreGroup(sidreGroup)
     , m_sidreRootGroup(root)
@@ -432,7 +444,7 @@ private:
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   bool m_docEnabled;
   std::function<bool(const Function&)> m_verifier;
-  InletFunctionWrapper m_func;
+  FunctionVariant m_func;
 };
 
 /*!
