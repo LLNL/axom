@@ -34,17 +34,29 @@ struct BoundaryCondition
   static void defineSchema(inlet::Table& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
-    // Inlet does not support sum types, so both options are added to the schema
+    // Inlet does not support sum types, so options are added to the schema
+    // for vector/scalar coefficients and for time-dependent versions of each
     // Supported function parameter/return types are Double, Vec2D, and Vec3D
-    // Only single-argument functions are currently supported
     schema.addFunction("vec_coef",
-                       inlet::InletFunctionType::Vec3D,  // Return type
-                       inlet::InletFunctionType::Vec3D,  // Argument type
+                       inlet::InletFunctionType::Vec3D,    // Return type
+                       {inlet::InletFunctionType::Vec3D},  // Argument type
                        "The function representing the BC coefficient");
 
     schema.addFunction("coef",
-                       inlet::InletFunctionType::Double,  // Return type
-                       inlet::InletFunctionType::Vec3D,   // Argument type
+                       inlet::InletFunctionType::Double,   // Return type
+                       {inlet::InletFunctionType::Vec3D},  // Argument type
+                       "The function representing the BC coefficient");
+
+    schema.addFunction("vec_coef_t",
+                       inlet::InletFunctionType::Vec3D,
+                       {inlet::InletFunctionType::Vec3D,
+                        inlet::InletFunctionType::Double},  // Argument types
+                       "The function representing the BC coefficient");
+
+    schema.addFunction("coef_t",
+                       inlet::InletFunctionType::Double,
+                       {inlet::InletFunctionType::Vec3D,
+                        inlet::InletFunctionType::Double},  // Argument types
                        "The function representing the BC coefficient");
   }
 };
@@ -93,7 +105,7 @@ struct FromInlet<BoundaryCondition>
       SLIC_INFO("Created an mfem::VectorCoefficient with dimension "
                 << bc.vec_coef->GetVDim());
     }
-    else
+    else if(base.contains("coef"))
     {
       // Another way of accessing the function is by extracting the std::function
       auto func =
@@ -104,6 +116,38 @@ struct FromInlet<BoundaryCondition>
           return func(vec.GetData());
         });
       SLIC_INFO("Created an mfem::Coefficient");
+    }
+    else if(base.contains("coef_t"))
+    {
+      auto func =
+        base["coef_t"].get<std::function<double(axom::primal::Vector3D, double)>>();
+      bc.coef = std::make_unique<mfem::FunctionCoefficient>(
+        [func(std::move(func))](const mfem::Vector& vec, double t) {
+          return func(vec.GetData(), t);
+        });
+      SLIC_INFO("Created a time-dependent mfem::Coefficient");
+    }
+    else if(base.contains("vec_coef_t"))
+    {
+      auto func =
+        base["vec_coef_t"]
+          .get<std::function<axom::primal::Vector3D(axom::primal::Vector3D, double)>>();
+      // We assume the dimension is 3
+      bc.vec_coef = std::make_unique<mfem::VectorFunctionCoefficient>(
+        3,
+        [func(std::move(
+          func))](const mfem::Vector& input, double t, mfem::Vector& output) {
+          auto ret = func(input.GetData(), t);
+          // Copy from the primal vector into the MFEM vector
+          std::copy(ret.data(), ret.data() + ret.dimension(), output.GetData());
+        });
+      SLIC_INFO(
+        "Created a time-dependent mfem::VectorCoefficient with dimension "
+        << bc.vec_coef->GetVDim());
+    }
+    else
+    {
+      SLIC_ERROR("Table did not contain a coefficient function: " << base.name());
     }
     return bc;
   }
@@ -118,6 +162,7 @@ int main(int argc, char** argv)
   axom::slic::UnitTestLogger logger;
 
   CLI::App app {"Example of Axom's Inlet component with user-defined types"};
+  // Intended to be used with mfem_coef.lua
   std::string inputFileName;
   auto opt = app.add_option("--file", inputFileName, "Path to input file");
   opt->check(CLI::ExistingFile);
@@ -130,8 +175,7 @@ int main(int argc, char** argv)
   Inlet inlet(std::move(lr), ds.getRoot());
 
   // We only need the boundary condition sub-table
-  auto& bc_table =
-    inlet.addGenericArray("thermal_solver/bcs", "List of boundary conditions");
+  auto& bc_table = inlet.addGenericArray("bcs", "List of boundary conditions");
   BoundaryCondition::defineSchema(bc_table);
 
   if(!inlet.verify())
@@ -140,8 +184,7 @@ int main(int argc, char** argv)
   }
 
   // Read all the data into a thermal solver object
-  auto bcs =
-    inlet["thermal_solver/bcs"].get<std::unordered_map<int, BoundaryCondition>>();
+  auto bcs = inlet["bcs"].get<std::unordered_map<int, BoundaryCondition>>();
 
 #endif  // MFEM_STDFUNCTION_COEF
 }

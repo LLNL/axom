@@ -75,6 +75,9 @@ struct inlet_function_arg_type
  * \brief Takes a Ret(Args...) signature and applies cvref qualifiers to applicable
  * arguments
  * 
+ * \tparam Ret The function's return type
+ * \tparam Args... The function's arguments
+ * 
  * Designed to be used with user-facing retrieval functions so the user is not 
  * required to specify the qualifiers in something like a get<std::function<Ret(Args...)>
  *******************************************************************************
