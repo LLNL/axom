@@ -212,8 +212,7 @@ public:
    *
    * \param [in]  id    The identifier to the function that will be retrieved
    * \param [in]  ret_type    The return type of the function
-   * \param [in]  arg_types    The argument type of the function (currently only
-   * single-argument functions are supported)
+   * \param [in]  arg_types    The argument types of the function
    *
    * \return The function, compares false if not found
    *****************************************************************************

@@ -562,7 +562,7 @@ Proxy Table::operator[](const std::string& name) const
   else
   {
     std::string msg = fmt::format(
-      "[Inlet] Neither a table nor a field nor a function with name {0} exist",
+      "[Inlet] No table, field, or function with name {0} exists",
       name);
     SLIC_ERROR(msg);
     return Proxy();

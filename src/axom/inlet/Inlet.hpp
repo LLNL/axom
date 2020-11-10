@@ -450,8 +450,7 @@ public:
    *
    * \param [in]  name Name of the function
    * \param [in]  ret_type    The return type of the function
-   * \param [in]  arg_types    The argument type of the function (currently only
-   * single-argument functions are supported)
+   * \param [in]  arg_types    The argument types of the function
    * \param [in] description Description of the Field
    *
    * \return Reference to the created Function

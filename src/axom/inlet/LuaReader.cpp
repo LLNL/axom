@@ -249,10 +249,12 @@ primal::Vector3D extractResult<primal::Vector3D>(sol::protected_function_result&
  *
  * \param [in] func The sol object containing the lua function of unknown signature
  * \tparam Ret The return type of the function
- * \tparam Arg The argument type of the function (currently only single-argument
- * functions are supported)
+ * \tparam Args... The argument types of the function
  *
  * \return A std::function that wraps the lua function
+ * 
+ * \note This is needed as a layer of indirection for bindArgType so it can
+ * properly deduce the constructor call
  *****************************************************************************
  */
 template <typename Ret, typename... Args>
