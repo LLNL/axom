@@ -47,37 +47,6 @@ namespace detail
 {
 /*!
  *******************************************************************************
- * \class inlet_function_type
- *
- * \brief A type trait for mapping values of the InletFunctionType enum to types
- * \tparam InletFunctionType The value of the enum, a non-type template parameter
- * 
- * Specializations must be defined for each member of InletFunctionType
- *******************************************************************************
- */
-template <InletFunctionType>
-struct inlet_function_type;
-
-template <>
-struct inlet_function_type<InletFunctionType::Vec2D>
-{
-  using type = primal::Vector2D;
-};
-
-template <>
-struct inlet_function_type<InletFunctionType::Vec3D>
-{
-  using type = primal::Vector3D;
-};
-
-template <>
-struct inlet_function_type<InletFunctionType::Double>
-{
-  using type = double;
-};
-
-/*!
- *******************************************************************************
  * \class inlet_function_arg_type
  *
  * \brief A type trait for modifying function argument types to enforce const
@@ -101,24 +70,15 @@ struct inlet_function_arg_type
 
 /*!
  *******************************************************************************
- * \class inlet_function_signature
+ * \class cleanup_function_signature
  *
- * \brief A type trait for building a function signature type
- * \tparam Result The function's return type
- * \tparam Args The parameter pack for the function's arguments - currently only
- * single-argument functions are supported
+ * \brief Takes a Ret(Args...) signature and applies cvref qualifiers to applicable
+ * arguments
  * 
- * Creates a function signature usable as the template parameter to std::function
- * given a set of InletFunctionTypes
+ * Designed to be used with user-facing retrieval functions so the user is not 
+ * required to specify the qualifiers in something like a get<std::function<Ret(Args...)>
  *******************************************************************************
  */
-template <InletFunctionType Result, InletFunctionType... Args>
-struct inlet_function_signature
-{
-  using type = typename inlet_function_type<Result>::type(
-    typename inlet_function_arg_type<typename inlet_function_type<Args>::type...>::type);
-};
-
 template <typename>
 struct cleanup_function_signature;
 
@@ -128,7 +88,7 @@ struct cleanup_function_signature<Ret(Args...)>
   using type = Ret(typename inlet_function_arg_type<Args>::type...);
 };
 
-// The following metaprogramming was assisted by the following:
+// The permutation metaprogramming was assisted by the following:
 // https://nolte.dev/jekyll/update/2019/06/06/fun-with-tuples.html
 // https://stackoverflow.com/questions/55005063/create-a-type-list-combination-of-types-in-c
 
@@ -263,8 +223,7 @@ using one_or_two_arg_tuples = decltype(
  * \class FunctionWrapper
  *
  * \brief A sum type for callables with arbitrary signature
- * \tparam FunctionTypes The types of supported functions - can be generated
- * with detail::inlet_function_signature
+ * \tparam FunctionTypes The types of supported functions
  * 
  * This provides an interface not templated on a specific function signature
  * for uniform retrieval through the Reader interface
@@ -311,13 +270,13 @@ public:
   template <typename Ret, typename... Args>
   Ret call(Args&&... args) const
   {
-    // FIXME: This is probably wrong, we can't store a pack like this directly
-    using ArgTypes = typename detail::inlet_function_arg_type<Args...>::type;
-    const auto& func =
-      *std::get<std::unique_ptr<std::function<Ret(ArgTypes)>>>(m_funcs);
+    const auto& func = *std::get<std::unique_ptr<
+      std::function<Ret(typename detail::inlet_function_arg_type<Args>::type...)>>>(
+      m_funcs);
     SLIC_ERROR_IF(!func || !m_function_valid,
                   "[Inlet] Function with requested type does not exist");
-    return func(std::forward<ArgTypes>(args)...);
+    return func(
+      std::forward<typename detail::inlet_function_arg_type<Args>::type>(args)...);
   }
 
   template <typename FuncType>

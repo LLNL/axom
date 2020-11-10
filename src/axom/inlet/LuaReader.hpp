@@ -212,7 +212,7 @@ public:
    *
    * \param [in]  id    The identifier to the function that will be retrieved
    * \param [in]  ret_type    The return type of the function
-   * \param [in]  arg_type    The argument type of the function (currently only
+   * \param [in]  arg_types    The argument type of the function (currently only
    * single-argument functions are supported)
    *
    * \return The function, compares false if not found
@@ -220,12 +220,7 @@ public:
    */
   InletFunctionWrapper getFunction(const std::string& id,
                                    const InletFunctionType ret_type,
-                                   const InletFunctionType arg_type);
-
-  InletFunctionWrapper getFunction(const std::string& id,
-                                   const InletFunctionType ret_type,
-                                   const InletFunctionType first_arg_type,
-                                   const InletFunctionType second_arg_type);
+                                   const std::vector<InletFunctionType>& arg_types);
 
   /*!
    *****************************************************************************

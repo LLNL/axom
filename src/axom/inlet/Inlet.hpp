@@ -450,7 +450,7 @@ public:
    *
    * \param [in]  name Name of the function
    * \param [in]  ret_type    The return type of the function
-   * \param [in]  arg_type    The argument type of the function (currently only
+   * \param [in]  arg_types    The argument type of the function (currently only
    * single-argument functions are supported)
    * \param [in] description Description of the Field
    *
@@ -459,10 +459,10 @@ public:
    */
   Verifiable<Function>& addFunction(const std::string& name,
                                     const InletFunctionType ret_type,
-                                    const InletFunctionType arg_type,
+                                    const std::vector<InletFunctionType>& arg_types,
                                     const std::string& description = "")
   {
-    return m_globalTable.addFunction(name, ret_type, arg_type, description);
+    return m_globalTable.addFunction(name, ret_type, arg_types, description);
   }
 
   /*!

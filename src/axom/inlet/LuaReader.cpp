@@ -358,52 +358,52 @@ bool checkedGet(const Proxy& proxy, Value& val)
 
 }  // end namespace detail
 
-InletFunctionWrapper LuaReader::getFunction(const std::string& id,
-                                            const InletFunctionType ret_type,
-                                            const InletFunctionType arg_type)
+InletFunctionWrapper LuaReader::getFunction(
+  const std::string& id,
+  const InletFunctionType ret_type,
+  const std::vector<InletFunctionType>& arg_types)
 {
   auto lua_func = getFunctionInternal(id);
   if(lua_func)
   {
-    switch(ret_type)
+    if(arg_types.size() == 1)
     {
-    case InletFunctionType::Vec2D:
-      return detail::bindArgType<primal::Vector2D>(std::move(lua_func), arg_type);
-    case InletFunctionType::Vec3D:
-      return detail::bindArgType<primal::Vector3D>(std::move(lua_func), arg_type);
-    case InletFunctionType::Double:
-      return detail::bindArgType<double>(std::move(lua_func), arg_type);
-    default:
-      SLIC_ERROR("[Inlet] Unexpected function return type");
+      const auto arg_type = arg_types[0];
+      switch(ret_type)
+      {
+      case InletFunctionType::Vec2D:
+        return detail::bindArgType<primal::Vector2D>(std::move(lua_func),
+                                                     arg_type);
+      case InletFunctionType::Vec3D:
+        return detail::bindArgType<primal::Vector3D>(std::move(lua_func),
+                                                     arg_type);
+      case InletFunctionType::Double:
+        return detail::bindArgType<double>(std::move(lua_func), arg_type);
+      default:
+        SLIC_ERROR("[Inlet] Unexpected function return type");
+      }
     }
-  }
-  return {};  // Return an empty function to indicate that the function was not found
-}
-
-InletFunctionWrapper LuaReader::getFunction(const std::string& id,
-                                            const InletFunctionType ret_type,
-                                            const InletFunctionType first_arg_type,
-                                            const InletFunctionType second_arg_type)
-{
-  auto lua_func = getFunctionInternal(id);
-  if(lua_func)
-  {
-    switch(ret_type)
+    else if(arg_types.size() == 2)
     {
-    case InletFunctionType::Vec2D:
-      return detail::bindFirstArgType<primal::Vector2D>(std::move(lua_func),
-                                                        first_arg_type,
-                                                        second_arg_type);
-    case InletFunctionType::Vec3D:
-      return detail::bindFirstArgType<primal::Vector3D>(std::move(lua_func),
-                                                        first_arg_type,
-                                                        second_arg_type);
-    case InletFunctionType::Double:
-      return detail::bindFirstArgType<double>(std::move(lua_func),
-                                              first_arg_type,
-                                              second_arg_type);
-    default:
-      SLIC_ERROR("[Inlet] Unexpected function return type");
+      const auto first_arg_type = arg_types[0];
+      const auto second_arg_type = arg_types[1];
+      switch(ret_type)
+      {
+      case InletFunctionType::Vec2D:
+        return detail::bindFirstArgType<primal::Vector2D>(std::move(lua_func),
+                                                          first_arg_type,
+                                                          second_arg_type);
+      case InletFunctionType::Vec3D:
+        return detail::bindFirstArgType<primal::Vector3D>(std::move(lua_func),
+                                                          first_arg_type,
+                                                          second_arg_type);
+      case InletFunctionType::Double:
+        return detail::bindFirstArgType<double>(std::move(lua_func),
+                                                first_arg_type,
+                                                second_arg_type);
+      default:
+        SLIC_ERROR("[Inlet] Unexpected function return type");
+      }
     }
   }
   return {};  // Return an empty function to indicate that the function was not found

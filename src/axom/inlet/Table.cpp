@@ -483,11 +483,12 @@ void Table::addPrimitiveArrayHelper<std::string>(Table& table,
   }
 }
 
-Verifiable<Function>& Table::addFunction(const std::string& name,
-                                         const InletFunctionType ret_type,
-                                         const InletFunctionType arg_type,
-                                         const std::string& description,
-                                         const std::string& pathOverride)
+Verifiable<Function>& Table::addFunction(
+  const std::string& name,
+  const InletFunctionType ret_type,
+  const std::vector<InletFunctionType>& arg_types,
+  const std::string& description,
+  const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
   {
@@ -500,7 +501,7 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
       // Add a primitive to an array element (which is a struct)
       funcs.push_back(
         getTable(indexPath.first)
-          .addFunction(name, ret_type, arg_type, description, indexPath.second));
+          .addFunction(name, ret_type, arg_types, description, indexPath.second));
     }
     // Create an aggregate field so requirements can be collectively imposed
     // on all elements of the array
@@ -520,7 +521,7 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
-    auto func = m_reader.getFunction(lookupPath, ret_type, arg_type);
+    auto func = m_reader.getFunction(lookupPath, ret_type, arg_types);
     return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
   }
 }
