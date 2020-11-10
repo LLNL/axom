@@ -30,6 +30,33 @@ void setWarningFlag(axom::sidre::Group* root);
 
 /*!
 *****************************************************************************
+* \brief This function is used to configure the target group as required
+*
+* \param [in] target Reference to the Sidre group to set the required 
+* status of
+* \param [in] root Reference to the Sidre Root Group where the warning flag 
+* will be set on failure
+* \param [in] required Whether the target group is required
+*****************************************************************************
+*/
+void setRequired(axom::sidre::Group& target,
+                 axom::sidre::Group& root,
+                 bool required);
+
+/*!
+*****************************************************************************
+* \brief This function is used to determine if the target group is required
+*
+* \param [in] target Reference to the Sidre group to check the required 
+* status of
+* \param [in] root Reference to the Sidre Root Group where the warning flag 
+* will be set on failure
+*****************************************************************************
+*/
+bool checkRequired(const axom::sidre::Group& target, axom::sidre::Group& root);
+
+/*!
+*****************************************************************************
 * \brief This function appends the prefix name to the ending name.
 *
 * \param [in] The prefix string name.

@@ -19,28 +19,7 @@ Function& Function::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Function specific Sidre Datastore Group not set");
-
-  if(m_sidreGroup->hasView("required"))
-  {
-    const std::string msg = fmt::format(
-      "[Inlet] Function has already defined "
-      "required value: {0}",
-      m_sidreGroup->getName());
-
-    SLIC_WARNING(msg);
-    setWarningFlag(m_sidreRootGroup);
-    return *this;
-  }
-
-  if(isRequired)
-  {
-    m_sidreGroup->createViewScalar("required", (int8)1);
-  }
-  else
-  {
-    m_sidreGroup->createViewScalar("required", (int8)0);
-  }
-
+  setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
   return *this;
 }
 
@@ -48,30 +27,7 @@ bool Function::isRequired() const
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Function specific Sidre Datastore Group not set");
-
-  if(!m_sidreGroup->hasView("required"))
-  {
-    return false;
-  }
-  const axom::sidre::View* valueView = m_sidreGroup->getView("required");
-  if(valueView == nullptr)
-  {
-    //TODO: is this possible after it says it has the view?
-    return false;
-  }
-  const int8 intValue = valueView->getScalar();
-  if(intValue < 0 || intValue > 1)
-  {
-    const std::string msg = fmt::format(
-      "[Inlet] Invalid integer value stored in "
-      " boolean value named {0}",
-      m_sidreGroup->getName());
-    SLIC_WARNING(msg);
-    setWarningFlag(m_sidreRootGroup);
-    return false;
-  }
-
-  return (bool)intValue;
+  return checkRequired(*m_sidreGroup, *m_sidreRootGroup);
 }
 
 Function& Function::registerVerifier(std::function<bool(const Function&)> lambda)
