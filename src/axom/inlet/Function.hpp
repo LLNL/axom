@@ -116,7 +116,7 @@ template <InletFunctionType Result, InletFunctionType... Args>
 struct inlet_function_signature
 {
   using type = typename inlet_function_type<Result>::type(
-    typename inlet_function_arg_type<typename inlet_function_type<Args...>::type>::type);
+    typename inlet_function_arg_type<typename inlet_function_type<Args>::type...>::type);
 };
 
 template <typename>
@@ -125,8 +125,136 @@ struct cleanup_function_signature;
 template <typename Ret, typename... Args>
 struct cleanup_function_signature<Ret(Args...)>
 {
-  using type = Ret(typename detail::inlet_function_arg_type<Args...>::type);
+  using type = Ret(typename inlet_function_arg_type<Args>::type...);
 };
+
+// The following metaprogramming was assisted by the following:
+// https://nolte.dev/jekyll/update/2019/06/06/fun-with-tuples.html
+// https://stackoverflow.com/questions/55005063/create-a-type-list-combination-of-types-in-c
+
+/*!
+ *******************************************************************************
+ * \brief Adds a single type to a single tuple type via prepending
+ *
+ * \tparam T The type to add to the tuple, e.g., <A>
+ * \tparam Ts... The types in the existing tuple, e.g., <B, C, D>
+ * 
+ * In the above example the result type is std::tuple<A, B, C, D>
+ *******************************************************************************
+ */
+template <typename T, typename... Ts>
+struct tuple_concat;
+
+template <typename T, typename... Ts>
+struct tuple_concat<T, std::tuple<Ts...>>
+{
+  // Expand the parameter pack within the single tuple alias decl
+  using type = std::tuple<T, Ts...>;
+};
+
+/*!
+ *******************************************************************************
+ * \brief Adds a single type to a parameter pack of tuples
+ *
+ * \tparam T The type to add to the tuple, e.g., <A>
+ * \tparam Ts... The types of the tuples to add to, e.g., <std::tuple<B, C>, std::tuple<D, E>>
+ * 
+ * In the above example the result type is std::tuple<std::tuple<A, B, C>, std::tuple<A, D, E>>
+ *******************************************************************************
+ */
+template <typename T, typename... Ts>
+struct multi_tuple_concat
+{
+  // Expand the parameter pack across calls to tuple_concat so T is prepended
+  // to each tuple
+  using type = std::tuple<typename tuple_concat<T, Ts>::type...>;
+};
+
+/*!
+ *******************************************************************************
+ * \brief Recursive helper struct for enumerating permutations of a list of types
+ *
+ * \tparam N The zero-indexed length of the permutations to produce ("stack height")
+ * \tparam Ts... The original (1-dimensional) set of types to permute, e.g. <A, B, C>
+ * \tparam Us... The current "result" tuple of tuples, each member U in Us will
+ * be a tuple whose size is the original requested permutation length minus the
+ * current stack height N
+ * 
+ * \note This function works by modifying the "result" type.  The multi_tuple_concat
+ * is called to add each original type T to each U in Us.  The resulting tuple
+ * of tuples from the concatenation of each T is then concatenated with std::tuple_cat.
+ * For example, with Ts = <A, B, C> and Us = std::tuple<std::tuple<A>, std::tuple<B>, std::tuple<C>>,
+ * the full tuple_cat call is std::tuple_cat(std::tuple<std::tuple<A, A>, std::tuple<A, B>, 
+ * std::tuple<A, C>>, std::tuple<std::tuple<B, A>, std::tuple<B, B>, std::tuple<B, C>>, ...)
+ * 
+ * The Us pack is expanded in the multi_tuple_concat "call" whereas the Ts pack
+ * is expanded as part of the std::tuple_cat "call"
+ *******************************************************************************
+ */
+template <std::size_t N>
+struct permutation_helper
+{
+  // Implemented as a function to allow for two parameter packs
+  template <typename... Ts, typename... Us>
+  static auto get(std::tuple<Ts...> t, std::tuple<Us...> u)
+    -> decltype(permutation_helper<N - 1>::get(
+      t,
+      std::tuple_cat(typename multi_tuple_concat<Ts, Us...>::type()...)));
+};
+
+// Base case -> N = 0 -> Us... is the result, so just "return" it
+template <>
+struct permutation_helper<0u>
+{
+  template <typename... Ts, typename... Us>
+  static auto get(std::tuple<Ts...> t, std::tuple<Us...> u) -> decltype(u);
+};
+
+/*!
+ *******************************************************************************
+ * \brief Entry point for retrieving a permutation of types
+ *
+ * \tparam N The (1-indexed) permutation length
+ * \tparam Ts... The types to permute
+ * 
+ * \note This initializes the result by creating a tuple of tuples of each type
+ * in the list, e.g., for Ts = <A, B, C>, the second declval will be 
+ * std::tuple<std::tuple<A>, std::tuple<B>, std::tuple<C>> (the first will be just
+ * std::tuple<A, B, C>)
+ *******************************************************************************
+ */
+template <std::size_t N, typename... Ts>
+using type_permutations = decltype(permutation_helper<N - 1>::get(
+  std::declval<std::tuple<Ts...>>(),
+  std::declval<std::tuple<std::tuple<Ts>...>>()));
+
+/*!
+ *******************************************************************************
+ * \brief Converts a tuple into a function signature
+ *
+ * \tparam Ret The function return type
+ * \tparam Args... The function's argument types
+ * 
+ * \note This would be called as tuple_as_function<Ret, Arg1, Arg2, ..., etc>
+ *******************************************************************************
+ */
+template <typename... Ts>
+struct tuple_to_inlet_signature;
+
+template <typename Ret, typename... Args>
+struct tuple_to_inlet_signature<std::tuple<Ret, Args...>>
+{
+  using type = Ret(typename inlet_function_arg_type<Args>::type...);
+};
+
+// Actually get the permutations for one- and two-argument functions
+using one_arg_tuples =
+  type_permutations<2u, primal::Vector2D, primal::Vector3D, double>;
+using two_arg_tuples =
+  type_permutations<3u, primal::Vector2D, primal::Vector3D, double>;
+// Then add them together so one- and two-argument functions can be supported
+using one_or_two_arg_tuples = decltype(
+  std::tuple_cat(std::declval<one_arg_tuples>(), std::declval<two_arg_tuples>()));
 
 }  // end namespace detail
 
@@ -183,6 +311,7 @@ public:
   template <typename Ret, typename... Args>
   Ret call(Args&&... args) const
   {
+    // FIXME: This is probably wrong, we can't store a pack like this directly
     using ArgTypes = typename detail::inlet_function_arg_type<Args...>::type;
     const auto& func =
       *std::get<std::unique_ptr<std::function<Ret(ArgTypes)>>>(m_funcs);
@@ -216,48 +345,29 @@ private:
   bool m_function_valid = false;
 };
 
-// The set of supported type signatures to be used in the "variant" type
 namespace detail
 {
-// This could definitely be done with more metaprogramming, which may be the only option
-// as the number of argumetns increases
+/*!
+ *******************************************************************************
+ * \brief "Unwraps" a tuple of tuples, converts the inner tuples to function
+ * signatures, and defines a FunctionWrapper templated on those signatures
+ *
+ * \tparam Tuples The tuple of tuples to expand, e.g.,
+ * std::tuple<std::tuple<A, B>, std::tuple<A, B, C>> to use the signatures
+ * A(B) and A(B, C) (subject to cvref qualifiers added by inlet_function_arg_type)
+ *******************************************************************************
+ */
+template <typename... Tuples>
+struct tuples_to_wrapper;
 
-using Vec2_Vec3 =
-  inlet_function_signature<InletFunctionType::Vec2D, InletFunctionType::Vec3D>::type;
+template <typename... Tuples>
+struct tuples_to_wrapper<std::tuple<Tuples...>>
+{
+  using type =
+    FunctionWrapper<typename tuple_to_inlet_signature<Tuples>::type...>;
+};
 
-using Vec2_Vec2 =
-  inlet_function_signature<InletFunctionType::Vec2D, InletFunctionType::Vec2D>::type;
-
-using Vec2_Double =
-  inlet_function_signature<InletFunctionType::Vec2D, InletFunctionType::Double>::type;
-
-using Vec3_Vec3 =
-  inlet_function_signature<InletFunctionType::Vec3D, InletFunctionType::Vec3D>::type;
-
-using Vec3_Vec2 =
-  inlet_function_signature<InletFunctionType::Vec3D, InletFunctionType::Vec2D>::type;
-
-using Vec3_Double =
-  inlet_function_signature<InletFunctionType::Vec3D, InletFunctionType::Double>::type;
-
-using Double_Vec3 =
-  inlet_function_signature<InletFunctionType::Double, InletFunctionType::Vec3D>::type;
-
-using Double_Vec2 =
-  inlet_function_signature<InletFunctionType::Double, InletFunctionType::Vec2D>::type;
-
-using Double_Double =
-  inlet_function_signature<InletFunctionType::Double, InletFunctionType::Double>::type;
-
-using BasicFunctionWrapper = FunctionWrapper<Vec2_Vec3,
-                                             Vec2_Vec2,
-                                             Vec2_Double,
-                                             Vec3_Vec3,
-                                             Vec3_Vec2,
-                                             Vec3_Double,
-                                             Double_Vec3,
-                                             Double_Vec2,
-                                             Double_Double>;
+using BasicFunctionWrapper = tuples_to_wrapper<one_or_two_arg_tuples>::type;
 
 }  // end namespace detail
 

@@ -170,38 +170,41 @@ bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices
 // callables
 namespace detail
 {
+template <typename Arg>
+Arg&& lua_identity(Arg&& arg)
+{
+  return std::forward<Arg>(arg);
+}
+
+std::tuple<double, double> lua_identity(const primal::Vector2D& vec)
+{
+  return std::make_tuple(vec[0], vec[1]);
+}
+
+std::tuple<double, double, double> lua_identity(const primal::Vector3D& vec)
+{
+  return std::make_tuple(vec[0], vec[1], vec[2]);
+}
+
 /*!
  *****************************************************************************
- * \brief Templated function for calling a sol function, used to allow for 
- * calling with nonprimitive types that need to be "unpacked", specifically, vectors
+ * \brief Templated function for calling a sol function
  *
  * \param [in] func The sol function of unknown concrete type
- * \tparam Arg The argument type of the function
+ * \tparam Args The argument types of the function
  *
  * \return A checkable version of the function's result
  *****************************************************************************
  */
-template <typename Arg>
+template <typename... Args>
 sol::protected_function_result callWith(const sol::protected_function& func,
-                                        const Arg& arg)
+                                        Args&&... args)
 {
-  auto tentative_result = func(arg);
+  auto tentative_result = func(lua_identity(std::forward<Args>(args))...);
   SLIC_ERROR_IF(
     !tentative_result.valid(),
     "[Inlet] Lua function call failed, argument types possibly incorrect");
   return tentative_result;
-}
-
-sol::protected_function_result callWith(const sol::protected_function& func,
-                                        const primal::Vector2D& vec)
-{
-  return callWith(func, std::make_tuple(vec[0], vec[1]));
-}
-
-sol::protected_function_result callWith(const sol::protected_function& func,
-                                        const primal::Vector3D& vec)
-{
-  return callWith(func, std::make_tuple(vec[0], vec[1], vec[2]));
 }
 
 /*!
@@ -252,15 +255,15 @@ primal::Vector3D extractResult<primal::Vector3D>(sol::protected_function_result&
  * \return A std::function that wraps the lua function
  *****************************************************************************
  */
-template <typename Ret, typename Arg>
-std::function<Ret(typename inlet_function_arg_type<Arg>::type)> buildStdFunction(
-  sol::protected_function&& func)
+template <typename Ret, typename... Args>
+std::function<Ret(typename detail::inlet_function_arg_type<Args>::type...)>
+buildStdFunction(sol::protected_function&& func)
 {
   // Generalized lambda capture needed to move into lambda
-  return
-    [func(std::move(func))](typename inlet_function_arg_type<Arg>::type arg) {
-      return extractResult<Ret>(callWith(func, arg));
-    };
+  return [func(std::move(func))](
+           typename detail::inlet_function_arg_type<Args>::type... args) {
+    return extractResult<Ret>(callWith(func, args...));
+  };
 }
 
 /*!
@@ -274,21 +277,57 @@ std::function<Ret(typename inlet_function_arg_type<Arg>::type)> buildStdFunction
  * \return A callable wrapper
  *****************************************************************************
  */
-template <InletFunctionType Ret>
+template <typename Ret>
 InletFunctionWrapper bindArgType(sol::protected_function&& func,
                                  const InletFunctionType arg_type)
 {
   switch(arg_type)
   {
   case InletFunctionType::Vec2D:
-    return buildStdFunction<typename inlet_function_type<Ret>::type, primal::Vector2D>(
-      std::move(func));
+    return buildStdFunction<Ret, primal::Vector2D>(std::move(func));
   case InletFunctionType::Vec3D:
-    return buildStdFunction<typename inlet_function_type<Ret>::type, primal::Vector3D>(
-      std::move(func));
+    return buildStdFunction<Ret, primal::Vector3D>(std::move(func));
   case InletFunctionType::Double:
-    return buildStdFunction<typename inlet_function_type<Ret>::type, double>(
-      std::move(func));
+    return buildStdFunction<Ret, double>(std::move(func));
+  default:
+    SLIC_ERROR("[Inlet] Unexpected function argument type");
+  }
+  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
+}
+
+template <typename Ret, typename FirstArg>
+InletFunctionWrapper bindSecondArgType(sol::protected_function&& func,
+                                       const InletFunctionType arg_type)
+{
+  switch(arg_type)
+  {
+  case InletFunctionType::Vec2D:
+    return buildStdFunction<Ret, FirstArg, primal::Vector2D>(std::move(func));
+  case InletFunctionType::Vec3D:
+    return buildStdFunction<Ret, FirstArg, primal::Vector3D>(std::move(func));
+  case InletFunctionType::Double:
+    return buildStdFunction<Ret, FirstArg, double>(std::move(func));
+  default:
+    SLIC_ERROR("[Inlet] Unexpected function argument type");
+  }
+  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
+}
+
+template <typename Ret>
+InletFunctionWrapper bindFirstArgType(sol::protected_function&& func,
+                                      const InletFunctionType first_arg_type,
+                                      const InletFunctionType second_arg_type)
+{
+  switch(first_arg_type)
+  {
+  case InletFunctionType::Vec2D:
+    return bindSecondArgType<Ret, primal::Vector2D>(std::move(func),
+                                                    second_arg_type);
+  case InletFunctionType::Vec3D:
+    return bindSecondArgType<Ret, primal::Vector3D>(std::move(func),
+                                                    second_arg_type);
+  case InletFunctionType::Double:
+    return bindSecondArgType<Ret, double>(std::move(func), second_arg_type);
   default:
     SLIC_ERROR("[Inlet] Unexpected function argument type");
   }
@@ -329,14 +368,40 @@ InletFunctionWrapper LuaReader::getFunction(const std::string& id,
     switch(ret_type)
     {
     case InletFunctionType::Vec2D:
-      return detail::bindArgType<InletFunctionType::Vec2D>(std::move(lua_func),
-                                                           arg_type);
+      return detail::bindArgType<primal::Vector2D>(std::move(lua_func), arg_type);
     case InletFunctionType::Vec3D:
-      return detail::bindArgType<InletFunctionType::Vec3D>(std::move(lua_func),
-                                                           arg_type);
+      return detail::bindArgType<primal::Vector3D>(std::move(lua_func), arg_type);
     case InletFunctionType::Double:
-      return detail::bindArgType<InletFunctionType::Double>(std::move(lua_func),
-                                                            arg_type);
+      return detail::bindArgType<double>(std::move(lua_func), arg_type);
+    default:
+      SLIC_ERROR("[Inlet] Unexpected function return type");
+    }
+  }
+  return {};  // Return an empty function to indicate that the function was not found
+}
+
+InletFunctionWrapper LuaReader::getFunction(const std::string& id,
+                                            const InletFunctionType ret_type,
+                                            const InletFunctionType first_arg_type,
+                                            const InletFunctionType second_arg_type)
+{
+  auto lua_func = getFunctionInternal(id);
+  if(lua_func)
+  {
+    switch(ret_type)
+    {
+    case InletFunctionType::Vec2D:
+      return detail::bindFirstArgType<primal::Vector2D>(std::move(lua_func),
+                                                        first_arg_type,
+                                                        second_arg_type);
+    case InletFunctionType::Vec3D:
+      return detail::bindFirstArgType<primal::Vector3D>(std::move(lua_func),
+                                                        first_arg_type,
+                                                        second_arg_type);
+    case InletFunctionType::Double:
+      return detail::bindFirstArgType<double>(std::move(lua_func),
+                                              first_arg_type,
+                                              second_arg_type);
     default:
       SLIC_ERROR("[Inlet] Unexpected function return type");
     }

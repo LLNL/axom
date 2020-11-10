@@ -222,6 +222,11 @@ public:
                                    const InletFunctionType ret_type,
                                    const InletFunctionType arg_type);
 
+  InletFunctionWrapper getFunction(const std::string& id,
+                                   const InletFunctionType ret_type,
+                                   const InletFunctionType first_arg_type,
+                                   const InletFunctionType second_arg_type);
+
   /*!
    *****************************************************************************
    * \brief Returns the Sol Lua state
