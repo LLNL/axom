@@ -91,14 +91,16 @@ struct FromInlet<BoundaryCondition>
     bc.attrs = base["attrs"];
     if(base.contains("vec_coef"))
     {
-      // We assume the dimension is 3
+      // We assume the dimension is 3 - if the mfem::Vector is 2D,
+      // the z-component will be set to zero due to how primal::Vector's
+      // (T*, size) constructor works
       bc.vec_coef = std::make_unique<mfem::VectorFunctionCoefficient>(
         3,
         [&base](const mfem::Vector& input, mfem::Vector& output) {
           // One way of accessing the function is with "call" - need
           // to specify the desired return and argument types explicitly
           auto ret = base["vec_coef"].call<axom::primal::Vector3D>(
-            axom::primal::Vector3D {input.GetData()});
+            axom::primal::Vector3D {input.GetData(), input.Size()});
           // Copy from the primal vector into the MFEM vector
           std::copy(ret.data(), ret.data() + ret.dimension(), output.GetData());
         });
@@ -113,7 +115,7 @@ struct FromInlet<BoundaryCondition>
       bc.coef = std::make_unique<mfem::FunctionCoefficient>(
         [func(std::move(func))](const mfem::Vector& vec) {
           // func is a concrete function type so calls can leverage conversions
-          return func(vec.GetData());
+          return func({vec.GetData(), vec.Size()});
         });
       SLIC_INFO("Created an mfem::Coefficient");
     }
@@ -123,7 +125,7 @@ struct FromInlet<BoundaryCondition>
         base["coef_t"].get<std::function<double(axom::primal::Vector3D, double)>>();
       bc.coef = std::make_unique<mfem::FunctionCoefficient>(
         [func(std::move(func))](const mfem::Vector& vec, double t) {
-          return func(vec.GetData(), t);
+          return func({vec.GetData(), vec.Size()}, t);
         });
       SLIC_INFO("Created a time-dependent mfem::Coefficient");
     }
@@ -132,12 +134,11 @@ struct FromInlet<BoundaryCondition>
       auto func =
         base["vec_coef_t"]
           .get<std::function<axom::primal::Vector3D(axom::primal::Vector3D, double)>>();
-      // We assume the dimension is 3
       bc.vec_coef = std::make_unique<mfem::VectorFunctionCoefficient>(
         3,
         [func(std::move(
           func))](const mfem::Vector& input, double t, mfem::Vector& output) {
-          auto ret = func(input.GetData(), t);
+          auto ret = func({input.GetData(), input.Size()}, t);
           // Copy from the primal vector into the MFEM vector
           std::copy(ret.data(), ret.data() + ret.dimension(), output.GetData());
         });

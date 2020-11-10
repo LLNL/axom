@@ -109,6 +109,7 @@ template <typename T>
 struct is_inlet_array<std::unordered_map<int, T>> : std::true_type
 { };
 
+// Determines whether a type is a std::function
 template <typename T>
 struct is_std_function : std::false_type
 { };
@@ -117,9 +118,9 @@ template <typename T>
 struct is_std_function<std::function<T>> : std::true_type
 { };
 
+// Extracts the signature of a std::function
 template <typename FuncType>
-struct std_function_signature
-{ };
+struct std_function_signature;
 
 template <typename FuncType>
 struct std_function_signature<std::function<FuncType>>

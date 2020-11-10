@@ -15,9 +15,7 @@
 #define INLET_FUNCTION_HPP
 
 #include <memory>
-// #include <string>
 #include <functional>
-// #include <unordered_map>
 #include <tuple>
 #include <type_traits>
 
@@ -198,7 +196,9 @@ using type_permutations = decltype(permutation_helper<N - 1>::get(
  * \tparam Ret The function return type
  * \tparam Args... The function's argument types
  * 
- * \note This would be called as tuple_as_function<Ret, Arg1, Arg2, ..., etc>
+ * \note This would be called as tuple_to_inlet_signature<Ret, Arg1, Arg2, ..., etc>
+ * to convert to Ret(Arg1, Arg2, ...) after applying the cvref transformation
+ * by inlet_function_arg_type<T>
  *******************************************************************************
  */
 template <typename... Ts>
@@ -210,7 +210,7 @@ struct tuple_to_inlet_signature<std::tuple<Ret, Args...>>
   using type = Ret(typename inlet_function_arg_type<Args>::type...);
 };
 
-// Actually get the permutations for one- and two-argument functions
+// Get the permutations for one- and two-argument functions
 using one_arg_tuples =
   type_permutations<2u, primal::Vector2D, primal::Vector3D, double>;
 using two_arg_tuples =
@@ -347,8 +347,6 @@ public:
     , m_docEnabled(docEnabled)
     , m_func(std::move(func))
   { }
-
-  // InletType type() const { return InletType::Function; }
 
   /*!
    *****************************************************************************
