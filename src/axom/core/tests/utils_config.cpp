@@ -21,7 +21,7 @@
 #include <string>     // for C++ string
 #include <vector>     // for STL vector
 
-TEST(core_config, axom_version)
+TEST(utils_config, axom_version)
 {
   const int AXOM_MAJOR = AXOM_VERSION_MAJOR;
   const int AXOM_MINOR = AXOM_VERSION_MINOR;
@@ -46,7 +46,7 @@ TEST(core_config, axom_version)
 #endif
 }
 
-TEST(core_config, config_libraries)
+TEST(utils_config, config_libraries)
 {
   // This test checks which libraries are available in the configuration
 
@@ -103,7 +103,7 @@ TEST(core_config, config_libraries)
   EXPECT_TRUE(true);
 }
 
-TEST(core_config, config_components)
+TEST(utils_config, config_components)
 {
   // This test checks which toolkit components are available in the
   // configuration
@@ -151,7 +151,7 @@ TEST(core_config, config_components)
   EXPECT_TRUE(true);
 }
 
-TEST(core_config, config_openmp)
+TEST(utils_config, config_openmp)
 {
   // This test checks that the per-target OpenMP guards
   // in our configuration file 'axom/config.hpp' are working properly
@@ -190,7 +190,7 @@ TEST(core_config, config_openmp)
 }
 
 #ifdef AXOM_USE_MFEM
-TEST(core_config, mfem_configuration)
+TEST(utils_config, mfem_configuration)
 {
   #ifdef MFEM_VERSION
   std::cout << "Using mfem version " << MFEM_VERSION_MAJOR

@@ -948,7 +948,7 @@ TEST(core_array, checkResize)
 }
 
 //------------------------------------------------------------------------------
-TEST(core_array_DeathTest, checkResize)
+TEST(core_array, deathtest_checkResize)
 {
   /* Resizing isn't allowed with a ratio less than 1.0. */
   Array<int> v_int(axom::internal::ZERO, 1, 100);
@@ -1003,7 +1003,7 @@ TEST(core_array, checkEmplace)
 }
 
 //------------------------------------------------------------------------------
-TEST(core_array_DeathTest, checkExternal)
+TEST(core_array, deathtest_checkExternal)
 {
   constexpr double MAGIC_NUM = 5683578.8;
   constexpr IndexType MAX_SIZE = 256;
@@ -1043,17 +1043,3 @@ TEST(core_array_DeathTest, checkExternal)
 }
 
 } /* end namespace axom */
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
-}

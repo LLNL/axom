@@ -23,14 +23,17 @@ packages:
       blas: [netlib-lapack]
       lapack: [netlib-lapack]
       mpi: [mvapich2]
+
 # LLNL toss3 CUDA 
   cuda:
     buildable: false
-
     externals:
     - spec: cuda@10.2
       prefix: /opt/cudatoolkit/10.2
+
 # Lock down which MPI we are using
+  mpi:
+    buildable: false
   mvapich2:
     buildable: false
     externals:
@@ -46,27 +49,6 @@ packages:
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2
     - spec: mvapich2@2.3%intel@19.0.4 process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
-# Spack may grab for mpi & we don't want to use them
-  openmpi:
-    buildable: false
-  mpich:
-    buildable: false
-  spectrum-mpi:
-    buildable: false
-  charmpp:
-    buildable: false
-  charm:
-    buildable: false
-  intel-mpi:
-    buildable: false
-  intel-parallel-studio:
-    buildable: false
-  fujitsu-mpi:
-    buildable: false
-  mpilander:
-    buildable: false
-  mpt:
-    buildable: false
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
@@ -155,6 +137,12 @@ packages:
     externals:
     - spec: graphviz
       prefix: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/graphviz-2.42.2
+  llvm:
+    version: [10.0.0]
+    buildable: false
+    externals:
+    - spec: llvm+clang
+      prefix: /usr/tce/packages/clang/clang-10.0.0
   python:
     version: [3.7.7]
     buildable: false
@@ -173,9 +161,3 @@ packages:
     externals:
     - spec: py-sphinx
       prefix: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.7
-  uncrustify:
-    version: [0.61]
-    buildable: false
-    externals:
-    - spec: uncrustify
-      prefix: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/uncrustify-0.61

@@ -206,17 +206,3 @@ TEST(core_execution_space, check_cuda_exec_async)
   #endif  // defined(AXOM_USE_CUDA)
 
 #endif  // defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_RAJA)
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
-}

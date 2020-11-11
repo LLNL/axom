@@ -11,7 +11,7 @@
 #include <limits>
 #include <iostream>
 
-TEST(core_endianness, print_endianness)
+TEST(utils_endianness, print_endianness)
 {
   std::cout << "Checking system endianness..." << std::endl;
 
@@ -21,7 +21,7 @@ TEST(core_endianness, print_endianness)
             << std::endl;
 }
 
-TEST(core_endianness, endianness_16)
+TEST(utils_endianness, endianness_16)
 {
   union SixteenBit
   {
@@ -80,7 +80,7 @@ TEST(core_endianness, endianness_16)
   }
 }
 
-TEST(core_endianness, endianness_32)
+TEST(utils_endianness, endianness_32)
 {
   union ThirtyTwoBit
   {
@@ -151,7 +151,7 @@ TEST(core_endianness, endianness_32)
   }
 }
 
-TEST(core_endianness, endianness_64)
+TEST(utils_endianness, endianness_64)
 {
   union SixtyFourBit
   {
@@ -205,7 +205,7 @@ TEST(core_endianness, endianness_64)
 #if 0
 // Note: Checks that swapEndian static_asserts for types within invalid sizes.
 //       Commented out since it should lead to a compile error
-TEST(core_endianness,invalid_byte_width)
+TEST(utils_endianness,invalid_byte_width)
 {
   {
     axom::int8 v1 = 5;
@@ -226,7 +226,7 @@ TEST(core_endianness,invalid_byte_width)
 #if 0
 // Note: Checks that swapEndian static_asserts for non-native types.
 //       Commented out since it should lead to a compile error.
-TEST(core_endianness,invalid_non_native_types)
+TEST(utils_endianness,invalid_non_native_types)
 {
   struct AxomUtilsTestsNonNative
   {

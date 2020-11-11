@@ -36,7 +36,7 @@ void check_random_real(int offset)
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
-TEST(core_Utilities, log2)
+TEST(utils_Utilities, log2)
 {
   std::cout << "Testing log2 functions." << std::endl;
 
@@ -70,7 +70,7 @@ TEST(core_Utilities, log2)
 }
 
 //------------------------------------------------------------------------------
-TEST(core_Utilities, random_real)
+TEST(utils_Utilities, random_real)
 {
   std::cout << "Testing random_real functions (non-deterministic)." << std::endl;
 
@@ -83,7 +83,7 @@ TEST(core_Utilities, random_real)
 }
 
 //------------------------------------------------------------------------------
-TEST(core_Utilities, random_real_with_seed)
+TEST(utils_Utilities, random_real_with_seed)
 {
   std::cout << "Testing random_real functions (deterministic)." << std::endl;
   constexpr unsigned int seed = 123456789;
@@ -107,7 +107,7 @@ TEST(core_Utilities, random_real_with_seed)
 }
 
 //------------------------------------------------------------------------------
-TEST(core_Utilities, minmax)
+TEST(utils_Utilities, minmax)
 {
   std::cout << "Testing min and max functions." << std::endl;
 
@@ -116,8 +116,11 @@ TEST(core_Utilities, minmax)
     int a = 5;
     int b = 7;
 
-    EXPECT_EQ(a, axom::utilities::min(a, b));
-    EXPECT_EQ(b, axom::utilities::max(a, b));
+    int temp_min = axom::utilities::min(a, b);
+    int temp_max = axom::utilities::max(a, b);
+
+    EXPECT_EQ(a, temp_min);
+    EXPECT_EQ(b, temp_max);
   }
 
   // Test simple min, max comparisons on doubles
@@ -125,7 +128,10 @@ TEST(core_Utilities, minmax)
     double a = 5.2;
     double b = -1.7;
 
-    EXPECT_EQ(b, axom::utilities::min(a, b));
-    EXPECT_EQ(a, axom::utilities::max(a, b));
+    int temp_min = axom::utilities::min(a, b);
+    int temp_max = axom::utilities::max(a, b);
+
+    EXPECT_EQ(b, temp_min);
+    EXPECT_EQ(a, temp_max);
   }
 }

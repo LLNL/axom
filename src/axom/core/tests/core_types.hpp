@@ -214,26 +214,3 @@ TEST(core_types, check_indextype)
 
 #endif
 }
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-#ifdef AXOM_USE_MPI
-  MPI_Init(&argc, &argv);
-#endif
-
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  // add this line to avoid a warning in the output about thread safety
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
-  result = RUN_ALL_TESTS();
-
-#ifdef AXOM_USE_MPI
-  MPI_Finalize();
-#endif
-
-  return result;
-}

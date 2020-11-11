@@ -29,7 +29,8 @@ blt_list_append( TO lulesh_depends ELEMENTS openmp IF ENABLE_OPENMP )
 
 blt_add_executable(
     NAME sidre_lulesh2_ex
-    SOURCES ${lulesh_sources} ${lulesh_headers}
+    SOURCES ${lulesh_sources}
+    HEADERS ${lulesh_headers}
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON ${lulesh_depends}
     FOLDER axom/sidre/examples )

@@ -71,13 +71,7 @@ public:
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value ||
                                       detail::is_inlet_primitive_array<T>::value>::type>
-  operator T()
-  {
-    return get<T>();
-  }
-
-  template <typename T>
-  explicit operator T()
+  operator T() const
   {
     return get<T>();
   }
@@ -91,7 +85,7 @@ public:
    * Field or Table with the given name.
    *****************************************************************************
    */
-  bool contains(const std::string& name);
+  bool contains(const std::string& name) const;
 
   /*!
    *****************************************************************************
@@ -115,7 +109,7 @@ public:
    * \return A view onto the subobject
    *******************************************************************************
    */
-  Proxy operator[](const std::string& name);
+  Proxy operator[](const std::string& name) const;
 
   /*!
    *******************************************************************************
@@ -127,7 +121,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value, T>::type get()
+  typename std::enable_if<!detail::is_inlet_primitive<T>::value, T>::type get() const
   {
     SLIC_ASSERT_MSG(m_table != nullptr,
                     "[Inlet] Tried to read a user-defined type from a Proxy "
@@ -145,7 +139,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type get()
+  typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type get() const
   {
     SLIC_ASSERT_MSG(
       m_field != nullptr,

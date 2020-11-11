@@ -20,3 +20,14 @@ thermal_solver.solver = {
  dt = 1.0,
  steps = 1 
 }
+-- boundary conditions
+thermal_solver.bcs = {
+  [1] = {
+    attrs = { [1] = 3, [2] = 4, [3] = 7},
+    constant = 12.2
+  },
+  [4] = {
+    attrs = { [7] = 4, [12] = 6, [9] = 1},
+    constant = -23.1
+  }
+}

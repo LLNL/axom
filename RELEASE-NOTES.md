@@ -17,6 +17,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added a `batched` option to quest's InOutOctree containment query example application.
   This uses a kernel to test for containment on an array of points.
   The query uses OpenMP threading, when available.
+- Inlet: Added support for user-defined conversions from Inlet tables to user-defined
+  types, and support for arrays of user-defined types
+- Added compiler define `NOMINMAX` to `axom/config.hpp.in` to avoid problems with
+  the Windows `min` and `max` macros.
+- Added `cpp14` variant to Spack package to allow `Inlet::LuaReader` to be used easier.
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -25,6 +30,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Fixed `SchemaCreator` to an abstract class and added missing functions
 - Inlet: Added ability to access the `Reader` class from `Inlet` and Sol Lua state
   from the `LuaReader` class
+- Inlet: Switched accessor interface to match that of the STL with operator[] and
+  T get<T>()
+- Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
+  and `std::unique_ptr<T>` in owning contexts
+- Unified core and SPIO unit tests into fewer executables to limit size of build directory
+
+### Fixed
+- Updated to new BLT version that does not fail when ClangFormat returns an empty
+  version string.  BLT/Axom now issues a warning and disables the `style` build
+  target if version is unknown or wrong.
 
 
 ## [Version 0.4.0] - Release date 2020-09-22

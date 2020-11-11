@@ -35,11 +35,15 @@ packages:
       szip: [libszip, libaec]
       tbb: [intel-tbb]
       jpeg: [libjpeg-turbo, libjpeg]
-# Spack may grab for mpi & we don't want to use them
-  charm:
+
+  # Spack may grab for mpi & we don't want to use them
+  mpi:
     buildable: false
-  mpilander:
-    buildable: false
+  mpich:
+    externals:
+    - spec: mpich@3.3
+      prefix: /usr
+
 # System level packages to not build
   autotools:
     buildable: false

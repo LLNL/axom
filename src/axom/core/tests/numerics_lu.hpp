@@ -9,7 +9,6 @@
 #include "axom/core/numerics/Matrix.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 
-namespace numerics = axom::numerics;
 using IndexType = axom::IndexType;
 
 TEST(numerics_lu, lu_decompose_non_square_matrix)
@@ -19,9 +18,9 @@ TEST(numerics_lu, lu_decompose_non_square_matrix)
   const int N = 3;
 
   EXPECT_TRUE(M != N);
-  numerics::Matrix<double> A = numerics::Matrix<double>::ones(M, N);
-  int rc = numerics::lu_decompose(A, pivots);
-  EXPECT_EQ(numerics::LU_NONSQUARE_MATRIX, rc);
+  axom::numerics::Matrix<double> A = axom::numerics::Matrix<double>::ones(M, N);
+  int rc = axom::numerics::lu_decompose(A, pivots);
+  EXPECT_EQ(axom::numerics::LU_NONSQUARE_MATRIX, rc);
 }
 
 //------------------------------------------------------------------------------
@@ -30,9 +29,9 @@ TEST(numerics_lu, lu_decompose_singular_matrix)
   int pivots[3];
   const int N = 3;
 
-  numerics::Matrix<double> A = numerics::Matrix<double>::zeros(N, N);
-  int rc = numerics::lu_decompose(A, pivots);
-  EXPECT_EQ(numerics::LU_SINGULAR_MATRIX, rc);
+  axom::numerics::Matrix<double> A = axom::numerics::Matrix<double>::zeros(N, N);
+  int rc = axom::numerics::lu_decompose(A, pivots);
+  EXPECT_EQ(axom::numerics::LU_SINGULAR_MATRIX, rc);
 }
 
 //------------------------------------------------------------------------------
@@ -42,7 +41,7 @@ TEST(numerics_lu, lu_decompose)
   const int N = 3;
 
   // initial matrix
-  numerics::Matrix<double> A(N, N);
+  axom::numerics::Matrix<double> A(N, N);
   // clang-format off
   A(0, 0) = 1; A(0, 1) = -2; A(0, 2) =  3;
   A(1, 0) = 2; A(1, 1) = -5; A(1, 2) = 12;
@@ -50,16 +49,18 @@ TEST(numerics_lu, lu_decompose)
   // clang-format on
 
   // decompose matrix
-  numerics::Matrix<double> A_decomposed = A;
-  int rc = numerics::lu_decompose(A_decomposed, pivots);
-  EXPECT_EQ(numerics::LU_SUCCESS, rc);
+  axom::numerics::Matrix<double> A_decomposed = A;
+  int rc = axom::numerics::lu_decompose(A_decomposed, pivots);
+  EXPECT_EQ(axom::numerics::LU_SUCCESS, rc);
 
   // extract lower/upper triangular matrix
-  numerics::Matrix<double> L = numerics::lower_triangular(A_decomposed);
-  numerics::Matrix<double> U = numerics::upper_triangular(A_decomposed);
+  axom::numerics::Matrix<double> L =
+    axom::numerics::lower_triangular(A_decomposed);
+  axom::numerics::Matrix<double> U =
+    axom::numerics::upper_triangular(A_decomposed);
 
   // construct permutation matrix on lhs
-  numerics::Matrix<double> P = numerics::Matrix<double>::identity(N);
+  axom::numerics::Matrix<double> P = axom::numerics::Matrix<double>::identity(N);
   for(int i = 0; i < N; ++i)
   {
     if(pivots[i] != i)
@@ -68,11 +69,11 @@ TEST(numerics_lu, lu_decompose)
     }
   }
 
-  numerics::Matrix<double> PA(N, N);
-  numerics::matrix_multiply(P, A, PA);
+  axom::numerics::Matrix<double> PA(N, N);
+  axom::numerics::matrix_multiply(P, A, PA);
 
-  numerics::Matrix<double> LU(N, N);
-  numerics::matrix_multiply(L, U, LU);
+  axom::numerics::Matrix<double> LU(N, N);
+  axom::numerics::matrix_multiply(L, U, LU);
 
   for(int i = 0; i < N; ++i)
   {
@@ -89,7 +90,7 @@ TEST(numerics_lu, lu_solve)
   const int N = 3;
 
   // initial matrix
-  numerics::Matrix<double> A(N, N);
+  axom::numerics::Matrix<double> A(N, N);
 
   // clang-format off
   A(0, 0) = 1; A(0, 1) = 2; A(0, 2) =  4;
@@ -99,18 +100,18 @@ TEST(numerics_lu, lu_solve)
 
   double b[3] = {3, 13, 4};
   double x[3];
-  numerics::Matrix<double> A_decomposed = A;
-  int rc = numerics::lu_decompose(A_decomposed, pivots);
-  EXPECT_EQ(numerics::LU_SUCCESS, rc);
+  axom::numerics::Matrix<double> A_decomposed = A;
+  int rc = axom::numerics::lu_decompose(A_decomposed, pivots);
+  EXPECT_EQ(axom::numerics::LU_SUCCESS, rc);
 
-  rc = numerics::lu_solve(A_decomposed, pivots, b, x);
-  EXPECT_EQ(numerics::LU_SUCCESS, rc);
+  rc = axom::numerics::lu_solve(A_decomposed, pivots, b, x);
+  EXPECT_EQ(axom::numerics::LU_SUCCESS, rc);
   EXPECT_DOUBLE_EQ(3, x[0]);
   EXPECT_DOUBLE_EQ(4, x[1]);
   EXPECT_DOUBLE_EQ(-2, x[2]);
 
   double rhs[3];
-  numerics::matrix_vector_multiply(A, x, rhs);
+  axom::numerics::matrix_vector_multiply(A, x, rhs);
 
   for(IndexType i = 0; i < N; ++i)
   {
