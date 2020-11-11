@@ -15,7 +15,7 @@ using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
 
 namespace inlet = axom::inlet;
-
+// _inlet_userdef_simple_start
 struct Mesh
 {
   std::string filename;
@@ -31,6 +31,7 @@ struct Mesh
     schema.addInt("parallel", "Number of parallel refinement iterations");
   }
 };
+// _inlet_userdef_simple_end
 
 // Additionally, each class should specialize this struct as follows
 // in the global namespace so that Inlet can access it
@@ -44,6 +45,7 @@ struct Mesh
  * }
  * \endcode
  */
+// _inlet_userdef_simple_frominlet_start
 template <>
 struct FromInlet<Mesh>
 {
@@ -52,6 +54,7 @@ struct FromInlet<Mesh>
     return {base["filename"], base["serial"], base["parallel"]};
   }
 };
+// _inlet_userdef_simple_frominlet_end
 
 struct LinearSolver
 {
@@ -116,11 +119,12 @@ struct BoundaryCondition
                        inlet::FunctionType::Vec3D,    // Return type
                        {inlet::FunctionType::Vec3D},  // Argument types
                        "The function representing the BC coefficient");
-
+    // _inlet_userdef_func_coef_start
     schema.addFunction("coef",
                        inlet::FunctionType::Double,   // Return type
                        {inlet::FunctionType::Vec3D},  // Argument types
                        "The function representing the BC coefficient");
+    // _inlet_userdef_func_coef_end
   }
 };
 
@@ -174,18 +178,22 @@ struct ThermalSolver
   // subobject defineSchema implementations
   static void defineSchema(inlet::Table& schema)
   {
+    // _inlet_userdef_simple_usage_start
     auto& mesh_table = schema.addTable("mesh", "Information about the mesh");
     Mesh::defineSchema(mesh_table);
+    // _inlet_userdef_simple_usage_end
     auto& solver_table =
       schema.addTable("solver",
                       "Information about the iterative solver used for Ku = f");
     LinearSolver::defineSchema(solver_table);
 
+    // _inlet_userdef_array_usage_start
     // Schema only needs to be defined once, will propagate through to each
     // element of the array, namely, the subtable at each found index in the input file
     auto& bc_table =
       schema.addGenericArray("bcs", "List of boundary conditions");
     BoundaryCondition::defineSchema(bc_table);
+    // _inlet_userdef_array_usage_end
   }
 };
 
