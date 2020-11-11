@@ -47,8 +47,7 @@ install(TARGETS              axom
         EXPORT               axom-targets
         DESTINATION          lib)
 install(EXPORT axom-targets
-        DESTINATION lib/cmake
-        NAMESPACE axom::)
+        DESTINATION lib/cmake)
 
 
 #------------------------------------------------------------------------------
