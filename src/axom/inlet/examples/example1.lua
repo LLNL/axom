@@ -23,20 +23,20 @@ thermal_solver.solver = {
 -- boundary conditions
 thermal_solver.bcs = {
   [1] = {
-    attrs = { [1] = 3, [2] = 4, [3] = 7},
+    attrs = {3, 4, 7},
     coef = function (x, y, z)
       -- Constant is defined as a function
       return 12.55
     end
   },
   [4] = {
-    attrs = { [7] = 4, [12] = 6, [9] = 1},
+    attrs = {4, 6, 1},
     coef = function (x, y, z)
       return x * 0.12
     end
   },
   [8] = {
-    attrs = { [4] = 14, [8] = 62, [6] = 11},
+    attrs = {14, 62, 11},
     vec_coef = function (x, y, z)
       scale = 0.12
       return x * scale, y * scale, z * scale

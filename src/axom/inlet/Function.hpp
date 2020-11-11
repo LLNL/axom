@@ -39,12 +39,14 @@ namespace inlet
  * \brief The tags used to describe function signatures in the input file
  * 
  * \note Additions to this enumeration should be propagated to LuaReader
- * and inlet_function_arg_type, if necessary
+ * and func_signature_tuples defined below (the mapping from enum to types)
+ * 
+ * \note Vec3D corresponds to a three-dimensional vector, Double corresponds to
+ * a floating-point scalar
  *******************************************************************************
  */
 enum class FunctionType
 {
-  Vec2D,
   Vec3D,
   Double
 };
@@ -328,20 +330,48 @@ struct tuples_to_wrapper<std::tuple<Tuples...>>
     FunctionWrapper<typename tuple_to_inlet_signature<Tuples>::type...>;
 };
 
-// Get the permutations for zero-, one-, and two-argument functions
-using zero_arg_tuples =
-  type_permutations<1u, primal::Vector2D, primal::Vector3D, double>;
-using one_arg_tuples =
-  type_permutations<2u, primal::Vector2D, primal::Vector3D, double>;
-using two_arg_tuples =
-  type_permutations<3u, primal::Vector2D, primal::Vector3D, double>;
-// Then add them together so zero-, one-, and two-argument can be supported
-using up_to_two_arg_tuples =
-  decltype(std::tuple_cat(std::declval<zero_arg_tuples>(),
-                          std::declval<one_arg_tuples>(),
-                          std::declval<two_arg_tuples>()));
+/*!
+ *****************************************************************************
+ * \brief Generates the permutations of a parameter pack up to a certain
+ * length, including all shorter permutations
+ * 
+ * \tparam N The length of the longest permutation, will also generate
+ * permutations of length N-1, N-2, ..., 1
+ * \tparam Ts... The parameter pack of types to enumerate
+ *****************************************************************************
+ */
+template <std::size_t N, typename... Ts>
+struct arg_tuples
+{
+  using type = decltype(
+    std::tuple_cat(std::declval<type_permutations<N, Ts...>>(),
+                   std::declval<typename arg_tuples<N - 1, Ts...>::type>()));
+};
 
-using BasicFunctionWrapper = tuples_to_wrapper<up_to_two_arg_tuples>::type;
+// Base case - empty tuple
+template <typename... Ts>
+struct arg_tuples<0u, Ts...>
+{
+  using type = std::tuple<>;
+};
+
+/*!
+ *****************************************************************************
+ * \brief The maximum number of user-specified arguments to a function
+ *
+ * \note Be very cautious when increasing this, as it will result in exponential
+ * function generation - specifically, m^n where n is this MAX_NUM_ARGS
+ * and m is the number of elements in the FunctionType enumeration
+ *****************************************************************************
+ */
+static constexpr std::size_t MAX_NUM_ARGS = 2u;
+
+// Get the permutations of all possible signatures
+// Add one as return types also need to be permuted
+using func_signature_tuples =
+  arg_tuples<MAX_NUM_ARGS + 1, primal::Vector3D, double>::type;
+
+using BasicFunctionWrapper = tuples_to_wrapper<func_signature_tuples>::type;
 
 }  // end namespace detail
 

@@ -170,15 +170,12 @@ bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices
 // callables
 namespace detail
 {
+// Passes through everything except a vector, which is expanded into
+// three separate arguments
 template <typename Arg>
 Arg&& lua_identity(Arg&& arg)
 {
   return std::forward<Arg>(arg);
-}
-
-std::tuple<double, double> lua_identity(const primal::Vector2D& vec)
-{
-  return std::make_tuple(vec[0], vec[1]);
 }
 
 std::tuple<double, double, double> lua_identity(const primal::Vector3D& vec)
@@ -229,13 +226,6 @@ Ret extractResult(sol::protected_function_result&& res)
 }
 
 template <>
-primal::Vector2D extractResult<primal::Vector2D>(sol::protected_function_result&& res)
-{
-  auto tup = extractResult<std::tuple<double, double>>(std::move(res));
-  return {std::get<0>(tup), std::get<1>(tup)};
-}
-
-template <>
 primal::Vector3D extractResult<primal::Vector3D>(sol::protected_function_result&& res)
 {
   auto tup = extractResult<std::tuple<double, double, double>>(std::move(res));
@@ -267,18 +257,6 @@ buildStdFunction(sol::protected_function&& func)
     return extractResult<Ret>(callWith(func, args...));
   };
 }
-
-/*!
- *****************************************************************************
- * \brief The maximum number of user-specified arguments in a lua function 
- * prior to vector expansion (Vec3D to x,y,z, for example)
- *
- * \note Be very cautious when increasing this, as it will result in exponential
- * function generation - specifically, O(m^n) where n is this MAX_NUM_ARGS
- * and m is the number of elements in the FunctionType enumeration
- *****************************************************************************
- */
-static constexpr std::size_t MAX_NUM_ARGS = 2u;
 
 /*!
  *****************************************************************************
@@ -319,9 +297,6 @@ typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
   {
     switch(arg_types[I])
     {
-    case FunctionType::Vec2D:
-      return bindArgType<I + 1, Ret, Args..., primal::Vector2D>(std::move(func),
-                                                                arg_types);
     case FunctionType::Vec3D:
       return bindArgType<I + 1, Ret, Args..., primal::Vector3D>(std::move(func),
                                                                 arg_types);
@@ -367,9 +342,6 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
   {
     switch(ret_type)
     {
-    case FunctionType::Vec2D:
-      return detail::bindArgType<0u, primal::Vector2D>(std::move(lua_func),
-                                                       arg_types);
     case FunctionType::Vec3D:
       return detail::bindArgType<0u, primal::Vector3D>(std::move(lua_func),
                                                        arg_types);

@@ -111,7 +111,7 @@ struct BoundaryCondition
   {
     schema.addIntArray("attrs", "List of boundary attributes");
     // Inlet does not support sum types, so both options are added to the schema
-    // Supported function parameter/return types are Double, Vec2D, and Vec3D
+    // Supported function parameter/return types are Double and Vec3D
     schema.addFunction("vec_coef",
                        inlet::FunctionType::Vec3D,    // Return type
                        {inlet::FunctionType::Vec3D},  // Argument types
