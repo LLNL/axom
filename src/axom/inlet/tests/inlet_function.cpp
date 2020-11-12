@@ -284,6 +284,31 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
   EXPECT_FLOAT_EQ(second_result[2], 18);
 }
 
+TEST(inlet_function, lua_usertype_basic)
+{
+  std::string testString = "function func(vec) return 7 end";
+  LuaReader lr;
+  lr.parseString(testString);
+  auto func = lr.getFunctionInternal("func");
+  axom::primal::Vector3D vec {1, 2, 3};
+  int result = func(vec);
+  EXPECT_EQ(result, 7);
+}
+
+TEST(inlet_function, lua_usertype_basic_ret)
+{
+  std::string testString =
+    "function func(x, y, z) return Vec3D.new(x, y, z) end";
+  LuaReader lr;
+  lr.parseString(testString);
+  auto func = lr.getFunctionInternal("func");
+  axom::primal::Vector3D vec {1, 2, 3};
+  axom::primal::Vector3D result = func(1, 2, 3);
+  EXPECT_FLOAT_EQ(vec[0], result[0]);
+  EXPECT_FLOAT_EQ(vec[1], result[1]);
+  EXPECT_FLOAT_EQ(vec[2], result[2]);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

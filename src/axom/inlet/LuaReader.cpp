@@ -26,6 +26,15 @@ namespace axom
 {
 namespace inlet
 {
+LuaReader::LuaReader()
+{
+  m_lua.open_libraries(sol::lib::base);
+  auto vec_type = m_lua.new_usertype<primal::Vector3D>(
+    "Vec3D",
+    "new",
+    sol::factories(primal::Vector3D::make_vector));
+}
+
 bool LuaReader::parseFile(const std::string& filePath)
 {
   if(!axom::utilities::filesystem::pathExists(filePath))

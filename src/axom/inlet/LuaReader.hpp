@@ -39,7 +39,7 @@ namespace inlet
 class LuaReader : public Reader
 {
 public:
-  LuaReader() { m_lua.open_libraries(sol::lib::base); }
+  LuaReader();
 
   /*!
    *****************************************************************************
@@ -273,9 +273,13 @@ private:
    * \return The function, compares false if not found
    *****************************************************************************
    */
+public:
   sol::protected_function getFunctionInternal(const std::string& id);
 
+private:
   sol::state m_lua;
+
+  sol::usertype<primal::Vector3D> m_vec3d_type;
 };
 
 }  // end namespace inlet
