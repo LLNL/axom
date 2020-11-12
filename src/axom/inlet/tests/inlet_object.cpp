@@ -428,6 +428,40 @@ TEST(inlet_object, implicit_conversion_primitives)
   EXPECT_EQ(arr, expected_arr);
 }
 
+TEST(inlet_dict, basic_dicts)
+{
+  std::string testString =
+    "foo = { [\"key1\"] = 4, [\"key3\"] = 6, [\"key2\"] = 10}";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addIntDict("foo", "foo's description");
+  std::unordered_map<std::string, int> dict = inlet["foo"];
+  std::unordered_map<std::string, int> correct = {{"key1", 4},
+                                                  {"key3", 6},
+                                                  {"key2", 10}};
+  EXPECT_EQ(dict, correct);
+}
+
+TEST(inlet_dict, simple_dict_of_struct_by_value)
+{
+  std::string testString =
+    "foo = { [\"key1\"] = { bar = true; baz = false}, "
+    "        [\"key2\"] = { bar = false; baz = true} }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& dict_table = inlet.getGlobalTable().addGenericDict("foo");
+
+  dict_table.addBool("bar", "bar's description");
+  dict_table.addBool("baz", "baz's description");
+  std::unordered_map<std::string, Foo> expected_foos = {{"key1", {true, false}},
+                                                        {"key2", {false, true}}};
+  std::unordered_map<std::string, Foo> foos;
+  EXPECT_TRUE(dict_table.getDict(foos));
+  EXPECT_EQ(foos, expected_foos);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
