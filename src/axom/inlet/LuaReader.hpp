@@ -276,8 +276,6 @@ private:
   sol::protected_function getFunctionInternal(const std::string& id);
 
   sol::state m_lua;
-
-  sol::usertype<primal::Vector3D> m_vec3d_type;
 };
 
 }  // end namespace inlet

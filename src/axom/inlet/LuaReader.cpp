@@ -32,7 +32,8 @@ LuaReader::LuaReader()
   auto vec_type = m_lua.new_usertype<primal::Vector3D>(
     "Vec3D",  // Name of the class in Lua
     // Add make_vector as a constructor to enable "new Vec3D(x,y,z)"
-    // Use lambdas for 2D and "default" cases
+    // Use lambdas for 2D and "default" cases - default arguments cannot be
+    // propagated automatically
     "new",
     sol::factories(
       primal::Vector3D::make_vector,
@@ -47,6 +48,14 @@ LuaReader::LuaReader()
     // Needs to be resolved in the same way as operator+
     sol::meta_function::unary_minus,
     sol::resolve<primal::Vector3D(const primal::Vector3D&)>(primal::operator-),
+    // To allow both "directions" of a scalar multiplication, the overloads
+    // have to be manually specified + resolved
+    sol::meta_function::multiplication,
+    sol::overload(
+      sol::resolve<primal::Vector3D(const primal::Vector3D&, const double)>(
+        primal::operator*),
+      sol::resolve<primal::Vector3D(const double, const primal::Vector3D&)>(
+        primal::operator*)),
     // Separate functions from get/set via index - subtract 1 as lua is 1-indexed
     sol::meta_function::index,
     [](const primal::Vector3D& vec, const int key) { return vec[key - 1]; },
@@ -57,7 +66,18 @@ LuaReader::LuaReader()
     },
     // Set up the mathematical operations by name
     "norm",
-    &primal::Vector3D::norm);
+    &primal::Vector3D::norm,
+    "squared_norm",
+    &primal::Vector3D::squared_norm,
+    "unitVector",
+    &primal::Vector3D::unitVector,
+    "dot",
+    &primal::Vector3D::dot,
+    // Implemented as a member function like dot products are, for simplicity
+    "cross",
+    // Needs to be resolved as it is an overloaded static method
+    sol::resolve<primal::Vector3D(const primal::Vector3D&, const primal::Vector3D&)>(
+      primal::Vector3D::cross_product));
 }
 
 bool LuaReader::parseFile(const std::string& filePath)
