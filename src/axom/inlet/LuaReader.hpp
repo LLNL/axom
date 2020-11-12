@@ -273,10 +273,8 @@ private:
    * \return The function, compares false if not found
    *****************************************************************************
    */
-public:
   sol::protected_function getFunctionInternal(const std::string& id);
 
-private:
   sol::state m_lua;
 
   sol::usertype<primal::Vector3D> m_vec3d_type;

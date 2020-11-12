@@ -30,9 +30,34 @@ LuaReader::LuaReader()
 {
   m_lua.open_libraries(sol::lib::base);
   auto vec_type = m_lua.new_usertype<primal::Vector3D>(
-    "Vec3D",
+    "Vec3D",  // Name of the class in Lua
+    // Add make_vector as a constructor to enable "new Vec3D(x,y,z)"
+    // Use lambdas for 2D and "default" cases
     "new",
-    sol::factories(primal::Vector3D::make_vector));
+    sol::factories(
+      primal::Vector3D::make_vector,
+      [](double x, double y) {
+        return primal::Vector3D {x, y};
+      },
+      [] { return primal::Vector3D {}; }),
+    // Add vector addition operation
+    sol::meta_function::addition,
+    sol::resolve<primal::Vector3D(const primal::Vector3D&, const primal::Vector3D&)>(
+      primal::operator+),
+    // Needs to be resolved in the same way as operator+
+    sol::meta_function::unary_minus,
+    sol::resolve<primal::Vector3D(const primal::Vector3D&)>(primal::operator-),
+    // Separate functions from get/set via index - subtract 1 as lua is 1-indexed
+    sol::meta_function::index,
+    [](const primal::Vector3D& vec, const int key) { return vec[key - 1]; },
+    // A lambda is used here as the set-via-returned reference is insufficient
+    sol::meta_function::new_index,
+    [](primal::Vector3D& vec, const int key, const double value) {
+      vec[key - 1] = value;
+    },
+    // Set up the mathematical operations by name
+    "norm",
+    &primal::Vector3D::norm);
 }
 
 bool LuaReader::parseFile(const std::string& filePath)

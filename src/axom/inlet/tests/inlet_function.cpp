@@ -284,14 +284,22 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
   EXPECT_FLOAT_EQ(second_result[2], 18);
 }
 
+template <typename Ret, typename... Args>
+Ret checkedCall(const sol::protected_function& func, Args&&... args)
+{
+  auto tentative_result = func(std::forward<Args>(args)...);
+  EXPECT_TRUE(tentative_result.valid());
+  return tentative_result;
+}
+
 TEST(inlet_function, lua_usertype_basic)
 {
   std::string testString = "function func(vec) return 7 end";
   LuaReader lr;
   lr.parseString(testString);
-  auto func = lr.getFunctionInternal("func");
+  sol::protected_function func = lr.solState()["func"];
   axom::primal::Vector3D vec {1, 2, 3};
-  int result = func(vec);
+  int result = checkedCall<int>(func, vec);
   EXPECT_EQ(result, 7);
 }
 
@@ -301,12 +309,107 @@ TEST(inlet_function, lua_usertype_basic_ret)
     "function func(x, y, z) return Vec3D.new(x, y, z) end";
   LuaReader lr;
   lr.parseString(testString);
-  auto func = lr.getFunctionInternal("func");
+  sol::protected_function func = lr.solState()["func"];
   axom::primal::Vector3D vec {1, 2, 3};
-  axom::primal::Vector3D result = func(1, 2, 3);
+  auto result = checkedCall<axom::primal::Vector3D>(func, 1, 2, 3);
   EXPECT_FLOAT_EQ(vec[0], result[0]);
   EXPECT_FLOAT_EQ(vec[1], result[1]);
   EXPECT_FLOAT_EQ(vec[2], result[2]);
+}
+
+TEST(inlet_function, lua_usertype_basic_ret_2d)
+{
+  std::string testString = "function func(x, y, z) return Vec3D.new(x, y) end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  axom::primal::Vector3D vec {1, 2, 0};
+  auto result = checkedCall<axom::primal::Vector3D>(func, 1, 2, 3);
+  EXPECT_FLOAT_EQ(vec[0], result[0]);
+  EXPECT_FLOAT_EQ(vec[1], result[1]);
+  EXPECT_FLOAT_EQ(vec[2], result[2]);
+}
+
+TEST(inlet_function, lua_usertype_basic_ret_default)
+{
+  std::string testString = "function func(x, y, z) return Vec3D.new() end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  axom::primal::Vector3D vec {0, 0, 0};
+  auto result = checkedCall<axom::primal::Vector3D>(func, 1, 2, 3);
+  EXPECT_FLOAT_EQ(vec[0], result[0]);
+  EXPECT_FLOAT_EQ(vec[1], result[1]);
+  EXPECT_FLOAT_EQ(vec[2], result[2]);
+}
+
+TEST(inlet_function, lua_usertype_basic_add)
+{
+  std::string testString = "function func(vec1, vec2) return vec1 + vec2 end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  axom::primal::Vector3D vec1 {1, 2, 3};
+  axom::primal::Vector3D vec2 {4, 5, 6};
+  auto result = checkedCall<axom::primal::Vector3D>(func, vec1, vec2);
+  EXPECT_FLOAT_EQ(5, result[0]);
+  EXPECT_FLOAT_EQ(7, result[1]);
+  EXPECT_FLOAT_EQ(9, result[2]);
+}
+
+TEST(inlet_function, lua_usertype_basic_negate)
+{
+  std::string testString = "function func(vec1) return -vec1 end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  axom::primal::Vector3D vec1 {1, 2, 3};
+  auto result = checkedCall<axom::primal::Vector3D>(func, vec1);
+  EXPECT_FLOAT_EQ(-1, result[0]);
+  EXPECT_FLOAT_EQ(-2, result[1]);
+  EXPECT_FLOAT_EQ(-3, result[2]);
+}
+
+TEST(inlet_function, lua_usertype_basic_index_get)
+{
+  std::string testString = "function func(vec, idx) return vec[idx] end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  axom::primal::Vector3D vec {1, 2, 3};
+  // Use 1-based indexing in these tests as lua is 1-indexed
+  auto result = checkedCall<double>(func, vec, 1);
+  EXPECT_FLOAT_EQ(1, result);
+  result = checkedCall<double>(func, vec, 2);
+  EXPECT_FLOAT_EQ(2, result);
+  result = checkedCall<double>(func, vec, 3);
+  EXPECT_FLOAT_EQ(3, result);
+}
+
+TEST(inlet_function, lua_usertype_basic_index_set)
+{
+  std::string testString =
+    "function func(idx) vec = Vec3D.new(1,1,1); vec[idx] = -1; return vec end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  auto result = checkedCall<axom::primal::Vector3D>(func, 1);
+  EXPECT_FLOAT_EQ(-1, result[0]);
+  result = checkedCall<axom::primal::Vector3D>(func, 2);
+  EXPECT_FLOAT_EQ(-1, result[1]);
+  result = checkedCall<axom::primal::Vector3D>(func, 3);
+  EXPECT_FLOAT_EQ(-1, result[2]);
+}
+
+TEST(inlet_function, lua_usertype_basic_norm)
+{
+  std::string testString = "function func(vec) return vec:norm() end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  axom::primal::Vector3D vec {1, 2, 3};
+  auto result = checkedCall<double>(func, vec);
+  EXPECT_FLOAT_EQ(vec.norm(), result);
 }
 
 //------------------------------------------------------------------------------
