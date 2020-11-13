@@ -27,14 +27,18 @@ namespace test
  * \param values the values of the matrix, in row-major order
  * \return the affine transformation matrix represented by the rows
  */
-numerics::Matrix<double> affine(const std::array<double, 12> &values);
+numerics::Matrix<double> affine(const std::array<std::array<double, 4>, 3> &values);
 
 class MockOperator : public GeometryOperator
 {
 public:
-  MOCK_METHOD(Dimensions, startDims, (), (const));
-  MOCK_METHOD(Dimensions, endDims, (), (const));
+  using GeometryOperator::GeometryOperator;
+  MOCK_METHOD(TransformableGeometryProperties, getEndProperties, (), (const));
   MOCK_METHOD(void, accept, (GeometryOperatorVisitor &), (const));
+  TransformableGeometryProperties getBaseEndProperties() const
+  {
+    return GeometryOperator::getEndProperties();
+  }
 };
 
 }  // namespace test

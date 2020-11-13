@@ -20,25 +20,27 @@ using ::testing::Return;
 
 TEST(GeometryTest, dimensions_noOperators)
 {
-  Geometry geometry;
-  geometry.setInitialDimensions(Dimensions::Three);
-  EXPECT_EQ(Dimensions::Three, geometry.getInitialDimensions());
-  EXPECT_EQ(Dimensions::Three, geometry.getDimensions());
+  TransformableGeometryProperties startProperties {Dimensions::Three,
+                                                   LengthUnit::mils};
+  Geometry geometry {startProperties, "test format", "test path", nullptr};
+  EXPECT_EQ(startProperties, geometry.getStartProperties());
+  EXPECT_EQ(startProperties, geometry.getEndProperties());
 }
 
 TEST(GeometryTest, dimensions_dimensionPreservingOperator)
 {
-  Geometry geometry;
-  geometry.setInitialDimensions(Dimensions::Three);
+  TransformableGeometryProperties startProperties {Dimensions::Two,
+                                                   LengthUnit::mils};
+  TransformableGeometryProperties endProperties {Dimensions::Three,
+                                                 LengthUnit::cm};
+  auto mockOperator = std::make_shared<MockOperator>(startProperties);
+  Geometry geometry {startProperties, "test format", "test path", mockOperator};
 
-  auto mockOperator = std::make_shared<MockOperator>();
-  ON_CALL(*mockOperator, startDims()).WillByDefault(Return(Dimensions::Three));
-  ON_CALL(*mockOperator, endDims()).WillByDefault(Return(Dimensions::Two));
-  geometry.setGeometryOperator(mockOperator);
-  EXPECT_CALL(*mockOperator, endDims());
+  ON_CALL(*mockOperator, getEndProperties()).WillByDefault(Return(endProperties));
+  EXPECT_CALL(*mockOperator, getEndProperties());
 
-  EXPECT_EQ(Dimensions::Three, geometry.getInitialDimensions());
-  EXPECT_EQ(Dimensions::Two, geometry.getDimensions());
+  EXPECT_EQ(startProperties, geometry.getStartProperties());
+  EXPECT_EQ(endProperties, geometry.getEndProperties());
 }
 
 }  // namespace klee

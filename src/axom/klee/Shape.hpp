@@ -23,50 +23,35 @@ class Shape
 {
 public:
   /**
-   * Get the name of this shape.
-   * \return the shape's name
+   * Create a new Shape.
+   *
+   * \param name the name of the shape
+   * \param material the shape's material.
+   * \param materialsReplaced the materials which can be replaced. If empty,
+   * all materials can be replaced unless materialsNotReplaced is set.
+   * \param materialsNotReplaced the materials which cannot be replaced. If
+   * empty, all materials can be replaced unless materialsReplaced is set.
+   * \param geometry the geometric properties of this shape
+   * \throws std::logic_error if both materialsReplaced and
+   * materialsNotReplaced have entries.
    */
-  const std::string &getName() const { return m_name; }
+  Shape(std::string name,
+        std::string material,
+        std::vector<std::string> materialsReplaced,
+        std::vector<std::string> materialsNotReplaced,
+        Geometry geometry);
 
   /**
-   * Set the name of the shape.
-   * \param name the shape's name
-   */
-  void setName(std::string name);
+     * Get the name of this shape.
+     * \return the shape's name
+     */
+  const std::string &getName() const { return m_name; }
 
   /**
    * Get the material this shape is made of.
    * \return the shape's material.
    */
   const std::string &getMaterial() const { return m_material; }
-
-  /**
-   * Set the material this shape is made of.
-   * \return the shape's material.
-   */
-  void setMaterial(std::string material);
-
-  /**
-   * Set the list of materials which can be replaced. By default, all
-   * materials are replaced.
-   *
-   * \param materialsReplaced the list of materials which this shape can
-   * replace.
-   * \throws std::logic_error if this shape has a list of materials that
-   * cannot be replaced.
-   */
-  void setMaterialsReplaced(const std::vector<std::string> &materialsReplaced);
-
-  /**
-   * Set the list of materials which cannot be replaced. By default, all
-   * materials are replaced.
-   *
-   * \param materialsNotReplaced the list of materials which this shape
-   * cannot replace.
-   * \throws std::logic_error if this shape has a list of materials that
-   * can be replaced.
-   */
-  void setMaterialsNotReplaced(const std::vector<std::string> &materialsNotReplaced);
 
   /**
    * Check whether this shape can replace the given material (within the
@@ -83,12 +68,6 @@ public:
    * \return the shape's geometry
    */
   const Geometry &getGeometry() const { return m_geometry; }
-
-  /**
-   * Set the shape's geometry
-   * \param geometry a description of the shape's geometry
-   */
-  void setGeometry(Geometry geometry);
 
 private:
   std::string m_name;

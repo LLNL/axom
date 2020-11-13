@@ -34,29 +34,23 @@ bool contains(const Container &container,
 }
 }  // unnamed namespace
 
-void Shape::setMaterialsReplaced(const std::vector<std::string> &materialsReplaced)
+Shape::Shape(std::string name,
+             std::string material,
+             std::vector<std::string> materialsReplaced,
+             std::vector<std::string> materialsNotReplaced,
+             Geometry geometry)
+  : m_name {std::move(name)}
+  , m_material {std::move(material)}
+  , m_materialsReplaced {std::move(materialsReplaced)}
+  , m_materialsNotReplaced {std::move(materialsNotReplaced)}
+  , m_geometry {std::move(geometry)}
 {
-  if(!m_materialsNotReplaced.empty())
+  if(!m_materialsNotReplaced.empty() && !m_materialsReplaced.empty())
   {
     throw std::logic_error(
-      "Can't set list of materials to replace "
-      "when materials to not replace have already "
-      "been set");
+      "Can't set both the list of materials to replace "
+      "and materials to not replace");
   }
-  m_materialsReplaced = materialsReplaced;
-}
-
-void Shape::setMaterialsNotReplaced(
-  const std::vector<std::string> &materialsNotReplaced)
-{
-  if(!m_materialsReplaced.empty())
-  {
-    throw std::logic_error(
-      "Can't set list of materials to not replace "
-      "when materials to replace have already "
-      "been set");
-  }
-  m_materialsNotReplaced = materialsNotReplaced;
 }
 
 bool Shape::replaces(const std::string &material) const
@@ -71,15 +65,6 @@ bool Shape::replaces(const std::string &material) const
   }
   return true;
 }
-
-void Shape::setName(std::string name) { m_name = std::move(name); }
-
-void Shape::setMaterial(std::string material)
-{
-  m_material = std::move(material);
-}
-
-void Shape::setGeometry(Geometry geometry) { m_geometry = std::move(geometry); }
 
 }  // namespace klee
 }  // namespace axom

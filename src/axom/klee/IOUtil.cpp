@@ -65,6 +65,45 @@ Dimensions toDimensions(const conduit::Node &dimensionsNode)
   throw std::invalid_argument("'dimensions' must be either 2 or 3");
 }
 
+std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
+  const conduit::Node &node)
+{
+  bool hasStartUnits = node.has_child("start_units");
+  bool hasEndUnits = node.has_child("end_units");
+  if(node.has_child("units"))
+  {
+    if(hasStartUnits || hasEndUnits)
+    {
+      throw std::invalid_argument(
+        "Can't specify 'units' with 'start_units' or 'end_units'");
+    }
+    auto units = parseLengthUnits(node["units"].as_string());
+    return std::make_tuple(units, units);
+  }
+  else if(hasStartUnits || hasEndUnits)
+  {
+    if(!(hasStartUnits && hasEndUnits))
+    {
+      throw std::invalid_argument(
+        "Must specify both 'start_units' and 'end_units'");
+    }
+    auto startUnits = parseLengthUnits(node["start_units"].as_string());
+    auto endUnits = parseLengthUnits(node["end_units"].as_string());
+    return std::make_tuple(startUnits, endUnits);
+  }
+  return std::make_tuple(LengthUnit::unspecified, LengthUnit::unspecified);
+}
+
+std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const conduit::Node &node)
+{
+  auto units = getOptionalStartAndEndUnits(node);
+  if(std::get<0>(units) == LengthUnit::unspecified)
+  {
+    throw std::invalid_argument("Did not specify units");
+  }
+  return units;
+}
+
 }  // namespace internal
 }  // namespace klee
 }  // namespace axom

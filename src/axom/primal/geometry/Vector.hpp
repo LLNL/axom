@@ -457,11 +457,12 @@ inline void Vector<T, NDIMS>::negate()
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline bool Vector<T, NDIMS >::is_zero() const
+inline bool Vector<T, NDIMS>::is_zero() const
 {
-  for ( int i=0 ; i < NDIMS ; ++i )
+  for(int i = 0; i < NDIMS; ++i)
   {
-    if (!utilities::isNearlyEqual(m_components[i], 0.0)) {
+    if(!utilities::isNearlyEqual(m_components[i], 0.0))
+    {
       return false;
     }
   }

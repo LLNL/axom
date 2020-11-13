@@ -16,6 +16,7 @@ set(klee_headers
         IO.hpp
         Shape.hpp
         ShapeSet.hpp
+        Units.hpp
     )
 
 set(klee_internal_headers
@@ -31,6 +32,7 @@ set(klee_sources
         IOUtil.cpp
         Shape.cpp
         ShapeSet.cpp
+        Units.cpp
     )
 
 #------------------------------------------------------------------------------

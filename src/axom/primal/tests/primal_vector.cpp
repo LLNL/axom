@@ -255,17 +255,18 @@ TEST(primal_vector, vector_outer_product)
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_vector, vector_zero)
+TEST(primal_vector, vector_zero)
 {
   constexpr int DIM = 5;
-  typedef primal::Vector< double, DIM > QVec;
-  QVec zero{0.0};
+  typedef primal::Vector<double, DIM> QVec;
+  QVec zero {0.0};
   EXPECT_TRUE(zero.is_zero());
 
-  for (int i = 0; i < DIM; ++i) {
-      QVec notZero = zero;
-      notZero[i] = 1e-7;
-      EXPECT_FALSE(notZero.is_zero()) << "Wrong when changing index " << i;
+  for(int i = 0; i < DIM; ++i)
+  {
+    QVec notZero = zero;
+    notZero[i] = 1e-7;
+    EXPECT_FALSE(notZero.is_zero()) << "Wrong when changing index " << i;
   }
 }
 

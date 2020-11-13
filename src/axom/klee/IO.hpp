@@ -19,13 +19,12 @@ namespace klee
  * Read a ShapeSet from an input stream.
  *
  * \param stream the stream from which to read the ShapeSet
- * \return the ShapeSet read from the stream
  * \throws runtime_error if the input is invalid
  */
 ShapeSet readShapeSet(std::istream &stream);
 
 /**
- * Read a ShapeSet from a specified faile
+ * Read a ShapeSet from a specified file
  *
  * \param filePath the file from which to read the ShapeSet
  * \return the ShapeSet read from the file

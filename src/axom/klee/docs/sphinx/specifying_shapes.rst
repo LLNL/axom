@@ -27,15 +27,18 @@ later when specifying transformations and slices.
         geometry:
           format: stl
           path: wheel.stl
+          units: cm
       - name: windshield
         material: glass
         geometry:
           format: stl
           path: windshield.stl
+          units: in
 
 
 The above example describes a series of 3D shapes. The first is a wheel
 made of steel. Its geometry is specified in an STL file named :code:`wheel.stl`.
+Since STL files don't have units embedded in them, we must specify them.
 The second shape is named "windshield", is made of "glass", and its geometry
 is specified in :code:`windshield.stl`. Note that Klee does not specify
 what a particular material means. A material is simply a label which can
@@ -66,7 +69,7 @@ Sometimes it is useful to bring in a geometry file in a different
 dimensionality than the one you are working in. For example, you may be
 working in 2D, but may want to bring in a 3D file and then slice it
 (slices are described below). To do this, you need to specify the
-:code:`initial_dimensions` field on the :code:`geometry` of a :code:`shape`.
+:code:`start_dimensions` field on the :code:`geometry` of a :code:`shape`.
 
 .. code-block:: yaml
 
@@ -78,7 +81,8 @@ working in 2D, but may want to bring in a 3D file and then slice it
         geometry:
           format: stl
           path: wheel.stl
-          initial_dimensions: 3
+          start_dimensions: 3
+          units: cm
           operators:
             - slice:
                 x: 10
@@ -93,6 +97,7 @@ specified by its geometry file. This can be overridden by using the
 .. code-block:: yaml
 
     dimensions: 3
+    units: cm
 
     shapes:
       - name: wheel
@@ -132,6 +137,7 @@ to apply transformations to shapes.
         geometry:
           format: stl
           path: windshield.stl
+          units: cm
           operators:
             - rotate: 90
               axis: [0, 1, 0]
@@ -142,6 +148,44 @@ In the example above, the wheel is rotated 90 degrees counterclockwise
 around an axis centered at the point :code:`(0, 0, -10)` and pointing in the
 direction of the vector :code:`(0, 1, 0)`. It is then translated by the
 vector :code:`(10, 20, 30)`.
+
+Regardless of whether the geometry file has embedded units and what those may
+be, units must be specified whenever specifying operators. These are the
+units that will be used to interpret any lengths and points specified in
+operators. Units may be specified in one of two ways: by specifying
+:code:`units`, or by specifying :code:`start_units` and :code:`end_units`.
+Specifying :code:`units` is the same as giving the same value for
+:code:`start_units` and :code:`end_units`. Being able to change units is
+useful for situations where your geometry file is in one set units, but
+you're thinking about your larger assembly in another set of units.
+For example:
+
+.. code-block:: yaml
+
+    dimensions: 3
+
+    shapes:
+      - name: windshield
+        material: glass
+        geometry:
+          format: stl
+          path: windshield.stl
+          start_units: in
+          end_units: ft
+          operators:
+            # Orient the windshield about its own coordinate system,
+            # working in its native units (inches)
+            - translate: [10, 20, 30]  # inches
+            - rotate: 90
+              axis: [0, 1, 0]
+              center: [0, 0, -10]  # inches
+            # switch to feet to put in the right place while thinking of
+            # of the car in car in different units
+            - convert_units_to: ft
+            - translate: [2, 3, 4]  # feet
+
+It is an error if the :code:`end_units` do not match the units after the
+last operator.
 
 Supported Operators
 *******************
@@ -198,20 +242,23 @@ Operators may also have additional required or optional parameters.
         # Scale by 2x in the x direction 0.5x in y, and 1.5x in z
         scale: [2.0, 0.5, 1.5]
 
-* Arbitrary Affine Matrices
+* Changing Units
 
-  :description: Apply an arbitrary affine transformation to a shape
-  :name: :code:`affine`
-  :value: a vector containing either 6 (for 2D) or 12 (for 3D) values. In 2D,
-   the vector :code:`(a, b, c, d, e, f)` maps to the matrix
-   :code:`((a, b, c), (d, e, f), (0, 0, 1))`. In 3D, the vector
-   :code:`(a, b, c, d, e, f, g, h, i, j, k, l)` maps to the matrix
-   :code:`((a, b, c, d), (e, f, g, h), (i, j, k, l), (0, 0, 0, 1))`.
+  :description: Change the units in which subsequent operators are expressed.
+    this is the same as scaling by the appropriate factor.
+  :name: :code:`convert_units_to`
+  :value: the name of the units to convert to. Must be one of the named units.
   :example:
     ::
 
-        # Apply the matrix ((1, 2, 3, 4,), (5, 6, 7, 8), (9, 10, 11, 12))
-        affine: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      geometry:
+        ...
+        start_units: in
+        end_units: cm
+        operators:
+          - translate: [2, 3]  # in inches
+          - convert_units_to: cm  # same as scale: 2.54
+          - translate: [5, 6]  # in centimeters
 
 * Slices
 
@@ -274,9 +321,16 @@ object. This is a list where each entry has the following values:
 :name (required): the name of the operator. This is how it is referenced later.
 :value (required): A list of operators. This is identical to the
   :code:`operators` entry in the :code:`geometry` object of a :code:`shape`.
-:initial_dimensions (optional): the number of initial dimensions of the
+:start_dimensions (optional): the number of initial dimensions of the
   operator. Must be 2 or 3. If not specified, the number of dimensions of the
   document is used.
+:units (required, must specify this or start_units and end_units): the units in
+  which the operator is specified
+:start_units (optional, must specify this or units): the units in which the
+  first operator is specified
+:end_units (optiona, must specify this or units): the units in which the
+  last operator is specified. It is an error if the right conversion are
+  not done.
 
 The example below demonstrates how to create and then use a named operator.
 Note that :code:`ref` is just one entry in the list of operators, and
@@ -290,17 +344,50 @@ additional operators may be used.
       - name: wheel
         material: steel
         geometry:
-          format: stl
-          path: wheel.stl
+          format: c2c
+          path: wheel.contour
+          units: cm
           operators:
             - ref MyFirstOperator
             - rotate: 90
 
     named_operators:
       - name: MyFirstOperator
+        units: cm
         value:
           - translate: [10, 20]
           - scale: 1.5
+
+An important thing to note is that the units of the named operator and
+the shape that uses it do not have to match. The appropriate conversions
+will be done automatically if needed. This allows you to not worry about how
+the transformation was defined when you use it.
+
+.. code-block:: yaml
+
+    dimensions: 2
+
+    named_operators:
+      - name: MySampleOperator
+        start_units: cm
+        end_units: mm
+        value:
+          - translate: [10, 20]  # cm
+          - convert_units_to: mm
+          - translate: [30, 40]  # mm
+    shapes:
+      - name: wheel
+        material: steel
+        geometry:
+          format: c2c
+          path: wheel.contour
+          units: in
+          operators:
+            # Automatic conversion from in to cm
+            - ref MySampleOperator
+            # Automatic conversion from mm to in
+            - translate: [50, 60]  # in
+
 
 
 In addition to using :code:`ref` in an individual shape's operators, you
@@ -310,13 +397,16 @@ be defined in the list before it is used.
 .. code-block:: yaml
 
     dimensions: 2
+    units: cm
 
     named_operators:
       - name: SomeOperator
+        units: cm
         value:
           - translate: [10, 20]
           - scale: 1.5
       - name: AnotherOperator
+        units: cm
         value:
           - rotate: 90
           - ref: SomeOperator

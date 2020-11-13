@@ -14,23 +14,10 @@ namespace axom
 {
 namespace klee
 {
-Dimensions CompositeOperator::startDims() const
-{
-  if(m_operators.empty())
-  {
-    throw std::logic_error("An empty composite has no dimensionality");
-  }
-  return m_operators[0]->startDims();
-}
-
-Dimensions CompositeOperator::endDims() const
-{
-  if(m_operators.empty())
-  {
-    throw std::logic_error("An empty composite has no dimensionality");
-  }
-  return (*m_operators.rbegin())->endDims();
-}
+GeometryOperator::GeometryOperator(
+  const TransformableGeometryProperties &startProperties)
+  : m_startProperties {startProperties}
+{ }
 
 void CompositeOperator::accept(GeometryOperatorVisitor &visitor) const
 {
@@ -39,12 +26,25 @@ void CompositeOperator::accept(GeometryOperatorVisitor &visitor) const
 
 void CompositeOperator::addOperator(const OpPtr &op)
 {
+  if(getEndProperties() != op->getStartProperties())
+  {
+    throw std::invalid_argument("Start and end properties don't match");
+  }
   m_operators.emplace_back(op);
 }
 
-Translation::Translation(const primal::Vector3D &offset, Dimensions dims)
-  : ConstantDimensionOperator {dims}
-  , MatrixOperator {}
+TransformableGeometryProperties CompositeOperator::getEndProperties() const
+{
+  if(m_operators.empty())
+  {
+    return GeometryOperator::getEndProperties();
+  }
+  return (*m_operators.rbegin())->getEndProperties();
+}
+
+Translation::Translation(const primal::Vector3D &offset,
+                         const TransformableGeometryProperties &startProperties)
+  : MatrixOperator {startProperties}
   , m_offset {offset}
 { }
 
@@ -66,9 +66,8 @@ void Translation::accept(GeometryOperatorVisitor &visitor) const
 Rotation::Rotation(double angle,
                    const primal::Point3D &center,
                    const primal::Vector3D &axis,
-                   Dimensions dims)
-  : ConstantDimensionOperator {dims}
-  , MatrixOperator {}
+                   const TransformableGeometryProperties &startProperties)
+  : MatrixOperator {startProperties}
   , m_angle {angle}
   , m_center {center}
   , m_axis {axis}
@@ -120,9 +119,11 @@ void Rotation::accept(GeometryOperatorVisitor &visitor) const
   visitor.visit(*this);
 }
 
-Scale::Scale(double xFactor, double yFactor, double zFactor, Dimensions dims)
-  : ConstantDimensionOperator {dims}
-  , MatrixOperator {}
+Scale::Scale(double xFactor,
+             double yFactor,
+             double zFactor,
+             const TransformableGeometryProperties &startProperties)
+  : MatrixOperator {startProperties}
   , m_xFactor {xFactor}
   , m_yFactor {yFactor}
   , m_zFactor {zFactor}
@@ -143,35 +144,39 @@ void Scale::accept(GeometryOperatorVisitor &visitor) const
   visitor.visit(*this);
 }
 
-ArbitraryMatrixOperator::ArbitraryMatrixOperator(
-  const numerics::Matrix<double> &transformation,
-  Dimensions dims)
-  : ConstantDimensionOperator {dims}
-  , MatrixOperator {}
-  , m_transformation {transformation}
+UnitConverter::UnitConverter(LengthUnit endUnits,
+                             const TransformableGeometryProperties &startProperties)
+  : MatrixOperator {startProperties}
+  , m_endUnits {endUnits}
 { }
 
-numerics::Matrix<double> ArbitraryMatrixOperator::toMatrix() const
+TransformableGeometryProperties UnitConverter::getEndProperties() const
 {
-  return m_transformation;
+  return TransformableGeometryProperties {getStartProperties().dimensions,
+                                          m_endUnits};
+};
+
+numerics::Matrix<double> UnitConverter::toMatrix() const
+{
+  double factor = convert(1, getStartProperties().units, m_endUnits);
+  Scale scale(factor, factor, factor, getStartProperties());
+  return scale.toMatrix();
 }
 
-void ArbitraryMatrixOperator::accept(GeometryOperatorVisitor &visitor) const
+void UnitConverter::accept(GeometryOperatorVisitor &visitor) const
 {
   visitor.visit(*this);
-}
+};
 
 SliceOperator::SliceOperator(const primal::Point3D &origin,
                              const primal::Vector3D &normal,
-                             const primal::Vector3D &up)
-  : m_origin {origin}
+                             const primal::Vector3D &up,
+                             const TransformableGeometryProperties &startProperties)
+  : MatrixOperator {startProperties}
+  , m_origin {origin}
   , m_normal {normal}
   , m_up {up}
 { }
-
-Dimensions SliceOperator::startDims() const { return Dimensions::Three; }
-
-Dimensions SliceOperator::endDims() const { return Dimensions::Two; }
 
 numerics::Matrix<double> SliceOperator::toMatrix() const
 {
@@ -223,7 +228,7 @@ primal::Vector3D SliceOperator::calculateRightVector() const
   Rotation rotation {270,
                      primal::Point3D {0.0},
                      m_normal.unitVector(),
-                     Dimensions::Three};
+                     getStartProperties()};
   primal::Vector<double, 4> unitRightAffine;
   auto unitUp = m_up.unitVector();
   primal::Vector<double, 4> upAffine {unitUp.data(), 3};
@@ -236,6 +241,13 @@ primal::Vector3D SliceOperator::calculateRightVector() const
 void SliceOperator::accept(GeometryOperatorVisitor &visitor) const
 {
   visitor.visit(*this);
+}
+
+TransformableGeometryProperties SliceOperator::getEndProperties() const
+{
+  TransformableGeometryProperties result = getStartProperties();
+  result.dimensions = Dimensions::Two;
+  return result;
 }
 
 }  // namespace klee

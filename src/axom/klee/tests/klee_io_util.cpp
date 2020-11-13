@@ -55,6 +55,68 @@ TEST(io_util, toDimensions)
   EXPECT_THROW(toDimensions(parseValue("4")), std::invalid_argument);
 }
 
+TEST(io_util, getOptionalStartAndEndUnits_nothingSpecified)
+{
+  conduit::Node node;
+  auto units = getOptionalStartAndEndUnits(node);
+  EXPECT_EQ(LengthUnit::unspecified, std::get<0>(units));
+  EXPECT_EQ(LengthUnit::unspecified, std::get<1>(units));
+}
+
+TEST(io_util, getOptionalStartAndEndUnits_unitsSpecified)
+{
+  conduit::Node node;
+  node["units"] = "cm";
+  auto units = getOptionalStartAndEndUnits(node);
+  EXPECT_EQ(LengthUnit::cm, std::get<0>(units));
+  EXPECT_EQ(LengthUnit::cm, std::get<1>(units));
+}
+
+TEST(io_util, getOptionalStartAndEndUnits_startAndEndSpecified)
+{
+  conduit::Node node;
+  node["start_units"] = "cm";
+  node["end_units"] = "in";
+  auto units = getOptionalStartAndEndUnits(node);
+  EXPECT_EQ(LengthUnit::cm, std::get<0>(units));
+  EXPECT_EQ(LengthUnit::inches, std::get<1>(units));
+}
+
+TEST(io_util, getOptionalStartAndEndUnits_partialSpecification)
+{
+  conduit::Node startOnly;
+  startOnly["start_units"] = "cm";
+  EXPECT_THROW(getOptionalStartAndEndUnits(startOnly), std::invalid_argument);
+
+  conduit::Node endOnly;
+  endOnly["end_units"] = "cm";
+  EXPECT_THROW(getOptionalStartAndEndUnits(startOnly), std::invalid_argument);
+}
+
+TEST(io_util, getOptionalStartAndEndUnits_startEndAndUnits)
+{
+  conduit::Node node;
+  node["start_units"] = "cm";
+  node["end_units"] = "cm";
+  node["units"] = "cm";
+  EXPECT_THROW(getOptionalStartAndEndUnits(node), std::invalid_argument);
+}
+
+TEST(io_util, getStartAndEndUnits_unitsPresent)
+{
+  conduit::Node node;
+  node["units"] = "cm";
+  auto units = getStartAndEndUnits(node);
+  EXPECT_EQ(LengthUnit::cm, std::get<0>(units));
+  EXPECT_EQ(LengthUnit::cm, std::get<1>(units));
+}
+
+TEST(io_util, getStartAndEndUnits_nothingSpecified)
+{
+  conduit::Node node;
+  EXPECT_THROW(getStartAndEndUnits(node), std::invalid_argument);
+}
+
 }  // namespace internal
 }  // namespace klee
 }  // namespace axom

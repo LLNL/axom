@@ -11,7 +11,7 @@ namespace klee
 {
 namespace test
 {
-numerics::Matrix<double> affine(const std::array<double, 12> &values)
+numerics::Matrix<double> affine(const std::array<std::array<double, 4>, 3> &values)
 {
   numerics::Matrix<double> m(4, 4);
   m(3, 3) = 1;
@@ -19,7 +19,7 @@ numerics::Matrix<double> affine(const std::array<double, 12> &values)
   {
     for(int j = 0; j < 4; ++j)
     {
-      m(i, j) = values[i * 4 + j];
+      m(i, j) = values[i][j];
     }
   }
   return m;

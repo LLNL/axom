@@ -5,11 +5,13 @@
 #ifndef AXOM_KLEE_IO_UTIL_HPP
 #define AXOM_KLEE_IO_UTIL_HPP
 
+#include <tuple>
 #include <vector>
 
 #include "conduit.hpp"
 
 #include "axom/klee/Dimensions.hpp"
+#include "axom/klee/Units.hpp"
 
 namespace axom
 {
@@ -47,6 +49,35 @@ double toDouble(const conduit::Node &value);
  * \throws std::invalid_argument if the node is not a valid dimension value
  */
 Dimensions toDimensions(const conduit::Node &dimensionsNode);
+
+/**
+ * Get the start and end units in a node.
+ *
+ * The node may either have a "units" field, or a "start_units" and "end_units".
+ * In the first case, "units" will be used for both the start and end. In the
+ * second, both must be present. In the case where no units are present at
+ * all, both returned units will be LengthUnit::unspecified.
+ *
+ * \param node the node from which to get the units
+ * \return the start and end units
+ * \throws std::invalid_argument if an invalid combination of fields is specified
+ */
+std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
+  const conduit::Node &node);
+
+/**
+ * Get the start and end units in a node.
+ *
+ * The node may either have a "units" field, or a "start_units" and "end_units".
+ * In the first case, "units" will be used for both the start and end. In the
+ * second, both must be present.
+ *
+ * \param node the node from which to get the units
+ * \return the start and end units
+ * \throws std::invalid_argument if an invalid combination of fields is
+ * specified or if no units are specified.
+ */
+std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const conduit::Node &node);
 
 }  // namespace internal
 }  // namespace klee

@@ -9,7 +9,6 @@
 #include "axom/klee/GeometryOperators.hpp"
 #include "axom/klee/GeometryOperatorsIO.hpp"
 #include "KleeMatchers.hpp"
-#include "KleeTestUtils.hpp"
 
 #include <memory>
 #include <stdexcept>
@@ -25,7 +24,6 @@ namespace
 {
 using primal::Point3D;
 using primal::Vector3D;
-using test::affine;
 using test::AlmostEqMatrix;
 using test::AlmostEqPoint;
 using test::AlmostEqVector;
@@ -37,19 +35,19 @@ using OperatorPointer = CompositeOperator::OpPtr;
 
 /**
  * Read geometry operators from a string
- * \param startingDimensions the starting dimensions
+ * \param startProperties the starting properties
  * \param input the operators expressed in yaml
  * \param an optional map of named operators
  * \return the operators that were read.
  */
 OperatorPointer readOperators(
-  Dimensions startingDimensions,
+  const TransformableGeometryProperties &startProperties,
   const std::string &input,
   const NamedOperatorMap &namedOperators = NamedOperatorMap {})
 {
   conduit::Node node;
   node.parse(input, "yaml");
-  return parseGeometryOperators(node, startingDimensions, namedOperators);
+  return parseGeometryOperators(node, startProperties, namedOperators);
 }
 
 /**
@@ -115,7 +113,10 @@ T getSingleOperatorFromComposite(const OperatorPointer &ptr)
  * Read a single operator.
  *
  * \tparam T the expected type of the operator
+ * \param startProperties the starting properties
  * \param startingDimensions the starting dimensions
+ * \param sourceUnits the units in which numbers are expressed
+ * \param targetUnits the units to which numbers should be converted
  * \param input the operator as yaml.
  * \param an optional map of named operators
  * \return the read operator
@@ -124,7 +125,7 @@ T getSingleOperatorFromComposite(const OperatorPointer &ptr)
  */
 template <typename T>
 T readSingleOperator(
-  Dimensions startingDimensions,
+  const TransformableGeometryProperties &startProperties,
   const std::string &input,
   const std::unordered_map<std::string, OperatorPointer> &namedOperators =
     std::unordered_map<std::string, OperatorPointer> {})
@@ -132,7 +133,7 @@ T readSingleOperator(
   std::string wrappedInput {"-\n"};
   wrappedInput += input;
   OperatorPointer genericOperator =
-    readOperators(startingDimensions, wrappedInput, namedOperators);
+    readOperators(startProperties, wrappedInput, namedOperators);
   return getSingleOperatorFromComposite<T>(genericOperator);
 }
 
@@ -164,43 +165,51 @@ T getSingleNamedOperator(const NamedOperatorMap &operators,
  * \param origin the expected origin
  * \param normal the expected normal vector
  * \param up the expected up vector
+ * \param startProperties the expected start properties
  * \return a matcher that verifies a SliceOperator is as specified
  */
-test::MatchesSliceMatcherP<SliceOperator> isSlice(Point3D origin,
-                                                  Vector3D normal,
-                                                  Vector3D up)
+test::MatchesSliceMatcherP<SliceOperator> isSlice(
+  Point3D origin,
+  Vector3D normal,
+  Vector3D up,
+  TransformableGeometryProperties startProperties)
 {
-  SliceOperator op {primal::Point3D {origin.data()},
-                    primal::Vector3D {normal.data()},
-                    primal::Vector3D {up.data()}};
+  SliceOperator op {origin, normal, up, startProperties};
   return MatchesSlice(op);
 }
 
 TEST(GeometryOperatorsIO, readTranslation_2D)
 {
-  auto translation = readSingleOperator<Translation>(Dimensions::Two, R"(
+  auto translation =
+    readSingleOperator<Translation>({Dimensions::Two, LengthUnit::cm}, R"(
       translate: [10, 20]
     )");
-  EXPECT_EQ(Dimensions::Two, translation.startDims());
-  EXPECT_EQ(Dimensions::Two, translation.endDims());
-  EXPECT_THAT(translation.getOffset(), AlmostEqVector(Vector3D {10, 20, 0}));
+  EXPECT_THAT(translation.getOffset(), AlmostEqVector(Vector3D {10, 20, 00}));
+  TransformableGeometryProperties expectedProperties {Dimensions::Two,
+                                                      LengthUnit::cm};
+  EXPECT_EQ(expectedProperties, translation.getStartProperties());
+  EXPECT_EQ(expectedProperties, translation.getEndProperties());
 }
 
 TEST(GeometryOperatorsIO, readTranslation_3D)
 {
-  auto translation = readSingleOperator<Translation>(Dimensions::Three, R"(
+  auto translation =
+    readSingleOperator<Translation>({Dimensions::Three, LengthUnit::cm}, R"(
       translate: [10, 20, 30]
     )");
-  EXPECT_EQ(Dimensions::Three, translation.startDims());
-  EXPECT_EQ(Dimensions::Three, translation.endDims());
   EXPECT_THAT(translation.getOffset(), AlmostEqVector(Vector3D {10, 20, 30}));
+  TransformableGeometryProperties expectedProperties {Dimensions::Three,
+                                                      LengthUnit::cm};
+  EXPECT_EQ(expectedProperties, translation.getStartProperties());
+  EXPECT_EQ(expectedProperties, translation.getEndProperties());
 }
 
 TEST(GeometryOperatorsIO, readTranslation_unknownKeys)
 {
   try
   {
-    readSingleOperator<Translation>(Dimensions::Two, R"(
+    readSingleOperator<Translation>({Dimensions::Two, LengthUnit::cm},
+                                    R"(
           translate: [10, 20]
           UNKNOWN_KEY: UNKNOWN_VALUE
         )");
@@ -215,34 +224,40 @@ TEST(GeometryOperatorsIO, readTranslation_unknownKeys)
 
 TEST(GeometryOperatorsIO, readRotation_2D_requiredOnly)
 {
-  auto rotation = readSingleOperator<Rotation>(Dimensions::Two, R"(
+  auto rotation =
+    readSingleOperator<Rotation>({Dimensions::Two, LengthUnit::cm}, R"(
       rotate: 45
     )");
-  EXPECT_EQ(Dimensions::Two, rotation.startDims());
-  EXPECT_EQ(Dimensions::Two, rotation.endDims());
   EXPECT_DOUBLE_EQ(45, rotation.getAngle());
   EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(Point3D {0, 0, 0}));
   EXPECT_THAT(rotation.getAxis(), AlmostEqVector(Vector3D {0, 0, 1}));
+  TransformableGeometryProperties expectedProperties {Dimensions::Two,
+                                                      LengthUnit::cm};
+  EXPECT_EQ(expectedProperties, rotation.getStartProperties());
+  EXPECT_EQ(expectedProperties, rotation.getEndProperties());
 }
 
 TEST(GeometryOperatorsIO, readRotation_2D_optionalFields)
 {
-  auto rotation = readSingleOperator<Rotation>(Dimensions::Two, R"(
+  auto rotation =
+    readSingleOperator<Rotation>({Dimensions::Two, LengthUnit::cm}, R"(
       rotate: 45
       center: [10, 20]
     )");
-  EXPECT_EQ(Dimensions::Two, rotation.startDims());
-  EXPECT_EQ(Dimensions::Two, rotation.endDims());
   EXPECT_DOUBLE_EQ(45, rotation.getAngle());
   EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(Point3D {10, 20, 0}));
   EXPECT_THAT(rotation.getAxis(), AlmostEqVector(Vector3D {0, 0, 1}));
+  TransformableGeometryProperties expectedProperties {Dimensions::Two,
+                                                      LengthUnit::cm};
+  EXPECT_EQ(expectedProperties, rotation.getStartProperties());
+  EXPECT_EQ(expectedProperties, rotation.getEndProperties());
 }
 
 TEST(GeometryOperatorsIO, readRotation_2D_axisNotAllowed)
 {
   try
   {
-    readSingleOperator<Rotation>(Dimensions::Two, R"(
+    readSingleOperator<Rotation>({Dimensions::Two, LengthUnit::cm}, R"(
             rotate: 45
             axis: [1, 2, 3]
         )");
@@ -257,29 +272,50 @@ TEST(GeometryOperatorsIO, readRotation_2D_axisNotAllowed)
 
 TEST(GeometryOperatorsIO, readRotation_3D_requiredOnly)
 {
-  auto rotation = readSingleOperator<Rotation>(Dimensions::Three, R"(
+  auto rotation =
+    readSingleOperator<Rotation>({Dimensions::Three, LengthUnit::cm}, R"(
       rotate: 45
       axis: [1, 2, 3]
     )");
-  EXPECT_EQ(Dimensions::Three, rotation.startDims());
-  EXPECT_EQ(Dimensions::Three, rotation.endDims());
   EXPECT_DOUBLE_EQ(45, rotation.getAngle());
   EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(Point3D {0, 0, 0}));
   EXPECT_THAT(rotation.getAxis(), AlmostEqVector(Vector3D {1, 2, 3}));
+  TransformableGeometryProperties expectedProperties {Dimensions::Three,
+                                                      LengthUnit::cm};
+  EXPECT_EQ(expectedProperties, rotation.getStartProperties());
+  EXPECT_EQ(expectedProperties, rotation.getEndProperties());
 }
 
 TEST(GeometryOperatorsIO, readRotation_3D_optionalFields)
 {
-  auto rotation = readSingleOperator<Rotation>(Dimensions::Three, R"(
+  auto rotation =
+    readSingleOperator<Rotation>({Dimensions::Three, LengthUnit::cm}, R"(
       rotate: 45
       axis: [1, 2, 3]
       center: [4, 5, 6]
     )");
-  EXPECT_EQ(Dimensions::Three, rotation.startDims());
-  EXPECT_EQ(Dimensions::Three, rotation.endDims());
   EXPECT_DOUBLE_EQ(45, rotation.getAngle());
   EXPECT_THAT(rotation.getCenter(), AlmostEqPoint(Point3D {4, 5, 6}));
   EXPECT_THAT(rotation.getAxis(), AlmostEqVector(Vector3D {1, 2, 3}));
+  TransformableGeometryProperties expectedProperties {Dimensions::Three,
+                                                      LengthUnit::cm};
+  EXPECT_EQ(expectedProperties, rotation.getStartProperties());
+  EXPECT_EQ(expectedProperties, rotation.getEndProperties());
+}
+
+TEST(GeometryOperatorsIO, readRotation_3D_axisMissing)
+{
+  try
+  {
+    readOperators({Dimensions::Three, LengthUnit::cm}, R"(
+          - rotate: 45
+        )");
+    FAIL() << "Should not have parsed";
+  }
+  catch(const std::invalid_argument &ex)
+  {
+    EXPECT_THAT(ex.what(), HasSubstr("axis"));
+  }
 }
 
 TEST(GeometryOperatorsIO, readScale_singleValue)
@@ -287,144 +323,166 @@ TEST(GeometryOperatorsIO, readScale_singleValue)
   Dimensions all_dims[] = {Dimensions::Two, Dimensions::Three};
   for(Dimensions dims : all_dims)
   {
-    auto scale = readSingleOperator<Scale>(dims, R"(
+    auto scale = readSingleOperator<Scale>({dims, LengthUnit::cm}, R"(
           scale: 1.2
         )");
-    EXPECT_EQ(dims, scale.startDims());
-    EXPECT_EQ(dims, scale.endDims());
     EXPECT_DOUBLE_EQ(1.2, scale.getXFactor());
     EXPECT_DOUBLE_EQ(1.2, scale.getYFactor());
     EXPECT_DOUBLE_EQ(1.2, scale.getZFactor());
+    TransformableGeometryProperties expectedProperties {dims, LengthUnit::cm};
+    EXPECT_EQ(expectedProperties, scale.getStartProperties());
+    EXPECT_EQ(expectedProperties, scale.getEndProperties());
   }
 }
 
 TEST(GeometryOperatorsIO, readScale_2d_array)
 {
-  auto scale = readSingleOperator<Scale>(Dimensions::Two, R"(
+  auto scale = readSingleOperator<Scale>({Dimensions::Two, LengthUnit::cm}, R"(
       scale: [1.2, 3.4]
     )");
-  EXPECT_EQ(Dimensions::Two, scale.startDims());
-  EXPECT_EQ(Dimensions::Two, scale.endDims());
   EXPECT_DOUBLE_EQ(1.2, scale.getXFactor());
   EXPECT_DOUBLE_EQ(3.4, scale.getYFactor());
   EXPECT_DOUBLE_EQ(1.0, scale.getZFactor());
+  TransformableGeometryProperties expectedProperties {Dimensions::Two,
+                                                      LengthUnit::cm};
+  EXPECT_EQ(expectedProperties, scale.getStartProperties());
+  EXPECT_EQ(expectedProperties, scale.getEndProperties());
 }
 
 TEST(GeometryOperatorsIO, readScale_3d_array)
 {
-  auto scale = readSingleOperator<Scale>(Dimensions::Three, R"(
+  auto scale = readSingleOperator<Scale>({Dimensions::Three, LengthUnit::cm}, R"(
       scale: [1.2, 3.4, 5.6]
     )");
-  EXPECT_EQ(Dimensions::Three, scale.startDims());
-  EXPECT_EQ(Dimensions::Three, scale.endDims());
   EXPECT_DOUBLE_EQ(1.2, scale.getXFactor());
   EXPECT_DOUBLE_EQ(3.4, scale.getYFactor());
   EXPECT_DOUBLE_EQ(5.6, scale.getZFactor());
+  TransformableGeometryProperties expectedProperties {Dimensions::Three,
+                                                      LengthUnit::cm};
+  EXPECT_EQ(expectedProperties, scale.getStartProperties());
+  EXPECT_EQ(expectedProperties, scale.getEndProperties());
 }
 
-TEST(GeometryOperatorsIO, readArbitraryMatrix_2D)
+TEST(GeometryOperatorsIO, readConvertUnits)
 {
-  auto matrixOp = readSingleOperator<ArbitraryMatrixOperator>(Dimensions::Two, R"(
-      matrix: [10, 20, 30, 40, 50, 60]
-    )");
-  EXPECT_EQ(Dimensions::Two, matrixOp.startDims());
-  EXPECT_EQ(Dimensions::Two, matrixOp.endDims());
-  EXPECT_THAT(matrixOp.toMatrix(),
-              AlmostEqMatrix(affine({10, 20, 0, 30, 40, 50, 0, 60, 0, 0, 1, 0})));
-}
-
-TEST(GeometryOperatorsIO, readArbitraryMatrix_3D)
-{
-  auto matrixOp =
-    readSingleOperator<ArbitraryMatrixOperator>(Dimensions::Three, R"(
-      matrix: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
-    )");
-  EXPECT_EQ(Dimensions::Three, matrixOp.startDims());
-  EXPECT_EQ(Dimensions::Three, matrixOp.endDims());
-  EXPECT_THAT(
-    matrixOp.toMatrix(),
-    AlmostEqMatrix(affine({10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120})));
+  auto converter =
+    readSingleOperator<UnitConverter>({Dimensions::Three, LengthUnit::inches}, R"(
+      convert_units_to: cm
+  )");
+  TransformableGeometryProperties expectedStartProperties {Dimensions::Three,
+                                                           LengthUnit::inches};
+  TransformableGeometryProperties expectedEndProperties {Dimensions::Three,
+                                                         LengthUnit::cm};
+  EXPECT_EQ(expectedStartProperties, converter.getStartProperties());
+  EXPECT_EQ(expectedEndProperties, converter.getEndProperties());
 }
 
 TEST(GeometryOperatorsIO, readSlice_specifyAll)
 {
-  auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  auto slice =
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         origin: [1, 2, 3]
         normal: [4, 5, 6]
         up: [-5, 4, 0]
     )");
-  EXPECT_THAT(slice, isSlice({1, 2, 3}, {4, 5, 6}, {-5, 4, 0}));
+  EXPECT_THAT(
+    slice,
+    isSlice({1, 2, 3}, {4, 5, 6}, {-5, 4, 0}, {Dimensions::Three, LengthUnit::cm}));
 }
 
 TEST(GeometryOperatorsIO, readSlice_x_defaults)
 {
-  auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  auto slice =
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         x: 10
     )");
-  EXPECT_THAT(slice, isSlice({10, 0, 0}, {1, 0, 0}, {0, 0, 1}));
+  EXPECT_THAT(
+    slice,
+    isSlice({10, 0, 0}, {1, 0, 0}, {0, 0, 1}, {Dimensions::Three, LengthUnit::cm}));
 }
 
 TEST(GeometryOperatorsIO, readSlice_x_optionals)
 {
-  auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  auto slice =
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         x: 10
         origin: [10, 20, 30]
         normal: [40, 0, 0]
         up: [0, -50, 60]
     )");
-  EXPECT_THAT(slice, isSlice({10, 20, 30}, {40, 0, 0}, {0, -50, 60}));
+  EXPECT_THAT(slice,
+              isSlice({10, 20, 30},
+                      {40, 0, 0},
+                      {0, -50, 60},
+                      {Dimensions::Three, LengthUnit::cm}));
 }
 
 TEST(GeometryOperatorsIO, readSlice_y_defaults)
 {
-  auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  auto slice =
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         y: 20
     )");
-  EXPECT_THAT(slice, isSlice({0, 20, 0}, {0, 1, 0}, {1, 0, 0}));
+  EXPECT_THAT(
+    slice,
+    isSlice({0, 20, 0}, {0, 1, 0}, {1, 0, 0}, {Dimensions::Three, LengthUnit::cm}));
 }
 
 TEST(GeometryOperatorsIO, readSlice_y_optionals)
 {
-  auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  auto slice =
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         y: 20
         origin: [10, 20, 30]
         normal: [0, 40, 0]
         up: [-50, 0, 60]
     )");
-  EXPECT_THAT(slice, isSlice({10, 20, 30}, {0, 40, 0}, {-50, 0, 60}));
+  EXPECT_THAT(slice,
+              isSlice({10, 20, 30},
+                      {0, 40, 0},
+                      {-50, 0, 60},
+                      {Dimensions::Three, LengthUnit::cm}));
 }
 
 TEST(GeometryOperatorsIO, readSlice_z_defaults)
 {
-  auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  auto slice =
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         z: 30
     )");
-  EXPECT_THAT(slice, isSlice({0, 0, 30}, {0, 0, 1}, {0, 1, 0}));
+  EXPECT_THAT(
+    slice,
+    isSlice({0, 0, 30}, {0, 0, 1}, {0, 1, 0}, {Dimensions::Three, LengthUnit::cm}));
 }
 
 TEST(GeometryOperatorsIO, readSlice_z_optionals)
 {
-  auto slice = readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  auto slice =
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         z: 30
         origin: [10, 20, 30]
         normal: [0, 0, 40]
         up: [-50, 60, 0]
     )");
-  EXPECT_THAT(slice, isSlice({10, 20, 30}, {0, 0, 40}, {-50, 60, 0}));
+  EXPECT_THAT(slice,
+              isSlice({10, 20, 30},
+                      {0, 0, 40},
+                      {-50, 60, 0},
+                      {Dimensions::Three, LengthUnit::cm}));
 }
 
 TEST(GeometryOperatorsIO, readSlice_zeroNormal)
 {
   try
   {
-    readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
           slice:
             origin: [10, 20, 30]
             normal: [0, 0, 0]
@@ -443,7 +501,7 @@ TEST(GeometryOperatorsIO, readSlice_upAndNormalNotNormal)
 {
   try
   {
-    readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
           slice:
             origin: [10, 20, 30]
             normal: [10, 20, 30]
@@ -461,34 +519,48 @@ TEST(GeometryOperatorsIO, readSlice_upAndNormalNotNormal)
 
 TEST(GeometryOperatorsIO, readSlice_badPlaneValues)
 {
-  EXPECT_THROW(readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  EXPECT_THROW(
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         x: 10
         origin: [20, 0, 0]
     )"),
-               std::invalid_argument)
+    std::invalid_argument)
     << "Bad origin";
 
-  EXPECT_THROW(readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  EXPECT_THROW(
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         x: 10
         normal: [1, 2, 3]
     )"),
-               std::invalid_argument)
+    std::invalid_argument)
     << "Bad normal";
 
-  EXPECT_THROW(readSingleOperator<SliceOperator>(Dimensions::Three, R"(
+  EXPECT_THROW(
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
       slice:
         x: 10
         up: [1, 2, 3]
     )"),
-               std::invalid_argument)
+    std::invalid_argument)
     << "Bad up";
+}
+
+TEST(GeometryOperatorsIO, readSlice_start2D)
+{
+  EXPECT_THROW(
+    readSingleOperator<SliceOperator>({Dimensions::Two, LengthUnit::cm}, R"(
+      slice:
+        x: 10
+        origin: [20, 0, 0]
+    )"),
+    std::invalid_argument);
 }
 
 TEST(GeometryOperatorsIO, readMultiple_matchingDimensions)
 {
-  auto op = readOperators(Dimensions::Three, R"(
+  auto op = readOperators({Dimensions::Three, LengthUnit::cm}, R"(
       - translate: [10, 20, 30]
       - translate: [40, 50, 60]
     )");
@@ -499,7 +571,7 @@ TEST(GeometryOperatorsIO, readMultiple_matchingDimensions)
 
 TEST(GeometryOperatorsIO, readMultiple_nonMatchingDimensions)
 {
-  EXPECT_THROW(readOperators(Dimensions::Three, R"(
+  EXPECT_THROW(readOperators({Dimensions::Three, LengthUnit::cm}, R"(
       - translate: [10, 20, 30]
       - translate: [40, 50]
     )"),
@@ -510,7 +582,7 @@ TEST(GeometryOperatorsIO, readMultiple_unknownOperator)
 {
   try
   {
-    readOperators(Dimensions::Three, R"(
+    readOperators({Dimensions::Three, LengthUnit::cm}, R"(
           - UNKNOWN_OPERATOR: [10, 20, 30]
          )");
     FAIL() << "Should have thrown";
@@ -525,7 +597,9 @@ TEST(GeometryOperatorsIO, readRef_missing)
 {
   try
   {
-    readOperators(Dimensions::Two, "ref: MISSING");
+    readOperators({Dimensions::Two, LengthUnit::cm}, R"(
+       - ref: MISSING
+    )");
     FAIL() << "Should have thrown";
   }
   catch(const std::invalid_argument &ex)
@@ -536,37 +610,141 @@ TEST(GeometryOperatorsIO, readRef_missing)
 
 TEST(GeometryOperatorsIO, readRef_present)
 {
+  TransformableGeometryProperties props {Dimensions::Three, LengthUnit::cm};
   NamedOperatorMap namedOperators = {
-    {"op1",
-     std::make_shared<Translation>(Vector3D {10, 20, 30}, Dimensions::Three)},
-    {"op2", std::make_shared<Scale>(1.5, 2.0, 2.5, Dimensions::Three)},
+    {"op1", std::make_shared<Translation>(Vector3D {10, 20, 30}, props)},
+    {"op2", std::make_shared<Scale>(1.5, 2.0, 2.5, props)},
   };
-  auto translation = readSingleOperator<Translation>(Dimensions::Three,
-                                                     R"(
+  auto translation =
+    readSingleOperator<Translation>({Dimensions::Three, LengthUnit::cm},
+                                    R"(
       ref: op1
     )",
-                                                     namedOperators);
-  EXPECT_EQ(Dimensions::Three, translation.startDims());
-  EXPECT_EQ(Dimensions::Three, translation.endDims());
+                                    namedOperators);
   EXPECT_THAT(translation.getOffset(), AlmostEqVector(Vector3D {10, 20, 30}));
+}
+
+class RefIoUnitsMismatchTest : public ::testing::Test
+{
+protected:
+  void SetUp() override;
+  std::shared_ptr<GeometryOperator> referencedOperator;
+  CompositeOperator readOperator(
+    const TransformableGeometryProperties &startProperties) const;
+};
+
+void RefIoUnitsMismatchTest::SetUp()
+{
+  TransformableGeometryProperties startProps {Dimensions::Three, LengthUnit::cm};
+  auto composite = std::make_shared<CompositeOperator>(startProps);
+  composite->addOperator(
+    std::make_shared<Translation>(Vector3D {10, 20, 30},
+                                  composite->getEndProperties()));
+  composite->addOperator(
+    std::make_shared<UnitConverter>(LengthUnit::mm,
+                                    composite->getEndProperties()));
+  composite->addOperator(
+    std::make_shared<Translation>(Vector3D {40, 50, 60},
+                                  composite->getEndProperties()));
+  referencedOperator = composite;
+}
+
+CompositeOperator RefIoUnitsMismatchTest::readOperator(
+  const TransformableGeometryProperties &startProperties) const
+{
+  NamedOperatorMap namedOperators = {
+    {"op1", referencedOperator},
+  };
+
+  return readSingleOperator<CompositeOperator>(startProperties,
+                                               R"(
+    ref: op1
+  )",
+                                               namedOperators);
+}
+
+TEST_F(RefIoUnitsMismatchTest, startUnitMismatch)
+{
+  TransformableGeometryProperties startProperties {Dimensions::Three,
+                                                   LengthUnit::mm};
+  auto composite = readOperator(startProperties);
+
+  EXPECT_EQ(2u, composite.getOperators().size());
+
+  auto automaticInitialConversion =
+    copyOperator<UnitConverter>(composite.getOperators()[0]);
+  EXPECT_EQ(LengthUnit::mm,
+            automaticInitialConversion.getStartProperties().units);
+  EXPECT_EQ(LengthUnit::cm, automaticInitialConversion.getEndProperties().units);
+
+  EXPECT_EQ(referencedOperator, composite.getOperators()[1]);
+}
+
+TEST_F(RefIoUnitsMismatchTest, endUnitMismatch)
+{
+  TransformableGeometryProperties startProperties {Dimensions::Three,
+                                                   LengthUnit::cm};
+  auto composite = readOperator(startProperties);
+
+  EXPECT_EQ(2u, composite.getOperators().size());
+
+  EXPECT_EQ(referencedOperator, composite.getOperators()[0]);
+
+  auto automaticFinalConversion =
+    copyOperator<UnitConverter>(composite.getOperators()[1]);
+  EXPECT_EQ(LengthUnit::mm, automaticFinalConversion.getStartProperties().units);
+  EXPECT_EQ(LengthUnit::cm, automaticFinalConversion.getEndProperties().units);
+}
+
+TEST_F(RefIoUnitsMismatchTest, allUnitMismatch)
+{
+  TransformableGeometryProperties startProperties {Dimensions::Three,
+                                                   LengthUnit::inches};
+  auto composite = readOperator(startProperties);
+
+  EXPECT_EQ(3u, composite.getOperators().size());
+
+  auto automaticInitialConversion =
+    copyOperator<UnitConverter>(composite.getOperators()[0]);
+  EXPECT_EQ(LengthUnit::inches,
+            automaticInitialConversion.getStartProperties().units);
+  EXPECT_EQ(LengthUnit::cm, automaticInitialConversion.getEndProperties().units);
+
+  EXPECT_EQ(referencedOperator, composite.getOperators()[1]);
+
+  auto automaticFinalConversion =
+    copyOperator<UnitConverter>(composite.getOperators()[2]);
+  EXPECT_EQ(LengthUnit::mm, automaticFinalConversion.getStartProperties().units);
+  EXPECT_EQ(LengthUnit::inches,
+            automaticFinalConversion.getEndProperties().units);
 }
 
 TEST(GeometryOperatorsIO, readNamedOperators_basic)
 {
   NamedOperatorMap readOperators = readNamedOperators(Dimensions::Two, R"(
       - name: op1
+        units: cm
         value:
           - translate: [10, 20]
       - name: op2
+        units: in
         value:
           - scale: 1.5
     )");
   EXPECT_EQ(2, readOperators.size());
 
   auto translation = getSingleNamedOperator<Translation>(readOperators, "op1");
+  TransformableGeometryProperties expectedTranslationProperties {Dimensions::Two,
+                                                                 LengthUnit::cm};
+  EXPECT_EQ(expectedTranslationProperties, translation.getStartProperties());
+  EXPECT_EQ(expectedTranslationProperties, translation.getEndProperties());
   EXPECT_THAT(translation.getOffset(), AlmostEqVector(Vector3D {10, 20, 0}));
 
   auto scale = getSingleNamedOperator<Scale>(readOperators, "op2");
+  TransformableGeometryProperties expectedScaleProperties {Dimensions::Two,
+                                                           LengthUnit::inches};
+  EXPECT_EQ(expectedScaleProperties, scale.getStartProperties());
+  EXPECT_EQ(expectedScaleProperties, scale.getEndProperties());
   EXPECT_EQ(1.5, scale.getXFactor());
   EXPECT_EQ(1.5, scale.getYFactor());
 }
@@ -575,6 +753,7 @@ TEST(GeometryOperatorsIO, readNamedOperators_invalidDimensions)
 {
   EXPECT_THROW(readNamedOperators(Dimensions::Two, R"(
       - name: op1
+        units: cm
         value:
           - translate: [10, 20, 30]
     )"),
@@ -585,7 +764,8 @@ TEST(GeometryOperatorsIO, readNamedOperators_differentInitialDimensions)
 {
   NamedOperatorMap readOperators = readNamedOperators(Dimensions::Two, R"(
       - name: op1
-        initial_dimensions: 3
+        units: cm
+        start_dimensions: 3
         value:
           - translate: [10, 20, 30]
     )");
@@ -593,15 +773,81 @@ TEST(GeometryOperatorsIO, readNamedOperators_differentInitialDimensions)
 
   auto translation = getSingleNamedOperator<Translation>(readOperators, "op1");
   EXPECT_THAT(translation.getOffset(), AlmostEqVector(Vector3D {10, 20, 30}));
+  TransformableGeometryProperties expectedProperties {Dimensions::Three,
+                                                      LengthUnit::cm};
+  EXPECT_EQ(expectedProperties, translation.getStartProperties());
+  EXPECT_EQ(expectedProperties, translation.getEndProperties());
+}
+
+TEST(GeometryOperatorsIO, readNamedOperators_differentStartAndEnd)
+{
+  NamedOperatorMap readOperators = readNamedOperators(Dimensions::Three, R"(
+      - name: op1
+        start_units: mm
+        end_units: cm
+        value:
+          - translate: [10, 20, 30]
+          - convert_units_to: cm
+          - translate: [40, 50, 60]
+    )");
+  ASSERT_EQ(1, readOperators.size());
+
+  auto composite = copyOperator<CompositeOperator>(readOperators["op1"]);
+  ASSERT_EQ(3u, composite.getOperators().size());
+  TransformableGeometryProperties expectedStartProperties {Dimensions::Three,
+                                                           LengthUnit::mm};
+  TransformableGeometryProperties expectedEndProperties {Dimensions::Three,
+                                                         LengthUnit::cm};
+  EXPECT_EQ(expectedStartProperties, composite.getStartProperties());
+  EXPECT_EQ(expectedEndProperties, composite.getEndProperties());
+
+  auto firstTranslation = copyOperator<Translation>(composite.getOperators()[0]);
+  EXPECT_THAT(firstTranslation.getOffset(),
+              AlmostEqVector(Vector3D {10, 20, 30}));
+  EXPECT_EQ(expectedStartProperties, firstTranslation.getStartProperties());
+  EXPECT_EQ(expectedStartProperties, firstTranslation.getEndProperties());
+
+  auto conversion = copyOperator<UnitConverter>(composite.getOperators()[1]);
+  EXPECT_EQ(expectedStartProperties, conversion.getStartProperties());
+  EXPECT_EQ(expectedEndProperties, conversion.getEndProperties());
+
+  auto secondTranslation = copyOperator<Translation>(composite.getOperators()[2]);
+  EXPECT_THAT(secondTranslation.getOffset(),
+              AlmostEqVector(Vector3D {40, 50, 60}));
+  EXPECT_EQ(expectedEndProperties, secondTranslation.getStartProperties());
+  EXPECT_EQ(expectedEndProperties, secondTranslation.getEndProperties());
+}
+
+TEST(GeometryOperatorsIO, readNamedOperators_errorInEndUnits)
+{
+  try
+  {
+    readNamedOperators(Dimensions::Three, R"(
+      - name: op1
+        start_units: mm
+        end_units: in
+        value:
+          - translate: [10, 20, 30]
+          - convert_units_to: cm
+          - translate: [40, 50, 60]
+    )");
+    FAIL() << "Should have thrown";
+  }
+  catch(const std::invalid_argument &ex)
+  {
+    EXPECT_THAT(ex.what(), HasSubstr("units"));
+  }
 }
 
 TEST(GeometryOperatorsIO, readNamedOperators_ref)
 {
   NamedOperatorMap readOperators = readNamedOperators(Dimensions::Two, R"(
       - name: op1
+        units: in
         value:
           - translate: [10, 20]
       - name: op2
+        units: in
         value:
           - scale: 1.5
           - ref: op1
@@ -614,6 +860,10 @@ TEST(GeometryOperatorsIO, readNamedOperators_ref)
   auto op2 = readOperators["op2"];
   auto composite = dynamic_cast<const CompositeOperator *>(op2.get());
   ASSERT_NE(nullptr, composite);
+  TransformableGeometryProperties expectedOp2Units {Dimensions::Two,
+                                                    LengthUnit::inches};
+  EXPECT_EQ(expectedOp2Units, composite->getStartProperties());
+  EXPECT_EQ(expectedOp2Units, composite->getEndProperties());
   ASSERT_EQ(2u, composite->getOperators().size());
 
   auto scale = copyOperator<Scale>(composite->getOperators()[0]);

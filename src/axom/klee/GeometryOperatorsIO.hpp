@@ -12,12 +12,14 @@
 #include "conduit.hpp"
 
 #include "axom/klee/Dimensions.hpp"
+#include "axom/klee/Units.hpp"
 
 namespace axom
 {
 namespace klee
 {
 class GeometryOperator;
+struct TransformableGeometryProperties;
 
 namespace internal
 {
@@ -29,15 +31,14 @@ using NamedOperatorMap =
  *
  * \param node a conduit node representing the operator. This should be a list
  * where each entry is its own operator.
- * \param initialDimensions the number of dimensions in which the first
- * operator must operate
+ * \param startProperties the transformable properties before the operators
  * \param namedOperators a map of named operators which contains operators
  * which may be referenced via the "ref" syntax.
  * \return A GeometryOperator describing the parsed values.
  */
 std::shared_ptr<const GeometryOperator> parseGeometryOperators(
   const conduit::Node &node,
-  Dimensions initialDimensions,
+  const TransformableGeometryProperties &startProperties,
   const NamedOperatorMap &namedOperators);
 
 /**
