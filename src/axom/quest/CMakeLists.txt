@@ -23,6 +23,9 @@ set( quest_headers
     AllNearestNeighbors.hpp
     detail/AllNearestNeighbors_detail.hpp
 
+    ## Discretize shapes
+    Discretize.hpp
+
     ## In/out query
     InOutOctree.hpp
 
@@ -50,6 +53,9 @@ set( quest_sources
 
     ## All-nearest-neighbors query
     AllNearestNeighbors.cpp
+
+    ## Discretize shapes
+    Discretize.cpp
 
     ## Geometry Sources
     # <nothing yet>

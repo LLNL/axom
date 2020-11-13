@@ -1,0 +1,46 @@
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+#ifndef QUEST_DISCRETIZE_HPP_
+#define QUEST_DISCRETIZE_HPP_
+
+// Axom includes
+#include "axom/core/Macros.hpp"  // for axom macros
+
+// Geometry
+#include "axom/primal/geometry/Sphere.hpp"  
+#include "axom/primal/geometry/Octahedron.hpp"
+
+// C/C++ includes
+#include <vector>  // for std::vector
+
+namespace axom
+{
+namespace quest
+{
+
+/// \name Discretize primitive shapes to linear shapes
+/// @{
+
+/*!
+ * \brief Given a primitive shape and a refinement level, return a list
+ *   of Octahedra approximating the shape.
+ * \param [in] s The sphere to approximate
+ * \param [in] levels The number of refinements to perform
+ * \param [out] out The collection of octahedra representing s
+ *
+ * This routine generates O(level^4) octahedra.  That's exponential growth.
+ * Use appropriate caution.
+ */
+using SphereType = primal::Sphere<double, 3>;
+using OctType = primal::Octahedron<double, 3>;
+void discretize(SphereType & s, int levels, std::vector<OctType> & out);
+
+/// @}
+
+}  // end namespace quest
+}  // end namespace axom
+
+#endif /* QUEST_DISCRETIZE_HPP_ */
