@@ -22,11 +22,11 @@ thermal_solver.solver = {
 }
 -- boundary conditions
 thermal_solver.bcs = {
-  [1] = {
+  ["temperature"] = {
     attrs = { [1] = 3, [2] = 4, [3] = 7},
     constant = 12.2
   },
-  [4] = {
+  ["flux"] = {
     attrs = { [7] = 4, [12] = 6, [9] = 1},
     constant = -23.1
   }
