@@ -7,15 +7,9 @@
 #------------------------------------------------------------------------------
 
 set(quest_example_depends
-        core
-        slic
-        mint
-        slam
         quest
         )
 
-blt_list_append(TO quest_example_depends ELEMENTS openmp IF ENABLE_OPENMP)
-blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
 blt_add_executable(

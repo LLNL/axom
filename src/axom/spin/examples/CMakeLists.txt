@@ -7,14 +7,9 @@
 #------------------------------------------------------------------------------
 
 set(spin_example_depends
-        core
-        slam
-        primal
         spin
         fmt
         )
-
-blt_list_append( TO spin_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 blt_add_executable(
     NAME        spin_introduction_ex
@@ -23,4 +18,3 @@ blt_add_executable(
     DEPENDS_ON  ${spin_example_depends}
     FOLDER      axom/spin/examples
     )
-

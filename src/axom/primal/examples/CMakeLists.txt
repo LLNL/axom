@@ -7,12 +7,9 @@
 #------------------------------------------------------------------------------
 
 set(primal_example_depends
-        core
         primal
         fmt
         )
-
-blt_list_append( TO primal_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 blt_add_executable(
     NAME        primal_introduction_ex
@@ -21,4 +18,3 @@ blt_add_executable(
     DEPENDS_ON  ${primal_example_depends}
     FOLDER      axom/primal/examples
     )
-
