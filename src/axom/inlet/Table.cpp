@@ -75,6 +75,7 @@ Table& Table::addTable(const std::string& name, const std::string& description)
 std::vector<std::string> Table::arrayIndices() const
 {
   std::vector<std::string> indices;
+  // If it's in the view, they are integer indices
   if(m_sidreGroup->hasView(ARRAY_INDICES_VIEW_NAME))
   {
     const auto view = m_sidreGroup->getView(ARRAY_INDICES_VIEW_NAME);
@@ -86,6 +87,7 @@ std::vector<std::string> Table::arrayIndices() const
       indices.push_back(std::to_string(array[i]));
     }
   }
+  // Otherwise, they're string indices
   else if(m_sidreGroup->hasGroup(ARRAY_INDICES_VIEW_NAME))
   {
     auto group = m_sidreGroup->getGroup(ARRAY_INDICES_VIEW_NAME);
@@ -156,10 +158,10 @@ Table& Table::addGenericArray(const std::string& name,
 {
   if(isGenericContainer())
   {
-    SLIC_ERROR(
-      fmt::format("[Inlet] Adding array of structs to array of structs {0} is "
-                  "not supported",
-                  m_name));
+    SLIC_ERROR(fmt::format(
+      "[Inlet] Adding array of container to array of structs {0} is "
+      "not supported",
+      m_name));
   }
   auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
   std::vector<int> indices;
@@ -216,10 +218,10 @@ Table& Table::addGenericDict(const std::string& name,
 {
   if(isGenericContainer())
   {
-    SLIC_ERROR(
-      fmt::format("[Inlet] Adding array of structs to array of structs {0} is "
-                  "not supported",
-                  m_name));
+    SLIC_ERROR(fmt::format(
+      "[Inlet] Adding dict of structs to container of structs {0} is "
+      "not supported",
+      m_name));
   }
   auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
   std::vector<std::string> indices;
@@ -419,6 +421,109 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
   return axom::sidre::DataTypeId::CHAR8_STR_ID;
 }
 
+namespace detail
+{
+/*!
+  *****************************************************************************
+  * \brief Adds the contents of an array to the table
+  *****************************************************************************
+  */
+template <typename T>
+void registerContainer(Table& table, const std::unordered_map<int, T>& container)
+{
+  for(const auto& entry : container)
+  {
+    table.addPrimitive(std::to_string(entry.first), "", true, entry.second);
+  }
+}
+
+/*!
+  *****************************************************************************
+  * \brief Adds the contents of a dict to the table
+  *****************************************************************************
+  */
+template <typename T>
+void registerContainer(Table& table,
+                       const std::unordered_map<std::string, T>& container)
+{
+  for(const auto& entry : container)
+  {
+    table.addPrimitive(entry.first, "", true, entry.second);
+  }
+}
+/*!
+ *****************************************************************************
+ * \brief Implementation helper for adding primitive arrays
+ * 
+ * \note Structs are used for partial template specializations
+ *****************************************************************************
+ */
+template <typename Key, typename Primitive>
+struct PrimitiveArrayHelper
+{ };
+
+template <typename Key>
+struct PrimitiveArrayHelper<Key, bool>
+{
+  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  {
+    std::unordered_map<Key, bool> map;
+    if(!reader.getBoolMap(lookupPath, map))
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] Bool container {0} not found.", lookupPath));
+    }
+    registerContainer(table, map);
+  }
+};
+
+template <typename Key>
+struct PrimitiveArrayHelper<Key, int>
+{
+  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  {
+    std::unordered_map<Key, int> map;
+    if(!reader.getIntMap(lookupPath, map))
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] Int container {0} not found.", lookupPath));
+    }
+    registerContainer(table, map);
+  }
+};
+
+template <typename Key>
+struct PrimitiveArrayHelper<Key, double>
+{
+  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  {
+    std::unordered_map<Key, double> map;
+    if(!reader.getDoubleMap(lookupPath, map))
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] Double container {0} not found.", lookupPath));
+    }
+    registerContainer(table, map);
+  }
+};
+
+template <typename Key>
+struct PrimitiveArrayHelper<Key, std::string>
+{
+  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  {
+    std::unordered_map<Key, std::string> map;
+    if(!reader.getStringMap(lookupPath, map))
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] String container {0} not found.", lookupPath));
+    }
+    registerContainer(table, map);
+  }
+};
+
+}  // end namespace detail
+
 template <typename T, typename SFINAE>
 Verifiable& Table::addPrimitiveArray(const std::string& name,
                                      const std::string& description,
@@ -448,7 +553,14 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
     auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
-    addPrimitiveArrayHelper<T>(table, lookupPath, isDict);
+    if(isDict)
+    {
+      detail::PrimitiveArrayHelper<std::string, T>(table, m_reader, lookupPath);
+    }
+    else
+    {
+      detail::PrimitiveArrayHelper<int, T>(table, m_reader, lookupPath);
+    }
     return table;
   }
 }
@@ -476,114 +588,6 @@ template Verifiable& Table::addPrimitiveArray<std::string>(
   const std::string& description,
   const bool isDict,
   const std::string& pathOverride);
-
-template <>
-void Table::addPrimitiveArrayHelper<bool>(Table& table,
-                                          const std::string& lookupPath,
-                                          bool isDict)
-{
-  std::unordered_map<int, bool> map;
-  std::unordered_map<std::string, bool> str_map;
-  if(!isDict && m_reader.getBoolMap(lookupPath, map))
-  {
-    for(const auto& p : map)
-    {
-      table.addPrimitive(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else if(isDict && m_reader.getBoolDict(lookupPath, str_map))
-  {
-    for(const auto& p : str_map)
-    {
-      table.addPrimitive(p.first, "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] Bool array {0} not found.", lookupPath));
-  }
-}
-
-template <>
-void Table::addPrimitiveArrayHelper<int>(Table& table,
-                                         const std::string& lookupPath,
-                                         bool isDict)
-{
-  std::unordered_map<int, int> map;
-  std::unordered_map<std::string, int> str_map;
-  if(!isDict && m_reader.getIntMap(lookupPath, map))
-  {
-    for(const auto& p : map)
-    {
-      table.addPrimitive(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else if(isDict && m_reader.getIntDict(lookupPath, str_map))
-  {
-    for(const auto& p : str_map)
-    {
-      table.addPrimitive(p.first, "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] Int array {0} not found.", lookupPath));
-  }
-}
-
-template <>
-void Table::addPrimitiveArrayHelper<double>(Table& table,
-                                            const std::string& lookupPath,
-                                            bool isDict)
-{
-  std::unordered_map<int, double> map;
-  std::unordered_map<std::string, double> str_map;
-  if(!isDict && m_reader.getDoubleMap(lookupPath, map))
-  {
-    for(const auto& p : map)
-    {
-      table.addPrimitive(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else if(isDict && m_reader.getDoubleDict(lookupPath, str_map))
-  {
-    for(const auto& p : str_map)
-    {
-      table.addPrimitive(p.first, "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] Double array {0} not found.", lookupPath));
-  }
-}
-
-template <>
-void Table::addPrimitiveArrayHelper<std::string>(Table& table,
-                                                 const std::string& lookupPath,
-                                                 bool isDict)
-{
-  std::unordered_map<int, std::string> map;
-  std::unordered_map<std::string, std::string> str_map;
-  if(!isDict && m_reader.getStringMap(lookupPath, map))
-  {
-    for(const auto& p : map)
-    {
-      table.addPrimitive(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else if(isDict && m_reader.getStringDict(lookupPath, str_map))
-  {
-    for(const auto& p : str_map)
-    {
-      table.addPrimitive(p.first, "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] String array {0} not found.", lookupPath));
-  }
-}
 
 Proxy Table::operator[](const std::string& name) const
 {

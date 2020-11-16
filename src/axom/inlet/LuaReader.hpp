@@ -207,8 +207,8 @@ public:
    * \return true if the dict was able to be retrieved from the file
    *****************************************************************************
    */
-  virtual bool getIntDict(const std::string& id,
-                          std::unordered_map<std::string, int>& values);
+  virtual bool getIntMap(const std::string& id,
+                         std::unordered_map<std::string, int>& values);
 
   /*!
    *****************************************************************************
@@ -223,8 +223,8 @@ public:
    * \return true if the dict was able to be retrieved from the file
    *****************************************************************************
    */
-  virtual bool getBoolDict(const std::string& id,
-                           std::unordered_map<std::string, bool>& values);
+  virtual bool getBoolMap(const std::string& id,
+                          std::unordered_map<std::string, bool>& values);
 
   /*!
    *****************************************************************************
@@ -239,8 +239,8 @@ public:
    * \return true if the dict was able to be retrieved from the file
    *****************************************************************************
    */
-  virtual bool getDoubleDict(const std::string& id,
-                             std::unordered_map<std::string, double>& values);
+  virtual bool getDoubleMap(const std::string& id,
+                            std::unordered_map<std::string, double>& values);
 
   /*!
    *****************************************************************************
@@ -255,8 +255,8 @@ public:
    * \return true if the dict was able to be retrieved from the file
    *****************************************************************************
    */
-  virtual bool getStringDict(const std::string& id,
-                             std::unordered_map<std::string, std::string>& values);
+  virtual bool getStringMap(const std::string& id,
+                            std::unordered_map<std::string, std::string>& values);
 
   /*!
    *****************************************************************************
