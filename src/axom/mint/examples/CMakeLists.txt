@@ -20,24 +20,6 @@ set( mint_examples
      user_guide/mint_getting_started.cpp
    )
 
-set( mint_example_dependencies
-     core
-     mint
-     slic
-   )
-
-blt_list_append( TO mint_example_dependencies ELEMENTS sidre conduit::conduit
-                 IF ${AXOM_MINT_USE_SIDRE} )
-
-blt_list_append( TO mint_example_dependencies ELEMENTS RAJA
-                 IF ${RAJA_FOUND} )
-
-blt_list_append( TO mint_example_dependencies ELEMENTS openmp
-                 IF ${ENABLE_OPENMP} )
-
-blt_list_append( TO mint_example_dependencies ELEMENTS cuda
-                 IF ${ENABLE_CUDA} )
-
 foreach( example ${mint_examples} )
 
    get_filename_component( example_name ${example} NAME_WE )
@@ -46,7 +28,7 @@ foreach( example ${mint_examples} )
         NAME       ${example_name}_ex
         SOURCES    ${example}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${mint_example_dependencies}
+        DEPENDS_ON mint
         FOLDER     axom/mint/examples
         )
 

@@ -40,20 +40,6 @@ set( mint_tests
      mint_util_write_vtk.cpp
    )
 
-## lists all axom depencies used for testing
-set( mint_test_dependencies
-     core
-     slic
-     mint
-     )
-
-blt_list_append( TO mint_test_dependencies
-                 ELEMENTS sidre conduit::conduit
-                 IF AXOM_MINT_USE_SIDRE )
-blt_list_append( TO mint_test_dependencies ELEMENTS RAJA IF ${RAJA_FOUND} )
-blt_list_append( TO mint_test_dependencies ELEMENTS openmp IF ${ENABLE_OPENMP} )
-blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
-
 foreach( test ${mint_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
@@ -62,7 +48,7 @@ foreach( test ${mint_tests} )
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${mint_test_dependencies} gtest
+        DEPENDS_ON mint gtest
         FOLDER     axom/mint/tests
         )
 
