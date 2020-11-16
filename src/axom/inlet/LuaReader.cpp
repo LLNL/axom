@@ -102,6 +102,30 @@ bool LuaReader::getStringMap(const std::string& id,
   return getMap(id, values, sol::type::string);
 }
 
+bool LuaReader::getIntDict(const std::string& id,
+                           std::unordered_map<std::string, int>& values)
+{
+  return getMap(id, values, sol::type::number);
+}
+
+bool LuaReader::getDoubleDict(const std::string& id,
+                              std::unordered_map<std::string, double>& values)
+{
+  return getMap(id, values, sol::type::number);
+}
+
+bool LuaReader::getBoolDict(const std::string& id,
+                            std::unordered_map<std::string, bool>& values)
+{
+  return getMap(id, values, sol::type::boolean);
+}
+
+bool LuaReader::getStringDict(const std::string& id,
+                              std::unordered_map<std::string, std::string>& values)
+{
+  return getMap(id, values, sol::type::string);
+}
+
 template <typename Iter>
 bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
 {
@@ -146,24 +170,13 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
 
 bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices)
 {
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  return getIndices(id, indices);
+}
 
-  sol::table t;
-
-  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
-  {
-    return false;
-  }
-
-  indices.clear();
-
-  // std::transform ends up being messier here
-  for(const auto& entry : t)
-  {
-    indices.push_back(entry.first.as<int>());
-  }
-  return true;
+bool LuaReader::getDictIndices(const std::string& id,
+                               std::vector<std::string>& indices)
+{
+  return getIndices(id, indices);
 }
 
 template <typename T>
@@ -198,9 +211,9 @@ bool LuaReader::getValue(const std::string& id, T& value)
   return false;
 }
 
-template <typename T>
+template <typename K, typename V>
 bool LuaReader::getMap(const std::string& id,
-                       std::unordered_map<int, T>& values,
+                       std::unordered_map<K, V>& values,
                        sol::type type)
 {
   values.clear();
@@ -212,15 +225,38 @@ bool LuaReader::getMap(const std::string& id,
   {
     return false;
   }
-
+  const auto key_type =
+    (std::is_same<K, int>::value) ? sol::type::number : sol::type::string;
   for(const auto& entry : t)
   {
     // Gets only indexed items in the table.
-    if(entry.first.get_type() == sol::type::number &&
-       entry.second.get_type() == type)
+    if(entry.first.get_type() == key_type && entry.second.get_type() == type)
     {
-      values[entry.first.as<int>()] = entry.second.as<T>();
+      values[entry.first.as<K>()] = entry.second.as<V>();
     }
+  }
+  return true;
+}
+
+template <typename T>
+bool LuaReader::getIndices(const std::string& id, std::vector<T>& indices)
+{
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+
+  sol::table t;
+
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
+  {
+    return false;
+  }
+
+  indices.clear();
+
+  // std::transform ends up being messier here
+  for(const auto& entry : t)
+  {
+    indices.push_back(entry.first.as<T>());
   }
   return true;
 }

@@ -78,14 +78,13 @@ TEST(inlet_object, simple_array_of_struct_by_value)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
   std::unordered_map<int, Foo> expected_foos = {{4, {true, false}},
                                                 {7, {false, true}}};
-  std::unordered_map<int, Foo> foos;
-  EXPECT_TRUE(arr_table.getArray(foos));
+  auto foos = inlet["foo"].get<std::unordered_map<int, Foo>>();
   EXPECT_EQ(foos, expected_foos);
 }
 
@@ -97,14 +96,13 @@ TEST(inlet_object, simple_array_of_struct_implicit_idx)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
   std::unordered_map<int, Foo> expected_foos = {{1, {true, false}},
                                                 {2, {false, true}}};
-  std::unordered_map<int, Foo> foos;
-  EXPECT_TRUE(arr_table.getArray(foos));
+  auto foos = inlet["foo"].get<std::unordered_map<int, Foo>>();
   EXPECT_EQ(foos, expected_foos);
 }
 
@@ -116,7 +114,7 @@ TEST(inlet_object, simple_array_of_struct_verify_optional)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(false);
@@ -170,7 +168,7 @@ TEST(inlet_object, array_of_struct_containing_array)
   std::unordered_map<int, FooWithArray> expected_foos = {{4, {{{1, 3}}}},
                                                          {7, {{{6, 2}}}}};
   std::unordered_map<int, FooWithArray> foos_with_arr;
-  EXPECT_TRUE(arr_table.getArray(foos_with_arr));
+  foos_with_arr = inlet["foo"].get<std::unordered_map<int, FooWithArray>>();
   EXPECT_EQ(foos_with_arr, expected_foos);
 }
 
@@ -458,7 +456,7 @@ TEST(inlet_dict, simple_dict_of_struct_by_value)
   std::unordered_map<std::string, Foo> expected_foos = {{"key1", {true, false}},
                                                         {"key2", {false, true}}};
   std::unordered_map<std::string, Foo> foos;
-  EXPECT_TRUE(dict_table.getDict(foos));
+  foos = inlet["foo"].get<std::unordered_map<std::string, Foo>>();
   EXPECT_EQ(foos, expected_foos);
 }
 

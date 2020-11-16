@@ -201,16 +201,94 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Get an string-integer mapping for the given array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the ints that were retrieved
+   *
+   * \return true if the dict was able to be retrieved from the file
+   *****************************************************************************
+   */
+  virtual bool getIntDict(const std::string& id,
+                          std::unordered_map<std::string, int>& values) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get an string-bool mapping for the given array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the bools that were retrieved
+   *
+   * \return true if the dict was able to be retrieved from the file
+   *****************************************************************************
+   */
+  virtual bool getBoolDict(const std::string& id,
+                           std::unordered_map<std::string, bool>& values) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get an string-double mapping for the given array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the doubles that were retrieved
+   *
+   * \return true if the dict was able to be retrieved from the file
+   *****************************************************************************
+   */
+  virtual bool getDoubleDict(const std::string& id,
+                             std::unordered_map<std::string, double>& values) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get an string-string mapping for the given Lua array
+   *
+   * This performs any necessary retrieval and mapping from the given identifier
+   * to what is in the input file.
+   *
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] map The values of the strings that were retrieved
+   *
+   * \return true if the dict was able to be retrieved from the file
+   *****************************************************************************
+   */
+  virtual bool getStringDict(
+    const std::string& id,
+    std::unordered_map<std::string, std::string>& values) = 0;
+
+  /*!
+   *****************************************************************************
    * \brief Get the list of indices for an array
    *
    * \param [in]  id    The identifier to the array that will be retrieved
-   * \param [out] map The values of the indices that were retrieved
+   * \param [out] indices The values of the indices that were retrieved
    *
    * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
   virtual bool getArrayIndices(const std::string& id,
                                std::vector<int>& indices) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get the list of indices for a dictionary
+   *
+   * \param [in]  id    The identifier to the dictionary that will be retrieved
+   * \param [out] indices The values of the indices that were retrieved
+   *
+   * \return true if the dictionary was able to be retrieved from the file
+   *****************************************************************************
+   */
+  virtual bool getDictIndices(const std::string& id,
+                              std::vector<std::string>& indices) = 0;
 };
 
 }  // end namespace inlet

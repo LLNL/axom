@@ -70,7 +70,8 @@ public:
   template <typename T,
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value ||
-                                      detail::is_inlet_primitive_array<T>::value>::type>
+                                      detail::is_inlet_primitive_array<T>::value ||
+                                      detail::is_inlet_primitive_dict<T>::value>::type>
   operator T() const
   {
     return get<T>();
