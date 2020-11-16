@@ -460,6 +460,80 @@ TEST(inlet_dict, simple_dict_of_struct_by_value)
   EXPECT_EQ(foos, expected_foos);
 }
 
+struct FooWithDict
+{
+  std::unordered_map<std::string, int> arr;
+  bool operator==(const FooWithDict& other) const { return arr == other.arr; }
+};
+
+template <>
+struct FromInlet<FooWithDict>
+{
+  FooWithDict operator()(const axom::inlet::Table& base)
+  {
+    FooWithDict f = {base["arr"]};
+    return f;
+  }
+};
+
+TEST(inlet_dict, dict_of_struct_containing_dict)
+{
+  std::string testString =
+    "foo = { [\"key3\"] = { arr = { [\"key1\"] = 3 }; }, "
+    "        [\"key4\"] = { arr = { [\"key2\"] = 2 }; } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& dict_table = inlet.getGlobalTable().addGenericDict("foo");
+
+  dict_table.addIntDict("arr", "arr's description");
+  std::unordered_map<std::string, FooWithDict> expected_foos = {
+    {"key3", {{{"key1", 3}}}},
+    {"key4", {{{"key2", 2}}}}};
+  std::unordered_map<std::string, FooWithDict> foos_with_dict;
+  foos_with_dict =
+    inlet["foo"].get<std::unordered_map<std::string, FooWithDict>>();
+  EXPECT_EQ(foos_with_dict, expected_foos);
+}
+
+TEST(inlet_dict, dict_of_struct_containing_array)
+{
+  std::string testString =
+    "foo = { [\"key3\"] = { arr = { [1] = 3 }; }, "
+    "        [\"key4\"] = { arr = { [6] = 2 }; } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& dict_table = inlet.getGlobalTable().addGenericDict("foo");
+
+  dict_table.addIntArray("arr", "arr's description");
+  std::unordered_map<std::string, FooWithArray> expected_foos = {
+    {"key3", {{{1, 3}}}},
+    {"key4", {{{6, 2}}}}};
+  std::unordered_map<std::string, FooWithArray> foos_with_array;
+  foos_with_array =
+    inlet["foo"].get<std::unordered_map<std::string, FooWithArray>>();
+  EXPECT_EQ(foos_with_array, expected_foos);
+}
+
+TEST(inlet_dict, array_of_struct_containing_dict)
+{
+  std::string testString =
+    "foo = { [7] = { arr = { [\"key1\"] = 3 }; }, "
+    "        [4] = { arr = { [\"key2\"] = 2 }; } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+
+  arr_table.addIntDict("arr", "arr's description");
+  std::unordered_map<int, FooWithDict> expected_foos = {{7, {{{"key1", 3}}}},
+                                                        {4, {{{"key2", 2}}}}};
+  std::unordered_map<int, FooWithDict> foos_with_dict;
+  foos_with_dict = inlet["foo"].get<std::unordered_map<int, FooWithDict>>();
+  EXPECT_EQ(foos_with_dict, expected_foos);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

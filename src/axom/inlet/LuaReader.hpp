@@ -146,6 +146,8 @@ public:
    *****************************************************************************
    */
   bool getIntMap(const std::string& id, std::unordered_map<int, int>& values);
+  bool getIntMap(const std::string& id,
+                 std::unordered_map<std::string, int>& values);
 
   /*!
    *****************************************************************************
@@ -162,6 +164,8 @@ public:
    */
   bool getDoubleMap(const std::string& id,
                     std::unordered_map<int, double>& values);
+  bool getDoubleMap(const std::string& id,
+                    std::unordered_map<std::string, double>& values);
 
   /*!
    *****************************************************************************
@@ -177,6 +181,8 @@ public:
    *****************************************************************************
    */
   bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values);
+  bool getBoolMap(const std::string& id,
+                  std::unordered_map<std::string, bool>& values);
 
   /*!
    *****************************************************************************
@@ -193,94 +199,21 @@ public:
    */
   bool getStringMap(const std::string& id,
                     std::unordered_map<int, std::string>& values);
+  bool getStringMap(const std::string& id,
+                    std::unordered_map<std::string, std::string>& values);
 
   /*!
    *****************************************************************************
-   * \brief Get an string-integer mapping for the given array
+   * \brief Get the list of indices for an container
    *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the string that will be retrieved
-   * \param [out] map The values of the ints that were retrieved
-   *
-   * \return true if the dict was able to be retrieved from the file
-   *****************************************************************************
-   */
-  virtual bool getIntMap(const std::string& id,
-                         std::unordered_map<std::string, int>& values);
-
-  /*!
-   *****************************************************************************
-   * \brief Get an string-bool mapping for the given array
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the string that will be retrieved
-   * \param [out] map The values of the bools that were retrieved
-   *
-   * \return true if the dict was able to be retrieved from the file
-   *****************************************************************************
-   */
-  virtual bool getBoolMap(const std::string& id,
-                          std::unordered_map<std::string, bool>& values);
-
-  /*!
-   *****************************************************************************
-   * \brief Get an string-double mapping for the given array
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the string that will be retrieved
-   * \param [out] map The values of the doubles that were retrieved
-   *
-   * \return true if the dict was able to be retrieved from the file
-   *****************************************************************************
-   */
-  virtual bool getDoubleMap(const std::string& id,
-                            std::unordered_map<std::string, double>& values);
-
-  /*!
-   *****************************************************************************
-   * \brief Get an string-string mapping for the given Lua array
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the string that will be retrieved
-   * \param [out] map The values of the strings that were retrieved
-   *
-   * \return true if the dict was able to be retrieved from the file
-   *****************************************************************************
-   */
-  virtual bool getStringMap(const std::string& id,
-                            std::unordered_map<std::string, std::string>& values);
-
-  /*!
-   *****************************************************************************
-   * \brief Get the list of indices for an array
-   *
-   * \param [in]  id    The identifier to the array that will be retrieved
+   * \param [in]  id    The identifier to the container that will be retrieved
    * \param [out] map The values of the indices that were retrieved
    *
-   * \return true if the array was able to be retrieved from the file
+   * \return true if the indices were able to be retrieved from the file
    *****************************************************************************
    */
-  bool getArrayIndices(const std::string& id, std::vector<int>& indices);
-
-  /*!
-   *****************************************************************************
-   * \brief Get the list of indices for a dictionary
-   *
-   * \param [in]  id    The identifier to the dictionary that will be retrieved
-   * \param [out] indices The values of the indices that were retrieved
-   *
-   * \return true if the dictionary was able to be retrieved from the file
-   *****************************************************************************
-   */
-  bool getDictIndices(const std::string& id, std::vector<std::string>& indices);
+  bool getIndices(const std::string& id, std::vector<int>& indices);
+  bool getIndices(const std::string& id, std::vector<std::string>& indices);
 
   /*!
    *****************************************************************************
@@ -305,7 +238,7 @@ private:
               sol::type type);
 
   template <typename T>
-  bool getIndices(const std::string& id, std::vector<T>& indices);
+  bool getIndicesInternal(const std::string& id, std::vector<T>& indices);
 
   /*!
    *****************************************************************************

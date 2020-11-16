@@ -168,15 +168,15 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   return true;
 }
 
-bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices)
+bool LuaReader::getIndices(const std::string& id, std::vector<int>& indices)
 {
-  return getIndices(id, indices);
+  return getIndicesInternal(id, indices);
 }
 
-bool LuaReader::getDictIndices(const std::string& id,
-                               std::vector<std::string>& indices)
+bool LuaReader::getIndices(const std::string& id,
+                           std::vector<std::string>& indices)
 {
-  return getIndices(id, indices);
+  return getIndicesInternal(id, indices);
 }
 
 template <typename T>
@@ -239,7 +239,7 @@ bool LuaReader::getMap(const std::string& id,
 }
 
 template <typename T>
-bool LuaReader::getIndices(const std::string& id, std::vector<T>& indices)
+bool LuaReader::getIndicesInternal(const std::string& id, std::vector<T>& indices)
 {
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
