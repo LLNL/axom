@@ -43,7 +43,7 @@ Function& Function::registerVerifier(std::function<bool(const Function&)> lambda
 bool Function::verify() const
 {
   bool verified = true;
-  // If this function was required, make sure soemething was defined in it
+  // If this function was required, make sure something was defined in it
   if(m_sidreGroup->hasView("required"))
   {
     int8 required = m_sidreGroup->getView("required")->getData();

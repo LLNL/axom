@@ -597,7 +597,7 @@ Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
 bool Table::verify() const
 {
   bool verified = true;
-  // If this table was required, make sure soemething was defined in it
+  // If this table was required, make sure something was defined in it
   if(m_sidreGroup->hasView("required"))
   {
     int8 required = m_sidreGroup->getView("required")->getData();

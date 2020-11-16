@@ -31,29 +31,55 @@ struct BoundaryCondition
   std::unique_ptr<mfem::Coefficient> coef;
   std::unique_ptr<mfem::VectorCoefficient> vec_coef;
 
+  // The data from the input file needed to construct a BC
+  // Needed as the mesh dimension won't be in the input file, which is needed
+  // to construct a coefficient
+  struct InputInfo
+  {
+    std::function<double(const mfem::Vector&, double)> scalar_func;
+    std::function<void(const mfem::Vector&, double, mfem::Vector&)> vec_func;
+    std::unordered_map<int, int> attrs;
+  };
+
+  // The object gets constructed with the input info and any user-provided info
+  // in this case, the dimension
+  BoundaryCondition(InputInfo&& info, const int dim)
+    : attrs(std::move(info.attrs))
+  {
+    if(info.scalar_func)
+    {
+      coef =
+        std::make_unique<mfem::FunctionCoefficient>(std::move(info.scalar_func));
+      SLIC_INFO("Created an mfem::Coefficient");
+    }
+    else if(info.vec_func)
+    {
+      vec_coef = std::make_unique<mfem::VectorFunctionCoefficient>(
+        dim,
+        std::move(info.vec_func));
+      SLIC_INFO("Created an mfem::VectorCoefficient with dimension "
+                << vec_coef->GetVDim());
+    }
+    else
+    {
+      SLIC_WARNING("No function present in BC input info, no coef was created");
+    }
+  }
+
   static void defineSchema(inlet::Table& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
     // Inlet does not support sum types, so options are added to the schema
-    // for vector/scalar coefficients and for time-dependent versions of each
+    // for vector/scalar coefficients
     // Supported function parameter/return types are Double and Vec3D
+
     schema.addFunction("vec_coef",
-                       inlet::FunctionType::Vec3D,    // Return type
-                       {inlet::FunctionType::Vec3D},  // Argument type
-                       "The function representing the BC coefficient");
-
-    schema.addFunction("coef",
-                       inlet::FunctionType::Double,
-                       {inlet::FunctionType::Vec3D},
-                       "The function representing the BC coefficient");
-
-    schema.addFunction("vec_coef_t",
                        inlet::FunctionType::Vec3D,
                        {inlet::FunctionType::Vec3D,
                         inlet::FunctionType::Double},  // Multiple argument types
                        "The function representing the BC coefficient");
 
-    schema.addFunction("coef_t",
+    schema.addFunction("coef",
                        inlet::FunctionType::Double,
                        {inlet::FunctionType::Vec3D, inlet::FunctionType::Double},
                        "The function representing the BC coefficient");
@@ -67,14 +93,14 @@ struct BoundaryCondition
  *   attrs = {
  *      3, 4, 6, 9
  *   }
- *   coef = function (x, y, z)
+ *   coef = function (x, y, z, t)
  *     return x * 0.12
  *   end
  * }
  * -- or, for vector coefficients:
  * [8] = {
  *   attrs = { [4] = 14, [8] = 62, [6] = 11},
- *   vec_coef = function (x, y, z)
+ *   vec_coef = function (x, y, z, t)
  *     scale = 0.12
  *     return x * scale, y * scale, z * scale
  *   end
@@ -82,74 +108,40 @@ struct BoundaryCondition
  * \endcode
  */
 template <>
-struct FromInlet<BoundaryCondition>
+struct FromInlet<BoundaryCondition::InputInfo>
 {
-  BoundaryCondition operator()(const inlet::Table& base)
+  BoundaryCondition::InputInfo operator()(const inlet::Table& base)
   {
-    BoundaryCondition bc;
-    bc.attrs = base["attrs"];
-    if(base.contains("vec_coef"))
+    BoundaryCondition::InputInfo result;
+    result.attrs = base["attrs"];
+    if(base.contains("coef"))
     {
-      // We assume the dimension is 3 - if the mfem::Vector is 2D,
-      // the z-component will be set to zero due to how primal::Vector's
-      // (T*, size) constructor works
-      bc.vec_coef = std::make_unique<mfem::VectorFunctionCoefficient>(
-        3,
-        [&base](const mfem::Vector& input, mfem::Vector& output) {
-          // One way of accessing the function is with "call" - need
-          // to specify the desired return and argument types explicitly
-          auto ret = base["vec_coef"].call<axom::primal::Vector3D>(
-            axom::primal::Vector3D {input.GetData(), input.Size()});
-          // Copy from the primal vector into the MFEM vector
-          std::copy(ret.data(), ret.data() + ret.dimension(), output.GetData());
-        });
-      SLIC_INFO("Created an mfem::VectorCoefficient with dimension "
-                << bc.vec_coef->GetVDim());
-    }
-    else if(base.contains("coef"))
-    {
-      // Another way of accessing the function is by extracting the std::function
+      // Retrieve the function (makes a copy) to be moved into the lambda
       auto func =
-        base["coef"].get<std::function<double(axom::primal::Vector3D)>>();
-      bc.coef = std::make_unique<mfem::FunctionCoefficient>(
-        [func(std::move(func))](const mfem::Vector& vec) {
-          // func is a concrete function type so calls can leverage conversions
-          return func({vec.GetData(), vec.Size()});
-        });
-      SLIC_INFO("Created an mfem::Coefficient");
+        base["coef"].get<std::function<double(axom::primal::Vector3D, double)>>();
+      result.scalar_func = [func(std::move(func))](const mfem::Vector& vec,
+                                                   double t) {
+        return func({vec.GetData(), vec.Size()}, t);
+      };
     }
-    else if(base.contains("coef_t"))
+    else if(base.contains("vec_coef"))
     {
       auto func =
-        base["coef_t"].get<std::function<double(axom::primal::Vector3D, double)>>();
-      bc.coef = std::make_unique<mfem::FunctionCoefficient>(
-        [func(std::move(func))](const mfem::Vector& vec, double t) {
-          return func({vec.GetData(), vec.Size()}, t);
-        });
-      SLIC_INFO("Created a time-dependent mfem::Coefficient");
-    }
-    else if(base.contains("vec_coef_t"))
-    {
-      auto func =
-        base["vec_coef_t"]
+        base["vec_coef"]
           .get<std::function<axom::primal::Vector3D(axom::primal::Vector3D, double)>>();
-      bc.vec_coef = std::make_unique<mfem::VectorFunctionCoefficient>(
-        3,
-        [func(std::move(
-          func))](const mfem::Vector& input, double t, mfem::Vector& output) {
-          auto ret = func({input.GetData(), input.Size()}, t);
-          // Copy from the primal vector into the MFEM vector
-          std::copy(ret.data(), ret.data() + ret.dimension(), output.GetData());
-        });
-      SLIC_INFO(
-        "Created a time-dependent mfem::VectorCoefficient with dimension "
-        << bc.vec_coef->GetVDim());
+      result.vec_func = [func(std::move(func))](const mfem::Vector& input,
+                                                double t,
+                                                mfem::Vector& output) {
+        auto ret = func({input.GetData(), input.Size()}, t);
+        // Copy from the primal vector into the MFEM vector
+        std::copy(ret.data(), ret.data() + ret.dimension(), output.GetData());
+      };
     }
     else
     {
       SLIC_ERROR("Table did not contain a coefficient function: " << base.name());
     }
-    return bc;
+    return result;
   }
 };
 
@@ -184,7 +176,16 @@ int main(int argc, char** argv)
   }
 
   // Read all the data into a thermal solver object
-  auto bcs = inlet["bcs"].get<std::unordered_map<int, BoundaryCondition>>();
+  auto bc_infos =
+    inlet["bcs"].get<std::unordered_map<int, BoundaryCondition::InputInfo>>();
+
+  // Then construct the actual boundary conditions once the mesh dimension is known
+  const int dim = 3;
+  std::unordered_map<int, BoundaryCondition> bcs;
+  for(auto&& info : bc_infos)
+  {
+    bcs.emplace(info.first, BoundaryCondition {std::move(info.second), dim});
+  }
 
 #endif  // MFEM_STDFUNCTION_COEF
 }

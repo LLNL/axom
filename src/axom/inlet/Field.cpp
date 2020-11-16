@@ -424,7 +424,7 @@ Field& Field::registerVerifier(std::function<bool(const Field&)> lambda)
 
 bool Field::verify() const
 {
-  // If this field was required, make sure soemething was defined in it
+  // If this field was required, make sure something was defined in it
   if(m_sidreGroup->hasView("required"))
   {
     int8 required = m_sidreGroup->getView("required")->getData();
