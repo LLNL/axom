@@ -976,7 +976,7 @@ private:
    * will be converted to strings
    *****************************************************************************
    */
-  std::vector<std::string> arrayIndices() const;
+  std::vector<std::string> containerIndices() const;
 
   /*!
    *****************************************************************************
@@ -988,7 +988,7 @@ private:
    * \param [in] name The name of the array object in the input file
    *****************************************************************************
    */
-  std::vector<std::pair<std::string, std::string>> arrayIndicesWithPaths(
+  std::vector<std::pair<std::string, std::string>> containerIndicesWithPaths(
     const std::string& name) const;
 
   /*!
@@ -1033,7 +1033,7 @@ private:
   typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
   getArray(std::unordered_map<int, T>& map) const
   {
-    for(const auto& indexLabel : arrayIndices())
+    for(const auto& indexLabel : containerIndices())
     {
       map[std::stoi(indexLabel)] = getTable(indexLabel).get<T>();
     }
@@ -1082,7 +1082,7 @@ private:
   typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
   getDict(std::unordered_map<std::string, T>& map) const
   {
-    for(const auto& indexLabel : arrayIndices())
+    for(const auto& indexLabel : containerIndices())
     {
       map[indexLabel] = getTable(indexLabel).get<T>();
     }
@@ -1097,8 +1097,8 @@ private:
    */
   bool isGenericContainer()
   {
-    return m_sidreGroup->hasView(ARRAY_INDICES_VIEW_NAME) ||
-      m_sidreGroup->hasGroup(ARRAY_INDICES_VIEW_NAME);
+    return m_sidreGroup->hasView(CONTAINER_INDICES_NAME) ||
+      m_sidreGroup->hasGroup(CONTAINER_INDICES_NAME);
   }
 
   std::string m_name;
@@ -1118,7 +1118,7 @@ private:
   std::vector<AggregateField> m_aggregate_fields;
 
   static const std::string ARRAY_GROUP_NAME;
-  static const std::string ARRAY_INDICES_VIEW_NAME;
+  static const std::string CONTAINER_INDICES_NAME;
 };
 
 // To-be-defined template specializations

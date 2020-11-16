@@ -14,7 +14,7 @@ namespace axom
 namespace inlet
 {
 const std::string Table::ARRAY_GROUP_NAME = "_inlet_array";
-const std::string Table::ARRAY_INDICES_VIEW_NAME = "_inlet_array_indices";
+const std::string Table::CONTAINER_INDICES_NAME = "_inlet_array_indices";
 
 Table& Table::addTable(const std::string& name, const std::string& description)
 {
@@ -72,13 +72,13 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   return *currTable;
 }
 
-std::vector<std::string> Table::arrayIndices() const
+std::vector<std::string> Table::containerIndices() const
 {
   std::vector<std::string> indices;
-  // If it's in the view, they are integer indices
-  if(m_sidreGroup->hasView(ARRAY_INDICES_VIEW_NAME))
+  // If it's in the view, they are integer indices of an array
+  if(m_sidreGroup->hasView(CONTAINER_INDICES_NAME))
   {
-    const auto view = m_sidreGroup->getView(ARRAY_INDICES_VIEW_NAME);
+    const auto view = m_sidreGroup->getView(CONTAINER_INDICES_NAME);
     const int* array = view->getArray();
     const auto num_elements = view->getNumElements();
     indices.reserve(num_elements);
@@ -87,17 +87,16 @@ std::vector<std::string> Table::arrayIndices() const
       indices.push_back(std::to_string(array[i]));
     }
   }
-  // Otherwise, they're string indices
-  else if(m_sidreGroup->hasGroup(ARRAY_INDICES_VIEW_NAME))
+  // Otherwise, they're string indices of a dict
+  // need to iterate over group
+  else if(m_sidreGroup->hasGroup(CONTAINER_INDICES_NAME))
   {
-    auto group = m_sidreGroup->getGroup(ARRAY_INDICES_VIEW_NAME);
+    auto group = m_sidreGroup->getGroup(CONTAINER_INDICES_NAME);
     indices.reserve(group->getNumViews());
-    auto idx = group->getFirstValidViewIndex();
-    while(sidre::indexIsValid(idx))
+    for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
+        idx = group->getNextValidViewIndex(idx))
     {
-      const auto view = group->getView(idx);
-      indices.push_back(view->getString());
-      idx = group->getNextValidViewIndex(idx);
+      indices.push_back(group->getView(idx)->getString());
     }
   }
   else
@@ -110,14 +109,14 @@ std::vector<std::string> Table::arrayIndices() const
   return indices;
 }
 
-std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
+std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPaths(
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
   // Need to go up one level because this is an _inlet_array group
   const auto pos = m_name.find_last_of("/");
   const std::string baseName = m_name.substr(0, pos);
-  for(const auto& indexLabel : arrayIndices())
+  for(const auto& indexLabel : containerIndices())
   {
     // The base name reflects the structure of the actual data
     // and is used for the reader call
@@ -172,7 +171,7 @@ Table& Table::addGenericArray(const std::string& name,
     // from an array of primitives - the tables have to be allocated
     // before they are populated as we don't know the schema of the
     // generic type yet
-    auto view = table.m_sidreGroup->createViewAndAllocate(ARRAY_INDICES_VIEW_NAME,
+    auto view = table.m_sidreGroup->createViewAndAllocate(CONTAINER_INDICES_NAME,
                                                           axom::sidre::INT_ID,
                                                           indices.size());
     int* raw_array = view->getArray();
@@ -228,7 +227,7 @@ Table& Table::addGenericDict(const std::string& name,
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader.getIndices(fullName, indices))
   {
-    auto group = table.m_sidreGroup->createGroup(ARRAY_INDICES_VIEW_NAME,
+    auto group = table.m_sidreGroup->createGroup(CONTAINER_INDICES_NAME,
                                                  /* list_format = */ true);
     for(const auto idx : indices)
     {
@@ -302,7 +301,7 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
     // of structs, so we need to iterate over the subtables
     // corresponding to elements of the array
     std::vector<std::reference_wrapper<VerifiableScalar>> fields;
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : containerIndicesWithPaths(name))
     {
       // Add a primitive to an array element (which is a struct)
       fields.push_back(
@@ -539,7 +538,7 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
     // Adding an array of primitive field to an array of structs
     std::vector<std::reference_wrapper<Verifiable>> tables;
     // Iterate over each element and forward the call to addPrimitiveArray
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : containerIndicesWithPaths(name))
     {
       tables.push_back(
         getTable(indexPath.first)
