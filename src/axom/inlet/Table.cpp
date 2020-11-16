@@ -161,6 +161,70 @@ Table& Table::addGenericArray(const std::string& name,
   return table;
 }
 
+Verifiable& Table::addBoolDict(const std::string& name,
+                               const std::string& description)
+{
+  return addPrimitiveArray<bool>(name, description, true);
+}
+
+Verifiable& Table::addIntDict(const std::string& name,
+                              const std::string& description)
+{
+  return addPrimitiveArray<int>(name, description, true);
+}
+
+Verifiable& Table::addDoubleDict(const std::string& name,
+                                 const std::string& description)
+{
+  return addPrimitiveArray<double>(name, description, true);
+}
+
+Verifiable& Table::addStringDict(const std::string& name,
+                                 const std::string& description)
+{
+  return addPrimitiveArray<std::string>(name, description, true);
+}
+
+Table& Table::addGenericDict(const std::string& name,
+                             const std::string& description)
+{
+  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+  {
+    SLIC_ERROR(
+      fmt::format("[Inlet] Adding array of structs to array of structs {0} is "
+                  "not supported",
+                  m_name));
+  }
+  auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
+  std::vector<std::string> indices;
+  const std::string& fullName = appendPrefix(m_name, name);
+  if(m_reader.getDictIndices(fullName, indices))
+  {
+    // This is how an array of user-defined type is differentiated
+    // from an array of primitives - the tables have to be allocated
+    // before they are populated as we don't know the schema of the
+    // generic type yet
+    auto view =
+      table.m_sidreGroup->createViewAndAllocate(ARRAY_INDICIES_VIEW_NAME,
+                                                axom::sidre::CHAR8_STR_ID,
+                                                indices.size());
+    auto raw_array = view->getNode();
+    auto itr = raw_array.children();
+    for(const auto idx : indices)
+    {
+      table.addTable(idx, description);
+      auto& ele = itr.next();
+      ele = idx;
+    }
+    raw_array.print();
+  }
+  else
+  {
+    SLIC_WARNING(fmt::format("[Inlet] Array {0} not found.", fullName));
+  }
+  return table;
+}
+
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
                                             const std::string& description)
 {
@@ -338,6 +402,7 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
 template <typename T, typename SFINAE>
 Verifiable& Table::addPrimitiveArray(const std::string& name,
                                      const std::string& description,
+                                     const bool isDict,
                                      const std::string& pathOverride)
 {
   if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
@@ -349,7 +414,7 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
     {
       tables.push_back(
         getTable(indexPath.first)
-          .addPrimitiveArray<T>(name, description, indexPath.second));
+          .addPrimitiveArray<T>(name, description, isDict, indexPath.second));
     }
 
     m_aggregate_tables.emplace_back(std::move(tables));
@@ -363,7 +428,7 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
     auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
-    addPrimitiveArrayHelper<T>(table, lookupPath);
+    addPrimitiveArrayHelper<T>(table, lookupPath, isDict);
     return table;
   }
 }
@@ -372,32 +437,45 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
 template Verifiable& Table::addPrimitiveArray<bool>(
   const std::string& name,
   const std::string& description,
+  const bool isDict,
   const std::string& pathOverride);
 
 template Verifiable& Table::addPrimitiveArray<int>(const std::string& name,
                                                    const std::string& description,
+                                                   const bool isDict,
                                                    const std::string& pathOverride);
 
 template Verifiable& Table::addPrimitiveArray<double>(
   const std::string& name,
   const std::string& description,
+  const bool isDict,
   const std::string& pathOverride);
 
 template Verifiable& Table::addPrimitiveArray<std::string>(
   const std::string& name,
   const std::string& description,
+  const bool isDict,
   const std::string& pathOverride);
 
 template <>
 void Table::addPrimitiveArrayHelper<bool>(Table& table,
-                                          const std::string& lookupPath)
+                                          const std::string& lookupPath,
+                                          bool isDict)
 {
   std::unordered_map<int, bool> map;
-  if(m_reader.getBoolMap(lookupPath, map))
+  std::unordered_map<std::string, bool> str_map;
+  if(!isDict && m_reader.getBoolMap(lookupPath, map))
   {
     for(const auto& p : map)
     {
       table.addPrimitive(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else if(isDict && m_reader.getBoolDict(lookupPath, str_map))
+  {
+    for(const auto& p : str_map)
+    {
+      table.addPrimitive(p.first, "", true, p.second);
     }
   }
   else
@@ -408,14 +486,23 @@ void Table::addPrimitiveArrayHelper<bool>(Table& table,
 
 template <>
 void Table::addPrimitiveArrayHelper<int>(Table& table,
-                                         const std::string& lookupPath)
+                                         const std::string& lookupPath,
+                                         bool isDict)
 {
   std::unordered_map<int, int> map;
-  if(m_reader.getIntMap(lookupPath, map))
+  std::unordered_map<std::string, int> str_map;
+  if(!isDict && m_reader.getIntMap(lookupPath, map))
   {
     for(const auto& p : map)
     {
       table.addPrimitive(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else if(isDict && m_reader.getIntDict(lookupPath, str_map))
+  {
+    for(const auto& p : str_map)
+    {
+      table.addPrimitive(p.first, "", true, p.second);
     }
   }
   else
@@ -426,14 +513,23 @@ void Table::addPrimitiveArrayHelper<int>(Table& table,
 
 template <>
 void Table::addPrimitiveArrayHelper<double>(Table& table,
-                                            const std::string& lookupPath)
+                                            const std::string& lookupPath,
+                                            bool isDict)
 {
   std::unordered_map<int, double> map;
-  if(m_reader.getDoubleMap(lookupPath, map))
+  std::unordered_map<std::string, double> str_map;
+  if(!isDict && m_reader.getDoubleMap(lookupPath, map))
   {
     for(const auto& p : map)
     {
       table.addPrimitive(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else if(isDict && m_reader.getDoubleDict(lookupPath, str_map))
+  {
+    for(const auto& p : str_map)
+    {
+      table.addPrimitive(p.first, "", true, p.second);
     }
   }
   else
@@ -444,14 +540,23 @@ void Table::addPrimitiveArrayHelper<double>(Table& table,
 
 template <>
 void Table::addPrimitiveArrayHelper<std::string>(Table& table,
-                                                 const std::string& lookupPath)
+                                                 const std::string& lookupPath,
+                                                 bool isDict)
 {
   std::unordered_map<int, std::string> map;
-  if(m_reader.getStringMap(lookupPath, map))
+  std::unordered_map<std::string, std::string> str_map;
+  if(!isDict && m_reader.getStringMap(lookupPath, map))
   {
     for(const auto& p : map)
     {
       table.addPrimitive(std::to_string(p.first), "", true, p.second);
+    }
+  }
+  else if(isDict && m_reader.getStringDict(lookupPath, str_map))
+  {
+    for(const auto& p : str_map)
+    {
+      table.addPrimitive(p.first, "", true, p.second);
     }
   }
   else

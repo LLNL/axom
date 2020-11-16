@@ -430,7 +430,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Fields to the input file schema.
+   * \brief Add an array of user-defined types to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
@@ -446,58 +446,82 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get a boolean array represented as an unordered map from the input file
+   * \brief Add a dictionary of Boolean Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the Field
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, bool>& map)
+  Verifiable& addBoolDict(const std::string& name,
+                          const std::string& description = "")
   {
-    return m_globalTable.getArray(map);
+    return m_globalTable.addBoolDict(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a int array represented as an unordered map from the input file
+   * \brief Add a dictionary of Integer Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the Field
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, int>& map)
+  Verifiable& addIntDict(const std::string& name,
+                         const std::string& description = "")
   {
-    return m_globalTable.getArray(map);
+    return m_globalTable.addIntDict(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a double array represented as an unordered map from the input file
+   * \brief Add a dictionary of Double Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the Field
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, double>& map)
+  Verifiable& addDoubleDict(const std::string& name,
+                            const std::string& description = "")
   {
-    return m_globalTable.getArray(map);
+    return m_globalTable.addDoubleDict(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a string array represented as an unordered map from the input file
+   * \brief Add a dictionary of String Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the Field
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created Field
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, std::string>& map)
+  Verifiable& addStringDict(const std::string& name,
+                            const std::string& description = "")
   {
-    return m_globalTable.getArray(map);
+    return m_globalTable.addStringDict(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add a dictionary of user-defined types to the input file schema.
+   *
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the Field
+   *
+   * \return Reference to the created Field
+   *****************************************************************************
+   */
+  Table& addGenericDict(const std::string& name,
+                        const std::string& description = "")
+  {
+    return m_globalTable.addGenericDict(name, description);
   }
 
   // TODO add update value functions
