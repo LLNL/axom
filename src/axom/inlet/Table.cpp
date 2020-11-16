@@ -166,7 +166,7 @@ Table& Table::addGenericArray(const std::string& name,
   auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
   std::vector<int> indices;
   const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader.getArrayIndices(fullName, indices))
+  if(m_reader.getIndices(fullName, indices))
   {
     // This is how an array of user-defined type is differentiated
     // from an array of primitives - the tables have to be allocated
@@ -226,12 +226,8 @@ Table& Table::addGenericDict(const std::string& name,
   auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
   std::vector<std::string> indices;
   const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader.getDictIndices(fullName, indices))
+  if(m_reader.getIndices(fullName, indices))
   {
-    // This is how an array of user-defined type is differentiated
-    // from an array of primitives - the tables have to be allocated
-    // before they are populated as we don't know the schema of the
-    // generic type yet
     auto group = table.m_sidreGroup->createGroup(ARRAY_INDICES_VIEW_NAME,
                                                  /* list_format = */ true);
     for(const auto idx : indices)
@@ -465,6 +461,14 @@ struct PrimitiveArrayHelper
 template <typename Key>
 struct PrimitiveArrayHelper<Key, bool>
 {
+  /*!
+   *****************************************************************************
+   * \brief Finalizes the creation of a container
+   * \param [inout] table The table to add the container to
+   * \param [in] reader The Reader object to read the container from
+   * \param [in] lookupPath The path within the input file to the container
+   *****************************************************************************
+   */
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
   {
     std::unordered_map<Key, bool> map;
