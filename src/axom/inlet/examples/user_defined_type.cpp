@@ -155,8 +155,7 @@ struct ThermalSolver
 
     // Schema only needs to be defined once, will propagate through to each
     // element of the array, namely, the subtable at each found index in the input file
-    auto& bc_table =
-      schema.addGenericDict("bcs", "List of boundary conditions");
+    auto& bc_table = schema.addGenericDict("bcs", "List of boundary conditions");
     BoundaryCondition::defineSchema(bc_table);
   }
 };
@@ -189,9 +188,10 @@ struct FromInlet<ThermalSolver>
   // functions defined for the subobjects
   ThermalSolver operator()(const inlet::Table& base)
   {
-    return {base["mesh"].get<Mesh>(),
-            base["solver"].get<LinearSolver>(),
-            base["bcs"].get<std::unordered_map<std::string, BoundaryCondition>>()};
+    return {
+      base["mesh"].get<Mesh>(),
+      base["solver"].get<LinearSolver>(),
+      base["bcs"].get<std::unordered_map<std::string, BoundaryCondition>>()};
   }
 };
 
