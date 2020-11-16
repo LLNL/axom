@@ -795,6 +795,14 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns whether this table or any of its subtables contain a non-
+   * empty field
+   *****************************************************************************
+   */
+  explicit operator bool() const;
+
+  /*!
+   *****************************************************************************
    * \return An unordered map from Field names to the child Field pointers for 
    * this Table.
    *****************************************************************************

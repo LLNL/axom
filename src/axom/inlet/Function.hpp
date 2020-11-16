@@ -298,7 +298,7 @@ public:
    * \brief Checks whether the function exists
    *******************************************************************************
    */
-  operator bool() const { return m_function_valid; }
+  explicit operator bool() const { return m_function_valid; }
 
 private:
   // This is on the heap to reduce size - each pointer is only 8 bytes vs 32 bytes

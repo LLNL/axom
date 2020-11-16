@@ -787,9 +787,10 @@ std::string Table::name() const { return m_name; }
 
 bool Table::contains(const std::string& name) const
 {
-  if(hasTable(name))
+  if(auto table = getTableInternal(name))
   {
-    return true;
+    // call operator bool on the table itself
+    return static_cast<bool>(*table);
   }
   else if(auto field = getFieldInternal(name))
   {
@@ -802,6 +803,22 @@ bool Table::contains(const std::string& name) const
     return static_cast<bool>(*function);
   }
   return false;
+}
+
+Table::operator bool() const
+{
+  // If there are no child tables, it must have child fields
+  if(m_tableChildren.empty())
+  {
+    return !m_fieldChildren.empty();
+  }
+
+  // Otherwise we have to recurse and check child tables
+  return std::any_of(m_tableChildren.begin(),
+                     m_tableChildren.end(),
+                     [](const decltype(m_tableChildren)::value_type& entry) {
+                       return static_cast<bool>(entry.second);
+                     });
 }
 
 const std::unordered_map<std::string, std::unique_ptr<Table>>&
