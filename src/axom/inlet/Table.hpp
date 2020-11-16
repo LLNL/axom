@@ -971,6 +971,15 @@ private:
 
   /*!
    *****************************************************************************
+   * \brief This is an internal utility intended to be used with arrays/dicts of 
+   * user-defined types that returns the indices as strings - integer indices
+   * will be converted to strings
+   *****************************************************************************
+   */
+  std::vector<std::string> arrayIndices() const;
+
+  /*!
+   *****************************************************************************
    * \brief This is an internal utility intended to be used with arrays of 
    * user-defined types that returns the a list of pairs, each of which contain
    * an index (a number) and a fully qualified path within the input file to
@@ -1024,20 +1033,9 @@ private:
   typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
   getArray(std::unordered_map<int, T>& map) const
   {
-    if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+    for(const auto& indexLabel : arrayIndices())
     {
-      auto view = m_sidreGroup->getView(ARRAY_INDICIES_VIEW_NAME);
-      int* array = view->getArray();
-      for(int i = 0; i < view->getNumElements(); i++)
-      {
-        auto index_label = std::to_string(array[i]);
-        map[array[i]] = getTable(index_label).get<T>();
-      }
-    }
-    else
-    {
-      SLIC_WARNING("[Inlet] Table does not contain an array");
-      return false;
+      map[std::stoi(indexLabel)] = getTable(indexLabel).get<T>();
     }
     return true;
   }
@@ -1084,24 +1082,23 @@ private:
   typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
   getDict(std::unordered_map<std::string, T>& map) const
   {
-    if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+    for(const auto& indexLabel : arrayIndices())
     {
-      auto view = m_sidreGroup->getView(ARRAY_INDICIES_VIEW_NAME);
-      auto raw_array = view->getNode();
-      auto itr = raw_array.children();
-      while(itr.has_next())
-      {
-        const auto& node = itr.next();
-        const char* index_label = node.value();
-        map[index_label] = getTable(index_label).get<T>();
-      }
-    }
-    else
-    {
-      SLIC_WARNING("[Inlet] Table does not contain an array");
-      return false;
+      map[indexLabel] = getTable(indexLabel).get<T>();
     }
     return true;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns true if the calling object is part of a generic container,
+   * i.e., an array or dictionary of user-defined type
+   *****************************************************************************
+   */
+  bool isGenericContainer()
+  {
+    return m_sidreGroup->hasView(ARRAY_INDICES_VIEW_NAME) ||
+      m_sidreGroup->hasGroup(ARRAY_INDICES_VIEW_NAME);
   }
 
   std::string m_name;
@@ -1121,7 +1118,7 @@ private:
   std::vector<AggregateField> m_aggregate_fields;
 
   static const std::string ARRAY_GROUP_NAME;
-  static const std::string ARRAY_INDICIES_VIEW_NAME;
+  static const std::string ARRAY_INDICES_VIEW_NAME;
 };
 
 // To-be-defined template specializations

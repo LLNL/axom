@@ -14,7 +14,7 @@ namespace axom
 namespace inlet
 {
 const std::string Table::ARRAY_GROUP_NAME = "_inlet_array";
-const std::string Table::ARRAY_INDICIES_VIEW_NAME = "_inlet_array_indices";
+const std::string Table::ARRAY_INDICES_VIEW_NAME = "_inlet_array_indices";
 
 Table& Table::addTable(const std::string& name, const std::string& description)
 {
@@ -72,24 +72,51 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   return *currTable;
 }
 
+std::vector<std::string> Table::arrayIndices() const
+{
+  std::vector<std::string> indices;
+  if(m_sidreGroup->hasView(ARRAY_INDICES_VIEW_NAME))
+  {
+    const auto view = m_sidreGroup->getView(ARRAY_INDICES_VIEW_NAME);
+    const int* array = view->getArray();
+    const auto num_elements = view->getNumElements();
+    indices.reserve(num_elements);
+    for(int i = 0; i < num_elements; i++)
+    {
+      indices.push_back(std::to_string(array[i]));
+    }
+  }
+  else if(m_sidreGroup->hasGroup(ARRAY_INDICES_VIEW_NAME))
+  {
+    auto group = m_sidreGroup->getGroup(ARRAY_INDICES_VIEW_NAME);
+    indices.reserve(group->getNumViews());
+    auto idx = group->getFirstValidViewIndex();
+    while(sidre::indexIsValid(idx))
+    {
+      const auto view = group->getView(idx);
+      indices.push_back(view->getString());
+      idx = group->getNextValidViewIndex(idx);
+    }
+  }
+  else
+  {
+    SLIC_ERROR(
+      fmt::format("[Inlet] Table '{0}' does not contain an array or dict of "
+                  "user-defined objects",
+                  m_name));
+  }
+  return indices;
+}
+
 std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
-  if(!m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
-  {
-    SLIC_ERROR(fmt::format(
-      "[Inlet] Table '{0}' does not contain an array of user-defined objects",
-      m_name));
-  }
-  const auto view = m_sidreGroup->getView(ARRAY_INDICIES_VIEW_NAME);
-  const int* array = view->getArray();
   // Need to go up one level because this is an _inlet_array group
   const auto pos = m_name.find_last_of("/");
   const std::string baseName = m_name.substr(0, pos);
-  for(int i = 0; i < view->getNumElements(); i++)
+  for(const auto& indexLabel : arrayIndices())
   {
-    const auto indexLabel = std::to_string(array[i]);
     // The base name reflects the structure of the actual data
     // and is used for the reader call
     auto fullPath = appendPrefix(baseName, indexLabel);
@@ -127,7 +154,7 @@ Verifiable& Table::addStringArray(const std::string& name,
 Table& Table::addGenericArray(const std::string& name,
                               const std::string& description)
 {
-  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+  if(isGenericContainer())
   {
     SLIC_ERROR(
       fmt::format("[Inlet] Adding array of structs to array of structs {0} is "
@@ -143,10 +170,9 @@ Table& Table::addGenericArray(const std::string& name,
     // from an array of primitives - the tables have to be allocated
     // before they are populated as we don't know the schema of the
     // generic type yet
-    auto view =
-      table.m_sidreGroup->createViewAndAllocate(ARRAY_INDICIES_VIEW_NAME,
-                                                axom::sidre::INT_ID,
-                                                indices.size());
+    auto view = table.m_sidreGroup->createViewAndAllocate(ARRAY_INDICES_VIEW_NAME,
+                                                          axom::sidre::INT_ID,
+                                                          indices.size());
     int* raw_array = view->getArray();
     std::copy(indices.begin(), indices.end(), raw_array);
     for(const auto idx : indices)
@@ -188,7 +214,7 @@ Verifiable& Table::addStringDict(const std::string& name,
 Table& Table::addGenericDict(const std::string& name,
                              const std::string& description)
 {
-  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+  if(isGenericContainer())
   {
     SLIC_ERROR(
       fmt::format("[Inlet] Adding array of structs to array of structs {0} is "
@@ -204,19 +230,13 @@ Table& Table::addGenericDict(const std::string& name,
     // from an array of primitives - the tables have to be allocated
     // before they are populated as we don't know the schema of the
     // generic type yet
-    auto view =
-      table.m_sidreGroup->createViewAndAllocate(ARRAY_INDICIES_VIEW_NAME,
-                                                axom::sidre::CHAR8_STR_ID,
-                                                indices.size());
-    auto raw_array = view->getNode();
-    auto itr = raw_array.children();
+    auto group = table.m_sidreGroup->createGroup(ARRAY_INDICES_VIEW_NAME,
+                                                 /* list_format = */ true);
     for(const auto idx : indices)
     {
       table.addTable(idx, description);
-      auto& ele = itr.next();
-      ele = idx;
+      group->createViewString("", idx);
     }
-    raw_array.print();
   }
   else
   {
@@ -278,7 +298,7 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
                                       T val,
                                       const std::string& pathOverride)
 {
-  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+  if(isGenericContainer())
   {
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
@@ -405,7 +425,7 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
                                      const bool isDict,
                                      const std::string& pathOverride)
 {
-  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+  if(isGenericContainer())
   {
     // Adding an array of primitive field to an array of structs
     std::vector<std::reference_wrapper<Verifiable>> tables;
