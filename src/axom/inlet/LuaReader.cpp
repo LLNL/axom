@@ -102,26 +102,26 @@ bool LuaReader::getStringMap(const std::string& id,
   return getMap(id, values, sol::type::string);
 }
 
-bool LuaReader::getIntDict(const std::string& id,
-                           std::unordered_map<std::string, int>& values)
+bool LuaReader::getIntMap(const std::string& id,
+                          std::unordered_map<std::string, int>& values)
 {
   return getMap(id, values, sol::type::number);
 }
 
-bool LuaReader::getDoubleDict(const std::string& id,
-                              std::unordered_map<std::string, double>& values)
+bool LuaReader::getDoubleMap(const std::string& id,
+                             std::unordered_map<std::string, double>& values)
 {
   return getMap(id, values, sol::type::number);
 }
 
-bool LuaReader::getBoolDict(const std::string& id,
-                            std::unordered_map<std::string, bool>& values)
+bool LuaReader::getBoolMap(const std::string& id,
+                           std::unordered_map<std::string, bool>& values)
 {
   return getMap(id, values, sol::type::boolean);
 }
 
-bool LuaReader::getStringDict(const std::string& id,
-                              std::unordered_map<std::string, std::string>& values)
+bool LuaReader::getStringMap(const std::string& id,
+                             std::unordered_map<std::string, std::string>& values)
 {
   return getMap(id, values, sol::type::string);
 }

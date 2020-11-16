@@ -1150,26 +1150,6 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
   bool forArray,
   std::string val);
 
-template <>
-void Table::addPrimitiveArrayHelper<bool>(Table& table,
-                                          const std::string& lookupPath,
-                                          bool isDict);
-
-template <>
-void Table::addPrimitiveArrayHelper<int>(Table& table,
-                                         const std::string& lookupPath,
-                                         bool isDict);
-
-template <>
-void Table::addPrimitiveArrayHelper<double>(Table& table,
-                                            const std::string& lookupPath,
-                                            bool isDict);
-
-template <>
-void Table::addPrimitiveArrayHelper<std::string>(Table& table,
-                                                 const std::string& lookupPath,
-                                                 bool isDict);
-
 }  // end namespace inlet
 }  // end namespace axom
 
