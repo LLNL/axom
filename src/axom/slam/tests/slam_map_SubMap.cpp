@@ -50,7 +50,9 @@ static PositionType const MAX_SET_SIZE = 10;
 
 TEST(slam_map, construct_empty_subsetmap)
 {
-  SubMap<int, Map<int>> m;
+  using MapType = Map<int>;
+  using SubMapType = SubMap<int, MapType>;
+  SubMapType m;
 
   EXPECT_TRUE(m.isValid(true));
 }
