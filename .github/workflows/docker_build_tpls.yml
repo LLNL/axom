@@ -79,6 +79,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         push: true
+        memory: ="6g"
         tags: ${{ steps.repo_name.outputs.repo_plus_tag }}
         file: ${{ steps.dockerfile_name.outputs.filename }}
         context: .
@@ -141,6 +142,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         push: true
+        memory: ="6g"
         tags: ${{ steps.repo_name.outputs.repo_plus_tag }}
         file: ${{ steps.dockerfile_name.outputs.filename }}
         context: .
