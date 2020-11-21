@@ -217,7 +217,7 @@ void IOManager::write(sidre::Group* datagroup,
     SLIC_ASSERT(h5_file_id >= 0);
 
     std::string group_name;
-    if (m_comm_size == num_files)
+    if(m_comm_size == num_files)
     {
       group_name = "datagroup";
     }
@@ -449,11 +449,11 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
       SLIC_ASSERT(h5_file_id >= 0);
 
       std::string group_name = "datagroup";
-      if (H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+      if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
       {
         group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
       }
- 
+
       hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
       SLIC_ASSERT(h5_group_id >= 0);
 
@@ -481,7 +481,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
       SLIC_ASSERT(h5_file_id >= 0);
 
       std::string group_name = "datagroup";
-      if (H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+      if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
       {
         group_name = fmt::sprintf("datagroup_%07d", input_rank);
       }
@@ -787,7 +787,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       SLIC_ASSERT(h5_file_id >= 0);
 
       std::string group_name = "datagroup";
-      if (H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+      if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
       {
         group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
       }
@@ -820,7 +820,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       SLIC_ASSERT(h5_file_id >= 0);
 
       std::string group_name = "datagroup";
-      if (H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+      if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
       {
         group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
       }
