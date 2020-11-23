@@ -30,13 +30,14 @@ void setWarningFlag(axom::sidre::Group* root);
 
 /*!
 *****************************************************************************
-* \brief This function is used to configure the target group as required
+* \brief This function is used to configure the Inlet object corresponding
+* to the provided Sidre group as required
 *
 * \param [in] target Reference to the Sidre group to set the required 
 * status of
 * \param [in] root Reference to the Sidre Root Group where the warning flag 
 * will be set on failure
-* \param [in] required Whether the target group is required
+* \param [in] required Whether the Inlet object is required
 *****************************************************************************
 */
 void setRequired(axom::sidre::Group& target,
@@ -45,12 +46,14 @@ void setRequired(axom::sidre::Group& target,
 
 /*!
 *****************************************************************************
-* \brief This function is used to determine if the target group is required
+* \brief This function is used to determine if the Inlet object corresponding
+* to the provided Sidre group is required
 *
 * \param [in] target Reference to the Sidre group to check the required 
 * status of
 * \param [in] root Reference to the Sidre Root Group where the warning flag 
 * will be set on failure
+* \return Whether the Inlet object is required
 *****************************************************************************
 */
 bool checkRequired(const axom::sidre::Group& target, axom::sidre::Group& root);
