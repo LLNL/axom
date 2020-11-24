@@ -75,7 +75,11 @@ std::string appendPrefix(const std::string& prefix, const std::string& name)
 
 std::string removePrefix(const std::string& prefix, const std::string& name)
 {
-  if(axom::utilities::string::startsWith(name, prefix + "/"))
+  if(prefix.empty())
+  {
+    return name;
+  }
+  else if(axom::utilities::string::startsWith(name, prefix + "/"))
   {
     return name.substr(prefix.size());
   }

@@ -277,8 +277,11 @@ public:
     const auto& func = *std::get<std::unique_ptr<
       std::function<Ret(typename detail::inlet_function_arg_type<Args>::type...)>>>(
       m_funcs);
-    SLIC_ERROR_IF(!func || !m_function_valid,
-                  "[Inlet] Function with requested type does not exist");
+    SLIC_ERROR_IF(
+      !func || !m_function_valid,
+      fmt::format("[Inlet] Function '{0}' with requested type does not exist",
+                  m_name));
+
     return func(
       std::forward<typename detail::inlet_function_arg_type<Args>::type>(args)...);
   }
@@ -289,7 +292,10 @@ public:
     const auto& ptr = std::get<std::unique_ptr<
       std::function<typename detail::cleanup_function_signature<FuncType>::type>>>(
       m_funcs);
-    SLIC_ERROR_IF(!ptr, "[Inlet] Function with requested type does not exist");
+    SLIC_ERROR_IF(
+      !ptr,
+      fmt::format("[Inlet] Function '{0}' with requested type does not exist",
+                  m_name));
     return *ptr;
   }
 
@@ -300,12 +306,23 @@ public:
    */
   explicit operator bool() const { return m_function_valid; }
 
+  /*!
+   *******************************************************************************
+   * \brief Sets the function's name
+   * 
+   * \note Needs to be separate from constructor to allow the compiler to deduce
+   * template arguments correctly
+   *******************************************************************************
+   */
+  void setName(std::string&& name) { m_name = std::move(name); }
+
 private:
   // This is on the heap to reduce size - each pointer is only 8 bytes vs 32 bytes
   // for a std::function, and it is guaranteed that only one of the pointers will
   // actually point to something
   std::tuple<std::unique_ptr<std::function<FunctionTypes>>...> m_funcs;
   bool m_function_valid = false;
+  std::string m_name;
 };
 
 namespace detail
@@ -388,7 +405,9 @@ public:
     , m_sidreRootGroup(root)
     , m_docEnabled(docEnabled)
     , m_func(std::move(func))
-  { }
+  {
+    m_func.setName(name());
+  }
 
   /*!
    *****************************************************************************
