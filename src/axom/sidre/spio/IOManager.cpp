@@ -216,12 +216,8 @@ void IOManager::write(sidre::Group* datagroup,
     }
     SLIC_ASSERT(h5_file_id >= 0);
 
-    std::string group_name;
-    if(m_comm_size == num_files)
-    {
-      group_name = "datagroup";
-    }
-    else
+    std::string group_name = "datagroup";
+    if(m_comm_size != num_files)
     {
       group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
     }
