@@ -130,7 +130,7 @@ TEST(inlet_object, simple_array_of_struct_verify_reqd)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(true);
@@ -162,7 +162,7 @@ TEST(inlet_object, array_of_struct_containing_array)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addIntArray("arr", "arr's description");
   std::unordered_map<int, FooWithArray> expected_foos = {{4, {{{1, 3}}}},
@@ -290,10 +290,10 @@ TEST(inlet_object, array_from_bracket)
   std::unordered_map<int, bool> boolMap;
   std::unordered_map<int, std::string> strMap;
   std::unordered_map<int, double> doubleMap;
-  inlet.getGlobalTable().addIntArray("luaArrays/arr1");
-  inlet.getGlobalTable().addBoolArray("luaArrays/arr2");
-  inlet.getGlobalTable().addStringArray("luaArrays/arr3");
-  inlet.getGlobalTable().addDoubleArray("luaArrays/arr4");
+  inlet.addIntArray("luaArrays/arr1");
+  inlet.addBoolArray("luaArrays/arr2");
+  inlet.addStringArray("luaArrays/arr3");
+  inlet.addDoubleArray("luaArrays/arr4");
 
   std::unordered_map<int, int> expectedInts {{1, 4}};
   std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
@@ -362,8 +362,8 @@ TEST(inlet_object, composite_type_checks)
 
   inlet.addBool("foo/baz", "baz's description");
 
-  inlet.getGlobalTable().addIntArray("luaArrays/arr1");
-  inlet.getGlobalTable().addBoolArray("luaArrays/arr2");
+  inlet.addIntArray("luaArrays/arr1");
+  inlet.addBoolArray("luaArrays/arr2");
 
   auto arr_table = inlet["luaArrays"];
   // The table containing the two arrays is not an array, but an object
@@ -396,7 +396,7 @@ TEST(inlet_object, implicit_conversion_primitives)
   inlet.addDouble("quux", "quux's description");
   inlet.addString("corge", "corge's description");
 
-  inlet.getGlobalTable().addIntArray("arr");
+  inlet.addIntArray("arr");
 
   // Attempt both construction and assignment
   bool bar = inlet["bar"];
@@ -449,7 +449,7 @@ TEST(inlet_dict, simple_dict_of_struct_by_value)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& dict_table = inlet.getGlobalTable().addGenericDict("foo");
+  auto& dict_table = inlet.addGenericDict("foo");
 
   dict_table.addBool("bar", "bar's description");
   dict_table.addBool("baz", "baz's description");
@@ -484,7 +484,7 @@ TEST(inlet_dict, dict_of_struct_containing_dict)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& dict_table = inlet.getGlobalTable().addGenericDict("foo");
+  auto& dict_table = inlet.addGenericDict("foo");
 
   dict_table.addIntDict("arr", "arr's description");
   std::unordered_map<std::string, FooWithDict> expected_foos = {
@@ -504,7 +504,7 @@ TEST(inlet_dict, dict_of_struct_containing_array)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& dict_table = inlet.getGlobalTable().addGenericDict("foo");
+  auto& dict_table = inlet.addGenericDict("foo");
 
   dict_table.addIntArray("arr", "arr's description");
   std::unordered_map<std::string, FooWithArray> expected_foos = {
@@ -524,7 +524,7 @@ TEST(inlet_dict, array_of_struct_containing_dict)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addIntDict("arr", "arr's description");
   std::unordered_map<int, FooWithDict> expected_foos = {{7, {{{"key1", 3}}}},
