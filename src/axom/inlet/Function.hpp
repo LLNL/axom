@@ -43,6 +43,9 @@ namespace inlet
  * 
  * \note Vec3D corresponds to a three-dimensional vector, Double corresponds to
  * a floating-point scalar
+ * 
+ * \note A two-dimensional vector was intentionally excluded for simplicity as
+ * a 3D vector can be used in its place (with the third component being empty/zero)
  *******************************************************************************
  */
 enum class FunctionType
@@ -131,6 +134,12 @@ struct tuple_concat<T, std::tuple<Ts...>>
  * \tparam Ts... The types of the tuples to add to, e.g., <std::tuple<B, C>, std::tuple<D, E>>
  * 
  * In the above example the result type is std::tuple<std::tuple<A, B, C>, std::tuple<A, D, E>>
+ * 
+ * The Python-like pseudocode for this function is roughly:
+ * \code{.py}
+ * def multi_tuple_concat(T, Ts):
+ *   return [T + T_ for T_ in Ts]
+ * \endcode
  *******************************************************************************
  */
 template <typename T, typename... Ts>
@@ -160,6 +169,18 @@ struct multi_tuple_concat
  * 
  * The Us pack is expanded in the multi_tuple_concat "call" whereas the Ts pack
  * is expanded as part of the std::tuple_cat "call"
+ * 
+ * The Python-like pseudocode for this function is roughly:
+ * \code{.py}
+ * def permutation_helper(Ts, Us, N):
+ *   if N == 0:
+ *     return Us
+ *   else:
+ *     result = []
+ *     for T in Ts:
+ *       result.append(permute(Ts, [T + U for U in Us], N - 1))
+ *     return result
+ * \endcode
  *******************************************************************************
  */
 template <std::size_t N>
@@ -192,6 +213,12 @@ struct permutation_helper<0u>
  * in the list, e.g., for Ts = <A, B, C>, the second declval will be 
  * std::tuple<std::tuple<A>, std::tuple<B>, std::tuple<C>> (the first will be just
  * std::tuple<A, B, C>)
+ * 
+ * The Python-like pseudocode for this function is roughly:
+ * \code{.py}
+ * def type_permutations(Ts, N):
+ *   return permutation_helper(Ts, [(T) for T in Ts])
+ * \endcode
  *******************************************************************************
  */
 template <std::size_t N, typename... Ts>
