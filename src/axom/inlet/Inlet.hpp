@@ -449,9 +449,9 @@ public:
    * \brief Add a dictionary of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the dict
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the dictionary
    *
-   * \return Reference to the created Field
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
   Verifiable& addBoolDict(const std::string& name,
@@ -465,9 +465,9 @@ public:
    * \brief Add a dictionary of Integer Fields to the input file schema.
    *
    * \param [in] name Name of the dict
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the dictionary
    *
-   * \return Reference to the created Field
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
   Verifiable& addIntDict(const std::string& name,
@@ -481,9 +481,9 @@ public:
    * \brief Add a dictionary of Double Fields to the input file schema.
    *
    * \param [in] name Name of the dict
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the dictionary
    *
-   * \return Reference to the created Field
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
   Verifiable& addDoubleDict(const std::string& name,
@@ -497,9 +497,9 @@ public:
    * \brief Add a dictionary of String Fields to the input file schema.
    *
    * \param [in] name Name of the dict
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the dictionary
    *
-   * \return Reference to the created Field
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
   Verifiable& addStringDict(const std::string& name,
@@ -513,9 +513,9 @@ public:
    * \brief Add a dictionary of user-defined types to the input file schema.
    *
    * \param [in] name Name of the dict
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the dictionary
    *
-   * \return Reference to the created Field
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
   Table& addGenericDict(const std::string& name,
