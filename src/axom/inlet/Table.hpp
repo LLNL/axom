@@ -663,18 +663,21 @@ public:
     T result;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
-    if(axom::utilities::string::endsWith(m_name, ARRAY_GROUP_NAME))
+    if(axom::utilities::string::endsWith(m_name, CONTAINER_GROUP_NAME))
     {
       if(!getArray(result))
       {
         SLIC_ERROR(
-          "[Inlet] Table does not contain a valid array of requested type");
+          fmt::format("[Inlet] Table '{0}' does not contain a valid array of "
+                      "requested type",
+                      m_name));
       }
     }
-    else if(!getTable(ARRAY_GROUP_NAME).getArray(result))
+    else if(!getTable(CONTAINER_GROUP_NAME).getArray(result))
     {
-      SLIC_ERROR(
-        "[Inlet] Table does not contain a valid array of requested type");
+      SLIC_ERROR(fmt::format(
+        "[Inlet] Table '{0}' does not contain a valid array of requested type",
+        m_name));
     }
     return result;
   }
@@ -694,18 +697,22 @@ public:
     T result;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
-    if(axom::utilities::string::endsWith(m_name, ARRAY_GROUP_NAME))
+    if(axom::utilities::string::endsWith(m_name, CONTAINER_GROUP_NAME))
     {
       if(!getDict(result))
       {
         SLIC_ERROR(
-          "[Inlet] Table does not contain a valid array of requested type");
+          fmt::format("[Inlet] Table '{0}' does not contain a valid dictionary "
+                      "of requested type",
+                      m_name));
       }
     }
-    else if(!getTable(ARRAY_GROUP_NAME).getDict(result))
+    else if(!getTable(CONTAINER_GROUP_NAME).getDict(result))
     {
       SLIC_ERROR(
-        "[Inlet] Table does not contain a valid array of requested type");
+        fmt::format("[Inlet] Table '{0}' does not contain a valid dictionary "
+                    "of requested type",
+                    m_name));
     }
     return result;
   }
@@ -1006,7 +1013,7 @@ private:
   getArray(std::unordered_map<int, T>& map) const
   {
     map.clear();
-    if(!axom::utilities::string::endsWith(m_name, ARRAY_GROUP_NAME))
+    if(!axom::utilities::string::endsWith(m_name, CONTAINER_GROUP_NAME))
     {
       return false;
     }
@@ -1055,7 +1062,7 @@ private:
   getDict(std::unordered_map<std::string, T>& map) const
   {
     map.clear();
-    if(!axom::utilities::string::endsWith(m_name, ARRAY_GROUP_NAME))
+    if(!axom::utilities::string::endsWith(m_name, CONTAINER_GROUP_NAME))
     {
       return false;
     }
@@ -1117,7 +1124,7 @@ private:
   std::vector<AggregateTable> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
 
-  static const std::string ARRAY_GROUP_NAME;
+  static const std::string CONTAINER_GROUP_NAME;
   static const std::string CONTAINER_INDICES_NAME;
 };
 

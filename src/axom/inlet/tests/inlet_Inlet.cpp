@@ -1360,8 +1360,7 @@ TEST(inletArrays, inletArraysInSidre)
 
   inlet.addIntArray("luaArrays/arr1");
 
-  auto group = inlet.sidreGroup()->getGroup(
-    "luaArrays/arr1/_inlet_array");
+  auto group = inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_array");
   auto idx = group->getGroup("1");
   EXPECT_TRUE(idx);
   int val = idx->getView("value")->getScalar();
