@@ -13,8 +13,8 @@ namespace axom
 {
 namespace inlet
 {
-const std::string Table::ARRAY_GROUP_NAME = "_inlet_array";
-const std::string Table::CONTAINER_INDICES_NAME = "_inlet_array_indices";
+const std::string Table::CONTAINER_GROUP_NAME = "_inlet_container";
+const std::string Table::CONTAINER_INDICES_NAME = "_inlet_container_indices";
 
 Table& Table::addTable(const std::string& name, const std::string& description)
 {
@@ -162,7 +162,7 @@ Table& Table::addGenericArray(const std::string& name,
       "not supported",
       m_name));
   }
-  auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
+  auto& table = addTable(appendPrefix(name, CONTAINER_GROUP_NAME), description);
   std::vector<int> indices;
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader.getIndices(fullName, indices))
@@ -222,7 +222,7 @@ Table& Table::addGenericDict(const std::string& name,
       "not supported",
       m_name));
   }
-  auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
+  auto& table = addTable(appendPrefix(name, CONTAINER_GROUP_NAME), description);
   std::vector<std::string> indices;
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader.getIndices(fullName, indices))
@@ -553,7 +553,7 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
   else
   {
     // "base case", create a table for the field and fill it in with the helper
-    auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
+    auto& table = addTable(appendPrefix(name, CONTAINER_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     if(isDict)
