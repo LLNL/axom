@@ -107,7 +107,7 @@ class Axom(CMakePackage, CudaPackage):
     # HDF5 needs to be the same as Conduit's
     depends_on("hdf5@1.8.19:1.8.999~cxx~shared~fortran", when="+hdf5")
 
-    depends_on("lua", when="+lua")
+    depends_on("lua@:5.3.999", when="+lua")
 
     depends_on("scr", when="+scr")
 
