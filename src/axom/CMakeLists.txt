@@ -27,9 +27,9 @@ endif()
 axom_add_component(COMPONENT_NAME slic   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME slam   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME sidre  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 if (AXOM_ENABLE_SIDRE)
     axom_add_component(COMPONENT_NAME inlet  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 else()
@@ -46,8 +46,7 @@ blt_add_library(NAME       axom
 install(TARGETS              axom
         EXPORT               axom-targets
         DESTINATION          lib)
-install(EXPORT axom-targets
-        DESTINATION lib/cmake)
+install(EXPORT axom-targets DESTINATION lib/cmake)
 
 #------------------------------------------------------------------------------
 # Output some information about the configuration
