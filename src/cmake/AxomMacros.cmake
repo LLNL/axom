@@ -271,13 +271,6 @@ macro(axom_install_component)
         install(FILES ${_mod} DESTINATION lib/fortran OPTIONAL)
     endif()
 
-    # Only install "library" to avoid copying object files
-    install(TARGETS              ${arg_NAME}
-            EXPORT               axom-targets
-            LIBRARY DESTINATION          lib)
-    # Namespace target to avoid conflicts
-    set_target_properties(${arg_NAME} PROPERTIES EXPORT_NAME axom::${arg_NAME})
-
 endmacro(axom_install_component)
 
 
