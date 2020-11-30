@@ -107,10 +107,11 @@ endif()
 #------------------------------------------------------------------------------
 if (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
-    blt_import_library( NAME      mfem
-                        INCLUDES  ${MFEM_INCLUDE_DIRS}
-                        LIBRARIES ${MFEM_LIBRARIES}
-                        TREAT_INCLUDES_AS_SYSTEM ON)
+    blt_import_library( NAME       mfem
+                        INCLUDES   ${MFEM_INCLUDE_DIRS}
+                        LIBRARIES  ${MFEM_LIBRARIES}
+                        TREAT_INCLUDES_AS_SYSTEM ON
+                        EXPORTABLE ON)
 else()
     message(STATUS "MFEM support is OFF")
 endif()
@@ -184,8 +185,25 @@ if (LUA_DIR)
         NAME          lua
         INCLUDES      ${LUA_INCLUDE_DIR}
         LIBRARIES     ${LUA_LIBRARY}
-        TREAT_INCLUDES_AS_SYSTEM ON)
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE    ON)
 else()
     message(STATUS "LUA support is OFF")
     set(LUA_FOUND OFF CACHE BOOL "")
 endif()
+
+
+#------------------------------------------------------------------------------
+# Targets that need to be exported but don't have a CMake config file
+#------------------------------------------------------------------------------
+set(TPL_DEPS cuda lua mfem mpi openmp)
+foreach(dep ${TPL_DEPS})
+    if(TARGET ${dep})
+        get_target_property(_is_imported ${dep} IMPORTED)
+        if(NOT ${_is_imported})
+            install(TARGETS              ${dep}
+                    EXPORT               serac-targets
+                    DESTINATION          lib)
+        endif()
+    endif()
+endforeach()
