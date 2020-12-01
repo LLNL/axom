@@ -106,7 +106,7 @@ jobs:
     env:
       TAG: gcc-8
       REPO: axomllnl/tpls
-      HOSTCONFIG_LOC: /home/serac/export_hostconfig
+      HOSTCONFIG_LOC: /home/axom/export_hostconfig
       DOCKERFILE_PREFIX: ./scripts/docker/dockerfile_
     steps:
     - name: Extract branch name
