@@ -28,8 +28,7 @@ RUN python3 ./axom/scripts/uberenv/uberenv.py --spack-config-dir=./axom/scripts/
                                                --spec=%gcc@8.1.0 --prefix=/home/axom/serac_tpls -k
 
 # Make sure the new hostconfig worked
-RUN cd axom && python3 config-build.py -hc *.cmake -bp build && cd build && make -j && make -j test
-#make CTEST_OUTPUT_ON_FAILURE=1 test ARGS="-T Test -VV -j8"
+RUN cd axom && python3 config-build.py -hc *.cmake -bp build && cd build && make -j8 VERBOSE=1 && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS="-T Test -VV -j8"
 
 RUN mkdir -p /home/axom/export_hostconfig
 RUN cp ./axom/*.cmake /home/axom/export_hostconfig
