@@ -40,10 +40,6 @@ packages:
       jpeg: [libjpeg-turbo, libjpeg]
 
   # Spack may grab for mpi & we don't want to use them
-  charm:
-    buildable: false
-  mpilander:
-    buildable: false
   mpi:
     buildable: false
   mpich:
@@ -97,6 +93,13 @@ packages:
     externals:
     - spec: openblas
       prefix: /usr
+
+  # Globally lock version of third party libraries
+  conduit:
+    version: [0.5.1]
+    variants: ~shared
+  mfem:
+    variants: ~mpi~metis~zlib
 
   # Globally lock in version of CMake
   cmake:
