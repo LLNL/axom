@@ -114,5 +114,40 @@
 #cmakedefine SPARSEHASH_HASHFUN_HEADER @SPARSEHASH_HASHFUN_HEADER@
 #cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
+/*
+ * define proper lib exports for various platforms
+ */
+
+#cmakedefine AXOM_WINDOWS_DLL_EXPORTS @AXOM_WINDOWS_DLL_EXPORTS@
+#cmakedefine CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS @CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS@
+
+#if defined(AXOM_EXPORTS) || defined(axom_EXPORTS) || defined(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS)
+    /* define catch all def */
+    #define AXOM_EXPORTS_DEFINED 1
+#endif
+
+#if defined(_WIN32)
+    #if defined(AXOM_WINDOWS_DLL_EXPORTS)
+        #if defined(AXOM_EXPORTS_DEFINED)
+            #define AXOM_API __declspec(dllexport)
+        #else
+            #define AXOM_API __declspec(dllimport)
+        #endif
+    #else
+        #define AXOM_API /* empty for static builds */
+    #endif
+
+    #if defined(_MSC_VER)
+        /* Turn off warning about lack of DLL interface */
+        #pragma warning(disable:4251)
+        /* Turn off warning non-dll class is base for dll-interface class */
+        #pragma warning(disable:4275)
+        /* Turn off warning about identifier truncation */
+        #pragma warning(disable:4786)
+    #endif
+#else
+    #define AXOM_API /* hidden by default */
+#endif
+
 #endif  /* AXOM_COMMON_CONFIG_CPP */
 

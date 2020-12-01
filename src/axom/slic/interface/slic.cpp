@@ -16,7 +16,7 @@ namespace slic
 // Initialize static variables for controlling runtime behavior of asserts and
 // error macros.
 //------------------------------------------------------------------------------
-bool debug::checksAreErrors = false;
+AXOM_API bool debug::checksAreErrors = false;
 
 void initialize() { Logger::initialize(); }
 
