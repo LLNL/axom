@@ -35,6 +35,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
   and `std::unique_ptr<T>` in owning contexts
 - Unified core and SPIO unit tests into fewer executables to limit size of build directory
+- Updated to new BLT version that creates native CMake targets for Axom's dependencies.
+  These targets are exported behind an `axom::` namespace to avoid collisions.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
