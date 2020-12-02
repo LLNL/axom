@@ -113,7 +113,7 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
-  // Need to go up one level because this is an _inlet_array group
+  // Need to go up one level because this is an _inlet_container group
   const auto pos = m_name.find_last_of("/");
   const std::string baseName = m_name.substr(0, pos);
   for(const auto& indexLabel : containerIndices())

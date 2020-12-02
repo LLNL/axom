@@ -1040,6 +1040,11 @@ private:
   typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
   getArray(std::unordered_map<int, T>& map) const
   {
+    map.clear();
+    if(!isGenericContainer())
+    {
+      return false;
+    }
     for(const auto& indexLabel : containerIndices())
     {
       map[std::stoi(indexLabel)] = getTable(indexLabel).get<T>();
@@ -1089,6 +1094,11 @@ private:
   typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
   getDict(std::unordered_map<std::string, T>& map) const
   {
+    map.clear();
+    if(!isGenericContainer())
+    {
+      return false;
+    }
     for(const auto& indexLabel : containerIndices())
     {
       map[indexLabel] = getTable(indexLabel).get<T>();
@@ -1102,7 +1112,7 @@ private:
    * i.e., an array or dictionary of user-defined type
    *****************************************************************************
    */
-  bool isGenericContainer()
+  bool isGenericContainer() const
   {
     return m_sidreGroup->hasView(CONTAINER_INDICES_NAME) ||
       m_sidreGroup->hasGroup(CONTAINER_INDICES_NAME);
