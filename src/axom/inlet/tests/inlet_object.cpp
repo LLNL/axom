@@ -370,8 +370,8 @@ TEST(inlet_object, composite_type_checks)
   EXPECT_EQ(arr_table.type(), InletType::Object);
 
   // But the things it contains are arrays
-  EXPECT_EQ(arr_table["arr1"].type(), InletType::Array);
-  EXPECT_EQ(arr_table["arr2"].type(), InletType::Array);
+  EXPECT_EQ(arr_table["arr1"].type(), InletType::Container);
+  EXPECT_EQ(arr_table["arr2"].type(), InletType::Container);
 
   auto foo_table = inlet["foo"];
   // Similarly, the table containing the two bools is an object
