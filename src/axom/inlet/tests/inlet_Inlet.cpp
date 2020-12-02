@@ -1360,7 +1360,7 @@ TEST(inletArrays, inletArraysInSidre)
 
   inlet.addIntArray("luaArrays/arr1");
 
-  auto group = inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_array");
+  auto group = inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_container");
   auto idx = group->getGroup("1");
   EXPECT_TRUE(idx);
   int val = idx->getView("value")->getScalar();
@@ -1382,7 +1382,7 @@ TEST(inletArrays, inletArraysInSidre)
   EXPECT_EQ(val, 6);
 
   inlet.addBoolArray("luaArrays/arr2");
-  group = inlet.getTable("luaArrays/arr2/_inlet_array").sidreGroup();
+  group = inlet.getTable("luaArrays/arr2/_inlet_container").sidreGroup();
 
   idx = group->getGroup("4");
   EXPECT_TRUE(idx);
@@ -1395,7 +1395,7 @@ TEST(inletArrays, inletArraysInSidre)
   EXPECT_EQ(boolVal, 0);
 
   inlet.addStringArray("luaArrays/arr3");
-  group = inlet.getTable("luaArrays/arr3/_inlet_array").sidreGroup();
+  group = inlet.getTable("luaArrays/arr3/_inlet_container").sidreGroup();
 
   idx = group->getGroup("33");
   EXPECT_TRUE(idx);
@@ -1408,7 +1408,7 @@ TEST(inletArrays, inletArraysInSidre)
   EXPECT_EQ(str, "bye");
 
   inlet.addDoubleArray("luaArrays/arr4");
-  group = inlet.getTable("luaArrays/arr4/_inlet_array").sidreGroup();
+  group = inlet.getTable("luaArrays/arr4/_inlet_container").sidreGroup();
 
   idx = group->getGroup("12");
   EXPECT_TRUE(idx);
