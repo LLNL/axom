@@ -121,7 +121,7 @@
 #cmakedefine AXOM_WINDOWS_DLL_EXPORTS @AXOM_WINDOWS_DLL_EXPORTS@
 #cmakedefine CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS @CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS@
 
-#if defined(AXOM_EXPORTS) || defined(axom_EXPORTS) || defined(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS)
+#if defined(AXOM_EXPORTS) || defined(axom_EXPORTS)
     /* define catch all def */
     #define AXOM_EXPORTS_DEFINED 1
 #endif
