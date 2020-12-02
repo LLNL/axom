@@ -72,21 +72,7 @@ Table& Table::addTable(const std::string& name, const std::string& description)
 std::vector<std::string> Table::containerIndices() const
 {
   std::vector<std::string> indices;
-  // If it's in the view, they are integer indices of an array
-  if(m_sidreGroup->hasView(detail::CONTAINER_INDICES_NAME))
-  {
-    const auto view = m_sidreGroup->getView(detail::CONTAINER_INDICES_NAME);
-    const int* array = view->getArray();
-    const auto num_elements = view->getNumElements();
-    indices.reserve(num_elements);
-    for(int i = 0; i < num_elements; i++)
-    {
-      indices.push_back(std::to_string(array[i]));
-    }
-  }
-  // Otherwise, they're string indices of a dict
-  // need to iterate over group
-  else if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
+  if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
   {
     auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
     indices.reserve(group->getNumViews());
@@ -149,19 +135,20 @@ Verifiable& Table::addStringArray(const std::string& name,
   return addPrimitiveArray<std::string>(name, description);
 }
 
-Table& Table::addGenericArray(const std::string& name,
-                              const std::string& description)
+template <typename Key>
+Table& Table::addGenericContainer(const std::string& name,
+                                  const std::string& description)
 {
   if(isGenericContainer())
   {
     SLIC_ERROR(fmt::format(
-      "[Inlet] Adding array of structs to container of structs {0} is "
+      "[Inlet] Adding container of structs to container of structs {0} is "
       "not supported",
       m_name));
   }
   auto& table =
     addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
-  std::vector<int> indices;
+  std::vector<Key> indices;
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader.getIndices(fullName, indices))
   {
@@ -169,22 +156,28 @@ Table& Table::addGenericArray(const std::string& name,
     // from an array of primitives - the tables have to be allocated
     // before they are populated as we don't know the schema of the
     // generic type yet
-    auto view =
-      table.m_sidreGroup->createViewAndAllocate(detail::CONTAINER_INDICES_NAME,
-                                                axom::sidre::INT_ID,
-                                                indices.size());
-    int* raw_array = view->getArray();
-    std::copy(indices.begin(), indices.end(), raw_array);
-    for(const auto idx : indices)
+    auto group = table.m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
+                                                 /* list_format = */ true);
+    // For each element of the dictionary, add a table whose name is its index
+    // Schema for struct is defined using the returned table
+    for(const auto& idx : indices)
     {
-      table.addTable(std::to_string(idx), description);
+      const auto string_idx = detail::indexToString(idx);
+      table.addTable(string_idx, description);
+      group->createViewString("", string_idx);
     }
   }
   else
   {
-    SLIC_WARNING(fmt::format("[Inlet] Array {0} not found.", fullName));
+    SLIC_WARNING(fmt::format("[Inlet] Container {0} not found.", fullName));
   }
   return table;
+}
+
+Table& Table::addGenericArray(const std::string& name,
+                              const std::string& description)
+{
+  return addGenericContainer<int>(name, description);
 }
 
 Verifiable& Table::addBoolDict(const std::string& name,
@@ -214,34 +207,7 @@ Verifiable& Table::addStringDict(const std::string& name,
 Table& Table::addGenericDict(const std::string& name,
                              const std::string& description)
 {
-  if(isGenericContainer())
-  {
-    SLIC_ERROR(fmt::format(
-      "[Inlet] Adding dict of structs to container of structs {0} is "
-      "not supported",
-      m_name));
-  }
-  auto& table =
-    addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
-  std::vector<std::string> indices;
-  const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader.getIndices(fullName, indices))
-  {
-    auto group = table.m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
-                                                 /* list_format = */ true);
-    // For each element of the dictionary, add a table whose name is its index
-    // Schema for struct is defined using the returned table
-    for(const auto idx : indices)
-    {
-      table.addTable(idx, description);
-      group->createViewString("", idx);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] Array {0} not found.", fullName));
-  }
-  return table;
+  return addGenericContainer<std::string>(name, description);
 }
 
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,

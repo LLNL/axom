@@ -148,6 +148,41 @@ struct has_FromInlet_specialization<
   : std::true_type
 { };
 
+/*!
+ *******************************************************************************
+ * \brief An overloaded utility function for converting a type to a string
+ * 
+ * \note Needed as std::to_string doesn't implement an identity overload
+ * 
+ * \param [in] idx The index to convert to string
+ *******************************************************************************
+ */
+inline std::string indexToString(const std::string& idx) { return idx; }
+/// \overload
+inline std::string indexToString(const int idx) { return std::to_string(idx); }
+
+/*!
+ *******************************************************************************
+ * \brief An templated utility function for converting an index to the desired type
+ * 
+ * \param [in] idx The index to convert
+ * \tparam From The type of the idx parameter (converting from)
+ * \tparam Result The type to convert to
+ *******************************************************************************
+ */
+template <typename Result, typename From>
+inline Result toIndex(const From& idx)
+{
+  // By default, try a static cast
+  return static_cast<Result>(idx);
+}
+
+template <>
+inline int toIndex(const std::string& idx)
+{
+  return std::stoi(idx);
+}
+
 }  // namespace detail
 
 class Proxy;
@@ -651,68 +686,37 @@ public:
 
   /*!
    *******************************************************************************
-   * \brief Returns a stored array of primitive types.
+   * \brief Returns a stored container.
    * 
-   * Retrieves a value of user-defined type.
+   * Retrieves a container of user-defined type.
    * 
-   * \return The retrieved array
+   * \return The retrieved container
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_inlet_array<T>::value, T>::type get() const
+  typename std::enable_if<detail::is_inlet_array<T>::value ||
+                            detail::is_inlet_dict<T>::value,
+                          T>::type
+  get() const
   {
     T result;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
     if(isContainerGroup(m_name))
     {
-      if(!getArray(result))
+      if(!getContainer(result))
       {
-        SLIC_ERROR(
-          fmt::format("[Inlet] Table '{0}' does not contain a valid array of "
-                      "requested type",
-                      m_name));
+        SLIC_ERROR(fmt::format(
+          "[Inlet] Table '{0}' does not contain a valid container of "
+          "requested type",
+          m_name));
       }
     }
-    else if(!getTable(detail::CONTAINER_GROUP_NAME).getArray(result))
-    {
-      SLIC_ERROR(fmt::format(
-        "[Inlet] Table '{0}' does not contain a valid array of requested type",
-        m_name));
-    }
-    return result;
-  }
-
-  /*!
-   *******************************************************************************
-   * \brief Returns a stored dictionary of primitive types.
-   * 
-   * Retrieves a value of user-defined type.
-   * 
-   * \return The retrieved dictionary
-   *******************************************************************************
-   */
-  template <typename T>
-  typename std::enable_if<detail::is_inlet_dict<T>::value, T>::type get() const
-  {
-    T result;
-    // This needs to work transparently for both references to the underlying
-    // internal table and references using the same path as the data file
-    if(isContainerGroup(m_name))
-    {
-      if(!getDict(result))
-      {
-        SLIC_ERROR(
-          fmt::format("[Inlet] Table '{0}' does not contain a valid dictionary "
-                      "of requested type",
-                      m_name));
-      }
-    }
-    else if(!getTable(detail::CONTAINER_GROUP_NAME).getDict(result))
+    else if(!getTable(detail::CONTAINER_GROUP_NAME).getContainer(result))
     {
       SLIC_ERROR(
-        fmt::format("[Inlet] Table '{0}' does not contain a valid dictionary "
-                    "of requested type",
+        fmt::format("[Inlet] Table '{0}' does not contain a valid container of "
+                    "requested type",
                     m_name));
     }
     return result;
@@ -1001,27 +1005,27 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Get an array represented as an unordered map from the input file
+   * \brief Get a container represented as an unordered map from the input file
    * of primitive type
    *
-   * \param [out] map Unordered map to be populated with array contents, will be
+   * \param [out] map Unordered map to be populated with container contents, will be
    * cleared before contents are added
    *
-   * \return Whether or not the array was found
+   * \return Whether or not the container was found
    *****************************************************************************
    */
-  template <typename T>
+  template <typename Key, typename T>
   typename std::enable_if<detail::is_inlet_primitive<T>::value, bool>::type
-  getArray(std::unordered_map<int, T>& map) const
+  getContainer(std::unordered_map<Key, T>& map) const
   {
     map.clear();
     if(!isContainerGroup(m_name))
     {
       return false;
     }
-    for(auto& item : m_fieldChildren)
+    for(const auto& item : m_fieldChildren)
     {
-      int index = std::stoi(removeBeforeDelimiter(item.first));
+      auto index = detail::toIndex<Key>(removeBeforeDelimiter(item.first));
       map[index] = item.second->get<T>();
     }
     return true;
@@ -1029,18 +1033,18 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Get an array represented as an unordered map from the input file
+   * \brief Get a container represented as an unordered map from the input file
    * of user-defined type
    *
-   * \param [out] map Unordered map to be populated with array contents, will be
+   * \param [out] map Unordered map to be populated with container contents, will be
    * cleared before contents are added
    *
-   * \return Whether or not the array was found
+   * \return Whether or not the container was found
    *****************************************************************************
    */
-  template <typename T>
+  template <typename Key, typename T>
   typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
-  getArray(std::unordered_map<int, T>& map) const
+  getContainer(std::unordered_map<Key, T>& map) const
   {
     map.clear();
     if(!isGenericContainer())
@@ -1049,65 +1053,24 @@ private:
     }
     for(const auto& indexLabel : containerIndices())
     {
-      map[std::stoi(indexLabel)] = getTable(indexLabel).get<T>();
+      map[detail::toIndex<Key>(indexLabel)] = getTable(indexLabel).get<T>();
     }
     return true;
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a dict represented as an unordered map from the input file
-   * of primitive type
+   * \brief Add an container of user-defined type to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with dictionary contents, will be
-   * cleared before contents are added
+   * \param [in] name Name of the container
+   * \param [in] description Description of the container
    *
-   * \return Whether or not the dictionary was found
+   * \return Reference to the created container
    *****************************************************************************
    */
-  template <typename T>
-  typename std::enable_if<detail::is_inlet_primitive<T>::value, bool>::type
-  getDict(std::unordered_map<std::string, T>& map) const
-  {
-    map.clear();
-    if(!isContainerGroup(m_name))
-    {
-      return false;
-    }
-    for(auto& item : m_fieldChildren)
-    {
-      auto index = removeBeforeDelimiter(item.first);
-      map[index] = item.second->get<T>();
-    }
-    return true;
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Get a dict represented as an unordered map from the input file
-   * of user-defined type
-   *
-   * \param [out] map Unordered map to be populated with dictionary contents, will be
-   * cleared before contents are added
-   *
-   * \return Whether or not the dictionary was found
-   *****************************************************************************
-   */
-  template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
-  getDict(std::unordered_map<std::string, T>& map) const
-  {
-    map.clear();
-    if(!isGenericContainer())
-    {
-      return false;
-    }
-    for(const auto& indexLabel : containerIndices())
-    {
-      map[indexLabel] = getTable(indexLabel).get<T>();
-    }
-    return true;
-  }
+  template <typename Key>
+  Table& addGenericContainer(const std::string& name,
+                             const std::string& description = "");
 
   /*!
    *****************************************************************************
