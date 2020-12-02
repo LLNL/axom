@@ -158,7 +158,7 @@ Table& Table::addGenericArray(const std::string& name,
   if(isGenericContainer())
   {
     SLIC_ERROR(fmt::format(
-      "[Inlet] Adding array of container to array of structs {0} is "
+      "[Inlet] Adding array of structs to container of structs {0} is "
       "not supported",
       m_name));
   }
@@ -229,6 +229,8 @@ Table& Table::addGenericDict(const std::string& name,
   {
     auto group = table.m_sidreGroup->createGroup(CONTAINER_INDICES_NAME,
                                                  /* list_format = */ true);
+    // For each element of the dictionary, add a table whose name is its index
+    // Schema for struct is defined using the returned table
     for(const auto idx : indices)
     {
       table.addTable(idx, description);

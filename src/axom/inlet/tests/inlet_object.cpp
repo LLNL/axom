@@ -428,8 +428,7 @@ TEST(inlet_object, implicit_conversion_primitives)
 
 TEST(inlet_dict, basic_dicts)
 {
-  std::string testString =
-    "foo = { [\"key1\"] = 4, [\"key3\"] = 6, [\"key2\"] = 10}";
+  std::string testString = "foo = { ['key1'] = 4, ['key3'] = 6, ['key2'] = 10}";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -444,8 +443,8 @@ TEST(inlet_dict, basic_dicts)
 TEST(inlet_dict, simple_dict_of_struct_by_value)
 {
   std::string testString =
-    "foo = { [\"key1\"] = { bar = true; baz = false}, "
-    "        [\"key2\"] = { bar = false; baz = true} }";
+    "foo = { ['key1'] = { bar = true; baz = false}, "
+    "        ['key2'] = { bar = false; baz = true} }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -479,8 +478,8 @@ struct FromInlet<FooWithDict>
 TEST(inlet_dict, dict_of_struct_containing_dict)
 {
   std::string testString =
-    "foo = { [\"key3\"] = { arr = { [\"key1\"] = 3 }; }, "
-    "        [\"key4\"] = { arr = { [\"key2\"] = 2 }; } }";
+    "foo = { ['key3'] = { arr = { ['key1'] = 3 }; }, "
+    "        ['key4'] = { arr = { ['key2'] = 2 }; } }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -499,8 +498,8 @@ TEST(inlet_dict, dict_of_struct_containing_dict)
 TEST(inlet_dict, dict_of_struct_containing_array)
 {
   std::string testString =
-    "foo = { [\"key3\"] = { arr = { [1] = 3 }; }, "
-    "        [\"key4\"] = { arr = { [6] = 2 }; } }";
+    "foo = { ['key3'] = { arr = { [1] = 3 }; }, "
+    "        ['key4'] = { arr = { [6] = 2 }; } }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -519,8 +518,8 @@ TEST(inlet_dict, dict_of_struct_containing_array)
 TEST(inlet_dict, array_of_struct_containing_dict)
 {
   std::string testString =
-    "foo = { [7] = { arr = { [\"key1\"] = 3 }; }, "
-    "        [4] = { arr = { [\"key2\"] = 2 }; } }";
+    "foo = { [7] = { arr = { ['key1'] = 3 }; }, "
+    "        [4] = { arr = { ['key2'] = 2 }; } }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 

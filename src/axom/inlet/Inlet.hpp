@@ -369,9 +369,9 @@ public:
    * \brief Add an array of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addBoolArray(const std::string& name,
@@ -385,9 +385,9 @@ public:
    * \brief Add an array of Integer Fields to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addIntArray(const std::string& name,
@@ -401,9 +401,9 @@ public:
    * \brief Add an array of Double Fields to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addDoubleArray(const std::string& name,
@@ -417,9 +417,9 @@ public:
    * \brief Add an array of String Fields to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addStringArray(const std::string& name,
@@ -433,9 +433,9 @@ public:
    * \brief Add an array of user-defined types to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Table& addGenericArray(const std::string& name,

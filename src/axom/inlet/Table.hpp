@@ -329,7 +329,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addBoolArray(const std::string& name,
@@ -342,7 +342,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addIntArray(const std::string& name,
@@ -355,7 +355,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addDoubleArray(const std::string& name,
@@ -368,7 +368,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addStringArray(const std::string& name,
@@ -381,7 +381,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Table& addGenericArray(const std::string& name,
@@ -394,7 +394,7 @@ public:
    * \param [in] name Name of the dict
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
   Verifiable& addBoolDict(const std::string& name,
@@ -571,6 +571,7 @@ public:
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
+   * \param [in] isDict Whether to use string-valued keys for the container
    * \param [in] pathOverride The path within the input file to read from, if
    * different than the structure of the Sidre datastore
    *
@@ -889,7 +890,7 @@ private:
    * 
    * \param [inout] table The inlet::Table to add the array to 
    * \param [in] lookupPath The path within the input file to read from
-   * \param[in] isDict Whether to use string keys
+   * \param [in] isDict Whether to use string keys
    * 
    *****************************************************************************
    */
@@ -1003,7 +1004,8 @@ private:
    * \brief Get an array represented as an unordered map from the input file
    * of primitive type
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [out] map Unordered map to be populated with array contents, will be
+   * cleared before contents are added
    *
    * \return Whether or not the array was found
    *****************************************************************************
@@ -1031,7 +1033,8 @@ private:
    * \brief Get an array represented as an unordered map from the input file
    * of user-defined type
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [out] map Unordered map to be populated with array contents, will be
+   * cleared before contents are added
    *
    * \return Whether or not the array was found
    *****************************************************************************
@@ -1057,7 +1060,8 @@ private:
    * \brief Get a dict represented as an unordered map from the input file
    * of primitive type
    *
-   * \param [out] map Unordered map to be populated with dictionary contents
+   * \param [out] map Unordered map to be populated with dictionary contents, will be
+   * cleared before contents are added
    *
    * \return Whether or not the dictionary was found
    *****************************************************************************
@@ -1085,7 +1089,8 @@ private:
    * \brief Get a dict represented as an unordered map from the input file
    * of user-defined type
    *
-   * \param [out] map Unordered map to be populated with dictionary contents
+   * \param [out] map Unordered map to be populated with dictionary contents, will be
+   * cleared before contents are added
    *
    * \return Whether or not the dictionary was found
    *****************************************************************************
