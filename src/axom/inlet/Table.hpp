@@ -180,7 +180,10 @@ inline Result toIndex(const From& idx)
 template <>
 inline int toIndex(const std::string& idx)
 {
-  return std::stoi(idx);
+  auto as_int = checkedConvertToInt(idx);
+  SLIC_ERROR_IF(!as_int.second,
+                fmt::format("[Inlet] Expected an integer, got: {0}", idx));
+  return as_int.first;
 }
 
 }  // namespace detail

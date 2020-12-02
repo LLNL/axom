@@ -411,6 +411,10 @@ void registerContainer(Table& table,
 {
   for(const auto& entry : container)
   {
+    SLIC_ERROR_IF(
+      entry.first.find('/') != std::string::npos,
+      fmt::format("[Inlet] Dictionary key '{0}' contains illegal character '/'",
+                  entry.first));
     table.addPrimitive(entry.first, "", true, entry.second);
   }
 }

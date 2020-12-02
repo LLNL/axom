@@ -66,6 +66,17 @@ std::string removePrefix(const std::string& prefix, const std::string& name);
 std::string removeBeforeDelimiter(const std::string& path,
                                   const char delim = '/');
 
+/*!
+*****************************************************************************
+* \brief This function performs a checked conversion of a string to an integer
+*
+* \param [in] number The string to be converted
+*
+* \return A tuple containing the conversion result, and the status of the conversion
+*****************************************************************************
+*/
+std::pair<int, bool> checkedConvertToInt(const std::string& number);
+
 namespace detail
 {
 /*!

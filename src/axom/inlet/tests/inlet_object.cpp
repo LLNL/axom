@@ -533,6 +533,43 @@ TEST(inlet_dict, array_of_struct_containing_dict)
   EXPECT_EQ(foos_with_dict, expected_foos);
 }
 
+/*
+FIXME: These are currently error conditions.  If these should be supported
+or handled differently these tests can be re-enabled.
+
+TEST(inlet_dict, mixed_keys)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addIntDict("foo", "foo's description");
+  std::unordered_map<std::string, int> dict = inlet["foo"];
+  std::unordered_map<std::string, int> correct_dict = {{"key1", 4}};
+  EXPECT_EQ(dict, correct_dict);
+
+  inlet.addIntArray("foo", "foo's description");
+  std::unordered_map<int, int> array = inlet["foo"];
+  std::unordered_map<int, int> correct_array = {{1, 6}};
+  EXPECT_EQ(array, correct_array);
+}
+
+TEST(inlet_dict, key_with_slash)
+{
+  std::string testString =
+    "foo = { ['key1/subkey1'] = 4, ['key3'] = 6, ['key2'] = 10}";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addIntDict("foo", "foo's description");
+  std::unordered_map<std::string, int> dict = inlet["foo"];
+  std::unordered_map<std::string, int> correct = {{"key1/subkey1", 4},
+                                                  {"key3", 6},
+                                                  {"key2", 10}};
+  EXPECT_EQ(dict, correct);
+}
+*/
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

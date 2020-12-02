@@ -147,14 +147,10 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   for(auto curr = begin; curr != end; ++curr)
   {
     auto key = *curr;
-    // Use the C versions to avoid the exceptions
-    // thrown by std::stoi on conversion failure
-    // FIXME: Switch to std::from_chars when C++17 is available
-    char* ptr;
-    auto as_int = strtol(key.c_str(), &ptr, 10);
-    if((!*ptr) && table[as_int].valid())
+    auto as_int = checkedConvertToInt(key);
+    if(as_int.second && table[as_int.first].valid())
     {
-      table = table[as_int];
+      table = table[as_int.first];
     }
     else if(table[key].valid())
     {
