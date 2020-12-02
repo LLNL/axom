@@ -13,9 +13,6 @@ namespace axom
 {
 namespace inlet
 {
-const std::string Table::CONTAINER_GROUP_NAME = "_inlet_container";
-const std::string Table::CONTAINER_INDICES_NAME = "_inlet_container_indices";
-
 Table& Table::addTable(const std::string& name, const std::string& description)
 {
   // Create intermediate Tables if they don't already exist
@@ -76,9 +73,9 @@ std::vector<std::string> Table::containerIndices() const
 {
   std::vector<std::string> indices;
   // If it's in the view, they are integer indices of an array
-  if(m_sidreGroup->hasView(CONTAINER_INDICES_NAME))
+  if(m_sidreGroup->hasView(detail::CONTAINER_INDICES_NAME))
   {
-    const auto view = m_sidreGroup->getView(CONTAINER_INDICES_NAME);
+    const auto view = m_sidreGroup->getView(detail::CONTAINER_INDICES_NAME);
     const int* array = view->getArray();
     const auto num_elements = view->getNumElements();
     indices.reserve(num_elements);
@@ -89,9 +86,9 @@ std::vector<std::string> Table::containerIndices() const
   }
   // Otherwise, they're string indices of a dict
   // need to iterate over group
-  else if(m_sidreGroup->hasGroup(CONTAINER_INDICES_NAME))
+  else if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
   {
-    auto group = m_sidreGroup->getGroup(CONTAINER_INDICES_NAME);
+    auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
     indices.reserve(group->getNumViews());
     for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
         idx = group->getNextValidViewIndex(idx))
@@ -162,7 +159,8 @@ Table& Table::addGenericArray(const std::string& name,
       "not supported",
       m_name));
   }
-  auto& table = addTable(appendPrefix(name, CONTAINER_GROUP_NAME), description);
+  auto& table =
+    addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
   std::vector<int> indices;
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader.getIndices(fullName, indices))
@@ -171,9 +169,10 @@ Table& Table::addGenericArray(const std::string& name,
     // from an array of primitives - the tables have to be allocated
     // before they are populated as we don't know the schema of the
     // generic type yet
-    auto view = table.m_sidreGroup->createViewAndAllocate(CONTAINER_INDICES_NAME,
-                                                          axom::sidre::INT_ID,
-                                                          indices.size());
+    auto view =
+      table.m_sidreGroup->createViewAndAllocate(detail::CONTAINER_INDICES_NAME,
+                                                axom::sidre::INT_ID,
+                                                indices.size());
     int* raw_array = view->getArray();
     std::copy(indices.begin(), indices.end(), raw_array);
     for(const auto idx : indices)
@@ -222,12 +221,13 @@ Table& Table::addGenericDict(const std::string& name,
       "not supported",
       m_name));
   }
-  auto& table = addTable(appendPrefix(name, CONTAINER_GROUP_NAME), description);
+  auto& table =
+    addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
   std::vector<std::string> indices;
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader.getIndices(fullName, indices))
   {
-    auto group = table.m_sidreGroup->createGroup(CONTAINER_INDICES_NAME,
+    auto group = table.m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
                                                  /* list_format = */ true);
     // For each element of the dictionary, add a table whose name is its index
     // Schema for struct is defined using the returned table
@@ -555,7 +555,8 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
   else
   {
     // "base case", create a table for the field and fill it in with the helper
-    auto& table = addTable(appendPrefix(name, CONTAINER_GROUP_NAME), description);
+    auto& table =
+      addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     if(isDict)

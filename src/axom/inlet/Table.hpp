@@ -664,7 +664,7 @@ public:
     T result;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
-    if(axom::utilities::string::endsWith(m_name, CONTAINER_GROUP_NAME))
+    if(isContainerGroup(m_name))
     {
       if(!getArray(result))
       {
@@ -674,7 +674,7 @@ public:
                       m_name));
       }
     }
-    else if(!getTable(CONTAINER_GROUP_NAME).getArray(result))
+    else if(!getTable(detail::CONTAINER_GROUP_NAME).getArray(result))
     {
       SLIC_ERROR(fmt::format(
         "[Inlet] Table '{0}' does not contain a valid array of requested type",
@@ -698,7 +698,7 @@ public:
     T result;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
-    if(axom::utilities::string::endsWith(m_name, CONTAINER_GROUP_NAME))
+    if(isContainerGroup(m_name))
     {
       if(!getDict(result))
       {
@@ -708,7 +708,7 @@ public:
                       m_name));
       }
     }
-    else if(!getTable(CONTAINER_GROUP_NAME).getDict(result))
+    else if(!getTable(detail::CONTAINER_GROUP_NAME).getDict(result))
     {
       SLIC_ERROR(
         fmt::format("[Inlet] Table '{0}' does not contain a valid dictionary "
@@ -1015,14 +1015,13 @@ private:
   getArray(std::unordered_map<int, T>& map) const
   {
     map.clear();
-    if(!axom::utilities::string::endsWith(m_name, CONTAINER_GROUP_NAME))
+    if(!isContainerGroup(m_name))
     {
       return false;
     }
     for(auto& item : m_fieldChildren)
     {
-      auto pos = item.first.find_last_of("/");
-      int index = std::stoi(item.first.substr(pos + 1));
+      int index = std::stoi(removeBeforeDelimiter(item.first));
       map[index] = item.second->get<T>();
     }
     return true;
@@ -1071,14 +1070,13 @@ private:
   getDict(std::unordered_map<std::string, T>& map) const
   {
     map.clear();
-    if(!axom::utilities::string::endsWith(m_name, CONTAINER_GROUP_NAME))
+    if(!isContainerGroup(m_name))
     {
       return false;
     }
     for(auto& item : m_fieldChildren)
     {
-      auto pos = item.first.find_last_of("/");
-      auto index = item.first.substr(pos + 1);
+      auto index = removeBeforeDelimiter(item.first);
       map[index] = item.second->get<T>();
     }
     return true;
@@ -1119,8 +1117,8 @@ private:
    */
   bool isGenericContainer() const
   {
-    return m_sidreGroup->hasView(CONTAINER_INDICES_NAME) ||
-      m_sidreGroup->hasGroup(CONTAINER_INDICES_NAME);
+    return m_sidreGroup->hasView(detail::CONTAINER_INDICES_NAME) ||
+      m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME);
   }
 
   std::string m_name;
@@ -1138,9 +1136,6 @@ private:
   // and AggregateTables have identical lifetime
   std::vector<AggregateTable> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
-
-  static const std::string CONTAINER_GROUP_NAME;
-  static const std::string CONTAINER_INDICES_NAME;
 };
 
 // To-be-defined template specializations
