@@ -52,6 +52,44 @@ std::string appendPrefix(const std::string& prefix, const std::string& name);
 */
 std::string removePrefix(const std::string& prefix, const std::string& name);
 
+/*!
+*****************************************************************************
+* \brief This function extracts the substring following the last instance
+* of the delimiting character
+*
+* \param [in] path The path to extract from
+* \param [in] delim The delimiting character
+*
+* \return The extracted string.
+*****************************************************************************
+*/
+std::string removeBeforeDelimiter(const std::string& path,
+                                  const char delim = '/');
+
+namespace detail
+{
+/*!
+  *******************************************************************************
+  * Names of the internal container data and container index groups/fields
+  * used for managing arrays/dictionaries
+  *******************************************************************************
+  */
+const std::string CONTAINER_GROUP_NAME = "_inlet_container";
+const std::string CONTAINER_INDICES_NAME = "_inlet_container_indices";
+}  // namespace detail
+
+/*!
+*****************************************************************************
+* \brief Determines whether a Table is a container group
+*
+* \param [in] name The name of the table
+*****************************************************************************
+*/
+inline bool isContainerGroup(const std::string& name)
+{
+  return axom::utilities::string::endsWith(name, detail::CONTAINER_GROUP_NAME);
+}
+
 namespace cpp11_compat
 {
 /*!

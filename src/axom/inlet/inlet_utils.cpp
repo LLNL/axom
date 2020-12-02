@@ -36,5 +36,12 @@ std::string removePrefix(const std::string& prefix, const std::string& name)
   return name;
 }
 
+std::string removeBeforeDelimiter(const std::string& path, const char delim)
+{
+  auto pos = path.find_last_of(delim);
+  // Will return an empty string if the delimiter was not found
+  return path.substr(pos + 1);
+}
+
 }  // namespace inlet
 }  // namespace axom
