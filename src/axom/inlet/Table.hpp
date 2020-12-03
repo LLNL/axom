@@ -1020,51 +1020,6 @@ private:
   static const std::string ARRAY_INDICIES_VIEW_NAME;
 };
 
-// To-be-defined template specializations
-template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
-  axom::sidre::Group* sidreGroup,
-  const std::string& lookupPath,
-  bool forArray,
-  bool val);
-
-template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
-  axom::sidre::Group* sidreGroup,
-  const std::string& lookupPath,
-  bool forArray,
-  int val);
-
-template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
-  axom::sidre::Group* sidreGroup,
-  const std::string& lookupPath,
-  bool forArray,
-  double val);
-
-template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
-  axom::sidre::Group* sidreGroup,
-  const std::string& lookupPath,
-  bool forArray,
-  std::string val);
-
-template <>
-void Table::addPrimitiveArrayHelper<bool>(Table& table,
-                                          const std::string& lookupPath);
-
-template <>
-void Table::addPrimitiveArrayHelper<int>(Table& table,
-                                         const std::string& lookupPath);
-
-template <>
-void Table::addPrimitiveArrayHelper<double>(Table& table,
-                                            const std::string& lookupPath);
-
-template <>
-void Table::addPrimitiveArrayHelper<std::string>(Table& table,
-                                                 const std::string& lookupPath);
-
 }  // end namespace inlet
 }  // end namespace axom
 
