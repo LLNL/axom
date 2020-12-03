@@ -33,7 +33,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Switched accessor interface to match that of the STL with operator[] and
   T get<T>()
 - Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
-  and `std::unique_ptr<T>` in owning contexts
+  and `std::unique_ptr<T>` in owning contexts 
+- The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
+  datastore is `Load` ed in
 - Unified core and SPIO unit tests into fewer executables to limit size of build directory
 
 ### Fixed
