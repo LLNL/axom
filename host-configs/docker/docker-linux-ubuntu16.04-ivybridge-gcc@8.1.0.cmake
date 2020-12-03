@@ -1,8 +1,8 @@
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# SYS_TYPE: linux-ubuntu18.04-x86_64
-# Compiler Spec: clang@10.0.0
+# SYS_TYPE: linux-ubuntu16.04-ivybridge
+# Compiler Spec: gcc@8.1.0
 #------------------------------------------------------------------------------
 # CMake executable path: /usr/bin/cmake
 #------------------------------------------------------------------------------
@@ -11,15 +11,17 @@
 # Compilers
 #------------------------------------------------------------------------------
 
-set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/bin/gcc" CACHE PATH "")
 
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/bin/g++" CACHE PATH "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/bin/gfortran" CACHE PATH "")
 
-set(BLT_EXE_LINKER_FLAGS " -Wl,-rpath,/usr/lib" CACHE PATH "Adds a missing libstdc++ rpath")
+set(CMAKE_C_FLAGS "-pthread" CACHE PATH "")
+
+set(CMAKE_CXX_FLAGS "-pthread" CACHE PATH "")
 
 set(BLT_CXX_STD "c++14" CACHE PATH "")
 
@@ -28,7 +30,7 @@ set(BLT_CXX_STD "c++14" CACHE PATH "")
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/home/axom/axom_tpls/clang-10.0.0" CACHE PATH "")
+set(TPL_ROOT "/home/axom/serac_tpls/gcc-8.1.0" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
