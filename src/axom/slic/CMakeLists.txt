@@ -77,7 +77,9 @@ blt_add_library(NAME        slic
 
 # If we're compiling as a dynamic-link library, define AXOM_EXPORTS so we export symbols.
 if(BUILD_SHARED_LIBS)
-    target_compile_definitions(slic PRIVATE AXOM_EXPORTS)
+    blt_add_target_definitions( TO slic
+                                SCOPE PRIVATE
+                                TARGET_DEFINITIONS AXOM_EXPORTS)
 endif()
 
 axom_write_unified_header( NAME slic
