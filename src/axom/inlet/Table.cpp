@@ -737,40 +737,5 @@ Table::getChildFields() const
   return m_fieldChildren;
 }
 
-bool AggregateTable::verify() const
-{
-  return std::all_of(
-    m_tables.begin(),
-    m_tables.end(),
-    [](const Verifiable<Table>& table) { return table.verify(); });
-}
-
-AggregateTable& AggregateTable::required(bool isRequired)
-{
-  for(auto& table : m_tables)
-  {
-    table.get().required(isRequired);
-  }
-  return *this;
-}
-
-bool AggregateTable::isRequired() const
-{
-  return std::any_of(
-    m_tables.begin(),
-    m_tables.end(),
-    [](const Verifiable<Table>& table) { return table.isRequired(); });
-}
-
-AggregateTable& AggregateTable::registerVerifier(
-  std::function<bool(const Table&)> lambda)
-{
-  for(auto& table : m_tables)
-  {
-    table.get().registerVerifier(lambda);
-  }
-  return *this;
-}
-
 }  // end namespace inlet
 }  // end namespace axom

@@ -153,67 +153,6 @@ struct has_FromInlet_specialization<
 }  // namespace detail
 
 class Proxy;
-
-/*!
-   *****************************************************************************
-   * \brief A wrapper class that enables constraints on groups of Tables
-   *****************************************************************************
-  */
-class AggregateTable : public Verifiable<Table>
-{
-public:
-  AggregateTable(std::vector<std::reference_wrapper<Verifiable>>&& tables)
-    : m_tables(std::move(tables))
-  { }
-
-  /*!
-   *****************************************************************************
-   * \brief This will be called by Inlet::verify to verify the contents of this
-   *  Table and all child Tables/Fields of this Table.
-   *****************************************************************************
-   */
-  bool verify() const;
-
-  /*!
-   *****************************************************************************
-   * \brief Set the required status of this Table.
-   *
-   * Set whether this Table is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \param [in] isRequired Boolean value of whether Table is required
-   *
-   * \return Reference to this instance of Table
-   *****************************************************************************
-   */
-  AggregateTable& required(bool isRequired = true);
-
-  /*!
-   *****************************************************************************
-   * \brief Return the required status of this Table.
-   *
-   * Return that this Table is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \return Boolean value of whether this Table is required
-   *****************************************************************************
-   */
-  bool isRequired() const;
-
-  /*!
-   *****************************************************************************
-   * \brief Registers the function object that will verify this Table's contents
-   * during the verification stage.
-   * 
-   * \param [in] The function object that will be called by Table::verify().
-   *****************************************************************************
-  */
-  AggregateTable& registerVerifier(std::function<bool(const Table&)> lambda);
-
-private:
-  std::vector<std::reference_wrapper<Verifiable>> m_tables;
-};
-
 /*!
  *******************************************************************************
  * \class Table
@@ -1010,11 +949,11 @@ private:
   std::unordered_map<std::string, std::unique_ptr<Function>> m_functionChildren;
   std::function<bool(const Table&)> m_verifier;
 
-  // Used for ownership only - need to take ownership of these so Tables
-  // and AggregateTables have identical lifetime
-  std::vector<AggregateTable> m_aggregate_tables;
+  // Used for ownership only - need to take ownership of these so children
+  // and their aggregates have identical lifetime
+  std::vector<AggregateVerifiable<Table>> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
-  std::vector<AggregateFunction> m_aggregate_funcs;
+  std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
 
   static const std::string ARRAY_GROUP_NAME;
   static const std::string ARRAY_INDICIES_VIEW_NAME;
