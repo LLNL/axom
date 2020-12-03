@@ -56,40 +56,5 @@ bool Function::verify() const
   return verified;
 }
 
-bool AggregateFunction::verify() const
-{
-  return std::all_of(
-    m_funcs.begin(),
-    m_funcs.end(),
-    [](const Verifiable<Function>& func) { return func.verify(); });
-}
-
-AggregateFunction& AggregateFunction::required(bool isRequired)
-{
-  for(auto& func : m_funcs)
-  {
-    func.get().required(isRequired);
-  }
-  return *this;
-}
-
-bool AggregateFunction::isRequired() const
-{
-  return std::any_of(
-    m_funcs.begin(),
-    m_funcs.end(),
-    [](const Verifiable<Function>& func) { return func.isRequired(); });
-}
-
-AggregateFunction& AggregateFunction::registerVerifier(
-  std::function<bool(const Function&)> lambda)
-{
-  for(auto& func : m_funcs)
-  {
-    func.get().registerVerifier(lambda);
-  }
-  return *this;
-}
-
 }  // end namespace inlet
 }  // end namespace axom

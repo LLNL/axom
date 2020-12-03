@@ -272,35 +272,6 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
   }
 }
 
-// Explicit instantiations
-template VerifiableScalar& Table::addPrimitive<bool>(
-  const std::string& name,
-  const std::string& description,
-  bool forArray,
-  bool val,
-  const std::string& pathOverride);
-
-template VerifiableScalar& Table::addPrimitive<int>(
-  const std::string& name,
-  const std::string& description,
-  bool forArray,
-  int val,
-  const std::string& pathOverride);
-
-template VerifiableScalar& Table::addPrimitive<double>(
-  const std::string& name,
-  const std::string& description,
-  bool forArray,
-  double val,
-  const std::string& pathOverride);
-
-template VerifiableScalar& Table::addPrimitive<std::string>(
-  const std::string& name,
-  const std::string& description,
-  bool forArray,
-  std::string val,
-  const std::string& pathOverride);
-
 template <>
 axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
   axom::sidre::Group* sidreGroup,
@@ -389,27 +360,6 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     return table;
   }
 }
-
-// Explicit instantiations
-template Verifiable<Table>& Table::addPrimitiveArray<bool>(
-  const std::string& name,
-  const std::string& description,
-  const std::string& pathOverride);
-
-template Verifiable<Table>& Table::addPrimitiveArray<int>(
-  const std::string& name,
-  const std::string& description,
-  const std::string& pathOverride);
-
-template Verifiable<Table>& Table::addPrimitiveArray<double>(
-  const std::string& name,
-  const std::string& description,
-  const std::string& pathOverride);
-
-template Verifiable<Table>& Table::addPrimitiveArray<std::string>(
-  const std::string& name,
-  const std::string& description,
-  const std::string& pathOverride);
 
 template <>
 void Table::addPrimitiveArrayHelper<bool>(Table& table,
@@ -785,41 +735,6 @@ const std::unordered_map<std::string, std::unique_ptr<Field>>&
 Table::getChildFields() const
 {
   return m_fieldChildren;
-}
-
-bool AggregateTable::verify() const
-{
-  return std::all_of(
-    m_tables.begin(),
-    m_tables.end(),
-    [](const Verifiable<Table>& table) { return table.verify(); });
-}
-
-AggregateTable& AggregateTable::required(bool isRequired)
-{
-  for(auto& table : m_tables)
-  {
-    table.get().required(isRequired);
-  }
-  return *this;
-}
-
-bool AggregateTable::isRequired() const
-{
-  return std::any_of(
-    m_tables.begin(),
-    m_tables.end(),
-    [](const Verifiable<Table>& table) { return table.isRequired(); });
-}
-
-AggregateTable& AggregateTable::registerVerifier(
-  std::function<bool(const Table&)> lambda)
-{
-  for(auto& table : m_tables)
-  {
-    table.get().registerVerifier(lambda);
-  }
-  return *this;
 }
 
 }  // end namespace inlet
