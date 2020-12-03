@@ -260,6 +260,57 @@ buildStdFunction(sol::protected_function&& func)
 
 /*!
  *****************************************************************************
+ * \brief Adds argument types to a parameter pack based on the contents
+ * of a std::vector of type tags
+ *
+ * \param [in] func The sol object containing the lua function of unknown signature
+ * \param [in] arg_types The vector of argument types
+ * 
+ * \tparam I The number of arguments processed, or "stack size", used to mitigate
+ * infinite compile-time recursion
+ * \tparam Ret The function's return type
+ * \tparam Args... The function's current arguments (already processed), remaining
+ * arguments are in the arg_types vector
+ *
+ * \return A callable wrapper
+ *****************************************************************************
+ */
+template <std::size_t I, typename Ret, typename... Args>
+typename std::enable_if<(I > MAX_NUM_ARGS), FunctionVariant>::type bindArgType(
+  sol::protected_function&&,
+  const std::vector<FunctionType>&)
+{
+  SLIC_ERROR("[Inlet] Maximum number of function arguments exceeded: " << I);
+  return {};
+}
+
+template <std::size_t I, typename Ret, typename... Args>
+typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
+  sol::protected_function&& func,
+  const std::vector<FunctionType>& arg_types)
+{
+  if(arg_types.size() == I)
+  {
+    return buildStdFunction<Ret, Args...>(std::move(func));
+  }
+  else
+  {
+    switch(arg_types[I])
+    {
+    case FunctionType::Vec3D:
+      return bindArgType<I + 1, Ret, Args..., primal::Vector3D>(std::move(func),
+                                                                arg_types);
+    case FunctionType::Double:
+      return bindArgType<I + 1, Ret, Args..., double>(std::move(func), arg_types);
+    default:
+      SLIC_ERROR("[Inlet] Unexpected function argument type");
+    }
+  }
+  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
+}
+
+/*!
+ *****************************************************************************
  * \brief Performs a type-checked access to a Lua table
  *
  * \param [in]  proxy The sol::proxy object to retrieve from
@@ -287,21 +338,15 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
                                        const std::vector<FunctionType>& arg_types)
 {
   auto lua_func = getFunctionInternal(id);
-  if(!((arg_types.size() == 1) && (arg_types.front() == FunctionType::Vec3D)))
-  {
-    SLIC_ERROR("[Inlet] Only a single Vec3D argument is currently supported");
-  }
-
   if(lua_func)
   {
     switch(ret_type)
     {
     case FunctionType::Vec3D:
-      return detail::buildStdFunction<primal::Vector3D, primal::Vector3D>(
-        std::move(lua_func));
+      return detail::bindArgType<0u, primal::Vector3D>(std::move(lua_func),
+                                                       arg_types);
     case FunctionType::Double:
-      return detail::buildStdFunction<double, primal::Vector3D>(
-        std::move(lua_func));
+      return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function return type");
     }
