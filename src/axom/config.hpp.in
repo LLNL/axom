@@ -127,27 +127,37 @@
 #endif
 
 #if defined(_WIN32)
-    #if defined(AXOM_WINDOWS_DLL_EXPORTS)
-        #if defined(AXOM_EXPORTS_DEFINED)
-            #define AXOM_API __declspec(dllexport)
-        #else
-            #define AXOM_API __declspec(dllimport)
-        #endif
-    #else
-        #define AXOM_API /* empty for static builds */
-    #endif
 
-    #if defined(_MSC_VER)
-        /* Turn off warning about lack of DLL interface */
-        #pragma warning(disable:4251)
-        /* Turn off warning non-dll class is base for dll-interface class */
-        #pragma warning(disable:4275)
-        /* Turn off warning about identifier truncation */
-        #pragma warning(disable:4786)
-    #endif
+#if defined(AXOM_WINDOWS_DLL_EXPORTS)
+
+#if defined(AXOM_EXPORTS_DEFINED)
+#define AXOM_API __declspec(dllexport)
 #else
-    #define AXOM_API /* hidden by default */
-#endif
+#define AXOM_API __declspec(dllimport)
+#endif  /* defined(AXOM_EXPORTS_DEFINED) */
 
-#endif  /* AXOM_COMMON_CONFIG_CPP */
+#else   /* defined(AXOM_WINDOWS_DLL_EXPORTS) */
+
+/* empty for static builds */
+#define AXOM_API
+
+#endif  /* defined(AXOM_WINDOWS_DLL_EXPORTS) */
+
+#if defined(_MSC_VER)
+/* Turn off warning about lack of DLL interface */
+#pragma warning(disable:4251)
+/* Turn off warning non-dll class is base for dll-interface class */
+#pragma warning(disable:4275)
+/* Turn off warning about identifier truncation */
+#pragma warning(disable:4786)
+#endif  /* defined(_MSC_VER) */
+
+#else   /* defined(_WIN32) */
+
+/* hidden by default */
+#define AXOM_API
+
+#endif  /* defined(_WIN32) */
+
+#endif  /* AXOM_COMMON_CONFIG_HPP */
 
