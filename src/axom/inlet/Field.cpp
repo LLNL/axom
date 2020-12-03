@@ -25,7 +25,7 @@ bool Field::isRequired() const
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Field specific Sidre Datastore Group not set");
-  return checkRequired(*m_sidreGroup, *m_sidreRootGroup);
+  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
 }
 
 template <typename T>
@@ -425,20 +425,10 @@ Field& Field::registerVerifier(std::function<bool(const Field&)> lambda)
 bool Field::verify() const
 {
   // If this field was required, make sure something was defined in it
-  if(m_sidreGroup->hasView("required"))
+  if(!verifyRequired(*m_sidreGroup, m_sidreGroup->hasView("value"), "Field"))
   {
-    int8 required = m_sidreGroup->getView("required")->getData();
-    if(required && !m_sidreGroup->hasView("value"))
-    {
-      std::string msg = fmt::format(
-        "[Inlet] Required Field not "
-        "specified: {0}",
-        m_sidreGroup->getPathName());
-      SLIC_WARNING(msg);
-      return false;
-    }
+    return false;
   }
-
   // Verify the provided value
   if(m_sidreGroup->hasView("value") &&
      !verifyValue(*m_sidreGroup->getView("value")))

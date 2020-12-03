@@ -56,7 +56,24 @@ void setRequired(axom::sidre::Group& target,
 * \return Whether the Inlet object is required
 *****************************************************************************
 */
-bool checkRequired(const axom::sidre::Group& target, axom::sidre::Group& root);
+bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root);
+
+/*!
+*****************************************************************************
+* \brief This function is used to verify the required-ness of the Inlet object
+* corresponding to the provided Sidre group
+*
+* \param [in] target Reference to the Sidre group to verify the required-ness of
+* \param [in] condition The condition that must be true if the object is required
+* \param [in] type The type of the object as a string, for use in the warning message
+* 
+* \return False if the object was required but \p condition was false, True otherwise
+* \post If the function returns False, a warning message will be emitted
+*****************************************************************************
+*/
+bool verifyRequired(const axom::sidre::Group& target,
+                    const bool condition,
+                    const std::string& type);
 
 /*!
 *****************************************************************************
