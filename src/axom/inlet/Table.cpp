@@ -28,7 +28,7 @@ Table& Table::addTable(const std::string& name, const std::string& description)
     const std::string currTableName =
       appendPrefix(currTable->m_name, currName.substr(0, found));
     // The current table will prepend its own prefix - just pass the basename
-    if(!currTable->hasChildTable(currName.substr(0, found)))
+    if(!currTable->hasChild<Table>(currName.substr(0, found)))
     {
       // Will the copy always be elided here with a move ctor
       // or do we need std::piecewise_construct/std::forward_as_tuple?
@@ -53,7 +53,7 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   const std::string currTableName =
     appendPrefix(currTable->m_name, currName.substr(0, found));
 
-  if(!currTable->hasChildTable(currName))
+  if(!currTable->hasChild<Table>(currName))
   {
     const auto& emplace_result = currTable->m_tableChildren.emplace(
       currTableName,
@@ -646,79 +646,42 @@ bool Table::verify() const
   return verified;
 }
 
-bool Table::hasChildTable(const std::string& tableName) const
+template <>
+std::unordered_map<std::string, std::unique_ptr<Table>> Table::*Table::getChildren()
 {
-  return m_tableChildren.find(appendPrefix(m_name, tableName)) !=
-    m_tableChildren.end();
+  return &Table::m_tableChildren;
 }
 
-bool Table::hasChildField(const std::string& fieldName) const
+template <>
+std::unordered_map<std::string, std::unique_ptr<Field>> Table::*Table::getChildren()
 {
-  return m_fieldChildren.find(appendPrefix(m_name, fieldName)) !=
-    m_fieldChildren.end();
+  return &Table::m_fieldChildren;
 }
 
-bool Table::hasChildFunction(const std::string& funcName) const
+template <>
+std::unordered_map<std::string, std::unique_ptr<Function>> Table::*Table::getChildren()
 {
-  return m_functionChildren.find(appendPrefix(m_name, funcName)) !=
-    m_functionChildren.end();
+  return &Table::m_functionChildren;
 }
 
-bool Table::hasTable(const std::string& tableName) const
+template <typename T>
+bool Table::hasChild(const std::string& childName) const
 {
-  return static_cast<bool>(getTableInternal(tableName));
+  const auto& children = this->*getChildren<T>();
+  return children.find(appendPrefix(m_name, childName)) != children.end();
 }
 
-bool Table::hasField(const std::string& fieldName) const
+template <typename T>
+T* Table::getChildInternal(const std::string& childName) const
 {
-  return static_cast<bool>(getFieldInternal(fieldName));
-}
-
-bool Table::hasFunction(const std::string& fieldName) const
-{
-  return static_cast<bool>(getFunctionInternal(fieldName));
-}
-
-Table& Table::getTable(const std::string& tableName) const
-{
-  auto table = getTableInternal(tableName);
-  if(!table)
-  {
-    SLIC_ERROR(fmt::format("[Inlet] Table not found: {0}", tableName));
-  }
-  return *table;
-}
-
-Field& Table::getField(const std::string& fieldName) const
-{
-  auto field = getFieldInternal(fieldName);
-  if(!field)
-  {
-    SLIC_ERROR(fmt::format("[Inlet] Field not found: {0}", fieldName));
-  }
-  return *field;
-}
-
-Function& Table::getFunction(const std::string& funcName) const
-{
-  auto func = getFunctionInternal(funcName);
-  if(!func)
-  {
-    SLIC_ERROR(fmt::format("[Inlet] Function not found: {0}", funcName));
-  }
-  return *func;
-}
-
-Table* Table::getTableInternal(const std::string& tableName) const
-{
-  std::string name = tableName;
+  std::string name = childName;
   size_t found = name.find("/");
   auto currTable = this;
 
   while(found != std::string::npos)
   {
     const std::string& currName = name.substr(0, found);
-    if(currTable->hasChildTable(currName))
+    if(currTable->hasChild<Table>(currName))
     {
       currTable =
         currTable->m_tableChildren.at(appendPrefix(currTable->m_name, currName))
@@ -732,72 +695,74 @@ Table* Table::getTableInternal(const std::string& tableName) const
     found = name.find("/");
   }
 
-  if(currTable->hasChildTable(name))
+  if(currTable->hasChild<T>(name))
   {
-    return currTable->m_tableChildren.at(appendPrefix(currTable->m_name, name)).get();
+    const auto& children = currTable->*getChildren<T>();
+    return children.at(appendPrefix(currTable->m_name, name)).get();
   }
   return nullptr;
 }
 
-Field* Table::getFieldInternal(const std::string& fieldName) const
+bool Table::hasTable(const std::string& tableName) const
 {
-  const size_t found = fieldName.find_last_of("/");
-  if(found == std::string::npos)
-  {
-    if(hasChildField(fieldName))
-    {
-      return m_fieldChildren.at(appendPrefix(m_name, fieldName)).get();
-    }
-  }
-  else
-  {
-    const std::string& name = fieldName.substr(found + 1);
-    auto table = getTableInternal(fieldName.substr(0, found));
-    if(table && table->hasChildField(name))
-    {
-      return table->m_fieldChildren.at(appendPrefix(table->m_name, name)).get();
-    }
-  }
-  return nullptr;
+  return static_cast<bool>(getChildInternal<Table>(tableName));
 }
 
-Function* Table::getFunctionInternal(const std::string& funcName) const
+bool Table::hasField(const std::string& fieldName) const
 {
-  const size_t found = funcName.find_last_of("/");
-  if(found == std::string::npos)
+  return static_cast<bool>(getChildInternal<Field>(fieldName));
+}
+
+bool Table::hasFunction(const std::string& fieldName) const
+{
+  return static_cast<bool>(getChildInternal<Function>(fieldName));
+}
+
+Table& Table::getTable(const std::string& tableName) const
+{
+  auto table = getChildInternal<Table>(tableName);
+  if(!table)
   {
-    if(hasChildFunction(funcName))
-    {
-      return m_functionChildren.at(appendPrefix(m_name, funcName)).get();
-    }
+    SLIC_ERROR(fmt::format("[Inlet] Table not found: {0}", tableName));
   }
-  else
+  return *table;
+}
+
+Field& Table::getField(const std::string& fieldName) const
+{
+  auto field = getChildInternal<Field>(fieldName);
+  if(!field)
   {
-    const std::string& name = funcName.substr(found + 1);
-    auto table = getTableInternal(funcName.substr(0, found));
-    if(table && table->hasChildFunction(name))
-    {
-      return table->m_functionChildren.at(appendPrefix(table->m_name, name)).get();
-    }
+    SLIC_ERROR(fmt::format("[Inlet] Field not found: {0}", fieldName));
   }
-  return nullptr;
+  return *field;
+}
+
+Function& Table::getFunction(const std::string& funcName) const
+{
+  auto func = getChildInternal<Function>(funcName);
+  if(!func)
+  {
+    SLIC_ERROR(fmt::format("[Inlet] Function not found: {0}", funcName));
+  }
+  return *func;
 }
 
 std::string Table::name() const { return m_name; }
 
 bool Table::contains(const std::string& name) const
 {
-  if(auto table = getTableInternal(name))
+  if(auto table = getChildInternal<Table>(name))
   {
     // call operator bool on the table itself
     return static_cast<bool>(*table);
   }
-  else if(auto field = getFieldInternal(name))
+  else if(auto field = getChildInternal<Field>(name))
   {
     // call operator bool on the field itself
     return static_cast<bool>(*field);
   }
-  else if(auto function = getFunctionInternal(name))
+  else if(auto function = getChildInternal<Function>(name))
   {
     // call operator bool on the function itself
     return static_cast<bool>(*function);

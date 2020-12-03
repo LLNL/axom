@@ -946,73 +946,44 @@ private:
                                 const std::string& fullName,
                                 const std::string& name);
 
-  /*!
-   *****************************************************************************
-   * \brief This is the internal implementation of getTable. It retrieves the matching Table.
-   * 
-   * \param [in] The string indicating the target name of the Table to be searched for.
-   * 
-   * \return The Table matching the target name. If no such Table is found,
-   * a nullptr is returned.
-   *****************************************************************************
-   */
-  Table* getTableInternal(const std::string& tableName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief This is the internal implementation of getField. It retrieves the matching Field.
-   * 
-   * \param [in] The string indicating the target name of the Field to be searched for.
-   * 
-   * \return The Field matching the target name. If no such Field is found,
-   * a nullptr is returned.
-   *****************************************************************************
-   */
-  Field* getFieldInternal(const std::string& fieldName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief This is the internal implementation of getFunction. It retrieves the matching Function.
-   * 
-   * \param [in] The string indicating the target name of the Function to be searched for.
-   * 
-   * \return The Function matching the target name. If no such Function is found,
-   * a nullptr is returned.
-   *****************************************************************************
-   */
-  Function* getFunctionInternal(const std::string& funcName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief This is an internal helper. It returns whether this Table has a child 
-   * Table with the given name.
-   *
-   * \return Boolean value of whether this Table has the child Table.
-   *****************************************************************************
-   */
-  bool hasChildTable(const std::string& tableName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief This is an internal helper. It return whether this Table has a child 
-   * Field with the given name.
-   *
-   * \return Boolean value of whether this Table has the child Field.
-   *****************************************************************************
-   */
-  bool hasChildField(const std::string& fieldName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief This is an internal helper. It return whether this Table has a child 
-   * Function with the given name.
-   *
-   * \return Boolean value of whether this Table has the child Function.
-   *****************************************************************************
-   */
-  bool hasChildFunction(const std::string& funcName) const;
-
   axom::sidre::View* baseGet(const std::string& name) const;
+
+  /*!
+   *****************************************************************************
+   * \brief This is an internal helper that returns the pointer-to-member for
+   * the unordered_map of children of requested type.
+   * 
+   * \tparam T The type of the child to search for (Field/Table/Function)
+   *****************************************************************************
+   */
+  template <typename T>
+  static std::unordered_map<std::string, std::unique_ptr<T>> Table::*getChildren();
+
+  /*!
+   *****************************************************************************
+   * \brief This is an internal helper. It return whether this Table has a child 
+   * with the given name and type.
+   * 
+   * \tparam T The type of the child to search for (Field/Table/Function)
+   * \return Boolean value of whether this Table has the child.
+   *****************************************************************************
+   */
+  template <typename T>
+  bool hasChild(const std::string& childName) const;
+
+  /*!
+   *****************************************************************************
+   * \brief This retrieves the child of requested name and type.
+   * 
+   * \param [in] The string indicating the target name of the child to be searched for.
+   * 
+   * \tparam T The type of the child to search for (Field/Table/Function)
+   * \return The child matching the target name. If no such child is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  template <typename T>
+  T* getChildInternal(const std::string& childName) const;
 
   /*!
    *****************************************************************************
