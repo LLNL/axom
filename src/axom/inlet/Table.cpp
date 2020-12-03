@@ -581,7 +581,7 @@ bool Table::isRequired() const
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Table specific Sidre Datastore Group not set");
-  return checkRequired(*m_sidreGroup, *m_sidreRootGroup);
+  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
 }
 
 Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
@@ -598,19 +598,8 @@ bool Table::verify() const
 {
   bool verified = true;
   // If this table was required, make sure something was defined in it
-  if(m_sidreGroup->hasView("required"))
-  {
-    int8 required = m_sidreGroup->getView("required")->getData();
-    if(required && m_sidreGroup->getNumGroups() == 0)
-    {
-      const std::string msg = fmt::format(
-        "[Inlet] Required Table not "
-        "specified: {0}",
-        m_sidreGroup->getPathName());
-      SLIC_WARNING(msg);
-      verified = false;
-    }
-  }
+  verified &=
+    verifyRequired(*m_sidreGroup, m_sidreGroup->getNumGroups() > 0, "Table");
   // Verify this Table if a lambda was configured
   if(m_verifier && !m_verifier(*this))
   {

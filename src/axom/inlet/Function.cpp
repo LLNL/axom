@@ -27,7 +27,7 @@ bool Function::isRequired() const
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Function specific Sidre Datastore Group not set");
-  return checkRequired(*m_sidreGroup, *m_sidreRootGroup);
+  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
 }
 
 Function& Function::registerVerifier(std::function<bool(const Function&)> lambda)
@@ -44,19 +44,8 @@ bool Function::verify() const
 {
   bool verified = true;
   // If this function was required, make sure something was defined in it
-  if(m_sidreGroup->hasView("required"))
-  {
-    int8 required = m_sidreGroup->getView("required")->getData();
-    if(required && !m_func)
-    {
-      const std::string msg = fmt::format(
-        "[Inlet] Required Function not "
-        "specified: {0}",
-        m_sidreGroup->getPathName());
-      SLIC_WARNING(msg);
-      verified = false;
-    }
-  }
+  verified &=
+    verifyRequired(*m_sidreGroup, static_cast<bool>(m_func), "Function");
   // Verify this Function if a lambda was configured
   if(m_verifier && !m_verifier(*this))
   {

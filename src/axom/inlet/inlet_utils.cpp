@@ -41,7 +41,7 @@ void setRequired(axom::sidre::Group& target, axom::sidre::Group& root, bool requ
   }
 }
 
-bool checkRequired(const axom::sidre::Group& target, axom::sidre::Group& root)
+bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root)
 {
   if(!target.hasView("required"))
   {
@@ -66,6 +66,27 @@ bool checkRequired(const axom::sidre::Group& target, axom::sidre::Group& root)
   }
 
   return static_cast<bool>(intValue);
+}
+
+bool verifyRequired(const axom::sidre::Group& target,
+                    const bool condition,
+                    const std::string& type)
+{
+  if(target.hasView("required"))
+  {
+    int8 required = target.getView("required")->getData();
+    if(required && !condition)
+    {
+      const std::string msg = fmt::format(
+        "[Inlet] Required {0} not "
+        "specified: {1}",
+        type,
+        target.getPathName());
+      SLIC_WARNING(msg);
+      return false;
+    }
+  }
+  return true;
 }
 
 std::string appendPrefix(const std::string& prefix, const std::string& name)
