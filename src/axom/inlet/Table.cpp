@@ -415,6 +415,8 @@ void registerContainer(Table& table,
       entry.first.find('/') != std::string::npos,
       fmt::format("[Inlet] Dictionary key '{0}' contains illegal character '/'",
                   entry.first));
+    SLIC_ERROR_IF(entry.first.empty(),
+                  "[Inlet] Dictionary key cannot be the empty string");
     table.addPrimitive(entry.first, "", true, entry.second);
   }
 }

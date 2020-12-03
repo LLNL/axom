@@ -632,6 +632,8 @@ public:
    * 
    * \param [in] name Name of the Field value to be gotten
    * \return The retrieved value
+   * 
+   * \tparam T The primitive type
    *******************************************************************************
    */
   template <typename T>
@@ -659,6 +661,8 @@ public:
    * If nothing is passed, the calling table is interpreted as the roof of the object
    * \return The retrieved value
    * \pre Requires a specialization of FromInlet for T
+   * 
+   * \tparam T The user-defined type
    *******************************************************************************
    */
   template <typename T>
@@ -694,6 +698,8 @@ public:
    * Retrieves a container of user-defined type.
    * 
    * \return The retrieved container
+   * 
+   * \tparam T The container type, i.e., T = std::unordered_map<K, V>
    *******************************************************************************
    */
   template <typename T>
