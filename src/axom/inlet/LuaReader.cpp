@@ -103,25 +103,25 @@ bool LuaReader::getStringMap(const std::string& id,
 }
 
 bool LuaReader::getIntMap(const std::string& id,
-                          std::unordered_map<std::string, int>& values)
+                          std::unordered_map<VariantKey, int>& values)
 {
   return getMap(id, values, sol::type::number);
 }
 
 bool LuaReader::getDoubleMap(const std::string& id,
-                             std::unordered_map<std::string, double>& values)
+                             std::unordered_map<VariantKey, double>& values)
 {
   return getMap(id, values, sol::type::number);
 }
 
 bool LuaReader::getBoolMap(const std::string& id,
-                           std::unordered_map<std::string, bool>& values)
+                           std::unordered_map<VariantKey, bool>& values)
 {
   return getMap(id, values, sol::type::boolean);
 }
 
 bool LuaReader::getStringMap(const std::string& id,
-                             std::unordered_map<std::string, std::string>& values)
+                             std::unordered_map<VariantKey, std::string>& values)
 {
   return getMap(id, values, sol::type::string);
 }
@@ -169,8 +169,7 @@ bool LuaReader::getIndices(const std::string& id, std::vector<int>& indices)
   return getIndicesInternal(id, indices);
 }
 
-bool LuaReader::getIndices(const std::string& id,
-                           std::vector<std::string>& indices)
+bool LuaReader::getIndices(const std::string& id, std::vector<VariantKey>& indices)
 {
   return getIndicesInternal(id, indices);
 }
@@ -207,6 +206,30 @@ bool LuaReader::getValue(const std::string& id, T& value)
   return false;
 }
 
+namespace detail
+{
+template <typename T>
+T extractAs(const sol::object& obj)
+{
+  // By default, just ask sol to cast it
+  return obj.as<T>();
+}
+
+template <>
+VariantKey extractAs(const sol::object& obj)
+{
+  // FIXME: Floating-point indices?
+  if(obj.get_type() == sol::type::number)
+  {
+    return obj.as<int>();
+  }
+  else
+  {
+    return obj.as<std::string>();
+  }
+}
+}  // end namespace detail
+
 template <typename Key, typename Val>
 bool LuaReader::getMap(const std::string& id,
                        std::unordered_map<Key, Val>& values,
@@ -221,14 +244,28 @@ bool LuaReader::getMap(const std::string& id,
   {
     return false;
   }
-  const auto key_type =
-    (std::is_same<Key, int>::value) ? sol::type::number : sol::type::string;
+  const auto is_correct_key_type = [](const sol::type type) {
+    bool is_number = type == sol::type::number;
+    // Arrays only
+    if(std::is_same<Key, int>::value)
+    {
+      return is_number;
+    }
+    // Dictionaries can have both string-valued and numeric keys
+    else
+    {
+      return is_number || (type == sol::type::string);
+    }
+  };
+
   for(const auto& entry : t)
   {
     // Gets only indexed items in the table.
-    if(entry.first.get_type() == key_type && entry.second.get_type() == type)
+    if(is_correct_key_type(entry.first.get_type()) &&
+       entry.second.get_type() == type)
     {
-      values[entry.first.as<Key>()] = entry.second.as<Val>();
+      values[detail::extractAs<Key>(entry.first)] =
+        detail::extractAs<Val>(entry.second);
     }
   }
   return true;
@@ -252,7 +289,7 @@ bool LuaReader::getIndicesInternal(const std::string& id, std::vector<T>& indice
   // std::transform ends up being messier here
   for(const auto& entry : t)
   {
-    indices.push_back(entry.first.as<T>());
+    indices.push_back(detail::extractAs<T>(entry.first));
   }
   return true;
 }

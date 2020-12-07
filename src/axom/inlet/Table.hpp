@@ -171,6 +171,12 @@ struct has_FromInlet_specialization<
 inline std::string indexToString(const std::string& idx) { return idx; }
 /// \overload
 inline std::string indexToString(const int idx) { return std::to_string(idx); }
+/// \overload
+inline std::string indexToString(const VariantKey& idx)
+{
+  return idx.type() == InletType::String ? static_cast<std::string>(idx)
+                                         : indexToString(static_cast<int>(idx));
+}
 
 /*!
  *******************************************************************************

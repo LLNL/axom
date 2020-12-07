@@ -15,12 +15,31 @@
 #ifndef INLET_KEY_HPP
 #define INLET_KEY_HPP
 
-#include "axom/inlet/Field.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 namespace axom
 {
 namespace inlet
 {
+/*!
+ *******************************************************************************
+ * \enum InletType
+ *
+ * \brief Enumeration of basic types for things in inlet
+ *******************************************************************************
+ */
+enum class InletType
+{
+  Nothing,
+  Bool,
+  String,
+  Integer,
+  // TODO: Unsigned integer
+  Double,
+  Object,
+  Container
+};
+
 /*!
  *******************************************************************************
  * \class VariantKey
@@ -226,6 +245,19 @@ private:
   // Active member of the union
   VariantKeyType m_type;
 };
+
+inline std::ostream& operator<<(std::ostream& out, const VariantKey& key)
+{
+  if(key.type() == axom::inlet::InletType::Integer)
+  {
+    out << static_cast<int>(key);
+  }
+  else
+  {
+    out << static_cast<std::string>(key);
+  }
+  return out;
+}
 
 }  // end namespace inlet
 }  // end namespace axom

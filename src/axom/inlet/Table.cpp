@@ -207,7 +207,7 @@ Verifiable& Table::addStringDictionary(const std::string& name,
 Table& Table::addGenericDictionary(const std::string& name,
                                    const std::string& description)
 {
-  return addGenericContainer<std::string>(name, description);
+  return addGenericContainer<VariantKey>(name, description);
 }
 
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
@@ -407,19 +407,21 @@ void registerContainer(Table& table, const std::unordered_map<int, T>& container
   */
 template <typename T>
 void registerContainer(Table& table,
-                       const std::unordered_map<std::string, T>& container)
+                       const std::unordered_map<VariantKey, T>& container)
 {
   for(const auto& entry : container)
   {
+    auto string_key = indexToString(entry.first);
     SLIC_ERROR_IF(
-      entry.first.find('/') != std::string::npos,
+      string_key.find('/') != std::string::npos,
       fmt::format("[Inlet] Dictionary key '{0}' contains illegal character '/'",
-                  entry.first));
-    SLIC_ERROR_IF(entry.first.empty(),
+                  string_key));
+    SLIC_ERROR_IF(string_key.empty(),
                   "[Inlet] Dictionary key cannot be the empty string");
-    table.addPrimitive(entry.first, "", true, entry.second);
+    table.addPrimitive(string_key, "", true, entry.second);
   }
 }
+
 /*!
  *****************************************************************************
  * \brief Implementation helper for adding primitive arrays
@@ -533,7 +535,7 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     if(isDict)
     {
-      detail::PrimitiveArrayHelper<std::string, T>(table, m_reader, lookupPath);
+      detail::PrimitiveArrayHelper<VariantKey, T>(table, m_reader, lookupPath);
     }
     else
     {
