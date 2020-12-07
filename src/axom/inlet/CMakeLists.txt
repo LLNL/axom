@@ -21,6 +21,7 @@ set(inlet_headers
     Reader.hpp
     Table.hpp 
     Proxy.hpp
+    VariantKey.hpp
     Verifiable.hpp
     VerifiableScalar.hpp
     DocWriter.hpp

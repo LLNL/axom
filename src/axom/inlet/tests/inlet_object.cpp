@@ -20,6 +20,7 @@
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
 using axom::inlet::LuaReader;
+using axom::inlet::VariantKey;
 using axom::sidre::DataStore;
 
 Inlet createBasicInlet(DataStore* ds,
@@ -536,7 +537,7 @@ TEST(inlet_dict, array_of_struct_containing_dict)
 /*
 FIXME: These are currently error conditions.  If these should be supported
 or handled differently these tests can be re-enabled.
-
+*/
 TEST(inlet_dict, mixed_keys)
 {
   std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
@@ -544,16 +545,11 @@ TEST(inlet_dict, mixed_keys)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addIntDictionary("foo", "foo's description");
-  std::unordered_map<std::string, int> dict = inlet["foo"];
-  std::unordered_map<std::string, int> correct_dict = {{"key1", 4}};
+  std::unordered_map<VariantKey, int> dict = inlet["foo"];
+  std::unordered_map<VariantKey, int> correct_dict = {{"key1", 4}, {1, 6}};
   EXPECT_EQ(dict, correct_dict);
-
-  inlet.addIntArray("foo", "foo's description");
-  std::unordered_map<int, int> array = inlet["foo"];
-  std::unordered_map<int, int> correct_array = {{1, 6}};
-  EXPECT_EQ(array, correct_array);
 }
-
+/*
 TEST(inlet_dict, key_with_slash)
 {
   std::string testString =

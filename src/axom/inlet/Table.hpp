@@ -24,6 +24,7 @@
 #include "fmt/fmt.hpp"
 
 #include "axom/inlet/Field.hpp"
+#include "axom/inlet/VariantKey.hpp"
 #include "axom/inlet/Reader.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 #include "axom/inlet/Verifiable.hpp"
@@ -117,11 +118,21 @@ struct is_inlet_dict<std::unordered_map<std::string, T>> : std::true_type
 { };
 
 template <typename T>
+struct is_inlet_dict<std::unordered_map<VariantKey, T>> : std::true_type
+{ };
+
+template <typename T>
 struct is_inlet_primitive_dict : std::false_type
 { };
 
 template <typename T>
 struct is_inlet_primitive_dict<std::unordered_map<std::string, T>>
+{
+  static constexpr bool value = is_inlet_primitive<T>::value;
+};
+
+template <typename T>
+struct is_inlet_primitive_dict<std::unordered_map<VariantKey, T>>
 {
   static constexpr bool value = is_inlet_primitive<T>::value;
 };
