@@ -161,20 +161,7 @@ Table& Table::addGenericContainer(const std::string& name,
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader.getIndices(fullName, indices))
   {
-    // This is how an array of user-defined type is differentiated
-    // from an array of primitives - the tables have to be allocated
-    // before they are populated as we don't know the schema of the
-    // generic type yet
-    auto group = table.m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
-                                                 /* list_format = */ true);
-    // For each element of the dictionary, add a table whose name is its index
-    // Schema for struct is defined using the returned table
-    for(const auto& idx : indices)
-    {
-      const auto string_idx = detail::indexToString(idx);
-      table.addTable(string_idx, description);
-      detail::addIndexViewToGroup(*group, idx);
-    }
+    detail::addIndicesGroupToTable(table, indices, description);
     table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
                                          static_cast<int8>(1));
   }
@@ -512,19 +499,16 @@ struct PrimitiveArrayHelper<Key, std::string>
   }
 };
 
-template <>
 void addIndexViewToGroup(sidre::Group& group, const int& index)
 {
   group.createViewScalar("", index);
 }
 
-template <>
 void addIndexViewToGroup(sidre::Group& group, const std::string& index)
 {
   group.createViewString("", index);
 }
 
-template <>
 void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
 {
   if(index.type() == InletType::String)
@@ -534,6 +518,23 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
   else
   {
     addIndexViewToGroup(group, static_cast<int>(index));
+  }
+}
+
+template <typename Key>
+void addIndicesGroupToTable(Table& table,
+                            const std::vector<Key>& indices,
+                            const std::string& description)
+{
+  auto indices_group = table.sidreGroup()->createGroup(CONTAINER_INDICES_NAME,
+                                                       /* list_format = */ true);
+  // For each index, add a table whose name is its index
+  // Schema for struct is defined using the returned table
+  for(const auto& idx : indices)
+  {
+    const auto string_idx = indexToString(idx);
+    table.addTable(string_idx, description);
+    addIndexViewToGroup(*indices_group, idx);
   }
 }
 
@@ -580,20 +581,7 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
     std::vector<VariantKey> indices;
     if(m_reader.getIndices(lookupPath, indices))
     {
-      // This is how an array of user-defined type is differentiated
-      // from an array of primitives - the tables have to be allocated
-      // before they are populated as we don't know the schema of the
-      // generic type yet
-      auto group = table.m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
-                                                   /* list_format = */ true);
-      // For each element of the dictionary, add a table whose name is its index
-      // Schema for struct is defined using the returned table
-      for(const auto& idx : indices)
-      {
-        const auto string_idx = detail::indexToString(idx);
-        table.addTable(string_idx, description);
-        detail::addIndexViewToGroup(*group, idx);
-      }
+      detail::addIndicesGroupToTable(table, indices, description);
     }
     return table;
   }

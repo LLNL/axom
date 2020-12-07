@@ -193,7 +193,7 @@ inline Result toIndex(const From& idx)
   // By default, try a static cast
   return static_cast<Result>(idx);
 }
-
+/// \overload
 template <>
 inline int toIndex(const std::string& idx)
 {
@@ -203,8 +203,49 @@ inline int toIndex(const std::string& idx)
   return as_int.first;
 }
 
-template <typename T>
-void addIndexViewToGroup(sidre::Group& group, const T& index);
+/*!
+ *******************************************************************************
+ * \brief Adds a group containing the indices of a container to a table, and a 
+ * subtable for each index
+ * 
+ * \param [inout] table The table to add to
+ * \param [in] indices The indices to add
+ * \param [in] description The optional description of the subtables
+ * \tparam Key The type of the indices to add
+ *******************************************************************************
+ */
+template <typename Key>
+void addIndicesGroupToTable(Table& table,
+                            const std::vector<Key>& indices,
+                            const std::string& description = "");
+
+/*!
+ *******************************************************************************
+ * \brief Determines whether a variant key is convertible to another type
+ * 
+ * \tparam Key The type to check the validity of the conversion to
+ * 
+ * \note That is, returns true if the key holds an integer and Key is int, etc
+ *******************************************************************************
+ */
+template <typename Key>
+bool matchesKeyType(const VariantKey& key)
+{
+  // A VariantKey matches everything
+  if(std::is_same<Key, VariantKey>::value)
+  {
+    return true;
+  }
+  else if(std::is_same<Key, int>::value && key.type() == InletType::Integer)
+  {
+    return true;
+  }
+  else if(std::is_same<Key, std::string>::value && key.type() == InletType::String)
+  {
+    return true;
+  }
+  return false;
+}
 
 }  // namespace detail
 
@@ -728,29 +769,20 @@ public:
                           T>::type
   get() const
   {
-    T result;
+    using Key = typename T::key_type;
+    using Val = typename T::mapped_type;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
     if(isContainerGroup(m_name))
     {
-      if(!getContainer(result))
-      {
-        SLIC_ERROR(fmt::format(
-          "[Inlet] Table '{0}' does not contain a valid container of "
-          "requested type",
-          m_name));
-      }
+      return getContainer<Key, Val>();
     }
     // If the container group is a child table, retrieve it and copy its contents
     // into the result
-    else if(!getTable(detail::CONTAINER_GROUP_NAME).getContainer(result))
+    else
     {
-      SLIC_ERROR(
-        fmt::format("[Inlet] Table '{0}' does not contain a valid container of "
-                    "requested type",
-                    m_name));
+      return getTable(detail::CONTAINER_GROUP_NAME).getContainer<Key, Val>();
     }
-    return result;
   }
 
   /*!
@@ -1037,57 +1069,21 @@ private:
   /*!
    *****************************************************************************
    * \brief Get a container represented as an unordered map from the input file
-   * of primitive type
-   *
-   * \param [out] map Unordered map to be populated with container contents, will be
-   * cleared before contents are added
-   *
-   * \return Whether or not the container was found
    *****************************************************************************
    */
   template <typename Key, typename Val>
-  typename std::enable_if<detail::is_inlet_primitive<Val>::value, bool>::type
-  getContainer(std::unordered_map<Key, Val>& map) const
+  std::unordered_map<Key, Val> getContainer() const
   {
-    map.clear();
-    if(!isContainerGroup(m_name))
-    {
-      return false;
-    }
+    std::unordered_map<Key, Val> map;
     for(const auto& indexLabel : containerIndices())
     {
-      const auto index = detail::toIndex<Key>(indexLabel);
-      map[index] = getField(detail::indexToString(indexLabel)).get<Val>();
+      if(detail::matchesKeyType<Key>(indexLabel))
+      {
+        map[detail::toIndex<Key>(indexLabel)] =
+          get<Val>(detail::indexToString(indexLabel));
+      }
     }
-    return true;
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Get a container represented as an unordered map from the input file
-   * of user-defined type
-   *
-   * \param [out] map Unordered map to be populated with container contents, will be
-   * cleared before contents are added
-   *
-   * \return Whether or not the container was found
-   *****************************************************************************
-   */
-  template <typename Key, typename Val>
-  typename std::enable_if<!detail::is_inlet_primitive<Val>::value, bool>::type
-  getContainer(std::unordered_map<Key, Val>& map) const
-  {
-    map.clear();
-    if(!isGenericContainer())
-    {
-      return false;
-    }
-    for(const auto& indexLabel : containerIndices())
-    {
-      map[detail::toIndex<Key>(indexLabel)] =
-        getTable(detail::indexToString(indexLabel)).get<Val>();
-    }
-    return true;
+    return map;
   }
 
   /*!

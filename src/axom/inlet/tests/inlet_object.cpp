@@ -546,6 +546,30 @@ TEST(inlet_dict, mixed_keys_primitive)
   EXPECT_EQ(dict, correct_dict);
 }
 
+TEST(inlet_dict, mixed_keys_primitive_ignore_string_only)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addIntDictionary("foo", "foo's description");
+  std::unordered_map<std::string, int> dict = inlet["foo"];
+  std::unordered_map<std::string, int> correct_dict = {{"key1", 4}};
+  EXPECT_EQ(dict, correct_dict);
+}
+
+TEST(inlet_dict, mixed_keys_primitive_ignore_int_only)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addIntArray("foo", "foo's description");
+  std::unordered_map<int, int> array = inlet["foo"];
+  std::unordered_map<int, int> correct_array = {{1, 6}};
+  EXPECT_EQ(array, correct_array);
+}
+
 TEST(inlet_dict, mixed_keys_object)
 {
   std::string testString =
