@@ -30,7 +30,7 @@ set(BLT_CXX_STD "c++14" CACHE PATH "")
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/home/axom/serac_tpls/gcc-8.1.0" CACHE PATH "")
+set(TPL_ROOT "/home/axom/axom_tpls/gcc-8.1.0" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
