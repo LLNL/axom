@@ -80,6 +80,19 @@ extern "C" {
   #include "lauxlib.h"
 }
 
+// Note: this was backported from the sol repo
+// https://github.com/ThePhD/sol2/blob/09f5e862b800c1d005a12f8c5da475e3085703b4/include/sol/compatibility/compat-5.4.h
+#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM == 504
+
+#if !defined(LUA_ERRGCMM)
+/* So Lua 5.4 actually removes this, which breaks sol2...
+ man, this API is quite unstable...!
+*/
+#  define LUA_ERRGCMM (LUA_ERRERR + 2)
+#endif /* LUA_ERRGCMM define */
+
+#endif // Lua 5.4 only
+
 // end axom change
 
 #if defined(SOL_CXX17_FEATURES) && SOL_CXX17_FEATURES

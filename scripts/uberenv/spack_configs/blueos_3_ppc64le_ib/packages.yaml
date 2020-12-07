@@ -116,6 +116,8 @@ packages:
     variants: ~shared
   mfem:
     variants: ~mpi~metis~zlib
+  umpire:
+    variants: ~shared
 
 # Globally lock in versions of Devtools
   cppcheck:
