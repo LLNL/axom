@@ -52,178 +52,67 @@ enum class InletType
 class VariantKey
 {
 public:
+  /*!
+   *****************************************************************************
+   * \brief Parameterized constructors for initializing the variant
+   * \param [in] key The key to initialize with 
+   *****************************************************************************
+   */
   VariantKey(const int key) : m_int(key), m_type(VariantKeyType::Integer) { }
+  /// \overload
   VariantKey(const std::string& key)
     : m_string(key)
     , m_type(VariantKeyType::String)
   { }
+  /// \overload
   VariantKey(std::string&& key)
     : m_string(std::move(key))
     , m_type(VariantKeyType::String)
   { }
+  /// \overload
+  // Explicit const char[] overload required to convert to std::string instead of ptr -> int
   VariantKey(const char key[]) : m_string(key), m_type(VariantKeyType::String)
   { }
-  VariantKey(const VariantKey& other) { copy_from(other); }
-  VariantKey(VariantKey&& other) { copy_from(std::move(other)); }
-  VariantKey& operator=(const VariantKey& other)
-  {
-    copy_from(other);
-    return *this;
-  }
-  VariantKey& operator=(VariantKey&& other)
-  {
-    copy_from(std::move(other));
-    return *this;
-  }
 
-  VariantKey& operator=(const int key)
-  {
-    if(m_type == VariantKeyType::String)
-    {
-      using std::string;
-      m_string.~string();
-    }
-    m_int = key;
-    return *this;
-  }
+  VariantKey(const VariantKey& other) { copyFrom(other); }
+  VariantKey(VariantKey&& other) { copyFrom(std::move(other)); }
 
-  VariantKey& operator=(const std::string& key)
-  {
-    if(m_type == VariantKeyType::String)
-    {
-      m_string = key;
-    }
-    else
-    {
-      new(&m_string) std::string(key);
-    }
-    return *this;
-  }
+  /*!
+   *****************************************************************************
+   * \brief Copy assignment operator
+   *****************************************************************************
+   */
+  VariantKey& operator=(const VariantKey& other);
+  /*!
+   *****************************************************************************
+   * \brief Move assignment operator
+   *****************************************************************************
+   */
+  VariantKey& operator=(VariantKey&& other);
 
-  VariantKey& operator=(std::string&& key)
-  {
-    if(m_type == VariantKeyType::String)
-    {
-      m_string = key;
-    }
-    else
-    {
-      new(&m_string) std::string(std::move(key));
-    }
-    return *this;
-  }
+  VariantKey& operator=(const int key);
 
-  VariantKey& operator=(const char key[])
-  {
-    if(m_type == VariantKeyType::String)
-    {
-      m_string = key;
-    }
-    else
-    {
-      new(&m_string) std::string(key);
-    }
-    return *this;
-  }
+  VariantKey& operator=(const std::string& key);
+  VariantKey& operator=(std::string&& key);
 
-  ~VariantKey()
-  {
-    // Have to call the destructor "manually" as the compiler cannot
-    // infer the active member at destruction time
-    if(m_type == VariantKeyType::String)
-    {
-      // Use std::string to get the full basic_string<char, Allocator>
-      using std::string;
-      m_string.~string();
-    }
-  }
+  VariantKey& operator=(const char key[]);
+  ~VariantKey();
 
-  operator int() const
-  {
-    if(m_type != VariantKeyType::Integer)
-    {
-      SLIC_ERROR(
-        "[Inlet] Attempted to retrieve an integer from a non-integer key");
-    }
-    return m_int;
-  }
+  operator int() const;
+  operator const std::string &() const;
 
-  operator const std::string &() const
-  {
-    if(m_type != VariantKeyType::String)
-    {
-      SLIC_ERROR(
-        "[Inlet] Attempted to retrieve a string from a non-string key");
-    }
-    return m_string;
-  }
+  InletType type() const;
 
-  InletType type() const
-  {
-    if(m_type == VariantKeyType::Integer)
-    {
-      return InletType::Integer;
-    }
-    else if(m_type == VariantKeyType::String)
-    {
-      return InletType::String;
-    }
-    SLIC_ERROR("[Inlet] VariantKey tagged union is in invalid state");
-    return InletType::Nothing;
-  }
-
-  bool operator==(const VariantKey& other) const
-  {
-    if(m_type != other.m_type)
-    {
-      return false;
-    }
-    if(m_type == VariantKeyType::Integer)
-    {
-      return m_int == other.m_int;
-    }
-    else if(m_type == VariantKeyType::String)
-    {
-      return m_string == other.m_string;
-    }
-    SLIC_ERROR("[Inlet] VariantKey tagged union is in invalid state");
-    return false;
-  }
+  bool operator==(const VariantKey& other) const;
 
 private:
-  void copy_from(const VariantKey& other)
-  {
-    m_type = other.m_type;
-    if(m_type == VariantKeyType::String)
-    {
-      new(&m_string) std::string(other.m_string);
-    }
-    else if(m_type == VariantKeyType::Integer)
-    {
-      m_int = other.m_int;
-    }
-    else
-    {
-      SLIC_ERROR("[Inlet] VariantKey tagged union is in invalid state");
-    }
-  }
-
-  void copy_from(VariantKey&& other)
-  {
-    m_type = other.m_type;
-    if(m_type == VariantKeyType::String)
-    {
-      new(&m_string) std::string(std::move(other.m_string));
-    }
-    else if(m_type == VariantKeyType::Integer)
-    {
-      m_int = other.m_int;
-    }
-    else
-    {
-      SLIC_ERROR("[Inlet] VariantKey tagged union is in invalid state");
-    }
-  }
+  /*!
+   *****************************************************************************
+   * \brief Move assignment operator
+   *****************************************************************************
+   */
+  void copyFrom(const VariantKey& other);
+  void copyFrom(VariantKey&& other);
 
   // Subset of InletType
   enum class VariantKeyType
@@ -246,18 +135,7 @@ private:
   VariantKeyType m_type;
 };
 
-inline std::ostream& operator<<(std::ostream& out, const VariantKey& key)
-{
-  if(key.type() == axom::inlet::InletType::Integer)
-  {
-    out << static_cast<int>(key);
-  }
-  else
-  {
-    out << static_cast<std::string>(key);
-  }
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const VariantKey& key);
 
 }  // end namespace inlet
 }  // end namespace axom

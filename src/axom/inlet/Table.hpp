@@ -203,6 +203,9 @@ inline int toIndex(const std::string& idx)
   return as_int.first;
 }
 
+template <typename T>
+void addIndexViewToGroup(sidre::Group& group, const T& index);
+
 }  // namespace detail
 
 class Proxy;
@@ -1016,7 +1019,7 @@ private:
    * will be converted to strings
    *****************************************************************************
    */
-  std::vector<std::string> containerIndices() const;
+  std::vector<VariantKey> containerIndices() const;
 
   /*!
    *****************************************************************************
@@ -1081,7 +1084,8 @@ private:
     }
     for(const auto& indexLabel : containerIndices())
     {
-      map[detail::toIndex<Key>(indexLabel)] = getTable(indexLabel).get<Val>();
+      map[detail::toIndex<Key>(indexLabel)] =
+        getTable(detail::indexToString(indexLabel)).get<Val>();
     }
     return true;
   }

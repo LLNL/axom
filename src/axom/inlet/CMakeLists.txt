@@ -33,6 +33,7 @@ set(inlet_sources
     Inlet.cpp
     Table.cpp
     Proxy.cpp
+    VariantKey.cpp
     SphinxDocWriter.cpp 
     inlet_utils.cpp )
 

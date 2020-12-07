@@ -69,9 +69,9 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   return *currTable;
 }
 
-std::vector<std::string> Table::containerIndices() const
+std::vector<VariantKey> Table::containerIndices() const
 {
-  std::vector<std::string> indices;
+  std::vector<VariantKey> indices;
   if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
   {
     auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
@@ -79,7 +79,15 @@ std::vector<std::string> Table::containerIndices() const
     for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
         idx = group->getNextValidViewIndex(idx))
     {
-      indices.push_back(group->getView(idx)->getString());
+      auto view = group->getView(idx);
+      if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
+      {
+        indices.push_back(view->getString());
+      }
+      else
+      {
+        indices.push_back(view->getData<int>());
+      }
     }
   }
   else
@@ -101,12 +109,13 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
   const std::string baseName = m_name.substr(0, pos);
   for(const auto& indexLabel : containerIndices())
   {
+    auto stringLabel = detail::indexToString(indexLabel);
     // The base name reflects the structure of the actual data
     // and is used for the reader call
-    auto fullPath = appendPrefix(baseName, indexLabel);
+    auto fullPath = appendPrefix(baseName, stringLabel);
     fullPath = appendPrefix(fullPath, name);
     // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
-    result.push_back({indexLabel, fullPath});
+    result.push_back({stringLabel, fullPath});
   }
   return result;
 }
@@ -164,7 +173,7 @@ Table& Table::addGenericContainer(const std::string& name,
     {
       const auto string_idx = detail::indexToString(idx);
       table.addTable(string_idx, description);
-      group->createViewString("", string_idx);
+      detail::addIndexViewToGroup(*group, idx);
     }
   }
   else
@@ -500,6 +509,31 @@ struct PrimitiveArrayHelper<Key, std::string>
     registerContainer(table, map);
   }
 };
+
+template <>
+void addIndexViewToGroup(sidre::Group& group, const int& index)
+{
+  group.createViewScalar("", index);
+}
+
+template <>
+void addIndexViewToGroup(sidre::Group& group, const std::string& index)
+{
+  group.createViewString("", index);
+}
+
+template <>
+void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
+{
+  if(index.type() == InletType::String)
+  {
+    addIndexViewToGroup(group, static_cast<std::string>(index));
+  }
+  else
+  {
+    addIndexViewToGroup(group, static_cast<int>(index));
+  }
+}
 
 }  // end namespace detail
 
