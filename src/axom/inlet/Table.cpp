@@ -578,6 +578,7 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
     {
       detail::PrimitiveArrayHelper<int, T>(table, m_reader, lookupPath);
     }
+    // Copy the indices to the datastore to keep track of integer vs. string indices
     std::vector<VariantKey> indices;
     if(m_reader.getIndices(lookupPath, indices))
     {

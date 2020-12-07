@@ -208,13 +208,21 @@ bool LuaReader::getValue(const std::string& id, T& value)
 
 namespace detail
 {
+/*!
+ *******************************************************************************
+ * \brief Extracts an object from sol into a concrete type, implemented to support
+ * extracting to a VariantKey
+ * 
+ * \tparam T The type to extract to
+ *******************************************************************************
+ */
 template <typename T>
 T extractAs(const sol::object& obj)
 {
   // By default, just ask sol to cast it
   return obj.as<T>();
 }
-
+/// \overload
 template <>
 VariantKey extractAs(const sol::object& obj)
 {
@@ -244,6 +252,8 @@ bool LuaReader::getMap(const std::string& id,
   {
     return false;
   }
+
+  // Allows for filtering out keys of incorrect type
   const auto is_correct_key_type = [](const sol::type type) {
     bool is_number = type == sol::type::number;
     // Arrays only

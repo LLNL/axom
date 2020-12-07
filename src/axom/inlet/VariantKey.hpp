@@ -90,36 +90,72 @@ public:
    */
   VariantKey& operator=(VariantKey&& other);
 
+  /*!
+   *****************************************************************************
+   * \brief Parameterized assignment operators for re-initializing the variant
+   * \param [in] key The key to initialize with 
+   *****************************************************************************
+   */
   VariantKey& operator=(const int key);
-
+  /// \overload
   VariantKey& operator=(const std::string& key);
+  /// \overload
   VariantKey& operator=(std::string&& key);
-
+  /// \overload
   VariantKey& operator=(const char key[]);
+
+  /*!
+   *****************************************************************************
+   * \brief Destructor - required as std::string has a nontrivial destructor
+   * that must be called manually when it is the active member
+   *****************************************************************************
+   */
   ~VariantKey();
 
+  /*!
+   *****************************************************************************
+   * \brief Implicit conversion operators to make usage more convenient
+   *****************************************************************************
+   */
   operator int() const;
   operator const std::string &() const;
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the type of the active member
+   *****************************************************************************
+   */
   InletType type() const;
 
+  /*!
+   *****************************************************************************
+   * \brief Comparison operator, returns true iff the active types are the same
+   * and the corresponding active members compare equal
+   *****************************************************************************
+   */
   bool operator==(const VariantKey& other) const;
 
 private:
   /*!
    *****************************************************************************
-   * \brief Move assignment operator
+   * \brief Helper functions for copy/move construction/assignment
    *****************************************************************************
    */
   void copyFrom(const VariantKey& other);
+  /// \overload
   void copyFrom(VariantKey&& other);
 
-  // Subset of InletType
+  /*!
+   *****************************************************************************
+   * \brief Subset of InletType containing only the types present in the union
+   *****************************************************************************
+   */
   enum class VariantKeyType
   {
     Integer,
     String
   };
+
   /*!
    *****************************************************************************
    * \brief Member of sum (variant) type for each possible key type
@@ -135,6 +171,16 @@ private:
   VariantKeyType m_type;
 };
 
+/*!
+ *******************************************************************************
+ * \brief Inserts the key into a stream
+ *
+ * \param [inout] out The stream to insert into
+ * \param [in] key The key to print
+ * 
+ * Prints the active member to the stream
+ *******************************************************************************
+ */
 std::ostream& operator<<(std::ostream& out, const VariantKey& key);
 
 }  // end namespace inlet
@@ -142,6 +188,12 @@ std::ostream& operator<<(std::ostream& out, const VariantKey& key);
 
 namespace std
 {
+/*!
+ *******************************************************************************
+ * \brief Specialization of std::hash so VariantKey is compatible with
+ * std::unordered_map
+ *******************************************************************************
+ */
 template <>
 struct hash<axom::inlet::VariantKey>
 {
