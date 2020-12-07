@@ -432,7 +432,7 @@ TEST(inlet_dict, basic_dicts)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  inlet.addIntDict("foo", "foo's description");
+  inlet.addIntDictionary("foo", "foo's description");
   std::unordered_map<std::string, int> dict = inlet["foo"];
   std::unordered_map<std::string, int> correct = {{"key1", 4},
                                                   {"key3", 6},
@@ -448,7 +448,7 @@ TEST(inlet_dict, simple_dict_of_struct_by_value)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& dict_table = inlet.addGenericDict("foo");
+  auto& dict_table = inlet.addGenericDictionary("foo");
 
   dict_table.addBool("bar", "bar's description");
   dict_table.addBool("baz", "baz's description");
@@ -483,9 +483,9 @@ TEST(inlet_dict, dict_of_struct_containing_dict)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& dict_table = inlet.addGenericDict("foo");
+  auto& dict_table = inlet.addGenericDictionary("foo");
 
-  dict_table.addIntDict("arr", "arr's description");
+  dict_table.addIntDictionary("arr", "arr's description");
   std::unordered_map<std::string, FooWithDict> expected_foos = {
     {"key3", {{{"key1", 3}}}},
     {"key4", {{{"key2", 2}}}}};
@@ -503,7 +503,7 @@ TEST(inlet_dict, dict_of_struct_containing_array)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& dict_table = inlet.addGenericDict("foo");
+  auto& dict_table = inlet.addGenericDictionary("foo");
 
   dict_table.addIntArray("arr", "arr's description");
   std::unordered_map<std::string, FooWithArray> expected_foos = {
@@ -525,7 +525,7 @@ TEST(inlet_dict, array_of_struct_containing_dict)
 
   auto& arr_table = inlet.addGenericArray("foo");
 
-  arr_table.addIntDict("arr", "arr's description");
+  arr_table.addIntDictionary("arr", "arr's description");
   std::unordered_map<int, FooWithDict> expected_foos = {{7, {{{"key1", 3}}}},
                                                         {4, {{{"key2", 2}}}}};
   std::unordered_map<int, FooWithDict> foos_with_dict;
@@ -543,7 +543,7 @@ TEST(inlet_dict, mixed_keys)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  inlet.addIntDict("foo", "foo's description");
+  inlet.addIntDictionary("foo", "foo's description");
   std::unordered_map<std::string, int> dict = inlet["foo"];
   std::unordered_map<std::string, int> correct_dict = {{"key1", 4}};
   EXPECT_EQ(dict, correct_dict);
@@ -561,7 +561,7 @@ TEST(inlet_dict, key_with_slash)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  inlet.addIntDict("foo", "foo's description");
+  inlet.addIntDictionary("foo", "foo's description");
   std::unordered_map<std::string, int> dict = inlet["foo"];
   std::unordered_map<std::string, int> correct = {{"key1/subkey1", 4},
                                                   {"key3", 6},

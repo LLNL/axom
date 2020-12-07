@@ -435,8 +435,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addBoolDict(const std::string& name,
-                          const std::string& description = "");
+  Verifiable& addBoolDictionary(const std::string& name,
+                                const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -448,8 +448,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addIntDict(const std::string& name,
-                         const std::string& description = "");
+  Verifiable& addIntDictionary(const std::string& name,
+                               const std::string& description = "");
   /*!
    *****************************************************************************
    * \brief Add a dictionary of Double Fields to the input file schema.
@@ -460,8 +460,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addDoubleDict(const std::string& name,
-                            const std::string& description = "");
+  Verifiable& addDoubleDictionary(const std::string& name,
+                                  const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -473,8 +473,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addStringDict(const std::string& name,
-                            const std::string& description = "");
+  Verifiable& addStringDictionary(const std::string& name,
+                                  const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -486,8 +486,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Table& addGenericDict(const std::string& name,
-                        const std::string& description = "");
+  Table& addGenericDictionary(const std::string& name,
+                              const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -721,6 +721,8 @@ public:
           m_name));
       }
     }
+    // If the container group is a child table, retrieve it and copy its contents
+    // into the result
     else if(!getTable(detail::CONTAINER_GROUP_NAME).getContainer(result))
     {
       SLIC_ERROR(
@@ -1023,9 +1025,9 @@ private:
    * \return Whether or not the container was found
    *****************************************************************************
    */
-  template <typename Key, typename T>
-  typename std::enable_if<detail::is_inlet_primitive<T>::value, bool>::type
-  getContainer(std::unordered_map<Key, T>& map) const
+  template <typename Key, typename Val>
+  typename std::enable_if<detail::is_inlet_primitive<Val>::value, bool>::type
+  getContainer(std::unordered_map<Key, Val>& map) const
   {
     map.clear();
     if(!isContainerGroup(m_name))
@@ -1035,7 +1037,7 @@ private:
     for(const auto& item : m_fieldChildren)
     {
       auto index = detail::toIndex<Key>(removeBeforeDelimiter(item.first));
-      map[index] = item.second->get<T>();
+      map[index] = item.second->get<Val>();
     }
     return true;
   }
@@ -1051,9 +1053,9 @@ private:
    * \return Whether or not the container was found
    *****************************************************************************
    */
-  template <typename Key, typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
-  getContainer(std::unordered_map<Key, T>& map) const
+  template <typename Key, typename Val>
+  typename std::enable_if<!detail::is_inlet_primitive<Val>::value, bool>::type
+  getContainer(std::unordered_map<Key, Val>& map) const
   {
     map.clear();
     if(!isGenericContainer())
@@ -1062,7 +1064,7 @@ private:
     }
     for(const auto& indexLabel : containerIndices())
     {
-      map[detail::toIndex<Key>(indexLabel)] = getTable(indexLabel).get<T>();
+      map[detail::toIndex<Key>(indexLabel)] = getTable(indexLabel).get<Val>();
     }
     return true;
   }

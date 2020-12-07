@@ -180,32 +180,32 @@ Table& Table::addGenericArray(const std::string& name,
   return addGenericContainer<int>(name, description);
 }
 
-Verifiable& Table::addBoolDict(const std::string& name,
-                               const std::string& description)
+Verifiable& Table::addBoolDictionary(const std::string& name,
+                                     const std::string& description)
 {
   return addPrimitiveArray<bool>(name, description, true);
 }
 
-Verifiable& Table::addIntDict(const std::string& name,
-                              const std::string& description)
+Verifiable& Table::addIntDictionary(const std::string& name,
+                                    const std::string& description)
 {
   return addPrimitiveArray<int>(name, description, true);
 }
 
-Verifiable& Table::addDoubleDict(const std::string& name,
-                                 const std::string& description)
+Verifiable& Table::addDoubleDictionary(const std::string& name,
+                                       const std::string& description)
 {
   return addPrimitiveArray<double>(name, description, true);
 }
 
-Verifiable& Table::addStringDict(const std::string& name,
-                                 const std::string& description)
+Verifiable& Table::addStringDictionary(const std::string& name,
+                                       const std::string& description)
 {
   return addPrimitiveArray<std::string>(name, description, true);
 }
 
-Table& Table::addGenericDict(const std::string& name,
-                             const std::string& description)
+Table& Table::addGenericDictionary(const std::string& name,
+                                   const std::string& description)
 {
   return addGenericContainer<std::string>(name, description);
 }

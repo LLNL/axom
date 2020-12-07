@@ -232,9 +232,9 @@ private:
   bool getValue(const std::string& id, T& value);
 
   // Expect this to be called for only Inlet-supported types.
-  template <typename K, typename V>
+  template <typename Key, typename Val>
   bool getMap(const std::string& id,
-              std::unordered_map<K, V>& values,
+              std::unordered_map<Key, Val>& values,
               sol::type type);
 
   template <typename T>

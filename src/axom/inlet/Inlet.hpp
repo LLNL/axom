@@ -454,10 +454,10 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addBoolDict(const std::string& name,
-                          const std::string& description = "")
+  Verifiable& addBoolDictionary(const std::string& name,
+                                const std::string& description = "")
   {
-    return m_globalTable.addBoolDict(name, description);
+    return m_globalTable.addBoolDictionary(name, description);
   }
 
   /*!
@@ -470,10 +470,10 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addIntDict(const std::string& name,
-                         const std::string& description = "")
+  Verifiable& addIntDictionary(const std::string& name,
+                               const std::string& description = "")
   {
-    return m_globalTable.addIntDict(name, description);
+    return m_globalTable.addIntDictionary(name, description);
   }
 
   /*!
@@ -486,10 +486,10 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addDoubleDict(const std::string& name,
-                            const std::string& description = "")
+  Verifiable& addDoubleDictionary(const std::string& name,
+                                  const std::string& description = "")
   {
-    return m_globalTable.addDoubleDict(name, description);
+    return m_globalTable.addDoubleDictionary(name, description);
   }
 
   /*!
@@ -502,10 +502,10 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addStringDict(const std::string& name,
-                            const std::string& description = "")
+  Verifiable& addStringDictionary(const std::string& name,
+                                  const std::string& description = "")
   {
-    return m_globalTable.addStringDict(name, description);
+    return m_globalTable.addStringDictionary(name, description);
   }
 
   /*!
@@ -518,10 +518,10 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Table& addGenericDict(const std::string& name,
-                        const std::string& description = "")
+  Table& addGenericDictionary(const std::string& name,
+                              const std::string& description = "")
   {
-    return m_globalTable.addGenericDict(name, description);
+    return m_globalTable.addGenericDictionary(name, description);
   }
 
   // TODO add update value functions

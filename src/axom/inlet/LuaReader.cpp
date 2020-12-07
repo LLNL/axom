@@ -207,9 +207,9 @@ bool LuaReader::getValue(const std::string& id, T& value)
   return false;
 }
 
-template <typename K, typename V>
+template <typename Key, typename Val>
 bool LuaReader::getMap(const std::string& id,
-                       std::unordered_map<K, V>& values,
+                       std::unordered_map<Key, Val>& values,
                        sol::type type)
 {
   values.clear();
@@ -222,13 +222,13 @@ bool LuaReader::getMap(const std::string& id,
     return false;
   }
   const auto key_type =
-    (std::is_same<K, int>::value) ? sol::type::number : sol::type::string;
+    (std::is_same<Key, int>::value) ? sol::type::number : sol::type::string;
   for(const auto& entry : t)
   {
     // Gets only indexed items in the table.
     if(entry.first.get_type() == key_type && entry.second.get_type() == type)
     {
-      values[entry.first.as<K>()] = entry.second.as<V>();
+      values[entry.first.as<Key>()] = entry.second.as<Val>();
     }
   }
   return true;
