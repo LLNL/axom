@@ -87,6 +87,7 @@ namespace detail
   */
 const std::string CONTAINER_GROUP_NAME = "_inlet_container";
 const std::string CONTAINER_INDICES_NAME = "_inlet_container_indices";
+const std::string GENERIC_CONTAINER_FLAG = "_inlet_generic_container";
 }  // namespace detail
 
 /*!

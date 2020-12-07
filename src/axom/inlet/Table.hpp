@@ -1054,10 +1054,10 @@ private:
     {
       return false;
     }
-    for(const auto& item : m_fieldChildren)
+    for(const auto& indexLabel : containerIndices())
     {
-      auto index = detail::toIndex<Key>(removeBeforeDelimiter(item.first));
-      map[index] = item.second->get<Val>();
+      const auto index = detail::toIndex<Key>(indexLabel);
+      map[index] = getField(detail::indexToString(indexLabel)).get<Val>();
     }
     return true;
   }
@@ -1112,8 +1112,7 @@ private:
    */
   bool isGenericContainer() const
   {
-    return m_sidreGroup->hasView(detail::CONTAINER_INDICES_NAME) ||
-      m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME);
+    return m_sidreGroup->hasView(detail::GENERIC_CONTAINER_FLAG);
   }
 
   std::string m_name;
