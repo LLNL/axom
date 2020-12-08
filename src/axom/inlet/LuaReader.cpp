@@ -236,7 +236,119 @@ VariantKey extractAs(const sol::object& obj)
     return obj.as<std::string>();
   }
 }
+
+/*!
+ *******************************************************************************
+ * \brief Retrieves the InletType of a sol object
+ * \param [in] obj The object to retrieve the type from
+ *******************************************************************************
+ */
+InletType getInletType(const sol::object& obj)
+{
+  switch(obj.get_type())
+  {
+  case sol::type::string:
+    return InletType::String;
+
+  case sol::type::number:
+    // Integers?
+    return InletType::Double;
+
+  case sol::type::boolean:
+    return InletType::Bool;
+
+    // FIXME: Functions
+    // case sol::type::function::
+    //   return InletType::Function;
+
+  case sol::type::table:
+  {
+    std::vector<sol::type> keyTypes;
+    std::vector<sol::type> valueTypes;
+    for(const auto& entry : obj.as<sol::table>())
+    {
+      keyTypes.push_back(entry.first.get_type());
+      valueTypes.push_back(entry.second.get_type());
+    }
+    // Inlet only allows string- and integer-keyed containers
+    bool allLegalKeys =
+      std::all_of(keyTypes.begin(), keyTypes.end(), [](const sol::type type) {
+        return type == sol::type::number || type == sol::type::string;
+      });
+    // Should we warn here?
+    if(!allLegalKeys)
+    {
+      return InletType::Nothing;
+    }
+
+    bool isDict =
+      std::any_of(keyTypes.begin(), keyTypes.end(), [](const sol::type type) {
+        return type == sol::type::string;
+      });
+
+    // Check if table entries are of homogenous type
+    bool valuesAllSameType = std::all_of(valueTypes.begin() + 1,
+                                         valueTypes.end(),
+                                         [&valueTypes](const sol::type type) {
+                                           return type == valueTypes.front();
+                                         });
+
+    if(!valuesAllSameType)
+    {
+      return isDict ? InletType::MixedDictionary : InletType::MixedArray;
+    }
+
+    // Note that "object" tables will be classified as Dictionaries
+    switch(valueTypes.front())
+    {
+    case sol::type::boolean:
+      return isDict ? InletType::BoolDictionary : InletType::BoolArray;
+    case sol::type::string:
+      return isDict ? InletType::StringDictionary : InletType::StringArray;
+    case sol::type::number:
+      // Integers?
+      return isDict ? InletType::DoubleDictionary : InletType::DoubleArray;
+    case sol::type::table:
+      return isDict ? InletType::ObjectDictionary : InletType::ObjectArray;
+    default:
+      return InletType::Nothing;
+    }
+  }
+
+  default:
+    // Should we warn here?
+    return InletType::Nothing;
+  }
+}
+
 }  // end namespace detail
+
+InletType LuaReader::getType(const std::string& id)
+{
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  if(tokens.size() == 1)
+  {
+    if(m_lua[tokens[0]].valid())
+    {
+      return detail::getInletType(m_lua[tokens[0]]);
+    }
+    else
+    {
+      return InletType::Nothing;
+    }
+  }
+
+  sol::table t;
+  if(!tokens.empty() && traverseToTable(tokens.begin(), tokens.end() - 1, t))
+  {
+    if(t[tokens.back()].valid())
+    {
+      return detail::getInletType(t[tokens.back()]);
+    }
+  }
+  return InletType::Nothing;
+}
 
 template <typename Key, typename Val>
 bool LuaReader::getMap(const std::string& id,

@@ -227,6 +227,18 @@ public:
   /// \overload
   virtual bool getIndices(const std::string& id,
                           std::vector<VariantKey>& indices) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get the type for the object at the specified identifier
+   *
+   * \param [in] id The identifier to retrieve the type for
+   *
+   * \return The determined type, InletType::Nothing if the identifier does not
+   * correspond to a valid path
+   *****************************************************************************
+   */
+  virtual InletType getType(const std::string& id) = 0;
 };
 
 }  // end namespace inlet

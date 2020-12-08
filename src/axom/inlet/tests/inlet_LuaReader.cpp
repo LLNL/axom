@@ -147,6 +147,24 @@ TEST(inlet_LuaReader, getMap)
   EXPECT_EQ(expectedStrs, strs);
 }
 
+TEST(inlet_LuaReader, typeChecks)
+{
+  std::string testString =
+    "t = { innerT = { foo = 1 }, anotherInnerT = {baz = 3}};"
+    "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = "
+    "2.4, [33] = 'hello', [200] = 'bye' };"
+    "luaDictionary = { ['key1'] = 4, ['key2'] = 5 }";
+  axom::inlet::LuaReader lr;
+  lr.parseString(testString);
+
+  using axom::inlet::InletType;
+  EXPECT_EQ(lr.getType("t"), InletType::ObjectDictionary);
+  // Lua doesn't distinguish between integer and double
+  EXPECT_EQ(lr.getType("t/innerT/foo"), InletType::Double);
+  EXPECT_EQ(lr.getType("luaArray"), InletType::MixedArray);
+  EXPECT_EQ(lr.getType("luaDictionary"), InletType::DoubleDictionary);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

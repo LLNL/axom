@@ -44,12 +44,14 @@ enum class InletType
   IntegerArray,
   DoubleArray,
   ObjectArray,
+  MixedArray,
   // String- or mixed-keyed containers (dictionaries)
   BoolDictionary,
   StringDictionary,
   IntegerDictionary,
   DoubleDictionary,
-  ObjectDictionary
+  ObjectDictionary,
+  MixedDictionary
 };
 
 /*!

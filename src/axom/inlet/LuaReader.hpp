@@ -217,6 +217,18 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Get the type for the object at the specified identifier
+   *
+   * \param [in] id The identifier to retrieve the type for
+   *
+   * \return The determined type, InletType::Nothing if the identifier does not
+   * correspond to a valid path
+   *****************************************************************************
+   */
+  InletType getType(const std::string& id);
+
+  /*!
+   *****************************************************************************
    * \brief Returns the Sol Lua state
    *
    * This allows the user to access functionality that was not provided by Inlet.
