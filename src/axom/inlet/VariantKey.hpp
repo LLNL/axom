@@ -50,7 +50,6 @@ enum class InletType
   StringDictionary,
   IntegerDictionary,
   DoubleDictionary,
-  ObjectDictionary,
   MixedDictionary
 };
 

@@ -158,7 +158,7 @@ TEST(inlet_LuaReader, typeChecks)
   lr.parseString(testString);
 
   using axom::inlet::InletType;
-  EXPECT_EQ(lr.getType("t"), InletType::ObjectDictionary);
+  EXPECT_EQ(lr.getType("t"), InletType::Object);
   // Lua doesn't distinguish between integer and double
   EXPECT_EQ(lr.getType("t/innerT/foo"), InletType::Double);
   EXPECT_EQ(lr.getType("luaArray"), InletType::MixedArray);

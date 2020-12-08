@@ -875,7 +875,8 @@ InletType Table::type() const
       });
     if(table->isGenericContainer())
     {
-      return isDict ? InletType::ObjectDictionary : InletType::ObjectArray;
+      // A dictionary of objects is just an object
+      return isDict ? InletType::Object : InletType::ObjectArray;
     }
     else
     {

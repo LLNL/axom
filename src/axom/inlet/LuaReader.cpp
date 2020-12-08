@@ -309,7 +309,9 @@ InletType getInletType(const sol::object& obj)
       // Integers?
       return isDict ? InletType::DoubleDictionary : InletType::DoubleArray;
     case sol::type::table:
-      return isDict ? InletType::ObjectDictionary : InletType::ObjectArray;
+      // Lua does not distinguish foo.bar from foo['bar'] so we say that a dictionary
+      // of objects is just an object
+      return isDict ? InletType::Object : InletType::ObjectArray;
     default:
       return InletType::Nothing;
     }

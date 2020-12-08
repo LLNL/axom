@@ -602,7 +602,9 @@ TEST(inlet_dict, dict_type_checks)
   dict_table.addBool("bar", "bar's description");
   dict_table.addBool("baz", "baz's description");
 
-  EXPECT_EQ(inlet["foo"].type(), InletType::ObjectDictionary);
+  // foo['key1'] is identical to foo.key1, so all we can
+  // be sure of is that it's an object
+  EXPECT_EQ(inlet["foo"].type(), InletType::Object);
 
   inlet.addDoubleDictionary("bar");
   EXPECT_EQ(inlet["bar"].type(), InletType::DoubleDictionary);
