@@ -14,7 +14,10 @@
 #ifndef INLET_VERIFIABLE_SCALAR_HPP
 #define INLET_VERIFIABLE_SCALAR_HPP
 
-#include "axom/inlet/Verifiable.hpp"
+#include <memory>
+#include <functional>
+#include <vector>
+#include <initializer_list>
 
 namespace axom
 {
@@ -37,9 +40,48 @@ class Field;
  * values and discrete sets of valid values.
  *******************************************************************************
  */
-class VerifiableScalar : public Verifiable<Field>
+class VerifiableScalar
 {
 public:
+  // Should not be reassignable
+  VerifiableScalar& operator=(const VerifiableScalar&) = delete;
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this object.
+   *
+   * Set whether this object is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \param [in] isRequired Boolean value of whether object is required
+   *
+   * \return Reference to calling object, for chaining
+   *****************************************************************************
+   */
+  virtual VerifiableScalar& required(bool isRequired = true) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Return the required status.
+   *
+   * Return that this object is required, or not, to be in the input file.
+   * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this object is required
+   *****************************************************************************
+   */
+  virtual bool isRequired() const = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this object's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object.
+   *****************************************************************************
+  */
+  virtual VerifiableScalar& registerVerifier(
+    std::function<bool(const axom::inlet::Field&)> lambda) = 0;
+
   /*!
    *****************************************************************************
    * \brief Set the default value of this object.
@@ -201,6 +243,13 @@ public:
    *****************************************************************************
   */
   virtual VerifiableScalar& validValues(const std::initializer_list<double>& set) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Verifies the object to make sure it satisfies the imposed requirements
+   *****************************************************************************
+  */
+  virtual bool verify() const = 0;
 };
 
 }  // namespace inlet
