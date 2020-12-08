@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "axom/inlet/VariantKey.hpp"
+
 namespace axom
 {
 namespace inlet
@@ -152,7 +154,7 @@ public:
                          std::unordered_map<int, int>& values) = 0;
   /// \overload
   virtual bool getIntMap(const std::string& id,
-                         std::unordered_map<std::string, int>& values) = 0;
+                         std::unordered_map<VariantKey, int>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -171,7 +173,7 @@ public:
                           std::unordered_map<int, bool>& values) = 0;
   /// \overload
   virtual bool getBoolMap(const std::string& id,
-                          std::unordered_map<std::string, bool>& values) = 0;
+                          std::unordered_map<VariantKey, bool>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -190,7 +192,7 @@ public:
                             std::unordered_map<int, double>& values) = 0;
   /// \overload
   virtual bool getDoubleMap(const std::string& id,
-                            std::unordered_map<std::string, double>& values) = 0;
+                            std::unordered_map<VariantKey, double>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -209,7 +211,7 @@ public:
                             std::unordered_map<int, std::string>& values) = 0;
   /// \overload
   virtual bool getStringMap(const std::string& id,
-                            std::unordered_map<std::string, std::string>& values) = 0;
+                            std::unordered_map<VariantKey, std::string>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -224,7 +226,7 @@ public:
   virtual bool getIndices(const std::string& id, std::vector<int>& indices) = 0;
   /// \overload
   virtual bool getIndices(const std::string& id,
-                          std::vector<std::string>& indices) = 0;
+                          std::vector<VariantKey>& indices) = 0;
 };
 
 }  // end namespace inlet
