@@ -71,31 +71,25 @@ Table& Table::addTable(const std::string& name, const std::string& description)
 
 std::vector<VariantKey> Table::containerIndices() const
 {
+  SLIC_ERROR_IF(
+    !m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME),
+    fmt::format("[Inlet] Table '{0}' does not contain an array or dictionary",
+                m_name));
   std::vector<VariantKey> indices;
-  if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
+  auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
+  indices.reserve(group->getNumViews());
+  for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
+      idx = group->getNextValidViewIndex(idx))
   {
-    auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
-    indices.reserve(group->getNumViews());
-    for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
-        idx = group->getNextValidViewIndex(idx))
+    auto view = group->getView(idx);
+    if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
     {
-      auto view = group->getView(idx);
-      if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
-      {
-        indices.push_back(view->getString());
-      }
-      else
-      {
-        indices.push_back(view->getData<int>());
-      }
+      indices.push_back(view->getString());
     }
-  }
-  else
-  {
-    SLIC_ERROR(
-      fmt::format("[Inlet] Table '{0}' does not contain an array or dict of "
-                  "user-defined objects",
-                  m_name));
+    else
+    {
+      indices.push_back(view->getData<int>());
+    }
   }
   return indices;
 }
@@ -866,6 +860,52 @@ const std::unordered_map<std::string, std::unique_ptr<Field>>&
 Table::getChildFields() const
 {
   return m_fieldChildren;
+}
+
+InletType Table::type() const
+{
+  if(const auto table = getContainerTable())
+  {
+    const auto indices = table->containerIndices();
+    // If all the keys are integers, it's an array
+    // Otherwise (either all strings or mixed string/int), it's a dictionary
+    bool isDict =
+      std::any_of(indices.begin(), indices.end(), [](const VariantKey& idx) {
+        return idx.type() == InletType::String;
+      });
+    if(table->isGenericContainer())
+    {
+      return isDict ? InletType::ObjectDictionary : InletType::ObjectArray;
+    }
+    else
+    {
+      // Primitive arrays are homogenous, so just check an arbitrary element
+      InletType primitiveElementType =
+        table->getField(detail::indexToString(indices.front())).type();
+      switch(primitiveElementType)
+      {
+      case InletType::Bool:
+        return isDict ? InletType::BoolDictionary : InletType::BoolArray;
+      case InletType::String:
+        return isDict ? InletType::StringDictionary : InletType::StringArray;
+      case InletType::Integer:
+        return isDict ? InletType::IntegerDictionary : InletType::IntegerArray;
+      case InletType::Double:
+        return isDict ? InletType::DoubleDictionary : InletType::DoubleArray;
+      default:
+        SLIC_ERROR(
+          fmt::format("[Inlet] Expected but did not find a primitive container "
+                      "in table: {0}",
+                      m_name));
+        return InletType::Nothing;
+      }
+    }
+  }
+  else
+  {
+    // If it's not a container, it has to be some composite type
+    return InletType::Object;
+  }
 }
 
 bool AggregateTable::verify() const

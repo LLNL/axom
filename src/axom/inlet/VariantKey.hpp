@@ -37,7 +37,19 @@ enum class InletType
   // TODO: Unsigned integer
   Double,
   Object,
-  Container
+  Container,
+  // Integer-keyed containers (arrays)
+  BoolArray,
+  StringArray,
+  IntegerArray,
+  DoubleArray,
+  ObjectArray,
+  // String- or mixed-keyed containers (dictionaries)
+  BoolDictionary,
+  StringDictionary,
+  IntegerDictionary,
+  DoubleDictionary,
+  ObjectDictionary
 };
 
 /*!

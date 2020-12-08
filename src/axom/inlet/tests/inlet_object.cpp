@@ -371,8 +371,8 @@ TEST(inlet_object, composite_type_checks)
   EXPECT_EQ(arr_table.type(), InletType::Object);
 
   // But the things it contains are arrays
-  EXPECT_EQ(arr_table["arr1"].type(), InletType::Container);
-  EXPECT_EQ(arr_table["arr2"].type(), InletType::Container);
+  EXPECT_EQ(arr_table["arr1"].type(), InletType::IntegerArray);
+  EXPECT_EQ(arr_table["arr2"].type(), InletType::BoolArray);
 
   auto foo_table = inlet["foo"];
   // Similarly, the table containing the two bools is an object
@@ -587,6 +587,25 @@ TEST(inlet_dict, mixed_keys_object)
   std::unordered_map<VariantKey, Foo> foos;
   foos = inlet["foo"].get<std::unordered_map<VariantKey, Foo>>();
   EXPECT_EQ(foos, expected_foos);
+}
+
+TEST(inlet_dict, dict_type_checks)
+{
+  std::string testString =
+    "foo = { ['key1'] = { bar = true; baz = false}, "
+    "        ['key2'] = { bar = false; baz = true} };"
+    "bar = { ['key3'] = 17.7, ['key4'] = 11.1 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& dict_table = inlet.addGenericDictionary("foo");
+  dict_table.addBool("bar", "bar's description");
+  dict_table.addBool("baz", "baz's description");
+
+  EXPECT_EQ(inlet["foo"].type(), InletType::ObjectDictionary);
+
+  inlet.addDoubleDictionary("bar");
+  EXPECT_EQ(inlet["bar"].type(), InletType::DoubleDictionary);
 }
 
 /*

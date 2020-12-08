@@ -771,18 +771,11 @@ public:
   {
     using Key = typename T::key_type;
     using Val = typename T::mapped_type;
-    // This needs to work transparently for both references to the underlying
-    // internal table and references using the same path as the data file
-    if(isContainerGroup(m_name))
-    {
-      return getContainer<Key, Val>();
-    }
-    // If the container group is a child table, retrieve it and copy its contents
-    // into the result
-    else
-    {
-      return getTable(detail::CONTAINER_GROUP_NAME).getContainer<Key, Val>();
-    }
+    const auto table = getContainerTable();
+    SLIC_ERROR_IF(
+      !table,
+      fmt::format("[Inlet] Table with name {0} is not a container", m_name));
+    return table->getContainer<Key, Val>();
   }
 
   /*!
@@ -922,6 +915,16 @@ public:
    *****************************************************************************
    */
   Field& getField(const std::string& fieldName) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the type of the stored value
+   * 
+   * \return The type
+   * \see InletType
+   *****************************************************************************
+   */
+  InletType type() const;
 
 private:
   /*!
@@ -1099,6 +1102,30 @@ private:
   template <typename Key>
   Table& addGenericContainer(const std::string& name,
                              const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Returns a pointer to the container table if the calling object is
+   * a container, otherwise, returns nullptr
+   * 
+   * \note Implemented to provide transparent access for both references to the
+   * underlying internal table and references using the same path as the data file
+   *****************************************************************************
+   */
+  const Table* getContainerTable() const
+  {
+    if(isContainerGroup(m_name))
+    {
+      return this;
+    }
+    // If the container group is a child table, retrieve it and copy its contents
+    // into the result
+    else if(hasTable(detail::CONTAINER_GROUP_NAME))
+    {
+      return &getTable(detail::CONTAINER_GROUP_NAME);
+    }
+    return nullptr;
+  }
 
   /*!
    *****************************************************************************

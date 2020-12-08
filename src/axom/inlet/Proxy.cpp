@@ -14,12 +14,7 @@ InletType Proxy::type() const
   // If it's a table, it must be either an object or an array
   if(m_table != nullptr)
   {
-    // This is how Inlet stores array types in the datastore
-    if(m_table->hasTable(detail::CONTAINER_GROUP_NAME))
-    {
-      return InletType::Container;
-    }
-    return InletType::Object;
+    return m_table->type();
   }
   // Otherwise it must be a field
   if(m_field == nullptr)
