@@ -149,7 +149,7 @@ public:
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
   Array( IndexType num_elements, IndexType capacity=0,
-         int allocator_id = DEFAULT_ALLOCATOR_ID );
+         int allocator_id = axom::getDefaultAllocatorID() );
 
   /*! 
    * \brief Copy constructor for an Array instance 
@@ -160,7 +160,7 @@ public:
    *  with data from an external data buffer, the copy-constructed Array 
    *  will have a deep copy of the data and own the data copy. 
    */ 
-  Array( const Array& other, int allocator_id = DEFAULT_ALLOCATOR_ID ); 
+  Array( const Array& other, int allocator_id = axom::getDefaultAllocatorID() ); 
 
   /*! 
    * \brief Move constructor for an Array instance 
@@ -745,7 +745,7 @@ Array< T >::Array( ) :
   m_capacity( 0 ),
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
   m_is_external( false ),
-  m_allocator_id( DEFAULT_ALLOCATOR_ID )
+  m_allocator_id( axom::getDefaultAllocatorID() )
 {}
 
 //------------------------------------------------------------------------------
@@ -802,7 +802,7 @@ Array< T >::Array( Array&& other ) :
   m_capacity( 0 ), 
   m_resize_ratio( 0.0 ), 
   m_is_external( false ),
-  m_allocator_id( DEFAULT_ALLOCATOR_ID)
+  m_allocator_id( axom::getDefaultAllocatorID())
 { 
   m_data = other.m_data; 
   m_num_elements = other.m_num_elements; 
