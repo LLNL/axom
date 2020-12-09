@@ -30,7 +30,7 @@ namespace utilities = axom::utilities;
 namespace
 {
 template <typename T>
-void populate_array(mint::MCArray<T>& data)
+void populate_array(axom::MCArray<T>& data)
 {
   const axom::IndexType numTuples = data.size();
   const axom::IndexType numComponents = data.numComponents();
@@ -47,7 +47,7 @@ void populate_array(mint::MCArray<T>& data)
 
 //------------------------------------------------------------------------------
 template <typename T>
-void check_array(mint::MCArray<T>& data)
+void check_array(axom::MCArray<T>& data)
 {
   const axom::IndexType numTuples = data.size();
   const axom::IndexType numComponents = data.numComponents();
