@@ -1044,17 +1044,3 @@ TEST(core_mcarray_DeathTest, checkExternal)
 }
 
 } /* end namespace axom */
-
-//------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
-}
