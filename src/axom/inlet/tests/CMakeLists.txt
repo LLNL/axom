@@ -16,12 +16,19 @@ set(gtest_inlet_tests inlet_Reader.cpp)
 
 blt_list_append( TO gtest_inlet_tests ELEMENTS inlet_Inlet.cpp inlet_object.cpp IF ${SOL_FOUND} )
 
+blt_add_library(
+        NAME        inlet_test_utils
+        SOURCES     inlet_test_utils.cpp
+        HEADERS     inlet_test_utils.hpp
+        DEPENDS_ON  inlet
+        )
+
 foreach(test ${gtest_inlet_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable( NAME       ${test_name}_test
                         SOURCES    ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON inlet gtest 
+                        DEPENDS_ON inlet gtest inlet_test_utils
                         FOLDER     axom/inlet/tests )
     blt_add_test( NAME    ${test_name} 
                     COMMAND ${test_name}_test )

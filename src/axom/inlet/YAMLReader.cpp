@@ -244,6 +244,7 @@ bool YAMLReader::getArray(const std::string& id,
   {
     return false;
   }
+
   conduit::index_t index = 0;
   for(const auto& child : node.children())
   {
