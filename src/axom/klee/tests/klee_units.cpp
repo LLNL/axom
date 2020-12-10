@@ -73,6 +73,11 @@ TEST(Units, getConversionFactor)
                    getConversionFactor(LengthUnit::miles, LengthUnit::feet));
 
   EXPECT_DOUBLE_EQ(1, getConversionFactor(LengthUnit::miles, LengthUnit::miles));
+
+  EXPECT_THROW(getConversionFactor(LengthUnit::cm, LengthUnit::unspecified),
+          std::invalid_argument);
+  EXPECT_THROW(getConversionFactor(LengthUnit::unspecified, LengthUnit::cm),
+          std::invalid_argument);
 }
 
 TEST(Units, convert_adjacent)

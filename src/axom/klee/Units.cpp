@@ -23,7 +23,7 @@ struct LengthUnitHash
 {
   std::size_t operator()(LengthUnit unit) const
   {
-    return static_cast<int>(unit);
+    return static_cast<std::size_t>(unit);
   }
 };
 }  // namespace
@@ -73,6 +73,11 @@ double getConversionFactor(LengthUnit sourceUnits, LengthUnit targetUnits)
     {LengthUnit::feet, 2.54 * 12.0},
     {LengthUnit::inches, 2.54},
     {LengthUnit::mils, 2.54e-3}};
+
+  if (sourceUnits == LengthUnit::unspecified
+      || targetUnits == LengthUnit::unspecified) {
+      throw std::invalid_argument("Cannot convert with unspecified units");
+  }
 
   if(sourceUnits == targetUnits)
   {
