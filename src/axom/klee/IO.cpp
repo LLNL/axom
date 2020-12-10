@@ -10,9 +10,11 @@
 #include <iterator>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 
 #include "conduit.hpp"
 
+#include "axom/klee/GeometryOperators.hpp"
 #include "axom/klee/GeometryOperatorsIO.hpp"
 #include "axom/klee/IOUtil.hpp"
 
@@ -63,33 +65,54 @@ std::vector<std::string> toStringList(const Node &listNode)
  * Get the geometry specification for a shape.
  *
  * \param geometryNode the node describing the geometry
- * \param initialDimensions the initial dimensions of the shape
+ * \param fileDimensions the dimensions of the file
  * \param namedOperators any named operators that were parsed from the file
  * \return the geometry description for the shape
  */
 Geometry getGeometry(const Node &geometryNode,
-                     Dimensions initialDimensions,
+                     Dimensions fileDimensions,
                      const internal::NamedOperatorMap &namedOperators)
 {
-  Geometry geometry;
-  geometry.setInitialDimensions(initialDimensions);
-  geometry.setFormat(geometryNode["format"].as_string());
-  geometry.setPath(geometryNode["path"].as_string());
-  if(geometryNode.has_child("initial_dimensions"))
+  Dimensions startDimensions = fileDimensions;
+  if(geometryNode.has_child("start_dimensions"))
   {
-    geometry.setInitialDimensions(
-      internal::toDimensions(geometryNode["initial_dimensions"]));
+    startDimensions =
+      internal::toDimensions(geometryNode["start_dimensions"]);
   }
 
+  LengthUnit startUnits, endUnits;
+  std::tie(startUnits, endUnits) =
+    internal::getOptionalStartAndEndUnits(geometryNode);
+  TransformableGeometryProperties startProperties {
+    startDimensions,
+    startUnits,
+  };
+  TransformableGeometryProperties endProperties = startProperties;
+
+  std::shared_ptr<GeometryOperator const> operator_;
   if(geometryNode.has_child("operators"))
   {
-    auto operators =
-      internal::parseGeometryOperators(geometryNode["operators"],
-                                       geometry.getInitialDimensions(),
-                                       namedOperators);
-    geometry.setGeometryOperator(operators);
+    if(startUnits == LengthUnit::unspecified)
+    {
+      throw std::invalid_argument(
+        "Cannot specify operators without specifying units");
+    }
+    operator_ = internal::parseGeometryOperators(geometryNode["operators"],
+                                                 startProperties,
+                                                 namedOperators);
+    endProperties = operator_->getEndProperties();
   }
-  return geometry;
+
+  if(endProperties.dimensions != fileDimensions)
+  {
+    throw std::invalid_argument(
+      "Did not end up in the number of dimensions specified by the file");
+  }
+
+  return Geometry {startProperties,
+                   geometryNode["format"].as_string(),
+                   geometryNode["path"].as_string(),
+                   operator_};
 }
 
 /**
@@ -103,12 +126,8 @@ Shape convertToShape(const Node &shapeNode,
                      Dimensions fileDimensions,
                      const internal::NamedOperatorMap &namedOperators)
 {
-  Shape shape;
-  shape.setName(shapeNode["name"].as_string());
-  shape.setMaterial(shapeNode["material"].as_string());
-  shape.setGeometry(
-    getGeometry(shapeNode["geometry"], fileDimensions, namedOperators));
-
+  std::vector<std::string> materialsReplaced;
+  std::vector<std::string> materialsNotReplaced;
   if(shapeNode.has_child("replaces"))
   {
     if(shapeNode.has_child("does_not_replace"))
@@ -117,30 +136,35 @@ Shape convertToShape(const Node &shapeNode,
         "Can't have both 'replaces' and "
         "'does_not_replace' lists");
     }
-    shape.setMaterialsReplaced(toStringList(shapeNode["replaces"]));
+    materialsReplaced = toStringList(shapeNode["replaces"]);
   }
   else if(shapeNode.has_child("does_not_replace"))
   {
-    shape.setMaterialsNotReplaced(toStringList(shapeNode["does_not_replace"]));
+    materialsNotReplaced = toStringList(shapeNode["does_not_replace"]);
   }
 
-  return shape;
+  return Shape {
+    shapeNode["name"].as_string(),
+    shapeNode["material"].as_string(),
+    materialsReplaced,
+    materialsNotReplaced,
+    getGeometry(shapeNode["geometry"], fileDimensions, namedOperators)};
 }
 
 /**
  * Get all named geometry operators from the file
  * \param doc the node for the top-level document
- * \param initialDimensions the number of dimensions that operators should
+ * \param startDimensions the number of dimensions that operators should
  * start at unless otherwise specified
  * \return all named operators read from the document
  */
 internal::NamedOperatorMap getNamedOperators(const Node &doc,
-                                             Dimensions initialDimensions)
+                                             Dimensions startDimensions)
 {
   if(doc.has_child("named_operators"))
   {
     return internal::parseNamedGeometryOperators(doc["named_operators"],
-                                                 initialDimensions);
+                                                 startDimensions);
   }
   return internal::NamedOperatorMap {};
 }
@@ -156,7 +180,7 @@ ShapeSet readShapeSet(std::istream &stream)
   auto namedOperators = getNamedOperators(doc, dimensions);
   shapeSet.setShapes(
     convertList(doc["shapes"],
-                [dimensions, &namedOperators](const Node &shapeNode) -> Shape {
+                [=, &namedOperators](const Node &shapeNode) -> Shape {
                   return convertToShape(shapeNode, dimensions, namedOperators);
                 }));
   return shapeSet;

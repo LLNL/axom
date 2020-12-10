@@ -10,6 +10,7 @@
 #include <string>
 
 #include "axom/klee/Dimensions.hpp"
+#include "axom/klee/Units.hpp"
 
 namespace axom
 {
@@ -18,11 +19,55 @@ namespace klee
 class GeometryOperator;
 
 /**
+ * Properties of a geometric object which can be transformed by operators
+ */
+struct TransformableGeometryProperties
+{
+  Dimensions dimensions;
+  LengthUnit units;
+};
+
+/**
+ * Compare transformable properties for equality.
+ * \param lhs the left-hand-side operand
+ * \param rhs the right-hand-side operand
+ * \return true if and only if all properties are equal
+ */
+bool operator==(const TransformableGeometryProperties &lhs,
+                const TransformableGeometryProperties &rhs);
+
+/**
+ * Compare transformable properties for inequality.
+ * \param lhs the left-hand-side operand
+ * \param rhs the right-hand-side operand
+ * \return false if and only if all properties are equal
+ */
+inline bool operator!=(const TransformableGeometryProperties &lhs,
+                       const TransformableGeometryProperties &rhs)
+{
+  return !(lhs == rhs);
+}
+
+/**
  * Represents the geometry specified in a Shape.
  */
 class Geometry
 {
 public:
+  /**
+   * Create a new Geometry object.
+   *
+   * \param startProperties the transformable properties before any
+   * operators are applied
+   * \param format the format of the file
+   * \param path the path of the file
+   * \param operator_ a possibly null operator to apply to the geometry.
+   */
+  Geometry(const TransformableGeometryProperties &startProperties,
+           std::string format,
+           std::string path,
+           std::shared_ptr<GeometryOperator const> operator_);
+
   /**
    * Get the format in which the geometry is specified.
    *
@@ -31,25 +76,11 @@ public:
   const std::string &getFormat() const { return m_format; }
 
   /**
-   * Set the format.
-   *
-   * \param format the geometry's format
-   */
-  void setFormat(std::string format);
-
-  /**
    * Get the path at which to find the specification of the geometry
    *
    * \return the path to the geometry file
    */
   const std::string &getPath() const { return m_path; }
-
-  /**
-   * Set the path to the geometry file.
-   *
-   *  \param path the file's path
-   */
-  void setPath(std::string path);
 
   /**
    * Get a GeometryOperator to apply to this geometry. Can be null.
@@ -62,42 +93,25 @@ public:
   }
 
   /**
-   * Set a GeometryOperator to apply to this geometry.
+   * Get the initial transformable properties of this geometry
    *
-   * \param op the operator to apply
+   * \return the initial transformable properties of this geometry
    */
-  void setGeometryOperator(std::shared_ptr<GeometryOperator const> const &op)
+  const TransformableGeometryProperties &getStartProperties() const
   {
-    m_operator = op;
+    return m_startProperties;
   }
 
   /**
-   * Set the initial dimensions of this geometry, before any operators
-   * have taken effect.
+   * Get the final transformable properties of this geometry after
+   * operators are applied
    *
-   * \param initialDimensions the initial dimensions. Must be 2 or 3.
+   * \return the initial transformable properties of this geometry
    */
-  void setInitialDimensions(Dimensions initialDimensions)
-  {
-    m_initialDimensions = initialDimensions;
-  }
-
-  /**
-   * Set the initial dimensions of this geometry
-   *
-   * \return the initial dimensions of this geometry
-   */
-  Dimensions getInitialDimensions() const { return m_initialDimensions; }
-
-  /**
-   * The dimensions of this geometry, after applying any operators.
-   *
-   * \return the geometry's dimension
-   */
-  Dimensions getDimensions() const;
+  TransformableGeometryProperties getEndProperties() const;
 
 private:
-  Dimensions m_initialDimensions;
+  TransformableGeometryProperties m_startProperties;
   std::string m_format;
   std::string m_path;
   std::shared_ptr<const GeometryOperator> m_operator;

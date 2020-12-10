@@ -5,11 +5,14 @@
 
 #include "axom/klee/GeometryOperatorsIO.hpp"
 
+#include "axom/klee/Geometry.hpp"
 #include "axom/klee/GeometryOperators.hpp"
 #include "axom/klee/IOUtil.hpp"
 
+#include <functional>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -22,7 +25,8 @@ namespace internal
 namespace
 {
 using OpPtr = CompositeOperator::OpPtr;
-using OperatorParser = std::function<OpPtr(const conduit::Node &, Dimensions)>;
+using OperatorParser =
+  std::function<OpPtr(const conduit::Node &, const TransformableGeometryProperties &)>;
 using internal::toDouble;
 using internal::toDoubleVector;
 using primal::Point3D;
@@ -89,203 +93,100 @@ void verifyObjectFields(const conduit::Node &node,
 }
 
 /**
- * Make an object of the specified type from a node that should be a list of
- * numbers.
+ * Make an array-like structure from the given node.
  *
- * \tparam T the type of object to make. Should be an instantiation of
- * either primal::Vector<double, N> or primal::Point<double, N>.
- * \param node the Conduit node containing the object
- * \param dimensions the required number of dimensions. Does not have
- * to match N. Whatever numbers are found will be given to the object's
- * constructor.
- * \return the created object
- * \throws std::invalid_argument if the node is not an array with the
- * specified number of entries.
+ * \tparam T the type of the array-like structure. Should be either
+ * Point3D or Vector3D.
+ * \param node the node to convert
+ * \param dims the expected number of dimensions
+ * \return the created value, scaled based on this parser's units
  */
 template <typename T>
-T makeFromDoubleVector(const conduit::Node &node, Dimensions dimensions)
+T toArrayType(const conduit::Node &node, Dimensions dims)
 {
-  auto values = toDoubleVector(node, static_cast<std::size_t>(toInt(dimensions)));
-  return T {values.data(), toInt(dimensions)};
+  static_assert(
+    std::is_same<T, Point3D>::value || std::is_same<T, Vector3D>::value,
+    "Type must be a Point3D or Vector3D");
+  auto values = toDoubleVector(node, static_cast<std::size_t>(toInt(dims)));
+  return T {values.data(), toInt(dims)};
 }
 
 /**
- * Create a primal::Vector3D from the given node.
+ * Make an array-like structure from the specified child of the
+ * given node, if it exists.
  *
- * \param node the Conduit node to convert
- * \param dimensions the expected number of entries in the vector. If less
- * than 3, trailing values will be zero.
- * \return the created vector
- */
-Vector3D toVector3D(const conduit::Node &node, Dimensions dimensions)
-{
-  return makeFromDoubleVector<Vector3D>(node, dimensions);
-}
-
-/**
- * Create a primal::Point3D from the given node.
- *
- * \param node the Conduit node to convert
- * \param dimensions the expected number of entries in the point. If less
- * than 3, trailing values will be zero.
- * \return the created point
- */
-Point3D toPoint3D(const conduit::Node &node, Dimensions dimensions)
-{
-  return makeFromDoubleVector<Point3D>(node, dimensions);
-}
-
-/**
- * Get an optional Point3D from a node.
- *
+ * \tparam T the type of the array-like structure. Should be either
+ * Point3D or Vector3D.
  * \param parent the parent node
- * \param name the name of the optional child node
- * \param dimensions the expected number of dimensions in the array
- * \param defaultValue the default value to use when the child is missing
- * \return the value of the child, or the default value if there is no such
- * child in the parent node.
+ * \param name the name of the child
+ * \param dims the expected number of dimensions
+ * \return the created value, scaled based on this parser's units, or
+ * the default value (not scaled)
  */
-Point3D getOptionalPoint(const conduit::Node &parent,
-                         const std::string &name,
-                         Dimensions dimensions,
-                         const Point3D &defaultValue)
+template <typename T>
+T toOptionalArrayType(const conduit::Node &parent,
+                      const std::string &name,
+                      Dimensions dims,
+                      T defaultValue)
 {
   if(!parent.has_child(name))
   {
     return defaultValue;
   }
-  return toPoint3D(parent[name], dimensions);
-}
-
-/**
- * Get an optional Vector3D from a node.
- *
- * \param parent the parent node
- * \param name the name of the optional child node
- * \param dimensions the expected number of dimensions in the array
- * \param defaultValue the default value to use when the child is missing
- * \return the value of the child, or the default value if there is no such
- * child in the parent node.
- */
-Vector3D getOptionalVector(const conduit::Node &parent,
-                           const std::string &name,
-                           Dimensions dimensions,
-                           const Vector3D &defaultValue)
-{
-  if(!parent.has_child(name))
-  {
-    return defaultValue;
-  }
-  return toPoint3D(parent[name], dimensions);
+  return toArrayType<T>(parent[name], dims);
 }
 
 /**
  * Parse a "translate" operator.
  *
  * \param node the node from which to read the operator
- * \param dimensions the expected number of dimensions
+ * \param startProperties the properties prior to this operator
  * \return the created operator
  */
-OpPtr parseTranslate(const conduit::Node &node, Dimensions dimensions)
+OpPtr parseTranslate(const conduit::Node &node,
+                     const TransformableGeometryProperties &startProperties)
 {
   verifyObjectFields(node, "translate", FieldSet {}, FieldSet {});
-  return std::make_shared<Translation>(toVector3D(node["translate"], dimensions),
-                                       dimensions);
+  return std::make_shared<Translation>(
+    toArrayType<Vector3D>(node["translate"], startProperties.dimensions),
+    startProperties);
 }
 
 /**
  * Parse a "rotate" operator.
  *
  * \param node the node from which to read the operator
- * \param dimensions the expected number of dimensions
+ * \param startProperties the properties prior to this operator
  * \return the created operator
  */
-OpPtr parseRotate(const conduit::Node &node, Dimensions dimensions)
+OpPtr parseRotate(const conduit::Node &node,
+                  const TransformableGeometryProperties &startProperties)
 {
-  if(dimensions == Dimensions::Two)
+  if(startProperties.dimensions == Dimensions::Two)
   {
     verifyObjectFields(node, "rotate", FieldSet {}, {"center"});
     Vector3D axis {0, 0, 1};
     return std::make_shared<Rotation>(
       toDouble(node["rotate"]),
-      getOptionalPoint(node, "center", dimensions, {0, 0, 0}),
+      toOptionalArrayType<Point3D>(node,
+                                   "center",
+                                   startProperties.dimensions,
+                                   {0, 0, 0}),
       axis,
-      dimensions);
+      startProperties);
   }
   else
   {
     verifyObjectFields(node, "rotate", {"axis"}, {"center"});
     return std::make_shared<Rotation>(
       toDouble(node["rotate"]),
-      getOptionalPoint(node, "center", dimensions, {0, 0, 0}),
-      toVector3D(node["axis"], Dimensions::Three),
-      dimensions);
+      toOptionalArrayType<Point3D>(node,
+                                   "center",
+                                   startProperties.dimensions,
+                                   {0, 0, 0}),
+      toArrayType<Vector3D>(node["axis"], Dimensions::Three),
+      startProperties);
   }
-}
-
-/**
- * Parse a "scale" operator.
- *
- * \param node the node from which to read the operator
- * \param dimensions the expected number of dimensions
- * \return the created operator
- */
-OpPtr parseScale(const conduit::Node &node, Dimensions dimensions)
-{
-  verifyObjectFields(node, "scale", FieldSet {}, FieldSet {});
-  auto &scaleNode = node["scale"];
-  if(scaleNode.dtype().is_number() && scaleNode.dtype().number_of_elements() == 1)
-  {
-    double factor = scaleNode.to_double();
-    return std::make_shared<Scale>(factor, factor, factor, dimensions);
-  }
-  auto factors = toDoubleVector(scaleNode, toInt(dimensions));
-  if(dimensions == Dimensions::Two)
-  {
-    factors.emplace_back(1.0);
-  }
-  return std::make_shared<Scale>(factors[0], factors[1], factors[2], dimensions);
-}
-
-/**
- * Parse a "matrix" operator.
- *
- * \param node the node from which to read the operator
- * \param dimensions the expected number of dimensions
- * \return the created operator
- */
-OpPtr parseMatrix(const conduit::Node &node, Dimensions dimensions)
-{
-  verifyObjectFields(node, "matrix", FieldSet {}, FieldSet {});
-  auto &valuesNode = node["matrix"];
-  numerics::Matrix<double> matrix = numerics::Matrix<double>::identity(4);
-  if(dimensions == Dimensions::Two)
-  {
-    auto readEntries = toDoubleVector(valuesNode, 6);
-    auto elementIter = readEntries.begin();
-    for(int i = 0; i < 2; ++i)
-    {
-      for(int j = 0; j < 2; ++j)
-      {
-        matrix(i, j) = *elementIter;
-        ++elementIter;
-      }
-      matrix(i, 3) = *elementIter;
-      ++elementIter;
-    }
-  }
-  else
-  {
-    auto readEntries = toDoubleVector(valuesNode, 12);
-    for(int i = 0; i < 3; ++i)
-    {
-      for(int j = 0; j < 4; ++j)
-      {
-        matrix(i, j) = readEntries[i * 4 + j];
-      }
-    }
-  }
-  return std::make_shared<ArbitraryMatrixOperator>(matrix, dimensions);
 }
 
 /**
@@ -294,10 +195,14 @@ OpPtr parseMatrix(const conduit::Node &node, Dimensions dimensions)
  * \param origin the origin of the coordinate system
  * \param normal a vector normal to the plane
  * \param up a vector which defines the positive Y direction
+ * \param startProperties the properties before the slice
  * \return the created operator
  * \throws std::invalid_argument if any value is invalid
  */
-OpPtr makeCheckedSlice(Point3D origin, Vector3D normal, Vector3D up)
+OpPtr makeCheckedSlice(Point3D origin,
+                       Vector3D normal,
+                       Vector3D up,
+                       const TransformableGeometryProperties &startProperties)
 {
   if(normal.is_zero())
   {
@@ -309,7 +214,7 @@ OpPtr makeCheckedSlice(Point3D origin, Vector3D normal, Vector3D up)
     throw std::invalid_argument(
       "The 'normal' and 'up' vectors must be perpendicular");
   }
-  return std::make_shared<SliceOperator>(origin, normal, up);
+  return std::make_shared<SliceOperator>(origin, normal, up, startProperties);
 }
 
 /**
@@ -342,7 +247,8 @@ primal::Point3D getPerpendicularSliceOrigin(const conduit::Node &sliceNode,
     return defaultOrigin;
   }
 
-  primal::Point3D givenOrigin = toPoint3D(sliceNode["origin"], Dimensions::Three);
+  primal::Point3D givenOrigin =
+    toArrayType<Point3D>(sliceNode["origin"], Dimensions::Three);
   if(givenOrigin[nonZeroIndex] != axisIntercept)
   {
     throw std::invalid_argument("The origin must be on the slice plane");
@@ -366,7 +272,7 @@ primal::Vector3D getPerpendicularSliceNormal(const conduit::Node &sliceNode,
   }
 
   primal::Vector3D givenNormal =
-    toVector3D(sliceNode["normal"], Dimensions::Three);
+    toArrayType<Vector3D>(sliceNode["normal"], Dimensions::Three);
   auto cross = primal::Vector3D::cross_product(givenNormal, defaultNormal);
   bool parallel = cross.is_zero();
   if(!parallel)
@@ -384,12 +290,14 @@ primal::Vector3D getPerpendicularSliceNormal(const conduit::Node &sliceNode,
  * \param defaultNormal the default normal vector for the type of plane
  *  being parsed
  * \param defaultUp the default up vector for the plane being parsed
+ * \param startProperties the properties prior to this operator
  * \return the parsed plane
  */
 OpPtr readPerpendicularSlice(const conduit::Node &sliceNode,
                              char const *planeName,
                              Vector3D const &defaultNormal,
-                             Vector3D const &defaultUp)
+                             Vector3D const &defaultUp,
+                             const TransformableGeometryProperties &startProperties)
 {
   verifyObjectFields(sliceNode,
                      planeName,
@@ -400,21 +308,23 @@ OpPtr readPerpendicularSlice(const conduit::Node &sliceNode,
   auto origin =
     getPerpendicularSliceOrigin(sliceNode, planeName, defaultNormalVec);
   auto normal = getPerpendicularSliceNormal(sliceNode, defaultNormalVec);
-  auto up = getOptionalVector(sliceNode, "up", Dimensions::Three, defaultUp);
+  auto up =
+    toOptionalArrayType<Vector3D>(sliceNode, "up", Dimensions::Three, defaultUp);
 
-  return makeCheckedSlice(origin, normal, up);
+  return makeCheckedSlice(origin, normal, up, startProperties);
 }
 
 /**
  * Parse a "slice" operator.
  *
  * \param node the node from which to read the operator
- * \param dimensions the expected number of dimensions
+ * \param startProperties the properties prior to this operator
  * \return the created operator
  */
-OpPtr parseSlice(const conduit::Node &node, Dimensions dimensions)
+OpPtr parseSlice(const conduit::Node &node,
+                 const TransformableGeometryProperties &startProperties)
 {
-  if(dimensions != Dimensions::Three)
+  if(startProperties.dimensions != Dimensions::Three)
   {
     throw std::invalid_argument("Cannot do a slice from 2D");
   }
@@ -422,32 +332,92 @@ OpPtr parseSlice(const conduit::Node &node, Dimensions dimensions)
   auto &properties = node["slice"];
   if(properties.has_child("x"))
   {
-    return readPerpendicularSlice(properties, "x", {1, 0, 0}, {0, 0, 1});
+    return readPerpendicularSlice(properties,
+                                  "x",
+                                  {1, 0, 0},
+                                  {0, 0, 1},
+                                  startProperties);
   }
   else if(properties.has_child("y"))
   {
-    return readPerpendicularSlice(properties, "y", {0, 1, 0}, {1, 0, 0});
+    return readPerpendicularSlice(properties,
+                                  "y",
+                                  {0, 1, 0},
+                                  {1, 0, 0},
+                                  startProperties);
   }
   else if(properties.has_child("z"))
   {
-    return readPerpendicularSlice(properties, "z", {0, 0, 1}, {0, 1, 0});
+    return readPerpendicularSlice(properties,
+                                  "z",
+                                  {0, 0, 1},
+                                  {0, 1, 0},
+                                  startProperties);
   }
 
   verifyObjectFields(properties, "origin", {"normal", "up"}, FieldSet {});
-  return makeCheckedSlice(toPoint3D(properties["origin"], Dimensions::Three),
-                          toVector3D(properties["normal"], Dimensions::Three),
-                          toVector3D(properties["up"], Dimensions::Three));
+  return makeCheckedSlice(
+    toArrayType<Point3D>(properties["origin"], Dimensions::Three),
+    toArrayType<Vector3D>(properties["normal"], Dimensions::Three),
+    toArrayType<Vector3D>(properties["up"], Dimensions::Three),
+    startProperties);
+}
+
+/**
+ * Parse a "scale" operator.
+ *
+ * \param node the node from which to read the operator
+ * \param startProperties the properties prior to this operator
+ * \return the created operator
+ */
+OpPtr parseScale(const conduit::Node &node,
+                 const TransformableGeometryProperties &startProperties)
+{
+  verifyObjectFields(node, "scale", FieldSet {}, FieldSet {});
+  auto &scaleNode = node["scale"];
+  if(scaleNode.dtype().is_number() && scaleNode.dtype().number_of_elements() == 1)
+  {
+    double factor = scaleNode.to_double();
+    return std::make_shared<Scale>(factor, factor, factor, startProperties);
+  }
+  auto factors = toDoubleVector(scaleNode, toInt(startProperties.dimensions));
+  if(startProperties.dimensions == Dimensions::Two)
+  {
+    factors.emplace_back(1.0);
+  }
+  return std::make_shared<Scale>(factors[0],
+                                 factors[1],
+                                 factors[2],
+                                 startProperties);
+}
+
+/**
+ * Parse a "convert_units_to" operator.
+ *
+ * \param node the node from which to read the operator
+ * \param startProperties the properties prior to this operator
+ * \return the created operator
+ */
+OpPtr parseConvertUnits(const conduit::Node &node,
+                        const TransformableGeometryProperties &startProperties)
+{
+  verifyObjectFields(node, "convert_units_to", FieldSet {}, FieldSet {});
+  auto endUnits = parseLengthUnits(node["convert_units_to"].as_string());
+  return std::make_shared<UnitConverter>(endUnits, startProperties);
 }
 
 /**
  * Parse an operator specified via the "ref" command.
  *
  * \param node the node from which to read the operator
+ * \param startProperties the properties before the "ref" command
  * \param namedOperators a map of named operators from which to get
  * referenced operators
  * \return the created operator
  */
-OpPtr parseRef(const conduit::Node &node, const NamedOperatorMap &namedOperators)
+OpPtr parseRef(const conduit::Node &node,
+               const TransformableGeometryProperties &startProperties,
+               const NamedOperatorMap &namedOperators)
 {
   verifyObjectFields(node, "ref", FieldSet {}, FieldSet {});
   std::string const &operatorName = node["ref"].as_string();
@@ -459,37 +429,66 @@ OpPtr parseRef(const conduit::Node &node, const NamedOperatorMap &namedOperators
     message += '\'';
     throw std::invalid_argument(message);
   }
-  return opIter->second;
+  auto referencedOperator = opIter->second;
+  bool startUnitsMatch =
+    startProperties.units == referencedOperator->getStartProperties().units;
+  bool endUnitsMatch =
+    startProperties.units == referencedOperator->getEndProperties().units;
+
+  if(startUnitsMatch && endUnitsMatch)
+  {
+    return referencedOperator;
+  }
+
+  auto compositeWithConversions =
+    std::make_shared<CompositeOperator>(startProperties);
+  if(!startUnitsMatch)
+  {
+    compositeWithConversions->addOperator(std::make_shared<UnitConverter>(
+      referencedOperator->getStartProperties().units,
+      startProperties));
+  }
+  compositeWithConversions->addOperator(referencedOperator);
+  if(!endUnitsMatch)
+  {
+    compositeWithConversions->addOperator(
+      std::make_shared<UnitConverter>(startProperties.units,
+                                      referencedOperator->getEndProperties()));
+  }
+  return compositeWithConversions;
 }
 
 /**
  * Parse a single operator
  *
  * \param node the node from which to parse the operator
- * \param dimensions the expected number of dimensions
+ * \param startProperties the properties before the operator
  * \param namedOperators a map of named operators from which to get
  * referenced operators
  * \return the created operator
  */
 OpPtr parseSingleOperator(const conduit::Node &node,
-                          Dimensions dimensions,
+                          const TransformableGeometryProperties &startProperties,
                           const NamedOperatorMap &namedOperators)
 {
   std::unordered_map<std::string, OperatorParser> parsers {
     {"translate", parseTranslate},
     {"rotate", parseRotate},
-    {"scale", parseScale},
-    {"matrix", parseMatrix},
     {"slice", parseSlice},
-    {"ref", [&namedOperators](const conduit::Node &node, Dimensions) {
-       return parseRef(node, namedOperators);
-     }}};
+    {"scale", parseScale},
+    {"convert_units_to", parseConvertUnits},
+    {"ref",
+     [&namedOperators](const conduit::Node &opNode,
+                       const TransformableGeometryProperties &startProperties) {
+       return parseRef(opNode, startProperties, namedOperators);
+     }},
+  };
 
   for(auto &entry : parsers)
   {
     if(node.has_child(entry.first))
     {
-      return entry.second(node, dimensions);
+      return entry.second(node, startProperties);
     }
   }
 
@@ -502,22 +501,22 @@ OpPtr parseSingleOperator(const conduit::Node &node,
 
 std::shared_ptr<const GeometryOperator> parseGeometryOperators(
   const conduit::Node &node,
-  Dimensions initialDimensions,
+  const TransformableGeometryProperties &startProperties,
   const NamedOperatorMap &namedOperators)
 {
-  auto composite = std::make_shared<CompositeOperator>();
-  Dimensions currentDimensions = initialDimensions;
+  auto composite = std::make_shared<CompositeOperator>(startProperties);
+  TransformableGeometryProperties currentProperties = startProperties;
   for(auto iter = node.children(); iter.has_next();)
   {
-    auto op = parseSingleOperator(iter.next(), currentDimensions, namedOperators);
+    auto op = parseSingleOperator(iter.next(), currentProperties, namedOperators);
+    currentProperties = op->getEndProperties();
     composite->addOperator(op);
-    currentDimensions = composite->endDims();
   }
   return composite;
 }
 
 NamedOperatorMap parseNamedGeometryOperators(const conduit::Node &node,
-                                             Dimensions initialDimensions)
+                                             Dimensions startDimensions)
 {
   NamedOperatorMap namedOperators;
 
@@ -526,14 +525,27 @@ NamedOperatorMap parseNamedGeometryOperators(const conduit::Node &node,
     auto &namedOperator = iter.next();
     std::string name = namedOperator["name"].as_string();
 
-    Dimensions dimensions = initialDimensions;
-    if(namedOperator.has_child("initial_dimensions"))
+    Dimensions dimensions = startDimensions;
+    if(namedOperator.has_child("start_dimensions"))
     {
-      dimensions = toDimensions(namedOperator["initial_dimensions"]);
+      dimensions = toDimensions(namedOperator["start_dimensions"]);
     }
 
-    auto op =
-      parseGeometryOperators(namedOperator["value"], dimensions, namedOperators);
+    auto units = internal::getStartAndEndUnits(namedOperator);
+
+    TransformableGeometryProperties startProperties {
+      dimensions,
+      std::get<0>(units),
+    };
+    auto op = parseGeometryOperators(namedOperator["value"],
+                                     startProperties,
+                                     namedOperators);
+
+    if(op->getEndProperties().units != std::get<1>(units))
+    {
+      throw std::invalid_argument(
+        "Specified end units did not match actual units");
+    }
     namedOperators.insert({name, op});
   }
   return namedOperators;

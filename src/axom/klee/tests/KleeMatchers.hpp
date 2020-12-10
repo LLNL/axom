@@ -82,7 +82,9 @@ MATCHER_P(MatchesSlice, slice, "")
 {
   return ::testing::Matches(AlmostEqArray(slice.getOrigin(), 3))(arg.getOrigin()) &&
     ::testing::Matches(AlmostEqArray(slice.getNormal(), 3))(arg.getNormal()) &&
-    ::testing::Matches(AlmostEqArray(slice.getUp(), 3))(arg.getUp());
+    ::testing::Matches(AlmostEqArray(slice.getUp(), 3))(arg.getUp()) &&
+    ::testing::Matches(::testing::Eq(slice.getStartProperties()))(
+           arg.getStartProperties());
 }
 
 }  // namespace test

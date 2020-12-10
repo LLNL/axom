@@ -13,17 +13,29 @@ namespace axom
 {
 namespace klee
 {
-void Geometry::setFormat(std::string format) { m_format = std::move(format); }
+bool operator==(const TransformableGeometryProperties &lhs,
+                const TransformableGeometryProperties &rhs)
+{
+  return lhs.dimensions == rhs.dimensions && lhs.units == rhs.units;
+}
 
-void Geometry::setPath(std::string path) { m_path = std::move(path); }
+Geometry::Geometry(const TransformableGeometryProperties &startProperties,
+                   std::string format,
+                   std::string path,
+                   std::shared_ptr<GeometryOperator const> operator_)
+  : m_startProperties {startProperties}
+  , m_format {std::move(format)}
+  , m_path {std::move(path)}
+  , m_operator {std::move(operator_)}
+{ }
 
-Dimensions Geometry::getDimensions() const
+TransformableGeometryProperties Geometry::getEndProperties() const
 {
   if(m_operator)
   {
-    return m_operator->endDims();
+    return m_operator->getEndProperties();
   }
-  return m_initialDimensions;
+  return m_startProperties;
 }
 
 }  // namespace klee

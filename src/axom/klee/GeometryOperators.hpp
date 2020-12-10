@@ -11,6 +11,8 @@
 
 #include "axom/core/numerics/Matrix.hpp"
 #include "axom/klee/Dimensions.hpp"
+#include "axom/klee/Geometry.hpp"
+#include "axom/klee/Units.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
@@ -31,21 +33,35 @@ class GeometryOperatorVisitor;
 class GeometryOperator
 {
 public:
+  /**
+   * Create an operator with the given start properties
+   * \param startProperties the properties before the operator is applied
+   */
+  explicit GeometryOperator(const TransformableGeometryProperties &startProperties);
+
   virtual ~GeometryOperator() = default;
 
   /**
-   * Get the number of dimensions that the geometry must be in before
-   * this operator is applied.
-   * \return always 2 or 3
+   * Get the properties that the operator expects to start in
+   *
+   * \return the properties which must be true before this operator is applied
    */
-  virtual Dimensions startDims() const = 0;
+  const TransformableGeometryProperties &getStartProperties() const
+  {
+    return m_startProperties;
+  }
 
   /**
-   * Get the number of dimensions that the geometry will be in after
-   * this operator is applied.
-   * \return always 2 or 3
+   * Get the properties after this operator is applied
+   *
+   * \return the properties which are true after this operator is applied
    */
-  virtual Dimensions endDims() const = 0;
+  virtual TransformableGeometryProperties getEndProperties() const
+  {
+    // Be default, end properties are the same as start properties, so
+    // this is correct.
+    return m_startProperties;
+  }
 
   /**
    * Accept the given visitor. The appropriate visit() method will
@@ -54,15 +70,20 @@ public:
    * \param visitor the visitor to accept.
    */
   virtual void accept(GeometryOperatorVisitor &visitor) const = 0;
+
+private:
+  TransformableGeometryProperties m_startProperties;
 };
 
 /**
  * A MatrixOperator is a type of GeometryOperator whose operation can be
  * expressed as a 4x4 affine transformation matrix.
  */
-class MatrixOperator : public virtual GeometryOperator
+class MatrixOperator : public GeometryOperator
 {
 public:
+  using GeometryOperator::GeometryOperator;
+
   /**
    * Convert this operator to its matrix representation.
    *
@@ -78,11 +99,9 @@ public:
 class CompositeOperator : public GeometryOperator
 {
 public:
+  using GeometryOperator::GeometryOperator;
+
   using OpPtr = std::shared_ptr<const GeometryOperator>;
-
-  Dimensions startDims() const override;
-
-  Dimensions endDims() const override;
 
   void accept(GeometryOperatorVisitor &visitor) const override;
 
@@ -101,49 +120,28 @@ public:
    */
   const std::vector<OpPtr> &getOperators() const { return m_operators; }
 
+  TransformableGeometryProperties getEndProperties() const override;
+
 private:
   std::vector<OpPtr> m_operators;
 };
 
 /**
- * A ConstantDimensionOperator is an abstract GeometryOperator which can
- * be used by subclasses that operate in a single dimension. This is the
- * case for all transformations (e.g. rotations, translations, etc).
- */
-class ConstantDimensionOperator : public virtual GeometryOperator
-{
-public:
-  /**
-   * Create a ConstantDimensionOperator which works in the specified
-   * number of dimensions.
-   *
-   * \param dims the number of dimensions
-   */
-  explicit ConstantDimensionOperator(Dimensions dims) : m_dims {dims} { }
-
-  Dimensions startDims() const override { return m_dims; }
-
-  Dimensions endDims() const override { return m_dims; }
-
-private:
-  Dimensions m_dims;
-};
-
-/**
  * A Translation is a GeometryOperator which translates points.
  */
-class Translation : public ConstantDimensionOperator, public MatrixOperator
+class Translation : public MatrixOperator
 {
 public:
   /**
    * Create a Translation.
    *
    * \param offset the amount by which to offset points
-   * \param dims the number of dimensions the translation was meant to
-   * operate in. If 2, the 3rd entry in the offset should be zero, but this
-   * is not checked.
+   * \param startProperties the initial properties, as in the parent
+   * class. If the number of dimensions is 2, the 3rd entry in the offset
+   * should be zero, but this is not checked.
    */
-  Translation(const primal::Vector3D &offset, Dimensions dims);
+  Translation(const primal::Vector3D &offset,
+              const TransformableGeometryProperties &startProperties);
 
   /**
    * Get the amount by which to offset points.
@@ -164,7 +162,7 @@ private:
  * A Rotation is a GeometryOperator which rotates points about a given
  * axis.
  */
-class Rotation : public ConstantDimensionOperator, public MatrixOperator
+class Rotation : public MatrixOperator
 {
 public:
   /**
@@ -174,13 +172,14 @@ public:
    * counter-clockwise.
    * \param center the center of rotation
    * \param axis the axis about which to rotate points
-   * \param dims the number of dimensions the translation was meant to
-   * operate in. If 2, the axis should be [0, 0, 1], but this is not checked.
+   * \param startProperties the initial properties, as in the parent
+   * class. If the number of dimensions is 2, the axis should be
+   * [0, 0, 1], but this is not checked.
    */
   Rotation(double angle,
            const primal::Point3D &center,
            const primal::Vector3D &axis,
-           Dimensions dims);
+           const TransformableGeometryProperties &startProperties);
 
   /**
    * Get the angle of rotation.
@@ -218,7 +217,7 @@ private:
 /**
  * A GeometryOperator for scaling shapes.
  */
-class Scale : public ConstantDimensionOperator, public MatrixOperator
+class Scale : public MatrixOperator
 {
 public:
   /**
@@ -227,10 +226,14 @@ public:
    * \param xFactor the amount by which to scale in the x direction
    * \param yFactor the amount by which to scale in the y direction
    * \param zFactor the amount by which to scale in the z direction
-   * \param dims the number of dimensions. If 3, zFactor should be 1.0,
+   * \param startProperties the initial properties, as in the parent
+   * class. If the number of dimensions is 2, zFactor should be 1.0,
    * but this is not enforced.
    */
-  Scale(double xFactor, double yFactor, double zFactor, Dimensions dims);
+  Scale(double xFactor,
+        double yFactor,
+        double zFactor,
+        const TransformableGeometryProperties &startProperties);
 
   /**
    * Get the scale factor in the x direction.
@@ -263,30 +266,20 @@ private:
   double m_zFactor;
 };
 
-/**
- * An ArbitraryMatrixOperator is an operator which a user specified via
- * an arbitrary affine matrix.
- */
-class ArbitraryMatrixOperator : public ConstantDimensionOperator,
-                                public MatrixOperator
+class UnitConverter : public MatrixOperator
 {
 public:
-  /**
-   * Create an ArbitraryMatrixOperator from the given transformation matrix.
-   *
-   * \param transformation the matrix which defines the transformation
-   * \param dims the number of dimensions the matrix operates on. This is
-   * not enforced.
-   */
-  ArbitraryMatrixOperator(const numerics::Matrix<double> &transformation,
-                          Dimensions dims);
+  UnitConverter(LengthUnit endUnits,
+                const TransformableGeometryProperties &startProperties);
+
+  TransformableGeometryProperties getEndProperties() const override;
 
   numerics::Matrix<double> toMatrix() const override;
 
   void accept(GeometryOperatorVisitor &visitor) const override;
 
 private:
-  numerics::Matrix<double> m_transformation;
+  LengthUnit m_endUnits;
 };
 
 /**
@@ -305,10 +298,13 @@ public:
    * vector.
    * \param up the direction of the positive Y axis. Must be normal to
    * the "normal" vector.
+   * \param startProperties the initial properties, as in the parent
+   * class. The number of dimensions should be 3, though this is not checked.
    */
   SliceOperator(const primal::Point3D &origin,
                 const primal::Vector3D &normal,
-                const primal::Vector3D &up);
+                const primal::Vector3D &up,
+                const TransformableGeometryProperties &startProperties);
 
   /**
    * Get the origin of the coordinate system.
@@ -331,12 +327,11 @@ public:
    */
   const primal::Vector3D &getUp() const { return m_up; }
 
-  Dimensions startDims() const override;
-  Dimensions endDims() const override;
-
   numerics::Matrix<double> toMatrix() const override;
 
   void accept(GeometryOperatorVisitor &visitor) const override;
+
+  TransformableGeometryProperties getEndProperties() const override;
 
 private:
   numerics::Matrix<double> createRotation() const;
@@ -366,7 +361,7 @@ public:
 
   virtual void visit(const Scale &scale) = 0;
 
-  virtual void visit(const ArbitraryMatrixOperator &op) = 0;
+  virtual void visit(const UnitConverter &converter) = 0;
 
   virtual void visit(const CompositeOperator &composite) = 0;
 

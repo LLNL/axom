@@ -10,8 +10,10 @@
 #include <stdexcept>
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include "axom/klee/GeometryOperators.hpp"
+#include "KleeMatchers.hpp"
 
 namespace axom
 {
@@ -19,6 +21,10 @@ namespace klee
 {
 namespace
 {
+using primal::Vector3D;
+using test::AlmostEqVector;
+using ::testing::HasSubstr;
+
 ShapeSet readShapeSetFromString(const std::string &input)
 {
   std::istringstream istream(input);
@@ -150,13 +156,13 @@ TEST(IOTest, readShapeSet_geometryOperators)
 {
   auto shapeSet = readShapeSetFromString(R"(
       dimensions: 2
-
       shapes:
         - name: wheel
           material: steel
           geometry:
             format: test_format
             path: path/to/file.format
+            units: m
             operators:
               - rotate: 90
               - translate: [10, 20]
@@ -170,20 +176,79 @@ TEST(IOTest, readShapeSet_geometryOperators)
     std::dynamic_pointer_cast<const CompositeOperator>(geometryOperator);
   ASSERT_TRUE(composite);
   EXPECT_EQ(2u, composite->getOperators().size());
+  auto translation =
+    dynamic_cast<const Translation *>(composite->getOperators()[1].get());
+  ASSERT_NE(translation, nullptr);
+  EXPECT_THAT(translation->getOffset(), AlmostEqVector(Vector3D {10, 20, 0}));
 }
 
-TEST(IOTest, readShapeSet_differentDimensions)
+TEST(IOTest, readShapeSet_geometryOperatorsWithoutUnits)
 {
-  auto shapeSet = readShapeSetFromString(R"(
+  try
+  {
+    readShapeSetFromString(R"(
       dimensions: 2
-
       shapes:
         - name: wheel
           material: steel
           geometry:
             format: test_format
             path: path/to/file.format
-            initial_dimensions: 3
+            operators:
+              - rotate: 90
+              - translate: [10, 20]
+    )");
+    FAIL() << "Expected a failure";
+  }
+  catch(const std::invalid_argument &ex)
+  {
+    EXPECT_THAT(ex.what(), HasSubstr("operator"));
+    EXPECT_THAT(ex.what(), HasSubstr("units"));
+  }
+}
+
+TEST(IOTest, readShapeSet_geometryOperatorsWithUnits)
+{
+  auto shapeSet = readShapeSetFromString(R"(
+      dimensions: 2
+      shapes:
+        - name: wheel
+          material: steel
+          geometry:
+            format: test_format
+            path: path/to/file.format
+            units: mm
+            operators:
+              - rotate: 90
+              - translate: [10, 20]
+    )");
+  auto &shapes = shapeSet.getShapes();
+  ASSERT_EQ(1u, shapes.size());
+  auto &shape = shapes[0];
+  auto &geometryOperator = shape.getGeometry().getGeometryOperator();
+  ASSERT_TRUE(geometryOperator);
+  auto composite =
+    std::dynamic_pointer_cast<const CompositeOperator>(geometryOperator);
+  ASSERT_TRUE(composite);
+  EXPECT_EQ(2u, composite->getOperators().size());
+  auto translation =
+    dynamic_cast<const Translation *>(composite->getOperators()[1].get());
+  ASSERT_NE(translation, nullptr);
+  EXPECT_THAT(translation->getOffset(), AlmostEqVector(Vector3D {10, 20, 0}));
+}
+
+TEST(IOTest, readShapeSet_differentDimensions)
+{
+  auto shapeSet = readShapeSetFromString(R"(
+      dimensions: 2
+      shapes:
+        - name: wheel
+          material: steel
+          geometry:
+            format: test_format
+            path: path/to/file.format
+            units: cm
+            start_dimensions: 3
             operators:
               - slice:
                  x: 10
@@ -192,8 +257,12 @@ TEST(IOTest, readShapeSet_differentDimensions)
   ASSERT_EQ(1u, shapes.size());
   auto &shape = shapes[0];
   auto &geometry = shape.getGeometry();
-  EXPECT_EQ(Dimensions::Three, geometry.getInitialDimensions());
-  EXPECT_EQ(Dimensions::Two, geometry.getDimensions());
+  TransformableGeometryProperties expectedStartProperties {Dimensions::Three,
+                                                           LengthUnit::cm};
+  TransformableGeometryProperties expectedEndProperties {Dimensions::Two,
+                                                         LengthUnit::cm};
+  EXPECT_EQ(expectedStartProperties, geometry.getStartProperties());
+  EXPECT_EQ(expectedEndProperties, geometry.getEndProperties());
   auto &geometryOperator = geometry.getGeometryOperator();
   ASSERT_TRUE(geometryOperator);
   auto composite =
@@ -203,6 +272,28 @@ TEST(IOTest, readShapeSet_differentDimensions)
   auto slice =
     std::dynamic_pointer_cast<const SliceOperator>(composite->getOperators()[0]);
   EXPECT_TRUE(slice);
+}
+
+TEST(IOTest, readShapeSet_wrongEndDimensions)
+{
+  try
+  {
+    readShapeSetFromString(R"(
+        dimensions: 3
+        shapes:
+          - name: wheel
+            material: steel
+            geometry:
+              format: test_format
+              path: path/to/file.format
+              start_dimensions: 2
+      )");
+    FAIL() << "Expected an error";
+  }
+  catch(const std::invalid_argument &ex)
+  {
+    EXPECT_THAT(ex.what(), HasSubstr("dimensions"));
+  }
 }
 
 TEST(IOTest, readShapeSet_namedGeometryOperators)
@@ -216,11 +307,13 @@ TEST(IOTest, readShapeSet_namedGeometryOperators)
           geometry:
             format: test_format
             path: path/to/file.format
+            units: m
             operators:
               - ref: my_operation
 
       named_operators:
         - name: my_operation
+          units: m
           value:
             - rotate: 90
             - translate: [10, 20]
@@ -234,6 +327,13 @@ TEST(IOTest, readShapeSet_namedGeometryOperators)
     std::dynamic_pointer_cast<const CompositeOperator>(geometryOperator);
   ASSERT_TRUE(composite);
   EXPECT_EQ(1u, composite->getOperators().size());
+  auto referenced =
+    dynamic_cast<const CompositeOperator *>(composite->getOperators()[0].get());
+  EXPECT_EQ(2u, referenced->getOperators().size());
+  auto translation =
+    dynamic_cast<const Translation *>(referenced->getOperators()[1].get());
+  ASSERT_NE(translation, nullptr);
+  EXPECT_THAT(translation->getOffset(), AlmostEqVector(Vector3D {10, 20, 0}));
 }
 
 }  // namespace
