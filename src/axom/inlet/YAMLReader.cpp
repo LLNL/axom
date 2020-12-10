@@ -54,7 +54,8 @@ bool YAMLReader::parseString(const std::string& YAMLString)
 
 bool YAMLReader::getValue(const conduit::Node& node, int& value)
 {
-  if(node.dtype().is_integer())
+  // Match LuaReader functionality - narrow from floating-point
+  if(node.dtype().is_number())
   {
     value = node.to_int();
     return true;
@@ -74,7 +75,8 @@ bool YAMLReader::getValue(const conduit::Node& node, std::string& value)
 
 bool YAMLReader::getValue(const conduit::Node& node, double& value)
 {
-  if(node.dtype().is_floating_point())
+  // Match LuaReader functionality - promote from integer
+  if(node.dtype().is_number())
   {
     value = node.to_float64();
     return true;
@@ -83,7 +85,7 @@ bool YAMLReader::getValue(const conduit::Node& node, double& value)
 }
 bool YAMLReader::getValue(const conduit::Node& node, bool& value)
 {
-  if(node.dtype().is_integer())
+  if(node.dtype().is_int8())
   {
     value = static_cast<bool>(node.to_int8());
     return true;
@@ -134,70 +136,125 @@ bool YAMLReader::getString(const std::string& id, std::string& value)
 bool YAMLReader::getIntMap(const std::string& id,
                            std::unordered_map<int, int>& values)
 {
-  return getMap(id, values);
+  return getArray(id, values);
 }
 
 bool YAMLReader::getDoubleMap(const std::string& id,
                               std::unordered_map<int, double>& values)
 {
-  return getMap(id, values);
+  return getArray(id, values);
 }
 
 bool YAMLReader::getBoolMap(const std::string& id,
                             std::unordered_map<int, bool>& values)
 {
-  return getMap(id, values);
+  return getArray(id, values);
 }
 
 bool YAMLReader::getStringMap(const std::string& id,
                               std::unordered_map<int, std::string>& values)
 {
-  return getMap(id, values);
+  return getArray(id, values);
 }
 
 bool YAMLReader::getIntMap(const std::string& id,
                            std::unordered_map<std::string, int>& values)
 {
-  return getMap(id, values);
+  return getDictionary(id, values);
 }
 
 bool YAMLReader::getDoubleMap(const std::string& id,
                               std::unordered_map<std::string, double>& values)
 {
-  return getMap(id, values);
+  return getDictionary(id, values);
 }
 
 bool YAMLReader::getBoolMap(const std::string& id,
                             std::unordered_map<std::string, bool>& values)
 {
-  return getMap(id, values);
+  return getDictionary(id, values);
 }
 
 bool YAMLReader::getStringMap(const std::string& id,
                               std::unordered_map<std::string, std::string>& values)
 {
-  return getMap(id, values);
+  return getDictionary(id, values);
 }
 
 bool YAMLReader::getIndices(const std::string& id, std::vector<int>& indices)
 {
-  // return getIndicesInternal(id, indices);
+  indices.clear();
+  const auto node = m_root[id];
+  if(!node.dtype().is_list())
+  {
+    return false;
+  }
+  indices.resize(node.number_of_children());
+  std::iota(indices.begin(), indices.end(), 0);
   return true;
 }
 
 bool YAMLReader::getIndices(const std::string& id,
                             std::vector<std::string>& indices)
 {
-  // return getIndicesInternal(id, indices);
+  indices.clear();
+  const auto node = m_root[id];
+  if(!node.dtype().is_object())
+  {
+    return false;
+  }
+  for(const auto& child : node.children())
+  {
+    indices.push_back(child.name());
+  }
   return true;
 }
 
-template <typename Key, typename Val>
-bool YAMLReader::getMap(const std::string& id,
-                        std::unordered_map<Key, Val>& values)
+template <typename T>
+bool YAMLReader::getDictionary(const std::string& id,
+                               std::unordered_map<std::string, T>& values)
 {
   values.clear();
+  const auto node = m_root[id];
+  if(!node.dtype().is_object())
+  {
+    return false;
+  }
 
+  for(const auto& child : node.children())
+  {
+    const auto name = child.name();
+    if(!getValue(child, values[name]))
+    {
+      // The current interface allows for overlapping types, but we need to
+      // remove the default-initialized element here if it failed
+      values.erase(name);
+    }
+  }
+  return true;
+}
+
+template <typename T>
+bool YAMLReader::getArray(const std::string& id,
+                          std::unordered_map<int, T>& values)
+{
+  values.clear();
+  const auto node = m_root[id];
+  if(!node.dtype().is_list())
+  {
+    return false;
+  }
+  conduit::index_t index = 0;
+  for(const auto& child : node.children())
+  {
+    if(!getValue(child, values[index]))
+    {
+      // The current interface allows for overlapping types, but we need to
+      // remove the default-initialized element here if it failed
+      values.erase(index);
+    }
+    index++;
+  }
   return true;
 }
 

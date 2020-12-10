@@ -216,8 +216,12 @@ private:
   bool getValue(const conduit::Node& node, double& value);
   bool getValue(const conduit::Node& node, bool& value);
 
-  template <typename Key, typename Val>
-  bool getMap(const std::string& id, std::unordered_map<Key, Val>& values);
+  template <typename T>
+  bool getDictionary(const std::string& id,
+                     std::unordered_map<std::string, T>& values);
+
+  template <typename T>
+  bool getArray(const std::string& id, std::unordered_map<int, T>& values);
   conduit::Node m_root;
 };
 
