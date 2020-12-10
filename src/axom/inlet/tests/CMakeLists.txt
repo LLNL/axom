@@ -11,20 +11,18 @@
 #------------------------------------------------------------------------------
 
 # Add Serial GTests based tests
-if (SOL_FOUND)
-    set(gtest_inlet_tests
-        inlet_LuaReader.cpp
-        inlet_Inlet.cpp 
-        inlet_object.cpp )
 
-    foreach(test ${gtest_inlet_tests})
-        get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable( NAME       ${test_name}_test
-                            SOURCES    ${test}
-                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON inlet gtest 
-                            FOLDER     axom/inlet/tests )
-        blt_add_test( NAME    ${test_name} 
-                      COMMAND ${test_name}_test )
-    endforeach()
-endif()
+set(gtest_inlet_tests inlet_Reader.cpp)
+
+blt_list_append( TO gtest_inlet_tests ELEMENTS inlet_Inlet.cpp inlet_object.cpp IF ${SOL_FOUND} )
+
+foreach(test ${gtest_inlet_tests})
+    get_filename_component( test_name ${test} NAME_WE )
+    blt_add_executable( NAME       ${test_name}_test
+                        SOURCES    ${test}
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON inlet gtest 
+                        FOLDER     axom/inlet/tests )
+    blt_add_test( NAME    ${test_name} 
+                    COMMAND ${test_name}_test )
+endforeach()

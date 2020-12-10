@@ -9,7 +9,12 @@
 #include <vector>
 #include <memory>
 
-#include "axom/inlet/LuaReader.hpp"
+#include "axom/config.hpp"
+
+#ifdef AXOM_USE_SOL
+  #include "axom/inlet/LuaReader.hpp"
+#endif
+
 #include "axom/inlet/YAMLReader.hpp"
 
 template <typename InletReader>
@@ -101,7 +106,6 @@ public:
       if((i < tokens.size() - 2) && tokens[i + 1] == "=" && tokens[i + 2] == "{")
       {
         result += indent + token + ":\n";
-        // std::cout << token << ":\n";
         indent += "  ";
         i += 3;
       }
@@ -123,12 +127,10 @@ public:
         {
           // Assume this is an integer-keyed array
           result += indent + "- " + value + "\n";
-          // std::cout << indent <<"- " << value << "\n";
         }
         else
         {
           result += indent + key + ": " + value + "\n";
-          // std::cout << indent << key << ": " << value << "\n";
         }
         i += 5;
       }
@@ -136,7 +138,6 @@ public:
       {
         const auto& value = tokens[i + 2];
         result += indent + token + ": " + value + "\n";
-        // std::cout << indent << token << ": " << value << "\n";
         i += 3;
       }
     }
@@ -305,8 +306,13 @@ REGISTER_TYPED_TEST_SUITE_P(InletReaderTest,
                             mixLevelTables,
                             getMap);
 
+#ifdef AXOM_USE_SOL
 using ReaderTypes =
   ::testing::Types<axom::inlet::LuaReader, axom::inlet::YAMLReader>;
+#else
+using ReaderTypes = ::testing::Types<axom::inlet::YAMLReader>;
+#endif
+
 INSTANTIATE_TYPED_TEST_SUITE_P(ReaderTests, InletReaderTest, ReaderTypes);
 
 //------------------------------------------------------------------------------
