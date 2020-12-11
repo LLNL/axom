@@ -3,13 +3,11 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/*! \file sidre_createdatastore.cpp
- *  \brief This example code is a basic demonstration of how to use the
- *  Sidre classes to construct a hierarchical data store and save it to
- *  a file.  (This example does not use the parallel I/O facility.)
- *  This also shows how to use Sidre with Conduit to generate and save a
- *  data store using the Mesh Blueprint, for easy data exchange and
- *  visualization.
+/*! \file sidre_generateindex.cpp
+ *  \brief This example code is a basic demonstration of the generation
+ *  of a Sidre DataStore containing a mesh conforming to the Mesh Blueprint,
+ *  including the automatical generation of a Blueprint index and saving it
+ *  to a file.
  */
 
 /*
@@ -20,31 +18,6 @@
  *
  * generate_spio_blueprint    -- Uses SPIO/IOManager calls to write data to
  *                               file and generate blueprint index
- */
-
-/* This example code contains snippets used in the Sidre Sphinx documentation.
- * They begin and end with comments
- *
- * first_example_creategroups_start
- * first_example_creategroups_end
- * first_example_state_start
- * first_example_state_end
- * first_example_nodes_start
- * first_example_nodes_end
- * first_example_fields_start
- * first_example_fields_end
- * first_example_access_start
- * first_example_access_end
- * serial_io_save_start
- * serial_io_save_end
- * tiny_create_start
- * tiny_create_end
- * blueprint_restructure_save_start
- * blueprint_restructure_save_end
- * blueprint_save_start
- * blueprint_save_end
- *
- * each prepended with an underscore.
  */
 
 // Axom headers
@@ -71,7 +44,6 @@ using namespace sidre;
 
 DataStore* create_tiny_datastore()
 {
-  // _tiny_create_start
   DataStore* ds = new DataStore();
 
   int nodecount = 12;
@@ -113,12 +85,10 @@ DataStore* create_tiny_datastore()
   ef[1] = 1.96;
 
   return ds;
-  // _tiny_create_end
 }
 
 void setup_blueprint_coords(DataStore* ds, Group* coords)
 {
-  // _blueprint_restructure_coords_start
   // Set up the coordinates as Mesh Blueprint requires
   coords->createViewString("type", "explicit");
   // We use prior knowledge of the layout of the original datastore
@@ -138,37 +108,10 @@ void setup_blueprint_coords(DataStore* ds, Group* coords)
                          sidre::DOUBLE_ID,
                          origv->getNumElements(),
                          origv->getBuffer());
-  // _blueprint_restructure_coords_end
-}
-
-void setup_blueprint_external_coords(DataStore* ds, Group* coords)
-{
-  // _blueprint_external_coords_start
-  // Set up the coordinates as Mesh Blueprint requires
-  coords->createViewString("type", "explicit");
-  // We use prior knowledge of the layout of the original datastore
-  View* origv = ds->getRoot()->getView("nodes/xs");
-  Group* conduitval = coords->createGroup("values");
-  conduitval->createView("x",
-                         sidre::DOUBLE_ID,
-                         origv->getNumElements(),
-                         static_cast<double*>(origv->getArray()));
-  origv = ds->getRoot()->getView("nodes/ys");
-  conduitval->createView("y",
-                         sidre::DOUBLE_ID,
-                         origv->getNumElements(),
-                         static_cast<double*>(origv->getArray()));
-  origv = ds->getRoot()->getView("nodes/zs");
-  conduitval->createView("z",
-                         sidre::DOUBLE_ID,
-                         origv->getNumElements(),
-                         static_cast<double*>(origv->getArray()));
-  // _blueprint_external_coords_end
 }
 
 void setup_blueprint_topos(DataStore* ds, Group* topos)
 {
-  // _blueprint_restructure_topo_start
   // Sew the nodes together into the two hexahedra, using prior knowledge.
   Group* connmesh = topos->createGroup("mesh");
   connmesh->createViewString("type", "unstructured");
@@ -209,7 +152,6 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
   c[13] = 9;
   c[14] = 10;
   c[15] = 11;
-  // _blueprint_restructure_topo_end
 
   // Deal with unused variable
   AXOM_DEBUG_VAR(ds);
@@ -217,7 +159,6 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
 
 void setup_blueprint_fields(DataStore* ds, Group* fields)
 {
-  // _blueprint_restructure_field_start
   // Set up the node-centered field
   // Get the original data
   View* origv = ds->getRoot()->getView("fields/nodefield");
@@ -241,36 +182,6 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
                        sidre::DOUBLE_ID,
                        origv->getNumElements(),
                        origv->getBuffer());
-  // _blueprint_restructure_field_end
-}
-
-void setup_blueprint_external_fields(DataStore* ds, Group* fields)
-{
-  // _blueprint_external_field_start
-  // Set up the node-centered field
-  // Get the original data
-  View* origv = ds->getRoot()->getView("fields/nodefield");
-  Group* nodefield = fields->createGroup("nodefield");
-  nodefield->createViewString("association", "vertex");
-  nodefield->createViewString("type", "scalar");
-  nodefield->createViewString("topology", "mesh");
-  nodefield->createView("values",
-                        sidre::INT_ID,
-                        origv->getNumElements(),
-                        static_cast<int*>(origv->getArray()));
-
-  // Set up the element-centered field
-  // Get the original data
-  origv = ds->getRoot()->getView("fields/eltfield");
-  Group* eltfield = fields->createGroup("eltfield");
-  eltfield->createViewString("association", "element");
-  eltfield->createViewString("type", "scalar");
-  eltfield->createViewString("topology", "mesh");
-  eltfield->createView("values",
-                       sidre::DOUBLE_ID,
-                       origv->getNumElements(),
-                       static_cast<double*>(origv->getArray()));
-  // _blueprint_external_field_end
 }
 
 #ifdef AXOM_USE_MPI
@@ -308,7 +219,6 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
     setup_blueprint_fields(ds, fields);
   }
 
-  // _blueprint_generate_spio_start
   IOManager writer(MPI_COMM_WORLD);
 
   conduit::Node info, mesh_node, root_node;
@@ -340,7 +250,6 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
 
     writer.writeBlueprintIndexToRootFile(ds, domain_location, bp_rootfile, mesh_name);
   }
-  // _blueprint_generate_spio_end
 }
 #endif
 
