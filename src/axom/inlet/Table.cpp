@@ -13,9 +13,6 @@ namespace axom
 {
 namespace inlet
 {
-const std::string Table::ARRAY_GROUP_NAME = "_inlet_array";
-const std::string Table::ARRAY_INDICIES_VIEW_NAME = "_inlet_array_indices";
-
 Table& Table::addTable(const std::string& name, const std::string& description)
 {
   // Create intermediate Tables if they don't already exist
@@ -72,24 +69,38 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   return *currTable;
 }
 
-std::vector<std::pair<std::string, std::string>> Table::arrayIndicesWithPaths(
+std::vector<std::string> Table::containerIndices() const
+{
+  std::vector<std::string> indices;
+  if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
+  {
+    auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
+    indices.reserve(group->getNumViews());
+    for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
+        idx = group->getNextValidViewIndex(idx))
+    {
+      indices.push_back(group->getView(idx)->getString());
+    }
+  }
+  else
+  {
+    SLIC_ERROR(
+      fmt::format("[Inlet] Table '{0}' does not contain an array or dict of "
+                  "user-defined objects",
+                  m_name));
+  }
+  return indices;
+}
+
+std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPaths(
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
-  if(!m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
-  {
-    SLIC_ERROR(fmt::format(
-      "[Inlet] Table '{0}' does not contain an array of user-defined objects",
-      m_name));
-  }
-  const auto view = m_sidreGroup->getView(ARRAY_INDICIES_VIEW_NAME);
-  const int* array = view->getArray();
-  // Need to go up one level because this is an _inlet_array group
+  // Need to go up one level because this is an _inlet_container group
   const auto pos = m_name.find_last_of("/");
   const std::string baseName = m_name.substr(0, pos);
-  for(int i = 0; i < view->getNumElements(); i++)
+  for(const auto& indexLabel : containerIndices())
   {
-    const auto indexLabel = std::to_string(array[i]);
     // The base name reflects the structure of the actual data
     // and is used for the reader call
     auto fullPath = appendPrefix(baseName, indexLabel);
@@ -124,41 +135,79 @@ Verifiable& Table::addStringArray(const std::string& name,
   return addPrimitiveArray<std::string>(name, description);
 }
 
-Table& Table::addGenericArray(const std::string& name,
-                              const std::string& description)
+template <typename Key>
+Table& Table::addGenericContainer(const std::string& name,
+                                  const std::string& description)
 {
-  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+  if(isGenericContainer())
   {
-    SLIC_ERROR(
-      fmt::format("[Inlet] Adding array of structs to array of structs {0} is "
-                  "not supported",
-                  m_name));
+    SLIC_ERROR(fmt::format(
+      "[Inlet] Adding container of structs to container of structs {0} is "
+      "not supported",
+      m_name));
   }
-  auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
-  std::vector<int> indices;
+  auto& table =
+    addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
+  std::vector<Key> indices;
   const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader.getArrayIndices(fullName, indices))
+  if(m_reader.getIndices(fullName, indices))
   {
     // This is how an array of user-defined type is differentiated
     // from an array of primitives - the tables have to be allocated
     // before they are populated as we don't know the schema of the
     // generic type yet
-    auto view =
-      table.m_sidreGroup->createViewAndAllocate(ARRAY_INDICIES_VIEW_NAME,
-                                                axom::sidre::INT_ID,
-                                                indices.size());
-    int* raw_array = view->getArray();
-    std::copy(indices.begin(), indices.end(), raw_array);
-    for(const auto idx : indices)
+    auto group = table.m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
+                                                 /* list_format = */ true);
+    // For each element of the dictionary, add a table whose name is its index
+    // Schema for struct is defined using the returned table
+    for(const auto& idx : indices)
     {
-      table.addTable(std::to_string(idx), description);
+      const auto string_idx = detail::indexToString(idx);
+      table.addTable(string_idx, description);
+      group->createViewString("", string_idx);
     }
   }
   else
   {
-    SLIC_WARNING(fmt::format("[Inlet] Array {0} not found.", fullName));
+    SLIC_WARNING(fmt::format("[Inlet] Container {0} not found.", fullName));
   }
   return table;
+}
+
+Table& Table::addGenericArray(const std::string& name,
+                              const std::string& description)
+{
+  return addGenericContainer<int>(name, description);
+}
+
+Verifiable& Table::addBoolDictionary(const std::string& name,
+                                     const std::string& description)
+{
+  return addPrimitiveArray<bool>(name, description, true);
+}
+
+Verifiable& Table::addIntDictionary(const std::string& name,
+                                    const std::string& description)
+{
+  return addPrimitiveArray<int>(name, description, true);
+}
+
+Verifiable& Table::addDoubleDictionary(const std::string& name,
+                                       const std::string& description)
+{
+  return addPrimitiveArray<double>(name, description, true);
+}
+
+Verifiable& Table::addStringDictionary(const std::string& name,
+                                       const std::string& description)
+{
+  return addPrimitiveArray<std::string>(name, description, true);
+}
+
+Table& Table::addGenericDictionary(const std::string& name,
+                                   const std::string& description)
+{
+  return addGenericContainer<std::string>(name, description);
 }
 
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
@@ -214,13 +263,13 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
                                       T val,
                                       const std::string& pathOverride)
 {
-  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+  if(isGenericContainer())
   {
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
     // corresponding to elements of the array
     std::vector<std::reference_wrapper<VerifiableScalar>> fields;
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : containerIndicesWithPaths(name))
     {
       // Add a primitive to an array element (which is a struct)
       fields.push_back(
@@ -335,21 +384,139 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
   return axom::sidre::DataTypeId::CHAR8_STR_ID;
 }
 
+namespace detail
+{
+/*!
+  *****************************************************************************
+  * \brief Adds the contents of an array to the table
+  *****************************************************************************
+  */
+template <typename T>
+void registerContainer(Table& table, const std::unordered_map<int, T>& container)
+{
+  for(const auto& entry : container)
+  {
+    table.addPrimitive(std::to_string(entry.first), "", true, entry.second);
+  }
+}
+
+/*!
+  *****************************************************************************
+  * \brief Adds the contents of a dict to the table
+  *****************************************************************************
+  */
+template <typename T>
+void registerContainer(Table& table,
+                       const std::unordered_map<std::string, T>& container)
+{
+  for(const auto& entry : container)
+  {
+    SLIC_ERROR_IF(
+      entry.first.find('/') != std::string::npos,
+      fmt::format("[Inlet] Dictionary key '{0}' contains illegal character '/'",
+                  entry.first));
+    SLIC_ERROR_IF(entry.first.empty(),
+                  "[Inlet] Dictionary key cannot be the empty string");
+    table.addPrimitive(entry.first, "", true, entry.second);
+  }
+}
+/*!
+ *****************************************************************************
+ * \brief Implementation helper for adding primitive arrays
+ * 
+ * \note Structs are used for partial template specializations
+ *****************************************************************************
+ */
+template <typename Key, typename Primitive>
+struct PrimitiveArrayHelper
+{ };
+
+template <typename Key>
+struct PrimitiveArrayHelper<Key, bool>
+{
+  /*!
+   *****************************************************************************
+   * \brief Finalizes the creation of a container
+   * \param [inout] table The table to add the container to
+   * \param [in] reader The Reader object to read the container from
+   * \param [in] lookupPath The path within the input file to the container
+   *****************************************************************************
+   */
+  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  {
+    std::unordered_map<Key, bool> map;
+    if(!reader.getBoolMap(lookupPath, map))
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] Bool container {0} not found.", lookupPath));
+    }
+    registerContainer(table, map);
+  }
+};
+
+template <typename Key>
+struct PrimitiveArrayHelper<Key, int>
+{
+  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  {
+    std::unordered_map<Key, int> map;
+    if(!reader.getIntMap(lookupPath, map))
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] Int container {0} not found.", lookupPath));
+    }
+    registerContainer(table, map);
+  }
+};
+
+template <typename Key>
+struct PrimitiveArrayHelper<Key, double>
+{
+  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  {
+    std::unordered_map<Key, double> map;
+    if(!reader.getDoubleMap(lookupPath, map))
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] Double container {0} not found.", lookupPath));
+    }
+    registerContainer(table, map);
+  }
+};
+
+template <typename Key>
+struct PrimitiveArrayHelper<Key, std::string>
+{
+  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  {
+    std::unordered_map<Key, std::string> map;
+    if(!reader.getStringMap(lookupPath, map))
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] String container {0} not found.", lookupPath));
+    }
+    registerContainer(table, map);
+  }
+};
+
+}  // end namespace detail
+
 template <typename T, typename SFINAE>
 Verifiable& Table::addPrimitiveArray(const std::string& name,
                                      const std::string& description,
+                                     const bool isDict,
                                      const std::string& pathOverride)
 {
-  if(m_sidreGroup->hasView(ARRAY_INDICIES_VIEW_NAME))
+  if(isGenericContainer())
   {
     // Adding an array of primitive field to an array of structs
     std::vector<std::reference_wrapper<Verifiable>> tables;
     // Iterate over each element and forward the call to addPrimitiveArray
-    for(const auto& indexPath : arrayIndicesWithPaths(name))
+    for(const auto& indexPath : containerIndicesWithPaths(name))
     {
       tables.push_back(
         getTable(indexPath.first)
-          .addPrimitiveArray<T>(name, description, indexPath.second));
+          .addPrimitiveArray<T>(name, description, isDict, indexPath.second));
     }
 
     m_aggregate_tables.emplace_back(std::move(tables));
@@ -360,10 +527,18 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
   else
   {
     // "base case", create a table for the field and fill it in with the helper
-    auto& table = addTable(appendPrefix(name, ARRAY_GROUP_NAME), description);
+    auto& table =
+      addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
-    addPrimitiveArrayHelper<T>(table, lookupPath);
+    if(isDict)
+    {
+      detail::PrimitiveArrayHelper<std::string, T>(table, m_reader, lookupPath);
+    }
+    else
+    {
+      detail::PrimitiveArrayHelper<int, T>(table, m_reader, lookupPath);
+    }
     return table;
   }
 }
@@ -372,93 +547,25 @@ Verifiable& Table::addPrimitiveArray(const std::string& name,
 template Verifiable& Table::addPrimitiveArray<bool>(
   const std::string& name,
   const std::string& description,
+  const bool isDict,
   const std::string& pathOverride);
 
 template Verifiable& Table::addPrimitiveArray<int>(const std::string& name,
                                                    const std::string& description,
+                                                   const bool isDict,
                                                    const std::string& pathOverride);
 
 template Verifiable& Table::addPrimitiveArray<double>(
   const std::string& name,
   const std::string& description,
+  const bool isDict,
   const std::string& pathOverride);
 
 template Verifiable& Table::addPrimitiveArray<std::string>(
   const std::string& name,
   const std::string& description,
+  const bool isDict,
   const std::string& pathOverride);
-
-template <>
-void Table::addPrimitiveArrayHelper<bool>(Table& table,
-                                          const std::string& lookupPath)
-{
-  std::unordered_map<int, bool> map;
-  if(m_reader.getBoolMap(lookupPath, map))
-  {
-    for(const auto& p : map)
-    {
-      table.addPrimitive(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] Bool array {0} not found.", lookupPath));
-  }
-}
-
-template <>
-void Table::addPrimitiveArrayHelper<int>(Table& table,
-                                         const std::string& lookupPath)
-{
-  std::unordered_map<int, int> map;
-  if(m_reader.getIntMap(lookupPath, map))
-  {
-    for(const auto& p : map)
-    {
-      table.addPrimitive(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] Int array {0} not found.", lookupPath));
-  }
-}
-
-template <>
-void Table::addPrimitiveArrayHelper<double>(Table& table,
-                                            const std::string& lookupPath)
-{
-  std::unordered_map<int, double> map;
-  if(m_reader.getDoubleMap(lookupPath, map))
-  {
-    for(const auto& p : map)
-    {
-      table.addPrimitive(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] Double array {0} not found.", lookupPath));
-  }
-}
-
-template <>
-void Table::addPrimitiveArrayHelper<std::string>(Table& table,
-                                                 const std::string& lookupPath)
-{
-  std::unordered_map<int, std::string> map;
-  if(m_reader.getStringMap(lookupPath, map))
-  {
-    for(const auto& p : map)
-    {
-      table.addPrimitive(std::to_string(p.first), "", true, p.second);
-    }
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] String array {0} not found.", lookupPath));
-  }
-}
 
 Proxy Table::operator[](const std::string& name) const
 {

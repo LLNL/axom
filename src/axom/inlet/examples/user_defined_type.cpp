@@ -140,7 +140,7 @@ struct ThermalSolver
 {
   Mesh mesh;
   LinearSolver solver;
-  std::unordered_map<int, BoundaryCondition> bcs;
+  std::unordered_map<std::string, BoundaryCondition> bcs;
   // defineSchema is intended to be used recursively
   // Tables are created for subobjects and passed to
   // subobject defineSchema implementations
@@ -156,7 +156,7 @@ struct ThermalSolver
     // Schema only needs to be defined once, will propagate through to each
     // element of the array, namely, the subtable at each found index in the input file
     auto& bc_table =
-      schema.addGenericArray("bcs", "List of boundary conditions");
+      schema.addGenericDictionary("bcs", "List of boundary conditions");
     BoundaryCondition::defineSchema(bc_table);
   }
 };
@@ -172,10 +172,10 @@ struct ThermalSolver
  *      -- see above FromInlet<LinearSolver>
  *    },
  *    bcs = {
- *        [1] = {
+ *        ["temperature"] = {
  *          -- see above FromInlet<BoundaryCondition>
  *        },
- *        [2] = {
+ *        ["flux"] = {
  *          -- see above FromInlet<BoundaryCondition>
  *        },
  *    }
@@ -189,9 +189,10 @@ struct FromInlet<ThermalSolver>
   // functions defined for the subobjects
   ThermalSolver operator()(const inlet::Table& base)
   {
-    return {base["mesh"].get<Mesh>(),
-            base["solver"].get<LinearSolver>(),
-            base["bcs"].get<std::unordered_map<int, BoundaryCondition>>()};
+    return {
+      base["mesh"].get<Mesh>(),
+      base["solver"].get<LinearSolver>(),
+      base["bcs"].get<std::unordered_map<std::string, BoundaryCondition>>()};
   }
 };
 

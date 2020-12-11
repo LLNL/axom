@@ -78,14 +78,13 @@ TEST(inlet_object, simple_array_of_struct_by_value)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
   std::unordered_map<int, Foo> expected_foos = {{4, {true, false}},
                                                 {7, {false, true}}};
-  std::unordered_map<int, Foo> foos;
-  EXPECT_TRUE(arr_table.getArray(foos));
+  auto foos = inlet["foo"].get<std::unordered_map<int, Foo>>();
   EXPECT_EQ(foos, expected_foos);
 }
 
@@ -97,14 +96,13 @@ TEST(inlet_object, simple_array_of_struct_implicit_idx)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
   std::unordered_map<int, Foo> expected_foos = {{1, {true, false}},
                                                 {2, {false, true}}};
-  std::unordered_map<int, Foo> foos;
-  EXPECT_TRUE(arr_table.getArray(foos));
+  auto foos = inlet["foo"].get<std::unordered_map<int, Foo>>();
   EXPECT_EQ(foos, expected_foos);
 }
 
@@ -116,7 +114,7 @@ TEST(inlet_object, simple_array_of_struct_verify_optional)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(false);
@@ -132,7 +130,7 @@ TEST(inlet_object, simple_array_of_struct_verify_reqd)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(true);
@@ -164,13 +162,13 @@ TEST(inlet_object, array_of_struct_containing_array)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.getGlobalTable().addGenericArray("foo");
+  auto& arr_table = inlet.addGenericArray("foo");
 
   arr_table.addIntArray("arr", "arr's description");
   std::unordered_map<int, FooWithArray> expected_foos = {{4, {{{1, 3}}}},
                                                          {7, {{{6, 2}}}}};
   std::unordered_map<int, FooWithArray> foos_with_arr;
-  EXPECT_TRUE(arr_table.getArray(foos_with_arr));
+  foos_with_arr = inlet["foo"].get<std::unordered_map<int, FooWithArray>>();
   EXPECT_EQ(foos_with_arr, expected_foos);
 }
 
@@ -292,10 +290,10 @@ TEST(inlet_object, array_from_bracket)
   std::unordered_map<int, bool> boolMap;
   std::unordered_map<int, std::string> strMap;
   std::unordered_map<int, double> doubleMap;
-  inlet.getGlobalTable().addIntArray("luaArrays/arr1");
-  inlet.getGlobalTable().addBoolArray("luaArrays/arr2");
-  inlet.getGlobalTable().addStringArray("luaArrays/arr3");
-  inlet.getGlobalTable().addDoubleArray("luaArrays/arr4");
+  inlet.addIntArray("luaArrays/arr1");
+  inlet.addBoolArray("luaArrays/arr2");
+  inlet.addStringArray("luaArrays/arr3");
+  inlet.addDoubleArray("luaArrays/arr4");
 
   std::unordered_map<int, int> expectedInts {{1, 4}};
   std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
@@ -364,16 +362,16 @@ TEST(inlet_object, composite_type_checks)
 
   inlet.addBool("foo/baz", "baz's description");
 
-  inlet.getGlobalTable().addIntArray("luaArrays/arr1");
-  inlet.getGlobalTable().addBoolArray("luaArrays/arr2");
+  inlet.addIntArray("luaArrays/arr1");
+  inlet.addBoolArray("luaArrays/arr2");
 
   auto arr_table = inlet["luaArrays"];
   // The table containing the two arrays is not an array, but an object
   EXPECT_EQ(arr_table.type(), InletType::Object);
 
   // But the things it contains are arrays
-  EXPECT_EQ(arr_table["arr1"].type(), InletType::Array);
-  EXPECT_EQ(arr_table["arr2"].type(), InletType::Array);
+  EXPECT_EQ(arr_table["arr1"].type(), InletType::Container);
+  EXPECT_EQ(arr_table["arr2"].type(), InletType::Container);
 
   auto foo_table = inlet["foo"];
   // Similarly, the table containing the two bools is an object
@@ -398,7 +396,7 @@ TEST(inlet_object, implicit_conversion_primitives)
   inlet.addDouble("quux", "quux's description");
   inlet.addString("corge", "corge's description");
 
-  inlet.getGlobalTable().addIntArray("arr");
+  inlet.addIntArray("arr");
 
   // Attempt both construction and assignment
   bool bar = inlet["bar"];
@@ -427,6 +425,150 @@ TEST(inlet_object, implicit_conversion_primitives)
   arr = inlet["arr"];
   EXPECT_EQ(arr, expected_arr);
 }
+
+TEST(inlet_dict, basic_dicts)
+{
+  std::string testString = "foo = { ['key1'] = 4, ['key3'] = 6, ['key2'] = 10}";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addIntDictionary("foo", "foo's description");
+  std::unordered_map<std::string, int> dict = inlet["foo"];
+  std::unordered_map<std::string, int> correct = {{"key1", 4},
+                                                  {"key3", 6},
+                                                  {"key2", 10}};
+  EXPECT_EQ(dict, correct);
+}
+
+TEST(inlet_dict, simple_dict_of_struct_by_value)
+{
+  std::string testString =
+    "foo = { ['key1'] = { bar = true; baz = false}, "
+    "        ['key2'] = { bar = false; baz = true} }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& dict_table = inlet.addGenericDictionary("foo");
+
+  dict_table.addBool("bar", "bar's description");
+  dict_table.addBool("baz", "baz's description");
+  std::unordered_map<std::string, Foo> expected_foos = {{"key1", {true, false}},
+                                                        {"key2", {false, true}}};
+  std::unordered_map<std::string, Foo> foos;
+  foos = inlet["foo"].get<std::unordered_map<std::string, Foo>>();
+  EXPECT_EQ(foos, expected_foos);
+}
+
+struct FooWithDict
+{
+  std::unordered_map<std::string, int> arr;
+  bool operator==(const FooWithDict& other) const { return arr == other.arr; }
+};
+
+template <>
+struct FromInlet<FooWithDict>
+{
+  FooWithDict operator()(const axom::inlet::Table& base)
+  {
+    FooWithDict f = {base["arr"]};
+    return f;
+  }
+};
+
+TEST(inlet_dict, dict_of_struct_containing_dict)
+{
+  std::string testString =
+    "foo = { ['key3'] = { arr = { ['key1'] = 3 }; }, "
+    "        ['key4'] = { arr = { ['key2'] = 2 }; } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& dict_table = inlet.addGenericDictionary("foo");
+
+  dict_table.addIntDictionary("arr", "arr's description");
+  std::unordered_map<std::string, FooWithDict> expected_foos = {
+    {"key3", {{{"key1", 3}}}},
+    {"key4", {{{"key2", 2}}}}};
+  std::unordered_map<std::string, FooWithDict> foos_with_dict;
+  foos_with_dict =
+    inlet["foo"].get<std::unordered_map<std::string, FooWithDict>>();
+  EXPECT_EQ(foos_with_dict, expected_foos);
+}
+
+TEST(inlet_dict, dict_of_struct_containing_array)
+{
+  std::string testString =
+    "foo = { ['key3'] = { arr = { [1] = 3 }; }, "
+    "        ['key4'] = { arr = { [6] = 2 }; } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& dict_table = inlet.addGenericDictionary("foo");
+
+  dict_table.addIntArray("arr", "arr's description");
+  std::unordered_map<std::string, FooWithArray> expected_foos = {
+    {"key3", {{{1, 3}}}},
+    {"key4", {{{6, 2}}}}};
+  std::unordered_map<std::string, FooWithArray> foos_with_array;
+  foos_with_array =
+    inlet["foo"].get<std::unordered_map<std::string, FooWithArray>>();
+  EXPECT_EQ(foos_with_array, expected_foos);
+}
+
+TEST(inlet_dict, array_of_struct_containing_dict)
+{
+  std::string testString =
+    "foo = { [7] = { arr = { ['key1'] = 3 }; }, "
+    "        [4] = { arr = { ['key2'] = 2 }; } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addIntDictionary("arr", "arr's description");
+  std::unordered_map<int, FooWithDict> expected_foos = {{7, {{{"key1", 3}}}},
+                                                        {4, {{{"key2", 2}}}}};
+  std::unordered_map<int, FooWithDict> foos_with_dict;
+  foos_with_dict = inlet["foo"].get<std::unordered_map<int, FooWithDict>>();
+  EXPECT_EQ(foos_with_dict, expected_foos);
+}
+
+/*
+FIXME: These are currently error conditions.  If these should be supported
+or handled differently these tests can be re-enabled.
+
+TEST(inlet_dict, mixed_keys)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addIntDictionary("foo", "foo's description");
+  std::unordered_map<std::string, int> dict = inlet["foo"];
+  std::unordered_map<std::string, int> correct_dict = {{"key1", 4}};
+  EXPECT_EQ(dict, correct_dict);
+
+  inlet.addIntArray("foo", "foo's description");
+  std::unordered_map<int, int> array = inlet["foo"];
+  std::unordered_map<int, int> correct_array = {{1, 6}};
+  EXPECT_EQ(array, correct_array);
+}
+
+TEST(inlet_dict, key_with_slash)
+{
+  std::string testString =
+    "foo = { ['key1/subkey1'] = 4, ['key3'] = 6, ['key2'] = 10}";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addIntDictionary("foo", "foo's description");
+  std::unordered_map<std::string, int> dict = inlet["foo"];
+  std::unordered_map<std::string, int> correct = {{"key1/subkey1", 4},
+                                                  {"key3", 6},
+                                                  {"key2", 10}};
+  EXPECT_EQ(dict, correct);
+}
+*/
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

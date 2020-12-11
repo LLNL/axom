@@ -108,6 +108,24 @@ template <typename T>
 struct is_inlet_array<std::unordered_map<int, T>> : std::true_type
 { };
 
+template <typename T>
+struct is_inlet_dict : std::false_type
+{ };
+
+template <typename T>
+struct is_inlet_dict<std::unordered_map<std::string, T>> : std::true_type
+{ };
+
+template <typename T>
+struct is_inlet_primitive_dict : std::false_type
+{ };
+
+template <typename T>
+struct is_inlet_primitive_dict<std::unordered_map<std::string, T>>
+{
+  static constexpr bool value = is_inlet_primitive<T>::value;
+};
+
 /*!
  *******************************************************************************
  * \class has_FromInlet_specialization
@@ -129,6 +147,44 @@ struct has_FromInlet_specialization<
                                          std::declval<const Table&>()))>::value>::type>
   : std::true_type
 { };
+
+/*!
+ *******************************************************************************
+ * \brief An overloaded utility function for converting a type to a string
+ * 
+ * \note Needed as std::to_string doesn't implement an identity overload
+ * 
+ * \param [in] idx The index to convert to string
+ *******************************************************************************
+ */
+inline std::string indexToString(const std::string& idx) { return idx; }
+/// \overload
+inline std::string indexToString(const int idx) { return std::to_string(idx); }
+
+/*!
+ *******************************************************************************
+ * \brief An templated utility function for converting an index to the desired type
+ * 
+ * \param [in] idx The index to convert
+ * \tparam From The type of the idx parameter (converting from)
+ * \tparam Result The type to convert to
+ *******************************************************************************
+ */
+template <typename Result, typename From>
+inline Result toIndex(const From& idx)
+{
+  // By default, try a static cast
+  return static_cast<Result>(idx);
+}
+
+template <>
+inline int toIndex(const std::string& idx)
+{
+  auto as_int = checkedConvertToInt(idx);
+  SLIC_ERROR_IF(!as_int.second,
+                fmt::format("[Inlet] Expected an integer, got: {0}", idx));
+  return as_int.first;
+}
 
 }  // namespace detail
 
@@ -311,7 +367,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addBoolArray(const std::string& name,
@@ -324,7 +380,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addIntArray(const std::string& name,
@@ -337,7 +393,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addDoubleArray(const std::string& name,
@@ -350,7 +406,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable& addStringArray(const std::string& name,
@@ -363,7 +419,7 @@ public:
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Table& addGenericArray(const std::string& name,
@@ -371,63 +427,67 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get an array represented as an unordered map from the input file
-   * of primitive type
+   * \brief Add a dictionary of Boolean Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the Field
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
-  template <typename T>
-  typename std::enable_if<detail::is_inlet_primitive<T>::value, bool>::type
-  getArray(std::unordered_map<int, T>& map) const
-  {
-    map.clear();
-    if(!axom::utilities::string::endsWith(m_name, ARRAY_GROUP_NAME))
-    {
-      return false;
-    }
-    for(auto& item : m_fieldChildren)
-    {
-      auto pos = item.first.find_last_of("/");
-      int index = std::stoi(item.first.substr(pos + 1));
-      map[index] = item.second->get<T>();
-    }
-    return true;
-  }
+  Verifiable& addBoolDictionary(const std::string& name,
+                                const std::string& description = "");
 
   /*!
    *****************************************************************************
-   * \brief Get an array represented as an unordered map from the input file
-   * of user-defined type
+   * \brief Add a dictionary of Integer Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the dictionary
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
-  template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value, bool>::type
-  getArray(std::unordered_map<int, T>& map) const
-  {
-    if(m_sidreGroup->hasView("_inlet_array_indices"))
-    {
-      auto view = m_sidreGroup->getView("_inlet_array_indices");
-      int* array = view->getArray();
-      for(int i = 0; i < view->getNumElements(); i++)
-      {
-        auto index_label = std::to_string(array[i]);
-        map[array[i]] = getTable(index_label).get<T>();
-      }
-    }
-    else
-    {
-      SLIC_WARNING("[Inlet] Table does not contain an array");
-      return false;
-    }
-    return true;
-  }
+  Verifiable& addIntDictionary(const std::string& name,
+                               const std::string& description = "");
+  /*!
+   *****************************************************************************
+   * \brief Add a dictionary of Double Fields to the input file schema.
+   *
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the dictionary
+   *
+   * \return Reference to the created dictionary
+   *****************************************************************************
+   */
+  Verifiable& addDoubleDictionary(const std::string& name,
+                                  const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add a dictionary of String Fields to the input file schema.
+   *
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the dictionary
+   *
+   * \return Reference to the created dictionary
+   *****************************************************************************
+   */
+  Verifiable& addStringDictionary(const std::string& name,
+                                  const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add a dictionary of user-defined types to the input file schema.
+   *
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the dictionary
+   *
+   * \return Reference to the created dictionary
+   *****************************************************************************
+   */
+  Table& addGenericDictionary(const std::string& name,
+                              const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -549,6 +609,7 @@ public:
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
+   * \param [in] isDict Whether to use string-valued keys for the container
    * \param [in] pathOverride The path within the input file to read from, if
    * different than the structure of the Sidre datastore
    *
@@ -560,6 +621,7 @@ public:
               typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
   Verifiable& addPrimitiveArray(const std::string& name,
                                 const std::string& description = "",
+                                const bool isDict = false,
                                 const std::string& pathOverride = "");
 
   /*!
@@ -570,6 +632,8 @@ public:
    * 
    * \param [in] name Name of the Field value to be gotten
    * \return The retrieved value
+   * 
+   * \tparam T The primitive type
    *******************************************************************************
    */
   template <typename T>
@@ -597,11 +661,14 @@ public:
    * If nothing is passed, the calling table is interpreted as the roof of the object
    * \return The retrieved value
    * \pre Requires a specialization of FromInlet for T
+   * 
+   * \tparam T The user-defined type
    *******************************************************************************
    */
   template <typename T>
   typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
-                            !detail::is_inlet_array<T>::value,
+                            !detail::is_inlet_array<T>::value &&
+                            !detail::is_inlet_dict<T>::value,
                           T>::type
   get(const std::string& name = "") const
   {
@@ -626,31 +693,42 @@ public:
 
   /*!
    *******************************************************************************
-   * \brief Returns a stored array of primitive types.
+   * \brief Returns a stored container.
    * 
-   * Retrieves a value of user-defined type.
+   * Retrieves a container of user-defined type.
    * 
-   * \return The retrieved array
+   * \return The retrieved container
+   * 
+   * \tparam T The container type, i.e., T = std::unordered_map<K, V>
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_inlet_array<T>::value, T>::type get() const
+  typename std::enable_if<detail::is_inlet_array<T>::value ||
+                            detail::is_inlet_dict<T>::value,
+                          T>::type
+  get() const
   {
     T result;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
-    if(axom::utilities::string::endsWith(m_name, ARRAY_GROUP_NAME))
+    if(isContainerGroup(m_name))
     {
-      if(!getArray(result))
+      if(!getContainer(result))
       {
-        SLIC_ERROR(
-          "[Inlet] Table does not contain a valid array of requested type");
+        SLIC_ERROR(fmt::format(
+          "[Inlet] Table '{0}' does not contain a valid container of "
+          "requested type",
+          m_name));
       }
     }
-    else if(!getTable(ARRAY_GROUP_NAME).getArray(result))
+    // If the container group is a child table, retrieve it and copy its contents
+    // into the result
+    else if(!getTable(detail::CONTAINER_GROUP_NAME).getContainer(result))
     {
       SLIC_ERROR(
-        "[Inlet] Table does not contain a valid array of requested type");
+        fmt::format("[Inlet] Table '{0}' does not contain a valid container of "
+                    "requested type",
+                    m_name));
     }
     return result;
   }
@@ -827,13 +905,16 @@ private:
    * 
    * \param [inout] table The inlet::Table to add the array to 
    * \param [in] lookupPath The path within the input file to read from
+   * \param [in] isDict Whether to use string keys
    * 
    *****************************************************************************
    */
   template <typename T,
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
-  void addPrimitiveArrayHelper(Table& table, const std::string& lookupPath);
+  void addPrimitiveArrayHelper(Table& table,
+                               const std::string& lookupPath,
+                               bool isDict = false);
 
   /*!
    *****************************************************************************
@@ -913,6 +994,15 @@ private:
 
   /*!
    *****************************************************************************
+   * \brief This is an internal utility intended to be used with arrays/dicts of 
+   * user-defined types that returns the indices as strings - integer indices
+   * will be converted to strings
+   *****************************************************************************
+   */
+  std::vector<std::string> containerIndices() const;
+
+  /*!
+   *****************************************************************************
    * \brief This is an internal utility intended to be used with arrays of 
    * user-defined types that returns the a list of pairs, each of which contain
    * an index (a number) and a fully qualified path within the input file to
@@ -921,8 +1011,89 @@ private:
    * \param [in] name The name of the array object in the input file
    *****************************************************************************
    */
-  std::vector<std::pair<std::string, std::string>> arrayIndicesWithPaths(
+  std::vector<std::pair<std::string, std::string>> containerIndicesWithPaths(
     const std::string& name) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Get a container represented as an unordered map from the input file
+   * of primitive type
+   *
+   * \param [out] map Unordered map to be populated with container contents, will be
+   * cleared before contents are added
+   *
+   * \return Whether or not the container was found
+   *****************************************************************************
+   */
+  template <typename Key, typename Val>
+  typename std::enable_if<detail::is_inlet_primitive<Val>::value, bool>::type
+  getContainer(std::unordered_map<Key, Val>& map) const
+  {
+    map.clear();
+    if(!isContainerGroup(m_name))
+    {
+      return false;
+    }
+    for(const auto& item : m_fieldChildren)
+    {
+      auto index = detail::toIndex<Key>(removeBeforeDelimiter(item.first));
+      map[index] = item.second->get<Val>();
+    }
+    return true;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Get a container represented as an unordered map from the input file
+   * of user-defined type
+   *
+   * \param [out] map Unordered map to be populated with container contents, will be
+   * cleared before contents are added
+   *
+   * \return Whether or not the container was found
+   *****************************************************************************
+   */
+  template <typename Key, typename Val>
+  typename std::enable_if<!detail::is_inlet_primitive<Val>::value, bool>::type
+  getContainer(std::unordered_map<Key, Val>& map) const
+  {
+    map.clear();
+    if(!isGenericContainer())
+    {
+      return false;
+    }
+    for(const auto& indexLabel : containerIndices())
+    {
+      map[detail::toIndex<Key>(indexLabel)] = getTable(indexLabel).get<Val>();
+    }
+    return true;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an container of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the container
+   * \param [in] description Description of the container
+   *
+   * \return Reference to the created container
+   *****************************************************************************
+   */
+  template <typename Key>
+  Table& addGenericContainer(const std::string& name,
+                             const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Returns true if the calling object is part of a generic container,
+   * i.e., an array or dictionary of user-defined type
+   *****************************************************************************
+   */
+  bool isGenericContainer() const
+  {
+    return m_sidreGroup->hasView(detail::CONTAINER_INDICES_NAME) ||
+      m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME);
+  }
 
   std::string m_name;
   Reader& m_reader;
@@ -939,9 +1110,6 @@ private:
   // and AggregateTables have identical lifetime
   std::vector<AggregateTable> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
-
-  static const std::string ARRAY_GROUP_NAME;
-  static const std::string ARRAY_INDICIES_VIEW_NAME;
 };
 
 // To-be-defined template specializations
@@ -972,22 +1140,6 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
   const std::string& lookupPath,
   bool forArray,
   std::string val);
-
-template <>
-void Table::addPrimitiveArrayHelper<bool>(Table& table,
-                                          const std::string& lookupPath);
-
-template <>
-void Table::addPrimitiveArrayHelper<int>(Table& table,
-                                         const std::string& lookupPath);
-
-template <>
-void Table::addPrimitiveArrayHelper<double>(Table& table,
-                                            const std::string& lookupPath);
-
-template <>
-void Table::addPrimitiveArrayHelper<std::string>(Table& table,
-                                                 const std::string& lookupPath);
 
 }  // end namespace inlet
 }  // end namespace axom

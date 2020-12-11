@@ -150,6 +150,9 @@ public:
    */
   virtual bool getIntMap(const std::string& id,
                          std::unordered_map<int, int>& values) = 0;
+  /// \overload
+  virtual bool getIntMap(const std::string& id,
+                         std::unordered_map<std::string, int>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -166,6 +169,9 @@ public:
    */
   virtual bool getBoolMap(const std::string& id,
                           std::unordered_map<int, bool>& values) = 0;
+  /// \overload
+  virtual bool getBoolMap(const std::string& id,
+                          std::unordered_map<std::string, bool>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -182,6 +188,9 @@ public:
    */
   virtual bool getDoubleMap(const std::string& id,
                             std::unordered_map<int, double>& values) = 0;
+  /// \overload
+  virtual bool getDoubleMap(const std::string& id,
+                            std::unordered_map<std::string, double>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -198,19 +207,24 @@ public:
    */
   virtual bool getStringMap(const std::string& id,
                             std::unordered_map<int, std::string>& values) = 0;
+  /// \overload
+  virtual bool getStringMap(const std::string& id,
+                            std::unordered_map<std::string, std::string>& values) = 0;
 
   /*!
    *****************************************************************************
-   * \brief Get the list of indices for an array
+   * \brief Get the list of indices for an container
    *
-   * \param [in]  id    The identifier to the array that will be retrieved
-   * \param [out] map The values of the indices that were retrieved
+   * \param [in]  id    The identifier to the container that will be retrieved
+   * \param [out] indices The values of the indices that were retrieved
    *
-   * \return true if the array was able to be retrieved from the file
+   * \return true if the indices were able to be retrieved from the file
    *****************************************************************************
    */
-  virtual bool getArrayIndices(const std::string& id,
-                               std::vector<int>& indices) = 0;
+  virtual bool getIndices(const std::string& id, std::vector<int>& indices) = 0;
+  /// \overload
+  virtual bool getIndices(const std::string& id,
+                          std::vector<std::string>& indices) = 0;
 };
 
 }  // end namespace inlet

@@ -41,7 +41,7 @@ enum class InletType
   // TODO: Unsigned integer
   Double,
   Object,
-  Array
+  Container
 };
 
 /*!

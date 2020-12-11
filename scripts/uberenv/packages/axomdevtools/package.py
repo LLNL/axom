@@ -18,3 +18,4 @@ class Axomdevtools(BundlePackage):
     depends_on("graphviz")
     depends_on("py-sphinx")
     depends_on("py-shroud")
+    depends_on("llvm+clang@10.0.0")

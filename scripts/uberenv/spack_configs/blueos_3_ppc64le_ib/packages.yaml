@@ -116,6 +116,8 @@ packages:
     variants: ~shared
   mfem:
     variants: ~mpi~metis~zlib
+  umpire:
+    variants: ~shared
 
 # Globally lock in versions of Devtools
   cppcheck:
@@ -136,6 +138,12 @@ packages:
     externals:
     - spec: graphviz
       prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/graphviz-2.42.2
+  llvm:
+    version: [10.0.0]
+    buildable: false
+    externals:
+    - spec: llvm+clang
+      prefix: /usr/tce/packages/clang/clang-10.0.0
   python:
     version: [3.7.7]
     buildable: false
@@ -154,9 +162,3 @@ packages:
     externals:
     - spec: py-sphinx
       prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
-  uncrustify:
-    version: [0.61]
-    buildable: false
-    externals:
-    - spec: uncrustify
-      prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/uncrustify-0.61
