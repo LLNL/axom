@@ -272,11 +272,13 @@ inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept
 
   if (rm.hasAllocator(const_cast<void *>(src)))
   {
-    srcStrategy = rm.findAllocationRecord(const_cast<void *>(src))->strategy;
+    srcRecord = const_cast<AllocationRecord*>(rm.findAllocationRecord(
+      const_cast<void *>(src)));
+    srcStrategy = srcRecord->strategy;
   }
 
   auto op = op_registry.find("COPY", srcStrategy, dstStrategy);
-  op->transform(const_cast<void *>(src), &dst, nullptr, nullptr, numbytes);
+  op->transform(const_cast<void *>(src), &dst, srcRecord, dstRecord, numbytes);
 #else
   std::memcpy(dst, src, numbytes);
 #endif
