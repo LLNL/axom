@@ -56,7 +56,7 @@ bool scalars(const std::string inputFileName)
   int a_defaulted_int = inlet["a_defaulted_int"];
   // _inlet_simple_types_scalar_access_end
 
-  // _inlet_simple_types_scalar_contains_end
+  // _inlet_simple_types_scalar_contains_start
   std::string does_not_exist = "Yay! Was not present!";
   if (inlet.contains("does_not_exist"))
   {
