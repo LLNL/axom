@@ -179,6 +179,7 @@ int main(int argc, char** argv)
   // This is a generic basic SLIC logger
   axom::slic::SimpleLogger logger;
 
+  // Handle command line arguments
   CLI::App app {"Basic example of Axom's Inlet component"};
   bool docsEnabled {false};
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");
