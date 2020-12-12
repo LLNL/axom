@@ -62,41 +62,46 @@ Here is an example of how to check if the input file contained an optional field
 Tables
 ******
 
+Coming soon!
 
 Defining And Storing
 --------------------
 
-
+Coming soon!
 
 Accessing
 ---------
 
-
+Coming soon!
 
 ******
 Arrays
 ******
 
+Coming soon!
 
 Defining And Storing
 --------------------
 
-
+Coming soon!
 
 Accessing
 ---------
 
-
+Coming soon!
 
 ************
 Dictionaries
-
 ************
+
+Coming soon!
 
 Defining And Storing
 --------------------
 
+Coming soon!
 
 Accessing
 ---------
 
+Coming soon!
