@@ -75,7 +75,7 @@ bool scalars(const std::string inputFileName)
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
   // This is a generic basic SLIC logger
