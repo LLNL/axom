@@ -18,8 +18,10 @@ blt_list_append( TO inlet_examples ELEMENTS
     verification.cpp
     user_defined_type.cpp
     documentation_generation.cpp
+    simple_types.cpp
     IF SOL_FOUND )
 
+# Build each executable example
 foreach(example ${inlet_examples})
     get_filename_component( ex_name ${example} NAME_WE )
     blt_add_executable( NAME       inlet_${ex_name}_ex
@@ -29,18 +31,25 @@ foreach(example ${inlet_examples})
                         FOLDER     axom/inlet/examples )
 endforeach()
 
+# Add examples as tests
 axom_add_test( NAME    inlet_nested_structs_ex
                COMMAND inlet_nested_structs_ex )
 
 if (SOL_FOUND)
-    axom_add_test( NAME    inlet_verification_ex
-                   COMMAND inlet_verification_ex )
+    axom_add_test( NAME    inlet_arrays_ex
+                   COMMAND inlet_arrays_ex )
 
     axom_add_test( NAME    inlet_documentation_generation_ex
                    COMMAND inlet_documentation_generation_ex --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
 
-    axom_add_test( NAME inlet_user_defined_type_ex
+    axom_add_test( NAME    inlet_simple_types_ex
+                   COMMAND inlet_simple_types_ex --file ${CMAKE_CURRENT_LIST_DIR}/simple_types.lua)
+
+    axom_add_test( NAME    inlet_user_defined_type_ex
                    COMMAND inlet_user_defined_type_ex --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua)
+
+    axom_add_test( NAME    inlet_verification_ex
+                   COMMAND inlet_verification_ex )
 
     if (MFEM_FOUND)
         blt_add_executable( NAME       inlet_mfem_coefficient_ex
