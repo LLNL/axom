@@ -18,7 +18,7 @@ There are four supported scalar types: `bool`, `int`, `double`, and `string`.
 
 In this example we will be using the following part of an input file:
 
-.. literalinclude:: ../../examples/simple.lua
+.. literalinclude:: ../../examples/simple_types.lua
    :start-after: _inlet_simple_types_scalar_input_start
    :end-before: _inlet_simple_types_scalar_input_end
    :language: lua
@@ -31,7 +31,7 @@ This example shows how to add the four simple scalar types with descriptions to 
 input file schema and add their values, if present in the input file, to the Sidre
 DataStore to be accessed later.
 
-.. literalinclude:: ../../examples/simple.cpp
+.. literalinclude:: ../../examples/simple_types.cpp
    :start-after: _inlet_simple_types_scalar_add_start
    :end-before: _inlet_simple_types_scalar_add_end
    :language: C++
@@ -45,14 +45,14 @@ Accessing
 
 Accessing field values stored in Inlet can be accessed via their name with the `[]` operator.
 
-.. literalinclude:: ../../examples/simple.cpp
+.. literalinclude:: ../../examples/simple_types.cpp
    :start-after: _inlet_simple_types_scalar_access_start
    :end-before: _inlet_simple_types_scalar_access_end
    :language: C++
 
 Here is an example of how to check if the input file contained an optional field:
 
-.. literalinclude:: ../../examples/simple.cpp
+.. literalinclude:: ../../examples/simple_types.cpp
    :start-after: _inlet_simple_types_scalar_contains_start
    :end-before: _inlet_simple_types_scalar_contains_end
    :language: C++
