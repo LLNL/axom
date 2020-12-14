@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/inlet/tests/inlet_test_utils.hpp"
+#include "axom/slic.hpp"
 
 namespace axom::inlet::detail
 {
@@ -99,13 +100,22 @@ std::string LuaToYAML::convert(const std::string& luaString)
     {
       i += 1;
     }
+    // The start of an implicitly indexed array
+    else if(token == "{")
+    {
+      result += indent + "-\n";
+      indent += "  ";
+      i += 1;
+    }
     else if(token == "[")
     {
       const auto& key = tokens[i + 1];
       // Check if this is the start of a new table
       if(tokens[i + 4] == "{")
       {
-        result += indent + key + ":\n";
+        result += indent;
+        // Check if it's an integer-keyed table
+        result += isdigit(key.front()) ? "-\n" : key + ":\n";
         indent += "  ";
       }
       // Or if it's a terminal entry in the current table

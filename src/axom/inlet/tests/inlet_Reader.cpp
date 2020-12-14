@@ -162,6 +162,19 @@ TYPED_TEST_P(InletReaderTest, getMap)
   // EXPECT_EQ(expectedStrs, strs);
 }
 
+REGISTER_TYPED_TEST_SUITE_P(InletReaderTest,
+                            getTopLevelBools,
+                            getInsideBools,
+                            getTopLevelStrings,
+                            getInsideStrings,
+                            mixLevelTables,
+                            getMap);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(ReaderTests,
+                               InletReaderTest,
+                               axom::inlet::detail::ReaderTypes);
+
+#ifdef AXOM_USE_SOL
 // Checks that LuaReader parses array information as expected
 // Discontiguous arrays are lua-specific
 TEST(LuaReaderTest, getDiscontiguousMap)
@@ -200,23 +213,7 @@ TEST(LuaReaderTest, getDiscontiguousMap)
                                                      {200, "bye"}};
   EXPECT_EQ(expectedStrs, strs);
 }
-
-REGISTER_TYPED_TEST_SUITE_P(InletReaderTest,
-                            getTopLevelBools,
-                            getInsideBools,
-                            getTopLevelStrings,
-                            getInsideStrings,
-                            mixLevelTables,
-                            getMap);
-
-#ifdef AXOM_USE_SOL
-using ReaderTypes =
-  ::testing::Types<axom::inlet::LuaReader, axom::inlet::YAMLReader>;
-#else
-using ReaderTypes = ::testing::Types<axom::inlet::YAMLReader>;
 #endif
-
-INSTANTIATE_TYPED_TEST_SUITE_P(ReaderTests, InletReaderTest, ReaderTypes);
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

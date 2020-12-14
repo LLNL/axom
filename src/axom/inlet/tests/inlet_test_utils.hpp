@@ -9,11 +9,13 @@
 #include <vector>
 #include <string>
 
+#include "gtest/gtest.h"
+
+#include "axom/inlet/YAMLReader.hpp"
+
 #ifdef AXOM_USE_SOL
   #include "axom/inlet/LuaReader.hpp"
 #endif
-
-#include "axom/inlet/YAMLReader.hpp"
 
 namespace axom::inlet::detail
 {
@@ -36,6 +38,13 @@ inline std::string fromLuaTo<axom::inlet::YAMLReader>(const std::string& luaStri
 {
   return LuaToYAML::convert(luaString);
 }
+
+#ifdef AXOM_USE_SOL
+using ReaderTypes =
+  ::testing::Types<axom::inlet::LuaReader, axom::inlet::YAMLReader>;
+#else
+using ReaderTypes = ::testing::Types<axom::inlet::YAMLReader>;
+#endif
 
 }  // namespace axom::inlet::detail
 
