@@ -12,9 +12,7 @@
 
 # Add Serial GTests based tests
 
-set(gtest_inlet_tests inlet_Reader.cpp inlet_object.cpp)
-
-blt_list_append( TO gtest_inlet_tests ELEMENTS inlet_Inlet.cpp IF ${SOL_FOUND} )
+set(gtest_inlet_tests inlet_Reader.cpp inlet_object.cpp inlet_Inlet.cpp)
 
 blt_add_library(
         NAME        inlet_test_utils

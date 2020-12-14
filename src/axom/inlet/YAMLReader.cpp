@@ -86,44 +86,15 @@ bool hasCompatibleType<std::string>(const conduit::DataType& type)
   return type.is_string();
 }
 
-template <typename T>
-struct yaml_parsed_type
+template <typename ConduitType, typename MapValueType>
+void arrayToMap(const conduit::DataArray<ConduitType>& array,
+                std::unordered_map<int, MapValueType>& map)
 {
-  using type = T;
-};
-
-template <>
-struct yaml_parsed_type<int>
-{
-  using type = long;
-};
-
-template <typename T>
-typename yaml_parsed_type<T>::type* getArrayPointer(const conduit::Node&)
-{
-  return nullptr;
-}
-
-template <>
-typename yaml_parsed_type<int>::type* getArrayPointer<int>(const conduit::Node& node)
-{
-  if(!node.dtype().is_number())
+  for(conduit::index_t i = 0; i < array.number_of_elements(); i++)
   {
-    return nullptr;
+    // No begin/end iterators are provided by DataArray
+    map[i] = array[i];
   }
-  // YAML integer literals are parsed as 64-bit ints
-  return static_cast<long*>(node.as_long_array().data_ptr());
-}
-
-template <>
-typename yaml_parsed_type<double>::type* getArrayPointer<double>(
-  const conduit::Node& node)
-{
-  if(!node.dtype().is_number())
-  {
-    return nullptr;
-  }
-  return static_cast<double*>(node.as_double_array().data_ptr());
 }
 
 // TODO allow alternate delimiter at sidre level
@@ -308,8 +279,11 @@ bool YAMLReader::getIndices(const std::string& id,
   {
     return false;
   }
-  for(const auto& child : node.children())
+  // FIXME: Update to range-based for loops when Axom begins using Conduit 0.6.0
+  auto itr = node.children();
+  while(itr.has_next())
   {
+    const auto& child = itr.next();
     indices.push_back(child.name());
   }
   return true;
@@ -326,8 +300,11 @@ bool YAMLReader::getDictionary(const std::string& id,
     return false;
   }
 
-  for(const auto& child : node.children())
+  // FIXME: Update to range-based for loops when Axom begins using Conduit 0.6.0
+  auto itr = node.children();
+  while(itr.has_next())
   {
+    const auto& child = itr.next();
     const auto name = child.name();
     if(!getValue(child, values[name]))
     {
@@ -348,17 +325,20 @@ bool YAMLReader::getArray(const std::string& id,
   // Truly primitive (i.e., not string) types are contiguous so we grab the array pointer
   if(node.dtype().number_of_elements() > 1)
   {
-    // A layer of indirection is needed here - cannot instantiate a conduit::DataArray
-    if(auto data_ptr = detail::getArrayPointer<T>(node))
+    // The template parameter is not enough to know the type of the conduit array
+    // as widening/narrowing conversions are supported
+    if(node.dtype().is_floating_point())
     {
-      for(conduit::index_t i = 0; i < node.dtype().number_of_elements(); i++)
-      {
-        // No begin/end iterators provided for conduit::DataArray
-        values[i] = data_ptr[i];
-      }
-      return true;
+      detail::arrayToMap(node.as_double_array(), values);
     }
-    return false;
+    else if(node.dtype().is_integer())
+    {
+      detail::arrayToMap(node.as_long_array(), values);
+    }
+    else
+    {
+      return false;
+    }
   }
   else if(!node.dtype().is_list())
   {
@@ -369,14 +349,16 @@ bool YAMLReader::getArray(const std::string& id,
       values.erase(0);
       return false;
     }
-    return true;
   }
-  // String arrays are not supported natively so they cacn be directly iterated over
+  // String arrays are not supported natively so the node is directly iterated over
   else
   {
     conduit::index_t index = 0;
-    for(const auto& child : node.children())
+    // FIXME: Update to range-based for loops when Axom begins using Conduit 0.6.0
+    auto itr = node.children();
+    while(itr.has_next())
     {
+      const auto& child = itr.next();
       if(!getValue(child, values[index]))
       {
         // The current interface allows for overlapping types, but we need to
@@ -385,8 +367,13 @@ bool YAMLReader::getArray(const std::string& id,
       }
       index++;
     }
-    return true;
+    // Check if nothing was inserted
+    if(values.empty())
+    {
+      return false;
+    }
   }
+  return true;
 }
 
 }  // end namespace inlet

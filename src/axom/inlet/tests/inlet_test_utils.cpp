@@ -10,13 +10,14 @@ namespace axom::inlet::detail
 {
 std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
 {
+  const static std::string punctuation = "{}[];,=";
   std::vector<std::string> result;
   std::size_t pos = 0;
   auto add_to_result = [&result](std::string&& str) {
     std::vector<std::string> parsed_after;
     std::size_t pos;
     while(str.length() > 1 &&
-          ((pos = str.find_first_of("{}[];,")) != std::string::npos))
+          ((pos = str.find_first_of(punctuation)) != std::string::npos))
     {
       if(pos == 0)
       {
@@ -27,7 +28,7 @@ std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
       {
         // The position could be partway through the string, but
         // we need the last entry
-        pos = str.find_last_of("{}[];,");
+        pos = str.find_last_of(punctuation);
         parsed_after.emplace_back(1, str[pos]);
         str = str.substr(0, str.length() - 1);
       }
@@ -41,9 +42,16 @@ std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
 
   while(pos < text.length())
   {
+    // For quoted strings, skip to the next quote
     if(text[pos] == '"')
     {
       auto ending_quote = text.find('"', pos + 1);
+      add_to_result(text.substr(pos, ending_quote - pos + 1));
+      pos = ending_quote + 1;
+    }
+    if(text[pos] == '\'')
+    {
+      auto ending_quote = text.find('\'', pos + 1);
       add_to_result(text.substr(pos, ending_quote - pos + 1));
       pos = ending_quote + 1;
     }

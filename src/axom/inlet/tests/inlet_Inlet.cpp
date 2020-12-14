@@ -13,8 +13,9 @@
 
 #include "axom/sidre.hpp"
 
-#include "axom/inlet/LuaReader.hpp"
 #include "axom/inlet/Inlet.hpp"
+
+#include "axom/inlet/tests/inlet_test_utils.hpp"
 
 using axom::inlet::Field;
 using axom::inlet::Inlet;
@@ -24,21 +25,28 @@ using axom::inlet::Proxy;
 using axom::inlet::Table;
 using axom::sidre::DataStore;
 
+template <typename InletReader>
 Inlet createBasicInlet(DataStore* ds,
                        const std::string& luaString,
                        bool enableDocs = true)
 {
-  auto lr = std::make_unique<LuaReader>();
-  lr->parseString(luaString);
+  auto lr = std::make_unique<InletReader>();
+  lr->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
 
   return Inlet(std::move(lr), ds->getRoot(), enableDocs);
 }
 
-TEST(inlet_Inlet_basic, getTopLevelBools)
+template <typename InletReader>
+class BasicInletTest : public ::testing::Test
+{ };
+
+TYPED_TEST_SUITE_P(BasicInletTest);
+
+TYPED_TEST_P(BasicInletTest, getTopLevelBools)
 {
   std::string testString = "foo = true; bar = false";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -75,11 +83,11 @@ TEST(inlet_Inlet_basic, getTopLevelBools)
   EXPECT_EQ(table.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getNestedBools)
+TYPED_TEST_P(BasicInletTest, getNestedBools)
 {
   std::string testString = "foo = { bar = true; baz = false }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -110,11 +118,11 @@ TEST(inlet_Inlet_basic, getNestedBools)
   EXPECT_EQ(table.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getDoublyNestedBools)
+TYPED_TEST_P(BasicInletTest, getDoublyNestedBools)
 {
   std::string testString = "foo = { quux = { bar = true; baz = false } }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -145,13 +153,13 @@ TEST(inlet_Inlet_basic, getDoublyNestedBools)
   EXPECT_EQ(table.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getDeeplyNestedBools)
+TYPED_TEST_P(BasicInletTest, getDeeplyNestedBools)
 {
   std::string testString =
     "foo = { quux = { corge = { quuz = { grault = { bar = true; baz = false } "
     "} } } }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -182,11 +190,11 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBools)
   EXPECT_EQ(table.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getNestedBoolsThroughTable)
+TYPED_TEST_P(BasicInletTest, getNestedBoolsThroughTable)
 {
   std::string testString = "foo = { bar = true; baz = false }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -220,13 +228,13 @@ TEST(inlet_Inlet_basic, getNestedBoolsThroughTable)
   EXPECT_EQ(proxy.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughTable)
+TYPED_TEST_P(BasicInletTest, getDeeplyNestedBoolsThroughTable)
 {
   std::string testString =
     "foo = { quux = { corge = { quuz = { grault = { bar = true; baz = false } "
     "} } } }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -259,13 +267,13 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughTable)
   EXPECT_EQ(proxy.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughField)
+TYPED_TEST_P(BasicInletTest, getDeeplyNestedBoolsThroughField)
 {
   std::string testString =
     "foo = { quux = { corge = { quuz = { grault = { bar = true; baz = false } "
     "} } } }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -298,11 +306,11 @@ TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughField)
   EXPECT_EQ(nonexistant_field.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getTopLevelDoubles)
+TYPED_TEST_P(BasicInletTest, getTopLevelDoubles)
 {
   std::string testString = "foo = 5.05; bar = 15.1";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -333,11 +341,11 @@ TEST(inlet_Inlet_basic, getTopLevelDoubles)
   EXPECT_EQ(proxy.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getNestedDoubles)
+TYPED_TEST_P(BasicInletTest, getNestedDoubles)
 {
   std::string testString = "foo = { bar = 200.5; baz = 100.987654321 }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -368,11 +376,11 @@ TEST(inlet_Inlet_basic, getNestedDoubles)
   EXPECT_EQ(proxy.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getTopLevelInts)
+TYPED_TEST_P(BasicInletTest, getTopLevelInts)
 {
   std::string testString = "foo = 5; bar = 15";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -403,11 +411,11 @@ TEST(inlet_Inlet_basic, getTopLevelInts)
   EXPECT_EQ(proxy.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getNestedInts)
+TYPED_TEST_P(BasicInletTest, getNestedInts)
 {
   std::string testString = "foo = { bar = 200; baz = 100 }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -438,11 +446,11 @@ TEST(inlet_Inlet_basic, getNestedInts)
   EXPECT_EQ(proxy.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getTopLevelStrings)
+TYPED_TEST_P(BasicInletTest, getTopLevelStrings)
 {
-  std::string testString = "foo = 'test string'; bar = '15'";
+  std::string testString = "foo = 'test string'; bar = 'other test string'";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -466,18 +474,19 @@ TEST(inlet_Inlet_basic, getTopLevelStrings)
   EXPECT_EQ(value, "test string");
 
   value = inlet["bar"].get<std::string>();
-  EXPECT_EQ(value, "15");
+  EXPECT_EQ(value, "other test string");
 
   // Check one that doesn't exist and doesn't have a default value
   auto proxy = inlet["nonexistant"];
   EXPECT_EQ(proxy.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getNestedStrings)
+TYPED_TEST_P(BasicInletTest, getNestedStrings)
 {
-  std::string testString = "foo = { bar = 'yet another string'; baz = '' }";
+  std::string testString =
+    "foo = { bar = 'yet another string'; baz = 'string 2' }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   //
   // Define schema
@@ -501,14 +510,14 @@ TEST(inlet_Inlet_basic, getNestedStrings)
   EXPECT_EQ(value, "yet another string");
 
   value = inlet["foo/baz"].get<std::string>();
-  EXPECT_EQ(value, "");
+  EXPECT_EQ(value, "string 2");
 
   // Check one that doesn't exist and doesn't have a default value
   auto proxy = inlet["foo/nonexistant"];
   EXPECT_EQ(proxy.type(), InletType::Nothing);
 }
 
-TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
+TYPED_TEST_P(BasicInletTest, getNestedValuesAddedUsingTable)
 {
   std::string strVal = "";
   int intVal = 0;
@@ -518,7 +527,7 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
   std::string testString =
     "foo = { bar = 'yet another string'; so = 3.5; re = 9; mi = true }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   // Check for existing fields
   Table& table = inlet.addTable("foo", "A table called foo");
@@ -547,12 +556,38 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
   EXPECT_EQ(intVal, 9);
 }
 
-TEST(inlet_Inlet_views, NestedTableViewCheck1)
+REGISTER_TYPED_TEST_SUITE_P(BasicInletTest,
+                            getTopLevelBools,
+                            getNestedBools,
+                            getDoublyNestedBools,
+                            getDeeplyNestedBools,
+                            getNestedBoolsThroughTable,
+                            getDeeplyNestedBoolsThroughTable,
+                            getDeeplyNestedBoolsThroughField,
+                            getTopLevelDoubles,
+                            getNestedDoubles,
+                            getTopLevelInts,
+                            getNestedInts,
+                            getTopLevelStrings,
+                            getNestedStrings,
+                            getNestedValuesAddedUsingTable);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(BasicTests,
+                               BasicInletTest,
+                               axom::inlet::detail::ReaderTypes);
+
+template <typename InletReader>
+class InletViewsTest : public ::testing::Test
+{ };
+
+TYPED_TEST_SUITE_P(InletViewsTest);
+
+TYPED_TEST_P(InletViewsTest, NestedTableViewCheck1)
 {
   std::string testString =
     "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
   inlet.addBool("field1", "this is field #1, a boolean value").required(true);
   inlet.addInt("field2", "this is field #2, an integer").required(false);
   Table& t = inlet.addTable("NewTable", "It's blue").required(false);
@@ -577,13 +612,13 @@ TEST(inlet_Inlet_views, NestedTableViewCheck1)
   EXPECT_TRUE(sidreGroup->hasView("NewTable/integer/description"));
 }
 
-TEST(inlet_Inlet_views, NestedTableViewCheck2)
+TYPED_TEST_P(InletViewsTest, NestedTableViewCheck2)
 {
   std::string testString =
     "foo = false; bar = true; Table1 = { float1 = 3.14; Table11 = { Table111 = "
     "{ x = 4 } } }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
   inlet.addBool("foo", "foo's description").required(true);
   inlet.addBool("bar", "bar's description").required(false);
 
@@ -609,13 +644,13 @@ TEST(inlet_Inlet_views, NestedTableViewCheck2)
   EXPECT_TRUE(sidreGroup->hasView("Table1/Table11/Table111/x/description"));
 }
 
-TEST(inlet_Inlet_views, NestedTableViewCheck3)
+TYPED_TEST_P(InletViewsTest, NestedTableViewCheck3)
 {
   std::string testString =
     "Table1 = { float1 = 5.6 }; Table2 = { int1 = 95 }; Table3 = { bool1 = "
     "true }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   auto& t = inlet.addTable("Table1", "The first table");
   t.addDouble("float1", " A floating point number in Table 1");
@@ -635,7 +670,22 @@ TEST(inlet_Inlet_views, NestedTableViewCheck3)
   EXPECT_TRUE(sidreGroup->hasView("Table3/bool1/description"));
 }
 
-TEST(inlet_Inlet, mixLevelTables)
+REGISTER_TYPED_TEST_SUITE_P(InletViewsTest,
+                            NestedTableViewCheck1,
+                            NestedTableViewCheck2,
+                            NestedTableViewCheck3);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(ViewsTests,
+                               InletViewsTest,
+                               axom::inlet::detail::ReaderTypes);
+
+template <typename InletReader>
+class InletClassesTest : public ::testing::Test
+{ };
+
+TYPED_TEST_SUITE_P(InletClassesTest);
+
+TYPED_TEST_P(InletClassesTest, mixLevelTables)
 {
   // regression test for the lua stack being at the wrong
   // level with nested tables with non-nested values
@@ -655,7 +705,7 @@ TEST(inlet_Inlet, mixLevelTables)
     "   }"
     "}";
 
-  auto inlet = createBasicInlet(&dataStore, input);
+  Inlet inlet = createBasicInlet<TypeParam>(&dataStore, input);
 
   //
   // Define input file schema
@@ -723,14 +773,14 @@ TEST(inlet_Inlet, mixLevelTables)
   EXPECT_EQ(intVal, 1);
 }
 
-TEST(inlet_Field, defaultValuesDocsEnabled)
+TYPED_TEST_P(InletClassesTest, defaultValuesDocsEnabled)
 {
   std::string testString =
     "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } "
     "}; Table3 = { bool1 = true }";
   DataStore ds;
   // Creating basic inlet with documentation enabled (indicated by the last param)
-  auto inlet = createBasicInlet(&ds, testString, true);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString, true);
 
   // new fields
   inlet.addDouble("field1").defaultValue(2);  // int argument will get casted to double
@@ -807,14 +857,14 @@ TEST(inlet_Field, defaultValuesDocsEnabled)
   EXPECT_EQ(strVal, "hi");
 }
 
-TEST(inlet_Field, defaultValuesDocsDisabled)
+TYPED_TEST_P(InletClassesTest, defaultValuesDocsDisabled)
 {
   std::string testString =
     "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } "
     "}; Table3 = { bool1 = true }";
   DataStore ds;
   // Creating basic inlet with documentation disabled (indicated by the last param)
-  auto inlet = createBasicInlet(&ds, testString, false);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString, false);
 
   // new fields
   inlet.addDouble("field1").defaultValue(2.0);
@@ -865,13 +915,13 @@ TEST(inlet_Field, defaultValuesDocsDisabled)
   EXPECT_EQ(strVal, "hi");
 }
 
-TEST(inlet_Field, ranges)
+TYPED_TEST_P(InletClassesTest, ranges)
 {
   std::string testString =
     "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } "
     "}; Table3 = { bool1 = true }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   axom::sidre::Group* sidreGroup = inlet.sidreGroup();
 
@@ -909,12 +959,28 @@ TEST(inlet_Field, ranges)
   EXPECT_EQ(bufferArr3[1], 50);
 }
 
-TEST(inlet_Inlet_verify, verifyRequired)
+REGISTER_TYPED_TEST_SUITE_P(InletClassesTest,
+                            mixLevelTables,
+                            defaultValuesDocsEnabled,
+                            defaultValuesDocsDisabled,
+                            ranges);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(ClassesTests,
+                               InletClassesTest,
+                               axom::inlet::detail::ReaderTypes);
+
+template <typename InletReader>
+class InletVerifyTest : public ::testing::Test
+{ };
+
+TYPED_TEST_SUITE_P(InletVerifyTest);
+
+TYPED_TEST_P(InletVerifyTest, verifyRequired)
 {
   std::string testString =
     "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   inlet.addString("NewTable/str").required(true);
   inlet.addInt("NewTable/int").required(false);
@@ -927,14 +993,14 @@ TEST(inlet_Inlet_verify, verifyRequired)
   EXPECT_FALSE(inlet.verify());
 }
 
-TEST(inlet_Inlet_verify, verifyDoubleRange)
+TYPED_TEST_P(InletVerifyTest, verifyDoubleRange)
 {
   // For checking values
   std::string testString =
     "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 "
     "}";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   inlet.addDouble("field2").range(1.0, 57.2);
   EXPECT_TRUE(inlet.verify());
@@ -950,7 +1016,7 @@ TEST(inlet_Inlet_verify, verifyDoubleRange)
     "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 "
     "}";
   DataStore ds1;
-  auto inlet1 = createBasicInlet(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
 
   inlet1.addDouble("field2").defaultValue(5).range(
     0,
@@ -961,13 +1027,13 @@ TEST(inlet_Inlet_verify, verifyDoubleRange)
   EXPECT_FALSE(inlet1.verify());
 }
 
-TEST(inlet_Inlet_verify, verifyIntRange)
+TYPED_TEST_P(InletVerifyTest, verifyIntRange)
 {
   // For checking values
   std::string testString =
     "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   inlet.addInt("field2").range(0, 56);
   EXPECT_TRUE(inlet.verify());
@@ -985,7 +1051,7 @@ TEST(inlet_Inlet_verify, verifyIntRange)
   std::string testString1 =
     "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds1;
-  auto inlet1 = createBasicInlet(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
   inlet1.addInt("field2").range(0, 56).defaultValue(32);
   EXPECT_TRUE(inlet1.verify());
 
@@ -996,13 +1062,13 @@ TEST(inlet_Inlet_verify, verifyIntRange)
   EXPECT_FALSE(inlet1.verify());
 }
 
-TEST(inlet_Inlet_verify, verifyValidIntValues)
+TYPED_TEST_P(InletVerifyTest, verifyValidIntValues)
 {
   // check values
   std::string testString =
     "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   inlet.addInt("field2").validValues({1, 2, 3, 56, 57, 58});
   EXPECT_TRUE(inlet.verify());
@@ -1022,7 +1088,7 @@ TEST(inlet_Inlet_verify, verifyValidIntValues)
   std::string testString1 =
     "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds1;
-  auto inlet1 = createBasicInlet(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
 
   inlet1.addInt("field2").validValues({1, 2, 3, 56, 57, 58}).defaultValue(2);
   EXPECT_TRUE(inlet1.verify());
@@ -1037,14 +1103,14 @@ TEST(inlet_Inlet_verify, verifyValidIntValues)
   EXPECT_FALSE(inlet1.verify());
 }
 
-TEST(inlet_Inlet_verify, verifyValidDoubleValues)
+TYPED_TEST_P(InletVerifyTest, verifyValidDoubleValues)
 {
   // check values
   std::string testString =
     "field1 = true; field2 = 56.0; NewTable = { field4 = 22.0; field5 = 48.23 "
     "}";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   inlet.addDouble("field2").validValues({1, 2, 3, 56, 57, 58});
   EXPECT_TRUE(inlet.verify());
@@ -1065,7 +1131,7 @@ TEST(inlet_Inlet_verify, verifyValidDoubleValues)
     "field1 = true; field2 = 56.0; NewTable = { field4 = 22.0; field5 = 48.23 "
     "}";
   DataStore ds1;
-  auto inlet1 = createBasicInlet(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
 
   inlet1.addDouble("field2").validValues({1, 2, 3, 56, 57, 58}).defaultValue(2.);
   EXPECT_TRUE(inlet1.verify());
@@ -1082,14 +1148,14 @@ TEST(inlet_Inlet_verify, verifyValidDoubleValues)
   EXPECT_FALSE(inlet1.verify());
 }
 
-TEST(inlet_Inlet_verify, verifyValidStringValues)
+TYPED_TEST_P(InletVerifyTest, verifyValidStringValues)
 {
   // check values
   std::string testString =
     "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = "
     "'yes' }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   inlet.addString("field2").validValues({"abc", "defg", "hijk", "lm"});
   EXPECT_TRUE(inlet.verify());
@@ -1108,7 +1174,7 @@ TEST(inlet_Inlet_verify, verifyValidStringValues)
   // check default values
   std::string testString1 = "field1 = true; NewTable = { field5 = 'nop' }";
   DataStore ds1;
-  auto inlet1 = createBasicInlet(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
 
   inlet1.addString("field2")
     .validValues({"abc", "defg", "hijk", "lm"})
@@ -1125,13 +1191,13 @@ TEST(inlet_Inlet_verify, verifyValidStringValues)
   EXPECT_FALSE(inlet1.verify());
 }
 
-TEST(inlet_verify, verifyFieldLambda)
+TYPED_TEST_P(InletVerifyTest, verifyFieldLambda)
 {
   std::string testString =
     "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = "
     "'yes' }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   inlet.addBool("field1");
   auto& field2 = inlet.addString("field2");
@@ -1150,13 +1216,13 @@ TEST(inlet_verify, verifyFieldLambda)
   EXPECT_FALSE(inlet.verify());
 }
 
-TEST(inlet_verify, verifyTableLambda1)
+TYPED_TEST_P(InletVerifyTest, verifyTableLambda1)
 {
   std::string testString =
     "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = "
     "'yes' }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   inlet.addBool("field1");
   auto& field2 = inlet.addString("field2");
@@ -1186,7 +1252,251 @@ TEST(inlet_verify, verifyTableLambda1)
   EXPECT_FALSE(inlet.verify());
 }
 
-TEST(inlet_verify, verifyTableLambda2)
+TYPED_TEST_P(InletVerifyTest, verifyTableLambda3)
+{
+  std::string testString = "dimensions = 2; vector = { x = 1; y = 2; z = 3; }";
+  DataStore ds;
+  auto myInlet = createBasicInlet<TypeParam>(&ds, testString);
+  myInlet.addInt("dimensions").required(true);
+  auto& v = myInlet.addTable("vector").required(true);
+  v.addInt("x");
+
+  v.registerVerifier([&myInlet](const Table& table) {
+    int dim = myInlet["dimensions"];
+    bool x_present =
+      table.contains("x") && (table["x"].type() == InletType::Integer);
+    bool y_present =
+      table.contains("y") && (table["y"].type() == InletType::Integer);
+    bool z_present =
+      table.contains("z") && (table["z"].type() == InletType::Integer);
+    if(dim == 1 && x_present)
+    {
+      return true;
+    }
+    else if(dim == 2 && x_present && y_present)
+    {
+      return true;
+    }
+    else if(dim == 3 && x_present && y_present && z_present)
+    {
+      return true;
+    }
+    return false;
+  });
+
+  EXPECT_FALSE(myInlet.verify());
+
+  v.addInt("y");
+  v.addInt("z");
+
+  EXPECT_TRUE(myInlet.verify());
+}
+
+REGISTER_TYPED_TEST_SUITE_P(InletVerifyTest,
+                            verifyRequired,
+                            verifyDoubleRange,
+                            verifyIntRange,
+                            verifyValidIntValues,
+                            verifyValidDoubleValues,
+                            verifyValidStringValues,
+                            verifyFieldLambda,
+                            verifyTableLambda1,
+                            verifyTableLambda3);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(VerifyTests,
+                               InletVerifyTest,
+                               axom::inlet::detail::ReaderTypes);
+
+template <typename InletReader>
+class InletArrayTest : public ::testing::Test
+{ };
+
+TYPED_TEST_SUITE_P(InletArrayTest);
+
+// Checks all of the Table::getArray functions
+TYPED_TEST_P(InletArrayTest, getArray)
+{
+  DataStore ds;
+  std::string testString =
+    "luaArrays = { arr1 = { [0] = 4}, "
+    "              arr2 = {[0] = true, [1] = false}, "
+    "              arr3 = {[0] = 'hello', [1] = 'bye'}, "
+    "              arr4 = { [0] = 2.4 } }";
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  inlet.addIntArray("luaArrays/arr1");
+  inlet.addBoolArray("luaArrays/arr2");
+  inlet.addStringArray("luaArrays/arr3");
+  inlet.addDoubleArray("luaArrays/arr4");
+
+  std::unordered_map<int, int> expectedInts {{0, 4}};
+  std::unordered_map<int, bool> expectedBools {{0, true}, {1, false}};
+  std::unordered_map<int, double> expectedDoubles {{0, 2.4}};
+  std::unordered_map<int, std::string> expectedStrs {{0, "hello"}, {1, "bye"}};
+
+  std::unordered_map<int, int> intMap = inlet["luaArrays/arr1"];
+  std::unordered_map<int, bool> boolMap = inlet["luaArrays/arr2"];
+  std::unordered_map<int, std::string> strMap = inlet["luaArrays/arr3"];
+  std::unordered_map<int, double> doubleMap = inlet["luaArrays/arr4"];
+
+  EXPECT_EQ(intMap, expectedInts);
+
+  EXPECT_EQ(boolMap, expectedBools);
+
+  EXPECT_EQ(strMap, expectedStrs);
+
+  EXPECT_EQ(doubleMap, expectedDoubles);
+}
+
+// Checks the underlying Sidre representation of the arrays added from Lua
+TYPED_TEST_P(InletArrayTest, inletArraysInSidre)
+{
+  DataStore ds;
+  std::string testString =
+    "luaArrays = { arr1 = { [0] = 4, [1] = 5, [2] = 6 , [3] = 2.4}, "
+    "              arr2 = { [0] = true, [1] = false}, "
+    "              arr3 = { [0] = 'hello', [1] = 'bye'}, "
+    "              arr4 = { [0] = 2.4 } }";
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  inlet.addIntArray("luaArrays/arr1");
+
+  auto group = inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_container");
+  auto idx = group->getGroup("0");
+  EXPECT_TRUE(idx);
+  int val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 4);
+
+  idx = group->getGroup("3");
+  EXPECT_TRUE(idx);
+  val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 2);
+
+  idx = group->getGroup("1");
+  EXPECT_TRUE(idx);
+  val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 5);
+
+  idx = group->getGroup("2");
+  EXPECT_TRUE(idx);
+  val = idx->getView("value")->getScalar();
+  EXPECT_EQ(val, 6);
+
+  inlet.addBoolArray("luaArrays/arr2");
+  group = inlet.getTable("luaArrays/arr2/_inlet_container").sidreGroup();
+
+  idx = group->getGroup("0");
+  EXPECT_TRUE(idx);
+  int8_t boolVal = idx->getView("value")->getScalar();
+  EXPECT_EQ(boolVal, 1);
+
+  idx = group->getGroup("1");
+  EXPECT_TRUE(idx);
+  boolVal = idx->getView("value")->getScalar();
+  EXPECT_EQ(boolVal, 0);
+
+  inlet.addStringArray("luaArrays/arr3");
+  group = inlet.getTable("luaArrays/arr3/_inlet_container").sidreGroup();
+
+  idx = group->getGroup("0");
+  EXPECT_TRUE(idx);
+  std::string str = idx->getView("value")->getString();
+  EXPECT_EQ(str, "hello");
+
+  idx = group->getGroup("1");
+  EXPECT_TRUE(idx);
+  str = idx->getView("value")->getString();
+  EXPECT_EQ(str, "bye");
+
+  inlet.addDoubleArray("luaArrays/arr4");
+  group = inlet.getTable("luaArrays/arr4/_inlet_container").sidreGroup();
+
+  idx = group->getGroup("0");
+  EXPECT_TRUE(idx);
+  double doubleVal = idx->getView("value")->getScalar();
+  EXPECT_EQ(doubleVal, 2.4);
+}
+
+REGISTER_TYPED_TEST_SUITE_P(InletArrayTest, getArray, inletArraysInSidre);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(ArrayTests,
+                               InletArrayTest,
+                               axom::inlet::detail::ReaderTypes);
+
+#ifdef AXOM_USE_SOL
+// Using integer literals in strings is lua-specific
+TEST(LuaBasicInletTest, getTopLevelStrings)
+{
+  std::string testString = "foo = 'test string'; bar = '15'";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  //
+  // Define schema
+  //
+
+  // Check for existing fields
+  inlet.addString("foo", "foo's description");
+  inlet.addString("bar", "bar's description");
+
+  // Check one that doesn't exist and doesn't have a default value
+  inlet.addString("nonexistant", "nothing");
+
+  //
+  // Check stored values from get
+  //
+
+  std::string value = "";
+
+  // Check for existing fields
+  value = inlet["foo"].get<std::string>();
+  EXPECT_EQ(value, "test string");
+
+  value = inlet["bar"].get<std::string>();
+  EXPECT_EQ(value, "15");
+
+  // Check one that doesn't exist and doesn't have a default value
+  auto proxy = inlet["nonexistant"];
+  EXPECT_EQ(proxy.type(), InletType::Nothing);
+}
+
+// Empty string literals are lua-specific
+TEST(LuaBasicInletTest, getNestedStrings)
+{
+  std::string testString = "foo = { bar = 'yet another string'; baz = '' }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  //
+  // Define schema
+  //
+
+  // Check for existing fields
+  inlet.addString("foo/bar", "bar's description");
+  inlet.addString("foo/baz", "baz's description");
+
+  // Check one that doesn't exist and doesn't have a default value
+  inlet.addString("foo/nonexistant", "nothing");
+
+  //
+  // Check stored values from get
+  //
+
+  std::string value = "";
+
+  // Check for existing fields
+  value = inlet["foo/bar"].get<std::string>();
+  EXPECT_EQ(value, "yet another string");
+
+  value = inlet["foo/baz"].get<std::string>();
+  EXPECT_EQ(value, "");
+
+  // Check one that doesn't exist and doesn't have a default value
+  auto proxy = inlet["foo/nonexistant"];
+  EXPECT_EQ(proxy.type(), InletType::Nothing);
+}
+
+TEST(LuaInletVerifyTest, verifyTableLambda2)
 {
   std::string testString =
     "thermal_solver={}\n"
@@ -1200,7 +1510,7 @@ TEST(inlet_verify, verifyTableLambda2)
     "material.thermalview = 'isotropic'\n"
     "material.solidview = 'hyperelastic'";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
   inlet.addInt("thermal_solver/order");
   inlet.addString("thermal_solver/timestepper");
   inlet.addInt("solid_solver/order");
@@ -1243,7 +1553,7 @@ TEST(inlet_verify, verifyTableLambda2)
             "test/test2/test3/test4/test5");
 }
 
-TEST(inlet_verify, requiredTable)
+TEST(LuaInletVerifyTest, requiredTable)
 {
   std::string testString =
     "thermal_solver={}\n"
@@ -1257,7 +1567,7 @@ TEST(inlet_verify, requiredTable)
     "material.thermalview = 'isotropic'\n"
     "material.solidview = 'hyperelastic'";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
   auto& material = inlet.addTable("material");
   material.required(true);
 
@@ -1272,48 +1582,8 @@ TEST(inlet_verify, requiredTable)
   EXPECT_TRUE(inlet.verify());
 }
 
-TEST(inlet_verify, verifyTableLambda3)
-{
-  std::string testString = "dimensions = 2; vector = { x = 1; y = 2; z = 3; }";
-  DataStore ds;
-  auto myInlet = createBasicInlet(&ds, testString);
-  myInlet.addInt("dimensions").required(true);
-  auto& v = myInlet.addTable("vector").required(true);
-  v.addInt("x");
-
-  v.registerVerifier([&myInlet](const Table& table) {
-    int dim = myInlet["dimensions"];
-    bool x_present =
-      table.contains("x") && (table["x"].type() == InletType::Integer);
-    bool y_present =
-      table.contains("y") && (table["y"].type() == InletType::Integer);
-    bool z_present =
-      table.contains("z") && (table["z"].type() == InletType::Integer);
-    if(dim == 1 && x_present)
-    {
-      return true;
-    }
-    else if(dim == 2 && x_present && y_present)
-    {
-      return true;
-    }
-    else if(dim == 3 && x_present && y_present && z_present)
-    {
-      return true;
-    }
-    return false;
-  });
-
-  EXPECT_FALSE(myInlet.verify());
-
-  v.addInt("y");
-  v.addInt("z");
-
-  EXPECT_TRUE(myInlet.verify());
-}
-
-// Checks all of the Table::getArray functions
-TEST(inletArrays, getArray)
+// Check discontiguous arrays specifically
+TEST(LuaInletArrayTest, getArray)
 {
   DataStore ds;
   std::string testString =
@@ -1321,7 +1591,7 @@ TEST(inletArrays, getArray)
     "              arr2 = {[4] = true, [8] = false}, "
     "              arr3 = {[33] = 'hello', [2] = 'bye'}, "
     "              arr4 = { [12] = 2.4 } }";
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
 
   inlet.addIntArray("luaArrays/arr1");
   inlet.addBoolArray("luaArrays/arr2");
@@ -1348,7 +1618,7 @@ TEST(inletArrays, getArray)
 }
 
 // Checks the underlying Sidre representation of the arrays added from Lua
-TEST(inletArrays, inletArraysInSidre)
+TEST(LuaInletArrayTest, inletArraysInSidre)
 {
   DataStore ds;
   std::string testString =
@@ -1356,7 +1626,7 @@ TEST(inletArrays, inletArraysInSidre)
     "              arr2 = { [4] = true, [8] = false}, "
     "              arr3 = { [33] = 'hello', [2] = 'bye'}, "
     "              arr4 = { [12] = 2.4 } }";
-  auto inlet = createBasicInlet(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
 
   inlet.addIntArray("luaArrays/arr1");
 
@@ -1415,6 +1685,8 @@ TEST(inletArrays, inletArraysInSidre)
   double doubleVal = idx->getView("value")->getScalar();
   EXPECT_EQ(doubleVal, 2.4);
 }
+
+#endif
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
