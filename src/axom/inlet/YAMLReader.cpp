@@ -54,52 +54,19 @@ bool YAMLReader::parseString(const std::string& YAMLString)
 
 namespace detail
 {
-template <typename T>
-bool hasCompatibleType(const conduit::DataType& type)
-{
-  return false;
-}
-
-template <>
-bool hasCompatibleType<int>(const conduit::DataType& type)
-{
-  // Match LuaReader functionality - allow narrowing from floating-point
-  return type.is_number();
-}
-
-template <>
-bool hasCompatibleType<double>(const conduit::DataType& type)
-{
-  // Match LuaReader functionality - allow promoting from integer
-  return type.is_number();
-}
-
-template <>
-bool hasCompatibleType<bool>(const conduit::DataType& type)
-{
-  return type.is_string();
-}
-
-template <>
-bool hasCompatibleType<std::string>(const conduit::DataType& type)
-{
-  return type.is_string();
-}
-
-template <typename ConduitType, typename MapValueType>
-void arrayToMap(const conduit::DataArray<ConduitType>& array,
-                std::unordered_map<int, MapValueType>& map)
-{
-  for(conduit::index_t i = 0; i < array.number_of_elements(); i++)
-  {
-    // No begin/end iterators are provided by DataArray
-    map[i] = array[i];
-  }
-}
-
-// TODO allow alternate delimiter at sidre level
+// TODO: allow alternate delimiter at sidre level
 const static char SCOPE_DELIMITER = '/';
-conduit::Node getNodeChild(const conduit::Node& root, const std::string& id)
+
+/*!
+ *******************************************************************************
+ * \brief Traverses a path starting from a Node
+ *
+ * \param [in] root The node from which to begin traversal
+ * \param [in] id   The path to traverse
+ * \note Needed for paths containing integers as a conversion is required
+ *******************************************************************************
+ */
+conduit::Node traverseNode(const conduit::Node& root, const std::string& id)
 {
   if(root.has_path(id))
   {
@@ -111,6 +78,7 @@ conduit::Node getNodeChild(const conduit::Node& root, const std::string& id)
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
   for(const auto& token : tokens)
   {
+    // Prefer the string name, but if it doesn't exist, try converting to int
     if(node->has_child(token))
     {
       node = &((*node)[token]);
@@ -131,12 +99,35 @@ conduit::Node getNodeChild(const conduit::Node& root, const std::string& id)
   }
   return *node;
 }
+
+/*!
+ *******************************************************************************
+ * \brief Copies a Conduit array into an unordered map, using zero-based array
+ * indices as the keys
+ *
+ * \param [in] array The array to copy from
+ * \param [out] map  The map to copy into
+ * \note Implementing to allow for widening/narrowing conversions
+ *******************************************************************************
+ */
+template <typename ConduitType, typename MapValueType>
+void arrayToMap(const conduit::DataArray<ConduitType>& array,
+                std::unordered_map<int, MapValueType>& map)
+{
+  map.clear();
+  for(conduit::index_t i = 0; i < array.number_of_elements(); i++)
+  {
+    // No begin/end iterators are provided by DataArray
+    map[i] = array[i];
+  }
+}
+
 }  // namespace detail
 
 bool YAMLReader::getValue(const conduit::Node& node, int& value)
 {
   // Match LuaReader functionality - narrow from floating-point
-  if(detail::hasCompatibleType<int>(node.dtype()))
+  if(node.dtype().is_number())
   {
     value = node.to_int();
     return true;
@@ -146,7 +137,7 @@ bool YAMLReader::getValue(const conduit::Node& node, int& value)
 
 bool YAMLReader::getValue(const conduit::Node& node, std::string& value)
 {
-  if(detail::hasCompatibleType<std::string>(node.dtype()))
+  if(node.dtype().is_string())
   {
     value = node.as_string();
     return true;
@@ -157,7 +148,7 @@ bool YAMLReader::getValue(const conduit::Node& node, std::string& value)
 bool YAMLReader::getValue(const conduit::Node& node, double& value)
 {
   // Match LuaReader functionality - promote from integer
-  if(detail::hasCompatibleType<double>(node.dtype()))
+  if(node.dtype().is_number())
   {
     value = node.to_float64();
     return true;
@@ -169,8 +160,10 @@ bool YAMLReader::getValue(const conduit::Node& node, bool& value)
   // Boolean literals don't appear to be parsed as such - they are strings
   if(node.dtype().is_string())
   {
-    // YAML 1.2 spec, section 10.3.2
     std::string as_str = node.as_string();
+    // YAML 1.2 spec, section 10.3.2
+    // FIXME: Converting the string to lowercase is not strictly correct, it
+    // allows for things like tRue and falsE
     std::transform(as_str.begin(),
                    as_str.end(),
                    as_str.begin(),
@@ -191,22 +184,22 @@ bool YAMLReader::getValue(const conduit::Node& node, bool& value)
 
 bool YAMLReader::getBool(const std::string& id, bool& value)
 {
-  return getValue(detail::getNodeChild(m_root, id), value);
+  return getValue(detail::traverseNode(m_root, id), value);
 }
 
 bool YAMLReader::getDouble(const std::string& id, double& value)
 {
-  return getValue(detail::getNodeChild(m_root, id), value);
+  return getValue(detail::traverseNode(m_root, id), value);
 }
 
 bool YAMLReader::getInt(const std::string& id, int& value)
 {
-  return getValue(detail::getNodeChild(m_root, id), value);
+  return getValue(detail::traverseNode(m_root, id), value);
 }
 
 bool YAMLReader::getString(const std::string& id, std::string& value)
 {
-  return getValue(detail::getNodeChild(m_root, id), value);
+  return getValue(detail::traverseNode(m_root, id), value);
 }
 
 bool YAMLReader::getIntMap(const std::string& id,
@@ -260,12 +253,13 @@ bool YAMLReader::getStringMap(const std::string& id,
 bool YAMLReader::getIndices(const std::string& id, std::vector<int>& indices)
 {
   indices.clear();
-  const auto node = detail::getNodeChild(m_root, id);
+  const auto node = detail::traverseNode(m_root, id);
   if(!node.dtype().is_list())
   {
     return false;
   }
   indices.resize(node.number_of_children());
+  // Arrays in YAML are contiguous so we don't need to query the input file
   std::iota(indices.begin(), indices.end(), 0);
   return true;
 }
@@ -274,7 +268,7 @@ bool YAMLReader::getIndices(const std::string& id,
                             std::vector<std::string>& indices)
 {
   indices.clear();
-  const auto node = detail::getNodeChild(m_root, id);
+  const auto node = detail::traverseNode(m_root, id);
   if(!node.dtype().is_object())
   {
     return false;
@@ -294,7 +288,7 @@ bool YAMLReader::getDictionary(const std::string& id,
                                std::unordered_map<std::string, T>& values)
 {
   values.clear();
-  const auto node = detail::getNodeChild(m_root, id);
+  const auto node = detail::traverseNode(m_root, id);
   if(!node.dtype().is_object())
   {
     return false;
@@ -321,7 +315,7 @@ bool YAMLReader::getArray(const std::string& id,
                           std::unordered_map<int, T>& values)
 {
   values.clear();
-  const auto node = detail::getNodeChild(m_root, id);
+  const auto node = detail::traverseNode(m_root, id);
   // Truly primitive (i.e., not string) types are contiguous so we grab the array pointer
   if(node.dtype().number_of_elements() > 1)
   {

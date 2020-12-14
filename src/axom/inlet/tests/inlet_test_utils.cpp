@@ -8,59 +8,65 @@
 
 namespace axom::inlet::detail
 {
-std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
+void LuaToYAML::add_token(std::string&& token, std::vector<std::string>& tokens)
 {
   const static std::string punctuation = "{}[];,=";
+  std::vector<std::string> parsed_after;
+  std::size_t pos;
+  while(token.length() > 1 &&
+        ((pos = token.find_first_of(punctuation)) != std::string::npos))
+  {
+    if(pos == 0)
+    {
+      tokens.emplace_back(1, token[pos]);
+      token = token.substr(1, token.length() - 1);
+    }
+    else
+    {
+      // The position could be partway through the string, but
+      // we need the last entry
+      pos = token.find_last_of(punctuation);
+      parsed_after.emplace_back(1, token[pos]);
+      token = token.substr(0, token.length() - 1);
+    }
+  }
+  if(!token.empty())
+  {
+    tokens.push_back(token);
+  }
+  tokens.insert(tokens.end(), parsed_after.rbegin(), parsed_after.rend());
+}
+
+std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
+{
   std::vector<std::string> result;
   std::size_t pos = 0;
-  auto add_to_result = [&result](std::string&& str) {
-    std::vector<std::string> parsed_after;
-    std::size_t pos;
-    while(str.length() > 1 &&
-          ((pos = str.find_first_of(punctuation)) != std::string::npos))
-    {
-      if(pos == 0)
-      {
-        result.emplace_back(1, str[pos]);
-        str = str.substr(1, str.length() - 1);
-      }
-      else
-      {
-        // The position could be partway through the string, but
-        // we need the last entry
-        pos = str.find_last_of(punctuation);
-        parsed_after.emplace_back(1, str[pos]);
-        str = str.substr(0, str.length() - 1);
-      }
-    }
-    if(!str.empty())
-    {
-      result.push_back(str);
-    }
-    result.insert(result.end(), parsed_after.rbegin(), parsed_after.rend());
+
+  // Adds a token starting at the current "pos" up through the next instance
+  // of the selected "end_char"
+  auto find_and_add_until = [&text, &result, &pos](const char end_char) {
+    auto ending_pos = text.find(end_char, pos + 1);
+    add_token(text.substr(pos, ending_pos - pos + 1), result);
+    pos = ending_pos + 1;
   };
 
   while(pos < text.length())
   {
-    // For quoted strings, skip to the next quote
+    // For quoted strings, find the next quote and use that as the end
     if(text[pos] == '"')
     {
-      auto ending_quote = text.find('"', pos + 1);
-      add_to_result(text.substr(pos, ending_quote - pos + 1));
-      pos = ending_quote + 1;
+      find_and_add_until('"');
     }
-    if(text[pos] == '\'')
+    else if(text[pos] == '\'')
     {
-      auto ending_quote = text.find('\'', pos + 1);
-      add_to_result(text.substr(pos, ending_quote - pos + 1));
-      pos = ending_quote + 1;
+      find_and_add_until('\'');
     }
+    // If it's a table index, find the next bracket and use that as the end
     else if(text[pos] == '[')
     {
-      auto ending_bracket = text.find(']', pos + 1);
-      add_to_result(text.substr(pos, ending_bracket - pos + 1));
-      pos = ending_bracket + 1;
+      find_and_add_until(']');
     }
+    // Otherwise just find the next instance of whitespace
     else
     {
       auto ending_space = text.find(' ', pos + 1);
@@ -71,12 +77,12 @@ std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
       }
       if(ending_space == std::string::npos)
       {
-        add_to_result(text.substr(pos, text.length() - pos));
+        add_token(text.substr(pos, text.length() - pos), result);
         pos = text.length();
       }
       else
       {
-        add_to_result(text.substr(pos, ending_space - pos));
+        add_token(text.substr(pos, ending_space - pos), result);
         pos = ending_space + 1;
       }
     }
