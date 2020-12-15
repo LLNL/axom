@@ -56,20 +56,24 @@ bool scalars(const std::string inputFileName)
   int a_defaulted_int = inlet["a_defaulted_int"];
   // _inlet_simple_types_scalar_access_end
 
-  // _inlet_simple_types_scalar_contains_start
-  std::string does_not_exist = "Yay! Was not present!";
-  if (inlet.contains("does_not_exist"))
-  {
-    does_not_exist = "Uh oh! This should not happen!";
-  }
-  // _inlet_simple_types_scalar_contains_end
-
   std::cout << "a_simple_bool = " << a_simple_bool << std::endl;
   std::cout << "a_simple_int = " << a_simple_int << std::endl;
   std::cout << "a_simple_double = " << a_simple_double << std::endl;
   std::cout << "a_simple_string = " << a_simple_string << std::endl;
   std::cout << "a_defaulted_int = " << a_defaulted_int << std::endl;
-  std::cout << "does_not_exist = " << does_not_exist << std::endl;
+
+  // _inlet_simple_types_scalar_contains_start
+  if (inlet.contains("does_not_exist"))
+  {
+    std::cout << "Error: Inlet should not have contained key 'does_not_exist' " << std::endl;
+    return false;
+  }
+  else 
+  {
+    std::cout << "Key 'does_not_exist' did not exist in Inlet. Success!" << std::endl;
+  }
+  // _inlet_simple_types_scalar_contains_end
+
 
   return true;
 }
@@ -80,7 +84,6 @@ int main(int argc, char** argv)
   // Inlet requires a SLIC logger to be initialized to output runtime information
   // This is a generic basic SLIC logger
   axom::slic::UnitTestLogger logger;
-
 
   // Handle command line arguments
   CLI::App app {"Basic example of Axom's Inlet component with simple types"};
