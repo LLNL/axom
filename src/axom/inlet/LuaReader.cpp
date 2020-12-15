@@ -187,7 +187,7 @@ Arg&& lua_identity(Arg&& arg)
   return std::forward<Arg>(arg);
 }
 
-std::tuple<double, double, double> lua_identity(const primal::Vector3D& vec)
+std::tuple<double, double, double> lua_identity(const FunctionType::Vec3D& vec)
 {
   return std::make_tuple(vec[0], vec[1], vec[2]);
 }
@@ -235,7 +235,8 @@ Ret extractResult(sol::protected_function_result&& res)
 }
 
 template <>
-primal::Vector3D extractResult<primal::Vector3D>(sol::protected_function_result&& res)
+FunctionType::Vec3D extractResult<FunctionType::Vec3D>(
+  sol::protected_function_result&& res)
 {
   auto tup = extractResult<std::tuple<double, double, double>>(std::move(res));
   return {std::get<0>(tup), std::get<1>(tup), std::get<2>(tup)};
@@ -287,7 +288,7 @@ buildStdFunction(sol::protected_function&& func)
 template <std::size_t I, typename Ret, typename... Args>
 typename std::enable_if<(I > MAX_NUM_ARGS), FunctionVariant>::type bindArgType(
   sol::protected_function&&,
-  const std::vector<FunctionType>&)
+  const std::vector<FunctionTag>&)
 {
   SLIC_ERROR("[Inlet] Maximum number of function arguments exceeded: " << I);
   return {};
@@ -296,7 +297,7 @@ typename std::enable_if<(I > MAX_NUM_ARGS), FunctionVariant>::type bindArgType(
 template <std::size_t I, typename Ret, typename... Args>
 typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
   sol::protected_function&& func,
-  const std::vector<FunctionType>& arg_types)
+  const std::vector<FunctionTag>& arg_types)
 {
   if(arg_types.size() == I)
   {
@@ -306,10 +307,11 @@ typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
   {
     switch(arg_types[I])
     {
-    case FunctionType::Vec3D:
-      return bindArgType<I + 1, Ret, Args..., primal::Vector3D>(std::move(func),
-                                                                arg_types);
-    case FunctionType::Double:
+    case FunctionTag::Vec3D:
+      return bindArgType<I + 1, Ret, Args..., FunctionType::Vec3D>(
+        std::move(func),
+        arg_types);
+    case FunctionTag::Double:
       return bindArgType<I + 1, Ret, Args..., double>(std::move(func), arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function argument type");
@@ -343,18 +345,18 @@ bool checkedGet(const Proxy& proxy, Value& val)
 }  // end namespace detail
 
 FunctionVariant LuaReader::getFunction(const std::string& id,
-                                       const FunctionType ret_type,
-                                       const std::vector<FunctionType>& arg_types)
+                                       const FunctionTag ret_type,
+                                       const std::vector<FunctionTag>& arg_types)
 {
   auto lua_func = getFunctionInternal(id);
   if(lua_func)
   {
     switch(ret_type)
     {
-    case FunctionType::Vec3D:
-      return detail::bindArgType<0u, primal::Vector3D>(std::move(lua_func),
-                                                       arg_types);
-    case FunctionType::Double:
+    case FunctionTag::Vec3D:
+      return detail::bindArgType<0u, FunctionType::Vec3D>(std::move(lua_func),
+                                                          arg_types);
+    case FunctionTag::Double:
       return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function return type");

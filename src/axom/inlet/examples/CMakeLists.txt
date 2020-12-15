@@ -42,7 +42,7 @@ if (SOL_FOUND)
                             DEPENDS_ON inlet mfem
                             FOLDER     axom/inlet/examples )
         blt_add_test( NAME    inlet_mfem_coefficient_ex
-                      COMMAND inlet_mfem_coefficient_ex --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua)
+                      COMMAND inlet_mfem_coefficient_ex --file ${CMAKE_CURRENT_LIST_DIR}/mfem_coef.lua)
     endif()
 
 endif()

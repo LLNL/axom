@@ -11,6 +11,7 @@
 #include "axom/slic/core/UnitTestLogger.hpp"
 #include "mfem.hpp"
 
+using axom::inlet::FunctionType;
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
@@ -74,14 +75,14 @@ struct BoundaryCondition
     // Supported function parameter/return types are Double and Vec3D
 
     schema.addFunction("vec_coef",
-                       inlet::FunctionType::Vec3D,
-                       {inlet::FunctionType::Vec3D,
-                        inlet::FunctionType::Double},  // Multiple argument types
+                       inlet::FunctionTag::Vec3D,
+                       {inlet::FunctionTag::Vec3D,
+                        inlet::FunctionTag::Double},  // Multiple argument types
                        "The function representing the BC coefficient");
 
     schema.addFunction("coef",
-                       inlet::FunctionType::Double,
-                       {inlet::FunctionType::Vec3D, inlet::FunctionType::Double},
+                       inlet::FunctionTag::Double,
+                       {inlet::FunctionTag::Vec3D, inlet::FunctionTag::Double},
                        "The function representing the BC coefficient");
   }
 };
@@ -118,7 +119,7 @@ struct FromInlet<BoundaryCondition::InputInfo>
     {
       // Retrieve the function (makes a copy) to be moved into the lambda
       auto func =
-        base["coef"].get<std::function<double(axom::primal::Vector3D, double)>>();
+        base["coef"].get<std::function<double(FunctionType::Vec3D, double)>>();
       result.scalar_func = [func(std::move(func))](const mfem::Vector& vec,
                                                    double t) {
         return func({vec.GetData(), vec.Size()}, t);
@@ -128,7 +129,7 @@ struct FromInlet<BoundaryCondition::InputInfo>
     {
       auto func =
         base["vec_coef"]
-          .get<std::function<axom::primal::Vector3D(axom::primal::Vector3D, double)>>();
+          .get<std::function<FunctionType::Vec3D(FunctionType::Vec3D, double)>>();
       result.vec_func = [func(std::move(func))](const mfem::Vector& input,
                                                 double t,
                                                 mfem::Vector& output) {

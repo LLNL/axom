@@ -38,7 +38,7 @@ namespace inlet
  *******************************************************************************
  * \brief The tags used to describe function signatures in the input file
  * 
- * \note Additions to this enumeration should be propagated to LuaReader
+ * \note Additions to this enumeration should be propagated to FunctionType, LuaReader
  * and func_signature_tuples defined below (the mapping from enum to types)
  * 
  * \note Vec3D corresponds to a three-dimensional vector, Double corresponds to
@@ -48,10 +48,23 @@ namespace inlet
  * a 3D vector can be used in its place (with the third component being empty/zero)
  *******************************************************************************
  */
-enum class FunctionType
+enum class FunctionTag
 {
   Vec3D,
   Double
+};
+
+/*!
+ *******************************************************************************
+ * \brief The types used to describe function signatures in the input file
+ * 
+ * \note These are aliases intended to improve readability
+ *******************************************************************************
+ */
+struct FunctionType
+{
+  using Vec3D = axom::primal::Vector3D;
+  using Double = double;
 };
 
 namespace detail
@@ -254,13 +267,13 @@ struct tuple_to_inlet_signature<std::tuple<Ret, Args...>>
  * \class FunctionWrapper
  *
  * \brief A sum type for callables with arbitrary signature
- * \tparam FunctionTypes The types of supported functions
+ * \tparam FunctionTags The types of supported functions
  * 
  * This provides an interface not templated on a specific function signature
  * for uniform retrieval through the Reader interface
  *******************************************************************************
  */
-template <typename... FunctionTypes>
+template <typename... FunctionTags>
 class FunctionWrapper
 {
 public:
@@ -348,7 +361,7 @@ private:
   // This is on the heap to reduce size - each pointer is only 8 bytes vs 32 bytes
   // for a std::function, and it is guaranteed that only one of the pointers will
   // actually point to something
-  std::tuple<std::unique_ptr<std::function<FunctionTypes>>...> m_funcs;
+  std::tuple<std::unique_ptr<std::function<FunctionTags>>...> m_funcs;
   bool m_function_valid = false;
   std::string m_name;
 };
@@ -406,7 +419,7 @@ struct arg_tuples<0u, Ts...>
  *
  * \note Be very cautious when increasing this, as it will result in exponential
  * function generation - specifically, m^n where n is this MAX_NUM_ARGS
- * and m is the number of elements in the FunctionType enumeration
+ * and m is the number of elements in the FunctionTag enumeration
  *****************************************************************************
  */
 static constexpr std::size_t MAX_NUM_ARGS = 2u;
@@ -414,7 +427,7 @@ static constexpr std::size_t MAX_NUM_ARGS = 2u;
 // Get the permutations of all possible signatures
 // Add one as return types also need to be permuted
 using func_signature_tuples =
-  arg_tuples<MAX_NUM_ARGS + 1, primal::Vector3D, double>::type;
+  arg_tuples<MAX_NUM_ARGS + 1, FunctionType::Vec3D, FunctionType::Double>::type;
 
 using BasicFunctionWrapper = tuples_to_wrapper<func_signature_tuples>::type;
 
