@@ -814,18 +814,29 @@ bool Table::contains(const std::string& name) const
 
 Table::operator bool() const
 {
-  // If there are no child tables, it must have child fields
-  if(m_tableChildren.empty())
-  {
-    return !m_fieldChildren.empty();
-  }
+  // Check if any of its child tables are nontrivial
+  const bool has_tables =
+    std::any_of(m_tableChildren.begin(),
+                m_tableChildren.end(),
+                [](const decltype(m_tableChildren)::value_type& entry) {
+                  return static_cast<bool>(*entry.second);
+                });
 
-  // Otherwise we have to recurse and check child tables
-  return std::any_of(m_tableChildren.begin(),
-                     m_tableChildren.end(),
-                     [](const decltype(m_tableChildren)::value_type& entry) {
-                       return static_cast<bool>(entry.second);
-                     });
+  const bool has_fields =
+    std::any_of(m_fieldChildren.begin(),
+                m_fieldChildren.end(),
+                [](const decltype(m_fieldChildren)::value_type& entry) {
+                  return static_cast<bool>(*entry.second);
+                });
+
+  const bool has_functions =
+    std::any_of(m_functionChildren.begin(),
+                m_functionChildren.end(),
+                [](const decltype(m_functionChildren)::value_type& entry) {
+                  return static_cast<bool>(*entry.second);
+                });
+
+  return has_tables || has_fields || has_functions;
 }
 
 const std::unordered_map<std::string, std::unique_ptr<Table>>&

@@ -156,14 +156,15 @@ public:
   template <typename Ret, typename... Args>
   Ret call(Args&&... args) const
   {
-    const auto& func = *std::get<std::unique_ptr<
+    const auto& ptr = std::get<std::unique_ptr<
       std::function<Ret(typename detail::inlet_function_arg_type<Args>::type...)>>>(
       m_funcs);
     SLIC_ERROR_IF(
-      !func || !m_function_valid,
+      !m_function_valid || !ptr || !(*ptr),
       fmt::format("[Inlet] Function '{0}' with requested type does not exist",
                   m_name));
 
+    const auto& func = *ptr;
     return func(
       std::forward<typename detail::inlet_function_arg_type<Args>::type>(args)...);
   }

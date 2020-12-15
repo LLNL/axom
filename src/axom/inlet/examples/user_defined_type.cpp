@@ -263,4 +263,26 @@ int main(int argc, char** argv)
 
   // Read all the data into a thermal solver object
   auto thermal_solver = inlet["thermal_solver"].get<ThermalSolver>();
+
+  const axom::primal::Vector3D vec {1, 2, 3};
+  for(const auto& bc_entry : thermal_solver.bcs)
+  {
+    const auto& bc = bc_entry.second;
+    if(bc.coef)
+    {
+      auto result = bc.coef(vec);
+      SLIC_INFO(fmt::format("Calling {0} with {1} returned: {2}",
+                            bc_entry.first,
+                            vec,
+                            result));
+    }
+    else if(bc.vec_coef)
+    {
+      auto result = bc.vec_coef(vec);
+      SLIC_INFO(fmt::format("Calling {0} with {1} returned: {2}",
+                            bc_entry.first,
+                            vec,
+                            result));
+    }
+  }
 }
