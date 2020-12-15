@@ -253,9 +253,11 @@ TEST(inlet_function, simple_vec3_to_vec3_struct)
 TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
 {
   std::string testString =
-    "foo = { [7] = { bar = true; baz = function (x, y, z) return 2*x, 2*y, 2*z "
-    "end }, [12] = { bar = false; baz = function (x, y, z) return 3*x, 3*y, "
-    "3*z end } }";
+    "foo = { [7] = { bar = true, "
+    "                baz = function (x, y, z) return 2*x, 2*y, 2*z end }, "
+    "       [12] = { bar = false, "
+    "                baz = function (x, y, z) return 3*x, 3*y, 3*z end } "
+    "}";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 

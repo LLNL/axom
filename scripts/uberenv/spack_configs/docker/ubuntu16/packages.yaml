@@ -15,6 +15,9 @@
 # -------------------------------------------------------------------------
 packages:
   all:
+    # This defaults us to machine specific flags of ivybridge which allows
+    # us to run on broadwell as well
+    target: [ivybridge]
     compiler: [gcc, intel, pgi, clang, xl, nag]
     providers:
       awk: [gawk]
@@ -44,53 +47,71 @@ packages:
     - spec: mpich@3.3
       prefix: /usr
 
-# System level packages to not build
+  # System level packages to not build
   autotools:
     buildable: false
     externals:
     - spec: autotools
-      prefix: /usr/bin/
+      prefix: /usr
   bzip2:
     buildable: false
     externals:
     - spec: bzip2
-      prefix: /usr/bin/
+      prefix: /usr
   gettext:
     buildable: false
     externals:
     - spec: gettext
-      prefix: /usr/bin/
+      prefix: /usr
   m4:
     buildable: false
     externals:
     - spec: m4
-      prefix: /usr/bin/
+      prefix: /usr
+  perl:
+    buildable: false
+    externals:
+    - spec: perl
+      prefix: /usr
   pkg-config:
     buildable: false
     externals:
     - spec: pkg-config
-      prefix: /usr/bin/
+      prefix: /usr
   tar:
     buildable: false
     externals:
     - spec: tar
-      prefix: /usr/bin/
+      prefix: /usr
   graphviz:
     buildable: false
     externals:
     - spec: graphviz
-      prefix: /usr/bin/
-  raja:
+      prefix: /usr
+  openblas:
     buildable: false
     externals:
-    - spec: raja
-      prefix: /usr/local/share/raja/cmake
-# Globally lock in version of CMake
-  cmake:
-    version: [3.10.1]
-# Globally lock version of third party libraries
+    - spec: openblas
+      prefix: /usr
+
+  # Globally lock version of third party libraries
   conduit:
     version: [0.5.1]
     variants: ~shared
   mfem:
     variants: ~mpi~metis~zlib
+
+  # Globally lock in version of CMake
+  cmake:
+    version: [3.10.1]
+    buildable: false
+    externals:
+    - spec: cmake@3.10.1
+      prefix: /usr
+  llvm:
+    version: [10.0.0]
+    buildable: false
+    externals:
+    - spec: llvm+clang
+      prefix: /usr
+
