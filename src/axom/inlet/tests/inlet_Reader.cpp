@@ -17,11 +17,11 @@ template <typename InletReader>
 class InletReaderTest : public testing::Test
 { };
 
-TYPED_TEST_SUITE_P(InletReaderTest);
+TYPED_TEST_SUITE(InletReaderTest, axom::inlet::detail::ReaderTypes);
 
 using axom::inlet::detail::fromLuaTo;
 
-TYPED_TEST_P(InletReaderTest, getTopLevelBools)
+TYPED_TEST(InletReaderTest, getTopLevelBools)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>("foo = true; bar = false"));
@@ -39,7 +39,7 @@ TYPED_TEST_P(InletReaderTest, getTopLevelBools)
   EXPECT_EQ(value, false);
 }
 
-TYPED_TEST_P(InletReaderTest, getInsideBools)
+TYPED_TEST(InletReaderTest, getInsideBools)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>("foo = { bar = false; baz = true }"));
@@ -57,7 +57,7 @@ TYPED_TEST_P(InletReaderTest, getInsideBools)
   EXPECT_EQ(value, true);
 }
 
-TYPED_TEST_P(InletReaderTest, getTopLevelStrings)
+TYPED_TEST(InletReaderTest, getTopLevelStrings)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>(
@@ -77,7 +77,7 @@ TYPED_TEST_P(InletReaderTest, getTopLevelStrings)
   EXPECT_EQ(value, "TesT StrInG");
 }
 
-TYPED_TEST_P(InletReaderTest, getInsideStrings)
+TYPED_TEST(InletReaderTest, getInsideStrings)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>(
@@ -97,7 +97,7 @@ TYPED_TEST_P(InletReaderTest, getInsideStrings)
   EXPECT_EQ(value, "TesT StrInG");
 }
 
-TYPED_TEST_P(InletReaderTest, mixLevelTables)
+TYPED_TEST(InletReaderTest, mixLevelTables)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>(
@@ -122,7 +122,7 @@ TYPED_TEST_P(InletReaderTest, mixLevelTables)
   EXPECT_EQ(value, 3);
 }
 
-TYPED_TEST_P(InletReaderTest, getMap)
+TYPED_TEST(InletReaderTest, getMap)
 {
   // Keep this contiguous in order to test all supported input languages
   std::string testString =
@@ -161,18 +161,6 @@ TYPED_TEST_P(InletReaderTest, getMap)
   //                                                    {7, "bye"}};
   // EXPECT_EQ(expectedStrs, strs);
 }
-
-REGISTER_TYPED_TEST_SUITE_P(InletReaderTest,
-                            getTopLevelBools,
-                            getInsideBools,
-                            getTopLevelStrings,
-                            getInsideStrings,
-                            mixLevelTables,
-                            getMap);
-
-INSTANTIATE_TYPED_TEST_SUITE_P(ReaderTests,
-                               InletReaderTest,
-                               axom::inlet::detail::ReaderTypes);
 
 #ifdef AXOM_USE_SOL
 // Checks that LuaReader parses array information as expected
