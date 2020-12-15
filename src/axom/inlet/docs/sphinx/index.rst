@@ -37,4 +37,4 @@ Requirements
    :maxdepth: 2
 
    quick_start
-
+   advanced_types

@@ -374,8 +374,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable& addBoolArray(const std::string& name,
-                           const std::string& description = "")
+  Verifiable<Table>& addBoolArray(const std::string& name,
+                                  const std::string& description = "")
   {
     return m_globalTable.addBoolArray(name, description);
   }
@@ -390,8 +390,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable& addIntArray(const std::string& name,
-                          const std::string& description = "")
+  Verifiable<Table>& addIntArray(const std::string& name,
+                                 const std::string& description = "")
   {
     return m_globalTable.addIntArray(name, description);
   }
@@ -406,8 +406,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable& addDoubleArray(const std::string& name,
-                             const std::string& description = "")
+  Verifiable<Table>& addDoubleArray(const std::string& name,
+                                    const std::string& description = "")
   {
     return m_globalTable.addDoubleArray(name, description);
   }
@@ -422,8 +422,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable& addStringArray(const std::string& name,
-                             const std::string& description = "")
+  Verifiable<Table>& addStringArray(const std::string& name,
+                                    const std::string& description = "")
   {
     return m_globalTable.addStringArray(name, description);
   }
@@ -446,6 +446,25 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Get a function from the input deck
+   *
+   * \param [in] name        Name of the function
+   * \param [in] ret_type    The return type of the function
+   * \param [in] arg_types   The argument types of the function
+   * \param [in] description Description of the Field
+   *
+   * \return Reference to the created Function
+   *****************************************************************************
+   */
+  Verifiable<Function>& addFunction(const std::string& name,
+                                    const FunctionType ret_type,
+                                    const std::vector<FunctionType>& arg_types,
+                                    const std::string& description = "")
+  {
+    return m_globalTable.addFunction(name, ret_type, arg_types, description);
+  }
+  /*!
+   *****************************************************************************
    * \brief Add a dictionary of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the dict
@@ -454,8 +473,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addBoolDictionary(const std::string& name,
-                                const std::string& description = "")
+  Verifiable<Table>& addBoolDictionary(const std::string& name,
+                                       const std::string& description = "")
   {
     return m_globalTable.addBoolDictionary(name, description);
   }
@@ -470,8 +489,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addIntDictionary(const std::string& name,
-                               const std::string& description = "")
+  Verifiable<Table>& addIntDictionary(const std::string& name,
+                                      const std::string& description = "")
   {
     return m_globalTable.addIntDictionary(name, description);
   }
@@ -486,8 +505,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addDoubleDictionary(const std::string& name,
-                                  const std::string& description = "")
+  Verifiable<Table>& addDoubleDictionary(const std::string& name,
+                                         const std::string& description = "")
   {
     return m_globalTable.addDoubleDictionary(name, description);
   }
@@ -502,8 +521,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addStringDictionary(const std::string& name,
-                                  const std::string& description = "")
+  Verifiable<Table>& addStringDictionary(const std::string& name,
+                                         const std::string& description = "")
   {
     return m_globalTable.addStringDictionary(name, description);
   }

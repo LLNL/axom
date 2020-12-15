@@ -15,7 +15,8 @@ if (SOL_FOUND)
     set(gtest_inlet_tests
         inlet_LuaReader.cpp
         inlet_Inlet.cpp 
-        inlet_object.cpp )
+        inlet_object.cpp
+        inlet_function.cpp )
 
     foreach(test ${gtest_inlet_tests})
         get_filename_component( test_name ${test} NAME_WE )

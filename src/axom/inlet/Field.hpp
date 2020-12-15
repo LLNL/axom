@@ -41,7 +41,8 @@ enum class InletType
   // TODO: Unsigned integer
   Double,
   Object,
-  Container
+  Container,
+  Function
 };
 
 /*!
@@ -329,6 +330,13 @@ public:
    *****************************************************************************
    */
   InletType type() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether an actual value is stored
+   *****************************************************************************
+   */
+  explicit operator bool() const { return m_sidreGroup->hasView("value"); }
 
 private:
   /*!
