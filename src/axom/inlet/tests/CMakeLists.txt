@@ -15,7 +15,8 @@ if (SOL_FOUND)
     set(gtest_inlet_tests
         inlet_Reader.cpp
         inlet_Inlet.cpp 
-        inlet_object.cpp )
+        inlet_object.cpp
+        inlet_function.cpp )
 
     blt_add_library(NAME        inlet_test_utils
                     SOURCES     inlet_test_utils.cpp

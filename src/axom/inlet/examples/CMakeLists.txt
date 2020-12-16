@@ -32,7 +32,6 @@ if (SOL_FOUND)
     blt_add_test( NAME    inlet_documentation_generation_ex
                   COMMAND inlet_documentation_generation_ex --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
 
-    blt_add_test( NAME inlet_user_defined_type_ex
+    blt_add_test( NAME    inlet_user_defined_type_ex
                   COMMAND inlet_user_defined_type_ex --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua)
-
 endif()
