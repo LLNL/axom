@@ -10,13 +10,14 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Inlet
-                        COMPONENTS SLIC Sidre )
+                        COMPONENTS SLIC Sidre PRIMAL )
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 set(inlet_headers
     Field.hpp
+    Function.hpp
     Inlet.hpp
     Reader.hpp
     Table.hpp 
@@ -29,6 +30,7 @@ set(inlet_headers
 
 set(inlet_sources
     Field.cpp
+    Function.cpp
     Inlet.cpp
     Table.cpp
     Proxy.cpp

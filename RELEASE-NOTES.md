@@ -22,6 +22,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added compiler define `NOMINMAX` to `axom/config.hpp.in` to avoid problems with
   the Windows `min` and `max` macros.
 - Added `cpp14` variant to Spack package to allow `Inlet::LuaReader` to be used easier.
+- Inlet: Added support for string-keyed associative arrays (dictionaries)
+- Inlet: Added support for defining and retrieving functions from the input file
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
