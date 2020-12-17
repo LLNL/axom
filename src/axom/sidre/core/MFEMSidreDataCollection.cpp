@@ -2002,39 +2002,51 @@ void MFEMSidreDataCollection::reconstructFields()
       auto basis_name = field_grp->getView("basis")->getString();
       m_fecolls.emplace_back(mfem::FiniteElementCollection::New(basis_name));
 
-  // FiniteElementSpace - mesh ptr and FEColl ptr
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-      auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
-      if(parmesh)
-      {
-        m_fespaces.emplace_back(
-          new mfem::ParFiniteElementSpace(parmesh, m_fecolls.back().get()));
-      }
-      else
-  #endif
-      {
-        m_fespaces.emplace_back(
-          new mfem::FiniteElementSpace(mesh, m_fecolls.back().get()));
-      }
-
-      double* values = nullptr;
+      View* value_view = nullptr;
+      auto ordering = mfem::Ordering::byNODES;  // The default
+      int vdim = 1;                             // The default
       // Scalar grid function
       if(field_grp->hasView("values"))
       {
-        values = field_grp->getView("values")->getData();
+        value_view = field_grp->getView("values");
       }
 
       // Vector grid function
       else if(field_grp->hasGroup("values"))
       {
         // Sufficient to use address of first component as data is interleaved
-        values = field_grp->getGroup("values")->getView("x0")->getData();
+        value_view = field_grp->getGroup("values")->getView("x0");
+        vdim = field_grp->getGroup("values")->getNumViews();
+        if(value_view->getStride() == static_cast<axom::sidre::IndexType>(vdim))
+        {
+          ordering = mfem::Ordering::byVDIM;
+        }
       }
-
       else
       {
         SLIC_ERROR("Cannot reconstruct grid function - field values not found");
       }
+
+  // FiniteElementSpace - mesh ptr and FEColl ptr
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+      auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+      if(parmesh)
+      {
+        m_fespaces.emplace_back(
+          new mfem::ParFiniteElementSpace(parmesh,
+                                          m_fecolls.back().get(),
+                                          vdim,
+                                          ordering));
+      }
+      else
+  #endif
+      {
+        m_fespaces.emplace_back(
+          new mfem::FiniteElementSpace(mesh, m_fecolls.back().get(), vdim, ordering));
+      }
+
+      double* values = value_view->getData();
+
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
       auto parfes =
         dynamic_cast<mfem::ParFiniteElementSpace*>(m_fespaces.back().get());
