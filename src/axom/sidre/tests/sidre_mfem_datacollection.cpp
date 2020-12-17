@@ -143,6 +143,58 @@ TEST(sidre_datacollection, dc_reload_gf)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
+TEST(sidre_datacollection, dc_reload_gf_vdim)
+{
+  const std::string field_name = "test_field";
+  const int vdim = 2;
+  // 2D mesh divided into triangles
+  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec, vdim, mfem::Ordering::byVDIM);
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc_writer(COLL_NAME, &mesh, owns_mesh);
+  mfem::GridFunction gf_write(&fes, nullptr);
+
+  // Register to allocate storage internally, then write to it
+  sdc_writer.RegisterField(field_name, &gf_write);
+
+  mfem::ConstantCoefficient three_and_a_half(3.5);
+  gf_write.ProjectCoefficient(three_and_a_half);
+
+  EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
+
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_writer.SetComm(MPI_COMM_WORLD);
+  #endif
+
+  sdc_writer.SetPrefixPath("/tmp/dc_reload_test");
+  sdc_writer.SetCycle(0);
+  sdc_writer.Save();
+
+  // No mesh is used here
+  MFEMSidreDataCollection sdc_reader(COLL_NAME);
+
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+  #endif
+
+  sdc_reader.SetPrefixPath("/tmp/dc_reload_test");
+  sdc_reader.Load();
+
+  // No need to reregister, it already exists
+  auto gf_read = sdc_reader.GetField(field_name);
+
+  // Make sure the gridfunction was actually read in
+  EXPECT_LT(gf_read->ComputeL2Error(three_and_a_half), EPSILON);
+  EXPECT_EQ(gf_read->FESpace()->GetOrdering(), mfem::Ordering::byVDIM);
+  EXPECT_EQ(gf_read->FESpace()->GetVDim(), vdim);
+
+  EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+}
+
 TEST(sidre_datacollection, dc_reload_mesh)
 {
   const std::string field_name = "test_field";
