@@ -269,10 +269,10 @@ int main(int argc, char* argv[])
   for(int i = 0; i < n_iter; i++)
   {
     sim_state.step(dt);
-
-    // then save it at each iteration
-    dc.Save("sidre_mfem_datacoll_restart_ex", "sidre_hdf5");
   }
+
+  // then save it at the end of the simulation
+  dc.Save("sidre_mfem_datacoll_restart_ex", "sidre_hdf5");
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   MPI_Finalize();

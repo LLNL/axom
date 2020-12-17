@@ -834,13 +834,8 @@ void MFEMSidreDataCollection::Load(const std::string& path,
                   "different number of nodes?");
 
     UpdateStateFromDS();
+    UpdateMeshAndFieldsFromDS();
   }
-
-  // Create a mesh from the datastore that was just read in
-  reconstructMesh();
-
-  // Create any fields from the datastore that was just read in
-  reconstructFields();
 }
 
 void MFEMSidreDataCollection::LoadExternalData(const std::string& path)
@@ -1945,13 +1940,12 @@ void MFEMSidreDataCollection::reconstructMesh()
   }
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  SLIC_ERROR_IF(m_comm == MPI_COMM_NULL,
+                "Must set the communicator with SetComm before a ParMesh can "
+                "be reconstructed");
   // If it has an adjacencies group, the reloaded state was a ParMesh
   if(m_bp_grp->hasGroup("adjsets/mesh"))
   {
-    SLIC_ERROR_IF(m_comm == MPI_COMM_NULL,
-                  "Must set the communicator with SetComm before a ParMesh can "
-                  "be reconstructed");
-
     m_owned_mesh = std::unique_ptr<SidreParMeshWrapper>(
       new SidreParMeshWrapper(m_bp_grp,
                               m_comm,
@@ -1982,6 +1976,12 @@ void MFEMSidreDataCollection::reconstructMesh()
                      boundary_attributes,
                      num_boundary_elements,
                      dimension));
+  // Vacuously parallel meshes (those on one rank) still need to be constructed
+  // as ParMeshes
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+    m_owned_mesh =
+      std::unique_ptr<mfem::ParMesh>(new mfem::ParMesh(m_comm, *m_owned_mesh));
+  #endif
   }
   // Now that we've initialized an owning pointer, set the base subobject's
   // mesh pointer as a non-owning pointer
