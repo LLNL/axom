@@ -1553,39 +1553,14 @@ void MFEMSidreDataCollection::reconstructFields()
         SLIC_ERROR("Cannot reconstruct grid function - field values not found");
       }
 
-  // FiniteElementSpace - mesh ptr and FEColl ptr
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-      auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
-      if(parmesh)
-      {
-        m_fespaces.emplace_back(
-          new mfem::ParFiniteElementSpace(parmesh,
-                                          m_fecolls.back().get(),
-                                          vdim,
-                                          ordering));
-      }
-      else
-  #endif
-      {
-        m_fespaces.emplace_back(
-          new mfem::FiniteElementSpace(mesh, m_fecolls.back().get(), vdim, ordering));
-      }
+      // FiniteElementSpace - mesh ptr and FEColl ptr
+      m_fespaces.emplace_back(
+        new mfem::FiniteElementSpace(mesh, m_fecolls.back().get(), vdim, ordering));
 
       double* values = value_view->getData();
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-      auto parfes =
-        dynamic_cast<mfem::ParFiniteElementSpace*>(m_fespaces.back().get());
-      if(parfes)
-      {
-        m_owned_gridfuncs.emplace_back(new mfem::ParGridFunction(parfes, values));
-      }
-      else
-  #endif
-      {
-        m_owned_gridfuncs.emplace_back(
-          new mfem::GridFunction(m_fespaces.back().get(), values));
-      }
+      m_owned_gridfuncs.emplace_back(
+        new mfem::GridFunction(m_fespaces.back().get(), values));
 
       // Register a non-owning pointer with the base subobject
       DataCollection::RegisterField(field_grp->getName(),
