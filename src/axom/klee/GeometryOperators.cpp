@@ -16,7 +16,7 @@ namespace klee
 {
 GeometryOperator::GeometryOperator(
   const TransformableGeometryProperties &startProperties)
-  : m_startProperties {startProperties}
+  : m_startProperties (startProperties)
 { }
 
 void CompositeOperator::accept(GeometryOperatorVisitor &visitor) const
