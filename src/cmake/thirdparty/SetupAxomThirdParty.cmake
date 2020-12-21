@@ -101,6 +101,7 @@ else()
     message(STATUS "Conduit support is OFF")
 endif()
 
+set(TPL_DEPS)
 
 #------------------------------------------------------------------------------
 # MFEM
@@ -117,6 +118,7 @@ if (MFEM_DIR)
                             LIBRARIES  ${MFEM_LIBRARIES}
                             TREAT_INCLUDES_AS_SYSTEM ON
                             EXPORTABLE ON)
+        blt_list_append(TO TPL_DEPS ELEMENTS mfem)
     endif()
 else()
     message(STATUS "MFEM support is OFF")
@@ -152,6 +154,7 @@ if (SCR_DIR)
                         LIBRARIES  ${SCR_LIBRARY}
                         TREAT_INCLUDES_AS_SYSTEM ON
                         EXPORTABLE ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS scr)
 else()
     message(STATUS "SCR support is OFF")
 endif()
@@ -194,6 +197,7 @@ if (LUA_DIR)
         LIBRARIES     ${LUA_LIBRARY}
         TREAT_INCLUDES_AS_SYSTEM ON
         EXPORTABLE    ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS lua)
 else()
     message(STATUS "LUA support is OFF")
     set(LUA_FOUND OFF CACHE BOOL "")
@@ -203,17 +207,18 @@ endif()
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------
-set(TPL_DEPS cuda cuda_runtime lua mfem mpi openmp scr)
+blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
+blt_list_append(TO TPL_DEPS ELEMENTS openmp IF ENABLE_OPENMP)
+blt_list_append(TO TPL_DEPS ELEMENTS mpi IF ENABLE_MPI)
+
 foreach(dep ${TPL_DEPS})
-    if(TARGET ${dep})
-        # If the target is EXPORTABLE, add it to the export set
-        get_target_property(_is_imported ${dep} IMPORTED)
-        if(NOT ${_is_imported})
-            install(TARGETS              ${dep}
-                    EXPORT               axom-targets
-                    DESTINATION          lib)
-            # Namespace target to avoid conflicts
-            set_target_properties(${dep} PROPERTIES EXPORT_NAME axom::${dep})
-        endif()
+    # If the target is EXPORTABLE, add it to the export set
+    get_target_property(_is_imported ${dep} IMPORTED)
+    if(NOT ${_is_imported})
+        install(TARGETS              ${dep}
+                EXPORT               axom-targets
+                DESTINATION          lib)
+        # Namespace target to avoid conflicts
+        set_target_properties(${dep} PROPERTIES EXPORT_NAME axom::${dep})
     endif()
 endforeach()
