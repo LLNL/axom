@@ -5,15 +5,15 @@
 
 /*!
  *******************************************************************************
- * \file YAMLReader.cpp
+ * \file JSONReader.cpp
  *
- * \brief This file contains the class implementation of the YAMLReader.
+ * \brief This file contains the class implementation of the JSONReader.
  *******************************************************************************
  */
 
 #include <fstream>
 
-#include "axom/inlet/YAMLReader.hpp"
+#include "axom/inlet/JSONReader.hpp"
 
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
@@ -28,27 +28,27 @@ namespace axom
 {
 namespace inlet
 {
-YAMLReader::YAMLReader() { }
-bool YAMLReader::parseFile(const std::string& filePath)
+JSONReader::JSONReader() { }
+bool JSONReader::parseFile(const std::string& filePath)
 {
   if(!axom::utilities::filesystem::pathExists(filePath))
   {
-    SLIC_WARNING(fmt::format("Inlet: Given YAML input file does not exist: {0}",
+    SLIC_WARNING(fmt::format("Inlet: Given JSON input file does not exist: {0}",
                              filePath));
     return false;
   }
-  m_root.load(filePath, "yaml");
+  m_root.load(filePath, "json");
   return true;
 }
 
-bool YAMLReader::parseString(const std::string& YAMLString)
+bool JSONReader::parseString(const std::string& JSONString)
 {
-  if(YAMLString.empty())
+  if(JSONString.empty())
   {
-    SLIC_WARNING("Inlet: Given an empty YAML string to parse.");
+    SLIC_WARNING("Inlet: Given an empty JSON string to parse.");
     return false;
   }
-  m_root.parse(YAMLString, "yaml");
+  m_root.parse(JSONString, "json");
   return true;
 }
 
@@ -124,7 +124,7 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
 
 }  // namespace detail
 
-bool YAMLReader::getValue(const conduit::Node& node, int& value)
+bool JSONReader::getValue(const conduit::Node& node, int& value)
 {
   // Match LuaReader functionality - narrow from floating-point
   if(node.dtype().is_number())
@@ -135,7 +135,7 @@ bool YAMLReader::getValue(const conduit::Node& node, int& value)
   return false;
 }
 
-bool YAMLReader::getValue(const conduit::Node& node, std::string& value)
+bool JSONReader::getValue(const conduit::Node& node, std::string& value)
 {
   if(node.dtype().is_string())
   {
@@ -145,7 +145,7 @@ bool YAMLReader::getValue(const conduit::Node& node, std::string& value)
   return false;
 }
 
-bool YAMLReader::getValue(const conduit::Node& node, double& value)
+bool JSONReader::getValue(const conduit::Node& node, double& value)
 {
   // Match LuaReader functionality - promote from integer
   if(node.dtype().is_number())
@@ -155,102 +155,85 @@ bool YAMLReader::getValue(const conduit::Node& node, double& value)
   }
   return false;
 }
-bool YAMLReader::getValue(const conduit::Node& node, bool& value)
+bool JSONReader::getValue(const conduit::Node& node, bool& value)
 {
-  // Boolean literals don't appear to be parsed as such - they are strings
-  if(node.dtype().is_string())
+  if(node.dtype().is_uint8())
   {
-    std::string as_str = node.as_string();
-    // YAML 1.2 spec, section 10.3.2
-    // FIXME: Converting the string to lowercase is not strictly correct, it
-    // allows for things like tRue and falsE
-    std::transform(as_str.begin(),
-                   as_str.end(),
-                   as_str.begin(),
-                   [](const unsigned char c) { return std::tolower(c); });
-    if(as_str == "true")
-    {
-      value = true;
-      return true;
-    }
-    else if(as_str == "false")
-    {
-      value = false;
-      return true;
-    }
+    value = node.as_uint8();
+    return true;
   }
   return false;
 }
 
-bool YAMLReader::getBool(const std::string& id, bool& value)
+bool JSONReader::getBool(const std::string& id, bool& value)
 {
   return getValue(detail::traverseNode(m_root, id), value);
 }
 
-bool YAMLReader::getDouble(const std::string& id, double& value)
+bool JSONReader::getDouble(const std::string& id, double& value)
 {
   return getValue(detail::traverseNode(m_root, id), value);
 }
 
-bool YAMLReader::getInt(const std::string& id, int& value)
+bool JSONReader::getInt(const std::string& id, int& value)
 {
   return getValue(detail::traverseNode(m_root, id), value);
 }
 
-bool YAMLReader::getString(const std::string& id, std::string& value)
+bool JSONReader::getString(const std::string& id, std::string& value)
 {
   return getValue(detail::traverseNode(m_root, id), value);
 }
 
-bool YAMLReader::getIntMap(const std::string& id,
+bool JSONReader::getIntMap(const std::string& id,
                            std::unordered_map<int, int>& values)
 {
   return getArray(id, values);
 }
 
-bool YAMLReader::getDoubleMap(const std::string& id,
+bool JSONReader::getDoubleMap(const std::string& id,
                               std::unordered_map<int, double>& values)
 {
   return getArray(id, values);
 }
 
-bool YAMLReader::getBoolMap(const std::string& id,
+bool JSONReader::getBoolMap(const std::string& id,
                             std::unordered_map<int, bool>& values)
 {
   return getArray(id, values);
 }
 
-bool YAMLReader::getStringMap(const std::string& id,
+bool JSONReader::getStringMap(const std::string& id,
                               std::unordered_map<int, std::string>& values)
 {
   return getArray(id, values);
 }
 
-bool YAMLReader::getIntMap(const std::string& id,
+bool JSONReader::getIntMap(const std::string& id,
                            std::unordered_map<std::string, int>& values)
 {
   return getDictionary(id, values);
 }
 
-bool YAMLReader::getDoubleMap(const std::string& id,
+bool JSONReader::getDoubleMap(const std::string& id,
                               std::unordered_map<std::string, double>& values)
 {
   return getDictionary(id, values);
 }
 
-bool YAMLReader::getBoolMap(const std::string& id,
+bool JSONReader::getBoolMap(const std::string& id,
                             std::unordered_map<std::string, bool>& values)
 {
   return getDictionary(id, values);
 }
 
-bool YAMLReader::getStringMap(const std::string& id,
+bool JSONReader::getStringMap(const std::string& id,
                               std::unordered_map<std::string, std::string>& values)
 {
   return getDictionary(id, values);
 }
 
-bool YAMLReader::getIndices(const std::string& id, std::vector<int>& indices)
+bool JSONReader::getIndices(const std::string& id, std::vector<int>& indices)
 {
   indices.clear();
   const auto node = detail::traverseNode(m_root, id);
@@ -259,12 +242,12 @@ bool YAMLReader::getIndices(const std::string& id, std::vector<int>& indices)
     return false;
   }
   indices.resize(node.number_of_children());
-  // Arrays in YAML are contiguous so we don't need to query the input file
+  // Arrays in JSON are contiguous so we don't need to query the input file
   std::iota(indices.begin(), indices.end(), 0);
   return true;
 }
 
-bool YAMLReader::getIndices(const std::string& id,
+bool JSONReader::getIndices(const std::string& id,
                             std::vector<std::string>& indices)
 {
   indices.clear();
@@ -283,16 +266,16 @@ bool YAMLReader::getIndices(const std::string& id,
   return true;
 }
 
-FunctionVariant YAMLReader::getFunction(const std::string&,
+FunctionVariant JSONReader::getFunction(const std::string&,
                                         const FunctionType,
                                         const std::vector<FunctionType>&)
 {
-  SLIC_ERROR("[Inlet] YAML does not support functions");
+  SLIC_ERROR("[Inlet] JSON does not support functions");
   return {};
 }
 
 template <typename T>
-bool YAMLReader::getDictionary(const std::string& id,
+bool JSONReader::getDictionary(const std::string& id,
                                std::unordered_map<std::string, T>& values)
 {
   values.clear();
@@ -319,7 +302,7 @@ bool YAMLReader::getDictionary(const std::string& id,
 }
 
 template <typename T>
-bool YAMLReader::getArray(const std::string& id,
+bool JSONReader::getArray(const std::string& id,
                           std::unordered_map<int, T>& values)
 {
   values.clear();

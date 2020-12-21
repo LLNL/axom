@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/inlet/YAMLReader.hpp"
+#include "axom/inlet/JSONReader.hpp"
 
 #ifdef AXOM_USE_SOL
   #include "axom/inlet/LuaReader.hpp"
@@ -40,6 +41,16 @@ public:
    *****************************************************************************
    */
   static std::string convert(const std::string& luaString);
+
+  /*!
+   *****************************************************************************
+   * \brief Converts a Lua string to JSON
+   * \param [in] luaString The string to convert
+   * \note This function does not check for syntactic validity.  It is the
+   * responsibility of the callet to pass a valid Lua string.
+   *****************************************************************************
+   */
+  static std::string convertJSON(const std::string& luaString);
 
 private:
   /*!
@@ -81,10 +92,16 @@ inline std::string fromLuaTo<axom::inlet::YAMLReader>(const std::string& luaStri
 {
   return LuaToYAML::convert(luaString);
 }
+/// \overload
+template <>
+inline std::string fromLuaTo<axom::inlet::JSONReader>(const std::string& luaString)
+{
+  return LuaToYAML::convertJSON(luaString);
+}
 
 #ifdef AXOM_USE_SOL
 using ReaderTypes =
-  ::testing::Types<axom::inlet::LuaReader, axom::inlet::YAMLReader>;
+  ::testing::Types<axom::inlet::LuaReader, axom::inlet::YAMLReader, axom::inlet::JSONReader>;
 #else
 using ReaderTypes = ::testing::Types<axom::inlet::YAMLReader>;
 #endif

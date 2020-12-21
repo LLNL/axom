@@ -27,6 +27,7 @@ set(inlet_headers
     DocWriter.hpp
     SphinxDocWriter.hpp
     YAMLReader.hpp
+    JSONReader.hpp
     inlet_utils.hpp )
 
 set(inlet_sources
@@ -37,6 +38,7 @@ set(inlet_sources
     Proxy.cpp
     SphinxDocWriter.cpp
     YAMLReader.cpp
+    JSONReader.cpp
     inlet_utils.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF SOL_FOUND)

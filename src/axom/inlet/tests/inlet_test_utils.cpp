@@ -161,4 +161,137 @@ std::string LuaToYAML::convert(const std::string& luaString)
   return result;
 }
 
+std::string LuaToYAML::convertJSON(const std::string& luaString)
+{
+  const auto tokens = [&luaString]() {
+    auto tokens = tokenize(luaString);
+    for(auto& token : tokens)
+    {
+      if(token.front() == '\'' && token.back() == '\'')
+      {
+        token.front() = '"';
+        token.back() = '"';
+      }
+    }
+    return tokens;
+  }();
+  std::size_t i = 0;
+  std::string indent = "  ";
+  std::string result = "{\n";
+  bool is_array = false;
+  bool is_dict = false;
+  auto trim_trailing_comma = [&result]() {
+    if(auto rpos = result.find_last_not_of(" \n"))
+    {
+      if(result[rpos] == ',')
+      {
+        result[rpos] = ' ';
+      }
+    }
+  };
+  while(i < tokens.size())
+  {
+    const auto& token = tokens[i];
+    // The start of a new table
+    if((i < tokens.size() - 2) && tokens[i + 1] == "=" && tokens[i + 2] == "{")
+    {
+      result += indent + '"' + token + '"' + ": ";
+      if(!isdigit(tokens[i + 4].front()))
+      {
+        is_dict = true;
+        result += '{';
+      }
+      result += '\n';
+      indent += "  ";
+      i += 3;
+    }
+    // End of a table - only need to reduce the indent
+    else if(token == "}")
+    {
+      indent = indent.substr(2);
+      i += 1;
+      if(is_array)
+      {
+        // Reset the array status
+        is_array = false;
+        trim_trailing_comma();
+        result += indent + "],\n";
+        indent = indent.substr(2);
+      }
+      else if(is_dict)
+      {
+        is_dict = false;
+        trim_trailing_comma();
+        result += indent + "},\n";
+      }
+    }
+    // Commas and semicolons can be ignored completely
+    else if(token == "," || token == ";")
+    {
+      i += 1;
+    }
+    // The start of an implicitly indexed array
+    else if(token == "{")
+    {
+      result += indent + "-\n";
+      indent += "  ";
+      i += 1;
+    }
+    else if(token == "[")
+    {
+      const auto& key = tokens[i + 1];
+      // Check if this is the start of a new table
+      if(tokens[i + 4] == "{")
+      {
+        result += indent;
+        // Check if it's an integer-keyed table
+        result += isdigit(key.front()) ? "-\n" : key + ":\n";
+        indent += "  ";
+      }
+      // Or if it's a terminal entry in the current table
+      else
+      {
+        const auto& value = tokens[i + 4];
+        if(isdigit(key.front()))
+        {
+          if(!is_array)
+          {
+            result += indent + '[' + '\n';
+            indent += "  ";
+          }
+          is_array = true;
+        }
+        else
+        {
+          if(!is_dict)
+          {
+            result += indent + '{';
+          }
+          is_dict = true;
+        }
+        if(is_array)
+        {
+          // Assume this is an integer-keyed array
+          result += indent + value + ",\n";
+        }
+        else
+        {
+          result += indent + key + ": " + value + "\n";
+        }
+      }
+      i += 5;
+    }
+    else
+    {
+      const auto& value = tokens[i + 2];
+      result += indent + '"' + token + '"' + ": " + value + ",\n";
+      i += 3;
+    }
+  }
+  trim_trailing_comma();
+  result += "}\n";
+  SLIC_INFO("Result is:\n" << result);
+  return result;
+}
+
 }  // namespace axom::inlet::detail
