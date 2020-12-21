@@ -14,14 +14,14 @@
 #include "axom/inlet/tests/inlet_test_utils.hpp"
 
 template <typename InletReader>
-class InletReaderTest : public testing::Test
+class inlet_Reader : public testing::Test
 { };
 
-TYPED_TEST_SUITE(InletReaderTest, axom::inlet::detail::ReaderTypes);
+TYPED_TEST_SUITE(inlet_Reader, axom::inlet::detail::ReaderTypes);
 
 using axom::inlet::detail::fromLuaTo;
 
-TYPED_TEST(InletReaderTest, getTopLevelBools)
+TYPED_TEST(inlet_Reader, getTopLevelBools)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>("foo = true; bar = false"));
@@ -39,7 +39,7 @@ TYPED_TEST(InletReaderTest, getTopLevelBools)
   EXPECT_EQ(value, false);
 }
 
-TYPED_TEST(InletReaderTest, getInsideBools)
+TYPED_TEST(inlet_Reader, getInsideBools)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>("foo = { bar = false; baz = true }"));
@@ -57,7 +57,7 @@ TYPED_TEST(InletReaderTest, getInsideBools)
   EXPECT_EQ(value, true);
 }
 
-TYPED_TEST(InletReaderTest, getTopLevelStrings)
+TYPED_TEST(inlet_Reader, getTopLevelStrings)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>(
@@ -77,7 +77,7 @@ TYPED_TEST(InletReaderTest, getTopLevelStrings)
   EXPECT_EQ(value, "TesT StrInG");
 }
 
-TYPED_TEST(InletReaderTest, getInsideStrings)
+TYPED_TEST(inlet_Reader, getInsideStrings)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>(
@@ -97,7 +97,7 @@ TYPED_TEST(InletReaderTest, getInsideStrings)
   EXPECT_EQ(value, "TesT StrInG");
 }
 
-TYPED_TEST(InletReaderTest, mixLevelTables)
+TYPED_TEST(inlet_Reader, mixLevelTables)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>(
@@ -122,7 +122,7 @@ TYPED_TEST(InletReaderTest, mixLevelTables)
   EXPECT_EQ(value, 3);
 }
 
-TYPED_TEST(InletReaderTest, getMap)
+TYPED_TEST(inlet_Reader, getMap)
 {
   // Keep this contiguous in order to test all supported input languages
   std::string testString =
@@ -165,7 +165,7 @@ TYPED_TEST(InletReaderTest, getMap)
 #ifdef AXOM_USE_SOL
 // Checks that LuaReader parses array information as expected
 // Discontiguous arrays are lua-specific
-TEST(LuaReaderTest, getDiscontiguousMap)
+TEST(inlet_Reader_lua, getDiscontiguousMap)
 {
   std::string testString =
     "luaArray = { [1] = 4, [2] = 5, [3] = 6 , [4] = true, [8] = false, [12] = "

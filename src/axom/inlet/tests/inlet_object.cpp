@@ -55,12 +55,12 @@ struct FromInlet<Foo>
 };
 
 template <typename InletReader>
-class InletObjectTest : public ::testing::Test
+class inlet_object : public ::testing::Test
 { };
 
-TYPED_TEST_SUITE(InletObjectTest, axom::inlet::detail::ReaderTypes);
+TYPED_TEST_SUITE(inlet_object, axom::inlet::detail::ReaderTypes);
 
-TYPED_TEST(InletObjectTest, simple_struct_by_value)
+TYPED_TEST(inlet_object, simple_struct_by_value)
 {
   std::string testString = "foo = { bar = true; baz = false }";
   DataStore ds;
@@ -77,7 +77,7 @@ TYPED_TEST(InletObjectTest, simple_struct_by_value)
   EXPECT_FALSE(foo.baz);
 }
 
-TYPED_TEST(InletObjectTest, simple_array_of_struct_by_value)
+TYPED_TEST(inlet_object, simple_array_of_struct_by_value)
 {
   std::string testString =
     "foo = { [0] = { bar = true; baz = false}, "
@@ -95,7 +95,7 @@ TYPED_TEST(InletObjectTest, simple_array_of_struct_by_value)
   EXPECT_EQ(foos, expected_foos);
 }
 
-TYPED_TEST(InletObjectTest, simple_array_of_struct_implicit_idx)
+TYPED_TEST(inlet_object, simple_array_of_struct_implicit_idx)
 {
   std::string testString =
     "foo = { { bar = true; baz = false}, "
@@ -115,7 +115,7 @@ TYPED_TEST(InletObjectTest, simple_array_of_struct_implicit_idx)
   EXPECT_EQ(foos, expected_foos);
 }
 
-TYPED_TEST(InletObjectTest, simple_array_of_struct_verify_optional)
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_optional)
 {
   std::string testString =
     "foo = { [4] = { bar = true;}, "
@@ -131,7 +131,7 @@ TYPED_TEST(InletObjectTest, simple_array_of_struct_verify_optional)
   EXPECT_TRUE(inlet.verify());
 }
 
-TYPED_TEST(InletObjectTest, simple_array_of_struct_verify_reqd)
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
 {
   std::string testString =
     "foo = { [4] = { bar = true;}, "
@@ -163,7 +163,7 @@ struct FromInlet<FooWithArray>
   }
 };
 
-TYPED_TEST(InletObjectTest, array_of_struct_containing_array)
+TYPED_TEST(inlet_object, array_of_struct_containing_array)
 {
   std::string testString =
     "foo = { [0] = { arr = { [0] = 3 }; }, "
@@ -202,7 +202,7 @@ struct FromInlet<MoveOnlyFoo>
   }
 };
 
-TYPED_TEST(InletObjectTest, simple_moveonly_struct_by_value)
+TYPED_TEST(inlet_object, simple_moveonly_struct_by_value)
 {
   std::string testString = "foo = { bar = true; baz = false }";
   DataStore ds;
@@ -219,7 +219,7 @@ TYPED_TEST(InletObjectTest, simple_moveonly_struct_by_value)
   EXPECT_FALSE(foo.baz);
 }
 
-TYPED_TEST(InletObjectTest, simple_value_from_bracket)
+TYPED_TEST(inlet_object, simple_value_from_bracket)
 {
   std::string testString = "foo = true";
   DataStore ds;
@@ -233,7 +233,7 @@ TYPED_TEST(InletObjectTest, simple_value_from_bracket)
   EXPECT_TRUE(foo);
 }
 
-TYPED_TEST(InletObjectTest, simple_struct_from_bracket)
+TYPED_TEST(inlet_object, simple_struct_from_bracket)
 {
   std::string testString = "foo = { bar = true; baz = false }";
   DataStore ds;
@@ -250,7 +250,7 @@ TYPED_TEST(InletObjectTest, simple_struct_from_bracket)
   EXPECT_FALSE(foo.baz);
 }
 
-TYPED_TEST(InletObjectTest, contains_from_table)
+TYPED_TEST(inlet_object, contains_from_table)
 {
   std::string testString = "foo = { bar = true; baz = false }";
   DataStore ds;
@@ -270,7 +270,7 @@ TYPED_TEST(InletObjectTest, contains_from_table)
   EXPECT_TRUE(foo_table.contains("baz"));
 }
 
-TYPED_TEST(InletObjectTest, contains_from_bracket)
+TYPED_TEST(inlet_object, contains_from_bracket)
 {
   std::string testString = "foo = { bar = true; baz = false }";
   DataStore ds;
@@ -286,7 +286,7 @@ TYPED_TEST(InletObjectTest, contains_from_bracket)
   EXPECT_TRUE(inlet["foo"].contains("baz"));
 }
 
-TYPED_TEST(InletObjectTest, array_from_bracket)
+TYPED_TEST(inlet_object, array_from_bracket)
 {
   DataStore ds;
   std::string testString =
@@ -323,7 +323,7 @@ TYPED_TEST(InletObjectTest, array_from_bracket)
   EXPECT_EQ(doubleMap, expectedDoubles);
 }
 
-TYPED_TEST(InletObjectTest, primitive_type_checks)
+TYPED_TEST(inlet_object, primitive_type_checks)
 {
   std::string testString =
     " bar = true; baz = 12; quux = 2.5; corge = 'hello' ";
@@ -357,7 +357,7 @@ TYPED_TEST(InletObjectTest, primitive_type_checks)
   EXPECT_EQ(corge, "hello");
 }
 
-TYPED_TEST(InletObjectTest, composite_type_checks)
+TYPED_TEST(inlet_object, composite_type_checks)
 {
   std::string testString =
     "luaArrays = { arr1 = { [1] = 4}, "
@@ -392,7 +392,7 @@ TYPED_TEST(InletObjectTest, composite_type_checks)
   EXPECT_EQ(foo_table["baz"].type(), InletType::Bool);
 }
 
-TYPED_TEST(InletObjectTest, implicit_conversion_primitives)
+TYPED_TEST(inlet_object, implicit_conversion_primitives)
 {
   std::string testString =
     " bar = true; baz = 12; quux = 2.5; corge = 'hello'; arr = { [0] = 4, [1] "
@@ -437,12 +437,12 @@ TYPED_TEST(InletObjectTest, implicit_conversion_primitives)
 }
 
 template <typename InletReader>
-class InletDictTest : public ::testing::Test
+class inlet_object_dict : public ::testing::Test
 { };
 
-TYPED_TEST_SUITE(InletDictTest, axom::inlet::detail::ReaderTypes);
+TYPED_TEST_SUITE(inlet_object_dict, axom::inlet::detail::ReaderTypes);
 
-TYPED_TEST(InletDictTest, basic_dicts)
+TYPED_TEST(inlet_object_dict, basic_dicts)
 {
   std::string testString = "foo = { ['key1'] = 4, ['key3'] = 6, ['key2'] = 10}";
   DataStore ds;
@@ -456,7 +456,7 @@ TYPED_TEST(InletDictTest, basic_dicts)
   EXPECT_EQ(dict, correct);
 }
 
-TYPED_TEST(InletDictTest, simple_dict_of_struct_by_value)
+TYPED_TEST(inlet_object_dict, simple_dict_of_struct_by_value)
 {
   std::string testString =
     "foo = { ['key1'] = { bar = true; baz = false}, "
@@ -491,7 +491,7 @@ struct FromInlet<FooWithDict>
   }
 };
 
-TYPED_TEST(InletDictTest, dict_of_struct_containing_dict)
+TYPED_TEST(inlet_object_dict, dict_of_struct_containing_dict)
 {
   std::string testString =
     "foo = { ['key3'] = { arr = { ['key1'] = 3 }; }, "
@@ -511,7 +511,7 @@ TYPED_TEST(InletDictTest, dict_of_struct_containing_dict)
   EXPECT_EQ(foos_with_dict, expected_foos);
 }
 
-TYPED_TEST(InletDictTest, dict_of_struct_containing_array)
+TYPED_TEST(inlet_object_dict, dict_of_struct_containing_array)
 {
   std::string testString =
     "foo = { ['key3'] = { arr = { [0] = 3 }; }, "
@@ -531,7 +531,7 @@ TYPED_TEST(InletDictTest, dict_of_struct_containing_array)
   EXPECT_EQ(foos_with_array, expected_foos);
 }
 
-TYPED_TEST(InletDictTest, array_of_struct_containing_dict)
+TYPED_TEST(inlet_object_dict, array_of_struct_containing_dict)
 {
   std::string testString =
     "foo = { [0] = { arr = { ['key1'] = 3 }; }, "
@@ -589,7 +589,7 @@ TEST(inlet_dict, key_with_slash)
 // Noncontiguous array tests that are only valid in Lua
 #ifdef AXOM_USE_SOL
 
-TEST(LuaInletObjectTest, array_of_struct_containing_array)
+TEST(inlet_object_lua, array_of_struct_containing_array)
 {
   std::string testString =
     "foo = { [4] = { arr = { [1] = 3 }; }, "
@@ -607,7 +607,7 @@ TEST(LuaInletObjectTest, array_of_struct_containing_array)
   EXPECT_EQ(foos_with_arr, expected_foos);
 }
 
-TEST(LuaInletObjectTest, array_from_bracket)
+TEST(inlet_object_lua, array_from_bracket)
 {
   DataStore ds;
   std::string testString =
@@ -644,7 +644,7 @@ TEST(LuaInletObjectTest, array_from_bracket)
   EXPECT_EQ(doubleMap, expectedDoubles);
 }
 
-TEST(LuaInletDictTest, dict_of_struct_containing_array)
+TEST(inlet_object_lua_dict, dict_of_struct_containing_array)
 {
   std::string testString =
     "foo = { ['key3'] = { arr = { [1] = 3 }; }, "
@@ -664,7 +664,7 @@ TEST(LuaInletDictTest, dict_of_struct_containing_array)
   EXPECT_EQ(foos_with_array, expected_foos);
 }
 
-TEST(LuaInletDictTest, array_of_struct_containing_dict)
+TEST(inlet_object_lua_dict, array_of_struct_containing_dict)
 {
   std::string testString =
     "foo = { [7] = { arr = { ['key1'] = 3 }; }, "
