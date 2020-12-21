@@ -11,12 +11,56 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/inlet/YAMLReader.hpp"
+
 #ifdef AXOM_USE_SOL
   #include "axom/inlet/LuaReader.hpp"
 #endif
 
 namespace axom::inlet::detail
 {
+/*!
+ *******************************************************************************
+ * \class LuaToYAML
+ * \brief A converter class that translates Lua to YAML
+ * \note This class is not a fully functional Lua parser and should not be treated
+ * as such.  It is designed only to parse the subset of Lua that maps to valid
+ * YAML.
+ *******************************************************************************
+ */
+class LuaToYAML
+{
+public:
+  /*!
+   *****************************************************************************
+   * \brief Converts a Lua string to YAML
+   * \param [in] luaString The string to convert
+   * \note This function does not check for syntactic validity.  It is the
+   * responsibility of the callet to pass a valid Lua string.
+   *****************************************************************************
+   */
+  static std::string convert(const std::string& luaString);
+
+private:
+  /*!
+   *****************************************************************************
+   * \brief Adds a token to a vector of strings, separating any punctuation
+   * that may precede or follow the token.
+   * \param [in] token The token to add
+   * \param [inout] tokens The list of tokens to append to
+   *****************************************************************************
+   */
+  static void add_token(std::string&& token, std::vector<std::string>& tokens);
+
+  /*!
+   *****************************************************************************
+   * \brief Splits a Lua string into tokens
+   * \param [in] text The Lua code to lex/tokenize
+   *****************************************************************************
+   */
+  static std::vector<std::string> tokenize(const std::string& text);
+};
+
 /*!
  *******************************************************************************
  * \brief Converts a Lua string to a string accepted by the reader of specified
@@ -31,11 +75,18 @@ inline std::string fromLuaTo(const std::string& luaString)
 {
   return luaString;
 }
+/// \overload
+template <>
+inline std::string fromLuaTo<axom::inlet::YAMLReader>(const std::string& luaString)
+{
+  return LuaToYAML::convert(luaString);
+}
 
 #ifdef AXOM_USE_SOL
-using ReaderTypes = ::testing::Types<axom::inlet::LuaReader>;
+using ReaderTypes =
+  ::testing::Types<axom::inlet::LuaReader, axom::inlet::YAMLReader>;
 #else
-using ReaderTypes = ::testing::Types<>;
+using ReaderTypes = ::testing::Types<axom::inlet::YAMLReader>;
 #endif
 
 }  // namespace axom::inlet::detail
