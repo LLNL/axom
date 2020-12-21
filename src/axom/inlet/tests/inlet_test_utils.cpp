@@ -7,6 +7,4 @@
 #include "axom/slic.hpp"
 
 namespace axom::inlet::detail
-{
-
-}  // namespace axom::inlet::detail
+{ }  // namespace axom::inlet::detail

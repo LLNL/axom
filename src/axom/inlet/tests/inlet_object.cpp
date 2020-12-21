@@ -108,8 +108,7 @@ TYPED_TEST(InletObjectTest, simple_array_of_struct_implicit_idx)
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
   // Lua is 1-indexed
-  const int base_idx =
-    std::is_same<TypeParam, axom::inlet::LuaReader>::value ? 1 : 0;
+  const int base_idx = TypeParam::baseIndex;
   std::unordered_map<int, Foo> expected_foos = {{base_idx, {true, false}},
                                                 {base_idx + 1, {false, true}}};
   auto foos = inlet["foo"].get<std::unordered_map<int, Foo>>();

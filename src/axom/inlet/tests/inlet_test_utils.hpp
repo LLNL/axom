@@ -17,7 +17,6 @@
 
 namespace axom::inlet::detail
 {
-
 /*!
  *******************************************************************************
  * \brief Converts a Lua string to a string accepted by the reader of specified
@@ -34,8 +33,7 @@ inline std::string fromLuaTo(const std::string& luaString)
 }
 
 #ifdef AXOM_USE_SOL
-using ReaderTypes =
-  ::testing::Types<axom::inlet::LuaReader>;
+using ReaderTypes = ::testing::Types<axom::inlet::LuaReader>;
 #else
 using ReaderTypes = ::testing::Types<>;
 #endif
