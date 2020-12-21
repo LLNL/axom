@@ -163,6 +163,7 @@ std::string LuaToYAML::convert(const std::string& luaString)
 
 std::string LuaToYAML::convertJSON(const std::string& luaString)
 {
+  // Replace all single-quoted strings with double quotes
   const auto tokens = [&luaString]() {
     auto tokens = tokenize(luaString);
     for(auto& token : tokens)
@@ -178,8 +179,7 @@ std::string LuaToYAML::convertJSON(const std::string& luaString)
   std::size_t i = 0;
   std::string indent = "  ";
   std::string result = "{\n";
-  bool is_array = false;
-  bool is_dict = false;
+  std::stack<char> delim_stack;
   auto trim_trailing_comma = [&result]() {
     if(auto rpos = result.find_last_not_of(" \n"))
     {
@@ -196,34 +196,23 @@ std::string LuaToYAML::convertJSON(const std::string& luaString)
     if((i < tokens.size() - 2) && tokens[i + 1] == "=" && tokens[i + 2] == "{")
     {
       result += indent + '"' + token + '"' + ": ";
-      if(!isdigit(tokens[i + 4].front()))
-      {
-        is_dict = true;
-        result += '{';
-      }
+      // Curly brace if it's a string-keyed table (not integer-keyed) and not implicitly indexed
+      const char open_bracket =
+        (!isdigit(tokens[i + 4].front()) && (tokens[i + 3] != "{")) ? '{' : '[';
+      delim_stack.push(open_bracket);
+      result += open_bracket;
       result += '\n';
       indent += "  ";
       i += 3;
     }
-    // End of a table - only need to reduce the indent
+    // End of a table - end with the matching type of bracket
     else if(token == "}")
     {
       indent = indent.substr(2);
+      trim_trailing_comma();
+      result += indent + (delim_stack.top() == '[' ? ']' : '}') + ",\n";
+      delim_stack.pop();
       i += 1;
-      if(is_array)
-      {
-        // Reset the array status
-        is_array = false;
-        trim_trailing_comma();
-        result += indent + "],\n";
-        indent = indent.substr(2);
-      }
-      else if(is_dict)
-      {
-        is_dict = false;
-        trim_trailing_comma();
-        result += indent + "},\n";
-      }
     }
     // Commas and semicolons can be ignored completely
     else if(token == "," || token == ";")
@@ -233,7 +222,10 @@ std::string LuaToYAML::convertJSON(const std::string& luaString)
     // The start of an implicitly indexed array
     else if(token == "{")
     {
-      result += indent + "-\n";
+      // The contents of the array are still objects (non-terminal),
+      // so add a curly brace
+      result += indent + "{\n";
+      delim_stack.push('{');
       indent += "  ";
       i += 1;
     }
@@ -245,38 +237,38 @@ std::string LuaToYAML::convertJSON(const std::string& luaString)
       {
         result += indent;
         // Check if it's an integer-keyed table
-        result += isdigit(key.front()) ? "-\n" : key + ":\n";
+        if(isdigit(key.front()))
+        {
+          result += "{\n";
+          delim_stack.push('{');
+        }
+        else
+        {
+          // The start of a string-keyed table
+          result += key + ": {\n";
+          delim_stack.push('{');
+        }
         indent += "  ";
       }
       // Or if it's a terminal entry in the current table
       else
       {
         const auto& value = tokens[i + 4];
-        if(isdigit(key.front()))
+        // If it's the start of an array of scalars, add the opening bracket
+        if(isdigit(key.front()) && (delim_stack.top() != '['))
         {
-          if(!is_array)
-          {
-            result += indent + '[' + '\n';
-            indent += "  ";
-          }
-          is_array = true;
+          result += indent + '[' + '\n';
+          indent += "  ";
+          delim_stack.push('[');
         }
-        else
+        // Integer-keyed arrays just need the element
+        if(delim_stack.top() == '[')
         {
-          if(!is_dict)
-          {
-            result += indent + '{';
-          }
-          is_dict = true;
-        }
-        if(is_array)
-        {
-          // Assume this is an integer-keyed array
           result += indent + value + ",\n";
         }
         else
         {
-          result += indent + key + ": " + value + "\n";
+          result += indent + key + ": " + value + ",\n";
         }
       }
       i += 5;
@@ -290,7 +282,6 @@ std::string LuaToYAML::convertJSON(const std::string& luaString)
   }
   trim_trailing_comma();
   result += "}\n";
-  SLIC_INFO("Result is:\n" << result);
   return result;
 }
 

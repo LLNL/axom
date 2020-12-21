@@ -126,8 +126,8 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
 
 bool JSONReader::getValue(const conduit::Node& node, int& value)
 {
-  // Match LuaReader functionality - narrow from floating-point
-  if(node.dtype().is_number())
+  // Match LuaReader functionality - narrow from floating-point but exclude bool
+  if(node.dtype().is_number() && !node.dtype().is_uint8())
   {
     value = node.to_int();
     return true;
@@ -147,8 +147,8 @@ bool JSONReader::getValue(const conduit::Node& node, std::string& value)
 
 bool JSONReader::getValue(const conduit::Node& node, double& value)
 {
-  // Match LuaReader functionality - promote from integer
-  if(node.dtype().is_number())
+  // Match LuaReader functionality - promote from integer but not bool
+  if(node.dtype().is_number() && !node.dtype().is_uint8())
   {
     value = node.to_float64();
     return true;
