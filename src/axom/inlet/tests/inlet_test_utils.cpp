@@ -99,17 +99,20 @@ std::string LuaToYAML::convert(const std::string& luaString)
   while(i < tokens.size())
   {
     const auto& token = tokens[i];
+    // The start of a new table
     if((i < tokens.size() - 2) && tokens[i + 1] == "=" && tokens[i + 2] == "{")
     {
       result += indent + token + ":\n";
       indent += "  ";
       i += 3;
     }
+    // End of a table - only need to reduce the indent
     else if(token == "}")
     {
       indent = indent.substr(2);
       i += 1;
     }
+    // Commas and semicolons can be ignored completely
     else if(token == "," || token == ";")
     {
       i += 1;
