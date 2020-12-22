@@ -35,7 +35,7 @@ foreach(example_source ${example_sources})
         FOLDER      axom/slam/examples )
 
     if(AXOM_ENABLE_TESTS)
-        blt_add_test(
+        axom_add_test(
             NAME        slam_${example_name}
             COMMAND     slam_${example_name}_ex )
     endif()
@@ -61,7 +61,7 @@ blt_add_executable(
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
-    blt_add_test(
+    axom_add_test(
         NAME        slam_unstructMesh
         COMMAND     slam_unstructMesh_ex ${AXOM_DATA_DIR}/slam )
 endif()
