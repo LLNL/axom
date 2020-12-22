@@ -18,7 +18,7 @@ set(spin_tests
 
 set(spin_depends
     spin
-    test
+    gtest
     fmt
     )
 
