@@ -8,7 +8,8 @@
 
 namespace axom::inlet::detail
 {
-void LuaToYAML::add_token(std::string&& token, std::vector<std::string>& tokens)
+void LuaTranslator::add_token(std::string&& token,
+                              std::vector<std::string>& tokens)
 {
   const static std::string punctuation = "{}[];,=";
   std::vector<std::string> parsed_after;
@@ -37,7 +38,7 @@ void LuaToYAML::add_token(std::string&& token, std::vector<std::string>& tokens)
   tokens.insert(tokens.end(), parsed_after.rbegin(), parsed_after.rend());
 }
 
-std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
+std::vector<std::string> LuaTranslator::tokenize(const std::string& text)
 {
   std::vector<std::string> result;
   std::size_t pos = 0;
@@ -90,7 +91,7 @@ std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
   return result;
 }
 
-std::string LuaToYAML::convert(const std::string& luaString)
+std::string LuaTranslator::convertYAML(const std::string& luaString)
 {
   const auto tokens = tokenize(luaString);
   std::size_t i = 0;
@@ -161,7 +162,7 @@ std::string LuaToYAML::convert(const std::string& luaString)
   return result;
 }
 
-std::string LuaToYAML::convertJSON(const std::string& luaString)
+std::string LuaTranslator::convertJSON(const std::string& luaString)
 {
   // Replace all single-quoted strings with double quotes
   const auto tokens = [&luaString]() {
@@ -185,7 +186,7 @@ std::string LuaToYAML::convertJSON(const std::string& luaString)
     {
       if(result[rpos] == ',')
       {
-        result[rpos] = ' ';
+        result.erase(rpos, 1);
       }
     }
   };

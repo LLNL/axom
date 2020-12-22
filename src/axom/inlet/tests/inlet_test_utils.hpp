@@ -22,14 +22,14 @@ namespace axom::inlet::detail
 {
 /*!
  *******************************************************************************
- * \class LuaToYAML
- * \brief A converter class that translates Lua to YAML
+ * \class LuaTranslator
+ * \brief A converter class that translates Lua to YAML or JSON
  * \note This class is not a fully functional Lua parser and should not be treated
  * as such.  It is designed only to parse the subset of Lua that maps to valid
- * YAML.
+ * YAML/JSON.
  *******************************************************************************
  */
-class LuaToYAML
+class LuaTranslator
 {
 public:
   /*!
@@ -37,17 +37,17 @@ public:
    * \brief Converts a Lua string to YAML
    * \param [in] luaString The string to convert
    * \note This function does not check for syntactic validity.  It is the
-   * responsibility of the callet to pass a valid Lua string.
+   * responsibility of the caller to pass a valid Lua string.
    *****************************************************************************
    */
-  static std::string convert(const std::string& luaString);
+  static std::string convertYAML(const std::string& luaString);
 
   /*!
    *****************************************************************************
    * \brief Converts a Lua string to JSON
    * \param [in] luaString The string to convert
    * \note This function does not check for syntactic validity.  It is the
-   * responsibility of the callet to pass a valid Lua string.
+   * responsibility of the caller to pass a valid Lua string.
    *****************************************************************************
    */
   static std::string convertJSON(const std::string& luaString);
@@ -90,13 +90,13 @@ inline std::string fromLuaTo(const std::string& luaString)
 template <>
 inline std::string fromLuaTo<axom::inlet::YAMLReader>(const std::string& luaString)
 {
-  return LuaToYAML::convert(luaString);
+  return LuaTranslator::convertYAML(luaString);
 }
 /// \overload
 template <>
 inline std::string fromLuaTo<axom::inlet::JSONReader>(const std::string& luaString)
 {
-  return LuaToYAML::convertJSON(luaString);
+  return LuaTranslator::convertJSON(luaString);
 }
 
 #ifdef AXOM_USE_SOL
