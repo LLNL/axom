@@ -60,8 +60,12 @@ const static char SCOPE_DELIMITER = '/';
  * \brief Traverses a path starting from a Node
  *
  * \param [in] root The node from which to begin traversal
- * \param [in] id   The path to traverse
+ * \param [in] id   The path to traverse as an Inlet path
  * \note Needed for paths containing integers as a conversion is required
+ * \note Inlet paths differ from Conduit paths in that they can contain integers,
+ * e.g., "/path/to/7/foo" would correspond to node["path"]["to"][7]["foo"].
+ * The traversal prefers the string-valued name but will attempt to convert to
+ * integer if no such child exists.
  *******************************************************************************
  */
 conduit::Node traverseNode(const conduit::Node& root, const std::string& id)
