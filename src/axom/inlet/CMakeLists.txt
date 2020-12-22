@@ -26,6 +26,7 @@ set(inlet_headers
     VerifiableScalar.hpp
     DocWriter.hpp
     SphinxDocWriter.hpp
+    ConduitReader.hpp
     YAMLReader.hpp
     JSONReader.hpp
     inlet_utils.hpp )
@@ -37,8 +38,7 @@ set(inlet_sources
     Table.cpp
     Proxy.cpp
     SphinxDocWriter.cpp
-    YAMLReader.cpp
-    JSONReader.cpp
+    ConduitReader.cpp
     inlet_utils.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF SOL_FOUND)
