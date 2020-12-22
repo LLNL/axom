@@ -23,8 +23,8 @@ blt_add_executable(NAME       lumberjack_serial_tests
 
 foreach(test_suite ${lumberjack_serial_tests})
     get_filename_component(test_suite ${test_suite} NAME_WE)
-    blt_add_test(NAME    ${test_suite}
-                 COMMAND lumberjack_serial_tests --gtest_filter=${test_suite}* )
+    axom_add_test(NAME    ${test_suite}
+                  COMMAND lumberjack_serial_tests --gtest_filter=${test_suite}* )
 endforeach()
 
 
@@ -45,9 +45,9 @@ blt_add_executable(NAME       lumberjack_mpi_tests
 foreach(test_suite ${lumberjack_mpi_tests})
     get_filename_component( test_suite ${test_suite} NAME_WE )
     foreach(task_count RANGE 1 8)
-        blt_add_test(NAME          ${test_suite}_${task_count}
-                     COMMAND       lumberjack_mpi_tests --gtest_filter=${test_suite}*
-                     NUM_MPI_TASKS ${task_count} )
+        axom_add_test(NAME          ${test_suite}_${task_count}
+                      COMMAND       lumberjack_mpi_tests --gtest_filter=${test_suite}*
+                      NUM_MPI_TASKS ${task_count} )
     endforeach()
 endforeach()
 
@@ -61,10 +61,10 @@ blt_add_executable(NAME       lumberjack_speed_test
                    FOLDER     axom/lumberjack/tests )
 
 set(lumberjack_sample_input_dir ${PROJECT_SOURCE_DIR}/axom/lumberjack/tests/sampleInput)
-blt_add_test(NAME          lumberjack_speedTest_binary
-             COMMAND       lumberjack_speed_test b 10 ${lumberjack_sample_input_dir}/loremIpsum02
-             NUM_MPI_TASKS 4)
+axom_add_test(NAME          lumberjack_speedTest_binary
+              COMMAND       lumberjack_speed_test b 10 ${lumberjack_sample_input_dir}/loremIpsum02
+              NUM_MPI_TASKS 4)
               
-blt_add_test(NAME          lumberjack_speedTest_root
-             COMMAND       lumberjack_speed_test r 10 ${lumberjack_sample_input_dir}/loremIpsum02
-             NUM_MPI_TASKS 4)       
+axom_add_test(NAME          lumberjack_speedTest_root
+              COMMAND       lumberjack_speed_test r 10 ${lumberjack_sample_input_dir}/loremIpsum02
+              NUM_MPI_TASKS 4)       

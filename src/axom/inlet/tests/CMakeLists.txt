@@ -30,7 +30,7 @@ if (SOL_FOUND)
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                             DEPENDS_ON inlet gtest inlet_test_utils
                             FOLDER     axom/inlet/tests )
-        blt_add_test( NAME    ${test_name} 
-                      COMMAND ${test_name}_test )
+        axom_add_test( NAME    ${test_name} 
+                       COMMAND ${test_name}_test )
     endforeach()
 endif()
