@@ -308,6 +308,7 @@ bool YAMLReader::getDictionary(const std::string& id,
     const auto name = child.name();
 
     T value;
+    // Inlet allows for heterogenous containers, so a failure here is "normal"
     if(getValue(child, value))
     {
       values[name] = value;
@@ -348,7 +349,7 @@ bool YAMLReader::getArray(const std::string& id,
     if(getValue(node, value))
     {
       values[0] = value;
-      return false;
+      return true;
     }
     else
     {
@@ -365,6 +366,7 @@ bool YAMLReader::getArray(const std::string& id,
     {
       const auto& child = itr.next();
       T value;
+      // Inlet allows for heterogenous containers, so a failure here is "normal"
       if(!getValue(child, value))
       {
         values[index] = value;
