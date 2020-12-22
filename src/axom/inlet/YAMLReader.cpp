@@ -11,9 +11,9 @@
  *******************************************************************************
  */
 
-#include <fstream>
-
 #include "axom/inlet/YAMLReader.hpp"
+
+#include <fstream>
 
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
@@ -21,8 +21,6 @@
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
-
-// #include "conduit_relay.hpp"
 
 namespace axom
 {
@@ -308,11 +306,11 @@ bool YAMLReader::getDictionary(const std::string& id,
   {
     const auto& child = itr.next();
     const auto name = child.name();
-    if(!getValue(child, values[name]))
+
+    T value;
+    if(getValue(child, value))
     {
-      // The current interface allows for overlapping types, but we need to
-      // remove the default-initialized element here if it failed
-      values.erase(name);
+      values[name] = value;
     }
   }
   return true;
@@ -346,9 +344,14 @@ bool YAMLReader::getArray(const std::string& id,
   {
     // Single-element arrays will be just the element itself
     // If it's a single element, we know the index is zero
-    if(!getValue(node, values[0]))
+    T value;
+    if(getValue(node, value))
     {
-      values.erase(0);
+      values[0] = value;
+      return false;
+    }
+    else
+    {
       return false;
     }
   }
@@ -361,11 +364,10 @@ bool YAMLReader::getArray(const std::string& id,
     while(itr.has_next())
     {
       const auto& child = itr.next();
-      if(!getValue(child, values[index]))
+      T value;
+      if(!getValue(child, value))
       {
-        // The current interface allows for overlapping types, but we need to
-        // remove the default-initialized element here if it failed
-        values.erase(index);
+        values[index] = value;
       }
       index++;
     }

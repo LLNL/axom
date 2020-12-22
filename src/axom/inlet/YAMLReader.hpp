@@ -49,7 +49,7 @@ public:
    * \return true if the input file was able to be parsed
    *****************************************************************************
    */
-  bool parseFile(const std::string& filePath);
+  bool parseFile(const std::string& filePath) override;
 
   /*!
    *****************************************************************************
@@ -64,7 +64,7 @@ public:
    * \return true if the string was able to be parsed
    *****************************************************************************
    */
-  bool parseString(const std::string& YAMLString);
+  bool parseString(const std::string& YAMLString) override;
 
   /*!
    *****************************************************************************
@@ -79,7 +79,7 @@ public:
    * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
-  bool getBool(const std::string& id, bool& value);
+  bool getBool(const std::string& id, bool& value) override;
 
   /*!
    *****************************************************************************
@@ -94,7 +94,7 @@ public:
    * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
-  bool getDouble(const std::string& id, double& value);
+  bool getDouble(const std::string& id, double& value) override;
 
   /*!
    *****************************************************************************
@@ -110,7 +110,7 @@ public:
    * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
-  bool getInt(const std::string& id, int& value);
+  bool getInt(const std::string& id, int& value) override;
 
   /*!
    *****************************************************************************
@@ -125,7 +125,7 @@ public:
    * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
-  bool getString(const std::string& id, std::string& value);
+  bool getString(const std::string& id, std::string& value) override;
 
   /*!
    *****************************************************************************
@@ -140,9 +140,10 @@ public:
    * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
-  bool getIntMap(const std::string& id, std::unordered_map<int, int>& values);
   bool getIntMap(const std::string& id,
-                 std::unordered_map<std::string, int>& values);
+                 std::unordered_map<int, int>& values) override;
+  bool getIntMap(const std::string& id,
+                 std::unordered_map<std::string, int>& values) override;
 
   /*!
    *****************************************************************************
@@ -158,9 +159,9 @@ public:
    *****************************************************************************
    */
   bool getDoubleMap(const std::string& id,
-                    std::unordered_map<int, double>& values);
+                    std::unordered_map<int, double>& values) override;
   bool getDoubleMap(const std::string& id,
-                    std::unordered_map<std::string, double>& values);
+                    std::unordered_map<std::string, double>& values) override;
 
   /*!
    *****************************************************************************
@@ -175,9 +176,10 @@ public:
    * \return true if the array was able to be retrieved from the file
    *****************************************************************************
    */
-  bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values);
   bool getBoolMap(const std::string& id,
-                  std::unordered_map<std::string, bool>& values);
+                  std::unordered_map<int, bool>& values) override;
+  bool getBoolMap(const std::string& id,
+                  std::unordered_map<std::string, bool>& values) override;
 
   /*!
    *****************************************************************************
@@ -193,9 +195,9 @@ public:
    *****************************************************************************
    */
   bool getStringMap(const std::string& id,
-                    std::unordered_map<int, std::string>& values);
+                    std::unordered_map<int, std::string>& values) override;
   bool getStringMap(const std::string& id,
-                    std::unordered_map<std::string, std::string>& values);
+                    std::unordered_map<std::string, std::string>& values) override;
 
   /*!
    *****************************************************************************
@@ -207,8 +209,9 @@ public:
    * \return true if the indices were able to be retrieved from the file
    *****************************************************************************
    */
-  bool getIndices(const std::string& id, std::vector<int>& indices);
-  bool getIndices(const std::string& id, std::vector<std::string>& indices);
+  bool getIndices(const std::string& id, std::vector<int>& indices) override;
+  bool getIndices(const std::string& id,
+                  std::vector<std::string>& indices) override;
 
   /*!
    *****************************************************************************
@@ -225,11 +228,11 @@ public:
    */
   FunctionVariant getFunction(const std::string& id,
                               const FunctionType ret_type,
-                              const std::vector<FunctionType>& arg_types);
+                              const std::vector<FunctionType>& arg_types) override;
 
   /*!
    *****************************************************************************
-   * \brief The base index for arrays in Lua
+   * \brief The base index for arrays in YAML
    *****************************************************************************
    */
   static const int baseIndex = 0;
