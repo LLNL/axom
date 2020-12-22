@@ -101,17 +101,25 @@ else()
     message(STATUS "Conduit support is OFF")
 endif()
 
+set(TPL_DEPS)
 
 #------------------------------------------------------------------------------
 # MFEM
 #------------------------------------------------------------------------------
 if (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
-    blt_import_library( NAME       mfem
-                        INCLUDES   ${MFEM_INCLUDE_DIRS}
-                        LIBRARIES  ${MFEM_LIBRARIES}
-                        TREAT_INCLUDES_AS_SYSTEM ON
-                        EXPORTABLE ON)
+    # If the CMake build system was used, a CMake target for mfem already exists
+    if (NOT TARGET mfem)
+        # Mark mfem (and subsequent dependencies without a CMake config file) as
+        # EXPORTABLE so they can be exported into axom-targets, allowing for a
+        # "shrinkwrapped" CMake config
+        blt_import_library( NAME       mfem
+                            INCLUDES   ${MFEM_INCLUDE_DIRS}
+                            LIBRARIES  ${MFEM_LIBRARIES}
+                            TREAT_INCLUDES_AS_SYSTEM ON
+                            EXPORTABLE ON)
+        blt_list_append(TO TPL_DEPS ELEMENTS mfem)
+    endif()
 else()
     message(STATUS "MFEM support is OFF")
 endif()
@@ -141,10 +149,12 @@ endif()
 #------------------------------------------------------------------------------
 if (SCR_DIR)
     include(cmake/thirdparty/FindSCR.cmake)
-    blt_import_library( NAME      scr
-                        INCLUDES  ${SCR_INCLUDE_DIRS}
-                        LIBRARIES ${SCR_LIBRARY}
-                        TREAT_INCLUDES_AS_SYSTEM ON)
+    blt_import_library( NAME       scr
+                        INCLUDES   ${SCR_INCLUDE_DIRS}
+                        LIBRARIES  ${SCR_LIBRARY}
+                        TREAT_INCLUDES_AS_SYSTEM ON
+                        EXPORTABLE ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS scr)
 else()
     message(STATUS "SCR support is OFF")
 endif()
@@ -187,6 +197,7 @@ if (LUA_DIR)
         LIBRARIES     ${LUA_LIBRARY}
         TREAT_INCLUDES_AS_SYSTEM ON
         EXPORTABLE    ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS lua)
 else()
     message(STATUS "LUA support is OFF")
     set(LUA_FOUND OFF CACHE BOOL "")
@@ -196,16 +207,18 @@ endif()
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------
-set(TPL_DEPS cuda lua mfem mpi openmp)
+blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
+blt_list_append(TO TPL_DEPS ELEMENTS openmp IF ENABLE_OPENMP)
+blt_list_append(TO TPL_DEPS ELEMENTS mpi IF ENABLE_MPI)
+
 foreach(dep ${TPL_DEPS})
-    if(TARGET ${dep})
-        get_target_property(_is_imported ${dep} IMPORTED)
-        if(NOT ${_is_imported})
-            install(TARGETS              ${dep}
-                    EXPORT               axom-targets
-                    DESTINATION          lib)
-            # Namespace target to avoid conflicts
-            set_target_properties(${dep} PROPERTIES EXPORT_NAME axom::${dep})
-        endif()
+    # If the target is EXPORTABLE, add it to the export set
+    get_target_property(_is_imported ${dep} IMPORTED)
+    if(NOT ${_is_imported})
+        install(TARGETS              ${dep}
+                EXPORT               axom-targets
+                DESTINATION          lib)
+        # Namespace target to avoid conflicts
+        set_target_properties(${dep} PROPERTIES EXPORT_NAME axom::${dep})
     endif()
 endforeach()
