@@ -11,9 +11,9 @@
  *******************************************************************************
  */
 
-#include <fstream>
-
 #include "axom/inlet/YAMLReader.hpp"
+
+#include <fstream>
 
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
@@ -21,8 +21,6 @@
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
-
-// #include "conduit_relay.hpp"
 
 namespace axom
 {
@@ -62,8 +60,12 @@ const static char SCOPE_DELIMITER = '/';
  * \brief Traverses a path starting from a Node
  *
  * \param [in] root The node from which to begin traversal
- * \param [in] id   The path to traverse
+ * \param [in] id   The path to traverse as an Inlet path
  * \note Needed for paths containing integers as a conversion is required
+ * \note Inlet paths differ from Conduit paths in that they can contain integers,
+ * e.g., "/path/to/7/foo" would correspond to node["path"]["to"][7]["foo"].
+ * The traversal prefers the string-valued name but will attempt to convert to
+ * integer if no such child exists.
  *******************************************************************************
  */
 inline conduit::Node traverseNode(const conduit::Node& root, const std::string& id)
@@ -308,11 +310,12 @@ bool YAMLReader::getDictionary(const std::string& id,
   {
     const auto& child = itr.next();
     const auto name = child.name();
-    if(!getValue(child, values[name]))
+
+    T value;
+    // Inlet allows for heterogenous containers, so a failure here is "normal"
+    if(getValue(child, value))
     {
-      // The current interface allows for overlapping types, but we need to
-      // remove the default-initialized element here if it failed
-      values.erase(name);
+      values[name] = value;
     }
   }
   return true;
@@ -346,9 +349,13 @@ bool YAMLReader::getArray(const std::string& id,
   {
     // Single-element arrays will be just the element itself
     // If it's a single element, we know the index is zero
-    if(!getValue(node, values[0]))
+    T value;
+    if(getValue(node, value))
     {
-      values.erase(0);
+      values[0] = value;
+    }
+    else
+    {
       return false;
     }
   }
@@ -361,11 +368,11 @@ bool YAMLReader::getArray(const std::string& id,
     while(itr.has_next())
     {
       const auto& child = itr.next();
-      if(!getValue(child, values[index]))
+      T value;
+      // Inlet allows for heterogenous containers, so a failure here is "normal"
+      if(getValue(child, value))
       {
-        // The current interface allows for overlapping types, but we need to
-        // remove the default-initialized element here if it failed
-        values.erase(index);
+        values[index] = value;
       }
       index++;
     }

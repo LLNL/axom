@@ -1744,14 +1744,14 @@ TEST(spin_bvh, traversal_predicates_pointInRightBin)
 }
 
 //------------------------------------------------------------------------------
-TEST(spin_bvh, contruct2D_sequential)
+TEST(spin_bvh, construct2D_sequential)
 {
   check_build_bvh2d<axom::SEQ_EXEC, double>();
   check_build_bvh2d<axom::SEQ_EXEC, float>();
 }
 
 //------------------------------------------------------------------------------
-TEST(spin_bvh, contruct3D_sequential)
+TEST(spin_bvh, construct3D_sequential)
 {
   check_build_bvh3d<axom::SEQ_EXEC, double>();
   check_build_bvh3d<axom::SEQ_EXEC, float>();
@@ -1816,14 +1816,14 @@ TEST(spin_bvh, single_box3d_sequential)
 //------------------------------------------------------------------------------
 #ifdef AXOM_USE_OPENMP
 
-TEST(spin_bvh, contruct2D_omp)
+TEST(spin_bvh, construct2D_omp)
 {
   check_build_bvh2d<axom::OMP_EXEC, double>();
   check_build_bvh2d<axom::OMP_EXEC, float>();
 }
 
 //------------------------------------------------------------------------------
-TEST(spin_bvh, contruct3D_omp)
+TEST(spin_bvh, construct3D_omp)
 {
   check_build_bvh3d<axom::OMP_EXEC, double>();
   check_build_bvh3d<axom::OMP_EXEC, float>();
@@ -1889,7 +1889,7 @@ TEST(spin_bvh, single_box3d_omp)
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
-AXOM_CUDA_TEST(spin_bvh, contruct2D_cuda)
+AXOM_CUDA_TEST(spin_bvh, construct2D_cuda)
 {
   constexpr int BLOCK_SIZE = 256;
   using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
@@ -1899,7 +1899,7 @@ AXOM_CUDA_TEST(spin_bvh, contruct2D_cuda)
 }
 
 //------------------------------------------------------------------------------
-AXOM_CUDA_TEST(spin_bvh, contruct3D_cuda)
+AXOM_CUDA_TEST(spin_bvh, construct3D_cuda)
 {
   constexpr int BLOCK_SIZE = 256;
   using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
