@@ -122,7 +122,7 @@ endmacro(axom_add_component)
 ##               NUM_OMP_THREADS [n]
 ##               CONFIGURATIONS  [config1 [config2...]])
 ##
-## Wrapper around axom_add_test() that handles functionality that Axom applies to all
+## Wrapper around blt_add_test() that handles functionality that Axom applies to all
 ## tests.
 ##------------------------------------------------------------------------------
 macro(axom_add_test)
