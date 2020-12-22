@@ -59,9 +59,9 @@ foreach(test ${gtest_sidre_tests})
                         FOLDER axom/sidre/tests
                         )
 
-    blt_add_test( NAME ${test_name}
-                  COMMAND ${test_name}_test
-                  )
+    axom_add_test( NAME    ${test_name}
+                   COMMAND ${test_name}_test
+                   )
 endforeach()
 
 #------------------------------------------------------------------------------
@@ -77,9 +77,9 @@ if (ENABLE_FORTRAN)
                             DEPENDS_ON sidre gtest
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name}
-                      COMMAND ${test_name}_test
-                      )
+        axom_add_test( NAME    ${test_name}
+                       COMMAND ${test_name}_test
+                       )
     endforeach()
 endif()
 
@@ -95,9 +95,9 @@ if (ENABLE_FORTRAN)
                             DEPENDS_ON sidre fruit
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name}
-                      COMMAND ${test_name}_test
-                      )
+        axom_add_test( NAME    ${test_name}
+                       COMMAND ${test_name}_test
+                       )
     endforeach()
 endif()
 
@@ -112,14 +112,14 @@ if (AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
                         FOLDER axom/sidre/tests
                         )
     if (ENABLE_MPI)
-        blt_add_test( NAME sidre_mfem_datacollection
-                        COMMAND sidre_mfem_datacollection_test
-                        NUM_MPI_TASKS 2
-                        )
+        axom_add_test( NAME sidre_mfem_datacollection
+                       COMMAND sidre_mfem_datacollection_test
+                       NUM_MPI_TASKS 2
+                       )
     else()
-        blt_add_test( NAME sidre_mfem_datacollection
-                        COMMAND sidre_mfem_datacollection_test
-                        )
+        axom_add_test( NAME    sidre_mfem_datacollection
+                       COMMAND sidre_mfem_datacollection_test
+                       )
     endif()
 endif()
 

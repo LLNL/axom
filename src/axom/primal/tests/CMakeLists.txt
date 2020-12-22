@@ -44,7 +44,7 @@ foreach ( test ${primal_tests} )
         FOLDER     axom/primal/tests
        )
 
-   blt_add_test(
+   axom_add_test(
         NAME    ${test_name}
         COMMAND ${test_name}_test
        )

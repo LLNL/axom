@@ -53,6 +53,6 @@ foreach(test ${gtest_slam_tests})
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON ${slam_tests_depends_on}
                         FOLDER axom/slam/tests )
-    blt_add_test( NAME ${test_name}
-                  COMMAND ${test_name}_test )
+    axom_add_test( NAME ${test_name}
+                   COMMAND ${test_name}_test )
 endforeach()

@@ -15,7 +15,7 @@ using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
 
 namespace inlet = axom::inlet;
-
+// _inlet_userdef_simple_start
 struct Mesh
 {
   std::string filename;
@@ -31,6 +31,7 @@ struct Mesh
     schema.addInt("parallel", "Number of parallel refinement iterations");
   }
 };
+// _inlet_userdef_simple_end
 
 // Additionally, each class should specialize this struct as follows
 // in the global namespace so that Inlet can access it
@@ -44,6 +45,7 @@ struct Mesh
  * }
  * \endcode
  */
+// _inlet_userdef_simple_frominlet_start
 template <>
 struct FromInlet<Mesh>
 {
@@ -52,6 +54,7 @@ struct FromInlet<Mesh>
     return {base["filename"], base["serial"], base["parallel"]};
   }
 };
+// _inlet_userdef_simple_frominlet_end
 
 struct LinearSolver
 {
@@ -104,12 +107,24 @@ struct FromInlet<LinearSolver>
 struct BoundaryCondition
 {
   std::unordered_map<int, int> attrs;
-  double constant;
+  // std::functions are nullable - coef/vec_coef act as a sum type here
+  std::function<double(axom::primal::Vector3D)> coef;
+  std::function<axom::primal::Vector3D(axom::primal::Vector3D)> vec_coef;
   static void defineSchema(inlet::Table& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
-    schema.addDouble("constant",
-                     "The scalar to fix the value of the solution to");
+    // Inlet does not support sum types, so both options are added to the schema
+    // Supported function parameter/return types are Double and Vec3D
+    schema.addFunction("vec_coef",
+                       inlet::FunctionType::Vec3D,    // Return type
+                       {inlet::FunctionType::Vec3D},  // Argument types
+                       "The function representing the BC coefficient");
+    // _inlet_userdef_func_coef_start
+    schema.addFunction("coef",
+                       inlet::FunctionType::Double,   // Return type
+                       {inlet::FunctionType::Vec3D},  // Argument types
+                       "The function representing the BC coefficient");
+    // _inlet_userdef_func_coef_end
   }
 };
 
@@ -120,7 +135,17 @@ struct BoundaryCondition
  *   attrs = {
  *      3, 4, 6, 9
  *   }
- *   constant = 12.55
+ *   coef = function (x, y, z)
+ *     return x * 0.12
+ *   end
+ * }
+ * -- or, for vector coefficients:
+ * [8] = {
+ *   attrs = { [4] = 14, [8] = 62, [6] = 11},
+ *   vec_coef = function (x, y, z)
+ *     scale = 0.12
+ *     return x * scale, y * scale, z * scale
+ *   end
  * }
  * \endcode
  */
@@ -131,7 +156,14 @@ struct FromInlet<BoundaryCondition>
   {
     BoundaryCondition bc;
     bc.attrs = base["attrs"];
-    bc.constant = base["constant"];
+    if(base.contains("vec_coef"))
+    {
+      bc.vec_coef = base["vec_coef"];
+    }
+    else
+    {
+      bc.coef = base["coef"];
+    }
     return bc;
   }
 };
@@ -140,24 +172,28 @@ struct ThermalSolver
 {
   Mesh mesh;
   LinearSolver solver;
-  std::unordered_map<int, BoundaryCondition> bcs;
+  std::unordered_map<std::string, BoundaryCondition> bcs;
   // defineSchema is intended to be used recursively
   // Tables are created for subobjects and passed to
   // subobject defineSchema implementations
   static void defineSchema(inlet::Table& schema)
   {
+    // _inlet_userdef_simple_usage_start
     auto& mesh_table = schema.addTable("mesh", "Information about the mesh");
     Mesh::defineSchema(mesh_table);
+    // _inlet_userdef_simple_usage_end
     auto& solver_table =
       schema.addTable("solver",
                       "Information about the iterative solver used for Ku = f");
     LinearSolver::defineSchema(solver_table);
 
+    // _inlet_userdef_array_usage_start
     // Schema only needs to be defined once, will propagate through to each
     // element of the array, namely, the subtable at each found index in the input file
     auto& bc_table =
-      schema.addGenericArray("bcs", "List of boundary conditions");
+      schema.addGenericDictionary("bcs", "List of boundary conditions");
     BoundaryCondition::defineSchema(bc_table);
+    // _inlet_userdef_array_usage_end
   }
 };
 
@@ -172,10 +208,10 @@ struct ThermalSolver
  *      -- see above FromInlet<LinearSolver>
  *    },
  *    bcs = {
- *        [1] = {
+ *        ["temperature"] = {
  *          -- see above FromInlet<BoundaryCondition>
  *        },
- *        [2] = {
+ *        ["flux"] = {
  *          -- see above FromInlet<BoundaryCondition>
  *        },
  *    }
@@ -189,9 +225,10 @@ struct FromInlet<ThermalSolver>
   // functions defined for the subobjects
   ThermalSolver operator()(const inlet::Table& base)
   {
-    return {base["mesh"].get<Mesh>(),
-            base["solver"].get<LinearSolver>(),
-            base["bcs"].get<std::unordered_map<int, BoundaryCondition>>()};
+    return {
+      base["mesh"].get<Mesh>(),
+      base["solver"].get<LinearSolver>(),
+      base["bcs"].get<std::unordered_map<std::string, BoundaryCondition>>()};
   }
 };
 
@@ -226,4 +263,26 @@ int main(int argc, char** argv)
 
   // Read all the data into a thermal solver object
   auto thermal_solver = inlet["thermal_solver"].get<ThermalSolver>();
+
+  const axom::primal::Vector3D vec {1, 2, 3};
+  for(const auto& bc_entry : thermal_solver.bcs)
+  {
+    const auto& bc = bc_entry.second;
+    if(bc.coef)
+    {
+      auto result = bc.coef(vec);
+      SLIC_INFO(fmt::format("Calling {0} with {1} returned: {2}",
+                            bc_entry.first,
+                            vec,
+                            result));
+    }
+    else if(bc.vec_coef)
+    {
+      auto result = bc.vec_coef(vec);
+      SLIC_INFO(fmt::format("Calling {0} with {1} returned: {2}",
+                            bc_entry.first,
+                            vec,
+                            result));
+    }
+  }
 }

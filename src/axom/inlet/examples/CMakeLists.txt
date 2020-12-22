@@ -26,13 +26,12 @@ if (SOL_FOUND)
                             FOLDER     axom/inlet/examples )
     endforeach()
 
-    blt_add_test( NAME    inlet_verification_ex
-                  COMMAND inlet_verification_ex )
+    axom_add_test( NAME    inlet_verification_ex
+                   COMMAND inlet_verification_ex )
 
-    blt_add_test( NAME    inlet_documentation_generation_ex
-                  COMMAND inlet_documentation_generation_ex --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
+    axom_add_test( NAME    inlet_documentation_generation_ex
+                   COMMAND inlet_documentation_generation_ex --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
 
-    blt_add_test( NAME inlet_user_defined_type_ex
-                  COMMAND inlet_user_defined_type_ex --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua)
-
+    axom_add_test( NAME    inlet_user_defined_type_ex
+                   COMMAND inlet_user_defined_type_ex --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua)
 endif()

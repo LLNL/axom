@@ -24,8 +24,8 @@ if ( UMPIRE_FOUND )
                       DEPENDS_ON ${umpire_smoke_dependencies}
                       FOLDER axom/thirdparty/tests )
 
-  blt_add_test( NAME umpire_smoke
-                COMMAND umpire_smoke_test )
+  axom_add_test( NAME    umpire_smoke
+                 COMMAND umpire_smoke_test )
 
 endif()
 
@@ -47,8 +47,8 @@ if ( RAJA_FOUND )
                       DEPENDS_ON ${raja_smoke_dependencies}
                       FOLDER axom/thirdparty/tests )
 
-  blt_add_test( NAME raja_smoke
-                COMMAND raja_smoke_test )
+  axom_add_test( NAME    raja_smoke
+                 COMMAND raja_smoke_test )
 
 endif()
 
@@ -67,7 +67,7 @@ if( HDF5_FOUND)
                        DEPENDS_ON ${hdf5_smoke_dependencies}
                        FOLDER axom/thirdparty/tests )
 
-    blt_add_test(NAME hdf5_smoke
+    axom_add_test(NAME hdf5_smoke
                  COMMAND hdf5_smoke_test)
 endif()
 
@@ -81,7 +81,7 @@ if (CONDUIT_FOUND)
                        DEPENDS_ON conduit::conduit gtest
                        FOLDER     axom/thirdparty/tests )
 
-    blt_add_test(NAME conduit_smoke
+    axom_add_test(NAME conduit_smoke
                  COMMAND conduit_smoke_test)
 
     if (ENABLE_FORTRAN)
@@ -91,7 +91,7 @@ if (CONDUIT_FOUND)
                            DEPENDS_ON conduit::conduit fruit
                            FOLDER     axom/thirdparty/tests )
 
-        blt_add_test(NAME conduit_smoke_F
+        axom_add_test(NAME conduit_smoke_F
                      COMMAND conduit_smoke_F_test)
   endif()
 endif()
@@ -111,8 +111,8 @@ if (MFEM_FOUND)
         TARGET mfem_smoke_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 
-    blt_add_test(NAME mfem_smoke
-                 COMMAND mfem_smoke_test)
+    axom_add_test(NAME    mfem_smoke
+                  COMMAND mfem_smoke_test)
 
 endif()
 
@@ -126,8 +126,8 @@ blt_add_executable(
     DEPENDS_ON fmt gtest
     FOLDER axom/thirdparty/tests )
     
-blt_add_test(NAME fmt_smoke
-             COMMAND fmt_smoke_test)
+axom_add_test(NAME    fmt_smoke
+              COMMAND fmt_smoke_test)
 
 #------------------------------------------------------------------------------
 # Smoke test for CLI11 third party library
@@ -139,11 +139,11 @@ blt_add_executable(
     DEPENDS_ON cli11
     FOLDER axom/thirdparty/tests )
 
-blt_add_test(
+axom_add_test(
     NAME cli11_smoke_help
     COMMAND cli11_smoke_test --help)
 
-blt_add_test(
+axom_add_test(
     NAME cli11_smoke_with_options
     COMMAND cli11_smoke_test -b -i 42 --some-float=3.14 --some-string "hello world")
 
@@ -159,8 +159,8 @@ if (SPARSEHASH_FOUND)
     DEPENDS_ON sparsehash gtest
     FOLDER axom/thirdparty/tests )
 
-  blt_add_test(NAME sparsehash_smoke
-             COMMAND sparsehash_smoke_test)
+  axom_add_test(NAME    sparsehash_smoke
+                COMMAND sparsehash_smoke_test)
 endif()
 
 #------------------------------------------------------------------------------
@@ -175,8 +175,8 @@ if (SOL_FOUND)
         DEPENDS_ON sol lua gtest
         FOLDER     axom/thirdparty/tests )
 
-    blt_add_test(NAME    sol_smoke
-                 COMMAND sol_smoke_test)
+    axom_add_test(NAME    sol_smoke
+                  COMMAND sol_smoke_test)
 endif()
 
 #------------------------------------------------------------------------------
@@ -212,7 +212,7 @@ foreach(test ${BLT_SMOKE_TESTS})
         USE_OPENMP False
         FOLDER axom/thirdparty/tests)
 
-    blt_add_test(
+    axom_add_test(
         NAME ${test_name}
         COMMAND ${test_name}_test)
 
