@@ -109,7 +109,6 @@ if(ENABLE_FORTRAN)
                 COMMAND ${exe_name}_ex )
         endif()
     endforeach()
-    set_target_properties(${exe_name}_ex PROPERTIES LINKER_LANGUAGE Fortran)
 endif()
 
 #------------------------------------------------------------------------------
