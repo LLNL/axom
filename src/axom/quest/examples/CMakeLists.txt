@@ -80,21 +80,6 @@ if (ENABLE_FORTRAN)
         FOLDER      axom/quest/examples
         )
 
-    # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly. 
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-        set_target_properties( quest_signed_distance_interface_F_ex
-                               PROPERTIES LINKER_LANGUAGE Fortran)
-
-        set_target_properties(quest_inout_interface_F_ex
-                              PROPERTIES LINKER_LANGUAGE Fortran)
-    else()
-        set_target_properties( quest_signed_distance_interface_F_ex
-                               PROPERTIES LINKER_LANGUAGE CXX)
-
-        set_target_properties(quest_inout_interface_F_ex
-                              PROPERTIES LINKER_LANGUAGE CXX)
-    endif()
-
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         if (ENABLE_MPI)
             axom_add_test(
