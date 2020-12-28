@@ -30,13 +30,14 @@ void setWarningFlag(axom::sidre::Group* root);
 
 /*!
 *****************************************************************************
-* \brief This function is used to configure the target group as required
+* \brief This function is used to configure the Inlet object corresponding
+* to the provided Sidre group as required
 *
 * \param [in] target Reference to the Sidre group to set the required 
 * status of
 * \param [in] root Reference to the Sidre Root Group where the warning flag 
 * will be set on failure
-* \param [in] required Whether the target group is required
+* \param [in] required Whether the Inlet object is required
 *****************************************************************************
 */
 void setRequired(axom::sidre::Group& target,
@@ -45,15 +46,34 @@ void setRequired(axom::sidre::Group& target,
 
 /*!
 *****************************************************************************
-* \brief This function is used to determine if the target group is required
+* \brief This function is used to determine if the Inlet object corresponding
+* to the provided Sidre group is required
 *
 * \param [in] target Reference to the Sidre group to check the required 
 * status of
 * \param [in] root Reference to the Sidre Root Group where the warning flag 
 * will be set on failure
+* \return Whether the Inlet object is required
 *****************************************************************************
 */
-bool checkRequired(const axom::sidre::Group& target, axom::sidre::Group& root);
+bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root);
+
+/*!
+*****************************************************************************
+* \brief This function is used to verify the required-ness of the Inlet object
+* corresponding to the provided Sidre group
+*
+* \param [in] target Reference to the Sidre group to verify the required-ness of
+* \param [in] condition The condition that must be true if the object is required
+* \param [in] type The type of the object as a string, for use in the warning message
+* 
+* \return False if the object was required but \p condition was false, True otherwise
+* \post If the function returns False, a warning message will be emitted
+*****************************************************************************
+*/
+bool verifyRequired(const axom::sidre::Group& target,
+                    const bool condition,
+                    const std::string& type);
 
 /*!
 *****************************************************************************
@@ -78,6 +98,55 @@ std::string appendPrefix(const std::string& prefix, const std::string& name);
 *****************************************************************************
 */
 std::string removePrefix(const std::string& prefix, const std::string& name);
+
+/*!
+*****************************************************************************
+* \brief This function extracts the substring following the last instance
+* of the delimiting character
+*
+* \param [in] path The path to extract from
+* \param [in] delim The delimiting character
+*
+* \return The extracted string.
+*****************************************************************************
+*/
+std::string removeBeforeDelimiter(const std::string& path,
+                                  const char delim = '/');
+
+/*!
+*****************************************************************************
+* \brief This function performs a checked conversion of a string to an integer
+*
+* \param [in] number The string to be converted
+*
+* \return A tuple containing the conversion result, and the status of the conversion
+*****************************************************************************
+*/
+std::pair<int, bool> checkedConvertToInt(const std::string& number);
+
+namespace detail
+{
+/*!
+  *******************************************************************************
+  * Names of the internal container data and container index groups/fields
+  * used for managing arrays/dictionaries
+  *******************************************************************************
+  */
+const std::string CONTAINER_GROUP_NAME = "_inlet_container";
+const std::string CONTAINER_INDICES_NAME = "_inlet_container_indices";
+}  // namespace detail
+
+/*!
+*****************************************************************************
+* \brief Determines whether a Table is a container group
+*
+* \param [in] name The name of the table
+*****************************************************************************
+*/
+inline bool isContainerGroup(const std::string& name)
+{
+  return axom::utilities::string::endsWith(name, detail::CONTAINER_GROUP_NAME);
+}
 
 namespace cpp11_compat
 {

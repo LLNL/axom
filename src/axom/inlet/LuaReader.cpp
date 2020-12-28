@@ -156,6 +156,30 @@ bool LuaReader::getStringMap(const std::string& id,
   return getMap(id, values, sol::type::string);
 }
 
+bool LuaReader::getIntMap(const std::string& id,
+                          std::unordered_map<std::string, int>& values)
+{
+  return getMap(id, values, sol::type::number);
+}
+
+bool LuaReader::getDoubleMap(const std::string& id,
+                             std::unordered_map<std::string, double>& values)
+{
+  return getMap(id, values, sol::type::number);
+}
+
+bool LuaReader::getBoolMap(const std::string& id,
+                           std::unordered_map<std::string, bool>& values)
+{
+  return getMap(id, values, sol::type::boolean);
+}
+
+bool LuaReader::getStringMap(const std::string& id,
+                             std::unordered_map<std::string, std::string>& values)
+{
+  return getMap(id, values, sol::type::string);
+}
+
 template <typename Iter>
 bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
 {
@@ -177,14 +201,10 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   for(auto curr = begin; curr != end; ++curr)
   {
     auto key = *curr;
-    // Use the C versions to avoid the exceptions
-    // thrown by std::stoi on conversion failure
-    // FIXME: Switch to std::from_chars when C++17 is available
-    char* ptr;
-    auto as_int = strtol(key.c_str(), &ptr, 10);
-    if((!*ptr) && table[as_int].valid())
+    auto as_int = checkedConvertToInt(key);
+    if(as_int.second && table[as_int.first].valid())
     {
-      table = table[as_int];
+      table = table[as_int.first];
     }
     else if(table[key].valid())
     {
@@ -198,26 +218,15 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   return true;
 }
 
-bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices)
+bool LuaReader::getIndices(const std::string& id, std::vector<int>& indices)
 {
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  return getIndicesInternal(id, indices);
+}
 
-  sol::table t;
-
-  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
-  {
-    return false;
-  }
-
-  indices.clear();
-
-  // std::transform ends up being messier here
-  for(const auto& entry : t)
-  {
-    indices.push_back(entry.first.as<int>());
-  }
-  return true;
+bool LuaReader::getIndices(const std::string& id,
+                           std::vector<std::string>& indices)
+{
+  return getIndicesInternal(id, indices);
 }
 
 // A set of pure functions for handling the conversion of Lua functions to C++
@@ -314,57 +323,6 @@ buildStdFunction(sol::protected_function&& func)
 
 /*!
  *****************************************************************************
- * \brief Adds argument types to a parameter pack based on the contents
- * of a std::vector of type tags
- *
- * \param [in] func The sol object containing the lua function of unknown signature
- * \param [in] arg_types The vector of argument types
- * 
- * \tparam I The number of arguments processed, or "stack size", used to mitigate
- * infinite compile-time recursion
- * \tparam Ret The function's return type
- * \tparam Args... The function's current arguments (already processed), remaining
- * arguments are in the arg_types vector
- *
- * \return A callable wrapper
- *****************************************************************************
- */
-template <std::size_t I, typename Ret, typename... Args>
-typename std::enable_if<(I > MAX_NUM_ARGS), FunctionVariant>::type bindArgType(
-  sol::protected_function&&,
-  const std::vector<FunctionType>&)
-{
-  SLIC_ERROR("[Inlet] Maximum number of function arguments exceeded: " << I);
-  return {};
-}
-
-template <std::size_t I, typename Ret, typename... Args>
-typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
-  sol::protected_function&& func,
-  const std::vector<FunctionType>& arg_types)
-{
-  if(arg_types.size() == I)
-  {
-    return buildStdFunction<Ret, Args...>(std::move(func));
-  }
-  else
-  {
-    switch(arg_types[I])
-    {
-    case FunctionType::Vec3D:
-      return bindArgType<I + 1, Ret, Args..., primal::Vector3D>(std::move(func),
-                                                                arg_types);
-    case FunctionType::Double:
-      return bindArgType<I + 1, Ret, Args..., double>(std::move(func), arg_types);
-    default:
-      SLIC_ERROR("[Inlet] Unexpected function argument type");
-    }
-  }
-  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
-}
-
-/*!
- *****************************************************************************
  * \brief Performs a type-checked access to a Lua table
  *
  * \param [in]  proxy The sol::proxy object to retrieve from
@@ -392,15 +350,21 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
                                        const std::vector<FunctionType>& arg_types)
 {
   auto lua_func = getFunctionInternal(id);
+  if(!((arg_types.size() == 1) && (arg_types.front() == FunctionType::Vec3D)))
+  {
+    SLIC_ERROR("[Inlet] Only a single Vec3D argument is currently supported");
+  }
+
   if(lua_func)
   {
     switch(ret_type)
     {
     case FunctionType::Vec3D:
-      return detail::bindArgType<0u, primal::Vector3D>(std::move(lua_func),
-                                                       arg_types);
+      return detail::buildStdFunction<primal::Vector3D, primal::Vector3D>(
+        std::move(lua_func));
     case FunctionType::Double:
-      return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
+      return detail::buildStdFunction<double, primal::Vector3D>(
+        std::move(lua_func));
     default:
       SLIC_ERROR("[Inlet] Unexpected function return type");
     }
@@ -438,9 +402,9 @@ bool LuaReader::getValue(const std::string& id, T& value)
   return false;
 }
 
-template <typename T>
+template <typename Key, typename Val>
 bool LuaReader::getMap(const std::string& id,
-                       std::unordered_map<int, T>& values,
+                       std::unordered_map<Key, Val>& values,
                        sol::type type)
 {
   values.clear();
@@ -452,15 +416,38 @@ bool LuaReader::getMap(const std::string& id,
   {
     return false;
   }
-
+  const auto key_type =
+    (std::is_same<Key, int>::value) ? sol::type::number : sol::type::string;
   for(const auto& entry : t)
   {
     // Gets only indexed items in the table.
-    if(entry.first.get_type() == sol::type::number &&
-       entry.second.get_type() == type)
+    if(entry.first.get_type() == key_type && entry.second.get_type() == type)
     {
-      values[entry.first.as<int>()] = entry.second.as<T>();
+      values[entry.first.as<Key>()] = entry.second.as<Val>();
     }
+  }
+  return true;
+}
+
+template <typename T>
+bool LuaReader::getIndicesInternal(const std::string& id, std::vector<T>& indices)
+{
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+
+  sol::table t;
+
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
+  {
+    return false;
+  }
+
+  indices.clear();
+
+  // std::transform ends up being messier here
+  for(const auto& entry : t)
+  {
+    indices.push_back(entry.first.as<T>());
   }
   return true;
 }
@@ -469,7 +456,6 @@ sol::protected_function LuaReader::getFunctionInternal(const std::string& id)
 {
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
-
   sol::protected_function lua_func;
 
   if(tokens.size() == 1)

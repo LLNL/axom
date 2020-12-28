@@ -369,9 +369,9 @@ public:
    * \brief Add an array of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable<Table>& addBoolArray(const std::string& name,
@@ -385,9 +385,9 @@ public:
    * \brief Add an array of Integer Fields to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable<Table>& addIntArray(const std::string& name,
@@ -401,9 +401,9 @@ public:
    * \brief Add an array of Double Fields to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable<Table>& addDoubleArray(const std::string& name,
@@ -417,9 +417,9 @@ public:
    * \brief Add an array of String Fields to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Verifiable<Table>& addStringArray(const std::string& name,
@@ -430,12 +430,12 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add an array of Fields to the input file schema.
+   * \brief Add an array of user-defined types to the input file schema.
    *
    * \param [in] name Name of the array
-   * \param [in] description Description of the Field
+   * \param [in] description Description of the array
    *
-   * \return Reference to the created Field
+   * \return Reference to the created array
    *****************************************************************************
    */
   Table& addGenericArray(const std::string& name,
@@ -448,9 +448,9 @@ public:
    *****************************************************************************
    * \brief Get a function from the input deck
    *
-   * \param [in]  name Name of the function
-   * \param [in]  ret_type    The return type of the function
-   * \param [in]  arg_types    The argument types of the function
+   * \param [in] name        Name of the function
+   * \param [in] ret_type    The return type of the function
+   * \param [in] arg_types   The argument types of the function
    * \param [in] description Description of the Field
    *
    * \return Reference to the created Function
@@ -463,61 +463,84 @@ public:
   {
     return m_globalTable.addFunction(name, ret_type, arg_types, description);
   }
-
   /*!
    *****************************************************************************
-   * \brief Get a boolean array represented as an unordered map from the input file
+   * \brief Add a dictionary of Boolean Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the dictionary
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, bool>& map)
+  Verifiable<Table>& addBoolDictionary(const std::string& name,
+                                       const std::string& description = "")
   {
-    return m_globalTable.getArray(map);
+    return m_globalTable.addBoolDictionary(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a int array represented as an unordered map from the input file
+   * \brief Add a dictionary of Integer Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the dictionary
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, int>& map)
+  Verifiable<Table>& addIntDictionary(const std::string& name,
+                                      const std::string& description = "")
   {
-    return m_globalTable.getArray(map);
+    return m_globalTable.addIntDictionary(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a double array represented as an unordered map from the input file
+   * \brief Add a dictionary of Double Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the dictionary
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, double>& map)
+  Verifiable<Table>& addDoubleDictionary(const std::string& name,
+                                         const std::string& description = "")
   {
-    return m_globalTable.getArray(map);
+    return m_globalTable.addDoubleDictionary(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Get a string array represented as an unordered map from the input file
+   * \brief Add a dictionary of String Fields to the input file schema.
    *
-   * \param [out] map Unordered map to be populated with array contents
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the dictionary
    *
-   * \return Whether or not the array was found
+   * \return Reference to the created dictionary
    *****************************************************************************
    */
-  bool getArray(std::unordered_map<int, std::string>& map)
+  Verifiable<Table>& addStringDictionary(const std::string& name,
+                                         const std::string& description = "")
   {
-    return m_globalTable.getArray(map);
+    return m_globalTable.addStringDictionary(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add a dictionary of user-defined types to the input file schema.
+   *
+   * \param [in] name Name of the dict
+   * \param [in] description Description of the dictionary
+   *
+   * \return Reference to the created dictionary
+   *****************************************************************************
+   */
+  Table& addGenericDictionary(const std::string& name,
+                              const std::string& description = "")
+  {
+    return m_globalTable.addGenericDictionary(name, description);
   }
 
   // TODO add update value functions

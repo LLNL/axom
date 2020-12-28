@@ -127,6 +127,8 @@ the following methods:
 
   auto coef = inlet["coef"].get<std::function<double(axom::primal::Vector3D)>>();
   std::function<double(axom::primal::Vector3D)> coef = inlet["coef"];
+  // Either method produces a std::function that can be called like any other function
+  double result = coef({3,5,7});
 
 Additionally, if a function does not need to be stored, the overhead of a copy can be eliminated
 by calling it directly:
