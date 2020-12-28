@@ -80,6 +80,23 @@ if (ENABLE_FORTRAN)
         FOLDER      axom/quest/examples
         )
 
+    # Don't override the linker that BLT selects when CUDA is enabled
+    if (NOT ENABLE_CUDA)
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+            set_target_properties( quest_signed_distance_interface_F_ex
+                                PROPERTIES LINKER_LANGUAGE Fortran)
+
+            set_target_properties(quest_inout_interface_F_ex
+                                PROPERTIES LINKER_LANGUAGE Fortran)
+        else()
+            set_target_properties( quest_signed_distance_interface_F_ex
+                                PROPERTIES LINKER_LANGUAGE CXX)
+
+            set_target_properties(quest_inout_interface_F_ex
+                                PROPERTIES LINKER_LANGUAGE CXX)
+        endif()
+    endif()
+
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         if (ENABLE_MPI)
             axom_add_test(
