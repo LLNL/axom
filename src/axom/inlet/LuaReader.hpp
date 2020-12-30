@@ -39,7 +39,7 @@ namespace inlet
 class LuaReader : public Reader
 {
 public:
-  LuaReader() { m_lua.open_libraries(sol::lib::base); }
+  LuaReader() { m_lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::io, sol::lib::package); }
 
   /*!
    *****************************************************************************
