@@ -64,5 +64,23 @@ compilers:
       fc:  /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
     spec: xl@16.1.1_nvcc
     target: ppc64le
+- compiler:
+    environment:
+      # Temporary workaround: Spack issue #18156
+      set:
+        SPACK_TARGET_ARGS: ""
+    extra_rpaths: []
+    flags:
+      # Required as spack cannot recognize compiler-specific linker
+      # flags in mixed toolchains
+      ldlibs: -lgfortran
+    modules: []
+    operating_system: rhel7
+    paths:
+      cc:  /usr/tce/packages/clang/clang-ibm-10.0.1-gcc-8.3.1/bin/clang
+      cxx: /usr/tce/packages/clang/clang-ibm-10.0.1-gcc-8.3.1/bin/clang++
+      f77: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
+      fc:  /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
+    spec: clang@10.0.1_nvcc
+    target: ppc64le
 
- 
