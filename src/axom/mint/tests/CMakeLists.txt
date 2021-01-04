@@ -66,9 +66,9 @@ foreach( test ${mint_tests} )
         FOLDER     axom/mint/tests
         )
 
-   blt_add_test( NAME    ${test_name}
-                 COMMAND ${test_name}_test
-                 NUM_OMP_THREADS 4
-               )
+   axom_add_test( NAME    ${test_name}
+                  COMMAND ${test_name}_test
+                  NUM_OMP_THREADS 4
+                  )
 
 endforeach()
