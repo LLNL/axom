@@ -507,13 +507,16 @@ class Axom(CMakePackage, CudaPackage):
 
                 if not spec.satisfies('cuda_arch=none'):
                     cuda_arch = spec.variants['cuda_arch'].value
-                    axom_arch = 'sm_{0}'.format(cuda_arch[0])
-                    cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", axom_arch))
-                    cudaflags += "-arch ${AXOM_CUDA_ARCH} "
+                    cfg.write(cmake_cache_entry("CMAKE_CUDA_ARCHITECTURES", cuda_arch))
+                    cudaflags += '-arch sm_${CMAKE_CUDA_ARCHITECTURES} '
                 else:
                     cfg.write("# cuda_arch could not be determined\n\n")
 
-                cudaflags += "-std=c++11 --expt-extended-lambda -G "
+                cudaflags += "--expt-extended-lambda -G "
+                if `cpp14` in spec:
+                    cudaflags += "-std=c++14 "
+                else:
+                    cudaflags += "-std=c++11 "
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS", cudaflags))
 
                 if "+mpi" in spec:
@@ -525,6 +528,12 @@ class Axom(CMakePackage, CudaPackage):
 
                 cfg.write("# nvcc does not like gtest's 'pthreads' flag\n")
                 cfg.write(cmake_cache_option("gtest_disable_pthreads", True))
+
+                # Very specific fix for working around CMake adding implicit link directories returned by the BlueOS
+                # compilers to link CUDA executables 
+                cfg.write(cmake_cache_string("BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE", \
+                                             "/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3;"
+                                             "/usr/tce/packages/gcc/gcc-4.9.3/lib64"))
 
         cfg.write("\n")
         cfg.close()
