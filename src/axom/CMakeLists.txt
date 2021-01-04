@@ -43,6 +43,11 @@ blt_add_library(NAME       axom
                 SOURCES    Axom.cpp
                 DEPENDS_ON ${AXOM_COMPONENTS_ENABLED})
 
+if(ENABLE_CUDA)
+    # Force "early" device linking to avoid propagating an NVCC link dependency
+    set_property(TARGET axom PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+endif()
+
 install(TARGETS              axom
         EXPORT               axom-targets
         DESTINATION          lib)
