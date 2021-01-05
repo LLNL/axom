@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/MCArray.hpp"            /* for axom::MCArray */
-#include "axom/core/memory_management.hpp"  /* for alloc() and free() */
+#include "axom/core/MCArray.hpp"           /* for axom::MCArray */
+#include "axom/core/memory_management.hpp" /* for alloc() and free() */
 
 #include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
 
@@ -13,7 +13,6 @@
 
 namespace axom
 {
-
 const char IGNORE_OUTPUT[] = ".*";
 
 namespace internal

@@ -1057,8 +1057,7 @@ TEST(mint_mesh_coordinates, shrink)
 TEST(mint_mesh_coordinates, change_resize_ratio)
 {
   constexpr int NDIMS = 3;
-  constexpr double DEFAULT_RESIZE_RATIO =
-    MCArray< double >::DEFAULT_RESIZE_RATIO;
+  constexpr double DEFAULT_RESIZE_RATIO = MCArray<double>::DEFAULT_RESIZE_RATIO;
   constexpr double NEW_RESIZE_RATIO = 2.5;
 
   MeshCoordinates mc(NDIMS);
@@ -1260,7 +1259,7 @@ TEST(mint_mesh_coordinates, sidre_push_constructor)
       EXPECT_TRUE(mesh_coords.numNodes() <= mesh_coords.capacity());
 
       IndexType capacity = SMALL_NUM_NODES * mesh_coords.getResizeRatio() + 0.5;
-      if (capacity < MCArray<IndexType>::MIN_DEFAULT_CAPACITY)
+      if(capacity < MCArray<IndexType>::MIN_DEFAULT_CAPACITY)
       {
         capacity = MCArray<IndexType>::MIN_DEFAULT_CAPACITY;
       }
