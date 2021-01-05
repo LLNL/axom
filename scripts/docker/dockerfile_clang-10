@@ -21,7 +21,7 @@ RUN git clone -b $branch --recursive https://github.com/LLNL/axom.git
 WORKDIR "/home/axom/axom"
 RUN python3 ./scripts/uberenv/uberenv.py --spack-config-dir=./scripts/uberenv/spack_configs/docker/ubuntu18 \
                                          --project-json=./scripts/uberenv/project.json \
-                                         --spec=%clang@10.0.0 --prefix=/home/axom/axom_tpls -k
+                                         --spec=%clang@10.0.0+mfem --prefix=/home/axom/axom_tpls -k
 
 # Make sure the new hostconfig worked
 RUN python3 config-build.py -hc *.cmake -bp build -DBLT_CXX_STD=c++14 && cd build && make -j8 && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS="-T Test -VV -j8"
