@@ -5,14 +5,16 @@
 
 #include "axom/config.hpp"
 
-#ifdef AXOM_USE_MFEM
+#ifndef AXOM_USE_MFEM
+  #error This file requires MFEM
+#endif
 
-  #include "mfem.hpp"
+#include "mfem.hpp"
 
-  #include "gtest/gtest.h"
+#include "gtest/gtest.h"
 
-  #include "axom/sidre/core/sidre.hpp"
-  #include "axom/sidre/core/MFEMSidreDataCollection.hpp"
+#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre/core/MFEMSidreDataCollection.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::MFEMSidreDataCollection;
@@ -118,9 +120,9 @@ TEST(sidre_datacollection, dc_reload_gf)
 
   EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_writer.SetComm(MPI_COMM_WORLD);
-  #endif
+#endif
 
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
@@ -128,9 +130,9 @@ TEST(sidre_datacollection, dc_reload_gf)
   // No mesh is used here
   MFEMSidreDataCollection sdc_reader(testName());
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_reader.SetComm(MPI_COMM_WORLD);
-  #endif
+#endif
 
   sdc_reader.Load();
 
@@ -166,9 +168,9 @@ TEST(sidre_datacollection, dc_reload_gf_vdim)
 
   EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_writer.SetComm(MPI_COMM_WORLD);
-  #endif
+#endif
 
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
@@ -176,9 +178,9 @@ TEST(sidre_datacollection, dc_reload_gf_vdim)
   // No mesh is used here
   MFEMSidreDataCollection sdc_reader(testName());
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_reader.SetComm(MPI_COMM_WORLD);
-  #endif
+#endif
 
   sdc_reader.Load();
 
@@ -213,9 +215,9 @@ TEST(sidre_datacollection, dc_reload_mesh)
   const int n_ele = sdc_writer.GetMesh()->GetNE();
   const int n_bdr_ele = sdc_writer.GetMesh()->GetNBE();
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_writer.SetComm(MPI_COMM_WORLD);
-  #endif
+#endif
 
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
@@ -223,9 +225,9 @@ TEST(sidre_datacollection, dc_reload_mesh)
   // No mesh is used here
   MFEMSidreDataCollection sdc_reader(testName());
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_reader.SetComm(MPI_COMM_WORLD);
-  #endif
+#endif
 
   sdc_reader.Load();
 
@@ -237,7 +239,7 @@ TEST(sidre_datacollection, dc_reload_mesh)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 
 TEST(sidre_datacollection, dc_alloc_owning_parmesh)
 {
@@ -259,8 +261,8 @@ TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
-    //----------------------------------------------------------------------
-    #include "axom/slic/core/UnitTestLogger.hpp"
+  //----------------------------------------------------------------------
+  #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
@@ -277,7 +279,5 @@ int main(int argc, char* argv[])
 
   return result;
 }
-
-  #endif
 
 #endif
