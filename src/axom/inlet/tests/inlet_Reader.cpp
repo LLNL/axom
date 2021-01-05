@@ -165,10 +165,11 @@ TYPED_TEST(inlet_Reader, getMap)
 TEST(inlet_Reader_YAML, getInsideBools)
 {
   axom::inlet::YAMLReader reader;
-  reader.parseString(
+  bool result = reader.parseString(
     "foo:\n"
     "  bar: false\n"
     "  baz: true");
+  EXPECT_TRUE(result);
   bool value, retValue;
 
   value = true;
@@ -185,12 +186,13 @@ TEST(inlet_Reader_YAML, getInsideBools)
 TEST(inlet_Reader_YAML, mixLevelTables)
 {
   axom::inlet::YAMLReader reader;
-  reader.parseString(
+  bool result = reader.parseString(
     "t:\n"
     "  innerT:\n"
     "    foo: 1\n"
     "  anotherInnerT:\n"
     "    baz: 3");
+  EXPECT_TRUE(result);
 
   bool retValue;
   int value;
@@ -219,6 +221,84 @@ TEST(inlet_Reader_YAML, mixLevelTables_invalid)
     "  innerT: foo: 1\n"
     "  anotherInnerT:\n"
     "    baz: 3");
+
+  EXPECT_FALSE(result);
+}
+
+TEST(inlet_Reader_JSON, getInsideBools)
+{
+  axom::inlet::JSONReader reader;
+  bool result = reader.parseString(
+    "{\n"
+    "  foo: {\n"
+    "    bar: false,\n"
+    "    baz: true\n"
+    "  }\n"
+    "}");
+  EXPECT_TRUE(result);
+
+  bool value, retValue;
+
+  value = true;
+  retValue = reader.getBool("foo/bar", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, false);
+
+  value = false;
+  retValue = reader.getBool("foo/baz", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, true);
+}
+
+TEST(inlet_Reader_JSON, mixLevelTables)
+{
+  axom::inlet::JSONReader reader;
+  bool result = reader.parseString(
+    "{\n"
+    "  t: {\n"
+    "    innerT: {\n"
+    "      foo: 1\n"
+    "    },\n"
+    "    anotherInnerT: {\n"
+    "      baz: 3\n"
+    "    }\n"
+    "  }\n"
+    "}");
+  EXPECT_TRUE(result);
+
+  bool retValue;
+  int value;
+
+  value = 0;
+  retValue = reader.getInt("t/innerT/foo", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 1);
+
+  value = 0;
+  retValue = reader.getInt("t/doesntexist", value);
+  EXPECT_EQ(retValue, false);
+  EXPECT_EQ(value, 0);
+
+  value = 0;
+  retValue = reader.getInt("t/anotherInnerT/baz", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 3);
+}
+
+TEST(inlet_Reader_JSON, mixLevelTables_invalid)
+{
+  axom::inlet::JSONReader reader;
+  bool result = reader.parseString(
+    "{\n"
+    "  t: {\n"
+    "    innerT: {\n"
+    "      foo: 1\n"
+    "    }\n"
+    "    anotherInnerT: {\n"
+    "      baz: 3\n"
+    "    }\n"
+    "  }\n"
+    "}");
 
   EXPECT_FALSE(result);
 }
