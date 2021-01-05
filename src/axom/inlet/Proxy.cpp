@@ -21,12 +21,14 @@ InletType Proxy::type() const
     }
     return InletType::Object;
   }
-  // Otherwise it must be a field
-  if(m_field == nullptr)
+  // Then check if it's a field
+  if(m_field != nullptr)
   {
-    SLIC_ERROR("[Inlet] Cannot retrieve the type of an empty Proxy");
+    return m_field->type();
   }
-  return m_field->type();
+  // Otherwise must be a function
+  SLIC_ERROR_IF(!m_func, "[Inlet] Cannot retrieve the type of an empty Proxy");
+  return InletType::Function;
 }
 
 bool Proxy::contains(const std::string& name) const

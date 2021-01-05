@@ -33,7 +33,7 @@ public:
   T m_data[S];
 
   //
-  //  Use only default contructors to keep this a POD type
+  //  Use only default constructors to keep this a POD type
   //
   inline Vec<T, S>() = default;
   inline Vec<T, S>(const Vec<T, S> &v) = default;

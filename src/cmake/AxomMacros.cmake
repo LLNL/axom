@@ -116,6 +116,46 @@ endmacro(axom_add_component)
 
 
 ##------------------------------------------------------------------------------
+## axom_add_test(NAME            [name]
+##               COMMAND         [command] 
+##               NUM_MPI_TASKS   [n]
+##               NUM_OMP_THREADS [n]
+##               CONFIGURATIONS  [config1 [config2...]])
+##
+## Wrapper around blt_add_test() that handles functionality that Axom applies to all
+## tests.
+##------------------------------------------------------------------------------
+macro(axom_add_test)
+
+    set(options )
+    set(singleValueArgs NAME NUM_MPI_TASKS NUM_OMP_THREADS)
+    set(multiValueArgs COMMAND CONFIGURATIONS)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+
+    blt_add_test(NAME            ${arg_NAME}
+                 COMMAND         ${arg_COMMAND}
+                 NUM_MPI_TASKS   ${arg_NUM_MPI_TASKS}
+                 NUM_OMP_THREADS ${arg_NUM_OMP_THREADS}
+                 CONFIGURATIONS  ${arg_CONFIGURATIONS} )
+
+    ###########################################################################
+    # Newer versions of OpenMPI require OMPI_MCA_rmaps_base_oversubscribe=1
+    # to run with more tasks than actual cores
+    # Since this is an OpenMPI specific env var, it shouldn't interfere
+    # with other mpi implementations.
+    ###########################################################################
+    set_property(TEST ${arg_NAME}
+                 APPEND
+                 PROPERTY ENVIRONMENT  "OMPI_MCA_rmaps_base_oversubscribe=1")
+
+endmacro(axom_add_test)
+
+
+##------------------------------------------------------------------------------
 ## convert_to_native_escaped_file_path( path output )
 ##
 ## This macro converts a cmake path to a platform specific string literal

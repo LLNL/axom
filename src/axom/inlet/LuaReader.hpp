@@ -217,6 +217,28 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Get a function from the input deck
+   *
+   * \param [in]  id    The identifier to the function that will be retrieved
+   * \param [in]  ret_type    The return type of the function
+   * \param [in]  arg_types    The argument types of the function
+   *
+   * \return The function, compares false if not found
+   *****************************************************************************
+   */
+  FunctionVariant getFunction(const std::string& id,
+                              const FunctionType ret_type,
+                              const std::vector<FunctionType>& arg_types);
+
+  /*!
+   *****************************************************************************
+   * \brief The base index for arrays in Lua
+   *****************************************************************************
+   */
+  static const int baseIndex = 1;
+
+  /*!
+   *****************************************************************************
    * \brief Returns the Sol Lua state
    *
    * This allows the user to access functionality that was not provided by Inlet.
@@ -260,6 +282,17 @@ private:
    */
   template <typename Iter>
   bool traverseToTable(Iter begin, Iter end, sol::table& table);
+
+  /*!
+   *****************************************************************************
+   * \brief Traverses the Lua state to retrieve a sol function object
+   *
+   * \param [in]  id    The identifier to the function that will be retrieved
+   *
+   * \return The function, compares false if not found
+   *****************************************************************************
+   */
+  sol::protected_function getFunctionInternal(const std::string& id);
 
   sol::state m_lua;
 };

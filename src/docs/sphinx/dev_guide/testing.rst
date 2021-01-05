@@ -274,7 +274,7 @@ following items:
 
   #. An executable and test variable for each test executable to be
      generated. These variables use the `blt_add_executable` and
-     `blt_add_test` macros, respectively, as described above.
+     `axom_add_test` macros, respectively, as described above.
 
 .. note:: Fortran executables and tests should be guarded to prevent
           generation when Fortran is not enabled.
@@ -310,7 +310,7 @@ following items:
 
   #. An executable and test variable for each example executable to be
      generated and each executable to be run as a test. These definitions
-     use the `blt_add_executable` and `blt_add_test` macros, respectively.
+     use the `blt_add_executable` and `axom_add_test` macros, respectively.
      For example::
 
        blt_add_executable(NAME  <example executable name>
@@ -320,8 +320,8 @@ following items:
 
      and::
 
-       blt_add_test(NAME <example executable name>
-                    COMMAND <example executable name>)
+       axom_add_test(NAME <example executable name>
+                     COMMAND <example executable name>)
 
      Fortran executables and tests should be guarded to prevent generation if
      Fortran is not enabled.

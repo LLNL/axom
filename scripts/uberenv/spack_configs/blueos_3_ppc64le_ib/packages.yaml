@@ -112,7 +112,7 @@ packages:
 
 # Globally lock version of third party libraries
   conduit:
-    version: [0.5.1]
+    version: [0.6.0]
     variants: ~shared
   mfem:
     variants: ~mpi~metis~zlib
