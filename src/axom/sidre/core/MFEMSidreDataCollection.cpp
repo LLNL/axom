@@ -530,16 +530,16 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
     int num_gtris = pmesh->GroupNTriangles(gi);
     int num_gquads = pmesh->GroupNQuadrilaterals(gi);
 
-    bool has_shared_elements = num_gvertices > 0;
+    int num_shared_elements = num_gvertices;
     if(dim >= 2)
     {
-      has_shared_elements |= num_gedges > 0;
+      num_shared_elements += num_gedges;
       if(dim >= 3)
       {
-        has_shared_elements |= num_gtris > 0;
-        has_shared_elements |= num_gquads > 0;
+        num_shared_elements += num_gtris + num_gquads;
       }
     }
+    const bool has_shared_elements = num_shared_elements > 0;
 
     if(has_shared_elements && (num_gneighbors > 1))
     {
