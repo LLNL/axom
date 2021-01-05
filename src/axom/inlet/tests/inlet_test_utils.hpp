@@ -107,7 +107,8 @@ inline std::string fromLuaTo<axom::inlet::JSONReader>(const std::string& luaStri
 using ReaderTypes =
   ::testing::Types<axom::inlet::LuaReader, axom::inlet::YAMLReader, axom::inlet::JSONReader>;
 #else
-using ReaderTypes = ::testing::Types<axom::inlet::YAMLReader>;
+using ReaderTypes =
+  ::testing::Types<axom::inlet::YAMLReader, axom::inlet::JSONReader>;
 #endif
 
 }  // namespace detail

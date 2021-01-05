@@ -99,7 +99,7 @@ const static char SCOPE_DELIMITER = '/';
  * integer if no such child exists.
  *******************************************************************************
  */
-inline conduit::Node traverseNode(const conduit::Node& root, const std::string& id)
+conduit::Node traverseNode(const conduit::Node& root, const std::string& id)
 {
   if(root.has_path(id))
   {

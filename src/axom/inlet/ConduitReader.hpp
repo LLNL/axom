@@ -89,7 +89,7 @@ public:
    * \param [in]  arg_types    The argument types of the function
    *
    * \return The function, compares false if not found
-   * \note YAML does not support functions - calling this function will result
+   * \note Conduit does not support functions - calling this function will result
    * in a SLIC_ERROR
    *****************************************************************************
    */
