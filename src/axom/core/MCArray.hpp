@@ -18,7 +18,6 @@
 
 namespace axom
 {
-
 /* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
  * constructor calls. */
 namespace internal
@@ -106,7 +105,9 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  MCArray(IndexType num_tuples, IndexType num_components = 1, IndexType capacity = 0);
+  MCArray(IndexType num_tuples,
+          IndexType num_components = 1,
+          IndexType capacity = 0);
 
   /// @}
 
@@ -139,9 +140,9 @@ public:
    *  Consequently, the MCArray instance cannot be reallocated.
    */
   MCArray(T* data,
-        IndexType num_tuples,
-        IndexType num_components = 1,
-        IndexType capacity = 0);
+          IndexType num_tuples,
+          IndexType num_components = 1,
+          IndexType capacity = 0);
 
   /// @}
 
@@ -500,7 +501,9 @@ MCArray<T>::MCArray()
 
 //------------------------------------------------------------------------------
 template <typename T>
-MCArray<T>::MCArray(IndexType num_tuples, IndexType num_components, IndexType capacity)
+MCArray<T>::MCArray(IndexType num_tuples,
+                    IndexType num_components,
+                    IndexType capacity)
   : m_data(nullptr)
   , m_num_tuples(0)
   , m_capacity(0)
@@ -514,9 +517,9 @@ MCArray<T>::MCArray(IndexType num_tuples, IndexType num_components, IndexType ca
 //------------------------------------------------------------------------------
 template <typename T>
 MCArray<T>::MCArray(T* data,
-                IndexType num_tuples,
-                IndexType num_components,
-                IndexType capacity)
+                    IndexType num_tuples,
+                    IndexType num_components,
+                    IndexType capacity)
   : m_data(data)
   , m_num_tuples(num_tuples)
   , m_capacity(0)
@@ -631,8 +634,8 @@ inline void MCArray<T>::resize(IndexType new_num_tuples)
 //------------------------------------------------------------------------------
 template <typename T>
 inline void MCArray<T>::initialize(IndexType num_tuples,
-                                 IndexType num_components,
-                                 IndexType capacity)
+                                   IndexType num_components,
+                                   IndexType capacity)
 {
   assert(num_tuples >= 0);
   assert(num_components > 0);

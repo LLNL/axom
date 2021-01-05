@@ -153,7 +153,8 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    m_values = new MCArray<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+    m_values =
+      new MCArray<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
   }
 
   /*!
@@ -173,7 +174,8 @@ public:
   {
     SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero: " << stride);
 
-    m_values = new MCArray<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+    m_values =
+      new MCArray<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
   }
 
   /// @}

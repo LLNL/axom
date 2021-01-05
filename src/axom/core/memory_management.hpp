@@ -122,7 +122,8 @@ inline void deallocate(T*& p) noexcept;
  * Otherwise, it is unused.
  */
 template <typename T>
-inline T* reallocate(T* p, std::size_t n,
+inline T* reallocate(T* p,
+                     std::size_t n,
                      int allocID = getDefaultAllocatorID()) noexcept;
 
 /*!
@@ -231,7 +232,7 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
   }
   else
   {
-    pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));    
+    pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
   }
 
 #else
@@ -270,15 +271,15 @@ inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept
     dstStrategy = dstRecord->strategy;
   }
 
-  if (rm.hasAllocator(const_cast<void *>(src)))
+  if(rm.hasAllocator(const_cast<void*>(src)))
   {
-    srcRecord = const_cast<AllocationRecord*>(rm.findAllocationRecord(
-      const_cast<void *>(src)));
+    srcRecord = const_cast<AllocationRecord*>(
+      rm.findAllocationRecord(const_cast<void*>(src)));
     srcStrategy = srcRecord->strategy;
   }
 
   auto op = op_registry.find("COPY", srcStrategy, dstStrategy);
-  op->transform(const_cast<void *>(src), &dst, srcRecord, dstRecord, numbytes);
+  op->transform(const_cast<void*>(src), &dst, srcRecord, dstRecord, numbytes);
 #else
   std::memcpy(dst, src, numbytes);
 #endif
