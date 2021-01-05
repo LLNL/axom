@@ -176,7 +176,7 @@ int main(int argc, char** argv)
     SLIC_ERROR("Inlet failed to verify against provided schema");
   }
 
-  // Read all the data into a thermal solver object
+  // Read all the data into a set of boundary conditions
   auto bc_infos =
     inlet["bcs"].get<std::unordered_map<int, BoundaryCondition::InputInfo>>();
 

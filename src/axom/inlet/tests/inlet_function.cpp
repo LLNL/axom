@@ -64,6 +64,28 @@ TEST(inlet_function, simple_vec3_to_vec3_raw)
   EXPECT_FLOAT_EQ(result[2], 6);
 }
 
+TEST(inlet_function, simple_vec3_to_vec3_raw_partial_init)
+{
+  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto func =
+    inlet.reader().getFunction("foo", FunctionTag::Vec3D, {FunctionTag::Vec3D});
+
+  EXPECT_TRUE(func);
+
+  auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2});
+  EXPECT_FLOAT_EQ(result[0], 2);
+  EXPECT_FLOAT_EQ(result[1], 4);
+  EXPECT_FLOAT_EQ(result[2], 0);
+
+  result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1});
+  EXPECT_FLOAT_EQ(result[0], 2);
+  EXPECT_FLOAT_EQ(result[1], 0);
+  EXPECT_FLOAT_EQ(result[2], 0);
+}
+
 TEST(inlet_function, simple_vec3_to_double_through_table)
 {
   std::string testString = "function foo (x, y, z) return x + y + z end";

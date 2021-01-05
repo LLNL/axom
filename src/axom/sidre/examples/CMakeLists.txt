@@ -62,7 +62,7 @@ foreach(example_source ${example_sources})
         FOLDER axom/sidre/examples )
 
     if(AXOM_ENABLE_TESTS)
-        blt_add_test(
+        axom_add_test(
             NAME ${exe_name}
             COMMAND ${exe_name}_ex )
     endif()
@@ -82,10 +82,10 @@ if(ENABLE_MPI)
             FOLDER axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)
-            blt_add_test( NAME ${exe_name}
-                          COMMAND ${exe_name}_ex
-                          NUM_MPI_TASKS 1
-                          )
+            axom_add_test( NAME ${exe_name}
+                           COMMAND ${exe_name}_ex
+                           NUM_MPI_TASKS 1
+                           )
         endif()
     endforeach()
 endif()
@@ -104,7 +104,7 @@ if(ENABLE_FORTRAN)
             FOLDER axom/sidre/examples )
 
         if(AXOM_ENABLE_TESTS)
-            blt_add_test(
+            axom_add_test(
                 NAME ${exe_name}
                 COMMAND ${exe_name}_ex )
         endif()

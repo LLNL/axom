@@ -232,6 +232,13 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief The base index for arrays in Lua
+   *****************************************************************************
+   */
+  static const int baseIndex = 1;
+
+  /*!
+   *****************************************************************************
    * \brief Returns the Sol Lua state
    *
    * This allows the user to access functionality that was not provided by Inlet.

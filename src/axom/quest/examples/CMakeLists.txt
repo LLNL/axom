@@ -49,13 +49,13 @@ set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
     if (ENABLE_MPI)
-        blt_add_test(
+        axom_add_test(
             NAME quest_inout_interface_mpi_test
             COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
             NUM_MPI_TASKS 2
             )
     else()
-        blt_add_test(
+        axom_add_test(
             NAME quest_inout_interface_test
             COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
             )
@@ -97,13 +97,13 @@ if (ENABLE_FORTRAN)
 
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         if (ENABLE_MPI)
-            blt_add_test(
+            axom_add_test(
                 NAME quest_inout_interface_mpi_F_test
                 COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
                 NUM_MPI_TASKS 2
                 )
         else()
-            blt_add_test(
+            axom_add_test(
                 NAME quest_inout_interface_F_test
                 COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
                 )
