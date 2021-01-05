@@ -211,6 +211,18 @@ TEST(inlet_Reader_YAML, mixLevelTables)
   EXPECT_EQ(value, 3);
 }
 
+TEST(inlet_Reader_YAML, mixLevelTables_invalid)
+{
+  axom::inlet::YAMLReader reader;
+  bool result = reader.parseString(
+    "t:\n"
+    "  innerT: foo: 1\n"
+    "  anotherInnerT:\n"
+    "    baz: 3");
+
+  EXPECT_FALSE(result);
+}
+
 #ifdef AXOM_USE_SOL
 // Checks that LuaReader parses array information as expected
 // Discontiguous arrays are lua-specific

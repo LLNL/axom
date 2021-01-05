@@ -35,8 +35,20 @@ bool YAMLReader::parseFile(const std::string& filePath)
                              filePath));
     return false;
   }
-  m_root.load(filePath, "yaml");
-  return true;
+  bool success = true;
+  // Temporarily enable exceptions for Conduit errors so they can be caught and displayed
+  sidre::DataStore::setConduitDefaultMessageHandlers();
+  try
+  {
+    m_root.load(filePath, "yaml");
+  }
+  catch(const conduit::Error& e)
+  {
+    SLIC_WARNING(fmt::format("[Inlet]: Failed to parse YAML:\n{}", e.message()));
+    success = false;
+  }
+  sidre::DataStore::setConduitSLICMessageHandlers();
+  return success;
 }
 
 bool YAMLReader::parseString(const std::string& YAMLString)
@@ -46,8 +58,19 @@ bool YAMLReader::parseString(const std::string& YAMLString)
     SLIC_WARNING("Inlet: Given an empty YAML string to parse.");
     return false;
   }
-  m_root.parse(YAMLString, "yaml");
-  return true;
+  bool success = true;
+  sidre::DataStore::setConduitDefaultMessageHandlers();
+  try
+  {
+    m_root.parse(YAMLString, "yaml");
+  }
+  catch(const conduit::Error& e)
+  {
+    SLIC_WARNING(fmt::format("[Inlet]: Failed to parse YAML:\n{}", e.message()));
+    success = false;
+  }
+  sidre::DataStore::setConduitSLICMessageHandlers();
+  return success;
 }
 
 namespace detail
