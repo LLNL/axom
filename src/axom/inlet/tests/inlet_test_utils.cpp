@@ -6,7 +6,11 @@
 #include "axom/inlet/tests/inlet_test_utils.hpp"
 #include "axom/slic.hpp"
 
-namespace axom::inlet::detail
+namespace axom
+{
+namespace inlet
+{
+namespace detail
 {
 void LuaToYAML::add_token(std::string&& token, std::vector<std::string>& tokens)
 {
@@ -161,4 +165,8 @@ std::string LuaToYAML::convert(const std::string& luaString)
   return result;
 }
 
-}  // namespace axom::inlet::detail
+}  // namespace detail
+
+}  // namespace inlet
+
+}  // namespace axom

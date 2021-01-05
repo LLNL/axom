@@ -17,7 +17,11 @@
   #include "axom/inlet/LuaReader.hpp"
 #endif
 
-namespace axom::inlet::detail
+namespace axom
+{
+namespace inlet
+{
+namespace detail
 {
 /*!
  *******************************************************************************
@@ -36,7 +40,7 @@ public:
    * \brief Converts a Lua string to YAML
    * \param [in] luaString The string to convert
    * \note This function does not check for syntactic validity.  It is the
-   * responsibility of the callet to pass a valid Lua string.
+   * responsibility of the caller to pass a valid Lua string.
    *****************************************************************************
    */
   static std::string convert(const std::string& luaString);
@@ -89,6 +93,10 @@ using ReaderTypes =
 using ReaderTypes = ::testing::Types<axom::inlet::YAMLReader>;
 #endif
 
-}  // namespace axom::inlet::detail
+}  // namespace detail
+
+}  // namespace inlet
+
+}  // namespace axom
 
 #endif
