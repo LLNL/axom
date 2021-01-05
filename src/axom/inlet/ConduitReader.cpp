@@ -41,8 +41,21 @@ bool ConduitReader::parseFile(const std::string& filePath)
       fmt::format("Inlet: Given input file does not exist: {0}", filePath));
     return false;
   }
-  m_root.load(filePath, m_protocol);
-  return true;
+  bool success = true;
+  // Temporarily enable exceptions for Conduit errors so they can be caught and displayed
+  sidre::DataStore::setConduitDefaultMessageHandlers();
+  try
+  {
+    m_root.load(filePath, m_protocol);
+  }
+  catch(const conduit::Error& e)
+  {
+    SLIC_WARNING(
+      fmt::format("[Inlet]: Failed to parse {0}:\n{1}", m_protocol, e.message()));
+    success = false;
+  }
+  sidre::DataStore::setConduitSLICMessageHandlers();
+  return success;
 }
 
 bool ConduitReader::parseString(const std::string& stringToRead)
@@ -52,8 +65,20 @@ bool ConduitReader::parseString(const std::string& stringToRead)
     SLIC_WARNING("Inlet: Given an empty string to parse.");
     return false;
   }
-  m_root.parse(stringToRead, m_protocol);
-  return true;
+  bool success = true;
+  sidre::DataStore::setConduitDefaultMessageHandlers();
+  try
+  {
+    m_root.parse(stringToRead, m_protocol);
+  }
+  catch(const conduit::Error& e)
+  {
+    SLIC_WARNING(
+      fmt::format("[Inlet]: Failed to parse {0}:\n{1}", m_protocol, e.message()));
+    success = false;
+  }
+  sidre::DataStore::setConduitSLICMessageHandlers();
+  return success;
 }
 
 namespace detail
@@ -158,11 +183,12 @@ bool ConduitReader::getValue(const conduit::Node& node, double& value)
   // Match LuaReader functionality - promote from integer but not bool
   if(node.dtype().is_number() && !node.dtype().is_uint8())
   {
-    value = node.to_float64();
+    value = node.to_double();
     return true;
   }
   return false;
 }
+
 bool ConduitReader::getValue(const conduit::Node& node, bool& value)
 {
   // Boolean literals don't appear to be parsed as such - they are strings
@@ -172,10 +198,7 @@ bool ConduitReader::getValue(const conduit::Node& node, bool& value)
     // YAML 1.2 spec, section 10.3.2
     // FIXME: Converting the string to lowercase is not strictly correct, it
     // allows for things like tRue and falsE
-    std::transform(as_str.begin(),
-                   as_str.end(),
-                   as_str.begin(),
-                   [](const unsigned char c) { return std::tolower(c); });
+    utilities::string::toLower(as_str);
     if(as_str == "true")
     {
       value = true;
@@ -286,11 +309,8 @@ bool ConduitReader::getIndices(const std::string& id,
   {
     return false;
   }
-  // FIXME: Update to range-based for loops when Axom begins using Conduit 0.6.0
-  auto itr = node.children();
-  while(itr.has_next())
+  for(const auto& child : node.children())
   {
-    const auto& child = itr.next();
     indices.push_back(child.name());
   }
   return true;
@@ -315,11 +335,8 @@ bool ConduitReader::getDictionary(const std::string& id,
     return false;
   }
 
-  // FIXME: Update to range-based for loops when Axom begins using Conduit 0.6.0
-  auto itr = node.children();
-  while(itr.has_next())
+  for(const auto& child : node.children())
   {
-    const auto& child = itr.next();
     const auto name = child.name();
 
     T value;
@@ -374,11 +391,8 @@ bool ConduitReader::getArray(const std::string& id,
   else
   {
     conduit::index_t index = 0;
-    // FIXME: Update to range-based for loops when Axom begins using Conduit 0.6.0
-    auto itr = node.children();
-    while(itr.has_next())
+    for(const auto& child : node.children())
     {
-      const auto& child = itr.next();
       T value;
       // Inlet allows for heterogenous containers, so a failure here is "normal"
       if(getValue(child, value))

@@ -162,6 +162,67 @@ TYPED_TEST(inlet_Reader, getMap)
   // EXPECT_EQ(expectedStrs, strs);
 }
 
+TEST(inlet_Reader_YAML, getInsideBools)
+{
+  axom::inlet::YAMLReader reader;
+  reader.parseString(
+    "foo:\n"
+    "  bar: false\n"
+    "  baz: true");
+  bool value, retValue;
+
+  value = true;
+  retValue = reader.getBool("foo/bar", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, false);
+
+  value = false;
+  retValue = reader.getBool("foo/baz", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, true);
+}
+
+TEST(inlet_Reader_YAML, mixLevelTables)
+{
+  axom::inlet::YAMLReader reader;
+  reader.parseString(
+    "t:\n"
+    "  innerT:\n"
+    "    foo: 1\n"
+    "  anotherInnerT:\n"
+    "    baz: 3");
+
+  bool retValue;
+  int value;
+
+  value = 0;
+  retValue = reader.getInt("t/innerT/foo", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 1);
+
+  value = 0;
+  retValue = reader.getInt("t/doesntexist", value);
+  EXPECT_EQ(retValue, false);
+  EXPECT_EQ(value, 0);
+
+  value = 0;
+  retValue = reader.getInt("t/anotherInnerT/baz", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 3);
+}
+
+TEST(inlet_Reader_YAML, mixLevelTables_invalid)
+{
+  axom::inlet::YAMLReader reader;
+  bool result = reader.parseString(
+    "t:\n"
+    "  innerT: foo: 1\n"
+    "  anotherInnerT:\n"
+    "    baz: 3");
+
+  EXPECT_FALSE(result);
+}
+
 #ifdef AXOM_USE_SOL
 // Checks that LuaReader parses array information as expected
 // Discontiguous arrays are lua-specific

@@ -18,7 +18,11 @@
   #include "axom/inlet/LuaReader.hpp"
 #endif
 
-namespace axom::inlet::detail
+namespace axom
+{
+namespace inlet
+{
+namespace detail
 {
 /*!
  *******************************************************************************
@@ -106,6 +110,10 @@ using ReaderTypes =
 using ReaderTypes = ::testing::Types<axom::inlet::YAMLReader>;
 #endif
 
-}  // namespace axom::inlet::detail
+}  // namespace detail
+
+}  // namespace inlet
+
+}  // namespace axom
 
 #endif
