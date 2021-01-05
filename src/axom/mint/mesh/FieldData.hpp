@@ -15,8 +15,8 @@
 #endif
 
 // Mint includes
-#include "axom/mint/config.hpp"  // for mint compile time definitions
-#include "axom/mint/mesh/Field.hpp"             // for mint::Field definition
+#include "axom/mint/config.hpp"      // for mint compile time definitions
+#include "axom/mint/mesh/Field.hpp"  // for mint::Field definition
 #include "axom/mint/mesh/FieldVariable.hpp"     // for mint::FieldVariable
 #include "axom/mint/mesh/FieldAssociation.hpp"  // for mint::FieldAssociation
 

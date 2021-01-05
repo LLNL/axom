@@ -68,7 +68,8 @@ public:
   {
     IndexType new_value_capacity =
       internal::calcValueCapacity(0, getIDCapacity(), 0, value_capacity);
-    m_values = new MCArray<IndexType>(axom::internal::ZERO, 1, new_value_capacity);
+    m_values =
+      new MCArray<IndexType>(axom::internal::ZERO, 1, new_value_capacity);
 
     m_offsets->append(0);
   }

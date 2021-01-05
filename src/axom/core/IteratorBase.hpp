@@ -14,7 +14,6 @@
 
 namespace axom
 {
-
 /**
  * \class IteratorBase
  *
@@ -197,4 +196,4 @@ protected:
 
 }  // end namespace axom
 
-#endif //  AXOM_ITERBASE_HPP_
+#endif  //  AXOM_ITERBASE_HPP_

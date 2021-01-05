@@ -9,8 +9,8 @@
 #include "axom/mint/mesh/Field.hpp"
 
 // axom includes
-#include "axom/core/Macros.hpp"  // for axom Macros
-#include "axom/core/Types.hpp"   // for axom types
+#include "axom/core/Macros.hpp"   // for axom Macros
+#include "axom/core/Types.hpp"    // for axom types
 #include "axom/core/MCArray.hpp"  // for axom::MCArray
 
 #include "axom/mint/config.hpp"
