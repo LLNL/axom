@@ -28,9 +28,10 @@ namespace inlet
 {
 ConduitReader::ConduitReader(const std::string& protocol) : m_protocol(protocol)
 {
-  SLIC_ERROR_IF(
-    (protocol != "yaml") && (protocol != "json"),
-    "Inlet: Only JSON and YAML protocols are supported by ConduitReader");
+  SLIC_ERROR_IF((protocol != "yaml") && (protocol != "json"),
+                fmt::format("Inlet: Only 'json' and 'yaml' protocols are "
+                            "supported by ConduitReader, got: {0}",
+                            protocol));
 }
 
 bool ConduitReader::parseFile(const std::string& filePath)

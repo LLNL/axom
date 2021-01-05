@@ -30,6 +30,9 @@ namespace inlet
  * one of Conduit's protocols.
  *
  * \see Reader
+ * 
+ * \note This class should not be used directly, instead, use the YAMLReader
+ * and JSONReader derived classes
  *******************************************************************************
  */
 class ConduitReader : public Reader
