@@ -72,7 +72,7 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
     #   C++ exception with description "CUDAassert" thrown in the test body.
     set_property(TEST spin_bvh
                  APPEND
-                 PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=1")
+                 PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=0") # Zero based indexed, so only first GPU is visible
 
 endif()
 
