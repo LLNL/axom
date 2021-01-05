@@ -51,14 +51,14 @@ class Axom(CMakePackage, CudaPackage):
     homepage = "https://github.com/LLNL/axom"
     git      = "https://github.com/LLNL/axom.git"
 
-    version('main', branch='main', submodules='True')
-    version('develop', branch='develop', submodules='True')
-    version('0.4.0', tag='v0.4.0', submodules='True')
-    version('0.3.3', tag='v0.3.3', submodules='True')
-    version('0.3.2', tag='v0.3.2', submodules='True')
-    version('0.3.1', tag='v0.3.1', submodules='True')
-    version('0.3.0', tag='v0.3.0', submodules='True')
-    version('0.2.9', tag='v0.2.9', submodules='True')
+    version('main', branch='main', submodules=True)
+    version('develop', branch='develop', submodules=True)
+    version('0.4.0', tag='v0.4.0', submodules=True)
+    version('0.3.3', tag='v0.3.3', submodules=True)
+    version('0.3.2', tag='v0.3.2', submodules=True)
+    version('0.3.1', tag='v0.3.1', submodules=True)
+    version('0.3.0', tag='v0.3.0', submodules=True)
+    version('0.2.9', tag='v0.2.9', submodules=True)
 
     phases = ["hostconfig", "cmake", "build", "install"]
     root_cmakelists_dir = 'src'
@@ -70,6 +70,8 @@ class Axom(CMakePackage, CudaPackage):
             description='Enable build of shared libraries')
     variant('debug',    default=False,
             description='Build debug instead of optimized version')
+
+    variant('cpp14',  default=True, description="Build with C++14 support")
 
     variant('fortran',  default=True, description="Build with Fortran support")
 
@@ -103,7 +105,7 @@ class Axom(CMakePackage, CudaPackage):
     depends_on("conduit~hdf5", when="~hdf5")
 
     # HDF5 needs to be the same as Conduit's
-    depends_on("hdf5@1.8.19:1.8.999~mpi~cxx~shared~fortran", when="+hdf5")
+    depends_on("hdf5@1.8.19:1.8.999~cxx~shared~fortran", when="+hdf5")
 
     depends_on("lua", when="+lua")
 
@@ -115,7 +117,7 @@ class Axom(CMakePackage, CudaPackage):
 
     depends_on("umpire~openmp", when="+umpire~openmp")
     depends_on("umpire+openmp", when="+umpire+openmp")
-    depends_on("umpire+cuda+deviceconst", when="+umpire+cuda")
+    depends_on("umpire+cuda", when="+umpire+cuda")
 
     for sm_ in CudaPackage.cuda_arch_values:
         depends_on('raja cuda_arch={0}'.format(sm_),
@@ -135,6 +137,7 @@ class Axom(CMakePackage, CudaPackage):
     depends_on("python", when="+devtools")
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-shroud", when="+devtools")
+    depends_on("llvm+clang@10.0.0", when="+devtools")
 
     def flag_handler(self, name, flags):
         if name in ('cflags', 'cxxflags', 'fflags'):
@@ -243,6 +246,9 @@ class Axom(CMakePackage, CudaPackage):
             if flags:
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS", flags,
                                             description))
+
+        if "+cpp14" in spec:
+            cfg.write(cmake_cache_entry("BLT_CXX_STD", "c++14", ""))
 
         # TPL locations
         cfg.write("#------------------{0}\n".format("-" * 60))
@@ -415,16 +421,14 @@ class Axom(CMakePackage, CudaPackage):
             cfg.write(cmake_cache_entry("CPPCHECK_EXECUTABLE",
                                         pjoin(cppcheck_bin_dir, "cppcheck")))
 
-        lc_clangformatpath = "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format"
-        # This works only with Ubuntu + Debian - other distros (Arch/Fedora) use
-        # /usr/bin/clang-format which would require actually running the executable to grab the version
-        apt_clangformatpath = "/usr/bin/clang-format-10"
-        if os.path.exists(lc_clangformatpath):
-            cfg.write(cmake_cache_entry("CLANGFORMAT_EXECUTABLE", lc_clangformatpath))
-        elif os.path.exists(apt_clangformatpath):
-            cfg.write(cmake_cache_entry("CLANGFORMAT_EXECUTABLE", apt_clangformatpath))
+        # Only turn on clangformat support if devtools is on
+        if "+devtools" in spec:
+            clang_fmt_path = spec['llvm'].prefix.bin.join('clang-format')
+            cfg.write(cmake_cache_entry("CLANGFORMAT_EXECUTABLE",
+                                        clang_fmt_path))
         else:
-            cfg.write("# Unable to find clang-format\n\n")
+            cfg.write("# ClangFormat disabled due to disabled devtools\n")
+            cfg.write(cmake_cache_option("ENABLE_CLANGFORMAT", False))
 
         ##################################
         # Other machine specifics

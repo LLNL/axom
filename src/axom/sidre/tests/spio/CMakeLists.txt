@@ -36,7 +36,8 @@ endif()
 # Add gtest C++ tests
 #------------------------------------------------------------------------------
 blt_add_executable( NAME       spio_tests
-                    SOURCES    spio_main.cpp ${gtest_spio_parallel_tests} ${gtest_spio_serial_tests}
+                    SOURCES    spio_main.cpp
+                    HEADERS    ${gtest_spio_parallel_tests} ${gtest_spio_serial_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON ${spio_test_depends} gtest
                     FOLDER     axom/sidre/tests
@@ -44,18 +45,18 @@ blt_add_executable( NAME       spio_tests
 
 foreach(test ${gtest_spio_serial_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_test( NAME          ${test_name} 
-                  COMMAND       spio_tests --gtest_filter=${test_name}*
-                  NUM_MPI_TASKS 1
-                 )
+    axom_add_test( NAME          ${test_name} 
+                   COMMAND       spio_tests --gtest_filter=${test_name}*
+                   NUM_MPI_TASKS 1
+                   )
 endforeach()
 
 foreach(test ${gtest_spio_parallel_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_test( NAME          ${test_name} 
-                  COMMAND       spio_tests --gtest_filter=${test_name}*
-                  NUM_MPI_TASKS 4
-                  )
+    axom_add_test( NAME          ${test_name} 
+                   COMMAND       spio_tests --gtest_filter=${test_name}*
+                   NUM_MPI_TASKS 4
+                   )
 endforeach()
 
 #------------------------------------------------------------------------------
@@ -77,7 +78,7 @@ if(ENABLE_FORTRAN)
                             DEPENDS_ON ${spio_test_depends}
                             FOLDER     axom/sidre/tests
                             )
-        blt_add_test( NAME    ${test_name}_F
+        axom_add_test( NAME    ${test_name}_F
                       COMMAND ${test_name}_F_test
                       NUM_MPI_TASKS 1
                       )
@@ -99,10 +100,10 @@ if(ENABLE_FORTRAN)
                             DEPENDS_ON ${spio_test_depends}
                             FOLDER     axom/sidre/tests
                             )
-        blt_add_test( NAME    ${test_name}_F
-                      COMMAND ${test_name}_F_test
-                      NUM_MPI_TASKS 4
-                      )
+        axom_add_test( NAME    ${test_name}_F
+                       COMMAND ${test_name}_F_test
+                       NUM_MPI_TASKS 4
+                       )
     endforeach()
 
     # Fruit parallel tests with 4 MPI task
@@ -119,10 +120,10 @@ if(ENABLE_FORTRAN)
                             DEPENDS_ON ${spio_test_depends} fruit
                             FOLDER     axom/sidre/tests
                             )
-        blt_add_test( NAME    ${test_name}_F
-                      COMMAND ${test_name}_F_test
-                      NUM_MPI_TASKS 4
-                      )
+        axom_add_test( NAME    ${test_name}_F
+                       COMMAND ${test_name}_F_test
+                       NUM_MPI_TASKS 4
+                       )
     endforeach()
 
 endif()

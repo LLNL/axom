@@ -29,20 +29,21 @@ blt_list_append( TO lulesh_depends ELEMENTS openmp IF ENABLE_OPENMP )
 
 blt_add_executable(
     NAME sidre_lulesh2_ex
-    SOURCES ${lulesh_sources} ${lulesh_headers}
+    SOURCES ${lulesh_sources}
+    HEADERS ${lulesh_headers}
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON ${lulesh_depends}
     FOLDER axom/sidre/examples )
 
 if(AXOM_ENABLE_TESTS)
     if(ENABLE_MPI)
-        blt_add_test(NAME sidre_lulesh2
-                     COMMAND sidre_lulesh2_ex -s 5
-                     NUM_MPI_TASKS 1
-                     NUM_OMP_THREADS 2 )
+        axom_add_test(NAME sidre_lulesh2
+                      COMMAND sidre_lulesh2_ex -s 5
+                      NUM_MPI_TASKS 1
+                      NUM_OMP_THREADS 2 )
     else()
-        blt_add_test(NAME sidre_lulesh2 -s 5
-                     COMMAND sidre_lulesh2_ex
-                     NUM_OMP_THREADS 2 )
+        axom_add_test(NAME sidre_lulesh2 -s 5
+                      COMMAND sidre_lulesh2_ex
+                      NUM_OMP_THREADS 2 )
     endif()
 endif()

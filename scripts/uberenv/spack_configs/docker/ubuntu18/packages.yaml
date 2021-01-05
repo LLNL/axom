@@ -94,10 +94,23 @@ packages:
     - spec: openblas
       prefix: /usr
 
-  # Globally lock in version of CMake
+  # Globally lock version of third party libraries
+  conduit:
+    version: [0.6.0]
+    variants: ~shared
+  mfem:
+    variants: ~mpi~metis~zlib
+
+  # Globally lock in version of devtools
   cmake:
     version: [3.10.1]
     buildable: false
     externals:
     - spec: cmake@3.10.1
+      prefix: /usr
+  llvm:
+    version: [10.0.0]
+    buildable: false
+    externals:
+    - spec: llvm+clang
       prefix: /usr
