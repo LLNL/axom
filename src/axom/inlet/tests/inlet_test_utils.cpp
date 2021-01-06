@@ -12,7 +12,8 @@ namespace inlet
 {
 namespace detail
 {
-void LuaToYAML::add_token(std::string&& token, std::vector<std::string>& tokens)
+void LuaTranslator::add_token(std::string&& token,
+                              std::vector<std::string>& tokens)
 {
   const static std::string punctuation = "{}[];,=";
   std::vector<std::string> parsed_after;
@@ -41,7 +42,7 @@ void LuaToYAML::add_token(std::string&& token, std::vector<std::string>& tokens)
   tokens.insert(tokens.end(), parsed_after.rbegin(), parsed_after.rend());
 }
 
-std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
+std::vector<std::string> LuaTranslator::tokenize(const std::string& text)
 {
   std::vector<std::string> result;
   std::size_t pos = 0;
@@ -94,7 +95,7 @@ std::vector<std::string> LuaToYAML::tokenize(const std::string& text)
   return result;
 }
 
-std::string LuaToYAML::convert(const std::string& luaString)
+std::string LuaTranslator::convertYAML(const std::string& luaString)
 {
   const auto tokens = tokenize(luaString);
   std::size_t i = 0;
@@ -162,6 +163,130 @@ std::string LuaToYAML::convert(const std::string& luaString)
       i += 3;
     }
   }
+  return result;
+}
+
+std::string LuaTranslator::convertJSON(const std::string& luaString)
+{
+  // Replace all single-quoted strings with double quotes
+  const auto tokens = [&luaString]() {
+    auto tokens = tokenize(luaString);
+    for(auto& token : tokens)
+    {
+      if(token.front() == '\'' && token.back() == '\'')
+      {
+        token.front() = '"';
+        token.back() = '"';
+      }
+    }
+    return tokens;
+  }();
+  std::size_t i = 0;
+  std::string indent = "  ";
+  std::string result = "{\n";
+  std::stack<char> delim_stack;
+  auto trim_trailing_comma = [&result]() {
+    if(auto rpos = result.find_last_not_of(" \n"))
+    {
+      if(result[rpos] == ',')
+      {
+        result.erase(rpos, 1);
+      }
+    }
+  };
+  while(i < tokens.size())
+  {
+    const auto& token = tokens[i];
+    // The start of a new table
+    if((i < tokens.size() - 2) && tokens[i + 1] == "=" && tokens[i + 2] == "{")
+    {
+      result += indent + '"' + token + '"' + ": ";
+      // Curly brace if it's a string-keyed table (not integer-keyed) and not implicitly indexed
+      const char open_bracket =
+        (!isdigit(tokens[i + 4].front()) && (tokens[i + 3] != "{")) ? '{' : '[';
+      delim_stack.push(open_bracket);
+      result += open_bracket;
+      result += '\n';
+      indent += "  ";
+      i += 3;
+    }
+    // End of a table - end with the matching type of bracket
+    else if(token == "}")
+    {
+      indent = indent.substr(2);
+      trim_trailing_comma();
+      result += indent + (delim_stack.top() == '[' ? ']' : '}') + ",\n";
+      delim_stack.pop();
+      i += 1;
+    }
+    // Commas and semicolons can be ignored completely
+    else if(token == "," || token == ";")
+    {
+      i += 1;
+    }
+    // The start of an implicitly indexed array
+    else if(token == "{")
+    {
+      // The contents of the array are still objects (non-terminal),
+      // so add a curly brace
+      result += indent + "{\n";
+      delim_stack.push('{');
+      indent += "  ";
+      i += 1;
+    }
+    else if(token == "[")
+    {
+      const auto& key = tokens[i + 1];
+      // Check if this is the start of a new table
+      if(tokens[i + 4] == "{")
+      {
+        result += indent;
+        // Check if it's an integer-keyed table
+        if(isdigit(key.front()))
+        {
+          result += "{\n";
+          delim_stack.push('{');
+        }
+        else
+        {
+          // The start of a string-keyed table
+          result += key + ": {\n";
+          delim_stack.push('{');
+        }
+        indent += "  ";
+      }
+      // Or if it's a terminal entry in the current table
+      else
+      {
+        const auto& value = tokens[i + 4];
+        // If it's the start of an array of scalars, add the opening bracket
+        if(isdigit(key.front()) && (delim_stack.top() != '['))
+        {
+          result += indent + '[' + '\n';
+          indent += "  ";
+          delim_stack.push('[');
+        }
+        // Integer-keyed arrays just need the element
+        if(delim_stack.top() == '[')
+        {
+          result += indent + value + ",\n";
+        }
+        else
+        {
+          result += indent + key + ": " + value + ",\n";
+        }
+      }
+      i += 5;
+    }
+    else
+    {
+      const auto& value = tokens[i + 2];
+      result += indent + '"' + token + '"' + ": " + value + ",\n";
+      i += 3;
+    }
+  }
+  trim_trailing_comma();
+  result += "}\n";
   return result;
 }
 

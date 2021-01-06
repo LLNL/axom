@@ -24,7 +24,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added `cpp14` variant to Spack package to allow `Inlet::LuaReader` to be used easier.
 - Inlet: Added support for string-keyed associative arrays (dictionaries)
 - Inlet: Added support for defining and retrieving functions from the input file
-- Inlet: Added support for YAML input files
+- Inlet: Added support for YAML and JSON input files
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 

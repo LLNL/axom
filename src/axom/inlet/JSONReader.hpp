@@ -5,14 +5,14 @@
 
 /*!
  *******************************************************************************
- * \file YAMLReader.hpp
+ * \file JSONReader.hpp
  *
- * \brief This file contains the class definition of the YAMLReader.
+ * \brief This file contains the class definition of the JSONReader.
  *******************************************************************************
  */
 
-#ifndef INLET_YAMLREADER_HPP
-#define INLET_YAMLREADER_HPP
+#ifndef INLET_JSONREADER_HPP
+#define INLET_JSONREADER_HPP
 
 #include "axom/inlet/ConduitReader.hpp"
 
@@ -24,17 +24,17 @@ namespace inlet
 {
 /*!
  *******************************************************************************
- * \class YAMLReader
+ * \class JSONReader
  *
- * \brief A Reader that is able to read variables from a YAML file.
+ * \brief A Reader that is able to read variables from a JSON file.
  *
  * \see Reader
  *******************************************************************************
  */
-class YAMLReader : public ConduitReader
+class JSONReader : public ConduitReader
 {
 public:
-  YAMLReader() : ConduitReader("yaml") { }
+  JSONReader() : ConduitReader("json") { }
 };
 
 }  // end namespace inlet

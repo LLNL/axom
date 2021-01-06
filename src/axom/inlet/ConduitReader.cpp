@@ -5,13 +5,13 @@
 
 /*!
  *******************************************************************************
- * \file YAMLReader.cpp
+ * \file ConduitReader.cpp
  *
- * \brief This file contains the class implementation of the YAMLReader.
+ * \brief This file contains the class implementation of the ConduitReader.
  *******************************************************************************
  */
 
-#include "axom/inlet/YAMLReader.hpp"
+#include "axom/inlet/ConduitReader.hpp"
 
 #include <fstream>
 
@@ -26,13 +26,20 @@ namespace axom
 {
 namespace inlet
 {
-YAMLReader::YAMLReader() { }
-bool YAMLReader::parseFile(const std::string& filePath)
+ConduitReader::ConduitReader(const std::string& protocol) : m_protocol(protocol)
+{
+  SLIC_ERROR_IF((protocol != "yaml") && (protocol != "json"),
+                fmt::format("Inlet: Only 'json' and 'yaml' protocols are "
+                            "supported by ConduitReader, got: {0}",
+                            protocol));
+}
+
+bool ConduitReader::parseFile(const std::string& filePath)
 {
   if(!axom::utilities::filesystem::pathExists(filePath))
   {
-    SLIC_WARNING(fmt::format("Inlet: Given YAML input file does not exist: {0}",
-                             filePath));
+    SLIC_WARNING(
+      fmt::format("Inlet: Given input file does not exist: {0}", filePath));
     return false;
   }
   bool success = true;
@@ -40,33 +47,35 @@ bool YAMLReader::parseFile(const std::string& filePath)
   sidre::DataStore::setConduitDefaultMessageHandlers();
   try
   {
-    m_root.load(filePath, "yaml");
+    m_root.load(filePath, m_protocol);
   }
   catch(const conduit::Error& e)
   {
-    SLIC_WARNING(fmt::format("[Inlet]: Failed to parse YAML:\n{}", e.message()));
+    SLIC_WARNING(
+      fmt::format("[Inlet]: Failed to parse {0}:\n{1}", m_protocol, e.message()));
     success = false;
   }
   sidre::DataStore::setConduitSLICMessageHandlers();
   return success;
 }
 
-bool YAMLReader::parseString(const std::string& YAMLString)
+bool ConduitReader::parseString(const std::string& stringToRead)
 {
-  if(YAMLString.empty())
+  if(stringToRead.empty())
   {
-    SLIC_WARNING("Inlet: Given an empty YAML string to parse.");
+    SLIC_WARNING("Inlet: Given an empty string to parse.");
     return false;
   }
   bool success = true;
   sidre::DataStore::setConduitDefaultMessageHandlers();
   try
   {
-    m_root.parse(YAMLString, "yaml");
+    m_root.parse(stringToRead, m_protocol);
   }
   catch(const conduit::Error& e)
   {
-    SLIC_WARNING(fmt::format("[Inlet]: Failed to parse YAML:\n{}", e.message()));
+    SLIC_WARNING(
+      fmt::format("[Inlet]: Failed to parse {0}:\n{1}", m_protocol, e.message()));
     success = false;
   }
   sidre::DataStore::setConduitSLICMessageHandlers();
@@ -149,10 +158,10 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
 
 }  // namespace detail
 
-bool YAMLReader::getValue(const conduit::Node& node, int& value)
+bool ConduitReader::getValue(const conduit::Node& node, int& value)
 {
-  // Match LuaReader functionality - narrow from floating-point
-  if(node.dtype().is_number())
+  // Match LuaReader functionality - narrow from floating-point but exclude bool
+  if(node.dtype().is_number() && !node.dtype().is_uint8())
   {
     value = node.to_int();
     return true;
@@ -160,7 +169,7 @@ bool YAMLReader::getValue(const conduit::Node& node, int& value)
   return false;
 }
 
-bool YAMLReader::getValue(const conduit::Node& node, std::string& value)
+bool ConduitReader::getValue(const conduit::Node& node, std::string& value)
 {
   if(node.dtype().is_string())
   {
@@ -170,10 +179,10 @@ bool YAMLReader::getValue(const conduit::Node& node, std::string& value)
   return false;
 }
 
-bool YAMLReader::getValue(const conduit::Node& node, double& value)
+bool ConduitReader::getValue(const conduit::Node& node, double& value)
 {
-  // Match LuaReader functionality - promote from integer
-  if(node.dtype().is_number())
+  // Match LuaReader functionality - promote from integer but not bool
+  if(node.dtype().is_number() && !node.dtype().is_uint8())
   {
     value = node.to_double();
     return true;
@@ -181,10 +190,10 @@ bool YAMLReader::getValue(const conduit::Node& node, double& value)
   return false;
 }
 
-bool YAMLReader::getValue(const conduit::Node& node, bool& value)
+bool ConduitReader::getValue(const conduit::Node& node, bool& value)
 {
   // Boolean literals don't appear to be parsed as such - they are strings
-  if(node.dtype().is_string())
+  if((m_protocol == "yaml") && node.dtype().is_string())
   {
     std::string as_str = node.as_string();
     // YAML 1.2 spec, section 10.3.2
@@ -202,78 +211,83 @@ bool YAMLReader::getValue(const conduit::Node& node, bool& value)
       return true;
     }
   }
+  else if((m_protocol == "json") && node.dtype().is_uint8())
+  {
+    value = node.as_uint8();
+    return true;
+  }
   return false;
 }
 
-bool YAMLReader::getBool(const std::string& id, bool& value)
+bool ConduitReader::getBool(const std::string& id, bool& value)
 {
   return getValue(detail::traverseNode(m_root, id), value);
 }
 
-bool YAMLReader::getDouble(const std::string& id, double& value)
+bool ConduitReader::getDouble(const std::string& id, double& value)
 {
   return getValue(detail::traverseNode(m_root, id), value);
 }
 
-bool YAMLReader::getInt(const std::string& id, int& value)
+bool ConduitReader::getInt(const std::string& id, int& value)
 {
   return getValue(detail::traverseNode(m_root, id), value);
 }
 
-bool YAMLReader::getString(const std::string& id, std::string& value)
+bool ConduitReader::getString(const std::string& id, std::string& value)
 {
   return getValue(detail::traverseNode(m_root, id), value);
 }
 
-bool YAMLReader::getIntMap(const std::string& id,
-                           std::unordered_map<int, int>& values)
+bool ConduitReader::getIntMap(const std::string& id,
+                              std::unordered_map<int, int>& values)
 {
   return getArray(id, values);
 }
 
-bool YAMLReader::getDoubleMap(const std::string& id,
-                              std::unordered_map<int, double>& values)
+bool ConduitReader::getDoubleMap(const std::string& id,
+                                 std::unordered_map<int, double>& values)
 {
   return getArray(id, values);
 }
 
-bool YAMLReader::getBoolMap(const std::string& id,
-                            std::unordered_map<int, bool>& values)
+bool ConduitReader::getBoolMap(const std::string& id,
+                               std::unordered_map<int, bool>& values)
 {
   return getArray(id, values);
 }
 
-bool YAMLReader::getStringMap(const std::string& id,
-                              std::unordered_map<int, std::string>& values)
+bool ConduitReader::getStringMap(const std::string& id,
+                                 std::unordered_map<int, std::string>& values)
 {
   return getArray(id, values);
 }
 
-bool YAMLReader::getIntMap(const std::string& id,
-                           std::unordered_map<std::string, int>& values)
+bool ConduitReader::getIntMap(const std::string& id,
+                              std::unordered_map<std::string, int>& values)
 {
   return getDictionary(id, values);
 }
 
-bool YAMLReader::getDoubleMap(const std::string& id,
-                              std::unordered_map<std::string, double>& values)
+bool ConduitReader::getDoubleMap(const std::string& id,
+                                 std::unordered_map<std::string, double>& values)
 {
   return getDictionary(id, values);
 }
 
-bool YAMLReader::getBoolMap(const std::string& id,
-                            std::unordered_map<std::string, bool>& values)
+bool ConduitReader::getBoolMap(const std::string& id,
+                               std::unordered_map<std::string, bool>& values)
 {
   return getDictionary(id, values);
 }
 
-bool YAMLReader::getStringMap(const std::string& id,
-                              std::unordered_map<std::string, std::string>& values)
+bool ConduitReader::getStringMap(const std::string& id,
+                                 std::unordered_map<std::string, std::string>& values)
 {
   return getDictionary(id, values);
 }
 
-bool YAMLReader::getIndices(const std::string& id, std::vector<int>& indices)
+bool ConduitReader::getIndices(const std::string& id, std::vector<int>& indices)
 {
   indices.clear();
   const auto node = detail::traverseNode(m_root, id);
@@ -282,13 +296,13 @@ bool YAMLReader::getIndices(const std::string& id, std::vector<int>& indices)
     return false;
   }
   indices.resize(node.number_of_children());
-  // Arrays in YAML are contiguous so we don't need to query the input file
+  // Arrays in YAML/JSON are contiguous so we don't need to query the input file
   std::iota(indices.begin(), indices.end(), 0);
   return true;
 }
 
-bool YAMLReader::getIndices(const std::string& id,
-                            std::vector<std::string>& indices)
+bool ConduitReader::getIndices(const std::string& id,
+                               std::vector<std::string>& indices)
 {
   indices.clear();
   const auto node = detail::traverseNode(m_root, id);
@@ -303,17 +317,17 @@ bool YAMLReader::getIndices(const std::string& id,
   return true;
 }
 
-FunctionVariant YAMLReader::getFunction(const std::string&,
-                                        const FunctionType,
-                                        const std::vector<FunctionType>&)
+FunctionVariant ConduitReader::getFunction(const std::string&,
+                                           const FunctionType,
+                                           const std::vector<FunctionType>&)
 {
-  SLIC_ERROR("[Inlet] YAML does not support functions");
+  SLIC_ERROR("[Inlet] Conduit YAML/JSON does not support functions");
   return {};
 }
 
 template <typename T>
-bool YAMLReader::getDictionary(const std::string& id,
-                               std::unordered_map<std::string, T>& values)
+bool ConduitReader::getDictionary(const std::string& id,
+                                  std::unordered_map<std::string, T>& values)
 {
   values.clear();
   const auto node = detail::traverseNode(m_root, id);
@@ -337,8 +351,8 @@ bool YAMLReader::getDictionary(const std::string& id,
 }
 
 template <typename T>
-bool YAMLReader::getArray(const std::string& id,
-                          std::unordered_map<int, T>& values)
+bool ConduitReader::getArray(const std::string& id,
+                             std::unordered_map<int, T>& values)
 {
   values.clear();
   const auto node = detail::traverseNode(m_root, id);
