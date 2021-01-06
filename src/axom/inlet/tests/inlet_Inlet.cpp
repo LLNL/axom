@@ -20,7 +20,6 @@
 using axom::inlet::Field;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
-using axom::inlet::LuaReader;
 using axom::inlet::Proxy;
 using axom::inlet::Table;
 using axom::sidre::DataStore;
@@ -30,10 +29,10 @@ Inlet createBasicInlet(DataStore* ds,
                        const std::string& luaString,
                        bool enableDocs = true)
 {
-  auto lr = std::make_unique<InletReader>();
-  lr->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
+  std::unique_ptr<InletReader> reader(new InletReader());
+  reader->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
 
-  return Inlet(std::move(lr), ds->getRoot(), enableDocs);
+  return Inlet(std::move(reader), ds->getRoot(), enableDocs);
 }
 
 template <typename InletReader>
