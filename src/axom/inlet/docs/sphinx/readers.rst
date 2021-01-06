@@ -13,15 +13,21 @@ Below is a table that lists supported features:
    * - Language
      - Types
      - Functions
-     - Simple Arrays
+     - Arrays
+     - Maps
      - Mixed-typed key Arrays
+     - Non-contiguous Arrays
    * - JSON
      - bool, double, int, string
      - 
      - X
+     - X
+     - 
      - 
    * - Lua
      - bool, double, int, string
+     - X
+     - X
      - X
      - X
      - X
@@ -29,4 +35,6 @@ Below is a table that lists supported features:
      - bool, double, int, string
      - 
      - X
+     - X
+     - 
      - 
