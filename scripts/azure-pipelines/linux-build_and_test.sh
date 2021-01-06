@@ -26,7 +26,7 @@ echo $HOST_CONFIG
 
 if [[ "$DO_BUILD" == "yes" ]] ; then
     echo "~~~~~~ RUNNING CMAKE ~~~~~~~~"
-    or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -DENABLE_GTEST_DEATH_TESTS=ON
+    or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -DENABLE_GTEST_DEATH_TESTS=ON ${CMAKE_EXTRA_FLAGS}
     or_die cd build-$HOST_CONFIG-debug
     echo "~~~~~~ BUILDING ~~~~~~~~"
     if [[ ${CMAKE_EXTRA_FLAGS} == *COVERAGE* ]] ; then
