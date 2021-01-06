@@ -8,7 +8,6 @@ Below is a table that lists supported features:
 
 
 .. list-table:: Supported Language Features
-   :widths: 25 25 25
    :header-rows: 1
 
    * - Language
