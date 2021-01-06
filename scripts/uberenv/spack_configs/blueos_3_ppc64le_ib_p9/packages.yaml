@@ -25,8 +25,8 @@ packages:
   cuda:
     buildable: false
     externals:
-      - spec: cuda@10.1.243
-        prefix: /usr/tce/packages/cuda/cuda-10.1.243
+    - spec: cuda@10.1.243
+      prefix: /usr/tce/packages/cuda/cuda-10.1.243
 
 # LLNL blueos mpi
   mpi:
@@ -70,11 +70,11 @@ packages:
     - spec: bzip2
       prefix: /usr
   cmake:
-    version: [3.18.0]
+    version: [3.14.5]
     buildable: false
     externals:
     - spec: cmake
-      prefix: /usr/tce/packages/cmake/cmake-3.18.0
+      prefix: /usr/tce/packages/cmake/cmake-3.14.5
   gettext:
     buildable: false
     externals:
