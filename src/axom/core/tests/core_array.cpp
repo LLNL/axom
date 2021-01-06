@@ -1093,3 +1093,10 @@ TEST(core_array, check_move_copy)
 }
 
 } /* end namespace axom */
+
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+
+  return RUN_ALL_TESTS();
+}
