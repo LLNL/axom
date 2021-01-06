@@ -290,7 +290,10 @@ public:
    
    /// Returns the QuadratureSpace order useful for reconstructing a QuadratureFunction
    int GetQFieldOrder(const std::string &field_name);
-   
+
+   /// Returns the QuadratureSpace VDim useful for reconstructing a QuadratureFunction
+   int GetQFieldVDim(const std::string &field_name);
+
    /// Returns a pointer to the raw data usefol for reconstructing a QuadratureFunction
    double* GetQFieldData(const std::string &field_name);
 

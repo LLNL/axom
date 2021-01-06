@@ -1121,6 +1121,9 @@ addQuadratureFunction(const std::string &field_name, mfem::QuadratureFunction *q
 
    const int numDofs = qf->Size();
 
+   if(qf->GetData() == nullptr) {
+      AllocNamedBuffer(buffer_name, offset + numDofs);
+   }
    /*
     *  Mesh blueprint for a scalar-based grid function is of the form
     *    /qfields/field_name/qspace_order
@@ -1178,10 +1181,13 @@ RegisterQFieldInBPIndex(const std::string& field_name, mfem::QuadratureFunction 
 
    bp_index_field_grp->createViewString( "path", bp_field_grp->getPathName() );
    bp_index_field_grp->copyView( bp_field_grp->getView("topology") );
+   bp_index_field_grp->copyView( bp_field_grp->getView("vdim") );
    bp_index_field_grp->copyView( bp_field_grp->getView("qspace_order") );
 
-   // Note: The bp index requires QuadratureFunction::VDim()
-   const int number_of_components = 1; //qf->VDim();
+   // Fix me?: Should this be qf->GetVDim() instead?
+   // It's not clear to me what this exactly does, since the value 1 works just fine
+   // even when qf->GetVDim() > 1.
+   const int number_of_components = 1;
    bp_index_field_grp->createViewScalar("number_of_components",
                                         number_of_components);
 }
@@ -1233,6 +1239,11 @@ void SidreDataCollection::RegisterQField(const std::string &field_name,
    sidre::View *v = alloc_view(grp, "qspace_order");
    v->setScalar(qf->GetSpace()->GetOrder());
 
+   // Set the "vdim" string using the qf's qspace, overwrite if
+   // necessary.
+   v = alloc_view(grp, "vdim");
+   v->setScalar(qf->GetVDim());
+
    // Set the topology of the QuadratureFunction.
    // This is always 'mesh'
    v = alloc_view(grp, "topology")->setString("mesh");
@@ -1248,7 +1259,7 @@ void SidreDataCollection::RegisterQField(const std::string &field_name,
    }
 
    // Register field_name + qf in field_map.
-   DataCollection::RegisterQField(field_name, qf);
+   mfem::DataCollection::RegisterQField(field_name, qf);
 }
 
 // private method
@@ -1299,6 +1310,16 @@ int SidreDataCollection::GetQFieldOrder(const std::string &field_name)
                    "qfield " << field_name << " does not exist");
 
    sidre::View *v = grp->getView("qspace_order");
+
+   return v->getScalar();
+}
+
+int SidreDataCollection::GetQFieldVDim(const std::string &field_name)
+{
+   sidre::Group* grp = m_bp_grp->getGroup("qfields/" + field_name);
+   MFEM_ASSERT(grp != NULL, "qfield " << field_name << " does not exist");
+
+   sidre::View *v = grp->getView("vdim");
 
    return v->getScalar();
 }
