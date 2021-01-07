@@ -38,27 +38,15 @@ else()
 endif()
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
+if(ENABLE_CUDA)
+    # Force "early" device linking to avoid propagating an NVCC link dependency
+    set_target_properties(core ${AXOM_COMPONENTS_ENABLED} PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+endif()
+
 # Combine all component object libraries into a unified library
 blt_add_library(NAME       axom
                 SOURCES    Axom.cpp
                 DEPENDS_ON ${AXOM_COMPONENTS_ENABLED})
-
-if(ENABLE_CUDA)
-    # Force "early" device linking to avoid propagating an NVCC link dependency
-    # CUDA_RESOLVE_DEVICE_SYMBOLS can't be used with object libraries, even indirectly
-    set(_arch_flag "-arch=${AXOM_CUDA_ARCH}")
-    foreach(comp core ${AXOM_COMPONENTS_ENABLED})
-        set(_comp_dlink "${comp}_device_link${CMAKE_CUDA_OUTPUT_EXTENSION}")
-        add_custom_command(
-            OUTPUT ${_comp_dlink}
-            BYPRODUCTS ${_comp_dlink}
-            COMMAND ${CMAKE_CUDA_COMPILER} --device-link ${_arch_flag} $<TARGET_OBJECTS:${comp}> -o ${_comp_dlink}
-            DEPENDS $<TARGET_OBJECTS:${comp}>
-            COMMAND_EXPAND_LISTS
-        )
-        target_sources(axom PRIVATE ${_comp_dlink})
-    endforeach()
-endif()
 
 install(TARGETS              axom
         EXPORT               axom-targets
