@@ -28,7 +28,10 @@ namespace inlet
 {
 LuaReader::LuaReader()
 {
-  m_lua.open_libraries(sol::lib::base);
+  m_lua.open_libraries(sol::lib::base,
+                       sol::lib::math,
+                       sol::lib::string,
+                       sol::lib::package);
   auto vec_type = m_lua.new_usertype<primal::Vector3D>(
     "Vec3D",  // Name of the class in Lua
     // Add make_vector as a constructor to enable "new Vec3D(x,y,z)"
