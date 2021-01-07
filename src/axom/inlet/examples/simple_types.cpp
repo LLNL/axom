@@ -12,7 +12,7 @@
 #include "CLI11/CLI11.hpp"
 
 // This example has the following input file:
-  /*
+/*
   a_simple_bool = true
   a_simple_int = 5,
   a_simple_double = 7.5,
@@ -45,7 +45,6 @@ bool scalars(const std::string inputFileName)
   inlet.addString("does_not_exist", "Should not be in your input file");
   // _inlet_simple_types_scalar_add_end
 
-
   // Access values stored in the Datastore via Inlet
   // _inlet_simple_types_scalar_access_start
   bool a_simple_bool = inlet["a_simple_bool"];
@@ -63,21 +62,21 @@ bool scalars(const std::string inputFileName)
   std::cout << "a_defaulted_int = " << a_defaulted_int << std::endl;
 
   // _inlet_simple_types_scalar_contains_start
-  if (inlet.contains("does_not_exist"))
+  if(inlet.contains("does_not_exist"))
   {
-    std::cout << "Error: Inlet should not have contained key 'does_not_exist' " << std::endl;
+    std::cout << "Error: Inlet should not have contained key 'does_not_exist' "
+              << std::endl;
     return false;
   }
-  else 
+  else
   {
-    std::cout << "Key 'does_not_exist' did not exist in Inlet. Success!" << std::endl;
+    std::cout << "Key 'does_not_exist' did not exist in Inlet. Success!"
+              << std::endl;
   }
   // _inlet_simple_types_scalar_contains_end
 
-
   return true;
 }
-
 
 int main(int argc, char** argv)
 {
