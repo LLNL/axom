@@ -44,22 +44,23 @@ bool load_library()
 
   // Define and store the values in the input file
   myinlet.addFunction("read_str",
-                      axom::inlet::FunctionType::Double,   // Return type
-                      {axom::inlet::FunctionType::Vec3D}, // Argument types (unused)
+                      axom::inlet::FunctionType::Double,  // Return type
+                      {axom::inlet::FunctionType::Vec3D},  // Argument types (unused)
                       "The function reads a double from a file");
 
   // call the function with an unimportant number
   // TODO: support no arguments?
   //double result = myinlet["coef"].call<double>(5.0);
-  double result = myinlet["read_str"].call<double>(axom::primal::Vector3D{3, 5, 7});
+  double result =
+    myinlet["read_str"].call<double>(axom::primal::Vector3D {3, 5, 7});
 
-  if (result != 7.4) {
-    std::cerr << "Failed to read '7.4' from test file." << std::endl;  
+  if(result != 7.4)
+  {
+    std::cerr << "Failed to read '7.4' from test file." << std::endl;
   }
   std::cout << "Successfully read '7.4' from test file." << std::endl;
   return true;
 }
-
 
 int main()
 {
@@ -75,7 +76,8 @@ int main()
 
   // Small example of loading an extra Lua library
   int result = 0;
-  if (!load_library()) {
+  if(!load_library())
+  {
     result = 1;
   }
 
