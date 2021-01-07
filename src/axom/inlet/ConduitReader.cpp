@@ -318,8 +318,8 @@ bool ConduitReader::getIndices(const std::string& id,
 }
 
 FunctionVariant ConduitReader::getFunction(const std::string&,
-                                           const FunctionType,
-                                           const std::vector<FunctionType>&)
+                                           const FunctionTag,
+                                           const std::vector<FunctionTag>&)
 {
   SLIC_ERROR("[Inlet] Conduit YAML/JSON does not support functions");
   return {};
