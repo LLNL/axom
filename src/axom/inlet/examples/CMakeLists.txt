@@ -16,6 +16,7 @@ set(inlet_examples
 blt_list_append( TO inlet_examples ELEMENTS
     arrays.cpp
     verification.cpp
+    lua_library.cpp
     user_defined_type.cpp
     documentation_generation.cpp
     simple_types.cpp
@@ -41,6 +42,9 @@ if (SOL_FOUND)
 
     axom_add_test( NAME    inlet_documentation_generation_ex
                    COMMAND inlet_documentation_generation_ex --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
+
+    axom_add_test( NAME    inlet_lua_library_ex
+                   COMMAND inlet_lua_library_ex )
 
     axom_add_test( NAME    inlet_simple_types_ex
                    COMMAND inlet_simple_types_ex --file ${CMAKE_CURRENT_LIST_DIR}/simple_types.lua)
