@@ -34,6 +34,27 @@ namespace axom
 {
 namespace inlet
 {
+namespace detail
+{
+struct InletVector
+{
+  int dim;
+  axom::primal::Vector3D vec;
+
+  InletVector() = default;
+
+  InletVector(std::initializer_list<double> values)
+    : dim(values.size())
+    , vec(values)
+  { }
+
+  double operator[](int i) const { return vec[i]; }
+
+  operator axom::primal::Vector3D &() { return vec; }
+  operator const axom::primal::Vector3D &() const { return vec; }
+};
+}  // namespace detail
+
 /*!
  *******************************************************************************
  * \brief The tags used to describe function signatures in the input file
@@ -63,7 +84,8 @@ enum class FunctionTag
  */
 struct FunctionType
 {
-  using Vec3D = axom::primal::Vector3D;
+  // using Vec3D = axom::primal::Vector3D;
+  using Vec3D = detail::InletVector;
   using Double = double;
 };
 
