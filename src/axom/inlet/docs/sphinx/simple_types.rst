@@ -7,7 +7,7 @@ and dictionaries. Inlet refers to individual items as Fields. Tables can contain
 Fields, a single array, and a single dictionar.
 
 .. note::  There is an inherent global table that holds all global level Fields.  This can be
-  accessed either via your `Inlet` class instance.
+  accessed via your `Inlet` class instance.
 
 
 *******
