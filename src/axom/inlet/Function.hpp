@@ -38,21 +38,30 @@ namespace detail
 {
 struct InletVector
 {
+  primal::Vector3D vec;
   int dim;
-  axom::primal::Vector3D vec;
 
   InletVector() = default;
 
   InletVector(std::initializer_list<double> values)
-    : dim(values.size())
-    , vec(values)
+    : vec(values)
+    , dim(values.size())
   { }
 
+  InletVector(primal::Vector3D&& v, int d = 3) : vec(std::move(v)), dim(d) { }
+
   double operator[](int i) const { return vec[i]; }
+  double& operator[](int i) { return vec[i]; }
 
   operator axom::primal::Vector3D &() { return vec; }
   operator const axom::primal::Vector3D &() const { return vec; }
 };
+
+inline bool operator==(const InletVector& u, const InletVector& v)
+{
+  return (u.vec == v.vec) && (u.dim == v.dim);
+}
+
 }  // namespace detail
 
 /*!
