@@ -74,12 +74,13 @@ int main()
   myfile.close();
 
   // Small example of loading an extra Lua library
-  load_library();
-
-  // Clean up test file
-  if (!remove(TEST_FILE_NAME)) {
-    return 1;
+  int result = 0;
+  if (!load_library()) {
+    result = 1;
   }
 
-  return 0;
+  // Clean up test file
+  remove(TEST_FILE_NAME);
+
+  return result;
 }
