@@ -34,8 +34,8 @@
 
 #include "quest_test_utilities.hpp"
 
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 #include "fmt/fmt.hpp"
 
@@ -1509,7 +1509,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   std::srand(SRAND_SEED);

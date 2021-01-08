@@ -26,9 +26,9 @@
 #include "quest_test_utilities.hpp"                  // test-utility functions
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"       // for SLIC macros
-#include "axom/slic/core/UnitTestLogger.hpp"  // for the unit test logger
-using axom::slic::UnitTestLogger;
+#include "axom/slic/interface/slic.hpp"     // for SLIC macros
+#include "axom/slic/core/SimpleLogger.hpp"  // for the unit test logger
+using axom::slic::SimpleLogger;
 
 // gtest
 #ifdef AXOM_USE_MPI
@@ -554,7 +554,7 @@ int main(int argc, char* argv[])
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

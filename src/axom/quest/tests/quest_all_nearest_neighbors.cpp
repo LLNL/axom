@@ -353,7 +353,7 @@ TEST(quest_all_nearnbr, file_query)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-using axom::slic::UnitTestLogger;
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -372,7 +372,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

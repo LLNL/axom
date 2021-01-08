@@ -146,7 +146,7 @@ TEST(slam_set_relation_map, access_pattern)
 }
 
 //----------------------------------------------------------------------
-using axom::slic::UnitTestLogger;
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -155,8 +155,7 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  axom::slic::UnitTestLogger logger;
-  // axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 
