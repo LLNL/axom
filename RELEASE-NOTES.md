@@ -38,6 +38,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
   and `std::unique_ptr<T>` in owning contexts
 - Unified core and SPIO unit tests into fewer executables to limit size of build directory
+- Renamed `axom::slic::UnitTestLogger` to `axom::slic:SimpleLogger` because it's used in
+  more than just unit tests.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty

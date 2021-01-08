@@ -30,7 +30,7 @@ int main(int argc, char** argv)
   MPI_Comm_rank(problem_comm, &myrank);
   MPI_Comm_size(problem_comm, &nranks);
 
-  slic::UnitTestLogger logger;
+  slic::SimpleLogger logger;
 
   // STEP 0: create the data store
   sidre::DataStore* dataStore1 = new sidre::DataStore();

@@ -134,8 +134,8 @@ TEST(primal_intersection_impl, zero_count)
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger, finalized when exiting main scope
-  UnitTestLogger logger;
+  SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

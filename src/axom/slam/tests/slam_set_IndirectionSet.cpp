@@ -589,7 +589,7 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();
 
