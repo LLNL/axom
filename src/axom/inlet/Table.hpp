@@ -27,6 +27,7 @@
 #include "axom/inlet/Function.hpp"
 #include "axom/inlet/Reader.hpp"
 #include "axom/inlet/inlet_utils.hpp"
+#include "axom/inlet/VariantKey.hpp"
 #include "axom/inlet/Verifiable.hpp"
 
 #include "axom/sidre.hpp"
@@ -137,11 +138,21 @@ struct is_inlet_dict<std::unordered_map<std::string, T>> : std::true_type
 { };
 
 template <typename T>
+struct is_inlet_dict<std::unordered_map<VariantKey, T>> : std::true_type
+{ };
+
+template <typename T>
 struct is_inlet_primitive_dict : std::false_type
 { };
 
 template <typename T>
 struct is_inlet_primitive_dict<std::unordered_map<std::string, T>>
+{
+  static constexpr bool value = is_inlet_primitive<T>::value;
+};
+
+template <typename T>
+struct is_inlet_primitive_dict<std::unordered_map<VariantKey, T>>
 {
   static constexpr bool value = is_inlet_primitive<T>::value;
 };
@@ -180,6 +191,12 @@ struct has_FromInlet_specialization<
 inline std::string indexToString(const std::string& idx) { return idx; }
 /// \overload
 inline std::string indexToString(const int idx) { return std::to_string(idx); }
+/// \overload
+inline std::string indexToString(const VariantKey& idx)
+{
+  return idx.type() == InletType::String ? static_cast<std::string>(idx)
+                                         : indexToString(static_cast<int>(idx));
+}
 
 /*!
  *******************************************************************************
@@ -196,7 +213,7 @@ inline Result toIndex(const From& idx)
   // By default, try a static cast
   return static_cast<Result>(idx);
 }
-
+/// \overload
 template <>
 inline int toIndex(const std::string& idx)
 {
@@ -204,6 +221,50 @@ inline int toIndex(const std::string& idx)
   SLIC_ERROR_IF(!as_int.second,
                 fmt::format("[Inlet] Expected an integer, got: {0}", idx));
   return as_int.first;
+}
+
+/*!
+ *******************************************************************************
+ * \brief Adds a group containing the indices of a container to a table, and a 
+ * subtable for each index
+ * 
+ * \param [inout] table The table to add to
+ * \param [in] indices The indices to add
+ * \param [in] description The optional description of the subtables
+ * \tparam Key The type of the indices to add
+ *******************************************************************************
+ */
+template <typename Key>
+void addIndicesGroupToTable(Table& table,
+                            const std::vector<Key>& indices,
+                            const std::string& description = "");
+
+/*!
+ *******************************************************************************
+ * \brief Determines whether a variant key is convertible to another type
+ * 
+ * \tparam Key The type to check the validity of the conversion to
+ * 
+ * \note That is, returns true if the key holds an integer and Key is int, etc
+ *******************************************************************************
+ */
+template <typename Key>
+bool matchesKeyType(const VariantKey& key)
+{
+  // A VariantKey matches everything
+  if(std::is_same<Key, VariantKey>::value)
+  {
+    return true;
+  }
+  else if(std::is_same<Key, int>::value && key.type() == InletType::Integer)
+  {
+    return true;
+  }
+  else if(std::is_same<Key, std::string>::value && key.type() == InletType::String)
+  {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace detail
@@ -687,29 +748,20 @@ public:
                           T>::type
   get() const
   {
-    T result;
+    using Key = typename T::key_type;
+    using Val = typename T::mapped_type;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
     if(isContainerGroup(m_name))
     {
-      if(!getContainer(result))
-      {
-        SLIC_ERROR(fmt::format(
-          "[Inlet] Table '{0}' does not contain a valid container of "
-          "requested type",
-          m_name));
-      }
+      return getContainer<Key, Val>();
     }
     // If the container group is a child table, retrieve it and copy its contents
     // into the result
-    else if(!getTable(detail::CONTAINER_GROUP_NAME).getContainer(result))
+    else
     {
-      SLIC_ERROR(
-        fmt::format("[Inlet] Table '{0}' does not contain a valid container of "
-                    "requested type",
-                    m_name));
+      return getTable(detail::CONTAINER_GROUP_NAME).getContainer<Key, Val>();
     }
-    return result;
   }
 
   /*!
@@ -1012,7 +1064,7 @@ private:
    * will be converted to strings
    *****************************************************************************
    */
-  std::vector<std::string> containerIndices() const;
+  std::vector<VariantKey> containerIndices() const;
 
   /*!
    *****************************************************************************
@@ -1030,56 +1082,21 @@ private:
   /*!
    *****************************************************************************
    * \brief Get a container represented as an unordered map from the input file
-   * of primitive type
-   *
-   * \param [out] map Unordered map to be populated with container contents, will be
-   * cleared before contents are added
-   *
-   * \return Whether or not the container was found
    *****************************************************************************
    */
   template <typename Key, typename Val>
-  typename std::enable_if<detail::is_inlet_primitive<Val>::value, bool>::type
-  getContainer(std::unordered_map<Key, Val>& map) const
+  std::unordered_map<Key, Val> getContainer() const
   {
-    map.clear();
-    if(!isContainerGroup(m_name))
-    {
-      return false;
-    }
-    for(const auto& item : m_fieldChildren)
-    {
-      auto index = detail::toIndex<Key>(removeBeforeDelimiter(item.first));
-      map[index] = item.second->get<Val>();
-    }
-    return true;
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Get a container represented as an unordered map from the input file
-   * of user-defined type
-   *
-   * \param [out] map Unordered map to be populated with container contents, will be
-   * cleared before contents are added
-   *
-   * \return Whether or not the container was found
-   *****************************************************************************
-   */
-  template <typename Key, typename Val>
-  typename std::enable_if<!detail::is_inlet_primitive<Val>::value, bool>::type
-  getContainer(std::unordered_map<Key, Val>& map) const
-  {
-    map.clear();
-    if(!isGenericContainer())
-    {
-      return false;
-    }
+    std::unordered_map<Key, Val> map;
     for(const auto& indexLabel : containerIndices())
     {
-      map[detail::toIndex<Key>(indexLabel)] = getTable(indexLabel).get<Val>();
+      if(detail::matchesKeyType<Key>(indexLabel))
+      {
+        map[detail::toIndex<Key>(indexLabel)] =
+          get<Val>(detail::indexToString(indexLabel));
+      }
     }
-    return true;
+    return map;
   }
 
   /*!
@@ -1104,8 +1121,7 @@ private:
    */
   bool isGenericContainer() const
   {
-    return m_sidreGroup->hasView(detail::CONTAINER_INDICES_NAME) ||
-      m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME);
+    return m_sidreGroup->hasView(detail::GENERIC_CONTAINER_FLAG);
   }
 
   std::string m_name;

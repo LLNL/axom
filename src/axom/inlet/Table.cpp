@@ -69,9 +69,9 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   return *currTable;
 }
 
-std::vector<std::string> Table::containerIndices() const
+std::vector<VariantKey> Table::containerIndices() const
 {
-  std::vector<std::string> indices;
+  std::vector<VariantKey> indices;
   if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
   {
     auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
@@ -79,14 +79,21 @@ std::vector<std::string> Table::containerIndices() const
     for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
         idx = group->getNextValidViewIndex(idx))
     {
-      indices.push_back(group->getView(idx)->getString());
+      auto view = group->getView(idx);
+      if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
+      {
+        indices.push_back(view->getString());
+      }
+      else
+      {
+        indices.push_back(view->getData<int>());
+      }
     }
   }
   else
   {
     SLIC_ERROR(
-      fmt::format("[Inlet] Table '{0}' does not contain an array or dict of "
-                  "user-defined objects",
+      fmt::format("[Inlet] Table '{0}' does not contain an array or dict",
                   m_name));
   }
   return indices;
@@ -101,12 +108,13 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
   const std::string baseName = m_name.substr(0, pos);
   for(const auto& indexLabel : containerIndices())
   {
+    auto stringLabel = detail::indexToString(indexLabel);
     // The base name reflects the structure of the actual data
     // and is used for the reader call
-    auto fullPath = appendPrefix(baseName, indexLabel);
+    auto fullPath = appendPrefix(baseName, stringLabel);
     fullPath = appendPrefix(fullPath, name);
     // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
-    result.push_back({indexLabel, fullPath});
+    result.push_back({stringLabel, fullPath});
   }
   return result;
 }
@@ -152,20 +160,9 @@ Table& Table::addGenericContainer(const std::string& name,
   const std::string& fullName = appendPrefix(m_name, name);
   if(m_reader.getIndices(fullName, indices))
   {
-    // This is how an array of user-defined type is differentiated
-    // from an array of primitives - the tables have to be allocated
-    // before they are populated as we don't know the schema of the
-    // generic type yet
-    auto group = table.m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
-                                                 /* list_format = */ true);
-    // For each element of the dictionary, add a table whose name is its index
-    // Schema for struct is defined using the returned table
-    for(const auto& idx : indices)
-    {
-      const auto string_idx = detail::indexToString(idx);
-      table.addTable(string_idx, description);
-      group->createViewString("", string_idx);
-    }
+    detail::addIndicesGroupToTable(table, indices, description);
+    table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
+                                         static_cast<int8>(1));
   }
   else
   {
@@ -207,7 +204,7 @@ Verifiable<Table>& Table::addStringDictionary(const std::string& name,
 Table& Table::addGenericDictionary(const std::string& name,
                                    const std::string& description)
 {
-  return addGenericContainer<std::string>(name, description);
+  return addGenericContainer<VariantKey>(name, description);
 }
 
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
@@ -400,19 +397,21 @@ void registerContainer(Table& table, const std::unordered_map<int, T>& container
   */
 template <typename T>
 void registerContainer(Table& table,
-                       const std::unordered_map<std::string, T>& container)
+                       const std::unordered_map<VariantKey, T>& container)
 {
   for(const auto& entry : container)
   {
+    auto string_key = indexToString(entry.first);
     SLIC_ERROR_IF(
-      entry.first.find('/') != std::string::npos,
+      string_key.find('/') != std::string::npos,
       fmt::format("[Inlet] Dictionary key '{0}' contains illegal character '/'",
-                  entry.first));
-    SLIC_ERROR_IF(entry.first.empty(),
+                  string_key));
+    SLIC_ERROR_IF(string_key.empty(),
                   "[Inlet] Dictionary key cannot be the empty string");
-    table.addPrimitive(entry.first, "", true, entry.second);
+    table.addPrimitive(string_key, "", true, entry.second);
   }
 }
+
 /*!
  *****************************************************************************
  * \brief Implementation helper for adding primitive arrays
@@ -492,6 +491,45 @@ struct PrimitiveArrayHelper<Key, std::string>
   }
 };
 
+void addIndexViewToGroup(sidre::Group& group, const int& index)
+{
+  group.createViewScalar("", index);
+}
+
+void addIndexViewToGroup(sidre::Group& group, const std::string& index)
+{
+  group.createViewString("", index);
+}
+
+void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
+{
+  if(index.type() == InletType::String)
+  {
+    addIndexViewToGroup(group, static_cast<std::string>(index));
+  }
+  else
+  {
+    addIndexViewToGroup(group, static_cast<int>(index));
+  }
+}
+
+template <typename Key>
+void addIndicesGroupToTable(Table& table,
+                            const std::vector<Key>& indices,
+                            const std::string& description)
+{
+  auto indices_group = table.sidreGroup()->createGroup(CONTAINER_INDICES_NAME,
+                                                       /* list_format = */ true);
+  // For each index, add a table whose name is its index
+  // Schema for struct is defined using the returned table
+  for(const auto& idx : indices)
+  {
+    const auto string_idx = indexToString(idx);
+    table.addTable(string_idx, description);
+    addIndexViewToGroup(*indices_group, idx);
+  }
+}
+
 }  // end namespace detail
 
 template <typename T, typename SFINAE>
@@ -526,11 +564,21 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     if(isDict)
     {
-      detail::PrimitiveArrayHelper<std::string, T>(table, m_reader, lookupPath);
+      detail::PrimitiveArrayHelper<VariantKey, T>(table, m_reader, lookupPath);
     }
     else
     {
       detail::PrimitiveArrayHelper<int, T>(table, m_reader, lookupPath);
+    }
+    // Copy the indices to the datastore to keep track of integer vs. string indices
+    std::vector<VariantKey> indices;
+    if(m_reader.getIndices(lookupPath, indices))
+    {
+      detail::addIndicesGroupToTable(table, indices, description);
+    }
+    else
+    {
+      SLIC_WARNING(fmt::format("[Inlet] Container {0} not found.", fullName));
     }
     return table;
   }
