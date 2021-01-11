@@ -462,7 +462,7 @@ int main(int argc, char* argv[])
 #endif
 
   // create & initialize test logger. finalized when exiting main scope
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

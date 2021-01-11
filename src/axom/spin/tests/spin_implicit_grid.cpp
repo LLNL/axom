@@ -605,7 +605,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;  // create & initialize test logger,
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   result = RUN_ALL_TESTS();

@@ -272,8 +272,8 @@ TEST(slam_set_dynamicset, find_index)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
 #endif
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();
 

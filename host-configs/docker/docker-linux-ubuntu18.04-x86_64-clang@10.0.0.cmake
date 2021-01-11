@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# SYS_TYPE: linux-ubuntu18.04-ivybridge
+# SYS_TYPE: linux-ubuntu18.04-x86_64
 # Compiler Spec: clang@10.0.0
 #------------------------------------------------------------------------------
 # CMake executable path: /usr/bin/cmake
@@ -21,6 +21,8 @@ set(CMAKE_Fortran_COMPILER "/usr/bin/gfortran" CACHE PATH "")
 
 set(BLT_EXE_LINKER_FLAGS " -Wl,-rpath,/usr/lib" CACHE PATH "Adds a missing libstdc++ rpath")
 
+set(BLT_CXX_STD "c++14" CACHE PATH "")
+
 #------------------------------------------------------------------------------
 # TPLs
 #------------------------------------------------------------------------------
@@ -28,9 +30,9 @@ set(BLT_EXE_LINKER_FLAGS " -Wl,-rpath,/usr/lib" CACHE PATH "Adds a missing libst
 # Root directory for generated TPLs
 set(TPL_ROOT "/home/axom/axom_tpls/clang-10.0.0" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.6.0" CACHE PATH "")
 
-# MFEM not built
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.1.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
 
@@ -63,6 +65,9 @@ set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
 #------------------------------------------------------------------------------
 
 set(ENABLE_DOCS OFF CACHE BOOL "")
+
+# ClangFormat disabled due to disabled devtools
+set(ENABLE_CLANGFORMAT OFF CACHE BOOL "")
 
 #------------------------------------------------------------------------------
 # Other machine specifics

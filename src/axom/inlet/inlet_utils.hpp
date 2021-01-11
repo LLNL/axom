@@ -30,6 +30,53 @@ void setWarningFlag(axom::sidre::Group* root);
 
 /*!
 *****************************************************************************
+* \brief This function is used to configure the Inlet object corresponding
+* to the provided Sidre group as required
+*
+* \param [in] target Reference to the Sidre group to set the required 
+* status of
+* \param [in] root Reference to the Sidre Root Group where the warning flag 
+* will be set on failure
+* \param [in] required Whether the Inlet object is required
+*****************************************************************************
+*/
+void setRequired(axom::sidre::Group& target,
+                 axom::sidre::Group& root,
+                 bool required);
+
+/*!
+*****************************************************************************
+* \brief This function is used to determine if the Inlet object corresponding
+* to the provided Sidre group is required
+*
+* \param [in] target Reference to the Sidre group to check the required 
+* status of
+* \param [in] root Reference to the Sidre Root Group where the warning flag 
+* will be set on failure
+* \return Whether the Inlet object is required
+*****************************************************************************
+*/
+bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root);
+
+/*!
+*****************************************************************************
+* \brief This function is used to verify the required-ness of the Inlet object
+* corresponding to the provided Sidre group
+*
+* \param [in] target Reference to the Sidre group to verify the required-ness of
+* \param [in] condition The condition that must be true if the object is required
+* \param [in] type The type of the object as a string, for use in the warning message
+* 
+* \return False if the object was required but \p condition was false, True otherwise
+* \post If the function returns False, a warning message will be emitted
+*****************************************************************************
+*/
+bool verifyRequired(const axom::sidre::Group& target,
+                    const bool condition,
+                    const std::string& type);
+
+/*!
+*****************************************************************************
 * \brief This function appends the prefix name to the ending name.
 *
 * \param [in] The prefix string name.

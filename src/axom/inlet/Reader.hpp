@@ -14,10 +14,12 @@
 #ifndef INLET_READER_HPP
 #define INLET_READER_HPP
 
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "axom/inlet/Function.hpp"
 #include "axom/inlet/VariantKey.hpp"
 
 namespace axom
@@ -227,6 +229,21 @@ public:
   /// \overload
   virtual bool getIndices(const std::string& id,
                           std::vector<VariantKey>& indices) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Get a function from the input deck
+   *
+   * \param [in]  id    The identifier to the function that will be retrieved
+   * \param [in]  ret_type    The return type of the function
+   * \param [in]  arg_types    The argument types of the function
+   *
+   * \return The function, compares false if not found
+   *****************************************************************************
+   */
+  virtual FunctionVariant getFunction(const std::string& id,
+                                      const FunctionType ret_type,
+                                      const std::vector<FunctionType>& arg_types) = 0;
 };
 
 }  // end namespace inlet

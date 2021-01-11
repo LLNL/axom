@@ -19,20 +19,20 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-19.0.4/bin/ifort" CACHE PATH "")
 
-set(CMAKE_C_FLAGS "-gcc-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE PATH "")
+set(CMAKE_C_FLAGS "-gcc-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE STRING "")
 
-set(CMAKE_CXX_FLAGS "-gxx-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/g++" CACHE PATH "")
+set(CMAKE_CXX_FLAGS "-gxx-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/g++" CACHE STRING "")
 
-set(CMAKE_Fortran_FLAGS "-gcc-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE PATH "")
+set(CMAKE_Fortran_FLAGS "-gcc-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # TPLs
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_11_25_18_21_13/intel-19.0.4" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_01_06_14_12_59/intel-19.0.4" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.6.0" CACHE PATH "")
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.1.0" CACHE PATH "")
 
@@ -60,7 +60,7 @@ set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0/b
 
 set(MPIEXEC_EXECUTABLE "/usr/bin/srun" CACHE PATH "")
 
-set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG "-n" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # Devtools

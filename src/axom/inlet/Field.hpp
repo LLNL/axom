@@ -312,6 +312,13 @@ public:
    */
   InletType type() const;
 
+  /*!
+   *****************************************************************************
+   * \brief Returns whether an actual value is stored
+   *****************************************************************************
+   */
+  explicit operator bool() const { return m_sidreGroup->hasView("value"); }
+
 private:
   /*!
    *****************************************************************************

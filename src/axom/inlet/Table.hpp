@@ -24,9 +24,10 @@
 #include "fmt/fmt.hpp"
 
 #include "axom/inlet/Field.hpp"
-#include "axom/inlet/VariantKey.hpp"
+#include "axom/inlet/Function.hpp"
 #include "axom/inlet/Reader.hpp"
 #include "axom/inlet/inlet_utils.hpp"
+#include "axom/inlet/VariantKey.hpp"
 #include "axom/inlet/Verifiable.hpp"
 
 #include "axom/sidre.hpp"
@@ -108,6 +109,25 @@ struct is_inlet_array : std::false_type
 template <typename T>
 struct is_inlet_array<std::unordered_map<int, T>> : std::true_type
 { };
+
+// Determines whether a type is a std::function
+template <typename T>
+struct is_std_function : std::false_type
+{ };
+
+template <typename T>
+struct is_std_function<std::function<T>> : std::true_type
+{ };
+
+// Extracts the signature of a std::function
+template <typename FuncType>
+struct std_function_signature;
+
+template <typename FuncType>
+struct std_function_signature<std::function<FuncType>>
+{
+  using type = FuncType;
+};
 
 template <typename T>
 struct is_inlet_dict : std::false_type
@@ -250,67 +270,6 @@ bool matchesKeyType(const VariantKey& key)
 }  // namespace detail
 
 class Proxy;
-
-/*!
-   *****************************************************************************
-   * \brief A wrapper class that enables constraints on groups of Tables
-   *****************************************************************************
-  */
-class AggregateTable : public Verifiable
-{
-public:
-  AggregateTable(std::vector<std::reference_wrapper<Verifiable>>&& tables)
-    : m_tables(std::move(tables))
-  { }
-
-  /*!
-   *****************************************************************************
-   * \brief This will be called by Inlet::verify to verify the contents of this
-   *  Table and all child Tables/Fields of this Table.
-   *****************************************************************************
-   */
-  bool verify() const;
-
-  /*!
-   *****************************************************************************
-   * \brief Set the required status of this Table.
-   *
-   * Set whether this Table is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \param [in] isRequired Boolean value of whether Table is required
-   *
-   * \return Reference to this instance of Table
-   *****************************************************************************
-   */
-  AggregateTable& required(bool isRequired = true);
-
-  /*!
-   *****************************************************************************
-   * \brief Return the required status of this Table.
-   *
-   * Return that this Table is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \return Boolean value of whether this Table is required
-   *****************************************************************************
-   */
-  bool isRequired() const;
-
-  /*!
-   *****************************************************************************
-   * \brief Registers the function object that will verify this Table's contents
-   * during the verification stage.
-   * 
-   * \param [in] The function object that will be called by Table::verify().
-   *****************************************************************************
-  */
-  AggregateTable& registerVerifier(std::function<bool(const Table&)> lambda);
-
-private:
-  std::vector<std::reference_wrapper<Verifiable>> m_tables;
-};
-
 /*!
  *******************************************************************************
  * \class Table
@@ -322,7 +281,7 @@ private:
  * \see Inlet Field
  *******************************************************************************
  */
-class Table : public Verifiable
+class Table : public Verifiable<Table>
 {
 public:
   /*!
@@ -431,8 +390,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable& addBoolArray(const std::string& name,
-                           const std::string& description = "");
+  Verifiable<Table>& addBoolArray(const std::string& name,
+                                  const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -444,8 +403,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable& addIntArray(const std::string& name,
-                          const std::string& description = "");
+  Verifiable<Table>& addIntArray(const std::string& name,
+                                 const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -457,8 +416,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable& addDoubleArray(const std::string& name,
-                             const std::string& description = "");
+  Verifiable<Table>& addDoubleArray(const std::string& name,
+                                    const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -470,8 +429,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable& addStringArray(const std::string& name,
-                             const std::string& description = "");
+  Verifiable<Table>& addStringArray(const std::string& name,
+                                    const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -496,8 +455,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addBoolDictionary(const std::string& name,
-                                const std::string& description = "");
+  Verifiable<Table>& addBoolDictionary(const std::string& name,
+                                       const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -509,8 +468,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addIntDictionary(const std::string& name,
-                               const std::string& description = "");
+  Verifiable<Table>& addIntDictionary(const std::string& name,
+                                      const std::string& description = "");
   /*!
    *****************************************************************************
    * \brief Add a dictionary of Double Fields to the input file schema.
@@ -521,8 +480,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addDoubleDictionary(const std::string& name,
-                                  const std::string& description = "");
+  Verifiable<Table>& addDoubleDictionary(const std::string& name,
+                                         const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -534,8 +493,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable& addStringDictionary(const std::string& name,
-                                  const std::string& description = "");
+  Verifiable<Table>& addStringDictionary(const std::string& name,
+                                         const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -680,10 +639,30 @@ public:
   template <typename T,
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
-  Verifiable& addPrimitiveArray(const std::string& name,
-                                const std::string& description = "",
-                                const bool isDict = false,
-                                const std::string& pathOverride = "");
+  Verifiable<Table>& addPrimitiveArray(const std::string& name,
+                                       const std::string& description = "",
+                                       const bool isDict = false,
+                                       const std::string& pathOverride = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Get a function from the input deck
+   *
+   * \param [in] name         Name of the function
+   * \param [in] ret_type     The return type of the function
+   * \param [in] arg_types    The argument types of the function
+   * \param [in] description  Description of the function
+   * \param [in] pathOverride The path within the input file to read from, if
+   * different than the structure of the Sidre datastore
+   *
+   * \return Reference to the created Function
+   *****************************************************************************
+   */
+  Verifiable<Function>& addFunction(const std::string& name,
+                                    const FunctionType ret_type,
+                                    const std::vector<FunctionType>& arg_types,
+                                    const std::string& description = "",
+                                    const std::string& pathOverride = "");
 
   /*!
    *******************************************************************************
@@ -864,6 +843,16 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Return whether a Function with the given name is present in this Table's
+   *  subtree.
+   *
+   * \return Boolean value indicating whether this Table's subtree contains this Function.
+   *****************************************************************************
+   */
+  bool hasFunction(const std::string& fieldName) const;
+
+  /*!
+   *****************************************************************************
    * \brief Return whether a Table or Field with the given name is present in 
    * this Table's subtree.
    *
@@ -871,10 +860,15 @@ public:
    * Field or Table with the given name.
    *****************************************************************************
    */
-  bool contains(const std::string& name) const
-  {
-    return hasTable(name) || hasField(name);
-  }
+  bool contains(const std::string& name) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether this table or any of its subtables contain a non-
+   * empty field
+   *****************************************************************************
+   */
+  explicit operator bool() const;
 
   /*!
    *****************************************************************************
@@ -905,8 +899,7 @@ public:
    * 
    * \param [in] The string indicating the target name of the Table to be searched for.
    * 
-   * \return The Table matching the target name. If no such Table is found,
-   * a nullptr is returned.
+   * \return The Table matching the target name.
    *****************************************************************************
    */
   Table& getTable(const std::string& tableName) const;
@@ -917,11 +910,21 @@ public:
    * 
    * \param [in] The string indicating the target name of the Field to be searched for.
    * 
-   * \return The Field matching the target name. If no such Field is found,
-   * a nullptr is returned.
+   * \return The Field matching the target name.
    *****************************************************************************
    */
   Field& getField(const std::string& fieldName) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Function.
+   * 
+   * \param [in] The string indicating the target name of the Function to be searched for.
+   * 
+   * \return The Function matching the target name.
+   *****************************************************************************
+   */
+  Function& getFunction(const std::string& funcName) const;
 
 private:
   /*!
@@ -989,8 +992,7 @@ private:
    * \param [in] The Table sequence for the Table this Field will be added to, 
    * relative to this Table.
    * 
-   * \return The child Field matching the target name. If no such Field is found,
-   * a nullptr is returned.
+   * \return The child Field matching the target name.
    *****************************************************************************
    */
   Field& addField(axom::sidre::Group* sidreGroup,
@@ -1000,49 +1002,60 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief This is the internal implementation of getTable. It retrieves the matching Table.
+   * \brief Adds the Function.
    * 
-   * \param [in] The string indicating the target name of the Table to be searched for.
+   * \param [in] The Sidre Group corresponding to the Function that will be added.
+   * \param [in] func The actual callable to store
+   * \param [in] The complete Table sequence for the Table this Function will be added to.
+   * \param [in] The Table sequence for the Table this Function will be added to, 
+   * relative to this Table.
    * 
-   * \return The Table matching the target name. If no such Table is found,
-   * a nullptr is returned.
+   * \return The child Function matching the target name.
    *****************************************************************************
    */
-  Table* getTableInternal(const std::string& tableName) const;
+  Function& addFunctionInternal(axom::sidre::Group* sidreGroup,
+                                FunctionVariant&& func,
+                                const std::string& fullName,
+                                const std::string& name);
+
+  axom::sidre::View* baseGet(const std::string& name) const;
 
   /*!
    *****************************************************************************
-   * \brief This is the internal implementation of getField. It retrieves the matching Field.
+   * \brief This is an internal helper that returns the pointer-to-member for
+   * the unordered_map of children of requested type.
    * 
-   * \param [in] The string indicating the target name of the Field to be searched for.
-   * 
-   * \return The Field matching the target name. If no such Table is found,
-   * a nullptr is returned.
+   * \tparam T The type of the child to search for (Field/Table/Function)
    *****************************************************************************
    */
-  Field* getFieldInternal(const std::string& fieldName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief This is an internal helper. It returns whether this Table has a child 
-   * Table with the given name.
-   *
-   * \return Boolean value of whether this Table has the child Table.
-   *****************************************************************************
-   */
-  bool hasChildTable(const std::string& tableName) const;
+  template <typename T>
+  static std::unordered_map<std::string, std::unique_ptr<T>> Table::*getChildren();
 
   /*!
    *****************************************************************************
    * \brief This is an internal helper. It return whether this Table has a child 
-   * Field with the given name.
-   *
-   * \return Boolean value of whether this Table has the child Field.
+   * with the given name and type.
+   * 
+   * \tparam T The type of the child to search for (Field/Table/Function)
+   * \return Boolean value of whether this Table has the child.
    *****************************************************************************
    */
-  bool hasChildField(const std::string& fieldName) const;
+  template <typename T>
+  bool hasChild(const std::string& childName) const;
 
-  axom::sidre::View* baseGet(const std::string& name) const;
+  /*!
+   *****************************************************************************
+   * \brief This retrieves the child of requested name and type.
+   * 
+   * \param [in] The string indicating the target name of the child to be searched for.
+   * 
+   * \tparam T The type of the child to search for (Field/Table/Function)
+   * \return The child matching the target name. If no such child is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  template <typename T>
+  T* getChildInternal(const std::string& childName) const;
 
   /*!
    *****************************************************************************
@@ -1120,44 +1133,17 @@ private:
   bool m_docEnabled;
   std::unordered_map<std::string, std::unique_ptr<Table>> m_tableChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
+  std::unordered_map<std::string, std::unique_ptr<Function>> m_functionChildren;
   std::function<bool(const Table&)> m_verifier;
 
-  // Used for ownership only - need to take ownership of these so Tables
-  // and AggregateTables have identical lifetime
-  std::vector<AggregateTable> m_aggregate_tables;
+  // Used for ownership only - need to take ownership of these so children
+  // and their aggregates have identical lifetime
+  std::vector<AggregateVerifiable<Table>> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
+  std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
 };
 
-// To-be-defined template specializations
-template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
-  axom::sidre::Group* sidreGroup,
-  const std::string& lookupPath,
-  bool forArray,
-  bool val);
-
-template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
-  axom::sidre::Group* sidreGroup,
-  const std::string& lookupPath,
-  bool forArray,
-  int val);
-
-template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
-  axom::sidre::Group* sidreGroup,
-  const std::string& lookupPath,
-  bool forArray,
-  double val);
-
-template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
-  axom::sidre::Group* sidreGroup,
-  const std::string& lookupPath,
-  bool forArray,
-  std::string val);
-
-}  // end namespace inlet
-}  // end namespace axom
+}  // namespace inlet
+}  // namespace axom
 
 #endif
