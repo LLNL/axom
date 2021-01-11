@@ -13,7 +13,7 @@ set(slic_headers
     core/Logger.hpp
     core/LogStream.hpp
     core/MessageLevel.hpp
-    core/UnitTestLogger.hpp
+    core/SimpleLogger.hpp
 
     interface/slic.hpp
     interface/slic_macros.hpp

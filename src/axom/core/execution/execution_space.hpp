@@ -95,7 +95,8 @@ struct execution_space
   #include "axom/core/execution/internal/omp_exec.hpp"
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__CUDACC__)
   #include "axom/core/execution/internal/cuda_exec.hpp"
 #endif
 

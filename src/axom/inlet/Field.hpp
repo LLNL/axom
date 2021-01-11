@@ -15,6 +15,7 @@
 #define INLET_FIELD_HPP
 
 #include "axom/sidre.hpp"
+#include "axom/inlet/VariantKey.hpp"
 #include "axom/inlet/VerifiableScalar.hpp"
 
 #include <memory>
@@ -25,25 +26,6 @@ namespace axom
 {
 namespace inlet
 {
-/*!
- *******************************************************************************
- * \enum InletType
- *
- * \brief Enumeration of basic types for things in inlet
- *******************************************************************************
- */
-enum class InletType
-{
-  Nothing,
-  Bool,
-  String,
-  Integer,
-  // TODO: Unsigned integer
-  Double,
-  Object,
-  Array
-};
-
 /*!
  *******************************************************************************
  * \class Field
@@ -329,6 +311,13 @@ public:
    *****************************************************************************
    */
   InletType type() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether an actual value is stored
+   *****************************************************************************
+   */
+  explicit operator bool() const { return m_sidreGroup->hasView("value"); }
 
 private:
   /*!

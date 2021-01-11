@@ -102,6 +102,30 @@ bool LuaReader::getStringMap(const std::string& id,
   return getMap(id, values, sol::type::string);
 }
 
+bool LuaReader::getIntMap(const std::string& id,
+                          std::unordered_map<VariantKey, int>& values)
+{
+  return getMap(id, values, sol::type::number);
+}
+
+bool LuaReader::getDoubleMap(const std::string& id,
+                             std::unordered_map<VariantKey, double>& values)
+{
+  return getMap(id, values, sol::type::number);
+}
+
+bool LuaReader::getBoolMap(const std::string& id,
+                           std::unordered_map<VariantKey, bool>& values)
+{
+  return getMap(id, values, sol::type::boolean);
+}
+
+bool LuaReader::getStringMap(const std::string& id,
+                             std::unordered_map<VariantKey, std::string>& values)
+{
+  return getMap(id, values, sol::type::string);
+}
+
 template <typename Iter>
 bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
 {
@@ -123,14 +147,10 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   for(auto curr = begin; curr != end; ++curr)
   {
     auto key = *curr;
-    // Use the C versions to avoid the exceptions
-    // thrown by std::stoi on conversion failure
-    // FIXME: Switch to std::from_chars when C++17 is available
-    char* ptr;
-    auto as_int = strtol(key.c_str(), &ptr, 10);
-    if((!*ptr) && table[as_int].valid())
+    auto as_int = checkedConvertToInt(key);
+    if(as_int.second && table[as_int.first].valid())
     {
-      table = table[as_int];
+      table = table[as_int.first];
     }
     else if(table[key].valid())
     {
@@ -144,7 +164,313 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   return true;
 }
 
-bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices)
+bool LuaReader::getIndices(const std::string& id, std::vector<int>& indices)
+{
+  return getIndicesInternal(id, indices);
+}
+
+bool LuaReader::getIndices(const std::string& id, std::vector<VariantKey>& indices)
+{
+  return getIndicesInternal(id, indices);
+}
+
+// A set of pure functions for handling the conversion of Lua functions to C++
+// callables
+namespace detail
+{
+// Passes through everything except a vector, which is expanded into
+// three separate arguments
+template <typename Arg>
+Arg&& lua_identity(Arg&& arg)
+{
+  return std::forward<Arg>(arg);
+}
+
+std::tuple<double, double, double> lua_identity(const FunctionType::Vec3D& vec)
+{
+  return std::make_tuple(vec[0], vec[1], vec[2]);
+}
+
+/*!
+ *****************************************************************************
+ * \brief Templated function for calling a sol function
+ *
+ * \param [in] func The sol function of unknown concrete type
+ * \tparam Args The argument types of the function
+ *
+ * \return A checkable version of the function's result
+ *****************************************************************************
+ */
+template <typename... Args>
+sol::protected_function_result callWith(const sol::protected_function& func,
+                                        Args&&... args)
+{
+  auto tentative_result = func(lua_identity(std::forward<Args>(args))...);
+  SLIC_ERROR_IF(
+    !tentative_result.valid(),
+    "[Inlet] Lua function call failed, argument types possibly incorrect");
+  return tentative_result;
+}
+
+/*!
+ *****************************************************************************
+ * \brief Templated function for extracting a concrete type from a sol function
+ * result, used to allow for returning nonprimitive types, specifically, vectors
+ *
+ * \param [in] res The sol result of unknown concrete type
+ * \tparam Ret The return type of the function
+ *
+ * \return The function's result
+ *****************************************************************************
+ */
+template <typename Ret>
+Ret extractResult(sol::protected_function_result&& res)
+{
+  sol::optional<Ret> option = res;
+  SLIC_ERROR_IF(
+    !option,
+    "[Inlet] Lua function call failed, return types possibly incorrect");
+  return option.value();
+}
+
+template <>
+FunctionType::Vec3D extractResult<FunctionType::Vec3D>(
+  sol::protected_function_result&& res)
+{
+  auto tup = extractResult<std::tuple<double, double, double>>(std::move(res));
+  return {std::get<0>(tup), std::get<1>(tup), std::get<2>(tup)};
+}
+
+/*!
+ *****************************************************************************
+ * \brief Creates a std::function given a Lua function and template parameters
+ * corresponding to the function signature
+ *
+ * \param [in] func The sol object containing the lua function of unknown signature
+ * \tparam Ret The return type of the function
+ * \tparam Args... The argument types of the function
+ *
+ * \return A std::function that wraps the lua function
+ * 
+ * \note This is needed as a layer of indirection for bindArgType so it can
+ * properly deduce the constructor call
+ *****************************************************************************
+ */
+template <typename Ret, typename... Args>
+std::function<Ret(typename detail::inlet_function_arg_type<Args>::type...)>
+buildStdFunction(sol::protected_function&& func)
+{
+  // Generalized lambda capture needed to move into lambda
+  return [func(std::move(func))](
+           typename detail::inlet_function_arg_type<Args>::type... args) {
+    return extractResult<Ret>(callWith(func, args...));
+  };
+}
+
+/*!
+ *****************************************************************************
+ * \brief Adds argument types to a parameter pack based on the contents
+ * of a std::vector of type tags
+ *
+ * \param [in] func The sol object containing the lua function of unknown signature
+ * \param [in] arg_types The vector of argument types
+ * 
+ * \tparam I The number of arguments processed, or "stack size", used to mitigate
+ * infinite compile-time recursion
+ * \tparam Ret The function's return type
+ * \tparam Args... The function's current arguments (already processed), remaining
+ * arguments are in the arg_types vector
+ *
+ * \return A callable wrapper
+ *****************************************************************************
+ */
+template <std::size_t I, typename Ret, typename... Args>
+typename std::enable_if<(I > MAX_NUM_ARGS), FunctionVariant>::type bindArgType(
+  sol::protected_function&&,
+  const std::vector<FunctionTag>&)
+{
+  SLIC_ERROR("[Inlet] Maximum number of function arguments exceeded: " << I);
+  return {};
+}
+
+template <std::size_t I, typename Ret, typename... Args>
+typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
+  sol::protected_function&& func,
+  const std::vector<FunctionTag>& arg_types)
+{
+  if(arg_types.size() == I)
+  {
+    return buildStdFunction<Ret, Args...>(std::move(func));
+  }
+  else
+  {
+    switch(arg_types[I])
+    {
+    case FunctionTag::Vec3D:
+      return bindArgType<I + 1, Ret, Args..., FunctionType::Vec3D>(
+        std::move(func),
+        arg_types);
+    case FunctionTag::Double:
+      return bindArgType<I + 1, Ret, Args..., double>(std::move(func), arg_types);
+    default:
+      SLIC_ERROR("[Inlet] Unexpected function argument type");
+    }
+  }
+  return {};  // Never reached but needed as errors do not imply control flow as with exceptions
+}
+
+/*!
+ *****************************************************************************
+ * \brief Performs a type-checked access to a Lua table
+ *
+ * \param [in]  proxy The sol::proxy object to retrieve from
+ * \param [out] val The value to write to, if it is of the correct type
+ *
+ * \return true if the value was retrieved from the lua state
+ *****************************************************************************
+ */
+template <typename Proxy, typename Value>
+bool checkedGet(const Proxy& proxy, Value& val)
+{
+  sol::optional<Value> option = proxy;
+  if(option)
+  {
+    val = option.value();
+    return true;
+  }
+  return false;
+}
+
+}  // end namespace detail
+
+FunctionVariant LuaReader::getFunction(const std::string& id,
+                                       const FunctionTag ret_type,
+                                       const std::vector<FunctionTag>& arg_types)
+{
+  auto lua_func = getFunctionInternal(id);
+  if(lua_func)
+  {
+    switch(ret_type)
+    {
+    case FunctionTag::Vec3D:
+      return detail::bindArgType<0u, FunctionType::Vec3D>(std::move(lua_func),
+                                                          arg_types);
+    case FunctionTag::Double:
+      return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
+    default:
+      SLIC_ERROR("[Inlet] Unexpected function return type");
+    }
+  }
+  return {};  // Return an empty function to indicate that the function was not found
+}
+
+template <typename T>
+bool LuaReader::getValue(const std::string& id, T& value)
+{
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+
+  if(tokens.size() == 1)
+  {
+    if(m_lua[tokens[0]].valid())
+    {
+      return detail::checkedGet(m_lua[tokens[0]], value);
+    }
+    return false;
+  }
+
+  sol::table t;
+  // Don't traverse through the last token as it doesn't contain a table
+  if(!traverseToTable(tokens.begin(), tokens.end() - 1, t))
+  {
+    return false;
+  }
+
+  if(t[tokens.back()].valid())
+  {
+    return detail::checkedGet(t[tokens.back()], value);
+  }
+
+  return false;
+}
+
+namespace detail
+{
+/*!
+ *******************************************************************************
+ * \brief Extracts an object from sol into a concrete type, implemented to support
+ * extracting to a VariantKey
+ * 
+ * \tparam T The type to extract to
+ *******************************************************************************
+ */
+template <typename T>
+T extractAs(const sol::object& obj)
+{
+  // By default, just ask sol to cast it
+  return obj.as<T>();
+}
+/// \overload
+template <>
+VariantKey extractAs(const sol::object& obj)
+{
+  // FIXME: Floating-point indices?
+  if(obj.get_type() == sol::type::number)
+  {
+    return obj.as<int>();
+  }
+  else
+  {
+    return obj.as<std::string>();
+  }
+}
+}  // end namespace detail
+
+template <typename Key, typename Val>
+bool LuaReader::getMap(const std::string& id,
+                       std::unordered_map<Key, Val>& values,
+                       sol::type type)
+{
+  values.clear();
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+
+  sol::table t;
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
+  {
+    return false;
+  }
+
+  // Allows for filtering out keys of incorrect type
+  const auto is_correct_key_type = [](const sol::type type) {
+    bool is_number = type == sol::type::number;
+    // Arrays only
+    if(std::is_same<Key, int>::value)
+    {
+      return is_number;
+    }
+    // Dictionaries can have both string-valued and numeric keys
+    else
+    {
+      return is_number || (type == sol::type::string);
+    }
+  };
+
+  for(const auto& entry : t)
+  {
+    // Gets only indexed items in the table.
+    if(is_correct_key_type(entry.first.get_type()) &&
+       entry.second.get_type() == type)
+    {
+      values[detail::extractAs<Key>(entry.first)] =
+        detail::extractAs<Val>(entry.second);
+    }
+  }
+  return true;
+}
+
+template <typename T>
+bool LuaReader::getIndicesInternal(const std::string& id, std::vector<T>& indices)
 {
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
@@ -161,68 +487,36 @@ bool LuaReader::getArrayIndices(const std::string& id, std::vector<int>& indices
   // std::transform ends up being messier here
   for(const auto& entry : t)
   {
-    indices.push_back(entry.first.as<int>());
+    indices.push_back(detail::extractAs<T>(entry.first));
   }
   return true;
 }
 
-template <typename T>
-bool LuaReader::getValue(const std::string& id, T& value)
+sol::protected_function LuaReader::getFunctionInternal(const std::string& id)
 {
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  sol::protected_function lua_func;
 
   if(tokens.size() == 1)
   {
     if(m_lua[tokens[0]].valid())
     {
-      value = m_lua[tokens[0]];
-      return true;
+      lua_func = m_lua[tokens[0]];
+      detail::checkedGet(m_lua[tokens[0]], lua_func);
     }
-    return false;
   }
-
-  sol::table t;
-  // Don't traverse through the last token as it doesn't contain a table
-  if(!traverseToTable(tokens.begin(), tokens.end() - 1, t))
+  else
   {
-    return false;
-  }
-
-  if(t[tokens.back()].valid())
-  {
-    value = t[tokens.back()];
-    return true;
-  }
-
-  return false;
-}
-
-template <typename T>
-bool LuaReader::getMap(const std::string& id,
-                       std::unordered_map<int, T>& values,
-                       sol::type type)
-{
-  values.clear();
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
-
-  sol::table t;
-  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
-  {
-    return false;
-  }
-
-  for(const auto& entry : t)
-  {
-    // Gets only indexed items in the table.
-    if(entry.first.get_type() == sol::type::number &&
-       entry.second.get_type() == type)
+    sol::table t;
+    // Don't traverse through the last token as it doesn't contain a table
+    if(traverseToTable(tokens.begin(), tokens.end() - 1, t) &&
+       t[tokens.back()].valid())
     {
-      values[entry.first.as<int>()] = entry.second.as<T>();
+      detail::checkedGet(t[tokens.back()], lua_func);
     }
   }
-  return true;
+  return lua_func;
 }
 
 }  // end namespace inlet

@@ -10,29 +10,37 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Inlet
-                        COMPONENTS SLIC Sidre )
+                        COMPONENTS SLIC Sidre PRIMAL )
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 set(inlet_headers
     Field.hpp
+    Function.hpp
     Inlet.hpp
     Reader.hpp
     Table.hpp 
     Proxy.hpp
+    VariantKey.hpp
     Verifiable.hpp
     VerifiableScalar.hpp
     DocWriter.hpp
-    SphinxDocWriter.hpp 
+    SphinxDocWriter.hpp
+    ConduitReader.hpp
+    YAMLReader.hpp
+    JSONReader.hpp
     inlet_utils.hpp )
 
 set(inlet_sources
     Field.cpp
+    Function.cpp
     Inlet.cpp
     Table.cpp
     Proxy.cpp
-    SphinxDocWriter.cpp 
+    VariantKey.cpp
+    SphinxDocWriter.cpp
+    ConduitReader.cpp
     inlet_utils.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF SOL_FOUND)

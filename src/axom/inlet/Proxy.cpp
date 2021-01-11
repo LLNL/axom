@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "Proxy.hpp"
+#include "axom/inlet/Proxy.hpp"
 
 namespace axom
 {
@@ -15,18 +15,20 @@ InletType Proxy::type() const
   if(m_table != nullptr)
   {
     // This is how Inlet stores array types in the datastore
-    if(m_table->hasTable("_inlet_array"))
+    if(m_table->hasTable(detail::CONTAINER_GROUP_NAME))
     {
-      return InletType::Array;
+      return InletType::Container;
     }
     return InletType::Object;
   }
-  // Otherwise it must be a field
-  if(m_field == nullptr)
+  // Then check if it's a field
+  if(m_field != nullptr)
   {
-    SLIC_ERROR("[Inlet] Cannot retrieve the type of an empty Proxy");
+    return m_field->type();
   }
-  return m_field->type();
+  // Otherwise must be a function
+  SLIC_ERROR_IF(!m_func, "[Inlet] Cannot retrieve the type of an empty Proxy");
+  return InletType::Function;
 }
 
 bool Proxy::contains(const std::string& name) const
