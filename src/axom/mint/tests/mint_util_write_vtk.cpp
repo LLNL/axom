@@ -23,8 +23,8 @@
 #include "mint_test_utilities.hpp"             /* for create_mesh */
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"      /* for slic macros */
-#include "axom/slic/core/UnitTestLogger.hpp" /* for UnitTestLogger */
+#include "axom/slic/interface/slic.hpp"    /* for slic macros */
+#include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */
 
 // C/C++ includes
 #include <cmath>   /* for std::exp */
@@ -937,13 +937,13 @@ TEST(mint_util_write_vtk, ParticleMesh)
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
-using axom::slic::UnitTestLogger;
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
-  UnitTestLogger logger;
+  SimpleLogger logger;
   result = RUN_ALL_TESTS();
   return result;
 }

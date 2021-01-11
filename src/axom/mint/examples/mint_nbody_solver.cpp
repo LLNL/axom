@@ -52,7 +52,7 @@ void apply_forces(mint::ParticleMesh& particles, double dt);
 int main(int argc, char** argv)
 {
   // STEP 0: initialize logger & parse arguments
-  slic::UnitTestLogger logger;
+  slic::SimpleLogger logger;
   parse_arguments(argc, argv);
 
   // STEP 1: construct particle mesh

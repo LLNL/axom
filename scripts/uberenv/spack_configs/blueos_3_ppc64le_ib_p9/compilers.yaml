@@ -64,5 +64,3 @@ compilers:
       fc:  /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
     spec: xl@16.1.1_nvcc
     target: ppc64le
-
- 

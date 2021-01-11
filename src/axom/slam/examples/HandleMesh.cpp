@@ -59,7 +59,7 @@ std::ostream& operator<<(std::ostream& os, const Handle<T>& h)
 
 int main(int, char**)
 {
-  slic::UnitTestLogger logger;
+  slic::SimpleLogger logger;
 
   using PosType = slam::DefaultPositionType;
   using HandleType = Handle<PosType>;

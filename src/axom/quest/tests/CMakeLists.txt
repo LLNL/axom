@@ -163,10 +163,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     endif()
 
-    if ( "$ENV{SYS_TYPE}" STREQUAL "bgqos_0" )
-       blt_add_target_link_flags( TO ${test_name} FLAGS "${AXOM_ALLOW_MULTIPLE_DEFINITIONS}" )
-    endif()
-
     # Add resolution tests for each dataset and resolution
     if(AXOM_DATA_DIR)
         set(quest_data_dir  ${AXOM_DATA_DIR}/quest)

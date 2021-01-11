@@ -485,7 +485,7 @@ int main(int argc, char** argv)
 {
   using namespace slamUnstructuredHex;
 
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
 #ifndef USE_ONE
   int const NUM_RESOLUTIONS = 4;
