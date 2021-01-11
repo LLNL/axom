@@ -75,22 +75,6 @@ public:
   VariantKey(const char key[]) : m_string(key), m_type(VariantKeyType::String)
   { }
 
-  VariantKey(const VariantKey& other) { copyFrom(other); }
-  VariantKey(VariantKey&& other) { copyFrom(std::move(other)); }
-
-  /*!
-   *****************************************************************************
-   * \brief Copy assignment operator
-   *****************************************************************************
-   */
-  VariantKey& operator=(const VariantKey& other);
-  /*!
-   *****************************************************************************
-   * \brief Move assignment operator
-   *****************************************************************************
-   */
-  VariantKey& operator=(VariantKey&& other);
-
   /*!
    *****************************************************************************
    * \brief Parameterized assignment operators for re-initializing the variant
@@ -104,14 +88,6 @@ public:
   VariantKey& operator=(std::string&& key);
   /// \overload
   VariantKey& operator=(const char key[]);
-
-  /*!
-   *****************************************************************************
-   * \brief Destructor - required as std::string has a nontrivial destructor
-   * that must be called manually when it is the active member
-   *****************************************************************************
-   */
-  ~VariantKey();
 
   /*!
    *****************************************************************************
@@ -139,15 +115,6 @@ public:
 private:
   /*!
    *****************************************************************************
-   * \brief Helper functions for copy/move construction/assignment
-   *****************************************************************************
-   */
-  void copyFrom(const VariantKey& other);
-  /// \overload
-  void copyFrom(VariantKey&& other);
-
-  /*!
-   *****************************************************************************
    * \brief Subset of InletType containing only the types present in the union
    *****************************************************************************
    */
@@ -157,18 +124,12 @@ private:
     String
   };
 
-  /*!
-   *****************************************************************************
-   * \brief Member of sum (variant) type for each possible key type
-   *****************************************************************************
-   */
-  union
-  {
-    int m_int;
-    std::string m_string;
-  };
+  // Integer and string keys
+  // With only two possible types a union is overkill
+  int m_int;
+  std::string m_string;
 
-  // Active member of the union
+  // Active key type
   VariantKeyType m_type;
 };
 
