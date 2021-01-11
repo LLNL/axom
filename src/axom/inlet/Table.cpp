@@ -576,6 +576,10 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     {
       detail::addIndicesGroupToTable(table, indices, description);
     }
+    else
+    {
+      SLIC_WARNING(fmt::format("[Inlet] Container {0} not found.", fullName));
+    }
     return table;
   }
 }
