@@ -8,7 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 #include "CLI11/CLI11.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 #include "mfem.hpp"
 
 using axom::inlet::FunctionType;
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 {
 #ifdef MFEM_STDFUNCTION_COEF
   // Inlet requires a SLIC logger to be initialized to output runtime information
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   CLI::App app {"Example of Axom's Inlet component with user-defined types"};
   // Intended to be used with mfem_coef.lua
