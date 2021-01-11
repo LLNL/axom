@@ -8,7 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 #include "CLI11/CLI11.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 
 using axom::inlet::FunctionType;
 using axom::inlet::Inlet;
@@ -240,7 +240,7 @@ struct FromInlet<ThermalSolver>
 int main(int argc, char** argv)
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   CLI::App app {"Example of Axom's Inlet component with user-defined types"};
   std::string inputFileName;

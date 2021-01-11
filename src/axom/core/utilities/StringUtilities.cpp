@@ -5,6 +5,8 @@
 
 #include "axom/core/utilities/StringUtilities.hpp"
 
+#include <algorithm>
+
 namespace axom
 {
 namespace utilities
@@ -21,6 +23,20 @@ void split(std::vector<std::string>& tokens,
   {
     tokens.push_back(token);
   }
+}
+
+void toLower(std::string& str)
+{
+  std::transform(str.begin(), str.end(), str.begin(), [](const unsigned char c) {
+    return std::tolower(c);
+  });
+}
+
+void toUpper(std::string& str)
+{
+  std::transform(str.begin(), str.end(), str.begin(), [](const unsigned char c) {
+    return std::toupper(c);
+  });
 }
 
 }  // end namespace string

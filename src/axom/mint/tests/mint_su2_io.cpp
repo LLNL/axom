@@ -9,8 +9,8 @@
 #include "axom/mint/utils/su2_utils.hpp"       /* for su2 i/o */
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"      /* for slic macros */
-#include "axom/slic/core/UnitTestLogger.hpp" /* for UnitTestLogger */
+#include "axom/slic/interface/slic.hpp"    /* for slic macros */
+#include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */
 
 // gtest includes
 #include "gtest/gtest.h" /* for gtest macros */
@@ -220,13 +220,13 @@ TEST(mint_su2_io, write_read_single_cell_topology_mesh)
 }
 
 //------------------------------------------------------------------------------
-using axom::slic::UnitTestLogger;
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
-  UnitTestLogger logger;
+  SimpleLogger logger;
   result = RUN_ALL_TESTS();
   return result;
 }

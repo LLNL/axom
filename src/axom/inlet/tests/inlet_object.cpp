@@ -19,7 +19,6 @@
 
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
-using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
 
 template <typename InletReader>
@@ -27,10 +26,10 @@ Inlet createBasicInlet(DataStore* ds,
                        const std::string& luaString,
                        bool enableDocs = true)
 {
-  auto lr = std::make_unique<InletReader>();
-  lr->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
+  std::unique_ptr<InletReader> reader(new InletReader());
+  reader->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
 
-  return Inlet(std::move(lr), ds->getRoot(), enableDocs);
+  return Inlet(std::move(reader), ds->getRoot(), enableDocs);
 }
 
 struct Foo
@@ -685,8 +684,8 @@ TEST(inlet_object_lua_dict, array_of_struct_containing_dict)
 #endif
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -694,7 +693,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

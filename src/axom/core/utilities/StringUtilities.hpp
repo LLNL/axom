@@ -73,6 +73,18 @@ void split(std::vector<std::string>& tokens,
            const std::string& str,
            const char delimiter);
 
+/*!
+ * \brief Converts a string to lowercase
+ * \param [inout] str    string to be converted
+ */
+void toLower(std::string& str);
+
+/*!
+ * \brief Converts a string to uppercase
+ * \param [inout] str    string to be converted
+ */
+void toUpper(std::string& str);
+
 }  // end namespace string
 }  // end namespace utilities
 }  // end namespace axom

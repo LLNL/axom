@@ -24,6 +24,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added `cpp14` variant to Spack package to allow `Inlet::LuaReader` to be used easier.
 - Inlet: Added support for string-keyed associative arrays (dictionaries)
 - Inlet: Added support for defining and retrieving functions from the input file
+- Inlet: Added support for YAML and JSON input files
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -37,6 +38,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
   and `std::unique_ptr<T>` in owning contexts
 - Unified core and SPIO unit tests into fewer executables to limit size of build directory
+- Renamed `axom::slic::UnitTestLogger` to `axom::slic:SimpleLogger` because it's used in
+  more than just unit tests.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty

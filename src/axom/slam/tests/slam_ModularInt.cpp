@@ -334,7 +334,7 @@ int main(int argc, char* argv[])
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
 
-  axom::slic::UnitTestLogger logger;  // create & initialize test logger
+  axom::slic::SimpleLogger logger;  // create & initialize test logger
 
   result = RUN_ALL_TESTS();
   return result;

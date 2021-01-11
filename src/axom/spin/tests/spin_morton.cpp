@@ -8,8 +8,8 @@
 #include "axom/spin/MortonIndex.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 #include <cstdlib>
 #include <limits>
@@ -290,7 +290,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   // finalized when exiting main scope

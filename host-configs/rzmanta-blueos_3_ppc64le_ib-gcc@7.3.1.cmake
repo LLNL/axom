@@ -24,7 +24,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran" CACHE 
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2020_12_15_16_23_32/gcc-7.3.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2021_01_06_14_16_51/gcc-7.3.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.6.0" CACHE PATH "")
 
@@ -54,9 +54,9 @@ set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-re
 
 set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpirun" CACHE PATH "")
 
-set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG "-np" CACHE STRING "")
 
-set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE PATH "")
+set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # Devtools
@@ -86,5 +86,7 @@ set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-forma
 set(ENABLE_OPENMP ON CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")
 
 
