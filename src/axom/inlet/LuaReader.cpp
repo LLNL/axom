@@ -242,7 +242,7 @@ FunctionType::Vec3D extractResult<FunctionType::Vec3D>(
 }
 
 template <>
-void extractResult<void>(sol::protected_function_result&&)
+FunctionType::Void extractResult<FunctionType::Void>(sol::protected_function_result&&)
 { }
 
 /*!

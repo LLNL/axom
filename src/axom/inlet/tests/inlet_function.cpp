@@ -154,7 +154,8 @@ TEST(inlet_function, simple_void_to_double_through_table)
 
 TEST(inlet_function, simple_double_to_void_through_table)
 {
-  std::string testString = "function foo (a) print(a) end";
+  // Test a function that returns nothing by using it to modify a global
+  std::string testString = "bar = 19.9; function foo (a) bar = a end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -167,7 +168,10 @@ TEST(inlet_function, simple_double_to_void_through_table)
     inlet["foo"].get<std::function<FunctionType::Void(FunctionType::Double)>>();
   double arg = -6.37;
   callable(arg);
-  // EXPECT_FLOAT_EQ(result, (arg * 3.4) + 9.64);
+
+  inlet.addDouble("bar", "bar's description");
+  double result = inlet["bar"];
+  EXPECT_FLOAT_EQ(result, arg);
 }
 
 TEST(inlet_function, simple_vec3_to_double_through_table_call)

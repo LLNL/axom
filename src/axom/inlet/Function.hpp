@@ -94,17 +94,36 @@ struct inlet_function_arg_type
     typename std::add_lvalue_reference<typename std::add_const<Arg>::type>::type>::type;
 };
 
-struct FakeVoid
+/*!
+ *******************************************************************************
+ * \class VoidPlaceholder
+ *
+ * \brief A layer of indirection to support 'void' in std::tuple via this
+ * placeholder, should typically be replaced by filter_out_void_placeholder when converting
+ * from std::tuple
+ *******************************************************************************
+ */
+struct VoidPlaceholder
 { };
 
+/*!
+ *******************************************************************************
+ * \class filter_out_void_placeholder
+ *
+ * \brief Converts VoidPlaceholder to void, otherwise, "returns" the template parameter
+ * unchanged
+ * 
+ * \tparam T The type to convert
+ *******************************************************************************
+ */
 template <typename T>
-struct filter_out_void
+struct filter_out_void_placeholder
 {
   using type = T;
 };
 
 template <>
-struct filter_out_void<FakeVoid>
+struct filter_out_void_placeholder<VoidPlaceholder>
 {
   using type = void;
 };
@@ -274,7 +293,8 @@ struct tuple_to_inlet_signature;
 template <typename Ret, typename... Args>
 struct tuple_to_inlet_signature<std::tuple<Ret, Args...>>
 {
-  using type = typename filter_out_void<Ret>::type(
+  // Replace VoidPlaceholder with void since we are converting from a tuple
+  using type = typename filter_out_void_placeholder<Ret>::type(
     typename inlet_function_arg_type<Args>::type...);
 };
 
@@ -431,21 +451,6 @@ struct arg_tuples<0u, Ts...>
   using type = std::tuple<>;
 };
 
-template <std::size_t N, typename... ReturnTypes>
-struct make_func_signature_tuples
-{
-  // Functions with no arguments
-  using no_arg_tuples =
-    decltype(permutation_helper<1u>::get(std::tuple<ReturnTypes...>(),
-                                         std::tuple<std::tuple<>>()));
-  template <typename... ArgTypes>
-  static auto get() -> decltype(std::tuple_cat(
-    std::declval<permutation_helper<1u>::get(
-      std::tuple<ReturnTypes...>(),
-      std::declval<typename arg_tuples<N, ArgTypes...>::type>())>(),
-    std::declval<no_arg_tuples>()));
-};
-
 /*!
  *****************************************************************************
  * \brief The maximum number of user-specified arguments to a function
@@ -457,20 +462,29 @@ struct make_func_signature_tuples
  */
 static constexpr std::size_t MAX_NUM_ARGS = 2u;
 
-using ret_tuple = std::tuple<FakeVoid, FunctionType::Vec3D, FunctionType::Double>;
+// Permissible return types - a VoidPlaceholder is used to avoid issues with 'void' in
+// a std::tuple
+using ret_tuple =
+  std::tuple<VoidPlaceholder, FunctionType::Vec3D, FunctionType::Double>;
 
-using Ts = arg_tuples<2u, FunctionType::Vec3D, FunctionType::Double>::type;
-using T2s =
-  decltype(permutation_helper<1u>::get(ret_tuple {}, std::declval<Ts>()));
-using T3s =
+// First, permissible argument types are permuted
+using arg_permutations =
+  arg_tuples<MAX_NUM_ARGS, FunctionType::Vec3D, FunctionType::Double>::type;
+
+// Then return types are prepended to the tuples to create tuples representing a
+// full function signature
+using arg_permutations_with_returns = decltype(
+  permutation_helper<1u>::get(ret_tuple {}, std::declval<arg_permutations>()));
+
+// Then function signatures are created representing functions that take no arguments
+// but return something
+using no_arguments_with_returns =
   decltype(permutation_helper<1u>::get(ret_tuple {}, std::tuple<std::tuple<>>()));
-using func_signature_tuples =
-  decltype(std::tuple_cat(std::declval<T2s>(), std::declval<T3s>()));
 
-// Get the permutations of all possible signatures
-// Add one as return types also need to be permuted
-// using func_signature_tuples = decltype(make_func_signature_tuples<MAX_NUM_ARGS, FunctionType::Vec3D, FunctionType::Double>::get<FunctionType::Vec3D, FunctionType::Double>());
-// arg_tuples<MAX_NUM_ARGS + 1, FunctionType::Vec3D, FunctionType::Double>::type;
+// The two sets of full function signatures (with args and without args) are concatenated
+using func_signature_tuples =
+  decltype(std::tuple_cat(std::declval<arg_permutations_with_returns>(),
+                          std::declval<no_arguments_with_returns>()));
 
 using BasicFunctionWrapper = tuples_to_wrapper<func_signature_tuples>::type;
 
