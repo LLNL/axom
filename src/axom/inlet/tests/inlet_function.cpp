@@ -174,6 +174,49 @@ TEST(inlet_function, simple_double_to_void_through_table)
   EXPECT_FLOAT_EQ(result, arg);
 }
 
+TEST(inlet_function, simple_string_to_double_through_table)
+{
+  std::string testString =
+    "function foo(s) if s == 'a' then return 9.1 "
+    "elseif s == 'b' then return -6.3 "
+    "else return 66.5 end end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::Double,
+                    {FunctionTag::String},
+                    "foo's description");
+
+  auto callable =
+    inlet["foo"].get<std::function<FunctionType::Double(FunctionType::String)>>();
+
+  EXPECT_FLOAT_EQ(callable("a"), 9.1);
+  EXPECT_FLOAT_EQ(callable("b"), -6.3);
+  EXPECT_FLOAT_EQ(callable("c"), 66.5);
+}
+
+TEST(inlet_function, simple_double_to_string_through_table)
+{
+  std::string testString =
+    "function foo(d) if d == 9.1 then return 'a' "
+    "elseif d == -6.3 then return 'b' "
+    "else return 'c' end end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::String,
+                    {FunctionTag::Double},
+                    "foo's description");
+
+  auto callable =
+    inlet["foo"].get<std::function<FunctionType::String(FunctionType::Double)>>();
+  EXPECT_EQ(callable(9.1), "a");
+  EXPECT_EQ(callable(-6.3), "b");
+  EXPECT_EQ(callable(66.5), "c");
+}
+
 TEST(inlet_function, simple_vec3_to_double_through_table_call)
 {
   std::string testString = "function foo (x, y, z) return x + y + z end";

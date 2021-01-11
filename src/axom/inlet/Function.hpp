@@ -52,7 +52,8 @@ enum class FunctionTag
 {
   Vec3D,
   Double,
-  Void
+  Void,
+  String
 };
 
 /*!
@@ -67,6 +68,7 @@ struct FunctionType
   using Vec3D = axom::primal::Vector3D;
   using Double = double;
   using Void = void;
+  using String = std::string;
 };
 
 namespace detail
@@ -465,11 +467,11 @@ static constexpr std::size_t MAX_NUM_ARGS = 2u;
 // Permissible return types - a VoidPlaceholder is used to avoid issues with 'void' in
 // a std::tuple
 using ret_tuple =
-  std::tuple<VoidPlaceholder, FunctionType::Vec3D, FunctionType::Double>;
+  std::tuple<VoidPlaceholder, FunctionType::Vec3D, FunctionType::Double, FunctionType::String>;
 
 // First, permissible argument types are permuted
 using arg_permutations =
-  arg_tuples<MAX_NUM_ARGS, FunctionType::Vec3D, FunctionType::Double>::type;
+  arg_tuples<MAX_NUM_ARGS, FunctionType::Vec3D, FunctionType::Double, FunctionType::String>::type;
 
 // Then return types are prepended to the tuples to create tuples representing a
 // full function signature
