@@ -585,8 +585,8 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
 }
 
 Verifiable<Function>& Table::addFunction(const std::string& name,
-                                         const FunctionType ret_type,
-                                         const std::vector<FunctionType>& arg_types,
+                                         const FunctionTag ret_type,
+                                         const std::vector<FunctionTag>& arg_types,
                                          const std::string& description,
                                          const std::string& pathOverride)
 {

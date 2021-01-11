@@ -97,8 +97,8 @@ public:
    *****************************************************************************
    */
   FunctionVariant getFunction(const std::string& id,
-                              const FunctionType ret_type,
-                              const std::vector<FunctionType>& arg_types) override;
+                              const FunctionTag ret_type,
+                              const std::vector<FunctionTag>& arg_types) override;
 
   /*!
    *****************************************************************************

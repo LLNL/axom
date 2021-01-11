@@ -242,8 +242,8 @@ public:
    *****************************************************************************
    */
   virtual FunctionVariant getFunction(const std::string& id,
-                                      const FunctionType ret_type,
-                                      const std::vector<FunctionType>& arg_types) = 0;
+                                      const FunctionTag ret_type,
+                                      const std::vector<FunctionTag>& arg_types) = 0;
 };
 
 }  // end namespace inlet

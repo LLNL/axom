@@ -41,6 +41,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Unified core and SPIO unit tests into fewer executables to limit size of build directory
 - Renamed `axom::slic::UnitTestLogger` to `axom::slic:SimpleLogger` because it's used in
   more than just unit tests.
+- Inlet: Input file functions can now be of arbitrary signature subject to type and arity
+  restrictions
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
