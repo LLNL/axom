@@ -51,7 +51,8 @@ namespace inlet
 enum class FunctionTag
 {
   Vec3D,
-  Double
+  Double,
+  Void
 };
 
 /*!
@@ -65,6 +66,7 @@ struct FunctionType
 {
   using Vec3D = axom::primal::Vector3D;
   using Double = double;
+  using Void = void;
 };
 
 namespace detail
@@ -90,6 +92,21 @@ struct inlet_function_arg_type
     std::is_arithmetic<Arg>::value,
     Arg,
     typename std::add_lvalue_reference<typename std::add_const<Arg>::type>::type>::type;
+};
+
+struct FakeVoid
+{ };
+
+template <typename T>
+struct filter_out_void
+{
+  using type = T;
+};
+
+template <>
+struct filter_out_void<FakeVoid>
+{
+  using type = void;
 };
 
 /*!
@@ -257,7 +274,8 @@ struct tuple_to_inlet_signature;
 template <typename Ret, typename... Args>
 struct tuple_to_inlet_signature<std::tuple<Ret, Args...>>
 {
-  using type = Ret(typename inlet_function_arg_type<Args>::type...);
+  using type = typename filter_out_void<Ret>::type(
+    typename inlet_function_arg_type<Args>::type...);
 };
 
 }  // end namespace detail
@@ -413,6 +431,21 @@ struct arg_tuples<0u, Ts...>
   using type = std::tuple<>;
 };
 
+template <std::size_t N, typename... ReturnTypes>
+struct make_func_signature_tuples
+{
+  // Functions with no arguments
+  using no_arg_tuples =
+    decltype(permutation_helper<1u>::get(std::tuple<ReturnTypes...>(),
+                                         std::tuple<std::tuple<>>()));
+  template <typename... ArgTypes>
+  static auto get() -> decltype(std::tuple_cat(
+    std::declval<permutation_helper<1u>::get(
+      std::tuple<ReturnTypes...>(),
+      std::declval<typename arg_tuples<N, ArgTypes...>::type>())>(),
+    std::declval<no_arg_tuples>()));
+};
+
 /*!
  *****************************************************************************
  * \brief The maximum number of user-specified arguments to a function
@@ -424,10 +457,20 @@ struct arg_tuples<0u, Ts...>
  */
 static constexpr std::size_t MAX_NUM_ARGS = 2u;
 
+using ret_tuple = std::tuple<FakeVoid, FunctionType::Vec3D, FunctionType::Double>;
+
+using Ts = arg_tuples<2u, FunctionType::Vec3D, FunctionType::Double>::type;
+using T2s =
+  decltype(permutation_helper<1u>::get(ret_tuple {}, std::declval<Ts>()));
+using T3s =
+  decltype(permutation_helper<1u>::get(ret_tuple {}, std::tuple<std::tuple<>>()));
+using func_signature_tuples =
+  decltype(std::tuple_cat(std::declval<T2s>(), std::declval<T3s>()));
+
 // Get the permutations of all possible signatures
 // Add one as return types also need to be permuted
-using func_signature_tuples =
-  arg_tuples<MAX_NUM_ARGS + 1, FunctionType::Vec3D, FunctionType::Double>::type;
+// using func_signature_tuples = decltype(make_func_signature_tuples<MAX_NUM_ARGS, FunctionType::Vec3D, FunctionType::Double>::get<FunctionType::Vec3D, FunctionType::Double>());
+// arg_tuples<MAX_NUM_ARGS + 1, FunctionType::Vec3D, FunctionType::Double>::type;
 
 using BasicFunctionWrapper = tuples_to_wrapper<func_signature_tuples>::type;
 

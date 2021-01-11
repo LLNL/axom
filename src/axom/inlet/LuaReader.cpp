@@ -241,6 +241,10 @@ FunctionType::Vec3D extractResult<FunctionType::Vec3D>(
   return {std::get<0>(tup), std::get<1>(tup), std::get<2>(tup)};
 }
 
+template <>
+void extractResult<void>(sol::protected_function_result&&)
+{ }
+
 /*!
  *****************************************************************************
  * \brief Creates a std::function given a Lua function and template parameters
@@ -357,6 +361,8 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
                                                           arg_types);
     case FunctionTag::Double:
       return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
+    case FunctionTag::Void:
+      return detail::bindArgType<0u, void>(std::move(lua_func), arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function return type");
     }
