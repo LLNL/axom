@@ -48,7 +48,7 @@ set(mesh_tester_sources
     mesh_tester.cpp
 )
 set(mesh_tester_depends 
-    core slic mint slam quest primal cli11
+    axom
     )
 
 blt_list_append(TO mesh_tester_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
