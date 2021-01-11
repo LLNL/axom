@@ -632,7 +632,7 @@ void dumpData(ShockTubeMesh const& mesh)
 int main(void)
 {
   using namespace slamShocktube;
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   // We should be able to parallelize pretty easily by
   // adding an MPI_Init() here, modifying the setup slightly,

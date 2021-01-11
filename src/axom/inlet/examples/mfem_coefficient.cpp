@@ -8,7 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 #include "CLI11/CLI11.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 #include "mfem.hpp"
 
 using axom::inlet::FunctionType;
@@ -80,10 +80,15 @@ struct BoundaryCondition
                         inlet::FunctionTag::Double},  // Multiple argument types
                        "The function representing the BC coefficient");
 
-    schema.addFunction("coef",
-                       inlet::FunctionTag::Double,
-                       {inlet::FunctionTag::Vec3D, inlet::FunctionTag::Double},
-                       "The function representing the BC coefficient");
+    schema
+      .addFunction("coef",
+                   inlet::FunctionTag::Double,
+                   {inlet::FunctionTag::Vec3D, inlet::FunctionTag::Double},
+                   "The function representing the BC coefficient")
+      .registerVerifier([](const inlet::Function& func) {
+        // An arbitrary restriction, but this calls the function and checks its result
+        return func.call<double>(inlet::FunctionType::Vec3D {1, 1, 1}, 1.0) < 15;
+      });
   }
 };
 
@@ -117,9 +122,11 @@ struct FromInlet<BoundaryCondition::InputInfo>
     result.attrs = base["attrs"];
     if(base.contains("coef"))
     {
+      // _inlet_mfem_coef_simple_retrieve_start
       // Retrieve the function (makes a copy) to be moved into the lambda
       auto func =
         base["coef"].get<std::function<double(FunctionType::Vec3D, double)>>();
+      // _inlet_mfem_coef_simple_retrieve_end
       result.scalar_func = [func(std::move(func))](const mfem::Vector& vec,
                                                    double t) {
         return func({vec.GetData(), vec.Size()}, t);
@@ -152,7 +159,7 @@ int main(int argc, char** argv)
 {
 #ifdef MFEM_STDFUNCTION_COEF
   // Inlet requires a SLIC logger to be initialized to output runtime information
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   CLI::App app {"Example of Axom's Inlet component with user-defined types"};
   // Intended to be used with mfem_coef.lua
@@ -176,7 +183,7 @@ int main(int argc, char** argv)
     SLIC_ERROR("Inlet failed to verify against provided schema");
   }
 
-  // Read all the data into a thermal solver object
+  // Read all the data into a set of boundary conditions
   auto bc_infos =
     inlet["bcs"].get<std::unordered_map<int, BoundaryCondition::InputInfo>>();
 

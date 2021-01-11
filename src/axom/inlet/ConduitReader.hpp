@@ -62,26 +62,26 @@ public:
   bool getIntMap(const std::string& id,
                  std::unordered_map<int, int>& values) override;
   bool getIntMap(const std::string& id,
-                 std::unordered_map<std::string, int>& values) override;
+                 std::unordered_map<VariantKey, int>& values) override;
 
   bool getDoubleMap(const std::string& id,
                     std::unordered_map<int, double>& values) override;
   bool getDoubleMap(const std::string& id,
-                    std::unordered_map<std::string, double>& values) override;
+                    std::unordered_map<VariantKey, double>& values) override;
 
   bool getBoolMap(const std::string& id,
                   std::unordered_map<int, bool>& values) override;
   bool getBoolMap(const std::string& id,
-                  std::unordered_map<std::string, bool>& values) override;
+                  std::unordered_map<VariantKey, bool>& values) override;
 
   bool getStringMap(const std::string& id,
                     std::unordered_map<int, std::string>& values) override;
   bool getStringMap(const std::string& id,
-                    std::unordered_map<std::string, std::string>& values) override;
+                    std::unordered_map<VariantKey, std::string>& values) override;
 
   bool getIndices(const std::string& id, std::vector<int>& indices) override;
   bool getIndices(const std::string& id,
-                  std::vector<std::string>& indices) override;
+                  std::vector<VariantKey>& indices) override;
 
   /*!
    *****************************************************************************
@@ -115,7 +115,7 @@ private:
 
   template <typename T>
   bool getDictionary(const std::string& id,
-                     std::unordered_map<std::string, T>& values);
+                     std::unordered_map<VariantKey, T>& values);
 
   template <typename T>
   bool getArray(const std::string& id, std::unordered_map<int, T>& values);

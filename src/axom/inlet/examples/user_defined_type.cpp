@@ -8,7 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 #include "CLI11/CLI11.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 
 using axom::inlet::FunctionType;
 using axom::inlet::Inlet;
@@ -105,12 +105,14 @@ struct FromInlet<LinearSolver>
   }
 };
 
+// _inlet_userdef_bc_struct_start
 struct BoundaryCondition
 {
   std::unordered_map<int, int> attrs;
   // std::functions are nullable - coef/vec_coef act as a sum type here
   std::function<double(FunctionType::Vec3D)> coef;
   std::function<FunctionType::Vec3D(FunctionType::Vec3D)> vec_coef;
+  // _inlet_userdef_bc_struct_end
   static void defineSchema(inlet::Table& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
@@ -157,6 +159,7 @@ struct FromInlet<BoundaryCondition>
   {
     BoundaryCondition bc;
     bc.attrs = base["attrs"];
+    // _inlet_userdef_bc_struct_retrieve_start
     if(base.contains("vec_coef"))
     {
       bc.vec_coef = base["vec_coef"];
@@ -165,6 +168,7 @@ struct FromInlet<BoundaryCondition>
     {
       bc.coef = base["coef"];
     }
+    // _inlet_userdef_bc_struct_retrieve_end
     return bc;
   }
 };
@@ -236,7 +240,7 @@ struct FromInlet<ThermalSolver>
 int main(int argc, char** argv)
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   CLI::App app {"Example of Axom's Inlet component with user-defined types"};
   std::string inputFileName;

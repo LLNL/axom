@@ -64,6 +64,28 @@ TEST(inlet_function, simple_vec3_to_vec3_raw)
   EXPECT_FLOAT_EQ(result[2], 6);
 }
 
+TEST(inlet_function, simple_vec3_to_vec3_raw_partial_init)
+{
+  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto func =
+    inlet.reader().getFunction("foo", FunctionTag::Vec3D, {FunctionTag::Vec3D});
+
+  EXPECT_TRUE(func);
+
+  auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2});
+  EXPECT_FLOAT_EQ(result[0], 2);
+  EXPECT_FLOAT_EQ(result[1], 4);
+  EXPECT_FLOAT_EQ(result[2], 0);
+
+  result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1});
+  EXPECT_FLOAT_EQ(result[0], 2);
+  EXPECT_FLOAT_EQ(result[1], 0);
+  EXPECT_FLOAT_EQ(result[2], 0);
+}
+
 TEST(inlet_function, simple_vec3_to_double_through_table)
 {
   std::string testString = "function foo (x, y, z) return x + y + z end";
@@ -97,6 +119,24 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table)
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
   EXPECT_FLOAT_EQ(result[2], 6);
+}
+
+TEST(inlet_function, simple_double_to_double_through_table)
+{
+  std::string testString = "function foo (a) return (a * 3.4) + 9.64 end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::Double,
+                    {FunctionTag::Double},
+                    "foo's description");
+
+  auto callable =
+    inlet["foo"].get<std::function<FunctionType::Double(FunctionType::Double)>>();
+  double arg = -6.37;
+  double result = callable(arg);
+  EXPECT_FLOAT_EQ(result, (arg * 3.4) + 9.64);
 }
 
 TEST(inlet_function, simple_vec3_to_double_through_table_call)
@@ -479,8 +519,8 @@ TEST(inlet_function, lua_usertype_check_dim)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -488,7 +528,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

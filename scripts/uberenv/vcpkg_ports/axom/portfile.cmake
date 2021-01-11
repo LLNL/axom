@@ -85,6 +85,9 @@ set(ENABLE_FOLDERS ON CACHE BOOL "")
 
 # On Windows, build shared libraries by default.
 set(BUILD_SHARED_LIBS ON CACHE BOOL "")
+# Shared libraries on Windows don't export symbols by default.  We'll export
+# all symbols to make behavior more like Linux or Mac OS.
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON CACHE BOOL "")
 
 # Toggle the following to disable gtest if you are compiling with static
 # libraries and need HDF5

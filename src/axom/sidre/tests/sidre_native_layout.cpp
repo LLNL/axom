@@ -642,8 +642,8 @@ TEST(sidre_native_layout, basic_demo_compare)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -651,8 +651,8 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger, finalized when
-                          // exiting main scope
+  SimpleLogger logger;  // create & initialize test logger, finalized when
+                        // exiting main scope
   axom::slic::setLoggingMsgLevel(axom::slic::message::Debug);
 
   result = RUN_ALL_TESTS();

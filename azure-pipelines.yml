@@ -36,6 +36,13 @@ jobs:
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
+      linux_clang10_cxx11:
+        VM_ImageName: 'ubuntu-18.04'
+        Compiler_ImageName: 'axom/tpls:clang-10_12-21-20_20h-48m'
+        CMAKE_EXTRA_FLAGS: '-DBLT_CXX_STD=c++11'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
       osx_gcc:
         VM_ImageName: 'macos-10.14'
         CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'

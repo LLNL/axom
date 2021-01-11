@@ -1997,14 +1997,14 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
   axom::slic::setLoggingMsgLevel(axom::slic::message::Warning);
 
   int result = RUN_ALL_TESTS();

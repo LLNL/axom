@@ -23,7 +23,7 @@ using axom::sidre::IOManager;
 int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   SLIC_ERROR_IF(argc != 2,
                 "Missing required command line argument. \n\t"
