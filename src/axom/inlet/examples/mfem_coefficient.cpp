@@ -122,9 +122,11 @@ struct FromInlet<BoundaryCondition::InputInfo>
     result.attrs = base["attrs"];
     if(base.contains("coef"))
     {
+      // _inlet_mfem_coef_simple_retrieve_start
       // Retrieve the function (makes a copy) to be moved into the lambda
       auto func =
         base["coef"].get<std::function<double(FunctionType::Vec3D, double)>>();
+      // _inlet_mfem_coef_simple_retrieve_end
       result.scalar_func = [func(std::move(func))](const mfem::Vector& vec,
                                                    double t) {
         return func({vec.GetData(), vec.Size()}, t);

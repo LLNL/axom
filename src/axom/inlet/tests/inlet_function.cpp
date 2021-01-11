@@ -121,6 +121,24 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table)
   EXPECT_FLOAT_EQ(result[2], 6);
 }
 
+TEST(inlet_function, simple_double_to_double_through_table)
+{
+  std::string testString = "function foo (a) return (a * 3.4) + 9.64 end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::Double,
+                    {FunctionTag::Double},
+                    "foo's description");
+
+  auto callable =
+    inlet["foo"].get<std::function<FunctionType::Double(FunctionType::Double)>>();
+  double arg = -6.37;
+  double result = callable(arg);
+  EXPECT_FLOAT_EQ(result, (arg * 3.4) + 9.64);
+}
+
 TEST(inlet_function, simple_vec3_to_double_through_table_call)
 {
   std::string testString = "function foo (x, y, z) return x + y + z end";
