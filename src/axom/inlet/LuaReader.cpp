@@ -32,82 +32,82 @@ LuaReader::LuaReader()
                        sol::lib::math,
                        sol::lib::string,
                        sol::lib::package);
-  auto vec_type = m_lua.new_usertype<FunctionType::Vec3D>(
-    "Vec3D",  // Name of the class in Lua
-    // Add make_vector as a constructor to enable "new Vec3D(x,y,z)"
+  auto vec_type = m_lua.new_usertype<FunctionType::Vector>(
+    "Vector",  // Name of the class in Lua
+    // Add make_vector as a constructor to enable "new Vector(x,y,z)"
     // Use lambdas for 2D and "default" cases - default arguments cannot be
     // propagated automatically
     "new",
     sol::factories(
       [](double x, double y, double z) {
-        return FunctionType::Vec3D {primal::Vector3D {x, y, z}, 3};
+        return FunctionType::Vector {primal::Vector3D {x, y, z}, 3};
       },
       [](double x, double y) {
-        return FunctionType::Vec3D {primal::Vector3D {x, y}, 2};
+        return FunctionType::Vector {primal::Vector3D {x, y}, 2};
       },
       // Assume three for a default constructor
       [] {
-        return FunctionType::Vec3D {primal::Vector3D {}, 3};
+        return FunctionType::Vector {primal::Vector3D {}, 3};
       }),
     // Add vector addition operation
     sol::meta_function::addition,
-    [](const FunctionType::Vec3D& u, const FunctionType::Vec3D& v) {
+    [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
       // FIXME: assert same size/space
-      return FunctionType::Vec3D {u.vec + v.vec, u.dim};
+      return FunctionType::Vector {u.vec + v.vec, u.dim};
     },
     // Needs to be resolved in the same way as operator+
     sol::meta_function::unary_minus,
-    [](const FunctionType::Vec3D& u) {
-      return FunctionType::Vec3D {-u.vec, u.dim};
+    [](const FunctionType::Vector& u) {
+      return FunctionType::Vector {-u.vec, u.dim};
     },
     // To allow both "directions" of a scalar multiplication, the overloads
     // have to be manually specified + resolved
     sol::meta_function::multiplication,
     sol::overload(
-      [](const FunctionType::Vec3D& u, const double a) {
-        return FunctionType::Vec3D {a * u.vec, u.dim};
+      [](const FunctionType::Vector& u, const double a) {
+        return FunctionType::Vector {a * u.vec, u.dim};
       },
-      [](const double a, const FunctionType::Vec3D& u) {
-        return FunctionType::Vec3D {a * u.vec, u.dim};
+      [](const double a, const FunctionType::Vector& u) {
+        return FunctionType::Vector {a * u.vec, u.dim};
       }),
     // Separate functions from get/set via index - subtract 1 as lua is 1-indexed
     sol::meta_function::index,
-    [](const FunctionType::Vec3D& vec, const int key) { return vec[key - 1]; },
+    [](const FunctionType::Vector& vec, const int key) { return vec[key - 1]; },
     // A lambda is used here as the set-via-returned reference is insufficient
     sol::meta_function::new_index,
-    [](FunctionType::Vec3D& vec, const int key, const double value) {
+    [](FunctionType::Vector& vec, const int key, const double value) {
       vec[key - 1] = value;
     },
     // Set up the mathematical operations by name
     "norm",
-    [](const FunctionType::Vec3D& u) { return u.vec.norm(); },
+    [](const FunctionType::Vector& u) { return u.vec.norm(); },
     "squared_norm",
-    [](const FunctionType::Vec3D& u) { return u.vec.squared_norm(); },
+    [](const FunctionType::Vector& u) { return u.vec.squared_norm(); },
     "unitVector",
-    [](const FunctionType::Vec3D& u) {
-      return FunctionType::Vec3D {u.vec.unitVector(), u.dim};
+    [](const FunctionType::Vector& u) {
+      return FunctionType::Vector {u.vec.unitVector(), u.dim};
     },
     "dot",
-    [](const FunctionType::Vec3D& u, const FunctionType::Vec3D& v) {
+    [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
       // FIXME: assert same size/space
       return u.vec.dot(v.vec);
     },
     // Implemented as a member function like dot products are, for simplicity
     "cross",
     // Needs to be resolved as it is an overloaded static method
-    [](const FunctionType::Vec3D& u, const FunctionType::Vec3D& v) {
+    [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
       // FIXME: assert same size/space
-      return FunctionType::Vec3D {primal::Vector3D::cross_product(u.vec, v.vec),
-                                  u.dim};
+      return FunctionType::Vector {primal::Vector3D::cross_product(u.vec, v.vec),
+                                   u.dim};
     },
     "dim",
-    [](const FunctionType::Vec3D& u) { return u.dim; },
+    [](const FunctionType::Vector& u) { return u.dim; },
     "x",
-    sol::property([](const FunctionType::Vec3D& u) { return u.vec[0]; }),
+    sol::property([](const FunctionType::Vector& u) { return u.vec[0]; }),
     "y",
-    sol::property([](const FunctionType::Vec3D& u) { return u.vec[1]; }),
+    sol::property([](const FunctionType::Vector& u) { return u.vec[1]; }),
     "z",
-    sol::property([](const FunctionType::Vec3D& u) { return u.vec[2]; }));
+    sol::property([](const FunctionType::Vector& u) { return u.vec[2]; }));
 }
 
 bool LuaReader::parseFile(const std::string& filePath)
@@ -369,8 +369,8 @@ typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
   {
     switch(arg_types[I])
     {
-    case FunctionTag::Vec3D:
-      return bindArgType<I + 1, Ret, Args..., FunctionType::Vec3D>(
+    case FunctionTag::Vector:
+      return bindArgType<I + 1, Ret, Args..., FunctionType::Vector>(
         std::move(func),
         arg_types);
     case FunctionTag::Double:
@@ -415,9 +415,9 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
   {
     switch(ret_type)
     {
-    case FunctionTag::Vec3D:
-      return detail::bindArgType<0u, FunctionType::Vec3D>(std::move(lua_func),
-                                                          arg_types);
+    case FunctionTag::Vector:
+      return detail::bindArgType<0u, FunctionType::Vector>(std::move(lua_func),
+                                                           arg_types);
     case FunctionTag::Double:
       return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
     default:

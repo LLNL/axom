@@ -108,12 +108,12 @@ The schema for this function would be defined as follows:
 
 Note that a single type tag is passed for the return type, while a vector of tags is passed
 for the argument types.  Currently a maximum of two arguments are supported, with possible argument
-types ``Double`` or ``Vec3D``.  These correspond to the C++ types ``double`` and
+types ``Double`` or ``Vector``.  These correspond to the C++ types ``double`` and
 ``axom::primal::Vector3D``, respectively.
 
 .. note::  The function retrieval implementation for Lua will automatically expand vector arguments into three
-  arguments and contract vector returns from three scalars.  That is, a function whose Inlet schema contains a ``Vec3D``
-  argument should accept three scalar arguments in its place, and a function whose Inlet schema contains a ``Vec3D``
+  arguments and contract vector returns from three scalars.  That is, a function whose Inlet schema contains a ``Vector``
+  argument should accept three scalar arguments in its place, and a function whose Inlet schema contains a ``Vector``
   return value should return three scalar arguments in its place.
 
 Retrieving Functions from an Input File
@@ -144,7 +144,7 @@ by calling it directly:
 
 .. code-block:: C++
 
-  double result = inlet["coef"].call<double>(axom::inlet::FunctionType::Vec3D{3, 5, 7});
+  double result = inlet["coef"].call<double>(axom::inlet::FunctionType::Vector{3, 5, 7});
 
 .. note::  Using ``call<ReturnType>(ArgType1, ArgType2, ...)`` requires both that the return type
   be explicitly specified and that argument types be passed with the exact type as used in the 

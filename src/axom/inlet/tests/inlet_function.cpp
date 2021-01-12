@@ -41,10 +41,10 @@ TEST(inlet_function, simple_vec3_to_double_raw)
   auto inlet = createBasicInlet(&ds, testString);
 
   auto func =
-    inlet.reader().getFunction("foo", FunctionTag::Double, {FunctionTag::Vec3D});
+    inlet.reader().getFunction("foo", FunctionTag::Double, {FunctionTag::Vector});
 
   EXPECT_TRUE(func);
-  auto result = func.call<double>(FunctionType::Vec3D {1, 2, 3});
+  auto result = func.call<double>(FunctionType::Vector {1, 2, 3});
   EXPECT_FLOAT_EQ(result, 6);
 }
 
@@ -55,10 +55,10 @@ TEST(inlet_function, simple_vec3_to_vec3_raw)
   auto inlet = createBasicInlet(&ds, testString);
 
   auto func =
-    inlet.reader().getFunction("foo", FunctionTag::Vec3D, {FunctionTag::Vec3D});
+    inlet.reader().getFunction("foo", FunctionTag::Vector, {FunctionTag::Vector});
 
   EXPECT_TRUE(func);
-  auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2, 3});
+  auto result = func.call<FunctionType::Vector>(FunctionType::Vector {1, 2, 3});
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
   EXPECT_FLOAT_EQ(result[2], 6);
@@ -71,16 +71,16 @@ TEST(inlet_function, simple_vec3_to_vec3_raw_partial_init)
   auto inlet = createBasicInlet(&ds, testString);
 
   auto func =
-    inlet.reader().getFunction("foo", FunctionTag::Vec3D, {FunctionTag::Vec3D});
+    inlet.reader().getFunction("foo", FunctionTag::Vector, {FunctionTag::Vector});
 
   EXPECT_TRUE(func);
 
-  auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2});
+  auto result = func.call<FunctionType::Vector>(FunctionType::Vector {1, 2});
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
   EXPECT_FLOAT_EQ(result[2], 0);
 
-  result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1});
+  result = func.call<FunctionType::Vector>(FunctionType::Vector {1});
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 0);
   EXPECT_FLOAT_EQ(result[2], 0);
@@ -94,10 +94,10 @@ TEST(inlet_function, simple_vec3_to_double_through_table)
 
   inlet.addFunction("foo",
                     FunctionTag::Double,
-                    {FunctionTag::Vec3D},
+                    {FunctionTag::Vector},
                     "foo's description");
 
-  auto callable = inlet["foo"].get<std::function<double(FunctionType::Vec3D)>>();
+  auto callable = inlet["foo"].get<std::function<double(FunctionType::Vector)>>();
   auto result = callable({1, 2, 3});
   EXPECT_FLOAT_EQ(result, 6);
 }
@@ -109,12 +109,12 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    FunctionTag::Vec3D,
-                    {FunctionTag::Vec3D},
+                    FunctionTag::Vector,
+                    {FunctionTag::Vector},
                     "foo's description");
 
   auto callable =
-    inlet["foo"].get<std::function<FunctionType::Vec3D(FunctionType::Vec3D)>>();
+    inlet["foo"].get<std::function<FunctionType::Vector(FunctionType::Vector)>>();
   auto result = callable({1, 2, 3});
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
@@ -147,10 +147,10 @@ TEST(inlet_function, simple_vec3_to_double_through_table_call)
 
   inlet.addFunction("foo",
                     FunctionTag::Double,
-                    {FunctionTag::Vec3D},
+                    {FunctionTag::Vector},
                     "foo's description");
 
-  auto result = inlet["foo"].call<double>(FunctionType::Vec3D {1, 2, 3});
+  auto result = inlet["foo"].call<double>(FunctionType::Vector {1, 2, 3});
   EXPECT_FLOAT_EQ(result, 6);
 }
 
@@ -161,12 +161,12 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table_call)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    FunctionTag::Vec3D,
-                    {FunctionTag::Vec3D},
+                    FunctionTag::Vector,
+                    {FunctionTag::Vector},
                     "foo's description");
 
   auto result =
-    inlet["foo"].call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2, 3});
+    inlet["foo"].call<FunctionType::Vector>(FunctionType::Vector {1, 2, 3});
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
   EXPECT_FLOAT_EQ(result[2], 6);
@@ -181,10 +181,10 @@ TEST(inlet_function, simple_vec3_double_to_double_through_table_call)
 
   inlet.addFunction("foo",
                     FunctionTag::Double,
-                    {FunctionTag::Vec3D, FunctionTag::Double},
+                    {FunctionTag::Vector, FunctionTag::Double},
                     "foo's description");
 
-  auto result = inlet["foo"].call<double>(FunctionType::Vec3D {1, 2, 3}, 2.0);
+  auto result = inlet["foo"].call<double>(FunctionType::Vector {1, 2, 3}, 2.0);
   EXPECT_FLOAT_EQ(result, 12);
 }
 
@@ -195,12 +195,12 @@ TEST(inlet_function, simple_vec3_double_to_vec3_through_table_call)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    FunctionTag::Vec3D,
-                    {FunctionTag::Vec3D, FunctionTag::Double},
+                    FunctionTag::Vector,
+                    {FunctionTag::Vector, FunctionTag::Double},
                     "foo's description");
 
   auto result =
-    inlet["foo"].call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2, 3}, 2.0);
+    inlet["foo"].call<FunctionType::Vector>(FunctionType::Vector {1, 2, 3}, 2.0);
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
   EXPECT_FLOAT_EQ(result[2], 6);
@@ -214,12 +214,12 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_pass)
 
   auto& func = inlet
                  .addFunction("foo",
-                              FunctionTag::Vec3D,
-                              {FunctionTag::Vec3D},
+                              FunctionTag::Vector,
+                              {FunctionTag::Vector},
                               "foo's description")
                  .required();
   func.registerVerifier([](const axom::inlet::Function& func) {
-    auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 0, 0});
+    auto result = func.call<FunctionType::Vector>(FunctionType::Vector {1, 0, 0});
     return std::abs(result[0] - 2) < 1e-5;
   });
 
@@ -234,12 +234,12 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_fail)
 
   auto& func = inlet
                  .addFunction("foo",
-                              FunctionTag::Vec3D,
-                              {FunctionTag::Vec3D},
+                              FunctionTag::Vector,
+                              {FunctionTag::Vector},
                               "foo's description")
                  .required();
   func.registerVerifier([](const axom::inlet::Function& func) {
-    auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {2, 0, 0});
+    auto result = func.call<FunctionType::Vector>(FunctionType::Vector {2, 0, 0});
     return std::abs(result[0] - 2) < 1e-5;
   });
 
@@ -249,7 +249,7 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_fail)
 struct Foo
 {
   bool bar;
-  std::function<FunctionType::Vec3D(FunctionType::Vec3D)> baz;
+  std::function<FunctionType::Vector(FunctionType::Vector)> baz;
 };
 
 template <>
@@ -273,8 +273,8 @@ TEST(inlet_function, simple_vec3_to_vec3_struct)
   inlet.addBool("foo/bar", "bar's description");
   inlet
     .addFunction("foo/baz",
-                 FunctionTag::Vec3D,
-                 {FunctionTag::Vec3D},
+                 FunctionTag::Vector,
+                 {FunctionTag::Vector},
                  "baz's description")
     .required();
   Foo foo = inlet["foo"].get<Foo>();
@@ -302,8 +302,8 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
   arr_table.addBool("bar", "bar's description");
   arr_table
     .addFunction("baz",
-                 FunctionTag::Vec3D,
-                 {FunctionTag::Vec3D},
+                 FunctionTag::Vector,
+                 {FunctionTag::Vector},
                  "baz's description")
     .required();
 
@@ -328,23 +328,23 @@ TEST(inlet_function, dimension_dependent_result)
     "first = 2 * v.x "
     "last = 2 * v.y "
     "if v:dim() == 2 then "
-    "return Vec3D.new(first, last) "
+    "return Vector.new(first, last) "
     "else "
-    "return Vec3D.new(first, 0, last) "
+    "return Vector.new(first, 0, last) "
     "end "
     "end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    FunctionTag::Vec3D,
-                    {FunctionTag::Vec3D},
+                    FunctionTag::Vector,
+                    {FunctionTag::Vector},
                     "foo's description");
 
   auto callable =
-    inlet["foo"].get<std::function<FunctionType::Vec3D(FunctionType::Vec3D)>>();
+    inlet["foo"].get<std::function<FunctionType::Vector(FunctionType::Vector)>>();
 
-  FunctionType::Vec3D input_3d({3.5, 0.5, 7.5});
+  FunctionType::Vector input_3d({3.5, 0.5, 7.5});
   auto result = callable(input_3d);
 
   EXPECT_EQ(result.dim, 3);
@@ -352,7 +352,7 @@ TEST(inlet_function, dimension_dependent_result)
   EXPECT_FLOAT_EQ(result.vec[1], 0);
   EXPECT_FLOAT_EQ(result.vec[2], 1);
 
-  FunctionType::Vec3D input_2d({3.5, 0.5});
+  FunctionType::Vector input_2d({3.5, 0.5});
   result = callable(input_2d);
 
   EXPECT_EQ(result.dim, 2);
@@ -374,7 +374,7 @@ TEST(inlet_function, lua_usertype_basic)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec {1, 2, 3};
+  axom::inlet::FunctionType::Vector vec {1, 2, 3};
   int result = checkedCall<int>(func, vec);
   EXPECT_EQ(result, 7);
 }
@@ -382,34 +382,34 @@ TEST(inlet_function, lua_usertype_basic)
 TEST(inlet_function, lua_usertype_basic_ret)
 {
   std::string testString =
-    "function func(x, y, z) return Vec3D.new(x, y, z) end";
+    "function func(x, y, z) return Vector.new(x, y, z) end";
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec {1, 2, 3};
-  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, 1, 2, 3);
+  axom::inlet::FunctionType::Vector vec {1, 2, 3};
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, 1, 2, 3);
   EXPECT_EQ(vec, result);
 }
 
 TEST(inlet_function, lua_usertype_basic_ret_2d)
 {
-  std::string testString = "function func(x, y, z) return Vec3D.new(x, y) end";
+  std::string testString = "function func(x, y, z) return Vector.new(x, y) end";
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec {1, 2};
-  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, 1, 2, 3);
+  axom::inlet::FunctionType::Vector vec {1, 2};
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, 1, 2, 3);
   EXPECT_EQ(vec, result);
 }
 
 TEST(inlet_function, lua_usertype_basic_ret_default)
 {
-  std::string testString = "function func(x, y, z) return Vec3D.new() end";
+  std::string testString = "function func(x, y, z) return Vector.new() end";
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec {0, 0, 0};
-  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, 1, 2, 3);
+  axom::inlet::FunctionType::Vector vec {0, 0, 0};
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, 1, 2, 3);
   EXPECT_EQ(vec, result);
 }
 
@@ -419,9 +419,9 @@ TEST(inlet_function, lua_usertype_basic_add)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec1 {1, 2, 3};
-  axom::inlet::FunctionType::Vec3D vec2 {4, 5, 6};
-  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, vec1, vec2);
+  axom::inlet::FunctionType::Vector vec1 {1, 2, 3};
+  axom::inlet::FunctionType::Vector vec2 {4, 5, 6};
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec1, vec2);
   EXPECT_EQ(result, vec1.vec + vec2.vec);
 }
 
@@ -431,8 +431,8 @@ TEST(inlet_function, lua_usertype_basic_negate)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec {1, 2, 3};
-  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, vec);
+  axom::inlet::FunctionType::Vector vec {1, 2, 3};
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec);
   EXPECT_EQ(result, -vec.vec);
 }
 
@@ -445,10 +445,10 @@ TEST(inlet_function, lua_usertype_basic_scalar_mult)
   lr.parseString(testString);
   sol::protected_function func1 = lr.solState()["func1"];
   sol::protected_function func2 = lr.solState()["func2"];
-  axom::inlet::FunctionType::Vec3D vec {1, 2, 3};
-  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func1, vec, 2.0);
+  axom::inlet::FunctionType::Vector vec {1, 2, 3};
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func1, vec, 2.0);
   EXPECT_EQ(result, 2.0 * vec.vec);
-  result = checkedCall<axom::inlet::FunctionType::Vec3D>(func2, vec, 3.0);
+  result = checkedCall<axom::inlet::FunctionType::Vector>(func2, vec, 3.0);
   EXPECT_EQ(result, 3.0 * vec.vec);
 }
 
@@ -458,7 +458,7 @@ TEST(inlet_function, lua_usertype_basic_index_get)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec {1, 2, 3};
+  axom::inlet::FunctionType::Vector vec {1, 2, 3};
   // Use 1-based indexing in these tests as lua is 1-indexed
   auto result = checkedCall<double>(func, vec, 1);
   EXPECT_FLOAT_EQ(1, result);
@@ -471,15 +471,15 @@ TEST(inlet_function, lua_usertype_basic_index_get)
 TEST(inlet_function, lua_usertype_basic_index_set)
 {
   std::string testString =
-    "function func(idx) vec = Vec3D.new(1,1,1); vec[idx] = -1; return vec end";
+    "function func(idx) vec = Vector.new(1,1,1); vec[idx] = -1; return vec end";
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, 1);
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, 1);
   EXPECT_FLOAT_EQ(-1, result[0]);
-  result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, 2);
+  result = checkedCall<axom::inlet::FunctionType::Vector>(func, 2);
   EXPECT_FLOAT_EQ(-1, result[1]);
-  result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, 3);
+  result = checkedCall<axom::inlet::FunctionType::Vector>(func, 3);
   EXPECT_FLOAT_EQ(-1, result[2]);
 }
 
@@ -489,7 +489,7 @@ TEST(inlet_function, lua_usertype_basic_norm)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec {1, 2, 3};
+  axom::inlet::FunctionType::Vector vec {1, 2, 3};
   auto result = checkedCall<double>(func, vec);
   EXPECT_FLOAT_EQ(vec.vec.norm(), result);
 }
@@ -500,7 +500,7 @@ TEST(inlet_function, lua_usertype_basic_squared_norm)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec {1, 2, 3};
+  axom::inlet::FunctionType::Vector vec {1, 2, 3};
   auto result = checkedCall<double>(func, vec);
   EXPECT_FLOAT_EQ(vec.vec.squared_norm(), result);
 }
@@ -511,8 +511,8 @@ TEST(inlet_function, lua_usertype_basic_unit_vec)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec {1, 2, 3};
-  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, vec);
+  axom::inlet::FunctionType::Vector vec {1, 2, 3};
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec);
   EXPECT_EQ(vec.vec.unitVector(), result);
 }
 
@@ -523,8 +523,8 @@ TEST(inlet_function, lua_usertype_basic_dot)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec1 {1, 2, 3};
-  axom::inlet::FunctionType::Vec3D vec2 {4, 5, 6};
+  axom::inlet::FunctionType::Vector vec1 {1, 2, 3};
+  axom::inlet::FunctionType::Vector vec2 {4, 5, 6};
   auto result = checkedCall<double>(func, vec1, vec2);
   EXPECT_EQ(vec1.vec.dot(vec2), result);
 }
@@ -536,9 +536,9 @@ TEST(inlet_function, lua_usertype_basic_cross)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec1 {1, 2, 3};
-  axom::inlet::FunctionType::Vec3D vec2 {4, 5, 6};
-  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, vec1, vec2);
+  axom::inlet::FunctionType::Vector vec1 {1, 2, 3};
+  axom::inlet::FunctionType::Vector vec2 {4, 5, 6};
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec1, vec2);
   EXPECT_EQ(axom::primal::Vector3D::cross_product(vec1.vec, vec2.vec), result);
 }
 
@@ -548,8 +548,8 @@ TEST(inlet_function, lua_usertype_check_dim)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec1 {1, 2, 3};
-  axom::inlet::FunctionType::Vec3D vec2 {4, 5};
+  axom::inlet::FunctionType::Vector vec1 {1, 2, 3};
+  axom::inlet::FunctionType::Vector vec2 {4, 5};
   auto result = checkedCall<double>(func, vec1);
   EXPECT_EQ(result, 3);
 
@@ -565,7 +565,7 @@ TEST(inlet_function, lua_usertype_named_access)
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
-  axom::inlet::FunctionType::Vec3D vec1 {4, 5, 6};
+  axom::inlet::FunctionType::Vector vec1 {4, 5, 6};
   auto result = checkedCall<double>(func, vec1, 1);
   EXPECT_EQ(result, 4);
 

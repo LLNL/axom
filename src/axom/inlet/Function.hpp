@@ -41,7 +41,7 @@ namespace inlet
  * \note Additions to this enumeration should be propagated to FunctionType, LuaReader
  * and func_signature_tuples defined below (the mapping from enum to types)
  * 
- * \note Vec3D corresponds to a three-dimensional vector, Double corresponds to
+ * \note Vector corresponds to a vector with max dimension of three, Double corresponds to
  * a floating-point scalar
  * 
  * \note A two-dimensional vector was intentionally excluded for simplicity as
@@ -50,7 +50,7 @@ namespace inlet
  */
 enum class FunctionTag
 {
-  Vec3D,
+  Vector,
   Double
 };
 
@@ -63,7 +63,7 @@ enum class FunctionTag
  */
 struct FunctionType
 {
-  using Vec3D = InletVector;
+  using Vector = InletVector;
   using Double = double;
 };
 
@@ -427,7 +427,7 @@ static constexpr std::size_t MAX_NUM_ARGS = 2u;
 // Get the permutations of all possible signatures
 // Add one as return types also need to be permuted
 using func_signature_tuples =
-  arg_tuples<MAX_NUM_ARGS + 1, FunctionType::Vec3D, FunctionType::Double>::type;
+  arg_tuples<MAX_NUM_ARGS + 1, FunctionType::Vector, FunctionType::Double>::type;
 
 using BasicFunctionWrapper = tuples_to_wrapper<func_signature_tuples>::type;
 
