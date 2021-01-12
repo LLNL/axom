@@ -177,9 +177,11 @@ TEST(inlet_function, simple_double_to_void_through_table)
 TEST(inlet_function, simple_string_to_double_through_table)
 {
   std::string testString =
-    "function foo(s) if s == 'a' then return 9.1 "
-    "elseif s == 'b' then return -6.3 "
-    "else return 66.5 end end";
+    "function foo(s) "
+    "  if s == 'a' then return 9.1 "
+    "  elseif s == 'b' then return -6.3 "
+    "  else return 66.5 end "
+    "end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -199,9 +201,11 @@ TEST(inlet_function, simple_string_to_double_through_table)
 TEST(inlet_function, simple_double_to_string_through_table)
 {
   std::string testString =
-    "function foo(d) if d == 9.1 then return 'a' "
-    "elseif d == -6.3 then return 'b' "
-    "else return 'c' end end";
+    "function foo(d) "
+    "  if d == 1 then return 'a' "
+    "  elseif d == 2 then return 'b' "
+    "  else return 'c' end "
+    "end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -212,9 +216,9 @@ TEST(inlet_function, simple_double_to_string_through_table)
 
   auto callable =
     inlet["foo"].get<std::function<FunctionType::String(FunctionType::Double)>>();
-  EXPECT_EQ(callable(9.1), "a");
-  EXPECT_EQ(callable(-6.3), "b");
-  EXPECT_EQ(callable(66.5), "c");
+  EXPECT_EQ(callable(1), "a");
+  EXPECT_EQ(callable(2), "b");
+  EXPECT_EQ(callable(3), "c");
 }
 
 TEST(inlet_function, simple_vec3_to_double_through_table_call)
