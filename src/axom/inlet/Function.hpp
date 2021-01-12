@@ -22,9 +22,9 @@
 #include "fmt/fmt.hpp"
 
 #include "axom/sidre.hpp"
-#include "axom/primal/geometry/Vector.hpp"
 
 #include "axom/inlet/Field.hpp"
+#include "axom/inlet/InletVector.hpp"
 #include "axom/inlet/Verifiable.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 
@@ -34,42 +34,6 @@ namespace axom
 {
 namespace inlet
 {
-namespace detail
-{
-struct InletVector
-{
-  primal::Vector3D vec;
-  int dim;
-
-  InletVector() = default;
-
-  InletVector(std::initializer_list<double> values)
-    : vec(values)
-    , dim(values.size())
-  { }
-
-  InletVector(primal::Vector3D&& v, int d = 3) : vec(std::move(v)), dim(d) { }
-
-  double operator[](int i) const { return vec[i]; }
-  double& operator[](int i) { return vec[i]; }
-
-  operator axom::primal::Vector3D &() { return vec; }
-  operator const axom::primal::Vector3D &() const { return vec; }
-};
-
-inline bool operator==(const InletVector& u, const InletVector& v)
-{
-  return (u.vec == v.vec) && (u.dim == v.dim);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const InletVector& v)
-{
-  os << v.vec;
-  return os;
-}
-
-}  // namespace detail
-
 /*!
  *******************************************************************************
  * \brief The tags used to describe function signatures in the input file
@@ -99,8 +63,7 @@ enum class FunctionTag
  */
 struct FunctionType
 {
-  // using Vec3D = axom::primal::Vector3D;
-  using Vec3D = detail::InletVector;
+  using Vec3D = InletVector;
   using Double = double;
 };
 

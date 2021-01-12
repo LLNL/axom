@@ -529,18 +529,18 @@ TEST(inlet_function, lua_usertype_basic_dot)
   EXPECT_EQ(vec1.vec.dot(vec2), result);
 }
 
-// TEST(inlet_function, lua_usertype_basic_cross)
-// {
-//   std::string testString =
-//     "function func(vec1, vec2) return vec1:cross(vec2) end";
-//   LuaReader lr;
-//   lr.parseString(testString);
-//   sol::protected_function func = lr.solState()["func"];
-//   axom::inlet::FunctionType::Vec3D vec1 {1, 2, 3};
-//   axom::inlet::FunctionType::Vec3D vec2 {4, 5, 6};
-//   auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, vec1, vec2);
-//   EXPECT_EQ(axom::inlet::FunctionType::Vec3D::cross_product(vec1, vec2), result);
-// }
+TEST(inlet_function, lua_usertype_basic_cross)
+{
+  std::string testString =
+    "function func(vec1, vec2) return vec1:cross(vec2) end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  axom::inlet::FunctionType::Vec3D vec1 {1, 2, 3};
+  axom::inlet::FunctionType::Vec3D vec2 {4, 5, 6};
+  auto result = checkedCall<axom::inlet::FunctionType::Vec3D>(func, vec1, vec2);
+  EXPECT_EQ(axom::primal::Vector3D::cross_product(vec1.vec, vec2.vec), result);
+}
 
 TEST(inlet_function, lua_usertype_check_dim)
 {
