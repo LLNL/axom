@@ -147,6 +147,21 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
   EXPECT_FALSE(inlet.verify());
 }
 
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+  // Even though these are required, the input file should still
+  // "verify" as the array is empty
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_TRUE(inlet.verify());
+}
+
 struct FooWithArray
 {
   std::unordered_map<int, int> arr;
