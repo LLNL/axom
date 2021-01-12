@@ -164,10 +164,6 @@ Table& Table::addGenericContainer(const std::string& name,
     table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
                                          static_cast<int8>(1));
   }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] Container {0} not found.", fullName));
-  }
   return table;
 }
 
