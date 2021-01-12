@@ -36,7 +36,7 @@ Inlet createBasicInlet(DataStore* ds,
 
 TEST(inlet_function, simple_vec3_to_double_raw)
 {
-  std::string testString = "function foo (x, y, z) return x + y + z end";
+  std::string testString = "function foo (v) return v.x + v.y + v.z end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -50,7 +50,7 @@ TEST(inlet_function, simple_vec3_to_double_raw)
 
 TEST(inlet_function, simple_vec3_to_vec3_raw)
 {
-  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  std::string testString = "function foo (v) return 2*v end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -66,7 +66,7 @@ TEST(inlet_function, simple_vec3_to_vec3_raw)
 
 TEST(inlet_function, simple_vec3_to_vec3_raw_partial_init)
 {
-  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  std::string testString = "function foo (v) return 2*v end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -88,7 +88,7 @@ TEST(inlet_function, simple_vec3_to_vec3_raw_partial_init)
 
 TEST(inlet_function, simple_vec3_to_double_through_table)
 {
-  std::string testString = "function foo (x, y, z) return x + y + z end";
+  std::string testString = "function foo (v) return v.x + v.y + v.z end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -104,7 +104,7 @@ TEST(inlet_function, simple_vec3_to_double_through_table)
 
 TEST(inlet_function, simple_vec3_to_vec3_through_table)
 {
-  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  std::string testString = "function foo (v) return 2*v end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -141,7 +141,7 @@ TEST(inlet_function, simple_double_to_double_through_table)
 
 TEST(inlet_function, simple_vec3_to_double_through_table_call)
 {
-  std::string testString = "function foo (x, y, z) return x + y + z end";
+  std::string testString = "function foo (v) return v.x + v.y + v.z end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -156,7 +156,7 @@ TEST(inlet_function, simple_vec3_to_double_through_table_call)
 
 TEST(inlet_function, simple_vec3_to_vec3_through_table_call)
 {
-  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  std::string testString = "function foo (v) return 2*v end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -175,7 +175,7 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table_call)
 TEST(inlet_function, simple_vec3_double_to_double_through_table_call)
 {
   std::string testString =
-    "function foo (x, y, z, t) return t * (x + y + z) end";
+    "function foo (v, t) return t * (v.x + v.y + v.z) end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -190,7 +190,7 @@ TEST(inlet_function, simple_vec3_double_to_double_through_table_call)
 
 TEST(inlet_function, simple_vec3_double_to_vec3_through_table_call)
 {
-  std::string testString = "function foo (x, y, z, t) return t*x, t*y, t*z end";
+  std::string testString = "function foo (v, t) return t*v end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -208,7 +208,7 @@ TEST(inlet_function, simple_vec3_double_to_vec3_through_table_call)
 
 TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_pass)
 {
-  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  std::string testString = "function foo (v) return 2*v end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -228,7 +228,7 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_pass)
 
 TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_fail)
 {
-  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  std::string testString = "function foo (v) return 2*v end";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -265,7 +265,7 @@ struct FromInlet<Foo>
 TEST(inlet_function, simple_vec3_to_vec3_struct)
 {
   std::string testString =
-    "foo = { bar = true; baz = function (x, y, z) return 2*x, 2*y, 2*z end }";
+    "foo = { bar = true; baz = function (v) return 2*v end }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
@@ -289,9 +289,9 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
 {
   std::string testString =
     "foo = { [7] = { bar = true, "
-    "                baz = function (x, y, z) return 2*x, 2*y, 2*z end }, "
+    "                baz = function (v) return 2*v end }, "
     "       [12] = { bar = false, "
-    "                baz = function (x, y, z) return 3*x, 3*y, 3*z end } "
+    "                baz = function (v) return 3*v end } "
     "}";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
@@ -516,6 +516,25 @@ TEST(inlet_function, lua_usertype_check_dim)
 
   result = checkedCall<double>(func, vec2);
   EXPECT_EQ(result, 2);
+}
+
+TEST(inlet_function, lua_usertype_named_access)
+{
+  std::string testString =
+    "function func(vec, comp) if comp == 1 then return vec.x elseif comp == 2 "
+    "then return vec.y else return vec.z end end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  axom::inlet::FunctionType::Vec3D vec1 {4, 5, 6};
+  auto result = checkedCall<double>(func, vec1, 1);
+  EXPECT_EQ(result, 4);
+
+  result = checkedCall<double>(func, vec1, 2);
+  EXPECT_EQ(result, 5);
+
+  result = checkedCall<double>(func, vec1, 3);
+  EXPECT_EQ(result, 6);
 }
 
 //------------------------------------------------------------------------------

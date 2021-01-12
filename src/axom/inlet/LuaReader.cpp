@@ -101,7 +101,13 @@ LuaReader::LuaReader()
                                   u.dim};
     },
     "dim",
-    [](const FunctionType::Vec3D& u) { return u.dim; });
+    [](const FunctionType::Vec3D& u) { return u.dim; },
+    "x",
+    sol::property([](const FunctionType::Vec3D& u) { return u.vec[0]; }),
+    "y",
+    sol::property([](const FunctionType::Vec3D& u) { return u.vec[1]; }),
+    "z",
+    sol::property([](const FunctionType::Vec3D& u) { return u.vec[2]; }));
 }
 
 bool LuaReader::parseFile(const std::string& filePath)
@@ -256,19 +262,6 @@ bool LuaReader::getIndices(const std::string& id, std::vector<VariantKey>& indic
 // callables
 namespace detail
 {
-// Passes through everything except a vector, which is expanded into
-// three separate arguments
-template <typename Arg>
-Arg&& lua_identity(Arg&& arg)
-{
-  return std::forward<Arg>(arg);
-}
-
-std::tuple<double, double, double> lua_identity(const FunctionType::Vec3D& vec)
-{
-  return std::make_tuple(vec[0], vec[1], vec[2]);
-}
-
 /*!
  *****************************************************************************
  * \brief Templated function for calling a sol function
@@ -283,7 +276,7 @@ template <typename... Args>
 sol::protected_function_result callWith(const sol::protected_function& func,
                                         Args&&... args)
 {
-  auto tentative_result = func(lua_identity(std::forward<Args>(args))...);
+  auto tentative_result = func(std::forward<Args>(args)...);
   SLIC_ERROR_IF(
     !tentative_result.valid(),
     "[Inlet] Lua function call failed, argument types possibly incorrect");
@@ -309,14 +302,6 @@ Ret extractResult(sol::protected_function_result&& res)
     !option,
     "[Inlet] Lua function call failed, return types possibly incorrect");
   return option.value();
-}
-
-template <>
-FunctionType::Vec3D extractResult<FunctionType::Vec3D>(
-  sol::protected_function_result&& res)
-{
-  auto tup = extractResult<std::tuple<double, double, double>>(std::move(res));
-  return {std::get<0>(tup), std::get<1>(tup), std::get<2>(tup)};
 }
 
 /*!

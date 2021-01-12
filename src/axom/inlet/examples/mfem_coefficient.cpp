@@ -142,7 +142,7 @@ struct FromInlet<BoundaryCondition::InputInfo>
                                                 mfem::Vector& output) {
         auto ret = func({input.GetData(), input.Size()}, t);
         // Copy from the primal vector into the MFEM vector
-        std::copy(ret.data(), ret.data() + ret.dimension(), output.GetData());
+        std::copy(ret.vec.data(), ret.vec.data() + input.Size(), output.GetData());
       };
     }
     else
