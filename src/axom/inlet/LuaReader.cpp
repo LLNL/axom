@@ -52,12 +52,16 @@ LuaReader::LuaReader()
     // Add vector addition operation
     sol::meta_function::addition,
     [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
-      // FIXME: assert same size/space
+      SLIC_ASSERT_MSG(
+        u.dim == v.dim,
+        "[Inlet] Operands to InletVector addition are of different dimension");
       return FunctionType::Vector {u.vec + v.vec, u.dim};
     },
     sol::meta_function::subtraction,
     [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
-      // FIXME: assert same size/space
+      SLIC_ASSERT_MSG(u.dim == v.dim,
+                      "[Inlet] Operands to InletVector subtraction are of "
+                      "different dimension");
       return FunctionType::Vector {u.vec - v.vec, u.dim};
     },
     // Needs to be resolved in the same way as operator+
@@ -94,14 +98,18 @@ LuaReader::LuaReader()
     },
     "dot",
     [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
-      // FIXME: assert same size/space
+      SLIC_ASSERT_MSG(u.dim == v.dim,
+                      "[Inlet] Operands to InletVector dot product are of "
+                      "different dimension");
       return u.vec.dot(v.vec);
     },
     // Implemented as a member function like dot products are, for simplicity
     "cross",
     // Needs to be resolved as it is an overloaded static method
     [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
-      // FIXME: assert same size/space
+      SLIC_ASSERT_MSG(u.dim == v.dim,
+                      "[Inlet] Operands to InletVector cross product are of "
+                      "different dimension");
       return FunctionType::Vector {primal::Vector3D::cross_product(u.vec, v.vec),
                                    u.dim};
     },
