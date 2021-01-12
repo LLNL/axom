@@ -62,6 +62,12 @@ inline bool operator==(const InletVector& u, const InletVector& v)
   return (u.vec == v.vec) && (u.dim == v.dim);
 }
 
+inline std::ostream& operator<<(std::ostream& os, const InletVector& v)
+{
+  os << v.vec;
+  return os;
+}
+
 }  // namespace detail
 
 /*!
