@@ -264,25 +264,25 @@ bool ConduitReader::getStringMap(const std::string& id,
 }
 
 bool ConduitReader::getIntMap(const std::string& id,
-                              std::unordered_map<std::string, int>& values)
+                              std::unordered_map<VariantKey, int>& values)
 {
   return getDictionary(id, values);
 }
 
 bool ConduitReader::getDoubleMap(const std::string& id,
-                                 std::unordered_map<std::string, double>& values)
+                                 std::unordered_map<VariantKey, double>& values)
 {
   return getDictionary(id, values);
 }
 
 bool ConduitReader::getBoolMap(const std::string& id,
-                               std::unordered_map<std::string, bool>& values)
+                               std::unordered_map<VariantKey, bool>& values)
 {
   return getDictionary(id, values);
 }
 
 bool ConduitReader::getStringMap(const std::string& id,
-                                 std::unordered_map<std::string, std::string>& values)
+                                 std::unordered_map<VariantKey, std::string>& values)
 {
   return getDictionary(id, values);
 }
@@ -291,23 +291,36 @@ bool ConduitReader::getIndices(const std::string& id, std::vector<int>& indices)
 {
   indices.clear();
   const auto node = detail::traverseNode(m_root, id);
+  int num_elements = node.number_of_children();
+  // Primitive arrays do not count as lists
   if(!node.dtype().is_list())
   {
-    return false;
+    num_elements = node.dtype().number_of_elements();
   }
-  indices.resize(node.number_of_children());
+
+  indices.resize(num_elements);
   // Arrays in YAML/JSON are contiguous so we don't need to query the input file
   std::iota(indices.begin(), indices.end(), 0);
   return true;
 }
 
 bool ConduitReader::getIndices(const std::string& id,
-                               std::vector<std::string>& indices)
+                               std::vector<VariantKey>& indices)
 {
   indices.clear();
   const auto node = detail::traverseNode(m_root, id);
   if(!node.dtype().is_object())
   {
+    // If it's not an object, try integer indexing
+    std::vector<int> int_indices;
+    if(getIndices(id, int_indices))
+    {
+      for(const int idx : int_indices)
+      {
+        indices.emplace_back(idx);
+      }
+      return true;
+    }
     return false;
   }
   for(const auto& child : node.children())
@@ -318,8 +331,8 @@ bool ConduitReader::getIndices(const std::string& id,
 }
 
 FunctionVariant ConduitReader::getFunction(const std::string&,
-                                           const FunctionType,
-                                           const std::vector<FunctionType>&)
+                                           const FunctionTag,
+                                           const std::vector<FunctionTag>&)
 {
   SLIC_ERROR("[Inlet] Conduit YAML/JSON does not support functions");
   return {};
@@ -327,7 +340,7 @@ FunctionVariant ConduitReader::getFunction(const std::string&,
 
 template <typename T>
 bool ConduitReader::getDictionary(const std::string& id,
-                                  std::unordered_map<std::string, T>& values)
+                                  std::unordered_map<VariantKey, T>& values)
 {
   values.clear();
   const auto node = detail::traverseNode(m_root, id);

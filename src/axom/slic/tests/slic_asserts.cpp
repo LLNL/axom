@@ -6,15 +6,15 @@
 #include "gtest/gtest.h"
 
 #include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 /*!
  * \file
  *
  * The tests in this file check that SLIC macros properly output their message
  * and exit (when appropriate) when run from constructors and destructors.
- * They also exercise the SLIC UnitTestLogger.
+ * They also exercise the SLIC SimpleLogger.
  */
 
 namespace
@@ -185,8 +185,8 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
-                          // finalized when exiting main scope
+  SimpleLogger logger;  // create & initialize test logger,
+                        // finalized when exiting main scope
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   result = RUN_ALL_TESTS();

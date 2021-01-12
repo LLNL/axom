@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "Proxy.hpp"
+#include "axom/inlet/Proxy.hpp"
 
 namespace axom
 {

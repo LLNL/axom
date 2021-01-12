@@ -19,6 +19,7 @@
 
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
+using axom::inlet::VariantKey;
 using axom::sidre::DataStore;
 
 template <typename InletReader>
@@ -552,21 +553,16 @@ TYPED_TEST(inlet_object_dict, array_of_struct_containing_dict)
 FIXME: These are currently error conditions.  If these should be supported
 or handled differently these tests can be re-enabled.
 
-TEST(inlet_dict, mixed_keys)
+TEST(inlet_dict, mixed_keys_primitive_duplicated)
 {
-  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  std::string testString = "foo = { ['1'] = 4, [1] = 6 }";
   DataStore ds;
-  Inlet inlet = createBasicInlet(&ds, testString);
+  auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addIntDictionary("foo", "foo's description");
-  std::unordered_map<std::string, int> dict = inlet["foo"];
-  std::unordered_map<std::string, int> correct_dict = {{"key1", 4}};
+  std::unordered_map<VariantKey, int> dict = inlet["foo"];
+  std::unordered_map<VariantKey, int> correct_dict = {{"1", 4}, {1, 6}};
   EXPECT_EQ(dict, correct_dict);
-
-  inlet.addIntArray("foo", "foo's description");
-  std::unordered_map<int, int> array = inlet["foo"];
-  std::unordered_map<int, int> correct_array = {{1, 6}};
-  EXPECT_EQ(array, correct_array);
 }
 
 TEST(inlet_dict, key_with_slash)
@@ -681,11 +677,66 @@ TEST(inlet_object_lua_dict, array_of_struct_containing_dict)
   EXPECT_EQ(foos_with_dict, expected_foos);
 }
 
+TEST(inlet_object_lua_dict, mixed_keys_primitive)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  inlet.addIntDictionary("foo", "foo's description");
+  std::unordered_map<VariantKey, int> dict = inlet["foo"];
+  std::unordered_map<VariantKey, int> correct_dict = {{"key1", 4}, {1, 6}};
+  EXPECT_EQ(dict, correct_dict);
+}
+
+TEST(inlet_object_lua_dict, mixed_keys_primitive_ignore_string_only)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  inlet.addIntDictionary("foo", "foo's description");
+  std::unordered_map<std::string, int> dict = inlet["foo"];
+  std::unordered_map<std::string, int> correct_dict = {{"key1", 4}};
+  EXPECT_EQ(dict, correct_dict);
+}
+
+TEST(inlet_object_lua_dict, mixed_keys_primitive_ignore_int_only)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  inlet.addIntArray("foo", "foo's description");
+  std::unordered_map<int, int> array = inlet["foo"];
+  std::unordered_map<int, int> correct_array = {{1, 6}};
+  EXPECT_EQ(array, correct_array);
+}
+
+TEST(inlet_object_lua_dict, mixed_keys_object)
+{
+  std::string testString =
+    "foo = { ['key1'] = { bar = true; baz = false}, "
+    "        [1] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  auto& dict_table = inlet.addGenericDictionary("foo");
+
+  dict_table.addBool("bar", "bar's description");
+  dict_table.addBool("baz", "baz's description");
+  std::unordered_map<VariantKey, Foo> expected_foos = {{"key1", {true, false}},
+                                                       {1, {false, true}}};
+  std::unordered_map<VariantKey, Foo> foos;
+  foos = inlet["foo"].get<std::unordered_map<VariantKey, Foo>>();
+  EXPECT_EQ(foos, expected_foos);
+}
+
 #endif
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -693,7 +744,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

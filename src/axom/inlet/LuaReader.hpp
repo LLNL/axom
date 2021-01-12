@@ -153,7 +153,7 @@ public:
    */
   bool getIntMap(const std::string& id, std::unordered_map<int, int>& values);
   bool getIntMap(const std::string& id,
-                 std::unordered_map<std::string, int>& values);
+                 std::unordered_map<VariantKey, int>& values);
 
   /*!
    *****************************************************************************
@@ -171,7 +171,7 @@ public:
   bool getDoubleMap(const std::string& id,
                     std::unordered_map<int, double>& values);
   bool getDoubleMap(const std::string& id,
-                    std::unordered_map<std::string, double>& values);
+                    std::unordered_map<VariantKey, double>& values);
 
   /*!
    *****************************************************************************
@@ -188,7 +188,7 @@ public:
    */
   bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values);
   bool getBoolMap(const std::string& id,
-                  std::unordered_map<std::string, bool>& values);
+                  std::unordered_map<VariantKey, bool>& values);
 
   /*!
    *****************************************************************************
@@ -206,7 +206,7 @@ public:
   bool getStringMap(const std::string& id,
                     std::unordered_map<int, std::string>& values);
   bool getStringMap(const std::string& id,
-                    std::unordered_map<std::string, std::string>& values);
+                    std::unordered_map<VariantKey, std::string>& values);
 
   /*!
    *****************************************************************************
@@ -219,7 +219,7 @@ public:
    *****************************************************************************
    */
   bool getIndices(const std::string& id, std::vector<int>& indices);
-  bool getIndices(const std::string& id, std::vector<std::string>& indices);
+  bool getIndices(const std::string& id, std::vector<VariantKey>& indices);
 
   /*!
    *****************************************************************************
@@ -233,8 +233,8 @@ public:
    *****************************************************************************
    */
   FunctionVariant getFunction(const std::string& id,
-                              const FunctionType ret_type,
-                              const std::vector<FunctionType>& arg_types);
+                              const FunctionTag ret_type,
+                              const std::vector<FunctionTag>& arg_types);
 
   /*!
    *****************************************************************************

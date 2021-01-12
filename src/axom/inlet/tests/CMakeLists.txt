@@ -28,7 +28,7 @@ foreach(test ${gtest_inlet_tests})
     blt_add_executable( NAME       ${test_name}_test
                         SOURCES    ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON inlet gtest inlet_test_utils
+                        DEPENDS_ON gtest inlet_test_utils
                         FOLDER     axom/inlet/tests )
     axom_add_test( NAME    ${test_name} 
                    COMMAND ${test_name}_test )

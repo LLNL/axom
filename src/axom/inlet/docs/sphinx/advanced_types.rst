@@ -120,22 +120,31 @@ Retrieving Functions from an Input File
 ---------------------------------------
 
 To retrieve a function, both the implicit conversion and ``get<T>`` syntax is supported.  For example,
-if the function above was located at the "root" of the input file, it could be retrieved by either of
-the following methods:
+a function can be retrieved as follows:
 
-.. code-block:: C++
+.. literalinclude:: ../../examples/mfem_coefficient.cpp
+   :start-after: _inlet_mfem_coef_simple_retrieve_start
+   :end-before: _inlet_mfem_coef_simple_retrieve_end
+   :language: C++
 
-  auto coef = inlet["coef"].get<std::function<double(axom::primal::Vector3D)>>();
-  std::function<double(axom::primal::Vector3D)> coef = inlet["coef"];
-  // Either method produces a std::function that can be called like any other function
-  double result = coef({3,5,7});
+It can also be assigned directly to a ``std::function`` without the need to use ``get<T>``:
+
+.. literalinclude:: ../../examples/user_defined_type.cpp
+   :start-after: _inlet_userdef_bc_struct_start
+   :end-before: _inlet_userdef_bc_struct_end
+   :language: C++
+
+.. literalinclude:: ../../examples/user_defined_type.cpp
+   :start-after: _inlet_userdef_bc_struct_retrieve_start
+   :end-before: _inlet_userdef_bc_struct_retrieve_end
+   :language: C++
 
 Additionally, if a function does not need to be stored, the overhead of a copy can be eliminated
 by calling it directly:
 
 .. code-block:: C++
 
-  double result = inlet["coef"].call<double>(axom::primal::Vector3D{3, 5, 7});
+  double result = inlet["coef"].call<double>(axom::inlet::FunctionType::Vec3D{3, 5, 7});
 
 .. note::  Using ``call<ReturnType>(ArgType1, ArgType2, ...)`` requires both that the return type
   be explicitly specified and that argument types be passed with the exact type as used in the 

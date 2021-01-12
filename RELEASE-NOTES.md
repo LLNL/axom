@@ -25,6 +25,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for string-keyed associative arrays (dictionaries)
 - Inlet: Added support for defining and retrieving functions from the input file
 - Inlet: Added support for YAML and JSON input files
+- Inlet: Added support for mixed-key (integer and string) associative arrays
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -38,6 +39,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
   and `std::unique_ptr<T>` in owning contexts
 - Unified core and SPIO unit tests into fewer executables to limit size of build directory
+- Renamed `axom::slic::UnitTestLogger` to `axom::slic:SimpleLogger` because it's used in
+  more than just unit tests.
+- Inlet: Input file functions can now be of arbitrary signature subject to type and arity
+  restrictions
+- Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
@@ -224,7 +230,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated Raja TPL to v0.9.0
 - Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
-  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  auto-detected based on whether `_OPENMP` is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
   Axom in parts of the code where OpenMP is enabled.
 

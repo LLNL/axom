@@ -22,6 +22,7 @@ set(inlet_headers
     Reader.hpp
     Table.hpp 
     Proxy.hpp
+    VariantKey.hpp
     Verifiable.hpp
     VerifiableScalar.hpp
     DocWriter.hpp
@@ -37,6 +38,7 @@ set(inlet_sources
     Inlet.cpp
     Table.cpp
     Proxy.cpp
+    VariantKey.cpp
     SphinxDocWriter.cpp
     ConduitReader.cpp
     inlet_utils.cpp )
