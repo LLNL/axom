@@ -55,6 +55,11 @@ LuaReader::LuaReader()
       // FIXME: assert same size/space
       return FunctionType::Vector {u.vec + v.vec, u.dim};
     },
+    sol::meta_function::subtraction,
+    [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
+      // FIXME: assert same size/space
+      return FunctionType::Vector {u.vec - v.vec, u.dim};
+    },
     // Needs to be resolved in the same way as operator+
     sol::meta_function::unary_minus,
     [](const FunctionType::Vector& u) {
@@ -101,7 +106,7 @@ LuaReader::LuaReader()
                                    u.dim};
     },
     "dim",
-    [](const FunctionType::Vector& u) { return u.dim; },
+    sol::property([](const FunctionType::Vector& u) { return u.dim; }),
     "x",
     sol::property([](const FunctionType::Vector& u) { return u.vec[0]; }),
     "y",

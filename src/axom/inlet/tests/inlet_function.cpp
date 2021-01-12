@@ -327,7 +327,7 @@ TEST(inlet_function, dimension_dependent_result)
     "foo = function (v) "
     "first = 2 * v.x "
     "last = 2 * v.y "
-    "if v:dim() == 2 then "
+    "if v.dim == 2 then "
     "return Vector.new(first, last) "
     "else "
     "return Vector.new(first, 0, last) "
@@ -423,6 +423,18 @@ TEST(inlet_function, lua_usertype_basic_add)
   axom::inlet::FunctionType::Vector vec2 {4, 5, 6};
   auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec1, vec2);
   EXPECT_EQ(result, vec1.vec + vec2.vec);
+}
+
+TEST(inlet_function, lua_usertype_basic_sub)
+{
+  std::string testString = "function func(vec1, vec2) return vec1 - vec2 end";
+  LuaReader lr;
+  lr.parseString(testString);
+  sol::protected_function func = lr.solState()["func"];
+  axom::inlet::FunctionType::Vector vec1 {1, 2, 3};
+  axom::inlet::FunctionType::Vector vec2 {4, 5, 6};
+  auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec1, vec2);
+  EXPECT_EQ(result, vec1.vec - vec2.vec);
 }
 
 TEST(inlet_function, lua_usertype_basic_negate)
@@ -544,7 +556,7 @@ TEST(inlet_function, lua_usertype_basic_cross)
 
 TEST(inlet_function, lua_usertype_check_dim)
 {
-  std::string testString = "function func(vec) return vec:dim() end";
+  std::string testString = "function func(vec) return vec.dim end";
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];

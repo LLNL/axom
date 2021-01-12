@@ -24,7 +24,7 @@ bcs = {
       s = 0.1 / 64
       first = -s * x * x
       last = s * x * x * (8.0 - x)
-      if v:dim() == 2 then
+      if v.dim == 2 then
         return Vec3.new(first, last)
       else
         return Vec3.new(first, 0, last)
