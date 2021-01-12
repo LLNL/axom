@@ -705,27 +705,22 @@ int main(int argc, char** argv)
 
   int region[3375];
 
-  int num_ranks = 1;
 
 #ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
-  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 #endif
 
-  if(num_ranks == 1)
-  {
-    DataStore* ds = create_datastore(region);
-    access_datastore(ds);
+  DataStore* ds = create_datastore(region);
+  access_datastore(ds);
 
-    DataStore* tds = create_tiny_datastore();
-    save_as_blueprint(tds);
+  DataStore* tds = create_tiny_datastore();
+  save_as_blueprint(tds);
 
-    DataStore* bds = create_tiny_datastore();
-    generate_blueprint(bds);
+  DataStore* bds = create_tiny_datastore();
+  generate_blueprint(bds);
 
-    DataStore* pds = create_tiny_datastore();
-    generate_blueprint_to_path(pds);
-  }
+  DataStore* pds = create_tiny_datastore();
+  generate_blueprint_to_path(pds);
 
 #ifdef AXOM_USE_MPI
   DataStore* sds = create_tiny_datastore();
