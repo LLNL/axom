@@ -457,8 +457,8 @@ public:
    *****************************************************************************
    */
   Verifiable<Function>& addFunction(const std::string& name,
-                                    const FunctionType ret_type,
-                                    const std::vector<FunctionType>& arg_types,
+                                    const FunctionTag ret_type,
+                                    const std::vector<FunctionTag>& arg_types,
                                     const std::string& description = "")
   {
     return m_globalTable.addFunction(name, ret_type, arg_types, description);

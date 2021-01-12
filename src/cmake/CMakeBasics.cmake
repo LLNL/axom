@@ -46,6 +46,18 @@ if(ENABLE_FORTRAN)
     set(CMAKE_Fortran_FORMAT FREE)
 endif()
 
+#------------------------------------------------------------------------------
+# Shared vs Static Libs
+#------------------------------------------------------------------------------
+if(BUILD_SHARED_LIBS)
+    message(STATUS "Building shared libraries (BUILD_SHARED_LIBS == ON)")
+else()
+    message(STATUS "Building static libraries (BUILD_SHARED_LIBS == OFF)")
+endif()
+
+if(WIN32 AND BUILD_SHARED_LIBS)
+    set(AXOM_WINDOWS_DLL_EXPORTS TRUE)
+endif()
 
 #------------------------------------------------------------------------------
 # Setup some additional compiler options that can be useful in various targets

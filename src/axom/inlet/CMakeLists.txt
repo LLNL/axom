@@ -22,10 +22,14 @@ set(inlet_headers
     Reader.hpp
     Table.hpp 
     Proxy.hpp
+    VariantKey.hpp
     Verifiable.hpp
     VerifiableScalar.hpp
     DocWriter.hpp
     SphinxDocWriter.hpp
+    ConduitReader.hpp
+    YAMLReader.hpp
+    JSONReader.hpp
     inlet_utils.hpp )
 
 set(inlet_sources
@@ -34,7 +38,9 @@ set(inlet_sources
     Inlet.cpp
     Table.cpp
     Proxy.cpp
+    VariantKey.cpp
     SphinxDocWriter.cpp
+    ConduitReader.cpp
     inlet_utils.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF SOL_FOUND)

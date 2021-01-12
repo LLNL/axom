@@ -390,7 +390,7 @@ void quadMeshExample()
 
 int main(int /* argc */, char** /* argv */)
 {
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   quadMeshExample();
 }

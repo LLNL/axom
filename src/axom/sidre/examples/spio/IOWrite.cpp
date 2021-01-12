@@ -27,7 +27,7 @@ using namespace axom::utilities;
 int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   SLIC_ERROR_IF(argc != 3,
                 "Missing command line arguments. \n\t"
