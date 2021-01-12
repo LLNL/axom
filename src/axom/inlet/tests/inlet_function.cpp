@@ -321,6 +321,45 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
   EXPECT_FLOAT_EQ(second_result[2], 18);
 }
 
+TEST(inlet_function, dimension_dependent_result)
+{
+  std::string testString =
+    "foo = function (v) "
+    "first = 2 * v.x "
+    "last = 2 * v.y "
+    "if v:dim() == 2 then "
+    "return Vec3D.new(first, last) "
+    "else "
+    "return Vec3D.new(first, 0, last) "
+    "end "
+    "end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::Vec3D,
+                    {FunctionTag::Vec3D},
+                    "foo's description");
+
+  auto callable =
+    inlet["foo"].get<std::function<FunctionType::Vec3D(FunctionType::Vec3D)>>();
+
+  FunctionType::Vec3D input_3d({3.5, 0.5, 7.5});
+  auto result = callable(input_3d);
+
+  EXPECT_EQ(result.dim, 3);
+  EXPECT_FLOAT_EQ(result.vec[0], 7);
+  EXPECT_FLOAT_EQ(result.vec[1], 0);
+  EXPECT_FLOAT_EQ(result.vec[2], 1);
+
+  FunctionType::Vec3D input_2d({3.5, 0.5});
+  result = callable(input_2d);
+
+  EXPECT_EQ(result.dim, 2);
+  EXPECT_FLOAT_EQ(result.vec[0], 7);
+  EXPECT_FLOAT_EQ(result.vec[1], 1);
+}
+
 template <typename Ret, typename... Args>
 Ret checkedCall(const sol::protected_function& func, Args&&... args)
 {

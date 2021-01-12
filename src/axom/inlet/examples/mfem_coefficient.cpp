@@ -99,16 +99,16 @@ struct BoundaryCondition
  *   attrs = {
  *      3, 4, 6, 9
  *   }
- *   coef = function (x, y, z, t)
- *     return x * 0.12
+ *   coef = function (v, t)
+ *     return v.x * 0.12
  *   end
  * }
  * -- or, for vector coefficients:
  * [8] = {
  *   attrs = { [4] = 14, [8] = 62, [6] = 11},
- *   vec_coef = function (x, y, z, t)
+ *   vec_coef = function (v, t)
  *     scale = 0.12
- *     return x * scale, y * scale, z * scale
+ *     return v * scale
  *   end
  * }
  * \endcode
