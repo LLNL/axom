@@ -158,12 +158,14 @@ struct is_inlet_primitive_dict<std::unordered_map<VariantKey, T>>
 };
 
 template <typename T>
-struct is_std_vector : std::false_type
+struct is_primitive_std_vector : std::false_type
 { };
 
 template <typename T>
-struct is_std_vector<std::vector<T>> : std::true_type
-{ };
+struct is_primitive_std_vector<std::vector<T>>
+{
+  static constexpr bool value = is_inlet_primitive<T>::value;
+};
 
 /*!
  *******************************************************************************
@@ -768,7 +770,7 @@ public:
   template <typename T>
   typename std::enable_if<
     !detail::is_inlet_primitive<T>::value && !detail::is_inlet_array<T>::value &&
-      !detail::is_inlet_dict<T>::value && !detail::is_std_vector<T>::value,
+      !detail::is_inlet_dict<T>::value && !detail::is_primitive_std_vector<T>::value,
     T>::type
   get(const std::string& name = "") const
   {
@@ -836,7 +838,7 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<detail::is_std_vector<T>::value, T>::type get() const
+  typename std::enable_if<detail::is_primitive_std_vector<T>::value, T>::type get() const
   {
     // Only allow retrieval of std::vectors from integer-keyed containers
     using Key = int;
@@ -849,7 +851,7 @@ public:
     for(const auto& entry : map)
     {
       // FIXME: 1-indexed arrays??
-      SLIC_ERROR_IF(entry.first >= result.size(),
+      SLIC_ERROR_IF(static_cast<std::size_t>(entry.first) >= result.size(),
                     "[Inlet] Cannot convert to vector due to too-large index");
       result[entry.first] = entry.second;
     }

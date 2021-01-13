@@ -758,6 +758,23 @@ TYPED_TEST(inlet_object, nested_array_of_nested_structs)
   EXPECT_EQ(quuxs_with_foo, expected_quuxs);
 }
 
+TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)
+{
+  std::string testString = " arr = { [0] = 4, [1] = 6, [2] = 10}";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Define schema
+  inlet.addIntArray("arr");
+
+  // Attempt both construction and assignment
+  std::vector<int> expected_arr {4, 6, 10};
+  std::vector<int> arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+  arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+}
+
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
 { };
