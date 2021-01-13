@@ -157,6 +157,14 @@ struct is_inlet_primitive_dict<std::unordered_map<VariantKey, T>>
   static constexpr bool value = is_inlet_primitive<T>::value;
 };
 
+template <typename T>
+struct is_std_vector : std::false_type
+{ };
+
+template <typename T>
+struct is_std_vector<std::vector<T>> : std::true_type
+{ };
+
 /*!
  *******************************************************************************
  * \class has_FromInlet_specialization
@@ -758,10 +766,10 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
-                            !detail::is_inlet_array<T>::value &&
-                            !detail::is_inlet_dict<T>::value,
-                          T>::type
+  typename std::enable_if<
+    !detail::is_inlet_primitive<T>::value && !detail::is_inlet_array<T>::value &&
+      !detail::is_inlet_dict<T>::value && !detail::is_std_vector<T>::value,
+    T>::type
   get(const std::string& name = "") const
   {
     static_assert(detail::has_FromInlet_specialization<T>::value,
@@ -814,6 +822,39 @@ public:
     {
       return getTable(detail::CONTAINER_GROUP_NAME).getContainer<Key, Val>();
     }
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Returns a stored container as a contiguous array.
+   * 
+   * Retrieves a container of user-defined type.
+   * 
+   * \return The values in the retrieved container
+   * 
+   * \tparam T The container type, i.e., T = std::vector<V>
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<detail::is_std_vector<T>::value, T>::type get() const
+  {
+    // Only allow retrieval of std::vectors from integer-keyed containers
+    using Key = int;
+    using Val = typename T::value_type;
+    auto map = get<std::unordered_map<Key, Val>>();
+
+    std::vector<Val> result(map.size());
+
+    // Accesses may be out-of-order so we use the index directly
+    for(const auto& entry : map)
+    {
+      // FIXME: 1-indexed arrays??
+      SLIC_ERROR_IF(entry.first >= result.size(),
+                    "[Inlet] Cannot convert to vector due to too-large index");
+      result[entry.first] = entry.second;
+    }
+
+    return result;
   }
 
   /*!
