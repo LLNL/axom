@@ -13,7 +13,6 @@ namespace axom
 {
 namespace inlet
 {
-
 template <typename Func>
 void Table::forEachContainerElement(Func&& func) const
 {
@@ -443,11 +442,8 @@ struct PrimitiveArrayHelper<Key, bool>
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
   {
     std::unordered_map<Key, bool> map;
-    if(!reader.getBoolMap(lookupPath, map))
-    {
-      SLIC_WARNING(
-        fmt::format("[Inlet] Bool container {0} not found.", lookupPath));
-    }
+    // Failure to retrieve a map is not necessarily an error
+    reader.getBoolMap(lookupPath, map);
     registerContainer(table, map);
   }
 };
@@ -458,11 +454,7 @@ struct PrimitiveArrayHelper<Key, int>
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
   {
     std::unordered_map<Key, int> map;
-    if(!reader.getIntMap(lookupPath, map))
-    {
-      SLIC_WARNING(
-        fmt::format("[Inlet] Int container {0} not found.", lookupPath));
-    }
+    reader.getIntMap(lookupPath, map);
     registerContainer(table, map);
   }
 };
@@ -473,11 +465,7 @@ struct PrimitiveArrayHelper<Key, double>
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
   {
     std::unordered_map<Key, double> map;
-    if(!reader.getDoubleMap(lookupPath, map))
-    {
-      SLIC_WARNING(
-        fmt::format("[Inlet] Double container {0} not found.", lookupPath));
-    }
+    reader.getDoubleMap(lookupPath, map);
     registerContainer(table, map);
   }
 };
@@ -488,11 +476,7 @@ struct PrimitiveArrayHelper<Key, std::string>
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
   {
     std::unordered_map<Key, std::string> map;
-    if(!reader.getStringMap(lookupPath, map))
-    {
-      SLIC_WARNING(
-        fmt::format("[Inlet] String container {0} not found.", lookupPath));
-    }
+    reader.getStringMap(lookupPath, map);
     registerContainer(table, map);
   }
 };
@@ -581,10 +565,6 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     if(m_reader.getIndices(lookupPath, indices))
     {
       detail::addIndicesGroupToTable(table, indices, description);
-    }
-    else
-    {
-      SLIC_WARNING(fmt::format("[Inlet] Container {0} not found.", fullName));
     }
     return table;
   }
