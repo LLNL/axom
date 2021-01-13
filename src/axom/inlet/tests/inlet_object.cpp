@@ -147,7 +147,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
   EXPECT_FALSE(inlet.verify());
 }
 
-TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty)
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_pass)
 {
   std::string testString = "foo = { }";
   DataStore ds;
@@ -160,6 +160,34 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty)
   arr_table.addBool("baz", "baz's description").required(true);
 
   EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should fail because the array is empty
+  // and was required
+  auto& arr_table = inlet.addGenericArray("foo").required(true);
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail_primitive)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should fail because the array is empty
+  // and was required
+  inlet.addIntArray("foo").required(true);
+
+  EXPECT_FALSE(inlet.verify());
 }
 
 TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda)
@@ -194,7 +222,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_pass)
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
 
-  // Check for mutual exclusivity
+  // Can specify either "bar" or "baz" but not both
   arr_table.registerVerifier([](const axom::inlet::Table& foo) {
     return !(foo.contains("bar") && foo.contains("baz"));
   });
@@ -215,7 +243,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
 
-  // Check for mutual exclusivity
+  // Can specify either "bar" or "baz" but not both
   arr_table.registerVerifier([](const axom::inlet::Table& foo) {
     return !(foo.contains("bar") && foo.contains("baz"));
   });

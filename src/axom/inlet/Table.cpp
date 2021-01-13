@@ -658,17 +658,18 @@ Proxy Table::operator[](const std::string& name) const
 
 Table& Table::required(bool isRequired)
 {
+  // If it's a generic container we set the individual fields as required,
+  // and also the container table itself, as the user would expect that marking
+  // a generic container as required means that it is non-empty
   if(isGenericContainer())
   {
     forEachContainerElement(
       [isRequired](Table& table) { table.required(isRequired); });
   }
-  else
-  {
-    SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
-                    "[Inlet] Table specific Sidre Datastore Group not set");
-    setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
-  }
+
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                  "[Inlet] Table specific Sidre Datastore Group not set");
+  setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
   return *this;
 }
 
@@ -682,12 +683,10 @@ bool Table::isRequired() const
     });
     return result;
   }
-  else
-  {
-    SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
-                    "[Inlet] Table specific Sidre Datastore Group not set");
-    return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
-  }
+
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                  "[Inlet] Table specific Sidre Datastore Group not set");
+  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
 }
 
 Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
@@ -712,8 +711,7 @@ bool Table::verify() const
 {
   bool verified = true;
   // If this table was required, make sure something was defined in it
-  verified &=
-    verifyRequired(*m_sidreGroup, m_sidreGroup->getNumGroups() > 0, "Table");
+  verified &= verifyRequired(*m_sidreGroup, static_cast<bool>(*this), "Table");
   // Verify this Table if a lambda was configured
   if(m_verifier && !m_verifier(*this))
   {
