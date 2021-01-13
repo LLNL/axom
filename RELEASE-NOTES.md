@@ -49,6 +49,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
   version string.  BLT/Axom now issues a warning and disables the `style` build
   target if version is unknown or wrong.
+- Inlet: Apply lambda verifiers on generic containers to individual elements
+  for consistency
 
 
 ## [Version 0.4.0] - Release date 2020-09-22

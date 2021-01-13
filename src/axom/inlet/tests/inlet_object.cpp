@@ -194,6 +194,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_pass)
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
 
+  // Check for mutual exclusivity
   arr_table.registerVerifier([](const axom::inlet::Table& foo) {
     return !(foo.contains("bar") && foo.contains("baz"));
   });
@@ -214,6 +215,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
 
+  // Check for mutual exclusivity
   arr_table.registerVerifier([](const axom::inlet::Table& foo) {
     return !(foo.contains("bar") && foo.contains("baz"));
   });
