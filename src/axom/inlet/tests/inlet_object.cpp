@@ -185,7 +185,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_pass)
 {
   std::string testString =
     "foo = { [4] = { bar = true;}, "
-    "        [7] = { bar = false;} }";
+    "        [7] = { baz = false;} }";
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
