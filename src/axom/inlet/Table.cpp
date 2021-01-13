@@ -13,6 +13,16 @@ namespace axom
 {
 namespace inlet
 {
+
+template <typename Func>
+void Table::forEachContainerElement(Func&& func) const
+{
+  for(const auto& index : containerIndices())
+  {
+    func(getTable(detail::indexToString(index)));
+  }
+}
+
 Table& Table::addTable(const std::string& name, const std::string& description)
 {
   // Create intermediate Tables if they don't already exist
@@ -668,26 +678,53 @@ Proxy Table::operator[](const std::string& name) const
 
 Table& Table::required(bool isRequired)
 {
-  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
-                  "[Inlet] Table specific Sidre Datastore Group not set");
-  setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
+  if(isGenericContainer())
+  {
+    forEachContainerElement(
+      [isRequired](Table& table) { table.required(isRequired); });
+  }
+  else
+  {
+    SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                    "[Inlet] Table specific Sidre Datastore Group not set");
+    setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
+  }
   return *this;
 }
 
 bool Table::isRequired() const
 {
-  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
-                  "[Inlet] Table specific Sidre Datastore Group not set");
-  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
+  if(isGenericContainer())
+  {
+    bool result = false;
+    forEachContainerElement([&result](Table& table) {
+      if(table.isRequired()) result = true;
+    });
+    return result;
+  }
+  else
+  {
+    SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                    "[Inlet] Table specific Sidre Datastore Group not set");
+    return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
+  }
 }
 
 Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
 {
-  SLIC_WARNING_IF(m_verifier,
-                  fmt::format("[Inlet] Verifier for Table "
-                              "already set: {0}",
-                              m_name));
-  m_verifier = lambda;
+  if(isGenericContainer())
+  {
+    forEachContainerElement(
+      [&lambda](Table& table) { table.registerVerifier(lambda); });
+  }
+  else
+  {
+    SLIC_WARNING_IF(m_verifier,
+                    fmt::format("[Inlet] Verifier for Table "
+                                "already set: {0}",
+                                m_name));
+    m_verifier = lambda;
+  }
   return *this;
 }
 

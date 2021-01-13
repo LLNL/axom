@@ -162,6 +162,65 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty)
   EXPECT_TRUE(inlet.verify());
 }
 
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false;} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description").required();
+
+  // Ensuring that foo is the element of the container
+  arr_table.registerVerifier(
+    [](const axom::inlet::Table& foo) { return foo.contains("bar"); });
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_pass)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false;} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+
+  arr_table.registerVerifier([](const axom::inlet::Table& foo) {
+    return !(foo.contains("bar") && foo.contains("baz"));
+  });
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+
+  arr_table.registerVerifier([](const axom::inlet::Table& foo) {
+    return !(foo.contains("bar") && foo.contains("baz"));
+  });
+
+  EXPECT_FALSE(inlet.verify());
+}
+
 struct FooWithArray
 {
   std::unordered_map<int, int> arr;

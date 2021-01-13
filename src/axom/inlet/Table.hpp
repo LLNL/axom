@@ -1124,6 +1124,23 @@ private:
     return m_sidreGroup->hasView(detail::GENERIC_CONTAINER_FLAG);
   }
 
+  /*!
+   *****************************************************************************
+   * \brief Calls a function on the subtables corresponding to the elements
+   * of the container held by this table
+   * 
+   * \param [in] func The function to apply to individual container elements
+   * 
+   * \pre The calling table must be a generic container, i.e., isGenericContainer()
+   * returns true
+   * 
+   * \pre The function must accept a single argument of type Table&
+   * 
+   *****************************************************************************
+   */
+  template <typename Func>
+  void forEachContainerElement(Func&& func) const;
+
   std::string m_name;
   Reader& m_reader;
   // Inlet's Root Sidre Group
