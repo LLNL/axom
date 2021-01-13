@@ -25,9 +25,9 @@ bcs = {
       first = -s * x * x
       last = s * x * x * (8.0 - x)
       if v.dim == 2 then
-        return Vec3.new(first, last)
+        return Vector.new(first, last)
       else
-        return Vec3.new(first, 0, last)
+        return Vector.new(first, 0, last)
       end
     end
   },
