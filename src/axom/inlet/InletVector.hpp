@@ -114,7 +114,12 @@ inline bool operator==(const InletVector& u, const InletVector& v)
  */
 inline std::ostream& operator<<(std::ostream& os, const InletVector& v)
 {
-  os << v.vec;
+  os << "<";
+  for(int i = 0; i < v.dim - 1; i++)
+  {
+    os << v[i] << ",";
+  }
+  os << v[v.dim - 1] << ">";
   return os;
 }
 

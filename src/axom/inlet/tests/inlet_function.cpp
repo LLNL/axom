@@ -368,7 +368,17 @@ Ret checkedCall(const sol::protected_function& func, Args&&... args)
   return tentative_result;
 }
 
-TEST(inlet_function, lua_usertype_basic)
+/**
+ * The inlet_function_usertype suite is intended to verify the correctness of the
+ * definition of the correspondence between the FunctionType::Vector type and its
+ * lua usertype equivalent.  Instead of using the Inlet interface to define and
+ * access functions, the LuaReader's sol::state member is interrogated directly
+ * to avoid mixing concerns in these tests.
+ * 
+ * Each entry in the Lua table/metatable for this usertype has a corresponding
+ * test, i.e., one for each operator overload/constructor/member variable.
+ */
+TEST(inlet_function_usertype, lua_usertype_basic)
 {
   std::string testString = "function func(vec) return 7 end";
   LuaReader lr;
@@ -379,7 +389,7 @@ TEST(inlet_function, lua_usertype_basic)
   EXPECT_EQ(result, 7);
 }
 
-TEST(inlet_function, lua_usertype_basic_ret)
+TEST(inlet_function_usertype, lua_usertype_basic_ret)
 {
   std::string testString =
     "function func(x, y, z) return Vector.new(x, y, z) end";
@@ -391,7 +401,7 @@ TEST(inlet_function, lua_usertype_basic_ret)
   EXPECT_EQ(vec, result);
 }
 
-TEST(inlet_function, lua_usertype_basic_ret_2d)
+TEST(inlet_function_usertype, lua_usertype_basic_ret_2d)
 {
   std::string testString = "function func(x, y, z) return Vector.new(x, y) end";
   LuaReader lr;
@@ -402,7 +412,7 @@ TEST(inlet_function, lua_usertype_basic_ret_2d)
   EXPECT_EQ(vec, result);
 }
 
-TEST(inlet_function, lua_usertype_basic_ret_default)
+TEST(inlet_function_usertype, lua_usertype_basic_ret_default)
 {
   std::string testString = "function func(x, y, z) return Vector.new() end";
   LuaReader lr;
@@ -413,7 +423,7 @@ TEST(inlet_function, lua_usertype_basic_ret_default)
   EXPECT_EQ(vec, result);
 }
 
-TEST(inlet_function, lua_usertype_basic_add)
+TEST(inlet_function_usertype, lua_usertype_basic_add)
 {
   std::string testString = "function func(vec1, vec2) return vec1 + vec2 end";
   LuaReader lr;
@@ -421,11 +431,12 @@ TEST(inlet_function, lua_usertype_basic_add)
   sol::protected_function func = lr.solState()["func"];
   axom::inlet::FunctionType::Vector vec1 {1, 2, 3};
   axom::inlet::FunctionType::Vector vec2 {4, 5, 6};
+  const axom::inlet::FunctionType::Vector sum {5, 7, 9};
   auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec1, vec2);
-  EXPECT_EQ(result, vec1.vec + vec2.vec);
+  EXPECT_EQ(result, sum);
 }
 
-TEST(inlet_function, lua_usertype_basic_sub)
+TEST(inlet_function_usertype, lua_usertype_basic_sub)
 {
   std::string testString = "function func(vec1, vec2) return vec1 - vec2 end";
   LuaReader lr;
@@ -433,22 +444,24 @@ TEST(inlet_function, lua_usertype_basic_sub)
   sol::protected_function func = lr.solState()["func"];
   axom::inlet::FunctionType::Vector vec1 {1, 2, 3};
   axom::inlet::FunctionType::Vector vec2 {4, 5, 6};
+  const axom::inlet::FunctionType::Vector difference {-3, -3, -3};
   auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec1, vec2);
-  EXPECT_EQ(result, vec1.vec - vec2.vec);
+  EXPECT_EQ(result, difference);
 }
 
-TEST(inlet_function, lua_usertype_basic_negate)
+TEST(inlet_function_usertype, lua_usertype_basic_negate)
 {
   std::string testString = "function func(vec) return -vec end";
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
   axom::inlet::FunctionType::Vector vec {1, 2, 3};
+  const axom::inlet::FunctionType::Vector negated {-1, -2, -3};
   auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec);
-  EXPECT_EQ(result, -vec.vec);
+  EXPECT_EQ(result, negated);
 }
 
-TEST(inlet_function, lua_usertype_basic_scalar_mult)
+TEST(inlet_function_usertype, lua_usertype_basic_scalar_mult)
 {
   std::string testString =
     "function func1(vec, x) return vec * x end; function func2(vec, x) return "
@@ -458,13 +471,15 @@ TEST(inlet_function, lua_usertype_basic_scalar_mult)
   sol::protected_function func1 = lr.solState()["func1"];
   sol::protected_function func2 = lr.solState()["func2"];
   axom::inlet::FunctionType::Vector vec {1, 2, 3};
+  const axom::inlet::FunctionType::Vector doubled {2, 4, 6};
   auto result = checkedCall<axom::inlet::FunctionType::Vector>(func1, vec, 2.0);
-  EXPECT_EQ(result, 2.0 * vec.vec);
+  EXPECT_EQ(result, doubled);
+  const axom::inlet::FunctionType::Vector tripled {3, 6, 9};
   result = checkedCall<axom::inlet::FunctionType::Vector>(func2, vec, 3.0);
-  EXPECT_EQ(result, 3.0 * vec.vec);
+  EXPECT_EQ(result, tripled);
 }
 
-TEST(inlet_function, lua_usertype_basic_index_get)
+TEST(inlet_function_usertype, lua_usertype_basic_index_get)
 {
   std::string testString = "function func(vec, idx) return vec[idx] end";
   LuaReader lr;
@@ -480,7 +495,7 @@ TEST(inlet_function, lua_usertype_basic_index_get)
   EXPECT_FLOAT_EQ(3, result);
 }
 
-TEST(inlet_function, lua_usertype_basic_index_set)
+TEST(inlet_function_usertype, lua_usertype_basic_index_set)
 {
   std::string testString =
     "function func(idx) vec = Vector.new(1,1,1); vec[idx] = -1; return vec end";
@@ -495,40 +510,46 @@ TEST(inlet_function, lua_usertype_basic_index_set)
   EXPECT_FLOAT_EQ(-1, result[2]);
 }
 
-TEST(inlet_function, lua_usertype_basic_norm)
+TEST(inlet_function_usertype, lua_usertype_basic_norm)
 {
   std::string testString = "function func(vec) return vec:norm() end";
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
   axom::inlet::FunctionType::Vector vec {1, 2, 3};
+  const double l2_norm = std::sqrt((1 * 1) + (2 * 2) + (3 * 3));
   auto result = checkedCall<double>(func, vec);
-  EXPECT_FLOAT_EQ(vec.vec.norm(), result);
+  EXPECT_FLOAT_EQ(l2_norm, result);
 }
 
-TEST(inlet_function, lua_usertype_basic_squared_norm)
+TEST(inlet_function_usertype, lua_usertype_basic_squared_norm)
 {
   std::string testString = "function func(vec) return vec:squared_norm() end";
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
   axom::inlet::FunctionType::Vector vec {1, 2, 3};
+  const double squared_l2_norm = (1 * 1) + (2 * 2) + (3 * 3);
   auto result = checkedCall<double>(func, vec);
-  EXPECT_FLOAT_EQ(vec.vec.squared_norm(), result);
+  EXPECT_FLOAT_EQ(squared_l2_norm, result);
 }
 
-TEST(inlet_function, lua_usertype_basic_unit_vec)
+TEST(inlet_function_usertype, lua_usertype_basic_unit_vec)
 {
   std::string testString = "function func(vec) return vec:unitVector() end";
   LuaReader lr;
   lr.parseString(testString);
   sol::protected_function func = lr.solState()["func"];
   axom::inlet::FunctionType::Vector vec {1, 2, 3};
+  const double l2_norm = std::sqrt((1 * 1) + (2 * 2) + (3 * 3));
+  const axom::inlet::FunctionType::Vector unit {1 / l2_norm,
+                                                2 / l2_norm,
+                                                3 / l2_norm};
   auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec);
-  EXPECT_EQ(vec.vec.unitVector(), result);
+  EXPECT_EQ(unit, result);
 }
 
-TEST(inlet_function, lua_usertype_basic_dot)
+TEST(inlet_function_usertype, lua_usertype_basic_dot)
 {
   std::string testString =
     "function func(vec1, vec2) return vec1:dot(vec2) end";
@@ -537,11 +558,12 @@ TEST(inlet_function, lua_usertype_basic_dot)
   sol::protected_function func = lr.solState()["func"];
   axom::inlet::FunctionType::Vector vec1 {1, 2, 3};
   axom::inlet::FunctionType::Vector vec2 {4, 5, 6};
+  const double dot = (1 * 4) + (2 * 5) + (3 * 6);
   auto result = checkedCall<double>(func, vec1, vec2);
-  EXPECT_EQ(vec1.vec.dot(vec2), result);
+  EXPECT_EQ(dot, result);
 }
 
-TEST(inlet_function, lua_usertype_basic_cross)
+TEST(inlet_function_usertype, lua_usertype_basic_cross)
 {
   std::string testString =
     "function func(vec1, vec2) return vec1:cross(vec2) end";
@@ -550,11 +572,15 @@ TEST(inlet_function, lua_usertype_basic_cross)
   sol::protected_function func = lr.solState()["func"];
   axom::inlet::FunctionType::Vector vec1 {1, 2, 3};
   axom::inlet::FunctionType::Vector vec2 {4, 5, 6};
+  const double i = (2 * 6) - (3 * 5);
+  const double j = (3 * 4) - (1 * 6);
+  const double k = (1 * 5) - (2 * 4);
+  const axom::inlet::FunctionType::Vector cross {i, j, k};
   auto result = checkedCall<axom::inlet::FunctionType::Vector>(func, vec1, vec2);
-  EXPECT_EQ(axom::primal::Vector3D::cross_product(vec1.vec, vec2.vec), result);
+  EXPECT_EQ(cross, result);
 }
 
-TEST(inlet_function, lua_usertype_check_dim)
+TEST(inlet_function_usertype, lua_usertype_check_dim)
 {
   std::string testString = "function func(vec) return vec.dim end";
   LuaReader lr;
@@ -569,7 +595,7 @@ TEST(inlet_function, lua_usertype_check_dim)
   EXPECT_EQ(result, 2);
 }
 
-TEST(inlet_function, lua_usertype_named_access)
+TEST(inlet_function_usertype, lua_usertype_named_access)
 {
   std::string testString =
     "function func(vec, comp) if comp == 1 then return vec.x elseif comp == 2 "
