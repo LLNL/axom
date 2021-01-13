@@ -1,3 +1,13 @@
+
+[comment]: # (#################################################################)
+[comment]: # (Copyright 2017-2120, Lawrence Livermore National Security, LLC)
+[comment]: # (and Axom Project Developers. See the top-level COPYRIGHT file)
+[comment]: # (for details.)
+[comment]: #
+[comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
+[comment]: # (#################################################################)
+
+
 # Axom Software Release Notes
 
 Notes describing significant changes in each Axom release are documented
