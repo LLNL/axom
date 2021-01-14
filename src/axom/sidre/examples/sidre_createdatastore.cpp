@@ -705,7 +705,6 @@ int main(int argc, char** argv)
 
   int region[3375];
 
-
 #ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
 #endif

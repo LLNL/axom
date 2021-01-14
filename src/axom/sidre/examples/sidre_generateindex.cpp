@@ -187,7 +187,6 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
 #ifdef AXOM_USE_MPI
 void generate_spio_blueprint(DataStore* ds, bool dense)
 {
-
   int my_rank;
   int comm_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -203,7 +202,7 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
   // dense places domains on all ranks when true. When not true, it
   // leaves off rank zero to show that the index can still be generated
   // with some ranks empty.
-  if (dense || my_rank > 0 || comm_size == 0)
+  if(dense || my_rank > 0 || comm_size == 0)
   {
     Group* mroot = holder->createGroup(domain_name);
     Group* coords = mroot->createGroup("coordsets/coords");
@@ -236,7 +235,7 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
   #endif
 
     std::string output_name;
-    if (dense)
+    if(dense)
     {
       output_name = "bpdense";
     }
@@ -248,7 +247,10 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
 
     writer.write(ds->getRoot()->getGroup("domain_data"), 1, output_name, protocol);
 
-    writer.writeBlueprintIndexToRootFile(ds, domain_location, bp_rootfile, mesh_name);
+    writer.writeBlueprintIndexToRootFile(ds,
+                                         domain_location,
+                                         bp_rootfile,
+                                         mesh_name);
   }
 }
 #endif
@@ -268,8 +270,8 @@ int main(int argc, char** argv)
 
   DataStore* sds = create_tiny_datastore();
   DataStore* spds = create_tiny_datastore();
-  generate_spio_blueprint(sds, true);   //dense
-  generate_spio_blueprint(spds, false); //sparse
+  generate_spio_blueprint(sds, true);    //dense
+  generate_spio_blueprint(spds, false);  //sparse
   MPI_Finalize();
 #endif
 

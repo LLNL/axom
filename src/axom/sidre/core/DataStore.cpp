@@ -633,11 +633,11 @@ bool DataStore::generateBlueprintIndex(MPI_Comm comm,
                                        const std::string& index_path)
 {
   Group* domain;
-  if (domain_path == "/")
+  if(domain_path == "/")
   {
     domain = getRoot();
   }
-  else if (getRoot()->hasGroup(domain_path))
+  else if(getRoot()->hasGroup(domain_path))
   {
     domain = getRoot()->getGroup(domain_path);
   }
@@ -649,7 +649,7 @@ bool DataStore::generateBlueprintIndex(MPI_Comm comm,
   }
 
   conduit::Node mesh_node;
-  if (domain)
+  if(domain)
   {
     domain->createNativeLayout(mesh_node);
   }
