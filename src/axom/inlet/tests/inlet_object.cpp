@@ -540,6 +540,51 @@ TYPED_TEST(inlet_object, implicit_conversion_primitives)
   EXPECT_EQ(arr, expected_arr);
 }
 
+struct QuuxWithFooArray
+{
+  std::unordered_map<int, Foo> arr;
+  bool operator==(const QuuxWithFooArray& other) const
+  {
+    return arr == other.arr;
+  }
+};
+
+template <>
+struct FromInlet<QuuxWithFooArray>
+{
+  QuuxWithFooArray operator()(const axom::inlet::Table& base)
+  {
+    QuuxWithFooArray q;
+    q.arr = base["arr"].get<std::unordered_map<int, Foo>>();
+    return q;
+  }
+};
+
+TYPED_TEST(inlet_object, array_of_struct_containing_array_of_struct)
+{
+  std::string testString =
+    "foo = { [0] = { arr = { [0] = { bar = true; baz = false}, "
+    "                        [1] = { bar = false; baz = true} } }, "
+    "        [1] = { arr = { [0] = { bar = false; baz = false}, "
+    "                        [1] = { bar = true; baz = true} } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericArray("foo");
+  auto& foo_table = quux_table.addGenericArray("arr");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, QuuxWithFooArray> expected_quuxs = {
+    {0, {{{0, {true, false}}, {1, {false, true}}}}},
+    {1, {{{0, {false, false}}, {1, {true, true}}}}}};
+  std::unordered_map<int, QuuxWithFooArray> quuxs_with_arr;
+  quuxs_with_arr = inlet["foo"].get<std::unordered_map<int, QuuxWithFooArray>>();
+  EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
 { };

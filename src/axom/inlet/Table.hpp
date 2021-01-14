@@ -1064,7 +1064,7 @@ private:
    * will be converted to strings
    *****************************************************************************
    */
-  std::vector<VariantKey> containerIndices() const;
+  std::vector<VariantKey> containerIndices(bool full = false) const;
 
   /*!
    *****************************************************************************
@@ -1158,6 +1158,11 @@ private:
   std::vector<AggregateVerifiable<Table>> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
   std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
+
+  // Used when the calling Table is a generic container within a generic container
+  // Need to delegate schema-defining calls (add*) to the elements of the nested
+  // container
+  std::vector<std::reference_wrapper<Table>> m_nested_aggregates;
 };
 
 }  // namespace inlet
