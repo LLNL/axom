@@ -679,7 +679,10 @@ bool Table::isRequired() const
   {
     bool result = false;
     forEachContainerElement([&result](Table& table) {
-      if(table.isRequired()) result = true;
+      if(table.isRequired())
+      {
+        result = true;
+      }
     });
     return result;
   }
