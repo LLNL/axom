@@ -775,6 +775,23 @@ TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)
   EXPECT_EQ(arr, expected_arr);
 }
 
+TYPED_TEST(inlet_object, generic_arrays_as_std_vector)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; baz = false}, "
+    "        [1] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+  std::vector<Foo> expected_foos = {{true, false}, {false, true}};
+  auto foos = inlet["foo"].get<std::vector<Foo>>();
+  EXPECT_EQ(foos, expected_foos);
+}
+
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
 { };
@@ -976,6 +993,74 @@ TEST(inlet_object_lua, array_from_bracket)
 
   doubleMap = inlet["luaArrays/arr4"].get<std::unordered_map<int, double>>();
   EXPECT_EQ(doubleMap, expectedDoubles);
+}
+
+TEST(inlet_object_lua, primitive_arrays_as_std_vector_discontiguous)
+{
+  std::string testString = " arr = { [0] = 4, [8] = 6, [12] = 10}";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  // Define schema
+  inlet.addIntArray("arr");
+
+  // Attempt both construction and assignment
+  std::vector<int> expected_arr {4, 6, 10};
+  std::vector<int> arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+  arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+}
+
+TEST(inlet_object_lua, generic_arrays_as_std_vector_discontiguous)
+{
+  std::string testString =
+    "foo = { [6] = { bar = true; baz = false}, "
+    "        [11] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+  std::vector<Foo> expected_foos = {{true, false}, {false, true}};
+  auto foos = inlet["foo"].get<std::vector<Foo>>();
+  EXPECT_EQ(foos, expected_foos);
+}
+
+TEST(inlet_object_lua, primitive_arrays_as_std_vector_implicit_idx)
+{
+  std::string testString = " arr = { 4, 6, 10}";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  // Define schema
+  inlet.addIntArray("arr");
+
+  // Attempt both construction and assignment
+  std::vector<int> expected_arr {4, 6, 10};
+  std::vector<int> arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+  arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+}
+
+TEST(inlet_object_lua, generic_arrays_as_std_vector_implicit_idx)
+{
+  std::string testString =
+    "foo = { { bar = true; baz = false}, "
+    "        { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+  std::vector<Foo> expected_foos = {{true, false}, {false, true}};
+  auto foos = inlet["foo"].get<std::vector<Foo>>();
+  EXPECT_EQ(foos, expected_foos);
 }
 
 TEST(inlet_object_lua_dict, dict_of_struct_containing_array)
