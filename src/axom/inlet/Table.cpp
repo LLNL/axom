@@ -13,6 +13,15 @@ namespace axom
 {
 namespace inlet
 {
+template <typename Func>
+void Table::forEachContainerElement(Func&& func) const
+{
+  for(const auto& index : containerIndices())
+  {
+    func(getTable(detail::indexToString(index)));
+  }
+}
+
 Table& Table::addTable(const std::string& name, const std::string& description)
 {
   // Create intermediate Tables if they don't already exist
@@ -163,10 +172,6 @@ Table& Table::addGenericContainer(const std::string& name,
     detail::addIndicesGroupToTable(table, indices, description);
     table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
                                          static_cast<int8>(1));
-  }
-  else
-  {
-    SLIC_WARNING(fmt::format("[Inlet] Container {0} not found.", fullName));
   }
   return table;
 }
@@ -437,11 +442,8 @@ struct PrimitiveArrayHelper<Key, bool>
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
   {
     std::unordered_map<Key, bool> map;
-    if(!reader.getBoolMap(lookupPath, map))
-    {
-      SLIC_WARNING(
-        fmt::format("[Inlet] Bool container {0} not found.", lookupPath));
-    }
+    // Failure to retrieve a map is not necessarily an error
+    reader.getBoolMap(lookupPath, map);
     registerContainer(table, map);
   }
 };
@@ -452,11 +454,7 @@ struct PrimitiveArrayHelper<Key, int>
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
   {
     std::unordered_map<Key, int> map;
-    if(!reader.getIntMap(lookupPath, map))
-    {
-      SLIC_WARNING(
-        fmt::format("[Inlet] Int container {0} not found.", lookupPath));
-    }
+    reader.getIntMap(lookupPath, map);
     registerContainer(table, map);
   }
 };
@@ -467,11 +465,7 @@ struct PrimitiveArrayHelper<Key, double>
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
   {
     std::unordered_map<Key, double> map;
-    if(!reader.getDoubleMap(lookupPath, map))
-    {
-      SLIC_WARNING(
-        fmt::format("[Inlet] Double container {0} not found.", lookupPath));
-    }
+    reader.getDoubleMap(lookupPath, map);
     registerContainer(table, map);
   }
 };
@@ -482,11 +476,7 @@ struct PrimitiveArrayHelper<Key, std::string>
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
   {
     std::unordered_map<Key, std::string> map;
-    if(!reader.getStringMap(lookupPath, map))
-    {
-      SLIC_WARNING(
-        fmt::format("[Inlet] String container {0} not found.", lookupPath));
-    }
+    reader.getStringMap(lookupPath, map);
     registerContainer(table, map);
   }
 };
@@ -575,10 +565,6 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     if(m_reader.getIndices(lookupPath, indices))
     {
       detail::addIndicesGroupToTable(table, indices, description);
-    }
-    else
-    {
-      SLIC_WARNING(fmt::format("[Inlet] Container {0} not found.", fullName));
     }
     return table;
   }
@@ -672,6 +658,15 @@ Proxy Table::operator[](const std::string& name) const
 
 Table& Table::required(bool isRequired)
 {
+  // If it's a generic container we set the individual fields as required,
+  // and also the container table itself, as the user would expect that marking
+  // a generic container as required means that it is non-empty
+  if(isGenericContainer())
+  {
+    forEachContainerElement(
+      [isRequired](Table& table) { table.required(isRequired); });
+  }
+
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Table specific Sidre Datastore Group not set");
   setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
@@ -680,6 +675,18 @@ Table& Table::required(bool isRequired)
 
 bool Table::isRequired() const
 {
+  if(isGenericContainer())
+  {
+    bool result = false;
+    forEachContainerElement([&result](Table& table) {
+      if(table.isRequired())
+      {
+        result = true;
+      }
+    });
+    return result;
+  }
+
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Table specific Sidre Datastore Group not set");
   return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
@@ -687,11 +694,19 @@ bool Table::isRequired() const
 
 Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
 {
-  SLIC_WARNING_IF(m_verifier,
-                  fmt::format("[Inlet] Verifier for Table "
-                              "already set: {0}",
-                              m_name));
-  m_verifier = lambda;
+  if(isGenericContainer())
+  {
+    forEachContainerElement(
+      [&lambda](Table& table) { table.registerVerifier(lambda); });
+  }
+  else
+  {
+    SLIC_WARNING_IF(m_verifier,
+                    fmt::format("[Inlet] Verifier for Table "
+                                "already set: {0}",
+                                m_name));
+    m_verifier = lambda;
+  }
   return *this;
 }
 
@@ -699,8 +714,7 @@ bool Table::verify() const
 {
   bool verified = true;
   // If this table was required, make sure something was defined in it
-  verified &=
-    verifyRequired(*m_sidreGroup, m_sidreGroup->getNumGroups() > 0, "Table");
+  verified &= verifyRequired(*m_sidreGroup, static_cast<bool>(*this), "Table");
   // Verify this Table if a lambda was configured
   if(m_verifier && !m_verifier(*this))
   {

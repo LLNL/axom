@@ -202,8 +202,10 @@ std::string LuaTranslator::convertJSON(const std::string& luaString)
     {
       result += indent + '"' + token + '"' + ": ";
       // Curly brace if it's a string-keyed table (not integer-keyed) and not implicitly indexed
-      const char open_bracket =
-        (!isdigit(tokens[i + 4].front()) && (tokens[i + 3] != "{")) ? '{' : '[';
+      const char open_bracket = (i + 4 >= tokens.size()) ||
+          (!isdigit(tokens[i + 4].front()) && (tokens[i + 3] != "{"))
+        ? '{'
+        : '[';
       delim_stack.push(open_bracket);
       result += open_bracket;
       result += '\n';
