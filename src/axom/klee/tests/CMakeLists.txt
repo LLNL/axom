@@ -11,6 +11,7 @@
 #
 
 set(gtest_klee_tests
+        klee_config.cpp
         klee_geometry.cpp
         klee_geometry_operators.cpp
         klee_geometry_operators_io.cpp
