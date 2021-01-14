@@ -44,6 +44,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Input file functions can now be of arbitrary signature subject to type and arity
   restrictions
 - Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
+- Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
