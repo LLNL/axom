@@ -618,6 +618,10 @@ bool DataStore::generateBlueprintIndex(const std::string& domain_path,
 
     success = true;
   }
+  else
+  {
+    SLIC_DEBUG("Blueprint verify failed. Node info: " << info.to_string());
+  }
 
   return success;
 }
@@ -664,6 +668,10 @@ bool DataStore::generateBlueprintIndex(MPI_Comm comm,
     bpindex->importConduitTree(index);
 
     success = true;
+  }
+  else
+  {
+    SLIC_DEBUG("Blueprint verify failed. Node info: " << info.to_string());
   }
 
   return success;

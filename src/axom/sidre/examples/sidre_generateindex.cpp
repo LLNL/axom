@@ -6,7 +6,7 @@
 /*! \file sidre_generateindex.cpp
  *  \brief This example code is a basic demonstration of the generation
  *  of a Sidre DataStore containing a mesh conforming to the Mesh Blueprint,
- *  including the automatical generation of a Blueprint index and saving it
+ *  including the automatic generation of a Blueprint index and saving it
  *  to a file.
  */
 
@@ -260,6 +260,8 @@ int main(int argc, char** argv)
   AXOM_DEBUG_VAR(argv);
 #ifdef AXOM_USE_MPI
   int num_ranks = 1;
+
+  slic::SimpleLogger logger;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);

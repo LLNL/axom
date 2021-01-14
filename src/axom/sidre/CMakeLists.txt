@@ -106,7 +106,6 @@ endif()
 set(sidre_depends
     core
     conduit::conduit
-    conduit::conduit_mpi
     slic)
 
 blt_list_append(TO sidre_depends ELEMENTS hdf5 IF HDF5_FOUND)
@@ -118,6 +117,7 @@ endif()
 # Include additional dependencides for spio when MPI is available
 if(ENABLE_MPI)
     list(APPEND sidre_depends fmt mpi)
+    blt_list_append(TO sidre_depends ELEMENTS conduit::conduit_mpi IF ENABLE_MPI)
     blt_list_append(TO sidre_depends ELEMENTS scr IF SCR_FOUND)
 endif()
 
