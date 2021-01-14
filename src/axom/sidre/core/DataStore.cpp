@@ -22,6 +22,10 @@
 #include "Group.hpp"
 #include "Attribute.hpp"
 
+#ifdef AXOM_USE_MPI
+  #include "conduit_blueprint_mpi.hpp"
+#endif
+
 namespace axom
 {
 namespace sidre
@@ -614,9 +618,65 @@ bool DataStore::generateBlueprintIndex(const std::string& domain_path,
 
     success = true;
   }
+  else
+  {
+    SLIC_DEBUG("Blueprint verify failed. Node info: " << info.to_string());
+  }
 
   return success;
 }
+
+#ifdef AXOM_USE_MPI
+bool DataStore::generateBlueprintIndex(MPI_Comm comm,
+                                       const std::string& domain_path,
+                                       const std::string& mesh_name,
+                                       const std::string& index_path)
+{
+  Group* domain;
+  if(domain_path == "/")
+  {
+    domain = getRoot();
+  }
+  else if(getRoot()->hasGroup(domain_path))
+  {
+    domain = getRoot()->getGroup(domain_path);
+  }
+  else
+  {
+    //There could be ranks with no domains--the MPI blueprint
+    //functions can handle this.
+    domain = nullptr;
+  }
+
+  conduit::Node mesh_node;
+  if(domain)
+  {
+    domain->createNativeLayout(mesh_node);
+  }
+
+  Group* bpindex = getRoot()->hasGroup(index_path)
+    ? getRoot()->getGroup(index_path)
+    : getRoot()->createGroup(index_path);
+
+  bool success = false;
+  conduit::Node info;
+  if(conduit::blueprint::mpi::verify("mesh", mesh_node, info, comm))
+  {
+    conduit::Node index;
+    conduit::blueprint::mpi::mesh::generate_index(mesh_node, mesh_name, index, comm);
+
+    bpindex->importConduitTree(index);
+
+    success = true;
+  }
+  else
+  {
+    SLIC_DEBUG("Blueprint verify failed. Node info: " << info.to_string());
+  }
+
+  return success;
+}
+#endif
 
 /*
  *************************************************************************
