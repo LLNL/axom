@@ -1,3 +1,13 @@
+
+[comment]: # (#################################################################)
+[comment]: # (Copyright 2017-2021, Lawrence Livermore National Security, LLC)
+[comment]: # (and Axom Project Developers. See the top-level COPYRIGHT file)
+[comment]: # (for details.)
+[comment]: #
+[comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
+[comment]: # (#################################################################)
+
+
 # Axom Software Release Notes
 
 Notes describing significant changes in each Axom release are documented
@@ -43,6 +53,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   more than just unit tests.
 - Inlet: Input file functions can now be of arbitrary signature subject to type and arity
   restrictions
+- Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
@@ -229,7 +240,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated Raja TPL to v0.9.0
 - Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
-  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  auto-detected based on whether `_OPENMP` is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
   Axom in parts of the code where OpenMP is enabled.
 

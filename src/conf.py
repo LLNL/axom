@@ -86,7 +86,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Axom'
-copyright = u'2017-2020, Lawrence Livermore National Security, LLNS'
+copyright = u'2017-2021, Lawrence Livermore National Security, LLNS'
 
 # -- Option for numbering figures/tables/etc.-----------------------------------
 # Note: numfig requires Sphinx (1.3+)
