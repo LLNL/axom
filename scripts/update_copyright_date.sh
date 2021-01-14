@@ -30,16 +30,6 @@
 # steps here.
 #
 #=============================================================================
-#
-# Note: The following files do not fit this pattern and require hand editing
-# (or integration into this script):
-#
-# - Top-level files: LICENSE, RELEASE, README.md
-#
-# - sphinx configuration files with filenames of the form  '*/docs/*/conf.py'
-#   They can be listed using: 'git ls-files | grep conf.py'
-#
-#=============================================================================
 
 #=============================================================================
 # First find all the files we want to modify
@@ -62,19 +52,19 @@ sed "s/Copyright (c) 2017-2020/Copyright (c) 2017-2021/" LICENSE.sed.bak > LICEN
 
 echo RELEASE
 cp RELEASE RELEASE.sed.bak
-sed "s/2017-20/2017-21/" RELEASE.sed.bak > RELEASE
+sed "s/2017-2020/2017-2020/" RELEASE.sed.bak > RELEASE
 
 echo README
 cp README.md README.md.sed.bak
-sed "s/2017-20/2017-21/" README.md.sed.bak > README.md
+sed "s/2017-2020/2017-2021/" README.md.sed.bak > README.md
 
 echo RELEASE-NOTES
 cp RELEASE-NOTES.md RELEASE-NOTES.md.sed.bak
-sed "s/2017-20/2017-21/" RELEASE-NOTES.md.sed.bak > RELEASE-NOTES.md
+sed "s/2017-2020/2017-2021/" RELEASE-NOTES.md.sed.bak > RELEASE-NOTES.md
 
 echo src/conf.py
 cp src/conf.py src/conf.py.sed.bak
-sed "s/2017-20/2017-21/" src/conf.py.sed.bak > src/conf.py
+sed "s/2017-2020/2017-2021/" src/conf.py.sed.bak > src/conf.py
 
 #=============================================================================
 # Remove temporary files created in the process
