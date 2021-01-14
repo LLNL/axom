@@ -291,6 +291,10 @@ bool ConduitReader::getIndices(const std::string& id, std::vector<int>& indices)
 {
   indices.clear();
   const auto node = detail::traverseNode(m_root, id);
+  if(node.dtype().is_empty())
+  {
+    return false;
+  }
   int num_elements = node.number_of_children();
   // Primitive arrays do not count as lists
   if(!node.dtype().is_list())
@@ -309,6 +313,10 @@ bool ConduitReader::getIndices(const std::string& id,
 {
   indices.clear();
   const auto node = detail::traverseNode(m_root, id);
+  if(node.dtype().is_empty())
+  {
+    return false;
+  }
   if(!node.dtype().is_object())
   {
     // If it's not an object, try integer indexing

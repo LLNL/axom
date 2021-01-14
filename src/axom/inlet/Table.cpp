@@ -139,13 +139,15 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
     // The base name reflects the structure of the actual data
     // and is used for the reader call
     auto fullPath = appendPrefix(baseName, stringLabel);
-    fullPath = appendPrefix(fullPath, name);
     // If the index is nontrivial, we only care about the last segment of it
+    // But nontrivial indices are "absolute" paths so we use it as the fullPath
     const auto last_index_pos = stringLabel.find_last_of("/");
     if(last_index_pos != std::string::npos)
     {
+      fullPath = stringLabel;
       stringLabel = stringLabel.substr(last_index_pos + 1);
     }
+    fullPath = appendPrefix(fullPath, name);
     // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
     result.push_back({stringLabel, fullPath});
   }
@@ -185,27 +187,38 @@ Table& Table::addGenericContainer(const std::string& name,
     auto& table =
       addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
     std::vector<Key> indices;
-    // Adding an array of primitive field to an array of structs
-    // std::vector<std::reference_wrapper<Table>> tables;
-    // Iterate over each element and forward the call to addPrimitiveArray
-    for(const auto& indexPath : containerIndicesWithPaths(name))
+    if(!m_nested_aggregates.empty())
     {
-      table.m_nested_aggregates.push_back(
-        getTable(indexPath.first).addGenericContainer<Key>(name, description));
-      Table& curr_table = table.m_nested_aggregates.back();
-      m_reader.getIndices(indexPath.second, indices);
-      std::vector<std::string> real_indices;
-      for(auto index : indices)
+      for(Table& sub_table : m_nested_aggregates)
       {
-        SLIC_INFO("Found index is : " << index);
-        std::string real_index =
-          fmt::format("{0}/{1}/{2}", indexPath.first, name, index);
-        SLIC_INFO("Real index is : " << real_index);
-        real_indices.push_back(real_index);
+        table.m_nested_aggregates.push_back(
+          sub_table.addGenericContainer<Key>(name, description));
       }
-      detail::addIndicesGroupToTable(curr_table, real_indices, description);
-      curr_table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
-                                                static_cast<int8>(1));
+    }
+    else
+    {
+      // Adding an array of primitive field to an array of structs
+      // std::vector<std::reference_wrapper<Table>> tables;
+      // Iterate over each element and forward the call to addPrimitiveArray
+      for(const auto& indexPath : containerIndicesWithPaths(name))
+      {
+        table.m_nested_aggregates.push_back(
+          getTable(indexPath.first).addGenericContainer<Key>(name, description));
+        Table& curr_table = table.m_nested_aggregates.back();
+        m_reader.getIndices(indexPath.second, indices);
+        std::vector<std::string> real_indices;
+        for(auto index : indices)
+        {
+          SLIC_INFO("Found index is : " << index);
+          std::string real_index =
+            fmt::format("{0}/{1}", indexPath.second, index);
+          SLIC_INFO("Real index is : " << real_index);
+          real_indices.push_back(real_index);
+        }
+        detail::addIndicesGroupToTable(curr_table, real_indices, description);
+        curr_table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
+                                                  static_cast<int8>(1));
+      }
     }
 
     table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,

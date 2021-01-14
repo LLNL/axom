@@ -560,7 +560,7 @@ struct FromInlet<QuuxWithFooArray>
   }
 };
 
-TYPED_TEST(inlet_object, array_of_struct_containing_array_of_struct)
+TYPED_TEST(inlet_object, nested_array_of_struct)
 {
   std::string testString =
     "foo = { [0] = { arr = { [0] = { bar = true; baz = false}, "
@@ -583,6 +583,90 @@ TYPED_TEST(inlet_object, array_of_struct_containing_array_of_struct)
   std::unordered_map<int, QuuxWithFooArray> quuxs_with_arr;
   quuxs_with_arr = inlet["foo"].get<std::unordered_map<int, QuuxWithFooArray>>();
   EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
+TYPED_TEST(inlet_object, nested_dict_of_array_of_struct)
+{
+  std::string testString =
+    "foo = { ['first'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                        [1] = { bar = false; baz = true} } }, "
+    "        ['second'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                        [1] = { bar = true; baz = true} } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericDictionary("foo");
+  auto& foo_table = quux_table.addGenericArray("arr");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<std::string, QuuxWithFooArray> expected_quuxs = {
+    {"first", {{{0, {true, false}}, {1, {false, true}}}}},
+    {"second", {{{0, {false, false}}, {1, {true, true}}}}}};
+  std::unordered_map<std::string, QuuxWithFooArray> quuxs_with_arr;
+  quuxs_with_arr =
+    inlet["foo"].get<std::unordered_map<std::string, QuuxWithFooArray>>();
+  EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
+struct CorgeWithQuuxDictionary
+{
+  std::unordered_map<std::string, QuuxWithFooArray> dict;
+  bool operator==(const CorgeWithQuuxDictionary& other) const
+  {
+    return dict == other.dict;
+  }
+};
+
+template <>
+struct FromInlet<CorgeWithQuuxDictionary>
+{
+  CorgeWithQuuxDictionary operator()(const axom::inlet::Table& base)
+  {
+    CorgeWithQuuxDictionary c;
+    c.dict =
+      base["dict"].get<std::unordered_map<std::string, QuuxWithFooArray>>();
+    return c;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_dict_of_array_of_struct)
+{
+  // clang-format off
+  std::string testString =
+    "corge = { [0] = { dict = { ['first'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                                                 [1] = { bar = false; baz = true} } }, "
+    "                          ['second'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                                                 [1] = { bar = true; baz = true} } } } }, "
+    "          [1] = { dict = { ['third'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                                                 [1] = { bar = false; baz = true} } }, "
+    "                          ['fourth'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                                                 [1] = { bar = true; baz = true} } } } } }";
+  // clang-format on
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& corge_table = inlet.addGenericArray("corge");
+  auto& quux_table = corge_table.addGenericDictionary("dict");
+  auto& foo_table = quux_table.addGenericArray("arr");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, CorgeWithQuuxDictionary> expected_corges = {
+    {0,
+     {{{"first", {{{0, {true, false}}, {1, {false, true}}}}},
+       {"second", {{{0, {false, false}}, {1, {true, true}}}}}}}},
+    {1,
+     {{{"third", {{{0, {true, false}}, {1, {false, true}}}}},
+       {"fourth", {{{0, {false, false}}, {1, {true, true}}}}}}}}};
+  std::unordered_map<int, CorgeWithQuuxDictionary> corges_with_dict;
+  corges_with_dict =
+    inlet["corge"].get<std::unordered_map<int, CorgeWithQuuxDictionary>>();
+  EXPECT_EQ(corges_with_dict, expected_corges);
 }
 
 template <typename InletReader>
