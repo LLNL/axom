@@ -92,6 +92,7 @@
  * Compiler defines for Axom components
  */
 #cmakedefine AXOM_USE_INLET
+#cmakedefine AXOM_USE_KLEE
 #cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_LUMBERJACK
 #cmakedefine AXOM_USE_PRIMAL
