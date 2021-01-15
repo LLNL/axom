@@ -8,11 +8,13 @@
 
 """
  file: build_src.py
+
  description: 
-  Builds Axom with the host-configs for the current machine.
+  Builds all Axom with the host-configs for the current machine.
+
 """
 
-from common_build_functions import *
+from llnl_lc_build_tools import *
 
 from optparse import OptionParser
 
@@ -25,28 +27,21 @@ def parse_args():
                       dest="directory",
                       default="",
                       help="Directory of source to be built (Defaults to current)")
+    # Whether to archive results
+    parser.add_option("-a", "--archive",
+                      dest="archive",
+                      default="",
+                      help="Archive build results under given name (Defaults to off)")
     # Whether to build a specific hostconfig
     parser.add_option("--host-config",
                       dest="hostconfig",
                       default="",
                       help="Build a specific hostconfig (Tries multiple known paths to locate given file)")
-    # Extra cmake options to pass to config build
-    parser.add_option("--extra-cmake-options",
-                      dest="extra_cmake_options",
-                      default="",
-                      help="Extra cmake options to add to the cmake configure line")
-
     parser.add_option("--automation-mode",
                       action="store_true",
                       dest="automation",
                       default=False,
-                      help="Toggle automation mode which uses env $HOST_CONFIG, then to $SYS_TYPE/$COMPILER available")                 
-
-    parser.add_option("-v", "--verbose",
-                      action="store_true",
-                      dest="verbose",
-                      default=False,
-                      help="Output logs to screen as well as to files")
+                      help="Toggle automation mode which uses env $HOST_CONFIG, then to $SYS_TYPE/$COMPILER available")
     ###############
     # parse args
     ###############
@@ -54,12 +49,6 @@ def parse_args():
     # we want a dict b/c the values could 
     # be passed without using optparse
     opts = vars(opts)
-
-    # Ensure correctness
-    if opts["automation"] and opts["hostconfig"] != "":
-        print("[ERROR: automation and host-config modes are mutually exclusive]")
-        sys.exit(1)
-
     return opts
 
 
@@ -70,17 +59,22 @@ def main():
     if os.environ.get("UBERENV_PREFIX") != None:
         repo_dir = os.environ["UBERENV_PREFIX"]
         if not os.path.isdir(repo_dir):
-            print("[ERROR: Given environment variable 'UBERENV_PREFIX' is not a valid directory]")
-            print("[    'UBERENV_PREFIX' = %s]" % repo_dir)
+            print "[ERROR: Given environment variable 'UBERENV_PREFIX' is not a valid directory]"
+            print "[    'UBERENV_PREFIX' = %s]" % repo_dir
             return 1
     if opts["directory"] != "":
         repo_dir = opts["directory"]
         if not os.path.isdir(repo_dir):
-            print("[ERROR: Given command line variable '--directory' is not a valid directory]")
-            print("[    '--directory' = %s]" % repo_dir)
+            print "[ERROR: Given command line variable '--directory' is not a valid directory]"
+            print "[    '--directory' = %s]" % repo_dir
             return 1
     else:
         repo_dir = get_repo_dir()
+
+    if opts["archive"] != "":
+        job_name = opts["archive"]
+    else:
+        job_name = get_username() + "/" + os.path.basename(__file__)
 
     try:
         original_wd = os.getcwd()
@@ -90,13 +84,13 @@ def main():
         # Default to build all SYS_TYPE's host-configs in host-config/
         build_all = not (opts["automation"] or opts["hostconfig"] != "")
         if build_all:
-            res = build_and_test_host_configs(repo_dir, timestamp, False, opts["verbose"], opts["extra_cmake_options"])
+            res = build_and_test_host_configs(repo_dir, timestamp, False)
         # Otherwise try to build a specific host-config
         else:
             # Command-line arg has highest priority
             if opts["hostconfig"] != "":
                 hostconfig = opts["hostconfig"]
-            
+
             # Otherwise try to build it
             elif opts["automation"]:
                 if not "SYS_TYPE" in os.environ:
@@ -138,8 +132,11 @@ def main():
 
             test_root = get_build_and_test_root(repo_dir, timestamp)
             os.mkdir(test_root)
-            res = build_and_test_host_config(test_root, hostconfig_path, opts["verbose"], opts["extra_cmake_options"])
+            res = build_and_test_host_config(test_root, hostconfig_path)
 
+        # Archive logs
+        if opts["archive"] != "":
+            archive_src_logs(repo_dir, job_name, timestamp)
     finally:
         os.chdir(original_wd)
 
@@ -147,4 +144,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-

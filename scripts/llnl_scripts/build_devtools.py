@@ -8,14 +8,17 @@
 
 """
  file: build_devtools.py
+
  description: 
   Builds all Axom Devtools
+
 """
 
-from common_build_functions import *
+from llnl_lc_build_tools import *
 
 from optparse import OptionParser
 
+import getpass
 import os
 
 
@@ -27,6 +30,11 @@ def parse_args():
                       dest="directory",
                       default="",
                       help="Location to build all TPL's, timestamp directory will be created (Defaults to shared location)")
+    # Whether to archive results
+    parser.add_option("-a", "--archive",
+                      dest="archive",
+                      default="",
+                      help="Archive build results under given name (Defaults to off)")
 
     ###############
     # parse args
@@ -47,16 +55,24 @@ def main():
         if not os.path.exists(build_dir):
             os.makedirs(build_dir)
     else:
+        if getpass.getuser() != "atk":
+            print "ERROR: Only shared user 'atk' can install into shared directory. Use -d option."
+            return 1
         build_dir = get_shared_devtool_dir()
     build_dir = os.path.abspath(build_dir)
 
     repo_dir = get_repo_dir()
 
+    if opts["archive"] != "":
+        job_name = opts["archive"]
+    else:
+        job_name = get_username() + "/" + os.path.basename(__file__)
+
     try:
         original_wd = os.getcwd()
         os.chdir(repo_dir)
 
-        res = build_devtools(build_dir, get_timestamp())
+        res = build_devtools(build_dir, job_name, get_timestamp())
     finally:
         os.chdir(original_wd)
 
