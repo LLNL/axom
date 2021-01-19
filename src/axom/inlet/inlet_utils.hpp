@@ -149,6 +149,16 @@ inline bool isContainerGroup(const std::string& name)
   return axom::utilities::string::endsWith(name, detail::CONTAINER_GROUP_NAME);
 }
 
+/*!
+*****************************************************************************
+* \brief Marks the sidre::Group as a "generic container" by adding a
+* corresponding flag to the group
+*
+* \param [inout] target The group to tag
+*****************************************************************************
+*/
+void markAsGenericContainer(axom::sidre::Group& target);
+
 namespace cpp11_compat
 {
 /*!

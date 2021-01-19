@@ -81,6 +81,8 @@ Table& Table::addTable(const std::string& name, const std::string& description)
 std::vector<VariantKey> Table::containerIndices(bool full) const
 {
   std::vector<VariantKey> indices;
+  // Not having indices is not necessarily an error, as the container
+  // could exist but just be empty
   if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
   {
     auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
@@ -114,12 +116,6 @@ std::vector<VariantKey> Table::containerIndices(bool full) const
         indices.push_back(view->getData<int>());
       }
     }
-  }
-  else
-  {
-    SLIC_ERROR(
-      fmt::format("[Inlet] Table '{0}' does not contain an array or dict",
-                  m_name));
   }
   return indices;
 }
@@ -187,6 +183,7 @@ Table& Table::addGenericContainer(const std::string& name,
     auto& table =
       addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
     std::vector<Key> indices;
+    // Iterate over each element and forward the call to addPrimitiveArray
     if(!m_nested_aggregates.empty())
     {
       for(Table& sub_table : m_nested_aggregates)
@@ -197,9 +194,6 @@ Table& Table::addGenericContainer(const std::string& name,
     }
     else
     {
-      // Adding an array of primitive field to an array of structs
-      // std::vector<std::reference_wrapper<Table>> tables;
-      // Iterate over each element and forward the call to addPrimitiveArray
       for(const auto& indexPath : containerIndicesWithPaths(name))
       {
         table.m_nested_aggregates.push_back(
@@ -216,13 +210,11 @@ Table& Table::addGenericContainer(const std::string& name,
           real_indices.push_back(real_index);
         }
         detail::addIndicesGroupToTable(curr_table, real_indices, description);
-        curr_table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
-                                                  static_cast<int8>(1));
+        markAsGenericContainer(*curr_table.m_sidreGroup);
       }
     }
 
-    table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
-                                         static_cast<int8>(1));
+    markAsGenericContainer(*table.m_sidreGroup);
     return table;
   }
   {
@@ -233,9 +225,8 @@ Table& Table::addGenericContainer(const std::string& name,
     if(m_reader.getIndices(fullName, indices))
     {
       detail::addIndicesGroupToTable(table, indices, description);
-      table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
-                                           static_cast<int8>(1));
     }
+    markAsGenericContainer(*table.m_sidreGroup);
     return table;
   }
 }
