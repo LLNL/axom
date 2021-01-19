@@ -54,6 +54,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Input file functions can now be of arbitrary signature subject to type and arity
   restrictions
 - Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
+- Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
+- Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
