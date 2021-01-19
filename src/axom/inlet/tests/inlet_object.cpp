@@ -714,6 +714,58 @@ TYPED_TEST(inlet_object, nested_dict_of_array_of_struct_with_array)
   EXPECT_EQ(quuxs_with_arr, expected_quuxs);
 }
 
+/*
+ * FIXME: This is something that should be supported, but this would
+ * require a refactoring of addTable (or of addGenericArray) such that
+ * one can distinguish between adding a Table to the "child" Tables (indidivual 
+ * elements of the array) versus the Table that represents the entire array
+ * 
+
+struct QuuxWithSingleFoo
+{
+  Foo foo;
+  bool operator==(const QuuxWithSingleFoo& other) const
+  {
+    return foo == other.foo;
+  }
+};
+
+template <>
+struct FromInlet<QuuxWithSingleFoo>
+{
+  QuuxWithSingleFoo operator()(const axom::inlet::Table& base)
+  {
+    QuuxWithSingleFoo q;
+    q.foo = base["foo"].get<Foo>();
+    return q;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_nested_structs)
+{
+  std::string testString =
+    "quux = { [0] = { foo = { bar = true; baz = false } }, "
+    "         [1] = { foo = { bar = false; baz = true } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericArray("quux");
+  auto& foo_table = quux_table.addTable("foo");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, QuuxWithSingleFoo> expected_quuxs = {
+    {0, {true, false}},
+    {1, {false, true}}};
+  std::unordered_map<int, QuuxWithSingleFoo> quuxs_with_foo;
+  quuxs_with_foo =
+    inlet["quux"].get<std::unordered_map<int, QuuxWithSingleFoo>>();
+  EXPECT_EQ(quuxs_with_foo, expected_quuxs);
+}
+*/
+
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
 { };
