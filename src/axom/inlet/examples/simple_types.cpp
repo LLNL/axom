@@ -7,7 +7,7 @@
 #include <string>
 
 #include "axom/inlet.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 
 #include "CLI11/CLI11.hpp"
 
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
   // This is a generic basic SLIC logger
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   // Handle command line arguments
   CLI::App app {"Basic example of Axom's Inlet component with simple types"};

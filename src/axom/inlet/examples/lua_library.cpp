@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 #include "axom/inlet.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 
 #include "CLI11/CLI11.hpp"
 
@@ -44,8 +44,8 @@ bool load_library()
 
   // Define and store the values in the input file
   myinlet.addFunction("read_str",
-                      axom::inlet::FunctionType::Double,  // Return type
-                      {axom::inlet::FunctionType::Vec3D},  // Argument types (unused)
+                      axom::inlet::FunctionTag::Double,  // Return type
+                      {axom::inlet::FunctionTag::Vec3D},  // Argument types (unused)
                       "The function reads a double from a file");
 
   // call the function with an unimportant number
@@ -66,7 +66,7 @@ int main()
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
   // This is a generic basic SLIC logger
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   // Write test file
   std::ofstream myfile;
