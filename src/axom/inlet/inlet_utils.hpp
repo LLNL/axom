@@ -118,11 +118,12 @@ std::string removeBeforeDelimiter(const std::string& path,
 * \brief This function performs a checked conversion of a string to an integer
 *
 * \param [in] number The string to be converted
+* \param [out] result The integer to store the result in, if successful
 *
-* \return A tuple containing the conversion result, and the status of the conversion
+* \return Whether the conversion was successful
 *****************************************************************************
 */
-std::pair<int, bool> checkedConvertToInt(const std::string& number);
+bool checkedConvertToInt(const std::string& number, int& result);
 
 namespace detail
 {

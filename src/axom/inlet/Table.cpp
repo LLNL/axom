@@ -94,21 +94,21 @@ std::vector<VariantKey> Table::containerIndices(bool trimAbsolute) const
       if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
       {
         indices.push_back(view->getString());
-        std::string stringIdx = indices.back();
+        std::string string_idx = view->getString();
         // If the index is full/absolute, we only care about the last segment of it
-        const auto last_index_pos = stringIdx.find_last_of("/");
+        const auto last_index_pos = string_idx.find_last_of("/");
         if(last_index_pos != std::string::npos && trimAbsolute)
         {
           // The basename might be an integer, so check and convert accordingly
-          stringIdx = stringIdx.substr(last_index_pos + 1);
-          auto as_int = checkedConvertToInt(stringIdx);
-          if(as_int.second)
+          string_idx = string_idx.substr(last_index_pos + 1);
+          int idx_as_int;
+          if(checkedConvertToInt(string_idx, idx_as_int))
           {
-            indices.back() = as_int.first;
+            indices.back() = idx_as_int;
           }
           else
           {
-            indices.back() = stringIdx;
+            indices.back() = string_idx;
           }
         }
       }

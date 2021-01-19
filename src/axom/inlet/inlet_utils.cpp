@@ -119,14 +119,14 @@ std::string removeBeforeDelimiter(const std::string& path, const char delim)
   return path.substr(pos + 1);
 }
 
-std::pair<int, bool> checkedConvertToInt(const std::string& number)
+bool checkedConvertToInt(const std::string& number, int& result)
 {
   // Use the C versions to avoid the exceptions
   // thrown by std::stoi on conversion failure
   // FIXME: Switch to std::from_chars when C++17 is available
   char* ptr;
-  auto result = strtol(number.c_str(), &ptr, 10);
-  return {result, *ptr == 0};
+  result = strtol(number.c_str(), &ptr, 10);
+  return *ptr == 0;
 }
 
 void markAsGenericContainer(axom::sidre::Group& target)
