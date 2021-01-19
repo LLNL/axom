@@ -1062,9 +1062,12 @@ private:
    * \brief This is an internal utility intended to be used with arrays/dicts of 
    * user-defined types that returns the indices as strings - integer indices
    * will be converted to strings
+   * 
+   * \param [in] trimAbsolute Whether to only return the "basename" if the path
+   * is absolute, e.g., an absolute path foo/0/bar will be trimmed to "bar"
    *****************************************************************************
    */
-  std::vector<VariantKey> containerIndices(bool full = false) const;
+  std::vector<VariantKey> containerIndices(bool trimAbsolute = true) const;
 
   /*!
    *****************************************************************************

@@ -78,7 +78,7 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   return *currTable;
 }
 
-std::vector<VariantKey> Table::containerIndices(bool full) const
+std::vector<VariantKey> Table::containerIndices(bool trimAbsolute) const
 {
   std::vector<VariantKey> indices;
   // Not having indices is not necessarily an error, as the container
@@ -95,10 +95,11 @@ std::vector<VariantKey> Table::containerIndices(bool full) const
       {
         indices.push_back(view->getString());
         std::string stringIdx = indices.back();
-        // If the index is nontrivial, we only care about the last segment of it
+        // If the index is full/absolute, we only care about the last segment of it
         const auto last_index_pos = stringIdx.find_last_of("/");
-        if(last_index_pos != std::string::npos && !full)
+        if(last_index_pos != std::string::npos && trimAbsolute)
         {
+          // The basename might be an integer, so check and convert accordingly
           stringIdx = stringIdx.substr(last_index_pos + 1);
           auto as_int = checkedConvertToInt(stringIdx);
           if(as_int.second)
@@ -135,8 +136,8 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
     // The base name reflects the structure of the actual data
     // and is used for the reader call
     auto fullPath = appendPrefix(baseName, stringLabel);
-    // If the index is nontrivial, we only care about the last segment of it
-    // But nontrivial indices are "absolute" paths so we use it as the fullPath
+    // If the index is absolute, we only care about the last segment of it
+    // But if it's an absolute path then it gets used as the fullPath
     const auto last_index_pos = stringLabel.find_last_of("/");
     if(last_index_pos != std::string::npos)
     {
@@ -144,7 +145,7 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
       stringLabel = stringLabel.substr(last_index_pos + 1);
     }
     fullPath = appendPrefix(fullPath, name);
-    // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+    // e.g. fullPath could be foo/1/bar for field "bar" at index 1 of array "foo"
     result.push_back({stringLabel, fullPath});
   }
   return result;
@@ -610,12 +611,22 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
   {
     // Adding an array of primitive field to an array of structs
     std::vector<std::reference_wrapper<Verifiable>> tables;
-    // Iterate over each element and forward the call to addPrimitiveArray
-    for(const auto& indexPath : containerIndicesWithPaths(name))
+    if(!m_nested_aggregates.empty())
     {
-      tables.push_back(
-        getTable(indexPath.first)
-          .addPrimitiveArray<T>(name, description, isDict, indexPath.second));
+      for(Table& table : m_nested_aggregates)
+      {
+        tables.push_back(table.addPrimitiveArray<T>(name, description, isDict));
+      }
+    }
+    else
+    {
+      // Iterate over each element and forward the call to addPrimitiveArray
+      for(const auto& indexPath : containerIndicesWithPaths(name))
+      {
+        tables.push_back(
+          getTable(indexPath.first)
+            .addPrimitiveArray<T>(name, description, isDict, indexPath.second));
+      }
     }
 
     m_aggregate_tables.emplace_back(std::move(tables));

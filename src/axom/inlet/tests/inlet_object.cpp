@@ -669,6 +669,51 @@ TYPED_TEST(inlet_object, nested_array_of_dict_of_array_of_struct)
   EXPECT_EQ(corges_with_dict, expected_corges);
 }
 
+struct QuuxWithFooWithArray
+{
+  std::unordered_map<int, FooWithArray> arr;
+  bool operator==(const QuuxWithFooWithArray& other) const
+  {
+    return arr == other.arr;
+  }
+};
+
+template <>
+struct FromInlet<QuuxWithFooWithArray>
+{
+  QuuxWithFooWithArray operator()(const axom::inlet::Table& base)
+  {
+    QuuxWithFooWithArray q;
+    q.arr = base["outer_arr"].get<std::unordered_map<int, FooWithArray>>();
+    return q;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_dict_of_array_of_struct_with_array)
+{
+  std::string testString =
+    "foo = { ['first'] = { outer_arr = {  [0] = { arr = { [0] = 1 } }, "
+    "                                     [1] = { arr = { [0] = 2 } } } }, "
+    "        ['second'] = { outer_arr = { [0] = { arr = { [0] = 3 } }, "
+    "                                     [1] = { arr = { [0] = 4 } } } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericDictionary("foo");
+  auto& foo_table = quux_table.addGenericArray("outer_arr");
+
+  foo_table.addIntArray("arr", "arr's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<std::string, QuuxWithFooWithArray> expected_quuxs = {
+    {"first", {{{0, {{{0, 1}}}}, {1, {{{0, 2}}}}}}},
+    {"second", {{{0, {{{0, 3}}}}, {1, {{{0, 4}}}}}}}};
+  std::unordered_map<std::string, QuuxWithFooWithArray> quuxs_with_arr;
+  quuxs_with_arr =
+    inlet["foo"].get<std::unordered_map<std::string, QuuxWithFooWithArray>>();
+  EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
 { };
