@@ -563,14 +563,14 @@ struct FromInlet<QuuxWithFooArray>
 TYPED_TEST(inlet_object, nested_array_of_struct)
 {
   std::string testString =
-    "foo = { [0] = { arr = { [0] = { bar = true; baz = false}, "
-    "                        [1] = { bar = false; baz = true} } }, "
-    "        [1] = { arr = { [0] = { bar = false; baz = false}, "
-    "                        [1] = { bar = true; baz = true} } } }";
+    "quux = { [0] = { arr = { [0] = { bar = true; baz = false}, "
+    "                         [1] = { bar = false; baz = true} } }, "
+    "         [1] = { arr = { [0] = { bar = false; baz = false}, "
+    "                         [1] = { bar = true; baz = true} } } }";
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& quux_table = inlet.addGenericArray("foo");
+  auto& quux_table = inlet.addGenericArray("quux");
   auto& foo_table = quux_table.addGenericArray("arr");
 
   foo_table.addBool("bar", "bar's description");
@@ -581,21 +581,21 @@ TYPED_TEST(inlet_object, nested_array_of_struct)
     {0, {{{0, {true, false}}, {1, {false, true}}}}},
     {1, {{{0, {false, false}}, {1, {true, true}}}}}};
   std::unordered_map<int, QuuxWithFooArray> quuxs_with_arr;
-  quuxs_with_arr = inlet["foo"].get<std::unordered_map<int, QuuxWithFooArray>>();
+  quuxs_with_arr = inlet["quux"].get<std::unordered_map<int, QuuxWithFooArray>>();
   EXPECT_EQ(quuxs_with_arr, expected_quuxs);
 }
 
 TYPED_TEST(inlet_object, nested_dict_of_array_of_struct)
 {
   std::string testString =
-    "foo = { ['first'] = { arr = { [0] = { bar = true; baz = false}, "
-    "                        [1] = { bar = false; baz = true} } }, "
-    "        ['second'] = { arr = { [0] = { bar = false; baz = false}, "
-    "                        [1] = { bar = true; baz = true} } } }";
+    "quux  = { ['first'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                                [1] = { bar = false; baz = true} } }, "
+    "         ['second'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                                [1] = { bar = true; baz = true} } } }";
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& quux_table = inlet.addGenericDictionary("foo");
+  auto& quux_table = inlet.addGenericDictionary("quux");
   auto& foo_table = quux_table.addGenericArray("arr");
 
   foo_table.addBool("bar", "bar's description");
@@ -607,7 +607,7 @@ TYPED_TEST(inlet_object, nested_dict_of_array_of_struct)
     {"second", {{{0, {false, false}}, {1, {true, true}}}}}};
   std::unordered_map<std::string, QuuxWithFooArray> quuxs_with_arr;
   quuxs_with_arr =
-    inlet["foo"].get<std::unordered_map<std::string, QuuxWithFooArray>>();
+    inlet["quux"].get<std::unordered_map<std::string, QuuxWithFooArray>>();
   EXPECT_EQ(quuxs_with_arr, expected_quuxs);
 }
 
@@ -692,14 +692,14 @@ struct FromInlet<QuuxWithFooWithArray>
 TYPED_TEST(inlet_object, nested_dict_of_array_of_struct_with_array)
 {
   std::string testString =
-    "foo = { ['first'] = { outer_arr = {  [0] = { arr = { [0] = 1 } }, "
-    "                                     [1] = { arr = { [0] = 2 } } } }, "
-    "        ['second'] = { outer_arr = { [0] = { arr = { [0] = 3 } }, "
-    "                                     [1] = { arr = { [0] = 4 } } } } }";
+    "quux = { ['first'] = { outer_arr = {  [0] = { arr = { [0] = 1 } }, "
+    "                                      [1] = { arr = { [0] = 2 } } } }, "
+    "         ['second'] = { outer_arr = { [0] = { arr = { [0] = 3 } }, "
+    "                                      [1] = { arr = { [0] = 4 } } } } }";
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& quux_table = inlet.addGenericDictionary("foo");
+  auto& quux_table = inlet.addGenericDictionary("quux");
   auto& foo_table = quux_table.addGenericArray("outer_arr");
 
   foo_table.addIntArray("arr", "arr's description");
@@ -710,7 +710,7 @@ TYPED_TEST(inlet_object, nested_dict_of_array_of_struct_with_array)
     {"second", {{{0, {{{0, 3}}}}, {1, {{{0, 4}}}}}}}};
   std::unordered_map<std::string, QuuxWithFooWithArray> quuxs_with_arr;
   quuxs_with_arr =
-    inlet["foo"].get<std::unordered_map<std::string, QuuxWithFooWithArray>>();
+    inlet["quux"].get<std::unordered_map<std::string, QuuxWithFooWithArray>>();
   EXPECT_EQ(quuxs_with_arr, expected_quuxs);
 }
 

@@ -130,7 +130,7 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
   // contains the rest of the path
   const auto pos = m_name.find(detail::CONTAINER_GROUP_NAME);
   std::string baseName = m_name.substr(0, pos - 1);
-  for(const auto& indexLabel : containerIndices(true))
+  for(const auto& indexLabel : containerIndices(false))
   {
     auto stringLabel = detail::indexToString(indexLabel);
     // The base name reflects the structure of the actual data
@@ -183,7 +183,6 @@ Table& Table::addGenericContainer(const std::string& name,
   {
     auto& table =
       addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
-    std::vector<Key> indices;
     // Iterate over each element and forward the call to addPrimitiveArray
     if(!m_nested_aggregates.empty())
     {
@@ -200,17 +199,18 @@ Table& Table::addGenericContainer(const std::string& name,
         table.m_nested_aggregates.push_back(
           getTable(indexPath.first).addGenericContainer<Key>(name, description));
         Table& curr_table = table.m_nested_aggregates.back();
+        std::vector<Key> indices;
         m_reader.getIndices(indexPath.second, indices);
-        std::vector<std::string> real_indices;
-        for(auto index : indices)
-        {
-          SLIC_INFO("Found index is : " << index);
-          std::string real_index =
-            fmt::format("{0}/{1}", indexPath.second, index);
-          SLIC_INFO("Real index is : " << real_index);
-          real_indices.push_back(real_index);
-        }
-        detail::addIndicesGroupToTable(curr_table, real_indices, description);
+        std::vector<std::string> absolute_indices(indices.size());
+        // Build the absolute indices by prepending the path for the current child table
+        std::transform(indices.begin(),
+                       indices.end(),
+                       absolute_indices.begin(),
+                       [&indexPath](const Key& index) {
+                         return appendPrefix(indexPath.second,
+                                             detail::indexToString(index));
+                       });
+        detail::addIndicesGroupToTable(curr_table, absolute_indices, description);
         markAsGenericContainer(*curr_table.m_sidreGroup);
       }
     }
