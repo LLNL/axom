@@ -127,6 +127,84 @@ TEST(sidre_datacollection, dc_reload)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
+TEST(sidre_datacollection, dc_qf_reload)
+{
+  //Set up a small mesh and a couple of grid function on that mesh
+  mfem::Mesh *mesh = new mfem::Mesh(2, 3, mfem::Element::QUADRILATERAL, 0, 2.0, 3.0);
+  mfem::FiniteElementCollection *fec = new mfem::LinearFECollection;
+  mfem::FiniteElementSpace *fespace = new mfem::FiniteElementSpace(mesh, fec);
+
+  const int intOrder = 3;
+  const int qs_vdim = 1;
+  const int qv_vdim = 2;
+
+  mfem::QuadratureSpace *qspace = new mfem::QuadratureSpace(mesh, intOrder);
+  // We want Sidre to allocate the data for us and to own the internal data.
+  // If we don't do the below then the data collection doesn't save off the data
+  // structure.
+  mfem::QuadratureFunction *qs = new mfem::QuadratureFunction(qspace, nullptr, qs_vdim);
+  mfem::QuadratureFunction *qv = new mfem::QuadratureFunction(qspace, nullptr, qv_vdim);
+
+  int Nq = qs->Size();
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc_writer(COLL_NAME, mesh, owns_mesh);
+
+  // sdc_writer owns the quadrature function fields and the underlying data
+  sdc_writer.RegisterQField("qs", qs);
+  sdc_writer.RegisterQField("qv", qv);
+
+  // The data needs to be instantiated before we save it off
+  for (int i = 0; i < Nq; ++i)
+  {
+      (*qs)(i) = double(i);
+      (*qv)(2*i+0) = double(i);
+      (*qv)(2*i+1) = double(Nq - i - 1);
+  }
+
+  sdc_writer.SetPrefixPath("/tmp/dc_qf_test");
+  sdc_writer.SetCycle(5);
+  sdc_writer.SetTime(8.0);
+  sdc_writer.Save();
+
+  MFEMSidreDataCollection sdc_reader(COLL_NAME);
+  sdc_reader.SetPrefixPath("/tmp/dc_qf_test");
+  sdc_reader.Load(sdc_writer.GetCycle());
+
+  const int order_qs = sdc_reader.GetQFieldOrder("qs");
+  const int vdim_qs = sdc_reader.GetQFieldVDim("qs");
+  double* data_qs = sdc_reader.GetQFieldData("qs");
+
+  const int order_qv = sdc_reader.GetQFieldOrder("qv");
+  const int vdim_qv = sdc_reader.GetQFieldVDim("qv");
+
+  // order_qs should also equal order_qv in this trivial case
+  EXPECT_TRUE(order_qs == intOrder);
+  EXPECT_TRUE(order_qv == intOrder);
+
+  EXPECT_TRUE(vdim_qs == qs_vdim);
+  EXPECT_TRUE(vdim_qv == qv_vdim);
+
+  mfem::QuadratureSpace qspace_new(mesh, order_qs);
+
+  // Just showing different ways in which you could restore a QuadratureFunction
+  mfem::QuadratureFunction qs_new(&qspace_new, data_qs, vdim_qs);
+  mfem::QuadratureFunction qv_new(&qspace_new, sdc_reader.GetQFieldData("qv"), sdc_reader.GetQFieldVDim("qv"));
+
+  qs_new -= *qs;
+  qv_new -= *qv;
+
+  EXPECT_TRUE(qs_new.Norml2() < 1e-15);
+  EXPECT_TRUE(qv_new.Norml2() < 1e-15);
+
+  delete fespace;
+  delete qs; delete qv; delete qspace;
+  delete mesh;
+
+}
+
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 TEST(sidre_datacollection, dc_alloc_owning_parmesh)
 {

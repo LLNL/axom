@@ -1111,7 +1111,7 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
 }
 
 // private method
-void SidreDataCollection::
+void MFEMSidreDataCollection::
 addQuadratureFunction(const std::string &field_name, mfem::QuadratureFunction *qf,
                      const std::string &buffer_name,
                      axom::sidre::IndexType offset)
@@ -1172,7 +1172,7 @@ addQuadratureFunction(const std::string &field_name, mfem::QuadratureFunction *q
 
 // private method
 // Should only be called on mpi rank 0 ( or if serial problem ).
-void SidreDataCollection::
+void MFEMSidreDataCollection::
 RegisterQFieldInBPIndex(const std::string& field_name, mfem::QuadratureFunction *qf)
 {
    sidre::Group *bp_field_grp = m_bp_grp->getGroup("qfields/" + field_name);
@@ -1192,7 +1192,7 @@ RegisterQFieldInBPIndex(const std::string& field_name, mfem::QuadratureFunction 
                                         number_of_components);
 }
 
-void SidreDataCollection::RegisterQField(const std::string &field_name,
+void MFEMSidreDataCollection::RegisterQField(const std::string &field_name,
                                         mfem::QuadratureFunction *qf,
                                         const std::string &buffer_name,
                                         axom::sidre::IndexType offset)
@@ -1264,7 +1264,7 @@ void SidreDataCollection::RegisterQField(const std::string &field_name,
 
 // private method
 // Should only be called on mpi rank 0 ( or if serial problem ).
-void SidreDataCollection::
+void MFEMSidreDataCollection::
 DeregisterQFieldInBPIndex(const std::string& field_name)
 {
    sidre::Group * fields_grp = m_bp_index_grp->getGroup("qfields/");
@@ -1277,7 +1277,7 @@ DeregisterQFieldInBPIndex(const std::string& field_name)
    fields_grp->destroyGroup(field_name);
 }
 
-void SidreDataCollection::DeregisterQField(const std::string& field_name)
+void MFEMSidreDataCollection::DeregisterQField(const std::string& field_name)
 {
    // Deregister field_name from field_map.
    mfem::DataCollection::DeregisterQField(field_name);
@@ -1303,7 +1303,7 @@ void SidreDataCollection::DeregisterQField(const std::string& field_name)
    FreeNamedBuffer(field_name);
 }
 
-int SidreDataCollection::GetQFieldOrder(const std::string &field_name)
+int MFEMSidreDataCollection::GetQFieldOrder(const std::string &field_name)
 {
    sidre::Group* grp = m_bp_grp->getGroup("qfields/" + field_name);
    SLIC_ASSERT_MSG(grp != NULL, 
@@ -1314,7 +1314,7 @@ int SidreDataCollection::GetQFieldOrder(const std::string &field_name)
    return v->getScalar();
 }
 
-int SidreDataCollection::GetQFieldVDim(const std::string &field_name)
+int MFEMSidreDataCollection::GetQFieldVDim(const std::string &field_name)
 {
    sidre::Group* grp = m_bp_grp->getGroup("qfields/" + field_name);
    MFEM_ASSERT(grp != NULL, "qfield " << field_name << " does not exist");
@@ -1324,7 +1324,7 @@ int SidreDataCollection::GetQFieldVDim(const std::string &field_name)
    return v->getScalar();
 }
 
-double* SidreDataCollection::GetQFieldData(const std::string &field_name)
+double* MFEMSidreDataCollection::GetQFieldData(const std::string &field_name)
 {
    sidre::Group* grp = m_bp_grp->getGroup("qfields/" + field_name);
    SLIC_ASSERT_MSG(grp != NULL, 
