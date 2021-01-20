@@ -30,79 +30,7 @@
 
 // MFEM includes - needed to set up simulation
 #include "mfem.hpp"
-
-// Abstraction for an object that may or may not retain ownership of an object
-// via an owning- or non-owning-pointer - this allows for owning and non-owning
-// versions of an object to be accessed uniformly.
-template <typename T>
-class MaybeOwner
-{
-public:
-  // Sets up an owning pointer via a moved unique_ptr
-  MaybeOwner& operator=(std::unique_ptr<T>&& ptr)
-  {
-    m_non_owning = nullptr;
-    m_owning = std::move(ptr);
-    return *this;
-  }
-
-  // Sets up an owning pointer via a moved object
-  MaybeOwner& operator=(T&& obj)
-  {
-    m_non_owning = nullptr;
-    m_owning.reset(new T(std::move(obj)));  // Calls move constructor
-    return *this;
-  }
-
-  // Sets up a non-owning pointer via a reference
-  MaybeOwner& operator=(T& obj)
-  {
-    m_owning.reset();
-    m_non_owning = &obj;
-    return *this;
-  }
-
-  // Sets up a non-owning pointer
-  MaybeOwner& operator=(T* ptr)
-  {
-    SLIC_ERROR_IF(!ptr, "Attempted to set a MaybeOwner to a nullptr");
-    m_owning.reset();
-    m_non_owning = ptr;
-    return *this;
-  }
-
-  T& get()
-  {
-    checkState();
-    return (m_owning) ? *m_owning : *m_non_owning;
-  }
-
-  const T& get() const
-  {
-    checkState();
-    return (m_owning) ? *m_owning : *m_non_owning;
-  }
-
-  // Provided for convienence for MFEM function calls which sometimes
-  // require pointers and sometimes require references
-  // Typically not advisable but helps with readability in this example
-  operator T&() { return get(); }
-  operator const T&() const { return get(); }
-
-  operator T*() { return &get(); }
-  operator const T*() const { return &get(); }
-
-private:
-  std::unique_ptr<T> m_owning;  // "nullptr" - value-initialized ptr member - by default
-  T* m_non_owning = nullptr;
-  void checkState()
-  {
-    SLIC_ERROR_IF(m_owning && m_non_owning,
-                  "Invalid MaybeOwner: Both pointers exist");
-    SLIC_ERROR_IF(!m_owning && !m_non_owning,
-                  "Invalid MaybeOwner: Neither pointer exists");
-  }
-};
+#include "CLI11/CLI11.hpp"
 
 // Stores the state of the simulation - a mesh, fields, and associated objects
 class SimulationState
@@ -132,6 +60,17 @@ public:
     }
   }
 
+  ~SimulationState()
+  {
+    if(owns_data)
+    {
+      delete mesh;
+      delete fecoll;
+      delete fespace;
+      delete soln_field;
+    }
+  }
+
   // A simulated "step" of the simulation
   void step(double dt)
   {
@@ -145,7 +84,7 @@ public:
 
     // Calculate the next iteration of the solution field...
     // For simplicity, every element in the field is set to the current time
-    soln_field.get() = t;
+    *soln_field = t;
   }
 
 private:
@@ -153,57 +92,52 @@ private:
   void setupNewSim()
   {
     SLIC_INFO_IF(!m_rank, "Starting a new simulation");
-    // Everything gets created on the heap so its lifetime can be managed by
-    // the MaybeOwners - needs to persist after this function
+    // Everything here is managed by the SimulationState object
+    owns_data = true;
 
-    // Built a 2D mesh with 100 square elements
-    std::unique_ptr<mfem::Mesh> tmp_mesh(
-      new mfem::Mesh(10, 10, mfem::Element::QUADRILATERAL));
+    // Build a 2D mesh with 100 square elements
+    mesh = new mfem::Mesh(10, 10, mfem::Element::QUADRILATERAL);
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    tmp_mesh.reset(new mfem::ParMesh(MPI_COMM_WORLD, *tmp_mesh));
+    mfem::Mesh* tmp_mesh = mesh;
+    mesh = new mfem::ParMesh(MPI_COMM_WORLD, *tmp_mesh);
+    delete tmp_mesh;
 #endif
-    mesh = std::move(tmp_mesh);
     // Set up the DataCollection with the newly created mesh
     datacoll.SetMesh(mesh);
 
     // Set up the FiniteElementSpace - needed for the grid functions
     // Initialize with H1 elements of order 1
-    fecoll = std::unique_ptr<mfem::H1_FECollection>(
-      new mfem::H1_FECollection(/*order=*/1, mesh.get().Dimension()));
+    fecoll = new mfem::H1_FECollection(/*order=*/1, mesh->Dimension());
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    auto par_mesh = dynamic_cast<mfem::ParMesh*>(&mesh.get());
-    fespace = std::unique_ptr<mfem::ParFiniteElementSpace>(
-      new mfem::ParFiniteElementSpace(par_mesh, fecoll));
+    auto par_mesh = dynamic_cast<mfem::ParMesh*>(mesh);
+    fespace = new mfem::ParFiniteElementSpace(par_mesh, fecoll);
 #else
-    fespace = std::unique_ptr<mfem::FiniteElementSpace>(
-      new mfem::FiniteElementSpace(mesh, fecoll));
+    fespace = new mfem::FiniteElementSpace(mesh, fecoll);
 #endif
 
     // Initialize the solution field
-    std::unique_ptr<mfem::GridFunction> tmp_soln_field;
 
     // Set the data to nullptr so the datacollection will initialize it with
     // its own managed data (needed for a restart)
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    auto par_fespace = dynamic_cast<mfem::ParFiniteElementSpace*>(&fespace.get());
-    soln_field = std::unique_ptr<mfem::ParGridFunction>(
-      new mfem::ParGridFunction(par_fespace, static_cast<double*>(nullptr)));
+    auto par_fespace = dynamic_cast<mfem::ParFiniteElementSpace*>(fespace);
+    soln_field =
+      new mfem::ParGridFunction(par_fespace, static_cast<double*>(nullptr));
 #else
-    soln_field = std::unique_ptr<mfem::GridFunction>(
-      new mfem::GridFunction(fespace, nullptr));
+    soln_field = new mfem::GridFunction(fespace, nullptr);
 #endif
     datacoll.RegisterField("solution", soln_field);
 
     // Intialize to zero as our "initial conditions"
-    soln_field.get() = 0.0;
+    *soln_field = 0.0;
 
     // Set t = 0 state info
     datacoll.SetCycle(0);   // Iteration counter
     datacoll.SetTime(0.0);  // Simulation time
   }
 
-  // Sets up the MaybeOwners with non-owning pointers
+  // Sets up the state with non-owning pointers
   void reloadSim()
   {
     SLIC_INFO_IF(!m_rank,
@@ -212,16 +146,17 @@ private:
     // The Mesh, GridFunction, etc, objects already exist and can be accessed
     mesh = datacoll.GetMesh();
     soln_field = datacoll.GetField("solution");
-    fespace = soln_field.get().FESpace();
-    fecoll = fespace.get().FEColl();
+    fespace = soln_field->FESpace();
+    fecoll = fespace->FEColl();
   }
 
   // FEM-related objects needed as part of a simulation
   // In a real simulation these would be exposed via accessors
-  MaybeOwner<mfem::Mesh> mesh;
-  MaybeOwner<const mfem::FiniteElementCollection> fecoll;
-  MaybeOwner<mfem::FiniteElementSpace> fespace;
-  MaybeOwner<mfem::GridFunction> soln_field;
+  mfem::Mesh* mesh;
+  const mfem::FiniteElementCollection* fecoll;
+  mfem::FiniteElementSpace* fespace;
+  mfem::GridFunction* soln_field;
+  bool owns_data = false;
 
   // A reference to the datacollection so it can be updated with time/cycle
   // information on each time step
@@ -248,11 +183,10 @@ int main(int argc, char* argv[])
 #endif
 
   // Command-line argument to load in a specific cycle - optional
+  CLI::App app {"Example of Axom's MFEMSidreDataCollection for restarts"};
   int cycle_to_load = -1;
-  if(argc > 1)
-  {
-    cycle_to_load = std::stoi(argv[1]);
-  }
+  app.add_option("--cycle", cycle_to_load, "Optional simulation cycle to load");
+  CLI11_PARSE(app, argc, argv);
 
   // Initialize the simulation data structures
   SimulationState sim_state(dc, cycle_to_load);

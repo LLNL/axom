@@ -14,7 +14,7 @@
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp" /* for UnitTestLogger */
+#include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
@@ -2066,13 +2066,13 @@ TEST(mint_connectivity_array_DeathTest, IndirectionSidreCapacity)
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
-using axom::slic::UnitTestLogger;
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
-  UnitTestLogger logger;
+  SimpleLogger logger;
   result = RUN_ALL_TESTS();
   return result;
 }

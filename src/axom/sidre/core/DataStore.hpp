@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -392,6 +392,22 @@ public:
                               const std::string& mesh_name,
                               const std::string& index_path,
                               int num_domains);
+
+#ifdef AXOM_USE_MPI
+  /*!
+   * \brief Generate a Conduit Blueprint index from a distributed mesh
+   *        stored in this Datastore
+   *
+   * \param comm            communicator for the mesh distribution
+   * \param domain_path     path where domains are located
+   * \param mesh_name       name for the mesh to be described
+   * \param index_path      path where index written
+   */
+  bool generateBlueprintIndex(MPI_Comm comm,
+                              const std::string& domain_path,
+                              const std::string& mesh_name,
+                              const std::string& index_path);
+#endif
 
   //----------------
 

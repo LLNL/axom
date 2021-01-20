@@ -1,3 +1,13 @@
+
+[comment]: # (#################################################################)
+[comment]: # (Copyright 2017-2021, Lawrence Livermore National Security, LLC)
+[comment]: # (and Axom Project Developers. See the top-level COPYRIGHT file)
+[comment]: # (for details.)
+[comment]: #
+[comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
+[comment]: # (#################################################################)
+
+
 # Axom Software Release Notes
 
 Notes describing significant changes in each Axom release are documented
@@ -24,6 +34,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added `cpp14` variant to Spack package to allow `Inlet::LuaReader` to be used easier.
 - Inlet: Added support for string-keyed associative arrays (dictionaries)
 - Inlet: Added support for defining and retrieving functions from the input file
+- Inlet: Added support for YAML and JSON input files
+- Inlet: Added support for mixed-key (integer and string) associative arrays
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -39,11 +51,20 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
   datastore is `Load` ed in
 - Unified core and SPIO unit tests into fewer executables to limit size of build directory
+- Renamed `axom::slic::UnitTestLogger` to `axom::slic:SimpleLogger` because it's used in
+  more than just unit tests.
+- Inlet: Input file functions can now be of arbitrary signature subject to type and arity
+  restrictions
+- Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
+- Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
+- Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
   version string.  BLT/Axom now issues a warning and disables the `style` build
   target if version is unknown or wrong.
+- Inlet: Apply lambda verifiers on generic containers to individual elements
+  for consistency
 
 
 ## [Version 0.4.0] - Release date 2020-09-22
@@ -225,7 +246,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated Raja TPL to v0.9.0
 - Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
-  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  auto-detected based on whether `_OPENMP` is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
   Axom in parts of the code where OpenMP is enabled.
 

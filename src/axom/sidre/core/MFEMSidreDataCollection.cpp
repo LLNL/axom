@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -530,16 +530,16 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
     int num_gtris = pmesh->GroupNTriangles(gi);
     int num_gquads = pmesh->GroupNQuadrilaterals(gi);
 
-    bool has_shared_elements = num_gvertices > 0;
+    int num_shared_elements = num_gvertices;
     if(dim >= 2)
     {
-      has_shared_elements |= num_gedges > 0;
+      num_shared_elements += num_gedges;
       if(dim >= 3)
       {
-        has_shared_elements |= num_gtris > 0;
-        has_shared_elements |= num_gquads > 0;
+        num_shared_elements += num_gtris + num_gquads;
       }
     }
+    const bool has_shared_elements = num_shared_elements > 0;
 
     if(has_shared_elements && (num_gneighbors > 1))
     {
@@ -654,10 +654,9 @@ bool MFEMSidreDataCollection::verifyMeshBlueprint()
 
   conduit::Node verify_info;
   bool result = conduit::blueprint::mesh::verify(mesh_node, verify_info);
-  // conduit::Node::to_string only available in latest version
   SLIC_WARNING_IF(!result,
-                  "MFEMSidreDataCollection blueprint verification failed: "
-                  /*<< verify_info.to_string()*/);
+                  "MFEMSidreDataCollection blueprint verification failed:\n"
+                    << verify_info.to_string());
   return result;
 }
 

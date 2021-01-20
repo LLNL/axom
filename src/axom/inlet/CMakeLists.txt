@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,10 +22,14 @@ set(inlet_headers
     Reader.hpp
     Table.hpp 
     Proxy.hpp
+    VariantKey.hpp
     Verifiable.hpp
     VerifiableScalar.hpp
     DocWriter.hpp
-    SphinxDocWriter.hpp 
+    SphinxDocWriter.hpp
+    ConduitReader.hpp
+    YAMLReader.hpp
+    JSONReader.hpp
     inlet_utils.hpp )
 
 set(inlet_sources
@@ -34,7 +38,9 @@ set(inlet_sources
     Inlet.cpp
     Table.cpp
     Proxy.cpp
-    SphinxDocWriter.cpp 
+    VariantKey.cpp
+    SphinxDocWriter.cpp
+    ConduitReader.cpp
     inlet_utils.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF SOL_FOUND)

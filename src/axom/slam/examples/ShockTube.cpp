@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -632,7 +632,7 @@ void dumpData(ShockTubeMesh const& mesh)
 int main(void)
 {
   using namespace slamShocktube;
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   // We should be able to parallelize pretty easily by
   // adding an MPI_Init() here, modifying the setup slightly,

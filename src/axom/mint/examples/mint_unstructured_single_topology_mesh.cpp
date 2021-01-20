@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,12 +16,12 @@
 #include "axom/slic.hpp"
 
 using namespace axom;
-using axom::slic::UnitTestLogger;
+using axom::slic::SimpleLogger;
 
 //------------------------------------------------------------------------------
 int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
 {
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   constexpr int DIMENSION = 2;
   constexpr axom::IndexType X_EXTENT = 11;
