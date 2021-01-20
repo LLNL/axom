@@ -654,10 +654,9 @@ bool MFEMSidreDataCollection::verifyMeshBlueprint()
 
   conduit::Node verify_info;
   bool result = conduit::blueprint::mesh::verify(mesh_node, verify_info);
-  // conduit::Node::to_string only available in latest version
   SLIC_WARNING_IF(!result,
-                  "MFEMSidreDataCollection blueprint verification failed: "
-                  /*<< verify_info.to_string()*/);
+                  "MFEMSidreDataCollection blueprint verification failed:\n"
+                    << verify_info.to_string());
   return result;
 }
 
