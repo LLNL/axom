@@ -540,6 +540,232 @@ TYPED_TEST(inlet_object, implicit_conversion_primitives)
   EXPECT_EQ(arr, expected_arr);
 }
 
+struct QuuxWithFooArray
+{
+  std::unordered_map<int, Foo> arr;
+  bool operator==(const QuuxWithFooArray& other) const
+  {
+    return arr == other.arr;
+  }
+};
+
+template <>
+struct FromInlet<QuuxWithFooArray>
+{
+  QuuxWithFooArray operator()(const axom::inlet::Table& base)
+  {
+    QuuxWithFooArray q;
+    q.arr = base["arr"].get<std::unordered_map<int, Foo>>();
+    return q;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_struct)
+{
+  std::string testString =
+    "quux = { [0] = { arr = { [0] = { bar = true; baz = false}, "
+    "                         [1] = { bar = false; baz = true} } }, "
+    "         [1] = { arr = { [0] = { bar = false; baz = false}, "
+    "                         [1] = { bar = true; baz = true} } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericArray("quux");
+  auto& foo_table = quux_table.addGenericArray("arr");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, QuuxWithFooArray> expected_quuxs = {
+    {0, {{{0, {true, false}}, {1, {false, true}}}}},
+    {1, {{{0, {false, false}}, {1, {true, true}}}}}};
+  std::unordered_map<int, QuuxWithFooArray> quuxs_with_arr;
+  quuxs_with_arr = inlet["quux"].get<std::unordered_map<int, QuuxWithFooArray>>();
+  EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
+TYPED_TEST(inlet_object, nested_dict_of_array_of_struct)
+{
+  std::string testString =
+    "quux  = { ['first'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                                [1] = { bar = false; baz = true} } }, "
+    "         ['second'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                                [1] = { bar = true; baz = true} } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericDictionary("quux");
+  auto& foo_table = quux_table.addGenericArray("arr");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<std::string, QuuxWithFooArray> expected_quuxs = {
+    {"first", {{{0, {true, false}}, {1, {false, true}}}}},
+    {"second", {{{0, {false, false}}, {1, {true, true}}}}}};
+  std::unordered_map<std::string, QuuxWithFooArray> quuxs_with_arr;
+  quuxs_with_arr =
+    inlet["quux"].get<std::unordered_map<std::string, QuuxWithFooArray>>();
+  EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
+struct CorgeWithQuuxDictionary
+{
+  std::unordered_map<std::string, QuuxWithFooArray> dict;
+  bool operator==(const CorgeWithQuuxDictionary& other) const
+  {
+    return dict == other.dict;
+  }
+};
+
+template <>
+struct FromInlet<CorgeWithQuuxDictionary>
+{
+  CorgeWithQuuxDictionary operator()(const axom::inlet::Table& base)
+  {
+    CorgeWithQuuxDictionary c;
+    c.dict =
+      base["dict"].get<std::unordered_map<std::string, QuuxWithFooArray>>();
+    return c;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_dict_of_array_of_struct)
+{
+  // clang-format off
+  std::string testString =
+    "corge = { [0] = { dict = { ['first'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                                                 [1] = { bar = false; baz = true} } }, "
+    "                          ['second'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                                                 [1] = { bar = true; baz = true} } } } }, "
+    "          [1] = { dict = { ['third'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                                                 [1] = { bar = false; baz = true} } }, "
+    "                          ['fourth'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                                                 [1] = { bar = true; baz = true} } } } } }";
+  // clang-format on
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& corge_table = inlet.addGenericArray("corge");
+  auto& quux_table = corge_table.addGenericDictionary("dict");
+  auto& foo_table = quux_table.addGenericArray("arr");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, CorgeWithQuuxDictionary> expected_corges = {
+    {0,
+     {{{"first", {{{0, {true, false}}, {1, {false, true}}}}},
+       {"second", {{{0, {false, false}}, {1, {true, true}}}}}}}},
+    {1,
+     {{{"third", {{{0, {true, false}}, {1, {false, true}}}}},
+       {"fourth", {{{0, {false, false}}, {1, {true, true}}}}}}}}};
+  std::unordered_map<int, CorgeWithQuuxDictionary> corges_with_dict;
+  corges_with_dict =
+    inlet["corge"].get<std::unordered_map<int, CorgeWithQuuxDictionary>>();
+  EXPECT_EQ(corges_with_dict, expected_corges);
+}
+
+struct QuuxWithFooWithArray
+{
+  std::unordered_map<int, FooWithArray> arr;
+  bool operator==(const QuuxWithFooWithArray& other) const
+  {
+    return arr == other.arr;
+  }
+};
+
+template <>
+struct FromInlet<QuuxWithFooWithArray>
+{
+  QuuxWithFooWithArray operator()(const axom::inlet::Table& base)
+  {
+    QuuxWithFooWithArray q;
+    q.arr = base["outer_arr"].get<std::unordered_map<int, FooWithArray>>();
+    return q;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_dict_of_array_of_struct_with_array)
+{
+  std::string testString =
+    "quux = { ['first'] = { outer_arr = {  [0] = { arr = { [0] = 1 } }, "
+    "                                      [1] = { arr = { [0] = 2 } } } }, "
+    "         ['second'] = { outer_arr = { [0] = { arr = { [0] = 3 } }, "
+    "                                      [1] = { arr = { [0] = 4 } } } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericDictionary("quux");
+  auto& foo_table = quux_table.addGenericArray("outer_arr");
+
+  foo_table.addIntArray("arr", "arr's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<std::string, QuuxWithFooWithArray> expected_quuxs = {
+    {"first", {{{0, {{{0, 1}}}}, {1, {{{0, 2}}}}}}},
+    {"second", {{{0, {{{0, 3}}}}, {1, {{{0, 4}}}}}}}};
+  std::unordered_map<std::string, QuuxWithFooWithArray> quuxs_with_arr;
+  quuxs_with_arr =
+    inlet["quux"].get<std::unordered_map<std::string, QuuxWithFooWithArray>>();
+  EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
+/*
+ * FIXME: This is something that should be supported, but this would
+ * require a refactoring of addTable (or of addGenericArray) such that
+ * one can distinguish between adding a Table to the "child" Tables (indidivual 
+ * elements of the array) versus the Table that represents the entire array
+ * 
+
+struct QuuxWithSingleFoo
+{
+  Foo foo;
+  bool operator==(const QuuxWithSingleFoo& other) const
+  {
+    return foo == other.foo;
+  }
+};
+
+template <>
+struct FromInlet<QuuxWithSingleFoo>
+{
+  QuuxWithSingleFoo operator()(const axom::inlet::Table& base)
+  {
+    QuuxWithSingleFoo q;
+    q.foo = base["foo"].get<Foo>();
+    return q;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_nested_structs)
+{
+  std::string testString =
+    "quux = { [0] = { foo = { bar = true; baz = false } }, "
+    "         [1] = { foo = { bar = false; baz = true } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericArray("quux");
+  auto& foo_table = quux_table.addTable("foo");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, QuuxWithSingleFoo> expected_quuxs = {
+    {0, {true, false}},
+    {1, {false, true}}};
+  std::unordered_map<int, QuuxWithSingleFoo> quuxs_with_foo;
+  quuxs_with_foo =
+    inlet["quux"].get<std::unordered_map<int, QuuxWithSingleFoo>>();
+  EXPECT_EQ(quuxs_with_foo, expected_quuxs);
+}
+*/
+
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
 { };

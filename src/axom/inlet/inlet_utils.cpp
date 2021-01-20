@@ -119,14 +119,37 @@ std::string removeBeforeDelimiter(const std::string& path, const char delim)
   return path.substr(pos + 1);
 }
 
-std::pair<int, bool> checkedConvertToInt(const std::string& number)
+bool checkedConvertToInt(const std::string& number, int& result)
 {
   // Use the C versions to avoid the exceptions
   // thrown by std::stoi on conversion failure
   // FIXME: Switch to std::from_chars when C++17 is available
   char* ptr;
-  auto result = strtol(number.c_str(), &ptr, 10);
-  return {result, *ptr == 0};
+  result = strtol(number.c_str(), &ptr, 10);
+  return *ptr == 0;
+}
+
+void markAsGenericContainer(axom::sidre::Group& target)
+{
+  if(target.hasView(detail::GENERIC_CONTAINER_FLAG))
+  {
+    // This flag should only ever be one, so we verify that and error otherwise
+    const sidre::View* flag = target.getView(detail::GENERIC_CONTAINER_FLAG);
+    SLIC_ERROR_IF(
+      !flag->isScalar(),
+      fmt::format(
+        "[Inlet] Generic container flag of group '{0}' was not a scalar",
+        target.getName()));
+    const int8 value = flag->getScalar();
+    SLIC_ERROR_IF(value != 1,
+                  fmt::format("[Inlet] Generic container flag of group '{0}' "
+                              "had a value other than 1",
+                              target.getName()));
+  }
+  else
+  {
+    target.createViewScalar(detail::GENERIC_CONTAINER_FLAG, static_cast<int8>(1));
+  }
 }
 
 }  // namespace inlet

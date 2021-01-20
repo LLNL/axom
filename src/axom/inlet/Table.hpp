@@ -217,10 +217,10 @@ inline Result toIndex(const From& idx)
 template <>
 inline int toIndex(const std::string& idx)
 {
-  auto as_int = checkedConvertToInt(idx);
-  SLIC_ERROR_IF(!as_int.second,
+  int idx_as_int;
+  SLIC_ERROR_IF(!checkedConvertToInt(idx, idx_as_int),
                 fmt::format("[Inlet] Expected an integer, got: {0}", idx));
-  return as_int.first;
+  return idx_as_int;
 }
 
 /*!
@@ -1062,9 +1062,12 @@ private:
    * \brief This is an internal utility intended to be used with arrays/dicts of 
    * user-defined types that returns the indices as strings - integer indices
    * will be converted to strings
+   * 
+   * \param [in] trimAbsolute Whether to only return the "basename" if the path
+   * is absolute, e.g., an absolute path foo/0/bar will be trimmed to "bar"
    *****************************************************************************
    */
-  std::vector<VariantKey> containerIndices() const;
+  std::vector<VariantKey> containerIndices(bool trimAbsolute = true) const;
 
   /*!
    *****************************************************************************
@@ -1158,6 +1161,11 @@ private:
   std::vector<AggregateVerifiable<Table>> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
   std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
+
+  // Used when the calling Table is a generic container within a generic container
+  // Need to delegate schema-defining calls (add*) to the elements of the nested
+  // container
+  std::vector<std::reference_wrapper<Table>> m_nested_aggregates;
 };
 
 }  // namespace inlet

@@ -78,9 +78,11 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   return *currTable;
 }
 
-std::vector<VariantKey> Table::containerIndices() const
+std::vector<VariantKey> Table::containerIndices(bool trimAbsolute) const
 {
   std::vector<VariantKey> indices;
+  // Not having indices is not necessarily an error, as the container
+  // could exist but just be empty
   if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
   {
     auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
@@ -92,18 +94,29 @@ std::vector<VariantKey> Table::containerIndices() const
       if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
       {
         indices.push_back(view->getString());
+        std::string string_idx = view->getString();
+        // If the index is full/absolute, we only care about the last segment of it
+        const auto last_index_pos = string_idx.find_last_of("/");
+        if(last_index_pos != std::string::npos && trimAbsolute)
+        {
+          // The basename might be an integer, so check and convert accordingly
+          string_idx = string_idx.substr(last_index_pos + 1);
+          int idx_as_int;
+          if(checkedConvertToInt(string_idx, idx_as_int))
+          {
+            indices.back() = idx_as_int;
+          }
+          else
+          {
+            indices.back() = string_idx;
+          }
+        }
       }
       else
       {
         indices.push_back(view->getData<int>());
       }
     }
-  }
-  else
-  {
-    SLIC_ERROR(
-      fmt::format("[Inlet] Table '{0}' does not contain an array or dict",
-                  m_name));
   }
   return indices;
 }
@@ -112,17 +125,27 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
-  // Need to go up one level because this is an _inlet_container group
-  const auto pos = m_name.find_last_of("/");
-  const std::string baseName = m_name.substr(0, pos);
-  for(const auto& indexLabel : containerIndices())
+  // Paths need to match the input file so we chop off everything
+  // after the first container group name, and assume that the index
+  // contains the rest of the path
+  const auto pos = m_name.find(detail::CONTAINER_GROUP_NAME);
+  std::string baseName = m_name.substr(0, pos - 1);
+  for(const auto& indexLabel : containerIndices(false))
   {
     auto stringLabel = detail::indexToString(indexLabel);
     // The base name reflects the structure of the actual data
     // and is used for the reader call
     auto fullPath = appendPrefix(baseName, stringLabel);
+    // If the index is absolute, we only care about the last segment of it
+    // But if it's an absolute path then it gets used as the fullPath
+    const auto last_index_pos = stringLabel.find_last_of("/");
+    if(last_index_pos != std::string::npos)
+    {
+      fullPath = stringLabel;
+      stringLabel = stringLabel.substr(last_index_pos + 1);
+    }
     fullPath = appendPrefix(fullPath, name);
-    // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+    // e.g. fullPath could be foo/1/bar for field "bar" at index 1 of array "foo"
     result.push_back({stringLabel, fullPath});
   }
   return result;
@@ -158,22 +181,55 @@ Table& Table::addGenericContainer(const std::string& name,
 {
   if(isGenericContainer())
   {
-    SLIC_ERROR(fmt::format(
-      "[Inlet] Adding container of structs to container of structs {0} is "
-      "not supported",
-      m_name));
+    auto& table =
+      addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
+    // Iterate over each element and forward the call to addPrimitiveArray
+    if(!m_nested_aggregates.empty())
+    {
+      for(Table& sub_table : m_nested_aggregates)
+      {
+        table.m_nested_aggregates.push_back(
+          sub_table.addGenericContainer<Key>(name, description));
+      }
+    }
+    else
+    {
+      for(const auto& indexPath : containerIndicesWithPaths(name))
+      {
+        table.m_nested_aggregates.push_back(
+          getTable(indexPath.first).addGenericContainer<Key>(name, description));
+        Table& curr_table = table.m_nested_aggregates.back();
+        std::vector<Key> indices;
+        m_reader.getIndices(indexPath.second, indices);
+        std::vector<std::string> absolute_indices(indices.size());
+        // Build the absolute indices by prepending the path for the current child table
+        std::transform(indices.begin(),
+                       indices.end(),
+                       absolute_indices.begin(),
+                       [&indexPath](const Key& index) {
+                         return appendPrefix(indexPath.second,
+                                             detail::indexToString(index));
+                       });
+        detail::addIndicesGroupToTable(curr_table, absolute_indices, description);
+        markAsGenericContainer(*curr_table.m_sidreGroup);
+      }
+    }
+
+    markAsGenericContainer(*table.m_sidreGroup);
+    return table;
   }
-  auto& table =
-    addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
-  std::vector<Key> indices;
-  const std::string& fullName = appendPrefix(m_name, name);
-  if(m_reader.getIndices(fullName, indices))
   {
-    detail::addIndicesGroupToTable(table, indices, description);
-    table.m_sidreGroup->createViewScalar(detail::GENERIC_CONTAINER_FLAG,
-                                         static_cast<int8>(1));
+    auto& table =
+      addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
+    std::vector<Key> indices;
+    const std::string& fullName = appendPrefix(m_name, name);
+    if(m_reader.getIndices(fullName, indices))
+    {
+      detail::addIndicesGroupToTable(table, indices, description);
+    }
+    markAsGenericContainer(*table.m_sidreGroup);
+    return table;
   }
-  return table;
 }
 
 Table& Table::addGenericArray(const std::string& name,
@@ -293,12 +349,22 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
     // of structs, so we need to iterate over the subtables
     // corresponding to elements of the array
     std::vector<std::reference_wrapper<VerifiableScalar>> fields;
-    for(const auto& indexPath : containerIndicesWithPaths(name))
+    if(!m_nested_aggregates.empty())
     {
-      // Add a primitive to an array element (which is a struct)
-      fields.push_back(
-        getTable(indexPath.first)
-          .addPrimitive<T>(name, description, forArray, val, indexPath.second));
+      for(Table& table : m_nested_aggregates)
+      {
+        fields.push_back(table.addPrimitive<T>(name, description, forArray, val));
+      }
+    }
+    else
+    {
+      for(const auto& indexPath : containerIndicesWithPaths(name))
+      {
+        // Add a primitive to an array element (which is a struct)
+        fields.push_back(
+          getTable(indexPath.first)
+            .addPrimitive<T>(name, description, forArray, val, indexPath.second));
+      }
     }
     // Create an aggregate field so requirements can be collectively imposed
     // on all elements of the array
@@ -508,13 +574,26 @@ void addIndicesGroupToTable(Table& table,
                             const std::vector<Key>& indices,
                             const std::string& description)
 {
-  auto indices_group = table.sidreGroup()->createGroup(CONTAINER_INDICES_NAME,
-                                                       /* list_format = */ true);
+  sidre::Group* indices_group = nullptr;
+  if(table.sidreGroup()->hasGroup(CONTAINER_INDICES_NAME))
+  {
+    indices_group = table.sidreGroup()->getGroup(CONTAINER_INDICES_NAME);
+  }
+  else
+  {
+    indices_group = table.sidreGroup()->createGroup(CONTAINER_INDICES_NAME,
+                                                    /* list_format = */ true);
+  }
   // For each index, add a table whose name is its index
   // Schema for struct is defined using the returned table
   for(const auto& idx : indices)
   {
-    const auto string_idx = indexToString(idx);
+    auto string_idx = indexToString(idx);
+    const auto last_index_pos = string_idx.find_last_of("/");
+    if(last_index_pos != std::string::npos)
+    {
+      string_idx = string_idx.substr(last_index_pos + 1);
+    }
     table.addTable(string_idx, description);
     addIndexViewToGroup(*indices_group, idx);
   }
@@ -532,12 +611,22 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
   {
     // Adding an array of primitive field to an array of structs
     std::vector<std::reference_wrapper<Verifiable>> tables;
-    // Iterate over each element and forward the call to addPrimitiveArray
-    for(const auto& indexPath : containerIndicesWithPaths(name))
+    if(!m_nested_aggregates.empty())
     {
-      tables.push_back(
-        getTable(indexPath.first)
-          .addPrimitiveArray<T>(name, description, isDict, indexPath.second));
+      for(Table& table : m_nested_aggregates)
+      {
+        tables.push_back(table.addPrimitiveArray<T>(name, description, isDict));
+      }
+    }
+    else
+    {
+      // Iterate over each element and forward the call to addPrimitiveArray
+      for(const auto& indexPath : containerIndicesWithPaths(name))
+      {
+        tables.push_back(
+          getTable(indexPath.first)
+            .addPrimitiveArray<T>(name, description, isDict, indexPath.second));
+      }
     }
 
     m_aggregate_tables.emplace_back(std::move(tables));
