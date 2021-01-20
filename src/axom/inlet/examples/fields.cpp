@@ -14,10 +14,10 @@
 /* Input file snippet used for documentation
 //_inlet_simple_types_fields_input_start
 
-  a_simple_bool = true
-  a_simple_int = 5,
-  a_simple_double = 7.5,
-  a_simple_string = 'such simplicity',
+a_simple_bool = true
+a_simple_int = 5,
+a_simple_double = 7.5,
+a_simple_string = 'such simplicity',
 
 //_inlet_simple_types_fields_input_end
 */
