@@ -45,7 +45,7 @@ if (SOL_FOUND)
                    COMMAND inlet_documentation_generation_ex --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
 
     axom_add_test( NAME    inlet_fields_ex
-                   COMMAND inlet_fields_ex --file ${CMAKE_CURRENT_LIST_DIR}/fields.lua)
+                   COMMAND inlet_fields_ex)
 
     axom_add_test( NAME    inlet_lua_library_ex
                    COMMAND inlet_lua_library_ex )

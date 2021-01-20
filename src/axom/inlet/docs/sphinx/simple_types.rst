@@ -22,7 +22,7 @@ There are four supported field types: `bool`, `int`, `double`, and `string`.
 
 In this example we will be using the following part of an input file:
 
-.. literalinclude:: ../../examples/simple_types.lua
+.. literalinclude:: ../../examples/fields.cpp
    :start-after: _inlet_simple_types_fields_input_start
    :end-before: _inlet_simple_types_fields_input_end
    :language: lua
@@ -35,7 +35,7 @@ This example shows how to add the four simple field types with descriptions to t
 input file schema and add their values, if present in the input file, to the Sidre
 DataStore to be accessed later.
 
-.. literalinclude:: ../../examples/simple_types.cpp
+.. literalinclude:: ../../examples/fields.cpp
    :start-after: _inlet_simple_types_fields_add_start
    :end-before: _inlet_simple_types_fields_add_end
    :language: C++
@@ -49,14 +49,14 @@ Accessing
 
 Accessing field values stored in Inlet can be accessed via their name with the `[]` operator.
 
-.. literalinclude:: ../../examples/simple_types.cpp
+.. literalinclude:: ../../examples/fields.cpp
    :start-after: _inlet_simple_types_fields_access_start
    :end-before: _inlet_simple_types_fields_access_end
    :language: C++
 
 Here is an example of how to check if the input file contained an optional field:
 
-.. literalinclude:: ../../examples/simple_types.cpp
+.. literalinclude:: ../../examples/fields.cpp
    :start-after: _inlet_simple_types_fields_contains_start
    :end-before: _inlet_simple_types_fields_contains_end
    :language: C++
