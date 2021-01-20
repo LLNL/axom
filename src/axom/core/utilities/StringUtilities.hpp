@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,6 +72,18 @@ inline bool startsWith(const std::string& str, const char prefix)
 void split(std::vector<std::string>& tokens,
            const std::string& str,
            const char delimiter);
+
+/*!
+ * \brief Converts a string to lowercase
+ * \param [inout] str    string to be converted
+ */
+void toLower(std::string& str);
+
+/*!
+ * \brief Converts a string to uppercase
+ * \param [inout] str    string to be converted
+ */
+void toUpper(std::string& str);
 
 }  // end namespace string
 }  // end namespace utilities

@@ -12,9 +12,15 @@ from os.path import join as pjoin
 import llnl.util.tty as tty
 
 
-def cmake_cache_entry(name, value, comment=""):
-    """Generate a string for a cmake cache variable"""
+def cmake_cache_path(name, value, comment=""):
+    """Generate a string for a cmake cache string variable"""
     return 'set({0} "{1}" CACHE PATH "{2}")\n\n'.format(name, value, comment)
+
+
+def cmake_cache_string(name, string, comment=""):
+    """Generate a string for a cmake cache path variable"""
+
+    return 'set({0} "{1}" CACHE STRING "{2}")\n\n'.format(name, string, comment)
 
 
 def cmake_cache_option(name, boolean_value, comment=""):
@@ -209,12 +215,12 @@ class Axom(CMakePackage, CudaPackage):
         cfg.write("# Compilers\n")
         cfg.write("#------------------{0}\n\n".format("-" * 60))
 
-        cfg.write(cmake_cache_entry("CMAKE_C_COMPILER", c_compiler))
-        cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER", cpp_compiler))
+        cfg.write(cmake_cache_path("CMAKE_C_COMPILER", c_compiler))
+        cfg.write(cmake_cache_path("CMAKE_CXX_COMPILER", cpp_compiler))
 
         if "+fortran" in spec or f_compiler is not None:
             cfg.write(cmake_cache_option("ENABLE_FORTRAN", True))
-            cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER", f_compiler))
+            cfg.write(cmake_cache_path("CMAKE_Fortran_COMPILER", f_compiler))
         else:
             cfg.write(cmake_cache_option("ENABLE_FORTRAN", False))
 
@@ -225,13 +231,13 @@ class Axom(CMakePackage, CudaPackage):
             cppflags += ' '
         cflags = cppflags + ' '.join(spec.compiler_flags['cflags'])
         if cflags:
-            cfg.write(cmake_cache_entry("CMAKE_C_FLAGS", cflags))
+            cfg.write(cmake_cache_string("CMAKE_C_FLAGS", cflags))
         cxxflags = cppflags + ' '.join(spec.compiler_flags['cxxflags'])
         if cxxflags:
-            cfg.write(cmake_cache_entry("CMAKE_CXX_FLAGS", cxxflags))
+            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS", cxxflags))
         fflags = ' '.join(spec.compiler_flags['fflags'])
         if fflags:
-            cfg.write(cmake_cache_entry("CMAKE_Fortran_FLAGS", fflags))
+            cfg.write(cmake_cache_string("CMAKE_Fortran_FLAGS", fflags))
 
         if ((f_compiler is not None)
            and ("gfortran" in f_compiler)
@@ -244,11 +250,11 @@ class Axom(CMakePackage, CudaPackage):
                     flags += " -Wl,-rpath,{0}".format(_libpath)
             description = ("Adds a missing libstdc++ rpath")
             if flags:
-                cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS", flags,
-                                            description))
+                cfg.write(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
+                                             description))
 
         if "+cpp14" in spec:
-            cfg.write(cmake_cache_entry("BLT_CXX_STD", "c++14", ""))
+            cfg.write(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
         # TPL locations
         cfg.write("#------------------{0}\n".format("-" * 60))
@@ -265,46 +271,46 @@ class Axom(CMakePackage, CudaPackage):
             tpl_root = os.path.realpath(pjoin(prefix_paths[0], compiler_str))
             path_replacements[tpl_root] = "${TPL_ROOT}"
             cfg.write("# Root directory for generated TPLs\n")
-            cfg.write(cmake_cache_entry("TPL_ROOT", tpl_root))
+            cfg.write(cmake_cache_path("TPL_ROOT", tpl_root))
 
         conduit_dir = get_spec_path(spec, "conduit", path_replacements)
-        cfg.write(cmake_cache_entry("CONDUIT_DIR", conduit_dir))
+        cfg.write(cmake_cache_path("CONDUIT_DIR", conduit_dir))
 
         # optional tpls
 
         if "+mfem" in spec:
             mfem_dir = get_spec_path(spec, "mfem", path_replacements)
-            cfg.write(cmake_cache_entry("MFEM_DIR", mfem_dir))
+            cfg.write(cmake_cache_path("MFEM_DIR", mfem_dir))
         else:
             cfg.write("# MFEM not built\n\n")
 
         if "+hdf5" in spec:
             hdf5_dir = get_spec_path(spec, "hdf5", path_replacements)
-            cfg.write(cmake_cache_entry("HDF5_DIR", hdf5_dir))
+            cfg.write(cmake_cache_path("HDF5_DIR", hdf5_dir))
         else:
             cfg.write("# HDF5 not built\n\n")
 
         if "+lua" in spec:
             lua_dir = get_spec_path(spec, "lua", path_replacements)
-            cfg.write(cmake_cache_entry("LUA_DIR", lua_dir))
+            cfg.write(cmake_cache_path("LUA_DIR", lua_dir))
         else:
             cfg.write("# Lua not built\n\n")
 
         if "+scr" in spec:
             scr_dir = get_spec_path(spec, "scr", path_replacements)
-            cfg.write(cmake_cache_entry("SCR_DIR", scr_dir))
+            cfg.write(cmake_cache_path("SCR_DIR", scr_dir))
         else:
             cfg.write("# SCR not built\n\n")
 
         if "+raja" in spec:
             raja_dir = get_spec_path(spec, "raja", path_replacements)
-            cfg.write(cmake_cache_entry("RAJA_DIR", raja_dir))
+            cfg.write(cmake_cache_path("RAJA_DIR", raja_dir))
         else:
             cfg.write("# RAJA not built\n\n")
 
         if "+umpire" in spec:
             umpire_dir = get_spec_path(spec, "umpire", path_replacements)
-            cfg.write(cmake_cache_entry("UMPIRE_DIR", umpire_dir))
+            cfg.write(cmake_cache_path("UMPIRE_DIR", umpire_dir))
         else:
             cfg.write("# Umpire not built\n\n")
 
@@ -314,12 +320,12 @@ class Axom(CMakePackage, CudaPackage):
 
         if "+mpi" in spec:
             cfg.write(cmake_cache_option("ENABLE_MPI", True))
-            cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
-            cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",
-                                        spec['mpi'].mpicxx))
+            cfg.write(cmake_cache_path("MPI_C_COMPILER", spec['mpi'].mpicc))
+            cfg.write(cmake_cache_path("MPI_CXX_COMPILER",
+                                       spec['mpi'].mpicxx))
             if "+fortran" in spec or f_compiler is not None:
-                cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
-                                            spec['mpi'].mpifc))
+                cfg.write(cmake_cache_path("MPI_Fortran_COMPILER",
+                                           spec['mpi'].mpifc))
 
             # Check for slurm
             using_slurm = False
@@ -348,19 +354,19 @@ class Axom(CMakePackage, CudaPackage):
                 # starting with cmake 3.10, FindMPI expects MPIEXEC_EXECUTABLE
                 # vs the older versions which expect MPIEXEC
                 if self.spec["cmake"].satisfies('@3.10:'):
-                    cfg.write(cmake_cache_entry("MPIEXEC_EXECUTABLE", mpiexec))
+                    cfg.write(cmake_cache_path("MPIEXEC_EXECUTABLE", mpiexec))
                 else:
-                    cfg.write(cmake_cache_entry("MPIEXEC", mpiexec))
+                    cfg.write(cmake_cache_path("MPIEXEC", mpiexec))
 
             # Determine MPIEXEC_NUMPROC_FLAG
             if using_slurm:
-                cfg.write(cmake_cache_entry("MPIEXEC_NUMPROC_FLAG", "-n"))
+                cfg.write(cmake_cache_string("MPIEXEC_NUMPROC_FLAG", "-n"))
             else:
-                cfg.write(cmake_cache_entry("MPIEXEC_NUMPROC_FLAG", "-np"))
+                cfg.write(cmake_cache_string("MPIEXEC_NUMPROC_FLAG", "-np"))
 
             if spec['mpi'].name == 'spectrum-mpi':
-                cfg.write(cmake_cache_entry("BLT_MPI_COMMAND_APPEND",
-                                            "mpibind"))
+                cfg.write(cmake_cache_string("BLT_MPI_COMMAND_APPEND",
+                                             "mpibind"))
         else:
             cfg.write(cmake_cache_option("ENABLE_MPI", False))
 
@@ -380,13 +386,13 @@ class Axom(CMakePackage, CudaPackage):
             devtools_root = os.path.commonprefix([path1, path2])[:-1]
             path_replacements[devtools_root] = "${DEVTOOLS_ROOT}"
             cfg.write("# Root directory for generated developer tools\n")
-            cfg.write(cmake_cache_entry("DEVTOOLS_ROOT", devtools_root))
+            cfg.write(cmake_cache_path("DEVTOOLS_ROOT", devtools_root))
 
         if "+python" in spec or "+devtools" in spec:
             python_path = os.path.realpath(spec['python'].command.path)
             for key in path_replacements:
                 python_path = python_path.replace(key, path_replacements[key])
-            cfg.write(cmake_cache_entry("PYTHON_EXECUTABLE", python_path))
+            cfg.write(cmake_cache_path("PYTHON_EXECUTABLE", python_path))
 
         if "doxygen" in spec or "py-sphinx" in spec:
             cfg.write(cmake_cache_option("ENABLE_DOCS", True))
@@ -395,37 +401,36 @@ class Axom(CMakePackage, CudaPackage):
                 doxygen_bin_dir = get_spec_path(spec, "doxygen",
                                                 path_replacements,
                                                 use_bin=True)
-                cfg.write(cmake_cache_entry("DOXYGEN_EXECUTABLE",
-                                            pjoin(doxygen_bin_dir,
-                                                  "doxygen")))
+                cfg.write(cmake_cache_path("DOXYGEN_EXECUTABLE",
+                                           pjoin(doxygen_bin_dir, "doxygen")))
 
             if "py-sphinx" in spec:
                 python_bin_dir = get_spec_path(spec, "python",
                                                path_replacements,
                                                use_bin=True)
-                cfg.write(cmake_cache_entry("SPHINX_EXECUTABLE",
-                                            pjoin(python_bin_dir,
-                                                  "sphinx-build")))
+                cfg.write(cmake_cache_path("SPHINX_EXECUTABLE",
+                                           pjoin(python_bin_dir,
+                                                 "sphinx-build")))
         else:
             cfg.write(cmake_cache_option("ENABLE_DOCS", False))
 
         if "py-shroud" in spec:
             shroud_bin_dir = get_spec_path(spec, "py-shroud",
                                            path_replacements, use_bin=True)
-            cfg.write(cmake_cache_entry("SHROUD_EXECUTABLE",
-                                        pjoin(shroud_bin_dir, "shroud")))
+            cfg.write(cmake_cache_path("SHROUD_EXECUTABLE",
+                                       pjoin(shroud_bin_dir, "shroud")))
 
         if "cppcheck" in spec:
             cppcheck_bin_dir = get_spec_path(spec, "cppcheck",
                                              path_replacements, use_bin=True)
-            cfg.write(cmake_cache_entry("CPPCHECK_EXECUTABLE",
-                                        pjoin(cppcheck_bin_dir, "cppcheck")))
+            cfg.write(cmake_cache_path("CPPCHECK_EXECUTABLE",
+                                       pjoin(cppcheck_bin_dir, "cppcheck")))
 
         # Only turn on clangformat support if devtools is on
         if "+devtools" in spec:
             clang_fmt_path = spec['llvm'].prefix.bin.join('clang-format')
-            cfg.write(cmake_cache_entry("CLANGFORMAT_EXECUTABLE",
-                                        clang_fmt_path))
+            cfg.write(cmake_cache_path("CLANGFORMAT_EXECUTABLE",
+                                       clang_fmt_path))
         else:
             cfg.write("# ClangFormat disabled due to disabled devtools\n")
             cfg.write(cmake_cache_option("ENABLE_CLANGFORMAT", False))
@@ -453,78 +458,89 @@ class Axom(CMakePackage, CudaPackage):
         # Override XL compiler family
         familymsg = ("Override to proper compiler family for XL")
         if (f_compiler is not None) and ("xlf" in f_compiler):
-            cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL",
-                                        familymsg))
+            cfg.write(cmake_cache_string("CMAKE_Fortran_COMPILER_ID", "XL",
+                                         familymsg))
         if "xlc" in c_compiler:
-            cfg.write(cmake_cache_entry("CMAKE_C_COMPILER_ID", "XL",
-                                        familymsg))
+            cfg.write(cmake_cache_string("CMAKE_C_COMPILER_ID", "XL",
+                                         familymsg))
         if "xlC" in cpp_compiler:
-            cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER_ID", "XL",
-                                        familymsg))
+            cfg.write(cmake_cache_string("CMAKE_CXX_COMPILER_ID", "XL",
+                                         familymsg))
 
         if spec.satisfies('target=ppc64le:'):
             if (f_compiler is not None) and ("xlf" in f_compiler):
                 description = ("Converts C-style comments to Fortran style "
                                "in preprocessed files")
-                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS",
-                                            "-WF,-C!  -qxlf2003=polymorphic",
-                                            description))
+                cfg.write(cmake_cache_string("BLT_FORTRAN_FLAGS",
+                                             "-WF,-C!  -qxlf2003=polymorphic",
+                                             description))
                 # Grab lib directory for the current fortran compiler
                 libdir = os.path.join(os.path.dirname(
                                       os.path.dirname(f_compiler)), "lib")
                 description = ("Adds a missing rpath for libraries "
                                "associated with the fortran compiler")
                 linker_flags = "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," + libdir
-                cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
+                cfg.write(cmake_cache_string("BLT_EXE_LINKER_FLAGS",
                                             linker_flags, description))
                 if "+shared" in spec:
                     linker_flags = "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath," \
                                    + libdir
-                    cfg.write(cmake_cache_entry("CMAKE_SHARED_LINKER_FLAGS",
-                                                linker_flags, description))
+                    cfg.write(cmake_cache_string("CMAKE_SHARED_LINKER_FLAGS",
+                                                 linker_flags, description))
 
-            if "+cuda" in spec:
-                cfg.write("#------------------{0}\n".format("-" * 60))
-                cfg.write("# Cuda\n")
-                cfg.write("#------------------{0}\n\n".format("-" * 60))
+            # Fix for working around CMake adding implicit link directories
+            # returned by the BlueOS compilers to link executables with
+            # non-system default stdlib
+            _gcc_prefix = "/usr/tce/packages/gcc/gcc-4.9.3/lib64"
+            if os.path.exists(_gcc_prefix):
+                _gcc_prefix2 = pjoin(_gcc_prefix,
+                    "gcc/powerpc64le-unknown-linux-gnu/4.9.3")
+                _link_dirs = "{0};{1}".format(_gcc_prefix, _gcc_prefix2)
+                cfg.write(cmake_cache_string(
+                    "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE", _link_dirs))
 
-                cfg.write(cmake_cache_option("ENABLE_CUDA", True))
+        if "+cuda" in spec:
+            cfg.write("#------------------{0}\n".format("-" * 60))
+            cfg.write("# Cuda\n")
+            cfg.write("#------------------{0}\n\n".format("-" * 60))
 
-                cudatoolkitdir = spec['cuda'].prefix
-                cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR",
-                                            cudatoolkitdir))
-                cudacompiler = "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"
-                cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER",
-                                            cudacompiler))
+            cfg.write(cmake_cache_option("ENABLE_CUDA", True))
 
-                cfg.write(cmake_cache_option("CUDA_SEPARABLE_COMPILATION",
-                                             True))
+            cudatoolkitdir = spec['cuda'].prefix
+            cfg.write(cmake_cache_path("CUDA_TOOLKIT_ROOT_DIR", cudatoolkitdir))
+            cudacompiler = "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"
+            cfg.write(cmake_cache_path("CMAKE_CUDA_COMPILER", cudacompiler))
 
-                cfg.write(cmake_cache_option("AXOM_ENABLE_ANNOTATIONS", True))
+            cfg.write(cmake_cache_option("CUDA_SEPARABLE_COMPILATION", True))
 
-                # CUDA_FLAGS
-                cudaflags  = "-restrict "
+            cfg.write(cmake_cache_option("AXOM_ENABLE_ANNOTATIONS", True))
 
-                if not spec.satisfies('cuda_arch=none'):
-                    cuda_arch = spec.variants['cuda_arch'].value
-                    axom_arch = 'sm_{0}'.format(cuda_arch[0])
-                    cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", axom_arch))
-                    cudaflags += "-arch ${AXOM_CUDA_ARCH} "
-                else:
-                    cfg.write("# cuda_arch could not be determined\n\n")
+            # CUDA_FLAGS
+            cudaflags  = "-restrict --expt-extended-lambda "
 
-                cudaflags += "-std=c++11 --expt-extended-lambda -G "
-                cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS", cudaflags))
+            if not spec.satisfies('cuda_arch=none'):
+                cuda_arch = spec.variants['cuda_arch'].value[0]
+                cfg.write(cmake_cache_string("CMAKE_CUDA_ARCHITECTURES",
+                                             cuda_arch))
+                cudaflags += '-arch sm_${CMAKE_CUDA_ARCHITECTURES} '
+            else:
+                cfg.write("# cuda_arch could not be determined\n\n")
 
-                if "+mpi" in spec:
-                    cfg.write(cmake_cache_entry("CMAKE_CUDA_HOST_COMPILER",
-                                                "${MPI_CXX_COMPILER}"))
-                else:
-                    cfg.write(cmake_cache_entry("CMAKE_CUDA_HOST_COMPILER",
-                                                "${CMAKE_CXX_COMPILER}"))
+            if "cpp14" in spec:
+                cudaflags += "-std=c++14 "
+            else:
+                cudaflags += "-std=c++11 "
+            cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS", cudaflags))
 
-                cfg.write("# nvcc does not like gtest's 'pthreads' flag\n")
-                cfg.write(cmake_cache_option("gtest_disable_pthreads", True))
+            if "+mpi" in spec:
+                cfg.write(cmake_cache_path("CMAKE_CUDA_HOST_COMPILER",
+                                           "${MPI_CXX_COMPILER}"))
+            else:
+                cfg.write(cmake_cache_path("CMAKE_CUDA_HOST_COMPILER",
+                                           "${CMAKE_CXX_COMPILER}"))
+
+            cfg.write("# nvcc does not like gtest's 'pthreads' flag\n")
+            cfg.write(cmake_cache_option("gtest_disable_pthreads", True))
 
         cfg.write("\n")
         cfg.close()

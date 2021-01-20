@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,7 +20,6 @@
 using axom::inlet::Field;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
-using axom::inlet::LuaReader;
 using axom::inlet::Proxy;
 using axom::inlet::Table;
 using axom::sidre::DataStore;
@@ -30,10 +29,10 @@ Inlet createBasicInlet(DataStore* ds,
                        const std::string& luaString,
                        bool enableDocs = true)
 {
-  auto lr = std::make_unique<InletReader>();
-  lr->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
+  std::unique_ptr<InletReader> reader(new InletReader());
+  reader->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
 
-  return Inlet(std::move(lr), ds->getRoot(), enableDocs);
+  return Inlet(std::move(reader), ds->getRoot(), enableDocs);
 }
 
 template <typename InletReader>
@@ -667,8 +666,8 @@ TYPED_TEST(inlet_Inlet_classes, mixLevelTables)
     "   u0 = { type = 'function', func = 'BoundaryTemperature'},"
     "   kappa = { type = 'constant', constant = 0.5},"
     "   solver = {"
-    "     rel_tol = 1.e-6,"
-    "     abs_tol = 1.e-12,"
+    "     rel_tol = 1.0e-6,"
+    "     abs_tol = 1.0e-12,"
     "     print_level = 0,"
     "     max_iter = 100,"
     "     dt = 1.0,"
@@ -1629,8 +1628,8 @@ TEST(inlet_Inlet_array_lua, inletArraysInSidre)
 #endif
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -1638,7 +1637,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

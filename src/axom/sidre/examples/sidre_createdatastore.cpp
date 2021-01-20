@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,6 +72,10 @@
 #include "conduit.hpp"
 #include "conduit_blueprint.hpp"
 #include "conduit_relay.hpp"
+
+#ifdef AXOM_USE_MPI
+  #include "conduit_blueprint_mpi.hpp"
+#endif
 
 // C++ headers
 #include <cstring>
@@ -598,7 +602,10 @@ void generate_spio_blueprint(DataStore* ds)
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
   std::string bp_protocol = "mesh";
-  if(conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
+  if(conduit::blueprint::mpi::verify(bp_protocol,
+                                     mesh_node[domain_mesh],
+                                     info,
+                                     MPI_COMM_WORLD))
   {
   #if defined(AXOM_USE_HDF5)
     std::string protocol = "sidre_hdf5";
@@ -642,7 +649,10 @@ void generate_spio_blueprint_to_path(DataStore* ds)
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
   std::string bp_protocol = "mesh";
-  if(conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
+  if(conduit::blueprint::mpi::verify(bp_protocol,
+                                     mesh_node[domain_mesh],
+                                     info,
+                                     MPI_COMM_WORLD))
   {
     std::string bp_rootfile("pathbpspio.root");
   #if defined(AXOM_USE_HDF5)
@@ -695,6 +705,10 @@ int main(int argc, char** argv)
 
   int region[3375];
 
+#ifdef AXOM_USE_MPI
+  MPI_Init(&argc, &argv);
+#endif
+
   DataStore* ds = create_datastore(region);
   access_datastore(ds);
 
@@ -710,7 +724,6 @@ int main(int argc, char** argv)
 #ifdef AXOM_USE_MPI
   DataStore* sds = create_tiny_datastore();
   DataStore* spds = create_tiny_datastore();
-  MPI_Init(&argc, &argv);
   generate_spio_blueprint(sds);
   generate_spio_blueprint_to_path(spds);
   MPI_Finalize();

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,7 +19,7 @@
 
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
-using axom::inlet::LuaReader;
+using axom::inlet::VariantKey;
 using axom::sidre::DataStore;
 
 template <typename InletReader>
@@ -27,10 +27,10 @@ Inlet createBasicInlet(DataStore* ds,
                        const std::string& luaString,
                        bool enableDocs = true)
 {
-  auto lr = std::make_unique<InletReader>();
-  lr->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
+  std::unique_ptr<InletReader> reader(new InletReader());
+  reader->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
 
-  return Inlet(std::move(lr), ds->getRoot(), enableDocs);
+  return Inlet(std::move(reader), ds->getRoot(), enableDocs);
 }
 
 struct Foo
@@ -143,6 +143,110 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
 
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_pass)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+  // Even though these are required, the input file should still
+  // "verify" as the array is empty
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should fail because the array is empty
+  // and was required
+  auto& arr_table = inlet.addGenericArray("foo").required(true);
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail_primitive)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should fail because the array is empty
+  // and was required
+  inlet.addIntArray("foo").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false;} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description").required();
+
+  // Ensuring that foo is the element of the container
+  arr_table.registerVerifier(
+    [](const axom::inlet::Table& foo) { return foo.contains("bar"); });
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_pass)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { baz = false;} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+
+  // Can specify either "bar" or "baz" but not both
+  arr_table.registerVerifier([](const axom::inlet::Table& foo) {
+    return !(foo.contains("bar") && foo.contains("baz"));
+  });
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+
+  // Can specify either "bar" or "baz" but not both
+  arr_table.registerVerifier([](const axom::inlet::Table& foo) {
+    return !(foo.contains("bar") && foo.contains("baz"));
+  });
 
   EXPECT_FALSE(inlet.verify());
 }
@@ -553,21 +657,16 @@ TYPED_TEST(inlet_object_dict, array_of_struct_containing_dict)
 FIXME: These are currently error conditions.  If these should be supported
 or handled differently these tests can be re-enabled.
 
-TEST(inlet_dict, mixed_keys)
+TEST(inlet_dict, mixed_keys_primitive_duplicated)
 {
-  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  std::string testString = "foo = { ['1'] = 4, [1] = 6 }";
   DataStore ds;
-  Inlet inlet = createBasicInlet(&ds, testString);
+  auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addIntDictionary("foo", "foo's description");
-  std::unordered_map<std::string, int> dict = inlet["foo"];
-  std::unordered_map<std::string, int> correct_dict = {{"key1", 4}};
+  std::unordered_map<VariantKey, int> dict = inlet["foo"];
+  std::unordered_map<VariantKey, int> correct_dict = {{"1", 4}, {1, 6}};
   EXPECT_EQ(dict, correct_dict);
-
-  inlet.addIntArray("foo", "foo's description");
-  std::unordered_map<int, int> array = inlet["foo"];
-  std::unordered_map<int, int> correct_array = {{1, 6}};
-  EXPECT_EQ(array, correct_array);
 }
 
 TEST(inlet_dict, key_with_slash)
@@ -682,11 +781,66 @@ TEST(inlet_object_lua_dict, array_of_struct_containing_dict)
   EXPECT_EQ(foos_with_dict, expected_foos);
 }
 
+TEST(inlet_object_lua_dict, mixed_keys_primitive)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  inlet.addIntDictionary("foo", "foo's description");
+  std::unordered_map<VariantKey, int> dict = inlet["foo"];
+  std::unordered_map<VariantKey, int> correct_dict = {{"key1", 4}, {1, 6}};
+  EXPECT_EQ(dict, correct_dict);
+}
+
+TEST(inlet_object_lua_dict, mixed_keys_primitive_ignore_string_only)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  inlet.addIntDictionary("foo", "foo's description");
+  std::unordered_map<std::string, int> dict = inlet["foo"];
+  std::unordered_map<std::string, int> correct_dict = {{"key1", 4}};
+  EXPECT_EQ(dict, correct_dict);
+}
+
+TEST(inlet_object_lua_dict, mixed_keys_primitive_ignore_int_only)
+{
+  std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  inlet.addIntArray("foo", "foo's description");
+  std::unordered_map<int, int> array = inlet["foo"];
+  std::unordered_map<int, int> correct_array = {{1, 6}};
+  EXPECT_EQ(array, correct_array);
+}
+
+TEST(inlet_object_lua_dict, mixed_keys_object)
+{
+  std::string testString =
+    "foo = { ['key1'] = { bar = true; baz = false}, "
+    "        [1] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  auto& dict_table = inlet.addGenericDictionary("foo");
+
+  dict_table.addBool("bar", "bar's description");
+  dict_table.addBool("baz", "baz's description");
+  std::unordered_map<VariantKey, Foo> expected_foos = {{"key1", {true, false}},
+                                                       {1, {false, true}}};
+  std::unordered_map<VariantKey, Foo> foos;
+  foos = inlet["foo"].get<std::unordered_map<VariantKey, Foo>>();
+  EXPECT_EQ(foos, expected_foos);
+}
+
 #endif
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -694,7 +848,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

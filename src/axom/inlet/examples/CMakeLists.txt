@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,6 +32,17 @@ if (SOL_FOUND)
     axom_add_test( NAME    inlet_documentation_generation_ex
                    COMMAND inlet_documentation_generation_ex --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
 
-    axom_add_test( NAME    inlet_user_defined_type_ex
+    axom_add_test( NAME inlet_user_defined_type_ex
                    COMMAND inlet_user_defined_type_ex --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua)
+
+    if (MFEM_FOUND)
+        blt_add_executable( NAME       inlet_mfem_coefficient_ex
+                            SOURCES    mfem_coefficient.cpp
+                            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                            DEPENDS_ON inlet mfem
+                            FOLDER     axom/inlet/examples )
+        axom_add_test( NAME    inlet_mfem_coefficient_ex
+                       COMMAND inlet_mfem_coefficient_ex --file ${CMAKE_CURRENT_LIST_DIR}/mfem_coef.lua)
+    endif()
+
 endif()

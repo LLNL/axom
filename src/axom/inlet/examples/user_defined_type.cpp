@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,8 +8,9 @@
 #include <iostream>
 #include <unordered_map>
 #include "CLI11/CLI11.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 
+using axom::inlet::FunctionType;
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
@@ -104,25 +105,27 @@ struct FromInlet<LinearSolver>
   }
 };
 
+// _inlet_userdef_bc_struct_start
 struct BoundaryCondition
 {
   std::unordered_map<int, int> attrs;
   // std::functions are nullable - coef/vec_coef act as a sum type here
-  std::function<double(axom::primal::Vector3D)> coef;
-  std::function<axom::primal::Vector3D(axom::primal::Vector3D)> vec_coef;
+  std::function<double(FunctionType::Vec3D)> coef;
+  std::function<FunctionType::Vec3D(FunctionType::Vec3D)> vec_coef;
+  // _inlet_userdef_bc_struct_end
   static void defineSchema(inlet::Table& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
     // Inlet does not support sum types, so both options are added to the schema
     // Supported function parameter/return types are Double and Vec3D
     schema.addFunction("vec_coef",
-                       inlet::FunctionType::Vec3D,    // Return type
-                       {inlet::FunctionType::Vec3D},  // Argument types
+                       inlet::FunctionTag::Vec3D,    // Return type
+                       {inlet::FunctionTag::Vec3D},  // Argument types
                        "The function representing the BC coefficient");
     // _inlet_userdef_func_coef_start
     schema.addFunction("coef",
-                       inlet::FunctionType::Double,   // Return type
-                       {inlet::FunctionType::Vec3D},  // Argument types
+                       inlet::FunctionTag::Double,   // Return type
+                       {inlet::FunctionTag::Vec3D},  // Argument types
                        "The function representing the BC coefficient");
     // _inlet_userdef_func_coef_end
   }
@@ -156,6 +159,7 @@ struct FromInlet<BoundaryCondition>
   {
     BoundaryCondition bc;
     bc.attrs = base["attrs"];
+    // _inlet_userdef_bc_struct_retrieve_start
     if(base.contains("vec_coef"))
     {
       bc.vec_coef = base["vec_coef"];
@@ -164,6 +168,7 @@ struct FromInlet<BoundaryCondition>
     {
       bc.coef = base["coef"];
     }
+    // _inlet_userdef_bc_struct_retrieve_end
     return bc;
   }
 };
@@ -235,7 +240,7 @@ struct FromInlet<ThermalSolver>
 int main(int argc, char** argv)
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   CLI::App app {"Example of Axom's Inlet component with user-defined types"};
   std::string inputFileName;
@@ -264,7 +269,7 @@ int main(int argc, char** argv)
   // Read all the data into a thermal solver object
   auto thermal_solver = inlet["thermal_solver"].get<ThermalSolver>();
 
-  const axom::primal::Vector3D vec {1, 2, 3};
+  const FunctionType::Vec3D vec {1, 2, 3};
   for(const auto& bc_entry : thermal_solver.bcs)
   {
     const auto& bc = bc_entry.second;

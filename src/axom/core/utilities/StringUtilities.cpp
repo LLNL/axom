@@ -1,9 +1,11 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/core/utilities/StringUtilities.hpp"
+
+#include <algorithm>
 
 namespace axom
 {
@@ -21,6 +23,20 @@ void split(std::vector<std::string>& tokens,
   {
     tokens.push_back(token);
   }
+}
+
+void toLower(std::string& str)
+{
+  std::transform(str.begin(), str.end(), str.begin(), [](const unsigned char c) {
+    return std::tolower(c);
+  });
+}
+
+void toUpper(std::string& str)
+{
+  std::transform(str.begin(), str.end(), str.begin(), [](const unsigned char c) {
+    return std::toupper(c);
+  });
 }
 
 }  // end namespace string

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -866,11 +866,11 @@ int main(int argc, char** argv)
   MPI_Init(&argc, &argv);
 
   {
-    // Note: this code is in a different context since UnitTestLogger's
+    // Note: this code is in a different context since SimpleLogger's
     // destructor
     //       might have MPI calls and would otherwise be invoked after
     // MPI_Finalize()
-    slic::UnitTestLogger logger;
+    slic::SimpleLogger logger;
     sidre::DataStore ds;
 
     // parse the command arguments

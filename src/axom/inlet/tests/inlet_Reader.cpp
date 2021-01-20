@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -162,6 +162,147 @@ TYPED_TEST(inlet_Reader, getMap)
   // EXPECT_EQ(expectedStrs, strs);
 }
 
+TEST(inlet_Reader_YAML, getInsideBools)
+{
+  axom::inlet::YAMLReader reader;
+  bool result = reader.parseString(
+    "foo:\n"
+    "  bar: false\n"
+    "  baz: true");
+  EXPECT_TRUE(result);
+  bool value, retValue;
+
+  value = true;
+  retValue = reader.getBool("foo/bar", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, false);
+
+  value = false;
+  retValue = reader.getBool("foo/baz", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, true);
+}
+
+TEST(inlet_Reader_YAML, mixLevelTables)
+{
+  axom::inlet::YAMLReader reader;
+  bool result = reader.parseString(
+    "t:\n"
+    "  innerT:\n"
+    "    foo: 1\n"
+    "  anotherInnerT:\n"
+    "    baz: 3");
+  EXPECT_TRUE(result);
+
+  bool retValue;
+  int value;
+
+  value = 0;
+  retValue = reader.getInt("t/innerT/foo", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 1);
+
+  value = 0;
+  retValue = reader.getInt("t/doesntexist", value);
+  EXPECT_EQ(retValue, false);
+  EXPECT_EQ(value, 0);
+
+  value = 0;
+  retValue = reader.getInt("t/anotherInnerT/baz", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 3);
+}
+
+TEST(inlet_Reader_YAML, mixLevelTables_invalid)
+{
+  axom::inlet::YAMLReader reader;
+  bool result = reader.parseString(
+    "t:\n"
+    "  innerT: foo: 1\n"
+    "  anotherInnerT:\n"
+    "    baz: 3");
+
+  EXPECT_FALSE(result);
+}
+
+TEST(inlet_Reader_JSON, getInsideBools)
+{
+  axom::inlet::JSONReader reader;
+  bool result = reader.parseString(
+    "{\n"
+    "  foo: {\n"
+    "    bar: false,\n"
+    "    baz: true\n"
+    "  }\n"
+    "}");
+  EXPECT_TRUE(result);
+
+  bool value, retValue;
+
+  value = true;
+  retValue = reader.getBool("foo/bar", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, false);
+
+  value = false;
+  retValue = reader.getBool("foo/baz", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, true);
+}
+
+TEST(inlet_Reader_JSON, mixLevelTables)
+{
+  axom::inlet::JSONReader reader;
+  bool result = reader.parseString(
+    "{\n"
+    "  t: {\n"
+    "    innerT: {\n"
+    "      foo: 1\n"
+    "    },\n"
+    "    anotherInnerT: {\n"
+    "      baz: 3\n"
+    "    }\n"
+    "  }\n"
+    "}");
+  EXPECT_TRUE(result);
+
+  bool retValue;
+  int value;
+
+  value = 0;
+  retValue = reader.getInt("t/innerT/foo", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 1);
+
+  value = 0;
+  retValue = reader.getInt("t/doesntexist", value);
+  EXPECT_EQ(retValue, false);
+  EXPECT_EQ(value, 0);
+
+  value = 0;
+  retValue = reader.getInt("t/anotherInnerT/baz", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 3);
+}
+
+TEST(inlet_Reader_JSON, mixLevelTables_invalid)
+{
+  axom::inlet::JSONReader reader;
+  bool result = reader.parseString(
+    "{\n"
+    "  t: {\n"
+    "    innerT: {\n"
+    "      foo: 1\n"
+    "    }\n"
+    "    anotherInnerT: {\n"
+    "      baz: 3\n"
+    "    }\n"
+    "  }\n"
+    "}");
+
+  EXPECT_FALSE(result);
+}
+
 #ifdef AXOM_USE_SOL
 // Checks that LuaReader parses array information as expected
 // Discontiguous arrays are lua-specific
@@ -204,8 +345,8 @@ TEST(inlet_Reader_lua, getDiscontiguousMap)
 #endif
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -213,7 +354,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

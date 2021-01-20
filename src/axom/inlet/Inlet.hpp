@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -457,8 +457,8 @@ public:
    *****************************************************************************
    */
   Verifiable<Function>& addFunction(const std::string& name,
-                                    const FunctionType ret_type,
-                                    const std::vector<FunctionType>& arg_types,
+                                    const FunctionTag ret_type,
+                                    const std::vector<FunctionTag>& arg_types,
                                     const std::string& description = "")
   {
     return m_globalTable.addFunction(name, ret_type, arg_types, description);

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -262,8 +262,8 @@ TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
 }
 
   //----------------------------------------------------------------------
-  #include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+  #include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -271,7 +271,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   MPI_Init(&argc, &argv);
   result = RUN_ALL_TESTS();

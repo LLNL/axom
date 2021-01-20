@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,6 +17,7 @@
 #include "axom/inlet/LuaReader.hpp"
 #include "axom/inlet/Inlet.hpp"
 
+using axom::inlet::FunctionTag;
 using axom::inlet::FunctionType;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
@@ -40,10 +41,10 @@ TEST(inlet_function, simple_vec3_to_double_raw)
   auto inlet = createBasicInlet(&ds, testString);
 
   auto func =
-    inlet.reader().getFunction("foo", FunctionType::Double, {FunctionType::Vec3D});
+    inlet.reader().getFunction("foo", FunctionTag::Double, {FunctionTag::Vec3D});
 
   EXPECT_TRUE(func);
-  auto result = func.call<double>(axom::primal::Vector3D {1, 2, 3});
+  auto result = func.call<double>(FunctionType::Vec3D {1, 2, 3});
   EXPECT_FLOAT_EQ(result, 6);
 }
 
@@ -54,14 +55,35 @@ TEST(inlet_function, simple_vec3_to_vec3_raw)
   auto inlet = createBasicInlet(&ds, testString);
 
   auto func =
-    inlet.reader().getFunction("foo", FunctionType::Vec3D, {FunctionType::Vec3D});
+    inlet.reader().getFunction("foo", FunctionTag::Vec3D, {FunctionTag::Vec3D});
 
   EXPECT_TRUE(func);
-  auto result =
-    func.call<axom::primal::Vector3D>(axom::primal::Vector3D {1, 2, 3});
+  auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2, 3});
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
   EXPECT_FLOAT_EQ(result[2], 6);
+}
+
+TEST(inlet_function, simple_vec3_to_vec3_raw_partial_init)
+{
+  std::string testString = "function foo (x, y, z) return 2*x, 2*y, 2*z end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto func =
+    inlet.reader().getFunction("foo", FunctionTag::Vec3D, {FunctionTag::Vec3D});
+
+  EXPECT_TRUE(func);
+
+  auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2});
+  EXPECT_FLOAT_EQ(result[0], 2);
+  EXPECT_FLOAT_EQ(result[1], 4);
+  EXPECT_FLOAT_EQ(result[2], 0);
+
+  result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1});
+  EXPECT_FLOAT_EQ(result[0], 2);
+  EXPECT_FLOAT_EQ(result[1], 0);
+  EXPECT_FLOAT_EQ(result[2], 0);
 }
 
 TEST(inlet_function, simple_vec3_to_double_through_table)
@@ -71,12 +93,11 @@ TEST(inlet_function, simple_vec3_to_double_through_table)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    FunctionType::Double,
-                    {FunctionType::Vec3D},
+                    FunctionTag::Double,
+                    {FunctionTag::Vec3D},
                     "foo's description");
 
-  auto callable =
-    inlet["foo"].get<std::function<double(axom::primal::Vector3D)>>();
+  auto callable = inlet["foo"].get<std::function<double(FunctionType::Vec3D)>>();
   auto result = callable({1, 2, 3});
   EXPECT_FLOAT_EQ(result, 6);
 }
@@ -88,17 +109,34 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    FunctionType::Vec3D,
-                    {FunctionType::Vec3D},
+                    FunctionTag::Vec3D,
+                    {FunctionTag::Vec3D},
                     "foo's description");
 
   auto callable =
-    inlet["foo"]
-      .get<std::function<axom::primal::Vector3D(axom::primal::Vector3D)>>();
+    inlet["foo"].get<std::function<FunctionType::Vec3D(FunctionType::Vec3D)>>();
   auto result = callable({1, 2, 3});
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
   EXPECT_FLOAT_EQ(result[2], 6);
+}
+
+TEST(inlet_function, simple_double_to_double_through_table)
+{
+  std::string testString = "function foo (a) return (a * 3.4) + 9.64 end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::Double,
+                    {FunctionTag::Double},
+                    "foo's description");
+
+  auto callable =
+    inlet["foo"].get<std::function<FunctionType::Double(FunctionType::Double)>>();
+  double arg = -6.37;
+  double result = callable(arg);
+  EXPECT_FLOAT_EQ(result, (arg * 3.4) + 9.64);
 }
 
 TEST(inlet_function, simple_vec3_to_double_through_table_call)
@@ -108,11 +146,11 @@ TEST(inlet_function, simple_vec3_to_double_through_table_call)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    FunctionType::Double,
-                    {FunctionType::Vec3D},
+                    FunctionTag::Double,
+                    {FunctionTag::Vec3D},
                     "foo's description");
 
-  auto result = inlet["foo"].call<double>(axom::primal::Vector3D {1, 2, 3});
+  auto result = inlet["foo"].call<double>(FunctionType::Vec3D {1, 2, 3});
   EXPECT_FLOAT_EQ(result, 6);
 }
 
@@ -123,12 +161,46 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table_call)
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addFunction("foo",
-                    FunctionType::Vec3D,
-                    {FunctionType::Vec3D},
+                    FunctionTag::Vec3D,
+                    {FunctionTag::Vec3D},
                     "foo's description");
 
   auto result =
-    inlet["foo"].call<axom::primal::Vector3D>(axom::primal::Vector3D {1, 2, 3});
+    inlet["foo"].call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2, 3});
+  EXPECT_FLOAT_EQ(result[0], 2);
+  EXPECT_FLOAT_EQ(result[1], 4);
+  EXPECT_FLOAT_EQ(result[2], 6);
+}
+
+TEST(inlet_function, simple_vec3_double_to_double_through_table_call)
+{
+  std::string testString =
+    "function foo (x, y, z, t) return t * (x + y + z) end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::Double,
+                    {FunctionTag::Vec3D, FunctionTag::Double},
+                    "foo's description");
+
+  auto result = inlet["foo"].call<double>(FunctionType::Vec3D {1, 2, 3}, 2.0);
+  EXPECT_FLOAT_EQ(result, 12);
+}
+
+TEST(inlet_function, simple_vec3_double_to_vec3_through_table_call)
+{
+  std::string testString = "function foo (x, y, z, t) return t*x, t*y, t*z end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::Vec3D,
+                    {FunctionTag::Vec3D, FunctionTag::Double},
+                    "foo's description");
+
+  auto result =
+    inlet["foo"].call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 2, 3}, 2.0);
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
   EXPECT_FLOAT_EQ(result[2], 6);
@@ -142,13 +214,12 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_pass)
 
   auto& func = inlet
                  .addFunction("foo",
-                              FunctionType::Vec3D,
-                              {FunctionType::Vec3D},
+                              FunctionTag::Vec3D,
+                              {FunctionTag::Vec3D},
                               "foo's description")
                  .required();
   func.registerVerifier([](const axom::inlet::Function& func) {
-    auto result =
-      func.call<axom::primal::Vector3D>(axom::primal::Vector3D {1, 0, 0});
+    auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {1, 0, 0});
     return std::abs(result[0] - 2) < 1e-5;
   });
 
@@ -163,13 +234,12 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_fail)
 
   auto& func = inlet
                  .addFunction("foo",
-                              FunctionType::Vec3D,
-                              {FunctionType::Vec3D},
+                              FunctionTag::Vec3D,
+                              {FunctionTag::Vec3D},
                               "foo's description")
                  .required();
   func.registerVerifier([](const axom::inlet::Function& func) {
-    auto result =
-      func.call<axom::primal::Vector3D>(axom::primal::Vector3D {2, 0, 0});
+    auto result = func.call<FunctionType::Vec3D>(FunctionType::Vec3D {2, 0, 0});
     return std::abs(result[0] - 2) < 1e-5;
   });
 
@@ -179,7 +249,7 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_fail)
 struct Foo
 {
   bool bar;
-  std::function<axom::primal::Vector3D(axom::primal::Vector3D)> baz;
+  std::function<FunctionType::Vec3D(FunctionType::Vec3D)> baz;
 };
 
 template <>
@@ -203,8 +273,8 @@ TEST(inlet_function, simple_vec3_to_vec3_struct)
   inlet.addBool("foo/bar", "bar's description");
   inlet
     .addFunction("foo/baz",
-                 FunctionType::Vec3D,
-                 {FunctionType::Vec3D},
+                 FunctionTag::Vec3D,
+                 {FunctionTag::Vec3D},
                  "baz's description")
     .required();
   Foo foo = inlet["foo"].get<Foo>();
@@ -232,8 +302,8 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
   arr_table.addBool("bar", "bar's description");
   arr_table
     .addFunction("baz",
-                 FunctionType::Vec3D,
-                 {FunctionType::Vec3D},
+                 FunctionTag::Vec3D,
+                 {FunctionTag::Vec3D},
                  "baz's description")
     .required();
 
@@ -252,8 +322,8 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -261,7 +331,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

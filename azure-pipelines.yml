@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,6 +33,13 @@ jobs:
         VM_ImageName: 'ubuntu-18.04'
         Compiler_ImageName: 'axom/tpls:clang-10_12-21-20_20h-48m'
         CMAKE_EXTRA_FLAGS: ''
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
+      linux_clang10_cxx11:
+        VM_ImageName: 'ubuntu-18.04'
+        Compiler_ImageName: 'axom/tpls:clang-10_12-21-20_20h-48m'
+        CMAKE_EXTRA_FLAGS: '-DBLT_CXX_STD=c++11'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
