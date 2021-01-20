@@ -714,13 +714,6 @@ TYPED_TEST(inlet_object, nested_dict_of_array_of_struct_with_array)
   EXPECT_EQ(quuxs_with_arr, expected_quuxs);
 }
 
-/*
- * FIXME: This is something that should be supported, but this would
- * require a refactoring of addTable (or of addGenericArray) such that
- * one can distinguish between adding a Table to the "child" Tables (indidivual 
- * elements of the array) versus the Table that represents the entire array
- * 
-
 struct QuuxWithSingleFoo
 {
   Foo foo;
@@ -750,7 +743,7 @@ TYPED_TEST(inlet_object, nested_array_of_nested_structs)
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   auto& quux_table = inlet.addGenericArray("quux");
-  auto& foo_table = quux_table.addTable("foo");
+  auto& foo_table = quux_table.addStruct("foo");
 
   foo_table.addBool("bar", "bar's description");
   foo_table.addBool("baz", "baz's description");
@@ -764,7 +757,6 @@ TYPED_TEST(inlet_object, nested_array_of_nested_structs)
     inlet["quux"].get<std::unordered_map<int, QuuxWithSingleFoo>>();
   EXPECT_EQ(quuxs_with_foo, expected_quuxs);
 }
-*/
 
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
