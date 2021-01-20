@@ -2,19 +2,23 @@
 Simple Types
 ############
 
-Inlet supports four simple types in the following groups: scalars, tables, arrays,
-and dictionaries. Inlet refers to individual items as Fields. Tables can contain multiple
-Fields, a single array, and a single dictionar.
+To help structure your input file information, Inlet supports two categories of
+types: Fields and Tables.
 
-.. note::  There is an inherent global table that holds all global level Fields.  This can be
+Fields refer to the individual scalar values that are either at the global level or
+that is contained inside of a Table.
+
+Tables can contain multiple Fields, as well as, a single array, and a single dictionary.
+
+.. note::  There is an inherent global Table that holds all global level Fields.  This can be
   accessed via your `Inlet` class instance.
 
 
 *******
-Scalars
+Fields
 *******
 
-There are four supported scalar types: `bool`, `int`, `double`, and `string`.
+There are four supported field types: `bool`, `int`, `double`, and `string`.
 
 In this example we will be using the following part of an input file:
 
@@ -27,7 +31,7 @@ In this example we will be using the following part of an input file:
 Defining And Storing
 --------------------
 
-This example shows how to add the four simple scalar types with descriptions to the
+This example shows how to add the four simple field types with descriptions to the
 input file schema and add their values, if present in the input file, to the Sidre
 DataStore to be accessed later.
 
