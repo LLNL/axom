@@ -22,17 +22,17 @@ a_simple_string = 'such simplicity',
 //_inlet_simple_types_fields_input_end
 */
 
-int main(int argc, char** argv)
+int main()
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
   // This is a generic basic SLIC logger
   axom::slic::SimpleLogger logger;
 
   std::string input = R""""(
-  a_simple_bool = true
-  a_simple_int = 5,
-  a_simple_double = 7.5,
-  a_simple_string = 'such simplicity',
+    a_simple_bool = true
+    a_simple_int = 5,
+    a_simple_double = 7.5,
+    a_simple_string = 'such simplicity',
   )"""";
 
   // Create Inlet Reader that supports Lua input files
