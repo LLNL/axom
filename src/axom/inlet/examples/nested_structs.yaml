@@ -1,0 +1,17 @@
+dimensions: 2
+shapes:
+  - name: wheel
+    material: steel
+    geometry:
+      format: test_format
+      path: path/to/file.format
+      units: cm
+      start_dimensions: 3
+      operators:
+        - translate: [10, 20, 30]
+        - rotate: 45
+          axis: [1, 2, 3]
+          center: [4, 5, 6]
+        - slice:
+          x: 10
+        - translate: [5, 6]

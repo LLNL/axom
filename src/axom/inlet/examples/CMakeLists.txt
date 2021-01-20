@@ -15,7 +15,8 @@ if (SOL_FOUND)
         arrays.cpp
         verification.cpp
         user_defined_type.cpp
-        documentation_generation.cpp )
+        documentation_generation.cpp
+        nested_structs.cpp )
 
     foreach(example ${inlet_examples})
         get_filename_component( ex_name ${example} NAME_WE )
