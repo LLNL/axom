@@ -11,21 +11,36 @@
 
 #include "CLI11/CLI11.hpp"
 
-// This example has the following input file:
-/*
+/* Input file snippet used for documentation
+//_inlet_simple_types_fields_input_start
+
   a_simple_bool = true
   a_simple_int = 5,
   a_simple_double = 7.5,
   a_simple_string = 'such simplicity',
-  */
 
-bool fields_example(const std::string inputFileName)
+//_inlet_simple_types_fields_input_end
+*/
+
+int main(int argc, char** argv)
 {
+  // Inlet requires a SLIC logger to be initialized to output runtime information
+  // This is a generic basic SLIC logger
+  axom::slic::SimpleLogger logger;
+
+  std::string input = R""""(
+  a_simple_bool = true
+  a_simple_int = 5,
+  a_simple_double = 7.5,
+  a_simple_string = 'such simplicity',
+  )"""";
+
   // Create Inlet Reader that supports Lua input files
   auto lr = std::make_unique<axom::inlet::LuaReader>();
 
-  // Parse example input file
-  lr->parseFile(inputFileName);
+  // Parse example input file string
+  // Note: the Reader class also supports parseFile(std::string filepath)
+  lr->parseString(input);
 
   // Inlet stores all input file in the Sidre DataStore
   axom::sidre::DataStore ds;
@@ -66,7 +81,7 @@ bool fields_example(const std::string inputFileName)
   {
     std::cout << "Error: Inlet should not have contained key 'does_not_exist' "
               << std::endl;
-    return false;
+    return 1;
   }
   else
   {
@@ -74,29 +89,6 @@ bool fields_example(const std::string inputFileName)
               << std::endl;
   }
   // _inlet_simple_types_fields_contains_end
-
-  return true;
-}
-
-
-int main(int argc, char** argv)
-{
-  // Inlet requires a SLIC logger to be initialized to output runtime information
-  // This is a generic basic SLIC logger
-  axom::slic::SimpleLogger logger;
-
-  // Handle command line arguments
-  CLI::App app {"Basic example of Axom's Inlet component with simple fields"};
-  std::string inputFileName;
-  auto opt = app.add_option("--file", inputFileName, "Path to input file");
-  opt->check(CLI::ExistingFile);
-  CLI11_PARSE(app, argc, argv);
-
-  // Small example of basic Field types
-  if(!fields_example(inputFileName))
-  {
-    return 1;
-  }
 
   return 0;
 }
