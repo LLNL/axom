@@ -19,7 +19,7 @@
   a_simple_string = 'such simplicity',
   */
 
-bool scalars(const std::string inputFileName)
+bool fields_example(const std::string inputFileName)
 {
   // Create Inlet Reader that supports Lua input files
   auto lr = std::make_unique<axom::inlet::LuaReader>();
@@ -34,7 +34,7 @@ bool scalars(const std::string inputFileName)
   axom::inlet::Inlet inlet(std::move(lr), ds.getRoot());
 
   // Define and store the values in the input file
-  // _inlet_simple_types_scalar_add_start
+  // _inlet_simple_types_fields_add_start
   inlet.addBool("a_simple_bool", "A description of a_simple_bool");
   inlet.addInt("a_simple_int", "A description of a_simple_int");
   inlet.addDouble("a_simple_double", "A description of a_simple_double").required();
@@ -43,17 +43,17 @@ bool scalars(const std::string inputFileName)
   inlet.addInt("a_defaulted_int", "An int that has a default value").defaultValue(17);
 
   inlet.addString("does_not_exist", "Should not be in your input file");
-  // _inlet_simple_types_scalar_add_end
+  // _inlet_simple_types_fields_add_end
 
   // Access values stored in the Datastore via Inlet
-  // _inlet_simple_types_scalar_access_start
+  // _inlet_simple_types_fields_access_start
   bool a_simple_bool = inlet["a_simple_bool"];
   int a_simple_int = inlet["a_simple_int"];
   double a_simple_double = inlet["a_simple_double"];
   std::string a_simple_string = inlet["a_simple_string"];
 
   int a_defaulted_int = inlet["a_defaulted_int"];
-  // _inlet_simple_types_scalar_access_end
+  // _inlet_simple_types_fields_access_end
 
   std::cout << "a_simple_bool = " << a_simple_bool << std::endl;
   std::cout << "a_simple_int = " << a_simple_int << std::endl;
@@ -61,7 +61,7 @@ bool scalars(const std::string inputFileName)
   std::cout << "a_simple_string = " << a_simple_string << std::endl;
   std::cout << "a_defaulted_int = " << a_defaulted_int << std::endl;
 
-  // _inlet_simple_types_scalar_contains_start
+  // _inlet_simple_types_fields_contains_start
   if(inlet.contains("does_not_exist"))
   {
     std::cout << "Error: Inlet should not have contained key 'does_not_exist' "
@@ -73,10 +73,11 @@ bool scalars(const std::string inputFileName)
     std::cout << "Key 'does_not_exist' did not exist in Inlet. Success!"
               << std::endl;
   }
-  // _inlet_simple_types_scalar_contains_end
+  // _inlet_simple_types_fields_contains_end
 
   return true;
 }
+
 
 int main(int argc, char** argv)
 {
@@ -85,14 +86,14 @@ int main(int argc, char** argv)
   axom::slic::SimpleLogger logger;
 
   // Handle command line arguments
-  CLI::App app {"Basic example of Axom's Inlet component with simple types"};
+  CLI::App app {"Basic example of Axom's Inlet component with simple fields"};
   std::string inputFileName;
   auto opt = app.add_option("--file", inputFileName, "Path to input file");
   opt->check(CLI::ExistingFile);
   CLI11_PARSE(app, argc, argv);
 
-  // Small example of basic scalar types
-  if(!scalars(inputFileName))
+  // Small example of basic Field types
+  if(!fields_example(inputFileName))
   {
     return 1;
   }
