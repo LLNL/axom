@@ -18,7 +18,8 @@ Tables can contain multiple Fields, as well as, a single array, and a single dic
 Fields
 *******
 
-There are four supported field types: `bool`, `int`, `double`, and `string`.
+In Inlet, Fields represent an individual scalar value. There are four supported
+field types: `bool`, `int`, `double`, and `string`.
 
 In this example we will be using the following part of an input file:
 
@@ -70,15 +71,40 @@ Tables help with grouping associated data together into a single container. Tabl
 contain multiple individually named Fields, as well as, a single array, and a single
 dictionary.    
 
+In this example we will be using the following part of an input file:
+
+.. literalinclude:: ../../examples/tables.cpp
+   :start-after: _inlet_simple_types_tables_input_start
+   :end-before: _inlet_simple_types_tables_input_end
+   :language: lua
+
 Defining And Storing
 --------------------
 
-Coming soon!
+This example shows how to add a Table with a nested Table to the
+input file schema and add the underlying field values to the Sidre
+DataStore to be accessed later.
+
+.. literalinclude:: ../../examples/tables.cpp
+   :start-after: _inlet_simple_types_tables_add_start
+   :end-before: _inlet_simple_types_tables_add_end
+   :language: C++
+
+This example also shows that the `color` Field that was not given in the
+input file but used the default value that was specified in the schema.
 
 Accessing
 ---------
 
-Coming soon!
+Accessing field values stored inside a table can be accessed via their name with the `[]` operator.
+They can be accessed from the Inlet class instance with their fully qualified name or you
+can get the Table instance first, then access it with the relative name.
+
+.. literalinclude:: ../../examples/tables.cpp
+   :start-after: _inlet_simple_types_tables_access_start
+   :end-before: _inlet_simple_types_tables_access_end
+   :language: C++
+
 
 ******
 Arrays
