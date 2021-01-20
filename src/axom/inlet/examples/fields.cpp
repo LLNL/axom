@@ -15,9 +15,9 @@
 //_inlet_simple_types_fields_input_start
 
 a_simple_bool = true
-a_simple_int = 5,
-a_simple_double = 7.5,
-a_simple_string = 'such simplicity',
+a_simple_int = 5
+a_simple_double = 7.5
+a_simple_string = 'such simplicity'
 
 //_inlet_simple_types_fields_input_end
 */
@@ -30,9 +30,9 @@ int main()
 
   std::string input = R""""(
     a_simple_bool = true
-    a_simple_int = 5,
-    a_simple_double = 7.5,
-    a_simple_string = 'such simplicity',
+    a_simple_int = 5
+    a_simple_double = 7.5
+    a_simple_string = 'such simplicity'
   )"""";
 
   // Create Inlet Reader that supports Lua input files
