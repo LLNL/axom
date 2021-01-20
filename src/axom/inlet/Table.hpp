@@ -382,6 +382,23 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Add a structure to the input file schema.
+   *
+   * Adds a structure/record to the input file schema. Structures can contain
+   * fields and/or substructures.  By default, it is not required unless marked with
+   * Table::isRequired(). This creates the Sidre Group class with the given name and
+   * stores the given description.
+   *
+   * \param [in] name Name of the struct expected in the input file
+   * \param [in] description Description of the struct
+   *
+   * \return Reference to the created struct, as a Table
+   *****************************************************************************
+   */
+  Table& addStruct(const std::string& name, const std::string& description = "");
+
+  /*!
+   *****************************************************************************
    * \brief Add an array of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the array
