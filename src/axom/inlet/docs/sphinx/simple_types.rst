@@ -19,7 +19,7 @@ Fields
 *******
 
 In Inlet, Fields represent an individual scalar value. There are four supported
-field types: `bool`, `int`, `double`, and `string`.
+field types: ``bool``, ``int``, ``double``, and ``string``.
 
 In this example we will be using the following part of an input file:
 
@@ -43,12 +43,12 @@ DataStore to be accessed later.
 
 You can also add default values to Fields to fall back to if they are not defined
 in your input file. The last added Field was intentionally not present in the input file.  Not all
-fields need to be present, unless they are marked required, like `a_simple_double`.
+fields need to be present, unless they are marked required, like ``a_simple_double``.
 
 Accessing
 ---------
 
-Accessing field values stored in Inlet can be accessed via their name with the `[]` operator.
+Accessing field values stored in Inlet can be accessed via their name with the ``[]`` operator.
 
 .. literalinclude:: ../../examples/fields.cpp
    :start-after: _inlet_simple_types_fields_access_start
@@ -71,7 +71,7 @@ Tables help with grouping associated data together into a single container. Tabl
 contain multiple individually named Fields, as well as, a single array, and a single
 dictionary.    
 
-In this example we will be using the following part of an input file:
+In this example, we will be using the following part of an input file:
 
 .. literalinclude:: ../../examples/tables.cpp
    :start-after: _inlet_simple_types_tables_input_start
@@ -90,13 +90,13 @@ DataStore to be accessed later.
    :end-before: _inlet_simple_types_tables_add_end
    :language: C++
 
-This example also shows that the `color` Field that was not given in the
+This example also shows that the ``color`` Field that was not given in the
 input file but used the default value that was specified in the schema.
 
 Accessing
 ---------
 
-Accessing field values stored inside a table can be accessed via their name with the `[]` operator.
+Accessing field values stored inside a table can be accessed via their name with the ``[]`` operator.
 They can be accessed from the Inlet class instance with their fully qualified name or you
 can get the Table instance first, then access it with the relative name.
 

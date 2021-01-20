@@ -43,7 +43,7 @@ Below is a table that lists supported features:
 Extra Lua functionality
 ***********************
 
-Inlet opens four Lua libraries by default: `base`, `math`, `string`, `package`.  All libraries are
+Inlet opens four Lua libraries by default: ``base``, ``math``, ``string``, ``package``.  All libraries are
 documented `here <https://sol2.readthedocs.io/en/v2.20.6/api/state.html?highlight=open_libraries#enumerations>`_. 
 
 For example, you can add the `io` library by doing this:
