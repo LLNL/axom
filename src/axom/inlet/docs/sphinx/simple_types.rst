@@ -2,8 +2,8 @@
 Simple Types
 ############
 
-To help structure your input file information, Inlet supports two categories of
-types: Fields and Tables.
+To help structure your input file information, Inlet categories the information into
+two types: Fields and Tables.
 
 Fields refer to the individual scalar values that are either at the global level or
 that is contained inside of a Table.
