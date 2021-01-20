@@ -253,7 +253,7 @@ int main()
   axom::slic::SimpleLogger logger;
 
   axom::sidre::DataStore ds;
-  auto reader = std::make_unique<inlet::YAMLReader>();
+  auto reader = std::unique_ptr<inlet::YAMLReader>(new inlet::YAMLReader());
   reader->parseString(input);
   inlet::Inlet inlet(std::move(reader), ds.getRoot());
 
