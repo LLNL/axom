@@ -119,6 +119,19 @@ std::string removeBeforeDelimiter(const std::string& path, const char delim)
   return path.substr(pos + 1);
 }
 
+std::string removeAllInstances(const std::string& target,
+                               const std::string& substr)
+{
+  std::string result = target;
+  auto pos = result.find(substr);
+  while(pos != std::string::npos)
+  {
+    result.erase(pos, substr.length());
+    pos = result.find(substr);
+  }
+  return result;
+}
+
 bool checkedConvertToInt(const std::string& number, int& result)
 {
   // Use the C versions to avoid the exceptions

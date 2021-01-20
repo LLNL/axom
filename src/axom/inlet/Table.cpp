@@ -120,12 +120,11 @@ std::vector<VariantKey> Table::containerIndices(bool trimAbsolute) const
       {
         indices.push_back(view->getString());
         std::string string_idx = view->getString();
-        // If the index is full/absolute, we only care about the last segment of it
-        const auto last_index_pos = string_idx.find_last_of("/");
-        if(last_index_pos != std::string::npos && trimAbsolute)
+        if(trimAbsolute)
         {
+          // If the index is full/absolute, we only care about the last segment of it
+          string_idx = removeBeforeDelimiter(string_idx);
           // The basename might be an integer, so check and convert accordingly
-          string_idx = string_idx.substr(last_index_pos + 1);
           int idx_as_int;
           if(checkedConvertToInt(string_idx, idx_as_int))
           {
@@ -150,28 +149,16 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
-  // Paths need to match the input file so we chop off everything
-  // after the first container group name, and assume that the index
-  // contains the rest of the path
-  const auto pos = m_name.find(detail::CONTAINER_GROUP_NAME);
-  std::string baseName = m_name.substr(0, pos - 1);
   for(const auto& indexLabel : containerIndices(false))
   {
     auto stringLabel = detail::indexToString(indexLabel);
-    // The base name reflects the structure of the actual data
-    // and is used for the reader call
-    auto fullPath = appendPrefix(baseName, stringLabel);
-    // If the index is absolute, we only care about the last segment of it
-    // But if it's an absolute path then it gets used as the fullPath
-    const auto last_index_pos = stringLabel.find_last_of("/");
-    if(last_index_pos != std::string::npos)
-    {
-      fullPath = stringLabel;
-      stringLabel = stringLabel.substr(last_index_pos + 1);
-    }
-    fullPath = appendPrefix(fullPath, name);
+    // Since the index is absolute, we only care about the last segment of it
+    // But since it's an absolute path then it gets used as the fullPath
+    // which is used by the Reader to search in the input file
+    const auto baseName = removeBeforeDelimiter(stringLabel);
+    const auto fullPath = appendPrefix(stringLabel, name);
     // e.g. fullPath could be foo/1/bar for field "bar" at index 1 of array "foo"
-    result.push_back({stringLabel, fullPath});
+    result.push_back({baseName, fullPath});
   }
   return result;
 }
@@ -227,12 +214,7 @@ Table& Table::addGenericContainer(const std::string& name,
   {
     std::vector<Key> indices;
     std::string fullName = appendPrefix(m_name, name);
-    auto pos = fullName.find(detail::CONTAINER_GROUP_NAME);
-    while(pos != std::string::npos)
-    {
-      fullName.erase(pos, detail::CONTAINER_GROUP_NAME.length() + 1);
-      pos = fullName.find(detail::CONTAINER_GROUP_NAME);
-    }
+    fullName = removeAllInstances(fullName, detail::CONTAINER_GROUP_NAME + "/");
     if(m_reader.getIndices(fullName, indices))
     {
       detail::addIndicesGroupToTable(table, indices, description);
@@ -394,12 +376,8 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
-    auto pos = lookupPath.find(detail::CONTAINER_GROUP_NAME);
-    while(pos != std::string::npos)
-    {
-      lookupPath.erase(pos, detail::CONTAINER_GROUP_NAME.length() + 1);
-      pos = lookupPath.find(detail::CONTAINER_GROUP_NAME);
-    }
+    lookupPath =
+      removeAllInstances(lookupPath, detail::CONTAINER_GROUP_NAME + "/");
     auto typeId = addPrimitiveHelper(sidreGroup, lookupPath, forArray, val);
     return addField(sidreGroup, typeId, fullName, name);
   }
@@ -597,20 +575,10 @@ void addIndicesGroupToTable(Table& table,
   // Schema for struct is defined using the returned table
   for(const auto& idx : indices)
   {
-    auto string_idx = indexToString(idx);
-    const auto last_index_pos = string_idx.find_last_of("/");
-    if(last_index_pos != std::string::npos)
-    {
-      string_idx = string_idx.substr(last_index_pos + 1);
-    }
+    const std::string string_idx = removeBeforeDelimiter(indexToString(idx));
     table.addTable(string_idx, description);
-    auto absolute = appendPrefix(table.name(), indexToString(idx));
-    auto pos = absolute.find(CONTAINER_GROUP_NAME);
-    while(pos != std::string::npos)
-    {
-      absolute.erase(pos, CONTAINER_GROUP_NAME.length() + 1);
-      pos = absolute.find(CONTAINER_GROUP_NAME);
-    }
+    std::string absolute = appendPrefix(table.name(), indexToString(idx));
+    absolute = removeAllInstances(absolute, detail::CONTAINER_GROUP_NAME + "/");
     addIndexViewToGroup(*indices_group, absolute);
   }
 }

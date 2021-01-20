@@ -115,6 +115,20 @@ std::string removeBeforeDelimiter(const std::string& path,
 
 /*!
 *****************************************************************************
+* \brief This function removes all instances of the substring from the target
+* string
+*
+* \param [in] target The string to operate on
+* \param [in] substr The string to remove
+*
+* \return The filtered string.
+*****************************************************************************
+*/
+std::string removeAllInstances(const std::string& target,
+                               const std::string& substr);
+
+/*!
+*****************************************************************************
 * \brief This function performs a checked conversion of a string to an integer
 *
 * \param [in] number The string to be converted
