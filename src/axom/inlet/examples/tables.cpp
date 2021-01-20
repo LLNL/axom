@@ -63,6 +63,7 @@ int main()
 
   auto& car_table = driver_table.addTable("car", "Car of driver");
   car_table.addString("make", "Make of car");
+  car_table.addString("color", "Color of car").defaultValue("red");
   car_table.addInt("seats", "Number of seats");
   car_table.addInt("horsepower", "Amount of horsepower");
   // _inlet_simple_types_tables_add_end
@@ -75,12 +76,14 @@ int main()
   // ... or... Get car table then access values from there
   auto car = inlet["driver/car"];
   std::string make = car["make"];
+  std::string color = car["color"];
   int seats = car["seats"];
   int horsepower = car["horsepower"];
   // _inlet_simple_types_tables_access_end
 
-  std::cout << "Name = " << name << std::endl;
+  std::cout << "name = " << name << std::endl;
   std::cout << "make = " << make << std::endl;
+  std::cout << "color = " << color << std::endl;
   std::cout << "seats = " << seats << std::endl;
   std::cout << "horsepower = " << horsepower << std::endl;
 
