@@ -15,11 +15,12 @@ set(inlet_examples
 
 blt_list_append( TO inlet_examples ELEMENTS
     arrays.cpp
-    verification.cpp
-    lua_library.cpp
-    user_defined_type.cpp
     documentation_generation.cpp
-    simple_types.cpp
+    fields.cpp
+    lua_library.cpp
+    tables.cpp
+    user_defined_type.cpp
+    verification.cpp
     IF SOL_FOUND )
 
 # Build each executable example
@@ -43,11 +44,14 @@ if (SOL_FOUND)
     axom_add_test( NAME    inlet_documentation_generation_ex
                    COMMAND inlet_documentation_generation_ex --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
 
+    axom_add_test( NAME    inlet_fields_ex
+                   COMMAND inlet_fields_ex --file ${CMAKE_CURRENT_LIST_DIR}/fields.lua)
+
     axom_add_test( NAME    inlet_lua_library_ex
                    COMMAND inlet_lua_library_ex )
 
-    axom_add_test( NAME    inlet_simple_types_ex
-                   COMMAND inlet_simple_types_ex --file ${CMAKE_CURRENT_LIST_DIR}/simple_types.lua)
+    axom_add_test( NAME    inlet_tables_ex
+                   COMMAND inlet_tables_ex --file ${CMAKE_CURRENT_LIST_DIR}/tables.lua)
 
     axom_add_test( NAME    inlet_user_defined_type_ex
                    COMMAND inlet_user_defined_type_ex --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua)
