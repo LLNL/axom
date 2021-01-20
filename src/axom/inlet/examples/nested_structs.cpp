@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 #include "axom/inlet.hpp"
 
 #include <iostream>
@@ -9,9 +14,13 @@
 namespace inlet = axom::inlet;
 using Vector = inlet::FunctionType::Vec3D;
 
+// Used to convert an unordered map (the type Inlet uses) to represent arrays
+// to a geometric vector type
+// FIXME: Clean this up/remove when PR #429 is merged
 Vector mapToVector(const std::unordered_map<int, double>& map)
 {
   Vector result;
+  // Make sure the elements are accessed in order
   for(int i = 0; i < 3; i++)
   {
     const auto ele = map.find(i);
@@ -23,6 +32,7 @@ Vector mapToVector(const std::unordered_map<int, double>& map)
   return result;
 }
 
+// A union of the members required for each of the operations is stored for simplicity
 struct Operator
 {
   double rotate;
@@ -38,9 +48,12 @@ struct Operator
     Rotate,
     Slice
   } type;
+
+  // Again, the union of the necessary members are defined as part of the schema
   static void defineSchema(inlet::Table& table)
   {
     table.addDouble("rotate");
+    // Vectors are defined as arrays of doubles
     table.addDoubleArray("axis");
     table.addDoubleArray("center");
     table.addDoubleArray("translate");
@@ -56,6 +69,9 @@ struct FromInlet<Operator>
   Operator operator()(const inlet::Table& base)
   {
     Operator result;
+    // Even though all the possible members are part of the schema, the
+    // "contains" operation can be used to check what is actually present
+    // in the input file
     if(base.contains("translate"))
     {
       result.type = Operator::Type::Translate;
@@ -88,6 +104,29 @@ struct FromInlet<Operator>
   }
 };
 
+std::ostream& operator<<(std::ostream& os, const Operator& op)
+{
+  switch(op.type)
+  {
+  case Operator::Type::Translate:
+    os << "   Translation operator:\n";
+    os << fmt::format("      with vector: {0}\n", op.translate);
+    break;
+  case Operator::Type::Rotate:
+    os << "   Rotation operator:\n";
+    os << fmt::format("      with axis: {0}\n", op.axis);
+    os << fmt::format("      with center: {0}\n", op.center);
+    break;
+  case Operator::Type::Slice:
+    os << "   Slice operator:\n";
+    os << fmt::format("      with x-coord: {0}\n", op.x);
+    os << fmt::format("      with y-coord: {0}\n", op.y);
+    os << fmt::format("      with z-coord: {0}\n", op.z);
+    break;
+  }
+  return os;
+}
+
 struct Geometry
 {
   std::vector<Operator> operators;
@@ -103,8 +142,11 @@ struct Geometry
   {
     table.addString("format");
     table.addString("path");
+    // A string is used to represent the enumeration
     table.addString("units");
     table.addInt("start_dimensions");
+    // addGenericArray is used to represent std::vector<T> where
+    // T is any non-primitive type
     auto& ops_table = table.addGenericArray("operators");
     Operator::defineSchema(ops_table);
   }
@@ -120,6 +162,7 @@ struct FromInlet<Geometry>
     result.path = base["path"];
     result.start_dim = base["start_dimensions"];
 
+    // FIXME: Remove when PR #429 is merged
     auto ops = base["operators"].get<std::unordered_map<int, Operator>>();
     for(const auto& ele : ops)
     {
@@ -131,10 +174,11 @@ struct FromInlet<Geometry>
 
 std::ostream& operator<<(std::ostream& os, const Geometry& geom)
 {
-  std::cout << fmt::format("Geometry in format: '{0}'\n", geom.format);
+  os << fmt::format("Geometry in format: '{0}'\n", geom.format);
+  os << fmt::format("  with path: '{0}'\n", geom.path);
   for(const auto& op : geom.operators)
   {
-    std::cout << fmt::format("Operator type: '{0}'\n", op.type);
+    os << op;
   }
   return os;
 }
@@ -153,6 +197,7 @@ struct Shape
   {
     table.addString("name");
     table.addString("material");
+    // addStruct is used for a single instance of a user-defined type
     auto& geom_table = table.addStruct("geometry");
     Geometry::defineSchema(geom_table);
   }
@@ -160,8 +205,8 @@ struct Shape
 
 std::ostream& operator<<(std::ostream& os, const Shape& shape)
 {
-  std::cout << fmt::format("Shape: '{0}'\n", shape.name);
-  std::cout << shape.geom;
+  os << fmt::format("Shape: '{0}'\n", shape.name);
+  os << shape.geom;
   return os;
 }
 

@@ -81,23 +81,17 @@ Table& Table::addTable(const std::string& name, const std::string& description)
 Table& Table::addStruct(const std::string& name, const std::string& description)
 {
   auto& base_table = addTable(name, description);
+  for(Table& sub_table : m_nested_aggregates)
+  {
+    base_table.m_nested_aggregates.push_back(
+      sub_table.addStruct(name, description));
+  }
   if(isGenericContainer())
   {
-    if(!m_nested_aggregates.empty())
+    for(const auto& index : containerIndices())
     {
-      for(Table& sub_table : m_nested_aggregates)
-      {
-        base_table.m_nested_aggregates.push_back(
-          sub_table.addStruct(name, description));
-      }
-    }
-    else
-    {
-      for(const auto& index : containerIndices())
-      {
-        base_table.m_nested_aggregates.push_back(
-          getTable(detail::indexToString(index)).addStruct(name, description));
-      }
+      base_table.m_nested_aggregates.push_back(
+        getTable(detail::indexToString(index)).addStruct(name, description));
     }
   }
   return base_table;
@@ -205,8 +199,6 @@ Table& Table::addGenericContainer(const std::string& name,
     {
       table.m_nested_aggregates.push_back(
         getTable(indexPath.first).addGenericContainer<Key>(name, description));
-      Table& curr_table = table.m_nested_aggregates.back();
-      markAsGenericContainer(*curr_table.m_sidreGroup);
     }
     markAsGenericContainer(*table.m_sidreGroup);
   }
