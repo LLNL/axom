@@ -112,8 +112,8 @@ std::vector<VariantKey> Table::containerIndices(bool trimAbsolute) const
       auto view = group->getView(idx);
       if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
       {
-        indices.push_back(view->getString());
         std::string string_idx = view->getString();
+        VariantKey key = string_idx;
         if(trimAbsolute)
         {
           // If the index is full/absolute, we only care about the last segment of it
@@ -122,13 +122,14 @@ std::vector<VariantKey> Table::containerIndices(bool trimAbsolute) const
           int idx_as_int;
           if(checkedConvertToInt(string_idx, idx_as_int))
           {
-            indices.back() = idx_as_int;
+            key = idx_as_int;
           }
           else
           {
-            indices.back() = string_idx;
+            key = string_idx;
           }
         }
+        indices.push_back(key);
       }
       else
       {
@@ -333,14 +334,11 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
     // of structs, so we need to iterate over the subtables
     // corresponding to elements of the array
     std::vector<std::reference_wrapper<VerifiableScalar>> fields;
-    if(!m_nested_aggregates.empty())
+    for(Table& table : m_nested_aggregates)
     {
-      for(Table& table : m_nested_aggregates)
-      {
-        fields.push_back(table.addPrimitive<T>(name, description, forArray, val));
-      }
+      fields.push_back(table.addPrimitive<T>(name, description, forArray, val));
     }
-    else
+    if(isGenericContainer())
     {
       for(const auto& indexPath : containerIndicesWithPaths(name))
       {
@@ -587,14 +585,11 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
   {
     // Adding an array of primitive field to an array of structs
     std::vector<std::reference_wrapper<Verifiable>> tables;
-    if(!m_nested_aggregates.empty())
+    for(Table& table : m_nested_aggregates)
     {
-      for(Table& table : m_nested_aggregates)
-      {
-        tables.push_back(table.addPrimitiveArray<T>(name, description, isDict));
-      }
+      tables.push_back(table.addPrimitiveArray<T>(name, description, isDict));
     }
-    else
+    if(isGenericContainer())
     {
       // Iterate over each element and forward the call to addPrimitiveArray
       for(const auto& indexPath : containerIndicesWithPaths(name))
