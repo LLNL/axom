@@ -26,10 +26,6 @@ Below is a table that lists supported features:
      - X
      - X
      - X
-   * - Maps
-     - X
-     - X
-     - X
    * - Mixed-typed key Arrays
      - 
      - X
@@ -38,6 +34,10 @@ Below is a table that lists supported features:
      - 
      - X
      - 
+   * - Dictionaries
+     - X
+     - X
+     - X
 
 ***********************
 Extra Lua functionality
