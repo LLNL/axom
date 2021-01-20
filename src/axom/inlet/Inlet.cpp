@@ -28,6 +28,11 @@ Table& Inlet::addTable(const std::string& name, const std::string& description)
   return m_globalTable.addTable(name, description);
 }
 
+Table& Inlet::addStruct(const std::string& name, const std::string& description)
+{
+  return m_globalTable.addStruct(name, description);
+}
+
 VerifiableScalar& Inlet::addBool(const std::string& name,
                                  const std::string& description)
 {

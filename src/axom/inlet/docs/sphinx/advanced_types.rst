@@ -9,7 +9,7 @@ and functions can also be defined as part of an input file.
 Adding User-Defined Types to a Schema
 -------------------------------------
 
-To add a single (i.e., not array) user-defined type to the input file, use the ``addTable``
+To add a single (i.e., not array) user-defined type to the input file, use the ``addStruct``
 function of the Inlet or Table classes to add a Table (collection of Fields and sub-Tables)
 that will represent the fields of the struct.
 
