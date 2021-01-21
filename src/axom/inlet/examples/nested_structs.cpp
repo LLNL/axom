@@ -57,9 +57,14 @@ struct Operator
     table.addDoubleArray("axis");
     table.addDoubleArray("center");
     table.addDoubleArray("translate");
-    table.addDouble("x");
-    table.addDouble("y");
-    table.addDouble("z");
+    // The slice operation can have sub-entries, so we represent it as a struct
+    // Note that Inlet does not require a 1-1 correspondence (or any correspondence)
+    // between structures defined in the schema via addStruct and structures extracted
+    // from the input file with FromInlet specializations (defined below)
+    auto& slice = table.addStruct("slice");
+    slice.addDouble("x");
+    slice.addDouble("y");
+    slice.addDouble("z");
   }
 };
 
@@ -84,20 +89,23 @@ struct FromInlet<Operator>
       result.axis = mapToVector(base["axis"]);
       result.center = mapToVector(base["center"]);
     }
-    else if(base.contains("x") || base.contains("y") || base.contains("z"))
+    else if(base.contains("slice"))
     {
       result.type = Operator::Type::Slice;
-      if(base.contains("x"))
+      // Grab the substructure corresponding to the slice operation
+      // and use it to populate the Operator instance
+      auto slice = base["slice"];
+      if(slice.contains("x"))
       {
-        result.x = base["x"];
+        result.x = slice["x"];
       }
-      if(base.contains("y"))
+      if(slice.contains("y"))
       {
-        result.y = base["y"];
+        result.y = slice["y"];
       }
-      if(base.contains("z"))
+      if(slice.contains("z"))
       {
-        result.z = base["z"];
+        result.z = slice["z"];
       }
     }
     return result;
@@ -243,7 +251,7 @@ shapes:
           axis: [1, 2, 3]
           center: [4, 5, 6]
         - slice:
-          x: 10
+            x: 10
         - translate: [5, 6]
 )";
 
