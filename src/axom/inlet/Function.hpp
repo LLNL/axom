@@ -119,10 +119,22 @@ struct cleanup_function_signature<Ret(Args...)>
   using type = Ret(typename inlet_function_arg_type<Args>::type...);
 };
 
+/*!
+ *******************************************************************************
+ * \brief A lightweight type used to store a list of types
+ * \tparam Ts The parameter pack containing the types to store
+ *******************************************************************************
+ */
 template <typename... Ts>
 struct TypeList
 { };
 
+/*!
+ *******************************************************************************
+ * \brief Helper structure used to concatenate parameter packs (lists) of TypeLists
+ * \tparam TypeLists The TypeLists to concatenate (in order)
+ *******************************************************************************
+ */
 template <typename... TypeLists>
 struct Concat;
 
@@ -147,11 +159,21 @@ struct Concat<TypeList<First...>, TypeList<Second...>>
 template <typename... First, typename... Second, typename... Tail>
 struct Concat<TypeList<First...>, TypeList<Second...>, Tail...>
 {
+  // Recursive call used for n > 2 TypeLists - recursive calls will always
+  // be to n - 2 and thus always terminate in one of the above base cases
   using type = typename Concat<TypeList<First..., Second...>, Tail...>::type;
 };
 
+/*!
+ *******************************************************************************
+ * \brief Implements concatenation functionality similar to std::tuple_cat
+ * \tparam TypeLists The TypeLists to concatenate (in order)
+ * \note This function should only be used in unevaluated contexts (e.g., within
+ * a \p decltype expression)
+ *******************************************************************************
+ */
 template <typename... TypeLists>
-typename Concat<TypeLists...>::type type_list_cat(TypeLists&&... lists)
+typename Concat<TypeLists...>::type type_list_cat(TypeLists&&...)
 {
   return {};
 }
