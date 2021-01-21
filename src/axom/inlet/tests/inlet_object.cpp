@@ -77,6 +77,33 @@ TYPED_TEST(inlet_object, simple_struct_by_value)
   EXPECT_FALSE(foo.baz);
 }
 
+TYPED_TEST(inlet_object, simple_struct_verify_pass)
+{
+  std::string testString = "";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_table = inlet.addTable("foo");
+  foo_table.addBool("bar", "bar's description").required(true);
+
+  // Should pass verification as the struct is not present
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_struct_verify_fail)
+{
+  std::string testString = "foo = { baz = true }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_table = inlet.addTable("foo");
+  foo_table.addBool("bar", "bar's description").required(true);
+
+  // It should fail because a) the struct exists, and
+  // b) the required field is not present
+  EXPECT_FALSE(inlet.verify());
+}
+
 TYPED_TEST(inlet_object, simple_array_of_struct_by_value)
 {
   std::string testString =
@@ -177,7 +204,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail)
   EXPECT_FALSE(inlet.verify());
 }
 
-TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail_primitive)
+TYPED_TEST(inlet_object, simple_array_of_primitive_verify_empty_fail)
 {
   std::string testString = "foo = { }";
   DataStore ds;
