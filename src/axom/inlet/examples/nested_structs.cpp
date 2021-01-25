@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+#include "CLI11/CLI11.hpp"
 #include "fmt/fmt.hpp"
 
 #include "axom/slic/core/SimpleLogger.hpp"
@@ -268,6 +269,7 @@ struct FromInlet<Shape>
   }
 };
 
+// "rubber" is not one of the allowed shape materials, so this will fail verification
 const std::string input = R"(
 dimensions: 2
 shapes:
@@ -286,12 +288,26 @@ shapes:
         - slice:
             x: 10
         - translate: [5, 6]
+  - name: tire
+    material: rubber
+    geometry:
+      format: test_format
+      path: path/to/tire.format
+      units: cm
+      operators:
+        - translate: [10, 20]
 )";
 
-int main()
+int main(int argc, char** argv)
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
   axom::slic::SimpleLogger logger;
+
+  
+  CLI::App app {"Example of Axom's Inlet component for nested structures"};
+  bool docsEnabled {false};
+  app.add_flag("--docs", docsEnabled, "Enables documentation generation");
+  CLI11_PARSE(app, argc, argv);
 
   axom::sidre::DataStore ds;
   auto reader = std::unique_ptr<inlet::YAMLReader>(new inlet::YAMLReader());
@@ -301,9 +317,25 @@ int main()
   auto& shapes_table = inlet.addStructArray("shapes");
   Shape::defineSchema(shapes_table);
 
+  if(inlet.verify())
+  {
+    SLIC_INFO("Verification was successful");
+  }
+  else
+  {
+    SLIC_INFO("Verification was unsuccessful");
+  }
+
   auto shapes = inlet["shapes"].get<std::unordered_map<int, Shape>>();
   for(const auto& entry : shapes)
   {
     std::cout << entry.second << "\n";
+  }
+
+  if(docsEnabled)
+  {
+    std::unique_ptr<inlet::SphinxDocWriter> docWriter(new inlet::SphinxDocWriter("nested_structs.rst", inlet.sidreGroup()));
+    inlet.registerDocWriter(std::move(docWriter));
+    inlet.writeDoc();
   }
 }
