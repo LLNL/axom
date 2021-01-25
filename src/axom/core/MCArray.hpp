@@ -31,8 +31,10 @@ constexpr IndexType ZERO = 0;
  * \brief Provides a generic multi-component array container.
  *
  *  The MCArray class provides a generic multi-component array container with
- *  dynamic re-allocation and insertion. Each element in the MCArray is a tuple
+ *  dynamic reallocation and insertion. Each element in the MCArray is a tuple
  *  consisting of 1 or more components, which are stored contiguously.
+ *
+ *  \note For a one-dimensional array container, Axom provides the Array class.
  *
  *  Depending on which constructor is used, the MCArray object can have two
  *  different underlying storage types:
@@ -45,10 +47,14 @@ constexpr IndexType ZERO = 0;
  *     The actual capacity of the MCArray (i.e., total number of tuples that the
  *     MCArray can hold) can be queried by calling the capacity() function.
  *     When allocated memory is used up, inserting a new element triggers a
- *     re-allocation.  At each re-allocation, extra space is allocated
+ *     reallocation.  At each reallocation, extra space is allocated
  *     according to the <em> resize_ratio </em> parameter, which is set to 2.0
  *     by default. To return all extra memory, an application can call
  *     `shrink()`.
+ *
+ *     \warning Reallocations tend to be costly operations in terms of performance.
+ *      Use `reserve()` when the number of nodes is known a priori, or
+ *      use a constructor that takes an actual size and capacity when possible.
  *
  *     \note The MCArray destructor deallocates and returns all memory associated
  *      with it to the system.
@@ -58,7 +64,7 @@ constexpr IndexType ZERO = 0;
  *    An MCArray object may be constructed from an external, user-supplied buffer
  *    consisting of the given number of tuples and specified number of
  *    components per tuple.  In this case, the MCArray object does not own the
- *    memory.  Instead, the MCArray object makes a shallow copy of the pointer.
+ *    memory.  Instead, the MCArray object makes a copy of the pointer.
  *
  *    \warning An MCArray object that points to an external buffer has a fixed
  *     size and cannot be dynamically resized.
@@ -66,9 +72,6 @@ constexpr IndexType ZERO = 0;
  *    \note The MCArray destructor does not deallocate a user-supplied buffer,
  *     since it does not manage that memory.
  *
- * \warning Reallocations tend to be costly operations in terms of performance.
- *  Use `reserve()` when the number of nodes is known a priori, or opt to
- *  use a constructor that takes an actual size and capacity when possible.
  *
  * \tparam T the type of the values to hold.
  *
@@ -94,8 +97,8 @@ public:
    *
    * \note If no capacity or capacity less than num_tuples is specified
    *  then it will default to at least num_tuples * DEFAULT_RESIZE_RATIO.
-   * \note a capacity is specified for the number of tuples to store in the
-   *  MCArray and does not correspond to the actual bytesize.
+   * \note The capacity specifies the number of tuples to store in the
+   *  MCArray, not the size in bytes.
    *
    * \pre num_tuples >= 0
    * \pre num_components >= 1
@@ -131,8 +134,8 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio == 0.0
    *
-   * \note a capacity is specified for the number of tuples to store in the
-   *  MCArray and does not correspond to the actual bytesize.
+   * \note The capacity specifies the number of tuples to store in the
+   *  MCArray, not the size in bytes.
    * \note If no capacity or capacity less than num_tuples is specified then
    *  it will default to the number of tuples.
    *
@@ -186,8 +189,7 @@ public:
    * \brief Accessor, returns a reference to the given value.
    *
    * \param [in] idx the position of the value to return.
-   *
-   * \note equivalent to *(mcarray.getData() + idx).
+   *  Equivalent to *(mcarray.getData() + idx).
    *
    * \pre 0 <= idx < m_num_tuples * m_num_components
    */
@@ -225,7 +227,7 @@ public:
   /// @{
 
   /*!
-   * \brief Set all the values of the MCArray.
+   * \brief Set all the values (each component of each tuple) of the MCArray.
    *
    * \param [in] value the value to set to.
    */
@@ -271,7 +273,8 @@ public:
   void set(const T* tuples, IndexType n, IndexType pos);
 
   /*!
-   * \brief Insert a tuple into the MCArray at the given position.
+   * \brief Insert a single-component tuple into the MCArray at the given
+   *  position.
    *
    * \param [in] value the value to insert.
    * \param [in] pos the position at which to insert.
@@ -425,7 +428,7 @@ protected:
   /*!
    * \brief Make space for a subsequent insertion into the MCArray.
    *
-   * \param [in] n the number of tuples to insert.
+   * \param [in] n the number of tuples to reserve.
    * \param [in] pos the position at which to begin the insertion.
    *
    * \return a pointer to the beginning of the insertion space.
