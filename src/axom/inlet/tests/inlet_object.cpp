@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -143,6 +143,110 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
 
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_pass)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+  // Even though these are required, the input file should still
+  // "verify" as the array is empty
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should fail because the array is empty
+  // and was required
+  auto& arr_table = inlet.addGenericArray("foo").required(true);
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail_primitive)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should fail because the array is empty
+  // and was required
+  inlet.addIntArray("foo").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false;} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description").required();
+
+  // Ensuring that foo is the element of the container
+  arr_table.registerVerifier(
+    [](const axom::inlet::Table& foo) { return foo.contains("bar"); });
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_pass)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { baz = false;} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+
+  // Can specify either "bar" or "baz" but not both
+  arr_table.registerVerifier([](const axom::inlet::Table& foo) {
+    return !(foo.contains("bar") && foo.contains("baz"));
+  });
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+
+  // Can specify either "bar" or "baz" but not both
+  arr_table.registerVerifier([](const axom::inlet::Table& foo) {
+    return !(foo.contains("bar") && foo.contains("baz"));
+  });
 
   EXPECT_FALSE(inlet.verify());
 }

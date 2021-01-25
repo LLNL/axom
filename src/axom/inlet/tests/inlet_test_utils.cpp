@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -202,8 +202,10 @@ std::string LuaTranslator::convertJSON(const std::string& luaString)
     {
       result += indent + '"' + token + '"' + ": ";
       // Curly brace if it's a string-keyed table (not integer-keyed) and not implicitly indexed
-      const char open_bracket =
-        (!isdigit(tokens[i + 4].front()) && (tokens[i + 3] != "{")) ? '{' : '[';
+      const char open_bracket = (i + 4 >= tokens.size()) ||
+          (!isdigit(tokens[i + 4].front()) && (tokens[i + 3] != "{"))
+        ? '{'
+        : '[';
       delim_stack.push(open_bracket);
       result += open_bracket;
       result += '\n';
