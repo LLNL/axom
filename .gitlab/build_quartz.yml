@@ -57,9 +57,9 @@ clang_10_0_0 (PR build_on_quartz):
     HOST_CONFIG: "quartz-toss_3_x86_64_ib-${COMPILER}.cmake"
   extends: .pr_build_on_quartz
 
-gcc_8_3_1 (PR build_on_quartz):
+gcc_8_1_0 (PR build_on_quartz):
   variables:
-    COMPILER: "gcc@8.3.1"
+    COMPILER: "gcc@8.1.0"
     HOST_CONFIG: "quartz-toss_3_x86_64_ib-${COMPILER}.cmake"
   extends: .pr_build_on_quartz
 
@@ -69,9 +69,9 @@ clang_10_0_0 (Main build_with_deps_on_quartz):
     SPEC: "@develop%${COMPILER}"
   extends: .main_build_with_deps_on_quartz
 
-gcc_8_3_1 (Main build_with_deps_on_quartz):
+gcc_8_1_0 (Main build_with_deps_on_quartz):
   variables:
-    COMPILER: "gcc@8.3.1"
+    COMPILER: "gcc@8.1.0"
     SPEC: "@develop%${COMPILER}"
   extends: .main_build_with_deps_on_quartz
 
