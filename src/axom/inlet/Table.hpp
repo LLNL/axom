@@ -363,6 +363,7 @@ public:
   // Functions that define the input file schema
   //
 
+  // FIXME: Make private in future PR
   /*!
    *****************************************************************************
    * \brief Add a Table to the input file schema.
@@ -449,6 +450,7 @@ public:
   Verifiable<Table>& addStringArray(const std::string& name,
                                     const std::string& description = "");
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add an array of Fields to the input file schema.
@@ -461,6 +463,22 @@ public:
    */
   Table& addGenericArray(const std::string& name,
                          const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the array
+   *
+   * \return Reference to the created array
+   *****************************************************************************
+   */
+  Table& addStructArray(const std::string& name,
+                        const std::string& description = "")
+  {
+    return addGenericArray(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -513,6 +531,7 @@ public:
   Verifiable<Table>& addStringDictionary(const std::string& name,
                                          const std::string& description = "");
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add a dictionary of user-defined types to the input file schema.
@@ -525,6 +544,22 @@ public:
    */
   Table& addGenericDictionary(const std::string& name,
                               const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an dictionary of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the dictionary
+   * \param [in] description Description of the dictionary
+   *
+   * \return Reference to the created dictionary
+   *****************************************************************************
+   */
+  Table& addStructDictionary(const std::string& name,
+                             const std::string& description = "")
+  {
+    return addGenericDictionary(name, description);
+  }
 
   /*!
    *****************************************************************************

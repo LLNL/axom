@@ -445,6 +445,7 @@ public:
     return m_globalTable.addStringArray(name, description);
   }
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add an array of user-defined types to the input file schema.
@@ -459,6 +460,22 @@ public:
                          const std::string& description = "")
   {
     return m_globalTable.addGenericArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the array
+   *
+   * \return Reference to the created array
+   *****************************************************************************
+   */
+  Table& addStructArray(const std::string& name,
+                        const std::string& description = "")
+  {
+    return m_globalTable.addStructArray(name, description);
   }
 
   /*!
@@ -544,6 +561,7 @@ public:
     return m_globalTable.addStringDictionary(name, description);
   }
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add a dictionary of user-defined types to the input file schema.
@@ -558,6 +576,22 @@ public:
                               const std::string& description = "")
   {
     return m_globalTable.addGenericDictionary(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an dictionary of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the dictionary
+   * \param [in] description Description of the dictionary
+   *
+   * \return Reference to the created dictionary
+   *****************************************************************************
+   */
+  Table& addStructDictionary(const std::string& name,
+                             const std::string& description = "")
+  {
+    return m_globalTable.addStructDictionary(name, description);
   }
 
   // TODO add update value functions

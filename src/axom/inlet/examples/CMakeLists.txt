@@ -13,14 +13,12 @@
 set(inlet_examples
     nested_structs.cpp )
 
-if (SOL_FOUND)
-   set(inlet_examples
-        arrays.cpp
-        verification.cpp
-        user_defined_type.cpp
-        documentation_generation.cpp
-        ${inlet_examples} )
-endif()
+blt_list_append( TO inlet_examples ELEMENTS
+    arrays.cpp
+    verification.cpp
+    user_defined_type.cpp
+    documentation_generation.cpp
+    IF SOL_FOUND )
 
 foreach(example ${inlet_examples})
     get_filename_component( ex_name ${example} NAME_WE )

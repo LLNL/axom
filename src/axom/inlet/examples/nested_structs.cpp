@@ -65,6 +65,21 @@ struct Operator
     slice.addDouble("x");
     slice.addDouble("y");
     slice.addDouble("z");
+
+    table.registerVerifier([](const inlet::Table& table) {
+      const bool is_translate = table.contains("translate");
+      const bool is_rotate = table.contains("rotate");
+      const bool is_slice = table.contains("slice");
+
+      // Can only be one
+      if((is_translate && is_rotate) || (is_translate && is_slice) ||
+         (is_rotate && is_slice))
+      {
+        return false;
+      }
+
+      return true;
+    });
   }
 };
 
@@ -151,11 +166,11 @@ struct Geometry
     table.addString("format");
     table.addString("path");
     // A string is used to represent the enumeration
-    table.addString("units");
-    table.addInt("start_dimensions");
-    // addGenericArray is used to represent std::vector<T> where
+    table.addString("units").defaultValue("cm").validValues({"cm", "m"});
+    table.addInt("start_dimensions").defaultValue(3);
+    // addStructArray is used to represent std::vector<T> where
     // T is any non-primitive type
-    auto& ops_table = table.addGenericArray("operators");
+    auto& ops_table = table.addStructArray("operators");
     Operator::defineSchema(ops_table);
   }
 };
@@ -169,6 +184,16 @@ struct FromInlet<Geometry>
     result.format = base["format"];
     result.path = base["path"];
     result.start_dim = base["start_dimensions"];
+
+    std::string units = base["units"];
+    if(units == "cm")
+    {
+      result.units = Geometry::Units::Centimeters;
+    }
+    else if(units == "m")
+    {
+      result.units = Geometry::Units::Meters;
+    }
 
     // FIXME: Remove when PR #429 is merged
     auto ops = base["operators"].get<std::unordered_map<int, Operator>>();
@@ -203,8 +228,8 @@ struct Shape
   Geometry geom;
   static void defineSchema(inlet::Table& table)
   {
-    table.addString("name");
-    table.addString("material");
+    table.addString("name").required();
+    table.addString("material").validValues({"steel", "wood", "plastic"});
     // addStruct is used for a single instance of a user-defined type
     auto& geom_table = table.addStruct("geometry");
     Geometry::defineSchema(geom_table);
@@ -229,6 +254,14 @@ struct FromInlet<Shape>
     if(material == "steel")
     {
       result.material = Shape::Material::Steel;
+    }
+    else if(material == "wood")
+    {
+      result.material = Shape::Material::Wood;
+    }
+    else if(material == "plastic")
+    {
+      result.material = Shape::Material::Plastic;
     }
     result.geom = base["geometry"].get<Geometry>();
     return result;
@@ -265,7 +298,7 @@ int main()
   reader->parseString(input);
   inlet::Inlet inlet(std::move(reader), ds.getRoot());
 
-  auto& shapes_table = inlet.addGenericArray("shapes");
+  auto& shapes_table = inlet.addStructArray("shapes");
   Shape::defineSchema(shapes_table);
 
   auto shapes = inlet["shapes"].get<std::unordered_map<int, Shape>>();
