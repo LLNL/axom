@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,9 +65,15 @@ bool operator!=(const Array<T>& lhs, const Array<T>& rhs);
  *
  * \brief Provides a generic array container.
  *
- *  The Array class provides a generic  array container with
- *  dynamic re-allocation and insertion. Each element in the array is 
+ *  The Array class provides a generic array container with
+ *  dynamic reallocation and insertion. Each element in the array is
  *  stored contiguously.
+ *
+ *  \note For a multi-component array container, where each element
+ *  is a tuple of 1 or more components, Axom provides the MCArray class.
+ *
+ *  The Array class mirrors std::array, with future support for GPUs
+ *  in-development.
  *
  *  Depending on which constructor is used, the Array object can have two
  *  different underlying storage types:
@@ -80,10 +86,14 @@ bool operator!=(const Array<T>& lhs, const Array<T>& rhs);
  *     The actual capacity of the array (i.e., total number of elements that
  *     the Array can hold) can be queried by calling the capacity() function.
  *     When allocated memory is used up, inserting a new element triggers a
- *     re-allocation.  At each re-allocation, extra space is allocated
+ *     reallocation.  At each reallocation, extra space is allocated
  *     according to the <em> resize_ratio </em> parameter, which is set to 2.0
  *     by default. To return all extra memory, an application can call
  *     `shrink()`.
+ *
+ *     \warning Reallocations tend to be costly operations in terms of performance.
+ *      Use `reserve()` when the number of nodes is known a priori, or
+ *      use a constructor that takes an actual size and capacity when possible.
  *
  *     \note The Array destructor deallocates and returns all memory associated
  *      with it to the system.
@@ -101,9 +111,6 @@ bool operator!=(const Array<T>& lhs, const Array<T>& rhs);
  *    \note The Array destructor does not deallocate a user-supplied buffer,
  *     since it does not manage that memory.
  *
- * \warning Reallocations tend to be costly operations in terms of performance.
- *  Use `reserve()` when the number of nodes is known a priori, or opt to
- *  use a constructor that takes an actual size and capacity when possible.
  *
  * \tparam T the type of the values to hold.
  *
