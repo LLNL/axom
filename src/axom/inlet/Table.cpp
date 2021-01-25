@@ -713,37 +713,46 @@ Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
 bool Table::verify() const
 {
   bool verified = true;
+  // Whether the calling table has any "truthy" subtables, fields, or functions
+  // If the name is empty then we're the global (root) table, which we always
+  // consider to be defined
+  const bool this_table_defined = static_cast<bool>(*this) || m_name.empty();
   // If this table was required, make sure something was defined in it
-  verified &= verifyRequired(*m_sidreGroup, static_cast<bool>(*this), "Table");
-  // Verify this Table if a lambda was configured
-  if(m_verifier && !m_verifier(*this))
-  {
-    verified = false;
-    SLIC_WARNING(fmt::format("[Inlet] Table failed verification: {0}", m_name));
-  }
-  // Verify the child Fields of this Table
-  for(const auto& field : m_fieldChildren)
-  {
-    if(!field.second->verify())
-    {
-      verified = false;
-    }
-  }
-  // Verify the child Tables of this Table
-  for(const auto& table : m_tableChildren)
-  {
-    if(!table.second->verify())
-    {
-      verified = false;
-    }
-  }
+  verified &= verifyRequired(*m_sidreGroup, this_table_defined, "Table");
 
-  // Verify the child Functions of this Table
-  for(const auto& function : m_functionChildren)
+  // Checking the lambda and child objects is not needed if the table is empty
+  if (this_table_defined)
   {
-    if(!function.second->verify())
+    // Verify this Table if a lambda was configured
+    if(m_verifier && !m_verifier(*this))
     {
       verified = false;
+      SLIC_WARNING(fmt::format("[Inlet] Table failed verification: {0}", m_name));
+    }
+    // Verify the child Fields of this Table
+    for(const auto& field : m_fieldChildren)
+    {
+      if(!field.second->verify())
+      {
+        verified = false;
+      }
+    }
+    // Verify the child Tables of this Table
+    for(const auto& table : m_tableChildren)
+    {
+      if(!table.second->verify())
+      {
+        verified = false;
+      }
+    }
+
+    // Verify the child Functions of this Table
+    for(const auto& function : m_functionChildren)
+    {
+      if(!function.second->verify())
+      {
+        verified = false;
+      }
     }
   }
 

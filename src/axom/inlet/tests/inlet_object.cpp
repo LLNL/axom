@@ -85,6 +85,7 @@ TYPED_TEST(inlet_object, simple_struct_verify_pass)
 
   auto& foo_table = inlet.addTable("foo");
   foo_table.addBool("bar", "bar's description").required(true);
+  foo_table.addBool("baz", "baz's description").required(true);
 
   // Should pass verification as the struct is not present
   EXPECT_TRUE(inlet.verify());
@@ -98,9 +99,12 @@ TYPED_TEST(inlet_object, simple_struct_verify_fail)
 
   auto& foo_table = inlet.addTable("foo");
   foo_table.addBool("bar", "bar's description").required(true);
+  foo_table.addBool("baz", "baz's description").required(true);
 
   // It should fail because a) the struct exists, and
-  // b) the required field is not present
+  // b) one of the required fields is not present
+  // Note that the only reason the struct is marked as present
+  // is because at least one of its expected fields is present
   EXPECT_FALSE(inlet.verify());
 }
 
