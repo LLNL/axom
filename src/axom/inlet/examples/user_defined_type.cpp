@@ -184,13 +184,13 @@ struct ThermalSolver
   static void defineSchema(inlet::Table& schema)
   {
     // _inlet_userdef_simple_usage_start
-    auto& mesh_table = schema.addStruct("mesh", "Information about the mesh");
-    Mesh::defineSchema(mesh_table);
+    auto& mesh_schema = schema.addStruct("mesh", "Information about the mesh");
+    Mesh::defineSchema(mesh_schema);
     // _inlet_userdef_simple_usage_end
-    auto& solver_table = schema.addStruct(
+    auto& solver_schema = schema.addStruct(
       "solver",
       "Information about the iterative solver used for Ku = f");
-    LinearSolver::defineSchema(solver_table);
+    LinearSolver::defineSchema(solver_schema);
 
     // _inlet_userdef_array_usage_start
     // Schema only needs to be defined once, will propagate through to each
@@ -256,10 +256,10 @@ int main(int argc, char** argv)
 
   // Create a table off the global table for the thermal_solver object
   // then define its schema
-  auto& thermal_solver_table =
+  auto& thermal_solver_schema =
     inlet.addStruct("thermal_solver",
                     "Configuration for a thermal conduction module");
-  ThermalSolver::defineSchema(thermal_solver_table);
+  ThermalSolver::defineSchema(thermal_solver_schema);
 
   if(!inlet.verify())
   {

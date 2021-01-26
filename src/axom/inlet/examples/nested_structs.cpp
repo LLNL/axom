@@ -74,7 +74,7 @@ struct Operator
       const bool is_rotate = table.contains("rotate");
       const bool is_slice = table.contains("slice");
 
-      // Can only be one
+      // There can be only one
       if((is_translate && is_rotate) || (is_translate && is_slice) ||
          (is_rotate && is_slice))
       {
@@ -149,6 +149,8 @@ std::ostream& operator<<(std::ostream& os, const Operator& op)
     os << fmt::format("      with y-coord: {0}\n", op.y);
     os << fmt::format("      with z-coord: {0}\n", op.z);
     break;
+  default:
+    SLIC_ERROR("Operator had unknown type");
   }
   return os;
 }
@@ -173,8 +175,8 @@ struct Geometry
     table.addInt("start_dimensions").defaultValue(3);
     // addStructArray is used to represent std::vector<T> where
     // T is any non-primitive type
-    auto& ops_table = table.addStructArray("operators");
-    Operator::defineSchema(ops_table);
+    auto& ops_schema = table.addStructArray("operators");
+    Operator::defineSchema(ops_schema);
   }
 };
 
@@ -234,8 +236,8 @@ struct Shape
     table.addString("name").required();
     table.addString("material").validValues({"steel", "wood", "plastic"});
     // addStruct is used for a single instance of a user-defined type
-    auto& geom_table = table.addStruct("geometry");
-    Geometry::defineSchema(geom_table);
+    auto& geom_schema = table.addStruct("geometry");
+    Geometry::defineSchema(geom_schema);
   }
 };
 

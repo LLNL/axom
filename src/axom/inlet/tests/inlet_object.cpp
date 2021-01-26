@@ -742,11 +742,11 @@ TYPED_TEST(inlet_object, nested_array_of_nested_structs)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& quux_table = inlet.addGenericArray("quux");
-  auto& foo_table = quux_table.addStruct("foo");
+  auto& quux_schema = inlet.addStructArray("quux");
+  auto& foo_schema = quux_schema.addStruct("foo");
 
-  foo_table.addBool("bar", "bar's description");
-  foo_table.addBool("baz", "baz's description");
+  foo_schema.addBool("bar", "bar's description");
+  foo_schema.addBool("baz", "baz's description");
 
   // Contiguous indexing for generality
   std::unordered_map<int, QuuxWithSingleFoo> expected_quuxs = {
