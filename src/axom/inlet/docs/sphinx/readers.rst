@@ -14,7 +14,7 @@ Below is a table that lists supported features:
      - JSON
      - Lua
      - YAML
-   * - Types
+   * - Primitive Types
      - bool, double, int, string
      - bool, double, int, string
      - bool, double, int, string

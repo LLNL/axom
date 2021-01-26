@@ -196,7 +196,7 @@ int main(int argc, char** argv)
   }
 
   return 0;
-#else  // MFEM_STDFUNCTION_COEF
+#else   // MFEM_STDFUNCTION_COEF
   // Quiet unused variable warnings
   AXOM_DEBUG_VAR(argc);
   AXOM_DEBUG_VAR(argv);
