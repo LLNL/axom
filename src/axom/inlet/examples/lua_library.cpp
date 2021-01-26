@@ -11,20 +11,28 @@
 #include "axom/inlet.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 
-#include "CLI11/CLI11.hpp"
-
-const char* TEST_FILE_NAME = "load_library_test_file";
-
-// TODO: add string and None to functions?
-const char* LUA_STRING = R"PREFIX(
-read_str = function (x,y,z)
-    file = io.open('load_library_test_file', 'r')
-    return tonumber(file:read())
-end
-)PREFIX";
-
-bool load_library()
+int main()
 {
+  const std::string test_file_name = "load_library_test_file";
+
+  // TODO: add string and None to functions?
+  const std::string input = R"(
+  read_str = function (x,y,z)
+      file = io.open('load_library_test_file', 'r')
+      return tonumber(file:read())
+  end
+  )";
+
+  // Inlet requires a SLIC logger to be initialized to output runtime information
+  // This is a generic basic SLIC logger
+  axom::slic::SimpleLogger logger;
+
+  // Write test file
+  std::ofstream myfile;
+  myfile.open(test_file_name);
+  myfile << "7.4";
+  myfile.close();
+
   // _inlet_io_library_add_start
   // Create Inlet Reader that supports Lua input files
   auto lr = std::make_unique<axom::inlet::LuaReader>();
@@ -32,11 +40,11 @@ bool load_library()
   // Load extra io Lua library
   lr->solState().open_libraries(sol::lib::io);
 
-  // Parse example input file
-  lr->parseString(LUA_STRING);
+  // Parse example input string
+  lr->parseString(input);
   // _inlet_io_library_add_end
 
-  // Inlet stores all input file in the Sidre DataStore
+  // Inlet stores all input information in the Sidre DataStore
   axom::sidre::DataStore ds;
 
   // Create Inlet with LuaReader and the Sidre Group which Inlet will use
@@ -57,32 +65,12 @@ bool load_library()
   if(result != 7.4)
   {
     std::cerr << "Failed to read '7.4' from test file." << std::endl;
+    return 1;
   }
   std::cout << "Successfully read '7.4' from test file." << std::endl;
-  return true;
-}
-
-int main()
-{
-  // Inlet requires a SLIC logger to be initialized to output runtime information
-  // This is a generic basic SLIC logger
-  axom::slic::SimpleLogger logger;
-
-  // Write test file
-  std::ofstream myfile;
-  myfile.open(TEST_FILE_NAME);
-  myfile << "7.4";
-  myfile.close();
-
-  // Small example of loading an extra Lua library
-  int result = 0;
-  if(!load_library())
-  {
-    result = 1;
-  }
 
   // Clean up test file
-  remove(TEST_FILE_NAME);
+  remove(test_file_name.c_str());
 
-  return result;
+  return 0;
 }

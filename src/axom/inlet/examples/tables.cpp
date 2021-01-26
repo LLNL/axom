@@ -9,8 +9,6 @@
 #include "axom/inlet.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 
-#include "CLI11/CLI11.hpp"
-
 /* Input file snippet used for documentation
 //_inlet_simple_types_tables_input_start
 
@@ -32,7 +30,7 @@ int main()
   // This is a generic basic SLIC logger
   axom::slic::SimpleLogger logger;
 
-  std::string input = R""""(
+  const std::string input = R"(
     driver = {
         name = "Speed Racer",
         car = {
@@ -41,7 +39,7 @@ int main()
             horsepower = 200
         }
     }
-  )"""";
+  )";
 
   // Create Inlet Reader that supports Lua input files
   auto lr = std::make_unique<axom::inlet::LuaReader>();
