@@ -15,7 +15,7 @@ int main()
 {
   const std::string test_file_name = "load_library_test_file";
 
-  // TODO: add string and None to functions?
+  // FIXME: Change signature to double(void) when #424 is merged
   const std::string input = R"(
   read_str = function (x,y,z)
       file = io.open('load_library_test_file', 'r')
@@ -51,6 +51,7 @@ int main()
   axom::inlet::Inlet myinlet(std::move(lr), ds.getRoot());
 
   // Define and store the values in the input file
+  // FIXME: Change signature to double(void) when #424 is merged
   myinlet.addFunction("read_str",
                       axom::inlet::FunctionTag::Double,  // Return type
                       {axom::inlet::FunctionTag::Vec3D},  // Argument types (unused)

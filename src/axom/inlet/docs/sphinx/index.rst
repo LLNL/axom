@@ -19,8 +19,10 @@ Introduction
 ------------
 
 Inlet provides an easy and extensible way to handle input files for simulation code.
-We provide JSON, Lua, and YAML functionality but any language can be used via an inherited
-Reader class. Inlet is used to define the structure of the information expected in your input file.
+We provide JSON, Lua, and YAML functionality but additional language can be supported
+via an implementation of Inlet's Reader interface.
+
+Inlet is used to define the structure of the information expected in your input file.
 That data is then read via a Reader class into the Sidre Datastore.  You can then verify
 that the input file met your criteria and use that information later in your code.
 

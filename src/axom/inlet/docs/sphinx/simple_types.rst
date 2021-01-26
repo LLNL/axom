@@ -2,13 +2,13 @@
 Simple Types
 ############
 
-To help structure your input file, Inlet categories the information into
+To help structure your input file, Inlet categorizes the information into
 two types: Fields and Tables.
 
 Fields refer to the individual scalar values that are either at the global level or
-that is contained inside of a Table.
+that are contained inside of a Table.
 
-Tables can contain multiple Fields, as well as, a single array, and a single dictionary.
+Tables can contain multiple Fields, other sub-Tables, as well as a single array or a single dictionary.
 
 .. note::  There is an inherent global Table that holds all global level Fields.  This can be
   accessed via your `Inlet` class instance.
@@ -18,8 +18,8 @@ Tables can contain multiple Fields, as well as, a single array, and a single dic
 Fields
 *******
 
-In Inlet, Fields represent an individual scalar value. There are four supported
-field types: ``bool``, ``int``, ``double``, and ``string``.
+In Inlet, Fields represent an individual scalar value of primitive type.
+There are four supported field types: ``bool``, ``int``, ``double``, and ``string``.
 
 In this example we will be using the following part of an input file:
 
@@ -68,8 +68,8 @@ Tables
 ******
 
 Tables help with grouping associated data together into a single container. Tables can
-contain multiple individually named Fields, as well as, a single array, and a single
-dictionary.    
+contain multiple individually named Fields, multiple sub-Tables, as well as a single
+array or a single dictionary.
 
 In this example, we will be using the following part of an input file:
 
@@ -92,6 +92,11 @@ DataStore to be accessed later.
 
 This example also shows that the ``color`` Field that was not given in the
 input file but used the default value that was specified in the schema.
+
+.. note:: Although nested Tables are added with the ``addStruct`` method,
+   Inlet does not require any correspondence between nested structures defined
+   in the schema via ``addStruct`` and C++ ``struct`` s.
+   See :ref:`Advanced Types <inlet_advanced_types_label>` for more info.
 
 Accessing
 ---------
