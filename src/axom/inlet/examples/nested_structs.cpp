@@ -53,7 +53,8 @@ struct Operator
   // Again, the union of the necessary members are defined as part of the schema
   static void defineSchema(inlet::Table& table)
   {
-    table.addDouble("rotate");
+    // The rotation is in degrees
+    table.addDouble("rotate").range(-180, 180);
     // Vectors are defined as arrays of doubles
     table.addDoubleArray("axis");
     table.addDoubleArray("center");
@@ -67,6 +68,7 @@ struct Operator
     slice.addDouble("y");
     slice.addDouble("z");
 
+    // Verify that exactly one type of operator is defined
     table.registerVerifier([](const inlet::Table& table) {
       const bool is_translate = table.contains("translate");
       const bool is_rotate = table.contains("rotate");
@@ -79,7 +81,7 @@ struct Operator
         return false;
       }
 
-      return true;
+      return is_translate || is_rotate || is_slice;
     });
   }
 };
@@ -303,7 +305,6 @@ int main(int argc, char** argv)
   // Inlet requires a SLIC logger to be initialized to output runtime information
   axom::slic::SimpleLogger logger;
 
-  
   CLI::App app {"Example of Axom's Inlet component for nested structures"};
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");
@@ -334,7 +335,8 @@ int main(int argc, char** argv)
 
   if(docsEnabled)
   {
-    std::unique_ptr<inlet::SphinxDocWriter> docWriter(new inlet::SphinxDocWriter("nested_structs.rst", inlet.sidreGroup()));
+    std::unique_ptr<inlet::SphinxDocWriter> docWriter(
+      new inlet::SphinxDocWriter("nested_structs.rst", inlet.sidreGroup()));
     inlet.registerDocWriter(std::move(docWriter));
     inlet.writeDoc();
   }
