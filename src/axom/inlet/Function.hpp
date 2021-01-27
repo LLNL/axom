@@ -39,7 +39,7 @@ namespace inlet
  * \brief The tags used to describe function signatures in the input file
  * 
  * \note Additions to this enumeration should be propagated to FunctionType, LuaReader
- * and func_signature_tuples defined below (the mapping from enum to types)
+ * and func_signature_lists defined below (the mapping from enum to types)
  * 
  * \note Vec3D corresponds to a three-dimensional vector, Double corresponds to
  * a floating-point scalar
@@ -51,7 +51,9 @@ namespace inlet
 enum class FunctionTag
 {
   Vec3D,
-  Double
+  Double,
+  Void,
+  String
 };
 
 /*!
@@ -65,6 +67,8 @@ struct FunctionType
 {
   using Vec3D = axom::primal::Vector3D;
   using Double = double;
+  using Void = void;
+  using String = std::string;
 };
 
 namespace detail
@@ -115,52 +119,111 @@ struct cleanup_function_signature<Ret(Args...)>
   using type = Ret(typename inlet_function_arg_type<Args>::type...);
 };
 
+/*!
+ *******************************************************************************
+ * \brief A lightweight type used to store a list of types
+ * \tparam Ts The parameter pack containing the types to store
+ *******************************************************************************
+ */
+template <typename... Ts>
+struct TypeList
+{ };
+
+/*!
+ *******************************************************************************
+ * \brief Helper structure used to concatenate parameter packs (lists) of TypeLists
+ * \tparam TypeLists The TypeLists to concatenate (in order)
+ *******************************************************************************
+ */
+template <typename... TypeLists>
+struct Concat;
+
+template <>
+struct Concat<>
+{
+  using type = TypeList<>;
+};
+
+template <typename... Types>
+struct Concat<TypeList<Types...>>
+{
+  using type = TypeList<Types...>;
+};
+
+template <typename... First, typename... Second>
+struct Concat<TypeList<First...>, TypeList<Second...>>
+{
+  using type = TypeList<First..., Second...>;
+};
+
+template <typename... First, typename... Second, typename... Tail>
+struct Concat<TypeList<First...>, TypeList<Second...>, Tail...>
+{
+  // Recursive call used for n > 2 TypeLists - recursive calls will always
+  // be to n - 2 and thus always terminate in one of the above base cases
+  using type = typename Concat<TypeList<First..., Second...>, Tail...>::type;
+};
+
+/*!
+ *******************************************************************************
+ * \brief Implements concatenation functionality similar to std::tuple_cat
+ * \tparam TypeLists The TypeLists to concatenate (in order)
+ * \note This function should only be used in unevaluated contexts (e.g., within
+ * a \p decltype expression)
+ *******************************************************************************
+ */
+template <typename... TypeLists>
+typename Concat<TypeLists...>::type type_list_cat(TypeLists&&...)
+{
+  return {};
+}
+
 // The permutation metaprogramming was assisted by the following:
 // https://nolte.dev/jekyll/update/2019/06/06/fun-with-tuples.html
 // https://stackoverflow.com/questions/55005063/create-a-type-list-combination-of-types-in-c
 
 /*!
  *******************************************************************************
- * \brief Adds a single type to a single tuple type via prepending
+ * \brief Adds a single type to a single TypeList via prepending
  *
- * \tparam T The type to add to the tuple, e.g., <A>
- * \tparam Ts... The types in the existing tuple, e.g., <B, C, D>
+ * \tparam T The type to add to the TypeList, e.g., <A>
+ * \tparam Ts... The types in the existing TypeList, e.g., <B, C, D>
  * 
- * In the above example the result type is std::tuple<A, B, C, D>
+ * In the above example the result type is TypeList<A, B, C, D>
  *******************************************************************************
  */
 template <typename T, typename... Ts>
-struct tuple_concat;
+struct list_prepend;
 
 template <typename T, typename... Ts>
-struct tuple_concat<T, std::tuple<Ts...>>
+struct list_prepend<T, TypeList<Ts...>>
 {
-  // Expand the parameter pack within the single tuple alias decl
-  using type = std::tuple<T, Ts...>;
+  // Expand the parameter pack within the single list alias decl
+  using type = TypeList<T, Ts...>;
 };
 
 /*!
  *******************************************************************************
- * \brief Adds a single type to a parameter pack of tuples
+ * \brief Adds a single type to a parameter pack of TypeLists
  *
- * \tparam T The type to add to the tuple, e.g., <A>
- * \tparam Ts... The types of the tuples to add to, e.g., <std::tuple<B, C>, std::tuple<D, E>>
+ * \tparam T The type to add to the TypeLists, e.g., <A>
+ * \tparam Ts... The types of the TypeLists to add to, e.g., <TypeList<B, C>, TypeList<D, E>>
  * 
- * In the above example the result type is std::tuple<std::tuple<A, B, C>, std::tuple<A, D, E>>
+ * In the above example the result type is TypeList<TypeList<A, B, C>, TypeList<A, D, E>>
  * 
  * The Python-like pseudocode for this function is roughly:
  * \code{.py}
- * def multi_tuple_concat(T, Ts):
+ * def multi_list_prepend(T, Ts):
  *   return [T + T_ for T_ in Ts]
  * \endcode
  *******************************************************************************
  */
 template <typename T, typename... Ts>
-struct multi_tuple_concat
+struct multi_list_prepend
 {
-  // Expand the parameter pack across calls to tuple_concat so T is prepended
-  // to each tuple
-  using type = std::tuple<typename tuple_concat<T, Ts>::type...>;
+  // Expand the parameter pack across calls to list_prepend so T is prepended
+  // to each TypeList
+  using type = TypeList<typename list_prepend<T, Ts>::type...>;
 };
 
 /*!
@@ -169,19 +232,19 @@ struct multi_tuple_concat
  *
  * \tparam N The zero-indexed length of the permutations to produce ("stack height")
  * \tparam Ts... The original (1-dimensional) set of types to permute, e.g. <A, B, C>
- * \tparam Us... The current "result" tuple of tuples, each member U in Us will
- * be a tuple whose size is the original requested permutation length minus the
+ * \tparam Us... The current "result" list of lists, each member U in Us will
+ * be a list whose size is the original requested permutation length minus the
  * current stack height N
  * 
- * \note This function works by modifying the "result" type.  The multi_tuple_concat
- * is called to add each original type T to each U in Us.  The resulting tuple
- * of tuples from the concatenation of each T is then concatenated with std::tuple_cat.
- * For example, with Ts = <A, B, C> and Us = std::tuple<std::tuple<A>, std::tuple<B>, std::tuple<C>>,
- * the full tuple_cat call is std::tuple_cat(std::tuple<std::tuple<A, A>, std::tuple<A, B>, 
- * std::tuple<A, C>>, std::tuple<std::tuple<B, A>, std::tuple<B, B>, std::tuple<B, C>>, ...)
+ * \note This function works by modifying the "result" type.  The multi_list_prepend
+ * is called to add each original type T to each U in Us.  The resulting list
+ * of lists from the concatenation of each T is then concatenated with type_list_cat.
+ * For example, with Ts = <A, B, C> and Us = TypeList<TypeList<A>, TypeList<B>, TypeList<C>>,
+ * the full type_list_cat call is type_list_cat(TypeList<TypeList<A, A>, TypeList<A, B>, 
+ * TypeList<A, C>>, TypeList<TypeList<B, A>, TypeList<B, B>, TypeList<B, C>>, ...)
  * 
- * The Us pack is expanded in the multi_tuple_concat "call" whereas the Ts pack
- * is expanded as part of the std::tuple_cat "call"
+ * The Us pack is expanded in the multi_list_prepend "call" whereas the Ts pack
+ * is expanded as part of the type_list_cat "call"
  * 
  * The Python-like pseudocode for this function is roughly:
  * \code{.py}
@@ -201,10 +264,10 @@ struct permutation_helper
 {
   // Implemented as a function to allow for two parameter packs
   template <typename... Ts, typename... Us>
-  static auto get(std::tuple<Ts...> t, std::tuple<Us...> u)
+  static auto get(TypeList<Ts...> t, TypeList<Us...> u)
     -> decltype(permutation_helper<N - 1>::get(
       t,
-      std::tuple_cat(typename multi_tuple_concat<Ts, Us...>::type()...)));
+      type_list_cat(typename multi_list_prepend<Ts, Us...>::type()...)));
 };
 
 // Base case -> N = 0 -> Us... is the result, so just "return" it
@@ -212,7 +275,7 @@ template <>
 struct permutation_helper<0u>
 {
   template <typename... Ts, typename... Us>
-  static auto get(std::tuple<Ts...> t, std::tuple<Us...> u) -> decltype(u);
+  static auto get(TypeList<Ts...> t, TypeList<Us...> u) -> decltype(u);
 };
 
 /*!
@@ -222,10 +285,10 @@ struct permutation_helper<0u>
  * \tparam N The (1-indexed) permutation length
  * \tparam Ts... The types to permute
  * 
- * \note This initializes the result by creating a tuple of tuples of each type
+ * \note This initializes the result by creating a list of lists of each type
  * in the list, e.g., for Ts = <A, B, C>, the second declval will be 
- * std::tuple<std::tuple<A>, std::tuple<B>, std::tuple<C>> (the first will be just
- * std::tuple<A, B, C>)
+ * TypeList<TypeList<A>, TypeList<B>, TypeList<C>> (the first will be just
+ * TypeList<A, B, C>)
  * 
  * The Python-like pseudocode for this function is roughly:
  * \code{.py}
@@ -235,27 +298,27 @@ struct permutation_helper<0u>
  *******************************************************************************
  */
 template <std::size_t N, typename... Ts>
-using type_permutations = decltype(permutation_helper<N - 1>::get(
-  std::declval<std::tuple<Ts...>>(),
-  std::declval<std::tuple<std::tuple<Ts>...>>()));
+using type_permutations = decltype(
+  permutation_helper<N - 1>::get(std::declval<TypeList<Ts...>>(),
+                                 std::declval<TypeList<TypeList<Ts>...>>()));
 
 /*!
  *******************************************************************************
- * \brief Converts a tuple into a function signature
+ * \brief Converts a list into a function signature
  *
  * \tparam Ret The function return type
  * \tparam Args... The function's argument types
  * 
- * \note This would be called as tuple_to_inlet_signature<Ret, Arg1, Arg2, ..., etc>
+ * \note This would be called as list_to_inlet_signature<Ret, Arg1, Arg2, ..., etc>
  * to convert to Ret(Arg1, Arg2, ...) after applying the cvref transformation
  * by inlet_function_arg_type<T>
  *******************************************************************************
  */
 template <typename... Ts>
-struct tuple_to_inlet_signature;
+struct list_to_inlet_signature;
 
 template <typename Ret, typename... Args>
-struct tuple_to_inlet_signature<std::tuple<Ret, Args...>>
+struct list_to_inlet_signature<TypeList<Ret, Args...>>
 {
   using type = Ret(typename inlet_function_arg_type<Args>::type...);
 };
@@ -370,22 +433,22 @@ namespace detail
 {
 /*!
  *******************************************************************************
- * \brief "Unwraps" a tuple of tuples, converts the inner tuples to function
+ * \brief "Unwraps" a list of lists, converts the inner lists to function
  * signatures, and defines a FunctionWrapper templated on those signatures
  *
- * \tparam Tuples The tuple of tuples to expand, e.g.,
- * std::tuple<std::tuple<A, B>, std::tuple<A, B, C>> to use the signatures
+ * \tparam TypeLists The list of lists to expand, e.g.,
+ * TypeList<TypeList<A, B>, TypeList<A, B, C>> to use the signatures
  * A(B) and A(B, C) (subject to cvref qualifiers added by inlet_function_arg_type)
  *******************************************************************************
  */
-template <typename... Tuples>
-struct tuples_to_wrapper;
+template <typename... TypeLists>
+struct lists_to_wrapper;
 
-template <typename... Tuples>
-struct tuples_to_wrapper<std::tuple<Tuples...>>
+template <typename... TypeLists>
+struct lists_to_wrapper<TypeList<TypeLists...>>
 {
   using type =
-    FunctionWrapper<typename tuple_to_inlet_signature<Tuples>::type...>;
+    FunctionWrapper<typename list_to_inlet_signature<TypeLists>::type...>;
 };
 
 /*!
@@ -399,18 +462,18 @@ struct tuples_to_wrapper<std::tuple<Tuples...>>
  *****************************************************************************
  */
 template <std::size_t N, typename... Ts>
-struct arg_tuples
+struct arg_lists
 {
   using type = decltype(
-    std::tuple_cat(std::declval<type_permutations<N, Ts...>>(),
-                   std::declval<typename arg_tuples<N - 1, Ts...>::type>()));
+    type_list_cat(std::declval<type_permutations<N, Ts...>>(),
+                  std::declval<typename arg_lists<N - 1, Ts...>::type>()));
 };
 
-// Base case - empty tuple
+// Base case - empty list
 template <typename... Ts>
-struct arg_tuples<0u, Ts...>
+struct arg_lists<0u, Ts...>
 {
-  using type = std::tuple<>;
+  using type = TypeList<>;
 };
 
 /*!
@@ -424,12 +487,30 @@ struct arg_tuples<0u, Ts...>
  */
 static constexpr std::size_t MAX_NUM_ARGS = 2u;
 
-// Get the permutations of all possible signatures
-// Add one as return types also need to be permuted
-using func_signature_tuples =
-  arg_tuples<MAX_NUM_ARGS + 1, FunctionType::Vec3D, FunctionType::Double>::type;
+// Permissible return types
+using ret_list =
+  TypeList<FunctionType::Void, FunctionType::Vec3D, FunctionType::Double, FunctionType::String>;
 
-using BasicFunctionWrapper = tuples_to_wrapper<func_signature_tuples>::type;
+// First, permissible argument types are permuted
+using arg_permutations =
+  arg_lists<MAX_NUM_ARGS, FunctionType::Vec3D, FunctionType::Double, FunctionType::String>::type;
+
+// Then return types are prepended to the lists to create lists representing a
+// full function signature
+using arg_permutations_with_returns = decltype(
+  permutation_helper<1u>::get(ret_list {}, std::declval<arg_permutations>()));
+
+// Then function signatures are created representing functions that take no arguments
+// but return something
+using no_arguments_with_returns =
+  decltype(permutation_helper<1u>::get(ret_list {}, TypeList<TypeList<>>()));
+
+// The two sets of full function signatures (with args and without args) are concatenated
+using func_signature_lists =
+  decltype(type_list_cat(std::declval<arg_permutations_with_returns>(),
+                         std::declval<no_arguments_with_returns>()));
+
+using BasicFunctionWrapper = lists_to_wrapper<func_signature_lists>::type;
 
 }  // end namespace detail
 
