@@ -125,16 +125,15 @@ std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPath
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
-  for(const auto& indexLabel : containerIndices(false))
+  for(const auto& index : containerIndices(false))
   {
-    auto stringLabel = detail::indexToString(indexLabel);
+    utilities::Path index_path = detail::indexToString(index);
     // Since the index is absolute, we only care about the last segment of it
-    // But since it's an absolute path then it gets used as the fullPath
+    // But since it's an absolute path then it gets used as the full_path
     // which is used by the Reader to search in the input file
-    const auto baseName = removeBeforeDelimiter(stringLabel);
-    const auto fullPath = appendPrefix(stringLabel, name);
-    // e.g. fullPath could be foo/1/bar for field "bar" at index 1 of array "foo"
-    result.push_back({baseName, fullPath});
+    const auto full_path = utilities::Path::join({index_path, name});
+    // e.g. full_path could be foo/1/bar for field "bar" at index 1 of array "foo"
+    result.push_back({index_path.baseName(), full_path});
   }
   return result;
 }
