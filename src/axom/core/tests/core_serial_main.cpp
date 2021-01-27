@@ -34,6 +34,7 @@
 #include "utils_nvtx_settings.hpp"
 #include "utils_utilities.hpp"
 #include "utils_about.hpp"
+#include "utils_Path.hpp"
 
 int main(int argc, char** argv)
 {

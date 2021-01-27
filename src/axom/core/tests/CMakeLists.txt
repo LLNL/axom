@@ -34,6 +34,7 @@ set(gtest_utils_tests
     utils_nvtx_settings.hpp
     utils_utilities.hpp
     utils_about.hpp
+    utils_Path.hpp
     )
 
 set(utils_tests_depends
@@ -116,4 +117,3 @@ if(MFEM_FOUND)
     set_property(TARGET utils_config_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 endif()
-
