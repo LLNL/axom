@@ -195,5 +195,12 @@ int main(int argc, char** argv)
     bcs.emplace(info.first, BoundaryCondition {std::move(info.second), dim});
   }
 
+  return 0;
+#else   // MFEM_STDFUNCTION_COEF
+  // Quiet unused variable warnings
+  AXOM_DEBUG_VAR(argc);
+  AXOM_DEBUG_VAR(argv);
+
+  return 0;
 #endif  // MFEM_STDFUNCTION_COEF
 }

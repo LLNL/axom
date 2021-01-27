@@ -36,7 +36,7 @@ The main drivers of the Axom project are to:
 Components
 ==========
 
-   * Inlet: Input deck parsing and information storage/retrieval
+   * Inlet: Input file parsing and information storage/retrieval
    * Lumberjack: Scalable parallel message logging and filtering
    * Mint: Mesh data model
    * Primal: Computational geometry primitives
@@ -178,7 +178,7 @@ LLNL-CODE-741217
    :caption: Component User Guides
 
    Core (Widely useful utilities) <axom/core/docs/sphinx/index>
-   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
+   Inlet (Input files) <axom/inlet/docs/sphinx/index>
    Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>

@@ -36,6 +36,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for defining and retrieving functions from the input file
 - Inlet: Added support for YAML and JSON input files
 - Inlet: Added support for mixed-key (integer and string) associative arrays
+- Inlet: Added support for deeply nested containers of structs
 - Inlet: Added support for `void` and strings in Lua-defined functions
 
 ### Changed
