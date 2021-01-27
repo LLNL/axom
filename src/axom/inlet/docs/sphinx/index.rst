@@ -18,8 +18,8 @@ Doxygen generated API documentation can be found here: `API documentation <../..
 Introduction
 ------------
 
-Inlet provides an easy and extensible way to handle input files for simulation code.
-We provide JSON, Lua, and YAML functionality but additional
+Inlet provides an easy and extensible way to handle input files for a simulation code.
+We provide readers for JSON, Lua, and YAML. Additional
 languages can be supported via an implementation of Inlet's Reader interface.
 
 All information read from the input file is stored via Inlet into a user-provided Sidre

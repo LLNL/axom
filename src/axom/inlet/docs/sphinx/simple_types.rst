@@ -10,7 +10,7 @@ that are contained inside of a Table.
 
 Tables can contain multiple Fields, other sub-Tables, as well as a single array or a single dictionary.
 
-.. note::  There is an global Table that holds all top-level Fields.  This can be
+.. note::  There is a global Table that holds all top-level Fields.  This can be
   accessed via your `Inlet` class instance.
 
 
@@ -106,7 +106,7 @@ input file but used the default value that was specified in the schema.
 Accessing
 ---------
 
-Accessing field values stored inside a table can be accessed via their name with the ``[]`` operator.
+Field values stored inside a table can be accessed via their name with the ``[]`` operator.
 They can be accessed from the Inlet class instance with their fully qualified name or you
 can get the Table instance first, then access it with the relative name.
 
