@@ -5,7 +5,10 @@
 
 #include "axom/core/utilities/Path.hpp"
 
+#include <iostream>
 #include <iterator>
+
+#include "fmt/fmt.hpp"
 
 #include "axom/core/utilities/StringUtilities.hpp"
 
@@ -53,6 +56,25 @@ Path::operator std::string() const
   }
   return result;
 }
+
+Path Path::parent() const
+{
+  Path result(*this);
+  result.m_components.pop_back();
+  return result;
+}
+
+std::string Path::baseName() const
+{
+  if(m_components.empty())
+  {
+    std::cerr << "Cannot retrieve the basename of an empty path\n";
+    // FIXME: Should we throw an exception/terminate here vs. deref a nullptr?
+  }
+  return m_components.back();
+}
+
+std::string Path::dirName() const { return static_cast<std::string>(parent()); }
 
 }  // end namespace utilities
 }  // end namespace axom

@@ -74,7 +74,7 @@ set(core_sources
 # Set library dependencies
 #------------------------------------------------------------------------------
 
-set( core_depends )
+set( core_depends fmt )
 blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO core_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ${ENABLE_CUDA} )

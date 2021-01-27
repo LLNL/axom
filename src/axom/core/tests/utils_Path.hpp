@@ -9,21 +9,109 @@
 
 TEST(utils_Path, trivial_construct)
 {
-  const std::string trivial_path_name = "foo";
-  axom::utilities::Path path(trivial_path_name);
-  EXPECT_EQ(static_cast<std::string>(path), trivial_path_name);
+  const std::string path_str = "foo";
+  axom::utilities::Path path(path_str);
+  EXPECT_EQ(static_cast<std::string>(path), path_str);
 }
 
 TEST(utils_Path, two_component_construct)
 {
-  const std::string two_component_path_name = "foo/bar";
-  axom::utilities::Path path(two_component_path_name);
-  EXPECT_EQ(static_cast<std::string>(path), two_component_path_name);
+  const std::string path_str = "foo/bar";
+  axom::utilities::Path path(path_str);
+  EXPECT_EQ(static_cast<std::string>(path), path_str);
 }
 
 TEST(utils_Path, two_component_construct_alt_delim)
 {
-  const std::string two_component_path_name = "foo:bar";
-  axom::utilities::Path path(two_component_path_name, ':');
-  EXPECT_EQ(static_cast<std::string>(path), two_component_path_name);
+  const std::string path_str = "foo:bar";
+  axom::utilities::Path path(path_str, ':');
+  EXPECT_EQ(static_cast<std::string>(path), path_str);
+}
+
+TEST(utils_Path, join_trivial)
+{
+  axom::utilities::Path first("foo");
+  axom::utilities::Path second("bar");
+  auto joined = axom::utilities::Path::join({first, second});
+  EXPECT_EQ(static_cast<std::string>(joined), "foo/bar");
+}
+
+TEST(utils_Path, join_trivial_alt_delim)
+{
+  axom::utilities::Path first("foo");
+  axom::utilities::Path second("bar");
+  auto joined = axom::utilities::Path::join({first, second}, ':');
+  EXPECT_EQ(static_cast<std::string>(joined), "foo:bar");
+}
+
+TEST(utils_Path, join_multi_component)
+{
+  axom::utilities::Path first("foo/bar");
+  axom::utilities::Path second("baz/quux");
+  auto joined = axom::utilities::Path::join({first, second});
+  EXPECT_EQ(static_cast<std::string>(joined), "foo/bar/baz/quux");
+}
+
+TEST(utils_Path, join_multi_component_alt_delim)
+{
+  axom::utilities::Path first("foo:bar", ':');
+  axom::utilities::Path second("baz:quux", ':');
+  auto joined = axom::utilities::Path::join({first, second}, ':');
+  EXPECT_EQ(static_cast<std::string>(joined), "foo:bar:baz:quux");
+}
+
+TEST(utils_Path, parent_basic)
+{
+  axom::utilities::Path path("foo/bar");
+  auto parent = path.parent();
+  EXPECT_EQ(static_cast<std::string>(parent), "foo");
+}
+
+TEST(utils_Path, parent_basic_alt_delim)
+{
+  axom::utilities::Path path("foo;bar", ';');
+  auto parent = path.parent();
+  EXPECT_EQ(static_cast<std::string>(parent), "foo");
+}
+
+TEST(utils_Path, parent_multi_component)
+{
+  axom::utilities::Path path("foo/bar/baz");
+  auto parent = path.parent();
+  EXPECT_EQ(static_cast<std::string>(parent), "foo/bar");
+}
+
+TEST(utils_Path, parent_multi_component_alt_delim)
+{
+  axom::utilities::Path path("foo;bar;baz", ';');
+  auto parent = path.parent();
+  EXPECT_EQ(static_cast<std::string>(parent), "foo;bar");
+}
+
+TEST(utils_Path, dirname_basename_basic)
+{
+  axom::utilities::Path path("foo/bar");
+  EXPECT_EQ(path.dirName(), "foo");
+  EXPECT_EQ(path.baseName(), "bar");
+}
+
+TEST(utils_Path, dirname_basename_basic_alt_delim)
+{
+  axom::utilities::Path path("foo;bar", ';');
+  EXPECT_EQ(path.dirName(), "foo");
+  EXPECT_EQ(path.baseName(), "bar");
+}
+
+TEST(utils_Path, dirname_basename_multi_component)
+{
+  axom::utilities::Path path("foo/bar/baz");
+  EXPECT_EQ(path.dirName(), "foo/bar");
+  EXPECT_EQ(path.baseName(), "baz");
+}
+
+TEST(utils_Path, dirname_basename_multi_component_alt_delim)
+{
+  axom::utilities::Path path("foo;bar;baz", ';');
+  EXPECT_EQ(path.dirName(), "foo;bar");
+  EXPECT_EQ(path.baseName(), "baz");
 }
