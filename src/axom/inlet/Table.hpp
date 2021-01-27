@@ -776,7 +776,7 @@ public:
       if(!hasTable(name))
       {
         std::string msg =
-          fmt::format("[Inlet] Table with name {0} does not exist", name);
+          fmt::format("[Inlet] Table with name '{0}' does not exist", name);
         SLIC_ERROR(msg);
       }
       return from_inlet(getTable(name));
