@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,16 +40,16 @@ public:
   // cycle_to_load is specified (>= 0)
   SimulationState(axom::sidre::MFEMSidreDataCollection& dc,
                   const int cycle_to_load)
-    : datacoll(dc)
+    : m_datacoll(dc)
   {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    MPI_Comm_rank(datacoll.GetComm(), &m_rank);
+    MPI_Comm_rank(m_datacoll.GetComm(), &m_rank);
 #endif
     // Check if this is a restart run
     if(cycle_to_load >= 0)
     {
       // If it is, we can load everything in and "unwrap" to fill in the state
-      datacoll.Load(cycle_to_load);
+      m_datacoll.Load(cycle_to_load);
       reloadSim();
     }
     // Otherwise it's a nominal run so we have to create everything
@@ -62,12 +62,12 @@ public:
 
   ~SimulationState()
   {
-    if(owns_data)
+    if(m_owns_data)
     {
-      delete mesh;
-      delete fecoll;
-      delete fespace;
-      delete soln_field;
+      delete m_mesh;
+      delete m_fecoll;
+      delete m_fespace;
+      delete m_soln_field;
     }
   }
 
@@ -75,16 +75,16 @@ public:
   void step(double dt)
   {
     // Update simulation state variables
-    double t = datacoll.GetTime();
+    double t = m_datacoll.GetTime();
     t += dt;
-    datacoll.SetTime(t);
+    m_datacoll.SetTime(t);
 
-    const int cycle = datacoll.GetCycle();
-    datacoll.SetCycle(cycle + 1);
+    const int cycle = m_datacoll.GetCycle();
+    m_datacoll.SetCycle(cycle + 1);
 
     // Calculate the next iteration of the solution field...
     // For simplicity, every element in the field is set to the current time
-    *soln_field = t;
+    *m_soln_field = t;
   }
 
 private:
@@ -93,27 +93,27 @@ private:
   {
     SLIC_INFO_IF(!m_rank, "Starting a new simulation");
     // Everything here is managed by the SimulationState object
-    owns_data = true;
+    m_owns_data = true;
 
     // Build a 2D mesh with 100 square elements
-    mesh = new mfem::Mesh(10, 10, mfem::Element::QUADRILATERAL);
+    m_mesh = new mfem::Mesh(10, 10, mfem::Element::QUADRILATERAL);
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    mfem::Mesh* tmp_mesh = mesh;
-    mesh = new mfem::ParMesh(MPI_COMM_WORLD, *tmp_mesh);
+    mfem::Mesh* tmp_mesh = m_mesh;
+    m_mesh = new mfem::ParMesh(MPI_COMM_WORLD, *tmp_mesh);
     delete tmp_mesh;
 #endif
     // Set up the DataCollection with the newly created mesh
-    datacoll.SetMesh(mesh);
+    m_datacoll.SetMesh(m_mesh);
 
     // Set up the FiniteElementSpace - needed for the grid functions
     // Initialize with H1 elements of order 1
-    fecoll = new mfem::H1_FECollection(/*order=*/1, mesh->Dimension());
+    m_fecoll = new mfem::H1_FECollection(/*order=*/1, m_mesh->Dimension());
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    auto par_mesh = dynamic_cast<mfem::ParMesh*>(mesh);
-    fespace = new mfem::ParFiniteElementSpace(par_mesh, fecoll);
+    auto par_mesh = dynamic_cast<mfem::ParMesh*>(m_mesh);
+    m_fespace = new mfem::ParFiniteElementSpace(par_mesh, m_fecoll);
 #else
-    fespace = new mfem::FiniteElementSpace(mesh, fecoll);
+    m_fespace = new mfem::FiniteElementSpace(m_mesh, m_fecoll);
 #endif
 
     // Initialize the solution field
@@ -121,20 +121,20 @@ private:
     // Set the data to nullptr so the datacollection will initialize it with
     // its own managed data (needed for a restart)
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    auto par_fespace = dynamic_cast<mfem::ParFiniteElementSpace*>(fespace);
-    soln_field =
+    auto par_fespace = dynamic_cast<mfem::ParFiniteElementSpace*>(m_fespace);
+    m_soln_field =
       new mfem::ParGridFunction(par_fespace, static_cast<double*>(nullptr));
 #else
-    soln_field = new mfem::GridFunction(fespace, nullptr);
+    m_soln_field = new mfem::GridFunction(m_fespace, nullptr);
 #endif
-    datacoll.RegisterField("solution", soln_field);
+    m_datacoll.RegisterField("solution", m_soln_field);
 
     // Intialize to zero as our "initial conditions"
-    *soln_field = 0.0;
+    *m_soln_field = 0.0;
 
     // Set t = 0 state info
-    datacoll.SetCycle(0);   // Iteration counter
-    datacoll.SetTime(0.0);  // Simulation time
+    m_datacoll.SetCycle(0);   // Iteration counter
+    m_datacoll.SetTime(0.0);  // Simulation time
   }
 
   // Sets up the state with non-owning pointers
@@ -142,25 +142,26 @@ private:
   {
     SLIC_INFO_IF(!m_rank,
                  "Reading in existing data and restarting from iteration "
-                   << datacoll.GetCycle() << " at time " << datacoll.GetTime());
+                   << m_datacoll.GetCycle() << " at time "
+                   << m_datacoll.GetTime());
     // The Mesh, GridFunction, etc, objects already exist and can be accessed
-    mesh = datacoll.GetMesh();
-    soln_field = datacoll.GetField("solution");
-    fespace = soln_field->FESpace();
-    fecoll = fespace->FEColl();
+    m_mesh = m_datacoll.GetMesh();
+    m_soln_field = m_datacoll.GetField("solution");
+    m_fespace = m_soln_field->FESpace();
+    m_fecoll = m_fespace->FEColl();
   }
 
   // FEM-related objects needed as part of a simulation
   // In a real simulation these would be exposed via accessors
-  mfem::Mesh* mesh;
-  const mfem::FiniteElementCollection* fecoll;
-  mfem::FiniteElementSpace* fespace;
-  mfem::GridFunction* soln_field;
-  bool owns_data = false;
+  mfem::Mesh* m_mesh;
+  const mfem::FiniteElementCollection* m_fecoll;
+  mfem::FiniteElementSpace* m_fespace;
+  mfem::GridFunction* m_soln_field;
+  bool m_owns_data = false;
 
   // A reference to the datacollection so it can be updated with time/cycle
   // information on each time step
-  axom::sidre::MFEMSidreDataCollection& datacoll;
+  axom::sidre::MFEMSidreDataCollection& m_datacoll;
 
   // The MPI rank, used to display messages on just one node
   int m_rank = 0;

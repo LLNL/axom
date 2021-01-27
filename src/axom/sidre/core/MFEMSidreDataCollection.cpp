@@ -510,7 +510,7 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
     }
   }
 
-  int dim = mesh->SpaceDimension();
+  int dim = pmesh->SpaceDimension();
 
   mfem::Array<int> tmp_verts;
   int tmp_edge;
@@ -1389,19 +1389,33 @@ mfem::Geometry::Type MFEMSidreDataCollection::getElementTypeFromName(
   const std::string& name)
 {
   if(name == "point")
+  {
     return mfem::Geometry::POINT;
+  }
   else if(name == "line")
+  {
     return mfem::Geometry::SEGMENT;
+  }
   else if(name == "tri")
+  {
     return mfem::Geometry::TRIANGLE;
+  }
   else if(name == "quad")
+  {
     return mfem::Geometry::SQUARE;
+  }
   else if(name == "tet")
+  {
     return mfem::Geometry::TETRAHEDRON;
+  }
   else if(name == "hex")
+  {
     return mfem::Geometry::CUBE;
+  }
   else
+  {
     return mfem::Geometry::INVALID;
+  }
 }
 
 // private method
