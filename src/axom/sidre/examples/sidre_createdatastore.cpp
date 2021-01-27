@@ -576,6 +576,9 @@ void generate_blueprint_to_path(DataStore* ds)
 #ifdef AXOM_USE_MPI
 void generate_spio_blueprint(DataStore* ds)
 {
+  int comm_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
   // _blueprint_spio_toplevel_start
   std::string domain_name = "domain";
   std::string domain_location = "domain_data/" + domain_name;
@@ -612,9 +615,15 @@ void generate_spio_blueprint(DataStore* ds)
   #else
     std::string protocol = "sidre_json";
   #endif
-    std::string bp_rootfile("bpspio.root");
+    std::string output_name = "bpspio";
+    if(comm_size > 1)
+    {
+      output_name = output_name + "_par";
+    }
 
-    writer.write(ds->getRoot()->getGroup(domain_location), 1, "bpspio", protocol);
+    std::string bp_rootfile = output_name + ".root";
+
+    writer.write(ds->getRoot()->getGroup(domain_location), 1, output_name, protocol);
 
     writer.writeBlueprintIndexToRootFile(ds, domain_mesh, bp_rootfile, mesh_name);
   }
@@ -623,6 +632,9 @@ void generate_spio_blueprint(DataStore* ds)
 
 void generate_spio_blueprint_to_path(DataStore* ds)
 {
+  int comm_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
   // _blueprint_spio_path_start
   std::string domain_name = "domain";
   std::string domain_location = "domain_data/level/domains/" + domain_name;
@@ -654,14 +666,20 @@ void generate_spio_blueprint_to_path(DataStore* ds)
                                      info,
                                      MPI_COMM_WORLD))
   {
-    std::string bp_rootfile("pathbpspio.root");
+    std::string output_name = "pathbpspio";
+    if(comm_size > 1)
+    {
+      output_name = output_name + "_par";
+    }
+
+    std::string bp_rootfile = output_name + ".root";
   #if defined(AXOM_USE_HDF5)
     std::string protocol = "sidre_hdf5";
   #else
     std::string protocol = "sidre_json";
   #endif
 
-    writer.write(ds->getRoot()->getGroup("domain_data"), 1, "pathbpspio", protocol);
+    writer.write(ds->getRoot()->getGroup("domain_data"), 1, output_name, protocol);
 
     writer.writeBlueprintIndexToRootFile(ds,
                                          domain_mesh,

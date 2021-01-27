@@ -202,7 +202,7 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
   // dense places domains on all ranks when true. When not true, it
   // leaves off rank zero to show that the index can still be generated
   // with some ranks empty.
-  if(dense || my_rank > 0 || comm_size == 0)
+  if(dense || my_rank > 0 || comm_size == 1)
   {
     Group* mroot = holder->createGroup(domain_name);
     Group* coords = mroot->createGroup("coordsets/coords");
@@ -243,6 +243,12 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
     {
       output_name = "bpsparse";
     }
+
+    if(comm_size > 1)
+    {
+      output_name = output_name + "_par";
+    }
+
     std::string bp_rootfile = output_name + ".root";
 
     writer.write(ds->getRoot()->getGroup("domain_data"), 1, output_name, protocol);

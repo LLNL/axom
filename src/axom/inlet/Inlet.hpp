@@ -121,6 +121,23 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Add a structure to the input file schema.
+   *
+   * Adds a structure/record to the input file schema. Structures can contain
+   * fields and/or substructures.  By default, it is not required unless marked with
+   * Table::isRequired(). This creates the Sidre Group class with the given name and
+   * stores the given description.
+   *
+   * \param [in] name Name of the struct expected in the input file
+   * \param [in] description Description of the struct
+   *
+   * \return Reference to the created struct, as a Table
+   *****************************************************************************
+   */
+  Table& addStruct(const std::string& name, const std::string& description = "");
+
+  /*!
+   *****************************************************************************
    * \brief Add a Boolean Field to the input file schema.
    *
    * Adds a Boolean Field to the input file schema. It may or may not be required
@@ -428,6 +445,7 @@ public:
     return m_globalTable.addStringArray(name, description);
   }
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add an array of user-defined types to the input file schema.
@@ -442,6 +460,22 @@ public:
                          const std::string& description = "")
   {
     return m_globalTable.addGenericArray(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the array
+   *
+   * \return Reference to the created array
+   *****************************************************************************
+   */
+  Table& addStructArray(const std::string& name,
+                        const std::string& description = "")
+  {
+    return m_globalTable.addStructArray(name, description);
   }
 
   /*!
@@ -527,6 +561,7 @@ public:
     return m_globalTable.addStringDictionary(name, description);
   }
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add a dictionary of user-defined types to the input file schema.
@@ -541,6 +576,22 @@ public:
                               const std::string& description = "")
   {
     return m_globalTable.addGenericDictionary(name, description);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Add an dictionary of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the dictionary
+   * \param [in] description Description of the dictionary
+   *
+   * \return Reference to the created dictionary
+   *****************************************************************************
+   */
+  Table& addStructDictionary(const std::string& name,
+                             const std::string& description = "")
+  {
+    return m_globalTable.addStructDictionary(name, description);
   }
 
   // TODO add update value functions

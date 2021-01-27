@@ -10,22 +10,29 @@
 # Specify list of examples
 #------------------------------------------------------------------------------
 
+set(inlet_examples
+    nested_structs.cpp )
+
+blt_list_append( TO inlet_examples ELEMENTS
+    arrays.cpp
+    verification.cpp
+    user_defined_type.cpp
+    documentation_generation.cpp
+    IF SOL_FOUND )
+
+foreach(example ${inlet_examples})
+    get_filename_component( ex_name ${example} NAME_WE )
+    blt_add_executable( NAME       inlet_${ex_name}_ex
+                        SOURCES    ${example}
+                        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                        DEPENDS_ON inlet
+                        FOLDER     axom/inlet/examples )
+endforeach()
+
+axom_add_test( NAME    inlet_nested_structs_ex
+               COMMAND inlet_nested_structs_ex )
+
 if (SOL_FOUND)
-   set(inlet_examples
-        arrays.cpp
-        verification.cpp
-        user_defined_type.cpp
-        documentation_generation.cpp )
-
-    foreach(example ${inlet_examples})
-        get_filename_component( ex_name ${example} NAME_WE )
-        blt_add_executable( NAME       inlet_${ex_name}_ex
-                            SOURCES    ${example}
-                            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                            DEPENDS_ON inlet
-                            FOLDER     axom/inlet/examples )
-    endforeach()
-
     axom_add_test( NAME    inlet_verification_ex
                    COMMAND inlet_verification_ex )
 
