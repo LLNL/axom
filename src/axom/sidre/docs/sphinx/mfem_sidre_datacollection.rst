@@ -81,3 +81,12 @@ the data read in will be used to reconstruct MFEM objects than can be accessed w
 
 This functionality is demonstrated in the ``sidre_mfem_datacollection_restart`` example, which is a stripped-down
 example of how a simulation code might utilize the automatic reconstruction logic when loading in a datastore.
+
+.. Note::
+  The mesh/field reconstruction logic requires that the save file was created with the ``MFEMSidreDataCollection``
+  class. In `Mesh Blueprint <http://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`_ terms, the
+  following constraints are imposed on the structure of the data:
+
+  * There must be a coordinate set named ``coords``
+  * There must be a topology named ``mesh`` with corresponding attributes stored in a field named ``mesh_material_attribute``
+  * There must be a topology named ``boundary``with corresponding attributes stored in a field named ``boundary_material_attribute``

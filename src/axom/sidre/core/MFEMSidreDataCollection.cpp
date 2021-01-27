@@ -25,6 +25,16 @@ namespace axom
 {
 namespace sidre
 {
+// Initializations for the coordset/topology/field names
+// used in the blueprint group
+// FIXME: These are still hardcoded in some places
+const std::string MFEMSidreDataCollection::s_mesh_topology_name = "mesh";
+const std::string MFEMSidreDataCollection::s_boundary_topology_name =
+  "boundary";
+const std::string MFEMSidreDataCollection::s_attribute_suffix =
+  "_material_attribute";
+const std::string MFEMSidreDataCollection::s_coordset_name = "coords";
+
 // Constructor that will automatically create the sidre data store and necessary
 // data groups for domain and global data.
 MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_name,
@@ -385,12 +395,12 @@ void MFEMSidreDataCollection::createMeshBlueprintTopologies(
   bool hasBP,
   const std::string& mesh_name)
 {
-  const bool isBdry = (mesh_name == "boundary");
+  const bool isBdry = (mesh_name == s_boundary_topology_name);
 
   const int num_elements = !isBdry ? mesh->GetNE() : mesh->GetNBE();
 
   const std::string mesh_topo_str = "topologies/" + mesh_name;
-  const std::string mesh_attr_str = mesh_name + "_material_attribute";
+  const std::string mesh_attr_str = mesh_name + s_attribute_suffix;
 
   int num_indices = 0;
   int geom = 0;
@@ -696,15 +706,17 @@ void MFEMSidreDataCollection::SetMesh(Mesh* new_mesh)
   GridFunction* nodes = new_mesh->GetNodes();
 
   // register the "mesh" topology in the blueprint.
-  createMeshBlueprintTopologies(hasBP, "mesh");
+  createMeshBlueprintTopologies(hasBP, s_mesh_topology_name);
 
   if(has_bnd_elts)
   {
     // Set the "boundary_topology" of "mesh" to "boundary".
-    m_bp_grp->createViewString("topologies/mesh/boundary_topology", "boundary");
+    m_bp_grp->createViewString(
+      "topologies/" + s_mesh_topology_name + "/boundary_topology",
+      s_boundary_topology_name);
 
     // register the "boundary" topology in the blueprint.
-    createMeshBlueprintTopologies(hasBP, "boundary");
+    createMeshBlueprintTopologies(hasBP, s_boundary_topology_name);
   }
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
@@ -722,8 +734,8 @@ void MFEMSidreDataCollection::SetMesh(Mesh* new_mesh)
     if(hasBP)
     {
       // Get the bp mesh nodes name.
-      sidre::View* v_bp_nodes_name =
-        m_bp_grp->getView("topologies/mesh/grid_function");
+      sidre::View* v_bp_nodes_name = m_bp_grp->getView(
+        "topologies/" + s_mesh_topology_name + "/grid_function");
       std::string bp_nodes_name(v_bp_nodes_name->getString());
 
       // Check that the names match, e.g. when loading the collection.
@@ -1454,53 +1466,65 @@ void MFEMSidreDataCollection::reconstructMesh()
   // Use the x to get the number of vertices
   int num_vertices = vertex_view->getNumElements();
 
-  SLIC_ERROR_IF(!m_bp_grp->hasGroup("topologies/mesh/elements"),
+  const std::string mesh_elements_path =
+    "topologies/" + s_mesh_topology_name + "/elements";
+
+  SLIC_ERROR_IF(!m_bp_grp->hasGroup(mesh_elements_path),
                 "Cannot reconstruct mesh without mesh topology");
 
   int* element_indices =
-    m_bp_grp->getView("topologies/mesh/elements/connectivity")->getData<int*>();
+    m_bp_grp->getView(mesh_elements_path + "/connectivity")->getData<int*>();
 
   // Name of the element type - convert to mfem::Geometry::Type later
   std::string element_name =
-    m_bp_grp->getView("topologies/mesh/elements/shape")->getString();
+    m_bp_grp->getView(mesh_elements_path + "/shape")->getString();
 
+  const std::string element_attribute_path =
+    "fields/" + s_mesh_topology_name + s_attribute_suffix;
   View* element_attribute_view =
-    m_bp_grp->getView("fields/mesh_material_attribute/values");
+    m_bp_grp->getView(element_attribute_path + "/values");
 
   int* element_attributes = element_attribute_view->getData<int*>();
   int num_elements = element_attribute_view->getNumElements();
 
-  SLIC_ERROR_IF(!m_bp_grp->hasGroup("topologies/boundary/elements"),
+  const std::string boundary_elements_path =
+    "topologies/" + s_boundary_topology_name + "/elements";
+
+  SLIC_ERROR_IF(!m_bp_grp->hasGroup(boundary_elements_path),
                 "Cannot reconstruct mesh without boundary topology");
 
   int* boundary_indices =
-    m_bp_grp->getView("topologies/boundary/elements/connectivity")->getData<int*>();
+    m_bp_grp->getView(boundary_elements_path + "/connectivity")->getData<int*>();
 
   // Name of the element type - convert to mfem::Geometry::Type later
   std::string bdr_element_name =
-    m_bp_grp->getView("topologies/boundary/elements/shape")->getString();
+    m_bp_grp->getView(boundary_elements_path + "/shape")->getString();
 
+  const std::string boundary_attribute_path =
+    "fields/" + s_boundary_topology_name + s_attribute_suffix;
   View* bdr_attribute_view =
-    m_bp_grp->getView("fields/boundary_material_attribute/values");
+    m_bp_grp->getView(boundary_attribute_path + "/values");
 
   int* boundary_attributes = bdr_attribute_view->getData<int*>();
   int num_boundary_elements = bdr_attribute_view->getNumElements();
 
+  const std::string coordset_path = "coordsets/" + s_coordset_name;
+
   int dimension = 1;
 
-  if(m_bp_grp->hasView("coordsets/coords/values/z"))
+  if(m_bp_grp->hasView(coordset_path + "/values/z"))
   {
     dimension = 3;
   }
 
-  else if(m_bp_grp->hasView("coordsets/coords/values/y"))
+  else if(m_bp_grp->hasView(coordset_path + "/values/y"))
   {
     dimension = 2;
   }
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   // If it has an adjacencies group, the reloaded state was a ParMesh
-  if(m_bp_grp->hasGroup("adjsets/mesh"))
+  if(m_bp_grp->hasGroup("adjsets/" + s_mesh_topology_name))
   {
     SLIC_ERROR(
       "[MFEMSidreDataCollection]: Restoring parallel meshes is not yet "

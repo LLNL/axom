@@ -564,6 +564,13 @@ private:
 
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();
+
+  // The names for the mesh and boundary topologies in the blueprint group,
+  // and the suffix used to store their attributes (as fields)
+  static const std::string s_mesh_topology_name;
+  static const std::string s_boundary_topology_name;
+  static const std::string s_attribute_suffix;
+  static const std::string s_coordset_name;
 };
 
 } /* namespace sidre */
