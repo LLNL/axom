@@ -2,7 +2,7 @@
 Readers
 #######
 
-Inlet has built-in support for three input file: JSON, Lua, and YAML.
+Inlet has built-in support for three input file languages: JSON, Lua, and YAML.
 Due to language features, not all readers support all Inlet features.
 Below is a table that lists supported features:
 
@@ -18,26 +18,26 @@ Below is a table that lists supported features:
      - bool, double, int, string
      - bool, double, int, string
      - bool, double, int, string
-   * - Functions
-     - 
-     - X
-     - 
-   * - Arrays
-     - X
-     - X
-     - X
-   * - Mixed-typed key Arrays
-     - 
-     - X
-     - 
-   * - Non-contiguous Arrays
-     - 
-     - X
-     - 
    * - Dictionaries
      - X
      - X
      - X
+   * - Arrays
+     - X
+     - X
+     - X
+   * - Non-contiguous Arrays
+     - 
+     - X
+     - 
+   * - Mixed-typed key Arrays
+     - 
+     - X
+     - 
+   * - Callback Functions
+     - 
+     - X
+     - 
 
 ***********************
 Extra Lua functionality

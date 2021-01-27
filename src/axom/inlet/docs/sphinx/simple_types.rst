@@ -10,7 +10,7 @@ that are contained inside of a Table.
 
 Tables can contain multiple Fields, other sub-Tables, as well as a single array or a single dictionary.
 
-.. note::  There is an inherent global Table that holds all global level Fields.  This can be
+.. note::  There is an global Table that holds all top-level Fields.  This can be
   accessed via your `Inlet` class instance.
 
 
@@ -49,18 +49,18 @@ Accessing
 ---------
 
 Accessing field values stored in Inlet can be accessed via their name with the ``[]`` operator.
+Prior to accessing optional fields, you should verify they were provided by the user via
+the ``contains`` function.  Accessing a value that was not provided by the user, or 
+a default value, will result in a runtime error. 
 
 .. literalinclude:: ../../examples/fields.cpp
    :start-after: _inlet_simple_types_fields_access_start
    :end-before: _inlet_simple_types_fields_access_end
    :language: C++
 
-Here is an example of how to check if the input file contained an optional field:
-
-.. literalinclude:: ../../examples/fields.cpp
-   :start-after: _inlet_simple_types_fields_contains_start
-   :end-before: _inlet_simple_types_fields_contains_end
-   :language: C++
+.. note:: The field ``does_not_exist`` was purposefully left this out of the
+   user-provided input file to show no warnings/errors are thrown during runtime
+   for defining optional fields in the schema.
 
 
 ******
@@ -78,6 +78,7 @@ In this example, we will be using the following part of an input file:
    :end-before: _inlet_simple_types_tables_input_end
    :language: lua
 
+
 Defining And Storing
 --------------------
 
@@ -93,10 +94,10 @@ DataStore to be accessed later.
 This example also shows that the ``color`` Field that was not given in the
 input file but used the default value that was specified in the schema.
 
-.. note:: Although nested Tables are added with the ``addStruct`` method,
-   Inlet does not require any correspondence between nested structures defined
-   in the schema via ``addStruct`` and C++ ``struct`` s.
-   See :ref:`Advanced Types <inlet_advanced_types_label>` for more info.
+.. note:: Inlet also has an ``addStruct`` member for defining more complex types,
+   such as nested structures. See :ref:`Advanced Types <inlet_advanced_types_label>`
+   for more details
+
 
 Accessing
 ---------
