@@ -216,12 +216,12 @@ public:
    *******************************************************************************
    * \brief Gets a value of arbitrary type out of the datastore
    * 
-   * Retrieves a value of user-defined type, i.e., not double, int, bool, or string.
+   * Retrieves a value of primitive or user-defined type.
    * 
    * \param [in] name The name of the subtable representing the root of the object
    * \return The retrieved value
    * \tparam The type to retrieve
-   * \pre Requires a specialization of FromInlet<T>
+   * \pre Requires a specialization of FromInlet<T> for user-defined types
    * \note This function does not indicate failure in a way that can be handled
    * by a program - if an object of requested type does not exist at the specified
    * location, the program will terminate
