@@ -80,6 +80,11 @@ public:
      */
   std::pair<std::string, std::string> split() const;
 
+  /*!
+   * \brief Returns a const reference to the parts of the path, to be iterated over
+   */
+  const std::vector<std::string>& parts() const { return m_components; }
+
 private:
   // The components (tokens) that make up the path
   std::vector<std::string> m_components;

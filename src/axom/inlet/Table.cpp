@@ -6,6 +6,7 @@
 #include "axom/inlet/Table.hpp"
 
 #include "axom/slic.hpp"
+#include "axom/core/utilities/Path.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 #include "axom/inlet/Proxy.hpp"
 
@@ -24,58 +25,38 @@ void Table::forEachContainerElement(Func&& func) const
 
 Table& Table::addTable(const std::string& name, const std::string& description)
 {
-  // Create intermediate Tables if they don't already exist
-  std::string currName = name;
-  size_t found = currName.find("/");
-  auto currTable = this;
+  auto curr_table = this;
+  utilities::Path path(name);
 
-  while(found != std::string::npos)
+  // Create intermediate Tables if they don't already exist
+  for(const auto& path_part : path.parts())
   {
-    const std::string currTableName =
-      appendPrefix(currTable->m_name, currName.substr(0, found));
-    // The current table will prepend its own prefix - just pass the basename
-    if(!currTable->hasChild<Table>(currName.substr(0, found)))
+    // Need to watch out for empty paths here
+    auto curr_table_name = (curr_table->m_name.empty())
+      ? utilities::Path(path_part)
+      : utilities::Path::join({curr_table->m_name, path_part});
+    // Leave the description empty for intermediate tables
+    const std::string curr_descr = (path_part == name) ? description : "";
+    if(!curr_table->hasChild<Table>(path_part))
     {
       // Will the copy always be elided here with a move ctor
       // or do we need std::piecewise_construct/std::forward_as_tuple?
-      const auto& emplace_result = currTable->m_tableChildren.emplace(
-        currTableName,
-        cpp11_compat::make_unique<Table>(currTableName,
-                                         "",
+      const auto& emplace_result = curr_table->m_tableChildren.emplace(
+        curr_table_name,
+        cpp11_compat::make_unique<Table>(curr_table_name,
+                                         curr_descr,
                                          m_reader,
                                          m_sidreRootGroup,
                                          m_docEnabled));
       // emplace_result is a pair whose first element is an iterator to the inserted element
-      currTable = emplace_result.first->second.get();
+      curr_table = emplace_result.first->second.get();
     }
     else
     {
-      currTable = currTable->m_tableChildren[currTableName].get();
+      curr_table = curr_table->m_tableChildren[curr_table_name].get();
     }
-    currName = currName.substr(found + 1);
-    found = currName.find("/");
   }
-
-  const std::string currTableName =
-    appendPrefix(currTable->m_name, currName.substr(0, found));
-
-  if(!currTable->hasChild<Table>(currName))
-  {
-    const auto& emplace_result = currTable->m_tableChildren.emplace(
-      currTableName,
-      cpp11_compat::make_unique<Table>(currTableName,
-                                       description,
-                                       m_reader,
-                                       m_sidreRootGroup,
-                                       m_docEnabled));
-    currTable = emplace_result.first->second.get();
-  }
-  else
-  {
-    currTable = currTable->m_tableChildren[currTableName].get();
-  }
-
-  return *currTable;
+  return *curr_table;
 }
 
 Table& Table::addStruct(const std::string& name, const std::string& description)
