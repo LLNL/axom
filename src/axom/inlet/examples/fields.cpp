@@ -74,18 +74,18 @@ int main()
 
   // Check if input file contained info before accessing optional fields
   if (inlet.contains("a_simple_bool")) {
+    // Access field via "[]" operator, save value first to avoid type ambiquity
     bool a_simple_bool = inlet["a_simple_bool"];
     std::cout << "a_simple_bool = " << a_simple_bool << std::endl;
   }
 
   if (inlet.contains("a_simple_int")) {
-    int a_simple_int = inlet["a_simple_int"];
-    std::cout << "a_simple_int = " << a_simple_int << std::endl;
+    // Access field via `get<T>` directly, no ambiquity 
+    std::cout << "a_simple_int = " << inlet.get<int>("a_simple_int") << std::endl;
   }
 
   // Because this field was marked required, we do not have to call contains before accessing
-  double a_simple_double = inlet["a_simple_double"];
-  std::cout << "a_simple_double = " << a_simple_double << std::endl;
+  std::cout << "a_simple_double = " << inlet.get<double>("a_simple_double") << std::endl;
 
   if (inlet.contains("a_simple_string")) {
     std::string a_simple_string = inlet["a_simple_string"];
