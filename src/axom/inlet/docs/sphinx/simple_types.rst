@@ -48,7 +48,11 @@ fields need to be present, unless they are marked required, like ``a_simple_doub
 Accessing
 ---------
 
-Accessing field values stored in Inlet can be accessed via their name with the ``[]`` operator.
+Accessing field values stored in Inlet can be accessed via their name with the ``[]`` operator
+or through the templated ``get<T>`` function.  The ``[]`` operator is more streamlined but
+can lead to compile time ambiquity depending on how it is used.  The example below shows
+an example of this.
+
 Prior to accessing optional fields, you should verify they were provided by the user via
 the ``contains`` function.  Accessing a value that was not provided by the user, or 
 a default value, will result in a runtime error. 
