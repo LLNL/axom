@@ -342,7 +342,7 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
-      fmt::format("Failed to create Sidre group with name {0}", fullName));
+      fmt::format("Failed to create Sidre group with name '{0}'", fullName));
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
@@ -643,7 +643,7 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
-      fmt::format("Failed to create Sidre group with name {0}", fullName));
+      fmt::format("Failed to create Sidre group with name '{0}'", fullName));
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
@@ -664,7 +664,7 @@ Proxy Table::operator[](const std::string& name) const
   {
     const std::string msg = fmt::format(
       "[Inlet] Ambiguous lookup - more than one of a table/field/function with "
-      "name {0} exist",
+      "name '{0}' exist",
       name);
     SLIC_ERROR(msg);
     return Proxy();
@@ -689,7 +689,7 @@ Proxy Table::operator[](const std::string& name) const
   else
   {
     std::string msg =
-      fmt::format("[Inlet] No table, field, or function with name {0} exists",
+      fmt::format("[Inlet] No table, field, or function with name '{0}' exists",
                   name);
     SLIC_ERROR(msg);
     return Proxy();

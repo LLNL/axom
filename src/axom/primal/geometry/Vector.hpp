@@ -156,6 +156,13 @@ public:
   Vector(const Vector<T, NDIMS>& other) : m_components(other.array()) { }
 
   /*!
+   * \brief Copy assignment operator
+   * \param [in] other The vector to copy
+   */
+  AXOM_HOST_DEVICE
+  Vector& operator=(const Vector<T, NDIMS>& other);
+
+  /*!
    * \brief Constructs a vector from point A to point B.
    * \param [in] A origin point of the vector.
    * \param [in] B destination point of the vector.
@@ -370,6 +377,14 @@ namespace axom
 {
 namespace primal
 {
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator=(const Vector<T, NDIMS>& other)
+{
+  m_components = other.array();
+  return *this;
+}
+
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator*=(T scalar)
