@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -143,6 +143,110 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
 
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_pass)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+  // Even though these are required, the input file should still
+  // "verify" as the array is empty
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should fail because the array is empty
+  // and was required
+  auto& arr_table = inlet.addGenericArray("foo").required(true);
+  arr_table.addBool("bar", "bar's description").required(true);
+  arr_table.addBool("baz", "baz's description").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail_primitive)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should fail because the array is empty
+  // and was required
+  inlet.addIntArray("foo").required(true);
+
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false;} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description").required();
+
+  // Ensuring that foo is the element of the container
+  arr_table.registerVerifier(
+    [](const axom::inlet::Table& foo) { return foo.contains("bar"); });
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_pass)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { baz = false;} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+
+  // Can specify either "bar" or "baz" but not both
+  arr_table.registerVerifier([](const axom::inlet::Table& foo) {
+    return !(foo.contains("bar") && foo.contains("baz"));
+  });
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
+{
+  std::string testString =
+    "foo = { [4] = { bar = true;}, "
+    "        [7] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+
+  // Can specify either "bar" or "baz" but not both
+  arr_table.registerVerifier([](const axom::inlet::Table& foo) {
+    return !(foo.contains("bar") && foo.contains("baz"));
+  });
 
   EXPECT_FALSE(inlet.verify());
 }
@@ -436,6 +540,263 @@ TYPED_TEST(inlet_object, implicit_conversion_primitives)
   EXPECT_EQ(arr, expected_arr);
 }
 
+struct QuuxWithFooArray
+{
+  std::unordered_map<int, Foo> arr;
+  bool operator==(const QuuxWithFooArray& other) const
+  {
+    return arr == other.arr;
+  }
+};
+
+template <>
+struct FromInlet<QuuxWithFooArray>
+{
+  QuuxWithFooArray operator()(const axom::inlet::Table& base)
+  {
+    QuuxWithFooArray q;
+    q.arr = base["arr"].get<std::unordered_map<int, Foo>>();
+    return q;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_struct)
+{
+  std::string testString =
+    "quux = { [0] = { arr = { [0] = { bar = true; baz = false}, "
+    "                         [1] = { bar = false; baz = true} } }, "
+    "         [1] = { arr = { [0] = { bar = false; baz = false}, "
+    "                         [1] = { bar = true; baz = true} } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericArray("quux");
+  auto& foo_table = quux_table.addGenericArray("arr");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, QuuxWithFooArray> expected_quuxs = {
+    {0, {{{0, {true, false}}, {1, {false, true}}}}},
+    {1, {{{0, {false, false}}, {1, {true, true}}}}}};
+  std::unordered_map<int, QuuxWithFooArray> quuxs_with_arr;
+  quuxs_with_arr = inlet["quux"].get<std::unordered_map<int, QuuxWithFooArray>>();
+  EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
+TYPED_TEST(inlet_object, nested_dict_of_array_of_struct)
+{
+  std::string testString =
+    "quux  = { ['first'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                                [1] = { bar = false; baz = true} } }, "
+    "         ['second'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                                [1] = { bar = true; baz = true} } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericDictionary("quux");
+  auto& foo_table = quux_table.addGenericArray("arr");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<std::string, QuuxWithFooArray> expected_quuxs = {
+    {"first", {{{0, {true, false}}, {1, {false, true}}}}},
+    {"second", {{{0, {false, false}}, {1, {true, true}}}}}};
+  std::unordered_map<std::string, QuuxWithFooArray> quuxs_with_arr;
+  quuxs_with_arr =
+    inlet["quux"].get<std::unordered_map<std::string, QuuxWithFooArray>>();
+  EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
+struct CorgeWithQuuxDictionary
+{
+  std::unordered_map<std::string, QuuxWithFooArray> dict;
+  bool operator==(const CorgeWithQuuxDictionary& other) const
+  {
+    return dict == other.dict;
+  }
+};
+
+template <>
+struct FromInlet<CorgeWithQuuxDictionary>
+{
+  CorgeWithQuuxDictionary operator()(const axom::inlet::Table& base)
+  {
+    CorgeWithQuuxDictionary c;
+    c.dict =
+      base["dict"].get<std::unordered_map<std::string, QuuxWithFooArray>>();
+    return c;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_dict_of_array_of_struct)
+{
+  // clang-format off
+  std::string testString =
+    "corge = { [0] = { dict = { ['first'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                                                 [1] = { bar = false; baz = true} } }, "
+    "                          ['second'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                                                 [1] = { bar = true; baz = true} } } } }, "
+    "          [1] = { dict = { ['third'] = { arr = { [0] = { bar = true; baz = false}, "
+    "                                                 [1] = { bar = false; baz = true} } }, "
+    "                          ['fourth'] = { arr = { [0] = { bar = false; baz = false}, "
+    "                                                 [1] = { bar = true; baz = true} } } } } }";
+  // clang-format on
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& corge_table = inlet.addGenericArray("corge");
+  auto& quux_table = corge_table.addGenericDictionary("dict");
+  auto& foo_table = quux_table.addGenericArray("arr");
+
+  foo_table.addBool("bar", "bar's description");
+  foo_table.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, CorgeWithQuuxDictionary> expected_corges = {
+    {0,
+     {{{"first", {{{0, {true, false}}, {1, {false, true}}}}},
+       {"second", {{{0, {false, false}}, {1, {true, true}}}}}}}},
+    {1,
+     {{{"third", {{{0, {true, false}}, {1, {false, true}}}}},
+       {"fourth", {{{0, {false, false}}, {1, {true, true}}}}}}}}};
+  std::unordered_map<int, CorgeWithQuuxDictionary> corges_with_dict;
+  corges_with_dict =
+    inlet["corge"].get<std::unordered_map<int, CorgeWithQuuxDictionary>>();
+  EXPECT_EQ(corges_with_dict, expected_corges);
+}
+
+struct QuuxWithFooWithArray
+{
+  std::unordered_map<int, FooWithArray> arr;
+  bool operator==(const QuuxWithFooWithArray& other) const
+  {
+    return arr == other.arr;
+  }
+};
+
+template <>
+struct FromInlet<QuuxWithFooWithArray>
+{
+  QuuxWithFooWithArray operator()(const axom::inlet::Table& base)
+  {
+    QuuxWithFooWithArray q;
+    q.arr = base["outer_arr"].get<std::unordered_map<int, FooWithArray>>();
+    return q;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_dict_of_array_of_struct_with_array)
+{
+  std::string testString =
+    "quux = { ['first'] = { outer_arr = {  [0] = { arr = { [0] = 1 } }, "
+    "                                      [1] = { arr = { [0] = 2 } } } }, "
+    "         ['second'] = { outer_arr = { [0] = { arr = { [0] = 3 } }, "
+    "                                      [1] = { arr = { [0] = 4 } } } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_table = inlet.addGenericDictionary("quux");
+  auto& foo_table = quux_table.addGenericArray("outer_arr");
+
+  foo_table.addIntArray("arr", "arr's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<std::string, QuuxWithFooWithArray> expected_quuxs = {
+    {"first", {{{0, {{{0, 1}}}}, {1, {{{0, 2}}}}}}},
+    {"second", {{{0, {{{0, 3}}}}, {1, {{{0, 4}}}}}}}};
+  std::unordered_map<std::string, QuuxWithFooWithArray> quuxs_with_arr;
+  quuxs_with_arr =
+    inlet["quux"].get<std::unordered_map<std::string, QuuxWithFooWithArray>>();
+  EXPECT_EQ(quuxs_with_arr, expected_quuxs);
+}
+
+struct QuuxWithSingleFoo
+{
+  Foo foo;
+  bool operator==(const QuuxWithSingleFoo& other) const
+  {
+    return foo == other.foo;
+  }
+};
+
+template <>
+struct FromInlet<QuuxWithSingleFoo>
+{
+  QuuxWithSingleFoo operator()(const axom::inlet::Table& base)
+  {
+    QuuxWithSingleFoo q;
+    q.foo = base["foo"].get<Foo>();
+    return q;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_nested_structs)
+{
+  std::string testString =
+    "quux = { [0] = { foo = { bar = true; baz = false } }, "
+    "         [1] = { foo = { bar = false; baz = true } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_schema = inlet.addStructArray("quux");
+  auto& foo_schema = quux_schema.addStruct("foo");
+
+  foo_schema.addBool("bar", "bar's description");
+  foo_schema.addBool("baz", "baz's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, QuuxWithSingleFoo> expected_quuxs = {
+    {0, {true, false}},
+    {1, {false, true}}};
+  std::unordered_map<int, QuuxWithSingleFoo> quuxs_with_foo;
+  quuxs_with_foo =
+    inlet["quux"].get<std::unordered_map<int, QuuxWithSingleFoo>>();
+  EXPECT_EQ(quuxs_with_foo, expected_quuxs);
+}
+
+TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)
+{
+  std::string testString = " arr = { [0] = 4, [1] = 6, [2] = 10}";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Define schema
+  inlet.addIntArray("arr");
+
+  // Attempt both construction and assignment
+  std::vector<int> expected_arr {4, 6, 10};
+  std::vector<int> arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+  arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+
+  // Also possible to retrieve with indices
+  std::unordered_map<int, int> expected_arr_w_indices {{0, 4}, {1, 6}, {2, 10}};
+  std::unordered_map<int, int> arr_w_indices = inlet["arr"];
+  EXPECT_EQ(arr_w_indices, expected_arr_w_indices);
+}
+
+TYPED_TEST(inlet_object, generic_arrays_as_std_vector)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; baz = false}, "
+    "        [1] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+  std::vector<Foo> expected_foos = {{true, false}, {false, true}};
+  auto foos = inlet["foo"].get<std::vector<Foo>>();
+  EXPECT_EQ(foos, expected_foos);
+}
+
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
 { };
@@ -637,6 +998,74 @@ TEST(inlet_object_lua, array_from_bracket)
 
   doubleMap = inlet["luaArrays/arr4"].get<std::unordered_map<int, double>>();
   EXPECT_EQ(doubleMap, expectedDoubles);
+}
+
+TEST(inlet_object_lua, primitive_arrays_as_std_vector_discontiguous)
+{
+  std::string testString = " arr = { [0] = 4, [8] = 6, [12] = 10}";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  // Define schema
+  inlet.addIntArray("arr");
+
+  // Attempt both construction and assignment
+  std::vector<int> expected_arr {4, 6, 10};
+  std::vector<int> arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+  arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+}
+
+TEST(inlet_object_lua, generic_arrays_as_std_vector_discontiguous)
+{
+  std::string testString =
+    "foo = { [6] = { bar = true; baz = false}, "
+    "        [11] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+  std::vector<Foo> expected_foos = {{true, false}, {false, true}};
+  auto foos = inlet["foo"].get<std::vector<Foo>>();
+  EXPECT_EQ(foos, expected_foos);
+}
+
+TEST(inlet_object_lua, primitive_arrays_as_std_vector_implicit_idx)
+{
+  std::string testString = " arr = { 4, 6, 10}";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  // Define schema
+  inlet.addIntArray("arr");
+
+  // Attempt both construction and assignment
+  std::vector<int> expected_arr {4, 6, 10};
+  std::vector<int> arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+  arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+}
+
+TEST(inlet_object_lua, generic_arrays_as_std_vector_implicit_idx)
+{
+  std::string testString =
+    "foo = { { bar = true; baz = false}, "
+    "        { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+
+  auto& arr_table = inlet.addGenericArray("foo");
+
+  arr_table.addBool("bar", "bar's description");
+  arr_table.addBool("baz", "baz's description");
+  std::vector<Foo> expected_foos = {{true, false}, {false, true}};
+  auto foos = inlet["foo"].get<std::vector<Foo>>();
+  EXPECT_EQ(foos, expected_foos);
 }
 
 TEST(inlet_object_lua_dict, dict_of_struct_containing_array)

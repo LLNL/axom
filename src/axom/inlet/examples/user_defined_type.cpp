@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -110,22 +110,22 @@ struct BoundaryCondition
 {
   std::unordered_map<int, int> attrs;
   // std::functions are nullable - coef/vec_coef act as a sum type here
-  std::function<double(FunctionType::Vec3D)> coef;
-  std::function<FunctionType::Vec3D(FunctionType::Vec3D)> vec_coef;
+  std::function<double(FunctionType::Vector)> coef;
+  std::function<FunctionType::Vector(FunctionType::Vector)> vec_coef;
   // _inlet_userdef_bc_struct_end
   static void defineSchema(inlet::Table& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
     // Inlet does not support sum types, so both options are added to the schema
-    // Supported function parameter/return types are Double and Vec3D
+    // Supported function parameter/return types are Double and Vector
     schema.addFunction("vec_coef",
-                       inlet::FunctionTag::Vec3D,    // Return type
-                       {inlet::FunctionTag::Vec3D},  // Argument types
+                       inlet::FunctionTag::Vector,    // Return type
+                       {inlet::FunctionTag::Vector},  // Argument types
                        "The function representing the BC coefficient");
     // _inlet_userdef_func_coef_start
     schema.addFunction("coef",
-                       inlet::FunctionTag::Double,   // Return type
-                       {inlet::FunctionTag::Vec3D},  // Argument types
+                       inlet::FunctionTag::Double,    // Return type
+                       {inlet::FunctionTag::Vector},  // Argument types
                        "The function representing the BC coefficient");
     // _inlet_userdef_func_coef_end
   }
@@ -138,16 +138,16 @@ struct BoundaryCondition
  *   attrs = {
  *      3, 4, 6, 9
  *   }
- *   coef = function (x, y, z)
- *     return x * 0.12
+ *   coef = function (v)
+ *     return v.x * 0.12
  *   end
  * }
  * -- or, for vector coefficients:
  * [8] = {
  *   attrs = { [4] = 14, [8] = 62, [6] = 11},
- *   vec_coef = function (x, y, z)
+ *   vec_coef = function (v)
  *     scale = 0.12
- *     return x * scale, y * scale, z * scale
+ *     return v * scale
  *   end
  * }
  * \endcode
@@ -184,13 +184,13 @@ struct ThermalSolver
   static void defineSchema(inlet::Table& schema)
   {
     // _inlet_userdef_simple_usage_start
-    auto& mesh_table = schema.addTable("mesh", "Information about the mesh");
-    Mesh::defineSchema(mesh_table);
+    auto& mesh_schema = schema.addStruct("mesh", "Information about the mesh");
+    Mesh::defineSchema(mesh_schema);
     // _inlet_userdef_simple_usage_end
-    auto& solver_table =
-      schema.addTable("solver",
-                      "Information about the iterative solver used for Ku = f");
-    LinearSolver::defineSchema(solver_table);
+    auto& solver_schema = schema.addStruct(
+      "solver",
+      "Information about the iterative solver used for Ku = f");
+    LinearSolver::defineSchema(solver_schema);
 
     // _inlet_userdef_array_usage_start
     // Schema only needs to be defined once, will propagate through to each
@@ -256,10 +256,10 @@ int main(int argc, char** argv)
 
   // Create a table off the global table for the thermal_solver object
   // then define its schema
-  auto& thermal_solver_table =
-    inlet.addTable("thermal_solver",
-                   "Configuration for a thermal conduction module");
-  ThermalSolver::defineSchema(thermal_solver_table);
+  auto& thermal_solver_schema =
+    inlet.addStruct("thermal_solver",
+                    "Configuration for a thermal conduction module");
+  ThermalSolver::defineSchema(thermal_solver_schema);
 
   if(!inlet.verify())
   {
@@ -269,7 +269,7 @@ int main(int argc, char** argv)
   // Read all the data into a thermal solver object
   auto thermal_solver = inlet["thermal_solver"].get<ThermalSolver>();
 
-  const FunctionType::Vec3D vec {1, 2, 3};
+  const FunctionType::Vector vec {1, 2, 3};
   for(const auto& bc_entry : thermal_solver.bcs)
   {
     const auto& bc = bc_entry.second;

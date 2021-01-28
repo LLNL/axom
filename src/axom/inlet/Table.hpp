@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -157,6 +157,24 @@ struct is_inlet_primitive_dict<std::unordered_map<VariantKey, T>>
   static constexpr bool value = is_inlet_primitive<T>::value;
 };
 
+template <typename T>
+struct is_std_vector : std::false_type
+{ };
+
+template <typename T>
+struct is_std_vector<std::vector<T>> : std::true_type
+{ };
+
+template <typename T>
+struct is_primitive_std_vector : std::false_type
+{ };
+
+template <typename T>
+struct is_primitive_std_vector<std::vector<T>>
+{
+  static constexpr bool value = is_inlet_primitive<T>::value;
+};
+
 /*!
  *******************************************************************************
  * \class has_FromInlet_specialization
@@ -217,10 +235,10 @@ inline Result toIndex(const From& idx)
 template <>
 inline int toIndex(const std::string& idx)
 {
-  auto as_int = checkedConvertToInt(idx);
-  SLIC_ERROR_IF(!as_int.second,
+  int idx_as_int;
+  SLIC_ERROR_IF(!checkedConvertToInt(idx, idx_as_int),
                 fmt::format("[Inlet] Expected an integer, got: {0}", idx));
-  return as_int.first;
+  return idx_as_int;
 }
 
 /*!
@@ -363,6 +381,7 @@ public:
   // Functions that define the input file schema
   //
 
+  // FIXME: Make private in future PR
   /*!
    *****************************************************************************
    * \brief Add a Table to the input file schema.
@@ -379,6 +398,23 @@ public:
    *****************************************************************************
    */
   Table& addTable(const std::string& name, const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add a structure to the input file schema.
+   *
+   * Adds a structure/record to the input file schema. Structures can contain
+   * fields and/or substructures.  By default, it is not required unless marked with
+   * Table::isRequired(). This creates the Sidre Group class with the given name and
+   * stores the given description.
+   *
+   * \param [in] name Name of the struct expected in the input file
+   * \param [in] description Description of the struct
+   *
+   * \return Reference to the created struct, as a Table
+   *****************************************************************************
+   */
+  Table& addStruct(const std::string& name, const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -432,6 +468,7 @@ public:
   Verifiable<Table>& addStringArray(const std::string& name,
                                     const std::string& description = "");
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add an array of Fields to the input file schema.
@@ -444,6 +481,22 @@ public:
    */
   Table& addGenericArray(const std::string& name,
                          const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the array
+   *
+   * \return Reference to the created array
+   *****************************************************************************
+   */
+  Table& addStructArray(const std::string& name,
+                        const std::string& description = "")
+  {
+    return addGenericArray(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -496,6 +549,7 @@ public:
   Verifiable<Table>& addStringDictionary(const std::string& name,
                                          const std::string& description = "");
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add a dictionary of user-defined types to the input file schema.
@@ -508,6 +562,22 @@ public:
    */
   Table& addGenericDictionary(const std::string& name,
                               const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an dictionary of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the dictionary
+   * \param [in] description Description of the dictionary
+   *
+   * \return Reference to the created dictionary
+   *****************************************************************************
+   */
+  Table& addStructDictionary(const std::string& name,
+                             const std::string& description = "")
+  {
+    return addGenericDictionary(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -706,10 +776,10 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
-                            !detail::is_inlet_array<T>::value &&
-                            !detail::is_inlet_dict<T>::value,
-                          T>::type
+  typename std::enable_if<
+    !detail::is_inlet_primitive<T>::value && !detail::is_inlet_array<T>::value &&
+      !detail::is_inlet_dict<T>::value && !detail::is_std_vector<T>::value,
+    T>::type
   get(const std::string& name = "") const
   {
     static_assert(detail::has_FromInlet_specialization<T>::value,
@@ -724,7 +794,7 @@ public:
       if(!hasTable(name))
       {
         std::string msg =
-          fmt::format("[Inlet] Table with name {0} does not exist", name);
+          fmt::format("[Inlet] Table with name '{0}' does not exist", name);
         SLIC_ERROR(msg);
       }
       return from_inlet(getTable(name));
@@ -762,6 +832,51 @@ public:
     {
       return getTable(detail::CONTAINER_GROUP_NAME).getContainer<Key, Val>();
     }
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Returns a stored container as a contiguous array.
+   * 
+   * Retrieves a container of user-defined type.
+   * 
+   * \return The values in the retrieved container
+   * 
+   * \tparam T The container type, i.e., T = std::vector<V>
+   * 
+   * \note Elements in the returned array will be in ascending order by index,
+   * regardless of index contiguity or base index
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<detail::is_std_vector<T>::value, T>::type get() const
+  {
+    // Only allow retrieval of std::vectors from integer-keyed containers
+    using Key = int;
+    using Val = typename T::value_type;
+    auto map = get<std::unordered_map<Key, Val>>();
+
+    // Retrieve and sort the indices to provide consistent behavior regardless
+    // of index contiguity or base index
+    std::vector<Key> indices;
+    indices.reserve(map.size());
+
+    for(const auto& entry : map)
+    {
+      indices.push_back(entry.first);
+    }
+    std::sort(indices.begin(), indices.end());
+
+    std::vector<Val> result;
+    result.reserve(map.size());
+
+    for(const Key index : indices)
+    {
+      // Safe to move from the map as it won't get used afterwards
+      result.push_back(std::move(map[index]));
+    }
+
+    return result;
   }
 
   /*!
@@ -1062,9 +1177,12 @@ private:
    * \brief This is an internal utility intended to be used with arrays/dicts of 
    * user-defined types that returns the indices as strings - integer indices
    * will be converted to strings
+   * 
+   * \param [in] trimAbsolute Whether to only return the "basename" if the path
+   * is absolute, e.g., an absolute path foo/0/bar will be trimmed to "bar"
    *****************************************************************************
    */
-  std::vector<VariantKey> containerIndices() const;
+  std::vector<VariantKey> containerIndices(bool trimAbsolute = true) const;
 
   /*!
    *****************************************************************************
@@ -1124,6 +1242,23 @@ private:
     return m_sidreGroup->hasView(detail::GENERIC_CONTAINER_FLAG);
   }
 
+  /*!
+   *****************************************************************************
+   * \brief Calls a function on the subtables corresponding to the elements
+   * of the container held by this table
+   * 
+   * \param [in] func The function to apply to individual container elements
+   * 
+   * \pre The calling table must be a generic container, i.e., isGenericContainer()
+   * returns true
+   * 
+   * \pre The function must accept a single argument of type Table&
+   * 
+   *****************************************************************************
+   */
+  template <typename Func>
+  void forEachContainerElement(Func&& func) const;
+
   std::string m_name;
   Reader& m_reader;
   // Inlet's Root Sidre Group
@@ -1141,6 +1276,11 @@ private:
   std::vector<AggregateVerifiable<Table>> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
   std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
+
+  // Used when the calling Table is a generic container within a generic container
+  // Need to delegate schema-defining calls (add*) to the elements of the nested
+  // container
+  std::vector<std::reference_wrapper<Table>> m_nested_aggregates;
 };
 
 }  // namespace inlet

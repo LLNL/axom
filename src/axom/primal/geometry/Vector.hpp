@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -155,6 +155,13 @@ public:
    */
   AXOM_HOST_DEVICE
   Vector(const Vector<T, NDIMS>& other) : m_components(other.array()) { }
+
+  /*!
+   * \brief Copy assignment operator
+   * \param [in] other The vector to copy
+   */
+  AXOM_HOST_DEVICE
+  Vector& operator=(const Vector<T, NDIMS>& other);
 
   /*!
    * \brief Constructs a vector from point A to point B.
@@ -377,6 +384,14 @@ namespace axom
 {
 namespace primal
 {
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator=(const Vector<T, NDIMS>& other)
+{
+  m_components = other.array();
+  return *this;
+}
+
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator*=(T scalar)

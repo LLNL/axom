@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * @file sidre_mfem_datacollection.cpp
+ * @file sidre_mfem_datacollection_vis.cpp
  * @brief This example code is a basic demonstration of Sidre's
  * MFEMSidreDataCollection class for visualizing a time-marching
  * simulation.  It is a more thorough version of the snippet
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
   // Initialize the datacollection with the mesh
   // Note: all fields (added with RegisterField) must be on this mesh
-  axom::sidre::MFEMSidreDataCollection dc("sidre_mfem_datacoll_ex", mesh);
+  axom::sidre::MFEMSidreDataCollection dc("sidre_mfem_datacoll_vis_ex", mesh);
 
 // This is where the time-dependent operator would be set up...
 
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
   dc.SetCycle(0);   // Iteration counter
   dc.SetTime(0.0);  // Simulation time
   // Filename and protocol, both of which are optional
-  dc.Save("sidre_mfem_datacoll_ex", "sidre_hdf5");
+  dc.Save("sidre_mfem_datacoll_vis_ex", "sidre_hdf5");
 
   // Sample time parameters
   int n_iter = 10;
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     // then save it after updating the time information...
     dc.SetCycle(i);
     dc.SetTime(dt * i);
-    dc.Save("sidre_mfem_datacoll_ex", "sidre_hdf5");
+    dc.Save("sidre_mfem_datacoll_vis_ex", "sidre_hdf5");
   }
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)

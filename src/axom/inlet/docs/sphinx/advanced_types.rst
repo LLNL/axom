@@ -9,7 +9,7 @@ and functions can also be defined as part of an input file.
 Adding User-Defined Types to a Schema
 -------------------------------------
 
-To add a single (i.e., not array) user-defined type to the input file, use the ``addTable``
+To add a single (i.e., not array) user-defined type to the input file, use the ``addStruct``
 function of the Inlet or Table classes to add a Table (collection of Fields and sub-Tables)
 that will represent the fields of the struct.
 
@@ -42,13 +42,30 @@ The definition of a static ``defineSchema`` member function is not required, and
 for convenience.  The schema definition for a class or struct could also be implemented as a
 free function for third-party types, or even in the same place as the sub-table declaration. 
 
-Arrays of user-defined types are also supported in Inlet.  First, use the ``addGenericArray``
+Arrays of user-defined types are also supported in Inlet.  First, use the ``addStructArray``
 function to create a subtable, then define the schema on that table:
 
 .. literalinclude:: ../../examples/user_defined_type.cpp
    :start-after: _inlet_userdef_array_usage_start
    :end-before: _inlet_userdef_array_usage_end
    :language: C++
+
+Associative arrays are also supported, using string keys or a mixture of string and integer keys.
+The ``addStructDictionary`` function can be used analogously to the ``addStructArray`` function
+for these associative arrays.
+
+.. note::
+  Although many of Inlet's input file languages do not distinguish between a "dictionary" type
+  and a "record" type, Inlet treats them differently for type safety reasons:
+
+  *Dictionaries* use arbitrary strings or integers for their keys, and their values (entries)
+  can only be retreived as a homogenous type.  In other words, dictionaries must map to
+  ``std::unordered_map<Key, Value>`` for fixed key and value types.
+
+  *Structs* contain a fixed set of named fields, but these fields can be of any type.
+  As the name suggests, these map to ``structs`` in C++.
+
+  In short, if the *key values* vary, use a dictionary.  If the *field types* vary, use a struct.
 
 Retrieving User-Defined Types from an Input File
 ------------------------------------------------
@@ -83,6 +100,10 @@ types is as follows, in this case for an array of the ``BoundaryCondition`` stru
 
   auto mesh = inlet["bcs"].get<std::unordered_map<int, BoundaryCondition>>();
 
+String-keyed dictionaries are implemented as ``std::unordered_map<std::string, T>`` and can be retrieved
+in the same way as the array above.  For dictionaries with a mix of string and integer keys, the
+``inlet::VariantKey`` type can be used, namely, by retrieving a ``std::unordered_map<inlet::VariantKey, T>``.
+
 Adding Functions to a Schema
 ----------------------------
 
@@ -90,13 +111,16 @@ For input file types that support functions, e.g., Lua, functions can also be re
 into a ``std::function``, the wrapper for callables provided by the C++ standard library.  This is accomplished
 by calling ``addFunction`` on an Inlet or Table object.
 
-Consider the following Lua function that accepts a three-dimensional vector (split into components x, y, and z)
-and returns a double:
+Consider the following Lua function that accepts a vector and returns a double:
 
 .. code-block:: Lua
 
-  coef = function (x, y, z)
-    return x + (y * 0.5) + (z * 0.25)
+  coef = function (v)
+    if v.dim == 2 then
+      return v.x + (v.y * 0.5)
+    else
+      return v.x + (v.y * 0.5) + (v.z * 0.25)
+    end
   end
 
 The schema for this function would be defined as follows:
@@ -108,13 +132,28 @@ The schema for this function would be defined as follows:
 
 Note that a single type tag is passed for the return type, while a vector of tags is passed
 for the argument types.  Currently a maximum of two arguments are supported, with possible argument
-types ``Double`` or ``Vec3D``.  These correspond to the C++ types ``double`` and
-``axom::primal::Vector3D``, respectively.
+types ``Double``, ``String``, or ``Vector``.  These correspond to the C++ types ``double``, ``std::string``, and
+``axom::inlet::InletVector``, respectively. Functions do not have to return a value or accept arguments; you can
+use ``FunctionTag::Void`` as the return type in these cases in these cases.  To declare a function with no arguments,
+simply leave the list of argument types empty.
 
-.. note::  The function retrieval implementation for Lua will automatically expand vector arguments into three
-  arguments and contract vector returns from three scalars.  That is, a function whose Inlet schema contains a ``Vec3D``
-  argument should accept three scalar arguments in its place, and a function whose Inlet schema contains a ``Vec3D``
-  return value should return three scalar arguments in its place.
+.. note::  The ``InletVector`` type (and its Lua representation) are statically-sized vectors with
+  a maximum dimension of three.  That is, they can also be used to represent two-dimensional vectors.
+
+In Lua, the following operations on the ``Vector`` type are supported (for ``Vector`` s ``u``, ``v``, and ``w``):
+
+1. Construction of a 3D vector: ``u = Vector.new(1, 2, 3)``
+#. Construction of a 2D vector: ``u = Vector.new(1, 2)``
+#. Construction of an empty vector (default dimension is 3): ``u = Vector.new()``
+#. Vector addition and subtraction: ``w = u + v``, ``w = u - v``
+#. Vector negation: ``v = -u``
+#. Scalar multiplication: ``v = u * 0.5``, ``v = 0.5 * u``
+#. Indexing (1-indexed for consistency with Lua): ``d = u[1]``, ``u[1] = 0.5``
+#. L2 norm and its square: ``d = u:norm()``, ``d = u:squared_norm()``
+#. Normalization: ``v = u:unitVector()``
+#. Dot and cross products: ``d = u:dot(v)``, ``w = u:cross(v)``
+#. Dimension retrieval: ``d = u.dim``
+#. Component retrieval: ``d = u.x``, ``d = u.y``, ``d = u.z``
 
 Retrieving Functions from an Input File
 ---------------------------------------
@@ -144,7 +183,7 @@ by calling it directly:
 
 .. code-block:: C++
 
-  double result = inlet["coef"].call<double>(axom::inlet::FunctionType::Vec3D{3, 5, 7});
+  double result = inlet["coef"].call<double>(axom::inlet::FunctionType::Vector{3, 5, 7});
 
 .. note::  Using ``call<ReturnType>(ArgType1, ArgType2, ...)`` requires both that the return type
   be explicitly specified and that argument types be passed with the exact type as used in the 

@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,7 +36,7 @@ The main drivers of the Axom project are to:
 Components
 ==========
 
-   * Inlet: Input deck parsing and information storage/retrieval
+   * Inlet: Input file parsing and information storage/retrieval
    * Klee: Shaping specification and implementation
    * Lumberjack: Scalable parallel message logging and filtering
    * Mint: Mesh data model
@@ -165,7 +165,7 @@ Axom Copyright and License Information
 
 Please see the :ref:`axom-license`.
 
-Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC.
+Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC.
 Produced at the Lawrence Livermore National Laboratory.
 
 LLNL-CODE-741217
@@ -182,7 +182,7 @@ LLNL-CODE-741217
    :caption: Component User Guides
 
    Core (Widely useful utilities) <axom/core/docs/sphinx/index>
-   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
+   Inlet (Input files) <axom/inlet/docs/sphinx/index>
    Klee (Shaping specification and implementation) <axom/klee/docs/sphinx/index>
    Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
