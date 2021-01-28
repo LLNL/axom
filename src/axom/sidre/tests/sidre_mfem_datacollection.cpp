@@ -265,12 +265,10 @@ struct ParMeshGroupData
   int n_edges;
   int n_triangles;
   int n_quads;
-  void check(const ParMeshGroupData& other)
+  bool operator==(const ParMeshGroupData& other) const
   {
-    EXPECT_EQ(n_verts, other.n_verts);
-    EXPECT_EQ(n_edges, other.n_edges);
-    EXPECT_EQ(n_triangles, other.n_triangles);
-    EXPECT_EQ(n_quads, other.n_quads);
+    return (n_verts == other.n_verts) && (n_edges == other.n_edges) &&
+      (n_triangles == other.n_triangles) && (n_quads == other.n_quads);
   }
 };
 
@@ -281,12 +279,12 @@ static std::vector<ParMeshGroupData> getGroupData(const mfem::ParMesh& parmesh)
   // remove when marked const in MFEM
   auto& non_const_parmesh = const_cast<mfem::ParMesh&>(parmesh);
 
-  for(std::size_t i = 1; i < result.size(); i++)
+  for(std::size_t i = 1; i <= result.size(); i++)
   {
-    result[i - 1] = ParMeshGroupData {non_const_parmesh.GroupNVertices(i),
-                                      non_const_parmesh.GroupNEdges(i),
-                                      non_const_parmesh.GroupNTriangles(i),
-                                      non_const_parmesh.GroupNQuadrilaterals(i)};
+    result[i - 1] = {non_const_parmesh.GroupNVertices(i),
+                     non_const_parmesh.GroupNEdges(i),
+                     non_const_parmesh.GroupNTriangles(i),
+                     non_const_parmesh.GroupNQuadrilaterals(i)};
   }
 
   return result;
@@ -301,10 +299,6 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
                                    const int part_method = 1)
 {
   mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh, nullptr, part_method);
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  int n_ranks;
-  MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
 
   mfem::H1_FECollection fec(1, base_mesh.Dimension());
   mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
@@ -343,27 +337,16 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
   EXPECT_EQ(sdc_reader.GetMesh()->GetNE(), n_ele);
   EXPECT_EQ(sdc_reader.GetMesh()->GetNBE(), n_bdr_ele);
 
-  // Currently a mesh cannot be identified as a ParMesh in a vacuously
-  // distributed setup
-  if(n_ranks > 1)
-  {
-    // Make sure the ParMesh was reconstructed
-    auto reader_pmesh = dynamic_cast<mfem::ParMesh*>(sdc_reader.GetMesh());
-    ASSERT_NE(reader_pmesh, nullptr);
-    EXPECT_EQ(reader_pmesh->GetNGroups(), n_groups);
-    EXPECT_EQ(reader_pmesh->GetNFaceNeighbors(), n_face_neighbors);
-    EXPECT_EQ(reader_pmesh->GetNSharedFaces(), n_shared_faces);
+  // Make sure the ParMesh was reconstructed - even on one rank, this
+  // will still be a ParMesh
+  auto reader_pmesh = dynamic_cast<mfem::ParMesh*>(sdc_reader.GetMesh());
+  ASSERT_NE(reader_pmesh, nullptr);
+  EXPECT_EQ(reader_pmesh->GetNGroups(), n_groups);
+  EXPECT_EQ(reader_pmesh->GetNFaceNeighbors(), n_face_neighbors);
+  EXPECT_EQ(reader_pmesh->GetNSharedFaces(), n_shared_faces);
 
-    auto reader_group_data = getGroupData(*reader_pmesh);
-    EXPECT_EQ(writer_group_data.size(), reader_group_data.size());
-    // std::equal would be nice here, but we would lose the gtest
-    // diagnostics I think
-    for(std::size_t i = 0; i < writer_group_data.size(); i++)
-    {
-      writer_group_data[i].check(reader_group_data[i]);
-    }
-  }
-
+  auto reader_group_data = getGroupData(*reader_pmesh);
+  EXPECT_EQ(writer_group_data, reader_group_data);
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
@@ -414,14 +397,7 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   sdc_reader.Load();
 
   auto gf_read = sdc_reader.GetField(field_name);
-
-  // Can only reconstruct if more than trivially parallel
-  int n_ranks;
-  MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
-  if(n_ranks > 1)
-  {
-    EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(gf_read));
-  }
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(gf_read));
 
   // Make sure the gridfunction was actually read in
   EXPECT_LT(gf_read->ComputeL2Error(three_and_a_half), EPSILON);
