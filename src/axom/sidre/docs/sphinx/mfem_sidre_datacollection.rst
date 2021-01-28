@@ -89,4 +89,4 @@ example of how a simulation code might utilize the automatic reconstruction logi
 
   * There must be a coordinate set named ``coords``
   * There must be a topology named ``mesh`` with corresponding attributes stored in a field named ``mesh_material_attribute``
-  * There must be a topology named ``boundary``with corresponding attributes stored in a field named ``boundary_material_attribute``
+  * There must be a topology named ``boundary`` with corresponding attributes stored in a field named ``boundary_material_attribute``

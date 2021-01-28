@@ -49,8 +49,7 @@ public:
     if(cycle_to_load >= 0)
     {
       // If it is, we can load everything in and "unwrap" to fill in the state
-      m_datacoll.Load(cycle_to_load);
-      reloadSim();
+      reloadSim(cycle_to_load);
     }
     // Otherwise it's a nominal run so we have to create everything
     // In a realistic simulation this is where an input file might be used
@@ -91,7 +90,7 @@ private:
   // Simulation state setup
   void setupNewSim()
   {
-    SLIC_INFO_IF(!m_rank, "Starting a new simulation");
+    SLIC_INFO_IF(m_rank == 0, "Starting a new simulation");
     // Everything here is managed by the SimulationState object
     m_owns_data = true;
 
@@ -138,9 +137,10 @@ private:
   }
 
   // Sets up the state with non-owning pointers
-  void reloadSim()
+  void reloadSim(const int cycle_to_load)
   {
-    SLIC_INFO_IF(!m_rank,
+    m_datacoll.Load(cycle_to_load);
+    SLIC_INFO_IF(m_rank == 0,
                  "Reading in existing data and restarting from iteration "
                    << m_datacoll.GetCycle() << " at time "
                    << m_datacoll.GetTime());
