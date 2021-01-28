@@ -19,6 +19,7 @@ set(inlet_headers
     Field.hpp
     Function.hpp
     Inlet.hpp
+    InletVector.hpp
     Reader.hpp
     Table.hpp 
     Proxy.hpp

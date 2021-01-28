@@ -22,9 +22,9 @@
 #include "fmt/fmt.hpp"
 
 #include "axom/sidre.hpp"
-#include "axom/primal/geometry/Vector.hpp"
 
 #include "axom/inlet/Field.hpp"
+#include "axom/inlet/InletVector.hpp"
 #include "axom/inlet/Verifiable.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 
@@ -41,7 +41,7 @@ namespace inlet
  * \note Additions to this enumeration should be propagated to FunctionType, LuaReader
  * and func_signature_lists defined below (the mapping from enum to types)
  * 
- * \note Vec3D corresponds to a three-dimensional vector, Double corresponds to
+ * \note Vector corresponds to a vector with max dimension of three, Double corresponds to
  * a floating-point scalar
  * 
  * \note A two-dimensional vector was intentionally excluded for simplicity as
@@ -50,7 +50,7 @@ namespace inlet
  */
 enum class FunctionTag
 {
-  Vec3D,
+  Vector,
   Double,
   Void,
   String
@@ -65,7 +65,7 @@ enum class FunctionTag
  */
 struct FunctionType
 {
-  using Vec3D = axom::primal::Vector3D;
+  using Vector = InletVector;
   using Double = double;
   using Void = void;
   using String = std::string;
@@ -489,11 +489,11 @@ static constexpr std::size_t MAX_NUM_ARGS = 2u;
 
 // Permissible return types
 using ret_list =
-  TypeList<FunctionType::Void, FunctionType::Vec3D, FunctionType::Double, FunctionType::String>;
+  TypeList<FunctionType::Void, FunctionType::Vector, FunctionType::Double, FunctionType::String>;
 
 // First, permissible argument types are permuted
 using arg_permutations =
-  arg_lists<MAX_NUM_ARGS, FunctionType::Vec3D, FunctionType::Double, FunctionType::String>::type;
+  arg_lists<MAX_NUM_ARGS, FunctionType::Vector, FunctionType::Double, FunctionType::String>::type;
 
 // Then return types are prepended to the lists to create lists representing a
 // full function signature
