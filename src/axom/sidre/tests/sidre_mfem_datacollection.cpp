@@ -296,30 +296,15 @@ static std::vector<ParMeshGroupData> getGroupData(const mfem::ParMesh& parmesh)
  * @brief Helper method for testing that a parallel mesh is reconstructed correctly
  * @param [in] base_mesh The serial mesh object to distribute, save, and then reload
  * @param [in] part_method The partitioning method to use - in [0, 5]
- * @param [in] debug_print Whether to save pre- and post-reload mesh data to files for debugging
  */
 static void testParallelMeshReload(mfem::Mesh& base_mesh,
-                                   const int part_method = 1,
-                                   bool debug_print = false)
+                                   const int part_method = 1)
 {
   mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh, nullptr, part_method);
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int n_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
-
-  std::ofstream fout;
-  if(debug_print)
-  {
-    fout.open("mesh_par_" + std::to_string(rank));
-    parmesh.PrintSharedEntities("mesh_par");
-    if(rank == 0)
-    {
-      // Prints local mesh on rank 0
-      std::ofstream vtkstream("parmesh.vtk");
-      parmesh.PrintVTK(vtkstream);
-    }
-  }
 
   mfem::H1_FECollection fec(1, base_mesh.Dimension());
   mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
@@ -328,10 +313,6 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
   // a simulated restart (save -> load)
   const bool owns_mesh = true;
   MFEMSidreDataCollection sdc_writer(testName(), &parmesh, owns_mesh);
-  if(debug_print && sdc_writer.GetBPGroup()->hasGroup("adjsets"))
-  {
-    sdc_writer.GetBPGroup()->print(fout);
-  }
 
   // Save some basic info about the mesh
   const int n_verts = sdc_writer.GetMesh()->GetNV();
@@ -348,7 +329,6 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
   // Group-specific info
   auto writer_group_data = getGroupData(*writer_pmesh);
 
-  sdc_writer.SetPrefixPath("/tmp/dc_par_reload_test");
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
 
@@ -356,23 +336,12 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
 
   // Needs to be set "manually" in order for everything to be loaded in properly
   sdc_reader.SetComm(MPI_COMM_WORLD);
-
-  sdc_reader.SetPrefixPath("/tmp/dc_par_reload_test");
   sdc_reader.Load();
 
   // Make sure the mesh was actually reconstructed
   EXPECT_EQ(sdc_reader.GetMesh()->GetNV(), n_verts);
   EXPECT_EQ(sdc_reader.GetMesh()->GetNE(), n_ele);
   EXPECT_EQ(sdc_reader.GetMesh()->GetNBE(), n_bdr_ele);
-
-  if(debug_print)
-  {
-    auto reader_pmesh = dynamic_cast<mfem::ParMesh*>(sdc_reader.GetMesh());
-    if(reader_pmesh)
-    {
-      reader_pmesh->PrintSharedEntities("mesh_par_reload_");
-    }
-  }
 
   // Currently a mesh cannot be identified as a ParMesh in a vacuously
   // distributed setup
@@ -401,14 +370,12 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
 /**
  * @brief Wrapper for testing mesh reconstruction across all partitioning methods
  * @param [in] base_mesh The serial mesh object to distribute, save, and then reload
- * @param [in] debug_print Whether to save pre- and post-reload mesh data to files for debugging
  */
-static void testParallelMeshReloadAllPartitionings(mfem::Mesh& base_mesh,
-                                                   bool debug_print = false)
+static void testParallelMeshReloadAllPartitionings(mfem::Mesh& base_mesh)
 {
   for(int part_method = 0; part_method <= 5; part_method++)
   {
-    testParallelMeshReload(base_mesh, part_method, debug_print);
+    testParallelMeshReload(base_mesh, part_method);
   }
 }
 
@@ -437,7 +404,6 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   mfem::ConstantCoefficient three_and_a_half(3.5);
   gf_write.ProjectCoefficient(three_and_a_half);
 
-  sdc_writer.SetPrefixPath("/tmp/dc_par_reload_test");
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
 
@@ -445,8 +411,6 @@ TEST(sidre_datacollection, dc_par_reload_gf)
 
   // Needs to be set "manually" in order for everything to be loaded in properly
   sdc_reader.SetComm(MPI_COMM_WORLD);
-
-  sdc_reader.SetPrefixPath("/tmp/dc_par_reload_test");
   sdc_reader.Load();
 
   auto gf_read = sdc_reader.GetField(field_name);
@@ -465,7 +429,7 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
-// MFEM's partitioning logic looks like it's buggy for 1D messages
+// MFEM's partitioning logic looks like it's buggy for 1D meshes
 // Probably not a problem since 1D meshes are rare
 
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_small)
@@ -529,4 +493,4 @@ int main(int argc, char* argv[])
   return result;
 }
 
-#endif
+#endif  // defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
