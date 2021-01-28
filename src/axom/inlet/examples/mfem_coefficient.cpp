@@ -72,22 +72,22 @@ struct BoundaryCondition
     schema.addIntArray("attrs", "List of boundary attributes");
     // Inlet does not support sum types, so options are added to the schema
     // for vector/scalar coefficients
-    // Supported function parameter/return types are Double and Vec3D
+    // Supported function parameter/return types are Double and Vector
 
     schema.addFunction("vec_coef",
-                       inlet::FunctionTag::Vec3D,
-                       {inlet::FunctionTag::Vec3D,
+                       inlet::FunctionTag::Vector,
+                       {inlet::FunctionTag::Vector,
                         inlet::FunctionTag::Double},  // Multiple argument types
                        "The function representing the BC coefficient");
 
     schema
       .addFunction("coef",
                    inlet::FunctionTag::Double,
-                   {inlet::FunctionTag::Vec3D, inlet::FunctionTag::Double},
+                   {inlet::FunctionTag::Vector, inlet::FunctionTag::Double},
                    "The function representing the BC coefficient")
       .registerVerifier([](const inlet::Function& func) {
         // An arbitrary restriction, but this calls the function and checks its result
-        return func.call<double>(inlet::FunctionType::Vec3D {1, 1, 1}, 1.0) < 15;
+        return func.call<double>(inlet::FunctionType::Vector {1, 1, 1}, 1.0) < 15;
       });
   }
 };
@@ -99,16 +99,16 @@ struct BoundaryCondition
  *   attrs = {
  *      3, 4, 6, 9
  *   }
- *   coef = function (x, y, z, t)
- *     return x * 0.12
+ *   coef = function (v, t)
+ *     return v.x * 0.12
  *   end
  * }
  * -- or, for vector coefficients:
  * [8] = {
  *   attrs = { [4] = 14, [8] = 62, [6] = 11},
- *   vec_coef = function (x, y, z, t)
+ *   vec_coef = function (v, t)
  *     scale = 0.12
- *     return x * scale, y * scale, z * scale
+ *     return v * scale
  *   end
  * }
  * \endcode
@@ -125,7 +125,7 @@ struct FromInlet<BoundaryCondition::InputInfo>
       // _inlet_mfem_coef_simple_retrieve_start
       // Retrieve the function (makes a copy) to be moved into the lambda
       auto func =
-        base["coef"].get<std::function<double(FunctionType::Vec3D, double)>>();
+        base["coef"].get<std::function<double(FunctionType::Vector, double)>>();
       // _inlet_mfem_coef_simple_retrieve_end
       result.scalar_func = [func(std::move(func))](const mfem::Vector& vec,
                                                    double t) {
@@ -136,13 +136,13 @@ struct FromInlet<BoundaryCondition::InputInfo>
     {
       auto func =
         base["vec_coef"]
-          .get<std::function<FunctionType::Vec3D(FunctionType::Vec3D, double)>>();
+          .get<std::function<FunctionType::Vector(FunctionType::Vector, double)>>();
       result.vec_func = [func(std::move(func))](const mfem::Vector& input,
                                                 double t,
                                                 mfem::Vector& output) {
         auto ret = func({input.GetData(), input.Size()}, t);
         // Copy from the primal vector into the MFEM vector
-        std::copy(ret.data(), ret.data() + ret.dimension(), output.GetData());
+        std::copy(ret.vec.data(), ret.vec.data() + input.Size(), output.GetData());
       };
     }
     else

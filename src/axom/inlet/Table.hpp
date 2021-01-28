@@ -157,6 +157,24 @@ struct is_inlet_primitive_dict<std::unordered_map<VariantKey, T>>
   static constexpr bool value = is_inlet_primitive<T>::value;
 };
 
+template <typename T>
+struct is_std_vector : std::false_type
+{ };
+
+template <typename T>
+struct is_std_vector<std::vector<T>> : std::true_type
+{ };
+
+template <typename T>
+struct is_primitive_std_vector : std::false_type
+{ };
+
+template <typename T>
+struct is_primitive_std_vector<std::vector<T>>
+{
+  static constexpr bool value = is_inlet_primitive<T>::value;
+};
+
 /*!
  *******************************************************************************
  * \class has_FromInlet_specialization
@@ -758,10 +776,10 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
-                            !detail::is_inlet_array<T>::value &&
-                            !detail::is_inlet_dict<T>::value,
-                          T>::type
+  typename std::enable_if<
+    !detail::is_inlet_primitive<T>::value && !detail::is_inlet_array<T>::value &&
+      !detail::is_inlet_dict<T>::value && !detail::is_std_vector<T>::value,
+    T>::type
   get(const std::string& name = "") const
   {
     static_assert(detail::has_FromInlet_specialization<T>::value,
@@ -814,6 +832,51 @@ public:
     {
       return getTable(detail::CONTAINER_GROUP_NAME).getContainer<Key, Val>();
     }
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Returns a stored container as a contiguous array.
+   * 
+   * Retrieves a container of user-defined type.
+   * 
+   * \return The values in the retrieved container
+   * 
+   * \tparam T The container type, i.e., T = std::vector<V>
+   * 
+   * \note Elements in the returned array will be in ascending order by index,
+   * regardless of index contiguity or base index
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<detail::is_std_vector<T>::value, T>::type get() const
+  {
+    // Only allow retrieval of std::vectors from integer-keyed containers
+    using Key = int;
+    using Val = typename T::value_type;
+    auto map = get<std::unordered_map<Key, Val>>();
+
+    // Retrieve and sort the indices to provide consistent behavior regardless
+    // of index contiguity or base index
+    std::vector<Key> indices;
+    indices.reserve(map.size());
+
+    for(const auto& entry : map)
+    {
+      indices.push_back(entry.first);
+    }
+    std::sort(indices.begin(), indices.end());
+
+    std::vector<Val> result;
+    result.reserve(map.size());
+
+    for(const Key index : indices)
+    {
+      // Safe to move from the map as it won't get used afterwards
+      result.push_back(std::move(map[index]));
+    }
+
+    return result;
   }
 
   /*!

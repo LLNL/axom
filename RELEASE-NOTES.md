@@ -38,6 +38,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for mixed-key (integer and string) associative arrays
 - Inlet: Added support for deeply nested containers of structs
 - Inlet: Added support for `void` and strings in Lua-defined functions
+- Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -59,8 +60,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
 - Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
 - Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
+- Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 - The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
   datastore is `Load` ed in
+- Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
