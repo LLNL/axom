@@ -129,8 +129,9 @@ The schema for this function would be defined as follows:
 
 Note that a single type tag is passed for the return type, while a vector of tags is passed
 for the argument types.  Currently a maximum of two arguments are supported, with possible argument
-types ``Double`` or ``Vec3D``.  These correspond to the C++ types ``double`` and
-``axom::primal::Vector3D``, respectively.
+types ``Double``, ``String``, or ``Vec3D``.  These correspond to the C++ types ``double``, ``std::string``, and
+``axom::primal::Vector3D``, respectively.  Functions do not have to return a value or accept arguments; you can
+use ``FunctionTag::Void`` in these cases.
 
 .. note::  The function retrieval implementation for Lua will automatically expand vector arguments into three
   arguments and contract vector returns from three scalars.  That is, a function whose Inlet schema contains a ``Vec3D``

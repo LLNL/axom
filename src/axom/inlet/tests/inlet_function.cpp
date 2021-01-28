@@ -139,6 +139,88 @@ TEST(inlet_function, simple_double_to_double_through_table)
   EXPECT_FLOAT_EQ(result, (arg * 3.4) + 9.64);
 }
 
+TEST(inlet_function, simple_void_to_double_through_table)
+{
+  std::string testString = "function foo () return 9.64 end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo", FunctionTag::Double, {}, "foo's description");
+
+  auto callable = inlet["foo"].get<std::function<FunctionType::Double()>>();
+  double result = callable();
+  EXPECT_FLOAT_EQ(result, 9.64);
+}
+
+TEST(inlet_function, simple_double_to_void_through_table)
+{
+  // Test a function that returns nothing by using it to modify a global
+  std::string testString = "bar = 19.9; function foo (a) bar = a end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::Void,
+                    {FunctionTag::Double},
+                    "foo's description");
+
+  auto callable =
+    inlet["foo"].get<std::function<FunctionType::Void(FunctionType::Double)>>();
+  double arg = -6.37;
+  callable(arg);
+
+  inlet.addDouble("bar", "bar's description");
+  double result = inlet["bar"];
+  EXPECT_FLOAT_EQ(result, arg);
+}
+
+TEST(inlet_function, simple_string_to_double_through_table)
+{
+  std::string testString =
+    "function foo(s) "
+    "  if s == 'a' then return 9.1 "
+    "  elseif s == 'b' then return -6.3 "
+    "  else return 66.5 end "
+    "end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::Double,
+                    {FunctionTag::String},
+                    "foo's description");
+
+  auto callable =
+    inlet["foo"].get<std::function<FunctionType::Double(FunctionType::String)>>();
+
+  EXPECT_FLOAT_EQ(callable("a"), 9.1);
+  EXPECT_FLOAT_EQ(callable("b"), -6.3);
+  EXPECT_FLOAT_EQ(callable("c"), 66.5);
+}
+
+TEST(inlet_function, simple_double_to_string_through_table)
+{
+  std::string testString =
+    "function foo(d) "
+    "  if d == 1 then return 'a' "
+    "  elseif d == 2 then return 'b' "
+    "  else return 'c' end "
+    "end";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet.addFunction("foo",
+                    FunctionTag::String,
+                    {FunctionTag::Double},
+                    "foo's description");
+
+  auto callable =
+    inlet["foo"].get<std::function<FunctionType::String(FunctionType::Double)>>();
+  EXPECT_EQ(callable(1), "a");
+  EXPECT_EQ(callable(2), "b");
+  EXPECT_EQ(callable(3), "c");
+}
+
 TEST(inlet_function, simple_vec3_to_double_through_table_call)
 {
   std::string testString = "function foo (x, y, z) return x + y + z end";
