@@ -244,10 +244,11 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   for(auto curr = begin; curr != end; ++curr)
   {
     auto key = *curr;
-    auto as_int = checkedConvertToInt(key);
-    if(as_int.second && table[as_int.first].valid())
+    int key_as_int;
+    bool is_int = checkedConvertToInt(key, key_as_int);
+    if(is_int && table[key_as_int].valid())
     {
-      table = table[as_int.first];
+      table = table[key_as_int];
     }
     else if(table[key].valid())
     {
