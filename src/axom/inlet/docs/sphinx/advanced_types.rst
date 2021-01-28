@@ -132,8 +132,10 @@ The schema for this function would be defined as follows:
 
 Note that a single type tag is passed for the return type, while a vector of tags is passed
 for the argument types.  Currently a maximum of two arguments are supported, with possible argument
-types ``Double`` or ``Vector``.  These correspond to the C++ types ``double`` and
-``axom::inlet::InletVector``, respectively.
+types ``Double``, ``String``, or ``Vector``.  These correspond to the C++ types ``double``, ``std::string``, and
+``axom::inlet::InletVector``, respectively. Functions do not have to return a value or accept arguments; you can
+use ``FunctionTag::Void`` as the return type in these cases in these cases.  To declare a function with no arguments,
+simply leave the list of argument types empty.
 
 .. note::  The ``InletVector`` type (and its Lua representation) are statically-sized vectors with
   a maximum dimension of three.  That is, they can also be used to represent two-dimensional vectors.

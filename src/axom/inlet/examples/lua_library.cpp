@@ -15,11 +15,10 @@ int main()
 {
   const std::string test_file_name = "load_library_test_file";
 
-  // FIXME: Change signature to double(void) when #424 is merged
   const std::string input = R"(
-  read_str = function (x,y,z)
+  read_str = function ()
       file = io.open('load_library_test_file', 'r')
-      return tonumber(file:read())
+      return file:read()
   end
   )";
 
@@ -30,7 +29,7 @@ int main()
   // Write test file
   std::ofstream myfile;
   myfile.open(test_file_name);
-  myfile << "7.4";
+  myfile << "test_string";
   myfile.close();
 
   // _inlet_io_library_add_start
@@ -51,24 +50,19 @@ int main()
   axom::inlet::Inlet myinlet(std::move(lr), ds.getRoot());
 
   // Define and store the values in the input file
-  // FIXME: Change signature to double(void) when #424 is merged
   myinlet.addFunction("read_str",
-                      axom::inlet::FunctionTag::Double,  // Return type
-                      {axom::inlet::FunctionTag::Vec3D},  // Argument types (unused)
+                      axom::inlet::FunctionTag::String,  // Return type
+                      {},                                // Argument types
                       "The function reads a double from a file");
 
-  // call the function with an unimportant number
-  // TODO: support no arguments?
-  //double result = myinlet["coef"].call<double>(5.0);
-  double result =
-    myinlet["read_str"].call<double>(axom::primal::Vector3D {3, 5, 7});
+  auto result = myinlet["read_str"].call<std::string>();
 
-  if(result != 7.4)
+  if(result != "test_string")
   {
-    std::cerr << "Failed to read '7.4' from test file." << std::endl;
+    std::cerr << "Failed to read 'test_string' from test file." << std::endl;
     return 1;
   }
-  std::cout << "Successfully read '7.4' from test file." << std::endl;
+  std::cout << "Successfully read 'test_string' from test file." << std::endl;
 
   // Clean up test file
   remove(test_file_name.c_str());

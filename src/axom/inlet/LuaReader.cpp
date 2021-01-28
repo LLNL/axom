@@ -318,6 +318,10 @@ Ret extractResult(sol::protected_function_result&& res)
   return option.value();
 }
 
+template <>
+FunctionType::Void extractResult<FunctionType::Void>(sol::protected_function_result&&)
+{ }
+
 /*!
  *****************************************************************************
  * \brief Creates a std::function given a Lua function and template parameters
@@ -389,6 +393,9 @@ typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
         arg_types);
     case FunctionTag::Double:
       return bindArgType<I + 1, Ret, Args..., double>(std::move(func), arg_types);
+    case FunctionTag::String:
+      return bindArgType<I + 1, Ret, Args..., std::string>(std::move(func),
+                                                           arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function argument type");
     }
@@ -434,6 +441,10 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
                                                            arg_types);
     case FunctionTag::Double:
       return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
+    case FunctionTag::Void:
+      return detail::bindArgType<0u, void>(std::move(lua_func), arg_types);
+    case FunctionTag::String:
+      return detail::bindArgType<0u, std::string>(std::move(lua_func), arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function return type");
     }
