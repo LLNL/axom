@@ -207,6 +207,9 @@ TEST(sidre_datacollection, dc_reload_mesh)
   // a simulated restart (save -> load)
   bool owns_mesh = true;
   MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh);
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_writer.SetComm(MPI_COMM_WORLD);
+#endif
 
   EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
 
@@ -215,16 +218,11 @@ TEST(sidre_datacollection, dc_reload_mesh)
   const int n_ele = sdc_writer.GetMesh()->GetNE();
   const int n_bdr_ele = sdc_writer.GetMesh()->GetNBE();
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  sdc_writer.SetComm(MPI_COMM_WORLD);
-#endif
-
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
 
-  // No mesh is used here
+  // No mesh is used here to construct as it will be read in
   MFEMSidreDataCollection sdc_reader(testName());
-
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_reader.SetComm(MPI_COMM_WORLD);
 #endif
