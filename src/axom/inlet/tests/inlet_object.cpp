@@ -773,6 +773,11 @@ TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)
   EXPECT_EQ(arr, expected_arr);
   arr = inlet["arr"];
   EXPECT_EQ(arr, expected_arr);
+
+  // Also possible to retrieve with indices
+  std::unordered_map<int, int> expected_arr_w_indices {{0, 4}, {1, 6}, {2, 10}};
+  std::unordered_map<int, int> arr_w_indices = inlet["arr"];
+  EXPECT_EQ(arr_w_indices, expected_arr_w_indices);
 }
 
 TYPED_TEST(inlet_object, generic_arrays_as_std_vector)
