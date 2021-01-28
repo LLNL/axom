@@ -1686,6 +1686,7 @@ private:
 
     FinalizeTopology();
   }
+
   /**
    * @brief A span over a list of vectors arranged contiguously (not interleaved)
    * Allows for convenient iteration over the list without having to manage
@@ -1771,7 +1772,7 @@ private:
     VectorSpan shared_edges;  // Pairs of vertex indices corresponding to shared edges
     VectorSpan shared_triangles;  // 3-tuples of vertex indices corresponding to shared triangular faces
     VectorSpan shared_quadrilaterals;  // 4-tuples of vertex indices corresponding to shared quadrilateral faces
-    std::vector<int> neighbors;  // Rank IDs of the neighboring nodes/processes
+    mfem::Array<int> neighbors;  // Rank IDs of the neighboring nodes/processes
   };
 
   /**
@@ -1794,23 +1795,15 @@ private:
     {
       mfem::IntegerSet integer_set;
       mfem::Array<int>& array = integer_set;  // Bind a ref so we can modify it
-
       // On a given rank, the group ID corresponding to the current rank
       // is a member of each group
       array.Append(MyRank);
-      // One extra for current rank
-      array.Reserve(shared_geom.neighbors.size() + 1);
-      for(const auto neighbor : shared_geom.neighbors)
-      {
-        array.Append(neighbor);  // Each of these neighbors is a rank ID
-      }
-
-      array.Sort();  // Not strictly necessary but it makes the diff nicer
+      array.Append(shared_geom.neighbors);
+      array.Sort();  // MFEM requires that the sets be sorted
       group_integer_sets.Insert(integer_set);
     }
-
-    gtopo.Create(group_integer_sets,
-                 823);  // 822 or 823? No clue what either refers to
+    // FIXME: 822 or 823? No clue what either refers to
+    gtopo.Create(group_integer_sets, 823);
   }
 
   /**
@@ -1825,57 +1818,57 @@ private:
   std::vector<SharedGeometries> GetSharedGeometries(const Group* mesh_adjset_groups)
   {
     auto num_groups = mesh_adjset_groups->getNumGroups();
-    std::vector<SharedGeometries> result(num_groups);
+    std::vector<SharedGeometries> shared_geoms(num_groups);
 
     // Iterate over both the *sidre* groups group
-    // to fill in the *geometric* group data
+    // to fill in the shared geometry data
     int group_idx = 0;
     for(auto idx = mesh_adjset_groups->getFirstValidGroupIndex();
         sidre::indexIsValid(idx);
         idx = mesh_adjset_groups->getNextValidGroupIndex(idx))
     {
       const Group* adjset_grp = mesh_adjset_groups->getGroup(idx);
-      auto& grp_info = result[group_idx];
+      auto& shared_geom = shared_geoms[group_idx];
 
       // Copy the neighbors array
       const View* group_neighbors = adjset_grp->getView("neighbors");
       const int* neighbors_array = group_neighbors->getData();
       std::size_t num_neighbors = group_neighbors->getNumElements();
-      grp_info.neighbors.assign(neighbors_array, neighbors_array + num_neighbors);
+      shared_geom.neighbors.Append(neighbors_array, num_neighbors);
 
       // This group's shared vertices
       if(adjset_grp->hasView("values"))
       {
         auto verts = adjset_grp->getView("values");
-        grp_info.shared_verts = {verts->getData(), verts->getNumElements(), 1};
+        shared_geom.shared_verts = {verts->getData(), verts->getNumElements(), 1};
       }
 
       // This group's shared edges
       if(adjset_grp->hasView("edges"))
       {
         auto edges = adjset_grp->getView("edges");
-        grp_info.shared_edges = {edges->getData(), edges->getNumElements(), 2};
+        shared_geom.shared_edges = {edges->getData(), edges->getNumElements(), 2};
       }
 
       // This group's shared triangular faces
       if(adjset_grp->hasView("triangles"))
       {
         auto tris = adjset_grp->getView("triangles");
-        grp_info.shared_triangles = {tris->getData(), tris->getNumElements(), 3};
+        shared_geom.shared_triangles = {tris->getData(), tris->getNumElements(), 3};
       }
 
       // This group's shared quadrilateral faces
       if(adjset_grp->hasView("quadrilaterals"))
       {
         auto quads = adjset_grp->getView("quadrilaterals");
-        grp_info.shared_quadrilaterals = {quads->getData(),
-                                          quads->getNumElements(),
-                                          4};
+        shared_geom.shared_quadrilaterals = {quads->getData(),
+                                             quads->getNumElements(),
+                                             4};
       }
       group_idx++;
     }
 
-    return result;
+    return shared_geoms;
   }
 };
 
