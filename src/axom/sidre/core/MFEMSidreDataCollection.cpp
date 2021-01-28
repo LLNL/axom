@@ -1426,6 +1426,8 @@ mfem::Geometry::Type MFEMSidreDataCollection::getElementTypeFromName(
 }
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+namespace detail
+{
 /**
  * @brief Wrapper class to enable the reconstruction of a ParMesh from a
  * Conduit blueprint
@@ -1435,6 +1437,190 @@ mfem::Geometry::Type MFEMSidreDataCollection::getElementTypeFromName(
  */
 class SidreParMeshWrapper : public mfem::ParMesh
 {
+public:
+  /**
+   * @brief Constructs a new parallel mesh, intended to be assigned
+   * to an mfem::ParMesh*
+   * 
+   * @param [in] bp_grp The root group of the Conduit Blueprint structure
+   * @param [in] comm The MPI communicator to use with the new mesh
+   * 
+   * The remaining parameters are used to construct the mfem::Mesh base subobject
+   */
+  SidreParMeshWrapper(Group* bp_grp,
+                      MPI_Comm comm,
+                      double* vertices,
+                      int num_vertices,
+                      int* element_indices,
+                      mfem::Geometry::Type element_type,
+                      int* element_attributes,
+                      int num_elements,
+                      int* boundary_indices,
+                      mfem::Geometry::Type boundary_type,
+                      int* boundary_attributes,
+                      int num_boundary_elements,
+                      int dimension,
+                      int space_dimension = -1)
+  {
+    MyComm = comm;
+    gtopo.SetComm(comm);
+    ConstructMeshSubObject(vertices,
+                           num_vertices,
+                           element_indices,
+                           element_type,
+                           element_attributes,
+                           num_elements,
+                           boundary_indices,
+                           boundary_type,
+                           boundary_attributes,
+                           num_boundary_elements,
+                           dimension,
+                           space_dimension);
+
+    SLIC_ERROR_IF(!bp_grp->hasGroup("adjsets"),
+                  "Cannot reconstruct a ParMesh without adjacency sets");
+
+    MPI_Comm_size(MyComm, &NRanks);
+    MPI_Comm_rank(MyComm, &MyRank);
+
+    // NOTE: The remaining logic is borrowed heavily from the mfem::ParMesh
+    // constructors, since it's setting up the internal data structures used
+    // to keep track of communication groups and shared elements
+
+    ReduceMeshGen();  // determine the global 'meshgen'
+
+    // FIXME: The word "group" is overloaded in this context
+    // Can we do any better with variable naming?
+    // A group can refer to a communication group or a Sidre group
+
+    auto mesh_adjset_groups = bp_grp->getGroup("adjsets/mesh/groups");
+    auto num_groups = mesh_adjset_groups->getNumGroups();
+
+    auto shared_geoms = GetSharedGeometries(mesh_adjset_groups);
+
+    // Set up the gtopo object
+    InitializeGroupTopology(shared_geoms);
+
+    std::size_t total_shared_vertices = 0;
+    std::size_t total_shared_edges = 0;
+    std::size_t total_shared_faces = 0;
+
+    for(const auto& shared_geom : shared_geoms)
+    {
+      total_shared_vertices += shared_geom.shared_verts.size();
+      total_shared_edges += shared_geom.shared_edges.size();
+      total_shared_faces += shared_geom.shared_triangles.size();
+      total_shared_faces += shared_geom.shared_quadrilaterals.size();
+    }
+
+    // Resizing for shared vertex data
+    svert_lvert.SetSize(total_shared_vertices);
+    group_svert.SetDims(num_groups, total_shared_vertices);
+
+    if(dimension >= 2)
+    {
+      // Resizing for shared edge data
+      sedge_ledge.SetSize(total_shared_edges);
+      shared_edges.SetSize(total_shared_edges);
+      group_sedge.SetDims(num_groups, total_shared_edges);
+    }
+    if(dimension >= 3)
+    {
+      // Resizing for shared face data
+      sface_lface.SetSize(total_shared_faces);
+      group_stria.MakeI(num_groups);
+      group_squad.MakeI(num_groups);
+    }
+    else
+    {
+      group_stria.SetSize(num_groups, 0);  // create empty group_stria
+      group_squad.SetSize(num_groups, 0);  // create empty group_squad
+    }
+
+    std::size_t group_idx = 1;  // The ID of the current group
+    std::size_t total_verts_added = 0;
+    std::size_t total_edges_added = 0;
+
+    for(const auto& shared_geom : shared_geoms)
+    {
+      // Add shared vertices
+      auto n_shared_verts = shared_geom.shared_verts.size();
+      n_shared_verts += total_verts_added;  // Get the index into the global table
+      SLIC_ERROR_IF(n_shared_verts > group_svert.Size_of_connections(),
+                    "incorrect number of total_shared_vertices");
+      group_svert.GetI()[group_idx] = n_shared_verts;
+
+      for(const auto vert : shared_geom.shared_verts)
+      {
+        group_svert.GetJ()[total_verts_added] = total_verts_added;
+        svert_lvert[total_verts_added] = *vert;
+        total_verts_added++;
+      }
+
+      if(dimension >= 2)
+      {
+        auto n_shared_edges = shared_geom.shared_edges.size();
+        n_shared_edges += total_edges_added;
+        SLIC_ERROR_IF(n_shared_edges > group_sedge.Size_of_connections(),
+                      "incorrect number of total_shared_edges");
+        group_sedge.GetI()[group_idx] = n_shared_edges;
+
+        for(const auto edge : shared_geom.shared_edges)
+        {
+          group_sedge.GetJ()[total_edges_added] = total_edges_added;
+          shared_edges[total_edges_added] = new mfem::Segment(edge, 1);
+          total_edges_added++;
+        }
+
+        if(dimension >= 3)
+        {
+          // Add all the shared faces
+          for(const auto triangle : shared_geom.shared_triangles)
+          {
+            shared_trias.Append({triangle[0], triangle[1], triangle[2]});
+          }
+
+          for(const auto quad : shared_geom.shared_quadrilaterals)
+          {
+            shared_quads.Append({quad[0], quad[1], quad[2], quad[3]});
+          }
+
+          group_stria.AddColumnsInRow(group_idx - 1,
+                                      shared_geom.shared_triangles.size());
+          group_squad.AddColumnsInRow(group_idx - 1,
+                                      shared_geom.shared_quadrilaterals.size());
+        }
+      }
+
+      group_idx++;
+    }
+
+    if(dimension >= 3)
+    {
+      SLIC_ERROR_IF(
+        shared_trias.Size() + shared_quads.Size() != sface_lface.Size(),
+        "incorrect number of total_shared_faces");
+      // Define the J arrays of group_stria and group_squad -- they just contain
+      // consecutive numbers starting from 0 up to shared_trias.Size()-1 and
+      // shared_quads.Size()-1, respectively.
+      group_stria.MakeJ();
+      for(int i = 0; i < shared_trias.Size(); i++)
+      {
+        group_stria.GetJ()[i] = i;
+      }
+      group_squad.MakeJ();
+      for(int i = 0; i < shared_quads.Size(); i++)
+      {
+        group_squad.GetJ()[i] = i;
+      }
+    }
+
+    const bool fix_orientation = false;
+    const bool refine = false;
+    Finalize(refine, fix_orientation);
+  }
+
+private:
   /**
    * @brief Clone of mfem::Mesh constructor that allows data fields
    * to be set directly
@@ -1444,18 +1630,18 @@ class SidreParMeshWrapper : public mfem::ParMesh
    * 
    * @see mfem::Mesh::Mesh(double, int, int*, ...)
    */
-  void CreateMesh(double* _vertices,
-                  int num_vertices,
-                  int* element_indices,
-                  mfem::Geometry::Type element_type,
-                  int* element_attributes,
-                  int num_elements,
-                  int* boundary_indices,
-                  mfem::Geometry::Type boundary_type,
-                  int* boundary_attributes,
-                  int num_boundary_elements,
-                  int dimension,
-                  int space_dimension)
+  void ConstructMeshSubObject(double* _vertices,
+                              int num_vertices,
+                              int* element_indices,
+                              mfem::Geometry::Type element_type,
+                              int* element_attributes,
+                              int num_elements,
+                              int* boundary_indices,
+                              mfem::Geometry::Type boundary_type,
+                              int* boundary_attributes,
+                              int num_boundary_elements,
+                              int dimension,
+                              int space_dimension)
   {
     // NOTE: This is all copied directly from the mfem::Mesh constructor
     // It needs to be called directly though because we have to "manually"
@@ -1551,8 +1737,9 @@ class SidreParMeshWrapper : public mfem::ParMesh
       }
       void operator++()
       {
+        // Moves the pointer forward by the stride
         m_ptr += m_stride;
-      }  // Moves the pointer forward by the stride
+      }
       const int* operator*() const { return m_ptr; }
 
     private:
@@ -1560,11 +1747,10 @@ class SidreParMeshWrapper : public mfem::ParMesh
       const IndexType m_stride;
     };
 
-    auto begin() const { return VectorSpanIterator(m_data, m_num_components); }
-    auto end() const
+    VectorSpanIterator begin() const { return {m_data, m_num_components}; }
+    VectorSpanIterator end() const
     {
-      return VectorSpanIterator(m_data + (m_num_vectors * m_num_components),
-                                m_num_components);
+      return {m_data + (m_num_vectors * m_num_components), m_num_components};
     }
 
   private:
@@ -1576,9 +1762,10 @@ class SidreParMeshWrapper : public mfem::ParMesh
 
   /**
    * @brief A data class containing all relevant information needed on geometric
-   * communication groups within an mfem::ParMesh
+   * communication groups within an mfem::ParMesh - the shared geometric
+   * entities and neighboring groups
    */
-  struct GroupInfo
+  struct SharedGeometries
   {
     VectorSpan shared_verts;  // Indices of shared vertices
     VectorSpan shared_edges;  // Pairs of vertex indices corresponding to shared edges
@@ -1589,21 +1776,21 @@ class SidreParMeshWrapper : public mfem::ParMesh
 
   /**
    * @brief Initializes the mfem::GroupTopology object
-   * @param [in] groups_info The communication group information
-   * @pre The shared vertex and neighbor fields of each GroupInfo must be populated
+   * @param [in] shared_geoms The shared geometry information
+   * @pre The shared vertex and neighbor fields of each SharedGeometries must be populated
    * @post The gtopo member of the base subobject is initialized
    */
-  void CreateGroupTopology(const std::vector<GroupInfo>& groups_info)
+  void InitializeGroupTopology(const std::vector<SharedGeometries>& shared_geoms)
   {
     mfem::ListOfIntegerSets group_integer_sets;
 
     // The first group always contains only the current rank
-    mfem::IntegerSet integer_set_0;
-    mfem::Array<int>& array_0 = integer_set_0;  // Bind a ref so we can modify it
-    array_0.Append(MyRank);
-    group_integer_sets.Insert(integer_set_0);
+    mfem::IntegerSet first_set;
+    mfem::Array<int>& first_array = first_set;  // Bind a ref so we can modify it
+    first_array.Append(MyRank);
+    group_integer_sets.Insert(first_set);
 
-    for(const auto& group_info : groups_info)
+    for(const auto& shared_geom : shared_geoms)
     {
       mfem::IntegerSet integer_set;
       mfem::Array<int>& array = integer_set;  // Bind a ref so we can modify it
@@ -1611,10 +1798,9 @@ class SidreParMeshWrapper : public mfem::ParMesh
       // On a given rank, the group ID corresponding to the current rank
       // is a member of each group
       array.Append(MyRank);
-
-      // TODO: Determine if the number of ranks used to build the blueprint differs
-      // from the current number of ranks
-      for(const auto neighbor : group_info.neighbors)
+      // One extra for current rank
+      array.Reserve(shared_geom.neighbors.size() + 1);
+      for(const auto neighbor : shared_geom.neighbors)
       {
         array.Append(neighbor);  // Each of these neighbors is a rank ID
       }
@@ -1628,18 +1814,18 @@ class SidreParMeshWrapper : public mfem::ParMesh
   }
 
   /**
-   * @brief Retrieves the information for each of the groups in the adjacency
-   * set and stores it in a GroupInfo object
+   * @brief Retrieves the shared geometry information from the mesh topology
+   * adjacency set group
    * 
-   * @param [in] mesh_adjset_groups The blueprint group corresponding to the communication
-   * groups, i.e. <blueprint_root>/adjsets/mesh/groups
+   * @param [in] mesh_adjset_groups The blueprint group corresponding to the
+   * adjacency sets, i.e. <blueprint_root>/adjsets/<mesh_topology>/groups
    * 
-   * @return The fully populated vector of GroupInfo objects
+   * @return The set of SharedGeometries, one for each communication group
    */
-  std::vector<GroupInfo> getGroupInfo(Group* mesh_adjset_groups)
+  std::vector<SharedGeometries> GetSharedGeometries(const Group* mesh_adjset_groups)
   {
     auto num_groups = mesh_adjset_groups->getNumGroups();
-    std::vector<GroupInfo> result(num_groups);
+    std::vector<SharedGeometries> result(num_groups);
 
     // Iterate over both the *sidre* groups group
     // to fill in the *geometric* group data
@@ -1648,12 +1834,12 @@ class SidreParMeshWrapper : public mfem::ParMesh
         sidre::indexIsValid(idx);
         idx = mesh_adjset_groups->getNextValidGroupIndex(idx))
     {
-      auto adjset_grp = mesh_adjset_groups->getGroup(idx);
+      const Group* adjset_grp = mesh_adjset_groups->getGroup(idx);
       auto& grp_info = result[group_idx];
 
       // Copy the neighbors array
-      auto group_neighbors = adjset_grp->getView("neighbors");
-      int* neighbors_array = group_neighbors->getData<int*>();
+      const View* group_neighbors = adjset_grp->getView("neighbors");
+      const int* neighbors_array = group_neighbors->getData();
       std::size_t num_neighbors = group_neighbors->getNumElements();
       grp_info.neighbors.assign(neighbors_array, neighbors_array + num_neighbors);
 
@@ -1661,34 +1847,28 @@ class SidreParMeshWrapper : public mfem::ParMesh
       if(adjset_grp->hasView("values"))
       {
         auto verts = adjset_grp->getView("values");
-        grp_info.shared_verts = {verts->getData<int*>(),
-                                 verts->getNumElements(),
-                                 1};
+        grp_info.shared_verts = {verts->getData(), verts->getNumElements(), 1};
       }
 
       // This group's shared edges
       if(adjset_grp->hasView("edges"))
       {
         auto edges = adjset_grp->getView("edges");
-        grp_info.shared_edges = {edges->getData<int*>(),
-                                 edges->getNumElements(),
-                                 2};
+        grp_info.shared_edges = {edges->getData(), edges->getNumElements(), 2};
       }
 
       // This group's shared triangular faces
       if(adjset_grp->hasView("triangles"))
       {
         auto tris = adjset_grp->getView("triangles");
-        grp_info.shared_triangles = {tris->getData<int*>(),
-                                     tris->getNumElements(),
-                                     3};
+        grp_info.shared_triangles = {tris->getData(), tris->getNumElements(), 3};
       }
 
       // This group's shared quadrilateral faces
       if(adjset_grp->hasView("quadrilaterals"))
       {
         auto quads = adjset_grp->getView("quadrilaterals");
-        grp_info.shared_quadrilaterals = {quads->getData<int*>(),
+        grp_info.shared_quadrilaterals = {quads->getData(),
                                           quads->getNumElements(),
                                           4};
       }
@@ -1697,191 +1877,9 @@ class SidreParMeshWrapper : public mfem::ParMesh
 
     return result;
   }
-
-public:
-  /**
-   * @brief Constructs a new parallel mesh, intended to be assigned
-   * to an mfem::ParMesh*
-   * 
-   * @param [in] bp_grp The root group of the Conduit Blueprint structure
-   * @param [in] comm The MPI communicator to use with the new mesh
-   * 
-   * The remaining parameters are used to construct the mfem::Mesh base subobject
-   */
-  SidreParMeshWrapper(Group* bp_grp,
-                      MPI_Comm comm,
-                      double* vertices,
-                      int num_vertices,
-                      int* element_indices,
-                      mfem::Geometry::Type element_type,
-                      int* element_attributes,
-                      int num_elements,
-                      int* boundary_indices,
-                      mfem::Geometry::Type boundary_type,
-                      int* boundary_attributes,
-                      int num_boundary_elements,
-                      int dimension,
-                      int space_dimension = -1)
-  {
-    MyComm = comm;
-    gtopo.SetComm(comm);
-    CreateMesh(vertices,
-               num_vertices,
-               element_indices,
-               element_type,
-               element_attributes,
-               num_elements,
-               boundary_indices,
-               boundary_type,
-               boundary_attributes,
-               num_boundary_elements,
-               dimension,
-               space_dimension);
-
-    SLIC_ERROR_IF(!bp_grp->hasGroup("adjsets"),
-                  "Cannot reconstruct a ParMesh without adjacency sets");
-
-    MPI_Comm_size(MyComm, &NRanks);
-    MPI_Comm_rank(MyComm, &MyRank);
-
-    // NOTE: The remaining logic is borrowed heavily from the mfem::ParMesh
-    // constructors, since it's setting up the internal data structures used
-    // to keep track of communication groups and shared elements
-
-    ReduceMeshGen();  // determine the global 'meshgen'
-
-    // FIXME: The word "group" is overloaded in this context
-    // Can we do any better with variable naming?
-    // A group can refer to a communication group or a Sidre group
-
-    auto mesh_adjset_groups = bp_grp->getGroup("adjsets/mesh/groups");
-    auto num_groups = mesh_adjset_groups->getNumGroups();
-
-    auto groups_info = getGroupInfo(mesh_adjset_groups);
-
-    // Set up the gtopo object
-    CreateGroupTopology(groups_info);
-
-    std::size_t total_shared_vertices = 0;
-    std::size_t total_shared_edges = 0;
-    std::size_t total_shared_faces = 0;
-
-    for(const auto& group_info : groups_info)
-    {
-      total_shared_vertices += group_info.shared_verts.size();
-      total_shared_edges += group_info.shared_edges.size();
-      total_shared_faces += group_info.shared_triangles.size();
-      total_shared_faces += group_info.shared_quadrilaterals.size();
-    }
-
-    // Resizing for shared vertex data
-    svert_lvert.SetSize(total_shared_vertices);
-    group_svert.SetDims(num_groups, total_shared_vertices);
-
-    if(dimension >= 2)
-    {
-      // Resizing for shared edge data
-      sedge_ledge.SetSize(total_shared_edges);
-      shared_edges.SetSize(total_shared_edges);
-      group_sedge.SetDims(num_groups, total_shared_edges);
-    }
-    if(dimension >= 3)
-    {
-      // Resizing for shared face data
-      sface_lface.SetSize(total_shared_faces);
-      group_stria.MakeI(num_groups);
-      group_squad.MakeI(num_groups);
-    }
-    else
-    {
-      group_stria.SetSize(num_groups, 0);  // create empty group_stria
-      group_squad.SetSize(num_groups, 0);  // create empty group_squad
-    }
-
-    std::size_t group_idx = 1;  // The ID of the current group
-    std::size_t total_verts_added = 0;
-    std::size_t total_edges_added = 0;
-
-    for(const auto& group_info : groups_info)
-    {
-      // Add shared vertices
-      auto n_shared_verts = group_info.shared_verts.size();
-      n_shared_verts += total_verts_added;  // Get the index into the global table
-      SLIC_ERROR_IF(n_shared_verts > group_svert.Size_of_connections(),
-                    "incorrect number of total_shared_vertices");
-      group_svert.GetI()[group_idx] = n_shared_verts;
-
-      for(const auto vert : group_info.shared_verts)
-      {
-        group_svert.GetJ()[total_verts_added] = total_verts_added;
-        svert_lvert[total_verts_added] = *vert;
-        total_verts_added++;
-      }
-
-      if(dimension >= 2)
-      {
-        auto n_shared_edges = group_info.shared_edges.size();
-        n_shared_edges += total_edges_added;
-        SLIC_ERROR_IF(n_shared_edges > group_sedge.Size_of_connections(),
-                      "incorrect number of total_shared_edges");
-        group_sedge.GetI()[group_idx] = n_shared_edges;
-
-        for(const auto edge : group_info.shared_edges)
-        {
-          group_sedge.GetJ()[total_edges_added] = total_edges_added;
-          shared_edges[total_edges_added] = new mfem::Segment(edge, 1);
-          total_edges_added++;
-        }
-
-        if(dimension >= 3)
-        {
-          // Add all the shared faces
-          for(const auto triangle : group_info.shared_triangles)
-          {
-            shared_trias.Append({triangle[0], triangle[1], triangle[2]});
-          }
-
-          for(const auto quad : group_info.shared_quadrilaterals)
-          {
-            shared_quads.Append({quad[0], quad[1], quad[2], quad[3]});
-          }
-
-          group_stria.AddColumnsInRow(group_idx - 1,
-                                      group_info.shared_triangles.size());
-          group_squad.AddColumnsInRow(group_idx - 1,
-                                      group_info.shared_quadrilaterals.size());
-        }
-      }
-
-      group_idx++;
-    }
-
-    if(dimension >= 3)
-    {
-      SLIC_ERROR_IF(
-        shared_trias.Size() + shared_quads.Size() != sface_lface.Size(),
-        "incorrect number of total_shared_faces");
-      // Define the J arrays of group_stria and group_squad -- they just contain
-      // consecutive numbers starting from 0 up to shared_trias.Size()-1 and
-      // shared_quads.Size()-1, respectively.
-      group_stria.MakeJ();
-      for(int i = 0; i < shared_trias.Size(); i++)
-      {
-        group_stria.GetJ()[i] = i;
-      }
-      group_squad.MakeJ();
-      for(int i = 0; i < shared_quads.Size(); i++)
-      {
-        group_squad.GetJ()[i] = i;
-      }
-    }
-
-    const bool fix_orientation = false;
-    const bool refine = false;
-    Finalize(refine, fix_orientation);
-  }
 };
 
+} /* namespace detail */
   #endif  // defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 
 // private method
@@ -1983,20 +1981,20 @@ void MFEMSidreDataCollection::reconstructMesh()
   // If it has an adjacencies group, the reloaded state was a ParMesh
   if(m_bp_grp->hasGroup("adjsets/" + s_mesh_topology_name))
   {
-    m_owned_mesh = std::unique_ptr<SidreParMeshWrapper>(
-      new SidreParMeshWrapper(m_bp_grp,
-                              m_comm,
-                              vertices,
-                              num_vertices,
-                              element_indices,
-                              getElementTypeFromName(element_name),
-                              element_attributes,
-                              num_elements,
-                              boundary_indices,
-                              getElementTypeFromName(bdr_element_name),
-                              boundary_attributes,
-                              num_boundary_elements,
-                              dimension));
+    m_owned_mesh = std::unique_ptr<detail::SidreParMeshWrapper>(
+      new detail::SidreParMeshWrapper(m_bp_grp,
+                                      m_comm,
+                                      vertices,
+                                      num_vertices,
+                                      element_indices,
+                                      getElementTypeFromName(element_name),
+                                      element_attributes,
+                                      num_elements,
+                                      boundary_indices,
+                                      getElementTypeFromName(bdr_element_name),
+                                      boundary_attributes,
+                                      num_boundary_elements,
+                                      dimension));
   }
   else
   #endif
