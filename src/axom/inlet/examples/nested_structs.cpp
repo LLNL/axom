@@ -15,23 +15,13 @@
 namespace inlet = axom::inlet;
 using Vector = inlet::FunctionType::Vector;
 
-// Used to convert an unordered map (the type Inlet uses) to represent arrays
+// Used to convert a std::vector (the type Inlet uses to represent arrays)
 // to a geometric vector type
-// FIXME: Clean this up/remove when PR #429 is merged
-Vector mapToVector(const std::unordered_map<int, double>& map)
+Vector toVector(const std::vector<double>& vec)
 {
-  Vector result;
-  // Make sure the elements are accessed in order
-  for(int i = 0; i < 3; i++)
-  {
-    const auto ele = map.find(i);
-    if(ele != map.end())
-    {
-      result[i] = ele->second;
-      result.dim = i + 1;
-    }
-  }
-  return result;
+  // Narrow from std::size_t to int
+  const int size = vec.size();
+  return {{vec.data(), size}, size};
 }
 
 // A union of the members required for each of the operations is stored for simplicity
@@ -99,14 +89,14 @@ struct FromInlet<Operator>
     if(base.contains("translate"))
     {
       result.type = Operator::Type::Translate;
-      result.translate = mapToVector(base["translate"]);
+      result.translate = toVector(base["translate"]);
     }
     else if(base.contains("rotate"))
     {
       result.type = Operator::Type::Rotate;
       result.rotate = base["rotate"];
-      result.axis = mapToVector(base["axis"]);
-      result.center = mapToVector(base["center"]);
+      result.axis = toVector(base["axis"]);
+      result.center = toVector(base["center"]);
     }
     else if(base.contains("slice"))
     {
