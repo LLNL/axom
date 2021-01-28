@@ -21,6 +21,7 @@ bcs = {
   [8] = {
     attrs = {14, 62, 11},
     vec_coef = function (v, t)
+      x = v.x
       s = 0.1 / 64
       first = -s * x * x
       last = s * x * x * (8.0 - x)

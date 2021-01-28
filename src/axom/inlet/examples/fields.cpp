@@ -66,28 +66,33 @@ int main()
   inlet.addInt("a_defaulted_int", "An int that has a default value").defaultValue(17);
 
   // Add an optional top-level string not defined in the input file for example purposes
-  inlet.addString("does_not_exist", "Shows that not all fields need to be present in input file");
+  inlet.addString("does_not_exist",
+                  "Shows that not all fields need to be present in input file");
   // _inlet_simple_types_fields_add_end
 
   // _inlet_simple_types_fields_access_start
   // Access values stored in the Datastore via Inlet
 
   // Check if input file contained info before accessing optional fields
-  if (inlet.contains("a_simple_bool")) {
+  if(inlet.contains("a_simple_bool"))
+  {
     // Access field via "[]" operator, save value first to avoid type ambiquity
     bool a_simple_bool = inlet["a_simple_bool"];
     std::cout << "a_simple_bool = " << a_simple_bool << std::endl;
   }
 
-  if (inlet.contains("a_simple_int")) {
-    // Access field via `get<T>` directly, no ambiquity 
+  if(inlet.contains("a_simple_int"))
+  {
+    // Access field via `get<T>` directly, no ambiquity
     std::cout << "a_simple_int = " << inlet.get<int>("a_simple_int") << std::endl;
   }
 
   // Because this field was marked required, we do not have to call contains before accessing
-  std::cout << "a_simple_double = " << inlet.get<double>("a_simple_double") << std::endl;
+  std::cout << "a_simple_double = " << inlet.get<double>("a_simple_double")
+            << std::endl;
 
-  if (inlet.contains("a_simple_string")) {
+  if(inlet.contains("a_simple_string"))
+  {
     std::string a_simple_string = inlet["a_simple_string"];
     std::cout << "a_simple_string = " << a_simple_string << std::endl;
   }
