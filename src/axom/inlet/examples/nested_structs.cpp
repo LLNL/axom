@@ -13,7 +13,7 @@
 #include "axom/slic/core/SimpleLogger.hpp"
 
 namespace inlet = axom::inlet;
-using Vector = inlet::FunctionType::Vec3D;
+using Vector = inlet::FunctionType::Vector;
 
 // Used to convert an unordered map (the type Inlet uses) to represent arrays
 // to a geometric vector type
@@ -28,6 +28,7 @@ Vector mapToVector(const std::unordered_map<int, double>& map)
     if(ele != map.end())
     {
       result[i] = ele->second;
+      result.dim = i + 1;
     }
   }
   return result;
