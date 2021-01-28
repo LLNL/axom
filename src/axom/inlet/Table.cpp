@@ -818,31 +818,36 @@ bool Table::hasChild(const std::string& childName) const
 template <typename T>
 T* Table::getChildInternal(const std::string& childName) const
 {
-  std::string name = childName;
-  size_t found = name.find("/");
-  auto currTable = this;
+  utilities::Path path(childName);
+  const std::string base_name = path.baseName();
+  auto curr_table = this;
 
-  while(found != std::string::npos)
+  // Need to watch out for empty paths here
+  auto curr_table_name = [&curr_table](const std::string& suffix) {
+    return (curr_table->m_name.empty())
+      ? utilities::Path(suffix)
+      : utilities::Path::join({curr_table->m_name, suffix});
+  };
+
+  // Traverse the intermediate paths
+  const auto parent = path.parent();
+  for(const auto& path_part : parent.parts())
   {
-    const std::string& currName = name.substr(0, found);
-    if(currTable->hasChild<Table>(currName))
+    if(curr_table->hasChild<Table>(path_part))
     {
-      currTable =
-        currTable->m_tableChildren.at(appendPrefix(currTable->m_name, currName))
-          .get();
+      curr_table =
+        curr_table->m_tableChildren.at(curr_table_name(path_part)).get();
     }
     else
     {
       return nullptr;
     }
-    name = name.substr(found + 1);
-    found = name.find("/");
   }
 
-  if(currTable->hasChild<T>(name))
+  if(curr_table->hasChild<T>(base_name))
   {
-    const auto& children = currTable->*getChildren<T>();
-    return children.at(appendPrefix(currTable->m_name, name)).get();
+    const auto& children = curr_table->*getChildren<T>();
+    return children.at(curr_table_name(base_name)).get();
   }
   return nullptr;
 }
