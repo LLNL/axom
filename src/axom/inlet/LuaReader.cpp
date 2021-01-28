@@ -147,10 +147,11 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   for(auto curr = begin; curr != end; ++curr)
   {
     auto key = *curr;
-    auto as_int = checkedConvertToInt(key);
-    if(as_int.second && table[as_int.first].valid())
+    int key_as_int;
+    bool is_int = checkedConvertToInt(key, key_as_int);
+    if(is_int && table[key_as_int].valid())
     {
-      table = table[as_int.first];
+      table = table[key_as_int];
     }
     else if(table[key].valid())
     {
@@ -241,6 +242,10 @@ FunctionType::Vec3D extractResult<FunctionType::Vec3D>(
   return {std::get<0>(tup), std::get<1>(tup), std::get<2>(tup)};
 }
 
+template <>
+FunctionType::Void extractResult<FunctionType::Void>(sol::protected_function_result&&)
+{ }
+
 /*!
  *****************************************************************************
  * \brief Creates a std::function given a Lua function and template parameters
@@ -312,6 +317,9 @@ typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
         arg_types);
     case FunctionTag::Double:
       return bindArgType<I + 1, Ret, Args..., double>(std::move(func), arg_types);
+    case FunctionTag::String:
+      return bindArgType<I + 1, Ret, Args..., std::string>(std::move(func),
+                                                           arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function argument type");
     }
@@ -357,6 +365,10 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
                                                           arg_types);
     case FunctionTag::Double:
       return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
+    case FunctionTag::Void:
+      return detail::bindArgType<0u, void>(std::move(lua_func), arg_types);
+    case FunctionTag::String:
+      return detail::bindArgType<0u, std::string>(std::move(lua_func), arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function return type");
     }

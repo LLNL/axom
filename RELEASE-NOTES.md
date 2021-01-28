@@ -36,6 +36,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for defining and retrieving functions from the input file
 - Inlet: Added support for YAML and JSON input files
 - Inlet: Added support for mixed-key (integer and string) associative arrays
+- Inlet: Added support for deeply nested containers of structs
+- Inlet: Added support for `void` and strings in Lua-defined functions
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -47,9 +49,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Switched accessor interface to match that of the STL with operator[] and
   T get<T>()
 - Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
-  and `std::unique_ptr<T>` in owning contexts 
-- The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
-  datastore is `Load` ed in
+  and `std::unique_ptr<T>` in owning contexts - specifically, within Inlet's internal
+  tree structure
 - Unified core and SPIO unit tests into fewer executables to limit size of build directory
 - Renamed `axom::slic::UnitTestLogger` to `axom::slic:SimpleLogger` because it's used in
   more than just unit tests.
@@ -58,6 +59,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
 - Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
 - Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
+- The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
+  datastore is `Load` ed in
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty

@@ -9,7 +9,7 @@ and functions can also be defined as part of an input file.
 Adding User-Defined Types to a Schema
 -------------------------------------
 
-To add a single (i.e., not array) user-defined type to the input file, use the ``addTable``
+To add a single (i.e., not array) user-defined type to the input file, use the ``addStruct``
 function of the Inlet or Table classes to add a Table (collection of Fields and sub-Tables)
 that will represent the fields of the struct.
 
@@ -42,13 +42,30 @@ The definition of a static ``defineSchema`` member function is not required, and
 for convenience.  The schema definition for a class or struct could also be implemented as a
 free function for third-party types, or even in the same place as the sub-table declaration. 
 
-Arrays of user-defined types are also supported in Inlet.  First, use the ``addGenericArray``
+Arrays of user-defined types are also supported in Inlet.  First, use the ``addStructArray``
 function to create a subtable, then define the schema on that table:
 
 .. literalinclude:: ../../examples/user_defined_type.cpp
    :start-after: _inlet_userdef_array_usage_start
    :end-before: _inlet_userdef_array_usage_end
    :language: C++
+
+Associative arrays are also supported, using string keys or a mixture of string and integer keys.
+The ``addStructDictionary`` function can be used analogously to the ``addStructArray`` function
+for these associative arrays.
+
+.. note::
+  Although many of Inlet's input file languages do not distinguish between a "dictionary" type
+  and a "record" type, Inlet treats them differently for type safety reasons:
+
+  *Dictionaries* use arbitrary strings or integers for their keys, and their values (entries)
+  can only be retreived as a homogenous type.  In other words, dictionaries must map to
+  ``std::unordered_map<Key, Value>`` for fixed key and value types.
+
+  *Structs* contain a fixed set of named fields, but these fields can be of any type.
+  As the name suggests, these map to ``structs`` in C++.
+
+  In short, if the *key values* vary, use a dictionary.  If the *field types* vary, use a struct.
 
 Retrieving User-Defined Types from an Input File
 ------------------------------------------------
@@ -83,6 +100,10 @@ types is as follows, in this case for an array of the ``BoundaryCondition`` stru
 
   auto mesh = inlet["bcs"].get<std::unordered_map<int, BoundaryCondition>>();
 
+String-keyed dictionaries are implemented as ``std::unordered_map<std::string, T>`` and can be retrieved
+in the same way as the array above.  For dictionaries with a mix of string and integer keys, the
+``inlet::VariantKey`` type can be used, namely, by retrieving a ``std::unordered_map<inlet::VariantKey, T>``.
+
 Adding Functions to a Schema
 ----------------------------
 
@@ -108,8 +129,9 @@ The schema for this function would be defined as follows:
 
 Note that a single type tag is passed for the return type, while a vector of tags is passed
 for the argument types.  Currently a maximum of two arguments are supported, with possible argument
-types ``Double`` or ``Vec3D``.  These correspond to the C++ types ``double`` and
-``axom::primal::Vector3D``, respectively.
+types ``Double``, ``String``, or ``Vec3D``.  These correspond to the C++ types ``double``, ``std::string``, and
+``axom::primal::Vector3D``, respectively.  Functions do not have to return a value or accept arguments; you can
+use ``FunctionTag::Void`` in these cases.
 
 .. note::  The function retrieval implementation for Lua will automatically expand vector arguments into three
   arguments and contract vector returns from three scalars.  That is, a function whose Inlet schema contains a ``Vec3D``

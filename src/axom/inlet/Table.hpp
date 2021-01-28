@@ -217,10 +217,10 @@ inline Result toIndex(const From& idx)
 template <>
 inline int toIndex(const std::string& idx)
 {
-  auto as_int = checkedConvertToInt(idx);
-  SLIC_ERROR_IF(!as_int.second,
+  int idx_as_int;
+  SLIC_ERROR_IF(!checkedConvertToInt(idx, idx_as_int),
                 fmt::format("[Inlet] Expected an integer, got: {0}", idx));
-  return as_int.first;
+  return idx_as_int;
 }
 
 /*!
@@ -363,6 +363,7 @@ public:
   // Functions that define the input file schema
   //
 
+  // FIXME: Make private in future PR
   /*!
    *****************************************************************************
    * \brief Add a Table to the input file schema.
@@ -379,6 +380,23 @@ public:
    *****************************************************************************
    */
   Table& addTable(const std::string& name, const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add a structure to the input file schema.
+   *
+   * Adds a structure/record to the input file schema. Structures can contain
+   * fields and/or substructures.  By default, it is not required unless marked with
+   * Table::isRequired(). This creates the Sidre Group class with the given name and
+   * stores the given description.
+   *
+   * \param [in] name Name of the struct expected in the input file
+   * \param [in] description Description of the struct
+   *
+   * \return Reference to the created struct, as a Table
+   *****************************************************************************
+   */
+  Table& addStruct(const std::string& name, const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -432,6 +450,7 @@ public:
   Verifiable<Table>& addStringArray(const std::string& name,
                                     const std::string& description = "");
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add an array of Fields to the input file schema.
@@ -444,6 +463,22 @@ public:
    */
   Table& addGenericArray(const std::string& name,
                          const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the array
+   *
+   * \return Reference to the created array
+   *****************************************************************************
+   */
+  Table& addStructArray(const std::string& name,
+                        const std::string& description = "")
+  {
+    return addGenericArray(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -496,6 +531,7 @@ public:
   Verifiable<Table>& addStringDictionary(const std::string& name,
                                          const std::string& description = "");
 
+  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add a dictionary of user-defined types to the input file schema.
@@ -508,6 +544,22 @@ public:
    */
   Table& addGenericDictionary(const std::string& name,
                               const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an dictionary of user-defined type to the input file schema.
+   *
+   * \param [in] name Name of the dictionary
+   * \param [in] description Description of the dictionary
+   *
+   * \return Reference to the created dictionary
+   *****************************************************************************
+   */
+  Table& addStructDictionary(const std::string& name,
+                             const std::string& description = "")
+  {
+    return addGenericDictionary(name, description);
+  }
 
   /*!
    *****************************************************************************
@@ -724,7 +776,7 @@ public:
       if(!hasTable(name))
       {
         std::string msg =
-          fmt::format("[Inlet] Table with name {0} does not exist", name);
+          fmt::format("[Inlet] Table with name '{0}' does not exist", name);
         SLIC_ERROR(msg);
       }
       return from_inlet(getTable(name));
@@ -1062,9 +1114,12 @@ private:
    * \brief This is an internal utility intended to be used with arrays/dicts of 
    * user-defined types that returns the indices as strings - integer indices
    * will be converted to strings
+   * 
+   * \param [in] trimAbsolute Whether to only return the "basename" if the path
+   * is absolute, e.g., an absolute path foo/0/bar will be trimmed to "bar"
    *****************************************************************************
    */
-  std::vector<VariantKey> containerIndices() const;
+  std::vector<VariantKey> containerIndices(bool trimAbsolute = true) const;
 
   /*!
    *****************************************************************************
@@ -1158,6 +1213,11 @@ private:
   std::vector<AggregateVerifiable<Table>> m_aggregate_tables;
   std::vector<AggregateField> m_aggregate_fields;
   std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
+
+  // Used when the calling Table is a generic container within a generic container
+  // Need to delegate schema-defining calls (add*) to the elements of the nested
+  // container
+  std::vector<std::reference_wrapper<Table>> m_nested_aggregates;
 };
 
 }  // namespace inlet
