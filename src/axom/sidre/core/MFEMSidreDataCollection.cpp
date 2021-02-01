@@ -1444,11 +1444,13 @@ public:
    * 
    * @param [in] bp_grp The root group of the Conduit Blueprint structure
    * @param [in] comm The MPI communicator to use with the new mesh
+   * @param [in] mesh_topo_name The name of the mesh topology in the Blueprint structure
    * 
    * The remaining parameters are used to construct the mfem::Mesh base subobject
    */
   SidreParMeshWrapper(Group* bp_grp,
                       MPI_Comm comm,
+                      const std::string& mesh_topo_name,
                       double* vertices,
                       int num_vertices,
                       int* element_indices,
@@ -1493,7 +1495,8 @@ public:
     // Can we do any better with variable naming?
     // A group can refer to a communication group or a Sidre group
 
-    auto mesh_adjset_groups = bp_grp->getGroup("adjsets/mesh/groups");
+    auto mesh_adjset_groups =
+      bp_grp->getGroup("adjsets/" + mesh_topo_name + "/groups");
     auto num_groups = mesh_adjset_groups->getNumGroups();
 
     auto shared_geoms = GetSharedGeometries(mesh_adjset_groups);
@@ -1575,6 +1578,8 @@ public:
         if(dimension >= 3)
         {
           // Add all the shared faces
+          // VectorSpanIterator allows for readable iteration and
+          // "registering" of the shared faces
           for(const auto triangle : shared_geom.shared_triangles)
           {
             shared_trias.Append({triangle[0], triangle[1], triangle[2]});
@@ -1691,6 +1696,9 @@ private:
    * @brief A span over a list of vectors arranged contiguously (not interleaved)
    * Allows for convenient iteration over the list without having to manage
    * sizes and offsets in multiple places
+   * 
+   * \note This is a convenience wrapper over Sidre's "stride" data attribute,
+   * perhaps this would be useful as a user-facing utility??
    */
   // TODO: Replace with std::span when C++20 is available
   class VectorSpan
@@ -1732,15 +1740,27 @@ private:
         , m_stride(stride)
       { }
 
+      /**
+       * @brief Compares two iterators
+       */
       bool operator!=(const VectorSpanIterator& other)
       {
-        return m_ptr != other.m_ptr;
+        return (m_ptr != other.m_ptr) || (m_stride != other.m_stride);
       }
+
+      /**
+       * @brief Advances the iterator to the next vector in the list
+       */
       void operator++()
       {
         // Moves the pointer forward by the stride
         m_ptr += m_stride;
       }
+
+      /**
+       * @brief Returns the pointer to the start of the current
+       * vector - accesses on this pointer are not bounds-checked
+       */
       const int* operator*() const { return m_ptr; }
 
     private:
@@ -1977,6 +1997,7 @@ void MFEMSidreDataCollection::reconstructMesh()
     m_owned_mesh = std::unique_ptr<detail::SidreParMeshWrapper>(
       new detail::SidreParMeshWrapper(m_bp_grp,
                                       m_comm,
+                                      s_mesh_topology_name,
                                       vertices,
                                       num_vertices,
                                       element_indices,
