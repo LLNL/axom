@@ -42,6 +42,11 @@ def parse_args():
                       dest="automation",
                       default=False,
                       help="Toggle automation mode which uses env $HOST_CONFIG, then to $SYS_TYPE/$COMPILER available")
+    parser.add_option("-v", "--verbose",
+                      action="store_true",
+                      dest="verbose",
+                      default=False,
+                      help="Output logs to screen as well as to files")
     ###############
     # parse args
     ###############
@@ -84,7 +89,7 @@ def main():
         # Default to build all SYS_TYPE's host-configs in host-config/
         build_all = not (opts["automation"] or opts["hostconfig"] != "")
         if build_all:
-            res = build_and_test_host_configs(repo_dir, timestamp, False)
+            res = build_and_test_host_configs(repo_dir, timestamp, False, opts["verbose"])
         # Otherwise try to build a specific host-config
         else:
             # Command-line arg has highest priority
@@ -132,7 +137,7 @@ def main():
 
             test_root = get_build_and_test_root(repo_dir, timestamp)
             os.mkdir(test_root)
-            res = build_and_test_host_config(test_root, hostconfig_path)
+            res = build_and_test_host_config(test_root, hostconfig_path, opts["verbose"])
 
         # Archive logs
         if opts["archive"] != "":
