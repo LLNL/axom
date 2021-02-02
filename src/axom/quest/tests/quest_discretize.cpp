@@ -5,8 +5,6 @@
 
 #include "axom/config.hpp"
 #include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 #include "axom/quest/Discretize.hpp"  // quest::Discretize
 
@@ -119,13 +117,17 @@ TEST(quest_discretize, sphere_test)
 }
 
 //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
+
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

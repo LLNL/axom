@@ -109,7 +109,7 @@ void discretize(const SphereType & sphere,
    out.reserve(octcount);
    
    // Establish an octahedron with all of its points lying on the sphere (level 0)
-   out.push_back(from_sphere(sphere));
+   out.emplace_back(from_sphere(sphere));
 
    // last_gen indexes to an octahedron of the last generation.
    int last_gen = 0;
