@@ -305,7 +305,7 @@ def uberenv_build(prefix, spec, project_file, config_dir, mirror_path):
 # helpers for testing a set of host configs
 ############################################################
 
-def build_and_test_host_config(test_root,host_config):
+def build_and_test_host_config(test_root,host_config, report_to_stdout = False):
     host_config_root = get_host_config_root(host_config)
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
@@ -321,7 +321,11 @@ def build_and_test_host_config(test_root,host_config):
     res = sexe("python config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
                output_file = cfg_output_file,
                echo=True)
-    
+
+    if report_to_stdout:
+        with open(cfg_output_file, 'r') as build_out:
+            print(build_out.read())
+
     if res != 0:
         print "[ERROR: Configure for host-config: %s failed]\n" % host_config
         return res
@@ -338,6 +342,10 @@ def build_and_test_host_config(test_root,host_config):
                 output_file = bld_output_file,
                 echo=True)
 
+    if report_to_stdout:
+        with open(bld_output_file, 'r') as build_out:
+            print(build_out.read())
+
     if res != 0:
         print "[ERROR: Build for host-config: %s failed]\n" % host_config
         return res
@@ -353,6 +361,10 @@ def build_and_test_host_config(test_root,host_config):
                output_file = tst_output_file,
                echo=True)
 
+    if report_to_stdout:
+        with open(tst_output_file, 'r') as test_out:
+            print(test_out.read())
+
     if res != 0:
         print "[ERROR: Tests for host-config: %s failed]\n" % host_config
         return res
@@ -365,6 +377,10 @@ def build_and_test_host_config(test_root,host_config):
     res = sexe("cd %s && make -j16 docs " % build_dir,
                output_file = docs_output_file,
                echo=True)
+
+    if report_to_stdout:
+        with open(docs_output_file, 'r') as docs_out:
+            print(docs_out.read())
 
     if res != 0:
         print "[ERROR: Docs generation for host-config: %s failed]\n\n" % host_config
@@ -463,7 +479,7 @@ def build_and_test_host_config(test_root,host_config):
     return 0
 
 
-def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_configs):
+def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_configs, report_to_stdout = False):
     host_configs = get_host_configs_for_current_machine(prefix, use_generated_host_configs)
     if len(host_configs) == 0:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
@@ -482,7 +498,7 @@ def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_
         build_dir = get_build_dir(test_root, host_config)
 
         start_time = time.time()
-        if build_and_test_host_config(test_root,host_config) == 0:
+        if build_and_test_host_config(test_root, host_config, report_to_stdout) == 0:
             ok.append(host_config)
             log_success(build_dir, job_name, timestamp)
         else:
@@ -546,7 +562,7 @@ def set_axom_group_and_perms(directory):
     return 0
 
 
-def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec):
+def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to_stdout = False):
     project_file = "scripts/uberenv/project.json"
     config_dir = "scripts/uberenv/spack_configs/{0}".format(get_system_type())
 
@@ -611,7 +627,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec):
     src_build_failed = False
     if not tpl_build_failed:
         # build the axom against the new tpls
-        res = build_and_test_host_configs(prefix, job_name, timestamp, True)
+        res = build_and_test_host_configs(prefix, job_name, timestamp, True, report_to_stdout)
         if res != 0:
             print "[ERROR: build and test of axom vs tpls test failed.]\n"
             src_build_failed = True
