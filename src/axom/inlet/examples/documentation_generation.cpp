@@ -198,7 +198,9 @@ int main(int argc, char** argv)
   Inlet inlet(std::move(lr), ds.getRoot(), docsEnabled);
 
   // _inlet_documentation_generation_start
-  auto docWriter = std::make_unique<SphinxDocWriter>("example_doc.rst", true);
+  auto docWriter =
+    std::make_unique<SphinxDocWriter>("example_doc.rst",
+                                      /* documentProvided = */ true);
   inlet.registerDocWriter(std::move(docWriter));
   // _inlet_documentation_generation_end
 
