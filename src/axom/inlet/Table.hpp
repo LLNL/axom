@@ -376,6 +376,8 @@ public:
    *****************************************************************************
    */
   axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
+  /// \overload
+  const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
 
   //
   // Functions that define the input file schema

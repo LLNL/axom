@@ -53,32 +53,13 @@ public:
   SphinxDocWriter(const std::string& fileName,
                   axom::sidre::Group* sidreRootGroup);
 
-  /*!
-  *******************************************************************************
-  * \brief Writes all documentation to a file.
-  * 
-  * This generates all RST-syntax documentation and writes it to the pre-specified
-  * file.
-  *
-  *******************************************************************************
-  */
-  void writeDocumentation();
+  void documentTable(const Table& table) override;
+
+  void finalize() override;
 
   virtual ~SphinxDocWriter() = default;
 
 private:
-  /*!
-   *****************************************************************************
-   * \brief Accumulate the rstTables vector with documentation data.
-   *
-   * This recursively identifies all Fields and Tables for the documentation.
-   *
-   * \param [in] sidreGroup The root of the sidre tree to traverse
-   *
-   *****************************************************************************
-   */
-  void writeDocumentationHelper(axom::sidre::Group* sidreGroup);
-
   /*!
    *****************************************************************************
    * \brief Writes the title in RST syntax.

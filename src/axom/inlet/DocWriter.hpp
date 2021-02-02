@@ -14,16 +14,13 @@
 #ifndef INLET_DOCWRITER_HPP
 #define INLET_DOCWRITER_HPP
 
-#include <string>
-#include <vector>
-#include <fstream>
-
-#include "axom/sidre.hpp"
-
 namespace axom
 {
 namespace inlet
 {
+// Forward declaration
+class Table;
+
 /*!
  *******************************************************************************
  * \class DocWriter
@@ -41,16 +38,26 @@ class DocWriter
 {
 public:
   virtual ~DocWriter() = default;
+
   /*!
    *****************************************************************************
-   * \brief Write documentation for the input file to a given file
+   * \brief Generates documentation for a Table and its child Fields
+   * \param [in] table The Table to generate documentation for
    *
-   * This writes the documentation according to the information retrieved from 
-   * the sidre group.
-   *
+   * \note Implementers of this function are not responsible for generating
+   * documentation for child Tables of this Table - only child Fields
    *****************************************************************************
    */
-  virtual void writeDocumentation() = 0;
+  virtual void documentTable(const Table& table) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Finalizes documentation generation (e.g., by writing it to a file)
+   * 
+   * This is a hint to implementers that no further tables will be documented
+   *****************************************************************************
+   */
+  virtual void finalize() = 0;
 };
 
 }  // namespace inlet

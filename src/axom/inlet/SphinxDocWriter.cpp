@@ -12,9 +12,11 @@
  */
 
 #include "axom/inlet/SphinxDocWriter.hpp"
+
 #include <iostream>
-#include <assert.h>
+
 #include "axom/slic.hpp"
+#include "axom/inlet/Table.hpp"
 
 namespace axom
 {
@@ -28,64 +30,36 @@ SphinxDocWriter::SphinxDocWriter(const std::string& fileName,
                   " while writing documentation");
   m_sidreRootGroup = root;
   m_fileName = fileName;
+
+  m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX\n";
+  m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX\n\n";
+  writeTitle("Input file Options");
 }
 
-void SphinxDocWriter::writeDocumentation()
+void SphinxDocWriter::documentTable(const Table& table)
 {
-  if(m_sidreRootGroup->getName() == "")
+  const auto sidreGroup = table.sidreGroup();
+  m_inletTablePathNames.push_back(sidreGroup->getPathName());
+  m_rstTables[sidreGroup->getPathName()] = TableData();
+  m_rstTables[sidreGroup->getPathName()].tableName = sidreGroup->getName();
+  if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
   {
-    writeTitle("Input file Options");
+    m_rstTables[sidreGroup->getPathName()].description =
+      sidreGroup->getView("description")->getString();
   }
-  else
+
+  for(const auto& field_entry : table.getChildFields())
   {
-    writeTitle(m_sidreRootGroup->getName());
+    extractFieldMetadata(field_entry.second->sidreGroup());
   }
-  m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX" << std::endl;
-  m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX" << std::endl;
-  writeDocumentationHelper(m_sidreRootGroup);
+}
+
+void SphinxDocWriter::finalize()
+{
   writeAllTables();
   m_outFile.open(m_fileName);
   m_outFile << m_oss.str();
   m_outFile.close();
-}
-
-void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup)
-{
-  SLIC_WARNING_IF(!sidreGroup, "[Inlet] Root was nullptr");
-  axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
-
-  // Special case for valid string values since it's a Group whereas other
-  // valid values and Field properties are all stored as Views
-  if(axom::sidre::indexIsValid(i) &&
-     sidreGroup->getGroupName(i) == "validStringValues")
-  {
-    i = axom::sidre::InvalidIndex;
-  }
-
-  // Case 1: the current group is a Field
-  if(sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex)
-  {
-    extractFieldMetadata(sidreGroup);
-  }
-
-  // Case 2: Current root corresponds to an Inlet::Table
-  if(i != axom::sidre::InvalidIndex)
-  {
-    m_inletTablePathNames.push_back(sidreGroup->getPathName());
-    m_rstTables[sidreGroup->getPathName()] = TableData();
-    m_rstTables[sidreGroup->getPathName()].tableName = sidreGroup->getName();
-    if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
-    {
-      m_rstTables[sidreGroup->getPathName()].description =
-        sidreGroup->getView("description")->getString();
-    }
-  }
-
-  while(i != axom::sidre::InvalidIndex)
-  {
-    writeDocumentationHelper(sidreGroup->getGroup(i));
-    i = sidreGroup->getNextValidGroupIndex(i);
-  }
 }
 
 void SphinxDocWriter::writeTitle(const std::string& title)

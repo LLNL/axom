@@ -62,11 +62,35 @@ void Inlet::registerDocWriter(std::unique_ptr<DocWriter> writer)
   m_docWriter = std::move(writer);
 }
 
+namespace detail
+{
+/*!
+ *******************************************************************************
+ * \brief Recursive helper function for traversing an Inlet tree for documentation
+ * generation purposes
+ * 
+ * \param [inout] writer The DocWriter to use for documentation
+ * \param [in] table The current table to write
+ *******************************************************************************
+ */
+void docWriterHelper(DocWriter& writer, const Table& table)
+{
+  // Use a pre-order traversal for readability
+  writer.documentTable(table);
+  for(const auto& sub_table_entry : table.getChildTables())
+  {
+    docWriterHelper(writer, *sub_table_entry.second);
+  }
+}
+
+}  // end namespace detail
+
 void Inlet::writeDoc()
 {
   if(m_docEnabled)
   {
-    m_docWriter->writeDocumentation();
+    detail::docWriterHelper(*m_docWriter, m_globalTable);
+    m_docWriter->finalize();
   }
 }
 
