@@ -136,6 +136,9 @@ private:
       rstTable.push_back(labels);
     }
 
+    // Shouldn't be needed, these will always be managed in a container
+    TableData(const TableData&) = delete;
+
     std::string tableName;
     std::string description;
     std::vector<std::vector<std::string>> rstTable;

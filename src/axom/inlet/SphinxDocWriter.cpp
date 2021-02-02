@@ -47,7 +47,7 @@ void SphinxDocWriter::documentTable(const Table& table)
 {
   const auto sidreGroup = table.sidreGroup();
   m_inletTablePathNames.push_back(sidreGroup->getPathName());
-  auto currTable =
+  auto& currTable =
     m_rstTables.emplace(sidreGroup->getPathName(), m_colLabels).first->second;
   currTable.tableName = sidreGroup->getName();
   if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
