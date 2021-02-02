@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -216,7 +216,11 @@ void IOManager::write(sidre::Group* datagroup,
     }
     SLIC_ASSERT(h5_file_id >= 0);
 
-    std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+    std::string group_name = "datagroup";
+    if(m_comm_size != num_files)
+    {
+      group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+    }
     h5_group_id = H5Gcreate(h5_file_id,
                             group_name.c_str(),
                             H5P_DEFAULT,
@@ -440,7 +444,12 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
 
-      std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+      std::string group_name = "datagroup";
+      if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+      {
+        group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+      }
+
       hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
       SLIC_ASSERT(h5_group_id >= 0);
 
@@ -467,7 +476,12 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
 
-      std::string group_name = fmt::sprintf("datagroup_%07d", input_rank);
+      std::string group_name = "datagroup";
+      if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+      {
+        group_name = fmt::sprintf("datagroup_%07d", input_rank);
+      }
+
       hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
       SLIC_ASSERT(h5_group_id >= 0);
 
@@ -768,7 +782,11 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
 
-      std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+      std::string group_name = "datagroup";
+      if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+      {
+        group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+      }
       hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
       SLIC_ASSERT(h5_group_id >= 0);
 
@@ -797,7 +815,11 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
 
-      std::string group_name = fmt::sprintf("datagroup_%07d", input_rank);
+      std::string group_name = "datagroup";
+      if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+      {
+        group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+      }
       hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
       SLIC_ASSERT(h5_group_id >= 0);
 
@@ -1060,12 +1082,6 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
                                               const std::string& mesh_path)
 {
 #ifdef AXOM_USE_HDF5
-  hid_t root_file_id =
-    conduit::relay::io::hdf5_open_file_for_read_write(file_name);
-
-  AXOM_DEBUG_VAR(root_file_id);
-  SLIC_ASSERT(root_file_id >= 0);
-
   std::string blueprint_name;
   std::string path_to_mesh;
   std::string delimiter(1, datastore->getRoot()->getPathDelimiter());
@@ -1076,15 +1092,30 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   std::string bp_index("blueprint_index/" + blueprint_name);
 
-  bool success = datastore->generateBlueprintIndex(domain_path,
-                                                   mesh_path,
-                                                   bp_index,
-                                                   m_comm_size);
+  bool success = false;
+
+  if(m_comm_size > 1)
+  {
+    success = datastore->generateBlueprintIndex(MPI_COMM_WORLD,
+                                                domain_path,
+                                                mesh_path,
+                                                bp_index);
+  }
+  else
+  {
+    success = datastore->generateBlueprintIndex(domain_path,
+                                                mesh_path,
+                                                bp_index,
+                                                m_comm_size);
+  }
 
   if(success)
   {
-    Group* ind_group = datastore->getRoot()->getGroup("blueprint_index");
-    writeGroupToRootFile(ind_group, file_name);
+    if(m_my_rank == 0)
+    {
+      Group* ind_group = datastore->getRoot()->getGroup("blueprint_index");
+      writeGroupToRootFile(ind_group, file_name);
+    }
   }
   else
   {

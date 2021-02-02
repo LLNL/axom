@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,13 +20,11 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
         convert_sidre_protocol.cpp
     )
     set(datastore_converter_depends 
+        axom
+        mpi
         cli11
-        sidre conduit::conduit hdf5
-        slic fmt 
-        slam 
-        mpi)
+        fmt)
 
-    blt_list_append(TO datastore_converter_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
     blt_list_append(TO datastore_converter_depends ELEMENTS scr IF SCR_FOUND)
 
     blt_add_executable(
@@ -48,10 +46,10 @@ set(mesh_tester_sources
     mesh_tester.cpp
 )
 set(mesh_tester_depends 
-    core slic mint slam quest primal cli11
+    axom
     )
 
-blt_list_append(TO mesh_tester_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
+blt_list_append(TO mesh_tester_depends ELEMENTS mpi IF ENABLE_MPI)
 blt_list_append(TO mesh_tester_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append(TO mesh_tester_depends ELEMENTS umpire IF UMPIRE_FOUND)
 blt_list_append(TO mesh_tester_depends ELEMENTS RAJA IF RAJA_FOUND)

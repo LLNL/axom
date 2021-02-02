@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,31 +15,31 @@ jobs:
 
   strategy:
     matrix:
-      linux_gcc7:
-        VM_ImageName: 'ubuntu-16.04'
-        Compiler_ImageName: 'axom/tpls:gcc-7'
-        CMAKE_EXTRA_FLAGS: ''
-        COMPILER: 'g++'
-        TEST_TARGET: 'linux_gcc7'
-        HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-gcc@7.3.0'
       linux_gcc8:
         VM_ImageName: 'ubuntu-16.04'
-        Compiler_ImageName: 'axom/tpls:gcc-8'
+        Compiler_ImageName: 'axom/tpls:gcc-8_12-21-20_20h-48m'
         CMAKE_EXTRA_FLAGS: ''
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc8'
-        HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-gcc@8.1.0'
+        HOST_CONFIG: 'docker-linux-ubuntu16.04-ivybridge-gcc@8.1.0'
       linux_gcc8_64bit:
         VM_ImageName: 'ubuntu-16.04'
-        Compiler_ImageName: 'axom/tpls:gcc-8'
+        Compiler_ImageName: 'axom/tpls:gcc-8_12-21-20_20h-48m'
         CMAKE_EXTRA_FLAGS: '-DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON'
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc8_64bit'
-        HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-gcc@8.1.0'
+        HOST_CONFIG: 'docker-linux-ubuntu16.04-ivybridge-gcc@8.1.0'
       linux_clang10:
         VM_ImageName: 'ubuntu-18.04'
-        Compiler_ImageName: 'axom/tpls:clang-10'
+        Compiler_ImageName: 'axom/tpls:clang-10_12-21-20_20h-48m'
         CMAKE_EXTRA_FLAGS: ''
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
+      linux_clang10_cxx11:
+        VM_ImageName: 'ubuntu-18.04'
+        Compiler_ImageName: 'axom/tpls:clang-10_12-21-20_20h-48m'
+        CMAKE_EXTRA_FLAGS: '-DBLT_CXX_STD=c++11'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
@@ -97,7 +97,7 @@ jobs:
 - job: Check_Style
   variables:
     VM_ImageName: 'ubuntu-18.04'
-    Compiler_ImageName: 'axom/tpls:clang-10'
+    Compiler_ImageName: 'axom/tpls:clang-10_12-21-20_20h-48m'
     TEST_TARGET: 'linux_clang10'
     HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
   pool:

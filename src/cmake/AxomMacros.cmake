@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -113,6 +113,46 @@ macro(axom_add_component)
     unset(COMPONENT_NAME_CAPITALIZED)
     unset(COMPONENT_NAME_LOWERED)
 endmacro(axom_add_component)
+
+
+##------------------------------------------------------------------------------
+## axom_add_test(NAME            [name]
+##               COMMAND         [command] 
+##               NUM_MPI_TASKS   [n]
+##               NUM_OMP_THREADS [n]
+##               CONFIGURATIONS  [config1 [config2...]])
+##
+## Wrapper around blt_add_test() that handles functionality that Axom applies to all
+## tests.
+##------------------------------------------------------------------------------
+macro(axom_add_test)
+
+    set(options )
+    set(singleValueArgs NAME NUM_MPI_TASKS NUM_OMP_THREADS)
+    set(multiValueArgs COMMAND CONFIGURATIONS)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+
+    blt_add_test(NAME            ${arg_NAME}
+                 COMMAND         ${arg_COMMAND}
+                 NUM_MPI_TASKS   ${arg_NUM_MPI_TASKS}
+                 NUM_OMP_THREADS ${arg_NUM_OMP_THREADS}
+                 CONFIGURATIONS  ${arg_CONFIGURATIONS} )
+
+    ###########################################################################
+    # Newer versions of OpenMPI require OMPI_MCA_rmaps_base_oversubscribe=1
+    # to run with more tasks than actual cores
+    # Since this is an OpenMPI specific env var, it shouldn't interfere
+    # with other mpi implementations.
+    ###########################################################################
+    set_property(TEST ${arg_NAME}
+                 APPEND
+                 PROPERTY ENVIRONMENT  "OMPI_MCA_rmaps_base_oversubscribe=1")
+
+endmacro(axom_add_test)
 
 
 ##------------------------------------------------------------------------------
@@ -299,7 +339,7 @@ macro(axom_write_unified_header)
     string(TOLOWER ${arg_NAME} _lcname)
     set(_header ${CMAKE_BINARY_DIR}/include/axom/${_lcname}.hpp)
 
-    file(WRITE ${_header} "\/\/ Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+    file(WRITE ${_header} "\/\/ Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 \/\/ other Axom Project Developers. See the top-level COPYRIGHT file for details.
 \/\/
 \/\/ SPDX-License-Identifier: (BSD-3-Clause)

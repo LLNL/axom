@@ -22,12 +22,24 @@ thermal_solver.solver = {
 }
 -- boundary conditions
 thermal_solver.bcs = {
-  [1] = {
-    attrs = { [1] = 3, [2] = 4, [3] = 7},
-    constant = 12.2
+  ["temperature_1"] = {
+    attrs = {3, 4, 7},
+    coef = function (v)
+      -- Constant is defined as a function
+      return 12.55
+    end
   },
-  [4] = {
-    attrs = { [7] = 4, [12] = 6, [9] = 1},
-    constant = -23.1
+  ["temperature_2"] = {
+    attrs = {4, 6, 1},
+    coef = function (v)
+      return v.x * 0.12
+    end
+  },
+  ["flux"] = {
+    attrs = {14, 62, 11},
+    vec_coef = function (v)
+      scale = 0.12
+      return v * scale
+    end
   }
 }

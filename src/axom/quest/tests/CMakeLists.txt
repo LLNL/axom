@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -43,7 +43,7 @@ foreach(test ${quest_tests})
         FOLDER axom/quest/tests
         )
 
-    blt_add_test(
+    axom_add_test(
         NAME ${test_name}
         COMMAND ${test_name}_test
         )
@@ -68,7 +68,7 @@ if(MFEM_FOUND)
 
     blt_add_target_compile_flags( TO ${test_name} FLAGS "${MFEM_COMPILE_FLAGS}" )
 
-    blt_add_test(
+    axom_add_test(
         NAME ${test_name}
         COMMAND ${test_name}
         )
@@ -113,13 +113,13 @@ foreach(test ${quest_mpi_tests})
     endif()
 
     if (ENABLE_MPI)
-        blt_add_test(
+        axom_add_test(
             NAME ${test_name}
             COMMAND ${test_name}_test
             NUM_MPI_TASKS ${_numMPITasks}
         )
     else()
-        blt_add_test(
+        axom_add_test(
             NAME ${test_name}
             COMMAND ${test_name}_test
         )
@@ -174,10 +174,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     endif()
 
-    if ( "$ENV{SYS_TYPE}" STREQUAL "bgqos_0" )
-       blt_add_target_link_flags( TO ${test_name} FLAGS "${AXOM_ALLOW_MULTIPLE_DEFINITIONS}" )
-    endif()
-
     # Add resolution tests for each dataset and resolution
     if(AXOM_DATA_DIR)
         set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
@@ -203,7 +199,7 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
         foreach(dataset ${quest_regression_datasets})
             foreach(res ${quest_regression_resolutions})
-                blt_add_test(
+                axom_add_test(
                     NAME quest_regression_${dataset}_${res}
                     COMMAND ${test_name}
                             --mesh ${quest_data_dir}/${dataset}.stl

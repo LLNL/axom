@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -23,7 +23,7 @@ using axom::sidre::IOManager;
 int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   SLIC_ERROR_IF(argc != 2,
                 "Missing required command line argument. \n\t"

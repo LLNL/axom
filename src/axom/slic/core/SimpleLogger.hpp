@@ -1,17 +1,17 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- *  \file UnitTestLogger.hpp
+ *  \file SimpleLogger.hpp
  *
- *  \brief Header file containing definition of UnitTestLogger class.
+ *  \brief Header file containing definition of SimpleLogger class.
  *
  */
 
-#ifndef UNITTESTLOGGER_HPP_
-#define UNITTESTLOGGER_HPP_
+#ifndef SIMPLELOGGER_HPP_
+#define SIMPLELOGGER_HPP_
 
 // Other axom headers
 #include "axom/core/Macros.hpp"  // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
@@ -25,9 +25,9 @@ namespace axom
 namespace slic
 {
 /*!
- * \class UnitTestLogger
+ * \class SimpleLogger
  *
- * \brief UnitTestLogger is a simple wrapper around the initialization and
+ * \brief SimpleLogger is a simple wrapper around the initialization and
  * finalize operations of the slic::Logger class that is helpful for
  * unit tests and simple applications in axom.
  *
@@ -45,7 +45,7 @@ namespace slic
  *     ::testing::InitGoogleTest(&argc, argv);
  *
  *     // create & initialize test logger, finalized when exiting main scope
- *     UnitTestLogger logger;
+ *     axom::slic::SimpleLogger logger;
  *
  *     result = RUN_ALL_TESTS();
  *
@@ -54,13 +54,13 @@ namespace slic
  *
  * \endverbatim
  */
-class UnitTestLogger
+class SimpleLogger
 {
 public:
   /*!
-   * \brief Constructor initializes slic loging environment.
+   * \brief Constructor initializes slic logging environment.
    */
-  UnitTestLogger()
+  SimpleLogger()
   {
     initialize();
     setLoggingMsgLevel(message::Debug);
@@ -89,14 +89,14 @@ public:
   /*!
    * \brief Destructor finalizes slic loging environment.
    */
-  ~UnitTestLogger() { finalize(); }
+  ~SimpleLogger() { finalize(); }
 
 private:
-  DISABLE_COPY_AND_ASSIGNMENT(UnitTestLogger);
-  DISABLE_MOVE_AND_ASSIGNMENT(UnitTestLogger);
+  DISABLE_COPY_AND_ASSIGNMENT(SimpleLogger);
+  DISABLE_MOVE_AND_ASSIGNMENT(SimpleLogger);
 };
 
 } /* end namespace slic */
 } /* end namespace axom */
 
-#endif /* UNITTESTLOGGER_HPP_ */
+#endif /* SIMPLELOGGER_HPP_ */

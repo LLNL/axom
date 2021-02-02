@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -58,6 +58,15 @@ public:
 
   /*!
    *******************************************************************************
+   * \brief Constructs a proxy view onto a function
+   * 
+   * \param [in] func The function to construct a proxy into
+   *******************************************************************************
+   */
+  Proxy(Function& func) : m_func(&func) { }
+
+  /*!
+   *******************************************************************************
    * \brief Returns an object from the proxy
    * 
    * \tparam T The type of the object to retrieve
@@ -67,10 +76,12 @@ public:
    * or T{}
    *******************************************************************************
    */
-  template <typename T,
-            typename SFINAE =
-              typename std::enable_if<detail::is_inlet_primitive<T>::value ||
-                                      detail::is_inlet_primitive_array<T>::value>::type>
+  template <
+    typename T,
+    typename SFINAE = typename std::enable_if<
+      detail::is_inlet_primitive<T>::value || detail::is_inlet_primitive_array<T>::value ||
+      detail::is_inlet_primitive_dict<T>::value || detail::is_std_function<T>::value ||
+      detail::is_primitive_std_vector<T>::value>::type>
   operator T() const
   {
     return get<T>();
@@ -121,12 +132,54 @@ public:
    *******************************************************************************
    */
   template <typename T>
-  typename std::enable_if<!detail::is_inlet_primitive<T>::value, T>::type get() const
+  typename std::enable_if<!detail::is_inlet_primitive<T>::value &&
+                            !detail::is_std_function<T>::value,
+                          T>::type
+  get() const
   {
     SLIC_ASSERT_MSG(m_table != nullptr,
                     "[Inlet] Tried to read a user-defined type from a Proxy "
-                    "containing a single field");
+                    "containing a single field or function");
     return m_table->get<T>();
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Returns a function type from the proxy
+   * 
+   * \tparam T The type of the object to retrieve
+   * \return The retrieved object
+   * \pre The Proxy must refer to a function object
+   *******************************************************************************
+   */
+  template <typename T>
+  typename std::enable_if<detail::is_std_function<T>::value, T>::type get() const
+  {
+    SLIC_ASSERT_MSG(m_func != nullptr,
+                    "[Inlet] Tried to read a function from a Proxy "
+                    "containing a field or table");
+    return m_func->get<typename detail::std_function_signature<T>::type>();
+  }
+
+  /*!
+   *******************************************************************************
+   * \brief Calls the function
+   * 
+   * \param [in] args The parameter pack for the function's arguments
+   * \tparam Ret The user-specified return type, needed to fully disambiguate the
+   * function to call
+   * \tparam Args The types of the user-specified arguments, deduced automatically
+   * 
+   * \return The function's result
+   *******************************************************************************
+   */
+  template <typename Ret, typename... Args>
+  Ret call(Args&&... args) const
+  {
+    SLIC_ASSERT_MSG(m_func != nullptr,
+                    "[Inlet] Tried to call a Proxy "
+                    "containing a field or table");
+    return m_func->call<Ret>(std::forward<Args>(args)...);
   }
 
   /*!
@@ -141,15 +194,16 @@ public:
   template <typename T>
   typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type get() const
   {
-    SLIC_ASSERT_MSG(
-      m_field != nullptr,
-      "[Inlet] Tried to read a primitive type from a Proxy containing a table");
+    SLIC_ASSERT_MSG(m_field != nullptr,
+                    "[Inlet] Tried to read a primitive type from a Proxy "
+                    "containing a table or function");
     return m_field->get<T>();
   }
 
 private:
   Table* m_table = nullptr;
   Field* m_field = nullptr;
+  Function* m_func = nullptr;
 };
 
 }  // end namespace inlet

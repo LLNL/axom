@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,7 +6,7 @@
 // usage : ./inlet_documentation_generation_example --enableDocs --fil lua_file.lua
 
 #include "axom/inlet.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 
 #include "CLI11/CLI11.hpp"
 #include <iostream>
@@ -177,8 +177,9 @@ int main(int argc, char** argv)
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
   // This is a generic basic SLIC logger
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
+  // Handle command line arguments
   CLI::App app {"Basic example of Axom's Inlet component"};
   bool docsEnabled {false};
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");

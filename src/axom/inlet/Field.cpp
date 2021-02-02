@@ -1,11 +1,10 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/inlet_utils.hpp"
-#include "axom/inlet/Proxy.hpp"
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
@@ -18,27 +17,7 @@ Field& Field::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Field specific Sidre Datastore Group not set");
-
-  if(m_sidreGroup->hasView("required"))
-  {
-    const std::string msg = fmt::format(
-      "[Inlet] Field has already defined "
-      "required value: {0}",
-      m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
-    setWarningFlag(m_sidreRootGroup);
-    return *this;
-  }
-
-  if(isRequired)
-  {
-    m_sidreGroup->createViewScalar("required", (int8)1);
-  }
-  else
-  {
-    m_sidreGroup->createViewScalar("required", (int8)0);
-  }
-
+  setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
   return *this;
 }
 
@@ -46,29 +25,7 @@ bool Field::isRequired() const
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Field specific Sidre Datastore Group not set");
-
-  if(!m_sidreGroup->hasView("required"))
-  {
-    return false;
-  }
-  axom::sidre::View* valueView = m_sidreGroup->getView("required");
-  if(valueView == nullptr)
-  {
-    return false;
-  }
-  int8 intValue = valueView->getScalar();
-  if(intValue < 0 || intValue > 1)
-  {
-    const std::string msg = fmt::format(
-      "[Inlet] Invalid integer value stored in "
-      "boolean value named {0}",
-      m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
-    setWarningFlag(m_sidreRootGroup);
-    return false;
-  }
-
-  return (bool)intValue;
+  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
 }
 
 template <typename T>
@@ -300,11 +257,11 @@ const axom::sidre::View* Field::checkExistenceAndType(
   if(valueView->getTypeID() != expected)
   {
     const std::string msg = fmt::format(
-      "[Inlet] Field with name '{0}' was expected to be of type {1}"
-      " but was actually of type {2}",
+      "[Inlet] Field with name '{0}' was expected to be of type '{1}'"
+      " but was actually of type '{2}'",
       name(),
-      expected,
-      valueView->getTypeID());
+      conduit::DataType::id_to_name(expected),
+      conduit::DataType::id_to_name(valueView->getTypeID()));
     SLIC_ERROR(msg);
   }
 
@@ -467,21 +424,11 @@ Field& Field::registerVerifier(std::function<bool(const Field&)> lambda)
 
 bool Field::verify() const
 {
-  // If this field was required, make sure soemething was defined in it
-  if(m_sidreGroup->hasView("required"))
+  // If this field was required, make sure something was defined in it
+  if(!verifyRequired(*m_sidreGroup, m_sidreGroup->hasView("value"), "Field"))
   {
-    int8 required = m_sidreGroup->getView("required")->getData();
-    if(required && !m_sidreGroup->hasView("value"))
-    {
-      std::string msg = fmt::format(
-        "[Inlet] Required Field not "
-        "specified: {0}",
-        m_sidreGroup->getPathName());
-      SLIC_WARNING(msg);
-      return false;
-    }
+    return false;
   }
-
   // Verify the provided value
   if(m_sidreGroup->hasView("value") &&
      !verifyValue(*m_sidreGroup->getView("value")))

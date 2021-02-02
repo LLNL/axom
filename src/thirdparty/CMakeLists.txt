@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,10 +59,13 @@ mark_as_advanced(CLI11_FOUND)
 
 set(fmt_headers
     fmt/fmt.hpp
+    fmt/compile.h
     fmt/core.h
     fmt/format.h
     fmt/format-inl.h
+    fmt/os.h
     fmt/ostream.h
+    fmt/posix.h
     fmt/printf.h
     fmt/ranges.h
     fmt/chrono.h
@@ -80,7 +83,7 @@ set(fmt_headers_sources
     fmt/format.cc
     )
 
-blt_add_library(NAME fmt
+blt_add_library(NAME    fmt
                 HEADERS ${fmt_headers})
 
 target_include_directories(fmt SYSTEM INTERFACE
