@@ -329,7 +329,7 @@ int main(int argc, char** argv)
   if(docsEnabled)
   {
     std::unique_ptr<inlet::SphinxDocWriter> docWriter(
-      new inlet::SphinxDocWriter("nested_structs.rst", inlet.sidreGroup()));
+      new inlet::SphinxDocWriter("nested_structs.rst", true));
     inlet.registerDocWriter(std::move(docWriter));
     inlet.writeDoc();
   }
