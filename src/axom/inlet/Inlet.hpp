@@ -445,23 +445,6 @@ public:
     return m_globalTable.addStringArray(name, description);
   }
 
-  // FIXME: Remove in future PR
-  /*!
-   *****************************************************************************
-   * \brief Add an array of user-defined types to the input file schema.
-   *
-   * \param [in] name Name of the array
-   * \param [in] description Description of the array
-   *
-   * \return Reference to the created array
-   *****************************************************************************
-   */
-  Table& addGenericArray(const std::string& name,
-                         const std::string& description = "")
-  {
-    return m_globalTable.addGenericArray(name, description);
-  }
-
   /*!
    *****************************************************************************
    * \brief Add an array of user-defined type to the input file schema.
@@ -559,23 +542,6 @@ public:
                                          const std::string& description = "")
   {
     return m_globalTable.addStringDictionary(name, description);
-  }
-
-  // FIXME: Remove in future PR
-  /*!
-   *****************************************************************************
-   * \brief Add a dictionary of user-defined types to the input file schema.
-   *
-   * \param [in] name Name of the dict
-   * \param [in] description Description of the dictionary
-   *
-   * \return Reference to the created dictionary
-   *****************************************************************************
-   */
-  Table& addGenericDictionary(const std::string& name,
-                              const std::string& description = "")
-  {
-    return m_globalTable.addGenericDictionary(name, description);
   }
 
   /*!

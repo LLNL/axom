@@ -217,8 +217,8 @@ Table& Table::addGenericContainer(const std::string& name,
   return table;
 }
 
-Table& Table::addGenericArray(const std::string& name,
-                              const std::string& description)
+Table& Table::addStructArray(const std::string& name,
+                             const std::string& description)
 {
   return addGenericContainer<int>(name, description);
 }
@@ -247,8 +247,8 @@ Verifiable<Table>& Table::addStringDictionary(const std::string& name,
   return addPrimitiveArray<std::string>(name, description, true);
 }
 
-Table& Table::addGenericDictionary(const std::string& name,
-                                   const std::string& description)
+Table& Table::addStructDictionary(const std::string& name,
+                                  const std::string& description)
 {
   return addGenericContainer<VariantKey>(name, description);
 }
