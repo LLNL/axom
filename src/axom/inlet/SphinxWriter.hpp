@@ -45,12 +45,12 @@ public:
   * 
   * \param [in] fileName The name of the file the documentation should be written to.
   * 
-  * \param [in] documentProvided Whether to document the values that were actually
+  * \param [in] outputProvidedValues Whether to document the values that were actually
   * provided in the input file
   *
   *******************************************************************************
   */
-  SphinxWriter(const std::string& fileName, bool documentProvided = false);
+  SphinxWriter(const std::string& fileName, bool outputProvidedValues = false);
 
   void documentTable(const Table& table) override;
 

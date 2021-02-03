@@ -22,7 +22,7 @@ namespace axom
 {
 namespace inlet
 {
-SphinxWriter::SphinxWriter(const std::string& fileName, bool documentProvided)
+SphinxWriter::SphinxWriter(const std::string& fileName, bool outputProvidedValues)
   : m_colLabels({"Field Name",
                  "Description",
                  "Default Value",
@@ -31,7 +31,7 @@ SphinxWriter::SphinxWriter(const std::string& fileName, bool documentProvided)
 {
   m_fileName = fileName;
 
-  if(documentProvided)
+  if(outputProvidedValues)
   {
     // The value provided by the user in the input file
     m_colLabels.push_back("Value");
