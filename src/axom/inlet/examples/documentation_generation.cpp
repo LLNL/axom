@@ -14,7 +14,7 @@
 
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
-using axom::inlet::SphinxDocWriter;
+using axom::inlet::SphinxWriter;
 using axom::sidre::DataStore;
 
 void findStr(std::string path, const Inlet& inlet)
@@ -198,10 +198,9 @@ int main(int argc, char** argv)
   Inlet inlet(std::move(lr), ds.getRoot(), docsEnabled);
 
   // _inlet_documentation_generation_start
-  auto docWriter =
-    std::make_unique<SphinxDocWriter>("example_doc.rst",
-                                      /* documentProvided = */ true);
-  inlet.registerDocWriter(std::move(docWriter));
+  auto writer = std::make_unique<SphinxWriter>("example_doc.rst",
+                                               /* documentProvided = */ true);
+  inlet.registerWriter(std::move(writer));
   // _inlet_documentation_generation_end
 
   defineSchema(inlet);

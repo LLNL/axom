@@ -5,14 +5,14 @@
 
 /*!
  *******************************************************************************
- * \file SphinxDocWriter.hpp
+ * \file SphinxWriter.hpp
  *
- * \brief This file contains the class definition of the SphinxDocWriter.
+ * \brief This file contains the class definition of the SphinxWriter.
  *******************************************************************************
  */
 
-#ifndef INLET_SPHINXDOCWRITER_HPP
-#define INLET_SPHINXDOCWRITER_HPP
+#ifndef INLET_SPHINXWRITER_HPP
+#define INLET_SPHINXWRITER_HPP
 
 #include <string>
 #include <vector>
@@ -20,7 +20,7 @@
 #include <unordered_map>
 
 #include "axom/sidre.hpp"
-#include "axom/inlet/DocWriter.hpp"
+#include "axom/inlet/Writer.hpp"
 
 namespace axom
 {
@@ -28,20 +28,20 @@ namespace inlet
 {
 /*!
  *******************************************************************************
- * \class SphinxDocWriter
+ * \class SphinxWriter
  *
- * \brief A DocWriter that is able write documentation in Sphinx RST format for 
+ * \brief A Writer that is able write documentation in Sphinx RST format for 
  * a given input file.
  *
- * \see DocWriter
+ * \see Writer
  *******************************************************************************
  */
-class SphinxDocWriter : public DocWriter
+class SphinxWriter : public Writer
 {
 public:
   /*!
   *******************************************************************************
-  * \brief A constructor for SphinxDocWriter.
+  * \brief A constructor for SphinxWriter.
   * 
   * \param [in] fileName The name of the file the documentation should be written to.
   * 
@@ -50,13 +50,13 @@ public:
   *
   *******************************************************************************
   */
-  SphinxDocWriter(const std::string& fileName, bool documentProvided = false);
+  SphinxWriter(const std::string& fileName, bool documentProvided = false);
 
   void documentTable(const Table& table) override;
 
   void finalize() override;
 
-  virtual ~SphinxDocWriter() = default;
+  virtual ~SphinxWriter() = default;
 
 private:
   /*!

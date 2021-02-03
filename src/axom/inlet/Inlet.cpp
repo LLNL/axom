@@ -57,9 +57,9 @@ VerifiableScalar& Inlet::addString(const std::string& name,
   return m_globalTable.addString(name, description);
 }
 
-void Inlet::registerDocWriter(std::unique_ptr<DocWriter> writer)
+void Inlet::registerWriter(std::unique_ptr<Writer> writer)
 {
-  m_docWriter = std::move(writer);
+  m_writer = std::move(writer);
 }
 
 namespace detail
@@ -69,17 +69,17 @@ namespace detail
  * \brief Recursive helper function for traversing an Inlet tree for documentation
  * generation purposes
  * 
- * \param [inout] writer The DocWriter to use for documentation
+ * \param [inout] writer The Writer to use for documentation
  * \param [in] table The current table to write
  *******************************************************************************
  */
-void docWriterHelper(DocWriter& writer, const Table& table)
+void writerHelper(Writer& writer, const Table& table)
 {
   // Use a pre-order traversal for readability
   writer.documentTable(table);
   for(const auto& sub_table_entry : table.getChildTables())
   {
-    docWriterHelper(writer, *sub_table_entry.second);
+    writerHelper(writer, *sub_table_entry.second);
   }
 }
 
@@ -89,8 +89,8 @@ void Inlet::writeDoc()
 {
   if(m_docEnabled)
   {
-    detail::docWriterHelper(*m_docWriter, m_globalTable);
-    m_docWriter->finalize();
+    detail::writerHelper(*m_writer, m_globalTable);
+    m_writer->finalize();
   }
 }
 

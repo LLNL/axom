@@ -27,7 +27,7 @@
 
 #include "axom/sidre.hpp"
 
-#include "axom/inlet/DocWriter.hpp"
+#include "axom/inlet/Writer.hpp"
 
 namespace axom
 {
@@ -260,22 +260,22 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Sets the associated DocWriter for the Inlet instance.
+   * \brief Sets the associated Writer for the Inlet instance.
    *
-   * Sets the associated DocWriter. If the DocWriter is already set, it will be
+   * Sets the associated Writer. If the Writer is already set, it will be
    * replaced by the one that was most recently set.
    *
-   * \param [in] writer An owning pointer to a DocWriter object
+   * \param [in] writer An owning pointer to a Writer object
    *
    *****************************************************************************
    */
-  void registerDocWriter(std::unique_ptr<DocWriter> writer);
+  void registerWriter(std::unique_ptr<Writer> writer);
 
   /*!
    *****************************************************************************
    * \brief Writes input file documentation.
    *
-   * This writes the input file's documentation through the registered DocWriter.
+   * This writes the input file's documentation through the registered Writer.
    *
    *****************************************************************************
    */
@@ -599,7 +599,7 @@ private:
   std::unique_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   Table m_globalTable;
-  std::unique_ptr<DocWriter> m_docWriter;
+  std::unique_ptr<Writer> m_writer;
   bool m_docEnabled;
 };
 

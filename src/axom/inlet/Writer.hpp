@@ -5,14 +5,14 @@
 
 /*!
  *******************************************************************************
- * \file DocWriter.hpp
+ * \file Writer.hpp
  *
- * \brief This file contains the abstract base class definition of DocWriter.
+ * \brief This file contains the abstract base class definition of Writer.
  *******************************************************************************
  */
 
-#ifndef INLET_DOCWRITER_HPP
-#define INLET_DOCWRITER_HPP
+#ifndef INLET_WRITER_HPP
+#define INLET_WRITER_HPP
 
 namespace axom
 {
@@ -23,21 +23,21 @@ class Table;
 
 /*!
  *******************************************************************************
- * \class DocWriter
+ * \class Writer
  *
- * \brief Abstract base class defining the interface of all DocWriter
+ * \brief Abstract base class defining the interface of all Writer
  *  classes.
  *
  *  Concrete instances need to inherit from this class and implement these
  *  functions.
  *
- * \see SphinxDocWriter
+ * \see SphinxWriter
  *******************************************************************************
  */
-class DocWriter
+class Writer
 {
 public:
-  virtual ~DocWriter() = default;
+  virtual ~Writer() = default;
 
   /*!
    *****************************************************************************
