@@ -820,9 +820,10 @@ TEST(core_array, checkResize)
 TEST(core_array_DeathTest, checkResize)
 {
   constexpr IndexType ZERO = 0;
+  IndexType size = 100;
 
   /* Resizing isn't allowed with a ratio less than 1.0. */
-  Array<int> v_int(ZERO, 100);
+  Array<int> v_int(ZERO, size);
   v_int.setResizeRatio(0.99);
   EXPECT_DEATH_IF_SUPPORTED(internal::check_resize(v_int), IGNORE_OUTPUT);
 }
@@ -1044,18 +1045,18 @@ TEST(core_array, check_move_copy)
     Array<int> v_int_external(ints.data(), size, capacity);
 
     Array<int> v_int_copy_ctor(v_int);
-    Array<int> v_int_copy_assign(0, 0);
+    Array<int> v_int_copy_assign;
     v_int_copy_assign = v_int;
     EXPECT_EQ(v_int, v_int_copy_ctor);
     EXPECT_EQ(v_int, v_int_copy_assign);
 
     Array<int> v_int_external_copy_ctor(v_int_external);
-    Array<int> v_int_external_copy_assign(0, 0);
+    Array<int> v_int_external_copy_assign;
     v_int_external_copy_assign = v_int_external;
     EXPECT_NE(v_int_external, v_int_external_copy_ctor);
     EXPECT_NE(v_int_external, v_int_external_copy_assign);
 
-    Array<int> v_int_move_assign(0, 0);
+    Array<int> v_int_move_assign;
     v_int_move_assign = std::move(v_int_copy_assign);
     Array<int> v_int_move_ctor = std::move(v_int_copy_ctor);
     EXPECT_EQ(v_int, v_int_move_assign);
@@ -1071,18 +1072,18 @@ TEST(core_array, check_move_copy)
     Array<double> v_double_external(doubles.data(), size, capacity);
 
     Array<double> v_double_copy_ctor(v_double);
-    Array<double> v_double_copy_assign(0, 0);
+    Array<double> v_double_copy_assign;
     v_double_copy_assign = v_double;
     EXPECT_EQ(v_double, v_double_copy_ctor);
     EXPECT_EQ(v_double, v_double_copy_assign);
 
     Array<double> v_double_external_copy_ctor(v_double_external);
-    Array<double> v_double_external_copy_assign(0, 0);
+    Array<double> v_double_external_copy_assign;
     v_double_external_copy_assign = v_double_external;
     EXPECT_NE(v_double_external, v_double_external_copy_ctor);
     EXPECT_NE(v_double_external, v_double_external_copy_assign);
 
-    Array<double> v_double_move_assign(0, 0);
+    Array<double> v_double_move_assign;
     v_double_move_assign = std::move(v_double_copy_assign);
     Array<double> v_double_move_ctor = std::move(v_double_copy_ctor);
     EXPECT_EQ(v_double, v_double_move_assign);
