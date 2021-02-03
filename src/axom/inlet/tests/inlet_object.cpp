@@ -354,26 +354,6 @@ TYPED_TEST(inlet_object, simple_struct_from_bracket)
   EXPECT_FALSE(foo.baz);
 }
 
-TYPED_TEST(inlet_object, contains_from_table)
-{
-  std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
-
-  // Define schema
-  // Check for existing fields
-  inlet.addBool("foo/bar", "bar's description");
-
-  inlet.addBool("foo/baz", "baz's description");
-
-  EXPECT_TRUE(inlet.contains("foo/bar"));
-  EXPECT_TRUE(inlet.contains("foo/baz"));
-
-  auto& foo_table = inlet.getTable("foo");
-  EXPECT_TRUE(foo_table.contains("bar"));
-  EXPECT_TRUE(foo_table.contains("baz"));
-}
-
 TYPED_TEST(inlet_object, contains_from_bracket)
 {
   std::string testString = "foo = { bar = true; baz = false }";

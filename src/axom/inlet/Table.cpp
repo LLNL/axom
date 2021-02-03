@@ -210,7 +210,7 @@ Table& Table::addStructContainer(const std::string& name,
     fullName = removeAllInstances(fullName, detail::CONTAINER_GROUP_NAME + "/");
     if(m_reader.getIndices(fullName, indices))
     {
-      detail::addIndicesGroupToTable(table, indices, description);
+      table.addIndicesGroup(indices, description);
     }
     markAsStructContainer(*table.m_sidreGroup);
   }
@@ -553,27 +553,27 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
   }
 }
 
+}  // end namespace detail
+
 template <typename Key>
-void addIndicesGroupToTable(Table& table,
-                            const std::vector<Key>& indices,
+void Table::addIndicesGroup(const std::vector<Key>& indices,
                             const std::string& description)
 {
   sidre::Group* indices_group =
-    table.sidreGroup()->createGroup(CONTAINER_INDICES_NAME,
-                                    /* list_format = */ true);
+    m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
+                              /* list_format = */ true);
   // For each index, add a table whose name is its index
   // Schema for struct is defined using the returned table
   for(const auto& idx : indices)
   {
-    const std::string string_idx = removeBeforeDelimiter(indexToString(idx));
-    table.addTable(string_idx, description);
-    std::string absolute = appendPrefix(table.name(), indexToString(idx));
+    const std::string string_idx =
+      removeBeforeDelimiter(detail::indexToString(idx));
+    addTable(string_idx, description);
+    std::string absolute = appendPrefix(m_name, detail::indexToString(idx));
     absolute = removeAllInstances(absolute, detail::CONTAINER_GROUP_NAME + "/");
-    addIndexViewToGroup(*indices_group, absolute);
+    detail::addIndexViewToGroup(*indices_group, absolute);
   }
 }
-
-}  // end namespace detail
 
 template <typename T, typename SFINAE>
 Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
@@ -624,7 +624,7 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     std::vector<VariantKey> indices;
     if(m_reader.getIndices(lookupPath, indices))
     {
-      detail::addIndicesGroupToTable(table, indices, description);
+      table.addIndicesGroup(indices, description);
     }
     return table;
   }
