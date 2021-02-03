@@ -116,6 +116,15 @@ void discretize(const SphereType & sphere,
    // max_last_gen indexes to the last oct of the last generation.
    int max_last_gen = 0;
 
+   enum {
+      P = 0,
+      Q,
+      R,
+      S,
+      T,
+      U
+   };
+
    // Refine: add an octahedron to each exposed face.
    for (int level = 0; level < levels; ++level)
    {
@@ -130,16 +139,16 @@ void discretize(const SphereType & sphere,
          /* newoct[1] uses (T,P,R)-old. */
          /* newoct[2] uses (P,U,Q)-old. */
          /* newoct[3] uses (R,Q,S)-old. */
-         out.push_back(new_inscribed_oct(sphere, out[last_gen], 0, 1, 2));
-         out.push_back(new_inscribed_oct(sphere, out[last_gen], 4, 0, 2));
-         out.push_back(new_inscribed_oct(sphere, out[last_gen], 0, 5, 1));
-         out.push_back(new_inscribed_oct(sphere, out[last_gen], 2, 1, 3));
+         out.push_back(new_inscribed_oct(sphere, out[last_gen], P, Q, R));
+         out.push_back(new_inscribed_oct(sphere, out[last_gen], T, P, R));
+         out.push_back(new_inscribed_oct(sphere, out[last_gen], P, U, Q));
+         out.push_back(new_inscribed_oct(sphere, out[last_gen], R, Q, S));
          if (last_gen == 0)
          {
-            out.push_back(new_inscribed_oct(sphere, out[last_gen], 0, 4, 5));
-            out.push_back(new_inscribed_oct(sphere, out[last_gen], 1, 5, 3));
-            out.push_back(new_inscribed_oct(sphere, out[last_gen], 4, 2, 3));
-            out.push_back(new_inscribed_oct(sphere, out[last_gen], 5, 4, 3));
+            out.push_back(new_inscribed_oct(sphere, out[last_gen], P, T, U));
+            out.push_back(new_inscribed_oct(sphere, out[last_gen], Q, U, S));
+            out.push_back(new_inscribed_oct(sphere, out[last_gen], T, R, S));
+            out.push_back(new_inscribed_oct(sphere, out[last_gen], U, T, S));
          }
          
          last_gen += 1;
