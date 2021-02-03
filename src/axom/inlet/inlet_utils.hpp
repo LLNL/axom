@@ -172,7 +172,7 @@ inline bool isContainerGroup(const std::string& name)
 * \param [inout] target The group to tag
 *****************************************************************************
 */
-void markAsGenericContainer(axom::sidre::Group& target);
+void markAsStructContainer(axom::sidre::Group& target);
 
 namespace cpp11_compat
 {
