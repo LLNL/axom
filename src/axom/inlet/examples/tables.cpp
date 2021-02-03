@@ -56,14 +56,14 @@ int main()
 
   // Define and store the values in the input file
   // _inlet_simple_types_tables_add_start
-  auto& driver_table = inlet.addTable("driver", "A description of driver");
-  driver_table.addString("name", "Name of driver");
+  auto& driver_schema = inlet.addStruct("driver", "A description of driver");
+  driver_schema.addString("name", "Name of driver");
 
-  auto& car_table = driver_table.addTable("car", "Car of driver");
-  car_table.addString("make", "Make of car");
-  car_table.addString("color", "Color of car").defaultValue("red");
-  car_table.addInt("seats", "Number of seats");
-  car_table.addInt("horsepower", "Amount of horsepower");
+  auto& car_schema = driver_schema.addStruct("car", "Car of driver");
+  car_schema.addString("make", "Make of car");
+  car_schema.addString("color", "Color of car").defaultValue("red");
+  car_schema.addInt("seats", "Number of seats");
+  car_schema.addInt("horsepower", "Amount of horsepower");
   // _inlet_simple_types_tables_add_end
 
   // Access values stored in the Datastore via Inlet

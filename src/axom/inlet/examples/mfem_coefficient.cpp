@@ -175,8 +175,8 @@ int main(int argc, char** argv)
   Inlet inlet(std::move(lr), ds.getRoot());
 
   // We only need the boundary condition sub-table
-  auto& bc_table = inlet.addStructArray("bcs", "List of boundary conditions");
-  BoundaryCondition::defineSchema(bc_table);
+  auto& bc_schema = inlet.addStructArray("bcs", "List of boundary conditions");
+  BoundaryCondition::defineSchema(bc_schema);
 
   if(!inlet.verify())
   {
