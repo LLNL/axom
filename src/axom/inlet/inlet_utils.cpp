@@ -142,7 +142,7 @@ bool checkedConvertToInt(const std::string& number, int& result)
   return *ptr == 0;
 }
 
-void markAsGenericContainer(axom::sidre::Group& target)
+void markAsStructContainer(axom::sidre::Group& target)
 {
   if(target.hasView(detail::GENERIC_CONTAINER_FLAG))
   {

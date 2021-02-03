@@ -1192,8 +1192,8 @@ private:
    *****************************************************************************
    */
   template <typename Key>
-  Table& addGenericContainer(const std::string& name,
-                             const std::string& description = "");
+  Table& addStructContainer(const std::string& name,
+                            const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -1201,7 +1201,7 @@ private:
    * i.e., an array or dictionary of user-defined type
    *****************************************************************************
    */
-  bool isGenericContainer() const
+  bool isStructContainer() const
   {
     return m_sidreGroup->hasView(detail::GENERIC_CONTAINER_FLAG);
   }
@@ -1213,7 +1213,7 @@ private:
    * 
    * \param [in] func The function to apply to individual container elements
    * 
-   * \pre The calling table must be a generic container, i.e., isGenericContainer()
+   * \pre The calling table must be a generic container, i.e., isStructContainer()
    * returns true
    * 
    * \pre The function must accept a single argument of type Table&
