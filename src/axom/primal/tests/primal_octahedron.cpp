@@ -15,7 +15,7 @@
 
 #include <cmath>
 
-using namespace axom;
+namespace primal = axom::primal;
 
 /// Test fixture for testing primal::Octahedron
 class OctahedronTest : public ::testing::Test

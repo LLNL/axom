@@ -25,12 +25,12 @@ namespace primal
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of spatial dimensions
  */
-template <typename T, int NDIMS>
+template <typename T, int NDIMS=3>
 class Octahedron
 {
 public:
-  typedef Point<T, NDIMS> PointType;
-  typedef Vector<T, NDIMS> VectorType;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
 
   enum
   {
