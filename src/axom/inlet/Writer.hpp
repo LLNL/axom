@@ -41,11 +41,11 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Generates documentation for a Table and its child Fields
+   * \brief Generates documentation for a Table and its child Fields/Functions
    * \param [in] table The Table to generate documentation for
    *
    * \note Implementers of this function are not responsible for generating
-   * documentation for child Tables of this Table - only child Fields
+   * documentation for child Tables of this Table - only child Fields/Functions
    *****************************************************************************
    */
   virtual void documentTable(const Table& table) = 0;

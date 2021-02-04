@@ -47,7 +47,8 @@ void SphinxWriter::documentTable(const Table& table)
   const auto sidreGroup = table.sidreGroup();
   m_inletTablePathNames.push_back(sidreGroup->getPathName());
   auto& currTable =
-    m_rstTables.emplace(sidreGroup->getPathName(), m_colLabels).first->second;
+    m_rstTables.emplace(sidreGroup->getPathName(), TableData {m_colLabels, {}})
+      .first->second;
   currTable.tableName = sidreGroup->getName();
   if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
   {
@@ -126,12 +127,11 @@ void SphinxWriter::writeAllTables()
     writeSubtitle(currTable.tableName);
     if(currTable.description != "")
     {
-      m_oss << "Description: " << currTable.description << std::endl
-            << std::endl;
+      m_oss << "Description: " << currTable.description << "\n\n";
     }
-    if(currTable.rstTable.size() > 1)
+    if(currTable.fieldTable.size() > 1)
     {
-      writeTable("Fields", currTable.rstTable);
+      writeTable("Fields", currTable.fieldTable);
     }
   }
 }
@@ -258,7 +258,7 @@ void SphinxWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup)
 
   // FIXME: Better to use an associative container here if the column header
   // set is variable?
-  const auto& labels = currentTable.rstTable.front();
+  const auto& labels = currentTable.fieldTable.front();
   auto iter = std::find(labels.begin(), labels.end(), "Value");
   if(iter != labels.end())
   {
@@ -274,7 +274,17 @@ void SphinxWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup)
     }
   }
 
-  currentTable.rstTable.push_back(fieldAttributes);
+  currentTable.fieldTable.push_back(fieldAttributes);
+}
+
+void SphinxWriter::extractFunctionMetadata(axom::sidre::Group* sidreGroup)
+{
+  TableData& currentTable =
+    m_rstTables.at(sidreGroup->getParent()->getPathName());
+
+  std::vector<std::string> functionAttributes(m_colLabels.size());
+
+  currentTable.functionTable.push_back(functionAttributes);
 }
 
 }  // namespace inlet

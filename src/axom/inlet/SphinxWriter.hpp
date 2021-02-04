@@ -131,17 +131,21 @@ private:
     *
     *******************************************************************************
     */
-    TableData(const std::vector<std::string>& labels)
+    TableData(const std::vector<std::string>& fieldLabels,
+              const std::vector<std::string>& functionLabels)
     {
-      rstTable.push_back(labels);
+      fieldTable.push_back(fieldLabels);
+      functionTable.push_back(functionLabels);
     }
 
-    // Shouldn't be needed, these will always be managed in a container
+    // Copying shouldn't be needed, these will always be managed in a container
     TableData(const TableData&) = delete;
+    TableData(TableData&&) = default;
 
     std::string tableName;
     std::string description;
-    std::vector<std::vector<std::string>> rstTable;
+    std::vector<std::vector<std::string>> fieldTable;
+    std::vector<std::vector<std::string>> functionTable;
   };
 
   /*!
@@ -158,6 +162,21 @@ private:
   *******************************************************************************
   */
   void extractFieldMetadata(axom::sidre::Group* sidreGroup);
+
+  /*!
+  *******************************************************************************
+  * \brief Extracts Function information from the given Sidre Group and stores it
+  * to be written later.
+  * 
+  * This extracts information about the Function stored in the given Sidre Group. 
+  * This information is stored internally by this class and then written to the
+  * document by writeAllTables.
+  * 
+  * \param [in] sidreGroup The Sidre Group from which Function metadata should be
+  * extracted and then stored.
+  *******************************************************************************
+  */
+  void extractFunctionMetadata(axom::sidre::Group* sidreGroup);
 
   /*!
   *******************************************************************************

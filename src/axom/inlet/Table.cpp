@@ -573,6 +573,46 @@ void addIndicesGroupToTable(Table& table,
   }
 }
 
+/*!
+ *****************************************************************************
+ * \brief Writes function signature information to the sidre Group associated
+ * with an inlet::Function
+ * 
+ * \param [in] ret_type The function's return type
+ * \param [in] arg_types The function's argument types
+ * \param [inout] group The group to add to
+ * 
+ * The structure of the function signature information is as follows:
+ * <group>
+ *  ├── function_arguments
+ *  │   ├─• <unnamed> arg0_type
+ *  │   ├─• ...
+ *  │   └─• <unnamed> argn_type
+ *  └─• return_type
+ *****************************************************************************
+ */
+void addSignatureToGroup(const FunctionTag ret_type,
+                         const std::vector<FunctionTag>& arg_types,
+                         sidre::Group* group)
+{
+  static const auto type_names = []() {
+    std::unordered_map<FunctionTag, std::string> result;
+    result[FunctionTag::Vector] = "Vector";
+    result[FunctionTag::Double] = "Double";
+    result[FunctionTag::Void] = "Void";
+    result[FunctionTag::String] = "String";
+    return result;
+  }();
+
+  group->createViewString("return_type", type_names.at(ret_type));
+  auto args_group =
+    group->createGroup("function_arguments", /* list_format = */ true);
+  for(const auto arg_type : arg_types)
+  {
+    args_group->createViewString("", type_names.at(arg_type));
+  }
+}
+
 }  // end namespace detail
 
 template <typename T, typename SFINAE>
@@ -664,6 +704,7 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
       fmt::format("Failed to create Sidre group with name '{0}'", fullName));
+    detail::addSignatureToGroup(ret_type, arg_types, sidreGroup);
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
@@ -971,6 +1012,12 @@ const std::unordered_map<std::string, std::unique_ptr<Field>>&
 Table::getChildFields() const
 {
   return m_fieldChildren;
+}
+
+const std::unordered_map<std::string, std::unique_ptr<Function>>&
+Table::getChildFunctions() const
+{
+  return m_functionChildren;
 }
 
 }  // end namespace inlet

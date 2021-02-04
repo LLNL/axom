@@ -997,6 +997,15 @@ public:
 
   /*!
    *****************************************************************************
+   * \return An unordered map from Function names to the child Function pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  const std::unordered_map<std::string, std::unique_ptr<Function>>&
+  getChildFunctions() const;
+
+  /*!
+   *****************************************************************************
    * \return An unordered map from Table names to the child Table pointers for 
    * this Table.
    *****************************************************************************
