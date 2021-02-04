@@ -249,13 +249,16 @@ inline int toIndex(const std::string& idx)
  * \param [inout] table The table to add to
  * \param [in] indices The indices to add
  * \param [in] description The optional description of the subtables
+ * \param [in] add_tables Whether to add a subtable for each element of the 
+ * container
  * \tparam Key The type of the indices to add
  *******************************************************************************
  */
 template <typename Key>
 void addIndicesGroupToTable(Table& table,
                             const std::vector<Key>& indices,
-                            const std::string& description = "");
+                            const std::string& description = "",
+                            const bool add_tables = false);
 
 /*!
  *******************************************************************************

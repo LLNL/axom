@@ -167,6 +167,9 @@ int main(int argc, char** argv)
   auto opt = app.add_option("--file", inputFileName, "Path to input file");
   opt->check(CLI::ExistingFile);
 
+  bool docsEnabled {false};
+  app.add_flag("--docs", docsEnabled, "Enables documentation generation");
+
   CLI11_PARSE(app, argc, argv);
 
   DataStore ds;
@@ -193,6 +196,15 @@ int main(int argc, char** argv)
   for(auto&& info : bc_infos)
   {
     bcs.emplace(info.first, BoundaryCondition {std::move(info.second), dim});
+  }
+
+  if(docsEnabled)
+  {
+    const bool outputProvidedValues = true;
+    std::unique_ptr<inlet::SphinxWriter> writer(
+      new inlet::SphinxWriter("mfem_coefficient.rst", outputProvidedValues));
+    inlet.registerWriter(std::move(writer));
+    inlet.writeDoc();
   }
 
   return 0;

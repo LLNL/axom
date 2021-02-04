@@ -23,18 +23,20 @@ namespace axom
 namespace inlet
 {
 SphinxWriter::SphinxWriter(const std::string& fileName, bool outputProvidedValues)
-  : m_colLabels({"Field Name",
-                 "Description",
-                 "Default Value",
-                 "Range/Valid Values",
-                 "Required"})
+  : m_fieldColLabels({"Field Name",
+                      "Description",
+                      "Default Value",
+                      "Range/Valid Values",
+                      "Required"})
+  , m_functionColLabels(
+      {"Function Name", "Description", "Signature", "Required"})
 {
   m_fileName = fileName;
 
   if(outputProvidedValues)
   {
     // The value provided by the user in the input file
-    m_colLabels.push_back("Value");
+    m_fieldColLabels.push_back("Value");
   }
 
   m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX\n";
@@ -45,20 +47,62 @@ SphinxWriter::SphinxWriter(const std::string& fileName, bool outputProvidedValue
 void SphinxWriter::documentTable(const Table& table)
 {
   const auto sidreGroup = table.sidreGroup();
-  m_inletTablePathNames.push_back(sidreGroup->getPathName());
+  const std::string pathName = sidreGroup->getPathName();
+  std::string tableName = sidreGroup->getName();
+  bool isSelectedElement = false;
+
+  if(tableName == detail::CONTAINER_GROUP_NAME)
+  {
+    tableName = "Container contents:";
+  }
+
+  // Avoid duplicating schema tables by selecting a single element to display
+  // By keeping track of these selections, this logic extends to subtrees
+  for(const auto& selection : m_selectedElements)
+  {
+    std::string selectedElement =
+      appendPrefix(selection.first, detail::CONTAINER_GROUP_NAME);
+    selectedElement = appendPrefix(selectedElement, selection.second);
+    // If we *are* part of an array/dict for which an element is selected,
+    // but we *are not* the selected element, bail out
+    if((pathName.find(selection.first) != std::string::npos) &&
+       (pathName.find(selectedElement) == std::string::npos))
+    {
+      return;
+    }
+  }
+
+  // If we're the first element of an array/dict, mark it as the selected element
+  if(removeBeforeDelimiter(sidreGroup->getParent()->getPathName()) ==
+     detail::CONTAINER_GROUP_NAME)
+  {
+    // The container that this Table is a part of
+    const std::string containerName =
+      sidreGroup->getParent()->getParent()->getPathName();
+    m_selectedElements.push_back({containerName, tableName});
+    isSelectedElement = true;
+  }
+
+  m_inletTablePathNames.push_back(pathName);
   auto& currTable =
-    m_rstTables.emplace(sidreGroup->getPathName(), TableData {m_colLabels, {}})
+    m_rstTables
+      .emplace(pathName, TableData {m_fieldColLabels, m_functionColLabels})
       .first->second;
-  currTable.tableName = sidreGroup->getName();
-  if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
+  currTable.tableName = tableName;
+  currTable.isSelectedElement = isSelectedElement;
+  if(tableName != "" && sidreGroup->hasView("description"))
   {
     currTable.description = sidreGroup->getView("description")->getString();
   }
 
-  // FIXME: Handle container fields differently
   for(const auto& field_entry : table.getChildFields())
   {
-    extractFieldMetadata(field_entry.second->sidreGroup());
+    extractFieldMetadata(field_entry.second->sidreGroup(), currTable);
+  }
+
+  for(const auto& function_entry : table.getChildFunctions())
+  {
+    extractFunctionMetadata(function_entry.second->sidreGroup(), currTable);
   }
 }
 
@@ -98,7 +142,7 @@ void SphinxWriter::writeTable(const std::string& title,
   std::string widths = ":widths:";
   // This would be easier with an iterator adaptor like back_inserter but for
   // concatenation
-  for(std::size_t i = 0u; i < m_colLabels.size(); i++)
+  for(std::size_t i = 0u; i < rstTable.front().size(); i++)
   {
     widths += " 25";
   }
@@ -124,19 +168,33 @@ void SphinxWriter::writeAllTables()
   for(std::string& pathName : m_inletTablePathNames)
   {
     auto& currTable = m_rstTables.at(pathName);
-    writeSubtitle(currTable.tableName);
-    if(currTable.description != "")
+    // If we're displaying a selected element, the title and description
+    // will already have been printed
+    if(currTable.isSelectedElement)
     {
-      m_oss << "Description: " << currTable.description << "\n\n";
+      m_oss << "The input schema defines an array of this table.\n";
+      m_oss << "For brevity, only one instance is displayed here.\n\n";
+    }
+    else
+    {
+      writeSubtitle(currTable.tableName);
+      if(currTable.description != "")
+      {
+        m_oss << "Description: " << currTable.description << "\n\n";
+      }
     }
     if(currTable.fieldTable.size() > 1)
     {
       writeTable("Fields", currTable.fieldTable);
     }
+    if(currTable.functionTable.size() > 1)
+    {
+      writeTable("Functions", currTable.functionTable);
+    }
   }
 }
 
-std::string SphinxWriter::getValueAsString(axom::sidre::View* view)
+std::string SphinxWriter::getValueAsString(const axom::sidre::View* view)
 {
   axom::sidre::TypeID type = view->getTypeID();
   if(type == axom::sidre::TypeID::INT8_ID)
@@ -157,7 +215,7 @@ std::string SphinxWriter::getValueAsString(axom::sidre::View* view)
   return view->getString();
 }
 
-std::string SphinxWriter::getRangeAsString(axom::sidre::View* view)
+std::string SphinxWriter::getRangeAsString(const axom::sidre::View* view)
 {
   std::ostringstream oss;
   oss.precision(3);
@@ -166,20 +224,20 @@ std::string SphinxWriter::getRangeAsString(axom::sidre::View* view)
   axom::sidre::TypeID type = view->getTypeID();
   if(type == axom::sidre::INT_ID)
   {
-    int* range = view->getArray();
+    const int* range = view->getData();
     oss << range[0] << " to " << range[1];
   }
   else
   {
-    double* range = view->getArray();
+    const double* range = view->getData();
     oss << range[0] << " to " << range[1];
   }
   return oss.str();
 }
 
-std::string SphinxWriter::getValidValuesAsString(axom::sidre::View* view)
+std::string SphinxWriter::getValidValuesAsString(const axom::sidre::View* view)
 {
-  int* range = view->getArray();
+  const int* range = view->getData();
   size_t size = view->getBuffer()->getNumElements();
   std::string result = "";
   for(size_t i = 0; i < size; ++i)
@@ -196,7 +254,7 @@ std::string SphinxWriter::getValidValuesAsString(axom::sidre::View* view)
   return result;
 }
 
-std::string SphinxWriter::getValidStringValues(axom::sidre::Group* sidreGroup)
+std::string SphinxWriter::getValidStringValues(const axom::sidre::Group* sidreGroup)
 {
   auto idx = sidreGroup->getFirstValidViewIndex();
   std::string validValues = "";
@@ -212,11 +270,10 @@ std::string SphinxWriter::getValidStringValues(axom::sidre::Group* sidreGroup)
   return validValues;
 }
 
-void SphinxWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup)
+void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup,
+                                        TableData& currentTable)
 {
-  TableData& currentTable =
-    m_rstTables.at(sidreGroup->getParent()->getPathName());
-  std::vector<std::string> fieldAttributes(m_colLabels.size());
+  std::vector<std::string> fieldAttributes(m_fieldColLabels.size());
 
   fieldAttributes[0] = sidreGroup->getName();
 
@@ -277,12 +334,50 @@ void SphinxWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup)
   currentTable.fieldTable.push_back(fieldAttributes);
 }
 
-void SphinxWriter::extractFunctionMetadata(axom::sidre::Group* sidreGroup)
+std::string SphinxWriter::getSignatureAsString(const axom::sidre::Group* sidreGroup)
 {
-  TableData& currentTable =
-    m_rstTables.at(sidreGroup->getParent()->getPathName());
+  const std::string retType = sidreGroup->getView("return_type")->getString();
 
-  std::vector<std::string> functionAttributes(m_colLabels.size());
+  const sidre::Group* argsGroup = sidreGroup->getGroup("function_arguments");
+  std::string argTypes;
+  auto idx = argsGroup->getFirstValidViewIndex();
+  while(axom::sidre::indexIsValid(idx))
+  {
+    argTypes += std::string(argsGroup->getView(idx)->getString());
+    idx = argsGroup->getNextValidViewIndex(idx);
+    if(axom::sidre::indexIsValid(idx))
+    {
+      argTypes += ", ";
+    }
+  }
+
+  return fmt::format("{0}({1})", retType, argTypes);
+}
+
+void SphinxWriter::extractFunctionMetadata(const axom::sidre::Group* sidreGroup,
+                                           TableData& currentTable)
+{
+  std::vector<std::string> functionAttributes(m_functionColLabels.size());
+
+  functionAttributes[0] = sidreGroup->getName();
+
+  if(sidreGroup->hasView("description"))
+  {
+    functionAttributes[1] =
+      std::string(sidreGroup->getView("description")->getString());
+  }
+
+  functionAttributes[2] = getSignatureAsString(sidreGroup);
+
+  if(sidreGroup->hasView("required"))
+  {
+    int8 required = sidreGroup->getView("required")->getData();
+    functionAttributes[3] = required ? "|check|" : "|uncheck|";
+  }
+  else
+  {
+    functionAttributes[3] = "|uncheck|";
+  }
 
   currentTable.functionTable.push_back(functionAttributes);
 }

@@ -210,7 +210,7 @@ Table& Table::addGenericContainer(const std::string& name,
     fullName = removeAllInstances(fullName, detail::CONTAINER_GROUP_NAME + "/");
     if(m_reader.getIndices(fullName, indices))
     {
-      detail::addIndicesGroupToTable(table, indices, description);
+      detail::addIndicesGroupToTable(table, indices, description, true);
     }
     markAsGenericContainer(*table.m_sidreGroup);
   }
@@ -556,7 +556,8 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
 template <typename Key>
 void addIndicesGroupToTable(Table& table,
                             const std::vector<Key>& indices,
-                            const std::string& description)
+                            const std::string& description,
+                            bool add_tables)
 {
   sidre::Group* indices_group =
     table.sidreGroup()->createGroup(CONTAINER_INDICES_NAME,
@@ -566,7 +567,10 @@ void addIndicesGroupToTable(Table& table,
   for(const auto& idx : indices)
   {
     const std::string string_idx = removeBeforeDelimiter(indexToString(idx));
-    table.addTable(string_idx, description);
+    if(add_tables)
+    {
+      table.addTable(string_idx, description);
+    }
     std::string absolute = appendPrefix(table.name(), indexToString(idx));
     absolute = removeAllInstances(absolute, detail::CONTAINER_GROUP_NAME + "/");
     addIndexViewToGroup(*indices_group, absolute);
@@ -664,7 +668,7 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     std::vector<VariantKey> indices;
     if(m_reader.getIndices(lookupPath, indices))
     {
-      detail::addIndicesGroupToTable(table, indices, description);
+      detail::addIndicesGroupToTable(table, indices);
     }
     return table;
   }

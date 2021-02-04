@@ -551,6 +551,8 @@ public:
     return m_func.call<Ret>(std::forward<Args>(args)...);
   }
 
+  const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
+
   /*!
    *******************************************************************************
    * \brief Checks whether the function exists

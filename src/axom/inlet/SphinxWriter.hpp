@@ -144,6 +144,7 @@ private:
 
     std::string tableName;
     std::string description;
+    bool isSelectedElement;
     std::vector<std::vector<std::string>> fieldTable;
     std::vector<std::vector<std::string>> functionTable;
   };
@@ -159,9 +160,11 @@ private:
   * 
   * \param [in] sidreGroup The Sidre Group from which Field metadata should be
   * extracted and then stored.
+  * \param [inout] currentTable The TableData object to write field information to
   *******************************************************************************
   */
-  void extractFieldMetadata(axom::sidre::Group* sidreGroup);
+  void extractFieldMetadata(const axom::sidre::Group* sidreGroup,
+                            TableData& currentTable);
 
   /*!
   *******************************************************************************
@@ -174,9 +177,11 @@ private:
   * 
   * \param [in] sidreGroup The Sidre Group from which Function metadata should be
   * extracted and then stored.
+  * \param [inout] currentTable The TableData object to write function information to
   *******************************************************************************
   */
-  void extractFunctionMetadata(axom::sidre::Group* sidreGroup);
+  void extractFunctionMetadata(const axom::sidre::Group* sidreGroup,
+                               TableData& currentTable);
 
   /*!
   *******************************************************************************
@@ -188,7 +193,7 @@ private:
   * \return String representation of value information.
   *******************************************************************************
   */
-  std::string getValueAsString(axom::sidre::View* view);
+  std::string getValueAsString(const axom::sidre::View* view);
 
   /*!
   *******************************************************************************
@@ -200,7 +205,7 @@ private:
   * \return String representation of range information.
   *******************************************************************************
   */
-  std::string getRangeAsString(axom::sidre::View* view);
+  std::string getRangeAsString(const axom::sidre::View* view);
 
   /*!
   *******************************************************************************
@@ -212,7 +217,7 @@ private:
   * \return String representation of valid value(s) information.
   *******************************************************************************
   */
-  std::string getValidValuesAsString(axom::sidre::View* view);
+  std::string getValidValuesAsString(const axom::sidre::View* view);
 
   /*!
   *******************************************************************************
@@ -224,7 +229,19 @@ private:
   * \return String listing the valid string values.
   *******************************************************************************
   */
-  std::string getValidStringValues(axom::sidre::Group* sidreGroup);
+  std::string getValidStringValues(const axom::sidre::Group* sidreGroup);
+
+  /*!
+  *******************************************************************************
+  * \brief Gets function signature information from the given Sidre Group. 
+  * 
+  * \param [in] sidreGroup The Sidre Group containing function signature information,
+  * i.e., one that corresponds to an inlet::Function
+  *
+  * \return C-style function signature, i.e., Double(Vector, Double)
+  *******************************************************************************
+  */
+  std::string getSignatureAsString(const axom::sidre::Group* sidreGroup);
 
   std::ofstream m_outFile;
   std::ostringstream m_oss;
@@ -233,7 +250,12 @@ private:
   std::unordered_map<std::string, TableData> m_rstTables;
   std::string m_fileName;
   // Used for the RST tables for fields
-  std::vector<std::string> m_colLabels;
+  std::vector<std::string> m_fieldColLabels;
+  // Used for the RST tables for functions
+  std::vector<std::string> m_functionColLabels;
+  // Used to denote the element of dicts/arrays that will be displayed
+  // To avoid cluttering the output with duplicate entries for arrays/dicts
+  std::vector<std::pair<std::string, std::string>> m_selectedElements;
 };
 
 }  // namespace inlet
