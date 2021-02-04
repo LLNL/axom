@@ -86,7 +86,7 @@ OctType new_inscribed_oct(const SphereType & sphere,
 /* Given a primitive shape and level of refinement, return the list of
  * octahedra that approximate the shape at that LOR.
  *
- * As noted in the doxygen, this function chops a shape into O(levels^4)
+ * As noted in the doxygen, this function chops a shape into O(4^levels)
  * octahedra.  That is exponential growth.  Use appropriate caution.
  */
 void discretize(const SphereType & sphere,

@@ -34,7 +34,7 @@ using OctType = primal::Octahedron<double, 3>;
  * \param [in] levels The number of refinements to perform
  * \param [out] out The collection of octahedra representing s
  *
- * This routine generates O(level^4) octahedra.  That's exponential growth.
+ * This routine generates O(4^level) octahedra.  That's exponential growth.
  * Use appropriate caution.
  */
 void discretize(const SphereType & s, int levels, std::vector<OctType> & out);
