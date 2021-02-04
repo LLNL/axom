@@ -548,7 +548,7 @@ TYPED_TEST(inlet_object, nested_array_of_struct_containing_array)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& bar_table = inlet.addGenericArray("bars");
+  auto& bar_table = inlet.addStructArray("bars");
   auto& foo_table = bar_table.addStruct("foo");
   foo_table.addIntArray("arr", "arr's description");
 
