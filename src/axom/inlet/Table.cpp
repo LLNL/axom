@@ -612,6 +612,8 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
       addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    lookupPath =
+      removeAllInstances(lookupPath, detail::CONTAINER_GROUP_NAME + "/");
     if(isDict)
     {
       detail::PrimitiveArrayHelper<VariantKey, T>(table, m_reader, lookupPath);
@@ -667,6 +669,8 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    lookupPath =
+      removeAllInstances(lookupPath, detail::CONTAINER_GROUP_NAME + "/");
     auto func = m_reader.getFunction(lookupPath, ret_type, arg_types);
     return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
   }

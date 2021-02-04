@@ -520,6 +520,48 @@ TYPED_TEST(inlet_object, implicit_conversion_primitives)
   EXPECT_EQ(arr, expected_arr);
 }
 
+struct BarWithFooWithArray
+{
+  FooWithArray foo;
+  bool operator==(const BarWithFooWithArray& other) const
+  {
+    return foo == other.foo;
+  }
+};
+
+template <>
+struct FromInlet<BarWithFooWithArray>
+{
+  BarWithFooWithArray operator()(const axom::inlet::Table& base)
+  {
+    BarWithFooWithArray b;
+    b.foo = base["foo"].get<FooWithArray>();
+    return b;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_struct_containing_array)
+{
+  std::string testString =
+    "bars = { [0] = { foo = { arr = { [0] = 3 }; } }, "
+    "         [1] = { foo = { arr = { [0] = 2 }; } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& bar_table = inlet.addGenericArray("bars");
+  auto& foo_table = bar_table.addStruct("foo");
+  foo_table.addIntArray("arr", "arr's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, BarWithFooWithArray> expected_bars = {
+    {0, {{{{0, 3}}}}},
+    {1, {{{{0, 2}}}}}};
+  std::unordered_map<int, BarWithFooWithArray> bars_with_foo;
+  bars_with_foo =
+    inlet["bars"].get<std::unordered_map<int, BarWithFooWithArray>>();
+  EXPECT_EQ(bars_with_foo, expected_bars);
+}
+
 struct QuuxWithFooArray
 {
   std::unordered_map<int, Foo> arr;
