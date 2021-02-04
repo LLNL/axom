@@ -10,6 +10,7 @@ set(quest_tests
     quest_all_nearest_neighbors.cpp
     quest_inout_octree.cpp
     quest_signed_distance.cpp
+    quest_discretize.cpp
     quest_stl_reader.cpp
     quest_vertex_weld.cpp
    )
