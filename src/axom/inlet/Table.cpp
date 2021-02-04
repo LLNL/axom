@@ -722,9 +722,9 @@ Proxy Table::operator[](const std::string& name) const
 
 Table& Table::required(bool isRequired)
 {
-  // If it's a generic container we set the individual fields as required,
+  // If it's a struct container we set the individual fields as required,
   // and also the container table itself, as the user would expect that marking
-  // a generic container as required means that it is non-empty
+  // a struct container as required means that it is non-empty
   if(isStructContainer())
   {
     forEachContainerElement(
