@@ -760,7 +760,7 @@ TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)
   EXPECT_EQ(arr_w_indices, expected_arr_w_indices);
 }
 
-TYPED_TEST(inlet_object, generic_arrays_as_std_vector)
+TYPED_TEST(inlet_object, struct_arrays_as_std_vector)
 {
   std::string testString =
     "foo = { [0] = { bar = true; baz = false}, "
@@ -997,7 +997,7 @@ TEST(inlet_object_lua, primitive_arrays_as_std_vector_discontiguous)
   EXPECT_EQ(arr, expected_arr);
 }
 
-TEST(inlet_object_lua, generic_arrays_as_std_vector_discontiguous)
+TEST(inlet_object_lua, struct_arrays_as_std_vector_discontiguous)
 {
   std::string testString =
     "foo = { [6] = { bar = true; baz = false}, "
@@ -1031,7 +1031,7 @@ TEST(inlet_object_lua, primitive_arrays_as_std_vector_implicit_idx)
   EXPECT_EQ(arr, expected_arr);
 }
 
-TEST(inlet_object_lua, generic_arrays_as_std_vector_implicit_idx)
+TEST(inlet_object_lua, struct_arrays_as_std_vector_implicit_idx)
 {
   std::string testString =
     "foo = { { bar = true; baz = false}, "

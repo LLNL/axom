@@ -861,7 +861,7 @@ public:
    *****************************************************************************
    * \brief Add a Field to the input file schema.
    *
-   * Adds a Field to the input file schema. It may or may not be required
+   * Adds a primitive Field to the input file schema. It may or may not be required
    * to be present in the input file. This creates the Sidre Group class with the
    * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
@@ -932,7 +932,8 @@ private:
    *****************************************************************************
    * \brief Return whether a Table with the given name is present in this Table's subtree.
    *
-   * \return Boolean value indicating whether this Table's subtree contains this Table.
+   * \return Boolean value indicating whether the calling Table's subtree
+   * contains a Table with the given name.
    *****************************************************************************
    */
   bool hasTable(const std::string& tableName) const;
@@ -942,7 +943,8 @@ private:
    * \brief Return whether a Field with the given name is present in this Table's
    *  subtree.
    *
-   * \return Boolean value indicating whether this Table's subtree contains this Field.
+   * \return Boolean value indicating whether the calling Table's subtree
+   * contains a Field with the given name.
    *****************************************************************************
    */
   bool hasField(const std::string& fieldName) const;
@@ -952,7 +954,8 @@ private:
    * \brief Return whether a Function with the given name is present in this Table's
    *  subtree.
    *
-   * \return Boolean value indicating whether this Table's subtree contains this Function.
+   * \return Boolean value indicating whether the calling Table's subtree
+   * contains a Function with the given name.
    *****************************************************************************
    */
   bool hasFunction(const std::string& fieldName) const;
@@ -1168,7 +1171,7 @@ private:
   /*!
    *******************************************************************************
    * \brief Adds a group containing the indices of a container to the calling 
-   * table, and a subtable for each index
+   * table and a subtable for each index
    * 
    * \param [in] indices The indices to add
    * \param [in] description The optional description of the subtables
@@ -1195,13 +1198,13 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Returns true if the calling object is part of a generic container,
+   * \brief Returns true if the calling object is part of a struct container,
    * i.e., an array or dictionary of user-defined type
    *****************************************************************************
    */
   bool isStructContainer() const
   {
-    return m_sidreGroup->hasView(detail::GENERIC_CONTAINER_FLAG);
+    return m_sidreGroup->hasView(detail::STRUCT_CONTAINER_FLAG);
   }
 
   /*!
@@ -1211,7 +1214,7 @@ private:
    * 
    * \param [in] func The function to apply to individual container elements
    * 
-   * \pre The calling table must be a generic container, i.e., isStructContainer()
+   * \pre The calling table must be a struct container, i.e., isStructContainer()
    * returns true
    * 
    * \pre The function must accept a single argument of type Table&
@@ -1239,7 +1242,7 @@ private:
   std::vector<AggregateField> m_aggregate_fields;
   std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
 
-  // Used when the calling Table is a generic container within a generic container
+  // Used when the calling Table is a struct container within a struct container
   // Need to delegate schema-defining calls (add*) to the elements of the nested
   // container
   std::vector<std::reference_wrapper<Table>> m_nested_aggregates;
