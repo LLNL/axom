@@ -198,16 +198,19 @@ int main(int argc, char* argv[])
   dc.Save("sidre_mfem_datacoll_restart_ex", "sidre_hdf5");
 
   // Sample time parameters
-  int n_iter = 10;
-  double dt = 0.05;
+  const int n_iter = 10;
+  const int n_checkpoint = 5;
+  const double dt = 0.05;
 
   for(int i = 0; i < n_iter; i++)
   {
     sim_state.step(dt);
+    if(i % n_checkpoint == 0)
+    {
+      // then save it at each checkpoint
+      dc.Save("sidre_mfem_datacoll_restart_ex", "sidre_hdf5");
+    }
   }
-
-  // then save it at the end of the simulation
-  dc.Save("sidre_mfem_datacoll_restart_ex", "sidre_hdf5");
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   MPI_Finalize();

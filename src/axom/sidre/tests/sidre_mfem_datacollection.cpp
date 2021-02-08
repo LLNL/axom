@@ -261,10 +261,10 @@ TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
 
 struct ParMeshGroupData
 {
-  int n_verts;
-  int n_edges;
-  int n_triangles;
-  int n_quads;
+  int n_verts = 0;
+  int n_edges = 0;
+  int n_triangles = 0;
+  int n_quads = 0;
   bool operator==(const ParMeshGroupData& other) const
   {
     return (n_verts == other.n_verts) && (n_edges == other.n_edges) &&
@@ -274,6 +274,7 @@ struct ParMeshGroupData
 
 static std::vector<ParMeshGroupData> getGroupData(const mfem::ParMesh& parmesh)
 {
+  const int dim = parmesh.Dimension();
   // Zeroth group doesn't matter
   std::vector<ParMeshGroupData> result(parmesh.GetNGroups() - 1);
   // remove when marked const in MFEM
@@ -281,10 +282,16 @@ static std::vector<ParMeshGroupData> getGroupData(const mfem::ParMesh& parmesh)
 
   for(std::size_t i = 1; i <= result.size(); i++)
   {
-    result[i - 1] = {non_const_parmesh.GroupNVertices(i),
-                     non_const_parmesh.GroupNEdges(i),
-                     non_const_parmesh.GroupNTriangles(i),
-                     non_const_parmesh.GroupNQuadrilaterals(i)};
+    result[i - 1].n_verts = non_const_parmesh.GroupNVertices(i);
+    if(dim >= 2)
+    {
+      result[i - 1].n_edges = non_const_parmesh.GroupNEdges(i);
+      if(dim >= 3)
+      {
+        result[i - 1].n_triangles = non_const_parmesh.GroupNTriangles(i);
+        result[i - 1].n_quads = non_const_parmesh.GroupNQuadrilaterals(i);
+      }
+    }
   }
 
   return result;
@@ -356,7 +363,9 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
  */
 static void testParallelMeshReloadAllPartitionings(mfem::Mesh& base_mesh)
 {
-  for(int part_method = 0; part_method <= 5; part_method++)
+  static constexpr int MAX_PART_METHOD =
+    5;  // MFEM supports partition methods [0, 5]
+  for(int part_method = 0; part_method <= MAX_PART_METHOD; part_method++)
   {
     testParallelMeshReload(base_mesh, part_method);
   }
@@ -405,8 +414,12 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
-// MFEM's partitioning logic looks like it's buggy for 1D meshes
-// Probably not a problem since 1D meshes are rare
+TEST(sidre_datacollection, dc_par_reload_mesh_1D_small)
+{
+  // 1D mesh divided into segments
+  mfem::Mesh mesh(10);
+  testParallelMeshReloadAllPartitionings(mesh);
+}
 
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_small)
 {
