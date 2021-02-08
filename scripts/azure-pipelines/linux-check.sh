@@ -42,7 +42,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~"
 
 
 echo "~~~~~~ RUNNING CMAKE ~~~~~~~~"
-or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -DENABLE_CPPCHECK=OFF
+or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake
 or_die cd build-$HOST_CONFIG-debug
 echo "~~~~~~ RUNNING make check ~~~~~~~~"
 or_die make VERBOSE=1 check
