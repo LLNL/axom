@@ -269,6 +269,13 @@ bool matchesKeyType(const VariantKey& key)
   return false;
 }
 
+// An indirection required to defer the Proxy constructor call to template instatiated
+template <typename>
+struct IndirectProxy
+{
+  using type = Proxy;
+};
+
 }  // namespace detail
 
 /*!
@@ -667,7 +674,7 @@ public:
     FromInlet<T> from_inlet;
     if(name.empty())
     {
-      return from_inlet(Proxy(*this));
+      return from_inlet(typename detail::IndirectProxy<T>::type(*this));
     }
     else
     {
@@ -677,7 +684,7 @@ public:
           fmt::format("[Inlet] Table with name '{0}' does not exist", name);
         SLIC_ERROR(msg);
       }
-      return from_inlet(Proxy(getTable(name)));
+      return from_inlet(typename detail::IndirectProxy<T>::type(getTable(name)));
     }
   }
 
