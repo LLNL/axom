@@ -150,6 +150,7 @@ namespace detail
 const std::string CONTAINER_GROUP_NAME = "_inlet_container";
 const std::string CONTAINER_INDICES_NAME = "_inlet_container_indices";
 const std::string GENERIC_CONTAINER_FLAG = "_inlet_generic_container";
+const std::string CONTAINER_ELEMENT_FLAG = "_inlet_container_element";
 }  // namespace detail
 
 /*!
@@ -173,6 +174,16 @@ inline bool isContainerGroup(const std::string& name)
 *****************************************************************************
 */
 void markAsGenericContainer(axom::sidre::Group& target);
+
+/*!
+*****************************************************************************
+* \brief Adds a flag to a Sidre group by adding an int8 View with value 1
+*
+* \param [inout] target The group to tag
+* \param [in] flag_name The name of the flag
+*****************************************************************************
+*/
+void addFlagToGroup(axom::sidre::Group& target, const std::string& flag_name);
 
 namespace cpp11_compat
 {

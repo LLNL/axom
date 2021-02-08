@@ -142,26 +142,35 @@ bool checkedConvertToInt(const std::string& number, int& result)
   return *ptr == 0;
 }
 
-void markAsGenericContainer(axom::sidre::Group& target)
+/*!
+*****************************************************************************
+* \brief Adds a flag to a Sidre group by adding an int8 View with value 1
+*
+* \param [inout] target The group to tag
+* \param [in] flag_name The name of the flag
+*****************************************************************************
+*/
+void addFlagToGroup(axom::sidre::Group& target, const std::string& flag_name)
 {
-  if(target.hasView(detail::GENERIC_CONTAINER_FLAG))
+  if(target.hasView(flag_name))
   {
     // This flag should only ever be one, so we verify that and error otherwise
-    const sidre::View* flag = target.getView(detail::GENERIC_CONTAINER_FLAG);
+    const sidre::View* flag = target.getView(flag_name);
     SLIC_ERROR_IF(
       !flag->isScalar(),
-      fmt::format(
-        "[Inlet] Generic container flag of group '{0}' was not a scalar",
-        target.getName()));
+      fmt::format("[Inlet] Flag '{0}' of group '{1}' was not a scalar",
+                  flag_name,
+                  target.getName()));
     const int8 value = flag->getScalar();
     SLIC_ERROR_IF(value != 1,
-                  fmt::format("[Inlet] Generic container flag of group '{0}' "
+                  fmt::format("[Inlet] Flag '{0}' of group '{1}' "
                               "had a value other than 1",
+                              flag_name,
                               target.getName()));
   }
   else
   {
-    target.createViewScalar(detail::GENERIC_CONTAINER_FLAG, static_cast<int8>(1));
+    target.createViewScalar(flag_name, static_cast<int8>(1));
   }
 }
 

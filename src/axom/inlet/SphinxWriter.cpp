@@ -72,9 +72,9 @@ void SphinxWriter::documentTable(const Table& table)
     }
   }
 
-  // If we're the first element of an array/dict, mark it as the selected element
-  if(removeBeforeDelimiter(sidreGroup->getParent()->getPathName()) ==
-     detail::CONTAINER_GROUP_NAME)
+  // If we've gotten to this point and are an element of an array/dict,
+  // mark it as the selected element
+  if(sidreGroup->hasView(detail::CONTAINER_ELEMENT_FLAG))
   {
     // The container that this Table is a part of
     const std::string containerName =

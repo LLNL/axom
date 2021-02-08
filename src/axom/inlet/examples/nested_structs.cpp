@@ -329,9 +329,11 @@ int main(int argc, char** argv)
   if(docsEnabled)
   {
     const bool outputProvidedValues = true;
+    const std::string docFileName = "nested_structs.rst";
     std::unique_ptr<inlet::SphinxWriter> writer(
-      new inlet::SphinxWriter("nested_structs.rst", outputProvidedValues));
+      new inlet::SphinxWriter(docFileName, outputProvidedValues));
     inlet.registerWriter(std::move(writer));
     inlet.writeDoc();
+    SLIC_INFO("Documentation was written to " << docFileName);
   }
 }

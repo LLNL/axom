@@ -201,7 +201,7 @@ Table& Table::addGenericContainer(const std::string& name,
       table.m_nested_aggregates.push_back(
         getTable(indexPath.first).addGenericContainer<Key>(name, description));
     }
-    markAsGenericContainer(*table.m_sidreGroup);
+    addFlagToGroup(*table.m_sidreGroup, detail::GENERIC_CONTAINER_FLAG);
   }
   else
   {
@@ -212,7 +212,7 @@ Table& Table::addGenericContainer(const std::string& name,
     {
       detail::addIndicesGroupToTable(table, indices, description, true);
     }
-    markAsGenericContainer(*table.m_sidreGroup);
+    addFlagToGroup(*table.m_sidreGroup, detail::GENERIC_CONTAINER_FLAG);
   }
   return table;
 }
@@ -569,7 +569,10 @@ void addIndicesGroupToTable(Table& table,
     const std::string string_idx = removeBeforeDelimiter(indexToString(idx));
     if(add_tables)
     {
-      table.addTable(string_idx, description);
+      auto& subtable = table.addTable(string_idx, description);
+      // Mark this as an element of a container so it can be distinguished from
+      // elements of the same table that are not part of the container
+      addFlagToGroup(*subtable.sidreGroup(), detail::CONTAINER_ELEMENT_FLAG);
     }
     std::string absolute = appendPrefix(table.name(), indexToString(idx));
     absolute = removeAllInstances(absolute, detail::CONTAINER_GROUP_NAME + "/");
