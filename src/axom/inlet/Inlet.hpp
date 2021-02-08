@@ -104,23 +104,6 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Table to the input file schema.
-   *
-   * Adds a Table to the input file schema. Tables hold a varying amount Fields
-   * defined by the user.  By default, it is not required unless marked with
-   * Table::isRequired(). This creates the Sidre Group class with the given name and
-   * stores the given description.
-   *
-   * \param [in] name Name of the Table expected in the input file
-   * \param [in] description Description of the Table
-   *
-   * \return Reference to the created Table
-   *****************************************************************************
-   */
-  Table& addTable(const std::string& name, const std::string& description = "");
-
-  /*!
-   *****************************************************************************
    * \brief Add a structure to the input file schema.
    *
    * Adds a structure/record to the input file schema. Structures can contain
@@ -307,82 +290,6 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Retrieves the matching Table.
-   * 
-   * \param [in] The string indicating the target name of the Table to be searched for.
-   * 
-   * \return The Table matching the target name. If no such Table is found,
-   * a nullptr is returned.
-   *****************************************************************************
-   */
-  Table& getTable(const std::string& name) const
-  {
-    return m_globalTable.getTable(name);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Retrieves the matching Field.
-   * 
-   * \param [in] The string indicating the target name of the Field to be searched for.
-   * 
-   * \return The child Field matching the target name. If no such Field is found,
-   * a nullptr is returned.
-   *****************************************************************************
-   */
-  Field& getField(const std::string& name) const
-  {
-    return m_globalTable.getField(name);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Return whether a Table with the given name is present in Inlet.
-   *
-   * \return Boolean value indicating whether this Inlet contains the Table.
-   *****************************************************************************
-   */
-  bool hasTable(const std::string& name) const
-  {
-    return m_globalTable.hasTable(name);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Return whether a Field with the given name is present in Inlet.
-   *
-   * \return Boolean value indicating whether this Inlet contains the Field.
-   *****************************************************************************
-   */
-  bool hasField(const std::string& name) const
-  {
-    return m_globalTable.hasField(name);
-  }
-
-  /*!
-   *****************************************************************************
-   * \return An unordered map from Field names to the child Field pointers for 
-   * this Table.
-   *****************************************************************************
-   */
-  const std::unordered_map<std::string, std::unique_ptr<Field>>& getChildFields() const
-  {
-    return m_globalTable.getChildFields();
-  }
-
-  /*!
-   *****************************************************************************
-   * \return An unordered map from Table names to the child Table pointers for 
-   * this Table.
-   *****************************************************************************
-   */
-  const std::unordered_map<std::string, std::unique_ptr<Table>>& getChildTables() const
-  {
-    return m_globalTable.getChildTables();
-  }
-
-  /*!
-   *****************************************************************************
    * \brief Add an array of Boolean Fields to the input file schema.
    *
    * \param [in] name Name of the array
@@ -443,23 +350,6 @@ public:
                                     const std::string& description = "")
   {
     return m_globalTable.addStringArray(name, description);
-  }
-
-  // FIXME: Remove in future PR
-  /*!
-   *****************************************************************************
-   * \brief Add an array of user-defined types to the input file schema.
-   *
-   * \param [in] name Name of the array
-   * \param [in] description Description of the array
-   *
-   * \return Reference to the created array
-   *****************************************************************************
-   */
-  Table& addGenericArray(const std::string& name,
-                         const std::string& description = "")
-  {
-    return m_globalTable.addGenericArray(name, description);
   }
 
   /*!
@@ -559,23 +449,6 @@ public:
                                          const std::string& description = "")
   {
     return m_globalTable.addStringDictionary(name, description);
-  }
-
-  // FIXME: Remove in future PR
-  /*!
-   *****************************************************************************
-   * \brief Add a dictionary of user-defined types to the input file schema.
-   *
-   * \param [in] name Name of the dict
-   * \param [in] description Description of the dictionary
-   *
-   * \return Reference to the created dictionary
-   *****************************************************************************
-   */
-  Table& addGenericDictionary(const std::string& name,
-                              const std::string& description = "")
-  {
-    return m_globalTable.addGenericDictionary(name, description);
   }
 
   /*!

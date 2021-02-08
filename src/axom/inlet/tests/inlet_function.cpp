@@ -378,7 +378,7 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   // Define schema
   arr_table.addBool("bar", "bar's description");
