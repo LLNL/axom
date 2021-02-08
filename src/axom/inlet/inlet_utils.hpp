@@ -167,13 +167,16 @@ inline bool isContainerGroup(const std::string& name)
 
 /*!
 *****************************************************************************
-* \brief Marks the sidre::Group as a "generic container" by adding a
-* corresponding flag to the group
+* \brief Determines whether a Sidre group corresponds to an Inlet Table
+* object that is an element of a container
 *
-* \param [inout] target The group to tag
+* \param [in] group The sidre::Group to check
 *****************************************************************************
 */
-void markAsGenericContainer(axom::sidre::Group& target);
+inline bool isContainerElement(const axom::sidre::Group& group)
+{
+  return group.hasView(detail::CONTAINER_ELEMENT_FLAG);
+}
 
 /*!
 *****************************************************************************
