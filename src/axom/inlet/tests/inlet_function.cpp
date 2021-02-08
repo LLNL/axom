@@ -337,7 +337,7 @@ struct Foo
 template <>
 struct FromInlet<Foo>
 {
-  Foo operator()(const axom::inlet::Table& base)
+  Foo operator()(const axom::inlet::Proxy& base)
   {
     Foo f {base["bar"], base["baz"]};
     return f;

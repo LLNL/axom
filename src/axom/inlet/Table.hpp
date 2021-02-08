@@ -56,8 +56,8 @@ namespace axom
 namespace inlet
 {
 // Forward declaration for the traits
-
 class Table;
+class Proxy;
 
 namespace detail
 {
@@ -193,7 +193,7 @@ struct has_FromInlet_specialization<
   T,
   typename std::enable_if<std::is_same<T,
                                        decltype(std::declval<FromInlet<T>&>()(
-                                         std::declval<const Table&>()))>::value>::type>
+                                         std::declval<const Proxy&>()))>::value>::type>
   : std::true_type
 { };
 
@@ -287,7 +287,6 @@ bool matchesKeyType(const VariantKey& key)
 
 }  // namespace detail
 
-class Proxy;
 /*!
  *******************************************************************************
  * \class Table
@@ -784,10 +783,13 @@ public:
   {
     static_assert(detail::has_FromInlet_specialization<T>::value,
                   "To read a user-defined type, specialize FromInlet<T>");
+    // Even though we only have a forward declaration for Proxy here, we can call
+    // the constructor because the full definition will be available when this
+    // function template is instantiated
     FromInlet<T> from_inlet;
     if(name.empty())
     {
-      return from_inlet(*this);
+      return from_inlet(Proxy(*this));
     }
     else
     {
@@ -797,7 +799,7 @@ public:
           fmt::format("[Inlet] Table with name '{0}' does not exist", name);
         SLIC_ERROR(msg);
       }
-      return from_inlet(getTable(name));
+      return from_inlet(Proxy(getTable(name)));
     }
   }
 

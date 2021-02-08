@@ -47,7 +47,7 @@ struct Foo
 template <>
 struct FromInlet<Foo>
 {
-  Foo operator()(const axom::inlet::Table& base)
+  Foo operator()(const axom::inlet::Proxy& base)
   {
     Foo f {base["bar"], base["baz"]};
     return f;
@@ -260,7 +260,7 @@ struct FooWithArray
 template <>
 struct FromInlet<FooWithArray>
 {
-  FooWithArray operator()(const axom::inlet::Table& base)
+  FooWithArray operator()(const axom::inlet::Proxy& base)
   {
     FooWithArray f = {base["arr"]};
     return f;
@@ -299,7 +299,7 @@ struct MoveOnlyFoo
 template <>
 struct FromInlet<MoveOnlyFoo>
 {
-  MoveOnlyFoo operator()(const axom::inlet::Table& base)
+  MoveOnlyFoo operator()(const axom::inlet::Proxy& base)
   {
     MoveOnlyFoo f(base["bar"], base["baz"]);
     return f;
@@ -552,7 +552,7 @@ struct BarWithFooWithArray
 template <>
 struct FromInlet<BarWithFooWithArray>
 {
-  BarWithFooWithArray operator()(const axom::inlet::Table& base)
+  BarWithFooWithArray operator()(const axom::inlet::Proxy& base)
   {
     BarWithFooWithArray b;
     b.foo = base["foo"].get<FooWithArray>();
@@ -594,7 +594,7 @@ struct QuuxWithFooArray
 template <>
 struct FromInlet<QuuxWithFooArray>
 {
-  QuuxWithFooArray operator()(const axom::inlet::Table& base)
+  QuuxWithFooArray operator()(const axom::inlet::Proxy& base)
   {
     QuuxWithFooArray q;
     q.arr = base["arr"].get<std::unordered_map<int, Foo>>();
@@ -665,7 +665,7 @@ struct CorgeWithQuuxDictionary
 template <>
 struct FromInlet<CorgeWithQuuxDictionary>
 {
-  CorgeWithQuuxDictionary operator()(const axom::inlet::Table& base)
+  CorgeWithQuuxDictionary operator()(const axom::inlet::Proxy& base)
   {
     CorgeWithQuuxDictionary c;
     c.dict =
@@ -723,7 +723,7 @@ struct QuuxWithFooWithArray
 template <>
 struct FromInlet<QuuxWithFooWithArray>
 {
-  QuuxWithFooWithArray operator()(const axom::inlet::Table& base)
+  QuuxWithFooWithArray operator()(const axom::inlet::Proxy& base)
   {
     QuuxWithFooWithArray q;
     q.arr = base["outer_arr"].get<std::unordered_map<int, FooWithArray>>();
@@ -768,7 +768,7 @@ struct QuuxWithSingleFoo
 template <>
 struct FromInlet<QuuxWithSingleFoo>
 {
-  QuuxWithSingleFoo operator()(const axom::inlet::Table& base)
+  QuuxWithSingleFoo operator()(const axom::inlet::Proxy& base)
   {
     QuuxWithSingleFoo q;
     q.foo = base["foo"].get<Foo>();
@@ -887,7 +887,7 @@ struct FooWithDict
 template <>
 struct FromInlet<FooWithDict>
 {
-  FooWithDict operator()(const axom::inlet::Table& base)
+  FooWithDict operator()(const axom::inlet::Proxy& base)
   {
     FooWithDict f = {base["arr"]};
     return f;

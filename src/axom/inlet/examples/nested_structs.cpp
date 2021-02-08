@@ -82,7 +82,7 @@ struct Operator
 template <>
 struct FromInlet<Operator>
 {
-  Operator operator()(const inlet::Table& base)
+  Operator operator()(const inlet::Proxy& base)
   {
     Operator result;
     // Even though all the possible members are part of the schema, the
@@ -181,7 +181,7 @@ struct Geometry
 template <>
 struct FromInlet<Geometry>
 {
-  Geometry operator()(const inlet::Table& base)
+  Geometry operator()(const inlet::Proxy& base)
   {
     Geometry result;
     result.format = base["format"];
@@ -249,7 +249,7 @@ std::ostream& operator<<(std::ostream& os, const Shape& shape)
 template <>
 struct FromInlet<Shape>
 {
-  Shape operator()(const inlet::Table& base)
+  Shape operator()(const inlet::Proxy& base)
   {
     Shape result;
     result.name = base["name"];

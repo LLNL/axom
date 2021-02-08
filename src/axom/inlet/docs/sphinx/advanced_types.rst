@@ -72,7 +72,7 @@ Retrieving User-Defined Types from an Input File
 
 In order to have Inlet extract from the input file into a struct, it needs to know how that struct can be built.
 This is accomplished by a specializing of the struct ``FromInlet<T>`` for your type ``T``.  It must define a
-single member function with the signature ``T operator()(const inlet::Table&)``.  This function should return
+single member function with the signature ``T operator()(const inlet::Proxy&)``.  This function should return
 an instance of type ``T`` with its members populated with the corresponding fields in the input file.
 For the simple ``Mesh`` example whose schema is defined above, the specialization might look like:
 

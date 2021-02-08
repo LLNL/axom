@@ -50,7 +50,7 @@ struct Mesh
 template <>
 struct FromInlet<Mesh>
 {
-  Mesh operator()(const inlet::Table& base)
+  Mesh operator()(const inlet::Proxy& base)
   {
     return {base["filename"], base["serial"], base["parallel"]};
   }
@@ -92,7 +92,7 @@ struct LinearSolver
 template <>
 struct FromInlet<LinearSolver>
 {
-  LinearSolver operator()(const inlet::Table& base)
+  LinearSolver operator()(const inlet::Proxy& base)
   {
     LinearSolver lin_solve;
     lin_solve.rel_tol = base["rel_tol"];
@@ -155,7 +155,7 @@ struct BoundaryCondition
 template <>
 struct FromInlet<BoundaryCondition>
 {
-  BoundaryCondition operator()(const inlet::Table& base)
+  BoundaryCondition operator()(const inlet::Proxy& base)
   {
     BoundaryCondition bc;
     bc.attrs = base["attrs"];
@@ -228,7 +228,7 @@ struct FromInlet<ThermalSolver>
 {
   // This is also implicitly recursive - will call the FromInlet
   // functions defined for the subobjects
-  ThermalSolver operator()(const inlet::Table& base)
+  ThermalSolver operator()(const inlet::Proxy& base)
   {
     return {
       base["mesh"].get<Mesh>(),

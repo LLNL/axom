@@ -116,7 +116,7 @@ struct BoundaryCondition
 template <>
 struct FromInlet<BoundaryCondition::InputInfo>
 {
-  BoundaryCondition::InputInfo operator()(const inlet::Table& base)
+  BoundaryCondition::InputInfo operator()(const inlet::Proxy& base)
   {
     BoundaryCondition::InputInfo result;
     result.attrs = base["attrs"];
