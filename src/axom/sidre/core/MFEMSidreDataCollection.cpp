@@ -666,7 +666,7 @@ bool MFEMSidreDataCollection::verifyMeshBlueprint()
   bool result = conduit::blueprint::mesh::verify(mesh_node, verify_info);
   SLIC_WARNING_IF(!result,
                   "MFEMSidreDataCollection blueprint verification failed:\n"
-                    << verify_info.to_string());
+                    << verify_info.to_yaml());
   return result;
 }
 
@@ -1214,6 +1214,9 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
     RegisterFieldInBPIndex(field_name, gf);
   }
 
+  // Check if the field is a matset volume fraction
+  checkForMaterialSet(field_name);
+
   // Register field_name + gf in field_map.
   DataCollection::RegisterField(field_name, gf);
 }
@@ -1381,6 +1384,66 @@ void MFEMSidreDataCollection::AssociateMaterialSet(
                  << iter->second);
   }
   m_matset_associations[volume_fraction_field_name] = matset_name;
+}
+
+void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
+{
+  const auto last_pos = field_name.find_last_of('_');
+  // If it doesn't contain an underscore, it can't be a volume fraction field
+  if(last_pos == std::string::npos)
+  {
+    return;
+  }
+
+  const std::string vol_frac_field = field_name.substr(0, last_pos);
+
+  auto iter = m_matset_associations.find(vol_frac_field);
+  // If it hasn't been registered as a matset, it's not a volume fraction field
+  if(iter == m_matset_associations.end())
+  {
+    return;
+  }
+  const std::string matset_name = iter->second;
+  const std::string material_id = field_name.substr(last_pos + 1);
+  const std::string matset_group_name = "matsets/" + matset_name;
+
+  Group* matset_group = nullptr;
+  if(m_bp_grp->hasGroup(matset_group_name))
+  {
+    matset_group = m_bp_grp->getGroup(matset_group_name);
+  }
+  else
+  {
+    matset_group = m_bp_grp->createGroup(matset_group_name);
+    // Since we're creating the matset, associate it with a topology
+    // FIXME: Will these always be associated with the mesh?
+    matset_group->createViewString("topology", s_mesh_topology_name);
+    matset_group->createGroup("volume_fractions");
+  }
+
+  const std::string field_values_name = "fields/" + field_name + "/values";
+  View* vol_fractions_view = nullptr;
+  if(m_bp_grp->hasView(field_values_name))
+  {
+    // Scalar-valued field
+    vol_fractions_view = m_bp_grp->getView(field_values_name);
+  }
+  else if(m_bp_grp->hasGroup(field_values_name))
+  {
+    // Vector-valued field
+    // FIXME: Is it correct to grab the first? It's just a view onto the full data block
+    vol_fractions_view = m_bp_grp->getGroup(field_values_name)->getView("x0");
+  }
+  else
+  {
+    // This function should only be called after the field is added to the
+    // 'fields' section of the blueprint
+    SLIC_WARNING("Field " << field_name << " was not registered");
+    return;
+  }
+
+  // FIXME: I think the naming of this is wrong, since it might be just "values" or "x0"
+  matset_group->getGroup("volume_fractions")->copyView(vol_fractions_view);
 }
 
 // private method

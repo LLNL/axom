@@ -565,6 +565,10 @@ private:
   void createMeshBlueprintAdjacencies(bool hasBP);
   #endif
 
+  /// After a Field has been registered, check if it's part of a material
+  /// set - if it is, add it to the matset
+  void checkForMaterialSet(const std::string& field_name);
+
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();
 
