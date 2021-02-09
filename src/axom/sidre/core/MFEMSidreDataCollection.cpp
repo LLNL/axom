@@ -1442,8 +1442,11 @@ void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
     return;
   }
 
-  // FIXME: I think the naming of this is wrong, since it might be just "values" or "x0"
-  matset_group->getGroup("volume_fractions")->copyView(vol_fractions_view);
+  View* matset_frac_view =
+    matset_group->getGroup("volume_fractions")->copyView(vol_fractions_view);
+  matset_frac_view->rename(material_id);
+
+  // FIXME: Do we need to add anything to the index group?
 }
 
 // private method
