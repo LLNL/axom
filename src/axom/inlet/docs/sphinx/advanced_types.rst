@@ -23,6 +23,15 @@ Consider a simple struct that contains only primitive types, whose definition in
     parallel = 1
   }
 
+or in YAML, something like:
+
+.. code-block:: YAML
+  
+  mesh:
+    filename: /data/star.mesh
+    serial: 1
+    parallel: 1
+
 Its Inlet schema can be defined as follows:
 
 .. literalinclude:: ../../examples/user_defined_type.cpp
@@ -45,9 +54,9 @@ free function for third-party types, or even in the same place as the sub-table 
 Arrays of user-defined types are also supported in Inlet.  First, use the ``addStructArray``
 function to create a subtable, then define the schema on that table:
 
-.. literalinclude:: ../../examples/user_defined_type.cpp
-   :start-after: _inlet_userdef_array_usage_start
-   :end-before: _inlet_userdef_array_usage_end
+.. literalinclude:: ../../examples/nested_structs.cpp
+   :start-after: _inlet_nested_struct_array_start
+   :end-before: _inlet_nested_struct_array_end
    :language: C++
 
 Associative arrays are also supported, using string keys or a mixture of string and integer keys.
@@ -64,8 +73,6 @@ for these associative arrays.
 
   *Structs* contain a fixed set of named fields, but these fields can be of any type.
   As the name suggests, these map to ``structs`` in C++.
-
-  In short, if the *key values* vary, use a dictionary.  If the *field types* vary, use a struct.
 
 Retrieving User-Defined Types from an Input File
 ------------------------------------------------

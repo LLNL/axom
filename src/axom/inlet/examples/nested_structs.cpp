@@ -316,8 +316,10 @@ int main(int argc, char** argv)
   reader->parseString(input);
   inlet::Inlet inlet(std::move(reader), ds.getRoot());
 
+  // _inlet_nested_struct_array_start
   auto& shapes_table = inlet.addStructArray("shapes");
   Shape::defineSchema(shapes_table);
+  // _inlet_nested_struct_array_end
 
   if(inlet.verify())
   {
