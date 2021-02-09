@@ -59,11 +59,12 @@ xl_16_11_1 (PR build_on_lassen):
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.pr_build_on_lassen]
 
-xl_16_11_1_nvcc (PR build_on_lassen):
-  variables:
-    COMPILER: "xl@16.11.1_nvcc"
-    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.pr_build_on_lassen, .with_cuda]
+# TODO: commented out until fmt failure is solved
+# xl_16_11_1_nvcc (PR build_on_lassen):
+#   variables:
+#     COMPILER: "xl@16.11.1_nvcc"
+#     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+#   extends: [.pr_build_on_lassen, .with_cuda]
 
 
 ####
@@ -93,9 +94,10 @@ xl_16_11_1_coral (Main build_with_deps_on_lassen):
     SPEC: "@develop+mfem%${COMPILER}"
   extends: [.main_build_on_lassen]
 
-xl_16_11_1_nvcc (Main build_with_deps_on_lassen):
-  variables:
-    COMPILER: "xl@16.11.1_nvcc"
-    SPEC: "@develop+mfem+cuda%${COMPILER}"
-    EXTRA_SPEC: "cuda_arch=70"
-  extends: [.main_build_on_lassen, .with_cuda]
+# TODO: commented out until fmt failure is solved
+# xl_16_11_1_nvcc (Main build_with_deps_on_lassen):
+#   variables:
+#     COMPILER: "xl@16.11.1_nvcc"
+#     SPEC: "@develop+mfem+cuda%${COMPILER}"
+#     EXTRA_SPEC: "cuda_arch=70"
+#   extends: [.main_build_on_lassen, .with_cuda]
