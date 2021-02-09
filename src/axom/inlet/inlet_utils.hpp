@@ -149,7 +149,7 @@ namespace detail
   */
 const std::string CONTAINER_GROUP_NAME = "_inlet_container";
 const std::string CONTAINER_INDICES_NAME = "_inlet_container_indices";
-const std::string GENERIC_CONTAINER_FLAG = "_inlet_generic_container";
+const std::string STRUCT_CONTAINER_FLAG = "_inlet_struct_container";
 const std::string CONTAINER_ELEMENT_FLAG = "_inlet_container_element";
 }  // namespace detail
 
@@ -168,7 +168,7 @@ inline bool isContainerGroup(const std::string& name)
 /*!
 *****************************************************************************
 * \brief Determines whether a Sidre group corresponds to an Inlet Table
-* object that is an element of a container
+* object that is an element of an array/dictionary
 *
 * \param [in] group The sidre::Group to check
 *****************************************************************************

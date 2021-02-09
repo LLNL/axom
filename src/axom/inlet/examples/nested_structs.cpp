@@ -34,6 +34,7 @@ struct Operator
   double x;
   double y;
   double z;
+  Vector origin;
   enum class Type
   {
     Translate,
@@ -58,6 +59,7 @@ struct Operator
     slice.addDouble("x");
     slice.addDouble("y");
     slice.addDouble("z");
+    slice.addDoubleArray("origin");
 
     // Verify that exactly one type of operator is defined
     table.registerVerifier([](const inlet::Table& table) {
@@ -116,6 +118,10 @@ struct FromInlet<Operator>
       {
         result.z = slice["z"];
       }
+      if(slice.contains("origin"))
+      {
+        result.origin = toVector(slice["origin"]);
+      }
     }
     return result;
   }
@@ -139,6 +145,7 @@ std::ostream& operator<<(std::ostream& os, const Operator& op)
     os << fmt::format("      with x-coord: {0}\n", op.x);
     os << fmt::format("      with y-coord: {0}\n", op.y);
     os << fmt::format("      with z-coord: {0}\n", op.z);
+    os << fmt::format("       with origin: {0}\n", op.origin);
     break;
   default:
     SLIC_ERROR("Operator had unknown type");
@@ -282,6 +289,7 @@ shapes:
           center: [4, 5, 6]
         - slice:
             x: 10
+            origin: [40, 50, 60]
         - translate: [5, 6]
   - name: tire
     material: rubber
@@ -328,10 +336,8 @@ int main(int argc, char** argv)
 
   if(docsEnabled)
   {
-    const bool outputProvidedValues = true;
-    const std::string docFileName = "nested_structs.rst";
     std::unique_ptr<inlet::SphinxWriter> writer(
-      new inlet::SphinxWriter(docFileName, outputProvidedValues));
+      new inlet::SphinxWriter("nested_structs.rst"));
     inlet.registerWriter(std::move(writer));
     inlet.writeDoc();
     SLIC_INFO("Documentation was written to " << docFileName);

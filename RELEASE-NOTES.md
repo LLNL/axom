@@ -39,7 +39,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for deeply nested containers of structs
 - Inlet: Added support for `void` and strings in Lua-defined functions
 - Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
-- Inlet: SphinxWriter can now output the values provided in an input file
 - Inlet: SphinxWriter will now document the signature of function callbacks added to a schema
 
 ### Changed
@@ -66,6 +65,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
   datastore is `Load` ed in
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
+- Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
+- Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
 - Inlet: SphinxWriter will now print only one element schema per container instead of
   printing the same schema for each element in the container
 
@@ -75,6 +76,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   target if version is unknown or wrong.
 - Inlet: Apply lambda verifiers on generic containers to individual elements
   for consistency
+- Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
 
 
 ## [Version 0.4.0] - Release date 2020-09-22

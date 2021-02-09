@@ -86,7 +86,7 @@ Table& Table::addStruct(const std::string& name, const std::string& description)
     base_table.m_nested_aggregates.push_back(
       sub_table.addStruct(name, description));
   }
-  if(isGenericContainer())
+  if(isStructContainer())
   {
     for(const auto& index : containerIndices())
     {
@@ -183,25 +183,25 @@ Verifiable<Table>& Table::addStringArray(const std::string& name,
 }
 
 template <typename Key>
-Table& Table::addGenericContainer(const std::string& name,
-                                  const std::string& description)
+Table& Table::addStructContainer(const std::string& name,
+                                 const std::string& description)
 {
   auto& table =
     addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
   for(Table& sub_table : m_nested_aggregates)
   {
     table.m_nested_aggregates.push_back(
-      sub_table.addGenericContainer<Key>(name, description));
+      sub_table.addStructContainer<Key>(name, description));
   }
-  if(isGenericContainer())
+  if(isStructContainer())
   {
     // Iterate over each element and forward the call to addPrimitiveArray
     for(const auto& indexPath : containerIndicesWithPaths(name))
     {
       table.m_nested_aggregates.push_back(
-        getTable(indexPath.first).addGenericContainer<Key>(name, description));
+        getTable(indexPath.first).addStructContainer<Key>(name, description));
     }
-    addFlagToGroup(*table.m_sidreGroup, detail::GENERIC_CONTAINER_FLAG);
+    addFlagToGroup(*table.m_sidreGroup, detail::STRUCT_CONTAINER_FLAG);
   }
   else
   {
@@ -210,17 +210,17 @@ Table& Table::addGenericContainer(const std::string& name,
     fullName = removeAllInstances(fullName, detail::CONTAINER_GROUP_NAME + "/");
     if(m_reader.getIndices(fullName, indices))
     {
-      detail::addIndicesGroupToTable(table, indices, description, true);
+      table.addIndicesGroup(indices, description, true);
     }
-    addFlagToGroup(*table.m_sidreGroup, detail::GENERIC_CONTAINER_FLAG);
+    addFlagToGroup(*table.m_sidreGroup, detail::STRUCT_CONTAINER_FLAG);
   }
   return table;
 }
 
-Table& Table::addGenericArray(const std::string& name,
-                              const std::string& description)
+Table& Table::addStructArray(const std::string& name,
+                             const std::string& description)
 {
-  return addGenericContainer<int>(name, description);
+  return addStructContainer<int>(name, description);
 }
 
 Verifiable<Table>& Table::addBoolDictionary(const std::string& name,
@@ -247,10 +247,10 @@ Verifiable<Table>& Table::addStringDictionary(const std::string& name,
   return addPrimitiveArray<std::string>(name, description, true);
 }
 
-Table& Table::addGenericDictionary(const std::string& name,
-                                   const std::string& description)
+Table& Table::addStructDictionary(const std::string& name,
+                                  const std::string& description)
 {
-  return addGenericContainer<VariantKey>(name, description);
+  return addStructContainer<VariantKey>(name, description);
 }
 
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
@@ -328,7 +328,7 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
                                       T val,
                                       const std::string& pathOverride)
 {
-  if(isGenericContainer() || !m_nested_aggregates.empty())
+  if(isStructContainer() || !m_nested_aggregates.empty())
   {
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
@@ -338,7 +338,7 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
     {
       fields.push_back(table.addPrimitive<T>(name, description, forArray, val));
     }
-    if(isGenericContainer())
+    if(isStructContainer())
     {
       for(const auto& indexPath : containerIndicesWithPaths(name))
       {
@@ -553,33 +553,6 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
   }
 }
 
-template <typename Key>
-void addIndicesGroupToTable(Table& table,
-                            const std::vector<Key>& indices,
-                            const std::string& description,
-                            bool add_tables)
-{
-  sidre::Group* indices_group =
-    table.sidreGroup()->createGroup(CONTAINER_INDICES_NAME,
-                                    /* list_format = */ true);
-  // For each index, add a table whose name is its index
-  // Schema for struct is defined using the returned table
-  for(const auto& idx : indices)
-  {
-    const std::string string_idx = removeBeforeDelimiter(indexToString(idx));
-    if(add_tables)
-    {
-      auto& subtable = table.addTable(string_idx, description);
-      // Mark this as an element of a container so it can be distinguished from
-      // elements of the same table that are not part of the container
-      addFlagToGroup(*subtable.sidreGroup(), detail::CONTAINER_ELEMENT_FLAG);
-    }
-    std::string absolute = appendPrefix(table.name(), indexToString(idx));
-    absolute = removeAllInstances(absolute, detail::CONTAINER_GROUP_NAME + "/");
-    addIndexViewToGroup(*indices_group, absolute);
-  }
-}
-
 /*!
  *****************************************************************************
  * \brief Writes function signature information to the sidre Group associated
@@ -622,13 +595,40 @@ void addSignatureToGroup(const FunctionTag ret_type,
 
 }  // end namespace detail
 
+template <typename Key>
+void Table::addIndicesGroup(const std::vector<Key>& indices,
+                            const std::string& description,
+                            const bool add_tables)
+{
+  sidre::Group* indices_group =
+    m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
+                              /* list_format = */ true);
+  // For each index, add a table whose name is its index
+  // Schema for struct is defined using the returned table
+  for(const auto& idx : indices)
+  {
+    const std::string string_idx =
+      removeBeforeDelimiter(detail::indexToString(idx));
+    if(add_tables)
+    {
+      auto& subtable = addTable(string_idx, description);
+      // Mark this as an element of a container so it can be distinguished from
+      // elements of the same table that are not part of the container
+      addFlagToGroup(*subtable.sidreGroup(), detail::CONTAINER_ELEMENT_FLAG);
+    }
+    std::string absolute = appendPrefix(name(), detail::indexToString(idx));
+    absolute = removeAllInstances(absolute, detail::CONTAINER_GROUP_NAME + "/");
+    detail::addIndexViewToGroup(*indices_group, absolute);
+  }
+}
+
 template <typename T, typename SFINAE>
 Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
                                             const std::string& description,
                                             const bool isDict,
                                             const std::string& pathOverride)
 {
-  if(isGenericContainer() || !m_nested_aggregates.empty())
+  if(isStructContainer() || !m_nested_aggregates.empty())
   {
     // Adding an array of primitive field to an array of structs
     std::vector<std::reference_wrapper<Verifiable>> tables;
@@ -636,7 +636,7 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     {
       tables.push_back(table.addPrimitiveArray<T>(name, description, isDict));
     }
-    if(isGenericContainer())
+    if(isStructContainer())
     {
       // Iterate over each element and forward the call to addPrimitiveArray
       for(const auto& indexPath : containerIndicesWithPaths(name))
@@ -659,6 +659,8 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
       addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    lookupPath =
+      removeAllInstances(lookupPath, detail::CONTAINER_GROUP_NAME + "/");
     if(isDict)
     {
       detail::PrimitiveArrayHelper<VariantKey, T>(table, m_reader, lookupPath);
@@ -671,7 +673,7 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     std::vector<VariantKey> indices;
     if(m_reader.getIndices(lookupPath, indices))
     {
-      detail::addIndicesGroupToTable(table, indices);
+      table.addIndicesGroup(indices, description, false);
     }
     return table;
   }
@@ -683,7 +685,7 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
                                          const std::string& description,
                                          const std::string& pathOverride)
 {
-  if(isGenericContainer())
+  if(isStructContainer())
   {
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
@@ -715,6 +717,8 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    lookupPath =
+      removeAllInstances(lookupPath, detail::CONTAINER_GROUP_NAME + "/");
     auto func = m_reader.getFunction(lookupPath, ret_type, arg_types);
     return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
   }
@@ -766,10 +770,10 @@ Proxy Table::operator[](const std::string& name) const
 
 Table& Table::required(bool isRequired)
 {
-  // If it's a generic container we set the individual fields as required,
+  // If it's a struct container we set the individual fields as required,
   // and also the container table itself, as the user would expect that marking
-  // a generic container as required means that it is non-empty
-  if(isGenericContainer())
+  // a struct container as required means that it is non-empty
+  if(isStructContainer())
   {
     forEachContainerElement(
       [isRequired](Table& table) { table.required(isRequired); });
@@ -783,7 +787,7 @@ Table& Table::required(bool isRequired)
 
 bool Table::isRequired() const
 {
-  if(isGenericContainer())
+  if(isStructContainer())
   {
     bool result = false;
     forEachContainerElement([&result](Table& table) {
@@ -802,7 +806,7 @@ bool Table::isRequired() const
 
 Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
 {
-  if(isGenericContainer())
+  if(isStructContainer())
   {
     forEachContainerElement(
       [&lambda](Table& table) { table.registerVerifier(lambda); });
@@ -1027,5 +1031,5 @@ Table::getChildFunctions() const
   return m_functionChildren;
 }
 
-}  // end namespace inlet
-}  // end namespace axom
+}  // namespace inlet
+}  // namespace axom

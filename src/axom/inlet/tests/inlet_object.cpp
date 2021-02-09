@@ -85,7 +85,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_by_value)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
@@ -103,7 +103,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_implicit_idx)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
@@ -123,7 +123,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_optional)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(false);
@@ -139,7 +139,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(true);
@@ -153,7 +153,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_pass)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
   // Even though these are required, the input file should still
   // "verify" as the array is empty
   arr_table.addBool("bar", "bar's description").required(true);
@@ -170,7 +170,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail)
 
   // Verification should fail because the array is empty
   // and was required
-  auto& arr_table = inlet.addGenericArray("foo").required(true);
+  auto& arr_table = inlet.addStructArray("foo").required(true);
   arr_table.addBool("bar", "bar's description").required(true);
   arr_table.addBool("baz", "baz's description").required(true);
 
@@ -198,7 +198,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description").required();
 
@@ -217,7 +217,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_pass)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
@@ -238,7 +238,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
@@ -275,7 +275,7 @@ TYPED_TEST(inlet_object, array_of_struct_containing_array)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addIntArray("arr", "arr's description");
   // Contiguous indexing for generality
@@ -352,26 +352,6 @@ TYPED_TEST(inlet_object, simple_struct_from_bracket)
   auto foo = inlet["foo"].get<Foo>();
   EXPECT_TRUE(foo.bar);
   EXPECT_FALSE(foo.baz);
-}
-
-TYPED_TEST(inlet_object, contains_from_table)
-{
-  std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
-
-  // Define schema
-  // Check for existing fields
-  inlet.addBool("foo/bar", "bar's description");
-
-  inlet.addBool("foo/baz", "baz's description");
-
-  EXPECT_TRUE(inlet.contains("foo/bar"));
-  EXPECT_TRUE(inlet.contains("foo/baz"));
-
-  auto& foo_table = inlet.getTable("foo");
-  EXPECT_TRUE(foo_table.contains("bar"));
-  EXPECT_TRUE(foo_table.contains("baz"));
 }
 
 TYPED_TEST(inlet_object, contains_from_bracket)
@@ -540,6 +520,48 @@ TYPED_TEST(inlet_object, implicit_conversion_primitives)
   EXPECT_EQ(arr, expected_arr);
 }
 
+struct BarWithFooWithArray
+{
+  FooWithArray foo;
+  bool operator==(const BarWithFooWithArray& other) const
+  {
+    return foo == other.foo;
+  }
+};
+
+template <>
+struct FromInlet<BarWithFooWithArray>
+{
+  BarWithFooWithArray operator()(const axom::inlet::Table& base)
+  {
+    BarWithFooWithArray b;
+    b.foo = base["foo"].get<FooWithArray>();
+    return b;
+  }
+};
+
+TYPED_TEST(inlet_object, nested_array_of_struct_containing_array)
+{
+  std::string testString =
+    "bars = { [0] = { foo = { arr = { [0] = 3 }; } }, "
+    "         [1] = { foo = { arr = { [0] = 2 }; } } }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& bar_table = inlet.addStructArray("bars");
+  auto& foo_table = bar_table.addStruct("foo");
+  foo_table.addIntArray("arr", "arr's description");
+
+  // Contiguous indexing for generality
+  std::unordered_map<int, BarWithFooWithArray> expected_bars = {
+    {0, {{{{0, 3}}}}},
+    {1, {{{{0, 2}}}}}};
+  std::unordered_map<int, BarWithFooWithArray> bars_with_foo;
+  bars_with_foo =
+    inlet["bars"].get<std::unordered_map<int, BarWithFooWithArray>>();
+  EXPECT_EQ(bars_with_foo, expected_bars);
+}
+
 struct QuuxWithFooArray
 {
   std::unordered_map<int, Foo> arr;
@@ -570,8 +592,8 @@ TYPED_TEST(inlet_object, nested_array_of_struct)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& quux_table = inlet.addGenericArray("quux");
-  auto& foo_table = quux_table.addGenericArray("arr");
+  auto& quux_table = inlet.addStructArray("quux");
+  auto& foo_table = quux_table.addStructArray("arr");
 
   foo_table.addBool("bar", "bar's description");
   foo_table.addBool("baz", "baz's description");
@@ -595,8 +617,8 @@ TYPED_TEST(inlet_object, nested_dict_of_array_of_struct)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& quux_table = inlet.addGenericDictionary("quux");
-  auto& foo_table = quux_table.addGenericArray("arr");
+  auto& quux_table = inlet.addStructDictionary("quux");
+  auto& foo_table = quux_table.addStructArray("arr");
 
   foo_table.addBool("bar", "bar's description");
   foo_table.addBool("baz", "baz's description");
@@ -648,9 +670,9 @@ TYPED_TEST(inlet_object, nested_array_of_dict_of_array_of_struct)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& corge_table = inlet.addGenericArray("corge");
-  auto& quux_table = corge_table.addGenericDictionary("dict");
-  auto& foo_table = quux_table.addGenericArray("arr");
+  auto& corge_table = inlet.addStructArray("corge");
+  auto& quux_table = corge_table.addStructDictionary("dict");
+  auto& foo_table = quux_table.addStructArray("arr");
 
   foo_table.addBool("bar", "bar's description");
   foo_table.addBool("baz", "baz's description");
@@ -699,8 +721,8 @@ TYPED_TEST(inlet_object, nested_dict_of_array_of_struct_with_array)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& quux_table = inlet.addGenericDictionary("quux");
-  auto& foo_table = quux_table.addGenericArray("outer_arr");
+  auto& quux_table = inlet.addStructDictionary("quux");
+  auto& foo_table = quux_table.addStructArray("outer_arr");
 
   foo_table.addIntArray("arr", "arr's description");
 
@@ -780,7 +802,7 @@ TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)
   EXPECT_EQ(arr_w_indices, expected_arr_w_indices);
 }
 
-TYPED_TEST(inlet_object, generic_arrays_as_std_vector)
+TYPED_TEST(inlet_object, struct_arrays_as_std_vector)
 {
   std::string testString =
     "foo = { [0] = { bar = true; baz = false}, "
@@ -788,7 +810,7 @@ TYPED_TEST(inlet_object, generic_arrays_as_std_vector)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
@@ -825,7 +847,7 @@ TYPED_TEST(inlet_object_dict, simple_dict_of_struct_by_value)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& dict_table = inlet.addGenericDictionary("foo");
+  auto& dict_table = inlet.addStructDictionary("foo");
 
   dict_table.addBool("bar", "bar's description");
   dict_table.addBool("baz", "baz's description");
@@ -860,7 +882,7 @@ TYPED_TEST(inlet_object_dict, dict_of_struct_containing_dict)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& dict_table = inlet.addGenericDictionary("foo");
+  auto& dict_table = inlet.addStructDictionary("foo");
 
   dict_table.addIntDictionary("arr", "arr's description");
   std::unordered_map<std::string, FooWithDict> expected_foos = {
@@ -880,7 +902,7 @@ TYPED_TEST(inlet_object_dict, dict_of_struct_containing_array)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& dict_table = inlet.addGenericDictionary("foo");
+  auto& dict_table = inlet.addStructDictionary("foo");
 
   dict_table.addIntArray("arr", "arr's description");
   std::unordered_map<std::string, FooWithArray> expected_foos = {
@@ -900,7 +922,7 @@ TYPED_TEST(inlet_object_dict, array_of_struct_containing_dict)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addIntDictionary("arr", "arr's description");
   std::unordered_map<int, FooWithDict> expected_foos = {{0, {{{"key1", 3}}}},
@@ -953,7 +975,7 @@ TEST(inlet_object_lua, array_of_struct_containing_array)
   DataStore ds;
   Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addIntArray("arr", "arr's description");
   std::unordered_map<int, FooWithArray> expected_foos = {{4, {{{1, 3}}}},
@@ -1017,7 +1039,7 @@ TEST(inlet_object_lua, primitive_arrays_as_std_vector_discontiguous)
   EXPECT_EQ(arr, expected_arr);
 }
 
-TEST(inlet_object_lua, generic_arrays_as_std_vector_discontiguous)
+TEST(inlet_object_lua, struct_arrays_as_std_vector_discontiguous)
 {
   std::string testString =
     "foo = { [6] = { bar = true; baz = false}, "
@@ -1025,7 +1047,7 @@ TEST(inlet_object_lua, generic_arrays_as_std_vector_discontiguous)
   DataStore ds;
   Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
@@ -1051,7 +1073,7 @@ TEST(inlet_object_lua, primitive_arrays_as_std_vector_implicit_idx)
   EXPECT_EQ(arr, expected_arr);
 }
 
-TEST(inlet_object_lua, generic_arrays_as_std_vector_implicit_idx)
+TEST(inlet_object_lua, struct_arrays_as_std_vector_implicit_idx)
 {
   std::string testString =
     "foo = { { bar = true; baz = false}, "
@@ -1059,7 +1081,7 @@ TEST(inlet_object_lua, generic_arrays_as_std_vector_implicit_idx)
   DataStore ds;
   Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addBool("bar", "bar's description");
   arr_table.addBool("baz", "baz's description");
@@ -1076,7 +1098,7 @@ TEST(inlet_object_lua_dict, dict_of_struct_containing_array)
   DataStore ds;
   Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
 
-  auto& dict_table = inlet.addGenericDictionary("foo");
+  auto& dict_table = inlet.addStructDictionary("foo");
 
   dict_table.addIntArray("arr", "arr's description");
   std::unordered_map<std::string, FooWithArray> expected_foos = {
@@ -1096,7 +1118,7 @@ TEST(inlet_object_lua_dict, array_of_struct_containing_dict)
   DataStore ds;
   Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
 
-  auto& arr_table = inlet.addGenericArray("foo");
+  auto& arr_table = inlet.addStructArray("foo");
 
   arr_table.addIntDictionary("arr", "arr's description");
   std::unordered_map<int, FooWithDict> expected_foos = {{7, {{{"key1", 3}}}},
@@ -1150,7 +1172,7 @@ TEST(inlet_object_lua_dict, mixed_keys_object)
   DataStore ds;
   Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
 
-  auto& dict_table = inlet.addGenericDictionary("foo");
+  auto& dict_table = inlet.addStructDictionary("foo");
 
   dict_table.addBool("bar", "bar's description");
   dict_table.addBool("baz", "baz's description");

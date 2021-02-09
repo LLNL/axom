@@ -22,7 +22,7 @@ namespace axom
 {
 namespace inlet
 {
-SphinxWriter::SphinxWriter(const std::string& fileName, bool outputProvidedValues)
+SphinxWriter::SphinxWriter(const std::string& fileName)
   : m_fieldColLabels({"Field Name",
                       "Description",
                       "Default Value",
@@ -32,13 +32,6 @@ SphinxWriter::SphinxWriter(const std::string& fileName, bool outputProvidedValue
       {"Function Name", "Description", "Signature", "Required"})
 {
   m_fileName = fileName;
-
-  if(outputProvidedValues)
-  {
-    // The value provided by the user in the input file
-    m_fieldColLabels.push_back("Value");
-  }
-
   m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX\n";
   m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX\n\n";
   writeTitle("Input file Options");
@@ -312,24 +305,6 @@ void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup,
   else
   {
     fieldAttributes[4] = "|uncheck|";
-  }
-
-  // FIXME: Better to use an associative container here if the column header
-  // set is variable?
-  const auto& labels = currentTable.fieldTable.front();
-  auto iter = std::find(labels.begin(), labels.end(), "Value");
-  if(iter != labels.end())
-  {
-    const auto pos = std::distance(labels.begin(), iter);
-    if(sidreGroup->hasView("value"))
-    {
-      fieldAttributes[pos] = getValueAsString(sidreGroup->getView("value"));
-    }
-    else
-    {
-      // Could also just leave it blank here?
-      fieldAttributes[pos] = "N/A";
-    }
   }
 
   currentTable.fieldTable.push_back(fieldAttributes);
