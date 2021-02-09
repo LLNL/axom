@@ -45,7 +45,7 @@ public:
    * \param [in] table The table to construct a proxy into
    *******************************************************************************
    */
-  Proxy(Table& table) : m_table(&table) { }
+  Proxy(const Table& table) : m_table(&table) { }
 
   /*!
    *******************************************************************************
@@ -54,7 +54,7 @@ public:
    * \param [in] field The field to construct a proxy into
    *******************************************************************************
    */
-  Proxy(Field& field) : m_field(&field) { }
+  Proxy(const Field& field) : m_field(&field) { }
 
   /*!
    *******************************************************************************
@@ -63,7 +63,7 @@ public:
    * \param [in] func The function to construct a proxy into
    *******************************************************************************
    */
-  Proxy(Function& func) : m_func(&func) { }
+  Proxy(const Function& func) : m_func(&func) { }
 
   /*!
    *******************************************************************************
@@ -121,6 +121,23 @@ public:
    *******************************************************************************
    */
   Proxy operator[](const std::string& name) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns pointer to the Sidre Group for the underlying object
+   *
+   * Provides access to the Sidre Group class that holds all the stored
+   * information for the underlying object.
+   *****************************************************************************
+   */
+  const axom::sidre::Group* sidreGroup() const;
+
+  /*!
+   *****************************************************************************
+   * \return The full name for the underlying object.
+   *****************************************************************************
+  */
+  std::string name() const;
 
   /*!
    *******************************************************************************
@@ -201,9 +218,9 @@ public:
   }
 
 private:
-  Table* m_table = nullptr;
-  Field* m_field = nullptr;
-  Function* m_func = nullptr;
+  const Table* const m_table = nullptr;
+  const Field* const m_field = nullptr;
+  const Function* const m_func = nullptr;
 };
 
 }  // end namespace inlet
