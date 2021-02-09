@@ -1214,8 +1214,9 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
     RegisterFieldInBPIndex(field_name, gf);
   }
 
-  // Check if the field is a matset volume fraction
+  // Check if the field contains material metadata
   checkForMaterialSet(field_name);
+  checkForSpeciesSet(field_name);
 
   // Register field_name + gf in field_map.
   DataCollection::RegisterField(field_name, gf);
@@ -1382,20 +1383,71 @@ void MFEMSidreDataCollection::AssociateMaterialSet(
                  << volume_fraction_field_name
                  << " has already been associated with a material set: "
                  << iter->second);
+    return;
   }
   m_matset_associations[volume_fraction_field_name] = matset_name;
+  Group* matset_group = m_bp_grp->createGroup("matsets/" + matset_name);
+  // Since we're creating the matset, associate it with a topology
+  // FIXME: Will these always be associated with the mesh?
+  matset_group->createViewString("topology", s_mesh_topology_name);
+  matset_group->createGroup("volume_fractions");
+}
+
+void MFEMSidreDataCollection::AssociateSpeciesSet(
+  const std::string& species_field_name,
+  const std::string& specset_name,
+  const std::string& matset_name,
+  const bool volume_dependent)
+{
+  auto iter = m_specset_associations.find(species_field_name);
+  if(iter != m_specset_associations.end())
+  {
+    SLIC_WARNING("Species field "
+                 << species_field_name
+                 << " has already been associated with a species set: "
+                 << iter->second);
+    return;
+  }
+  m_specset_associations[species_field_name] = specset_name;
+  Group* specset_grp = m_bp_grp->createGroup("specsets/" + specset_name);
+  specset_grp->createViewScalar("volume_dependent",
+                                static_cast<int8>(volume_dependent));
+  // Since we're creating the species set, associate it with a material set
+  specset_grp->createViewString("matset", matset_name);
+  specset_grp->createGroup("matset_values");
+}
+
+View* MFEMSidreDataCollection::getFieldValuesView(const std::string& field_name)
+{
+  const std::string field_values_name = "fields/" + field_name + "/values";
+  View* values_view = nullptr;
+  if(m_bp_grp->hasView(field_values_name))
+  {
+    // Scalar-valued field
+    values_view = m_bp_grp->getView(field_values_name);
+  }
+  else if(m_bp_grp->hasGroup(field_values_name))
+  {
+    // Vector-valued field
+    values_view = m_bp_grp->getGroup(field_values_name)->getView("x0");
+  }
+  else
+  {
+    SLIC_WARNING("Field " << field_name << " was not registered");
+  }
+  return values_view;
 }
 
 void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 {
-  const auto last_pos = field_name.find_last_of('_');
+  const auto last_underscore_pos = field_name.find_last_of('_');
   // If it doesn't contain an underscore, it can't be a volume fraction field
-  if(last_pos == std::string::npos)
+  if(last_underscore_pos == std::string::npos)
   {
     return;
   }
 
-  const std::string vol_frac_field = field_name.substr(0, last_pos);
+  const std::string vol_frac_field = field_name.substr(0, last_underscore_pos);
 
   auto iter = m_matset_associations.find(vol_frac_field);
   // If it hasn't been registered as a matset, it's not a volume fraction field
@@ -1404,47 +1456,59 @@ void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
     return;
   }
   const std::string matset_name = iter->second;
-  const std::string material_id = field_name.substr(last_pos + 1);
-  const std::string matset_group_name = "matsets/" + matset_name;
-
-  Group* matset_group = nullptr;
-  if(m_bp_grp->hasGroup(matset_group_name))
-  {
-    matset_group = m_bp_grp->getGroup(matset_group_name);
-  }
-  else
-  {
-    matset_group = m_bp_grp->createGroup(matset_group_name);
-    // Since we're creating the matset, associate it with a topology
-    // FIXME: Will these always be associated with the mesh?
-    matset_group->createViewString("topology", s_mesh_topology_name);
-    matset_group->createGroup("volume_fractions");
-  }
+  const std::string material_id = field_name.substr(last_underscore_pos + 1);
 
   const std::string field_values_name = "fields/" + field_name + "/values";
-  View* vol_fractions_view = nullptr;
-  if(m_bp_grp->hasView(field_values_name))
-  {
-    // Scalar-valued field
-    vol_fractions_view = m_bp_grp->getView(field_values_name);
-  }
-  else if(m_bp_grp->hasGroup(field_values_name))
-  {
-    // Vector-valued field
-    // FIXME: Is it correct to grab the first? It's just a view onto the full data block
-    vol_fractions_view = m_bp_grp->getGroup(field_values_name)->getView("x0");
-  }
-  else
-  {
-    // This function should only be called after the field is added to the
-    // 'fields' section of the blueprint
-    SLIC_WARNING("Field " << field_name << " was not registered");
-    return;
-  }
+  View* vol_fractions_view = getFieldValuesView(field_name);
 
+  Group* matset_group = m_bp_grp->getGroup("matsets/" + matset_name);
   View* matset_frac_view =
     matset_group->getGroup("volume_fractions")->copyView(vol_fractions_view);
   matset_frac_view->rename(material_id);
+
+  // FIXME: Do we need to add anything to the index group?
+}
+
+void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
+{
+  const auto last_underscore_pos = field_name.find_last_of('_');
+  // If it doesn't contain an underscore, it can't be a species set field field
+  if(last_underscore_pos == std::string::npos)
+  {
+    return;
+  }
+
+  // Needs to have a second underscore for the second layer of indexing
+  const auto penultimate_underscore_pos =
+    field_name.find_last_of('_', last_underscore_pos - 1);
+  if(penultimate_underscore_pos == std::string::npos)
+  {
+    return;
+  }
+
+  const std::string species_field =
+    field_name.substr(0, penultimate_underscore_pos);
+
+  auto iter = m_specset_associations.find(species_field);
+  // If it hasn't been registered as a matset, it's not a species field
+  if(iter == m_specset_associations.end())
+  {
+    return;
+  }
+  const std::string specset_name = iter->second;
+  const std::string material_id =
+    field_name.substr(penultimate_underscore_pos + 1,
+                      field_name.length() - last_underscore_pos - 1);
+  const std::string component_id = field_name.substr(last_underscore_pos + 1);
+
+  const std::string field_values_name = "fields/" + field_name + "/values";
+  View* species_values_view = getFieldValuesView(field_name);
+
+  Group* specset_group =
+    m_bp_grp->getGroup("specsets/" + specset_name + "/matset_values");
+  Group* specset_material_group = alloc_group(specset_group, material_id);
+  View* specset_values = specset_material_group->copyView(species_values_view);
+  specset_values->rename(component_id);
 
   // FIXME: Do we need to add anything to the index group?
 }

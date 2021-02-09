@@ -288,7 +288,7 @@ public:
   virtual void DeregisterField(const std::string& field_name);
 
   /// Associates a field name with a multi-buffer material set
-  /** Subsequent calls to RegisterField iwth field_names of the form
+  /** Subsequent calls to RegisterField with field_names of the form
    * @p volume_fraction_field_name_<material_id> will result in the addition
    * of a volume buffer to the matset @p matset_name corresponding to @p material_id.
    * 
@@ -301,6 +301,26 @@ public:
    */
   void AssociateMaterialSet(const std::string& volume_fraction_field_name,
                             const std::string& matset_name);
+
+  /// Associates a field name with a species set
+  /** Subsequent calls to RegisterField with field_names of the form
+   * @p matset_vals_field_name_<material_id>_<component> will result in the addition
+   * of its values to the specset @p specset_name corresponding to @p material_id.
+   * and specified component
+   * 
+   * Note that this does not inhibit the addition of the field - that is, the GridFunction
+   * data will be present as both a field and within the species set
+   * 
+   * @param species_field_name The field name to associate with the species set matset values
+   * @param specset_name The name of the species set to associate added matset values with
+   * @param matset_name The material set to associate with the species set
+   * @param volume_dependent Whether the species set is volume-dependent
+   *
+   */
+  void AssociateSpeciesSet(const std::string& species_field_name,
+                           const std::string& specset_name,
+                           const std::string& matset_name,
+                           const bool volume_dependent);
 
   /// Delete all owned data.
   virtual ~MFEMSidreDataCollection();
@@ -565,9 +585,18 @@ private:
   void createMeshBlueprintAdjacencies(bool hasBP);
   #endif
 
+  /// Retrieves a pointer to the View onto the data for a Field
+  /// For vector-valued Fields, retrieves the view to the first component
+  /// as data is interleaved
+  View* getFieldValuesView(const std::string& field_name);
+
   /// After a Field has been registered, check if it's part of a material
   /// set - if it is, add it to the matset
   void checkForMaterialSet(const std::string& field_name);
+
+  /// After a Field has been registered, check if it's part of a species
+  /// set - if it is, add it to the specset
+  void checkForSpeciesSet(const std::string& field_name);
 
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();
@@ -579,9 +608,11 @@ private:
   static const std::string s_attribute_suffix;
   static const std::string s_coordset_name;
 
-  // Associations between field names and material sets
+  // Associations between field names and material metadata
   // Maps field names onto matset names
   std::unordered_map<std::string, std::string> m_matset_associations;
+  // Maps field names onto specset names
+  std::unordered_map<std::string, std::string> m_specset_associations;
 };
 
 } /* namespace sidre */

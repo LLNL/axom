@@ -318,6 +318,94 @@ TEST(sidre_datacollection, create_matset_multi_fraction)
   EXPECT_TRUE(bp_grp->hasView("matsets/matset/volume_fractions/002"));
 }
 
+TEST(sidre_datacollection, create_specset)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // Add a material set so we can associate the specset with it
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 1.0;
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+
+  // Then add the species set
+  const bool volume_dependent = false;
+  sdc.AssociateSpeciesSet("partial_density", "specset", "matset", volume_dependent);
+
+  mfem::GridFunction partial_density_1_1(&fes);
+  partial_density_1_1 = 1.0;
+
+  sdc.RegisterField("partial_density_001_001", &partial_density_1_1);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("specsets"));
+  EXPECT_TRUE(bp_grp->hasGroup("specsets/specset"));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/volume_dependent"));
+  EXPECT_FALSE(static_cast<axom::int8>(
+    bp_grp->getView("specsets/specset/volume_dependent")->getScalar()));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset"));
+  EXPECT_EQ(std::string(bp_grp->getView("specsets/specset/matset")->getString()),
+            "matset");
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/001/001"));
+}
+
+TEST(sidre_datacollection, create_specset_multi_fraction)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // Add a material set so we can associate the specset with it
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 0.7;
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+  mfem::GridFunction vol_frac_2(&fes);
+  vol_frac_2 = 0.3;
+  sdc.RegisterField("volume_fraction_002", &vol_frac_2);
+
+  // Then add the species set
+  const bool volume_dependent = false;
+  sdc.AssociateSpeciesSet("partial_density", "specset", "matset", volume_dependent);
+
+  mfem::GridFunction partial_density_1_1(&fes);
+  partial_density_1_1 = 0.4;
+  sdc.RegisterField("partial_density_001_001", &partial_density_1_1);
+  mfem::GridFunction partial_density_1_2(&fes);
+  partial_density_1_2 = 0.3;
+  sdc.RegisterField("partial_density_001_002", &partial_density_1_2);
+  mfem::GridFunction partial_density_2_1(&fes);
+  partial_density_2_1 = 0.2;
+  sdc.RegisterField("partial_density_002_001", &partial_density_2_1);
+  mfem::GridFunction partial_density_2_2(&fes);
+  partial_density_2_2 = 0.1;
+  sdc.RegisterField("partial_density_002_002", &partial_density_2_2);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("specsets"));
+  EXPECT_TRUE(bp_grp->hasGroup("specsets/specset"));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/volume_dependent"));
+  EXPECT_FALSE(static_cast<axom::int8>(
+    bp_grp->getView("specsets/specset/volume_dependent")->getScalar()));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset"));
+  EXPECT_EQ(std::string(bp_grp->getView("specsets/specset/matset")->getString()),
+            "matset");
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/001/001"));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/001/002"));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/002/001"));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/002/002"));
+}
+
   //----------------------------------------------------------------------
   #include "axom/slic/core/SimpleLogger.hpp"
 using axom::slic::SimpleLogger;
