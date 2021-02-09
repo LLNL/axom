@@ -20,10 +20,6 @@ stages:
   - q_build_devtools
   - q_release_resources
 
-# Whether and how to update uberenv
-.run_update_uberenv: &run_update_uberenv |
-  [[ -n "${UPDATE_UBERENV}" ]] && ./scripts/gitlab/update-uberenv.sh "${UPDATE_UBERENV}"
-
 .pr_workflow:
   rules:
     - if: '$CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != "develop" && $BUILD_DEPS != "ON"' #run only if ...
@@ -49,7 +45,6 @@ stages:
 
 .srun_build_with_deps_script:
   script:
-    - *run_update_uberenv
     - EXEC_PREFIX="srun ${SLURM_ACCOUNT}"
     #DEPENDENCIES
     - RESOURCES="-t 45 -N 1"
@@ -67,7 +62,6 @@ stages:
 
 .srun_build_devtools_script:
   script:
-    - *run_update_uberenv
     - EXEC_PREFIX="srun ${SLURM_ACCOUNT}"
     - RESOURCES="-t 30 -N 1"
     - echo -e "section_start:$(date +%s):devtools\r\e[0K
@@ -86,7 +80,6 @@ stages:
 
 .build_with_deps_blueos_3_ppc64le_ib_p9_script:
   script:
-    - *run_update_uberenv
     #DEPENDENCIES
     - echo -e "section_start:$(date +%s):dependencies\r\e[0K
       Build dependencies and generate host-config file (uberenv)"

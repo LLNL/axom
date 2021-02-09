@@ -14,7 +14,7 @@
 # Load required CUDA module
 .with_cuda:
   before_script:
-    - module load cuda/11.1.1
+    - module load cuda/10.1.243
 
 ####
 # Template
@@ -41,6 +41,5 @@ clang_8_0_1 (Main build_with_deps_on_lassen):
     COMPILER: "clang@8.0.1"
     SPEC: "@develop+cuda%${COMPILER}"
     EXTRA_SPEC: "cuda_arch=70"
-    # The "-cuda" at the end of the host-config needs to be hardcoded for now
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}_nvcc_xlf.cmake"
   extends: [.main_build_with_deps_on_lassen, .with_cuda]
