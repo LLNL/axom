@@ -10,7 +10,6 @@ variables:
   SLURM_ACCOUNT: -p pdebug
   LSF_ACCOUNT: -q pdebug
 
-# There are no tests for now
 stages:
   - l_build
   - l_build_with_deps
