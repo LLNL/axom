@@ -44,13 +44,9 @@ public:
   * \brief A constructor for SphinxWriter.
   * 
   * \param [in] fileName The name of the file the documentation should be written to.
-  * 
-  * \param [in] outputProvidedValues Whether to document the values that were actually
-  * provided in the input file
-  *
   *******************************************************************************
   */
-  SphinxWriter(const std::string& fileName, bool outputProvidedValues = false);
+  SphinxWriter(const std::string& fileName);
 
   void documentTable(const Table& table) override;
 
@@ -157,7 +153,7 @@ private:
   * extracted and then stored.
   *******************************************************************************
   */
-  void extractFieldMetadata(axom::sidre::Group* sidreGroup);
+  void extractFieldMetadata(const axom::sidre::Group* sidreGroup);
 
   /*!
   *******************************************************************************
@@ -169,7 +165,7 @@ private:
   * \return String representation of value information.
   *******************************************************************************
   */
-  std::string getValueAsString(axom::sidre::View* view);
+  std::string getValueAsString(const axom::sidre::View* view);
 
   /*!
   *******************************************************************************
@@ -181,7 +177,7 @@ private:
   * \return String representation of range information.
   *******************************************************************************
   */
-  std::string getRangeAsString(axom::sidre::View* view);
+  std::string getRangeAsString(const axom::sidre::View* view);
 
   /*!
   *******************************************************************************
@@ -193,7 +189,7 @@ private:
   * \return String representation of valid value(s) information.
   *******************************************************************************
   */
-  std::string getValidValuesAsString(axom::sidre::View* view);
+  std::string getValidValuesAsString(const axom::sidre::View* view);
 
   /*!
   *******************************************************************************
@@ -205,7 +201,7 @@ private:
   * \return String listing the valid string values.
   *******************************************************************************
   */
-  std::string getValidStringValues(axom::sidre::Group* sidreGroup);
+  std::string getValidStringValues(const axom::sidre::Group* sidreGroup);
 
   std::ofstream m_outFile;
   std::ostringstream m_oss;

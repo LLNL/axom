@@ -22,7 +22,7 @@ namespace axom
 {
 namespace inlet
 {
-SphinxWriter::SphinxWriter(const std::string& fileName, bool outputProvidedValues)
+SphinxWriter::SphinxWriter(const std::string& fileName)
   : m_colLabels({"Field Name",
                  "Description",
                  "Default Value",
@@ -30,12 +30,6 @@ SphinxWriter::SphinxWriter(const std::string& fileName, bool outputProvidedValue
                  "Required"})
 {
   m_fileName = fileName;
-
-  if(outputProvidedValues)
-  {
-    // The value provided by the user in the input file
-    m_colLabels.push_back("Value");
-  }
 
   m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX\n";
   m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX\n\n";
@@ -136,7 +130,7 @@ void SphinxWriter::writeAllTables()
   }
 }
 
-std::string SphinxWriter::getValueAsString(axom::sidre::View* view)
+std::string SphinxWriter::getValueAsString(const axom::sidre::View* view)
 {
   axom::sidre::TypeID type = view->getTypeID();
   if(type == axom::sidre::TypeID::INT8_ID)
@@ -157,7 +151,7 @@ std::string SphinxWriter::getValueAsString(axom::sidre::View* view)
   return view->getString();
 }
 
-std::string SphinxWriter::getRangeAsString(axom::sidre::View* view)
+std::string SphinxWriter::getRangeAsString(const axom::sidre::View* view)
 {
   std::ostringstream oss;
   oss.precision(3);
@@ -166,20 +160,20 @@ std::string SphinxWriter::getRangeAsString(axom::sidre::View* view)
   axom::sidre::TypeID type = view->getTypeID();
   if(type == axom::sidre::INT_ID)
   {
-    int* range = view->getArray();
+    const int* range = view->getData();
     oss << range[0] << " to " << range[1];
   }
   else
   {
-    double* range = view->getArray();
+    const double* range = view->getData();
     oss << range[0] << " to " << range[1];
   }
   return oss.str();
 }
 
-std::string SphinxWriter::getValidValuesAsString(axom::sidre::View* view)
+std::string SphinxWriter::getValidValuesAsString(const axom::sidre::View* view)
 {
-  int* range = view->getArray();
+  const int* range = view->getData();
   size_t size = view->getBuffer()->getNumElements();
   std::string result = "";
   for(size_t i = 0; i < size; ++i)
@@ -196,7 +190,7 @@ std::string SphinxWriter::getValidValuesAsString(axom::sidre::View* view)
   return result;
 }
 
-std::string SphinxWriter::getValidStringValues(axom::sidre::Group* sidreGroup)
+std::string SphinxWriter::getValidStringValues(const axom::sidre::Group* sidreGroup)
 {
   auto idx = sidreGroup->getFirstValidViewIndex();
   std::string validValues = "";
@@ -212,7 +206,7 @@ std::string SphinxWriter::getValidStringValues(axom::sidre::Group* sidreGroup)
   return validValues;
 }
 
-void SphinxWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup)
+void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup)
 {
   TableData& currentTable =
     m_rstTables.at(sidreGroup->getParent()->getPathName());
@@ -254,24 +248,6 @@ void SphinxWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup)
   else
   {
     fieldAttributes[4] = "|uncheck|";
-  }
-
-  // FIXME: Better to use an associative container here if the column header
-  // set is variable?
-  const auto& labels = currentTable.rstTable.front();
-  auto iter = std::find(labels.begin(), labels.end(), "Value");
-  if(iter != labels.end())
-  {
-    const auto pos = std::distance(labels.begin(), iter);
-    if(sidreGroup->hasView("value"))
-    {
-      fieldAttributes[pos] = getValueAsString(sidreGroup->getView("value"));
-    }
-    else
-    {
-      // Could also just leave it blank here?
-      fieldAttributes[pos] = "N/A";
-    }
   }
 
   currentTable.rstTable.push_back(fieldAttributes);

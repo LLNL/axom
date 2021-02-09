@@ -39,7 +39,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for deeply nested containers of structs
 - Inlet: Added support for `void` and strings in Lua-defined functions
 - Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
-- Inlet: SphinxDocWriter can now output the values provided in an input file
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -66,6 +65,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   datastore is `Load` ed in
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 - Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
+- Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
