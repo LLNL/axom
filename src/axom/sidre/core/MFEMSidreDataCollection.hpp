@@ -113,10 +113,27 @@ namespace sidre
               │    │    ├── matset
               │    │    │    ├─• topology = "mesh"
               │    │    │    └── volume_fractions
-              │    │    │         ├─• 001: view in <ext-double-array>/<named-buffer>
-              │    │    │         ├─• 002: view in <ext-double-array>/<named-buffer>
+              │    │    │         ├─• material-1: view in <ext-double-array>/<named-buffer>
+              │    │    │         ├─• material-2: view in <ext-double-array>/<named-buffer>
               │    │    │         ...
-              │    │    │         └─• 00N: view in <ext-double-array>/<named-buffer>
+              │    │    │         └─• material-N: view in <ext-double-array>/<named-buffer>
+              │    │    ├── ...
+              │    │   ...
+              │    ├── specsets
+              │    │    ├── specset
+              │    │    │    ├─• volume_dependent
+              │    │    │    ├─• matset = "matset"
+              │    │    │    └── matset_values
+              │    │    │         ├── material-1
+              │    │    │         │    ├─• component-1: view in <ext-double-array>/<named-buffer>
+              │    │    │         │    ├─• component-2: view in <ext-double-array>/<named-buffer>
+              │    │    │         │    ...
+              │    │    │         │    └─• component-N: view in <ext-double-array>/<named-buffer>
+              │    │    │         ├── material-2
+              │    │    │              └─• ...
+              │    │    │        ...
+              │    │    │         └── material-N
+              │    │    │              └─• ...
               │    │    ├── ...
               │    │   ...
               │    └── fields
