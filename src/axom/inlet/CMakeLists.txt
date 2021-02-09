@@ -29,6 +29,7 @@ set(inlet_headers
     Writer.hpp
     SphinxWriter.hpp
     ConduitReader.hpp
+    ConduitWriter.hpp
     YAMLReader.hpp
     JSONReader.hpp
     inlet_utils.hpp )
@@ -42,6 +43,7 @@ set(inlet_sources
     VariantKey.cpp
     SphinxWriter.cpp
     ConduitReader.cpp
+    ConduitWriter.cpp
     inlet_utils.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF SOL_FOUND)
