@@ -34,17 +34,73 @@
   needs: []
 
 ####
-# Build jobs
+# PR Build jobs
+clang_8_0_1 (PR build_on_lassen):
+  variables:
+    COMPILER: "clang@8.0.1"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}_nvcc_xlf.cmake"
+  extends: [.pr_build_on_lassen, .with_cuda]
+
 clang_9_0_0 (PR build_on_lassen):
   variables:
     COMPILER: "clang@9.0.0"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}_upstream_xlf.cmake"
+  extends: [.pr_build_on_lassen]
+
+gcc_7_3_1 (PR build_on_lassen):
+  variables:
+    COMPILER: "gcc@7.3.1"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.pr_build_on_lassen]
+
+xl_16_11_1 (PR build_on_lassen):
+  variables:
+    COMPILER: "xl@16.11.1"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}_coral.cmake"
+  extends: [.pr_build_on_lassen]
+
+xl_16_11_1_nvcc (PR build_on_lassen):
+  variables:
+    COMPILER: "xl@16.11.1"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}_nvcc.cmake"
   extends: [.pr_build_on_lassen, .with_cuda]
 
+
+####
+# Main Build jobs
 clang_8_0_1 (Main build_with_deps_on_lassen):
   variables:
     COMPILER: "clang@8.0.1"
-    SPEC: "@develop+cuda%${COMPILER}"
+    SPEC: "@develop+mfem+cuda%${COMPILER}"
     EXTRA_SPEC: "cuda_arch=70"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}_nvcc_xlf.cmake"
-  extends: [.main_build_with_deps_on_lassen, .with_cuda]
+  extends: [.main_build_on_lassen, .with_cuda]
+
+clang_9_0_0 (Main build_with_deps_on_lassen):
+  variables:
+    COMPILER: "clang@9.0.0"
+    SPEC: "@develop+mfem%${COMPILER}"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}_upstream_xlf.cmake"
+  extends: [.main_build_on_lassen]
+
+gcc_7_3_1 (Main build_with_deps_on_lassen):
+  variables:
+    COMPILER: "gcc@7.3.1"
+    SPEC: "@develop+mfem%${COMPILER}"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.main_build_on_lassen]
+
+xl_16_11_1 (Main build_with_deps_on_lassen):
+  variables:
+    COMPILER: "xl@16.11.1"
+    SPEC: "@develop+mfem%${COMPILER}"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}_coral.cmake"
+  extends: [.main_build_on_lassen]
+
+xl_16_11_1_nvcc (Main build_with_deps_on_lassen):
+  variables:
+    COMPILER: "xl@16.11.1"
+    SPEC: "@develop+mfem+cuda%${COMPILER}"
+    EXTRA_SPEC: "cuda_arch=70"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}_nvcc.cmake"
+  extends: [.main_build_on_lassen, .with_cuda]
