@@ -55,7 +55,7 @@ stages:
     - RESOURCES="-t 10 -N 1"
     - echo -e "section_start:$(date +%s):build_and_test\r\e[0K
       Build and test ${CI_PROJECT_NAME}"
-    # Autodetects hostconfig created by build_tpls
+    # Autodetects host-config created by build_tpls
     - ${EXEC_PREFIX} ${RESOURCES} scripts/llnl_scripts/build_src.py -v --automation
     - echo -e "section_end:$(date +%s):build_and_test\r\e[0K"
 
@@ -87,7 +87,8 @@ stages:
     #BUILD + TEST
     - echo -e "section_start:$(date +%s):build_and_test\r\e[0K
       Build and test ${CI_PROJECT_NAME}"
-    - lalloc 1 -W 10 ${LSF_ACCOUNT} scripts/llnl_scripts/build_src.py -v --host-config ${HOST_CONFIG}
+    # Autodetects host-config created by build_tpls
+    - lalloc 1 -W 10 ${LSF_ACCOUNT} scripts/llnl_scripts/build_src.py -v --automation
     - echo -e "section_end:$(date +%s):build_and_test\r\e[0K"
 
 # This is where jobs are included
