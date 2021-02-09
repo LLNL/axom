@@ -243,22 +243,6 @@ inline int toIndex(const std::string& idx)
 
 /*!
  *******************************************************************************
- * \brief Adds a group containing the indices of a container to a table, and a 
- * subtable for each index
- * 
- * \param [inout] table The table to add to
- * \param [in] indices The indices to add
- * \param [in] description The optional description of the subtables
- * \tparam Key The type of the indices to add
- *******************************************************************************
- */
-template <typename Key>
-void addIndicesGroupToTable(Table& table,
-                            const std::vector<Key>& indices,
-                            const std::string& description = "");
-
-/*!
- *******************************************************************************
  * \brief Determines whether a variant key is convertible to another type
  * 
  * \tparam Key The type to check the validity of the conversion to
@@ -375,29 +359,11 @@ public:
    * \return Pointer to the Sidre Group for this Table
    *****************************************************************************
    */
-  axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
+  const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
 
   //
   // Functions that define the input file schema
   //
-
-  // FIXME: Make private in future PR
-  /*!
-   *****************************************************************************
-   * \brief Add a Table to the input file schema.
-   *
-   * Adds a Table to the input file schema. Tables hold a varying amount Fields
-   * defined by the user.  By default, it is not required unless marked with
-   * Table::isRequired(). This creates the Sidre Group class with the given name and
-   * stores the given description.
-   *
-   * \param [in] name Name of the Table expected in the input file
-   * \param [in] description Description of the Table
-   *
-   * \return Reference to the created Table
-   *****************************************************************************
-   */
-  Table& addTable(const std::string& name, const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -468,7 +434,6 @@ public:
   Verifiable<Table>& addStringArray(const std::string& name,
                                     const std::string& description = "");
 
-  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add an array of Fields to the input file schema.
@@ -479,25 +444,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Table& addGenericArray(const std::string& name,
-                         const std::string& description = "");
-
-  /*!
-   *****************************************************************************
-   * \brief Add an array of user-defined type to the input file schema.
-   *
-   * \param [in] name Name of the array
-   * \param [in] description Description of the array
-   *
-   * \return Reference to the created array
-   *****************************************************************************
-   */
   Table& addStructArray(const std::string& name,
-                        const std::string& description = "")
-  {
-    return addGenericArray(name, description);
-  }
-
+                        const std::string& description = "");
   /*!
    *****************************************************************************
    * \brief Add a dictionary of Boolean Fields to the input file schema.
@@ -549,7 +497,6 @@ public:
   Verifiable<Table>& addStringDictionary(const std::string& name,
                                          const std::string& description = "");
 
-  // FIXME: Remove in future PR
   /*!
    *****************************************************************************
    * \brief Add a dictionary of user-defined types to the input file schema.
@@ -560,25 +507,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Table& addGenericDictionary(const std::string& name,
-                              const std::string& description = "");
-
-  /*!
-   *****************************************************************************
-   * \brief Add an dictionary of user-defined type to the input file schema.
-   *
-   * \param [in] name Name of the dictionary
-   * \param [in] description Description of the dictionary
-   *
-   * \return Reference to the created dictionary
-   *****************************************************************************
-   */
   Table& addStructDictionary(const std::string& name,
-                             const std::string& description = "")
-  {
-    return addGenericDictionary(name, description);
-  }
-
+                             const std::string& description = "");
   /*!
    *****************************************************************************
    * \brief Add a Boolean Field to the input file schema.
@@ -661,58 +591,6 @@ public:
   {
     return addPrimitive<std::string>(name, description);
   }
-
-  /*!
-   *****************************************************************************
-   * \brief Add a Field to the input file schema.
-   *
-   * Adds a Field to the input file schema. It may or may not be required
-   * to be present in the input file. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input file the
-   * value is read and stored in the datastore. 
-   *
-   * \param [in] name Name of the Table expected in the input file
-   * \param [in] description Description of the Table
-   * \param [in] forArray Whether the primitive is in an array, in which
-   * case the provided value should be inserted instead of the one read from
-   * the input file
-   * \param [in] val A provided value, will be overwritten if found at specified
-   * path in input file
-   * \param [in] pathOverride The path within the input file to read from, if
-   * different than the structure of the Sidre datastore
-   *
-   * \return Reference to the created Field
-   *****************************************************************************
-   */
-  template <typename T,
-            typename SFINAE =
-              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
-  VerifiableScalar& addPrimitive(const std::string& name,
-                                 const std::string& description = "",
-                                 bool forArray = false,
-                                 T val = T {},
-                                 const std::string& pathOverride = "");
-
-  /*!
-   *****************************************************************************
-   * \brief Add an array of primitive Fields to the input file schema.
-   *
-   * \param [in] name Name of the array
-   * \param [in] description Description of the Field
-   * \param [in] isDict Whether to use string-valued keys for the container
-   * \param [in] pathOverride The path within the input file to read from, if
-   * different than the structure of the Sidre datastore
-   *
-   * \return Reference to the created Field
-   *****************************************************************************
-   */
-  template <typename T,
-            typename SFINAE =
-              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
-  Verifiable<Table>& addPrimitiveArray(const std::string& name,
-                                       const std::string& description = "",
-                                       const bool isDict = false,
-                                       const std::string& pathOverride = "");
 
   /*!
    *****************************************************************************
@@ -939,35 +817,6 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Return whether a Table with the given name is present in this Table's subtree.
-   *
-   * \return Boolean value indicating whether this Table's subtree contains this Table.
-   *****************************************************************************
-   */
-  bool hasTable(const std::string& tableName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief Return whether a Field with the given name is present in this Table's
-   *  subtree.
-   *
-   * \return Boolean value indicating whether this Table's subtree contains this Field.
-   *****************************************************************************
-   */
-  bool hasField(const std::string& fieldName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief Return whether a Function with the given name is present in this Table's
-   *  subtree.
-   *
-   * \return Boolean value indicating whether this Table's subtree contains this Function.
-   *****************************************************************************
-   */
-  bool hasFunction(const std::string& fieldName) const;
-
-  /*!
-   *****************************************************************************
    * \brief Return whether a Table or Field with the given name is present in 
    * this Table's subtree.
    *
@@ -1010,6 +859,109 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Add a Field to the input file schema.
+   *
+   * Adds a primitive Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
+   * value is read and stored in the datastore. 
+   *
+   * \param [in] name Name of the Table expected in the input file
+   * \param [in] description Description of the Table
+   * \param [in] forArray Whether the primitive is in an array, in which
+   * case the provided value should be inserted instead of the one read from
+   * the input file
+   * \param [in] val A provided value, will be overwritten if found at specified
+   * path in input file
+   * \param [in] pathOverride The path within the input file to read from, if
+   * different than the structure of the Sidre datastore
+   *
+   * \return Reference to the created Field
+   *****************************************************************************
+   */
+
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  VerifiableScalar& addPrimitive(const std::string& name,
+                                 const std::string& description = "",
+                                 bool forArray = false,
+                                 T val = T {},
+                                 const std::string& pathOverride = "");
+
+private:
+  /*!
+   *****************************************************************************
+   * \brief Add a Table to the input file schema.
+   *
+   * Adds a Table to the input file schema. Tables hold a varying amount Fields
+   * defined by the user.  By default, it is not required unless marked with
+   * Table::isRequired(). This creates the Sidre Group class with the given name and
+   * stores the given description.
+   *
+   * \param [in] name Name of the Table expected in the input file
+   * \param [in] description Description of the Table
+   *
+   * \return Reference to the created Table
+   *****************************************************************************
+   */
+  Table& addTable(const std::string& name, const std::string& description = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Add an array of primitive Fields to the input file schema.
+   *
+   * \param [in] name Name of the array
+   * \param [in] description Description of the Field
+   * \param [in] isDict Whether to use string-valued keys for the container
+   * \param [in] pathOverride The path within the input file to read from, if
+   * different than the structure of the Sidre datastore
+   *
+   * \return Reference to the created Field
+   *****************************************************************************
+   */
+  template <typename T,
+            typename SFINAE =
+              typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
+  Verifiable<Table>& addPrimitiveArray(const std::string& name,
+                                       const std::string& description = "",
+                                       const bool isDict = false,
+                                       const std::string& pathOverride = "");
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Table with the given name is present in this Table's subtree.
+   *
+   * \return Boolean value indicating whether the calling Table's subtree
+   * contains a Table with the given name.
+   *****************************************************************************
+   */
+  bool hasTable(const std::string& tableName) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Field with the given name is present in this Table's
+   *  subtree.
+   *
+   * \return Boolean value indicating whether the calling Table's subtree
+   * contains a Field with the given name.
+   *****************************************************************************
+   */
+  bool hasField(const std::string& fieldName) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Function with the given name is present in this Table's
+   *  subtree.
+   *
+   * \return Boolean value indicating whether the calling Table's subtree
+   * contains a Function with the given name.
+   *****************************************************************************
+   */
+  bool hasFunction(const std::string& fieldName) const;
+
+  /*!
+   *****************************************************************************
    * \brief Retrieves the matching Table.
    * 
    * \param [in] The string indicating the target name of the Table to be searched for.
@@ -1041,7 +993,6 @@ public:
    */
   Function& getFunction(const std::string& funcName) const;
 
-private:
   /*!
    *****************************************************************************
    * \brief Helper method template for adding primitives
@@ -1218,6 +1169,20 @@ private:
   }
 
   /*!
+   *******************************************************************************
+   * \brief Adds a group containing the indices of a container to the calling 
+   * table and a subtable for each index
+   * 
+   * \param [in] indices The indices to add
+   * \param [in] description The optional description of the subtables
+   * \tparam Key The type of the indices to add
+   *******************************************************************************
+   */
+  template <typename Key>
+  void addIndicesGroup(const std::vector<Key>& indices,
+                       const std::string& description = "");
+
+  /*!
    *****************************************************************************
    * \brief Add an container of user-defined type to the input file schema.
    *
@@ -1228,18 +1193,18 @@ private:
    *****************************************************************************
    */
   template <typename Key>
-  Table& addGenericContainer(const std::string& name,
-                             const std::string& description = "");
+  Table& addStructContainer(const std::string& name,
+                            const std::string& description = "");
 
   /*!
    *****************************************************************************
-   * \brief Returns true if the calling object is part of a generic container,
+   * \brief Returns true if the calling object is part of a struct container,
    * i.e., an array or dictionary of user-defined type
    *****************************************************************************
    */
-  bool isGenericContainer() const
+  bool isStructContainer() const
   {
-    return m_sidreGroup->hasView(detail::GENERIC_CONTAINER_FLAG);
+    return m_sidreGroup->hasView(detail::STRUCT_CONTAINER_FLAG);
   }
 
   /*!
@@ -1249,7 +1214,7 @@ private:
    * 
    * \param [in] func The function to apply to individual container elements
    * 
-   * \pre The calling table must be a generic container, i.e., isGenericContainer()
+   * \pre The calling table must be a struct container, i.e., isStructContainer()
    * returns true
    * 
    * \pre The function must accept a single argument of type Table&
@@ -1277,7 +1242,7 @@ private:
   std::vector<AggregateField> m_aggregate_fields;
   std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
 
-  // Used when the calling Table is a generic container within a generic container
+  // Used when the calling Table is a struct container within a struct container
   // Need to delegate schema-defining calls (add*) to the elements of the nested
   // container
   std::vector<std::reference_wrapper<Table>> m_nested_aggregates;

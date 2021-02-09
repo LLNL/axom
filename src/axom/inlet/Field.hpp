@@ -77,7 +77,7 @@ public:
    * \return Pointer to the Sidre Group class for this Field
    *****************************************************************************
    */
-  axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
+  const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
 
   /*!
    *****************************************************************************

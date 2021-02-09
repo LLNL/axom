@@ -24,7 +24,7 @@ int main()
   myInlet.addInt("dimensions").required(true).defaultValue(2);
 
   // defines a required table named vector with an internal field named 'x'
-  auto& v = myInlet.addTable("vector").required(true);
+  auto& v = myInlet.addStruct("vector").required(true);
   v.addDouble("x");
   // _inlet_workflow_defining_schema_end
 
