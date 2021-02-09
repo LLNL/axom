@@ -261,6 +261,28 @@ TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
+TEST(sidre_datacollection, create_matset)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  mfem::GridFunction vol_frac_1(&fes);
+  *vol_frac_1 = 1.0;
+
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("matsets"));
+  EXPECT_TRUE(bp_grp->hasGroup("matsets/matset"));
+}
+
   //----------------------------------------------------------------------
   #include "axom/slic/core/SimpleLogger.hpp"
 using axom::slic::SimpleLogger;

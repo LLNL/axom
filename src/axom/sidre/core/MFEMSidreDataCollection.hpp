@@ -20,6 +20,7 @@ namespace sidre
 {
 /** @brief Data collection with Sidre routines following the Conduit mesh
     blueprint specification. */
+// clang-format off
 /** MFEMSidreDataCollection provides an HDF5-based file format for visualization
    or
     restart capability.  This functionality is aimed primarily at customers of
@@ -43,56 +44,39 @@ namespace sidre
          │              ├── coordsets
          │              │    └── coords
          │              │         ├─• path = "<bp-path>/coordsets/coords"
-         │              │         ├─• type ─> <bp-grp>/coordsets/coords/type =
-            "explicit"
+         │              │         ├─• type ─> <bp-grp>/coordsets/coords/type = "explicit"
          │              │         └─• coord_system = "x"|"xy"|"xyz"
          │              ├── topologies
          │              │    ├── mesh
          │              │    │    ├─• path = "<bp-path>/topologies/mesh"
-         │              │    │    ├─• type              ─>
-            <bp-grp>/topologies/mesh/type = "unstructured"
-         │              │    │    ├─• coordset          ─>
-            <bp-grp>/topologies/mesh/coordset = "coords"
-         │              │    │    ├─• grid_function     ─>
-            <bp-grp>/topologies/mesh/grid_function = "<nodes-field-name>"
-         │              │    │    └─• boundary_topology ─>
-            <bp-grp>/topologies/mesh/boundary_topology = "boundary"
+         │              │    │    ├─• type              ─> <bp-grp>/topologies/mesh/type = "unstructured"
+         │              │    │    ├─• coordset          ─> <bp-grp>/topologies/mesh/coordset = "coords"
+         │              │    │    ├─• grid_function     ─> <bp-grp>/topologies/mesh/grid_function = "<nodes-field-name>"
+         │              │    │    └─• boundary_topology ─> <bp-grp>/topologies/mesh/boundary_topology = "boundary"
          │              │    └── boundary
          │              │         ├─• path = "<bp-path>/topologies/mesh"
-         │              │         ├─• type     ─>
-            <bp-grp>/topologies/boundary/type = "unstructured"
-         │              │         └─• coordset ─>
-            <bp-grp>/topologies/boundary/coordset = "coords"
+         │              │         ├─• type     ─> <bp-grp>/topologies/boundary/type = "unstructured"
+         │              │         └─• coordset ─> <bp-grp>/topologies/boundary/coordset = "coords"
          │              └── fields
          │                   ├── mesh_material_attribute
-         │                   │    ├─• path =
-            "<bp-path>/fields/mesh_material_attribute"
-         │                   │    ├─• association ─>
-            <bp-grp>/fields/mesh_material_attribute/association = "element"
-         │                   │    ├─• topology    ─>
-            <bp-grp>/fields/mesh_material_attribute/topology = "mesh"
+         │                   │    ├─• path = "<bp-path>/fields/mesh_material_attribute"
+         │                   │    ├─• association ─> <bp-grp>/fields/mesh_material_attribute/association = "element"
+         │                   │    ├─• topology    ─> <bp-grp>/fields/mesh_material_attribute/topology = "mesh"
          │                   │    └─• number_of_components = 1
          │                   ├── boundary_material_attribute
-         │                   │    ├─• path =
-            "<bp-path>/fields/boundary_material_attribute"
-         │                   │    ├─• association ─>
-            <bp-grp>/fields/boundary_material_attribute/association = "element"
-         │                   │    ├─• topology    ─>
-            <bp-grp>/fields/boundary_material_attribute/topology = "boundary"
+         │                   │    ├─• path = "<bp-path>/fields/boundary_material_attribute"
+         │                   │    ├─• association ─> <bp-grp>/fields/boundary_material_attribute/association = "element"
+         │                   │    ├─• topology    ─> <bp-grp>/fields/boundary_material_attribute/topology = "boundary"
          │                   │    └─• number_of_components = 1
          │                   ├── grid-function-1
          │                   │    ├─• path = "<bp-path>/fields/grid-function-1"
-         │                   │    ├─• basis    ─>
-            <bp-grp>/fields/grid-function-1/basis = "<fe-coll-name>"
-         │                   │    ├─• topology ─>
-            <bp-grp>/fields/grid-function-1/topology = "mesh"
+         │                   │    ├─• basis    ─> <bp-grp>/fields/grid-function-1/basis = "<fe-coll-name>"
+         │                   │    ├─• topology ─> <bp-grp>/fields/grid-function-1/topology = "mesh"
          │                   │    └─• number_of_components = gf1->VectorDim()
          │                   ├── grid-function-2
          │                   │    ├─• path = "<bp-path>/fields/grid-function-2"
-         │                   │    ├─• basis    ─>
-            <bp-grp>/fields/grid-function-2/basis = "<fe-coll-name>"
-         │                   │    ├─• topology ─>
-            <bp-grp>/fields/grid-function-2/topology = "mesh"
+         │                   │    ├─• basis    ─> <bp-grp>/fields/grid-function-2/basis = "<fe-coll-name>"
+         │                   │    ├─• topology ─> <bp-grp>/fields/grid-function-2/topology = "mesh"
          │                   │    └─• number_of_components = gf2->VectorDim()
          │                   ├── ...
          │                  ...
@@ -107,12 +91,9 @@ namespace sidre
               │    │    └── coords
               │    │         ├─• type = "explicit"
               │    │         └── values
-              │    │              ├─• x = view in
-                 <vertex-coords-buffer>/<ext-double-data>
-              │    │              ├─• y = view in
-                 <vertex-coords-buffer>/<ext-double-data>
-              │    │              └─• z = view in
-                 <vertex-coords-buffer>/<ext-double-data>
+              │    │              ├─• x = view in <vertex-coords-buffer>/<ext-double-data>
+              │    │              ├─• y = view in <vertex-coords-buffer>/<ext-double-data>
+              │    │              └─• z = view in <vertex-coords-buffer>/<ext-double-data>
               │    ├── topologies
               │    │    ├── mesh
               │    │    │    ├─• type = "unstructured"
@@ -128,6 +109,16 @@ namespace sidre
               │    │         │    ├─• shape = "points"|"lines"|...
               │    │         │    └─• connectivity = <vert-idx-array>
               │    │         └─• coordset = "coords"
+              │    ├── matsets
+              │    │    ├── matset
+              │    │    │    ├─• topology = "mesh"
+              │    │    │    └── volume_fractions
+              │    │    │         ├─• 001: view in <ext-double-array>/<named-buffer>
+              │    │    │         ├─• 002: view in <ext-double-array>/<named-buffer>
+              │    │    │         ...
+              │    │    │         └─• 00N: view in <ext-double-array>/<named-buffer>
+              │    │    ├── ...
+              │    │   ...
               │    └── fields
               │         ├── mesh_material_attribute
               │         │    ├─• association = "element"
@@ -140,18 +131,14 @@ namespace sidre
               │         ├── grid-function-1   (name can include path)
               │         │    ├─• basis = "<fe-coll-name>"
               │         │    ├─• topology = "mesh"
-              │         │    └─• values = <ext-double-array>/<named-buffer>
-                 (vdim == 1)
+              │         │    └─• values = <ext-double-array>/<named-buffer> (vdim == 1)
               │         ├── grid-function-2   (name can include path)
               │         │    ├─• basis = "<fe-coll-name>"
               │         │    ├─• topology = "mesh"
               │         │    └── values   (vdim > 1)
-              │         │         ├─• x0 = view into
-                 <ext-double-array>/<named-buffer>
-              │         │         ├─• x1 = view into
-                 <ext-double-array>/<named-buffer>
-              │         │         └─• x2 = view into
-                 <ext-double-array>/<named-buffer>
+              │         │         ├─• x0 = view into <ext-double-array>/<named-buffer>
+              │         │         ├─• x1 = view into <ext-double-array>/<named-buffer>
+              │         │         └─• x2 = view into <ext-double-array>/<named-buffer>
               │         ├── ...
               │        ...
               └── named_buffers                (named_buffers group)
@@ -174,6 +161,7 @@ namespace sidre
     releases, it may not be backward compatible, and the output files generated
     by the current version may become unreadable.
  */
+// clang-format on
 class MFEMSidreDataCollection : public mfem::DataCollection
 {
 public:
@@ -298,6 +286,21 @@ public:
   /** The field is removed from the #field_map and the DataStore, including
       deleting it from the named_buffers group, if allocated. */
   virtual void DeregisterField(const std::string& field_name);
+
+  /// Associates a field name with a multi-buffer material set
+  /** Subsequent calls to RegisterField iwth field_names of the form
+   * @p volume_fraction_field_name_<material_id> will result in the addition
+   * of a volume buffer to the matset @p matset_name corresponding to @p material_id.
+   * 
+   * Note that this does not inhibit the addition of the field - that is, the GridFunction
+   * data will be present as both a field and a volume fraction buffer
+   * 
+   * @param volume_fraction_field_name The field name to associate with volume fractions
+   * @param matset_name The material set to associate subsequently added volume fractions with
+   *
+   */
+  void AssociateMaterialSet(const std::string& volume_fraction_field_name,
+                            const std::string& matset_name);
 
   /// Delete all owned data.
   virtual ~MFEMSidreDataCollection();
@@ -571,6 +574,10 @@ private:
   static const std::string s_boundary_topology_name;
   static const std::string s_attribute_suffix;
   static const std::string s_coordset_name;
+
+  // Associations between field names and material sets
+  // Maps field names onto matset names
+  std::unordered_map<std::string, std::string> m_matset_associations;
 };
 
 } /* namespace sidre */

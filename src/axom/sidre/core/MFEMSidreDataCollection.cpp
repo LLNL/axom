@@ -1368,6 +1368,21 @@ void MFEMSidreDataCollection::DeregisterField(const std::string& field_name)
   FreeNamedBuffer(field_name);
 }
 
+void MFEMSidreDataCollection::AssociateMaterialSet(
+  const std::string& volume_fraction_field_name,
+  const std::string& matset_name)
+{
+  auto iter = m_matset_associations.find(volume_fraction_field_name);
+  if(iter != m_matset_associations.end())
+  {
+    SLIC_WARNING("Volume fraction field "
+                 << volume_fraction_field_name
+                 << " has already been associated with a material set: "
+                 << iter->second);
+  }
+  m_matset_associations[volume_fraction_field_name] = matset_name;
+}
+
 // private method
 std::string MFEMSidreDataCollection::getElementName(mfem::Element::Type elementEnum)
 {
