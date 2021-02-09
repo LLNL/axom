@@ -16,52 +16,49 @@ using axom::sidre::DataStore;
 
 namespace inlet = axom::inlet;
 // _inlet_userdef_simple_start
-struct Mesh
+struct Car
 {
-  std::string filename;
-  int serial_ref_iter;
-  int par_ref_iter;
+  std::string make;
+  std::string color;
+  int seats;
+  int horsepower;
 
   // A function can be used to define a schema for a particular struct
   // For convenience, it can be implemented as a static method of the struct
-  static void defineSchema(inlet::Table& schema)
+  static void defineSchema(inlet::Table& car_schema)
   {
-    schema.addString("filename", "Path to mesh file");
-    schema.addInt("serial", "Number of serial refinement iterations");
-    schema.addInt("parallel", "Number of parallel refinement iterations");
+    car_schema.addString("make", "Make of car");
+    car_schema.addString("color", "Color of car").defaultValue("red");
+    car_schema.addInt("seats", "Number of seats").range(2, 7);
+    car_schema.addInt("horsepower", "Amount of horsepower");
   }
 };
 // _inlet_userdef_simple_end
 
 // Additionally, each class should specialize this struct as follows
 // in the global namespace so that Inlet can access it
-/**
- * Example Lua definition:
- * \code{.lua}
- * mesh = {
- *    filename = 'data/square.mesh',
- *    serial = 12,
- *    parallel = 7
- * }
- * \endcode
- */
 // _inlet_userdef_simple_frominlet_start
 template <>
-struct FromInlet<Mesh>
+struct FromInlet<Car>
 {
-  Mesh operator()(const inlet::Table& base)
+  Car operator()(const inlet::Table& input_data)
   {
-    return {base["filename"], base["serial"], base["parallel"]};
+    Car result;
+    result.make = input_data["make"];
+    result.color = input_data["color"];
+    result.seats = input_data["seats"];
+    result.horsepower = input_data["horsepower"];
+    return result;
   }
 };
 // _inlet_userdef_simple_frominlet_end
 
 const std::string input = R"(
-mesh = {
-  filename = 'data/square.mesh',
-  serial = 12,
-  parallel = 7
-}
+  car = {
+      make = "BestCompany",
+      seats = 2,
+      horsepower = 200
+  }
 )";
 
 int main()
@@ -74,22 +71,20 @@ int main()
   lr->parseString(input);
   Inlet inlet(std::move(lr), ds.getRoot());
 
-  // Create a table off the global table for the mesh object
+  // Create a table off the global table for the car object
   // then define its schema
-  auto& mesh_schema =
-    inlet.addStruct("mesh", "Information used to read in/process a mesh");
-  Mesh::defineSchema(mesh_schema);
+  auto& car_schema = inlet.addStruct("car", "Vehicle description");
+  Car::defineSchema(car_schema);
 
   if(!inlet.verify())
   {
     SLIC_ERROR("Inlet failed to verify against provided schema");
   }
 
-  // Read all the data into a thermal solver object
-  Mesh mesh = inlet["mesh"].get<Mesh>();
-  SLIC_INFO(fmt::format("Mesh has filename '{0}'", mesh.filename));
-  SLIC_INFO(fmt::format("Mesh has {0} serial refinement iterations",
-                        mesh.serial_ref_iter));
-  SLIC_INFO(fmt::format("Mesh has {0} parallel refinement iterations",
-                        mesh.par_ref_iter));
+  // Extract the car object
+  Car car = inlet["car"].get<Car>();
+  std::cout << "make = " << car.make << std::endl;
+  std::cout << "color = " << car.color << std::endl;
+  std::cout << "seats = " << car.seats << std::endl;
+  std::cout << "horsepower = " << car.horsepower << std::endl;
 }

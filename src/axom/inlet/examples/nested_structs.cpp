@@ -198,12 +198,7 @@ struct FromInlet<Geometry>
       result.units = Geometry::Units::Meters;
     }
 
-    // FIXME: Remove when PR #429 is merged
-    auto ops = base["operators"].get<std::unordered_map<int, Operator>>();
-    for(const auto& ele : ops)
-    {
-      result.operators.push_back(ele.second);
-    }
+    result.operators = base["operators"].get<std::vector<Operator>>();
     return result;
   }
 };

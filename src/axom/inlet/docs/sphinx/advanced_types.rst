@@ -1,13 +1,18 @@
 .. _inlet_advanced_types_label:
 
+##############
 Advanced Types
-==============
+##############
 
 In addition to Inlet's primitive types (bool, int, double, string), user-defined types
 and functions can also be defined as part of an input file.
 
-Adding User-Defined Types to a Schema
--------------------------------------
+*****************
+Individal Structs
+*****************
+
+Defining And Storing
+--------------------
 
 To add a single (i.e., not array) user-defined type to the input file, use the ``addStruct``
 function of the Inlet or Table classes to add a Table (collection of Fields and sub-Tables)
@@ -17,20 +22,20 @@ Consider a simple struct that contains only primitive types, whose definition in
 
 .. code-block:: Lua
 
-  mesh = {
-    filename = "/data/star.mesh",
-    serial = 1,
-    parallel = 1
+  car = {
+      make = "BestCompany",
+      seats = 2,
+      horsepower = 200
   }
 
 or in YAML, something like:
 
 .. code-block:: YAML
   
-  mesh:
-    filename: /data/star.mesh
-    serial: 1
-    parallel: 1
+  car:
+    make: BestCompany
+    seats: 2
+    horsepower: 200
 
 Its Inlet schema can be defined as follows:
 
@@ -39,7 +44,7 @@ Its Inlet schema can be defined as follows:
    :end-before: _inlet_userdef_simple_end
    :language: C++
 
-This would be used by defining a table for the ``Mesh`` instance and then defining the struct
+This would be used by defining a table for the ``Car`` instance and then defining the struct
 schema on that subtable, e.g.:
 
 .. literalinclude:: ../../examples/user_defined_type.cpp
@@ -49,15 +54,51 @@ schema on that subtable, e.g.:
 
 The definition of a static ``defineSchema`` member function is not required, and is just used
 for convenience.  The schema definition for a class or struct could also be implemented as a
-free function for third-party types, or even in the same place as the sub-table declaration. 
+free function for third-party types, or even in the same place as the sub-table declaration.
 
-Arrays of user-defined types are also supported in Inlet.  First, use the ``addStructArray``
-function to create a subtable, then define the schema on that table:
+Accessing
+---------
+
+In order to have Inlet extract from the input file into a struct, it needs to know how that struct can be built.
+This is accomplished by a specializing of the struct ``FromInlet<T>`` for your type ``T``.  It must define a
+single member function with the signature ``T operator()(const inlet::Table&)``.  This function should return
+an instance of type ``T`` with its members populated with the corresponding fields in the input file.
+For the simple ``Car`` example whose schema is defined above, the specialization might look like:
+
+.. literalinclude:: ../../examples/user_defined_type.cpp
+   :start-after: _inlet_userdef_simple_frominlet_start
+   :end-before: _inlet_userdef_simple_frominlet_end
+   :language: C++
+
+The ``Table::operator[]`` is used to extract fields from the input file and is automatically converted to
+the correct member variable types when the function's return value is constructed.  This conversion does
+not happen automatically for user-defined types.  If a ``Car`` object as defined above is located at the
+path "car" within the input file, it can be retrieved as follows:
+
+.. code-block:: C++
+
+  Car car = inlet["car"].get<Car>();
+
+**********************************
+Arrays and Dictionaries of Structs
+**********************************
+
+Arrays of user-defined types are also supported in Inlet.  
+
+Defining And Storing
+--------------------
+
+First, use the ``addStructArray`` function to create a subtable, then define the schema on that table:
 
 .. literalinclude:: ../../examples/nested_structs.cpp
    :start-after: _inlet_nested_struct_array_start
    :end-before: _inlet_nested_struct_array_end
    :language: C++
+
+.. note::
+  The schema definition logic for a struct is identical between individual instances of structs
+  and arrays of structs.  The distinction is made by ``Table`` on which the struct schema is
+  defined - specifically, whether it is obtained via ``addStruct`` or ``addStructArray``.
 
 Associative arrays are also supported, using string keys or a mixture of string and integer keys.
 The ``addStructDictionary`` function can be used analogously to the ``addStructArray`` function
@@ -74,49 +115,44 @@ for these associative arrays.
   *Structs* contain a fixed set of named fields, but these fields can be of any type.
   As the name suggests, these map to ``structs`` in C++.
 
-Retrieving User-Defined Types from an Input File
-------------------------------------------------
-
-In order to have Inlet extract from the input file into a struct, it needs to know how that struct can be built.
-This is accomplished by a specializing of the struct ``FromInlet<T>`` for your type ``T``.  It must define a
-single member function with the signature ``T operator()(const inlet::Table&)``.  This function should return
-an instance of type ``T`` with its members populated with the corresponding fields in the input file.
-For the simple ``Mesh`` example whose schema is defined above, the specialization might look like:
-
-.. literalinclude:: ../../examples/user_defined_type.cpp
-   :start-after: _inlet_userdef_simple_frominlet_start
-   :end-before: _inlet_userdef_simple_frominlet_end
-   :language: C++
-
-The ``Table::operator[]`` is used to extract fields from the input file and is automatically converted to
-the correct member variable types when the function's return value is constructed.  This conversion does
-not happen automatically for user-defined types.  If a ``Mesh`` object as defined above is located at the
-path "mesh" within the input file, it can be retrieved as follows:
-
-.. code-block:: C++
-
-  Mesh mesh = inlet["mesh"].get<Mesh>();
+Accessing
+---------
 
 As with the schema definition, the ``FromInlet`` specialization for a user-defined type will work for both
 single instances of the type and arrays of the type.
 
-Arrays in Inlet are implemented as ``std::unordered_map<int, T>``, so retrieving an array of user-defined
-types is as follows, in this case for an array of the ``BoundaryCondition`` struct:
+To retrieve an array of structs as a contiguous array of user-defined type, use ``std::vector``:
 
 .. code-block:: C++
 
-  auto mesh = inlet["bcs"].get<std::unordered_map<int, BoundaryCondition>>();
+  auto ops = base["operators"].get<std::vector<Operator>>();
+
+Some input file languages support non-contiguous array indexing, so you can also retrieve arrays 
+as ``std::unordered_map<int, T>``:
+
+.. code-block:: C++
+
+  auto ops = inlet["operators"].get<std::unordered_map<int, Operator>>();
+
+.. note::
+  If a non-contiguous array is retrieved as a (contiguous) ``std::vector``, the elements will be
+  ordered by increasing index.
 
 String-keyed dictionaries are implemented as ``std::unordered_map<std::string, T>`` and can be retrieved
 in the same way as the array above.  For dictionaries with a mix of string and integer keys, the
 ``inlet::VariantKey`` type can be used, namely, by retrieving a ``std::unordered_map<inlet::VariantKey, T>``.
 
-Adding Functions to a Schema
-----------------------------
+*********
+Functions
+*********
 
 For input file types that support functions, e.g., Lua, functions can also be read from the input file
-into a ``std::function``, the wrapper for callables provided by the C++ standard library.  This is accomplished
-by calling ``addFunction`` on an Inlet or Table object.
+into a ``std::function``, the wrapper for callables provided by the C++ standard library.
+
+Defining And Storing
+--------------------
+
+This is accomplished by calling ``addFunction`` on an Inlet or Table object.
 
 Consider the following Lua function that accepts a vector and returns a double:
 
@@ -162,8 +198,8 @@ In Lua, the following operations on the ``Vector`` type are supported (for ``Vec
 #. Dimension retrieval: ``d = u.dim``
 #. Component retrieval: ``d = u.x``, ``d = u.y``, ``d = u.z``
 
-Retrieving Functions from an Input File
----------------------------------------
+Accessing
+---------
 
 To retrieve a function, both the implicit conversion and ``get<T>`` syntax is supported.  For example,
 a function can be retrieved as follows:
