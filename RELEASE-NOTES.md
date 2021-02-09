@@ -65,6 +65,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   datastore is `Load` ed in
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 - Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
+- Inlet deserialization logic uses ``Proxy`` instead of ``Table`` to support conversions from
+  primitives to user-defined types (e.g., string to enum)
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty

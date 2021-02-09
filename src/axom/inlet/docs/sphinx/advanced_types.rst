@@ -81,10 +81,13 @@ For the simple ``Mesh`` example whose schema is defined above, the specializatio
    :end-before: _inlet_userdef_simple_frominlet_end
    :language: C++
 
-The ``Table::operator[]`` is used to extract fields from the input file and is automatically converted to
-the correct member variable types when the function's return value is constructed.  This conversion does
-not happen automatically for user-defined types.  If a ``Mesh`` object as defined above is located at the
-path "mesh" within the input file, it can be retrieved as follows:
+A ``Proxy`` object can be thought of as a lightweight pointer to a position in the Inlet hierarchy and supports
+``get<T>`` for retrieving objects of any type (including primitives, user-defined types, and functions) and
+``operator[]`` for further traversal of the hierarchy (if it refers to a non-terminal position).
+
+``Proxy`` supports implicit conversions to primitives types and arrays/dictionaries of primitive types.
+These conversions do not happen automatically for user-defined types, in which case the ``get<T>`` syntax is required.
+If a ``Mesh`` object as defined above is located at the path "mesh" within the input file, it can be retrieved as follows:
 
 .. code-block:: C++
 

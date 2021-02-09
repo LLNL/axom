@@ -269,7 +269,7 @@ bool matchesKeyType(const VariantKey& key)
   return false;
 }
 
-// An indirection required to defer the Proxy constructor call to template instatiated
+// An indirection required to defer the Proxy constructor call to template instantiation
 template <typename>
 struct IndirectProxy
 {
