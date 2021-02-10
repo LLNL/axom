@@ -442,6 +442,48 @@ TEST(inlet_function, dimension_dependent_result)
   EXPECT_FLOAT_EQ(result.vec[1], 1);
 }
 
+struct FooWithScalarFunc
+{
+  std::function<double(double)> bar;
+};
+
+template <>
+struct FromInlet<FooWithScalarFunc>
+{
+  FooWithScalarFunc operator()(const axom::inlet::Table& base)
+  {
+    return {base["foo/bar"]};
+  }
+};
+
+TEST(inlet_function, nested_function_in_struct)
+{
+  std::string testString =
+    "quux = { [0] = { foo = { bar = function (x) return x + 1 end } }, "
+    "         [1] = { foo = { bar = function (x) return x + 3 end } } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& quux_schema = inlet.addStructArray("quux");
+  auto& foo_schema = quux_schema.addStruct("foo");
+
+  foo_schema.addFunction("bar",
+                         FunctionTag::Double,
+                         {FunctionTag::Double},
+                         "bar's description");
+
+  auto foos = inlet["quux"].get<std::vector<FooWithScalarFunc>>();
+  EXPECT_EQ(foos.size(), 2);
+
+  auto& first_func = foos[0].bar;
+  EXPECT_TRUE(static_cast<bool>(first_func));
+  EXPECT_DOUBLE_EQ(first_func(4.0), 5.0);
+
+  auto& second_func = foos[1].bar;
+  EXPECT_TRUE(static_cast<bool>(second_func));
+  EXPECT_DOUBLE_EQ(second_func(4.0), 7.0);
+}
+
 template <typename Ret, typename... Args>
 Ret checkedCall(const sol::protected_function& func, Args&&... args)
 {
