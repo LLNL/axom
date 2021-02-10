@@ -270,7 +270,7 @@ def uberenv_create_mirror(prefix, project_file, mirror_path):
     print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
     set_axom_group_and_perms(mirror_path)
     return res
-`
+
 
 def uberenv_build(prefix, spec, project_file, config_dir, mirror_path):
     """
