@@ -73,6 +73,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Apply lambda verifiers on generic containers to individual elements
   for consistency
 - Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
+- Fixed a bug relating to deeply nested callback functions in Inlet
 
 
 ## [Version 0.4.0] - Release date 2020-09-22
