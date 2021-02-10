@@ -70,9 +70,9 @@ gcc_8_1_0 (PR build_on_quartz):
     HOST_CONFIG: "quartz-toss_3_x86_64_ib-${COMPILER}.cmake"
   extends: .pr_build_on_quartz
 
-gcc_8_1_0_no_fortran (PR build_on_quartz):
+gcc_8_1_no_fortran (PR build_on_quartz):
   variables:
-    COMPILER: "gcc@8.1.0_no_fortran"
+    COMPILER: "gcc@8.1_no_fortran"
     HOST_CONFIG: "quartz-toss_3_x86_64_ib-${COMPILER}.cmake"
   extends: .pr_build_on_quartz
 
@@ -111,9 +111,9 @@ gcc_8_1_0 (Main build_with_deps_on_quartz):
     SPEC: "@develop%+mfem${COMPILER}"
   extends: .main_build_with_deps_on_quartz
 
-gcc_8_1_0_no_fortran (Main build_with_deps_on_quartz):
+gcc_8_1_no_fortran (Main build_with_deps_on_quartz):
   variables:
-    COMPILER: "gcc@8.1.0_no_fortran"
+    COMPILER: "gcc@8.1_no_fortran"
     SPEC: "@develop%+mfem${COMPILER}"
   extends: .main_build_with_deps_on_quartz
 
