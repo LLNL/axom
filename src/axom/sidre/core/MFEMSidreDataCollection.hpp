@@ -321,7 +321,7 @@ public:
 
   /// Associates a field name with a species set
   /** Subsequent calls to RegisterField with field_names of the form
-   * @p matset_vals_field_name_<material_id>_<component> will result in the addition
+   * @p species_field_name_<material_id>_<component> will result in the addition
    * of its values to the specset @p specset_name corresponding to @p material_id.
    * and specified component
    * 
@@ -338,6 +338,22 @@ public:
                            const std::string& specset_name,
                            const std::string& matset_name,
                            const bool volume_dependent);
+
+  /// Associates a material-dependent field with its corresponding material set
+  /** Subsequent calls to RegisterField with field_names of the form
+   * @p dependent_field_name_<material_id> will result in the addition
+   * of its values to the to the matset_vals of the @p dependent_field_name corresponding to
+   * @p material_id
+   * 
+   * Note that this does not inhibit the addition of the field - that is, the GridFunction
+   * data will be present as both a field on its own and as part of the "top-level" field
+   * 
+   * @param material_dependent_field_name The name of the field to mark as material-dependent
+   * @param matset_name The material set to associate with the field
+   *
+   */
+  void AssociateMaterialDependentField(const std::string& material_dependent_field_name,
+                                       const std::string& matset_name);
 
   /// Delete all owned data.
   virtual ~MFEMSidreDataCollection();
@@ -615,6 +631,10 @@ private:
   /// set - if it is, add it to the specset
   void checkForSpeciesSet(const std::string& field_name);
 
+  /// After a Field has been registered, check if it's a material-dependent
+  /// field - if it is, add it to the matset_values
+  void checkForMaterialDependentField(const std::string& field_name);
+
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();
 
@@ -630,6 +650,8 @@ private:
   std::unordered_map<std::string, std::string> m_matset_associations;
   // Maps field names onto specset names
   std::unordered_map<std::string, std::string> m_specset_associations;
+  // Maps material-dependent field names onto the material set they're associated with
+  std::unordered_map<std::string, std::string> m_material_dependent_fields;
 };
 
 } /* namespace sidre */

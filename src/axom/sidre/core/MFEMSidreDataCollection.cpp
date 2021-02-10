@@ -1217,6 +1217,7 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
   // Check if the field contains material metadata
   checkForMaterialSet(field_name);
   checkForSpeciesSet(field_name);
+  checkForMaterialDependentField(field_name);
 
   // Register field_name + gf in field_map.
   DataCollection::RegisterField(field_name, gf);
@@ -1417,6 +1418,22 @@ void MFEMSidreDataCollection::AssociateSpeciesSet(
   specset_grp->createGroup("matset_values");
 }
 
+void MFEMSidreDataCollection::AssociateMaterialDependentField(
+  const std::string& material_dependent_field_name,
+  const std::string& matset_name)
+{
+  auto iter = m_material_dependent_fields.find(material_dependent_field_name);
+  if(iter != m_material_dependent_fields.end())
+  {
+    SLIC_WARNING("Field " << material_dependent_field_name
+                          << " has already been labeled as material-dependent"
+                             " and associated with a material set: "
+                          << iter->second);
+    return;
+  }
+  m_material_dependent_fields[material_dependent_field_name] = matset_name;
+}
+
 View* MFEMSidreDataCollection::getFieldValuesView(const std::string& field_name)
 {
   const std::string field_values_name = "fields/" + field_name + "/values";
@@ -1458,7 +1475,6 @@ void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
   const std::string matset_name = iter->second;
   const std::string material_id = field_name.substr(last_underscore_pos + 1);
 
-  const std::string field_values_name = "fields/" + field_name + "/values";
   View* vol_fractions_view = getFieldValuesView(field_name);
 
   Group* matset_group = m_bp_grp->getGroup("matsets/" + matset_name);
@@ -1501,7 +1517,6 @@ void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
                       field_name.length() - last_underscore_pos - 1);
   const std::string component_id = field_name.substr(last_underscore_pos + 1);
 
-  const std::string field_values_name = "fields/" + field_name + "/values";
   View* species_values_view = getFieldValuesView(field_name);
 
   Group* specset_group =
@@ -1509,6 +1524,43 @@ void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
   Group* specset_material_group = alloc_group(specset_group, material_id);
   View* specset_values = specset_material_group->copyView(species_values_view);
   specset_values->rename(component_id);
+
+  // FIXME: Do we need to add anything to the index group?
+}
+
+void MFEMSidreDataCollection::checkForMaterialDependentField(
+  const std::string& field_name)
+{
+  const auto last_underscore_pos = field_name.find_last_of('_');
+  // If it doesn't contain an underscore, it can't be a volume fraction field
+  if(last_underscore_pos == std::string::npos)
+  {
+    return;
+  }
+
+  const std::string mat_dependent_field =
+    field_name.substr(0, last_underscore_pos);
+
+  auto iter = m_material_dependent_fields.find(mat_dependent_field);
+  // If it hasn't been registered, it's not a material-dependent field
+  if(iter == m_material_dependent_fields.end())
+  {
+    return;
+  }
+  const std::string matset_name = iter->second;
+  const std::string material_id = field_name.substr(last_underscore_pos + 1);
+
+  View* material_values = getFieldValuesView(field_name);
+
+  Group* field_grp = m_bp_grp->getGroup("fields/" + mat_dependent_field);
+  if(!field_grp->hasView("matset"))
+  {
+    field_grp->createViewString("matset", matset_name);
+  }
+
+  Group* values_grp = alloc_group(field_grp, "matset_values");
+  View* added_values = values_grp->copyView(material_values);
+  added_values->rename(material_id);
 
   // FIXME: Do we need to add anything to the index group?
 }

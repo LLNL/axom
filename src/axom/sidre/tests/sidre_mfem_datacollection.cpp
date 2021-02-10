@@ -406,6 +406,80 @@ TEST(sidre_datacollection, create_specset_multi_fraction)
   EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/002/002"));
 }
 
+TEST(sidre_datacollection, create_material_dependent_field)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // Add a material set so we can associate the field with it
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 1.0;
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+
+  // Then mark the field as material-dependent
+  sdc.AssociateMaterialDependentField("density", "matset");
+
+  mfem::GridFunction density_indenpendent(&fes);
+  density_indenpendent = 1.0;
+  sdc.RegisterField("density", &density_indenpendent);
+
+  mfem::GridFunction density_dependent(&fes);
+  density_dependent = 0.2;
+  sdc.RegisterField("density_001", &density_dependent);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("fields/density"));
+  EXPECT_TRUE(bp_grp->hasGroup("fields/density/matset_values"));
+  EXPECT_TRUE(bp_grp->hasView("fields/density/matset_values/001"));
+}
+
+TEST(sidre_datacollection, create_material_dependent_field_multi_fraction)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // Add a material set so we can associate the field with it
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 0.65;
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+  mfem::GridFunction vol_frac_2(&fes);
+  vol_frac_2 = 0.35;
+  sdc.RegisterField("volume_fraction_002", &vol_frac_2);
+
+  // Then mark the field as material-dependent
+  sdc.AssociateMaterialDependentField("density", "matset");
+
+  mfem::GridFunction density_indenpendent(&fes);
+  density_indenpendent = 1.0;
+  sdc.RegisterField("density", &density_indenpendent);
+
+  mfem::GridFunction density_dependent_1(&fes);
+  density_dependent_1 = 0.2;
+  sdc.RegisterField("density_001", &density_dependent_1);
+
+  mfem::GridFunction density_dependent_2(&fes);
+  density_dependent_2 = 0.3;
+  sdc.RegisterField("density_002", &density_dependent_2);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("fields/density"));
+  EXPECT_TRUE(bp_grp->hasGroup("fields/density/matset_values"));
+  EXPECT_TRUE(bp_grp->hasView("fields/density/matset_values/001"));
+  EXPECT_TRUE(bp_grp->hasView("fields/density/matset_values/002"));
+}
+
   //----------------------------------------------------------------------
   #include "axom/slic/core/SimpleLogger.hpp"
 using axom::slic::SimpleLogger;
