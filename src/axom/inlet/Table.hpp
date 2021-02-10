@@ -1224,6 +1224,25 @@ private:
   template <typename Func>
   void forEachContainerElement(Func&& func) const;
 
+  /*!
+   *****************************************************************************
+   * \brief Calls a function on the subtables corresponding to the elements
+   * of the container held by this table
+   * 
+   * \param [out] first The iterator to the first element of the container
+   * \param [in] name The name of the item to add (FIXME)
+   * \param [in] func The function to apply to individual container elements
+   * 
+   * \pre The function must accept two arguments of type Table& and
+   * const std::string&, respectively
+   * 
+   *****************************************************************************
+   */
+  template <typename OutputIt, typename Func>
+  bool generateFromContainerElements(OutputIt first,
+                                     const std::string& name,
+                                     Func&& func) const;
+
   std::string m_name;
   Reader& m_reader;
   // Inlet's Root Sidre Group

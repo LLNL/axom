@@ -22,6 +22,29 @@ void Table::forEachContainerElement(Func&& func) const
   }
 }
 
+template <typename OutputIt, typename Func>
+bool Table::generateFromContainerElements(OutputIt first,
+                                          const std::string& name,
+                                          Func&& func) const
+{
+  bool is_nested = false;
+  for(Table& table : m_nested_aggregates)
+  {
+    *first++ = func(table, {});
+    is_nested = true;
+  }
+
+  if(isStructContainer())
+  {
+    is_nested = true;
+    for(const auto& indexPath : containerIndicesWithPaths(name))
+    {
+      *first++ = func(getTable(indexPath.first), indexPath.second);
+    }
+  }
+  return is_nested;
+}
+
 Table& Table::addTable(const std::string& name, const std::string& description)
 {
   // Create intermediate Tables if they don't already exist
@@ -188,19 +211,17 @@ Table& Table::addStructContainer(const std::string& name,
 {
   auto& table =
     addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
-  for(Table& sub_table : m_nested_aggregates)
-  {
-    table.m_nested_aggregates.push_back(
-      sub_table.addStructContainer<Key>(name, description));
-  }
+
+  generateFromContainerElements(
+    std::back_inserter(table.m_nested_aggregates),
+    name,
+    [&name, &description](Table& subtable,
+                          const std::string&) -> std::reference_wrapper<Table> {
+      return subtable.addStructContainer<Key>(name, description);
+    });
+
   if(isStructContainer())
   {
-    // Iterate over each element and forward the call to addPrimitiveArray
-    for(const auto& indexPath : containerIndicesWithPaths(name))
-    {
-      table.m_nested_aggregates.push_back(
-        getTable(indexPath.first).addStructContainer<Key>(name, description));
-    }
     markAsStructContainer(*table.m_sidreGroup);
   }
   else
@@ -328,26 +349,21 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
                                       T val,
                                       const std::string& pathOverride)
 {
-  if(isStructContainer() || !m_nested_aggregates.empty())
+  // If it has indices, we're adding a primitive field to an array
+  // of structs, so we need to iterate over the subtables
+  // corresponding to elements of the array
+  std::vector<std::reference_wrapper<VerifiableScalar>> fields;
+  const bool is_nested = generateFromContainerElements(
+    std::back_inserter(fields),
+    name,
+    [&name, &description, forArray, &val](
+      Table& subtable,
+      const std::string& path) -> std::reference_wrapper<VerifiableScalar> {
+      return subtable.addPrimitive<T>(name, description, forArray, val, path);
+    });
+
+  if(is_nested)
   {
-    // If it has indices, we're adding a primitive field to an array
-    // of structs, so we need to iterate over the subtables
-    // corresponding to elements of the array
-    std::vector<std::reference_wrapper<VerifiableScalar>> fields;
-    for(Table& table : m_nested_aggregates)
-    {
-      fields.push_back(table.addPrimitive<T>(name, description, forArray, val));
-    }
-    if(isStructContainer())
-    {
-      for(const auto& indexPath : containerIndicesWithPaths(name))
-      {
-        // Add a primitive to an array element (which is a struct)
-        fields.push_back(
-          getTable(indexPath.first)
-            .addPrimitive<T>(name, description, forArray, val, indexPath.second));
-      }
-    }
     // Create an aggregate field so requirements can be collectively imposed
     // on all elements of the array
     m_aggregate_fields.emplace_back(std::move(fields));
@@ -581,25 +597,18 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
                                             const bool isDict,
                                             const std::string& pathOverride)
 {
-  if(isStructContainer() || !m_nested_aggregates.empty())
-  {
-    // Adding an array of primitive field to an array of structs
-    std::vector<std::reference_wrapper<Verifiable>> tables;
-    for(Table& table : m_nested_aggregates)
-    {
-      tables.push_back(table.addPrimitiveArray<T>(name, description, isDict));
-    }
-    if(isStructContainer())
-    {
-      // Iterate over each element and forward the call to addPrimitiveArray
-      for(const auto& indexPath : containerIndicesWithPaths(name))
-      {
-        tables.push_back(
-          getTable(indexPath.first)
-            .addPrimitiveArray<T>(name, description, isDict, indexPath.second));
-      }
-    }
+  // Adding an array of primitive field to an array of structs
+  std::vector<std::reference_wrapper<Verifiable>> tables;
+  const bool is_nested = generateFromContainerElements(
+    std::back_inserter(tables),
+    name,
+    [&name, &description, isDict](Table& subtable,
+                                  const std::string& path) -> Verifiable<Table>& {
+      return subtable.addPrimitiveArray<T>(name, description, isDict, path);
+    });
 
+  if(is_nested)
+  {
     m_aggregate_tables.emplace_back(std::move(tables));
 
     // Remove when C++17 is available
@@ -638,27 +647,21 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
                                          const std::string& description,
                                          const std::string& pathOverride)
 {
-  if(isStructContainer() || !m_nested_aggregates.empty())
-  {
-    // If it has indices, we're adding a primitive field to an array
-    // of structs, so we need to iterate over the subtables
-    // corresponding to elements of the array
-    std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
-    for(Table& table : m_nested_aggregates)
-    {
-      funcs.push_back(table.addFunction(name, ret_type, arg_types, description));
-    }
-    if(isStructContainer())
-    {
-      for(const auto& indexPath : containerIndicesWithPaths(name))
-      {
-        // Add a primitive to an array element (which is a struct)
-        funcs.push_back(
-          getTable(indexPath.first)
-            .addFunction(name, ret_type, arg_types, description, indexPath.second));
-      }
-    }
+  // If it has indices, we're adding a primitive field to an array
+  // of structs, so we need to iterate over the subtables
+  // corresponding to elements of the array
+  std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
 
+  const bool is_nested = generateFromContainerElements(
+    std::back_inserter(funcs),
+    name,
+    [&name, &ret_type, &arg_types, &description](
+      Table& subtable,
+      const std::string& path) -> Verifiable<Function>& {
+      return subtable.addFunction(name, ret_type, arg_types, description, path);
+    });
+  if(is_nested)
+  {
     // Create an aggregate field so requirements can be collectively imposed
     // on all elements of the array
     m_aggregate_funcs.emplace_back(std::move(funcs));
