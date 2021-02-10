@@ -1391,7 +1391,6 @@ void MFEMSidreDataCollection::AssociateMaterialSet(
   // Since we're creating the matset, associate it with a topology
   // FIXME: Will these always be associated with the mesh?
   matset_group->createViewString("topology", s_mesh_topology_name);
-  matset_group->createGroup("volume_fractions");
 }
 
 void MFEMSidreDataCollection::AssociateSpeciesSet(
@@ -1415,7 +1414,6 @@ void MFEMSidreDataCollection::AssociateSpeciesSet(
                                 static_cast<int8>(volume_dependent));
   // Since we're creating the species set, associate it with a material set
   specset_grp->createViewString("matset", matset_name);
-  specset_grp->createGroup("matset_values");
 }
 
 void MFEMSidreDataCollection::AssociateMaterialDependentField(
@@ -1477,9 +1475,9 @@ void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 
   View* vol_fractions_view = getFieldValuesView(field_name);
 
-  Group* matset_group = m_bp_grp->getGroup("matsets/" + matset_name);
-  View* matset_frac_view =
-    matset_group->getGroup("volume_fractions")->copyView(vol_fractions_view);
+  Group* fractions_group =
+    alloc_group(m_bp_grp, "matsets/" + matset_name + "/volume_fractions");
+  View* matset_frac_view = fractions_group->copyView(vol_fractions_view);
   matset_frac_view->rename(material_id);
 
   // FIXME: Do we need to add anything to the index group?
@@ -1519,9 +1517,9 @@ void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
 
   View* species_values_view = getFieldValuesView(field_name);
 
-  Group* specset_group =
-    m_bp_grp->getGroup("specsets/" + specset_name + "/matset_values");
-  Group* specset_material_group = alloc_group(specset_group, material_id);
+  Group* specset_material_group =
+    alloc_group(m_bp_grp,
+                "specsets/" + specset_name + "/matset_values/" + material_id);
   View* specset_values = specset_material_group->copyView(species_values_view);
   specset_values->rename(component_id);
 
