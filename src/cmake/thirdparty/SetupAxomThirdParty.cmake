@@ -13,6 +13,8 @@ if(POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
 endif()
 
+set(TPL_DEPS)
+
 #------------------------------------------------------------------------------
 # UMPIRE
 #------------------------------------------------------------------------------
@@ -190,3 +192,21 @@ else()
     set(LUA_FOUND OFF CACHE BOOL "")
 endif()
 
+#------------------------------------------------------------------------------
+# Targets that need to be exported but don't have a CMake config file
+#------------------------------------------------------------------------------
+blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
+blt_list_append(TO TPL_DEPS ELEMENTS openmp IF ENABLE_OPENMP)
+blt_list_append(TO TPL_DEPS ELEMENTS mpi IF ENABLE_MPI)
+
+foreach(dep ${TPL_DEPS})
+    # If the target is EXPORTABLE, add it to the export set
+    get_target_property(_is_imported ${dep} IMPORTED)
+    if(NOT ${_is_imported})
+        install(TARGETS              ${dep}
+                EXPORT               axom-targets
+                DESTINATION          lib)
+        # Namespace target to avoid conflicts
+        set_target_properties(${dep} PROPERTIES EXPORT_NAME axom::${dep})
+    endif()
+endforeach()
