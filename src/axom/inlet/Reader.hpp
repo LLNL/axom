@@ -217,9 +217,9 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get the list of indices for an container
+   * \brief Get the list of indices for an collection
    *
-   * \param [in]  id    The identifier to the container that will be retrieved
+   * \param [in]  id    The identifier to the collection that will be retrieved
    * \param [out] indices The values of the indices that were retrieved
    *
    * \return true if the indices were able to be retrieved from the file
