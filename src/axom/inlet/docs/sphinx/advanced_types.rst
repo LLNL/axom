@@ -156,7 +156,7 @@ for these associative arrays.
   and a "record" type, Inlet treats them differently for type safety reasons:
 
   *Dictionaries* use arbitrary strings or integers for their keys, and their values (entries)
-  can only be retreived as a homogenous type.  In other words, dictionaries must map to
+  can only be retreived as a homogeneous type.  In other words, dictionaries must map to
   ``std::unordered_map<Key, Value>`` for fixed key and value types.
 
   *Structs* contain a fixed set of named fields, but these fields can be of any type.
