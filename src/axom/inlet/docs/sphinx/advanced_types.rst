@@ -18,14 +18,15 @@ To add a single (i.e., not array) user-defined type to the input file, use the `
 function of the Inlet or Table classes to add a Table (collection of Fields and sub-Tables)
 that will represent the fields of the struct.
 
-Consider a simple struct that contains only primitive types, whose definition in Lua might look like:
+Consider a simple Lua table that contains only primitive types, whose definition might look like:
 
 .. code-block:: Lua
 
   car = {
       make = "BestCompany",
       seats = 2,
-      horsepower = 200
+      horsepower = 200,
+      color = "blue"
   }
 
 or in YAML, something like:
@@ -36,6 +37,7 @@ or in YAML, something like:
     make: BestCompany
     seats: 2
     horsepower: 200
+    color: blue
 
 Its Inlet schema can be defined as follows:
 
@@ -44,7 +46,7 @@ Its Inlet schema can be defined as follows:
    :end-before: _inlet_userdef_simple_end
    :language: C++
 
-This would be used by defining a table for the ``Car`` instance and then defining the struct
+This would be used by creating an ``inlet::Table`` for the ``Car`` instance and then defining the struct
 schema on that subtable, e.g.:
 
 .. literalinclude:: ../../examples/user_defined_type.cpp
@@ -52,28 +54,30 @@ schema on that subtable, e.g.:
    :end-before: _inlet_userdef_simple_usage_end
    :language: C++
 
-The definition of a static ``defineSchema`` member function is not required, and is just used
-for convenience.  The schema definition for a class or struct could also be implemented as a
-free function for third-party types, or even in the same place as the sub-table declaration.
+.. note:: 
+  The definition of a static ``defineSchema`` member function is not required, and is just used
+  for convenience.  The schema definition for a class or struct could also be implemented as a
+  free function for third-party types, or even in the same place as the sub-table declaration.
 
 Accessing
 ---------
 
-In order to have Inlet extract from the input file into a struct, it needs to know how that struct can be built.
-This is accomplished by a specializing of the struct ``FromInlet<T>`` for your type ``T``.  It must define a
-single member function with the signature ``T operator()(const inlet::Table&)``.  This function should return
-an instance of type ``T`` with its members populated with the corresponding fields in the input file.
-For the simple ``Car`` example whose schema is defined above, the specialization might look like:
+In order to convert from Inlet's internal representation to a custom C++ ``struct``, you must provide 
+deserialization logic.  This is accomplished by a specialization of the ``FromInlet<T>`` functor for your
+type ``T``, which implements a member function with the signature ``T operator()(const inlet::Table&)``.
+This function should return an instance of type ``T`` with its members populated with the corresponding
+fields in the input file. For the simple ``Car`` example whose schema is defined above,the specialization
+might look like:
 
 .. literalinclude:: ../../examples/user_defined_type.cpp
    :start-after: _inlet_userdef_simple_frominlet_start
    :end-before: _inlet_userdef_simple_frominlet_end
    :language: C++
 
-The ``Table::operator[]`` is used to extract fields from the input file and is automatically converted to
-the correct member variable types when the function's return value is constructed.  This conversion does
-not happen automatically for user-defined types.  If a ``Car`` object as defined above is located at the
-path "car" within the input file, it can be retrieved as follows:
+In the above snippet, ``Table::operator[]`` is used to extract data from Inlet's internal representation
+which is automatically converted to the correct member variable types when the function's return value is
+constructed.  This conversion does not happen automatically for user-defined types.
+If a ``Car`` object as defined above is located at the path "car" within the input file, it can be retrieved as follows:
 
 .. code-block:: C++
 
@@ -88,11 +92,54 @@ Arrays of user-defined types are also supported in Inlet.
 Defining And Storing
 --------------------
 
+Consider a collection of cars, described in Lua as:
+
+.. code-block:: Lua
+
+  fleet = {
+    {
+      make = "Globex Corp",
+      seats = 3,
+      horsepower = 155,
+      color = "green"
+    },
+    {
+      make = "Initech",
+      seats = 4,
+      horsepower = 370
+      -- uses default value for color
+    },
+    {
+      make = "Cyberdyne",
+      seats = 1,
+      horsepower = 101,
+      color = "silver"
+    }
+  }
+
+or in YAML, as:
+
+.. code-block:: YAML
+
+  fleet:
+    - make: Globex Corp
+      seats: 3
+      horsepower: 155
+      color: green
+    - make: Initech
+      seats: 4
+      horsepower: 370
+      # uses default value for color
+    - make: Cyberdyne
+      seats: 1
+      horsepower: 101
+      color: silver
+
 First, use the ``addStructArray`` function to create a subtable, then define the schema on that table:
 
-.. literalinclude:: ../../examples/nested_structs.cpp
-   :start-after: _inlet_nested_struct_array_start
-   :end-before: _inlet_nested_struct_array_end
+.. literalinclude:: ../../examples/user_defined_type.cpp
+   :start-after: _inlet_userdef_collection_usage_start
+   :end-before: _inlet_userdef_collection_usage_end
    :language: C++
 
 .. note::
@@ -125,14 +172,14 @@ To retrieve an array of structs as a contiguous array of user-defined type, use 
 
 .. code-block:: C++
 
-  auto ops = base["operators"].get<std::vector<Operator>>();
+  auto fleet = base["fleet"].get<std::vector<Car>>();
 
 Some input file languages support non-contiguous array indexing, so you can also retrieve arrays 
 as ``std::unordered_map<int, T>``:
 
 .. code-block:: C++
 
-  auto ops = inlet["operators"].get<std::unordered_map<int, Operator>>();
+  auto fleet = inlet["fleet"].get<std::unordered_map<int, Car>>();
 
 .. note::
   If a non-contiguous array is retrieved as a (contiguous) ``std::vector``, the elements will be
@@ -154,7 +201,7 @@ Defining And Storing
 
 This is accomplished by calling ``addFunction`` on an Inlet or Table object.
 
-Consider the following Lua function that accepts a vector and returns a double:
+Consider the following Lua function that accepts a vector in **R**\ :sup:`2` or **R**\ :sup:`3` and returns a double:
 
 .. code-block:: Lua
 
@@ -168,17 +215,21 @@ Consider the following Lua function that accepts a vector and returns a double:
 
 The schema for this function would be defined as follows:
 
-.. literalinclude:: ../../examples/user_defined_type.cpp
-   :start-after: _inlet_userdef_func_coef_start
-   :end-before: _inlet_userdef_func_coef_end
+.. literalinclude:: ../../examples/mfem_coefficient.cpp
+   :start-after: _inlet_mfem_func_coef_start
+   :end-before: _inlet_mfem_func_coef_end
    :language: C++
 
+The return type and argument types are described with the ``inlet::FunctionTag`` enumeration, which has the following members:
+
+  * ``Double`` - corresponds to a C++ ``double``
+  * ``String`` - corresponds to a C++ ``std::string``
+  * ``Vector`` - corresponds to a C++ ``inlet::InletVector``
+  * ``Void`` - corresponds to C++ ``void``, should only be used for functions that don't return a value
+
 Note that a single type tag is passed for the return type, while a vector of tags is passed
-for the argument types.  Currently a maximum of two arguments are supported, with possible argument
-types ``Double``, ``String``, or ``Vector``.  These correspond to the C++ types ``double``, ``std::string``, and
-``axom::inlet::InletVector``, respectively. Functions do not have to return a value or accept arguments; you can
-use ``FunctionTag::Void`` as the return type in these cases in these cases.  To declare a function with no arguments,
-simply leave the list of argument types empty.
+for the argument types.  Currently a maximum of two arguments are supported. 
+To declare a function with no arguments, simply leave the list of argument types empty.
 
 .. note::  The ``InletVector`` type (and its Lua representation) are statically-sized vectors with
   a maximum dimension of three.  That is, they can also be used to represent two-dimensional vectors.
@@ -211,15 +262,8 @@ a function can be retrieved as follows:
 
 It can also be assigned directly to a ``std::function`` without the need to use ``get<T>``:
 
-.. literalinclude:: ../../examples/user_defined_type.cpp
-   :start-after: _inlet_userdef_bc_struct_start
-   :end-before: _inlet_userdef_bc_struct_end
-   :language: C++
-
-.. literalinclude:: ../../examples/user_defined_type.cpp
-   :start-after: _inlet_userdef_bc_struct_retrieve_start
-   :end-before: _inlet_userdef_bc_struct_retrieve_end
-   :language: C++
+.. code-block:: C++
+  std::function<double(FunctionType::Vector)> coef = inlet["coef"];
 
 Additionally, if a function does not need to be stored, the overhead of a copy can be eliminated
 by calling it directly:

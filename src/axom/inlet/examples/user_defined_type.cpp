@@ -54,10 +54,33 @@ struct FromInlet<Car>
 // _inlet_userdef_simple_frominlet_end
 
 const std::string input = R"(
+  -- A single car
   car = {
       make = "BestCompany",
       seats = 2,
-      horsepower = 200
+      horsepower = 200,
+      color = "blue"
+  }
+
+  -- A collection of cars
+  fleet = {
+    {
+      make = "Globex Corp",
+      seats = 3,
+      horsepower = 155,
+      color = "green"
+    },
+    {
+      make = "Initech",
+      seats = 4,
+      horsepower = 370
+    },
+    {
+      make = "Cyberdyne",
+      seats = 2,
+      horsepower = 101,
+      color = "silver"
+    }
   }
 )";
 
@@ -71,10 +94,18 @@ int main()
   lr->parseString(input);
   Inlet inlet(std::move(lr), ds.getRoot());
 
+  // _inlet_userdef_simple_usage_start
   // Create a table off the global table for the car object
   // then define its schema
   auto& car_schema = inlet.addStruct("car", "Vehicle description");
   Car::defineSchema(car_schema);
+  // _inlet_userdef_simple_usage_end
+
+  // _inlet_userdef_collection_usage_start
+  // Create a fleet of cars with the same Car::defineSchema
+  auto& fleet_schema = inlet.addStructArray("fleet", "A collection of cars");
+  Car::defineSchema(fleet_schema);
+  // _inlet_userdef_collection_usage_end
 
   if(!inlet.verify())
   {
@@ -83,8 +114,20 @@ int main()
 
   // Extract the car object
   Car car = inlet["car"].get<Car>();
+  std::cout << "Info on single car:" << std::endl;
   std::cout << "make = " << car.make << std::endl;
   std::cout << "color = " << car.color << std::endl;
   std::cout << "seats = " << car.seats << std::endl;
   std::cout << "horsepower = " << car.horsepower << std::endl;
+
+  // Extract the cars in the fleet
+  auto fleet = inlet["fleet"].get<std::vector<Car>>();
+  std::cout << "\nInfo on cars in fleet:" << std::endl;
+  for (const Car& car: fleet)
+  {
+    std::cout << "make = " << car.make << std::endl;
+    std::cout << "color = " << car.color << std::endl;
+    std::cout << "seats = " << car.seats << std::endl;
+    std::cout << "horsepower = " << car.horsepower << std::endl;
+  }
 }
