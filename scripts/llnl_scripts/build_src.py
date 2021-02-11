@@ -89,7 +89,7 @@ def main():
         # Default to build all SYS_TYPE's host-configs in host-config/
         build_all = not opts["hostconfig"] and not opts["automation"]
         if build_all:
-            res = build_and_test_host_configs(repo_dir, timestamp, False, opts["verbose"])
+            res = build_and_test_host_configs(repo_dir, job_name, timestamp, False, opts["verbose"])
         # Otherwise try to build a specific host-config
         else:
             # Command-line arg has highest priority

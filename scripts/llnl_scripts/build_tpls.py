@@ -45,6 +45,10 @@ def parse_args():
                       dest="verbose",
                       default=False,
                       help="Output logs to screen as well as to files")
+    parser.add_option("-m", "--mirror",
+                      dest="mirror",
+                      default="",
+                      help="Mirror location to use (defaults to shared location)")
 
     ###############
     # parse args
@@ -80,7 +84,7 @@ def main():
         os.chdir(repo_dir)
 
         timestamp = get_timestamp()
-        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp, opts["spec"], opts["verbose"])
+        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp, opts["spec"], opts["verbose"], opts["mirror"])
 
         if opts["archive"] != "":
             # Get information for archiving
