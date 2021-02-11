@@ -142,26 +142,26 @@ bool checkedConvertToInt(const std::string& number, int& result)
   return *ptr == 0;
 }
 
-void markAsGenericContainer(axom::sidre::Group& target)
+void markAsStructContainer(axom::sidre::Group& target)
 {
-  if(target.hasView(detail::GENERIC_CONTAINER_FLAG))
+  if(target.hasView(detail::STRUCT_CONTAINER_FLAG))
   {
     // This flag should only ever be one, so we verify that and error otherwise
-    const sidre::View* flag = target.getView(detail::GENERIC_CONTAINER_FLAG);
+    const sidre::View* flag = target.getView(detail::STRUCT_CONTAINER_FLAG);
     SLIC_ERROR_IF(
       !flag->isScalar(),
       fmt::format(
-        "[Inlet] Generic container flag of group '{0}' was not a scalar",
+        "[Inlet] Struct container flag of group '{0}' was not a scalar",
         target.getName()));
     const int8 value = flag->getScalar();
     SLIC_ERROR_IF(value != 1,
-                  fmt::format("[Inlet] Generic container flag of group '{0}' "
+                  fmt::format("[Inlet] Struct container flag of group '{0}' "
                               "had a value other than 1",
                               target.getName()));
   }
   else
   {
-    target.createViewScalar(detail::GENERIC_CONTAINER_FLAG, static_cast<int8>(1));
+    target.createViewScalar(detail::STRUCT_CONTAINER_FLAG, static_cast<int8>(1));
   }
 }
 
