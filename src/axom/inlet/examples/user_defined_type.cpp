@@ -195,9 +195,9 @@ struct ThermalSolver
     // _inlet_userdef_array_usage_start
     // Schema only needs to be defined once, will propagate through to each
     // element of the array, namely, the subtable at each found index in the input file
-    auto& bc_table =
-      schema.addGenericDictionary("bcs", "List of boundary conditions");
-    BoundaryCondition::defineSchema(bc_table);
+    auto& bc_schema =
+      schema.addStructDictionary("bcs", "List of boundary conditions");
+    BoundaryCondition::defineSchema(bc_schema);
     // _inlet_userdef_array_usage_end
   }
 };

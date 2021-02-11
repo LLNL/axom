@@ -149,7 +149,7 @@ namespace detail
   */
 const std::string CONTAINER_GROUP_NAME = "_inlet_container";
 const std::string CONTAINER_INDICES_NAME = "_inlet_container_indices";
-const std::string GENERIC_CONTAINER_FLAG = "_inlet_generic_container";
+const std::string STRUCT_CONTAINER_FLAG = "_inlet_struct_container";
 }  // namespace detail
 
 /*!
@@ -166,13 +166,13 @@ inline bool isContainerGroup(const std::string& name)
 
 /*!
 *****************************************************************************
-* \brief Marks the sidre::Group as a "generic container" by adding a
+* \brief Marks the sidre::Group as a "struct container" by adding a
 * corresponding flag to the group
 *
 * \param [inout] target The group to tag
 *****************************************************************************
 */
-void markAsGenericContainer(axom::sidre::Group& target);
+void markAsStructContainer(axom::sidre::Group& target);
 
 namespace cpp11_compat
 {
