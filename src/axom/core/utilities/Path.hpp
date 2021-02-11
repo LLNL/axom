@@ -45,6 +45,8 @@ public:
      * TODO: Should this be something easier-to-use, like the delimiter used
      * by the first Path object in the list?
      * 
+     * Empty paths ins \p paths will be ignored.
+     * 
      * \return The joined paths
      */
   static Path join(std::initializer_list<Path> paths, const char delim = '/');

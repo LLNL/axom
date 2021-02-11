@@ -32,9 +32,7 @@ Table& Table::addTable(const std::string& name, const std::string& description)
   for(const auto& path_part : path.parts())
   {
     // Need to watch out for empty paths here
-    auto curr_table_name = (curr_table->m_name.empty())
-      ? utilities::Path(path_part)
-      : utilities::Path::join({curr_table->m_name, path_part});
+    auto curr_table_name = utilities::Path::join({curr_table->m_name, path_part});
     // Leave the description empty for intermediate tables
     const std::string curr_descr = (path_part == name) ? description : "";
     if(!curr_table->hasChild<Table>(path_part))
@@ -826,21 +824,15 @@ T* Table::getChildInternal(const std::string& childName) const
   const std::string base_name = path.baseName();
   auto curr_table = this;
 
-  // Need to watch out for empty paths here
-  auto curr_table_name = [&curr_table](const std::string& suffix) {
-    return (curr_table->m_name.empty())
-      ? utilities::Path(suffix)
-      : utilities::Path::join({curr_table->m_name, suffix});
-  };
-
   // Traverse the intermediate paths
   const auto parent = path.parent();
   for(const auto& path_part : parent.parts())
   {
     if(curr_table->hasChild<Table>(path_part))
     {
-      curr_table =
-        curr_table->m_tableChildren.at(curr_table_name(path_part)).get();
+      curr_table = curr_table->m_tableChildren
+                     .at(utilities::Path::join({curr_table->m_name, path_part}))
+                     .get();
     }
     else
     {
@@ -851,7 +843,7 @@ T* Table::getChildInternal(const std::string& childName) const
   if(curr_table->hasChild<T>(base_name))
   {
     const auto& children = curr_table->*getChildren<T>();
-    return children.at(curr_table_name(base_name)).get();
+    return children.at(utilities::Path::join({curr_table->m_name, base_name})).get();
   }
   return nullptr;
 }

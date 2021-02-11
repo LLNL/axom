@@ -23,7 +23,7 @@ Path::Path(const std::string& path, const char delim) : m_delim(delim)
   {
     utilities::string::split(m_components, path, delim);
   }
-  else
+  else if(!path.empty())
   {
     m_components.push_back(path);
   }
@@ -36,9 +36,14 @@ Path Path::join(std::initializer_list<Path> paths, const char delim)
   for(const auto& path : paths)
   {
     // Insert everything in order
-    result.m_components.insert(result.m_components.end(),
-                               std::make_move_iterator(path.m_components.begin()),
-                               std::make_move_iterator(path.m_components.end()));
+    // It seems useful to ignore empty elements here, but maybe this is short-sighted?
+    if(!path.m_components.empty())
+    {
+      result.m_components.insert(
+        result.m_components.end(),
+        std::make_move_iterator(path.m_components.begin()),
+        std::make_move_iterator(path.m_components.end()));
+    }
   }
   return result;
 }
