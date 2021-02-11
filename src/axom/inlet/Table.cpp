@@ -23,26 +23,23 @@ void Table::forEachContainerElement(Func&& func) const
 }
 
 template <typename OutputIt, typename Func>
-bool Table::generateFromContainerElements(OutputIt first,
-                                          const std::string& name,
-                                          Func&& func) const
+bool Table::transformFromNestedElements(OutputIt output,
+                                        const std::string& name,
+                                        Func&& func) const
 {
-  bool is_nested = false;
   for(Table& table : m_nested_aggregates)
   {
-    *first++ = func(table, {});
-    is_nested = true;
+    *output++ = func(table, {});
   }
 
   if(isStructContainer())
   {
-    is_nested = true;
     for(const auto& indexPath : containerIndicesWithPaths(name))
     {
-      *first++ = func(getTable(indexPath.first), indexPath.second);
+      *output++ = func(getTable(indexPath.first), indexPath.second);
     }
   }
-  return is_nested;
+  return isStructContainer() || !m_nested_aggregates.empty();
 }
 
 Table& Table::addTable(const std::string& name, const std::string& description)
@@ -212,7 +209,7 @@ Table& Table::addStructContainer(const std::string& name,
   auto& table =
     addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
 
-  generateFromContainerElements(
+  transformFromNestedElements(
     std::back_inserter(table.m_nested_aggregates),
     name,
     [&name, &description](Table& subtable,
@@ -353,12 +350,12 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
   // of structs, so we need to iterate over the subtables
   // corresponding to elements of the array
   std::vector<std::reference_wrapper<VerifiableScalar>> fields;
-  const bool is_nested = generateFromContainerElements(
+  const bool is_nested = transformFromNestedElements(
     std::back_inserter(fields),
     name,
     [&name, &description, forArray, &val](
       Table& subtable,
-      const std::string& path) -> std::reference_wrapper<VerifiableScalar> {
+      const std::string& path) -> VerifiableScalar& {
       return subtable.addPrimitive<T>(name, description, forArray, val, path);
     });
 
@@ -599,7 +596,7 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
 {
   // Adding an array of primitive field to an array of structs
   std::vector<std::reference_wrapper<Verifiable>> tables;
-  const bool is_nested = generateFromContainerElements(
+  const bool is_nested = transformFromNestedElements(
     std::back_inserter(tables),
     name,
     [&name, &description, isDict](Table& subtable,
@@ -652,7 +649,7 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
   // corresponding to elements of the array
   std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
 
-  const bool is_nested = generateFromContainerElements(
+  const bool is_nested = transformFromNestedElements(
     std::back_inserter(funcs),
     name,
     [&name, &ret_type, &arg_types, &description](

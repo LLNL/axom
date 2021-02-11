@@ -1226,22 +1226,31 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Calls a function on the subtables corresponding to the elements
-   * of the container held by this table
-   * 
-   * \param [out] first The iterator to the first element of the container
-   * \param [in] name The name of the item to add (FIXME)
-   * \param [in] func The function to apply to individual container elements
+   * \brief Applies a provided function to nested elements of the calling table
+   * and stores the result in another container
    * 
    * \pre The function must accept two arguments of type Table& and
-   * const std::string&, respectively
+   * const std::string&, respectively.  
    * 
+   * This function will pass to the provided function the nested table
+   * as the first argument and the path of the nested element in the input file
+   * as the second argument, when applicable.
+   * 
+   * \param [out] output An iterator to the output container
+   * \param [in] name The name to append to the path described above
+   * \param [in] func The function to apply to individual nested elements
+   * 
+   * \return Whether the calling container had any nested elements (or
+   * was a struct container)
+   * 
+   * \note This function can be thought of as a variant of std::transform that
+   * operates on nested elements instead of a provided input range
    *****************************************************************************
    */
   template <typename OutputIt, typename Func>
-  bool generateFromContainerElements(OutputIt first,
-                                     const std::string& name,
-                                     Func&& func) const;
+  bool transformFromNestedElements(OutputIt output,
+                                   const std::string& name,
+                                   Func&& func) const;
 
   std::string m_name;
   Reader& m_reader;
