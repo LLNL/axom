@@ -1184,7 +1184,7 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Add an collection of user-defined type to the input file schema.
+   * \brief Add a collection of user-defined type to the input file schema.
    *
    * \param [in] name Name of the collection
    * \param [in] description Description of the collection

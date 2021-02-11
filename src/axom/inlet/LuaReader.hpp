@@ -204,7 +204,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get the list of indices for an collection
+   * \brief Get the list of indices for a collection
    *
    * \param [in]  id    The identifier to the collection that will be retrieved
    * \param [out] map The values of the indices that were retrieved
@@ -265,7 +265,7 @@ private:
   /*!
    *****************************************************************************
    * \brief Obtains the Lua table reached by successive indexing through the
-   * collection of keys described by a pair of iterators
+   * range of keys described by a pair of iterators
    * 
    * \note For a set of keys {key1, key2, key3, ...}, this function
    * is equivalent to
@@ -273,8 +273,8 @@ private:
    * table = m_lua[key1][key2][key3][...];
    * \endcode
    * 
-   * \param [in] begin Iterator to the beginning of the collection of keys
-   * \param [in] end Iterator to one-past-then-end of the collection
+   * \param [in] begin Iterator to the beginning of the range of keys
+   * \param [in] end Iterator to one-past-the-end of the range
    * \param [out] t The table to traverse
    * 
    * \return Whether the traversal was successful

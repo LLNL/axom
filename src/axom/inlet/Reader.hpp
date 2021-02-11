@@ -217,7 +217,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Get the list of indices for an collection
+   * \brief Get the list of indices for a collection
    *
    * \param [in]  id    The identifier to the collection that will be retrieved
    * \param [out] indices The values of the indices that were retrieved
