@@ -42,6 +42,9 @@ stages:
     - ${EXEC_PREFIX} ${RESOURCES} scripts/llnl_scripts/build_src.py -v --host-config ${HOST_CONFIG}
     - echo -e "section_end:$(date +%s):build_and_test\r\e[0K"
   artifacts:
+    paths:
+      - _axom_build_and_test_*/output.log*.txt
+      - _axom_build_and_test_*/build-*/output.log*.txt
     reports:
       junit: _axom_build_and_test_*/build-*/junit.xml
 
@@ -62,6 +65,9 @@ stages:
     - ${EXEC_PREFIX} ${RESOURCES} scripts/llnl_scripts/build_src.py -v --automation
     - echo -e "section_end:$(date +%s):build_and_test\r\e[0K"
   artifacts:
+    paths:
+      - _axom_build_and_test_*/output.log*.txt
+      - _axom_build_and_test_*/build-*/output.log*.txt
     reports:
       junit: _axom_build_and_test_*/build-*/junit.xml
 
@@ -73,6 +79,9 @@ stages:
     - lalloc 1 -W 25 ${LSF_ACCOUNT} scripts/llnl_scripts/build_src.py -v --host-config ${HOST_CONFIG}
     - echo -e "section_end:$(date +%s):build_and_test\r\e[0K"
   artifacts:
+    paths:
+      - _axom_build_and_test_*/output.log*.txt
+      - _axom_build_and_test_*/build-*/output.log*.txt
     reports:
       junit: _axom_build_and_test_*/build-*/junit.xml
 
@@ -90,6 +99,9 @@ stages:
     - lalloc 1 -W 25 ${LSF_ACCOUNT} scripts/llnl_scripts/build_src.py -v --automation
     - echo -e "section_end:$(date +%s):build_and_test\r\e[0K"
   artifacts:
+    paths:
+      - _axom_build_and_test_*/output.log*.txt
+      - _axom_build_and_test_*/build-*/output.log*.txt
     reports:
       junit: _axom_build_and_test_*/build-*/junit.xml
 
