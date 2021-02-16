@@ -476,10 +476,12 @@ TEST(inlet_function, nested_function_in_struct)
   EXPECT_EQ(foos.size(), 2);
 
   auto& first_func = foos[0].bar;
+  // Check that the function object contains a valid target
   EXPECT_TRUE(static_cast<bool>(first_func));
   EXPECT_DOUBLE_EQ(first_func(4.0), 5.0);
 
   auto& second_func = foos[1].bar;
+  // Check that the function object contains a valid target
   EXPECT_TRUE(static_cast<bool>(second_func));
   EXPECT_DOUBLE_EQ(second_func(4.0), 7.0);
 }
