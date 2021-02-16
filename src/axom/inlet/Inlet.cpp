@@ -72,9 +72,25 @@ void writerHelper(Writer& writer, const Table& table)
 {
   // Use a pre-order traversal for readability
   writer.documentTable(table);
-  for(const auto& sub_table_entry : table.getChildTables())
+  // If the current table contains a collection, visit that last
+  const auto& child_tables = table.getChildTables();
+  for(const auto& sub_table_entry : child_tables)
   {
-    writerHelper(writer, *sub_table_entry.second);
+    // Ignore the collection group as it will be visited later
+    if(!isContainerGroup(sub_table_entry.first))
+    {
+      writerHelper(writer, *sub_table_entry.second);
+    }
+  }
+  auto iter =
+    child_tables.find(appendPrefix(table.name(), detail::CONTAINER_GROUP_NAME));
+  if(iter != child_tables.end())
+  {
+    const auto& coll_table = *iter->second;
+    if(coll_table.sidreGroup()->hasGroup(detail::CONTAINER_INDICES_NAME))
+    {
+      writerHelper(writer, coll_table);
+    }
   }
 }
 
