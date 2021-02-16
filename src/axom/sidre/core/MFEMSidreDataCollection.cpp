@@ -35,6 +35,41 @@ const std::string MFEMSidreDataCollection::s_attribute_suffix =
   "_material_attribute";
 const std::string MFEMSidreDataCollection::s_coordset_name = "coords";
 
+namespace detail
+{
+/**
+ * @brief Retrieves the last "n" tokens of a string split with the specified delimiter
+ * @param[in] input The string to split
+ * @param[in] n The number of tokens to retrieve
+ * @param[in] delim The delimiter to split with
+ * 
+ * @return A list of tokens (of size @p n )
+ * 
+ * Splits a string starting from the end of the string into a maximum of @p n tokens
+ */
+std::vector<std::string> splitLastNTokens(const std::string& input,
+                                          const int n,
+                                          const char delim)
+{
+  std::vector<std::string> result;
+
+  auto last_pos = std::string::npos;
+  auto pos = input.find_last_of(delim, last_pos - 1);
+
+  while((pos != std::string::npos) && (result.size() < n - 1))
+  {
+    result.push_back(input.substr(pos + 1, last_pos - pos - 1));
+    last_pos = pos;
+    pos = input.find_last_of(delim, last_pos - 1);
+  }
+  // Add the rest of the string (first token)
+  result.push_back(input.substr(0, last_pos));
+  std::reverse(result.begin(), result.end());
+  return result;
+}
+
+}  // namespace detail
+
 // Constructor that will automatically create the sidre data store and necessary
 // data groups for domain and global data.
 MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_name,
@@ -1455,102 +1490,78 @@ View* MFEMSidreDataCollection::getFieldValuesView(const std::string& field_name)
 
 void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 {
-  const auto last_underscore_pos = field_name.find_last_of('_');
-  // If it doesn't contain an underscore, it can't be a volume fraction field
-  if(last_underscore_pos == std::string::npos)
+  const auto tokens = detail::splitLastNTokens(field_name, 2, '_');
+  // Expecting [base_field_name, material_id]
+  if(tokens.size() != 2)
   {
     return;
   }
 
-  const std::string vol_frac_field = field_name.substr(0, last_underscore_pos);
-
-  auto iter = m_matset_associations.find(vol_frac_field);
+  auto iter = m_matset_associations.find(tokens[0]);
   // If it hasn't been registered as a matset, it's not a volume fraction field
   if(iter == m_matset_associations.end())
   {
     return;
   }
   const std::string matset_name = iter->second;
-  const std::string material_id = field_name.substr(last_underscore_pos + 1);
 
   View* vol_fractions_view = getFieldValuesView(field_name);
 
   Group* fractions_group =
     alloc_group(m_bp_grp, "matsets/" + matset_name + "/volume_fractions");
   View* matset_frac_view = fractions_group->copyView(vol_fractions_view);
-  matset_frac_view->rename(material_id);
-
+  matset_frac_view->rename(tokens[1]);
   // FIXME: Do we need to add anything to the index group?
 }
 
 void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
 {
-  const auto last_underscore_pos = field_name.find_last_of('_');
-  // If it doesn't contain an underscore, it can't be a species set field field
-  if(last_underscore_pos == std::string::npos)
+  const auto tokens = detail::splitLastNTokens(field_name, 3, '_');
+  // Expecting [base_field_name, material_id, component]
+  if(tokens.size() != 3)
   {
     return;
   }
 
-  // Needs to have a second underscore for the second layer of indexing
-  const auto penultimate_underscore_pos =
-    field_name.find_last_of('_', last_underscore_pos - 1);
-  if(penultimate_underscore_pos == std::string::npos)
-  {
-    return;
-  }
-
-  const std::string species_field =
-    field_name.substr(0, penultimate_underscore_pos);
-
-  auto iter = m_specset_associations.find(species_field);
+  auto iter = m_specset_associations.find(tokens[0]);
   // If it hasn't been registered as a matset, it's not a species field
   if(iter == m_specset_associations.end())
   {
     return;
   }
   const std::string specset_name = iter->second;
-  const std::string material_id =
-    field_name.substr(penultimate_underscore_pos + 1,
-                      field_name.length() - last_underscore_pos - 1);
-  const std::string component_id = field_name.substr(last_underscore_pos + 1);
 
   View* species_values_view = getFieldValuesView(field_name);
 
   Group* specset_material_group =
     alloc_group(m_bp_grp,
-                "specsets/" + specset_name + "/matset_values/" + material_id);
+                "specsets/" + specset_name + "/matset_values/" + tokens[1]);
   View* specset_values = specset_material_group->copyView(species_values_view);
-  specset_values->rename(component_id);
-
+  specset_values->rename(tokens[2]);
   // FIXME: Do we need to add anything to the index group?
 }
 
 void MFEMSidreDataCollection::checkForMaterialDependentField(
   const std::string& field_name)
 {
-  const auto last_underscore_pos = field_name.find_last_of('_');
-  // If it doesn't contain an underscore, it can't be a volume fraction field
-  if(last_underscore_pos == std::string::npos)
+  const auto tokens = detail::splitLastNTokens(field_name, 2, '_');
+  // Expecting [base_field_name, material_id]
+  if(tokens.size() != 2)
   {
     return;
   }
 
-  const std::string mat_dependent_field =
-    field_name.substr(0, last_underscore_pos);
-
-  auto iter = m_material_dependent_fields.find(mat_dependent_field);
+  auto iter = m_material_dependent_fields.find(tokens[0]);
   // If it hasn't been registered, it's not a material-dependent field
   if(iter == m_material_dependent_fields.end())
   {
     return;
   }
   const std::string matset_name = iter->second;
-  const std::string material_id = field_name.substr(last_underscore_pos + 1);
 
   View* material_values = getFieldValuesView(field_name);
 
-  Group* field_grp = m_bp_grp->getGroup("fields/" + mat_dependent_field);
+  Group* field_grp = m_bp_grp->getGroup("fields/" + tokens[0]);
   if(!field_grp->hasView("matset"))
   {
     field_grp->createViewString("matset", matset_name);
@@ -1558,8 +1569,7 @@ void MFEMSidreDataCollection::checkForMaterialDependentField(
 
   Group* values_grp = alloc_group(field_grp, "matset_values");
   View* added_values = values_grp->copyView(material_values);
-  added_values->rename(material_id);
-
+  added_values->rename(tokens[1]);
   // FIXME: Do we need to add anything to the index group?
 }
 
@@ -1801,7 +1811,7 @@ void MFEMSidreDataCollection::reconstructFields()
   }
 }
 
-} /* namespace sidre */
-} /* namespace axom */
+}  // namespace sidre
+}  // namespace axom
 
 #endif  // AXOM_USE_MFEM
