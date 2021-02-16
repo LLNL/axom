@@ -5,90 +5,66 @@
 
 /*!
  *******************************************************************************
- * \file SphinxDocWriter.cpp
+ * \file SphinxWriter.cpp
  *
- * \brief This file contains the class implementation of the SphinxDocWriter.
+ * \brief This file contains the class implementation of the SphinxWriter.
  *******************************************************************************
  */
 
-#include "axom/inlet/SphinxDocWriter.hpp"
+#include "axom/inlet/SphinxWriter.hpp"
+
 #include <iostream>
-#include <assert.h>
+
 #include "axom/slic.hpp"
+#include "axom/inlet/Table.hpp"
 
 namespace axom
 {
 namespace inlet
 {
-SphinxDocWriter::SphinxDocWriter(const std::string& fileName,
-                                 axom::sidre::Group* root)
+SphinxWriter::SphinxWriter(const std::string& fileName)
+  : m_colLabels({"Field Name",
+                 "Description",
+                 "Default Value",
+                 "Range/Valid Values",
+                 "Required"})
 {
-  SLIC_WARNING_IF(root == nullptr,
-                  "[Inlet] Sidre root group was not defined"
-                  " while writing documentation");
-  m_sidreRootGroup = root;
   m_fileName = fileName;
+
+  m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX\n";
+  m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX\n\n";
+  writeTitle("Input file Options");
 }
 
-void SphinxDocWriter::writeDocumentation()
+void SphinxWriter::documentTable(const Table& table)
 {
-  if(m_sidreRootGroup->getName() == "")
+  const auto sidreGroup = table.sidreGroup();
+  m_inletTablePathNames.push_back(sidreGroup->getPathName());
+  auto& currTable =
+    m_rstTables.emplace(sidreGroup->getPathName(), TableData {m_colLabels})
+      .first->second;
+  currTable.tableName = sidreGroup->getName();
+  if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
   {
-    writeTitle("Input file Options");
+    currTable.description = sidreGroup->getView("description")->getString();
   }
-  else
+
+  // FIXME: Handle container fields differently
+  for(const auto& field_entry : table.getChildFields())
   {
-    writeTitle(m_sidreRootGroup->getName());
+    extractFieldMetadata(field_entry.second->sidreGroup());
   }
-  m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX" << std::endl;
-  m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX" << std::endl;
-  writeDocumentationHelper(m_sidreRootGroup);
+}
+
+void SphinxWriter::finalize()
+{
   writeAllTables();
   m_outFile.open(m_fileName);
   m_outFile << m_oss.str();
   m_outFile.close();
 }
 
-void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup)
-{
-  SLIC_WARNING_IF(!sidreGroup, "[Inlet] Root was nullptr");
-  axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
-
-  // Special case for valid string values since it's a Group whereas other
-  // valid values and Field properties are all stored as Views
-  if(axom::sidre::indexIsValid(i) &&
-     sidreGroup->getGroupName(i) == "validStringValues")
-  {
-    i = axom::sidre::InvalidIndex;
-  }
-
-  // Case 1: the current group is a Field
-  if(sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex)
-  {
-    extractFieldMetadata(sidreGroup);
-  }
-
-  // Case 2: Current root corresponds to an Inlet::Table
-  if(i != axom::sidre::InvalidIndex)
-  {
-    m_inletTablePathNames.push_back(sidreGroup->getPathName());
-    m_rstTables[sidreGroup->getPathName()] = TableData();
-    m_rstTables[sidreGroup->getPathName()].tableName = sidreGroup->getName();
-    if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
-    {
-      m_rstTables[sidreGroup->getPathName()].description =
-        sidreGroup->getView("description")->getString();
-    }
-  }
-
-  while(i != axom::sidre::InvalidIndex)
-  {
-    writeDocumentationHelper(sidreGroup->getGroup(i));
-    i = sidreGroup->getNextValidGroupIndex(i);
-  }
-}
-
-void SphinxDocWriter::writeTitle(const std::string& title)
+void SphinxWriter::writeTitle(const std::string& title)
 {
   if(title != "")
   {
@@ -97,7 +73,7 @@ void SphinxDocWriter::writeTitle(const std::string& title)
   }
 }
 
-void SphinxDocWriter::writeSubtitle(const std::string& sub)
+void SphinxWriter::writeSubtitle(const std::string& sub)
 {
   if(sub != "")
   {
@@ -106,14 +82,21 @@ void SphinxDocWriter::writeSubtitle(const std::string& sub)
   }
 }
 
-void SphinxDocWriter::writeTable(const std::string& title,
-                                 const std::vector<std::vector<std::string>>& rstTable)
+void SphinxWriter::writeTable(const std::string& title,
+                              const std::vector<std::vector<std::string>>& rstTable)
 {
   SLIC_WARNING_IF(
     rstTable.size() <= 1,
     "[Inlet] Vector for corresponding rst table must be nonempty");
   std::string result = ".. list-table:: " + title;
-  result += "\n   :widths: 25 25 25 25 25\n";
+  std::string widths = ":widths:";
+  // This would be easier with an iterator adaptor like back_inserter but for
+  // concatenation
+  for(std::size_t i = 0u; i < m_colLabels.size(); i++)
+  {
+    widths += " 25";
+  }
+  result += "\n   " + widths + "\n";
   result += "   :header-rows: 1\n   :stub-columns: 1\n\n";
   for(unsigned int i = 0; i < rstTable.size(); ++i)
   {
@@ -130,24 +113,25 @@ void SphinxDocWriter::writeTable(const std::string& title,
   m_oss << result;
 }
 
-void SphinxDocWriter::writeAllTables()
+void SphinxWriter::writeAllTables()
 {
   for(std::string& pathName : m_inletTablePathNames)
   {
-    writeSubtitle(m_rstTables[pathName].tableName);
-    if(m_rstTables[pathName].description != "")
+    auto& currTable = m_rstTables.at(pathName);
+    writeSubtitle(currTable.tableName);
+    if(currTable.description != "")
     {
-      m_oss << "Description: " << m_rstTables[pathName].description << std::endl
+      m_oss << "Description: " << currTable.description << std::endl
             << std::endl;
     }
-    if(m_rstTables[pathName].rstTable.size() > 1)
+    if(currTable.rstTable.size() > 1)
     {
-      writeTable("Fields", m_rstTables[pathName].rstTable);
+      writeTable("Fields", currTable.rstTable);
     }
   }
 }
 
-std::string SphinxDocWriter::getDefaultValueAsString(axom::sidre::View* view)
+std::string SphinxWriter::getValueAsString(const axom::sidre::View* view)
 {
   axom::sidre::TypeID type = view->getTypeID();
   if(type == axom::sidre::TypeID::INT8_ID)
@@ -168,7 +152,7 @@ std::string SphinxDocWriter::getDefaultValueAsString(axom::sidre::View* view)
   return view->getString();
 }
 
-std::string SphinxDocWriter::getRangeAsString(axom::sidre::View* view)
+std::string SphinxWriter::getRangeAsString(const axom::sidre::View* view)
 {
   std::ostringstream oss;
   oss.precision(3);
@@ -177,20 +161,20 @@ std::string SphinxDocWriter::getRangeAsString(axom::sidre::View* view)
   axom::sidre::TypeID type = view->getTypeID();
   if(type == axom::sidre::INT_ID)
   {
-    int* range = view->getArray();
+    const int* range = view->getData();
     oss << range[0] << " to " << range[1];
   }
   else
   {
-    double* range = view->getArray();
+    const double* range = view->getData();
     oss << range[0] << " to " << range[1];
   }
   return oss.str();
 }
 
-std::string SphinxDocWriter::getValidValuesAsString(axom::sidre::View* view)
+std::string SphinxWriter::getValidValuesAsString(const axom::sidre::View* view)
 {
-  int* range = view->getArray();
+  const int* range = view->getData();
   size_t size = view->getBuffer()->getNumElements();
   std::string result = "";
   for(size_t i = 0; i < size; ++i)
@@ -207,7 +191,7 @@ std::string SphinxDocWriter::getValidValuesAsString(axom::sidre::View* view)
   return result;
 }
 
-std::string SphinxDocWriter::getValidStringValues(axom::sidre::Group* sidreGroup)
+std::string SphinxWriter::getValidStringValues(const axom::sidre::Group* sidreGroup)
 {
   auto idx = sidreGroup->getFirstValidViewIndex();
   std::string validValues = "";
@@ -223,11 +207,11 @@ std::string SphinxDocWriter::getValidStringValues(axom::sidre::Group* sidreGroup
   return validValues;
 }
 
-void SphinxDocWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup)
+void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup)
 {
-  TableData& currentTable = m_rstTables[sidreGroup->getParent()->getPathName()];
-  std::vector<std::string> fieldAttributes(5, "");
-  fieldAttributes.resize(5);
+  TableData& currentTable =
+    m_rstTables.at(sidreGroup->getParent()->getPathName());
+  std::vector<std::string> fieldAttributes(m_colLabels.size());
 
   fieldAttributes[0] = sidreGroup->getName();
 
@@ -239,8 +223,7 @@ void SphinxDocWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup)
 
   if(sidreGroup->hasView("defaultValue"))
   {
-    fieldAttributes[2] =
-      getDefaultValueAsString(sidreGroup->getView("defaultValue"));
+    fieldAttributes[2] = getValueAsString(sidreGroup->getView("defaultValue"));
   }
 
   if(sidreGroup->hasView("range"))
