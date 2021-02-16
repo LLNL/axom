@@ -132,6 +132,7 @@ private:
       rstTable.push_back(labels);
     }
 
+    TableData(TableData&&) = default;
     // Shouldn't be needed, these will always be managed in a container
     TableData(const TableData&) = delete;
 
