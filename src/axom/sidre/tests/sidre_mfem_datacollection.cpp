@@ -268,6 +268,21 @@ void dumpDataCollection(MFEMSidreDataCollection& sdc)
   SLIC_INFO(mesh_node.to_yaml());
 }
 
+// Helper function to check for the existence of two sidre::Views and to check
+// that they each refer to the same block of data
+void checkReferentialEquality(axom::sidre::Group* grp,
+                              const std::string& first,
+                              const std::string& second)
+{
+  ASSERT_TRUE(grp->hasView(first));
+  ASSERT_TRUE(grp->hasView(second));
+  // Conduct a pointer comparison to make sure that the two views actually
+  // refer to the same block of memory
+  const double* first_data = grp->getView(first)->getData();
+  const double* second_data = grp->getView(second)->getData();
+  EXPECT_EQ(first_data, second_data);
+}
+
 TEST(sidre_datacollection, create_matset)
 {
   // 1D mesh divided into 10 segments
@@ -288,7 +303,9 @@ TEST(sidre_datacollection, create_matset)
   const auto bp_grp = sdc.GetBPGroup();
   EXPECT_TRUE(bp_grp->hasGroup("matsets"));
   EXPECT_TRUE(bp_grp->hasGroup("matsets/matset"));
-  EXPECT_TRUE(bp_grp->hasView("matsets/matset/volume_fractions/001"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
 }
 
 TEST(sidre_datacollection, create_matset_multi_fraction)
@@ -314,8 +331,12 @@ TEST(sidre_datacollection, create_matset_multi_fraction)
   const auto bp_grp = sdc.GetBPGroup();
   EXPECT_TRUE(bp_grp->hasGroup("matsets"));
   EXPECT_TRUE(bp_grp->hasGroup("matsets/matset"));
-  EXPECT_TRUE(bp_grp->hasView("matsets/matset/volume_fractions/001"));
-  EXPECT_TRUE(bp_grp->hasView("matsets/matset/volume_fractions/002"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/002",
+                           "fields/volume_fraction_002/values");
 }
 
 TEST(sidre_datacollection, create_specset)
@@ -353,6 +374,12 @@ TEST(sidre_datacollection, create_specset)
   EXPECT_EQ(std::string(bp_grp->getView("specsets/specset/matset")->getString()),
             "matset");
   EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/001/001"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/001/001",
+                           "fields/partial_density_001_001/values");
 }
 
 TEST(sidre_datacollection, create_specset_multi_fraction)
@@ -400,10 +427,24 @@ TEST(sidre_datacollection, create_specset_multi_fraction)
   EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset"));
   EXPECT_EQ(std::string(bp_grp->getView("specsets/specset/matset")->getString()),
             "matset");
-  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/001/001"));
-  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/001/002"));
-  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/002/001"));
-  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/002/002"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/002",
+                           "fields/volume_fraction_002/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/001/001",
+                           "fields/partial_density_001_001/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/001/002",
+                           "fields/partial_density_001_002/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/002/001",
+                           "fields/partial_density_002_001/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/002/002",
+                           "fields/partial_density_002_002/values");
 }
 
 TEST(sidre_datacollection, create_material_dependent_field)
@@ -436,7 +477,12 @@ TEST(sidre_datacollection, create_material_dependent_field)
   const auto bp_grp = sdc.GetBPGroup();
   EXPECT_TRUE(bp_grp->hasGroup("fields/density"));
   EXPECT_TRUE(bp_grp->hasGroup("fields/density/matset_values"));
-  EXPECT_TRUE(bp_grp->hasView("fields/density/matset_values/001"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "fields/density/matset_values/001",
+                           "fields/density_001/values");
 }
 
 TEST(sidre_datacollection, create_material_dependent_field_multi_fraction)
@@ -476,8 +522,18 @@ TEST(sidre_datacollection, create_material_dependent_field_multi_fraction)
   const auto bp_grp = sdc.GetBPGroup();
   EXPECT_TRUE(bp_grp->hasGroup("fields/density"));
   EXPECT_TRUE(bp_grp->hasGroup("fields/density/matset_values"));
-  EXPECT_TRUE(bp_grp->hasView("fields/density/matset_values/001"));
-  EXPECT_TRUE(bp_grp->hasView("fields/density/matset_values/002"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/002",
+                           "fields/volume_fraction_002/values");
+  checkReferentialEquality(bp_grp,
+                           "fields/density/matset_values/001",
+                           "fields/density_001/values");
+  checkReferentialEquality(bp_grp,
+                           "fields/density/matset_values/002",
+                           "fields/density_002/values");
 }
 
   //----------------------------------------------------------------------
