@@ -35,6 +35,41 @@ const std::string MFEMSidreDataCollection::s_attribute_suffix =
   "_material_attribute";
 const std::string MFEMSidreDataCollection::s_coordset_name = "coords";
 
+namespace detail
+{
+/**
+ * @brief Retrieves the last "n" tokens of a string split with the specified delimiter
+ * @param[in] input The string to split
+ * @param[in] n The number of tokens to retrieve
+ * @param[in] delim The delimiter to split with
+ * 
+ * @return A list of tokens (of size @p n )
+ * 
+ * Splits a string starting from the end of the string into a maximum of @p n tokens
+ */
+std::vector<std::string> splitLastNTokens(const std::string& input,
+                                          const int n,
+                                          const char delim)
+{
+  std::vector<std::string> result;
+
+  auto last_pos = std::string::npos;
+  auto pos = input.find_last_of(delim, last_pos - 1);
+
+  while((pos != std::string::npos) && (result.size() < n - 1))
+  {
+    result.push_back(input.substr(pos + 1, last_pos - pos - 1));
+    last_pos = pos;
+    pos = input.find_last_of(delim, last_pos - 1);
+  }
+  // Add the rest of the string (first token)
+  result.push_back(input.substr(0, last_pos));
+  std::reverse(result.begin(), result.end());
+  return result;
+}
+
+}  // namespace detail
+
 // Constructor that will automatically create the sidre data store and necessary
 // data groups for domain and global data.
 MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_name,
@@ -2444,7 +2479,7 @@ void MFEMSidreDataCollection::reconstructFields()
   }
 }
 
-} /* namespace sidre */
-} /* namespace axom */
+}  // namespace sidre
+}  // namespace axom
 
 #endif  // AXOM_USE_MFEM
