@@ -71,7 +71,7 @@ a default value, will result in a runtime error.
 Tables
 ******
 
-Tables help with grouping associated data together into a single container. Tables can
+Tables help with grouping associated data together into a single collection. Tables can
 contain multiple individually named Fields, multiple sub-Tables, as well as a single
 array or a single dictionary.
 

@@ -14,9 +14,9 @@ namespace axom
 namespace inlet
 {
 template <typename Func>
-void Table::forEachContainerElement(Func&& func) const
+void Table::forEachCollectionElement(Func&& func) const
 {
-  for(const auto& index : containerIndices())
+  for(const auto& index : collectionIndices())
   {
     func(getTable(detail::indexToString(index)));
   }
@@ -86,9 +86,9 @@ Table& Table::addStruct(const std::string& name, const std::string& description)
     base_table.m_nested_aggregates.push_back(
       sub_table.addStruct(name, description));
   }
-  if(isStructContainer())
+  if(isStructCollection())
   {
-    for(const auto& index : containerIndices())
+    for(const auto& index : collectionIndices())
     {
       base_table.m_nested_aggregates.push_back(
         getTable(detail::indexToString(index)).addStruct(name, description));
@@ -97,14 +97,14 @@ Table& Table::addStruct(const std::string& name, const std::string& description)
   return base_table;
 }
 
-std::vector<VariantKey> Table::containerIndices(bool trimAbsolute) const
+std::vector<VariantKey> Table::collectionIndices(bool trimAbsolute) const
 {
   std::vector<VariantKey> indices;
-  // Not having indices is not necessarily an error, as the container
+  // Not having indices is not necessarily an error, as the collection
   // could exist but just be empty
-  if(m_sidreGroup->hasGroup(detail::CONTAINER_INDICES_NAME))
+  if(m_sidreGroup->hasGroup(detail::COLLECTION_INDICES_NAME))
   {
-    auto group = m_sidreGroup->getGroup(detail::CONTAINER_INDICES_NAME);
+    auto group = m_sidreGroup->getGroup(detail::COLLECTION_INDICES_NAME);
     indices.reserve(group->getNumViews());
     for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
         idx = group->getNextValidViewIndex(idx))
@@ -140,11 +140,11 @@ std::vector<VariantKey> Table::containerIndices(bool trimAbsolute) const
   return indices;
 }
 
-std::vector<std::pair<std::string, std::string>> Table::containerIndicesWithPaths(
+std::vector<std::pair<std::string, std::string>> Table::collectionIndicesWithPaths(
   const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
-  for(const auto& indexLabel : containerIndices(false))
+  for(const auto& indexLabel : collectionIndices(false))
   {
     auto stringLabel = detail::indexToString(indexLabel);
     // Since the index is absolute, we only care about the last segment of it
@@ -183,36 +183,36 @@ Verifiable<Table>& Table::addStringArray(const std::string& name,
 }
 
 template <typename Key>
-Table& Table::addStructContainer(const std::string& name,
-                                 const std::string& description)
+Table& Table::addStructCollection(const std::string& name,
+                                  const std::string& description)
 {
   auto& table =
-    addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
+    addTable(appendPrefix(name, detail::COLLECTION_GROUP_NAME), description);
   for(Table& sub_table : m_nested_aggregates)
   {
     table.m_nested_aggregates.push_back(
-      sub_table.addStructContainer<Key>(name, description));
+      sub_table.addStructCollection<Key>(name, description));
   }
-  if(isStructContainer())
+  if(isStructCollection())
   {
     // Iterate over each element and forward the call to addPrimitiveArray
-    for(const auto& indexPath : containerIndicesWithPaths(name))
+    for(const auto& indexPath : collectionIndicesWithPaths(name))
     {
       table.m_nested_aggregates.push_back(
-        getTable(indexPath.first).addStructContainer<Key>(name, description));
+        getTable(indexPath.first).addStructCollection<Key>(name, description));
     }
-    markAsStructContainer(*table.m_sidreGroup);
+    markAsStructCollection(*table.m_sidreGroup);
   }
   else
   {
     std::vector<Key> indices;
     std::string fullName = appendPrefix(m_name, name);
-    fullName = removeAllInstances(fullName, detail::CONTAINER_GROUP_NAME + "/");
+    fullName = removeAllInstances(fullName, detail::COLLECTION_GROUP_NAME + "/");
     if(m_reader.getIndices(fullName, indices))
     {
       table.addIndicesGroup(indices, description);
     }
-    markAsStructContainer(*table.m_sidreGroup);
+    markAsStructCollection(*table.m_sidreGroup);
   }
   return table;
 }
@@ -220,7 +220,7 @@ Table& Table::addStructContainer(const std::string& name,
 Table& Table::addStructArray(const std::string& name,
                              const std::string& description)
 {
-  return addStructContainer<int>(name, description);
+  return addStructCollection<int>(name, description);
 }
 
 Verifiable<Table>& Table::addBoolDictionary(const std::string& name,
@@ -250,7 +250,7 @@ Verifiable<Table>& Table::addStringDictionary(const std::string& name,
 Table& Table::addStructDictionary(const std::string& name,
                                   const std::string& description)
 {
-  return addStructContainer<VariantKey>(name, description);
+  return addStructCollection<VariantKey>(name, description);
 }
 
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
@@ -328,7 +328,7 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
                                       T val,
                                       const std::string& pathOverride)
 {
-  if(isStructContainer() || !m_nested_aggregates.empty())
+  if(isStructCollection() || !m_nested_aggregates.empty())
   {
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
@@ -338,9 +338,9 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
     {
       fields.push_back(table.addPrimitive<T>(name, description, forArray, val));
     }
-    if(isStructContainer())
+    if(isStructCollection())
     {
-      for(const auto& indexPath : containerIndicesWithPaths(name))
+      for(const auto& indexPath : collectionIndicesWithPaths(name))
       {
         // Add a primitive to an array element (which is a struct)
         fields.push_back(
@@ -367,7 +367,7 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
-      removeAllInstances(lookupPath, detail::CONTAINER_GROUP_NAME + "/");
+      removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
     auto typeId = addPrimitiveHelper(sidreGroup, lookupPath, forArray, val);
     return addField(sidreGroup, typeId, fullName, name);
   }
@@ -437,9 +437,9 @@ namespace detail
   *****************************************************************************
   */
 template <typename T>
-void registerContainer(Table& table, const std::unordered_map<int, T>& container)
+void registerCollection(Table& table, const std::unordered_map<int, T>& collection)
 {
-  for(const auto& entry : container)
+  for(const auto& entry : collection)
   {
     table.addPrimitive(std::to_string(entry.first), "", true, entry.second);
   }
@@ -451,10 +451,10 @@ void registerContainer(Table& table, const std::unordered_map<int, T>& container
   *****************************************************************************
   */
 template <typename T>
-void registerContainer(Table& table,
-                       const std::unordered_map<VariantKey, T>& container)
+void registerCollection(Table& table,
+                        const std::unordered_map<VariantKey, T>& collection)
 {
-  for(const auto& entry : container)
+  for(const auto& entry : collection)
   {
     auto string_key = indexToString(entry.first);
     SLIC_ERROR_IF(
@@ -483,10 +483,10 @@ struct PrimitiveArrayHelper<Key, bool>
 {
   /*!
    *****************************************************************************
-   * \brief Finalizes the creation of a container
-   * \param [inout] table The table to add the container to
-   * \param [in] reader The Reader object to read the container from
-   * \param [in] lookupPath The path within the input file to the container
+   * \brief Finalizes the creation of a collection
+   * \param [inout] table The table to add the collection to
+   * \param [in] reader The Reader object to read the collection from
+   * \param [in] lookupPath The path within the input file to the collection
    *****************************************************************************
    */
   PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
@@ -494,7 +494,7 @@ struct PrimitiveArrayHelper<Key, bool>
     std::unordered_map<Key, bool> map;
     // Failure to retrieve a map is not necessarily an error
     reader.getBoolMap(lookupPath, map);
-    registerContainer(table, map);
+    registerCollection(table, map);
   }
 };
 
@@ -505,7 +505,7 @@ struct PrimitiveArrayHelper<Key, int>
   {
     std::unordered_map<Key, int> map;
     reader.getIntMap(lookupPath, map);
-    registerContainer(table, map);
+    registerCollection(table, map);
   }
 };
 
@@ -516,7 +516,7 @@ struct PrimitiveArrayHelper<Key, double>
   {
     std::unordered_map<Key, double> map;
     reader.getDoubleMap(lookupPath, map);
-    registerContainer(table, map);
+    registerCollection(table, map);
   }
 };
 
@@ -527,7 +527,7 @@ struct PrimitiveArrayHelper<Key, std::string>
   {
     std::unordered_map<Key, std::string> map;
     reader.getStringMap(lookupPath, map);
-    registerContainer(table, map);
+    registerCollection(table, map);
   }
 };
 
@@ -560,7 +560,7 @@ void Table::addIndicesGroup(const std::vector<Key>& indices,
                             const std::string& description)
 {
   sidre::Group* indices_group =
-    m_sidreGroup->createGroup(detail::CONTAINER_INDICES_NAME,
+    m_sidreGroup->createGroup(detail::COLLECTION_INDICES_NAME,
                               /* list_format = */ true);
   // For each index, add a table whose name is its index
   // Schema for struct is defined using the returned table
@@ -570,7 +570,7 @@ void Table::addIndicesGroup(const std::vector<Key>& indices,
       removeBeforeDelimiter(detail::indexToString(idx));
     addTable(string_idx, description);
     std::string absolute = appendPrefix(m_name, detail::indexToString(idx));
-    absolute = removeAllInstances(absolute, detail::CONTAINER_GROUP_NAME + "/");
+    absolute = removeAllInstances(absolute, detail::COLLECTION_GROUP_NAME + "/");
     detail::addIndexViewToGroup(*indices_group, absolute);
   }
 }
@@ -581,7 +581,7 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
                                             const bool isDict,
                                             const std::string& pathOverride)
 {
-  if(isStructContainer() || !m_nested_aggregates.empty())
+  if(isStructCollection() || !m_nested_aggregates.empty())
   {
     // Adding an array of primitive field to an array of structs
     std::vector<std::reference_wrapper<Verifiable>> tables;
@@ -589,10 +589,10 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     {
       tables.push_back(table.addPrimitiveArray<T>(name, description, isDict));
     }
-    if(isStructContainer())
+    if(isStructCollection())
     {
       // Iterate over each element and forward the call to addPrimitiveArray
-      for(const auto& indexPath : containerIndicesWithPaths(name))
+      for(const auto& indexPath : collectionIndicesWithPaths(name))
       {
         tables.push_back(
           getTable(indexPath.first)
@@ -609,11 +609,11 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
   {
     // "base case", create a table for the field and fill it in with the helper
     auto& table =
-      addTable(appendPrefix(name, detail::CONTAINER_GROUP_NAME), description);
+      addTable(appendPrefix(name, detail::COLLECTION_GROUP_NAME), description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
-      removeAllInstances(lookupPath, detail::CONTAINER_GROUP_NAME + "/");
+      removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
     if(isDict)
     {
       detail::PrimitiveArrayHelper<VariantKey, T>(table, m_reader, lookupPath);
@@ -638,7 +638,7 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
                                          const std::string& description,
                                          const std::string& pathOverride)
 {
-  if(isStructContainer() || !m_nested_aggregates.empty())
+  if(isStructCollection() || !m_nested_aggregates.empty())
   {
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
@@ -648,9 +648,9 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
     {
       funcs.push_back(table.addFunction(name, ret_type, arg_types, description));
     }
-    if(isStructContainer())
+    if(isStructCollection())
     {
-      for(const auto& indexPath : containerIndicesWithPaths(name))
+      for(const auto& indexPath : collectionIndicesWithPaths(name))
       {
         // Add a primitive to an array element (which is a struct)
         funcs.push_back(
@@ -678,7 +678,7 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
-      removeAllInstances(lookupPath, detail::CONTAINER_GROUP_NAME + "/");
+      removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
     auto func = m_reader.getFunction(lookupPath, ret_type, arg_types);
     return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
   }
@@ -730,12 +730,12 @@ Proxy Table::operator[](const std::string& name) const
 
 Table& Table::required(bool isRequired)
 {
-  // If it's a struct container we set the individual fields as required,
-  // and also the container table itself, as the user would expect that marking
-  // a struct container as required means that it is non-empty
-  if(isStructContainer())
+  // If it's a struct collection we set the individual fields as required,
+  // and also the collection table itself, as the user would expect that marking
+  // a struct collection as required means that it is non-empty
+  if(isStructCollection())
   {
-    forEachContainerElement(
+    forEachCollectionElement(
       [isRequired](Table& table) { table.required(isRequired); });
   }
 
@@ -747,10 +747,10 @@ Table& Table::required(bool isRequired)
 
 bool Table::isRequired() const
 {
-  if(isStructContainer())
+  if(isStructCollection())
   {
     bool result = false;
-    forEachContainerElement([&result](Table& table) {
+    forEachCollectionElement([&result](Table& table) {
       if(table.isRequired())
       {
         result = true;
@@ -766,9 +766,9 @@ bool Table::isRequired() const
 
 Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
 {
-  if(isStructContainer())
+  if(isStructCollection())
   {
-    forEachContainerElement(
+    forEachCollectionElement(
       [&lambda](Table& table) { table.registerVerifier(lambda); });
   }
   else
