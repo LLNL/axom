@@ -38,6 +38,19 @@ Requirements
 * (Optional) Lua - Inlet provides a Lua reader class that assists in Lua input files
 
 
+Glossary
+--------
+
+* ``inlet::Table``: Internal nodes of the Inlet hierarchy
+* ``inlet::Field``: Terminal nodes of the Inlet hierarchy that store primitive types (bool, int, string, double)
+* ``inlet::Function``: Terminal nodes of the Inlet hierarchy that store function callbacks
+* ``inlet::Proxy``: Provides type-erased access to data in the Inlet hierarchy - can
+  refer to either a ``Table``, ``Field``, or ``Function`` internally
+* **struct**: Refers to something that maps to a C++ ``struct``.  This can be a Lua table, a YAML dictionary, or a JSON object.
+* **dictionary**: Refers to an associative array whose keys are either strings or a mix of strings and integers, and whose values
+  are of homogeneous type
+* **array**: Refers to either a contiguous array or an integer-keyed associative arrays whose values are of homogeneous type
+
 .. toctree::
    :caption: Contents
    :maxdepth: 2
@@ -46,3 +59,4 @@ Requirements
    readers
    simple_types
    advanced_types
+   functions
