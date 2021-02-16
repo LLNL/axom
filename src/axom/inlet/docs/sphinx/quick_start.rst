@@ -108,7 +108,7 @@ We provide a slightly more complex but closer to a real world Inlet usage exampl
 You can find that example in our repository `here <https://github.com/LLNL/axom/blob/develop/src/axom/inlet/examples/document_generation.cpp>`_.
 
 After you create your ``Inlet`` class but before you start defining your schema, create a concrete
-instantiation of a ``DocWriter`` class and register it with your ``Inlet`` class.
+instantiation of a ``Writer`` class and register it with your ``Inlet`` class.
 
 .. literalinclude:: ../../examples/documentation_generation.cpp
    :start-after: _inlet_documentation_generation_start
