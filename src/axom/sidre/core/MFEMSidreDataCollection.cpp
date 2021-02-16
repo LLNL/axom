@@ -48,7 +48,7 @@ namespace detail
  * Splits a string starting from the end of the string into a maximum of @p n tokens
  */
 std::vector<std::string> splitLastNTokens(const std::string& input,
-                                          const int n,
+                                          const std::size_t n,
                                           const char delim)
 {
   std::vector<std::string> result;

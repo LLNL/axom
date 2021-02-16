@@ -48,6 +48,7 @@ blt_list_append(TO sidre_example_depends ELEMENTS mpi IF MPI_FOUND)
 if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     list(APPEND example_sources sidre_mfem_datacollection_vis.cpp)
     list(APPEND example_sources sidre_mfem_datacollection_restart.cpp)
+    list(APPEND example_sources sidre_mfem_datacollection_materials.cpp)
     list(APPEND sidre_example_depends mfem)
 endif()
 
