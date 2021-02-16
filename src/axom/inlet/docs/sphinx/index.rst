@@ -45,7 +45,7 @@ Glossary
 * ``inlet::Field``: Terminal nodes of the Inlet hierarchy that store primitive types (bool, int, string, double)
 * ``inlet::Function``: Terminal nodes of the Inlet hierarchy that store function callbacks
 * ``inlet::Proxy``: Provides type-erased access to data in the Inlet hierarchy - can
-  refer to either a ``Table``, ``Field``, or ``Function internally
+  refer to either a ``Table``, ``Field``, or ``Function`` internally
 * **struct**: Refers to something that maps to a C++ ``struct``.  This can be a Lua table, a YAML dictionary, or a JSON object.
 * **dictionary**: Refers to an associative array whose keys are either strings or a mix of strings and integers, and whose values
   are of homogeneous type
@@ -59,3 +59,4 @@ Glossary
    readers
    simple_types
    advanced_types
+   functions
