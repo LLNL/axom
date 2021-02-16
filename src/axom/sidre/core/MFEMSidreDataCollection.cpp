@@ -1540,7 +1540,7 @@ public:
       group_squad.SetSize(num_groups, 0);  // create empty group_squad
     }
 
-    std::size_t group_idx = 1;  // The ID of the current group
+    std::size_t comm_group_idx = 1;  // The ID of the current group
     std::size_t total_verts_added = 0;
     std::size_t total_edges_added = 0;
 
@@ -1551,7 +1551,7 @@ public:
       n_shared_verts += total_verts_added;  // Get the index into the global table
       SLIC_ERROR_IF(n_shared_verts > group_svert.Size_of_connections(),
                     "incorrect number of total_shared_vertices");
-      group_svert.GetI()[group_idx] = n_shared_verts;
+      group_svert.GetI()[comm_group_idx] = n_shared_verts;
 
       for(const auto vert : shared_geom.shared_verts)
       {
@@ -1566,7 +1566,7 @@ public:
         n_shared_edges += total_edges_added;
         SLIC_ERROR_IF(n_shared_edges > group_sedge.Size_of_connections(),
                       "incorrect number of total_shared_edges");
-        group_sedge.GetI()[group_idx] = n_shared_edges;
+        group_sedge.GetI()[comm_group_idx] = n_shared_edges;
 
         for(const auto edge : shared_geom.shared_edges)
         {
@@ -1590,14 +1590,14 @@ public:
             shared_quads.Append({quad[0], quad[1], quad[2], quad[3]});
           }
 
-          group_stria.AddColumnsInRow(group_idx - 1,
+          group_stria.AddColumnsInRow(comm_group_idx - 1,
                                       shared_geom.shared_triangles.size());
-          group_squad.AddColumnsInRow(group_idx - 1,
+          group_squad.AddColumnsInRow(comm_group_idx - 1,
                                       shared_geom.shared_quadrilaterals.size());
         }
       }
 
-      group_idx++;
+      comm_group_idx++;
     }
 
     if(dimension >= 3)
@@ -1803,13 +1803,13 @@ private:
    */
   void InitializeGroupTopology(const std::vector<SharedGeometries>& shared_geoms)
   {
-    mfem::ListOfIntegerSets group_integer_sets;
+    mfem::ListOfIntegerSets comm_group_integer_sets;
 
     // The first group always contains only the current rank
     mfem::IntegerSet first_set;
     mfem::Array<int>& first_array = first_set;  // Bind a ref so we can modify it
     first_array.Append(MyRank);
-    group_integer_sets.Insert(first_set);
+    comm_group_integer_sets.Insert(first_set);
 
     for(const auto& shared_geom : shared_geoms)
     {
@@ -1820,10 +1820,14 @@ private:
       array.Append(MyRank);
       array.Append(shared_geom.neighbors);
       array.Sort();  // MFEM requires that the sets be sorted
-      group_integer_sets.Insert(integer_set);
+      comm_group_integer_sets.Insert(integer_set);
     }
-    // FIXME: 822 or 823? No clue what either refers to
-    gtopo.Create(group_integer_sets, 823);
+    // FIXME: 822 or 823?
+    // This appears to just be an MPI tag used by MFEM when it creates the
+    // group topology object in ParMesh and elsewhere - see
+    // https://github.com/mfem/mfem/blob/b0770915511fc63fda3120b13c88db48946e4302/mesh/pmesh.cpp#L206-L207
+    // https://github.com/mfem/mfem/blob/b0770915511fc63fda3120b13c88db48946e4302/general/communication.cpp#L324
+    gtopo.Create(comm_group_integer_sets, 823);
   }
 
   /**
