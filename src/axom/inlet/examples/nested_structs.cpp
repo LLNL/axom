@@ -198,12 +198,7 @@ struct FromInlet<Geometry>
       result.units = Geometry::Units::Meters;
     }
 
-    // FIXME: Remove when PR #429 is merged
-    auto ops = base["operators"].get<std::unordered_map<int, Operator>>();
-    for(const auto& ele : ops)
-    {
-      result.operators.push_back(ele.second);
-    }
+    result.operators = base["operators"].get<std::vector<Operator>>();
     return result;
   }
 };
@@ -316,8 +311,10 @@ int main(int argc, char** argv)
   reader->parseString(input);
   inlet::Inlet inlet(std::move(reader), ds.getRoot());
 
+  // _inlet_nested_struct_array_start
   auto& shapes_table = inlet.addStructArray("shapes");
   Shape::defineSchema(shapes_table);
+  // _inlet_nested_struct_array_end
 
   if(inlet.verify())
   {
@@ -336,8 +333,9 @@ int main(int argc, char** argv)
 
   if(docsEnabled)
   {
+    const std::string docFileName = "nested_structs.rst";
     std::unique_ptr<inlet::SphinxWriter> writer(
-      new inlet::SphinxWriter("nested_structs.rst"));
+      new inlet::SphinxWriter(docFileName));
     inlet.registerWriter(std::move(writer));
     inlet.writeDoc();
     SLIC_INFO("Documentation was written to " << docFileName);

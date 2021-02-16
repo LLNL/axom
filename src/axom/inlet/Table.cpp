@@ -685,19 +685,27 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
                                          const std::string& description,
                                          const std::string& pathOverride)
 {
-  if(isStructContainer())
+  if(isStructContainer() || !m_nested_aggregates.empty())
   {
     // If it has indices, we're adding a primitive field to an array
     // of structs, so we need to iterate over the subtables
     // corresponding to elements of the array
     std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
-    for(const auto& indexPath : containerIndicesWithPaths(name))
+    for(Table& table : m_nested_aggregates)
     {
-      // Add a primitive to an array element (which is a struct)
-      funcs.push_back(
-        getTable(indexPath.first)
-          .addFunction(name, ret_type, arg_types, description, indexPath.second));
+      funcs.push_back(table.addFunction(name, ret_type, arg_types, description));
     }
+    if(isStructContainer())
+    {
+      for(const auto& indexPath : containerIndicesWithPaths(name))
+      {
+        // Add a primitive to an array element (which is a struct)
+        funcs.push_back(
+          getTable(indexPath.first)
+            .addFunction(name, ret_type, arg_types, description, indexPath.second));
+      }
+    }
+
     // Create an aggregate field so requirements can be collectively imposed
     // on all elements of the array
     m_aggregate_funcs.emplace_back(std::move(funcs));
