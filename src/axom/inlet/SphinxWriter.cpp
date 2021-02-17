@@ -88,7 +88,7 @@ void SphinxWriter::writeContainer(const std::string& title,
   SLIC_WARNING_IF(
     rstTable.size() <= 1,
     "[Inlet] Vector for corresponding rst container must be nonempty");
-  std::string result = ".. list-container:: " + title;
+  std::string result = ".. list-table:: " + title;
   std::string widths = ":widths:";
   // This would be easier with an iterator adaptor like back_inserter but for
   // concatenation
