@@ -202,7 +202,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda)
 
   arr_table.addBool("bar", "bar's description").required();
 
-  // Ensuring that foo is the element of the container
+  // Ensuring that foo is the element of the collection
   arr_table.registerVerifier(
     [](const axom::inlet::Table& foo) { return foo.contains("bar"); });
 
@@ -464,8 +464,8 @@ TYPED_TEST(inlet_object, composite_type_checks)
   EXPECT_EQ(arr_table.type(), InletType::Object);
 
   // But the things it contains are arrays
-  EXPECT_EQ(arr_table["arr1"].type(), InletType::Container);
-  EXPECT_EQ(arr_table["arr2"].type(), InletType::Container);
+  EXPECT_EQ(arr_table["arr1"].type(), InletType::Collection);
+  EXPECT_EQ(arr_table["arr2"].type(), InletType::Collection);
 
   auto foo_table = inlet["foo"];
   // Similarly, the table containing the two bools is an object

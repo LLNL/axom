@@ -363,7 +363,7 @@ bool ConduitReader::getDictionary(const std::string& id,
     const auto name = child.name();
 
     T value;
-    // Inlet allows for heterogenous containers, so a failure here is "normal"
+    // Inlet allows for heterogenous collections, so a failure here is "normal"
     if(getValue(child, value))
     {
       values[name] = value;
@@ -417,7 +417,7 @@ bool ConduitReader::getArray(const std::string& id,
     for(const auto& child : node.children())
     {
       T value;
-      // Inlet allows for heterogenous containers, so a failure here is "normal"
+      // Inlet allows for heterogenous collections, so a failure here is "normal"
       if(getValue(child, value))
       {
         values[index] = value;

@@ -15,9 +15,9 @@ InletType Proxy::type() const
   if(m_table != nullptr)
   {
     // This is how Inlet stores array types in the datastore
-    if(m_table->contains(detail::CONTAINER_GROUP_NAME))
+    if(m_table->contains(detail::COLLECTION_GROUP_NAME))
     {
-      return InletType::Container;
+      return InletType::Collection;
     }
     return InletType::Object;
   }
