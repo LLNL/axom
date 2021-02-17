@@ -365,6 +365,8 @@ public:
    * \return Pointer to the Sidre Group for this Table
    *****************************************************************************
    */
+  axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
+  /// \overload
   const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
 
   //
@@ -690,13 +692,13 @@ public:
 
   /*!
    *******************************************************************************
-   * \brief Returns a stored container.
+   * \brief Returns a stored collection.
    * 
-   * Retrieves a container of user-defined type.
+   * Retrieves a collection of user-defined type.
    * 
-   * \return The retrieved container
+   * \return The retrieved collection
    * 
-   * \tparam T The container type, i.e., T = std::unordered_map<K, V>
+   * \tparam T The collection type, i.e., T = std::unordered_map<K, V>
    *******************************************************************************
    */
   template <typename T>
@@ -709,27 +711,27 @@ public:
     using Val = typename T::mapped_type;
     // This needs to work transparently for both references to the underlying
     // internal table and references using the same path as the data file
-    if(isContainerGroup(m_name))
+    if(isCollectionGroup(m_name))
     {
-      return getContainer<Key, Val>();
+      return getCollection<Key, Val>();
     }
-    // If the container group is a child table, retrieve it and copy its contents
+    // If the collection group is a child table, retrieve it and copy its contents
     // into the result
     else
     {
-      return getTable(detail::CONTAINER_GROUP_NAME).getContainer<Key, Val>();
+      return getTable(detail::COLLECTION_GROUP_NAME).getCollection<Key, Val>();
     }
   }
 
   /*!
    *******************************************************************************
-   * \brief Returns a stored container as a contiguous array.
+   * \brief Returns a stored collection as a contiguous array.
    * 
-   * Retrieves a container of user-defined type.
+   * Retrieves a collection of user-defined type.
    * 
-   * \return The values in the retrieved container
+   * \return The values in the retrieved collection
    * 
-   * \tparam T The container type, i.e., T = std::vector<V>
+   * \tparam T The collection type, i.e., T = std::vector<V>
    * 
    * \note Elements in the returned array will be in ascending order by index,
    * regardless of index contiguity or base index
@@ -738,7 +740,7 @@ public:
   template <typename T>
   typename std::enable_if<detail::is_std_vector<T>::value, T>::type get() const
   {
-    // Only allow retrieval of std::vectors from integer-keyed containers
+    // Only allow retrieval of std::vectors from integer-keyed collections
     using Key = int;
     using Val = typename T::value_type;
     auto map = get<std::unordered_map<Key, Val>>();
@@ -922,7 +924,7 @@ private:
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the Field
-   * \param [in] isDict Whether to use string-valued keys for the container
+   * \param [in] isDict Whether to use string-valued keys for the collection
    * \param [in] pathOverride The path within the input file to read from, if
    * different than the structure of the Sidre datastore
    *
@@ -1142,7 +1144,7 @@ private:
    * is absolute, e.g., an absolute path foo/0/bar will be trimmed to "bar"
    *****************************************************************************
    */
-  std::vector<VariantKey> containerIndices(bool trimAbsolute = true) const;
+  std::vector<VariantKey> collectionIndices(bool trimAbsolute = true) const;
 
   /*!
    *****************************************************************************
@@ -1154,19 +1156,19 @@ private:
    * \param [in] name The name of the array object in the input file
    *****************************************************************************
    */
-  std::vector<std::pair<std::string, std::string>> containerIndicesWithPaths(
+  std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
     const std::string& name) const;
 
   /*!
    *****************************************************************************
-   * \brief Get a container represented as an unordered map from the input file
+   * \brief Get a collection represented as an unordered map from the input file
    *****************************************************************************
    */
   template <typename Key, typename Val>
-  std::unordered_map<Key, Val> getContainer() const
+  std::unordered_map<Key, Val> getCollection() const
   {
     std::unordered_map<Key, Val> map;
-    for(const auto& indexLabel : containerIndices())
+    for(const auto& indexLabel : collectionIndices())
     {
       if(detail::matchesKeyType<Key>(indexLabel))
       {
@@ -1179,7 +1181,7 @@ private:
 
   /*!
    *******************************************************************************
-   * \brief Adds a group containing the indices of a container to the calling 
+   * \brief Adds a group containing the indices of a collection to the calling 
    * table and a subtable for each index
    * 
    * \param [in] indices The indices to add
@@ -1193,37 +1195,37 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Add an container of user-defined type to the input file schema.
+   * \brief Add a collection of user-defined type to the input file schema.
    *
-   * \param [in] name Name of the container
-   * \param [in] description Description of the container
+   * \param [in] name Name of the collection
+   * \param [in] description Description of the collection
    *
-   * \return Reference to the created container
+   * \return Reference to the created collection
    *****************************************************************************
    */
   template <typename Key>
-  Table& addStructContainer(const std::string& name,
-                            const std::string& description = "");
+  Table& addStructCollection(const std::string& name,
+                             const std::string& description = "");
 
   /*!
    *****************************************************************************
-   * \brief Returns true if the calling object is part of a struct container,
+   * \brief Returns true if the calling object is part of a struct collection,
    * i.e., an array or dictionary of user-defined type
    *****************************************************************************
    */
-  bool isStructContainer() const
+  bool isStructCollection() const
   {
-    return m_sidreGroup->hasView(detail::STRUCT_CONTAINER_FLAG);
+    return m_sidreGroup->hasView(detail::STRUCT_COLLECTION_FLAG);
   }
 
   /*!
    *****************************************************************************
    * \brief Calls a function on the subtables corresponding to the elements
-   * of the container held by this table
+   * of the collection held by this table
    * 
-   * \param [in] func The function to apply to individual container elements
+   * \param [in] func The function to apply to individual collection elements
    * 
-   * \pre The calling table must be a struct container, i.e., isStructContainer()
+   * \pre The calling table must be a struct collection, i.e., isStructCollection()
    * returns true
    * 
    * \pre The function must accept a single argument of type Table&
@@ -1231,7 +1233,7 @@ private:
    *****************************************************************************
    */
   template <typename Func>
-  void forEachContainerElement(Func&& func) const;
+  void forEachCollectionElement(Func&& func) const;
 
   std::string m_name;
   Reader& m_reader;
@@ -1251,9 +1253,9 @@ private:
   std::vector<AggregateField> m_aggregate_fields;
   std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
 
-  // Used when the calling Table is a struct container within a struct container
+  // Used when the calling Table is a struct collection within a struct collection
   // Need to delegate schema-defining calls (add*) to the elements of the nested
-  // container
+  // collection
   std::vector<std::reference_wrapper<Table>> m_nested_aggregates;
 };
 

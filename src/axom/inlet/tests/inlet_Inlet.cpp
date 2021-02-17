@@ -1307,7 +1307,7 @@ TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
   inlet.addIntArray("luaArrays/arr1");
 
   const axom::sidre::Group* group =
-    inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_container");
+    inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_collection");
   auto idx = group->getGroup("0");
   EXPECT_TRUE(idx);
   int val = idx->getView("value")->getScalar();
@@ -1329,7 +1329,7 @@ TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
   EXPECT_EQ(val, 6);
 
   inlet.addBoolArray("luaArrays/arr2");
-  group = inlet["luaArrays/arr2/_inlet_container"].sidreGroup();
+  group = inlet["luaArrays/arr2/_inlet_collection"].sidreGroup();
 
   idx = group->getGroup("0");
   EXPECT_TRUE(idx);
@@ -1342,7 +1342,7 @@ TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
   EXPECT_EQ(boolVal, 0);
 
   inlet.addStringArray("luaArrays/arr3");
-  group = inlet["luaArrays/arr3/_inlet_container"].sidreGroup();
+  group = inlet["luaArrays/arr3/_inlet_collection"].sidreGroup();
 
   idx = group->getGroup("0");
   EXPECT_TRUE(idx);
@@ -1355,7 +1355,7 @@ TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
   EXPECT_EQ(str, "bye");
 
   inlet.addDoubleArray("luaArrays/arr4");
-  group = inlet["luaArrays/arr4/_inlet_container"].sidreGroup();
+  group = inlet["luaArrays/arr4/_inlet_collection"].sidreGroup();
 
   idx = group->getGroup("0");
   EXPECT_TRUE(idx);
@@ -1570,7 +1570,7 @@ TEST(inlet_Inlet_array_lua, inletArraysInSidre)
   inlet.addIntArray("luaArrays/arr1");
 
   const axom::sidre::Group* group =
-    inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_container");
+    inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_collection");
   auto idx = group->getGroup("1");
   EXPECT_TRUE(idx);
   int val = idx->getView("value")->getScalar();
@@ -1592,7 +1592,7 @@ TEST(inlet_Inlet_array_lua, inletArraysInSidre)
   EXPECT_EQ(val, 6);
 
   inlet.addBoolArray("luaArrays/arr2");
-  group = inlet["luaArrays/arr2/_inlet_container"].sidreGroup();
+  group = inlet["luaArrays/arr2/_inlet_collection"].sidreGroup();
 
   idx = group->getGroup("4");
   EXPECT_TRUE(idx);
@@ -1605,7 +1605,7 @@ TEST(inlet_Inlet_array_lua, inletArraysInSidre)
   EXPECT_EQ(boolVal, 0);
 
   inlet.addStringArray("luaArrays/arr3");
-  group = inlet["luaArrays/arr3/_inlet_container"].sidreGroup();
+  group = inlet["luaArrays/arr3/_inlet_collection"].sidreGroup();
 
   idx = group->getGroup("33");
   EXPECT_TRUE(idx);
@@ -1618,7 +1618,7 @@ TEST(inlet_Inlet_array_lua, inletArraysInSidre)
   EXPECT_EQ(str, "bye");
 
   inlet.addDoubleArray("luaArrays/arr4");
-  group = inlet["luaArrays/arr4/_inlet_container"].sidreGroup();
+  group = inlet["luaArrays/arr4/_inlet_collection"].sidreGroup();
 
   idx = group->getGroup("12");
   EXPECT_TRUE(idx);
