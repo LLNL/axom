@@ -91,7 +91,7 @@ void SphinxWriter::documentTable(const Table& table)
   // Replace the "implementation-defined" name with something a bit more readable
   if(isCollectionGroup(tableName))
   {
-    tableName = "Container contents:";
+    tableName = "Collection contents:";
   }
 
   // If we've gotten to this point and are an element of an array/dict,
