@@ -501,7 +501,7 @@ Ret checkedCall(const sol::protected_function& func, Args&&... args)
  * access functions, the LuaReader's sol::state member is interrogated directly
  * to avoid mixing concerns in these tests.
  * 
- * Each entry in the Lua container/metacontainer for this usertype has a corresponding
+ * Each entry in the Lua table/metatable for this usertype has a corresponding
  * test, i.e., one for each operator overload/constructor/member variable.
  */
 TEST(inlet_function_usertype, lua_usertype_basic)
