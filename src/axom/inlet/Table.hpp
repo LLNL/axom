@@ -359,6 +359,8 @@ public:
    * \return Pointer to the Sidre Group for this Table
    *****************************************************************************
    */
+  axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
+  /// \overload
   const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
 
   //
