@@ -242,7 +242,6 @@ void MFEMSidreDataCollection::createMeshBlueprintStubs(bool hasBP)
     m_bp_grp->createGroup("coordsets");
     m_bp_grp->createGroup("topologies");
     m_bp_grp->createGroup("fields");
-    m_bp_grp->createGroup("qfields");
   }
 
   // If rank is 0, set up blueprint index state group.
@@ -252,7 +251,6 @@ void MFEMSidreDataCollection::createMeshBlueprintStubs(bool hasBP)
     m_bp_index_grp->createGroup("coordsets");
     m_bp_index_grp->createGroup("topologies");
     m_bp_index_grp->createGroup("fields");
-    m_bp_index_grp->createGroup("qfields");
   }
 }
 
@@ -1117,13 +1115,13 @@ addQuadratureFunction(const std::string &field_name, mfem::QuadratureFunction *q
                      axom::sidre::IndexType offset)
 {
    sidre::Group* grp = nullptr;
-   if( m_bp_grp->hasGroup("qfields/" + field_name))
+   if( m_bp_grp->hasGroup("fields/" + field_name))
    {
-      grp = m_bp_grp->getGroup("qfields/" + field_name);
+      grp = m_bp_grp->getGroup("fields/" + field_name);
    }
    else
    {
-      SLIC_WARNING("qfield " << field_name << " does not exist");
+      SLIC_WARNING("Qfield " << field_name << " does not exist");
    }
 
    const int numDofs = qf->Size();
@@ -1180,14 +1178,15 @@ addQuadratureFunction(const std::string &field_name, mfem::QuadratureFunction *q
 void MFEMSidreDataCollection::
 RegisterQFieldInBPIndex(const std::string& field_name, mfem::QuadratureFunction *qf)
 {
-   sidre::Group *bp_field_grp = m_bp_grp->getGroup("qfields/" + field_name);
+   sidre::Group *bp_field_grp = m_bp_grp->getGroup("fields/" + field_name);
    sidre::Group *bp_index_field_grp =
-      m_bp_index_grp->createGroup("qfields/" + field_name);
+      m_bp_index_grp->createGroup("fields/" + field_name);
 
    bp_index_field_grp->createViewString( "path", bp_field_grp->getPathName() );
    bp_index_field_grp->copyView( bp_field_grp->getView("topology") );
-   bp_index_field_grp->copyView( bp_field_grp->getView("vdim") );
-   bp_index_field_grp->copyView( bp_field_grp->getView("qspace_order") );
+   bp_index_field_grp->copyView(bp_field_grp->getView("basis"));
+  //  bp_index_field_grp->copyView( bp_field_grp->getView("vdim") );
+  //  bp_index_field_grp->copyView( bp_field_grp->getView("qspace_order") );
 
    const int number_of_components = qf->GetVDim();
    bp_index_field_grp->createViewScalar("number_of_components",
@@ -1210,7 +1209,7 @@ void MFEMSidreDataCollection::RegisterQField(const std::string &field_name,
    }
 
    // Register field_name in the blueprint group.
-   sidre::Group* f = m_bp_grp->getGroup("qfields");
+   sidre::Group* f = m_bp_grp->getGroup("fields");
 
    if (f->hasGroup( field_name ))
    {
@@ -1237,27 +1236,26 @@ void MFEMSidreDataCollection::RegisterQField(const std::string &field_name,
    sidre::Group* grp = f->createGroup( field_name );
 
    // A QField has the following schema:
-   // <m_bp_grp>/qfields/<field_name>/
-   // <m_bp_grp>/qfields/<field_name>/qspace_order = # (integration order of QField)
-   // <m_bp_grp>/qfields/<field_name>/vdim         = # (vector dimension of QField)
-   // <m_bp_grp>/qfields/<field_name>/topology     = "mesh"
-   // <m_bp_grp>/qfields/<field_name>/values       = array of size QuadratureFunction::Size()
+   // <m_bp_grp>/fields/<field_name>/
+   // <m_bp_grp>/fields/<field_name>/topology     = "mesh"
+   // <m_bp_grp>/fields/<field_name>/values       = array of size QuadratureFunction::Size()
+   // <m_bp_grp>/fields/<field_name>/basis        = string that encodes the QF 
+   //                                               integration order and vector dimension
+   //                                               "QF_Default_[ORDER]_[VDIM]"
 
-   // Set the "qspace_order" string using the qf's qspace, overwrite if
+   // Set the "basis" string using the qf's order and vdim, overwrite if
    // necessary.
-   sidre::View *v = alloc_view(grp, "qspace_order");
-   v->setScalar(qf->GetSpace()->GetOrder());
-
-   // Set the "vdim" string using the qf's qspace, overwrite if
-   // necessary.
-   v = alloc_view(grp, "vdim");
-   v->setScalar(qf->GetVDim());
+   sidre::View *v = alloc_view(grp, "basis");
+   // In the future, we should be able to have mfem::QuadratureFunction provide us this name.
+   const std::string basis_name = "QF_Default_" + std::to_string(qf->GetSpace()->GetOrder())
+                                + "_" + std::to_string(qf->GetVDim());
+   v->setString(basis_name);
 
    // Set the topology of the QuadratureFunction.
    // This is always 'mesh'
    v = alloc_view(grp, "topology")->setString("mesh");
 
-   // Set the View "<m_bp_grp>/qfields/<field_name>/values"
+   // Set the View "<m_bp_grp>/fields/<field_name>/values"
    addQuadratureFunction(field_name, qf, buffer_name, offset);
 
 
@@ -1276,9 +1274,9 @@ void MFEMSidreDataCollection::RegisterQField(const std::string &field_name,
 void MFEMSidreDataCollection::
 DeregisterQFieldInBPIndex(const std::string& field_name)
 {
-   sidre::Group * fields_grp = m_bp_index_grp->getGroup("qfields/");
+   sidre::Group * fields_grp = m_bp_index_grp->getGroup("fields/");
    SLIC_WARNING_IF(fields_grp->hasGroup(field_name),
-               "No qfield exists in blueprint index with name " << field_name);
+               "No field exists in blueprint index with name " << field_name);
 
    // Note: This will destroy all orphaned views or buffer classes under this
    // group also.  If sidre owns this field data, the memory will be deleted
@@ -1291,9 +1289,9 @@ void MFEMSidreDataCollection::DeregisterQField(const std::string& field_name)
    // Deregister field_name from field_map.
    mfem::DataCollection::DeregisterQField(field_name);
 
-   sidre::Group * fields_grp = m_bp_grp->getGroup("qfields/");
+   sidre::Group * fields_grp = m_bp_grp->getGroup("fields/");
    SLIC_WARNING_IF(fields_grp->hasGroup(field_name),
-               "No qfield exists in blueprint with name " << field_name);
+               "No field exists in blueprint with name " << field_name);
 
    // Delete field_name from the blueprint group.
 
@@ -1315,52 +1313,115 @@ void MFEMSidreDataCollection::DeregisterQField(const std::string& field_name)
 int MFEMSidreDataCollection::GetQFieldOrder(const std::string &field_name)
 {
    sidre::Group* grp = nullptr;
-   if( m_bp_grp->hasGroup("qfields/" + field_name))
+   if( m_bp_grp->hasGroup("fields/" + field_name))
    {
-      grp = m_bp_grp->getGroup("qfields/" + field_name);
+      grp = m_bp_grp->getGroup("fields/" + field_name);
+
+      sidre::View *v = grp->getView("basis");
+      std::string basis_name = v->getString();
+
+      size_t pos = 0;
+      std::string delimiter = "_";
+
+      // If the DC was reloaded the internal q_field_map was not restored
+      // so we can't just use HasQField here. We should fix this in the  Load
+      // function. 
+      if (basis_name.substr(0, basis_name.find(delimiter)) != "QF")
+      {
+        SLIC_ERROR("field name provided was not for a QF");
+        return -1;
+      }
+      // We know our basis string should be something like:
+      // QF_Default_[ORDER]_[VDIM]
+      pos = basis_name.find(delimiter);
+      basis_name.erase(0, pos + delimiter.length());
+
+      pos = basis_name.find(delimiter);
+      basis_name.erase(0, pos + delimiter.length());
+      std::string order = basis_name.substr(0, basis_name.find(delimiter));
+
+      return std::stoi(order);
    }
    else
    {
-      SLIC_WARNING("qfield " << field_name << " does not exist");
+      SLIC_WARNING("field " << field_name << " does not exist");
+      return -1;
    }
 
-   sidre::View *v = grp->getView("qspace_order");
-
-   return v->getScalar();
 }
 
 int MFEMSidreDataCollection::GetQFieldVDim(const std::string &field_name)
 {
    sidre::Group* grp = nullptr;
-   if( m_bp_grp->hasGroup("qfields/" + field_name))
+   if( m_bp_grp->hasGroup("fields/" + field_name))
    {
-      grp = m_bp_grp->getGroup("qfields/" + field_name);
+      grp = m_bp_grp->getGroup("fields/" + field_name);
+
+      sidre::View *v = grp->getView("basis");
+      std::string basis_name = v->getString();
+
+      size_t pos = 0;
+      std::string delimiter = "_";
+
+      // If the DC was reloaded the internal q_field_map was not restored
+      // so we can't just use HasQField here. We should fix this in the  Load
+      // function. 
+      if (basis_name.substr(0, basis_name.find(delimiter)) != "QF")
+      {
+        SLIC_ERROR("field name provided was not for a QF");
+        return -1;
+      }
+
+      // We know our basis string should be something like:
+      // QF_Default_[ORDER]_[VDIM]
+      pos = basis_name.find(delimiter);
+      basis_name.erase(0, pos + delimiter.length());
+
+      pos = basis_name.find(delimiter);
+      basis_name.erase(0, pos + delimiter.length());
+
+      pos = basis_name.find(delimiter);
+      basis_name.erase(0, pos + delimiter.length());
+
+      return std::stoi(basis_name);
    }
    else
    {
-      SLIC_WARNING("qfield " << field_name << " does not exist");
+      SLIC_ERROR("field " << field_name << " does not exist");
+      return -1;
    }
-
-   sidre::View *v = grp->getView("vdim");
-
-   return v->getScalar();
 }
 
 double* MFEMSidreDataCollection::GetQFieldData(const std::string &field_name)
 {
    sidre::Group* grp = nullptr;
-   if( m_bp_grp->hasGroup("qfields/" + field_name))
+   if( m_bp_grp->hasGroup("fields/" + field_name))
    {
-      grp = m_bp_grp->getGroup("qfields/" + field_name);
+      grp = m_bp_grp->getGroup("fields/" + field_name);
+
+      // If the DC was reloaded the internal q_field_map was not restored
+      // so we can't just use HasQField here. We should fix this in the  Load
+      // function. 
+      sidre::View *v = grp->getView("basis");
+      std::string basis_name = v->getString();
+
+      std::string delimiter = "_";
+
+      if (basis_name.substr(0, basis_name.find(delimiter)) != "QF")
+      {
+        SLIC_ERROR("field name provided was not for a QF");
+        return nullptr;
+      }
+
+      v = grp->getView("values");
+      void* vptr = v->getVoidPtr();
+      return static_cast<double*>(vptr) + v->getOffset();
    }
    else
    {
-      SLIC_WARNING("qfield " << field_name << " does not exist");
+      SLIC_ERROR("field " << field_name << " does not exist");
+      return nullptr;
    }
-
-   sidre::View *v = grp->getView("values");
-   void* vptr = v->getVoidPtr();
-   return static_cast<double*>(vptr) + v->getOffset();
 }
 
 void MFEMSidreDataCollection::RegisterAttributeField(const std::string& attr_name,
