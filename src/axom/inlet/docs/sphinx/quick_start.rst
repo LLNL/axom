@@ -25,7 +25,7 @@ global Containers and Fields, or on individual Container instances, for Containe
 ========================= ===================
 Name                      Description
 ========================= ===================
-addContainer                  Adds a Container to the input file schema with the given name.
+addContainer              Adds a Container to the input file schema with the given name.
 addBool                   Adds a boolean Field to the global or parent Container with the given name.
 addDouble                 Adds a double Field to the global or parent Container with the given name.
 addInt                    Adds a integer Field to the global or parent Container with the given name.
