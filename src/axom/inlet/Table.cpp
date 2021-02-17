@@ -434,6 +434,8 @@ namespace detail
 /*!
   *****************************************************************************
   * \brief Adds the contents of an array to the table
+  * 
+  * \return The keys that were added
   *****************************************************************************
   */
 template <typename T>
@@ -452,6 +454,8 @@ std::vector<VariantKey> registerCollection(Table& table,
 /*!
   *****************************************************************************
   * \brief Adds the contents of a dict to the table
+  * 
+  * \return The keys that were added
   *****************************************************************************
   */
 template <typename T>
@@ -495,6 +499,8 @@ struct PrimitiveArrayHelper<Key, bool>
    * \param [inout] table The table to add the collection to
    * \param [in] reader The Reader object to read the collection from
    * \param [in] lookupPath The path within the input file to the collection
+   * 
+   * \return The keys from the collection that was added
    *****************************************************************************
    */
   static std::vector<VariantKey> add(Table& table,
