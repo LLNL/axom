@@ -437,12 +437,16 @@ namespace detail
   *****************************************************************************
   */
 template <typename T>
-void registerCollection(Table& table, const std::unordered_map<int, T>& collection)
+std::vector<VariantKey> registerCollection(Table& table,
+                                           const std::unordered_map<int, T>& collection)
 {
+  std::vector<VariantKey> result;
   for(const auto& entry : collection)
   {
+    result.push_back(entry.first);
     table.addPrimitive(std::to_string(entry.first), "", true, entry.second);
   }
+  return result;
 }
 
 /*!
@@ -451,11 +455,14 @@ void registerCollection(Table& table, const std::unordered_map<int, T>& collecti
   *****************************************************************************
   */
 template <typename T>
-void registerCollection(Table& table,
-                        const std::unordered_map<VariantKey, T>& collection)
+std::vector<VariantKey> registerCollection(
+  Table& table,
+  const std::unordered_map<VariantKey, T>& collection)
 {
+  std::vector<VariantKey> result;
   for(const auto& entry : collection)
   {
+    result.push_back(entry.first);
     auto string_key = indexToString(entry.first);
     SLIC_ERROR_IF(
       string_key.find('/') != std::string::npos,
@@ -465,6 +472,7 @@ void registerCollection(Table& table,
                   "[Inlet] Dictionary key cannot be the empty string");
     table.addPrimitive(string_key, "", true, entry.second);
   }
+  return result;
 }
 
 /*!
@@ -489,45 +497,53 @@ struct PrimitiveArrayHelper<Key, bool>
    * \param [in] lookupPath The path within the input file to the collection
    *****************************************************************************
    */
-  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  static std::vector<VariantKey> add(Table& table,
+                                     Reader& reader,
+                                     const std::string& lookupPath)
   {
     std::unordered_map<Key, bool> map;
     // Failure to retrieve a map is not necessarily an error
     reader.getBoolMap(lookupPath, map);
-    registerCollection(table, map);
+    return registerCollection(table, map);
   }
 };
 
 template <typename Key>
 struct PrimitiveArrayHelper<Key, int>
 {
-  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  static std::vector<VariantKey> add(Table& table,
+                                     Reader& reader,
+                                     const std::string& lookupPath)
   {
     std::unordered_map<Key, int> map;
     reader.getIntMap(lookupPath, map);
-    registerCollection(table, map);
+    return registerCollection(table, map);
   }
 };
 
 template <typename Key>
 struct PrimitiveArrayHelper<Key, double>
 {
-  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  static std::vector<VariantKey> add(Table& table,
+                                     Reader& reader,
+                                     const std::string& lookupPath)
   {
     std::unordered_map<Key, double> map;
     reader.getDoubleMap(lookupPath, map);
-    registerCollection(table, map);
+    return registerCollection(table, map);
   }
 };
 
 template <typename Key>
 struct PrimitiveArrayHelper<Key, std::string>
 {
-  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  static std::vector<VariantKey> add(Table& table,
+                                     Reader& reader,
+                                     const std::string& lookupPath)
   {
     std::unordered_map<Key, std::string> map;
     reader.getStringMap(lookupPath, map);
-    registerCollection(table, map);
+    return registerCollection(table, map);
   }
 };
 
@@ -614,17 +630,20 @@ Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    std::vector<VariantKey> indices;
     if(isDict)
     {
-      detail::PrimitiveArrayHelper<VariantKey, T>(table, m_reader, lookupPath);
+      indices = detail::PrimitiveArrayHelper<VariantKey, T>::add(table,
+                                                                 m_reader,
+                                                                 lookupPath);
     }
     else
     {
-      detail::PrimitiveArrayHelper<int, T>(table, m_reader, lookupPath);
+      indices =
+        detail::PrimitiveArrayHelper<int, T>::add(table, m_reader, lookupPath);
     }
     // Copy the indices to the datastore to keep track of integer vs. string indices
-    std::vector<VariantKey> indices;
-    if(m_reader.getIndices(lookupPath, indices))
+    if(!indices.empty())
     {
       table.addIndicesGroup(indices, description);
     }
