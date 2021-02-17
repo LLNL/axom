@@ -465,6 +465,14 @@ public:
     }
   }
 
+  /** @brief Updates the DataCollection's mesh and registered fields
+      with the values from the data store. */
+  void UpdateMeshAndFieldsFromDS()
+  {
+    reconstructMesh();
+    reconstructFields();
+  }
+
   /// Verifies that the contents of the mesh blueprint data is valid.
   bool verifyMeshBlueprint();
 
