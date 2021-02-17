@@ -25,7 +25,7 @@ struct Car
 
   // A function can be used to define a schema for a particular struct
   // For convenience, it can be implemented as a static method of the struct
-  static void defineSchema(inlet::Table& car_schema)
+  static void defineSchema(inlet::Container& car_schema)
   {
     car_schema.addString("make", "Make of car");
     car_schema.addString("color", "Color of car").defaultValue("red");
@@ -41,7 +41,7 @@ struct Car
 template <>
 struct FromInlet<Car>
 {
-  Car operator()(const inlet::Table& input_data)
+  Car operator()(const inlet::Container& input_data)
   {
     Car result;
     result.make = input_data["make"];
@@ -95,7 +95,7 @@ int main()
   Inlet inlet(std::move(lr), ds.getRoot());
 
   // _inlet_userdef_simple_usage_start
-  // Create a table off the global table for the car object
+  // Create a container off the global container for the car object
   // then define its schema
   auto& car_schema = inlet.addStruct("car", "Vehicle description");
   Car::defineSchema(car_schema);

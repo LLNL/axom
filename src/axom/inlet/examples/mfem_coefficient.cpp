@@ -67,7 +67,7 @@ struct BoundaryCondition
     }
   }
 
-  static void defineSchema(inlet::Table& schema)
+  static void defineSchema(inlet::Container& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
     // Inlet does not support sum types, so options are added to the schema
@@ -129,7 +129,7 @@ void toMFEMVector(const inlet::InletVector& input, mfem::Vector& result)
 template <>
 struct FromInlet<BoundaryCondition::InputInfo>
 {
-  BoundaryCondition::InputInfo operator()(const inlet::Table& base)
+  BoundaryCondition::InputInfo operator()(const inlet::Container& base)
   {
     BoundaryCondition::InputInfo result;
     result.attrs = base["attrs"];
@@ -159,7 +159,8 @@ struct FromInlet<BoundaryCondition::InputInfo>
     }
     else
     {
-      SLIC_ERROR("Table did not contain a coefficient function: " << base.name());
+      SLIC_ERROR(
+        "Container did not contain a coefficient function: " << base.name());
     }
     return result;
   }
@@ -186,7 +187,7 @@ int main(int argc, char** argv)
   lr->parseFile(inputFileName);
   Inlet inlet(std::move(lr), ds.getRoot());
 
-  // We only need the boundary condition sub-table
+  // We only need the boundary condition sub-container
   auto& bc_schema = inlet.addStructArray("bcs", "List of boundary conditions");
   BoundaryCondition::defineSchema(bc_schema);
 
