@@ -5,14 +5,14 @@
 
 /*!
  *******************************************************************************
- * \file Table.hpp
+ * \file Container.hpp
  *
- * \brief This file contains the class definition of Inlet's Table class.
+ * \brief This file contains the class definition of Inlet's Container class.
  *******************************************************************************
  */
 
-#ifndef INLET_TABLE_HPP
-#define INLET_TABLE_HPP
+#ifndef INLET_CONTAINER_HPP
+#define INLET_CONTAINER_HPP
 
 #include <memory>
 #include <string>
@@ -35,12 +35,12 @@
 /*!
  *******************************************************************************
  * \brief Prototype for user-defined types wishing to define a by-value read
- * from inlet with axom::inlet::Table::get(const std::string&)
+ * from inlet with axom::inlet::Container::get(const std::string&)
  * 
  * This is the only way of reading in a non-default-constructible type from
  * Inlet.
  * 
- * \see axom::inlet::Table::get(const std::string&)
+ * \see axom::inlet::Container::get(const std::string&)
  *******************************************************************************
  */
 template <typename T>
@@ -57,7 +57,7 @@ namespace inlet
 {
 // Forward declaration for the traits
 
-class Table;
+class Container;
 
 namespace detail
 {
@@ -180,7 +180,7 @@ struct is_primitive_std_vector<std::vector<T>>
  * \class has_FromInlet_specialization
  *
  * \brief A type trait for checking if a type has specialized FromInlet
- * with the required T operator()(axom::inlet::Table&)
+ * with the required T operator()(axom::inlet::Container&)
  * \tparam T The type to check
  *******************************************************************************
  */
@@ -193,7 +193,7 @@ struct has_FromInlet_specialization<
   T,
   typename std::enable_if<std::is_same<T,
                                        decltype(std::declval<FromInlet<T>&>()(
-                                         std::declval<const Table&>()))>::value>::type>
+                                         std::declval<const Container&>()))>::value>::type>
   : std::true_type
 { };
 
@@ -274,39 +274,39 @@ bool matchesKeyType(const VariantKey& key)
 class Proxy;
 /*!
  *******************************************************************************
- * \class Table
+ * \class Container
  *
- * \brief Provides functions to help define how individual Table and Field
+ * \brief Provides functions to help define how individual Container and Field
  *        variables in an input file are expected to behave.  It also holds the
- *        Sidre Group to the individual Table.
+ *        Sidre Group to the individual Container.
  *
  * \see Inlet Field
  *******************************************************************************
  */
-class Table : public Verifiable<Table>
+class Container : public Verifiable<Container>
 {
 public:
   /*!
    *****************************************************************************
-   * \brief Constructor for the Table class.
+   * \brief Constructor for the Container class.
    *
-   * This class provides functions to define the behavior of the Table
+   * This class provides functions to define the behavior of the Container
    * data already read and stored in the given Sidre Group. This creates
    * the necessary Sidre Group's and views to store the given name and description.
    *
-   * \param [in] name Name of the Table expected in the input file
-   * \param [in] description Description of the Table
+   * \param [in] name Name of the Container expected in the input file
+   * \param [in] description Description of the Container
    * \param [in] reader Reference to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether or not documentation
-   * generation is enabled for input feck this Table instance belongs to.
+   * generation is enabled for input feck this Container instance belongs to.
    *****************************************************************************
    */
-  Table(const std::string& name,
-        const std::string& description,
-        Reader& reader,
-        axom::sidre::Group* sidreRootGroup,
-        bool docEnabled = true)
+  Container(const std::string& name,
+            const std::string& description,
+            Reader& reader,
+            axom::sidre::Group* sidreRootGroup,
+            bool docEnabled = true)
     : m_name(name)
     , m_reader(reader)
     , m_sidreRootGroup(sidreRootGroup)
@@ -324,7 +324,7 @@ public:
       if(!m_sidreRootGroup->hasGroup(name))
       {
         m_sidreGroup = m_sidreRootGroup->createGroup(name);
-        m_sidreGroup->createViewString("InletType", "Table");
+        m_sidreGroup->createViewString("InletType", "Container");
       }
       else
       {
@@ -343,20 +343,20 @@ public:
     }
   }
 
-  // Tables must be move-only - delete the implicit shallow copy constructor
-  Table(const Table&) = delete;
-  Table(Table&&) = default;
+  // Containers must be move-only - delete the implicit shallow copy constructor
+  Container(const Container&) = delete;
+  Container(Container&&) = default;
 
-  virtual ~Table() = default;
+  virtual ~Container() = default;
 
   /*!
    *****************************************************************************
-   * \brief Returns pointer to the Sidre Group class for this Table.
+   * \brief Returns pointer to the Sidre Group class for this Container.
    *
    * Provides access to the Sidre Group class that holds all the stored
-   * information for this Table class.
+   * information for this Container class.
    *
-   * \return Pointer to the Sidre Group for this Table
+   * \return Pointer to the Sidre Group for this Container
    *****************************************************************************
    */
   axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
@@ -373,16 +373,17 @@ public:
    *
    * Adds a structure/record to the input file schema. Structures can contain
    * fields and/or substructures.  By default, it is not required unless marked with
-   * Table::isRequired(). This creates the Sidre Group class with the given name and
+   * Container::isRequired(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
    * \param [in] name Name of the struct expected in the input file
    * \param [in] description Description of the struct
    *
-   * \return Reference to the created struct, as a Table
+   * \return Reference to the created struct, as a Container
    *****************************************************************************
    */
-  Table& addStruct(const std::string& name, const std::string& description = "");
+  Container& addStruct(const std::string& name,
+                       const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -394,8 +395,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable<Table>& addBoolArray(const std::string& name,
-                                  const std::string& description = "");
+  Verifiable<Container>& addBoolArray(const std::string& name,
+                                      const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -407,8 +408,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable<Table>& addIntArray(const std::string& name,
-                                 const std::string& description = "");
+  Verifiable<Container>& addIntArray(const std::string& name,
+                                     const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -420,8 +421,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable<Table>& addDoubleArray(const std::string& name,
-                                    const std::string& description = "");
+  Verifiable<Container>& addDoubleArray(const std::string& name,
+                                        const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -433,8 +434,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable<Table>& addStringArray(const std::string& name,
-                                    const std::string& description = "");
+  Verifiable<Container>& addStringArray(const std::string& name,
+                                        const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -446,8 +447,8 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Table& addStructArray(const std::string& name,
-                        const std::string& description = "");
+  Container& addStructArray(const std::string& name,
+                            const std::string& description = "");
   /*!
    *****************************************************************************
    * \brief Add a dictionary of Boolean Fields to the input file schema.
@@ -458,8 +459,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable<Table>& addBoolDictionary(const std::string& name,
-                                       const std::string& description = "");
+  Verifiable<Container>& addBoolDictionary(const std::string& name,
+                                           const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -471,8 +472,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable<Table>& addIntDictionary(const std::string& name,
-                                      const std::string& description = "");
+  Verifiable<Container>& addIntDictionary(const std::string& name,
+                                          const std::string& description = "");
   /*!
    *****************************************************************************
    * \brief Add a dictionary of Double Fields to the input file schema.
@@ -483,8 +484,9 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable<Table>& addDoubleDictionary(const std::string& name,
-                                         const std::string& description = "");
+  Verifiable<Container>& addDoubleDictionary(
+    const std::string& name,
+    const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -496,8 +498,9 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable<Table>& addStringDictionary(const std::string& name,
-                                         const std::string& description = "");
+  Verifiable<Container>& addStringDictionary(
+    const std::string& name,
+    const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -509,8 +512,8 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Table& addStructDictionary(const std::string& name,
-                             const std::string& description = "");
+  Container& addStructDictionary(const std::string& name,
+                                 const std::string& description = "");
   /*!
    *****************************************************************************
    * \brief Add a Boolean Field to the input file schema.
@@ -582,8 +585,8 @@ public:
    * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Table expected in the input file
-   * \param [in] description Description of the Table
+   * \param [in] name Name of the Container expected in the input file
+   * \param [in] description Description of the Container
    *
    * \return Reference to the created Field
    *****************************************************************************
@@ -647,8 +650,8 @@ public:
    * 
    * Retrieves a value of user-defined type.
    * 
-   * \param [in] name The name of the subtable representing the root of the object
-   * If nothing is passed, the calling table is interpreted as the roof of the object
+   * \param [in] name The name of the subcontainer representing the root of the object
+   * If nothing is passed, the calling container is interpreted as the roof of the object
    * \return The retrieved value
    * \pre Requires a specialization of FromInlet for T
    * 
@@ -671,13 +674,13 @@ public:
     }
     else
     {
-      if(!hasTable(name))
+      if(!hasContainer(name))
       {
         std::string msg =
-          fmt::format("[Inlet] Table with name '{0}' does not exist", name);
+          fmt::format("[Inlet] Container with name '{0}' does not exist", name);
         SLIC_ERROR(msg);
       }
-      return from_inlet(getTable(name));
+      return from_inlet(getContainer(name));
     }
   }
 
@@ -701,16 +704,16 @@ public:
     using Key = typename T::key_type;
     using Val = typename T::mapped_type;
     // This needs to work transparently for both references to the underlying
-    // internal table and references using the same path as the data file
+    // internal container and references using the same path as the data file
     if(isCollectionGroup(m_name))
     {
       return getCollection<Key, Val>();
     }
-    // If the collection group is a child table, retrieve it and copy its contents
+    // If the collection group is a child container, retrieve it and copy its contents
     // into the result
     else
     {
-      return getTable(detail::COLLECTION_GROUP_NAME).getCollection<Key, Val>();
+      return getContainer(detail::COLLECTION_GROUP_NAME).getCollection<Key, Val>();
     }
   }
 
@@ -761,11 +764,11 @@ public:
 
   /*!
    *******************************************************************************
-   * \brief Obtains a proxy view into the table for either a Field/Table subobject
+   * \brief Obtains a proxy view into the container for either a Field/Container subobject
    * 
    * Returns a reference via a lightweight proxy object to the element in the 
    * datastore at the index specified by the name.  This can be a field 
-   * or a table.
+   * or a container.
    * 
    * \param [in] name The name of the subobject
    * \return The retrieved array
@@ -775,62 +778,62 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Set the required status of this Table.
+   * \brief Set the required status of this Container.
    *
-   * Set whether this Table is required, or not, to be in the input file.
+   * Set whether this Container is required, or not, to be in the input file.
    * The default behavior is to not be required.
    *
-   * \param [in] isRequired Boolean value of whether Table is required
+   * \param [in] isRequired Boolean value of whether Container is required
    *
-   * \return Reference to this instance of Table
+   * \return Reference to this instance of Container
    *****************************************************************************
    */
-  Table& required(bool isRequired = true);
+  Container& required(bool isRequired = true);
 
   /*!
    *****************************************************************************
-   * \brief Return the required status of this Table.
+   * \brief Return the required status of this Container.
    *
-   * Return that this Table is required, or not, to be in the input file.
+   * Return that this Container is required, or not, to be in the input file.
    * The default behavior is to not be required.
    *
-   * \return Boolean value of whether this Table is required
+   * \return Boolean value of whether this Container is required
    *****************************************************************************
    */
   bool isRequired() const;
 
   /*!
    *****************************************************************************
-   * \brief Registers the function object that will verify this Table's contents
+   * \brief Registers the function object that will verify this Container's contents
    * during the verification stage.
    * 
-   * \param [in] The function object that will be called by Table::verify().
+   * \param [in] The function object that will be called by Container::verify().
    *****************************************************************************
   */
-  Table& registerVerifier(std::function<bool(const Table&)> lambda);
+  Container& registerVerifier(std::function<bool(const Container&)> lambda);
 
   /*!
    *****************************************************************************
    * \brief This will be called by Inlet::verify to verify the contents of this
-   *  Table and all child Tables/Fields of this Table.
+   *  Container and all child Containers/Fields of this Container.
    *****************************************************************************
   */
   bool verify() const;
 
   /*!
    *****************************************************************************
-   * \brief Return whether a Table or Field with the given name is present in 
-   * this Table's subtree.
+   * \brief Return whether a Container or Field with the given name is present in 
+   * this Container's subtree.
    *
-   * \return Boolean value indicating whether this Table's subtree contains a
-   * Field or Table with the given name.
+   * \return Boolean value indicating whether this Container's subtree contains a
+   * Field or Container with the given name.
    *****************************************************************************
    */
   bool contains(const std::string& name) const;
 
   /*!
    *****************************************************************************
-   * \brief Returns whether this table or any of its subtables contain a non-
+   * \brief Returns whether this container or any of its subcontainers contain a non-
    * empty field
    *****************************************************************************
    */
@@ -839,22 +842,23 @@ public:
   /*!
    *****************************************************************************
    * \return An unordered map from Field names to the child Field pointers for 
-   * this Table.
+   * this Container.
    *****************************************************************************
    */
   const std::unordered_map<std::string, std::unique_ptr<Field>>& getChildFields() const;
 
   /*!
    *****************************************************************************
-   * \return An unordered map from Table names to the child Table pointers for 
-   * this Table.
+   * \return An unordered map from Container names to the child Container pointers for 
+   * this Container.
    *****************************************************************************
    */
-  const std::unordered_map<std::string, std::unique_ptr<Table>>& getChildTables() const;
+  const std::unordered_map<std::string, std::unique_ptr<Container>>&
+  getChildContainers() const;
 
   /*!
    *****************************************************************************
-   * \return The full name of this Table.
+   * \return The full name of this Container.
    *****************************************************************************
    */
   std::string name() const;
@@ -868,8 +872,8 @@ public:
    * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Table expected in the input file
-   * \param [in] description Description of the Table
+   * \param [in] name Name of the Container expected in the input file
+   * \param [in] description Description of the Container
    * \param [in] forArray Whether the primitive is in an array, in which
    * case the provided value should be inserted instead of the one read from
    * the input file
@@ -894,20 +898,21 @@ public:
 private:
   /*!
    *****************************************************************************
-   * \brief Add a Table to the input file schema.
+   * \brief Add a Container to the input file schema.
    *
-   * Adds a Table to the input file schema. Tables hold a varying amount Fields
+   * Adds a Container to the input file schema. Containers hold a varying amount Fields
    * defined by the user.  By default, it is not required unless marked with
-   * Table::isRequired(). This creates the Sidre Group class with the given name and
+   * Container::isRequired(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
-   * \param [in] name Name of the Table expected in the input file
-   * \param [in] description Description of the Table
+   * \param [in] name Name of the Container expected in the input file
+   * \param [in] description Description of the Container
    *
-   * \return Reference to the created Table
+   * \return Reference to the created Container
    *****************************************************************************
    */
-  Table& addTable(const std::string& name, const std::string& description = "");
+  Container& addContainer(const std::string& name,
+                          const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -925,27 +930,27 @@ private:
   template <typename T,
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
-  Verifiable<Table>& addPrimitiveArray(const std::string& name,
-                                       const std::string& description = "",
-                                       const bool isDict = false,
-                                       const std::string& pathOverride = "");
+  Verifiable<Container>& addPrimitiveArray(const std::string& name,
+                                           const std::string& description = "",
+                                           const bool isDict = false,
+                                           const std::string& pathOverride = "");
 
   /*!
    *****************************************************************************
-   * \brief Return whether a Table with the given name is present in this Table's subtree.
+   * \brief Return whether a Container with the given name is present in this Container's subtree.
    *
-   * \return Boolean value indicating whether the calling Table's subtree
-   * contains a Table with the given name.
+   * \return Boolean value indicating whether the calling Container's subtree
+   * contains a Container with the given name.
    *****************************************************************************
    */
-  bool hasTable(const std::string& tableName) const;
+  bool hasContainer(const std::string& containerName) const;
 
   /*!
    *****************************************************************************
-   * \brief Return whether a Field with the given name is present in this Table's
+   * \brief Return whether a Field with the given name is present in this Container's
    *  subtree.
    *
-   * \return Boolean value indicating whether the calling Table's subtree
+   * \return Boolean value indicating whether the calling Container's subtree
    * contains a Field with the given name.
    *****************************************************************************
    */
@@ -953,10 +958,10 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Return whether a Function with the given name is present in this Table's
+   * \brief Return whether a Function with the given name is present in this Container's
    *  subtree.
    *
-   * \return Boolean value indicating whether the calling Table's subtree
+   * \return Boolean value indicating whether the calling Container's subtree
    * contains a Function with the given name.
    *****************************************************************************
    */
@@ -964,14 +969,14 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Retrieves the matching Table.
+   * \brief Retrieves the matching Container.
    * 
-   * \param [in] The string indicating the target name of the Table to be searched for.
+   * \param [in] The string indicating the target name of the Container to be searched for.
    * 
-   * \return The Table matching the target name.
+   * \return The Container matching the target name.
    *****************************************************************************
    */
-  Table& getTable(const std::string& tableName) const;
+  Container& getContainer(const std::string& containerName) const;
 
   /*!
    *****************************************************************************
@@ -1024,9 +1029,9 @@ private:
    *****************************************************************************
    * \brief Helper method template for adding primitives
    * 
-   * Reads an array at the provided path into the provided table
+   * Reads an array at the provided path into the provided container
    * 
-   * \param [inout] table The inlet::Table to add the array to 
+   * \param [inout] container The inlet::Container to add the array to 
    * \param [in] lookupPath The path within the input file to read from
    * \param [in] isDict Whether to use string keys
    * 
@@ -1035,16 +1040,16 @@ private:
   template <typename T,
             typename SFINAE =
               typename std::enable_if<detail::is_inlet_primitive<T>::value>::type>
-  void addPrimitiveArrayHelper(Table& table,
+  void addPrimitiveArrayHelper(Container& container,
                                const std::string& lookupPath,
                                bool isDict = false);
 
   /*!
    *****************************************************************************
-   * \brief Creates the basic Sidre Group for this Table and stores the given
+   * \brief Creates the basic Sidre Group for this Container and stores the given
    *        information
    *
-   * \return Pointer to the created Sidre Group for this Table
+   * \return Pointer to the created Sidre Group for this Container
    *****************************************************************************
    */
   axom::sidre::Group* createSidreGroup(const std::string& name,
@@ -1056,9 +1061,9 @@ private:
    * 
    * \param [in] The Sidre Group corresponding to the Field that will be added.
    * \param [in] The type ID
-   * \param [in] The complete Table sequence for the Table this Field will be added to.
-   * \param [in] The Table sequence for the Table this Field will be added to, 
-   * relative to this Table.
+   * \param [in] The complete Container sequence for the Container this Field will be added to.
+   * \param [in] The Container sequence for the Container this Field will be added to, 
+   * relative to this Container.
    * 
    * \return The child Field matching the target name.
    *****************************************************************************
@@ -1074,9 +1079,9 @@ private:
    * 
    * \param [in] The Sidre Group corresponding to the Function that will be added.
    * \param [in] func The actual callable to store
-   * \param [in] The complete Table sequence for the Table this Function will be added to.
-   * \param [in] The Table sequence for the Table this Function will be added to, 
-   * relative to this Table.
+   * \param [in] The complete Container sequence for the Container this Function will be added to.
+   * \param [in] The Container sequence for the Container this Function will be added to, 
+   * relative to this Container.
    * 
    * \return The child Function matching the target name.
    *****************************************************************************
@@ -1093,19 +1098,19 @@ private:
    * \brief This is an internal helper that returns the pointer-to-member for
    * the unordered_map of children of requested type.
    * 
-   * \tparam T The type of the child to search for (Field/Table/Function)
+   * \tparam T The type of the child to search for (Field/Container/Function)
    *****************************************************************************
    */
   template <typename T>
-  static std::unordered_map<std::string, std::unique_ptr<T>> Table::*getChildren();
+  static std::unordered_map<std::string, std::unique_ptr<T>> Container::*getChildren();
 
   /*!
    *****************************************************************************
-   * \brief This is an internal helper. It return whether this Table has a child 
+   * \brief This is an internal helper. It return whether this Container has a child 
    * with the given name and type.
    * 
-   * \tparam T The type of the child to search for (Field/Table/Function)
-   * \return Boolean value of whether this Table has the child.
+   * \tparam T The type of the child to search for (Field/Container/Function)
+   * \return Boolean value of whether this Container has the child.
    *****************************************************************************
    */
   template <typename T>
@@ -1117,7 +1122,7 @@ private:
    * 
    * \param [in] The string indicating the target name of the child to be searched for.
    * 
-   * \tparam T The type of the child to search for (Field/Table/Function)
+   * \tparam T The type of the child to search for (Field/Container/Function)
    * \return The child matching the target name. If no such child is found,
    * a nullptr is returned.
    *****************************************************************************
@@ -1173,10 +1178,10 @@ private:
   /*!
    *******************************************************************************
    * \brief Adds a group containing the indices of a collection to the calling 
-   * table and a subtable for each index
+   * container and a subcontainer for each index
    * 
    * \param [in] indices The indices to add
-   * \param [in] description The optional description of the subtables
+   * \param [in] description The optional description of the subcontainers
    * \tparam Key The type of the indices to add
    *******************************************************************************
    */
@@ -1195,8 +1200,8 @@ private:
    *****************************************************************************
    */
   template <typename Key>
-  Table& addStructCollection(const std::string& name,
-                             const std::string& description = "");
+  Container& addStructCollection(const std::string& name,
+                                 const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -1211,15 +1216,15 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Calls a function on the subtables corresponding to the elements
-   * of the collection held by this table
+   * \brief Calls a function on the subcontainers corresponding to the elements
+   * of the collection held by this container
    * 
    * \param [in] func The function to apply to individual collection elements
    * 
-   * \pre The calling table must be a struct collection, i.e., isStructCollection()
+   * \pre The calling container must be a struct collection, i.e., isStructCollection()
    * returns true
    * 
-   * \pre The function must accept a single argument of type Table&
+   * \pre The function must accept a single argument of type Container&
    * 
    *****************************************************************************
    */
@@ -1230,24 +1235,24 @@ private:
   Reader& m_reader;
   // Inlet's Root Sidre Group
   axom::sidre::Group* m_sidreRootGroup;
-  // This Table's Sidre Group
+  // This Container's Sidre Group
   axom::sidre::Group* m_sidreGroup;
   bool m_docEnabled;
-  std::unordered_map<std::string, std::unique_ptr<Table>> m_tableChildren;
+  std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
   std::unordered_map<std::string, std::unique_ptr<Function>> m_functionChildren;
-  std::function<bool(const Table&)> m_verifier;
+  std::function<bool(const Container&)> m_verifier;
 
   // Used for ownership only - need to take ownership of these so children
   // and their aggregates have identical lifetime
-  std::vector<AggregateVerifiable<Table>> m_aggregate_tables;
+  std::vector<AggregateVerifiable<Container>> m_aggregate_containers;
   std::vector<AggregateField> m_aggregate_fields;
   std::vector<AggregateVerifiable<Function>> m_aggregate_funcs;
 
-  // Used when the calling Table is a struct collection within a struct collection
+  // Used when the calling Container is a struct collection within a struct collection
   // Need to delegate schema-defining calls (add*) to the elements of the nested
   // collection
-  std::vector<std::reference_wrapper<Table>> m_nested_aggregates;
+  std::vector<std::reference_wrapper<Container>> m_nested_aggregates;
 };
 
 }  // namespace inlet

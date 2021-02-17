@@ -9,7 +9,7 @@ Example Output: Input File Options
 thermal_solver
 --------------
 
-.. list-table:: Fields
+.. list-container:: Fields
    :widths: 25 25 25 25 25
    :header-rows: 1
    :stub-columns: 1
@@ -34,9 +34,9 @@ thermal_solver
 solver
 ------
 
-Description: This is the solver sub-table in the thermal_solver table
+Description: This is the solver sub-container in the thermal_solver container
 
-.. list-table:: Fields
+.. list-container:: Fields
    :widths: 25 25 25 25 25
    :header-rows: 1
    :stub-columns: 1
@@ -81,7 +81,7 @@ Description: This is the solver sub-table in the thermal_solver table
 kappa
 -----
 
-.. list-table:: Fields
+.. list-container:: Fields
    :widths: 25 25 25 25 25
    :header-rows: 1
    :stub-columns: 1
@@ -106,7 +106,7 @@ kappa
 u0
 --
 
-.. list-table:: Fields
+.. list-container:: Fields
    :widths: 25 25 25 25 25
    :header-rows: 1
    :stub-columns: 1
@@ -131,7 +131,7 @@ u0
 mesh
 ----
 
-.. list-table:: Fields
+.. list-container:: Fields
    :widths: 25 25 25 25 25
    :header-rows: 1
    :stub-columns: 1

@@ -48,7 +48,7 @@ public:
   */
   SphinxWriter(const std::string& fileName);
 
-  void documentTable(const Table& table) override;
+  void documentContainer(const Container& container) override;
 
   void finalize() override;
 
@@ -81,62 +81,62 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Writes a 4 column table in RST syntax.
+   * \brief Writes a 4 column container in RST syntax.
    *
-   * This writes a 4 column table to the ostringstream in RST syntax. The number
+   * This writes a 4 column container to the ostringstream in RST syntax. The number
    * of rows are determined by the number of Fields found in the vector.
    *
-   * \param [in] sub The title of the table written
+   * \param [in] sub The title of the container written
    * 
    * \param [in] rstTable The 2 dimensional vector containing information to
-   * be translated into an RST table
+   * be translated into an RST container
    *
    *****************************************************************************
    */
-  void writeTable(const std::string& title,
-                  const std::vector<std::vector<std::string>>& rstTable);
+  void writeContainer(const std::string& title,
+                      const std::vector<std::vector<std::string>>& rstTable);
 
   /*!
    *****************************************************************************
-   * \brief Writes all tables and their respective titles and descriptions.
+   * \brief Writes all containers and their respective titles and descriptions.
    *
    * This parses all of the information from m_rstTables into RST-syntax 
    * documentation and writes it to the ostringstream.
    *
    *****************************************************************************
    */
-  void writeAllTables();
+  void writeAllContainers();
 
   /*!
   *******************************************************************************
-  * \struct TableData
+  * \struct ContainerData
   *
-  * \brief A struct to store data associated with each inlet::Table.
+  * \brief A struct to store data associated with each inlet::Container.
   *
   *******************************************************************************
   */
-  struct TableData
+  struct ContainerData
   {
     /*!
     *******************************************************************************
-    * \brief A constructor for the TableData struct
+    * \brief A constructor for the ContainerData struct
     * 
-    * This initializes the RST table's column labels.
+    * This initializes the RST container's column labels.
     * 
-    * \param[in] labels The column labels for the RST table
+    * \param[in] labels The column labels for the RST container
     *
     *******************************************************************************
     */
-    TableData(const std::vector<std::string>& labels)
+    ContainerData(const std::vector<std::string>& labels)
     {
       rstTable.push_back(labels);
     }
 
-    TableData(TableData&&) = default;
+    ContainerData(ContainerData&&) = default;
     // Shouldn't be needed, these will always be managed in a container
-    TableData(const TableData&) = delete;
+    ContainerData(const ContainerData&) = delete;
 
-    std::string tableName;
+    std::string containerName;
     std::string description;
     std::vector<std::vector<std::string>> rstTable;
   };
@@ -148,7 +148,7 @@ private:
   * 
   * This extracts information about the Field stored in the given Sidre Group. 
   * This information is stored internally by this class and then written to the
-  * document by writeAllTables.
+  * document by writeAllContainers.
   * 
   * \param [in] sidreGroup The Sidre Group from which Field metadata should be
   * extracted and then stored.
@@ -206,11 +206,11 @@ private:
 
   std::ofstream m_outFile;
   std::ostringstream m_oss;
-  // This is needed to preserve the traversal order of the Inlet::Tables
-  std::vector<std::string> m_inletTablePathNames;
-  std::unordered_map<std::string, TableData> m_rstTables;
+  // This is needed to preserve the traversal order of the Inlet::Containers
+  std::vector<std::string> m_inletContainerPathNames;
+  std::unordered_map<std::string, ContainerData> m_rstTables;
   std::string m_fileName;
-  // Used for the RST tables for fields
+  // Used for the RST containers for fields
   std::vector<std::string> m_colLabels;
 };
 
