@@ -22,6 +22,28 @@ namespace axom
 {
 namespace inlet
 {
+namespace detail
+{
+/**
+ * \brief Determines whether a table is trivial (contains no fields/functions in its subtree)
+ * 
+ * \param [in] table The table to evaluate
+ */
+bool isTrivial(const Table& table)
+{
+  if(!table.getChildFields().empty() || !table.getChildFunctions().empty())
+  {
+    return false;
+  }
+  using value_type =
+    std::decay<decltype(table.getChildTables())>::type::value_type;
+  return std::all_of(
+    table.getChildTables().begin(),
+    table.getChildTables().end(),
+    [](const value_type& entry) { return isTrivial(*entry.second); });
+}
+}  // namespace detail
+
 SphinxWriter::SphinxWriter(const std::string& fileName)
   : m_fieldColLabels({"Field Name",
                       "Description",
@@ -44,10 +66,10 @@ void SphinxWriter::documentTable(const Table& table)
   std::string tableName = sidreGroup->getName();
   bool isSelectedElement = false;
 
-  // Replace the "implementation-defined" name with something a bit more readable
-  if(isCollectionGroup(tableName))
+  // If the table is empty, ignore it
+  if(detail::isTrivial(table))
   {
-    tableName = "Container contents:";
+    return;
   }
 
   // Avoid duplicating schema tables by selecting a single element to display
@@ -64,6 +86,12 @@ void SphinxWriter::documentTable(const Table& table)
     {
       return;
     }
+  }
+
+  // Replace the "implementation-defined" name with something a bit more readable
+  if(isCollectionGroup(tableName))
+  {
+    tableName = "Container contents:";
   }
 
   // If we've gotten to this point and are an element of an array/dict,

@@ -129,3 +129,5 @@ own style.  The link below shows the example output from the ``documentation_gen
    :maxdepth: 1
 
    example1_expected_documentation
+   mfem_coefficient_expected_documentation
+   nested_structs_expected_documentation
