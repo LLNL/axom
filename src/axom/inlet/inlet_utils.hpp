@@ -143,26 +143,26 @@ namespace detail
 {
 /*!
   *******************************************************************************
-  * Names of the internal container data and container index groups/fields
+  * Names of the internal collection data and collection index groups/fields
   * used for managing arrays/dictionaries
   *******************************************************************************
   */
-const std::string CONTAINER_GROUP_NAME = "_inlet_container";
-const std::string CONTAINER_INDICES_NAME = "_inlet_container_indices";
-const std::string STRUCT_CONTAINER_FLAG = "_inlet_struct_container";
-const std::string CONTAINER_ELEMENT_FLAG = "_inlet_container_element";
+const std::string COLLECTION_GROUP_NAME = "_inlet_collection";
+const std::string COLLECTION_INDICES_NAME = "_inlet_collection_indices";
+const std::string STRUCT_COLLECTION_FLAG = "_inlet_struct_collection";
+const std::string COLLECTION_ELEMENT_FLAG = "_inlet_collection_element";
 }  // namespace detail
 
 /*!
 *****************************************************************************
-* \brief Determines whether a Table is a container group
+* \brief Determines whether a Table is a collection group
 *
 * \param [in] name The name of the table
 *****************************************************************************
 */
-inline bool isContainerGroup(const std::string& name)
+inline bool isCollectionGroup(const std::string& name)
 {
-  return axom::utilities::string::endsWith(name, detail::CONTAINER_GROUP_NAME);
+  return axom::utilities::string::endsWith(name, detail::COLLECTION_GROUP_NAME);
 }
 
 /*!
@@ -173,9 +173,9 @@ inline bool isContainerGroup(const std::string& name)
 * \param [in] group The sidre::Group to check
 *****************************************************************************
 */
-inline bool isContainerElement(const axom::sidre::Group& group)
+inline bool isCollectionElement(const axom::sidre::Group& group)
 {
-  return group.hasView(detail::CONTAINER_ELEMENT_FLAG);
+  return group.hasView(detail::COLLECTION_ELEMENT_FLAG);
 }
 
 /*!

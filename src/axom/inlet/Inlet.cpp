@@ -77,17 +77,17 @@ void writerHelper(Writer& writer, const Table& table)
   for(const auto& sub_table_entry : child_tables)
   {
     // Ignore the collection group as it will be visited later
-    if(!isContainerGroup(sub_table_entry.first))
+    if(!isCollectionGroup(sub_table_entry.first))
     {
       writerHelper(writer, *sub_table_entry.second);
     }
   }
   auto iter =
-    child_tables.find(appendPrefix(table.name(), detail::CONTAINER_GROUP_NAME));
+    child_tables.find(appendPrefix(table.name(), detail::COLLECTION_GROUP_NAME));
   if(iter != child_tables.end())
   {
     const auto& coll_table = *iter->second;
-    if(coll_table.sidreGroup()->hasGroup(detail::CONTAINER_INDICES_NAME))
+    if(coll_table.sidreGroup()->hasGroup(detail::COLLECTION_INDICES_NAME))
     {
       writerHelper(writer, coll_table);
     }

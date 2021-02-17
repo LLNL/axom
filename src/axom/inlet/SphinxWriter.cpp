@@ -45,7 +45,7 @@ void SphinxWriter::documentTable(const Table& table)
   bool isSelectedElement = false;
 
   // Replace the "implementation-defined" name with something a bit more readable
-  if(isContainerGroup(tableName))
+  if(isCollectionGroup(tableName))
   {
     tableName = "Container contents:";
   }
@@ -55,7 +55,7 @@ void SphinxWriter::documentTable(const Table& table)
   for(const auto& selection : m_selectedElements)
   {
     std::string selectedElement =
-      appendPrefix(selection.first, detail::CONTAINER_GROUP_NAME);
+      appendPrefix(selection.first, detail::COLLECTION_GROUP_NAME);
     selectedElement = appendPrefix(selectedElement, selection.second);
     // If we *are* part of an array/dict for which an element is selected,
     // but we *are not* the selected element, bail out
@@ -68,7 +68,7 @@ void SphinxWriter::documentTable(const Table& table)
 
   // If we've gotten to this point and are an element of an array/dict,
   // mark it as the selected element
-  if(isContainerElement(*sidreGroup))
+  if(isCollectionElement(*sidreGroup))
   {
     // The container that this Table is a part of
     const std::string containerName =
