@@ -46,7 +46,7 @@ Glossary
 * ``inlet::Function``: Terminal nodes of the Inlet hierarchy that store function callbacks
 * ``inlet::Proxy``: Provides type-erased access to data in the Inlet hierarchy - can
   refer to either a ``Container``, ``Field``, or ``Function`` internally
-* **struct**: Refers to something that maps to a C++ ``struct``.  This can be a Lua container, a YAML dictionary, or a JSON object.
+* **struct**: Refers to something that maps to a C++ ``struct``.  This can be a Lua table, a YAML dictionary, or a JSON object.
 * **dictionary**: Refers to an associative array whose keys are either strings or a mix of strings and integers, and whose values
   are of homogeneous type
 * **array**: Refers to either a contiguous array or an integer-keyed associative arrays whose values are of homogeneous type

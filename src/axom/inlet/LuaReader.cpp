@@ -224,7 +224,7 @@ bool LuaReader::getStringMap(const std::string& id,
 }
 
 template <typename Iter>
-bool LuaReader::traverseToContainer(Iter begin, Iter end, sol::table& container)
+bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
 {
   // Nothing to traverse
   if(begin == end)
@@ -237,23 +237,22 @@ bool LuaReader::traverseToContainer(Iter begin, Iter end, sol::table& container)
     return false;
   }
 
-  container =
-    m_lua[*begin];  // Use the first one to index into the global lua state
+  table = m_lua[*begin];  // Use the first one to index into the global lua state
   ++begin;
 
-  // Then use the remaining keys to walk down to the requested container
+  // Then use the remaining keys to walk down to the requested table
   for(auto curr = begin; curr != end; ++curr)
   {
     auto key = *curr;
     int key_as_int;
     bool is_int = checkedConvertToInt(key, key_as_int);
-    if(is_int && container[key_as_int].valid())
+    if(is_int && table[key_as_int].valid())
     {
-      container = container[key_as_int];
+      table = table[key_as_int];
     }
-    else if(container[key].valid())
+    else if(table[key].valid())
     {
-      container = container[key];
+      table = table[key];
     }
     else
     {
@@ -406,7 +405,7 @@ typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
 
 /*!
  *****************************************************************************
- * \brief Performs a type-checked access to a Lua container
+ * \brief Performs a type-checked access to a Lua table
  *
  * \param [in]  proxy The sol::proxy object to retrieve from
  * \param [out] val The value to write to, if it is of the correct type
@@ -469,8 +468,8 @@ bool LuaReader::getValue(const std::string& id, T& value)
   }
 
   sol::table t;
-  // Don't traverse through the last token as it doesn't contain a container
-  if(!traverseToContainer(tokens.begin(), tokens.end() - 1, t))
+  // Don't traverse through the last token as it doesn't contain a table
+  if(!traverseToTable(tokens.begin(), tokens.end() - 1, t))
   {
     return false;
   }
@@ -525,7 +524,7 @@ bool LuaReader::getMap(const std::string& id,
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
 
   sol::table t;
-  if(tokens.empty() || !traverseToContainer(tokens.begin(), tokens.end(), t))
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
   {
     return false;
   }
@@ -547,7 +546,7 @@ bool LuaReader::getMap(const std::string& id,
 
   for(const auto& entry : t)
   {
-    // Gets only indexed items in the container.
+    // Gets only indexed items in the table.
     if(is_correct_key_type(entry.first.get_type()) &&
        entry.second.get_type() == type)
     {
@@ -566,7 +565,7 @@ bool LuaReader::getIndicesInternal(const std::string& id, std::vector<T>& indice
 
   sol::table t;
 
-  if(tokens.empty() || !traverseToContainer(tokens.begin(), tokens.end(), t))
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
   {
     return false;
   }
@@ -598,8 +597,8 @@ sol::protected_function LuaReader::getFunctionInternal(const std::string& id)
   else
   {
     sol::table t;
-    // Don't traverse through the last token as it doesn't contain a container
-    if(traverseToContainer(tokens.begin(), tokens.end() - 1, t) &&
+    // Don't traverse through the last token as it doesn't contain a table
+    if(traverseToTable(tokens.begin(), tokens.end() - 1, t) &&
        t[tokens.back()].valid())
     {
       detail::checkedGet(t[tokens.back()], lua_func);

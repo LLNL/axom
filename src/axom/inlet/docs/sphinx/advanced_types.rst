@@ -23,7 +23,7 @@ To add a single (i.e., not array) user-defined type to the input file, use the `
 function of the Inlet or Container classes to add a Container (collection of Fields and sub-Containers)
 that will represent the fields of the struct.
 
-Consider a simple Lua container that contains only primitive types, whose definition might look like:
+Consider a simple Lua table that contains only primitive types, whose definition might look like:
 
 .. code-block:: Lua
 
