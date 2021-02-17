@@ -9,9 +9,10 @@
 
 namespace axom
 {
-namespace klee {
-
-TEST(KleeConfig, defines) {
+namespace klee
+{
+TEST(KleeConfig, defines)
+{
 #ifndef AXOM_USE_KLEE
   FAIL() << "AXOM_ENABLE_KLEE not defined";
 #endif

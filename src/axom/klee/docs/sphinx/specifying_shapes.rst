@@ -348,7 +348,7 @@ additional operators may be used.
           path: wheel.contour
           units: cm
           operators:
-            - ref MyFirstOperator
+            - ref: MyFirstOperator
             - rotate: 90
 
     named_operators:
@@ -384,7 +384,7 @@ the transformation was defined when you use it.
           units: in
           operators:
             # Automatic conversion from in to cm
-            - ref MySampleOperator
+            - ref: MySampleOperator
             # Automatic conversion from mm to in
             - translate: [50, 60]  # in
 

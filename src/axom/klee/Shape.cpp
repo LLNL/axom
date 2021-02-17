@@ -39,11 +39,11 @@ Shape::Shape(std::string name,
              std::vector<std::string> materialsReplaced,
              std::vector<std::string> materialsNotReplaced,
              Geometry geometry)
-  : m_name (std::move(name))
-  , m_material (std::move(material))
-  , m_materialsReplaced (std::move(materialsReplaced))
-  , m_materialsNotReplaced (std::move(materialsNotReplaced))
-  , m_geometry (std::move(geometry))
+  : m_name(std::move(name))
+  , m_material(std::move(material))
+  , m_materialsReplaced(std::move(materialsReplaced))
+  , m_materialsNotReplaced(std::move(materialsNotReplaced))
+  , m_geometry(std::move(geometry))
 {
   if(!m_materialsNotReplaced.empty() && !m_materialsReplaced.empty())
   {

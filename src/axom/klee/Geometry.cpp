@@ -23,10 +23,10 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
                    std::string format,
                    std::string path,
                    std::shared_ptr<GeometryOperator const> operator_)
-  : m_startProperties (startProperties)
-  , m_format (std::move(format))
-  , m_path (std::move(path))
-  , m_operator (std::move(operator_))
+  : m_startProperties(startProperties)
+  , m_format(std::move(format))
+  , m_path(std::move(path))
+  , m_operator(std::move(operator_))
 { }
 
 TransformableGeometryProperties Geometry::getEndProperties() const

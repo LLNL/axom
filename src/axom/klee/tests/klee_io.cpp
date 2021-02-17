@@ -7,12 +7,12 @@
 
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
 
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
 
 #include "axom/klee/GeometryOperators.hpp"
+#include "axom/klee/KleeError.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 #include "KleeMatchers.hpp"
 
 namespace axom
@@ -44,7 +44,7 @@ TEST(IOTest, readShapeSet_invalidDimensions)
   EXPECT_THROW(readShapeSetFromString(R"(
         dimensions: 5
         shapes: [])"),
-               std::invalid_argument);
+               KleeError);
 }
 
 TEST(IOTest, readShapeSet_shapeWithNoReplacementLists)
@@ -149,7 +149,7 @@ TEST(IOTest, readShapeSet_shapeWithReplacesAndDoesNotReplaceLists)
             format: test_format
             path: path/to/file.format
     )"),
-               std::invalid_argument);
+               KleeError);
 }
 
 TEST(IOTest, readShapeSet_geometryOperators)
@@ -180,6 +180,7 @@ TEST(IOTest, readShapeSet_geometryOperators)
     dynamic_cast<const Translation *>(composite->getOperators()[1].get());
   ASSERT_NE(translation, nullptr);
   EXPECT_THAT(translation->getOffset(), AlmostEqVector(Vector3D {10, 20, 0}));
+  EXPECT_EQ(LengthUnit::m, translation->getEndProperties().units);
 }
 
 TEST(IOTest, readShapeSet_geometryOperatorsWithoutUnits)
@@ -200,7 +201,7 @@ TEST(IOTest, readShapeSet_geometryOperatorsWithoutUnits)
     )");
     FAIL() << "Expected a failure";
   }
-  catch(const std::invalid_argument &ex)
+  catch(const KleeError &ex)
   {
     EXPECT_THAT(ex.what(), HasSubstr("operator"));
     EXPECT_THAT(ex.what(), HasSubstr("units"));
@@ -290,7 +291,7 @@ TEST(IOTest, readShapeSet_wrongEndDimensions)
       )");
     FAIL() << "Expected an error";
   }
-  catch(const std::invalid_argument &ex)
+  catch(const KleeError &ex)
   {
     EXPECT_THAT(ex.what(), HasSubstr("dimensions"));
   }
@@ -339,3 +340,11 @@ TEST(IOTest, readShapeSet_namedGeometryOperators)
 }  // namespace
 }  // namespace klee
 }  // namespace axom
+
+int main(int argc, char *argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  axom::slic::SimpleLogger logger;
+  int result = RUN_ALL_TESTS();
+  return result;
+}

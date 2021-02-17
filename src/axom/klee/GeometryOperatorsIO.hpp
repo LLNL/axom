@@ -9,8 +9,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "conduit.hpp"
-
+#include "axom/inlet/Table.hpp"
 #include "axom/klee/Dimensions.hpp"
 #include "axom/klee/Units.hpp"
 
@@ -27,34 +26,138 @@ using NamedOperatorMap =
   std::unordered_map<std::string, std::shared_ptr<const GeometryOperator>>;
 
 /**
- * Parse a GeometryOperator from the given node.
- *
- * \param node a conduit node representing the operator. This should be a list
- * where each entry is its own operator.
- * \param startProperties the transformable properties before the operators
- * \param namedOperators a map of named operators which contains operators
- * which may be referenced via the "ref" syntax.
- * \return A GeometryOperator describing the parsed values.
+ * The data for a single operator.
  */
-std::shared_ptr<const GeometryOperator> parseGeometryOperators(
-  const conduit::Node &node,
-  const TransformableGeometryProperties &startProperties,
-  const NamedOperatorMap &namedOperators);
+struct SingleOperatorData
+{
+  const inlet::Table *m_table;
+};
 
 /**
- * Parse named geometry operators.
- *
- * \param node the node from which to parse the operators. This should be
- * the value of the "named_operators" node in the specification.
- * \param initialDimensions the number of dimensions that operators should
- * start in, unless they specify otherwise.
- * \return a map of names to operators
+ * The data for the "operator" component of "geometry" objects.
  */
-NamedOperatorMap parseNamedGeometryOperators(const conduit::Node &node,
-                                             Dimensions initialDimensions);
+class GeometryOperatorData
+{
+public:
+  /**
+     * Construct a GeometryOperatorData with no operators.
+     */
+  GeometryOperatorData() = default;
+
+  /**
+     * Construct a GeometryOperatorData for the given list of operators
+     * @param singleOperatorData the data for the individual operators
+     */
+  explicit GeometryOperatorData(std::vector<SingleOperatorData> &&singleOperatorData);
+
+  /**
+     * Define the schema for geometry operators
+     * @param parent the parent table
+     * @param fieldName the name of the field
+     * @param description a description of the field
+     * @return the table for the new item
+     */
+  static inlet::Table &defineSchema(inlet::Table &parent,
+                                    const std::string &fieldName,
+                                    const std::string &description);
+
+  /**
+     * Make an operator describing the transformation to apply to the geomtry.
+     * May be null.
+     *
+     * @param startProperties properties of the geometry before the first
+     * operator
+     * @param namedOperators a map of any named operators
+     * @return the (possibly null) operator
+     */
+  std::shared_ptr<GeometryOperator> makeOperator(
+    const TransformableGeometryProperties &startProperties,
+    const NamedOperatorMap &namedOperators) const;
+
+private:
+  std::vector<SingleOperatorData> m_singleOperatorData;
+};
+
+/**
+ * Data for a named operator.
+ */
+struct NamedOperatorData
+{
+  std::string name;
+  LengthUnit startUnits;
+  LengthUnit endUnits;
+  bool startDimsSet;
+  Dimensions startDims;
+  GeometryOperatorData value;
+
+  /**
+     * Define the schema for a named operator.
+     *
+     * @param table the table in which to describe a single named operator
+     */
+  static void defineSchema(inlet::Table &table);
+};
+
+/**
+ * Data for all a collection of named operators
+ */
+struct NamedOperatorMapData
+{
+  /**
+     * Create a NamedOperatorMapData with no operators.
+     */
+  NamedOperatorMapData() = default;
+
+  /**
+     * Create a NamedOperatorMapData with the given list of operators.
+     *
+     * @param operatorData the data for all the named operators in this map
+     */
+  explicit NamedOperatorMapData(std::vector<NamedOperatorData> &&operatorData);
+
+  /**
+     * Convert the data to a NamedOperatorMap.
+     *
+     * @param fileDimensions the dimensions that shapes should be in in this
+     * file.
+     * @return the name of converted operators
+     */
+  NamedOperatorMap makeNamedOperatorMap(Dimensions fileDimensions) const;
+
+  /**
+     * Define the schema for a collection of named operators.
+     *
+     * @param parent the parent object in which to define the operator map
+     * @param name the name of the map
+     */
+  static void defineSchema(inlet::Table &parent, const std::string &name);
+
+private:
+  std::vector<NamedOperatorData> m_operatorData;
+};
 
 }  // namespace internal
 }  // namespace klee
 }  // namespace axom
+
+template <>
+struct FromInlet<axom::klee::internal::GeometryOperatorData>
+{
+  axom::klee::internal::GeometryOperatorData operator()(
+    const axom::inlet::Table &base);
+};
+
+template <>
+struct FromInlet<axom::klee::internal::NamedOperatorData>
+{
+  axom::klee::internal::NamedOperatorData operator()(const axom::inlet::Table &base);
+};
+
+template <>
+struct FromInlet<axom::klee::internal::NamedOperatorMapData>
+{
+  axom::klee::internal::NamedOperatorMapData operator()(
+    const axom::inlet::Table &base);
+};
 
 #endif  //AXOM_KLEE_GEOMETRYOPERATORSIO_HPP
