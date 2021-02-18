@@ -269,6 +269,9 @@ bool matchesKeyType(const VariantKey& key)
   return false;
 }
 
+void updateUnexpectedNames(const std::string& accessed_name,
+                           std::unordered_set<std::string>& unexpected_names);
+
 }  // namespace detail
 
 class Proxy;
@@ -306,10 +309,12 @@ public:
             const std::string& description,
             Reader& reader,
             axom::sidre::Group* sidreRootGroup,
+            std::unordered_set<std::string>& expected_names,
             bool docEnabled = true)
     : m_name(name)
     , m_reader(reader)
     , m_sidreRootGroup(sidreRootGroup)
+    , m_unexpected_names(expected_names)
     , m_docEnabled(docEnabled)
   {
     SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
@@ -1237,6 +1242,9 @@ private:
   axom::sidre::Group* m_sidreRootGroup;
   // This Container's Sidre Group
   axom::sidre::Group* m_sidreGroup;
+  // Hold a reference to the global set of unexpected names so it can be updated when
+  // things are added to this Container
+  std::unordered_set<std::string>& m_unexpected_names;
   bool m_docEnabled;
   std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;

@@ -45,6 +45,7 @@ Container& Container::addContainer(const std::string& name,
                                              "",
                                              m_reader,
                                              m_sidreRootGroup,
+                                             m_unexpected_names,
                                              m_docEnabled));
       // emplace_result is a pair whose first element is an iterator to the inserted element
       currContainer = emplace_result.first->second.get();
@@ -68,6 +69,7 @@ Container& Container::addContainer(const std::string& name,
                                            description,
                                            m_reader,
                                            m_sidreRootGroup,
+                                           m_unexpected_names,
                                            m_docEnabled));
     currContainer = emplace_result.first->second.get();
   }
@@ -210,6 +212,7 @@ Container& Container::addStructCollection(const std::string& name,
     std::vector<Key> indices;
     std::string fullName = appendPrefix(m_name, name);
     fullName = removeAllInstances(fullName, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(fullName, m_unexpected_names);
     if(m_reader.getIndices(fullName, indices))
     {
       container.addIndicesGroup(indices, description);
@@ -371,6 +374,7 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(lookupPath, m_unexpected_names);
     auto typeId = addPrimitiveHelper(sidreGroup, lookupPath, forArray, val);
     return addField(sidreGroup, typeId, fullName, name);
   }
@@ -565,6 +569,24 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
   }
 }
 
+void updateUnexpectedNames(const std::string& accessed_name,
+                           std::unordered_set<std::string>& unexpected_names)
+{
+  for(auto iter = unexpected_names.begin(); iter != unexpected_names.end();)
+  {
+    // Check if the possibly unexpected name is a substring of the accessed name,
+    // if it is, then it gets marked as expected via removal
+    if(accessed_name.find(*iter) != std::string::npos)
+    {
+      iter = unexpected_names.erase(iter);
+    }
+    else
+    {
+      ++iter;
+    }
+  }
+}
+
 }  // end namespace detail
 
 template <typename Key>
@@ -628,6 +650,7 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(lookupPath, m_unexpected_names);
     if(isDict)
     {
       detail::PrimitiveArrayHelper<VariantKey, T>(container, m_reader, lookupPath);
@@ -638,6 +661,7 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
     }
     // Copy the indices to the datastore to keep track of integer vs. string indices
     std::vector<VariantKey> indices;
+    detail::updateUnexpectedNames(lookupPath, m_unexpected_names);
     if(m_reader.getIndices(lookupPath, indices))
     {
       container.addIndicesGroup(indices, description);
@@ -694,6 +718,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(lookupPath, m_unexpected_names);
     auto func = m_reader.getFunction(lookupPath, ret_type, arg_types);
     return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
   }

@@ -90,7 +90,16 @@ void Inlet::writeDoc()
   }
 }
 
-bool Inlet::verify() const { return m_globalContainer.verify(); }
+bool Inlet::verify() const
+{
+  if(!m_unexpected_names.empty())
+  {
+    const auto msg = fmt::format("The following paths were unexpected: {0}",
+                                 fmt::join(m_unexpected_names, ", "));
+    SLIC_INFO(msg);
+  }
+  return m_globalContainer.verify();
+}
 
 }  // end namespace inlet
 }  // end namespace axom

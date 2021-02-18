@@ -162,7 +162,7 @@ void nameRetrievalHelper(std::unordered_set<std::string>& names,
 {
   // Conduit paths use [0] for array indices, Inlet does not, so they need
   // to be removed - e.g., foo/[0]/bar vs foo/0/bar
-  auto filter_name = [](std::string name){
+  auto filter_name = [](std::string name) {
     name.erase(std::remove(name.begin(), name.end(), '['), name.end());
     name.erase(std::remove(name.begin(), name.end(), ']'), name.end());
     return name;
