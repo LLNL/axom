@@ -61,3 +61,4 @@ Glossary
    simple_types
    advanced_types
    functions
+   verification

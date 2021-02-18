@@ -41,6 +41,22 @@ TYPED_TEST(inlet_Reader, getTopLevelBools)
   EXPECT_EQ(value, false);
 }
 
+TYPED_TEST(inlet_Reader, getTopLevelBoolsWrongType)
+{
+  TypeParam reader;
+  reader.parseString(fromLuaTo<TypeParam>("foo = true; bar = false"));
+
+  ReaderResult retValue;
+  double value;
+
+  retValue = reader.getDouble("foo", value);
+  EXPECT_EQ(retValue, ReaderResult::WrongType);
+
+  value = true;
+  retValue = reader.getDouble("bar", value);
+  EXPECT_EQ(retValue, ReaderResult::WrongType);
+}
+
 TYPED_TEST(inlet_Reader, getInsideBools)
 {
   TypeParam reader;
