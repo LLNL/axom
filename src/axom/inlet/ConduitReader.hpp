@@ -51,37 +51,39 @@ public:
 
   bool parseString(const std::string& stringToRead) override;
 
-  bool getBool(const std::string& id, bool& value) override;
+  ReaderResult getBool(const std::string& id, bool& value) override;
 
-  bool getDouble(const std::string& id, double& value) override;
+  ReaderResult getDouble(const std::string& id, double& value) override;
 
-  bool getInt(const std::string& id, int& value) override;
+  ReaderResult getInt(const std::string& id, int& value) override;
 
-  bool getString(const std::string& id, std::string& value) override;
+  ReaderResult getString(const std::string& id, std::string& value) override;
 
-  bool getIntMap(const std::string& id,
-                 std::unordered_map<int, int>& values) override;
-  bool getIntMap(const std::string& id,
-                 std::unordered_map<VariantKey, int>& values) override;
+  ReaderResult getIntMap(const std::string& id,
+                         std::unordered_map<int, int>& values) override;
+  ReaderResult getIntMap(const std::string& id,
+                         std::unordered_map<VariantKey, int>& values) override;
 
-  bool getDoubleMap(const std::string& id,
-                    std::unordered_map<int, double>& values) override;
-  bool getDoubleMap(const std::string& id,
-                    std::unordered_map<VariantKey, double>& values) override;
+  ReaderResult getDoubleMap(const std::string& id,
+                            std::unordered_map<int, double>& values) override;
+  ReaderResult getDoubleMap(const std::string& id,
+                            std::unordered_map<VariantKey, double>& values) override;
 
-  bool getBoolMap(const std::string& id,
-                  std::unordered_map<int, bool>& values) override;
-  bool getBoolMap(const std::string& id,
-                  std::unordered_map<VariantKey, bool>& values) override;
+  ReaderResult getBoolMap(const std::string& id,
+                          std::unordered_map<int, bool>& values) override;
+  ReaderResult getBoolMap(const std::string& id,
+                          std::unordered_map<VariantKey, bool>& values) override;
 
-  bool getStringMap(const std::string& id,
-                    std::unordered_map<int, std::string>& values) override;
-  bool getStringMap(const std::string& id,
-                    std::unordered_map<VariantKey, std::string>& values) override;
+  ReaderResult getStringMap(const std::string& id,
+                            std::unordered_map<int, std::string>& values) override;
+  ReaderResult getStringMap(
+    const std::string& id,
+    std::unordered_map<VariantKey, std::string>& values) override;
 
-  bool getIndices(const std::string& id, std::vector<int>& indices) override;
-  bool getIndices(const std::string& id,
-                  std::vector<VariantKey>& indices) override;
+  ReaderResult getIndices(const std::string& id,
+                          std::vector<int>& indices) override;
+  ReaderResult getIndices(const std::string& id,
+                          std::vector<VariantKey>& indices) override;
 
   /*!
    *****************************************************************************
@@ -108,17 +110,18 @@ public:
   static const int baseIndex = 0;
 
 private:
-  bool getValue(const conduit::Node& node, int& value);
-  bool getValue(const conduit::Node& node, std::string& value);
-  bool getValue(const conduit::Node& node, double& value);
-  bool getValue(const conduit::Node& node, bool& value);
+  ReaderResult getValue(const conduit::Node& node, int& value);
+  ReaderResult getValue(const conduit::Node& node, std::string& value);
+  ReaderResult getValue(const conduit::Node& node, double& value);
+  ReaderResult getValue(const conduit::Node& node, bool& value);
 
   template <typename T>
-  bool getDictionary(const std::string& id,
-                     std::unordered_map<VariantKey, T>& values);
+  ReaderResult getDictionary(const std::string& id,
+                             std::unordered_map<VariantKey, T>& values);
 
   template <typename T>
-  bool getArray(const std::string& id, std::unordered_map<int, T>& values);
+  ReaderResult getArray(const std::string& id,
+                        std::unordered_map<int, T>& values);
   conduit::Node m_root;
   const std::string m_protocol;
 };

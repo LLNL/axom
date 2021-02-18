@@ -155,70 +155,71 @@ bool LuaReader::parseString(const std::string& luaString)
 // TODO allow alternate delimiter at sidre level
 #define SCOPE_DELIMITER '/'
 
-bool LuaReader::getBool(const std::string& id, bool& value)
+ReaderResult LuaReader::getBool(const std::string& id, bool& value)
 {
   return getValue(id, value);
 }
 
-bool LuaReader::getDouble(const std::string& id, double& value)
+ReaderResult LuaReader::getDouble(const std::string& id, double& value)
 {
   return getValue(id, value);
 }
 
-bool LuaReader::getInt(const std::string& id, int& value)
+ReaderResult LuaReader::getInt(const std::string& id, int& value)
 {
   return getValue(id, value);
 }
 
-bool LuaReader::getString(const std::string& id, std::string& value)
+ReaderResult LuaReader::getString(const std::string& id, std::string& value)
 {
   return getValue(id, value);
 }
 
-bool LuaReader::getIntMap(const std::string& id,
-                          std::unordered_map<int, int>& values)
+ReaderResult LuaReader::getIntMap(const std::string& id,
+                                  std::unordered_map<int, int>& values)
 {
   return getMap(id, values, sol::type::number);
 }
 
-bool LuaReader::getDoubleMap(const std::string& id,
-                             std::unordered_map<int, double>& values)
+ReaderResult LuaReader::getDoubleMap(const std::string& id,
+                                     std::unordered_map<int, double>& values)
 {
   return getMap(id, values, sol::type::number);
 }
 
-bool LuaReader::getBoolMap(const std::string& id,
-                           std::unordered_map<int, bool>& values)
+ReaderResult LuaReader::getBoolMap(const std::string& id,
+                                   std::unordered_map<int, bool>& values)
 {
   return getMap(id, values, sol::type::boolean);
 }
 
-bool LuaReader::getStringMap(const std::string& id,
-                             std::unordered_map<int, std::string>& values)
+ReaderResult LuaReader::getStringMap(const std::string& id,
+                                     std::unordered_map<int, std::string>& values)
 {
   return getMap(id, values, sol::type::string);
 }
 
-bool LuaReader::getIntMap(const std::string& id,
-                          std::unordered_map<VariantKey, int>& values)
+ReaderResult LuaReader::getIntMap(const std::string& id,
+                                  std::unordered_map<VariantKey, int>& values)
 {
   return getMap(id, values, sol::type::number);
 }
 
-bool LuaReader::getDoubleMap(const std::string& id,
-                             std::unordered_map<VariantKey, double>& values)
+ReaderResult LuaReader::getDoubleMap(const std::string& id,
+                                     std::unordered_map<VariantKey, double>& values)
 {
   return getMap(id, values, sol::type::number);
 }
 
-bool LuaReader::getBoolMap(const std::string& id,
-                           std::unordered_map<VariantKey, bool>& values)
+ReaderResult LuaReader::getBoolMap(const std::string& id,
+                                   std::unordered_map<VariantKey, bool>& values)
 {
   return getMap(id, values, sol::type::boolean);
 }
 
-bool LuaReader::getStringMap(const std::string& id,
-                             std::unordered_map<VariantKey, std::string>& values)
+ReaderResult LuaReader::getStringMap(
+  const std::string& id,
+  std::unordered_map<VariantKey, std::string>& values)
 {
   return getMap(id, values, sol::type::string);
 }
@@ -262,12 +263,14 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   return true;
 }
 
-bool LuaReader::getIndices(const std::string& id, std::vector<int>& indices)
+ReaderResult LuaReader::getIndices(const std::string& id,
+                                   std::vector<int>& indices)
 {
   return getIndicesInternal(id, indices);
 }
 
-bool LuaReader::getIndices(const std::string& id, std::vector<VariantKey>& indices)
+ReaderResult LuaReader::getIndices(const std::string& id,
+                                   std::vector<VariantKey>& indices)
 {
   return getIndicesInternal(id, indices);
 }
@@ -410,19 +413,20 @@ typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
  * \param [in]  proxy The sol::proxy object to retrieve from
  * \param [out] val The value to write to, if it is of the correct type
  *
- * \return true if the value was retrieved from the lua state
+ * \return ReaderResult::Success if the object was of the correct type,
+ * ReaderResult::WrongType otherwise
  *****************************************************************************
  */
 template <typename Proxy, typename Value>
-bool checkedGet(const Proxy& proxy, Value& val)
+ReaderResult checkedGet(const Proxy& proxy, Value& val)
 {
   sol::optional<Value> option = proxy;
   if(option)
   {
     val = option.value();
-    return true;
+    return ReaderResult::Success;
   }
-  return false;
+  return ReaderResult::WrongType;
 }
 
 }  // end namespace detail
@@ -453,7 +457,7 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
 }
 
 template <typename T>
-bool LuaReader::getValue(const std::string& id, T& value)
+ReaderResult LuaReader::getValue(const std::string& id, T& value)
 {
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
@@ -464,22 +468,20 @@ bool LuaReader::getValue(const std::string& id, T& value)
     {
       return detail::checkedGet(m_lua[tokens[0]], value);
     }
-    return false;
+    return ReaderResult::NotFound;
   }
 
   sol::table t;
   // Don't traverse through the last token as it doesn't contain a table
-  if(!traverseToTable(tokens.begin(), tokens.end() - 1, t))
+  if(traverseToTable(tokens.begin(), tokens.end() - 1, t))
   {
-    return false;
+    if(t[tokens.back()].valid())
+    {
+      return detail::checkedGet(t[tokens.back()], value);
+    }
   }
 
-  if(t[tokens.back()].valid())
-  {
-    return detail::checkedGet(t[tokens.back()], value);
-  }
-
-  return false;
+  return ReaderResult::NotFound;
 }
 
 namespace detail
@@ -515,9 +517,9 @@ VariantKey extractAs(const sol::object& obj)
 }  // end namespace detail
 
 template <typename Key, typename Val>
-bool LuaReader::getMap(const std::string& id,
-                       std::unordered_map<Key, Val>& values,
-                       sol::type type)
+ReaderResult LuaReader::getMap(const std::string& id,
+                               std::unordered_map<Key, Val>& values,
+                               sol::type type)
 {
   values.clear();
   std::vector<std::string> tokens;
@@ -526,7 +528,7 @@ bool LuaReader::getMap(const std::string& id,
   sol::table t;
   if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
   {
-    return false;
+    return ReaderResult::NotFound;
   }
 
   // Allows for filtering out keys of incorrect type
@@ -543,7 +545,7 @@ bool LuaReader::getMap(const std::string& id,
       return is_number || (type == sol::type::string);
     }
   };
-
+  bool homogeneous = true;
   for(const auto& entry : t)
   {
     // Gets only indexed items in the table.
@@ -553,12 +555,17 @@ bool LuaReader::getMap(const std::string& id,
       values[detail::extractAs<Key>(entry.first)] =
         detail::extractAs<Val>(entry.second);
     }
+    else
+    {
+      homogeneous = false;
+    }
   }
-  return true;
+  return (homogeneous) ? ReaderResult::Success : ReaderResult::NotHomogeneous;
 }
 
 template <typename T>
-bool LuaReader::getIndicesInternal(const std::string& id, std::vector<T>& indices)
+ReaderResult LuaReader::getIndicesInternal(const std::string& id,
+                                           std::vector<T>& indices)
 {
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
@@ -567,7 +574,7 @@ bool LuaReader::getIndicesInternal(const std::string& id, std::vector<T>& indice
 
   if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
   {
-    return false;
+    return ReaderResult::NotFound;
   }
 
   indices.clear();
@@ -577,7 +584,7 @@ bool LuaReader::getIndicesInternal(const std::string& id, std::vector<T>& indice
   {
     indices.push_back(detail::extractAs<T>(entry.first));
   }
-  return true;
+  return ReaderResult::Success;
 }
 
 sol::protected_function LuaReader::getFunctionInternal(const std::string& id)

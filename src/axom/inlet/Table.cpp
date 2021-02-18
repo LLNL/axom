@@ -208,10 +208,12 @@ Table& Table::addStructCollection(const std::string& name,
     std::vector<Key> indices;
     std::string fullName = appendPrefix(m_name, name);
     fullName = removeAllInstances(fullName, detail::COLLECTION_GROUP_NAME + "/");
-    if(m_reader.getIndices(fullName, indices))
+    const auto result = m_reader.getIndices(fullName, indices);
+    if(result == ReaderResult::Success)
     {
       table.addIndicesGroup(indices, description);
     }
+    markRetrievalStatus(*table.m_sidreGroup, result);
     markAsStructCollection(*table.m_sidreGroup);
   }
   return table;
@@ -380,10 +382,12 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
   bool forArray,
   bool val)
 {
-  if(forArray || m_reader.getBool(lookupPath, val))
+  const auto result = m_reader.getBool(lookupPath, val);
+  if(forArray || result == ReaderResult::Success)
   {
     sidreGroup->createViewScalar("value", val ? int8(1) : int8(0));
   }
+  markRetrievalStatus(*sidreGroup, result);
   return axom::sidre::DataTypeId::INT8_ID;
 }
 
@@ -394,10 +398,12 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
   bool forArray,
   int val)
 {
-  if(forArray || m_reader.getInt(lookupPath, val))
+  const auto result = m_reader.getInt(lookupPath, val);
+  if(forArray || result == ReaderResult::Success)
   {
     sidreGroup->createViewScalar("value", val);
   }
+  markRetrievalStatus(*sidreGroup, result);
   return axom::sidre::DataTypeId::INT_ID;
 }
 
@@ -408,10 +414,12 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
   bool forArray,
   double val)
 {
-  if(forArray || m_reader.getDouble(lookupPath, val))
+  const auto result = m_reader.getDouble(lookupPath, val);
+  if(forArray || result == ReaderResult::Success)
   {
     sidreGroup->createViewScalar("value", val);
   }
+  markRetrievalStatus(*sidreGroup, result);
   return axom::sidre::DataTypeId::DOUBLE_ID;
 }
 
@@ -422,10 +430,12 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
   bool forArray,
   std::string val)
 {
-  if(forArray || m_reader.getString(lookupPath, val))
+  const auto result = m_reader.getString(lookupPath, val);
+  if(forArray || result == ReaderResult::Success)
   {
     sidreGroup->createViewString("value", val);
   }
+  markRetrievalStatus(*sidreGroup, result);
   return axom::sidre::DataTypeId::CHAR8_STR_ID;
 }
 
@@ -509,7 +519,8 @@ struct PrimitiveArrayHelper<Key, bool>
   {
     std::unordered_map<Key, bool> map;
     // Failure to retrieve a map is not necessarily an error
-    reader.getBoolMap(lookupPath, map);
+    const auto result = reader.getBoolMap(lookupPath, map);
+    markRetrievalStatus(*table.sidreGroup(), result);
     return registerCollection(table, map);
   }
 };
@@ -522,7 +533,8 @@ struct PrimitiveArrayHelper<Key, int>
                                      const std::string& lookupPath)
   {
     std::unordered_map<Key, int> map;
-    reader.getIntMap(lookupPath, map);
+    const auto result = reader.getIntMap(lookupPath, map);
+    markRetrievalStatus(*table.sidreGroup(), result);
     return registerCollection(table, map);
   }
 };
@@ -535,7 +547,8 @@ struct PrimitiveArrayHelper<Key, double>
                                      const std::string& lookupPath)
   {
     std::unordered_map<Key, double> map;
-    reader.getDoubleMap(lookupPath, map);
+    const auto result = reader.getDoubleMap(lookupPath, map);
+    markRetrievalStatus(*table.sidreGroup(), result);
     return registerCollection(table, map);
   }
 };
@@ -548,7 +561,8 @@ struct PrimitiveArrayHelper<Key, std::string>
                                      const std::string& lookupPath)
   {
     std::unordered_map<Key, std::string> map;
-    reader.getStringMap(lookupPath, map);
+    const auto result = reader.getStringMap(lookupPath, map);
+    markRetrievalStatus(*table.sidreGroup(), result);
     return registerCollection(table, map);
   }
 };

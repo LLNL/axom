@@ -165,5 +165,13 @@ void markAsStructCollection(axom::sidre::Group& target)
   }
 }
 
+void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result)
+{
+  if(result != ReaderResult::Success)
+  {
+    target.createViewScalar("retrieval_status", static_cast<int>(result));
+  }
+}
+
 }  // namespace inlet
 }  // namespace axom
