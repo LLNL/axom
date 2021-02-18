@@ -177,6 +177,25 @@ TYPED_TEST(inlet_Reader, simple_name_retrieval)
   EXPECT_EQ(found_names, expected_names);
 }
 
+TYPED_TEST(inlet_Reader, simple_name_retrieval_arrays)
+{
+  TypeParam reader;
+  reader.parseString(fromLuaTo<TypeParam>(
+    "t = { [0] = { foo = 1, bar = 2}, [1] = { foo = 3, bar = 4} }"));
+
+  auto found_names = reader.getAllNames();
+  std::unordered_set<std::string> expected_names {
+    "t",
+    "t/0",
+    "t/0/foo",
+    "t/0/bar",
+    "t/1",
+    "t/1/foo",
+    "t/1/bar",
+  };
+  EXPECT_EQ(found_names, expected_names);
+}
+
 TEST(inlet_Reader_YAML, getInsideBools)
 {
   axom::inlet::YAMLReader reader;

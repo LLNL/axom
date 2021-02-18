@@ -160,9 +160,16 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
 void nameRetrievalHelper(std::unordered_set<std::string>& names,
                          const conduit::Node& node)
 {
+  // Conduit paths use [0] for array indices, Inlet does not, so they need
+  // to be removed - e.g., foo/[0]/bar vs foo/0/bar
+  auto filter_name = [](std::string name){
+    name.erase(std::remove(name.begin(), name.end(), '['), name.end());
+    name.erase(std::remove(name.begin(), name.end(), ']'), name.end());
+    return name;
+  };
   for(const auto& child : node.children())
   {
-    names.insert(child.path());
+    names.insert(filter_name(child.path()));
     nameRetrievalHelper(names, child);
   }
 }
