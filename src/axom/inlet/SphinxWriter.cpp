@@ -58,7 +58,7 @@ void SphinxWriter::documentContainer(const Container& container)
 
 void SphinxWriter::finalize()
 {
-  writeAllContainers();
+  writeAllTables();
   m_outFile.open(m_fileName);
   m_outFile << m_oss.str();
   m_outFile.close();
@@ -82,12 +82,12 @@ void SphinxWriter::writeSubtitle(const std::string& sub)
   }
 }
 
-void SphinxWriter::writeContainer(const std::string& title,
-                                  const std::vector<std::vector<std::string>>& rstTable)
+void SphinxWriter::writeTable(const std::string& title,
+                              const std::vector<std::vector<std::string>>& rstTable)
 {
   SLIC_WARNING_IF(
     rstTable.size() <= 1,
-    "[Inlet] Vector for corresponding rst container must be nonempty");
+    "[Inlet] Vector for corresponding rst table must be nonempty");
   std::string result = ".. list-table:: " + title;
   std::string widths = ":widths:";
   // This would be easier with an iterator adaptor like back_inserter but for
@@ -113,7 +113,7 @@ void SphinxWriter::writeContainer(const std::string& title,
   m_oss << result;
 }
 
-void SphinxWriter::writeAllContainers()
+void SphinxWriter::writeAllTables()
 {
   for(std::string& pathName : m_inletContainerPathNames)
   {
@@ -126,7 +126,7 @@ void SphinxWriter::writeAllContainers()
     }
     if(currContainer.rstTable.size() > 1)
     {
-      writeContainer("Fields", currContainer.rstTable);
+      writeTable("Fields", currContainer.rstTable);
     }
   }
 }

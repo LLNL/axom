@@ -81,31 +81,31 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Writes a 4 column container in RST syntax.
+   * \brief Writes a 4 column table in RST syntax.
    *
-   * This writes a 4 column container to the ostringstream in RST syntax. The number
+   * This writes a 4 column table to the ostringstream in RST syntax. The number
    * of rows are determined by the number of Fields found in the vector.
    *
-   * \param [in] sub The title of the container written
+   * \param [in] sub The title of the table written
    * 
    * \param [in] rstTable The 2 dimensional vector containing information to
-   * be translated into an RST container
+   * be translated into an RST table
    *
    *****************************************************************************
    */
-  void writeContainer(const std::string& title,
-                      const std::vector<std::vector<std::string>>& rstTable);
+  void writeTable(const std::string& title,
+                  const std::vector<std::vector<std::string>>& rstTable);
 
   /*!
    *****************************************************************************
-   * \brief Writes all containers and their respective titles and descriptions.
+   * \brief Writes all tables and their respective titles and descriptions.
    *
    * This parses all of the information from m_rstTables into RST-syntax 
    * documentation and writes it to the ostringstream.
    *
    *****************************************************************************
    */
-  void writeAllContainers();
+  void writeAllTables();
 
   /*!
   *******************************************************************************
@@ -121,9 +121,9 @@ private:
     *******************************************************************************
     * \brief A constructor for the ContainerData struct
     * 
-    * This initializes the RST container's column labels.
+    * This initializes the RST tables's column labels.
     * 
-    * \param[in] labels The column labels for the RST container
+    * \param[in] labels The column labels for the RST table
     *
     *******************************************************************************
     */
@@ -148,7 +148,7 @@ private:
   * 
   * This extracts information about the Field stored in the given Sidre Group. 
   * This information is stored internally by this class and then written to the
-  * document by writeAllContainers.
+  * document by writeAllTables.
   * 
   * \param [in] sidreGroup The Sidre Group from which Field metadata should be
   * extracted and then stored.
@@ -210,7 +210,7 @@ private:
   std::vector<std::string> m_inletContainerPathNames;
   std::unordered_map<std::string, ContainerData> m_rstTables;
   std::string m_fileName;
-  // Used for the RST containers for fields
+  // Used for the RST tables for fields
   std::vector<std::string> m_colLabels;
 };
 
