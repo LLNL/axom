@@ -43,29 +43,29 @@ struct Operator
   } type;
 
   // Again, the union of the necessary members are defined as part of the schema
-  static void defineSchema(inlet::Table& table)
+  static void defineSchema(inlet::Container& container)
   {
     // The rotation is in degrees
-    table.addDouble("rotate").range(-180, 180);
+    container.addDouble("rotate").range(-180, 180);
     // Vectors are defined as arrays of doubles
-    table.addDoubleArray("axis");
-    table.addDoubleArray("center");
-    table.addDoubleArray("translate");
+    container.addDoubleArray("axis");
+    container.addDoubleArray("center");
+    container.addDoubleArray("translate");
     // The slice operation can have sub-entries, so we represent it as a struct
     // Note that Inlet does not require a 1-1 correspondence (or any correspondence)
     // between structures defined in the schema via addStruct and structures extracted
     // from the input file with FromInlet specializations (defined below)
-    auto& slice = table.addStruct("slice");
+    auto& slice = container.addStruct("slice");
     slice.addDouble("x");
     slice.addDouble("y");
     slice.addDouble("z");
     slice.addDoubleArray("origin");
 
     // Verify that exactly one type of operator is defined
-    table.registerVerifier([](const inlet::Table& table) {
-      const bool is_translate = table.contains("translate");
-      const bool is_rotate = table.contains("rotate");
-      const bool is_slice = table.contains("slice");
+    container.registerVerifier([](const inlet::Container& container) {
+      const bool is_translate = container.contains("translate");
+      const bool is_rotate = container.contains("rotate");
+      const bool is_slice = container.contains("slice");
 
       // There can be only one
       if((is_translate && is_rotate) || (is_translate && is_slice) ||
@@ -82,7 +82,7 @@ struct Operator
 template <>
 struct FromInlet<Operator>
 {
-  Operator operator()(const inlet::Table& base)
+  Operator operator()(const inlet::Container& base)
   {
     Operator result;
     // Even though all the possible members are part of the schema, the
@@ -164,16 +164,16 @@ struct Geometry
     Meters
   } units;
   int start_dim;
-  static void defineSchema(inlet::Table& table)
+  static void defineSchema(inlet::Container& container)
   {
-    table.addString("format");
-    table.addString("path");
+    container.addString("format");
+    container.addString("path");
     // A string is used to represent the enumeration
-    table.addString("units").defaultValue("cm").validValues({"cm", "m"});
-    table.addInt("start_dimensions").defaultValue(3);
+    container.addString("units").defaultValue("cm").validValues({"cm", "m"});
+    container.addInt("start_dimensions").defaultValue(3);
     // addStructArray is used to represent std::vector<T> where
     // T is any non-primitive type
-    auto& ops_schema = table.addStructArray("operators");
+    auto& ops_schema = container.addStructArray("operators");
     Operator::defineSchema(ops_schema);
   }
 };
@@ -181,7 +181,7 @@ struct Geometry
 template <>
 struct FromInlet<Geometry>
 {
-  Geometry operator()(const inlet::Table& base)
+  Geometry operator()(const inlet::Container& base)
   {
     Geometry result;
     result.format = base["format"];
@@ -224,12 +224,12 @@ struct Shape
     Plastic
   } material;
   Geometry geom;
-  static void defineSchema(inlet::Table& table)
+  static void defineSchema(inlet::Container& container)
   {
-    table.addString("name").required();
-    table.addString("material").validValues({"steel", "wood", "plastic"});
+    container.addString("name").required();
+    container.addString("material").validValues({"steel", "wood", "plastic"});
     // addStruct is used for a single instance of a user-defined type
-    auto& geom_schema = table.addStruct("geometry");
+    auto& geom_schema = container.addStruct("geometry");
     Geometry::defineSchema(geom_schema);
   }
 };
@@ -244,7 +244,7 @@ std::ostream& operator<<(std::ostream& os, const Shape& shape)
 template <>
 struct FromInlet<Shape>
 {
-  Shape operator()(const inlet::Table& base)
+  Shape operator()(const inlet::Container& base)
   {
     Shape result;
     result.name = base["name"];
@@ -312,8 +312,8 @@ int main(int argc, char** argv)
   inlet::Inlet inlet(std::move(reader), ds.getRoot());
 
   // _inlet_nested_struct_array_start
-  auto& shapes_table = inlet.addStructArray("shapes");
-  Shape::defineSchema(shapes_table);
+  auto& shapes_container = inlet.addStructArray("shapes");
+  Shape::defineSchema(shapes_container);
   // _inlet_nested_struct_array_end
 
   if(inlet.verify())

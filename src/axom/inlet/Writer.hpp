@@ -19,7 +19,7 @@ namespace axom
 namespace inlet
 {
 // Forward declaration
-class Table;
+class Container;
 
 /*!
  *******************************************************************************
@@ -41,20 +41,20 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Generates documentation for a Table and its child Fields
-   * \param [in] table The Table to generate documentation for
+   * \brief Generates documentation for a Container and its child Fields
+   * \param [in] container The Container to generate documentation for
    *
    * \note Implementers of this function are not responsible for generating
-   * documentation for child Tables of this Table - only child Fields
+   * documentation for child Containers of this Container - only child Fields
    *****************************************************************************
    */
-  virtual void documentTable(const Table& table) = 0;
+  virtual void documentContainer(const Container& container) = 0;
 
   /*!
    *****************************************************************************
    * \brief Finalizes documentation generation (e.g., by writing it to a file)
    * 
-   * This is a hint to implementers that no further tables will be documented
+   * This is a hint to implementers that no further containers will be documented
    *****************************************************************************
    */
   virtual void finalize() = 0;

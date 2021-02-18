@@ -16,7 +16,7 @@
 #include <iostream>
 
 #include "axom/slic.hpp"
-#include "axom/inlet/Table.hpp"
+#include "axom/inlet/Container.hpp"
 
 namespace axom
 {
@@ -36,21 +36,21 @@ SphinxWriter::SphinxWriter(const std::string& fileName)
   writeTitle("Input file Options");
 }
 
-void SphinxWriter::documentTable(const Table& table)
+void SphinxWriter::documentContainer(const Container& container)
 {
-  const auto sidreGroup = table.sidreGroup();
-  m_inletTablePathNames.push_back(sidreGroup->getPathName());
-  auto& currTable =
-    m_rstTables.emplace(sidreGroup->getPathName(), TableData {m_colLabels})
+  const auto sidreGroup = container.sidreGroup();
+  m_inletContainerPathNames.push_back(sidreGroup->getPathName());
+  auto& currContainer =
+    m_rstTables.emplace(sidreGroup->getPathName(), ContainerData {m_colLabels})
       .first->second;
-  currTable.tableName = sidreGroup->getName();
+  currContainer.containerName = sidreGroup->getName();
   if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
   {
-    currTable.description = sidreGroup->getView("description")->getString();
+    currContainer.description = sidreGroup->getView("description")->getString();
   }
 
   // FIXME: Handle container fields differently
-  for(const auto& field_entry : table.getChildFields())
+  for(const auto& field_entry : container.getChildFields())
   {
     extractFieldMetadata(field_entry.second->sidreGroup());
   }
@@ -115,18 +115,18 @@ void SphinxWriter::writeTable(const std::string& title,
 
 void SphinxWriter::writeAllTables()
 {
-  for(std::string& pathName : m_inletTablePathNames)
+  for(std::string& pathName : m_inletContainerPathNames)
   {
-    auto& currTable = m_rstTables.at(pathName);
-    writeSubtitle(currTable.tableName);
-    if(currTable.description != "")
+    auto& currContainer = m_rstTables.at(pathName);
+    writeSubtitle(currContainer.containerName);
+    if(currContainer.description != "")
     {
-      m_oss << "Description: " << currTable.description << std::endl
+      m_oss << "Description: " << currContainer.description << std::endl
             << std::endl;
     }
-    if(currTable.rstTable.size() > 1)
+    if(currContainer.rstTable.size() > 1)
     {
-      writeTable("Fields", currTable.rstTable);
+      writeTable("Fields", currContainer.rstTable);
     }
   }
 }
@@ -209,7 +209,7 @@ std::string SphinxWriter::getValidStringValues(const axom::sidre::Group* sidreGr
 
 void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup)
 {
-  TableData& currentTable =
+  ContainerData& currentContainer =
     m_rstTables.at(sidreGroup->getParent()->getPathName());
   std::vector<std::string> fieldAttributes(m_colLabels.size());
 
@@ -251,7 +251,7 @@ void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup)
     fieldAttributes[4] = "|uncheck|";
   }
 
-  currentTable.rstTable.push_back(fieldAttributes);
+  currentContainer.rstTable.push_back(fieldAttributes);
 }
 
 }  // namespace inlet

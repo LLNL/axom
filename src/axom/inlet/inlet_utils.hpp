@@ -97,7 +97,7 @@ std::string appendPrefix(const std::string& prefix, const std::string& name);
 
 /*!
 *****************************************************************************
-* \brief This function extracts the Table name from the full name.
+* \brief This function extracts the Container name from the full name.
 *
 * \param [in] The prefix of the name, to be removed.
 * \param [in] The full name.
@@ -162,9 +162,9 @@ const std::string STRUCT_COLLECTION_FLAG = "_inlet_struct_collection";
 
 /*!
 *****************************************************************************
-* \brief Determines whether a Table is a collection group
+* \brief Determines whether a Container is a collection group
 *
-* \param [in] name The name of the table
+* \param [in] name The name of the container
 *****************************************************************************
 */
 inline bool isCollectionGroup(const std::string& name)

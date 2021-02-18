@@ -116,7 +116,7 @@ TYPED_TEST(inlet_Reader, getInsideStrings)
   EXPECT_EQ(value, "TesT StrInG");
 }
 
-TYPED_TEST(inlet_Reader, mixLevelTables)
+TYPED_TEST(inlet_Reader, mixLevelContainers)
 {
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>(
@@ -204,7 +204,7 @@ TEST(inlet_Reader_YAML, getInsideBools)
   EXPECT_EQ(value, true);
 }
 
-TEST(inlet_Reader_YAML, mixLevelTables)
+TEST(inlet_Reader_YAML, mixLevelContainers)
 {
   axom::inlet::YAMLReader reader;
   bool result = reader.parseString(
@@ -234,7 +234,7 @@ TEST(inlet_Reader_YAML, mixLevelTables)
   EXPECT_EQ(value, 3);
 }
 
-TEST(inlet_Reader_YAML, mixLevelTables_invalid)
+TEST(inlet_Reader_YAML, mixLevelContainers_invalid)
 {
   axom::inlet::YAMLReader reader;
   bool result = reader.parseString(
@@ -272,7 +272,7 @@ TEST(inlet_Reader_JSON, getInsideBools)
   EXPECT_EQ(value, true);
 }
 
-TEST(inlet_Reader_JSON, mixLevelTables)
+TEST(inlet_Reader_JSON, mixLevelContainers)
 {
   axom::inlet::JSONReader reader;
   bool result = reader.parseString(
@@ -307,7 +307,7 @@ TEST(inlet_Reader_JSON, mixLevelTables)
   EXPECT_EQ(value, 3);
 }
 
-TEST(inlet_Reader_JSON, mixLevelTables_invalid)
+TEST(inlet_Reader_JSON, mixLevelContainers_invalid)
 {
   axom::inlet::JSONReader reader;
   bool result = reader.parseString(
