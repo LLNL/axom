@@ -10,25 +10,25 @@ provided input conformed to the schema, and specific violations of the schema ar
 SLIC.
 
 This section describes the verification rules that apply to each possible element of the Inlet
-hierarchy, namely, ``Table``, ``Field``, and ``Function``.
+hierarchy, namely, ``Container``, ``Field``, and ``Function``.
 
-Table Verification
-------------------
+Container Verification
+----------------------
 
-If a ``Table`` is marked as required (via the ``required()``) method, then the ``Table`` must be nontrivial,
-meaning it either has a ``Field`` or ``Function`` that was present in the input, or contains a sub-``Table``
+If a ``Container`` is marked as required (via the ``required()``) method, then the ``Container`` must be nontrivial,
+meaning it either has a ``Field`` or ``Function`` that was present in the input, or contains a sub-``Container``
 that does.
 
-If a ``Table`` corresponds to an array or dictionary, the elements of the array must all be of the requested
+If a ``Container`` corresponds to an array or dictionary, the elements of the array must all be of the requested
 type.  This restriction applies even if the array/dictionary was not marked as ``required``.
 
 If a verification lambda was provided via the ``registerVerifier()`` method, this lambda must 
-return ``true`` when passed the corresponding ``Table`` object.
+return ``true`` when passed the corresponding ``Container`` object.
 
 .. note::
-  Since a ``Table`` represents internal nodes in the Inlet hierarchy, its verification status is
-  dependent on that of its child objects.  A ``Table`` is only considered valid if all of its child
-  ``Table``, ``Field``, and ``Function`` objects are also valid.
+  Since a ``Container`` represents internal nodes in the Inlet hierarchy, its verification status is
+  dependent on that of its child objects.  A ``Container`` is only considered valid if all of its child
+  ``Container``, ``Field``, and ``Function`` objects are also valid.
 
 Field Verification
 ------------------
