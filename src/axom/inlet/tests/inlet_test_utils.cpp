@@ -66,7 +66,7 @@ std::vector<std::string> LuaTranslator::tokenize(const std::string& text)
     {
       find_and_add_until('\'');
     }
-    // If it's a container index, find the next bracket and use that as the end
+    // If it's a table index, find the next bracket and use that as the end
     else if(text[pos] == '[')
     {
       find_and_add_until(']');
@@ -104,14 +104,14 @@ std::string LuaTranslator::convertYAML(const std::string& luaString)
   while(i < tokens.size())
   {
     const auto& token = tokens[i];
-    // The start of a new container
+    // The start of a new table
     if((i < tokens.size() - 2) && tokens[i + 1] == "=" && tokens[i + 2] == "{")
     {
       result += indent + token + ":\n";
       indent += "  ";
       i += 3;
     }
-    // End of a container - only need to reduce the indent
+    // End of a table - only need to reduce the indent
     else if(token == "}")
     {
       indent = indent.substr(2);
@@ -132,15 +132,15 @@ std::string LuaTranslator::convertYAML(const std::string& luaString)
     else if(token == "[")
     {
       const auto& key = tokens[i + 1];
-      // Check if this is the start of a new container
+      // Check if this is the start of a new table
       if(tokens[i + 4] == "{")
       {
         result += indent;
-        // Check if it's an integer-keyed container
+        // Check if it's an integer-keyed table
         result += isdigit(key.front()) ? "-\n" : key + ":\n";
         indent += "  ";
       }
-      // Or if it's a terminal entry in the current container
+      // Or if it's a terminal entry in the current table
       else
       {
         const auto& value = tokens[i + 4];
@@ -197,11 +197,11 @@ std::string LuaTranslator::convertJSON(const std::string& luaString)
   while(i < tokens.size())
   {
     const auto& token = tokens[i];
-    // The start of a new container
+    // The start of a new table
     if((i < tokens.size() - 2) && tokens[i + 1] == "=" && tokens[i + 2] == "{")
     {
       result += indent + '"' + token + '"' + ": ";
-      // Curly brace if it's a string-keyed container (not integer-keyed) and not implicitly indexed
+      // Curly brace if it's a string-keyed table (not integer-keyed) and not implicitly indexed
       const char open_bracket = (i + 4 >= tokens.size()) ||
           (!isdigit(tokens[i + 4].front()) && (tokens[i + 3] != "{"))
         ? '{'
@@ -212,7 +212,7 @@ std::string LuaTranslator::convertJSON(const std::string& luaString)
       indent += "  ";
       i += 3;
     }
-    // End of a container - end with the matching type of bracket
+    // End of a table - end with the matching type of bracket
     else if(token == "}")
     {
       indent = indent.substr(2);
@@ -239,11 +239,11 @@ std::string LuaTranslator::convertJSON(const std::string& luaString)
     else if(token == "[")
     {
       const auto& key = tokens[i + 1];
-      // Check if this is the start of a new container
+      // Check if this is the start of a new table
       if(tokens[i + 4] == "{")
       {
         result += indent;
-        // Check if it's an integer-keyed container
+        // Check if it's an integer-keyed table
         if(isdigit(key.front()))
         {
           result += "{\n";
@@ -251,13 +251,13 @@ std::string LuaTranslator::convertJSON(const std::string& luaString)
         }
         else
         {
-          // The start of a string-keyed container
+          // The start of a string-keyed table
           result += key + ": {\n";
           delim_stack.push('{');
         }
         indent += "  ";
       }
-      // Or if it's a terminal entry in the current container
+      // Or if it's a terminal entry in the current table
       else
       {
         const auto& value = tokens[i + 4];

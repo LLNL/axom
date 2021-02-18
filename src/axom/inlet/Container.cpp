@@ -711,8 +711,7 @@ Proxy Container::operator[](const std::string& name) const
   {
     const std::string msg = fmt::format(
       "[Inlet] Ambiguous lookup - more than one of a container/field/function "
-      "with "
-      "name '{0}' exist",
+      "with name '{0}' exist",
       name);
     SLIC_ERROR(msg);
     return Proxy();
