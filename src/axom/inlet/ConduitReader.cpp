@@ -157,6 +157,16 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
   }
 }
 
+void nameRetrievalHelper(std::unordered_set<std::string>& names,
+                         const conduit::Node& node)
+{
+  for(const auto& child : node.children())
+  {
+    names.insert(child.path());
+    nameRetrievalHelper(names, child);
+  }
+}
+
 }  // namespace detail
 
 bool ConduitReader::getValue(const conduit::Node& node, int& value)
@@ -345,6 +355,13 @@ FunctionVariant ConduitReader::getFunction(const std::string&,
 {
   SLIC_ERROR("[Inlet] Conduit YAML/JSON does not support functions");
   return {};
+}
+
+std::unordered_set<std::string> ConduitReader::getAllNames()
+{
+  std::unordered_set<std::string> result;
+  detail::nameRetrievalHelper(result, m_root);
+  return result;
 }
 
 template <typename T>

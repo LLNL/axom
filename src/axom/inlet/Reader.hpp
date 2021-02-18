@@ -17,6 +17,7 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "axom/inlet/Function.hpp"
@@ -244,6 +245,8 @@ public:
   virtual FunctionVariant getFunction(const std::string& id,
                                       const FunctionTag ret_type,
                                       const std::vector<FunctionTag>& arg_types) = 0;
+
+  virtual std::unordered_set<std::string> getAllNames() = 0;
 };
 
 }  // end namespace inlet

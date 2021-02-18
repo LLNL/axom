@@ -230,6 +230,8 @@ public:
                               const FunctionTag ret_type,
                               const std::vector<FunctionTag>& arg_types);
 
+  std::unordered_set<std::string> getAllNames();
+
   /*!
    *****************************************************************************
    * \brief The base index for arrays in Lua
@@ -295,6 +297,7 @@ private:
   sol::protected_function getFunctionInternal(const std::string& id);
 
   sol::state m_lua;
+  std::unordered_set<std::string> m_preloaded_globals;
 };
 
 }  // end namespace inlet

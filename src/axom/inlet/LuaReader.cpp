@@ -26,6 +26,65 @@ namespace axom
 {
 namespace inlet
 {
+namespace detail
+{
+/*!
+ *******************************************************************************
+ * \brief Extracts an object from sol into a concrete type, implemented to support
+ * extracting to a VariantKey
+ * 
+ * \tparam T The type to extract to
+ *******************************************************************************
+ */
+template <typename T>
+T extractAs(const sol::object& obj)
+{
+  // By default, just ask sol to cast it
+  return obj.as<T>();
+}
+/// \overload
+template <>
+VariantKey extractAs(const sol::object& obj)
+{
+  // FIXME: Floating-point indices?
+  if(obj.get_type() == sol::type::number)
+  {
+    return obj.as<int>();
+  }
+  else
+  {
+    return obj.as<std::string>();
+  }
+}
+
+void nameRetrievalHelper(std::unordered_set<std::string>& names,
+                         const std::unordered_set<std::string>& ignores,
+                         const sol::table& table,
+                         const std::string& prefix)
+{
+  auto to_string = [](const VariantKey& key) {
+    return key.type() == InletType::String
+      ? static_cast<std::string>(key)
+      : std::to_string(static_cast<int>(key));
+  };
+  for(const auto& entry : table)
+  {
+    const auto variant_key = detail::extractAs<VariantKey>(entry.first);
+    const std::string full_name = appendPrefix(prefix, to_string(variant_key));
+    if(ignores.count(full_name) == 0)
+    {
+      names.insert(full_name);
+    }
+    if(entry.second.get_type() == sol::type::table &&
+       (ignores.count(full_name) == 0))
+    {
+      nameRetrievalHelper(names, ignores, entry.second, full_name);
+    }
+  }
+}
+
+}  // end namespace detail
+
 LuaReader::LuaReader()
 {
   m_lua.open_libraries(sol::lib::base,
@@ -121,6 +180,11 @@ LuaReader::LuaReader()
     sol::property([](const FunctionType::Vector& u) { return u.vec[1]; }),
     "z",
     sol::property([](const FunctionType::Vector& u) { return u.vec[2]; }));
+
+  detail::nameRetrievalHelper(m_preloaded_globals,
+                              m_preloaded_globals,
+                              m_lua.globals(),
+                              "");
 }
 
 bool LuaReader::parseFile(const std::string& filePath)
@@ -482,37 +546,12 @@ bool LuaReader::getValue(const std::string& id, T& value)
   return false;
 }
 
-namespace detail
+std::unordered_set<std::string> LuaReader::getAllNames()
 {
-/*!
- *******************************************************************************
- * \brief Extracts an object from sol into a concrete type, implemented to support
- * extracting to a VariantKey
- * 
- * \tparam T The type to extract to
- *******************************************************************************
- */
-template <typename T>
-T extractAs(const sol::object& obj)
-{
-  // By default, just ask sol to cast it
-  return obj.as<T>();
+  std::unordered_set<std::string> result;
+  detail::nameRetrievalHelper(result, m_preloaded_globals, m_lua.globals(), "");
+  return result;
 }
-/// \overload
-template <>
-VariantKey extractAs(const sol::object& obj)
-{
-  // FIXME: Floating-point indices?
-  if(obj.get_type() == sol::type::number)
-  {
-    return obj.as<int>();
-  }
-  else
-  {
-    return obj.as<std::string>();
-  }
-}
-}  // end namespace detail
 
 template <typename Key, typename Val>
 bool LuaReader::getMap(const std::string& id,

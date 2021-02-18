@@ -162,6 +162,21 @@ TYPED_TEST(inlet_Reader, getMap)
   // EXPECT_EQ(expectedStrs, strs);
 }
 
+TYPED_TEST(inlet_Reader, simple_name_retrieval)
+{
+  TypeParam reader;
+  reader.parseString(fromLuaTo<TypeParam>(
+    "t = { innerT = { foo = 1 }, anotherInnerT = {baz = 3}}"));
+
+  auto found_names = reader.getAllNames();
+  std::unordered_set<std::string> expected_names {"t",
+                                                  "t/innerT",
+                                                  "t/innerT/foo",
+                                                  "t/anotherInnerT",
+                                                  "t/anotherInnerT/baz"};
+  EXPECT_EQ(found_names, expected_names);
+}
+
 TEST(inlet_Reader_YAML, getInsideBools)
 {
   axom::inlet::YAMLReader reader;
