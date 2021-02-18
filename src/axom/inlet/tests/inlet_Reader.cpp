@@ -19,6 +19,7 @@ class inlet_Reader : public testing::Test
 
 TYPED_TEST_SUITE(inlet_Reader, axom::inlet::detail::ReaderTypes);
 
+using axom::inlet::ReaderResult;
 using axom::inlet::detail::fromLuaTo;
 
 TYPED_TEST(inlet_Reader, getTopLevelBools)
@@ -26,16 +27,17 @@ TYPED_TEST(inlet_Reader, getTopLevelBools)
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>("foo = true; bar = false"));
 
-  bool value, retValue;
+  ReaderResult retValue;
+  bool value;
 
   value = false;
   retValue = reader.getBool("foo", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, true);
 
   value = true;
   retValue = reader.getBool("bar", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, false);
 }
 
@@ -44,16 +46,17 @@ TYPED_TEST(inlet_Reader, getInsideBools)
   TypeParam reader;
   reader.parseString(fromLuaTo<TypeParam>("foo = { bar = false; baz = true }"));
 
-  bool value, retValue;
+  ReaderResult retValue;
+  bool value;
 
   value = true;
   retValue = reader.getBool("foo/bar", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, false);
 
   value = false;
   retValue = reader.getBool("foo/baz", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, true);
 }
 
@@ -63,17 +66,17 @@ TYPED_TEST(inlet_Reader, getTopLevelStrings)
   reader.parseString(fromLuaTo<TypeParam>(
     "foo = \"this is a test string\"; bar = \"TesT StrInG\""));
 
-  bool retValue;
+  ReaderResult retValue;
   std::string value;
 
   value = "";
   retValue = reader.getString("foo", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, "this is a test string");
 
   value = "";
   retValue = reader.getString("bar", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, "TesT StrInG");
 }
 
@@ -83,17 +86,17 @@ TYPED_TEST(inlet_Reader, getInsideStrings)
   reader.parseString(fromLuaTo<TypeParam>(
     "foo = { bar = \"this is a test string\"; baz = \"TesT StrInG\" }"));
 
-  bool retValue;
+  ReaderResult retValue;
   std::string value;
 
   value = "";
   retValue = reader.getString("foo/bar", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, "this is a test string");
 
   value = "";
   retValue = reader.getString("foo/baz", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, "TesT StrInG");
 }
 
@@ -103,22 +106,22 @@ TYPED_TEST(inlet_Reader, mixLevelTables)
   reader.parseString(fromLuaTo<TypeParam>(
     "t = { innerT = { foo = 1 }, anotherInnerT = {baz = 3}}"));
 
-  bool retValue;
+  ReaderResult retValue;
   int value;
 
   value = 0;
   retValue = reader.getInt("t/innerT/foo", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, 1);
 
   value = 0;
   retValue = reader.getInt("t/doesntexist", value);
-  EXPECT_EQ(retValue, false);
+  EXPECT_EQ(retValue, ReaderResult::NotFound);
   EXPECT_EQ(value, 0);
 
   value = 0;
   retValue = reader.getInt("t/anotherInnerT/baz", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, 3);
 }
 
@@ -132,14 +135,14 @@ TYPED_TEST(inlet_Reader, getMap)
   reader.parseString(fromLuaTo<TypeParam>(testString));
 
   std::unordered_map<int, int> ints;
-  bool found = reader.getIntMap("luaArray", ints);
-  EXPECT_TRUE(found);
+  ReaderResult retValue = reader.getIntMap("luaArray", ints);
+  EXPECT_EQ(retValue, ReaderResult::NotHomogeneous);
   std::unordered_map<int, int> expectedInts {{0, 4}, {1, 5}, {2, 6}, {5, 2}};
   EXPECT_EQ(expectedInts, ints);
 
   std::unordered_map<int, double> doubles;
-  found = reader.getDoubleMap("luaArray", doubles);
-  EXPECT_TRUE(found);
+  retValue = reader.getDoubleMap("luaArray", doubles);
+  EXPECT_EQ(retValue, ReaderResult::NotHomogeneous);
   std::unordered_map<int, double> expectedDoubles {{0, 4},
                                                    {1, 5},
                                                    {2, 6},
@@ -147,16 +150,16 @@ TYPED_TEST(inlet_Reader, getMap)
   EXPECT_EQ(expectedDoubles, doubles);
 
   std::unordered_map<int, bool> bools;
-  found = reader.getBoolMap("luaArray", bools);
-  EXPECT_TRUE(found);
+  retValue = reader.getBoolMap("luaArray", bools);
+  EXPECT_EQ(retValue, ReaderResult::NotHomogeneous);
   std::unordered_map<int, bool> expectedBools {{3, true}, {4, false}};
   EXPECT_EQ(expectedBools, bools);
 
   // Conduit's YAML parser doesn't distinguish boolean literals from strings
   // so the YAML version will extract the "true" and "false" here
   std::unordered_map<int, std::string> strs;
-  found = reader.getStringMap("luaArray", strs);
-  EXPECT_TRUE(found);
+  retValue = reader.getStringMap("luaArray", strs);
+  EXPECT_EQ(retValue, ReaderResult::NotHomogeneous);
   // std::unordered_map<int, std::string> expectedStrs {{6, "hello"},
   //                                                    {7, "bye"}};
   // EXPECT_EQ(expectedStrs, strs);
@@ -170,16 +173,18 @@ TEST(inlet_Reader_YAML, getInsideBools)
     "  bar: false\n"
     "  baz: true");
   EXPECT_TRUE(result);
-  bool value, retValue;
+
+  ReaderResult retValue;
+  bool value;
 
   value = true;
   retValue = reader.getBool("foo/bar", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, false);
 
   value = false;
   retValue = reader.getBool("foo/baz", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, true);
 }
 
@@ -194,22 +199,22 @@ TEST(inlet_Reader_YAML, mixLevelTables)
     "    baz: 3");
   EXPECT_TRUE(result);
 
-  bool retValue;
+  ReaderResult retValue;
   int value;
 
   value = 0;
   retValue = reader.getInt("t/innerT/foo", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, 1);
 
   value = 0;
   retValue = reader.getInt("t/doesntexist", value);
-  EXPECT_EQ(retValue, false);
+  EXPECT_EQ(retValue, ReaderResult::NotFound);
   EXPECT_EQ(value, 0);
 
   value = 0;
   retValue = reader.getInt("t/anotherInnerT/baz", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, 3);
 }
 
@@ -237,16 +242,17 @@ TEST(inlet_Reader_JSON, getInsideBools)
     "}");
   EXPECT_TRUE(result);
 
-  bool value, retValue;
+  ReaderResult retValue;
+  bool value;
 
   value = true;
   retValue = reader.getBool("foo/bar", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, false);
 
   value = false;
   retValue = reader.getBool("foo/baz", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, true);
 }
 
@@ -266,22 +272,22 @@ TEST(inlet_Reader_JSON, mixLevelTables)
     "}");
   EXPECT_TRUE(result);
 
-  bool retValue;
+  ReaderResult retValue;
   int value;
 
   value = 0;
   retValue = reader.getInt("t/innerT/foo", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, 1);
 
   value = 0;
   retValue = reader.getInt("t/doesntexist", value);
-  EXPECT_EQ(retValue, false);
+  EXPECT_EQ(retValue, ReaderResult::NotFound);
   EXPECT_EQ(value, 0);
 
   value = 0;
   retValue = reader.getInt("t/anotherInnerT/baz", value);
-  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(retValue, ReaderResult::Success);
   EXPECT_EQ(value, 3);
 }
 
@@ -315,14 +321,14 @@ TEST(inlet_Reader_lua, getDiscontiguousMap)
   reader.parseString(testString);
 
   std::unordered_map<int, int> ints;
-  bool found = reader.getIntMap("luaArray", ints);
-  EXPECT_TRUE(found);
+  ReaderResult retValue = reader.getIntMap("luaArray", ints);
+  EXPECT_EQ(retValue, ReaderResult::NotHomogeneous);
   std::unordered_map<int, int> expectedInts {{1, 4}, {2, 5}, {3, 6}, {12, 2}};
   EXPECT_EQ(expectedInts, ints);
 
   std::unordered_map<int, double> doubles;
-  found = reader.getDoubleMap("luaArray", doubles);
-  EXPECT_TRUE(found);
+  retValue = reader.getDoubleMap("luaArray", doubles);
+  EXPECT_EQ(retValue, ReaderResult::NotHomogeneous);
   std::unordered_map<int, double> expectedDoubles {{1, 4},
                                                    {2, 5},
                                                    {3, 6},
@@ -330,14 +336,14 @@ TEST(inlet_Reader_lua, getDiscontiguousMap)
   EXPECT_EQ(expectedDoubles, doubles);
 
   std::unordered_map<int, bool> bools;
-  found = reader.getBoolMap("luaArray", bools);
-  EXPECT_TRUE(found);
+  retValue = reader.getBoolMap("luaArray", bools);
+  EXPECT_EQ(retValue, ReaderResult::NotHomogeneous);
   std::unordered_map<int, bool> expectedBools {{4, true}, {8, false}};
   EXPECT_EQ(expectedBools, bools);
 
   std::unordered_map<int, std::string> strs;
-  found = reader.getStringMap("luaArray", strs);
-  EXPECT_TRUE(found);
+  retValue = reader.getStringMap("luaArray", strs);
+  EXPECT_EQ(retValue, ReaderResult::NotHomogeneous);
   std::unordered_map<int, std::string> expectedStrs {{33, "hello"},
                                                      {200, "bye"}};
   EXPECT_EQ(expectedStrs, strs);

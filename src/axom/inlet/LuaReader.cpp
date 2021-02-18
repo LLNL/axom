@@ -526,7 +526,8 @@ ReaderResult LuaReader::getMap(const std::string& id,
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
 
   sol::table t;
-  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t) ||
+     t.empty())
   {
     return ReaderResult::NotFound;
   }
@@ -560,7 +561,7 @@ ReaderResult LuaReader::getMap(const std::string& id,
       homogeneous = false;
     }
   }
-  return (homogeneous) ? ReaderResult::Success : ReaderResult::NotHomogeneous;
+  return collectionRetrievalResult(homogeneous, values.empty());
 }
 
 template <typename T>
@@ -572,7 +573,8 @@ ReaderResult LuaReader::getIndicesInternal(const std::string& id,
 
   sol::table t;
 
-  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t) ||
+     t.empty())
   {
     return ReaderResult::NotFound;
   }

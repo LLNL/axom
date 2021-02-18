@@ -312,7 +312,7 @@ ReaderResult ConduitReader::getIndices(const std::string& id,
   indices.resize(num_elements);
   // Arrays in YAML/JSON are contiguous so we don't need to query the input file
   std::iota(indices.begin(), indices.end(), 0);
-  return ReaderResult::Success;
+  return (num_elements == 0) ? ReaderResult::NotFound : ReaderResult::Success;
 }
 
 ReaderResult ConduitReader::getIndices(const std::string& id,
@@ -342,7 +342,7 @@ ReaderResult ConduitReader::getIndices(const std::string& id,
   {
     indices.push_back(child.name());
   }
-  return ReaderResult::Success;
+  return (indices.size() == 0) ? ReaderResult::NotFound : ReaderResult::Success;
 }
 
 FunctionVariant ConduitReader::getFunction(const std::string&,
@@ -359,9 +359,13 @@ ReaderResult ConduitReader::getDictionary(const std::string& id,
 {
   values.clear();
   const auto node = detail::traverseNode(m_root, id);
-  if(!node.dtype().is_object())
+  if(node.dtype().is_empty())
   {
     return ReaderResult::NotFound;
+  }
+  if(!node.dtype().is_object())
+  {
+    return ReaderResult::WrongType;
   }
 
   bool homogeneous = true;
@@ -381,7 +385,7 @@ ReaderResult ConduitReader::getDictionary(const std::string& id,
       homogeneous = false;
     }
   }
-  return (homogeneous) ? ReaderResult::Success : ReaderResult::NotHomogeneous;
+  return collectionRetrievalResult(homogeneous, values.empty());
 }
 
 template <typename T>
@@ -447,15 +451,7 @@ ReaderResult ConduitReader::getArray(const std::string& id,
       }
       index++;
     }
-    // Check if nothing was inserted
-    if(values.empty())
-    {
-      return ReaderResult::NotFound;
-    }
-    if(!homogeneous)
-    {
-      return ReaderResult::NotHomogeneous;
-    }
+    return collectionRetrievalResult(homogeneous, values.empty());
   }
   return ReaderResult::Success;
 }

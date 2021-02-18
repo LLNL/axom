@@ -75,6 +75,9 @@ bool verifyRequired(const axom::sidre::Group& target,
   if(target.hasView("required"))
   {
     int8 required = target.getView("required")->getData();
+    // If it wasn't found at all, it's only an error if the object was required and not provided
+    // The retrieval_status will typically (but not always) be NotFound in these cases, but that
+    // information isn't needed here
     if(required && !condition)
     {
       const std::string msg = fmt::format(
@@ -82,6 +85,27 @@ bool verifyRequired(const axom::sidre::Group& target,
         "specified: {1}",
         type,
         target.getPathName());
+      SLIC_WARNING(msg);
+      return false;
+    }
+  }
+
+  if(target.hasView("retrieval_status"))
+  {
+    const auto status = static_cast<ReaderResult>(
+      static_cast<int>(target.getView("retrieval_status")->getData()));
+
+    // If it was the wrong type or part of a non-homogeneous array, it's always an error,
+    // even if the object wasn't marked as required
+    if(status == ReaderResult::WrongType || status == ReaderResult::NotHomogeneous)
+    {
+      const std::string reason = (status == ReaderResult::WrongType)
+        ? "of the wrong type"
+        : "not homogeneous";
+      const std::string msg = fmt::format("[Inlet] {0} '{1}' was {2}",
+                                          type,
+                                          target.getPathName(),
+                                          reason);
       SLIC_WARNING(msg);
       return false;
     }
@@ -171,6 +195,26 @@ void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result)
   {
     target.createViewScalar("retrieval_status", static_cast<int>(result));
   }
+}
+
+ReaderResult collectionRetrievalResult(const bool homogeneous, const bool empty)
+{
+  // First check if the collection was entirely the wrong type
+  if(!homogeneous && empty)
+  {
+    return ReaderResult::WrongType;
+  }
+  // Then check if some values were of the correct type, but others weren't
+  else if(!homogeneous)
+  {
+    return ReaderResult::NotHomogeneous;
+  }
+  // Finally check if nothing existed at all
+  else if(empty)
+  {
+    return ReaderResult::NotFound;
+  }
+  return ReaderResult::Success;
 }
 
 }  // namespace inlet
