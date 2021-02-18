@@ -30,8 +30,8 @@ namespace inlet
  * \tparam BaseType The "base" type of the object, used for the argument type
  * of a verifying predicate
  * 
- * In practice this interface is used for the Table and Function classes.
- * Currently the only supported means of verifying a composite type (table)
+ * In practice this interface is used for the Container and Function classes.
+ * Currently the only supported means of verifying a composite type (container)
  * or function type are the methods exposed by this interface.
  *******************************************************************************
  */
@@ -97,7 +97,7 @@ public:
  * \tparam BaseType The "base" type of the object, used for the argument type
  * of a verifying predicate
  * 
- * In practice this interface is used for the Table and Function classes.
+ * In practice this interface is used for the Container and Function classes.
  *******************************************************************************
  */
 template <typename BaseType>

@@ -66,6 +66,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 - Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
 - Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
+- Inlet: Renamed `Table` to `Container`
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty

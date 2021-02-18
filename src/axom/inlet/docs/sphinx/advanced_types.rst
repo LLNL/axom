@@ -20,7 +20,7 @@ Defining And Storing
 --------------------
 
 To add a single (i.e., not array) user-defined type to the input file, use the ``addStruct``
-function of the Inlet or Table classes to add a Table (collection of Fields and sub-Tables)
+function of the Inlet or Container classes to add a Container (collection of Fields and sub-Containers)
 that will represent the fields of the struct.
 
 Consider a simple Lua table that contains only primitive types, whose definition might look like:
@@ -51,8 +51,8 @@ Its Inlet schema can be defined as follows:
    :end-before: _inlet_userdef_simple_end
    :language: C++
 
-This would be used by creating an ``inlet::Table`` for the ``Car`` instance and then defining the struct
-schema on that subtable, e.g.:
+This would be used by creating an ``inlet::Container`` for the ``Car`` instance and then defining the struct
+schema on that subcontainer, e.g.:
 
 .. literalinclude:: ../../examples/user_defined_type.cpp
    :start-after: _inlet_userdef_simple_usage_start
@@ -62,14 +62,14 @@ schema on that subtable, e.g.:
 .. note:: 
   The definition of a static ``defineSchema`` member function is not required, and is just used
   for convenience.  The schema definition for a class or struct could also be implemented as a
-  free function for third-party types, or even in the same place as the sub-table declaration.
+  free function for third-party types, or even in the same place as the sub-container declaration.
 
 Accessing
 ---------
 
 In order to convert from Inlet's internal representation to a custom C++ ``struct``, you must provide 
 deserialization logic.  This is accomplished by a specialization of the ``FromInlet<T>`` functor for your
-type ``T``, which implements a member function with the signature ``T operator()(const inlet::Table&)``.
+type ``T``, which implements a member function with the signature ``T operator()(const inlet::Container&)``.
 This function should return an instance of type ``T`` with its members populated with the corresponding
 fields in the input file. For the simple ``Car`` example whose schema is defined above, the specialization
 might look like:
@@ -79,7 +79,7 @@ might look like:
    :end-before: _inlet_userdef_simple_frominlet_end
    :language: C++
 
-In the above snippet, ``Table::operator[]`` is used to extract data from Inlet's internal representation
+In the above snippet, ``Container::operator[]`` is used to extract data from Inlet's internal representation
 which is automatically converted to the correct member variable types when the function's return value is
 constructed.  This conversion does not happen automatically for user-defined types.
 If a ``Car`` object as defined above is located at the path "car" within the input file, it can be retrieved as follows:
@@ -140,7 +140,7 @@ or in YAML, as:
       horsepower: 101
       color: silver
 
-First, use the ``addStructArray`` function to create a subtable, then define the schema on that table
+First, use the ``addStructArray`` function to create a subcontainer, then define the schema on that container
 using the same ``Car::defineSchema`` used above:
 
 .. literalinclude:: ../../examples/user_defined_type.cpp
@@ -150,7 +150,7 @@ using the same ``Car::defineSchema`` used above:
 
 .. note::
   The schema definition logic for a struct is identical between individual instances of structs
-  and arrays of structs.  The distinction is made by ``Table`` on which the struct schema is
+  and arrays of structs.  The distinction is made by ``Container`` on which the struct schema is
   defined - specifically, whether it is obtained via ``addStruct`` or ``addStructArray``.
 
 Associative arrays are also supported, using string keys or a mixture of string and integer keys.
