@@ -819,6 +819,26 @@ TYPED_TEST(inlet_object, struct_arrays_as_std_vector)
   EXPECT_EQ(foos, expected_foos);
 }
 
+TYPED_TEST(inlet_object, basic_unused_names)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; baz = false}, "
+    "        [1] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_container = inlet.addStructArray("foo");
+
+  arr_container.addBool("bar", "bar's description");
+  // Baz is left unused
+
+  // Should still verify - unexpected fields do not mean invalid
+  EXPECT_TRUE(inlet.verify());
+
+  std::unordered_set<std::string> expected_unused {"foo/0/baz", "foo/1/baz"};
+  EXPECT_EQ(expected_unused, inlet.unexpectedNames());
+}
+
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
 { };

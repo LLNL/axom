@@ -475,6 +475,11 @@ public:
     return m_globalContainer.addStructDictionary(name, description);
   }
 
+  const std::unordered_set<std::string>& unexpectedNames() const
+  {
+    return m_unexpected_names;
+  }
+
   // TODO add update value functions
 private:
   std::unique_ptr<Reader> m_reader;
