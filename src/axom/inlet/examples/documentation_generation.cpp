@@ -99,12 +99,12 @@ void defineSchema(Inlet& inlet)
     .addDouble("thermal_solver/kappa/constant", "description for kappa constant")
     .required();
 
-  // Add description to solver table by using the addStruct function
+  // Add description to solver container by using the addStruct function
   auto& solver_schema =
     inlet.addStruct("thermal_solver/solver",
                     "This is the solver sub-table in the thermal_solver table");
 
-  // You can also add fields through a table
+  // You can also add fields through a container
 
   auto& rel_tol_field =
     solver_schema.addDouble("rel_tol", "description for solver rel tol");

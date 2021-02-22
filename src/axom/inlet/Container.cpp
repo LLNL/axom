@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/inlet/Table.hpp"
+#include "axom/inlet/Container.hpp"
 
 #include "axom/slic.hpp"
 #include "axom/inlet/inlet_utils.hpp"
@@ -14,110 +14,112 @@ namespace axom
 namespace inlet
 {
 template <typename Func>
-void Table::forEachCollectionElement(Func&& func) const
+void Container::forEachCollectionElement(Func&& func) const
 {
   for(const auto& index : collectionIndices())
   {
-    func(getTable(detail::indexToString(index)));
+    func(getContainer(detail::indexToString(index)));
   }
 }
 
 template <typename OutputIt, typename Func>
-bool Table::transformFromNestedElements(OutputIt output,
-                                        const std::string& name,
-                                        Func&& func) const
+bool Container::transformFromNestedElements(OutputIt output,
+                                            const std::string& name,
+                                            Func&& func) const
 {
-  for(Table& table : m_nested_aggregates)
+  for(Container& container : m_nested_aggregates)
   {
-    *output++ = func(table, {});
+    *output++ = func(container, {});
   }
 
   if(isStructCollection())
   {
     for(const auto& indexPath : collectionIndicesWithPaths(name))
     {
-      *output++ = func(getTable(indexPath.first), indexPath.second);
+      *output++ = func(getContainer(indexPath.first), indexPath.second);
     }
   }
   return isStructCollection() || !m_nested_aggregates.empty();
 }
 
-Table& Table::addTable(const std::string& name, const std::string& description)
+Container& Container::addContainer(const std::string& name,
+                                   const std::string& description)
 {
-  // Create intermediate Tables if they don't already exist
+  // Create intermediate Containers if they don't already exist
   std::string currName = name;
   size_t found = currName.find("/");
-  auto currTable = this;
+  auto currContainer = this;
 
   while(found != std::string::npos)
   {
-    const std::string currTableName =
-      appendPrefix(currTable->m_name, currName.substr(0, found));
-    // The current table will prepend its own prefix - just pass the basename
-    if(!currTable->hasChild<Table>(currName.substr(0, found)))
+    const std::string currContainerName =
+      appendPrefix(currContainer->m_name, currName.substr(0, found));
+    // The current container will prepend its own prefix - just pass the basename
+    if(!currContainer->hasChild<Container>(currName.substr(0, found)))
     {
       // Will the copy always be elided here with a move ctor
       // or do we need std::piecewise_construct/std::forward_as_tuple?
-      const auto& emplace_result = currTable->m_tableChildren.emplace(
-        currTableName,
-        cpp11_compat::make_unique<Table>(currTableName,
-                                         "",
-                                         m_reader,
-                                         m_sidreRootGroup,
-                                         m_docEnabled));
+      const auto& emplace_result = currContainer->m_containerChildren.emplace(
+        currContainerName,
+        cpp11_compat::make_unique<Container>(currContainerName,
+                                             "",
+                                             m_reader,
+                                             m_sidreRootGroup,
+                                             m_docEnabled));
       // emplace_result is a pair whose first element is an iterator to the inserted element
-      currTable = emplace_result.first->second.get();
+      currContainer = emplace_result.first->second.get();
     }
     else
     {
-      currTable = currTable->m_tableChildren[currTableName].get();
+      currContainer = currContainer->m_containerChildren[currContainerName].get();
     }
     currName = currName.substr(found + 1);
     found = currName.find("/");
   }
 
-  const std::string currTableName =
-    appendPrefix(currTable->m_name, currName.substr(0, found));
+  const std::string currContainerName =
+    appendPrefix(currContainer->m_name, currName.substr(0, found));
 
-  if(!currTable->hasChild<Table>(currName))
+  if(!currContainer->hasChild<Container>(currName))
   {
-    const auto& emplace_result = currTable->m_tableChildren.emplace(
-      currTableName,
-      cpp11_compat::make_unique<Table>(currTableName,
-                                       description,
-                                       m_reader,
-                                       m_sidreRootGroup,
-                                       m_docEnabled));
-    currTable = emplace_result.first->second.get();
+    const auto& emplace_result = currContainer->m_containerChildren.emplace(
+      currContainerName,
+      cpp11_compat::make_unique<Container>(currContainerName,
+                                           description,
+                                           m_reader,
+                                           m_sidreRootGroup,
+                                           m_docEnabled));
+    currContainer = emplace_result.first->second.get();
   }
   else
   {
-    currTable = currTable->m_tableChildren[currTableName].get();
+    currContainer = currContainer->m_containerChildren[currContainerName].get();
   }
 
-  return *currTable;
+  return *currContainer;
 }
 
-Table& Table::addStruct(const std::string& name, const std::string& description)
+Container& Container::addStruct(const std::string& name,
+                                const std::string& description)
 {
-  auto& base_table = addTable(name, description);
-  for(Table& sub_table : m_nested_aggregates)
+  auto& base_container = addContainer(name, description);
+  for(Container& sub_container : m_nested_aggregates)
   {
-    base_table.m_nested_aggregates.push_back(
-      sub_table.addStruct(name, description));
+    base_container.m_nested_aggregates.push_back(
+      sub_container.addStruct(name, description));
   }
   if(isStructCollection())
   {
     for(const auto& index : collectionIndices())
     {
-      base_table.m_nested_aggregates.push_back(
-        getTable(detail::indexToString(index)).addStruct(name, description));
+      base_container.m_nested_aggregates.push_back(
+        getContainer(detail::indexToString(index)).addStruct(name, description));
     }
   }
-  return base_table;
+  return base_container;
 }
 
-std::vector<VariantKey> Table::collectionIndices(bool trimAbsolute) const
+std::vector<VariantKey> Container::collectionIndices(bool trimAbsolute) const
 {
   std::vector<VariantKey> indices;
   // Not having indices is not necessarily an error, as the collection
@@ -160,8 +162,8 @@ std::vector<VariantKey> Table::collectionIndices(bool trimAbsolute) const
   return indices;
 }
 
-std::vector<std::pair<std::string, std::string>> Table::collectionIndicesWithPaths(
-  const std::string& name) const
+std::vector<std::pair<std::string, std::string>>
+Container::collectionIndicesWithPaths(const std::string& name) const
 {
   std::vector<std::pair<std::string, std::string>> result;
   for(const auto& indexLabel : collectionIndices(false))
@@ -178,47 +180,48 @@ std::vector<std::pair<std::string, std::string>> Table::collectionIndicesWithPat
   return result;
 }
 
-Verifiable<Table>& Table::addBoolArray(const std::string& name,
-                                       const std::string& description)
+Verifiable<Container>& Container::addBoolArray(const std::string& name,
+                                               const std::string& description)
 {
   return addPrimitiveArray<bool>(name, description);
 }
 
-Verifiable<Table>& Table::addIntArray(const std::string& name,
-                                      const std::string& description)
+Verifiable<Container>& Container::addIntArray(const std::string& name,
+                                              const std::string& description)
 {
   return addPrimitiveArray<int>(name, description);
 }
 
-Verifiable<Table>& Table::addDoubleArray(const std::string& name,
-                                         const std::string& description)
+Verifiable<Container>& Container::addDoubleArray(const std::string& name,
+                                                 const std::string& description)
 {
   return addPrimitiveArray<double>(name, description);
 }
 
-Verifiable<Table>& Table::addStringArray(const std::string& name,
-                                         const std::string& description)
+Verifiable<Container>& Container::addStringArray(const std::string& name,
+                                                 const std::string& description)
 {
   return addPrimitiveArray<std::string>(name, description);
 }
 
 template <typename Key>
-Table& Table::addStructCollection(const std::string& name,
-                                  const std::string& description)
+Container& Container::addStructCollection(const std::string& name,
+                                          const std::string& description)
 {
-  auto& table =
-    addTable(appendPrefix(name, detail::COLLECTION_GROUP_NAME), description);
+  auto& container =
+    addContainer(appendPrefix(name, detail::COLLECTION_GROUP_NAME), description);
 
   transformFromNestedElements(
-    std::back_inserter(table.m_nested_aggregates),
+    std::back_inserter(container.m_nested_aggregates),
     name,
-    [&name, &description](Table& subtable, const std::string&) -> Table& {
-      return subtable.addStructCollection<Key>(name, description);
+    [&name, &description](Container& subcontainer,
+                          const std::string&) -> Container& {
+      return subcontainer.addStructCollection<Key>(name, description);
     });
 
   if(isStructCollection())
   {
-    markAsStructCollection(*table.m_sidreGroup);
+    markAsStructCollection(*container.m_sidreGroup);
   }
   else
   {
@@ -227,51 +230,51 @@ Table& Table::addStructCollection(const std::string& name,
     fullName = removeAllInstances(fullName, detail::COLLECTION_GROUP_NAME + "/");
     if(m_reader.getIndices(fullName, indices))
     {
-      table.addIndicesGroup(indices, description);
+      container.addIndicesGroup(indices, description);
     }
-    markAsStructCollection(*table.m_sidreGroup);
+    markAsStructCollection(*container.m_sidreGroup);
   }
-  return table;
+  return container;
 }
 
-Table& Table::addStructArray(const std::string& name,
-                             const std::string& description)
+Container& Container::addStructArray(const std::string& name,
+                                     const std::string& description)
 {
   return addStructCollection<int>(name, description);
 }
 
-Verifiable<Table>& Table::addBoolDictionary(const std::string& name,
-                                            const std::string& description)
+Verifiable<Container>& Container::addBoolDictionary(const std::string& name,
+                                                    const std::string& description)
 {
   return addPrimitiveArray<bool>(name, description, true);
 }
 
-Verifiable<Table>& Table::addIntDictionary(const std::string& name,
-                                           const std::string& description)
+Verifiable<Container>& Container::addIntDictionary(const std::string& name,
+                                                   const std::string& description)
 {
   return addPrimitiveArray<int>(name, description, true);
 }
 
-Verifiable<Table>& Table::addDoubleDictionary(const std::string& name,
-                                              const std::string& description)
+Verifiable<Container>& Container::addDoubleDictionary(const std::string& name,
+                                                      const std::string& description)
 {
   return addPrimitiveArray<double>(name, description, true);
 }
 
-Verifiable<Table>& Table::addStringDictionary(const std::string& name,
-                                              const std::string& description)
+Verifiable<Container>& Container::addStringDictionary(const std::string& name,
+                                                      const std::string& description)
 {
   return addPrimitiveArray<std::string>(name, description, true);
 }
 
-Table& Table::addStructDictionary(const std::string& name,
-                                  const std::string& description)
+Container& Container::addStructDictionary(const std::string& name,
+                                          const std::string& description)
 {
   return addStructCollection<VariantKey>(name, description);
 }
 
-axom::sidre::Group* Table::createSidreGroup(const std::string& name,
-                                            const std::string& description)
+axom::sidre::Group* Container::createSidreGroup(const std::string& name,
+                                                const std::string& description)
 {
   SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
                   "[Inlet] Sidre Datastore Group not set");
@@ -294,19 +297,19 @@ axom::sidre::Group* Table::createSidreGroup(const std::string& name,
   return sidreGroup;
 }
 
-Field& Table::addField(axom::sidre::Group* sidreGroup,
-                       axom::sidre::DataTypeId type,
-                       const std::string& fullName,
-                       const std::string& name)
+Field& Container::addField(axom::sidre::Group* sidreGroup,
+                           axom::sidre::DataTypeId type,
+                           const std::string& fullName,
+                           const std::string& name)
 {
   const size_t found = name.find_last_of("/");
-  auto currTable = this;
+  auto currContainer = this;
   if(found != std::string::npos)
   {
-    // This will add any intermediate Tables (if not present) before adding the field
-    currTable = &addTable(name.substr(0, found));
+    // This will add any intermediate Containers (if not present) before adding the field
+    currContainer = &addContainer(name.substr(0, found));
   }
-  const auto& emplace_result = currTable->m_fieldChildren.emplace(
+  const auto& emplace_result = currContainer->m_fieldChildren.emplace(
     fullName,
     cpp11_compat::make_unique<Field>(sidreGroup,
                                      m_sidreRootGroup,
@@ -316,19 +319,19 @@ Field& Table::addField(axom::sidre::Group* sidreGroup,
   return *(emplace_result.first->second);
 }
 
-Function& Table::addFunctionInternal(axom::sidre::Group* sidreGroup,
-                                     FunctionVariant&& func,
-                                     const std::string& fullName,
-                                     const std::string& name)
+Function& Container::addFunctionInternal(axom::sidre::Group* sidreGroup,
+                                         FunctionVariant&& func,
+                                         const std::string& fullName,
+                                         const std::string& name)
 {
   const size_t found = name.find_last_of("/");
-  auto currTable = this;
+  auto currContainer = this;
   if(found != std::string::npos)
   {
-    // This will add any intermediate Tables (if not present) before adding the field
-    currTable = &addTable(name.substr(0, found));
+    // This will add any intermediate Containers (if not present) before adding the field
+    currContainer = &addContainer(name.substr(0, found));
   }
-  const auto& emplace_result = currTable->m_functionChildren.emplace(
+  const auto& emplace_result = currContainer->m_functionChildren.emplace(
     fullName,
     cpp11_compat::make_unique<Function>(sidreGroup,
                                         m_sidreRootGroup,
@@ -339,23 +342,23 @@ Function& Table::addFunctionInternal(axom::sidre::Group* sidreGroup,
 }
 
 template <typename T, typename SFINAE>
-VerifiableScalar& Table::addPrimitive(const std::string& name,
-                                      const std::string& description,
-                                      bool forArray,
-                                      T val,
-                                      const std::string& pathOverride)
+VerifiableScalar& Container::addPrimitive(const std::string& name,
+                                          const std::string& description,
+                                          bool forArray,
+                                          T val,
+                                          const std::string& pathOverride)
 {
   // If it has indices, we're adding a primitive field to an array
-  // of structs, so we need to iterate over the subtables
+  // of structs, so we need to iterate over the subcontainers
   // corresponding to elements of the array
   std::vector<std::reference_wrapper<VerifiableScalar>> fields;
   const bool is_nested = transformFromNestedElements(
     std::back_inserter(fields),
     name,
     [&name, &description, forArray, &val](
-      Table& subtable,
+      Container& subcontainer,
       const std::string& path) -> VerifiableScalar& {
-      return subtable.addPrimitive<T>(name, description, forArray, val, path);
+      return subcontainer.addPrimitive<T>(name, description, forArray, val, path);
     });
 
   if(is_nested)
@@ -386,7 +389,7 @@ VerifiableScalar& Table::addPrimitive(const std::string& name,
 }
 
 template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
+axom::sidre::DataTypeId Container::addPrimitiveHelper<bool>(
   axom::sidre::Group* sidreGroup,
   const std::string& lookupPath,
   bool forArray,
@@ -400,7 +403,7 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<bool>(
 }
 
 template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
+axom::sidre::DataTypeId Container::addPrimitiveHelper<int>(
   axom::sidre::Group* sidreGroup,
   const std::string& lookupPath,
   bool forArray,
@@ -414,7 +417,7 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<int>(
 }
 
 template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
+axom::sidre::DataTypeId Container::addPrimitiveHelper<double>(
   axom::sidre::Group* sidreGroup,
   const std::string& lookupPath,
   bool forArray,
@@ -428,7 +431,7 @@ axom::sidre::DataTypeId Table::addPrimitiveHelper<double>(
 }
 
 template <>
-axom::sidre::DataTypeId Table::addPrimitiveHelper<std::string>(
+axom::sidre::DataTypeId Container::addPrimitiveHelper<std::string>(
   axom::sidre::Group* sidreGroup,
   const std::string& lookupPath,
   bool forArray,
@@ -445,29 +448,40 @@ namespace detail
 {
 /*!
   *****************************************************************************
-  * \brief Adds the contents of an array to the table
+  * \brief Adds the contents of an array to the container
+  * 
+  * \return The keys that were added
   *****************************************************************************
   */
 template <typename T>
-void registerCollection(Table& table, const std::unordered_map<int, T>& collection)
+std::vector<VariantKey> registerCollection(Container& container,
+                                           const std::unordered_map<int, T>& collection)
 {
+  std::vector<VariantKey> result;
   for(const auto& entry : collection)
   {
-    table.addPrimitive(std::to_string(entry.first), "", true, entry.second);
+    result.push_back(entry.first);
+    container.addPrimitive(std::to_string(entry.first), "", true, entry.second);
   }
+  return result;
 }
 
 /*!
   *****************************************************************************
-  * \brief Adds the contents of a dict to the table
+  * \brief Adds the contents of a dict to the container
+  * 
+  * \return The keys that were added
   *****************************************************************************
   */
 template <typename T>
-void registerCollection(Table& table,
-                        const std::unordered_map<VariantKey, T>& collection)
+std::vector<VariantKey> registerCollection(
+  Container& container,
+  const std::unordered_map<VariantKey, T>& collection)
 {
+  std::vector<VariantKey> result;
   for(const auto& entry : collection)
   {
+    result.push_back(entry.first);
     auto string_key = indexToString(entry.first);
     SLIC_ERROR_IF(
       string_key.find('/') != std::string::npos,
@@ -475,8 +489,9 @@ void registerCollection(Table& table,
                   string_key));
     SLIC_ERROR_IF(string_key.empty(),
                   "[Inlet] Dictionary key cannot be the empty string");
-    table.addPrimitive(string_key, "", true, entry.second);
+    container.addPrimitive(string_key, "", true, entry.second);
   }
+  return result;
 }
 
 /*!
@@ -496,50 +511,60 @@ struct PrimitiveArrayHelper<Key, bool>
   /*!
    *****************************************************************************
    * \brief Finalizes the creation of a collection
-   * \param [inout] table The table to add the collection to
+   * \param [inout] container The container to add the collection to
    * \param [in] reader The Reader object to read the collection from
    * \param [in] lookupPath The path within the input file to the collection
+   * 
+   * \return The keys from the collection that was added
    *****************************************************************************
    */
-  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  static std::vector<VariantKey> add(Container& container,
+                                     Reader& reader,
+                                     const std::string& lookupPath)
   {
     std::unordered_map<Key, bool> map;
     // Failure to retrieve a map is not necessarily an error
     reader.getBoolMap(lookupPath, map);
-    registerCollection(table, map);
+    return registerCollection(container, map);
   }
 };
 
 template <typename Key>
 struct PrimitiveArrayHelper<Key, int>
 {
-  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  static std::vector<VariantKey> add(Container& container,
+                                     Reader& reader,
+                                     const std::string& lookupPath)
   {
     std::unordered_map<Key, int> map;
     reader.getIntMap(lookupPath, map);
-    registerCollection(table, map);
+    return registerCollection(container, map);
   }
 };
 
 template <typename Key>
 struct PrimitiveArrayHelper<Key, double>
 {
-  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  static std::vector<VariantKey> add(Container& container,
+                                     Reader& reader,
+                                     const std::string& lookupPath)
   {
     std::unordered_map<Key, double> map;
     reader.getDoubleMap(lookupPath, map);
-    registerCollection(table, map);
+    return registerCollection(container, map);
   }
 };
 
 template <typename Key>
 struct PrimitiveArrayHelper<Key, std::string>
 {
-  PrimitiveArrayHelper(Table& table, Reader& reader, const std::string& lookupPath)
+  static std::vector<VariantKey> add(Container& container,
+                                     Reader& reader,
+                                     const std::string& lookupPath)
   {
     std::unordered_map<Key, std::string> map;
     reader.getStringMap(lookupPath, map);
-    registerCollection(table, map);
+    return registerCollection(container, map);
   }
 };
 
@@ -568,19 +593,19 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
 }  // end namespace detail
 
 template <typename Key>
-void Table::addIndicesGroup(const std::vector<Key>& indices,
-                            const std::string& description)
+void Container::addIndicesGroup(const std::vector<Key>& indices,
+                                const std::string& description)
 {
   sidre::Group* indices_group =
     m_sidreGroup->createGroup(detail::COLLECTION_INDICES_NAME,
                               /* list_format = */ true);
-  // For each index, add a table whose name is its index
-  // Schema for struct is defined using the returned table
+  // For each index, add a container whose name is its index
+  // Schema for struct is defined using the returned container
   for(const auto& idx : indices)
   {
     const std::string string_idx =
       removeBeforeDelimiter(detail::indexToString(idx));
-    addTable(string_idx, description);
+    addContainer(string_idx, description);
     std::string absolute = appendPrefix(m_name, detail::indexToString(idx));
     absolute = removeAllInstances(absolute, detail::COLLECTION_GROUP_NAME + "/");
     detail::addIndexViewToGroup(*indices_group, absolute);
@@ -588,63 +613,68 @@ void Table::addIndicesGroup(const std::vector<Key>& indices,
 }
 
 template <typename T, typename SFINAE>
-Verifiable<Table>& Table::addPrimitiveArray(const std::string& name,
-                                            const std::string& description,
-                                            const bool isDict,
-                                            const std::string& pathOverride)
+Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
+                                                    const std::string& description,
+                                                    const bool isDict,
+                                                    const std::string& pathOverride)
 {
   // Adding an array of primitive field to an array of structs
-  std::vector<std::reference_wrapper<Verifiable>> tables;
+  std::vector<std::reference_wrapper<Verifiable>> containers;
   const bool is_nested = transformFromNestedElements(
-    std::back_inserter(tables),
+    std::back_inserter(containers),
     name,
-    [&name, &description, isDict](Table& subtable,
-                                  const std::string& path) -> Verifiable<Table>& {
-      return subtable.addPrimitiveArray<T>(name, description, isDict, path);
+    [&name, &description, isDict](
+      Container& subcontainer,
+      const std::string& path) -> Verifiable<Container>& {
+      return subcontainer.addPrimitiveArray<T>(name, description, isDict, path);
     });
 
   if(is_nested)
   {
-    m_aggregate_tables.emplace_back(std::move(tables));
+    m_aggregate_containers.emplace_back(std::move(containers));
 
     // Remove when C++17 is available
-    return m_aggregate_tables.back();
+    return m_aggregate_containers.back();
   }
   else
   {
-    // "base case", create a table for the field and fill it in with the helper
-    auto& table =
-      addTable(appendPrefix(name, detail::COLLECTION_GROUP_NAME), description);
+    // "base case", create a container for the field and fill it in with the helper
+    auto& container =
+      addContainer(appendPrefix(name, detail::COLLECTION_GROUP_NAME),
+                   description);
     const std::string& fullName = appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    std::vector<VariantKey> indices;
     if(isDict)
     {
-      detail::PrimitiveArrayHelper<VariantKey, T>(table, m_reader, lookupPath);
+      indices = detail::PrimitiveArrayHelper<VariantKey, T>::add(container,
+                                                                 m_reader,
+                                                                 lookupPath);
     }
     else
     {
-      detail::PrimitiveArrayHelper<int, T>(table, m_reader, lookupPath);
+      indices =
+        detail::PrimitiveArrayHelper<int, T>::add(container, m_reader, lookupPath);
     }
     // Copy the indices to the datastore to keep track of integer vs. string indices
-    std::vector<VariantKey> indices;
-    if(m_reader.getIndices(lookupPath, indices))
+    if(!indices.empty())
     {
-      table.addIndicesGroup(indices, description);
+      container.addIndicesGroup(indices, description);
     }
-    return table;
+    return container;
   }
 }
 
-Verifiable<Function>& Table::addFunction(const std::string& name,
-                                         const FunctionTag ret_type,
-                                         const std::vector<FunctionTag>& arg_types,
-                                         const std::string& description,
-                                         const std::string& pathOverride)
+Verifiable<Function>& Container::addFunction(const std::string& name,
+                                             const FunctionTag ret_type,
+                                             const std::vector<FunctionTag>& arg_types,
+                                             const std::string& description,
+                                             const std::string& pathOverride)
 {
   // If it has indices, we're adding a primitive field to an array
-  // of structs, so we need to iterate over the subtables
+  // of structs, so we need to iterate over the subcontainers
   // corresponding to elements of the array
   std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
 
@@ -652,9 +682,9 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
     std::back_inserter(funcs),
     name,
     [&name, &ret_type, &arg_types, &description](
-      Table& subtable,
+      Container& subcontainer,
       const std::string& path) -> Verifiable<Function>& {
-      return subtable.addFunction(name, ret_type, arg_types, description, path);
+      return subcontainer.addFunction(name, ret_type, arg_types, description, path);
     });
   if(is_nested)
   {
@@ -683,27 +713,27 @@ Verifiable<Function>& Table::addFunction(const std::string& name,
   }
 }
 
-Proxy Table::operator[](const std::string& name) const
+Proxy Container::operator[](const std::string& name) const
 {
-  const bool has_table = hasTable(name);
+  const bool has_container = hasContainer(name);
   const bool has_field = hasField(name);
   const bool has_func = hasFunction(name);
 
-  // Ambiguous case - both a table and field exist with the same name
-  if((has_table && has_field) || (has_field && has_func) ||
-     (has_table && has_func))
+  // Ambiguous case - both a container and field exist with the same name
+  if((has_container && has_field) || (has_field && has_func) ||
+     (has_container && has_func))
   {
     const std::string msg = fmt::format(
-      "[Inlet] Ambiguous lookup - more than one of a table/field/function with "
-      "name '{0}' exist",
+      "[Inlet] Ambiguous lookup - more than one of a container/field/function "
+      "with name '{0}' exist",
       name);
     SLIC_ERROR(msg);
     return Proxy();
   }
 
-  else if(has_table)
+  else if(has_container)
   {
-    return Proxy(getTable(name));
+    return Proxy(getContainer(name));
   }
 
   else if(has_field)
@@ -719,38 +749,38 @@ Proxy Table::operator[](const std::string& name) const
   // Neither exists
   else
   {
-    std::string msg =
-      fmt::format("[Inlet] No table, field, or function with name '{0}' exists",
-                  name);
+    std::string msg = fmt::format(
+      "[Inlet] No container, field, or function with name '{0}' exists",
+      name);
     SLIC_ERROR(msg);
     return Proxy();
   }
 }
 
-Table& Table::required(bool isRequired)
+Container& Container::required(bool isRequired)
 {
   // If it's a struct collection we set the individual fields as required,
-  // and also the collection table itself, as the user would expect that marking
+  // and also the collection container itself, as the user would expect that marking
   // a struct collection as required means that it is non-empty
   if(isStructCollection())
   {
     forEachCollectionElement(
-      [isRequired](Table& table) { table.required(isRequired); });
+      [isRequired](Container& container) { container.required(isRequired); });
   }
 
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
-                  "[Inlet] Table specific Sidre Datastore Group not set");
+                  "[Inlet] Container specific Sidre Datastore Group not set");
   setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
   return *this;
 }
 
-bool Table::isRequired() const
+bool Container::isRequired() const
 {
   if(isStructCollection())
   {
     bool result = false;
-    forEachCollectionElement([&result](Table& table) {
-      if(table.isRequired())
+    forEachCollectionElement([&result](Container& container) {
+      if(container.isRequired())
       {
         result = true;
       }
@@ -759,21 +789,21 @@ bool Table::isRequired() const
   }
 
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
-                  "[Inlet] Table specific Sidre Datastore Group not set");
+                  "[Inlet] Container specific Sidre Datastore Group not set");
   return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
 }
 
-Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
+Container& Container::registerVerifier(std::function<bool(const Container&)> lambda)
 {
   if(isStructCollection())
   {
     forEachCollectionElement(
-      [&lambda](Table& table) { table.registerVerifier(lambda); });
+      [&lambda](Container& container) { container.registerVerifier(lambda); });
   }
   else
   {
     SLIC_WARNING_IF(m_verifier,
-                    fmt::format("[Inlet] Verifier for Table "
+                    fmt::format("[Inlet] Verifier for Container "
                                 "already set: {0}",
                                 m_name));
     m_verifier = lambda;
@@ -781,18 +811,20 @@ Table& Table::registerVerifier(std::function<bool(const Table&)> lambda)
   return *this;
 }
 
-bool Table::verify() const
+bool Container::verify() const
 {
   bool verified = true;
-  // If this table was required, make sure something was defined in it
-  verified &= verifyRequired(*m_sidreGroup, static_cast<bool>(*this), "Table");
-  // Verify this Table if a lambda was configured
+  // If this container was required, make sure something was defined in it
+  verified &=
+    verifyRequired(*m_sidreGroup, static_cast<bool>(*this), "Container");
+  // Verify this Container if a lambda was configured
   if(m_verifier && !m_verifier(*this))
   {
     verified = false;
-    SLIC_WARNING(fmt::format("[Inlet] Table failed verification: {0}", m_name));
+    SLIC_WARNING(
+      fmt::format("[Inlet] Container failed verification: {0}", m_name));
   }
-  // Verify the child Fields of this Table
+  // Verify the child Fields of this Container
   for(const auto& field : m_fieldChildren)
   {
     if(!field.second->verify())
@@ -800,16 +832,16 @@ bool Table::verify() const
       verified = false;
     }
   }
-  // Verify the child Tables of this Table
-  for(const auto& table : m_tableChildren)
+  // Verify the child Containers of this Container
+  for(const auto& container : m_containerChildren)
   {
-    if(!table.second->verify())
+    if(!container.second->verify())
     {
       verified = false;
     }
   }
 
-  // Verify the child Functions of this Table
+  // Verify the child Functions of this Container
   for(const auto& function : m_functionChildren)
   {
     if(!function.second->verify())
@@ -822,45 +854,48 @@ bool Table::verify() const
 }
 
 template <>
-std::unordered_map<std::string, std::unique_ptr<Table>> Table::*Table::getChildren()
+std::unordered_map<std::string, std::unique_ptr<Container>> Container::*
+Container::getChildren()
 {
-  return &Table::m_tableChildren;
+  return &Container::m_containerChildren;
 }
 
 template <>
-std::unordered_map<std::string, std::unique_ptr<Field>> Table::*Table::getChildren()
+std::unordered_map<std::string, std::unique_ptr<Field>> Container::*
+Container::getChildren()
 {
-  return &Table::m_fieldChildren;
+  return &Container::m_fieldChildren;
 }
 
 template <>
-std::unordered_map<std::string, std::unique_ptr<Function>> Table::*Table::getChildren()
+std::unordered_map<std::string, std::unique_ptr<Function>> Container::*
+Container::getChildren()
 {
-  return &Table::m_functionChildren;
+  return &Container::m_functionChildren;
 }
 
 template <typename T>
-bool Table::hasChild(const std::string& childName) const
+bool Container::hasChild(const std::string& childName) const
 {
   const auto& children = this->*getChildren<T>();
   return children.find(appendPrefix(m_name, childName)) != children.end();
 }
 
 template <typename T>
-T* Table::getChildInternal(const std::string& childName) const
+T* Container::getChildInternal(const std::string& childName) const
 {
   std::string name = childName;
   size_t found = name.find("/");
-  auto currTable = this;
+  auto currContainer = this;
 
   while(found != std::string::npos)
   {
     const std::string& currName = name.substr(0, found);
-    if(currTable->hasChild<Table>(currName))
+    if(currContainer->hasChild<Container>(currName))
     {
-      currTable =
-        currTable->m_tableChildren.at(appendPrefix(currTable->m_name, currName))
-          .get();
+      currContainer = currContainer->m_containerChildren
+                        .at(appendPrefix(currContainer->m_name, currName))
+                        .get();
     }
     else
     {
@@ -870,40 +905,40 @@ T* Table::getChildInternal(const std::string& childName) const
     found = name.find("/");
   }
 
-  if(currTable->hasChild<T>(name))
+  if(currContainer->hasChild<T>(name))
   {
-    const auto& children = currTable->*getChildren<T>();
-    return children.at(appendPrefix(currTable->m_name, name)).get();
+    const auto& children = currContainer->*getChildren<T>();
+    return children.at(appendPrefix(currContainer->m_name, name)).get();
   }
   return nullptr;
 }
 
-bool Table::hasTable(const std::string& tableName) const
+bool Container::hasContainer(const std::string& containerName) const
 {
-  return static_cast<bool>(getChildInternal<Table>(tableName));
+  return static_cast<bool>(getChildInternal<Container>(containerName));
 }
 
-bool Table::hasField(const std::string& fieldName) const
+bool Container::hasField(const std::string& fieldName) const
 {
   return static_cast<bool>(getChildInternal<Field>(fieldName));
 }
 
-bool Table::hasFunction(const std::string& fieldName) const
+bool Container::hasFunction(const std::string& fieldName) const
 {
   return static_cast<bool>(getChildInternal<Function>(fieldName));
 }
 
-Table& Table::getTable(const std::string& tableName) const
+Container& Container::getContainer(const std::string& containerName) const
 {
-  auto table = getChildInternal<Table>(tableName);
-  if(!table)
+  auto container = getChildInternal<Container>(containerName);
+  if(!container)
   {
-    SLIC_ERROR(fmt::format("[Inlet] Table not found: {0}", tableName));
+    SLIC_ERROR(fmt::format("[Inlet] Container not found: {0}", containerName));
   }
-  return *table;
+  return *container;
 }
 
-Field& Table::getField(const std::string& fieldName) const
+Field& Container::getField(const std::string& fieldName) const
 {
   auto field = getChildInternal<Field>(fieldName);
   if(!field)
@@ -913,7 +948,7 @@ Field& Table::getField(const std::string& fieldName) const
   return *field;
 }
 
-Function& Table::getFunction(const std::string& funcName) const
+Function& Container::getFunction(const std::string& funcName) const
 {
   auto func = getChildInternal<Function>(funcName);
   if(!func)
@@ -923,14 +958,14 @@ Function& Table::getFunction(const std::string& funcName) const
   return *func;
 }
 
-std::string Table::name() const { return m_name; }
+std::string Container::name() const { return m_name; }
 
-bool Table::contains(const std::string& name) const
+bool Container::contains(const std::string& name) const
 {
-  if(auto table = getChildInternal<Table>(name))
+  if(auto container = getChildInternal<Container>(name))
   {
-    // call operator bool on the table itself
-    return static_cast<bool>(*table);
+    // call operator bool on the container itself
+    return static_cast<bool>(*container);
   }
   else if(auto field = getChildInternal<Field>(name))
   {
@@ -945,13 +980,13 @@ bool Table::contains(const std::string& name) const
   return false;
 }
 
-Table::operator bool() const
+Container::operator bool() const
 {
-  // Check if any of its child tables are nontrivial
-  const bool has_tables =
-    std::any_of(m_tableChildren.begin(),
-                m_tableChildren.end(),
-                [](const decltype(m_tableChildren)::value_type& entry) {
+  // Check if any of its child containers are nontrivial
+  const bool has_containers =
+    std::any_of(m_containerChildren.begin(),
+                m_containerChildren.end(),
+                [](const decltype(m_containerChildren)::value_type& entry) {
                   return static_cast<bool>(*entry.second);
                 });
 
@@ -969,17 +1004,17 @@ Table::operator bool() const
                   return static_cast<bool>(*entry.second);
                 });
 
-  return has_tables || has_fields || has_functions;
+  return has_containers || has_fields || has_functions;
 }
 
-const std::unordered_map<std::string, std::unique_ptr<Table>>&
-Table::getChildTables() const
+const std::unordered_map<std::string, std::unique_ptr<Container>>&
+Container::getChildContainers() const
 {
-  return m_tableChildren;
+  return m_containerChildren;
 }
 
 const std::unordered_map<std::string, std::unique_ptr<Field>>&
-Table::getChildFields() const
+Container::getChildFields() const
 {
   return m_fieldChildren;
 }

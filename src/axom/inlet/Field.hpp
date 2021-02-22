@@ -34,7 +34,7 @@ namespace inlet
  * input file are expected to behave.  It also holds the Sidre Group to 
  * the individual field.
  *
- * \see Inlet Table
+ * \see Inlet Container
  *******************************************************************************
  */
 class Field : public VerifiableScalar
