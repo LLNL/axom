@@ -6,7 +6,7 @@ Verification
 
 Before input file data can be accessed, it must first be verified by calling the ``verify()``
 method of the top-level ``Inlet`` object. This will return a ``bool`` indicating whether the
-provided input conformed to the schema, and specific violations of the schema are logged via
+provided input conformed to the schema and specific violations of the schema are logged via
 SLIC.
 
 This section describes the verification rules that apply to each possible element of the Inlet
@@ -15,9 +15,8 @@ hierarchy, namely, ``Container``, ``Field``, and ``Function``.
 Container Verification
 ----------------------
 
-If a ``Container`` is marked as required (via the ``required()``) method, then the ``Container`` must be nontrivial,
-meaning it either has a ``Field`` or ``Function`` that was present in the input, or contains a sub-``Container``
-that does.
+If a ``Container`` is marked as required (via the ``required()``) method, then the ``Container`` must
+have a ``Field`` or ``Function`` that was present in the input or contain a sub-``Container`` that does.
 
 If a ``Container`` corresponds to an array or dictionary, the elements of the array must all be of the requested
 type.  This restriction applies even if the array/dictionary was not marked as ``required``.

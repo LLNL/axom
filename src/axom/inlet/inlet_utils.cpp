@@ -197,10 +197,11 @@ void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result)
   }
 }
 
-ReaderResult collectionRetrievalResult(const bool homogeneous, const bool empty)
+ReaderResult collectionRetrievalResult(const bool homogeneous,
+                                       const bool none_of_requested_type)
 {
   // First check if the collection was entirely the wrong type
-  if(!homogeneous && empty)
+  if(!homogeneous && none_of_requested_type)
   {
     return ReaderResult::WrongType;
   }
@@ -210,7 +211,7 @@ ReaderResult collectionRetrievalResult(const bool homogeneous, const bool empty)
     return ReaderResult::NotHomogeneous;
   }
   // Finally check if nothing existed at all
-  else if(empty)
+  else if(none_of_requested_type)
   {
     return ReaderResult::NotFound;
   }
