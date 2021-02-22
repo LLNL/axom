@@ -48,7 +48,7 @@ public:
   */
   SphinxWriter(const std::string& fileName);
 
-  void documentTable(const Table& table) override;
+  void documentContainer(const Container& container) override;
 
   void finalize() override;
 
@@ -109,36 +109,36 @@ private:
 
   /*!
   *******************************************************************************
-  * \struct TableData
+  * \struct ContainerData
   *
-  * \brief A struct to store data associated with each inlet::Table.
+  * \brief A struct to store data associated with each inlet::Container.
   *
   *******************************************************************************
   */
-  struct TableData
+  struct ContainerData
   {
     /*!
     *******************************************************************************
-    * \brief A constructor for the TableData struct
+    * \brief A constructor for the ContainerData struct
     * 
-    * This initializes the RST table's column labels.
+    * This initializes the RST tables's column labels.
     * 
     * \param[in] labels The column labels for the RST table
     *
     *******************************************************************************
     */
-    TableData(const std::vector<std::string>& fieldLabels,
-              const std::vector<std::string>& functionLabels)
+    ContainerData(const std::vector<std::string>& fieldLabels,
+                  const std::vector<std::string>& functionLabels)
     {
       fieldTable.push_back(fieldLabels);
       functionTable.push_back(functionLabels);
     }
 
     // Copying shouldn't be needed, these will always be managed in a container
-    TableData(const TableData&) = delete;
-    TableData(TableData&&) = default;
+    ContainerData(const ContainerData&) = delete;
+    ContainerData(ContainerData&&) = default;
 
-    std::string tableName;
+    std::string containerName;
     std::string description;
     bool isSelectedElement;
     std::vector<std::vector<std::string>> fieldTable;
@@ -156,11 +156,11 @@ private:
   * 
   * \param [in] sidreGroup The Sidre Group from which Field metadata should be
   * extracted and then stored.
-  * \param [inout] currentTable The TableData object to write field information to
+  * \param [inout] currentTable The ContainerData object to write field information to
   *******************************************************************************
   */
   void extractFieldMetadata(const axom::sidre::Group* sidreGroup,
-                            TableData& currentTable);
+                            ContainerData& currentContainer);
 
   /*!
   *******************************************************************************
@@ -177,7 +177,7 @@ private:
   *******************************************************************************
   */
   void extractFunctionMetadata(const axom::sidre::Group* sidreGroup,
-                               TableData& currentTable);
+                               ContainerData& currentContainer);
 
   /*!
   *******************************************************************************
@@ -241,9 +241,9 @@ private:
 
   std::ofstream m_outFile;
   std::ostringstream m_oss;
-  // This is needed to preserve the traversal order of the Inlet::Tables
-  std::vector<std::string> m_inletTablePathNames;
-  std::unordered_map<std::string, TableData> m_rstTables;
+  // This is needed to preserve the traversal order of the Inlet::Containers
+  std::vector<std::string> m_inletContainerPathNames;
+  std::unordered_map<std::string, ContainerData> m_rstTables;
   std::string m_fileName;
   // Used for the RST tables for fields
   std::vector<std::string> m_fieldColLabels;

@@ -16,7 +16,7 @@
 #include <iostream>
 
 #include "axom/slic.hpp"
-#include "axom/inlet/Table.hpp"
+#include "axom/inlet/Container.hpp"
 
 namespace axom
 {
@@ -25,21 +25,22 @@ namespace inlet
 namespace detail
 {
 /**
- * \brief Determines whether a table is trivial (contains no fields/functions in its subtree)
+ * \brief Determines whether a container is trivial (contains no fields/functions in its subtree)
  * 
- * \param [in] table The table to evaluate
+ * \param [in] container The container to evaluate
  */
-bool isTrivial(const Table& table)
+bool isTrivial(const Container& container)
 {
-  if(!table.getChildFields().empty() || !table.getChildFunctions().empty())
+  if(!container.getChildFields().empty() ||
+     !container.getChildFunctions().empty())
   {
     return false;
   }
   using value_type =
-    std::decay<decltype(table.getChildTables())>::type::value_type;
+    std::decay<decltype(container.getChildContainers())>::type::value_type;
   return std::all_of(
-    table.getChildTables().begin(),
-    table.getChildTables().end(),
+    container.getChildContainers().begin(),
+    container.getChildContainers().end(),
     [](const value_type& entry) { return isTrivial(*entry.second); });
 }
 }  // namespace detail
@@ -59,20 +60,20 @@ SphinxWriter::SphinxWriter(const std::string& fileName)
   writeTitle("Input file Options");
 }
 
-void SphinxWriter::documentTable(const Table& table)
+void SphinxWriter::documentContainer(const Container& container)
 {
-  const auto sidreGroup = table.sidreGroup();
+  const auto sidreGroup = container.sidreGroup();
   const std::string pathName = sidreGroup->getPathName();
-  std::string tableName = sidreGroup->getName();
+  std::string containerName = sidreGroup->getName();
   bool isSelectedElement = false;
 
-  // If the table is empty, ignore it
-  if(detail::isTrivial(table))
+  // If the container is empty, ignore it
+  if(detail::isTrivial(container))
   {
     return;
   }
 
-  // Avoid duplicating schema tables by selecting a single element to display
+  // Avoid duplicating schema containers by selecting a single element to display
   // By keeping track of these selections, this logic extends to subtrees
   for(const auto& selection : m_selectedElements)
   {
@@ -89,42 +90,42 @@ void SphinxWriter::documentTable(const Table& table)
   }
 
   // Replace the "implementation-defined" name with something a bit more readable
-  if(isCollectionGroup(tableName))
+  if(isCollectionGroup(containerName))
   {
-    tableName = "Collection contents:";
+    containerName = "Collection contents:";
   }
 
   // If we've gotten to this point and are an element of an array/dict,
   // mark it as the selected element
   if(isCollectionElement(*sidreGroup))
   {
-    // The container that this Table is a part of
-    const std::string containerName =
+    // The collection that this Container is a part of
+    const std::string collectionName =
       sidreGroup->getParent()->getParent()->getPathName();
-    m_selectedElements.push_back({containerName, tableName});
+    m_selectedElements.push_back({collectionName, containerName});
     isSelectedElement = true;
   }
 
-  m_inletTablePathNames.push_back(pathName);
-  auto& currTable =
+  m_inletContainerPathNames.push_back(pathName);
+  auto& currContainer =
     m_rstTables
-      .emplace(pathName, TableData {m_fieldColLabels, m_functionColLabels})
+      .emplace(pathName, ContainerData {m_fieldColLabels, m_functionColLabels})
       .first->second;
-  currTable.tableName = tableName;
-  currTable.isSelectedElement = isSelectedElement;
-  if(tableName != "" && sidreGroup->hasView("description"))
+  currContainer.containerName = containerName;
+  currContainer.isSelectedElement = isSelectedElement;
+  if(containerName != "" && sidreGroup->hasView("description"))
   {
-    currTable.description = sidreGroup->getView("description")->getString();
+    currContainer.description = sidreGroup->getView("description")->getString();
   }
 
-  for(const auto& field_entry : table.getChildFields())
+  for(const auto& field_entry : container.getChildFields())
   {
-    extractFieldMetadata(field_entry.second->sidreGroup(), currTable);
+    extractFieldMetadata(field_entry.second->sidreGroup(), currContainer);
   }
 
-  for(const auto& function_entry : table.getChildFunctions())
+  for(const auto& function_entry : container.getChildFunctions())
   {
-    extractFunctionMetadata(function_entry.second->sidreGroup(), currTable);
+    extractFunctionMetadata(function_entry.second->sidreGroup(), currContainer);
   }
 }
 
@@ -187,31 +188,31 @@ void SphinxWriter::writeTable(const std::string& title,
 
 void SphinxWriter::writeAllTables()
 {
-  for(std::string& pathName : m_inletTablePathNames)
+  for(std::string& pathName : m_inletContainerPathNames)
   {
-    auto& currTable = m_rstTables.at(pathName);
+    auto& currContainer = m_rstTables.at(pathName);
     // If we're displaying a selected element, the title and description
     // will already have been printed
-    if(currTable.isSelectedElement)
+    if(currContainer.isSelectedElement)
     {
       m_oss << "The input schema defines an array of this table.\n";
       m_oss << "For brevity, only one instance is displayed here.\n\n";
     }
     else
     {
-      writeSubtitle(currTable.tableName);
-      if(currTable.description != "")
+      writeSubtitle(currContainer.containerName);
+      if(currContainer.description != "")
       {
-        m_oss << "Description: " << currTable.description << "\n\n";
+        m_oss << "Description: " << currContainer.description << "\n\n";
       }
     }
-    if(currTable.fieldTable.size() > 1)
+    if(currContainer.fieldTable.size() > 1)
     {
-      writeTable("Fields", currTable.fieldTable);
+      writeTable("Fields", currContainer.fieldTable);
     }
-    if(currTable.functionTable.size() > 1)
+    if(currContainer.functionTable.size() > 1)
     {
-      writeTable("Functions", currTable.functionTable);
+      writeTable("Functions", currContainer.functionTable);
     }
   }
 }
@@ -293,7 +294,7 @@ std::string SphinxWriter::getValidStringValues(const axom::sidre::Group* sidreGr
 }
 
 void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup,
-                                        TableData& currentTable)
+                                        ContainerData& currentContainer)
 {
   std::vector<std::string> fieldAttributes(m_fieldColLabels.size());
 
@@ -335,7 +336,7 @@ void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup,
     fieldAttributes[4] = "|uncheck|";
   }
 
-  currentTable.fieldTable.push_back(fieldAttributes);
+  currentContainer.fieldTable.push_back(fieldAttributes);
 }
 
 std::string SphinxWriter::getSignatureAsString(const axom::sidre::Group* sidreGroup)
@@ -359,7 +360,7 @@ std::string SphinxWriter::getSignatureAsString(const axom::sidre::Group* sidreGr
 }
 
 void SphinxWriter::extractFunctionMetadata(const axom::sidre::Group* sidreGroup,
-                                           TableData& currentTable)
+                                           ContainerData& currentContainer)
 {
   std::vector<std::string> functionAttributes(m_functionColLabels.size());
 
@@ -383,7 +384,7 @@ void SphinxWriter::extractFunctionMetadata(const axom::sidre::Group* sidreGroup,
     functionAttributes[3] = "|uncheck|";
   }
 
-  currentTable.functionTable.push_back(functionAttributes);
+  currentContainer.functionTable.push_back(functionAttributes);
 }
 
 }  // namespace inlet

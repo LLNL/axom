@@ -67,6 +67,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 - Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
 - Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
+- Inlet: Renamed `Table` to `Container`
 - Inlet: SphinxWriter will now print only one element schema per container instead of
   printing the same schema for each element in the container
 
@@ -78,6 +79,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   for consistency
 - Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
 - Fixed a bug relating to deeply nested callback functions in Inlet
+- Inlet: Always ignore primitive array elements that do not match the requested type
 
 
 ## [Version 0.4.0] - Release date 2020-09-22

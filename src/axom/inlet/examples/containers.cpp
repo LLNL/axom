@@ -10,7 +10,7 @@
 #include "axom/slic/core/SimpleLogger.hpp"
 
 /* Input file snippet used for documentation
-//_inlet_simple_types_tables_input_start
+//_inlet_simple_types_containers_input_start
 
 driver = {
     name = "Speed Racer",
@@ -21,7 +21,7 @@ driver = {
     }
 }
 
-//_inlet_simple_types_tables_input_end
+//_inlet_simple_types_containers_input_end
 */
 
 int main()
@@ -55,7 +55,7 @@ int main()
   axom::inlet::Inlet inlet(std::move(lr), ds.getRoot());
 
   // Define and store the values in the input file
-  // _inlet_simple_types_tables_add_start
+  // _inlet_simple_types_containers_add_start
   auto& driver_schema = inlet.addStruct("driver", "A description of driver");
   driver_schema.addString("name", "Name of driver");
 
@@ -64,20 +64,20 @@ int main()
   car_schema.addString("color", "Color of car").defaultValue("red");
   car_schema.addInt("seats", "Number of seats");
   car_schema.addInt("horsepower", "Amount of horsepower");
-  // _inlet_simple_types_tables_add_end
+  // _inlet_simple_types_containers_add_end
 
   // Access values stored in the Datastore via Inlet
-  // _inlet_simple_types_tables_access_start
+  // _inlet_simple_types_containers_access_start
   // Access values by fully qualified name from Inlet instance
   std::string name = inlet["driver/name"];
 
-  // ... or... Get car table then access values from there
+  // ... or... Get car container then access values from there
   auto car = inlet["driver/car"];
   std::string make = car["make"];
   std::string color = car["color"];
   int seats = car["seats"];
   int horsepower = car["horsepower"];
-  // _inlet_simple_types_tables_access_end
+  // _inlet_simple_types_containers_access_end
 
   std::cout << "name = " << name << std::endl;
   std::cout << "make = " << make << std::endl;
