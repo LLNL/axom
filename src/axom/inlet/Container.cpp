@@ -838,27 +838,18 @@ bool Container::verify() const
     // Verify the child Fields of this Container
     for(const auto& field : m_fieldChildren)
     {
-      if(!field.second->verify())
-      {
-        verified = false;
-      }
+      verified &= field.second->verify();
     }
     // Verify the child Containers of this Container
     for(const auto& container : m_containerChildren)
     {
-      if(!container.second->verify())
-      {
-        verified = false;
-      }
+      verified &= container.second->verify();
     }
 
     // Verify the child Functions of this Container
     for(const auto& function : m_functionChildren)
     {
-      if(!function.second->verify())
-      {
-        verified = false;
-      }
+      verified &= function.second->verify();
     }
   }
   // If this has a collection group, it always needs to be verified, as annotations
