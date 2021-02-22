@@ -199,13 +199,13 @@ void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result);
 * on whether the collection is empty and whether the corresponding collection
 * in the input file was homogeneous
 *
-* \param [in] homogeneous Whether the collection elements were all of the
-* requested type
+* \param [in] none_of_other_type Whether any collection elements were of type
+* other than the requested type
 * \param [in] none_of_requested_type Whether the collection of requested type was empty,
 * i.e., if no elements of the requested type were present
 *****************************************************************************
 */
-ReaderResult collectionRetrievalResult(const bool homogeneous,
+ReaderResult collectionRetrievalResult(const bool none_of_other_type,
                                        const bool none_of_requested_type);
 
 namespace cpp11_compat

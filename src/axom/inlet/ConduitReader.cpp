@@ -368,7 +368,7 @@ ReaderResult ConduitReader::getDictionary(const std::string& id,
     return ReaderResult::WrongType;
   }
 
-  bool homogeneous = true;
+  bool none_of_other_type = true;
   for(const auto& child : node.children())
   {
     const auto name = child.name();
@@ -382,10 +382,10 @@ ReaderResult ConduitReader::getDictionary(const std::string& id,
     }
     else
     {
-      homogeneous = false;
+      none_of_other_type = false;
     }
   }
-  return collectionRetrievalResult(homogeneous, values.empty());
+  return collectionRetrievalResult(none_of_other_type, values.empty());
 }
 
 template <typename T>
@@ -435,7 +435,7 @@ ReaderResult ConduitReader::getArray(const std::string& id,
   else
   {
     conduit::index_t index = 0;
-    bool homogeneous = true;
+    bool none_of_other_type = true;
     for(const auto& child : node.children())
     {
       T value;
@@ -447,11 +447,11 @@ ReaderResult ConduitReader::getArray(const std::string& id,
       }
       else
       {
-        homogeneous = false;
+        none_of_other_type = false;
       }
       index++;
     }
-    return collectionRetrievalResult(homogeneous, values.empty());
+    return collectionRetrievalResult(none_of_other_type, values.empty());
   }
   return ReaderResult::Success;
 }
