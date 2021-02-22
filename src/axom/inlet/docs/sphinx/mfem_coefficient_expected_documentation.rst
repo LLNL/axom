@@ -10,13 +10,13 @@ bcs
 ---
 
 
--------------------
-Container contents:
+--------------------
+Collection contents:
 -------------------
 
 Description: List of boundary conditions
 
-The input schema defines an array of this table.
+The input schema defines an collection of this container.
 For brevity, only one instance is displayed here.
 
 .. list-table:: Functions
@@ -42,9 +42,9 @@ attrs
 -----
 
 
--------------------
-Container contents:
--------------------
+--------------------
+Collection contents:
+--------------------
 
 Description: List of boundary attributes
 

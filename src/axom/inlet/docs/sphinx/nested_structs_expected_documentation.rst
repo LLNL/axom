@@ -10,11 +10,11 @@ shapes
 ------
 
 
--------------------
-Container contents:
--------------------
+--------------------
+Collection contents:
+--------------------
 
-The input schema defines an array of this table.
+The input schema defines an collection of this container.
 For brevity, only one instance is displayed here.
 
 .. list-table:: Fields
@@ -78,11 +78,11 @@ operators
 ---------
 
 
--------------------
-Container contents:
--------------------
+--------------------
+Collection contents:
+--------------------
 
-The input schema defines an array of this table.
+The input schema defines an collection of this container.
 For brevity, only one instance is displayed here.
 
 .. list-table:: Fields
@@ -136,9 +136,9 @@ translate
 ---------
 
 
--------------------
-Container contents:
--------------------
+--------------------
+Collection contents:
+--------------------
 
 .. list-table:: Fields
    :widths: 25 25 25 25 25

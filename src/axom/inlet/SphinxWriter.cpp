@@ -195,7 +195,7 @@ void SphinxWriter::writeAllTables()
     // will already have been printed
     if(currContainer.isSelectedElement)
     {
-      m_oss << "The input schema defines an array of this table.\n";
+      m_oss << "The input schema defines a collection of this container.\n";
       m_oss << "For brevity, only one instance is displayed here.\n\n";
     }
     else
