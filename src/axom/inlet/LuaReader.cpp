@@ -57,10 +57,22 @@ VariantKey extractAs(const sol::object& obj)
   }
 }
 
-void nameRetrievalHelper(std::unordered_set<std::string>& names,
-                         const std::unordered_set<std::string>& ignores,
+/*!
+ *******************************************************************************
+ * \brief Recursive name retrieval function
+ * 
+ * \param [in] ignores The set of paths to ignore, used for pre-loaded entries
+ * in Lua's global table
+ * \param [in] table The Lua table to "visit"
+ * \param [in] prefix The Inlet-style path to @p table relative to the "root" of
+ * the input file
+ * \param [out] names The set of paths to add to
+ *******************************************************************************
+ */
+void nameRetrievalHelper(const std::unordered_set<std::string>& ignores,
                          const sol::table& table,
-                         const std::string& prefix)
+                         const std::string& prefix,
+                         std::unordered_set<std::string>& names)
 {
   auto to_string = [](const VariantKey& key) {
     return key.type() == InletType::String
@@ -78,7 +90,7 @@ void nameRetrievalHelper(std::unordered_set<std::string>& names,
     if(entry.second.get_type() == sol::type::table &&
        (ignores.count(full_name) == 0))
     {
-      nameRetrievalHelper(names, ignores, entry.second, full_name);
+      nameRetrievalHelper(ignores, entry.second, full_name, names);
     }
   }
 }
@@ -181,10 +193,12 @@ LuaReader::LuaReader()
     "z",
     sol::property([](const FunctionType::Vector& u) { return u.vec[2]; }));
 
+  // Pass the preloaded globals as both the set to ignore and the set to add
+  // to, such that only the top-level preloaded globals are added
   detail::nameRetrievalHelper(m_preloaded_globals,
-                              m_preloaded_globals,
                               m_lua.globals(),
-                              "");
+                              "",
+                              m_preloaded_globals);
 }
 
 bool LuaReader::parseFile(const std::string& filePath)
@@ -549,7 +563,7 @@ bool LuaReader::getValue(const std::string& id, T& value)
 std::unordered_set<std::string> LuaReader::getAllNames()
 {
   std::unordered_set<std::string> result;
-  detail::nameRetrievalHelper(result, m_preloaded_globals, m_lua.globals(), "");
+  detail::nameRetrievalHelper(m_preloaded_globals, m_lua.globals(), "", result);
   return result;
 }
 

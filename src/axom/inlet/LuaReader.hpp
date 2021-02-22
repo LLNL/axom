@@ -297,6 +297,8 @@ private:
   sol::protected_function getFunctionInternal(const std::string& id);
 
   sol::state m_lua;
+  // The elements in the global table preloaded by Sol/Lua, these are ignored
+  // to ensure that name retrieval only includes user-provided paths
   std::unordered_set<std::string> m_preloaded_globals;
 };
 

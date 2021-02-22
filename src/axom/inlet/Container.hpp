@@ -269,6 +269,18 @@ bool matchesKeyType(const VariantKey& key)
   return false;
 }
 
+/*!
+ *******************************************************************************
+ * \brief Updates the set of unexpected names to reflect an user-requested access
+ * 
+ * \param [in] accessed_name The path within the input file that will be accessed
+ * \param [inout] unexpected_names The set of input file paths that have not yet
+ * been requested by the user
+ * 
+ * \note To maintain consistency, this function should always be followed by an
+ * access to a Reader
+ *******************************************************************************
+ */
 void updateUnexpectedNames(const std::string& accessed_name,
                            std::unordered_set<std::string>& unexpected_names);
 

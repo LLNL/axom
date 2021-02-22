@@ -157,8 +157,16 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
   }
 }
 
-void nameRetrievalHelper(std::unordered_set<std::string>& names,
-                         const conduit::Node& node)
+/*!
+ *******************************************************************************
+ * \brief Recursive name retrieval function
+ * 
+ * \param [in] node The Conduit node to "visit"
+ * \param [out] names The set of paths to add to
+ *******************************************************************************
+ */
+void nameRetrievalHelper(const conduit::Node& node,
+                         std::unordered_set<std::string>& names)
 {
   // Conduit paths use [0] for array indices, Inlet does not, so they need
   // to be removed - e.g., foo/[0]/bar vs foo/0/bar
@@ -170,7 +178,7 @@ void nameRetrievalHelper(std::unordered_set<std::string>& names,
   for(const auto& child : node.children())
   {
     names.insert(filter_name(child.path()));
-    nameRetrievalHelper(names, child);
+    nameRetrievalHelper(child, names);
   }
 }
 
@@ -367,7 +375,7 @@ FunctionVariant ConduitReader::getFunction(const std::string&,
 std::unordered_set<std::string> ConduitReader::getAllNames()
 {
   std::unordered_set<std::string> result;
-  detail::nameRetrievalHelper(result, m_root);
+  detail::nameRetrievalHelper(m_root, result);
   return result;
 }
 
