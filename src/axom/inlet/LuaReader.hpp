@@ -230,7 +230,7 @@ public:
                               const FunctionTag ret_type,
                               const std::vector<FunctionTag>& arg_types);
 
-  std::unordered_set<std::string> getAllNames();
+  std::unordered_set<std::string> getAllNames() override;
 
   /*!
    *****************************************************************************
