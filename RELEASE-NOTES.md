@@ -76,6 +76,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   for consistency
 - Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
 - Fixed a bug relating to deeply nested callback functions in Inlet
+- Inlet: Always ignore primitive array elements that do not match the requested type
 
 
 ## [Version 0.4.0] - Release date 2020-09-22

@@ -636,7 +636,7 @@ public:
     if(!hasField(name))
     {
       const std::string msg = fmt::format(
-        "[Inlet] Field with specified path"
+        "[Inlet] Field with specified path "
         "does not exist: {0}",
         name);
       SLIC_ERROR(msg);

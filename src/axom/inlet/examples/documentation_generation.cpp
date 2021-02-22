@@ -100,9 +100,9 @@ void defineSchema(Inlet& inlet)
     .required();
 
   // Add description to solver container by using the addStruct function
-  auto& solver_schema = inlet.addStruct(
-    "thermal_solver/solver",
-    "This is the solver sub-table in the thermal_solver table");
+  auto& solver_schema =
+    inlet.addStruct("thermal_solver/solver",
+                    "This is the solver sub-table in the thermal_solver table");
 
   // You can also add fields through a container
 
