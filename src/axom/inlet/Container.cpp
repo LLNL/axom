@@ -103,19 +103,11 @@ Container& Container::addStruct(const std::string& name,
                                 const std::string& description)
 {
   auto& base_container = addContainer(name, description);
-  for(Container& sub_container : m_nested_aggregates)
-  {
-    base_container.m_nested_aggregates.push_back(
-      sub_container.addStruct(name, description));
-  }
-  if(isStructCollection())
-  {
-    for(const auto& index : collectionIndices())
-    {
-      base_container.m_nested_aggregates.push_back(
-        getContainer(detail::indexToString(index)).addStruct(name, description));
-    }
-  }
+  transformFromNestedElements(
+    std::back_inserter(base_container.m_nested_aggregates),
+    name,
+    [&name, &description](Container& subcontainer, const std::string&)
+      -> Container& { return subcontainer.addStruct(name, description); });
   return base_container;
 }
 
