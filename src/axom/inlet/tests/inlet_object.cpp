@@ -802,6 +802,58 @@ TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)
   EXPECT_EQ(arr_w_indices, expected_arr_w_indices);
 }
 
+TYPED_TEST(inlet_object, primitive_arrays_as_std_vector_wrong_type)
+{
+  std::string testString = " arr = { [0] = 'a', [1] = 'b', [2] = 'c'}";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Define schema
+  inlet.addIntArray("arr");
+
+  // The array was empty (same as if it didn't exist), but *not* marked as required
+  EXPECT_TRUE(inlet.verify());
+
+  // Attempt both construction and assignment
+  std::vector<int> expected_arr {};
+  std::vector<int> arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+  arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+}
+
+TYPED_TEST(inlet_object, primitive_arrays_as_std_vector_wrong_type_reqd_fail)
+{
+  std::string testString = " arr = { [0] = 'a', [1] = 'b', [2] = 'c'}";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Define schema
+  inlet.addIntArray("arr").required();
+
+  // The array was empty (same as if it didn't exist), but marked as required
+  EXPECT_FALSE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, primitive_arrays_as_std_vector_mixed_type)
+{
+  std::string testString = " arr = { [0] = 4, [1] = 6, [2] = 'a', [3] = 'b'}";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Define schema
+  inlet.addIntArray("arr");
+
+  EXPECT_TRUE(inlet.verify());
+
+  // Attempt both construction and assignment
+  std::vector<int> expected_arr {4, 6};
+  std::vector<int> arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+  arr = inlet["arr"];
+  EXPECT_EQ(arr, expected_arr);
+}
+
 TYPED_TEST(inlet_object, struct_arrays_as_std_vector)
 {
   std::string testString =
