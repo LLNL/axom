@@ -588,32 +588,22 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
  * 
  * The structure of the function signature information is as follows:
  * <group>
- *  ├── function_arguments
- *  │   ├─• <unnamed> arg0_type
- *  │   ├─• ...
- *  │   └─• <unnamed> argn_type
- *  └─• return_type
+ *  ├─• function_arguments <integer array>
+ *  └─• return_type <integer>
  *****************************************************************************
  */
 void addSignatureToGroup(const FunctionTag ret_type,
                          const std::vector<FunctionTag>& arg_types,
                          sidre::Group* group)
 {
-  static const auto type_names = []() {
-    std::unordered_map<FunctionTag, std::string> result;
-    result[FunctionTag::Vector] = "Vector";
-    result[FunctionTag::Double] = "Double";
-    result[FunctionTag::Void] = "Void";
-    result[FunctionTag::String] = "String";
-    return result;
-  }();
-
-  group->createViewString("return_type", type_names.at(ret_type));
-  auto args_group =
-    group->createGroup("function_arguments", /* list_format = */ true);
+  group->createViewScalar("return_type", static_cast<int>(ret_type));
+  auto args_view = group->createViewAndAllocate("function_arguments",
+                                                sidre::INT_ID,
+                                                arg_types.size());
+  int* args_array = args_view->getArray();
   for(const auto arg_type : arg_types)
   {
-    args_group->createViewString("", type_names.at(arg_type));
+    *args_array++ = static_cast<int>(arg_type);
   }
 }
 

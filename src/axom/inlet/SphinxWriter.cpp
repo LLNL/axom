@@ -341,22 +341,30 @@ void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup,
 
 std::string SphinxWriter::getSignatureAsString(const axom::sidre::Group* sidreGroup)
 {
-  const std::string retType = sidreGroup->getView("return_type")->getString();
+  static const auto type_names = []() {
+    std::unordered_map<FunctionTag, std::string> result;
+    result[FunctionTag::Vector] = "Vector";
+    result[FunctionTag::Double] = "Double";
+    result[FunctionTag::Void] = "Void";
+    result[FunctionTag::String] = "String";
+    return result;
+  }();
 
-  const sidre::Group* argsGroup = sidreGroup->getGroup("function_arguments");
-  std::string argTypes;
-  auto idx = argsGroup->getFirstValidViewIndex();
-  while(axom::sidre::indexIsValid(idx))
+  // View::getData<T> does not have a const version...
+  const auto ret_type = static_cast<FunctionTag>(
+    static_cast<int>(sidreGroup->getView("return_type")->getData()));
+
+  const auto args_view = sidreGroup->getView("function_arguments");
+  const int* arg_tags = args_view->getData();
+  const int num_args = args_view->getNumElements();
+  std::vector<std::string> arg_types(num_args);
+  for(int i = 0; i < num_args; i++)
   {
-    argTypes += std::string(argsGroup->getView(idx)->getString());
-    idx = argsGroup->getNextValidViewIndex(idx);
-    if(axom::sidre::indexIsValid(idx))
-    {
-      argTypes += ", ";
-    }
+    arg_types[i] = type_names.at(static_cast<FunctionTag>(arg_tags[i]));
   }
-
-  return fmt::format("{0}({1})", retType, argTypes);
+  return fmt::format("{0}({1})",
+                     type_names.at(ret_type),
+                     fmt::join(arg_types, ", "));
 }
 
 void SphinxWriter::extractFunctionMetadata(const axom::sidre::Group* sidreGroup,
