@@ -19,14 +19,15 @@ set(inlet_headers
     Field.hpp
     Function.hpp
     Inlet.hpp
+    InletVector.hpp
     Reader.hpp
-    Table.hpp 
+    Container.hpp 
     Proxy.hpp
     VariantKey.hpp
     Verifiable.hpp
     VerifiableScalar.hpp
-    DocWriter.hpp
-    SphinxDocWriter.hpp
+    Writer.hpp
+    SphinxWriter.hpp
     ConduitReader.hpp
     YAMLReader.hpp
     JSONReader.hpp
@@ -36,10 +37,10 @@ set(inlet_sources
     Field.cpp
     Function.cpp
     Inlet.cpp
-    Table.cpp
+    Container.cpp
     Proxy.cpp
     VariantKey.cpp
-    SphinxDocWriter.cpp
+    SphinxWriter.cpp
     ConduitReader.cpp
     inlet_utils.cpp )
 

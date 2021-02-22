@@ -119,14 +119,50 @@ std::string removeBeforeDelimiter(const std::string& path, const char delim)
   return path.substr(pos + 1);
 }
 
-std::pair<int, bool> checkedConvertToInt(const std::string& number)
+std::string removeAllInstances(const std::string& target,
+                               const std::string& substr)
+{
+  std::string result = target;
+  auto pos = result.find(substr);
+  while(pos != std::string::npos)
+  {
+    result.erase(pos, substr.length());
+    pos = result.find(substr);
+  }
+  return result;
+}
+
+bool checkedConvertToInt(const std::string& number, int& result)
 {
   // Use the C versions to avoid the exceptions
   // thrown by std::stoi on conversion failure
   // FIXME: Switch to std::from_chars when C++17 is available
   char* ptr;
-  auto result = strtol(number.c_str(), &ptr, 10);
-  return {result, *ptr == 0};
+  result = strtol(number.c_str(), &ptr, 10);
+  return *ptr == 0;
+}
+
+void markAsStructCollection(axom::sidre::Group& target)
+{
+  if(target.hasView(detail::STRUCT_COLLECTION_FLAG))
+  {
+    // This flag should only ever be one, so we verify that and error otherwise
+    const sidre::View* flag = target.getView(detail::STRUCT_COLLECTION_FLAG);
+    SLIC_ERROR_IF(
+      !flag->isScalar(),
+      fmt::format(
+        "[Inlet] Struct collection flag of group '{0}' was not a scalar",
+        target.getName()));
+    const int8 value = flag->getScalar();
+    SLIC_ERROR_IF(value != 1,
+                  fmt::format("[Inlet] Struct collection flag of group '{0}' "
+                              "had a value other than 1",
+                              target.getName()));
+  }
+  else
+  {
+    target.createViewScalar(detail::STRUCT_COLLECTION_FLAG, static_cast<int8>(1));
+  }
 }
 
 }  // namespace inlet

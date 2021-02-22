@@ -14,7 +14,7 @@
 
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
-using axom::inlet::SphinxDocWriter;
+using axom::inlet::SphinxWriter;
 using axom::sidre::DataStore;
 
 void findStr(std::string path, const Inlet& inlet)
@@ -99,43 +99,44 @@ void defineSchema(Inlet& inlet)
     .addDouble("thermal_solver/kappa/constant", "description for kappa constant")
     .required();
 
-  // Add description to solver table by using the addTable function
-  auto& table =
-    inlet.addTable("thermal_solver/solver",
-                   "This is the solver sub-table in the thermal_solver table");
+  // Add description to solver container by using the addStruct function
+  auto& solver_schema =
+    inlet.addStruct("thermal_solver/solver",
+                    "This is the solver sub-table in the thermal_solver table");
 
-  // You can also add fields through a table
+  // You can also add fields through a container
 
   auto& rel_tol_field =
-    table.addDouble("rel_tol", "description for solver rel tol");
+    solver_schema.addDouble("rel_tol", "description for solver rel tol");
   rel_tol_field.required(false);
   rel_tol_field.defaultValue(1.e-6);
   rel_tol_field.range(0.0, std::numeric_limits<double>::max());
 
   auto& abs_tol_field =
-    table.addDouble("abs_tol", "description for solver abs tol");
+    solver_schema.addDouble("abs_tol", "description for solver abs tol");
   abs_tol_field.required(true);
   abs_tol_field.defaultValue(1.e-12);
   abs_tol_field.range(0.0, std::numeric_limits<double>::max());
 
   auto& print_level_field =
-    table.addInt("print_level", "description for solver print level");
+    solver_schema.addInt("print_level", "description for solver print level");
   print_level_field.required(true);
   print_level_field.defaultValue(0);
   print_level_field.range(0, 3);
 
   auto& max_iter_field =
-    table.addInt("max_iter", "description for solver max iter");
+    solver_schema.addInt("max_iter", "description for solver max iter");
   max_iter_field.required(false);
   max_iter_field.defaultValue(100);
   max_iter_field.range(1, std::numeric_limits<int>::max());
 
-  auto& dt_field = table.addDouble("dt", "description for solver dt");
+  auto& dt_field = solver_schema.addDouble("dt", "description for solver dt");
   dt_field.required(true);
   dt_field.defaultValue(1);
   dt_field.range(0.0, std::numeric_limits<double>::max());
 
-  auto& steps_field = table.addInt("steps", "description for solver steps");
+  auto& steps_field =
+    solver_schema.addInt("steps", "description for solver steps");
   steps_field.required(true);
   steps_field.defaultValue(1);
   steps_field.range(1, std::numeric_limits<int>::max());
@@ -179,6 +180,7 @@ int main(int argc, char** argv)
   // This is a generic basic SLIC logger
   axom::slic::SimpleLogger logger;
 
+  // Handle command line arguments
   CLI::App app {"Basic example of Axom's Inlet component"};
   bool docsEnabled {false};
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");
@@ -197,9 +199,8 @@ int main(int argc, char** argv)
   Inlet inlet(std::move(lr), ds.getRoot(), docsEnabled);
 
   // _inlet_documentation_generation_start
-  auto docWriter =
-    std::make_unique<SphinxDocWriter>("example_doc.rst", inlet.sidreGroup());
-  inlet.registerDocWriter(std::move(docWriter));
+  auto writer = std::make_unique<SphinxWriter>("example_doc.rst");
+  inlet.registerWriter(std::move(writer));
   // _inlet_documentation_generation_end
 
   defineSchema(inlet);

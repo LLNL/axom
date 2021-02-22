@@ -26,6 +26,103 @@ namespace axom
 {
 namespace inlet
 {
+LuaReader::LuaReader()
+{
+  m_lua.open_libraries(sol::lib::base,
+                       sol::lib::math,
+                       sol::lib::string,
+                       sol::lib::package);
+  auto vec_type = m_lua.new_usertype<FunctionType::Vector>(
+    "Vector",  // Name of the class in Lua
+    // Add make_vector as a constructor to enable "new Vector(x,y,z)"
+    // Use lambdas for 2D and "default" cases - default arguments cannot be
+    // propagated automatically
+    "new",
+    sol::factories(
+      [](double x, double y, double z) {
+        return FunctionType::Vector {primal::Vector3D {x, y, z}, 3};
+      },
+      [](double x, double y) {
+        return FunctionType::Vector {primal::Vector3D {x, y}, 2};
+      },
+      // Assume three for a default constructor
+      [] {
+        return FunctionType::Vector {primal::Vector3D {}, 3};
+      }),
+    // Add vector addition operation
+    sol::meta_function::addition,
+    [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
+      SLIC_ASSERT_MSG(
+        u.dim == v.dim,
+        "[Inlet] Operands to InletVector addition are of different dimension");
+      return FunctionType::Vector {u.vec + v.vec, u.dim};
+    },
+    sol::meta_function::subtraction,
+    [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
+      SLIC_ASSERT_MSG(u.dim == v.dim,
+                      "[Inlet] Operands to InletVector subtraction are of "
+                      "different dimension");
+      return FunctionType::Vector {u.vec - v.vec, u.dim};
+    },
+    // Needs to be resolved in the same way as operator+
+    sol::meta_function::unary_minus,
+    [](const FunctionType::Vector& u) {
+      return FunctionType::Vector {-u.vec, u.dim};
+    },
+    // To allow both "directions" of a scalar multiplication, the overloads
+    // have to be manually specified + resolved
+    sol::meta_function::multiplication,
+    sol::overload(
+      [](const FunctionType::Vector& u, const double a) {
+        return FunctionType::Vector {a * u.vec, u.dim};
+      },
+      [](const double a, const FunctionType::Vector& u) {
+        return FunctionType::Vector {a * u.vec, u.dim};
+      }),
+    // Separate functions from get/set via index - subtract 1 as lua is 1-indexed
+    sol::meta_function::index,
+    [](const FunctionType::Vector& vec, const int key) { return vec[key - 1]; },
+    // A lambda is used here as the set-via-returned reference is insufficient
+    sol::meta_function::new_index,
+    [](FunctionType::Vector& vec, const int key, const double value) {
+      vec[key - 1] = value;
+    },
+    // Set up the mathematical operations by name
+    "norm",
+    [](const FunctionType::Vector& u) { return u.vec.norm(); },
+    "squared_norm",
+    [](const FunctionType::Vector& u) { return u.vec.squared_norm(); },
+    "unitVector",
+    [](const FunctionType::Vector& u) {
+      return FunctionType::Vector {u.vec.unitVector(), u.dim};
+    },
+    "dot",
+    [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
+      SLIC_ASSERT_MSG(u.dim == v.dim,
+                      "[Inlet] Operands to InletVector dot product are of "
+                      "different dimension");
+      return u.vec.dot(v.vec);
+    },
+    // Implemented as a member function like dot products are, for simplicity
+    "cross",
+    // Needs to be resolved as it is an overloaded static method
+    [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
+      SLIC_ASSERT_MSG(u.dim == v.dim,
+                      "[Inlet] Operands to InletVector cross product are of "
+                      "different dimension");
+      return FunctionType::Vector {primal::Vector3D::cross_product(u.vec, v.vec),
+                                   u.dim};
+    },
+    "dim",
+    sol::property([](const FunctionType::Vector& u) { return u.dim; }),
+    "x",
+    sol::property([](const FunctionType::Vector& u) { return u.vec[0]; }),
+    "y",
+    sol::property([](const FunctionType::Vector& u) { return u.vec[1]; }),
+    "z",
+    sol::property([](const FunctionType::Vector& u) { return u.vec[2]; }));
+}
+
 bool LuaReader::parseFile(const std::string& filePath)
 {
   if(!axom::utilities::filesystem::pathExists(filePath))
@@ -147,10 +244,11 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   for(auto curr = begin; curr != end; ++curr)
   {
     auto key = *curr;
-    auto as_int = checkedConvertToInt(key);
-    if(as_int.second && table[as_int.first].valid())
+    int key_as_int;
+    bool is_int = checkedConvertToInt(key, key_as_int);
+    if(is_int && table[key_as_int].valid())
     {
-      table = table[as_int.first];
+      table = table[key_as_int];
     }
     else if(table[key].valid())
     {
@@ -178,19 +276,6 @@ bool LuaReader::getIndices(const std::string& id, std::vector<VariantKey>& indic
 // callables
 namespace detail
 {
-// Passes through everything except a vector, which is expanded into
-// three separate arguments
-template <typename Arg>
-Arg&& lua_identity(Arg&& arg)
-{
-  return std::forward<Arg>(arg);
-}
-
-std::tuple<double, double, double> lua_identity(const FunctionType::Vec3D& vec)
-{
-  return std::make_tuple(vec[0], vec[1], vec[2]);
-}
-
 /*!
  *****************************************************************************
  * \brief Templated function for calling a sol function
@@ -205,7 +290,7 @@ template <typename... Args>
 sol::protected_function_result callWith(const sol::protected_function& func,
                                         Args&&... args)
 {
-  auto tentative_result = func(lua_identity(std::forward<Args>(args))...);
+  auto tentative_result = func(std::forward<Args>(args)...);
   SLIC_ERROR_IF(
     !tentative_result.valid(),
     "[Inlet] Lua function call failed, argument types possibly incorrect");
@@ -234,12 +319,8 @@ Ret extractResult(sol::protected_function_result&& res)
 }
 
 template <>
-FunctionType::Vec3D extractResult<FunctionType::Vec3D>(
-  sol::protected_function_result&& res)
-{
-  auto tup = extractResult<std::tuple<double, double, double>>(std::move(res));
-  return {std::get<0>(tup), std::get<1>(tup), std::get<2>(tup)};
-}
+FunctionType::Void extractResult<FunctionType::Void>(sol::protected_function_result&&)
+{ }
 
 /*!
  *****************************************************************************
@@ -306,12 +387,15 @@ typename std::enable_if<I <= MAX_NUM_ARGS, FunctionVariant>::type bindArgType(
   {
     switch(arg_types[I])
     {
-    case FunctionTag::Vec3D:
-      return bindArgType<I + 1, Ret, Args..., FunctionType::Vec3D>(
+    case FunctionTag::Vector:
+      return bindArgType<I + 1, Ret, Args..., FunctionType::Vector>(
         std::move(func),
         arg_types);
     case FunctionTag::Double:
       return bindArgType<I + 1, Ret, Args..., double>(std::move(func), arg_types);
+    case FunctionTag::String:
+      return bindArgType<I + 1, Ret, Args..., std::string>(std::move(func),
+                                                           arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function argument type");
     }
@@ -352,11 +436,15 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
   {
     switch(ret_type)
     {
-    case FunctionTag::Vec3D:
-      return detail::bindArgType<0u, FunctionType::Vec3D>(std::move(lua_func),
-                                                          arg_types);
+    case FunctionTag::Vector:
+      return detail::bindArgType<0u, FunctionType::Vector>(std::move(lua_func),
+                                                           arg_types);
     case FunctionTag::Double:
       return detail::bindArgType<0u, double>(std::move(lua_func), arg_types);
+    case FunctionTag::Void:
+      return detail::bindArgType<0u, void>(std::move(lua_func), arg_types);
+    case FunctionTag::String:
+      return detail::bindArgType<0u, std::string>(std::move(lua_func), arg_types);
     default:
       SLIC_ERROR("[Inlet] Unexpected function return type");
     }

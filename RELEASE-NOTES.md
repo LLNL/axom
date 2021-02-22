@@ -36,6 +36,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for defining and retrieving functions from the input file
 - Inlet: Added support for YAML and JSON input files
 - Inlet: Added support for mixed-key (integer and string) associative arrays
+- Inlet: Added support for deeply nested containers of structs
+- Inlet: Added support for `void` and strings in Lua-defined functions
+- Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -47,7 +50,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Switched accessor interface to match that of the STL with operator[] and
   T get<T>()
 - Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
-  and `std::unique_ptr<T>` in owning contexts
+  and `std::unique_ptr<T>` in owning contexts - specifically, within Inlet's internal
+  tree structure
 - Unified core and SPIO unit tests into fewer executables to limit size of build directory
 - Renamed `axom::slic::UnitTestLogger` to `axom::slic:SimpleLogger` because it's used in
   more than just unit tests.
@@ -56,6 +60,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
 - Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
 - Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
+- Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
+- The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
+  datastore is `Load` ed in
+- Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
+- Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
+- Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
+- Inlet: Renamed `Table` to `Container`
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
@@ -63,6 +74,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   target if version is unknown or wrong.
 - Inlet: Apply lambda verifiers on generic containers to individual elements
   for consistency
+- Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
+- Fixed a bug relating to deeply nested callback functions in Inlet
+- Inlet: Always ignore primitive array elements that do not match the requested type
 
 
 ## [Version 0.4.0] - Release date 2020-09-22

@@ -34,7 +34,7 @@ namespace inlet
  * input file are expected to behave.  It also holds the Sidre Group to 
  * the individual field.
  *
- * \see Inlet Table
+ * \see Inlet Container
  *******************************************************************************
  */
 class Field : public VerifiableScalar
@@ -77,7 +77,7 @@ public:
    * \return Pointer to the Sidre Group class for this Field
    *****************************************************************************
    */
-  axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
+  const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
 
   /*!
    *****************************************************************************
