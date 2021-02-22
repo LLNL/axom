@@ -1234,7 +1234,7 @@ private:
   /*!
    *****************************************************************************
    * \brief Applies a provided function to nested elements of the calling table
-   * and stores the result in another container
+   * and stores the result in a range
    * 
    * \pre The function must accept two arguments of type Table& and
    * const std::string&, respectively.  
@@ -1243,7 +1243,7 @@ private:
    * as the first argument and the path of the nested element in the input file
    * as the second argument, when applicable.
    * 
-   * \param [out] output An iterator to the output container
+   * \param [out] output An iterator to the beginning of the output range
    * \param [in] name The name to append to the path described above
    * \param [in] func The function to apply to individual nested elements
    * 
