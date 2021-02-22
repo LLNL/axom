@@ -73,7 +73,9 @@ void writerHelper(Writer& writer, const Container& container)
 {
   // Use a pre-order traversal for readability
   writer.documentContainer(container);
-  // If the current container contains a collection, visit that last
+  // If the current container contains a collection, visit that last to ensure
+  // that singleton fields present in the current table (those not part of struct
+  // elements) are displayed before the sub-container struct schema
   const auto& child_containers = container.getChildContainers();
   for(const auto& sub_container_entry : child_containers)
   {
@@ -88,6 +90,7 @@ void writerHelper(Writer& writer, const Container& container)
   if(iter != child_containers.end())
   {
     const auto& coll_container = *iter->second;
+    // Make sure that the collection is "real"
     if(coll_container.sidreGroup()->hasGroup(detail::COLLECTION_INDICES_NAME))
     {
       writerHelper(writer, coll_container);

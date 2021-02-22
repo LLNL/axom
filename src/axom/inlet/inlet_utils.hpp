@@ -150,7 +150,6 @@ namespace detail
 const std::string COLLECTION_GROUP_NAME = "_inlet_collection";
 const std::string COLLECTION_INDICES_NAME = "_inlet_collection_indices";
 const std::string STRUCT_COLLECTION_FLAG = "_inlet_struct_collection";
-const std::string COLLECTION_ELEMENT_FLAG = "_inlet_collection_element";
 }  // namespace detail
 
 /*!
@@ -167,26 +166,13 @@ inline bool isCollectionGroup(const std::string& name)
 
 /*!
 *****************************************************************************
-* \brief Determines whether a Sidre group corresponds to an Inlet Table
-* object that is an element of an array/dictionary
-*
-* \param [in] group The sidre::Group to check
-*****************************************************************************
-*/
-inline bool isCollectionElement(const axom::sidre::Group& group)
-{
-  return group.hasView(detail::COLLECTION_ELEMENT_FLAG);
-}
-
-/*!
-*****************************************************************************
-* \brief Adds a flag to a Sidre group by adding an int8 View with value 1
+* \brief Marks the sidre::Group as a "struct collection" by adding a
+* corresponding flag to the group
 *
 * \param [inout] target The group to tag
-* \param [in] flag_name The name of the flag
 *****************************************************************************
 */
-void addFlagToGroup(axom::sidre::Group& target, const std::string& flag_name);
+void markAsStructCollection(axom::sidre::Group& target);
 
 namespace cpp11_compat
 {

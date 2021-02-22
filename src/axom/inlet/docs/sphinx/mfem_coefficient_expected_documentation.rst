@@ -16,7 +16,7 @@ Collection contents:
 
 Description: List of boundary conditions
 
-The input schema defines an collection of this container.
+The input schema defines a collection of this container.
 For brevity, only one instance is displayed here.
 
 .. list-table:: Functions

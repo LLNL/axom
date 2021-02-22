@@ -203,7 +203,6 @@ Container& Container::addStructCollection(const std::string& name,
       container.m_nested_aggregates.push_back(
         getContainer(indexPath.first).addStructCollection<Key>(name, description));
     }
-    addFlagToGroup(*container.m_sidreGroup, detail::STRUCT_COLLECTION_FLAG);
   }
   else
   {
@@ -214,8 +213,8 @@ Container& Container::addStructCollection(const std::string& name,
     {
       container.addIndicesGroup(indices, description, true);
     }
-    addFlagToGroup(*container.m_sidreGroup, detail::STRUCT_COLLECTION_FLAG);
   }
+  markAsStructCollection(*container.m_sidreGroup);
   return container;
 }
 
@@ -636,12 +635,9 @@ void Container::addIndicesGroup(const std::vector<Key>& indices,
       removeBeforeDelimiter(detail::indexToString(idx));
     if(add_containers)
     {
-      auto& subcontainer = addContainer(string_idx, description);
-      // Mark this as an element of a container so it can be distinguished from
-      // elements of the same table that are not part of the container
-      addFlagToGroup(*subcontainer.sidreGroup(), detail::COLLECTION_ELEMENT_FLAG);
+      addContainer(string_idx, description);
     }
-    std::string absolute = appendPrefix(name(), detail::indexToString(idx));
+    std::string absolute = appendPrefix(m_name, detail::indexToString(idx));
     absolute = removeAllInstances(absolute, detail::COLLECTION_GROUP_NAME + "/");
     detail::addIndexViewToGroup(*indices_group, absolute);
   }

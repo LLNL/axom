@@ -97,7 +97,7 @@ void SphinxWriter::documentContainer(const Container& container)
 
   // If we've gotten to this point and are an element of an array/dict,
   // mark it as the selected element
-  if(isCollectionElement(*sidreGroup))
+  if(sidreGroup->getParent()->getName() == detail::COLLECTION_GROUP_NAME)
   {
     // The collection that this Container is a part of
     const std::string collectionName =

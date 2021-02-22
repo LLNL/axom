@@ -142,35 +142,26 @@ bool checkedConvertToInt(const std::string& number, int& result)
   return *ptr == 0;
 }
 
-/*!
-*****************************************************************************
-* \brief Adds a flag to a Sidre group by adding an int8 View with value 1
-*
-* \param [inout] target The group to tag
-* \param [in] flag_name The name of the flag
-*****************************************************************************
-*/
-void addFlagToGroup(axom::sidre::Group& target, const std::string& flag_name)
+void markAsStructCollection(axom::sidre::Group& target)
 {
-  if(target.hasView(flag_name))
+  if(target.hasView(detail::STRUCT_COLLECTION_FLAG))
   {
     // This flag should only ever be one, so we verify that and error otherwise
-    const sidre::View* flag = target.getView(flag_name);
+    const sidre::View* flag = target.getView(detail::STRUCT_COLLECTION_FLAG);
     SLIC_ERROR_IF(
       !flag->isScalar(),
-      fmt::format("[Inlet] Flag '{0}' of group '{1}' was not a scalar",
-                  flag_name,
-                  target.getName()));
+      fmt::format(
+        "[Inlet] Struct collection flag of group '{0}' was not a scalar",
+        target.getName()));
     const int8 value = flag->getScalar();
     SLIC_ERROR_IF(value != 1,
-                  fmt::format("[Inlet] Flag '{0}' of group '{1}' "
+                  fmt::format("[Inlet] Struct collection flag of group '{0}' "
                               "had a value other than 1",
-                              flag_name,
                               target.getName()));
   }
   else
   {
-    target.createViewScalar(flag_name, static_cast<int8>(1));
+    target.createViewScalar(detail::STRUCT_COLLECTION_FLAG, static_cast<int8>(1));
   }
 }
 

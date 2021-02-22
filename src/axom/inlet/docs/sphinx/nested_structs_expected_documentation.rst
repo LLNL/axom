@@ -14,7 +14,7 @@ shapes
 Collection contents:
 --------------------
 
-The input schema defines an collection of this container.
+The input schema defines a collection of this container.
 For brevity, only one instance is displayed here.
 
 .. list-table:: Fields
@@ -82,7 +82,7 @@ operators
 Collection contents:
 --------------------
 
-The input schema defines an collection of this container.
+The input schema defines a collection of this container.
 For brevity, only one instance is displayed here.
 
 .. list-table:: Fields
