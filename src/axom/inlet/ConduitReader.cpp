@@ -100,11 +100,11 @@ const static char SCOPE_DELIMITER = '/';
  * integer if no such child exists.
  *******************************************************************************
  */
-conduit::Node traverseNode(const conduit::Node& root, const std::string& id)
+const conduit::Node* traverseNode(const conduit::Node& root, const std::string& id)
 {
   if(root.has_path(id))
   {
-    return root[id];
+    return &root[id];
   }
 
   const conduit::Node* node = &root;
@@ -132,7 +132,7 @@ conduit::Node traverseNode(const conduit::Node& root, const std::string& id)
       }
     }
   }
-  return *node;
+  return node;
 }
 
 /*!
@@ -159,47 +159,63 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
 
 }  // namespace detail
 
-ReaderResult ConduitReader::getValue(const conduit::Node& node, int& value)
+ReaderResult ConduitReader::getValue(const conduit::Node* node, int& value)
 {
+  if(!node)
+  {
+    return ReaderResult::NotFound;
+  }
   // Match LuaReader functionality - narrow from floating-point but exclude bool
-  if(node.dtype().is_number() && !node.dtype().is_uint8())
+  if(node->dtype().is_number() && !node->dtype().is_uint8())
   {
-    value = node.to_int();
+    value = node->to_int();
     return ReaderResult::Success;
   }
-  return node.dtype().is_empty() ? ReaderResult::NotFound
-                                 : ReaderResult::WrongType;
+  return node->dtype().is_empty() ? ReaderResult::NotFound
+                                  : ReaderResult::WrongType;
 }
 
-ReaderResult ConduitReader::getValue(const conduit::Node& node, std::string& value)
+ReaderResult ConduitReader::getValue(const conduit::Node* node, std::string& value)
 {
-  if(node.dtype().is_string())
+  if(!node)
   {
-    value = node.as_string();
+    return ReaderResult::NotFound;
+  }
+  if(node->dtype().is_string())
+  {
+    value = node->as_string();
     return ReaderResult::Success;
   }
-  return node.dtype().is_empty() ? ReaderResult::NotFound
-                                 : ReaderResult::WrongType;
+  return node->dtype().is_empty() ? ReaderResult::NotFound
+                                  : ReaderResult::WrongType;
 }
 
-ReaderResult ConduitReader::getValue(const conduit::Node& node, double& value)
+ReaderResult ConduitReader::getValue(const conduit::Node* node, double& value)
 {
+  if(!node)
+  {
+    return ReaderResult::NotFound;
+  }
   // Match LuaReader functionality - promote from integer but not bool
-  if(node.dtype().is_number() && !node.dtype().is_uint8())
+  if(node->dtype().is_number() && !node->dtype().is_uint8())
   {
-    value = node.to_double();
+    value = node->to_double();
     return ReaderResult::Success;
   }
-  return node.dtype().is_empty() ? ReaderResult::NotFound
-                                 : ReaderResult::WrongType;
+  return node->dtype().is_empty() ? ReaderResult::NotFound
+                                  : ReaderResult::WrongType;
 }
 
-ReaderResult ConduitReader::getValue(const conduit::Node& node, bool& value)
+ReaderResult ConduitReader::getValue(const conduit::Node* node, bool& value)
 {
-  // Boolean literals don't appear to be parsed as such - they are strings
-  if((m_protocol == "yaml") && node.dtype().is_string())
+  if(!node)
   {
-    std::string as_str = node.as_string();
+    return ReaderResult::NotFound;
+  }
+  // Boolean literals don't appear to be parsed as such - they are strings
+  if((m_protocol == "yaml") && node->dtype().is_string())
+  {
+    std::string as_str = node->as_string();
     // YAML 1.2 spec, section 10.3.2
     // FIXME: Converting the string to lowercase is not strictly correct, it
     // allows for things like tRue and falsE
@@ -215,13 +231,13 @@ ReaderResult ConduitReader::getValue(const conduit::Node& node, bool& value)
       return ReaderResult::Success;
     }
   }
-  else if((m_protocol == "json") && node.dtype().is_uint8())
+  else if((m_protocol == "json") && node->dtype().is_uint8())
   {
-    value = node.as_uint8();
+    value = node->as_uint8();
     return ReaderResult::Success;
   }
-  return node.dtype().is_empty() ? ReaderResult::NotFound
-                                 : ReaderResult::WrongType;
+  return node->dtype().is_empty() ? ReaderResult::NotFound
+                                  : ReaderResult::WrongType;
 }
 
 ReaderResult ConduitReader::getBool(const std::string& id, bool& value)
@@ -297,11 +313,12 @@ ReaderResult ConduitReader::getIndices(const std::string& id,
                                        std::vector<int>& indices)
 {
   indices.clear();
-  const auto node = detail::traverseNode(m_root, id);
-  if(node.dtype().is_empty())
+  const auto node_ptr = detail::traverseNode(m_root, id);
+  if(!node_ptr)
   {
     return ReaderResult::NotFound;
   }
+  const auto& node = *node_ptr;
   int num_elements = node.number_of_children();
   // Primitive arrays do not count as lists
   if(!node.dtype().is_list())
@@ -312,18 +329,19 @@ ReaderResult ConduitReader::getIndices(const std::string& id,
   indices.resize(num_elements);
   // Arrays in YAML/JSON are contiguous so we don't need to query the input file
   std::iota(indices.begin(), indices.end(), 0);
-  return (num_elements == 0) ? ReaderResult::NotFound : ReaderResult::Success;
+  return ReaderResult::Success;
 }
 
 ReaderResult ConduitReader::getIndices(const std::string& id,
                                        std::vector<VariantKey>& indices)
 {
   indices.clear();
-  const auto node = detail::traverseNode(m_root, id);
-  if(node.dtype().is_empty())
+  const auto node_ptr = detail::traverseNode(m_root, id);
+  if(!node_ptr)
   {
     return ReaderResult::NotFound;
   }
+  const auto& node = *node_ptr;
   if(!node.dtype().is_object())
   {
     // If it's not an object, try integer indexing
@@ -342,7 +360,7 @@ ReaderResult ConduitReader::getIndices(const std::string& id,
   {
     indices.push_back(child.name());
   }
-  return (indices.size() == 0) ? ReaderResult::NotFound : ReaderResult::Success;
+  return ReaderResult::Success;
 }
 
 FunctionVariant ConduitReader::getFunction(const std::string&,
@@ -358,7 +376,12 @@ ReaderResult ConduitReader::getDictionary(const std::string& id,
                                           std::unordered_map<VariantKey, T>& values)
 {
   values.clear();
-  const auto node = detail::traverseNode(m_root, id);
+  const auto node_ptr = detail::traverseNode(m_root, id);
+  if(!node_ptr)
+  {
+    return ReaderResult::NotFound;
+  }
+  const auto& node = *node_ptr;
   if(node.dtype().is_empty())
   {
     return ReaderResult::NotFound;
@@ -375,7 +398,7 @@ ReaderResult ConduitReader::getDictionary(const std::string& id,
 
     T value;
     // Inlet allows for heterogenous collections, but a failure here must be reported
-    const auto result = getValue(child, value);
+    const auto result = getValue(&child, value);
     if(result == ReaderResult::Success)
     {
       values[name] = value;
@@ -393,7 +416,12 @@ ReaderResult ConduitReader::getArray(const std::string& id,
                                      std::unordered_map<int, T>& values)
 {
   values.clear();
-  const auto node = detail::traverseNode(m_root, id);
+  const auto node_ptr = detail::traverseNode(m_root, id);
+  if(!node_ptr)
+  {
+    return ReaderResult::NotFound;
+  }
+  const auto& node = *node_ptr;
   if(node.dtype().is_empty())
   {
     return ReaderResult::NotFound;
@@ -421,7 +449,7 @@ ReaderResult ConduitReader::getArray(const std::string& id,
     // Single-element arrays will be just the element itself
     // If it's a single element, we know the index is zero
     T value;
-    const auto result = getValue(node, value);
+    const auto result = getValue(&node, value);
     if(result == ReaderResult::Success)
     {
       values[0] = value;
@@ -440,7 +468,7 @@ ReaderResult ConduitReader::getArray(const std::string& id,
     {
       T value;
       // Inlet allows for heterogenous collections, but a failure here must be reported
-      const auto result = getValue(child, value);
+      const auto result = getValue(&child, value);
       if(result == ReaderResult::Success)
       {
         values[index] = value;

@@ -526,8 +526,7 @@ ReaderResult LuaReader::getMap(const std::string& id,
   axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
 
   sol::table t;
-  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t) ||
-     t.empty())
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
   {
     return ReaderResult::NotFound;
   }
@@ -573,8 +572,7 @@ ReaderResult LuaReader::getIndicesInternal(const std::string& id,
 
   sol::table t;
 
-  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t) ||
-     t.empty())
+  if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
   {
     return ReaderResult::NotFound;
   }

@@ -181,6 +181,24 @@ TYPED_TEST(inlet_Reader, getMap)
   // EXPECT_EQ(expectedStrs, strs);
 }
 
+TYPED_TEST(inlet_Reader, emptyCollections)
+{
+  TypeParam reader;
+  reader.parseString(fromLuaTo<TypeParam>("arr = { }"));
+
+  ReaderResult retValue;
+  std::vector<axom::inlet::VariantKey> indices;
+  std::vector<axom::inlet::VariantKey> expected_indices;
+
+  retValue = reader.getIndices("arr", indices);
+  EXPECT_EQ(retValue, ReaderResult::Success);
+  EXPECT_EQ(indices, expected_indices);
+
+  retValue = reader.getIndices("nonexistent_arr", indices);
+  EXPECT_EQ(retValue, ReaderResult::NotFound);
+  EXPECT_EQ(indices, expected_indices);
+}
+
 TEST(inlet_Reader_YAML, getInsideBools)
 {
   axom::inlet::YAMLReader reader;

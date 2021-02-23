@@ -210,11 +210,8 @@ ReaderResult collectionRetrievalResult(const bool none_of_other_type,
   {
     return ReaderResult::NotHomogeneous;
   }
-  // Finally check if nothing existed at all
-  else if(none_of_requested_type)
-  {
-    return ReaderResult::NotFound;
-  }
+  // Otherwise we mark it as successful - having just an empty collection
+  // counts as success
   return ReaderResult::Success;
 }
 

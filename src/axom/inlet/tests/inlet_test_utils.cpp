@@ -114,6 +114,10 @@ std::string LuaTranslator::convertYAML(const std::string& luaString)
     // End of a table - only need to reduce the indent
     else if(token == "}")
     {
+      if(i > 0 && tokens[i - 1] == "{")
+      {
+        result += indent + "[]\n";
+      }
       indent = indent.substr(2);
       i += 1;
     }

@@ -110,10 +110,10 @@ public:
   static const int baseIndex = 0;
 
 private:
-  ReaderResult getValue(const conduit::Node& node, int& value);
-  ReaderResult getValue(const conduit::Node& node, std::string& value);
-  ReaderResult getValue(const conduit::Node& node, double& value);
-  ReaderResult getValue(const conduit::Node& node, bool& value);
+  ReaderResult getValue(const conduit::Node* node, int& value);
+  ReaderResult getValue(const conduit::Node* node, std::string& value);
+  ReaderResult getValue(const conduit::Node* node, double& value);
+  ReaderResult getValue(const conduit::Node* node, bool& value);
 
   template <typename T>
   ReaderResult getDictionary(const std::string& id,
