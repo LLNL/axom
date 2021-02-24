@@ -126,7 +126,7 @@ The Axom team develops and supports other software tools that are useful
 for software projects independent of the Axom. These include:
 
   *  `BLT <https://github.com/LLNL/blt>`_ CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration
-  *  `Shroud <https://github.com/LLNL/shroud>`_ Generator for Fortran and Python interfaces to C or C++ libries
+  *  `Shroud <https://github.com/LLNL/shroud>`_ Generator for Fortran and Python interfaces to C or C++ libraries
   *  `Conduit <https://github.com/LLNL/conduit>`_ Library for describing and managing in-memory simulation data
 
 ===================
