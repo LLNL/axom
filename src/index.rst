@@ -21,7 +21,7 @@ simulation data between applications and tools. Axom developers
 emphasize the following principles in software design and implementation:
 
   * Start design and implementation based on concrete application use cases and maintain flexibility to meet the needs of a diverse set of applications
-  * Develop high-quality software that has well-designed APIs, good documentation, solid testing, and is robust and high performance
+  * Develop high-quality, robust, high performance software that has well-designed APIs, good documentation, and solid testing
   * Apply consistent software engineering practices across all Axom components so developers can easily work on them
   * Ensure that components integrate well together and are easy for applications to adopt
 
@@ -110,7 +110,7 @@ Axom has the following inter-component dependencies:
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
 - Quest depends on Slam, Spin, Primal, and Mint
-- Inlet depends on Sidre and Slic
+- Inlet depends on Sidre, Slic, and Primal
 
 The figure below summarizes these dependencies. Solid links indicate hard 
 dependencies; dashed links indicate optional dependencies.
