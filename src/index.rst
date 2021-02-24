@@ -7,22 +7,22 @@
 Axom
 ****
 
-Axom provides a collection of robust and flexible software components that 
-serve as building blocks for high performance scientific computing 
-applications. A key goal is to have different application teams co-develop 
-and share general core infrastructure software across their projects 
-instead of them developing and maintaining capabilities that provide
-similar capabilities but are not easily shared.
+Axom is an open source project that provides robust and flexible software 
+components that serve as building blocks for high performance scientific 
+computing applications. A key goal of the project is to have different 
+application teams co-develop and share general core infrastructure software 
+across their projects instead of individually developing and maintaining 
+capabilities that are similar in functionality but are not easily shared.
 
 An important objective of Axom is to facilitate integration of novel, 
 forward-looking computer science capabilities into simulation codes. 
 A pillar of Axom design is to enable and simplify the exchange of 
-simulation data between applications and tools. Thus, Axom developers 
+simulation data between applications and tools. Axom developers 
 emphasize the following principles in software design and implementation:
 
-  * Maintain flexibility to meet the needs of a diverse set of applications
+  * Start design and implementation based on concrete application use cases and maintain flexibility to meet the needs of a diverse set of applications
   * Develop high-quality software that has well-designed APIs, good documentation, solid testing, and is robust and high performance
-  * Apply consistent software engineering practices across all Axom components
+  * Apply consistent software engineering practices across all Axom components so developers can easily work on them
   * Ensure that components integrate well together and are easy for applications to adopt
 
 The main drivers of Axom capabilities originate in the needs of multiphysics
@@ -36,10 +36,14 @@ Axom Software
 ==============
 
 Axom software components are maintained and developed on the
-`Axom GitHub Project <https://github.com/LLNL/axom>`_.
+`Axom GitHub Project <https://github.com/LLNL/axom>`_. 
+
+.. note:: While Axom is developed in C++, its components have native 
+          interfaces in C and Fortran. Python interfaces are in development.
 
 Our current collection of components is listed here. The number of 
-components and and their capabilities expand over time.
+components and their capabilities will expand over time as new needs
+are identified.
 
    * Inlet: Input file parsing and information storage/retrieval
    * Lumberjack: Scalable parallel message logging and filtering
@@ -49,13 +53,13 @@ components and and their capabilities expand over time.
    * Sidre: Simulation data repository
    * Slam: Set-theoretic lightweight API for meshes
    * Slic: Simple Logging Interface Code
-   * Spin: Spatial indexes
+   * Spin: Spatial index structures for managing and accelerating spatial searches
 
 =============
 Documentation
 =============
 
-User guides and source code documentation are always available on this site.
+User guides and source code documentation are always linked on this site.
 
   * :doc:`Quickstart Guide <docs/sphinx/quickstart_guide/index>`
   *  `Source documentation <doxygen/html/index.html>`__
@@ -101,12 +105,12 @@ Component Level Dependencies
 
 Axom has the following inter-component dependencies:
 
-- Core has no dependencies, and the other components depend on Core
+- Core has no dependencies and the other components depend on Core
 - Slic optionally depends on Lumberjack
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
 - Quest depends on Slam, Spin, Primal, and Mint
-- Inlet depends on Sidre, and Slic
+- Inlet depends on Sidre and Slic
 
 The figure below summarizes these dependencies. Solid links indicate hard 
 dependencies; dashed links indicate optional dependencies.
@@ -121,9 +125,9 @@ Other Tools Application Developers May Find Useful
 The Axom team develops and supports other software tools that are useful
 for software projects independent of the Axom. These include:
 
-  *  `BLT <https://github.com/LLNL/blt>`_: CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration
-  *  `Shroud <https://github.com/LLNL/shroud>`_: Generator for native C and Fortran APIs from C++ code
-  *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_: Library for describing and managing in-memory data structures
+  *  `BLT <https://github.com/LLNL/blt>`_ CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration
+  *  `Shroud <https://github.com/LLNL/shroud>`_ Generator for Fortran and Python interfaces to C or C++ libries
+  *  `Conduit <https://github.com/LLNL/conduit>`_ Library for describing and managing in-memory simulation data
 
 ===================
 Developer Resources
