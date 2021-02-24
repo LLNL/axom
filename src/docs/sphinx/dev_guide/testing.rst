@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -146,7 +146,7 @@ object to be used in tests::
 
     ::testing::InitGoogleTest(&argc, argv);
 
-    UnitTestLogger logger;  // create & initialize test logger,
+    SimpleLogger logger;  // create & initialize test logger,
                             // finalized when exiting main scope
 
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -156,7 +156,7 @@ object to be used in tests::
   }
 
 Note that Google Test is initialized first, followed by initialization of the
-slic UnitTestLogger object. The `RUN_ALL_TESTS()` Google Test macro will 
+slic SimpleLogger object. The `RUN_ALL_TESTS()` Google Test macro will 
 run all the tests in the file. 
 
 As another example, consider a set of tests that use MPI.  The 'main()' 
@@ -169,7 +169,7 @@ respectively::
 
     ::testing::InitGoogleTest(&argc, argv);
 
-    UnitTestLogger logger;  // create & initialize test logger,
+    SimpleLogger logger;  // create & initialize test logger,
                             // finalized when exiting main scope
 
     MPI_Init(&argc, &argv);

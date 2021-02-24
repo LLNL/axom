@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -23,49 +23,74 @@ namespace axom
 {
 namespace inlet
 {
-Table& Inlet::addTable(const std::string& name, const std::string& description)
+Container& Inlet::addStruct(const std::string& name,
+                            const std::string& description)
 {
-  return m_globalTable.addTable(name, description);
+  return m_globalContainer.addStruct(name, description);
 }
 
 VerifiableScalar& Inlet::addBool(const std::string& name,
                                  const std::string& description)
 {
-  return m_globalTable.addBool(name, description);
+  return m_globalContainer.addBool(name, description);
 }
 
 VerifiableScalar& Inlet::addDouble(const std::string& name,
                                    const std::string& description)
 {
-  return m_globalTable.addDouble(name, description);
+  return m_globalContainer.addDouble(name, description);
 }
 
 VerifiableScalar& Inlet::addInt(const std::string& name,
                                 const std::string& description)
 {
-  return m_globalTable.addInt(name, description);
+  return m_globalContainer.addInt(name, description);
 }
 
 VerifiableScalar& Inlet::addString(const std::string& name,
                                    const std::string& description)
 {
-  return m_globalTable.addString(name, description);
+  return m_globalContainer.addString(name, description);
 }
 
-void Inlet::registerDocWriter(std::unique_ptr<DocWriter> writer)
+void Inlet::registerWriter(std::unique_ptr<Writer> writer)
 {
-  m_docWriter = std::move(writer);
+  m_writer = std::move(writer);
 }
+
+namespace detail
+{
+/*!
+ *******************************************************************************
+ * \brief Recursive helper function for traversing an Inlet tree for documentation
+ * generation purposes
+ * 
+ * \param [inout] writer The Writer to use for documentation
+ * \param [in] container The current container to write
+ *******************************************************************************
+ */
+void writerHelper(Writer& writer, const Container& container)
+{
+  // Use a pre-order traversal for readability
+  writer.documentContainer(container);
+  for(const auto& sub_container_entry : container.getChildContainers())
+  {
+    writerHelper(writer, *sub_container_entry.second);
+  }
+}
+
+}  // end namespace detail
 
 void Inlet::writeDoc()
 {
   if(m_docEnabled)
   {
-    m_docWriter->writeDocumentation();
+    detail::writerHelper(*m_writer, m_globalContainer);
+    m_writer->finalize();
   }
 }
 
-bool Inlet::verify() const { return m_globalTable.verify(); }
+bool Inlet::verify() const { return m_globalContainer.verify(); }
 
 }  // end namespace inlet
 }  // end namespace axom

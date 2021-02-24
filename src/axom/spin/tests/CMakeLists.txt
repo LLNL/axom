@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,7 +72,7 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
     #   C++ exception with description "CUDAassert" thrown in the test body.
     set_property(TEST spin_bvh
                  APPEND
-                 PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=1")
+                 PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=0") # Zero based indexed, so only first GPU is visible
 
 endif()
 

@@ -24,22 +24,22 @@ thermal_solver.solver = {
 thermal_solver.bcs = {
   ["temperature_1"] = {
     attrs = {3, 4, 7},
-    coef = function (x, y, z)
+    coef = function (v)
       -- Constant is defined as a function
       return 12.55
     end
   },
   ["temperature_2"] = {
     attrs = {4, 6, 1},
-    coef = function (x, y, z)
-      return x * 0.12
+    coef = function (v)
+      return v.x * 0.12
     end
   },
   ["flux"] = {
     attrs = {14, 62, 11},
-    vec_coef = function (x, y, z)
+    vec_coef = function (v)
       scale = 0.12
-      return x * scale, y * scale, z * scale
+      return v * scale
     end
   }
 }

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -55,6 +55,10 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     set(ENABLE_UNCRUSTIFY  OFF CACHE BOOL "")
 
     set(BLT_REQUIRED_CLANGFORMAT_VERSION  "10" CACHE STRING "")
+
+    # Mark BLT's built-in third-party targets as EXPORTABLE so they can be added
+    # to the axom-targets export set
+    set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
 endif()
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)

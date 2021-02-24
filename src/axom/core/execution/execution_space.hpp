@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -95,7 +95,8 @@ struct execution_space
   #include "axom/core/execution/internal/omp_exec.hpp"
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__CUDACC__)
   #include "axom/core/execution/internal/cuda_exec.hpp"
 #endif
 

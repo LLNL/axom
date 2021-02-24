@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -996,14 +996,11 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   // to add the blueprint index to the root file
   MPI_Barrier(MPI_COMM_WORLD);
 
-  // rank 0 adds the bp index to the root file
-  if(my_rank == 0)
-  {
-    writer.writeBlueprintIndexToRootFile(&ds,
-                                         "mesh",
-                                         "out_spio_blueprint_example.root",
-                                         "mesh");
-  }
+  // Add the bp index to the root file
+  writer.writeBlueprintIndexToRootFile(&ds,
+                                       "mesh",
+                                       "out_spio_blueprint_example.root",
+                                       "mesh");
 
 #endif
 }

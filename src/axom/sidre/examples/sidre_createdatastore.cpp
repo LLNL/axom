@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,6 +72,10 @@
 #include "conduit.hpp"
 #include "conduit_blueprint.hpp"
 #include "conduit_relay.hpp"
+
+#ifdef AXOM_USE_MPI
+  #include "conduit_blueprint_mpi.hpp"
+#endif
 
 // C++ headers
 #include <cstring>
@@ -572,6 +576,9 @@ void generate_blueprint_to_path(DataStore* ds)
 #ifdef AXOM_USE_MPI
 void generate_spio_blueprint(DataStore* ds)
 {
+  int comm_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
   // _blueprint_spio_toplevel_start
   std::string domain_name = "domain";
   std::string domain_location = "domain_data/" + domain_name;
@@ -598,16 +605,25 @@ void generate_spio_blueprint(DataStore* ds)
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
   std::string bp_protocol = "mesh";
-  if(conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
+  if(conduit::blueprint::mpi::verify(bp_protocol,
+                                     mesh_node[domain_mesh],
+                                     info,
+                                     MPI_COMM_WORLD))
   {
   #if defined(AXOM_USE_HDF5)
     std::string protocol = "sidre_hdf5";
   #else
     std::string protocol = "sidre_json";
   #endif
-    std::string bp_rootfile("bpspio.root");
+    std::string output_name = "bpspio";
+    if(comm_size > 1)
+    {
+      output_name = output_name + "_par";
+    }
 
-    writer.write(ds->getRoot()->getGroup(domain_location), 1, "bpspio", protocol);
+    std::string bp_rootfile = output_name + ".root";
+
+    writer.write(ds->getRoot()->getGroup(domain_location), 1, output_name, protocol);
 
     writer.writeBlueprintIndexToRootFile(ds, domain_mesh, bp_rootfile, mesh_name);
   }
@@ -616,6 +632,9 @@ void generate_spio_blueprint(DataStore* ds)
 
 void generate_spio_blueprint_to_path(DataStore* ds)
 {
+  int comm_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
   // _blueprint_spio_path_start
   std::string domain_name = "domain";
   std::string domain_location = "domain_data/level/domains/" + domain_name;
@@ -642,16 +661,25 @@ void generate_spio_blueprint_to_path(DataStore* ds)
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
   std::string bp_protocol = "mesh";
-  if(conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
+  if(conduit::blueprint::mpi::verify(bp_protocol,
+                                     mesh_node[domain_mesh],
+                                     info,
+                                     MPI_COMM_WORLD))
   {
-    std::string bp_rootfile("pathbpspio.root");
+    std::string output_name = "pathbpspio";
+    if(comm_size > 1)
+    {
+      output_name = output_name + "_par";
+    }
+
+    std::string bp_rootfile = output_name + ".root";
   #if defined(AXOM_USE_HDF5)
     std::string protocol = "sidre_hdf5";
   #else
     std::string protocol = "sidre_json";
   #endif
 
-    writer.write(ds->getRoot()->getGroup("domain_data"), 1, "pathbpspio", protocol);
+    writer.write(ds->getRoot()->getGroup("domain_data"), 1, output_name, protocol);
 
     writer.writeBlueprintIndexToRootFile(ds,
                                          domain_mesh,
@@ -695,6 +723,10 @@ int main(int argc, char** argv)
 
   int region[3375];
 
+#ifdef AXOM_USE_MPI
+  MPI_Init(&argc, &argv);
+#endif
+
   DataStore* ds = create_datastore(region);
   access_datastore(ds);
 
@@ -710,7 +742,6 @@ int main(int argc, char** argv)
 #ifdef AXOM_USE_MPI
   DataStore* sds = create_tiny_datastore();
   DataStore* spds = create_tiny_datastore();
-  MPI_Init(&argc, &argv);
   generate_spio_blueprint(sds);
   generate_spio_blueprint_to_path(spds);
   MPI_Finalize();

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -171,10 +171,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
         blt_add_target_compile_flags( TO ${test_name} FLAGS "${extra_compile_flags}" )
 
-    endif()
-
-    if ( "$ENV{SYS_TYPE}" STREQUAL "bgqos_0" )
-       blt_add_target_link_flags( TO ${test_name} FLAGS "${AXOM_ALLOW_MULTIPLE_DEFINITIONS}" )
     endif()
 
     # Add resolution tests for each dataset and resolution

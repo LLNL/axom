@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -89,7 +89,7 @@ std::string appendPrefix(const std::string& prefix, const std::string& name);
 
 /*!
 *****************************************************************************
-* \brief This function extracts the Table name from the full name.
+* \brief This function extracts the Container name from the full name.
 *
 * \param [in] The prefix of the name, to be removed.
 * \param [in] The full name.
@@ -115,38 +115,64 @@ std::string removeBeforeDelimiter(const std::string& path,
 
 /*!
 *****************************************************************************
+* \brief This function removes all instances of the substring from the target
+* string
+*
+* \param [in] target The string to operate on
+* \param [in] substr The string to remove
+*
+* \return The filtered string.
+*****************************************************************************
+*/
+std::string removeAllInstances(const std::string& target,
+                               const std::string& substr);
+
+/*!
+*****************************************************************************
 * \brief This function performs a checked conversion of a string to an integer
 *
 * \param [in] number The string to be converted
+* \param [out] result The integer to store the result in, if successful
 *
-* \return A tuple containing the conversion result, and the status of the conversion
+* \return Whether the conversion was successful
 *****************************************************************************
 */
-std::pair<int, bool> checkedConvertToInt(const std::string& number);
+bool checkedConvertToInt(const std::string& number, int& result);
 
 namespace detail
 {
 /*!
   *******************************************************************************
-  * Names of the internal container data and container index groups/fields
+  * Names of the internal collection data and collection index groups/fields
   * used for managing arrays/dictionaries
   *******************************************************************************
   */
-const std::string CONTAINER_GROUP_NAME = "_inlet_container";
-const std::string CONTAINER_INDICES_NAME = "_inlet_container_indices";
+const std::string COLLECTION_GROUP_NAME = "_inlet_collection";
+const std::string COLLECTION_INDICES_NAME = "_inlet_collection_indices";
+const std::string STRUCT_COLLECTION_FLAG = "_inlet_struct_collection";
 }  // namespace detail
 
 /*!
 *****************************************************************************
-* \brief Determines whether a Table is a container group
+* \brief Determines whether a Container is a collection group
 *
-* \param [in] name The name of the table
+* \param [in] name The name of the container
 *****************************************************************************
 */
-inline bool isContainerGroup(const std::string& name)
+inline bool isCollectionGroup(const std::string& name)
 {
-  return axom::utilities::string::endsWith(name, detail::CONTAINER_GROUP_NAME);
+  return axom::utilities::string::endsWith(name, detail::COLLECTION_GROUP_NAME);
 }
+
+/*!
+*****************************************************************************
+* \brief Marks the sidre::Group as a "struct collection" by adding a
+* corresponding flag to the group
+*
+* \param [inout] target The group to tag
+*****************************************************************************
+*/
+void markAsStructCollection(axom::sidre::Group& target);
 
 namespace cpp11_compat
 {
