@@ -825,7 +825,7 @@ bool Container::verify() const
   verified &= verifyRequired(*m_sidreGroup, this_container_defined, "Container");
 
   // Verify this Container if a lambda was configured
-  if(m_verifier && !m_verifier(*this))
+  if(this_container_defined && m_verifier && !m_verifier(*this))
   {
     verified = false;
     SLIC_WARNING(
