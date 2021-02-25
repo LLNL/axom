@@ -19,7 +19,7 @@ Axom provides robust, flexible software infrastructure for the development of mu
 Documentation
 -------------
 
-https://axom.readthedocs.io
+https://readthedocs.org/projects/axom/
 
 Getting Involved
 ----------------
