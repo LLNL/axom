@@ -545,7 +545,7 @@ ReaderResult LuaReader::getMap(const std::string& id,
       return is_number || (type == sol::type::string);
     }
   };
-  bool none_of_other_type = true;
+  bool contains_other_type = false;
   for(const auto& entry : t)
   {
     // Gets only indexed items in the table.
@@ -557,10 +557,10 @@ ReaderResult LuaReader::getMap(const std::string& id,
     }
     else
     {
-      none_of_other_type = false;
+      contains_other_type = true;
     }
   }
-  return collectionRetrievalResult(none_of_other_type, values.empty());
+  return collectionRetrievalResult(contains_other_type, !values.empty());
 }
 
 template <typename T>

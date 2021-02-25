@@ -196,17 +196,17 @@ void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result);
 /*!
 *****************************************************************************
 * \brief Returns the corresponding retrieval result for a collection depending
-* on whether the collection is empty and whether the corresponding collection
-* in the input file was homogeneous
+* on whether the collection contained any elements of the requested or of
+* other type
 *
-* \param [in] none_of_other_type Whether any collection elements were of type
+* \param [in] contains_other_type Whether any collection elements were of type
 * other than the requested type
-* \param [in] none_of_requested_type Whether the collection of requested type was empty,
-* i.e., if no elements of the requested type were present
+* \param [in] contains_requested_type Whether the collection of requested type
+* was not empty, i.e., if any elements of the requested type were present
 *****************************************************************************
 */
-ReaderResult collectionRetrievalResult(const bool none_of_other_type,
-                                       const bool none_of_requested_type);
+ReaderResult collectionRetrievalResult(const bool contains_other_type,
+                                       const bool contains_requested_type);
 
 namespace cpp11_compat
 {

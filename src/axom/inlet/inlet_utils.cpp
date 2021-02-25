@@ -197,16 +197,16 @@ void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result)
   target.createViewScalar("retrieval_status", static_cast<int>(result));
 }
 
-ReaderResult collectionRetrievalResult(const bool none_of_other_type,
-                                       const bool none_of_requested_type)
+ReaderResult collectionRetrievalResult(const bool contains_other_type,
+                                       const bool contains_requested_type)
 {
   // First check if the collection was entirely the wrong type
-  if(!none_of_other_type && none_of_requested_type)
+  if(contains_other_type && !contains_requested_type)
   {
     return ReaderResult::WrongType;
   }
   // Then check if some values were of the correct type, but others weren't
-  else if(!none_of_other_type)
+  else if(contains_other_type)
   {
     return ReaderResult::NotHomogeneous;
   }
