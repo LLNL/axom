@@ -39,7 +39,9 @@ Axom software components are maintained and developed on the
 `Axom GitHub Project <https://github.com/LLNL/axom>`_. 
 
 .. note:: While Axom is developed in C++, its components have native 
-          interfaces in C and Fortran. Python interfaces are in development.
+          interfaces in C and Fortran for straightforward usage in 
+          applications developed in those languages. Python interfaces 
+          are in development.
 
 Our current collection of components is listed here. The number of 
 components and their capabilities will expand over time as new needs
@@ -126,7 +128,7 @@ The Axom team develops and supports other software tools that are useful
 for software projects independent of the Axom. These include:
 
   *  `BLT <https://github.com/LLNL/blt>`_ CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration
-  *  `Shroud <https://github.com/LLNL/shroud>`_ Generator for Fortran and Python interfaces to C or C++ libraries
+  *  `Shroud <https://github.com/LLNL/shroud>`_ Generator for C, Fortran, and Python interfaces to C++ libraries, and Fortran and Python interfaces to C libraries
   *  `Conduit <https://github.com/LLNL/conduit>`_ Library for describing and managing in-memory simulation data
 
 ===================
