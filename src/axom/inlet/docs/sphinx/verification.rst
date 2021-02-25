@@ -17,11 +17,12 @@ Container Verification
 
 If a ``Container`` is marked as required (via the ``required()``) method, then the ``Container`` must
 have a ``Field`` or ``Function`` that was present in the input or contain a sub-``Container`` that does.
+This does not apply to a ``Container`` that corresponds to an array or dictionary.
 
 If a ``Container`` corresponds to an array or dictionary, the elements of the array must all be of the requested
-type.  This restriction applies even if the array/dictionary was not marked as ``required``.
+type, if any were provided.  This restriction applies even if the array/dictionary was not marked as ``required``.
 
-If a verification lambda was provided via the ``registerVerifier()`` method, this lambda must 
+If a verification function was provided via the ``registerVerifier()`` method, this function must 
 return ``true`` when passed the corresponding ``Container`` object.
 
 .. note::
@@ -42,7 +43,7 @@ If a range (inclusive upper/lower bounds) of valid values is specified with the 
 If a set of valid values is specified with the ``validValues()`` method, both the provided value
 (if applicable) and default value (if specified with ``defaultValue()``) must be included in the set.
 
-If a verification lambda was provided via the ``registerVerifier()`` method, this lambda must 
+If a verification function was provided via the ``registerVerifier()`` method, this function must 
 return ``true`` when passed the corresponding ``Field`` object.
 
 Function Verification
@@ -50,5 +51,5 @@ Function Verification
 
 If a ``Function`` is marked as required (via the ``required()``) method, then a function must be provided in the input.
 
-If a verification lambda was provided via the ``registerVerifier()`` method, this lambda must 
+If a verification function was provided via the ``registerVerifier()`` method, this function must 
 return ``true`` when passed the corresponding ``Function`` object.
