@@ -147,7 +147,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
   EXPECT_FALSE(inlet.verify());
 }
 
-TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_pass)
+TYPED_TEST(inlet_object, simple_array_of_struct_optional_empty_pass)
 {
   std::string testString = "foo = { }";
   DataStore ds;
@@ -162,14 +162,39 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_pass)
   EXPECT_TRUE(inlet.verify());
 }
 
-TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail)
+TYPED_TEST(inlet_object, simple_array_of_struct_required_empty_pass)
 {
   std::string testString = "foo = { }";
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  // Verification should fail because the array is empty
-  // and was required
+  // Verification should pass because the array exists but is empty
+  auto& arr_container = inlet.addStructArray("foo").required(true);
+  arr_container.addBool("bar", "bar's description").required(true);
+  arr_container.addBool("baz", "baz's description").required(true);
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_primitive_required_empty_pass)
+{
+  std::string testString = "foo = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should pass because the array exists but is empty
+  inlet.addIntArray("foo").required(true);
+
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_array_of_struct_nonexistent_fail)
+{
+  std::string testString = "";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Verification should fail because the array does not exist
   auto& arr_container = inlet.addStructArray("foo").required(true);
   arr_container.addBool("bar", "bar's description").required(true);
   arr_container.addBool("baz", "baz's description").required(true);
@@ -177,14 +202,13 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail)
   EXPECT_FALSE(inlet.verify());
 }
 
-TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail_primitive)
+TYPED_TEST(inlet_object, simple_array_of_primitive_nonexistent_fail)
 {
-  std::string testString = "foo = { }";
+  std::string testString = "";
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  // Verification should fail because the array is empty
-  // and was required
+  // Verification should fail because the array does not exist
   inlet.addIntArray("foo").required(true);
 
   EXPECT_FALSE(inlet.verify());

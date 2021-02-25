@@ -382,9 +382,10 @@ ReaderResult ConduitReader::getDictionary(const std::string& id,
     return ReaderResult::NotFound;
   }
   const auto& node = *node_ptr;
+  // If it's empty, then the dictionary must have been empty, which counts as successful
   if(node.dtype().is_empty())
   {
-    return ReaderResult::NotFound;
+    return ReaderResult::Success;
   }
   if(!node.dtype().is_object())
   {
@@ -422,12 +423,13 @@ ReaderResult ConduitReader::getArray(const std::string& id,
     return ReaderResult::NotFound;
   }
   const auto& node = *node_ptr;
+  // If it's empty, then the array must have been empty, which counts as successful
   if(node.dtype().is_empty())
   {
-    return ReaderResult::NotFound;
+    return ReaderResult::Success;
   }
   // Truly primitive (i.e., not string) types are contiguous so we grab the array pointer
-  if(node.dtype().number_of_elements() > 1)
+  else if(node.dtype().number_of_elements() > 1)
   {
     // The template parameter is not enough to know the type of the conduit array
     // as widening/narrowing conversions are supported
@@ -444,7 +446,7 @@ ReaderResult ConduitReader::getArray(const std::string& id,
       return ReaderResult::WrongType;
     }
   }
-  else if(!node.dtype().is_list())
+  else if(!node.dtype().is_list() && !node.dtype().is_object())
   {
     // Single-element arrays will be just the element itself
     // If it's a single element, we know the index is zero

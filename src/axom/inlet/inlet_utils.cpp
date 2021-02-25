@@ -72,13 +72,24 @@ bool verifyRequired(const axom::sidre::Group& target,
                     const bool condition,
                     const std::string& type)
 {
+  // Assume that it wasn't found
+  ReaderResult status = ReaderResult::NotFound;
+  if(target.hasView("retrieval_status"))
+  {
+    status = static_cast<ReaderResult>(
+      static_cast<int>(target.getView("retrieval_status")->getData()));
+  }
+
   if(target.hasView("required"))
   {
     int8 required = target.getView("required")->getData();
     // If it wasn't found at all, it's only an error if the object was required and not provided
     // The retrieval_status will typically (but not always) be NotFound in these cases, but that
-    // information isn't needed here
-    if(required && !condition)
+    // information isn't needed here unless it's a collection group - empty collections are permissible,
+    // so they shouldn't impede verification if they existed but were empty (hence Success check)
+    if(required && !condition &&
+       (!isCollectionGroup(target.getPathName()) ||
+        status != ReaderResult::Success))
     {
       const std::string msg = fmt::format(
         "[Inlet] Required {0} not "
@@ -90,25 +101,17 @@ bool verifyRequired(const axom::sidre::Group& target,
     }
   }
 
-  if(target.hasView("retrieval_status"))
+  // If it was the wrong type or part of a non-homogeneous array, it's always an error,
+  // even if the object wasn't marked as required
+  if(status == ReaderResult::WrongType || status == ReaderResult::NotHomogeneous)
   {
-    const auto status = static_cast<ReaderResult>(
-      static_cast<int>(target.getView("retrieval_status")->getData()));
-
-    // If it was the wrong type or part of a non-homogeneous array, it's always an error,
-    // even if the object wasn't marked as required
-    if(status == ReaderResult::WrongType || status == ReaderResult::NotHomogeneous)
-    {
-      const std::string reason = (status == ReaderResult::WrongType)
-        ? "of the wrong type"
-        : "not homogeneous";
-      const std::string msg = fmt::format("[Inlet] {0} '{1}' was {2}",
-                                          type,
-                                          target.getPathName(),
-                                          reason);
-      SLIC_WARNING(msg);
-      return false;
-    }
+    const std::string reason = (status == ReaderResult::WrongType)
+      ? "of the wrong type"
+      : "not homogeneous";
+    const std::string msg =
+      fmt::format("[Inlet] {0} '{1}' was {2}", type, target.getPathName(), reason);
+    SLIC_WARNING(msg);
+    return false;
   }
   return true;
 }
@@ -191,10 +194,7 @@ void markAsStructCollection(axom::sidre::Group& target)
 
 void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result)
 {
-  if(result != ReaderResult::Success)
-  {
-    target.createViewScalar("retrieval_status", static_cast<int>(result));
-  }
+  target.createViewScalar("retrieval_status", static_cast<int>(result));
 }
 
 ReaderResult collectionRetrievalResult(const bool none_of_other_type,

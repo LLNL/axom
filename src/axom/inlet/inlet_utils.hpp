@@ -185,7 +185,7 @@ void markAsStructCollection(axom::sidre::Group& target);
 /*!
 *****************************************************************************
 * \brief Adds a ReaderResult to a sidre::Group corresponding to an inlet
-* object, if the retrieval is not successful
+* object
 *
 * \param [inout] target The group to tag
 * \param [in] result The retrieval result
