@@ -602,11 +602,25 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
 void updateUnexpectedNames(const std::string& accessedName,
                            std::unordered_set<std::string>& unexpectedNames)
 {
+  std::vector<std::string> accessed_tokens;
+  axom::utilities::string::split(accessed_tokens, accessedName, '/');
+  std::vector<std::string> unexpected_tokens;
   for(auto iter = unexpectedNames.begin(); iter != unexpectedNames.end();)
   {
-    // Check if the possibly unexpected name is a substring of the accessed name,
+    // Check if the possibly unexpected name is an "ancestor" of the accessed name,
     // if it is, then it gets marked as expected via removal
-    if(accessedName.find(*iter) != std::string::npos)
+    unexpected_tokens.clear();
+    axom::utilities::string::split(unexpected_tokens, *iter, '/');
+    // If it's bigger, it can't be an ancestor so we can bail out early
+    if(unexpected_tokens.size() > accessed_tokens.size())
+    {
+      ++iter;
+    }
+    // Check if the beginning of the accessed tokens sequence is equal to the tokens in the possibly
+    // unexpected name
+    else if(std::equal(unexpected_tokens.begin(),
+                       unexpected_tokens.end(),
+                       accessed_tokens.begin()))
     {
       iter = unexpectedNames.erase(iter);
     }
