@@ -17,7 +17,18 @@ Container Verification
 
 If a ``Container`` is marked as required (via the ``required()``) method, then the ``Container`` must
 have a ``Field`` or ``Function`` that was present in the input or contain a sub-``Container`` that does.
-This does not apply to a ``Container`` that corresponds to an array or dictionary.
+This does not apply to a ``Container`` that corresponds to an array or dictionary, as empty collections
+provided by the user are considered valid.  Consider the following definition and input file:
+
+.. code-block:: C++
+
+  addIntArray("foo").required();
+
+.. code-block:: Lua
+
+  foo = { }
+
+Inlet verification will succeed for the above snippets.
 
 If a ``Container`` corresponds to an array or dictionary, the elements of the array must all be of the requested
 type, if any were provided.  This restriction applies even if the array/dictionary was not marked as ``required``.
