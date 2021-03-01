@@ -77,6 +77,38 @@ TYPED_TEST(inlet_object, simple_struct_by_value)
   EXPECT_FALSE(foo.baz);
 }
 
+TYPED_TEST(inlet_object, simple_struct_verify_pass)
+{
+  std::string testString = "";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_table = inlet.addStruct("foo");
+  foo_table.addBool("bar", "bar's description").required(true);
+  foo_table.addBool("baz", "baz's description").required(true);
+
+  // Should pass verification as the struct is not present
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, simple_struct_verify_fail)
+{
+  std::string testString = "foo = { baz = true }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_table = inlet.addStruct("foo");
+  foo_table.addBool("bar", "bar's description").required(true);
+  foo_table.addBool("baz", "baz's description").required(true);
+
+  // It should fail because a) the struct exists, and
+  // b) one of the required fields is not present
+  // Note that the only reason the struct is marked as present
+  // is because at least one of its expected fields is present, i.e.,
+  // having a foo = { quux = true } will pass verification
+  EXPECT_FALSE(inlet.verify());
+}
+
 TYPED_TEST(inlet_object, simple_array_of_struct_by_value)
 {
   std::string testString =
@@ -177,7 +209,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail)
   EXPECT_FALSE(inlet.verify());
 }
 
-TYPED_TEST(inlet_object, simple_array_of_struct_verify_empty_fail_primitive)
+TYPED_TEST(inlet_object, simple_array_of_primitive_verify_empty_fail)
 {
   std::string testString = "foo = { }";
   DataStore ds;
@@ -778,6 +810,29 @@ TYPED_TEST(inlet_object, nested_array_of_nested_structs)
   quuxs_with_foo =
     inlet["quux"].get<std::unordered_map<int, QuuxWithSingleFoo>>();
   EXPECT_EQ(quuxs_with_foo, expected_quuxs);
+}
+
+TYPED_TEST(inlet_object, nested_array_of_struct_verify_pass)
+{
+  std::string testString = "quux = { }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& quux_schema = inlet.addStructArray("quux");
+
+  // Simple required field
+  quux_schema.addString("corge").required();
+
+  // The struct itself is required, but its fields are not
+  auto& foo_schema = quux_schema.addStruct("foo").required();
+  foo_schema.addBool("bar", "bar's description");
+  foo_schema.addBool("baz", "baz's description");
+
+  // The struct itself is not required, but its fields are
+  auto& grault_schema = quux_schema.addStruct("grault");
+  grault_schema.addDouble("thud").required();
+
+  EXPECT_TRUE(inlet.verify());
 }
 
 TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)

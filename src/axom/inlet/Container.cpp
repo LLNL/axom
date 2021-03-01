@@ -815,41 +815,48 @@ Container& Container::registerVerifier(std::function<bool(const Container&)> lam
 
 bool Container::verify() const
 {
-  bool verified = true;
+  // Whether the calling container has any "truthy" subcontainers, fields, or functions
+  // If the name is empty then we're the global (root) container, which we always
+  // consider to be defined
+  const bool this_container_defined = static_cast<bool>(*this) || m_name.empty();
+
   // If this container was required, make sure something was defined in it
-  verified &=
-    verifyRequired(*m_sidreGroup, static_cast<bool>(*this), "Container");
+  bool verified =
+    verifyRequired(*m_sidreGroup, this_container_defined, "Container");
+
   // Verify this Container if a lambda was configured
-  if(m_verifier && !m_verifier(*this))
+  if(this_container_defined && m_verifier && !m_verifier(*this))
   {
     verified = false;
     SLIC_WARNING(
       fmt::format("[Inlet] Container failed verification: {0}", m_name));
   }
-  // Verify the child Fields of this Container
-  for(const auto& field : m_fieldChildren)
-  {
-    if(!field.second->verify())
-    {
-      verified = false;
-    }
-  }
-  // Verify the child Containers of this Container
-  for(const auto& container : m_containerChildren)
-  {
-    if(!container.second->verify())
-    {
-      verified = false;
-    }
-  }
 
-  // Verify the child Functions of this Container
-  for(const auto& function : m_functionChildren)
+  // Checking the child objects is not needed if the container is empty
+  if(this_container_defined)
   {
-    if(!function.second->verify())
+    // Verify the child Fields of this Container
+    for(const auto& field : m_fieldChildren)
     {
-      verified = false;
+      verified = verified && field.second->verify();
     }
+    // Verify the child Containers of this Container
+    for(const auto& container : m_containerChildren)
+    {
+      verified = verified && container.second->verify();
+    }
+
+    // Verify the child Functions of this Container
+    for(const auto& function : m_functionChildren)
+    {
+      verified = verified && function.second->verify();
+    }
+  }
+  // If this has a collection group, it always needs to be verified, as annotations
+  // may have been applied to the collection group and not the calling group
+  else if(hasContainer(detail::COLLECTION_GROUP_NAME))
+  {
+    verified = verified && getContainer(detail::COLLECTION_GROUP_NAME).verify();
   }
 
   return verified;
