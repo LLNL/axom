@@ -485,10 +485,13 @@ std::vector<VariantKey> registerCollection(
   {
     result.push_back(entry.first);
     auto string_key = indexToString(entry.first);
+    const auto illegal_char_loc = string_key.find_first_of("/[]");
     SLIC_ERROR_IF(
-      string_key.find('/') != std::string::npos,
-      fmt::format("[Inlet] Dictionary key '{0}' contains illegal character '/'",
-                  string_key));
+      illegal_char_loc != std::string::npos,
+      fmt::format(
+        "[Inlet] Dictionary key '{0}' contains illegal character '{1}'",
+        string_key,
+        string_key[illegal_char_loc]));
     SLIC_ERROR_IF(string_key.empty(),
                   "[Inlet] Dictionary key cannot be the empty string");
     container.addPrimitive(string_key, "", true, entry.second);

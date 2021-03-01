@@ -59,7 +59,8 @@ VariantKey extractAs(const sol::object& obj)
 
 /*!
  *******************************************************************************
- * \brief Recursive name retrieval function
+ * \brief Recursive name retrieval function - adds the names of all descendents
+ * of @p node as an Inlet-style path
  * 
  * \param [in] ignores The set of paths to ignore, used for pre-loaded entries
  * in Lua's global table

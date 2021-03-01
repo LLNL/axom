@@ -159,7 +159,8 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
 
 /*!
  *******************************************************************************
- * \brief Recursive name retrieval function
+ * \brief Recursive name retrieval function - adds the names of all descendents
+ * of @p node as an Inlet-style path
  * 
  * \param [in] node The Conduit node to "visit"
  * \param [out] names The set of paths to add to
