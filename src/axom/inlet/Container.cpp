@@ -815,14 +815,14 @@ Container& Container::registerVerifier(std::function<bool(const Container&)> lam
 
 bool Container::verify() const
 {
-  bool verified = true;
   // Whether the calling container has any "truthy" subcontainers, fields, or functions
   // If the name is empty then we're the global (root) container, which we always
   // consider to be defined
   const bool this_container_defined = static_cast<bool>(*this) || m_name.empty();
 
   // If this container was required, make sure something was defined in it
-  verified &= verifyRequired(*m_sidreGroup, this_container_defined, "Container");
+  bool verified =
+    verifyRequired(*m_sidreGroup, this_container_defined, "Container");
 
   // Verify this Container if a lambda was configured
   if(this_container_defined && m_verifier && !m_verifier(*this))
@@ -838,25 +838,25 @@ bool Container::verify() const
     // Verify the child Fields of this Container
     for(const auto& field : m_fieldChildren)
     {
-      verified &= field.second->verify();
+      verified = verified && field.second->verify();
     }
     // Verify the child Containers of this Container
     for(const auto& container : m_containerChildren)
     {
-      verified &= container.second->verify();
+      verified = verified && container.second->verify();
     }
 
     // Verify the child Functions of this Container
     for(const auto& function : m_functionChildren)
     {
-      verified &= function.second->verify();
+      verified = verified && function.second->verify();
     }
   }
   // If this has a collection group, it always needs to be verified, as annotations
   // may have been applied to the collection group and not the calling group
   else if(hasContainer(detail::COLLECTION_GROUP_NAME))
   {
-    verified &= getContainer(detail::COLLECTION_GROUP_NAME).verify();
+    verified = verified && getContainer(detail::COLLECTION_GROUP_NAME).verify();
   }
 
   return verified;
