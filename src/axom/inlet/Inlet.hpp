@@ -65,15 +65,10 @@ public:
         bool docEnabled = true)
     : m_reader(std::move(reader))
     , m_sidreRootGroup(sidreRootGroup)
-    , m_globalContainer("",
-                        "",
-                        *m_reader,
-                        m_sidreRootGroup,
-                        m_unexpected_names,
-                        docEnabled)
+    , m_globalContainer("", "", *m_reader, m_sidreRootGroup, m_unexpectedNames, docEnabled)
     , m_docEnabled(docEnabled)
   {
-    m_unexpected_names = m_reader->getAllNames();
+    m_unexpectedNames = m_reader->getAllNames();
   }
 
   // Inlet objects must be move only - delete the implicit shallow copy constructor
@@ -477,7 +472,7 @@ public:
 
   const std::unordered_set<std::string>& unexpectedNames() const
   {
-    return m_unexpected_names;
+    return m_unexpectedNames;
   }
 
   // TODO add update value functions
@@ -487,7 +482,7 @@ private:
   Container m_globalContainer;
   std::unique_ptr<Writer> m_writer;
   bool m_docEnabled;
-  std::unordered_set<std::string> m_unexpected_names;
+  std::unordered_set<std::string> m_unexpectedNames;
 };
 
 }  // end namespace inlet

@@ -274,7 +274,7 @@ bool matchesKeyType(const VariantKey& key)
  * \brief Updates the set of unexpected names to reflect an user-requested access
  * 
  * \param [in] accessed_name The path within the input file that will be accessed
- * \param [inout] unexpected_names The set of input file paths that have not yet
+ * \param [inout] unexpectedNames The set of input file paths that have not yet
  * been requested by the user
  * 
  * \note To maintain consistency, this function should always be followed by an
@@ -282,7 +282,7 @@ bool matchesKeyType(const VariantKey& key)
  *******************************************************************************
  */
 void updateUnexpectedNames(const std::string& accessed_name,
-                           std::unordered_set<std::string>& unexpected_names);
+                           std::unordered_set<std::string>& unexpectedNames);
 
 }  // namespace detail
 
@@ -326,7 +326,7 @@ public:
     : m_name(name)
     , m_reader(reader)
     , m_sidreRootGroup(sidreRootGroup)
-    , m_unexpected_names(expected_names)
+    , m_unexpectedNames(expected_names)
     , m_docEnabled(docEnabled)
   {
     SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
@@ -1256,7 +1256,7 @@ private:
   axom::sidre::Group* m_sidreGroup;
   // Hold a reference to the global set of unexpected names so it can be updated when
   // things are added to this Container
-  std::unordered_set<std::string>& m_unexpected_names;
+  std::unordered_set<std::string>& m_unexpectedNames;
   bool m_docEnabled;
   std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
