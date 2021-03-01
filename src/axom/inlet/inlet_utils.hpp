@@ -17,6 +17,14 @@ namespace axom
 {
 namespace inlet
 {
+enum class ReaderResult
+{
+  Success,         // Found with no issue
+  NotFound,        // Path does not exist in the input file
+  NotHomogeneous,  // Found, but elements of other type exist
+  WrongType  // Found, but item at specified path was not of requested type
+};
+
 /*!
 *****************************************************************************
 * \brief This function is used to mark if anything went wrong during the 
@@ -173,6 +181,32 @@ inline bool isCollectionGroup(const std::string& name)
 *****************************************************************************
 */
 void markAsStructCollection(axom::sidre::Group& target);
+
+/*!
+*****************************************************************************
+* \brief Adds a ReaderResult to a sidre::Group corresponding to an inlet
+* object
+*
+* \param [inout] target The group to tag
+* \param [in] result The retrieval result
+*****************************************************************************
+*/
+void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result);
+
+/*!
+*****************************************************************************
+* \brief Returns the corresponding retrieval result for a collection depending
+* on whether the collection contained any elements of the requested or of
+* other type
+*
+* \param [in] contains_other_type Whether any collection elements were of type
+* other than the requested type
+* \param [in] contains_requested_type Whether the collection of requested type
+* was not empty, i.e., if any elements of the requested type were present
+*****************************************************************************
+*/
+ReaderResult collectionRetrievalResult(const bool contains_other_type,
+                                       const bool contains_requested_type);
 
 namespace cpp11_compat
 {

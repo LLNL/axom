@@ -69,6 +69,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
 - Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
 - Inlet: Renamed `Table` to `Container`
+- Inlet collections of mixed or incorrect type will now fail verification, even if they're
+  not marked as required
+- Required collections no longer fail Inlet verification if they are empty in the input file
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
@@ -79,6 +82,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
 - Fixed a bug relating to deeply nested callback functions in Inlet
 - Inlet: Always ignore primitive array elements that do not match the requested type
+- Inlet: Empty structs/collections of structs with required sub-elements no longer fail
+  verification
 
 
 ## [Version 0.4.0] - Release date 2020-09-22
