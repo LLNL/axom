@@ -200,7 +200,7 @@ def archive_src_logs(prefix, job_name, timestamp):
         print("[  Build Dir: %s]" % build_dir)
         copy_build_dir_files(build_dir, archive_spec_dir)
 
-    set_axom_group_and_perms(archive_dir)
+    set_group_and_perms(archive_dir)
 
 
 def archive_tpl_logs(prefix, job_name, timestamp):
@@ -253,7 +253,7 @@ def archive_tpl_logs(prefix, job_name, timestamp):
         else:
             print("[Error: No build dirs found in Build/Test root.]")
 
-    set_axom_group_and_perms(archive_dir)
+    set_group_and_perms(archive_dir)
 
 
 def assertUberenvExists():
@@ -505,8 +505,8 @@ def build_and_test_host_config(test_root, host_config, report_to_stdout = False,
 
     print("[SUCCESS: Build, test, and install for host-config: %s complete]\n" % host_config)
 
-    set_axom_group_and_perms(build_dir)
-    set_axom_group_and_perms(install_dir)
+    set_group_and_perms(build_dir)
+    set_group_and_perms(install_dir)
 
     return 0
 
