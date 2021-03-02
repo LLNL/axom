@@ -249,13 +249,6 @@ void IOManager::write(sidre::Group* datagroup,
   (void)m_baton->pass();
 
   MPI_Barrier(m_mpi_comm);
-#ifdef AXOM_USE_SCR
-  if(m_use_scr)
-  {
-    int valid = 1;
-    SCR_Complete_checkpoint(valid);
-  }
-#endif
 }
 
 /*
