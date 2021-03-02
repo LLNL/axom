@@ -148,6 +148,27 @@ void recordFieldSchema(const Field& field, conduit::Node& node)
   }
 }
 
+void filterCollectionPaths(std::string& target,
+                           const std::vector<std::string>& collectionPaths,
+                           const std::string& label)
+{
+  for(const auto& path : collectionPaths)
+  {
+    // Needs to be at the beginning - since the path is absolute
+    if(target.find(path) == 0)
+    {
+      // Remove the name of the selected element - get the slash following the name
+      const auto pos = target.find('/', path.length() + 1);
+      if(pos != std::string::npos)
+      {
+        target.erase(path.length() + 1, pos - path.length());
+      }
+      // Insert the extension just after it
+      target.insert(path.length(), "/" + label);
+    }
+  }
+}
+
 }  // namespace detail
 
 JSONSchemaWriter::JSONSchemaWriter(const std::string& fileName)
@@ -170,53 +191,72 @@ void JSONSchemaWriter::documentContainer(const Container& container)
     m_rootPathInitialized = true;
   }
 
-  // FIXME: Use path class for all of this logic - all this is doing is inserting
+  // The "level" of the schema to add to - adjusted "up" if we're an element
+  // of a collection
+  const sidre::Group* propertyGroup = sidreGroup;
+  if(isCollectionGroup(sidreGroup->getParent()->getName()))
+  {
+    propertyGroup = sidreGroup->getParent();
+  }
+  // FIXME: Use path class for some of this logic - all this is doing is inserting
   // a 'properties' in after each token
+  std::string filteredPathName =
+    removePrefix(m_rootPath, propertyGroup->getPathName());
+  detail::filterCollectionPaths(filteredPathName,
+                                m_ArrayPaths,
+                                "additionalItems");
+  detail::filterCollectionPaths(filteredPathName,
+                                m_DictionaryPaths,
+                                "additionalProperties");
   std::vector<std::string> tokens;
-  const std::string filteredPathName =
-    removePrefix(m_rootPath, sidreGroup->getPathName());
   utilities::string::split(tokens, filteredPathName, '/');
+  // Remove the collection group annotations
+  auto iter =
+    std::remove(tokens.begin(), tokens.end(), detail::COLLECTION_GROUP_NAME);
+  tokens.erase(iter, tokens.end());
   std::string containerPath =
     fmt::format("properties/{}", fmt::join(tokens, "/properties/"));
-  auto& containerNode =
+  // Needed so we can reassign without calling the op= on the Node itself
+  std::reference_wrapper<conduit::Node> containerNode =
     container.name().empty() ? m_schemaRoot : m_schemaRoot[containerPath];
-  // if (!tokens.empty())
-  // {
-  //   tokens.pop_back(); // Remove the basename so we can add it later
-  // }
-  // auto& containerNode = m_schemaRoot;
-  // for (const auto& token : tokens)
-  // {
-  //   containerNode = containerNode[token]["properties"];
-  // }
-  // if (!container.name().empty())
-  // {
-  //   // Re-add the basename to get the "root" of the container
-  //   containerNode = containerNode[sidreGroup->getName()];
-  // }
-  // const std::string containerPath = appendPrefix(appendPrefix(filteredPath, "properties"), sidreGroup->getName());
-  // auto& containerNode = container.name().empty() ? m_schemaRoot : m_schemaRoot[containerPath];
 
-  // m_inletContainerPathNames.push_back(sidreGroup->getPathName());
-  // auto& currContainer =
-  //   m_rstTables.emplace(sidreGroup->getPathName(), ContainerData {m_colLabels})
-  //     .first->second;
-  // currContainer.containerName = sidreGroup->getName();
+  // Annotate with the default type of object, but arrays should be labeled
+  // with "array"
+  if(!containerNode.get().has_child("type"))
+  {
+    containerNode.get()["type"] = "object";
+  }
+  if(isCollectionGroup(container.name()))
+  {
+    auto indices = detail::collectionIndices(container);
+    // Check to see if it's an array - have to watch out for mixed index types
+    if(std::all_of(indices.begin(), indices.end(), [](const VariantKey& key) {
+         return key.type() == InletType::Integer;
+       }))
+    {
+      containerNode.get()["type"] = "array";
+      m_ArrayPaths.push_back(filteredPathName);
+    }
+    else
+    {
+      m_DictionaryPaths.push_back(filteredPathName);
+    }
+  }
+
   if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
   {
-    containerNode["description"] =
+    containerNode.get()["description"] =
       std::string(sidreGroup->getView("description")->getString());
   }
 
-  // // FIXME: Handle container fields differently
   for(const auto& fieldEntry : container.getChildFields())
   {
     const auto name = removeBeforeDelimiter(fieldEntry.first);
-    auto& childNode = containerNode["properties"][name];
+    auto& childNode = containerNode.get()["properties"][name];
     detail::recordFieldSchema(*fieldEntry.second, childNode);
     if(fieldEntry.second->isRequired())
     {
-      containerNode["required"].append() = name;
+      containerNode.get()["required"].append() = name;
     }
   }
 }

@@ -333,8 +333,10 @@ int main(int argc, char** argv)
 
   if(docsEnabled)
   {
-    std::unique_ptr<inlet::SphinxWriter> writer(
-      new inlet::SphinxWriter("nested_structs.rst"));
+    // std::unique_ptr<inlet::SphinxWriter> writer(
+    //   new inlet::SphinxWriter("nested_structs.rst"));
+    std::unique_ptr<inlet::JSONSchemaWriter> writer(
+      new inlet::JSONSchemaWriter("nested_structs.json"));
     inlet.registerWriter(std::move(writer));
     inlet.writeDoc();
   }

@@ -16,7 +16,7 @@ namespace inlet
 template <typename Func>
 void Container::forEachCollectionElement(Func&& func) const
 {
-  for(const auto& index : collectionIndices())
+  for(const auto& index : detail::collectionIndices(*this))
   {
     func(getContainer(detail::indexToString(index)));
   }
@@ -90,74 +90,13 @@ Container& Container::addStruct(const std::string& name,
   }
   if(isStructCollection())
   {
-    for(const auto& index : collectionIndices())
+    for(const auto& index : detail::collectionIndices(*this))
     {
       base_container.m_nested_aggregates.push_back(
         getContainer(detail::indexToString(index)).addStruct(name, description));
     }
   }
   return base_container;
-}
-
-std::vector<VariantKey> Container::collectionIndices(bool trimAbsolute) const
-{
-  std::vector<VariantKey> indices;
-  // Not having indices is not necessarily an error, as the collection
-  // could exist but just be empty
-  if(m_sidreGroup->hasGroup(detail::COLLECTION_INDICES_NAME))
-  {
-    auto group = m_sidreGroup->getGroup(detail::COLLECTION_INDICES_NAME);
-    indices.reserve(group->getNumViews());
-    for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
-        idx = group->getNextValidViewIndex(idx))
-    {
-      auto view = group->getView(idx);
-      if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
-      {
-        std::string string_idx = view->getString();
-        VariantKey key = string_idx;
-        if(trimAbsolute)
-        {
-          // If the index is full/absolute, we only care about the last segment of it
-          string_idx = removeBeforeDelimiter(string_idx);
-          // The basename might be an integer, so check and convert accordingly
-          int idx_as_int;
-          if(checkedConvertToInt(string_idx, idx_as_int))
-          {
-            key = idx_as_int;
-          }
-          else
-          {
-            key = string_idx;
-          }
-        }
-        indices.push_back(key);
-      }
-      else
-      {
-        indices.push_back(view->getData<int>());
-      }
-    }
-  }
-  return indices;
-}
-
-std::vector<std::pair<std::string, std::string>>
-Container::collectionIndicesWithPaths(const std::string& name) const
-{
-  std::vector<std::pair<std::string, std::string>> result;
-  for(const auto& indexLabel : collectionIndices(false))
-  {
-    auto stringLabel = detail::indexToString(indexLabel);
-    // Since the index is absolute, we only care about the last segment of it
-    // But since it's an absolute path then it gets used as the fullPath
-    // which is used by the Reader to search in the input file
-    const auto baseName = removeBeforeDelimiter(stringLabel);
-    const auto fullPath = appendPrefix(stringLabel, name);
-    // e.g. fullPath could be foo/1/bar for field "bar" at index 1 of array "foo"
-    result.push_back({baseName, fullPath});
-  }
-  return result;
 }
 
 Verifiable<Container>& Container::addBoolArray(const std::string& name,
@@ -198,7 +137,7 @@ Container& Container::addStructCollection(const std::string& name,
   if(isStructCollection())
   {
     // Iterate over each element and forward the call to addPrimitiveArray
-    for(const auto& indexPath : collectionIndicesWithPaths(name))
+    for(const auto& indexPath : detail::collectionIndicesWithPaths(*this, name))
     {
       container.m_nested_aggregates.push_back(
         getContainer(indexPath.first).addStructCollection<Key>(name, description));
@@ -345,7 +284,7 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
     }
     if(isStructCollection())
     {
-      for(const auto& indexPath : collectionIndicesWithPaths(name))
+      for(const auto& indexPath : detail::collectionIndicesWithPaths(*this, name))
       {
         // Add a primitive to an array element (which is a struct)
         fields.push_back(
@@ -592,6 +531,70 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
   }
 }
 
+std::vector<VariantKey> collectionIndices(const Container& container,
+                                          bool trimAbsolute)
+{
+  std::vector<VariantKey> indices;
+  const auto sidreGroup = container.sidreGroup();
+  // Not having indices is not necessarily an error, as the collection
+  // could exist but just be empty
+  if(sidreGroup->hasGroup(detail::COLLECTION_INDICES_NAME))
+  {
+    const auto group = sidreGroup->getGroup(detail::COLLECTION_INDICES_NAME);
+    indices.reserve(group->getNumViews());
+    for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
+        idx = group->getNextValidViewIndex(idx))
+    {
+      const auto view = group->getView(idx);
+      if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
+      {
+        std::string string_idx = view->getString();
+        VariantKey key = string_idx;
+        if(trimAbsolute)
+        {
+          // If the index is full/absolute, we only care about the last segment of it
+          string_idx = removeBeforeDelimiter(string_idx);
+          // The basename might be an integer, so check and convert accordingly
+          int idx_as_int;
+          if(checkedConvertToInt(string_idx, idx_as_int))
+          {
+            key = idx_as_int;
+          }
+          else
+          {
+            key = string_idx;
+          }
+        }
+        indices.push_back(key);
+      }
+      else
+      {
+        indices.push_back(static_cast<int>(view->getData()));
+      }
+    }
+  }
+  return indices;
+}
+
+std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
+  const Container& container,
+  const std::string& name)
+{
+  std::vector<std::pair<std::string, std::string>> result;
+  for(const auto& indexLabel : collectionIndices(container, false))
+  {
+    auto stringLabel = detail::indexToString(indexLabel);
+    // Since the index is absolute, we only care about the last segment of it
+    // But since it's an absolute path then it gets used as the fullPath
+    // which is used by the Reader to search in the input file
+    const auto baseName = removeBeforeDelimiter(stringLabel);
+    const auto fullPath = appendPrefix(stringLabel, name);
+    // e.g. fullPath could be foo/1/bar for field "bar" at index 1 of array "foo"
+    result.push_back({baseName, fullPath});
+  }
+  return result;
+}
+
 }  // end namespace detail
 
 template <typename Key>
@@ -632,7 +635,7 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
     if(isStructCollection())
     {
       // Iterate over each element and forward the call to addPrimitiveArray
-      for(const auto& indexPath : collectionIndicesWithPaths(name))
+      for(const auto& indexPath : detail::collectionIndicesWithPaths(*this, name))
       {
         containers.push_back(
           getContainer(indexPath.first)
@@ -695,7 +698,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     }
     if(isStructCollection())
     {
-      for(const auto& indexPath : collectionIndicesWithPaths(name))
+      for(const auto& indexPath : detail::collectionIndicesWithPaths(*this, name))
       {
         // Add a primitive to an array element (which is a struct)
         funcs.push_back(

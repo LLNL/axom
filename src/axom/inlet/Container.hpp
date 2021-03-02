@@ -269,6 +269,35 @@ bool matchesKeyType(const VariantKey& key)
   return false;
 }
 
+/*!
+ *****************************************************************************
+ * \brief This is an internal utility intended to be used with arrays/dicts of 
+ * user-defined types that returns the indices as strings - integer indices
+ * will be converted to strings
+ * 
+ * \param [in] container The container to retrieve indices from
+ * \param [in] trimAbsolute Whether to only return the "basename" if the path
+ * is absolute, e.g., an absolute path foo/0/bar will be trimmed to "bar"
+ *****************************************************************************
+ */
+std::vector<VariantKey> collectionIndices(const Container& container,
+                                          bool trimAbsolute = true);
+
+/*!
+ *****************************************************************************
+ * \brief This is an internal utility intended to be used with arrays of 
+ * user-defined types that returns the a list of pairs, each of which contain
+ * an index (a number) and a fully qualified path within the input file to
+ * the array element at the corresponding index.
+ * 
+ * \param [in] container The container to retrieve indices from
+ * \param [in] name The name of the array object in the input file
+ *****************************************************************************
+ */
+std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
+  const Container& container,
+  const std::string& name);
+
 }  // namespace detail
 
 class Proxy;
@@ -1132,31 +1161,6 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief This is an internal utility intended to be used with arrays/dicts of 
-   * user-defined types that returns the indices as strings - integer indices
-   * will be converted to strings
-   * 
-   * \param [in] trimAbsolute Whether to only return the "basename" if the path
-   * is absolute, e.g., an absolute path foo/0/bar will be trimmed to "bar"
-   *****************************************************************************
-   */
-  std::vector<VariantKey> collectionIndices(bool trimAbsolute = true) const;
-
-  /*!
-   *****************************************************************************
-   * \brief This is an internal utility intended to be used with arrays of 
-   * user-defined types that returns the a list of pairs, each of which contain
-   * an index (a number) and a fully qualified path within the input file to
-   * the array element at the corresponding index.
-   * 
-   * \param [in] name The name of the array object in the input file
-   *****************************************************************************
-   */
-  std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
-    const std::string& name) const;
-
-  /*!
-   *****************************************************************************
    * \brief Get a collection represented as an unordered map from the input file
    *****************************************************************************
    */
@@ -1164,7 +1168,7 @@ private:
   std::unordered_map<Key, Val> getCollection() const
   {
     std::unordered_map<Key, Val> map;
-    for(const auto& indexLabel : collectionIndices())
+    for(const auto& indexLabel : detail::collectionIndices(*this))
     {
       if(detail::matchesKeyType<Key>(indexLabel))
       {
