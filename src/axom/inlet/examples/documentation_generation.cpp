@@ -199,7 +199,9 @@ int main(int argc, char** argv)
   Inlet inlet(std::move(lr), ds.getRoot(), docsEnabled);
 
   // _inlet_documentation_generation_start
-  auto writer = std::make_unique<SphinxWriter>("example_doc.rst");
+  // auto writer = std::make_unique<SphinxWriter>("example_doc.rst");
+  auto writer =
+    std::make_unique<axom::inlet::JSONSchemaWriter>("example_doc.json");
   inlet.registerWriter(std::move(writer));
   // _inlet_documentation_generation_end
 
