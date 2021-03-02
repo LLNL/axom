@@ -171,7 +171,10 @@ def setup_build_dir(args, platform_info):
         buildpath = args.buildpath
     else:
         # use platform info & build type
-        buildpath = "-".join(["build", platform_info, args.buildtype.lower()])
+        pathList = ["build", platform_info]
+        if not args.msvc:
+            pathList.append(args.buildtype.lower())
+        buildpath = "-".join(pathList)
 
     buildpath = os.path.abspath(buildpath)
 
@@ -193,9 +196,10 @@ def setup_install_dir(args, platform_info):
         installpath = os.path.abspath(args.installpath)
     else:
         # use platform info & build type
-        installpath = "-".join(
-            ["install", platform_info, args.buildtype.lower()]
-        )
+        pathList = ["install", platform_info]
+        if not args.msvc:
+            pathList.append(args.buildtype.lower())
+        installpath = "-".join(pathList)
 
     installpath = os.path.abspath(installpath)
 
@@ -250,8 +254,9 @@ def create_cmake_command_line(
 
     # Add cache file option
     cmakeline = '"{0}" -C {1}'.format(cmakeline,hostconfigpath)
-    # Add build type (opt or debug)
-    cmakeline += " -DCMAKE_BUILD_TYPE=" + args.buildtype
+    # Add build type (opt or debug); don't add for msvc generator
+    if not args.msvc:
+        cmakeline += " -DCMAKE_BUILD_TYPE=" + args.buildtype
     # Set install dir
     cmakeline += " -DCMAKE_INSTALL_PREFIX=%s" % installpath
 
