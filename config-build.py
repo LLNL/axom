@@ -90,7 +90,11 @@ def parse_arguments():
 
     # Add supported versions of MS Visual Studio as needed.
     msvcversions = {'2017': 'Visual Studio 15 2017',
-                    '201764': 'Visual Studio 15 2017 Win64'}
+                    '201764': 'Visual Studio 15 2017 Win64',
+                    '2019': 'Visual Studio 16 2019',
+                    '201964': 'Visual Studio 16 2019'}
+    # Newer versions  of MSVC might supply an archicecture flag
+    generator_archs = {'201964': 'x64'}
     parser.add_argument(
         "--msvc",
         type=str,
@@ -124,6 +128,7 @@ def parse_arguments():
 
     args, unknown_args = parser.parse_known_args()
     args.msvcversions = msvcversions
+    args.generator_archs = generator_archs
     if unknown_args:
         print(
             "[config-build]: Passing the following arguments directly to cmake... %s"
@@ -260,6 +265,8 @@ def create_cmake_command_line(
 
     if args.msvc:
         cmakeline += ' -G "%s"' % args.msvcversions[args.msvc]
+        if args.generator_archs.get(args.msvc):
+            cmakeline += ' -A %s' % args.generator_archs[args.msvc]
 
     if args.docs_only:
         cmakeline += " -DENABLE_ALL_COMPONENTS=OFF"
