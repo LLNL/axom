@@ -40,6 +40,8 @@ def sexe(cmd,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
         res =p.communicate()[0]
+        if isinstance(res, bytes):
+            res = res.decode()
         return p.returncode,res
     elif output_file != None:
         ofile = open(output_file,"w")
@@ -254,13 +256,23 @@ def archive_tpl_logs(prefix, job_name, timestamp):
     set_axom_group_and_perms(archive_dir)
 
 
+def assertUberenvExists():
+    if not os.path.exists(get_uberenv_path()):
+        print("[ERROR: {0} does not exist".format(get_uberenv_path()))
+        print("  run 'git submodule update --init'")
+        print("]")
+        sys.exit(1)
+
+
 def uberenv_create_mirror(prefix, project_file, mirror_path):
     """
     Calls uberenv to create a spack mirror.
     """
-    cmd  = "python scripts/uberenv/uberenv.py --create-mirror"
+    assertUberenvExists()
+    cmd  = "python {0} --create-mirror -k ".format(get_uberenv_path())
     cmd += " --prefix=\"{0}\" --mirror=\"{1}\"".format(prefix, mirror_path)
-    cmd += " --project-json=\"{0}\" ".format(project_file)
+    if project_file:
+        cmd += " --project-json=\"{0}\" ".format(project_file)
     print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
     print("[ It is expected for 'spack --create-mirror' to throw warnings.                ]")
     print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
@@ -268,7 +280,7 @@ def uberenv_create_mirror(prefix, project_file, mirror_path):
     print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
     print("[ End of expected warnings from 'spack --create-mirror'                        ]")
     print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
-    set_axom_group_and_perms(mirror_path)
+    set_group_and_perms(mirror_path)
     return res
 
 
@@ -276,10 +288,12 @@ def uberenv_build(prefix, spec, project_file, config_dir, mirror_path):
     """
     Calls uberenv to install tpls for a given spec to given prefix.
     """
-    cmd  = "python scripts/uberenv/uberenv.py "
+    assertUberenvExists()
+    cmd  = "python {0} -k ".format(get_uberenv_path())
     cmd += "--prefix=\"{0}\" --spec=\"{1}\" ".format(prefix, spec)
-    cmd += "--project-json=\"{0}\" ".format(project_file)
     cmd += "--mirror=\"{0}\" ".format(mirror_path)
+    if project_file:
+        cmd += "--project-json=\"{0}\" ".format(project_file)
     cmd += "--spack-config-dir=\"{0}\" ".format(config_dir)
         
     spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec.replace(" ", "_"))
@@ -497,7 +511,7 @@ def build_and_test_host_config(test_root,host_config, report_to_stdout = False):
     return 0
 
 
-def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_configs, report_to_stdout = False):
+def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_configs, report_to_stdout = False, extra_cmake_options = ""):
     host_configs = get_host_configs_for_current_machine(prefix, use_generated_host_configs)
     if len(host_configs) == 0:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
@@ -516,7 +530,7 @@ def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_
         build_dir = get_build_dir(test_root, host_config)
 
         start_time = time.time()
-        if build_and_test_host_config(test_root, host_config, report_to_stdout) == 0:
+        if build_and_test_host_config(test_root, host_config, report_to_stdout, extra_cmake_options) == 0:
             ok.append(host_config)
             log_success(build_dir, job_name, timestamp)
         else:
@@ -549,7 +563,7 @@ def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_
     return 0
 
 
-def set_axom_group_and_perms(directory):
+def set_group_and_perms(directory):
     """
     Sets the proper group and access permissions of given input
     directory. 
@@ -580,8 +594,7 @@ def set_axom_group_and_perms(directory):
 
 
 def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to_stdout = False, mirror_location = ''):
-    project_file = "scripts/uberenv/project.json"
-    config_dir = "scripts/uberenv/spack_configs/{0}".format(get_system_type())
+    config_dir = "scripts/spack/configs/{0}".format(get_system_type())
 
     if spec:
         if not spec.startswith("%"):
@@ -610,7 +623,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
     prefix = pjoin(prefix, timestamp)
 
     # create a mirror
-    uberenv_create_mirror(prefix, project_file, mirror_dir)
+    uberenv_create_mirror(prefix, "", mirror_dir)
     # write info about this build
     write_build_info(pjoin(prefix, "info.json"), job_name)
 
@@ -646,16 +659,16 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
 
     src_build_failed = False
     if not tpl_build_failed:
-        # build the axom against the new tpls
+        # build the src against the new tpls
         res = build_and_test_host_configs(prefix, job_name, timestamp, True, report_to_stdout)
         if res != 0:
-            print("[ERROR: build and test of axom vs tpls test failed.]\n")
+            print("[ERROR: Build and test of src vs tpls test failed.]\n")
             src_build_failed = True
         else:
-            print("[SUCCESS: build and test of axom vs tpls test passed.]\n")
+            print("[SUCCESS: Build and test of src vs tpls test passed.]\n")
  
     # set proper perms for installed tpls
-    set_axom_group_and_perms(prefix)
+    set_group_and_perms(prefix)
 
     if tpl_build_failed:
         print("[ERROR: Failed to build all specs of third party libraries]")
@@ -666,8 +679,8 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
 
 def build_devtools(builds_dir, job_name, timestamp):
     sys_type = get_system_type()
-    config_dir = "scripts/uberenv/spack_configs/{0}/devtools".format(sys_type)
-    project_file = "scripts/uberenv/devtools.json"
+    config_dir = "scripts/spack/configs/{0}/devtools".format(sys_type)
+    project_file = "scripts/spack/devtools.json"
 
     if "toss_3" in sys_type:
         compiler_spec = "%gcc@8.1.0"
@@ -718,9 +731,31 @@ def build_devtools(builds_dir, job_name, timestamp):
         print("[SUCCESS: Finished build devtools for spec %s]\n" % compiler_spec)
 
     # set proper perms for installed devtools
-    set_axom_group_and_perms(prefix)
+    set_group_and_perms(prefix)
 
     return res
+
+
+def get_specs_for_current_machine():
+    repo_dir = get_repo_dir()
+    specs_json_path = pjoin(repo_dir, "scripts/spack/specs.json")
+
+    with open(specs_json_path, 'r') as f:
+        specs_json = json.load(f)
+
+    sys_type = get_system_type()
+    machine_name = get_machine_name()
+
+    specs = []
+    if machine_name in specs_json.keys():
+        specs = specs_json[machine_name]
+    else:
+        specs = specs_json[sys_type]
+
+    specs = ['%' + spec for spec in specs]
+
+    return specs
+
 
 def get_host_configs_for_current_machine(src_dir, use_generated_host_configs):
     host_configs = []
@@ -755,7 +790,8 @@ def get_repo_dir():
 
 
 def get_build_and_test_root(prefix, timestamp):
-    return pjoin(prefix,"_axom_build_and_test_%s" % timestamp)
+    dirname = "_axom_build_and_test_{1}".format(timestamp)
+    return pjoin(prefix, dirname)
 
 
 def get_machine_name():
@@ -796,27 +832,6 @@ def get_shared_libs_dir():
 
 def get_shared_devtool_dir():
     return pjoin(get_shared_collab_dir(), "devtools")
-
-
-def get_specs_for_current_machine():
-    repo_dir = get_repo_dir()
-    specs_json_path = pjoin(repo_dir, "scripts/uberenv/specs.json")
-
-    with open(specs_json_path, 'r') as f:
-        specs_json = json.load(f)
-
-    sys_type = get_system_type()
-    machine_name = get_machine_name()
-
-    specs = []
-    if machine_name in specs_json.keys():
-        specs = specs_json[machine_name]
-    else:
-        specs = specs_json[sys_type]
-
-    specs = ['%' + spec for spec in specs]
-
-    return specs
 
 
 def get_spec_from_build_dir(build_dir):
