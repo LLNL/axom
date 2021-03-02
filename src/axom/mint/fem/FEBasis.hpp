@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,18 +19,18 @@
  *  expands to a specialization of the FEBasis trait class that binds a
  *  Finite Element basis to a cell type.
  */
-#define REGISTER_LAGRANGE_BASIS( C )                                      \
-  template < >                                                            \
-  struct FEBasis< MINT_LAGRANGE_BASIS, C > {                              \
-    static const int BasisType = MINT_LAGRANGE_BASIS;                     \
-    typedef mint::ShapeFunction< mint::Lagrange< C > > ShapeFunctionType; \
+#define REGISTER_LAGRANGE_BASIS(C)                                    \
+  template <>                                                         \
+  struct FEBasis<MINT_LAGRANGE_BASIS, C>                              \
+  {                                                                   \
+    static const int BasisType = MINT_LAGRANGE_BASIS;                 \
+    typedef mint::ShapeFunction<mint::Lagrange<C>> ShapeFunctionType; \
   }
 
 namespace axom
 {
 namespace mint
 {
-
 /*!
  * \brief FEBasis is a traits class that binds a Finite Element basis type,
  *  e.g., MINT_LAGRANGE_BASIS, to a particular cell type, e.g., MINT_QUAD.
@@ -40,19 +40,20 @@ namespace mint
  * \see ShapeFunction
  * \see FEBasisTypes
  */
-template < int BasisType, CellType CELLTYPE >
-struct FEBasis { };
+template <int BasisType, CellType CELLTYPE>
+struct FEBasis
+{ };
 
 // Lagrange Basis
-REGISTER_LAGRANGE_BASIS(  mint::QUAD );
-REGISTER_LAGRANGE_BASIS(  mint::TRIANGLE );
-REGISTER_LAGRANGE_BASIS(  mint::TET );
-REGISTER_LAGRANGE_BASIS(  mint::HEX );
-REGISTER_LAGRANGE_BASIS(  mint::PRISM );
-REGISTER_LAGRANGE_BASIS(  mint::PYRAMID );
+REGISTER_LAGRANGE_BASIS(mint::QUAD);
+REGISTER_LAGRANGE_BASIS(mint::TRIANGLE);
+REGISTER_LAGRANGE_BASIS(mint::TET);
+REGISTER_LAGRANGE_BASIS(mint::HEX);
+REGISTER_LAGRANGE_BASIS(mint::PRISM);
+REGISTER_LAGRANGE_BASIS(mint::PYRAMID);
 
-REGISTER_LAGRANGE_BASIS(  mint::QUAD9 );
-REGISTER_LAGRANGE_BASIS(  mint::HEX27 );
+REGISTER_LAGRANGE_BASIS(mint::QUAD9);
+REGISTER_LAGRANGE_BASIS(mint::HEX27);
 
 } /* namespace mint */
 } /* namespace axom */

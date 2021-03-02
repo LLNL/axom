@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,7 +26,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 void BinaryTreeCommunicator::initialize(MPI_Comm comm, int ranksLimit)
 {
   m_mpiComm = comm;
@@ -40,7 +39,7 @@ void BinaryTreeCommunicator::initialize(MPI_Comm comm, int ranksLimit)
   m_leftChildRank = (m_mpiCommRank * 2) + 1;
   m_rightChildRank = (m_mpiCommRank * 2) + 2;
   m_childCount = 0;
-  if (m_leftChildRank < m_mpiCommSize)
+  if(m_leftChildRank < m_mpiCommSize)
   {
     ++m_childCount;
   }
@@ -48,7 +47,7 @@ void BinaryTreeCommunicator::initialize(MPI_Comm comm, int ranksLimit)
   {
     m_leftChildRank = -1;
   }
-  if (m_rightChildRank < m_mpiCommSize)
+  if(m_rightChildRank < m_mpiCommSize)
   {
     ++m_childCount;
   }
@@ -56,46 +55,31 @@ void BinaryTreeCommunicator::initialize(MPI_Comm comm, int ranksLimit)
   {
     m_rightChildRank = -1;
   }
-
 }
 
-void BinaryTreeCommunicator::finalize()
-{}
+void BinaryTreeCommunicator::finalize() { }
 
-int BinaryTreeCommunicator::rank()
-{
-  return m_mpiCommRank;
-}
+int BinaryTreeCommunicator::rank() { return m_mpiCommRank; }
 
-void BinaryTreeCommunicator::ranksLimit(int value)
-{
-  m_ranksLimit = value;
-}
+void BinaryTreeCommunicator::ranksLimit(int value) { m_ranksLimit = value; }
 
-int BinaryTreeCommunicator::ranksLimit()
-{
-  return m_ranksLimit;
-}
+int BinaryTreeCommunicator::ranksLimit() { return m_ranksLimit; }
 
-int BinaryTreeCommunicator::numPushesToFlush()
-{
-  return m_treeHeight-1;
-}
+int BinaryTreeCommunicator::numPushesToFlush() { return m_treeHeight - 1; }
 
 void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
                                   std::vector<const char*>& receivedPackedMessages)
 {
   MPI_Barrier(m_mpiComm);
-  if (m_mpiCommRank != 0)
+  if(m_mpiCommRank != 0)
   {
-    if (isPackedMessagesEmpty(packedMessagesToBeSent))
+    if(isPackedMessagesEmpty(packedMessagesToBeSent))
     {
       mpiNonBlockingSendMessages(m_mpiComm, m_parentRank, zeroMessage);
     }
     else
     {
-      mpiNonBlockingSendMessages(m_mpiComm, m_parentRank,
-                                 packedMessagesToBeSent);
+      mpiNonBlockingSendMessages(m_mpiComm, m_parentRank, packedMessagesToBeSent);
     }
   }
 
@@ -104,11 +88,11 @@ void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
   while(childrenDoneCount < m_childCount)
   {
     currPackedMessages = mpiBlockingReceiveMessages(m_mpiComm);
-    if (isPackedMessagesEmpty(currPackedMessages))
+    if(isPackedMessagesEmpty(currPackedMessages))
     {
-      if ((currPackedMessages != nullptr) || (currPackedMessages[0] == '\0'))
+      if((currPackedMessages != nullptr) || (currPackedMessages[0] == '\0'))
       {
-        delete [] currPackedMessages;
+        delete[] currPackedMessages;
       }
     }
     else
@@ -123,12 +107,12 @@ void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
 
 bool BinaryTreeCommunicator::isOutputNode()
 {
-  if (m_mpiCommRank == 0)
+  if(m_mpiCommRank == 0)
   {
     return true;
   }
   return false;
 }
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom

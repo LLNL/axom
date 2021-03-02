@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,7 +16,6 @@ namespace utilities
 {
 namespace string
 {
-
 /*!
  * \brief Tests whether a string ends with another string
  * https://stackoverflow.com/questions/20446201/how-to-check-if-string-ends-with-txt/20446257
@@ -26,9 +25,9 @@ namespace string
  */
 inline bool endsWith(const std::string& str, const std::string& suffix)
 {
-   return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+  return str.size() >= suffix.size() &&
+    0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
-
 
 /*!
  * \brief Tests whether a string ends with a char
@@ -38,9 +37,8 @@ inline bool endsWith(const std::string& str, const std::string& suffix)
  */
 inline bool endsWith(const std::string& str, const char suffix)
 {
-   return str.size() >= 1 && str[str.size()-1] == suffix;
+  return str.size() >= 1 && str[str.size() - 1] == suffix;
 }
-
 
 /*!
  * \brief Tests whether a string starts with another string
@@ -50,9 +48,9 @@ inline bool endsWith(const std::string& str, const char suffix)
  */
 inline bool startsWith(const std::string& str, const std::string& prefix)
 {
-   return str.size() >= prefix.size() && 0 == str.compare(0, prefix.size(), prefix);
+  return str.size() >= prefix.size() &&
+    0 == str.compare(0, prefix.size(), prefix);
 }
-
 
 /*!
  * \brief Tests whether a string starts with a char
@@ -62,9 +60,8 @@ inline bool startsWith(const std::string& str, const std::string& prefix)
  */
 inline bool startsWith(const std::string& str, const char prefix)
 {
-   return str.size() >= 1 && str[0] == prefix;
+  return str.size() >= 1 && str[0] == prefix;
 }
-
 
 /*!
  * \brief Splits the given string based on the given delimiter
@@ -72,10 +69,24 @@ inline bool startsWith(const std::string& str, const char prefix)
  * \param [in]  str       string to be tokenized
  * \param [in]  delimiter char to split string on
  */
-void split(std::vector<std::string>& tokens, const std::string& str, const char delimiter);
+void split(std::vector<std::string>& tokens,
+           const std::string& str,
+           const char delimiter);
 
-} // end namespace string
-} // end namespace utilities
-} // end namespace axom
+/*!
+ * \brief Converts a string to lowercase
+ * \param [inout] str    string to be converted
+ */
+void toLower(std::string& str);
 
-#endif //  CORE_STRING_UTILITIES_H_
+/*!
+ * \brief Converts a string to uppercase
+ * \param [inout] str    string to be converted
+ */
+void toUpper(std::string& str);
+
+}  // end namespace string
+}  // end namespace utilities
+}  // end namespace axom
+
+#endif  //  CORE_STRING_UTILITIES_H_

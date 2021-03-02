@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,7 +20,6 @@
 
 namespace
 {
-
 namespace slam = axom::slam;
 
 using SetPosition = slam::DefaultPositionType;
@@ -32,9 +31,9 @@ static const SetPosition MAX_SET_SIZE = 10;
 using IntMap = slam::DynamicMap<SetType, int>;
 using RealMap = slam::DynamicMap<SetType, double>;
 
-} // end anonymous namespace
+}  // end anonymous namespace
 
-TEST(slam_map,construct_empty_map)
+TEST(slam_map, construct_empty_map)
 {
   IntMap m;
 
@@ -42,7 +41,7 @@ TEST(slam_map,construct_empty_map)
   EXPECT_EQ(nullptr, m.set());
 }
 
-TEST(slam_map,construct_from_set_int)
+TEST(slam_map, construct_from_set_int)
 {
   SetType s(MAX_SET_SIZE);
 
@@ -53,7 +52,7 @@ TEST(slam_map,construct_from_set_int)
   EXPECT_EQ(s.size(), m.size());
 }
 
-TEST(slam_map,construct_from_set_real)
+TEST(slam_map, construct_from_set_real)
 {
   SetType s(MAX_SET_SIZE);
 
@@ -65,7 +64,7 @@ TEST(slam_map,construct_from_set_real)
   EXPECT_EQ(MAX_SET_SIZE, m.size());
   EXPECT_EQ(s.size(), m.size());
 
-  for(int i=0 ; i< MAX_SET_SIZE ; ++i)
+  for(int i = 0; i < MAX_SET_SIZE; ++i)
   {
     EXPECT_EQ(DEFAULT_VAL, m[i]);
   }
@@ -78,7 +77,7 @@ TEST(slam_map,construct_from_set_real)
 
 // Check that resizing the map to a smaller size
 // TODO: This shouldn't shrink the data
-TEST(slam_map,modify_size)
+TEST(slam_map, modify_size)
 {
   SetType s(MAX_SET_SIZE);
 
@@ -104,7 +103,7 @@ TEST(slam_map,modify_size)
 
 // Check that resizing the map
 // TODO: This should resize the underlying set
-TEST(slam_map,modify_size_increases_set)
+TEST(slam_map, modify_size_increases_set)
 {
   SetType s(MAX_SET_SIZE);
   IntMap m(&s);
@@ -115,16 +114,14 @@ TEST(slam_map,modify_size_increases_set)
   EXPECT_EQ(newSize, m.size());
 }
 
-
-
 //----------------------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
-  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
+  axom::slic::SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();
 

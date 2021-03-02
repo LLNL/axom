@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,7 +22,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *****************************************************************************
  * \brief Message to indicate no messages need to be sent from child node.
@@ -74,7 +73,8 @@ public:
     , m_fileName("")
     , m_lineNumber(0)
     , m_level(0)
-    , m_tag("") {}
+    , m_tag("")
+  { }
 
   /*!
    *****************************************************************************
@@ -89,9 +89,12 @@ public:
    * \param [in] tag The tag of where the Message originated.
    *****************************************************************************
    */
-  Message(const std::string& text, int rank,
-          const std::string& fileName, int lineNumber,
-          int level, const std::string& tag)
+  Message(const std::string& text,
+          int rank,
+          const std::string& fileName,
+          int lineNumber,
+          int level,
+          const std::string& tag)
     : m_text(text)
     , m_ranks(1, rank)
     , m_ranksLimitReached(false)
@@ -99,7 +102,8 @@ public:
     , m_fileName(fileName)
     , m_lineNumber(lineNumber)
     , m_level(level)
-    , m_tag(tag) {}
+    , m_tag(tag)
+  { }
 
   /*!
    *****************************************************************************
@@ -117,10 +121,14 @@ public:
    * \param [in] tag The tag of where the Message originated.
    *****************************************************************************
    */
-  Message(const std::string& text, const std::vector<int>& ranks,
-          int count, int ranksLimit,
-          const std::string& fileName, int lineNumber,
-          int level, const std::string& tag)
+  Message(const std::string& text,
+          const std::vector<int>& ranks,
+          int count,
+          int ranksLimit,
+          const std::string& fileName,
+          int lineNumber,
+          int level,
+          const std::string& tag)
     : m_text(text)
     , m_ranks()
     , m_ranksLimitReached(false)
@@ -164,7 +172,7 @@ public:
    *  string.
    *****************************************************************************
    */
-  std::string stringOfRanks(std::string delimiter=",") const;
+  std::string stringOfRanks(std::string delimiter = ",") const;
 
   /*!
    *****************************************************************************
@@ -261,8 +269,7 @@ public:
    * \param [in] ranksLimit Limits how many ranks are tracked per Message.
    *****************************************************************************
    */
-  void addRanks(const std::vector<int>& newRanks, int count,
-                int ranksLimit);
+  void addRanks(const std::vector<int>& newRanks, int count, int ranksLimit);
 
   // utilities
 
@@ -292,6 +299,7 @@ public:
    *****************************************************************************
    */
   void unpack(const std::string& packedMessage, int ranksLimit);
+
 private:
   void unpackRanks(const std::string& ranksString, int ranksLimit);
 
@@ -304,7 +312,6 @@ private:
   int m_level;
   std::string m_tag;
 };
-
 
 /*!
  *****************************************************************************
@@ -321,7 +328,6 @@ private:
  *****************************************************************************
  */
 const char* packMessages(const std::vector<Message*>& messages);
-
 
 /*!
  *****************************************************************************
@@ -342,7 +348,6 @@ void unpackMessages(std::vector<Message*>& messages,
                     const char* packedMessages,
                     const int ranksLimit);
 
-
 /*!
  *****************************************************************************
  * \brief This checks if a given set of packed messages is empty.
@@ -354,12 +359,11 @@ void unpackMessages(std::vector<Message*>& messages,
  */
 inline bool isPackedMessagesEmpty(const char* packedMessages)
 {
-  return (packedMessages == nullptr) ||
-         (packedMessages[0] == '\0') ||
-         (strcmp(packedMessages, zeroMessage) == 0);
+  return (packedMessages == nullptr) || (packedMessages[0] == '\0') ||
+    (strcmp(packedMessages, zeroMessage) == 0);
 }
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

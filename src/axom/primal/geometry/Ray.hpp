@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,16 +18,15 @@ namespace axom
 {
 namespace primal
 {
-
 // Forward declare the templated classes and operator functions
-template < typename T, int DIM >
+template <typename T, int DIM>
 class Ray;
 
 /*!
  * \brief Overloaded output operator for rays
  */
-template < typename T, int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Ray< T,NDIMS > & ray);
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Ray<T, NDIMS>& ray);
 
 /*!
  * \class
@@ -39,29 +38,28 @@ std::ostream& operator<<(std::ostream & os, const Ray< T,NDIMS > & ray);
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  */
-template < typename T, int NDIMS >
+template <typename T, int NDIMS>
 class Ray
 {
 public:
-  typedef Point< T,NDIMS >   PointType;
-  typedef Segment< T,NDIMS > SegmentType;
-  typedef Vector< T,NDIMS >  VectorType;
+  typedef Point<T, NDIMS> PointType;
+  typedef Segment<T, NDIMS> SegmentType;
+  typedef Vector<T, NDIMS> VectorType;
 
 public:
-
   /*!
    * \brief Constructs a ray object with the given origin and direction.
    * \param [in] origin the origin of the ray.
    * \param [in] direction the direction of the ray.
    * \pre direction.squared_norm()!= 0.0
    */
-  Ray( const PointType& origin, const VectorType& direction );
+  Ray(const PointType& origin, const VectorType& direction);
 
   /*!
    * \brief Constructs a ray object from a directed segment.
    * \param [in] S user-supplied segment.
    */
-  explicit Ray( const SegmentType& S );
+  explicit Ray(const SegmentType& S);
 
   /*!
    * \brief Ray Destructor.
@@ -80,7 +78,7 @@ public:
    * \return p a point along the ray.
    * \pre \f$ t \ge 0 \f$
    */
-  PointType at( const T& t) const;
+  PointType at(const T& t) const;
 
   /*!
    * \brief Returns the direction vector of this Ray instance.
@@ -96,17 +94,17 @@ public:
    */
   std::ostream& print(std::ostream& os) const
   {
-    os <<"{origin:"<< m_origin<<"; direction:"<< m_direction << "}";
+    os << "{origin:" << m_origin << "; direction:" << m_direction << "}";
 
     return os;
   }
-private:
 
+private:
   /*!
    * \brief Default Constructor. Does nothing.
    * \note Made private to prevent its use in application code.
    */
-  Ray() { };
+  Ray() {};
 
   PointType m_origin;
   VectorType m_direction;
@@ -123,48 +121,47 @@ namespace axom
 {
 namespace primal
 {
-
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-Ray< T,NDIMS >::Ray( const PointType& origin, const VectorType& direction ) :
-  m_origin( origin ),
-  m_direction( direction.unitVector() )
+template <typename T, int NDIMS>
+Ray<T, NDIMS>::Ray(const PointType& origin, const VectorType& direction)
+  : m_origin(origin)
+  , m_direction(direction.unitVector())
 {
-  SLIC_ASSERT( m_direction.squared_norm() != 0.0 );
+  SLIC_ASSERT(m_direction.squared_norm() != 0.0);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-Ray< T,NDIMS >::Ray( const SegmentType& S )
+template <typename T, int NDIMS>
+Ray<T, NDIMS>::Ray(const SegmentType& S)
 {
   m_origin = S.source();
 
-  VectorType dir( S.source(), S.target() );
+  VectorType dir(S.source(), S.target());
   m_direction = dir.unitVector();
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-Ray< T,NDIMS >::~Ray()
-{}
+template <typename T, int NDIMS>
+Ray<T, NDIMS>::~Ray()
+{ }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-inline Point< T,NDIMS > Ray< T,NDIMS >::at( const T& t ) const
+template <typename T, int NDIMS>
+inline Point<T, NDIMS> Ray<T, NDIMS>::at(const T& t) const
 {
   PointType p;
-  for ( int i=0 ; i < NDIMS ; ++i )
+  for(int i = 0; i < NDIMS; ++i)
   {
-    p[i] = m_origin[i] + t*m_direction[i];
+    p[i] = m_origin[i] + t * m_direction[i];
   }
-  return ( p );
+  return (p);
 }
 
 //------------------------------------------------------------------------------
 /// Free functions implementing Ray's operators
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Ray< T,NDIMS > & ray)
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Ray<T, NDIMS>& ray)
 {
   ray.print(os);
   return os;

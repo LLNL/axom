@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -30,21 +30,11 @@
 # steps here.
 #
 #=============================================================================
-#
-# Note: The following files do not fit this pattern and require hand editing
-# (or integration into this script):
-#
-# - Top-level files: LICENSE, RELEASE, README.md
-#
-# - sphinx configuration files with filenames of the form  '*/docs/*/conf.py'
-#   They can be listed using: 'git ls-files | grep conf.py'
-#
-#=============================================================================
 
 #=============================================================================
 # First find all the files we want to modify
 #=============================================================================
-git grep -l "other Axom Project Developers. See the top-level COPYRIGHT file for details." | grep -v update_copyright > files2change
+git grep -l "Axom Project Developers" | grep -v update_copyright > files2change
 
 #=============================================================================
 # Replace the old copyright dates with new dates
@@ -53,8 +43,28 @@ for i in `cat files2change`
 do
     echo $i
     cp $i $i.sed.bak
-    sed "s/Copyright (c) 2017-2019/Copyright (c) 2017-2020/" $i.sed.bak > $i
+    sed "s/Copyright (c) 2017-2020/Copyright (c) 2017-2021/" $i.sed.bak > $i
 done
+
+echo LICENSE
+cp LICENSE LICENSE.sed.bak
+sed "s/Copyright (c) 2017-2020/Copyright (c) 2017-2021/" LICENSE.sed.bak > LICENSE
+
+echo RELEASE
+cp RELEASE RELEASE.sed.bak
+sed "s/2017-2020/2017-2020/" RELEASE.sed.bak > RELEASE
+
+echo README
+cp README.md README.md.sed.bak
+sed "s/2017-2020/2017-2021/" README.md.sed.bak > README.md
+
+echo RELEASE-NOTES
+cp RELEASE-NOTES.md RELEASE-NOTES.md.sed.bak
+sed "s/2017-2020/2017-2021/" RELEASE-NOTES.md.sed.bak > RELEASE-NOTES.md
+
+echo src/conf.py
+cp src/conf.py src/conf.py.sed.bak
+sed "s/2017-2020/2017-2021/" src/conf.py.sed.bak > src/conf.py
 
 #=============================================================================
 # Remove temporary files created in the process

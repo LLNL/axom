@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,24 +6,23 @@
 #ifndef SIDRE_ARRAY_HPP_
 #define SIDRE_ARRAY_HPP_
 
-#include "axom/core/Macros.hpp"      // for disable copy/assignment macro
+#include "axom/core/Macros.hpp"  // for disable copy/assignment macro
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
 #include "axom/core/Array.hpp"                // to inherit
 #include "axom/core/Types.hpp"
 
-#include "axom/slic/interface/slic.hpp"            // for slic logging macros
+#include "axom/slic/interface/slic.hpp"  // for slic logging macros
 
-#include "View.hpp"          // for View definition
-#include "Buffer.hpp"        // for Buffer definition
+#include "View.hpp"    // for View definition
+#include "Buffer.hpp"  // for Buffer definition
 
 // C/C++ includes
-#include <cstring>                  // for std::memcpy
+#include <cstring>  // for std::memcpy
 
 namespace axom
 {
 namespace sidre
 {
-
 /* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
  * constructor calls. */
 namespace internal
@@ -59,19 +58,17 @@ constexpr axom::IndexType ZERO = 0;
  * \see Group
  * \see View
  */
-template< typename T >
+template <typename T>
 class Array : public axom::Array<T>
 {
-
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
   Array() = delete;
 
-/// \name Sidre Array constructors
-/// @{
+  /// \name Sidre Array constructors
+  /// @{
 
   /*!
    * \brief Creates an Array instance from a View that already has data.
@@ -90,7 +87,7 @@ public:
    * \post numComponents() == view->getDimension(1)
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array( View* view );
+  Array(View* view);
 
   /*!
    * \brief Creates an Array instance of `num_tuples` size, where each
@@ -125,19 +122,20 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array( View* view, axom::IndexType num_tuples,
-         axom::IndexType num_components=1,
-         axom::IndexType capacity=0 );
+  Array(View* view,
+        axom::IndexType num_tuples,
+        axom::IndexType num_components = 1,
+        axom::IndexType capacity = 0);
 
-/// @}
+  /// @}
 
   /*!
    * Destructor.  Frees the associated buffer unless owned by Sidre.
    */
   virtual ~Array();
 
-/// \name Array methods to query and set attributes
-/// @{
+  /// \name Array methods to query and set attributes
+  /// @{
 
   /*!
    * \brief Return true iff the external buffer constructor was called.
@@ -154,23 +152,22 @@ public:
    */
   const View* getView() const { return m_view; }
 
-/// @}
+  /// @}
 
 protected:
-
   /*!
    * \brief Update the number of tuples.
    *
    * \param [in] new_num_tuples the new number of tuples.
    */
-  virtual void updateNumTuples( axom::IndexType new_num_tuples );
+  virtual void updateNumTuples(axom::IndexType new_num_tuples);
 
   /*!
    * \brief Set the number of tuples allocated for the data array.
    *
    * \param [in] capacity the new number of tuples to allocate.
    */
-  virtual void setCapacity( axom::IndexType new_capacity );
+  virtual void setCapacity(axom::IndexType new_capacity);
 
   /*!
    * \brief Reallocates the data array when the size exceeds the capacity.
@@ -178,30 +175,28 @@ protected:
    * \param [in] new_num_tuples the number of tuples which exceeds the current
    *  capacity.
    */
-  virtual void dynamicRealloc( axom::IndexType new_num_tuples );
-
+  virtual void dynamicRealloc(axom::IndexType new_num_tuples);
 
   /*!
    * \brief Return the TypeID corresponding to T. This function
    *  handles when T is not an enum.
    */
-  template < typename U = T >
-  static constexpr
-  typename std::enable_if< !std::is_enum< U >::value, TypeID >::type
+  template <typename U = T>
+  static constexpr typename std::enable_if<!std::is_enum<U>::value, TypeID>::type
   sidreTypeId()
-  { return detail::SidreTT< U >::id; }
+  {
+    return detail::SidreTT<U>::id;
+  }
 
   /*!
    * \brief Return the TypeID corresponding to T. This function handles
    *  when T is an enum.
    */
-  template < typename U = T >
-  static constexpr
-  typename std::enable_if< std::is_enum< U >::value, TypeID >::type
+  template <typename U = T>
+  static constexpr typename std::enable_if<std::is_enum<U>::value, TypeID>::type
   sidreTypeId()
   {
-    return detail::SidreTT<
-      typename std::underlying_type< U >::type >::id;
+    return detail::SidreTT<typename std::underlying_type<U>::type>::id;
   }
 
   /*!
@@ -220,7 +215,7 @@ protected:
    *
    * \pre 0 <= dim <= 1
    */
-  axom::IndexType getViewShape( int dim ) const;
+  axom::IndexType getViewShape(int dim) const;
 
   /*!
    * \brief Allocates space within the Array's View.
@@ -228,184 +223,187 @@ protected:
    * \param [in] new_num_tuples the number of tuples which exceeds the current
    *  capacity.
    */
-  void reallocViewData( IndexType new_capacity );
+  void reallocViewData(IndexType new_capacity);
 
   View* m_view;
 
-  DISABLE_COPY_AND_ASSIGNMENT( Array );
-  DISABLE_MOVE_AND_ASSIGNMENT( Array );
+  DISABLE_COPY_AND_ASSIGNMENT(Array);
+  DISABLE_MOVE_AND_ASSIGNMENT(Array);
 };
-
 
 //------------------------------------------------------------------------------
 //                            Array IMPLEMENTATION
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-template< typename T >
-Array< T >::Array( View* view ) :
-  axom::Array<T>(),
-  m_view( view )
+template <typename T>
+Array<T>::Array(View* view) : axom::Array<T>()
+                            , m_view(view)
 {
-  SLIC_ERROR_IF( m_view == nullptr, "Provided View cannot be null." );
-  SLIC_ERROR_IF( m_view->isEmpty(), "Provided View cannot be empty." );
+  SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
+  SLIC_ERROR_IF(m_view->isEmpty(), "Provided View cannot be empty.");
 
-  this->m_num_tuples       = getViewShape(0);
+  this->m_num_tuples = getViewShape(0);
   this->m_num_components = getViewShape(1);
 
   axom::IndexType buffer_size = m_view->getBuffer()->getNumElements();
-  SLIC_ERROR_IF( buffer_size % this->m_num_components != 0,
-                 "The buffer size (" << buffer_size << ") " <<
-                 "is not a multiple of the number of components " <<
-                 "(" << this->m_num_components << ")." );
+  SLIC_ERROR_IF(buffer_size % this->m_num_components != 0,
+                "The buffer size ("
+                  << buffer_size << ") "
+                  << "is not a multiple of the number of components "
+                  << "(" << this->m_num_components << ").");
   this->m_capacity = buffer_size / this->m_num_components;
 
-  SLIC_ERROR_IF( this->m_num_tuples < 0,
-                 "Number of tuples (" << this->m_num_tuples << ") " <<
-                 "cannot be negative." );
+  SLIC_ERROR_IF(this->m_num_tuples < 0,
+                "Number of tuples (" << this->m_num_tuples << ") "
+                                     << "cannot be negative.");
 
-  SLIC_ERROR_IF( this->m_num_components <= 0,
-                 "Number of components (" << this->m_num_components << ") " <<
-                 "must be greater than 0." );
+  SLIC_ERROR_IF(this->m_num_components <= 0,
+                "Number of components (" << this->m_num_components << ") "
+                                         << "must be greater than 0.");
 
-  SLIC_ERROR_IF( this->m_num_tuples > this->m_capacity,
-                 "Number of tuples (" << this->m_num_tuples << ") " <<
-                 "cannot be greater than the tuple capacity " <<
-                 "(" << this->m_capacity << ")." );
+  SLIC_ERROR_IF(this->m_num_tuples > this->m_capacity,
+                "Number of tuples ("
+                  << this->m_num_tuples << ") "
+                  << "cannot be greater than the tuple capacity "
+                  << "(" << this->m_capacity << ").");
 
   TypeID view_type = m_view->getTypeID();
   TypeID T_type = sidreTypeId();
-  SLIC_ERROR_IF( view_type != T_type,
-                 "View data type (" << view_type << ")" <<
-                 "differs from this Array type (" << T_type << ")." );
+  SLIC_ERROR_IF(view_type != T_type,
+                "View data type (" << view_type << ")"
+                                   << "differs from this Array type (" << T_type
+                                   << ").");
 
-  this->m_data = static_cast< T* >( m_view->getVoidPtr() );
-  SLIC_ERROR_IF( this->m_data == nullptr && this->m_capacity > 0,
-                 "View returned a null pointer when the capacity " <<
-                 "is greater than zero." );
+  this->m_data = static_cast<T*>(m_view->getVoidPtr());
+  SLIC_ERROR_IF(this->m_data == nullptr && this->m_capacity > 0,
+                "View returned a null pointer when the capacity "
+                  << "is greater than zero.");
 }
 
 //------------------------------------------------------------------------------
-template< typename T >
-Array< T >::Array( View* view, axom::IndexType num_tuples,
-                   axom::IndexType num_components, axom::IndexType capacity ) :
-  axom::Array<T>(),
-  m_view( view )
+template <typename T>
+Array<T>::Array(View* view,
+                axom::IndexType num_tuples,
+                axom::IndexType num_components,
+                axom::IndexType capacity)
+  : axom::Array<T>()
+  , m_view(view)
 {
-  SLIC_ERROR_IF( m_view == nullptr, "Provided View cannot be null." );
-  SLIC_ERROR_IF( !m_view->isEmpty(), "View must be empty." );
-  SLIC_ERROR_IF( num_tuples < 0,
-                 "Number of tuples (" << num_tuples << ") " <<
-                 "cannot be negative." );
-  SLIC_ERROR_IF( num_components <= 0,
-                 "Components per tuple (" << num_components << ") " <<
-                 "must be greater than 0." );
+  SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
+  SLIC_ERROR_IF(!m_view->isEmpty(), "View must be empty.");
+  SLIC_ERROR_IF(num_tuples < 0,
+                "Number of tuples (" << num_tuples << ") "
+                                     << "cannot be negative.");
+  SLIC_ERROR_IF(num_components <= 0,
+                "Components per tuple (" << num_components << ") "
+                                         << "must be greater than 0.");
 
-  this->initialize( num_tuples, num_components, capacity );
+  this->initialize(num_tuples, num_components, capacity);
 
-  SLIC_ERROR_IF( this->m_num_tuples > this->m_capacity,
-                 "Number of tuples (" << this->m_num_tuples << ") " <<
-                 "cannot be greater than the tuple capacity " <<
-                 "(" << this->m_capacity << ")." );
+  SLIC_ERROR_IF(this->m_num_tuples > this->m_capacity,
+                "Number of tuples ("
+                  << this->m_num_tuples << ") "
+                  << "cannot be greater than the tuple capacity "
+                  << "(" << this->m_capacity << ").");
 
   // sanity checks
-  SLIC_ASSERT( this->m_data != nullptr );
-  SLIC_ASSERT( this->m_num_tuples >= 0 );
-  SLIC_ASSERT( this->m_num_components >= 1 );
+  SLIC_ASSERT(this->m_data != nullptr);
+  SLIC_ASSERT(this->m_num_tuples >= 0);
+  SLIC_ASSERT(this->m_num_components >= 1);
 }
 
 //------------------------------------------------------------------------------
-template< typename T >
-Array< T >::~Array()
+template <typename T>
+Array<T>::~Array()
 {
   m_view = nullptr;
   this->m_data = nullptr;
 }
 
-
 //------------------------------------------------------------------------------
-template< typename T >
-inline void Array< T >::updateNumTuples( axom::IndexType new_num_tuples )
+template <typename T>
+inline void Array<T>::updateNumTuples(axom::IndexType new_num_tuples)
 {
-  SLIC_ASSERT( new_num_tuples >= 0 );
-  SLIC_ASSERT( new_num_tuples <= this->m_capacity );
+  SLIC_ASSERT(new_num_tuples >= 0);
+  SLIC_ASSERT(new_num_tuples <= this->m_capacity);
   this->m_num_tuples = new_num_tuples;
   describeView();
 }
 
 //------------------------------------------------------------------------------
-template< typename T >
-inline void Array< T >::setCapacity( axom::IndexType new_capacity )
+template <typename T>
+inline void Array<T>::setCapacity(axom::IndexType new_capacity)
 {
-  SLIC_ASSERT( new_capacity >= 0 );
+  SLIC_ASSERT(new_capacity >= 0);
 
-  if ( new_capacity < this->m_num_tuples )
+  if(new_capacity < this->m_num_tuples)
   {
-    updateNumTuples( new_capacity );
+    updateNumTuples(new_capacity);
   }
 
-  return reallocViewData( new_capacity );
+  return reallocViewData(new_capacity);
 }
 
 //------------------------------------------------------------------------------
-template< typename T >
-inline void Array< T >::dynamicRealloc( axom::IndexType new_num_tuples )
+template <typename T>
+inline void Array<T>::dynamicRealloc(axom::IndexType new_num_tuples)
 {
-  SLIC_ERROR_IF( this->m_resize_ratio < 1.0, "Resize ratio of " <<
-                 this->m_resize_ratio << " doesn't support dynamic resizing");
+  SLIC_ERROR_IF(this->m_resize_ratio < 1.0,
+                "Resize ratio of " << this->m_resize_ratio
+                                   << " doesn't support dynamic resizing");
 
   IndexType new_capacity = new_num_tuples * this->m_resize_ratio + 0.5;
-  return reallocViewData( new_capacity );
+  return reallocViewData(new_capacity);
 }
 
 //------------------------------------------------------------------------------
-template< typename T >
-inline void Array< T >::describeView()
+template <typename T>
+inline void Array<T>::describeView()
 {
-  SLIC_ASSERT( m_view != nullptr );
+  SLIC_ASSERT(m_view != nullptr);
 
   static constexpr TypeID T_type = sidreTypeId();
   IndexType dims[2];
   dims[0] = this->m_num_tuples;
   dims[1] = this->m_num_components;
 
-  m_view->apply( T_type, 2, dims );
+  m_view->apply(T_type, 2, dims);
 }
 
 //------------------------------------------------------------------------------
-template< typename T >
-inline axom::IndexType Array< T >::getViewShape( int dim ) const
+template <typename T>
+inline axom::IndexType Array<T>::getViewShape(int dim) const
 {
-  SLIC_ERROR_IF( dim > 1, "Only two dimensional views supported." );
-  SLIC_ERROR_IF( m_view->isEmpty(), "view cannot be empty." );
-  SLIC_ERROR_IF( m_view->getNumDimensions() != 2,
-                 "view must have dimension 2.");
+  SLIC_ERROR_IF(dim > 1, "Only two dimensional views supported.");
+  SLIC_ERROR_IF(m_view->isEmpty(), "view cannot be empty.");
+  SLIC_ERROR_IF(m_view->getNumDimensions() != 2, "view must have dimension 2.");
 
-  sidre::IndexType dims[ 2 ];
-  m_view->getShape( 2, dims );
-  return static_cast<axom::IndexType>(dims[ dim ]);
+  sidre::IndexType dims[2];
+  m_view->getShape(2, dims);
+  return static_cast<axom::IndexType>(dims[dim]);
 }
 
 //------------------------------------------------------------------------------
-template< typename T >
-inline void Array< T >::reallocViewData( IndexType new_capacity )
+template <typename T>
+inline void Array<T>::reallocViewData(IndexType new_capacity)
 {
-  if ( m_view->isEmpty() )
+  if(m_view->isEmpty())
   {
     constexpr sidre::TypeID T_type = sidreTypeId();
-    m_view->allocate( T_type, new_capacity * this->m_num_components );
+    m_view->allocate(T_type, new_capacity * this->m_num_components);
   }
   else
   {
-    m_view->reallocate( new_capacity * this->m_num_components );
+    m_view->reallocate(new_capacity * this->m_num_components);
   }
 
   this->m_capacity = new_capacity;
   describeView();
-  this->m_data = static_cast< T* >( m_view->getVoidPtr() );
+  this->m_data = static_cast<T*>(m_view->getVoidPtr());
 
-  SLIC_ERROR_IF( this->m_data == nullptr && this->m_capacity > 0,
-                 "Array reallocation failed." );
+  SLIC_ERROR_IF(this->m_data == nullptr && this->m_capacity > 0,
+                "Array reallocation failed.");
 }
 
 } /* namespace sidre */

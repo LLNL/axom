@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,9 +17,9 @@
 //-----------------------------------------------------------------------------
 TEST(conduit_smoke, basic_use)
 {
-  EXPECT_EQ(sizeof(conduit::uint32),(size_t)4);
-  EXPECT_EQ(sizeof(conduit::uint64),(size_t)8);
-  EXPECT_EQ(sizeof(conduit::float64),(size_t)8);
+  EXPECT_EQ(sizeof(conduit::uint32), (size_t)4);
+  EXPECT_EQ(sizeof(conduit::uint64), (size_t)8);
+  EXPECT_EQ(sizeof(conduit::float64), (size_t)8);
 
   std::cout << conduit::about() << std::endl;
 }

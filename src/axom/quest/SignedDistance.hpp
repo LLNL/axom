@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,25 +26,23 @@
 #include "axom/mint/mesh/Mesh.hpp"
 
 // C/C++ includes
-#include <cmath> // for std::sqrt()
+#include <cmath>  // for std::sqrt()
 
 namespace axom
 {
 namespace quest
 {
-
-template < int NDIMS >
+template <int NDIMS>
 class SignedDistance
 {
 public:
-  using PointType = axom::primal::Point< double,NDIMS >;
-  using VectorType = axom::primal::Vector< double,NDIMS >;
-  using TriangleType = axom::primal::Triangle< double,NDIMS >;
-  using BoxType = axom::primal::BoundingBox< double,NDIMS >;
-  using BVHTreeType = axom::spin::BVHTree< int,NDIMS >;
+  using PointType = axom::primal::Point<double, NDIMS>;
+  using VectorType = axom::primal::Vector<double, NDIMS>;
+  using TriangleType = axom::primal::Triangle<double, NDIMS>;
+  using BoxType = axom::primal::BoundingBox<double, NDIMS>;
+  using BVHTreeType = axom::spin::BVHTree<int, NDIMS>;
 
 private:
-
   /// @{
   /// \name Internal Datatype Definitions
 
@@ -55,16 +53,15 @@ private:
     int cpt_location;
 
     int nelems;
-    std::vector< TriangleType > surface_elements;
-    std::vector< axom::IndexType > element_ids;
-    std::vector< PointType > closest_pts;
-    std::vector< int > cpt_locs;
+    std::vector<TriangleType> surface_elements;
+    std::vector<axom::IndexType> element_ids;
+    std::vector<PointType> closest_pts;
+    std::vector<int> cpt_locs;
   };
 
   /// @}
 
 public:
-
   /*!
    * \brief Creates a SignedDistance instance for queries on the given mesh.
    * \param [in] surfaceMesh user-supplied surface mesh.
@@ -75,11 +72,11 @@ public:
    * \note computeSign defaults to \a true when not specified.
    * \pre surfaceMesh != nullptr
    */
-  SignedDistance( const mint::Mesh* surfaceMesh,
-                  bool isWatertight,
-                  int maxObjects,
-                  int maxLevels,
-                  bool computeSign = true );
+  SignedDistance(const mint::Mesh* surfaceMesh,
+                 bool isWatertight,
+                 int maxObjects,
+                 int maxLevels,
+                 bool computeSign = true);
 
   /*!
    * \brief Destructor.
@@ -107,10 +104,10 @@ public:
    *
    * \return minDist minimum signed distance of the query point to the surface.
    */
-  double computeDistance( double x, double y, double z=0.0 )
+  double computeDistance(double x, double y, double z = 0.0)
   {
-    PointType pt = PointType::make_point( x, y, z );
-    return ( computeDistance( pt ) );
+    PointType pt = PointType::make_point(x, y, z);
+    return (computeDistance(pt));
   }
 
   /*!
@@ -131,7 +128,7 @@ public:
    *
    * \return minDist the signed minimum distance to the surface mesh.
    */
-  double computeDistance( const PointType& queryPnt ) const;
+  double computeDistance(const PointType& queryPnt) const;
 
   /*!
    * \brief Computes the distance of the given point to the surface mesh.
@@ -159,21 +156,20 @@ public:
    *
    * \return minDist the minimum signed distance to the surface mesh.
    */
-  double computeDistance( const PointType& queryPnt,
-                          std::vector< int >& bvh_buckets,
-                          std::vector< axom::IndexType >& triangles,
-                          std::vector< axom::IndexType >& my_triangles,
-                          PointType& closest_pt ) const;
+  double computeDistance(const PointType& queryPnt,
+                         std::vector<int>& bvh_buckets,
+                         std::vector<axom::IndexType>& triangles,
+                         std::vector<axom::IndexType>& my_triangles,
+                         PointType& closest_pt) const;
 
   /*!
    * \brief Returns a const reference to the underlying bucket tree.
    * \return ptr pointer to the underlying bucket tree
    * \post ptr != nullptr
    */
-  const BVHTreeType* getBVHTree( ) const { return m_bvhTree; };
+  const BVHTreeType* getBVHTree() const { return m_bvhTree; }
 
 private:
-
   /*!
    * \brief Computes the bounding box of the given cell on the surface mesh.
    * \param [in] icell the index of the cell on the surface mesh.
@@ -181,7 +177,7 @@ private:
    * \pre m_surfaceMesh != nullptr
    * \pre icell >= 0 && icell < m_surfaceMesh->getNumberOfCells()
    */
-  BoxType getCellBoundingBox( axom::IndexType icell );
+  BoxType getCellBoundingBox(axom::IndexType icell);
 
   /*!
    * \brief Searches through the list of candidates surface elements and
@@ -208,10 +204,10 @@ private:
    *
    * \return dist minimum squared distance to the surface.
    */
-  double getMinSqDistance( const PointType& pt,
-                           const int* candidates,
-                           int nelems,
-                           cpt_data* cpt) const;
+  double getMinSqDistance(const PointType& pt,
+                          const int* candidates,
+                          int nelems,
+                          cpt_data* cpt) const;
 
   /*!
    * \brief Computes the sign of the given query point given the closest point
@@ -228,9 +224,9 @@ private:
    * \pre closest_pts != nullptr
    * \pre clocs != nullptr
    */
-  double computeSign( const PointType& pt,
-                      const cpt_data* cpt,
-                      std::vector< axom::IndexType >& my_elements ) const;
+  double computeSign(const PointType& pt,
+                     const cpt_data* cpt,
+                     std::vector<axom::IndexType>& my_elements) const;
 
   /*!
    * \brief Returns a sorted list of the candidate surface elements.
@@ -251,10 +247,10 @@ private:
    *  \pre surface_elements != nullptr
    *  \pre indx != nullptr
    */
-  void getCandidateSurfaceElements( const PointType& pt,
-                                    const int* bins,
-                                    int nbins,
-                                    std::vector< int >& candidates ) const;
+  void getCandidateSurfaceElements(const PointType& pt,
+                                   const int* bins,
+                                   int nbins,
+                                   std::vector<int>& candidates) const;
 
   /*!
    * \brief Returns the maximum distance between a given point and box.
@@ -262,27 +258,26 @@ private:
    * \param [in] pt user-supplied point.
    * \return d maximum distance from a point to a box.
    */
-  double getMaxSqDistance( const BoxType& b, const PointType& pt ) const;
+  double getMaxSqDistance(const BoxType& b, const PointType& pt) const;
 
   /*!
    * \brief Default constructor. Does nothing.
    * \note Made private to prevent its use from the calling application.
    */
-  SignedDistance() : m_surfaceMesh(nullptr), m_bvhTree(nullptr) { };
+  SignedDistance() : m_surfaceMesh(nullptr), m_bvhTree(nullptr) { }
 
 private:
-  bool m_isInputWatertight;         /*!< indicates if input is watertight     */
-  bool m_computeSign;               /*!< indicates if queries compute sign    */
-  const mint::Mesh* m_surfaceMesh;  /*!< User-supplied surface mesh.          */
-  BoxType m_boxDomain;              /*!< bounding box containing surface mesh */
-  BVHTreeType* m_bvhTree;           /*!< Spatial acceleration data-structure. */
+  bool m_isInputWatertight;        /*!< indicates if input is watertight     */
+  bool m_computeSign;              /*!< indicates if queries compute sign    */
+  const mint::Mesh* m_surfaceMesh; /*!< User-supplied surface mesh.          */
+  BoxType m_boxDomain;             /*!< bounding box containing surface mesh */
+  BVHTreeType* m_bvhTree;          /*!< Spatial acceleration data-structure. */
 
-  DISABLE_COPY_AND_ASSIGNMENT( SignedDistance );
-
+  DISABLE_COPY_AND_ASSIGNMENT(SignedDistance);
 };
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom
 
 //------------------------------------------------------------------------------
 //           SignedDistance Implementation
@@ -293,133 +288,133 @@ namespace quest
 {
 namespace detail
 {
-
 class SortByDistance
 {
 public:
-  SortByDistance( double* dist ) : m_dist( dist ) { };
+  SortByDistance(double* dist) : m_dist(dist) { }
   ~SortByDistance() { }
-  bool operator()( int i, int j) const { return( m_dist[i] < m_dist[j] ); }
+  bool operator()(int i, int j) const { return (m_dist[i] < m_dist[j]); }
+
 private:
   double* m_dist;
 };
 
-} // end namespace detail
+}  // end namespace detail
 
 //------------------------------------------------------------------------------
-template < int NDIMS >
-SignedDistance< NDIMS >::SignedDistance(
-  const mint::Mesh* surfaceMesh, bool isWatertight,
-  int maxObjects, int maxLevels, bool computeSign ) :
-  m_isInputWatertight( isWatertight ), m_computeSign(computeSign)
+template <int NDIMS>
+SignedDistance<NDIMS>::SignedDistance(const mint::Mesh* surfaceMesh,
+                                      bool isWatertight,
+                                      int maxObjects,
+                                      int maxLevels,
+                                      bool computeSign)
+  : m_isInputWatertight(isWatertight)
+  , m_computeSign(computeSign)
 {
   // Sanity checks
-  SLIC_ASSERT( surfaceMesh != nullptr );
-  SLIC_ASSERT( maxLevels >= 1 );
+  SLIC_ASSERT(surfaceMesh != nullptr);
+  SLIC_ASSERT(maxLevels >= 1);
 
-  m_surfaceMesh    = surfaceMesh;
+  m_surfaceMesh = surfaceMesh;
   const axom::IndexType ncells = m_surfaceMesh->getNumberOfCells();
   const axom::IndexType nnodes = m_surfaceMesh->getNumberOfNodes();
 
   // compute bounding box of surface mesh
   // NOTE: this should be changed to an oriented bounding box in the future.
-  for ( axom::IndexType inode=0 ; inode < nnodes ; ++inode )
+  for(axom::IndexType inode = 0; inode < nnodes; ++inode)
   {
     PointType pt;
-    for ( int i=0 ; i < NDIMS ; ++i )
+    for(int i = 0; i < NDIMS; ++i)
     {
-      pt[ i ] = m_surfaceMesh->getCoordinateArray( i )[ inode ];
+      pt[i] = m_surfaceMesh->getCoordinateArray(i)[inode];
     }
-    m_boxDomain.addPoint( pt );
+    m_boxDomain.addPoint(pt);
   }
 
   // Initialize BucketTree with the surface elements.
-  m_bvhTree  = new BVHTreeType( ncells, maxLevels );
+  m_bvhTree = new BVHTreeType(ncells, maxLevels);
 
-  for ( axom::IndexType icell=0 ; icell < ncells ; ++icell )
+  for(axom::IndexType icell = 0; icell < ncells; ++icell)
   {
-    m_bvhTree->insert( this->getCellBoundingBox( icell ), icell );
-  } // END for all cells
+    m_bvhTree->insert(this->getCellBoundingBox(icell), icell);
+  }  // END for all cells
 
   // Build bounding volume hierarchy
-  m_bvhTree->build( maxObjects );
+  m_bvhTree->build(maxObjects);
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS >
-SignedDistance< NDIMS >::~SignedDistance( )
+template <int NDIMS>
+SignedDistance<NDIMS>::~SignedDistance()
 {
   delete m_bvhTree;
   m_bvhTree = nullptr;
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS >
-inline double SignedDistance< NDIMS >::computeDistance(
-  const PointType& pt) const
+template <int NDIMS>
+inline double SignedDistance<NDIMS>::computeDistance(const PointType& pt) const
 {
-  std::vector< int > buckets;
-  std::vector< axom::IndexType > elements;
-  std::vector< axom::IndexType > my_elements;
+  std::vector<int> buckets;
+  std::vector<axom::IndexType> elements;
+  std::vector<axom::IndexType> my_elements;
   PointType closest_pt;
-  double dist = this->computeDistance( pt, buckets, elements, my_elements,
-                                       closest_pt );
-  return ( dist );
+  double dist =
+    this->computeDistance(pt, buckets, elements, my_elements, closest_pt);
+  return (dist);
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS >
-inline double SignedDistance< NDIMS >::computeDistance(
+template <int NDIMS>
+inline double SignedDistance<NDIMS>::computeDistance(
   const PointType& pt,
-  std::vector< int >& buckets,
-  std::vector< axom::IndexType >& AXOM_DEBUG_PARAM(elementIds),
-  std::vector< axom::IndexType >& my_elements,
-  PointType& closest_pt ) const
+  std::vector<int>& buckets,
+  std::vector<axom::IndexType>& AXOM_DEBUG_PARAM(elementIds),
+  std::vector<axom::IndexType>& my_elements,
+  PointType& closest_pt) const
 {
-  SLIC_ASSERT( m_surfaceMesh != nullptr );
-  SLIC_ASSERT( m_bvhTree != nullptr );
+  SLIC_ASSERT(m_surfaceMesh != nullptr);
+  SLIC_ASSERT(m_bvhTree != nullptr);
 
   // STEP 0: get list of buckets to satisfy point query
-  m_bvhTree->find( pt, buckets );
+  m_bvhTree->find(pt, buckets);
 
   // STEP 1: get candidate surface elements
-  int nbuckets = static_cast< int >( buckets.size() );
-  std::vector< int > candidates;
-  this->getCandidateSurfaceElements( pt, &buckets[0], nbuckets, candidates );
+  int nbuckets = static_cast<int>(buckets.size());
+  std::vector<int> candidates;
+  this->getCandidateSurfaceElements(pt, &buckets[0], nbuckets, candidates);
 
-  const int nelems = static_cast< int >( candidates.size() );
+  const int nelems = static_cast<int>(candidates.size());
 
   // STEP 2: process surface elements and compute minimum distance and
   // corresponding closest point.
   cpt_data cpt;
-  double minSqDist = this->getMinSqDistance( pt, &candidates[0], nelems, &cpt );
+  double minSqDist = this->getMinSqDistance(pt, &candidates[0], nelems, &cpt);
   closest_pt = cpt.closest_point;
 #ifdef AXOM_DEBUG
   elementIds = cpt.element_ids;
 #endif
 
   // STEP 3: compute sign
-  double sign = m_computeSign 
-      ? this->computeSign( pt, &cpt, my_elements )
-      : 1.;
+  double sign = m_computeSign ? this->computeSign(pt, &cpt, my_elements) : 1.;
 
   // STEP 4: return computed signed distance
-  return ( sign*std::sqrt( minSqDist) );
+  return (sign * std::sqrt(minSqDist));
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS >
-double SignedDistance< NDIMS >::computeSign(
+template <int NDIMS>
+double SignedDistance<NDIMS>::computeSign(
   const PointType& pt,
   const cpt_data* cpt,
-  std::vector< axom::IndexType >& AXOM_DEBUG_PARAM(my_elements) ) const
+  std::vector<axom::IndexType>& AXOM_DEBUG_PARAM(my_elements)) const
 {
   // Sanity checks
-  SLIC_ASSERT( cpt != nullptr );
+  SLIC_ASSERT(cpt != nullptr);
 
   // STEP 0: if point is outside the bounding box of the surface mesh, then
   // it is outside, just return 1.0
-  if ( m_isInputWatertight && !m_boxDomain.contains( pt ) )
+  if(m_isInputWatertight && !m_boxDomain.contains(pt))
   {
     /* short-circuit, pt outside bounding box of the surface mesh */
     return 1.0;
@@ -429,268 +424,256 @@ double SignedDistance< NDIMS >::computeSign(
   // calculate the sign. There are effectively 3 cases based on the location
   // of the closest point
 
-  VectorType N; // the pseudo-normal, computed below
+  VectorType N;  // the pseudo-normal, computed below
 
   const int cpt_loc = cpt->cpt_location;
-  const int index   = cpt->candidate_index;
-  const int nelems  = cpt->nelems;
+  const int index = cpt->candidate_index;
+  const int nelems = cpt->nelems;
 
-  if ( cpt_loc >= TriangleType::NUM_TRI_VERTS )
+  if(cpt_loc >= TriangleType::NUM_TRI_VERTS)
   {
-
     // CASE 1: closest point is on the face of the surface element
-    N = cpt->surface_elements[ index ].normal();
+    N = cpt->surface_elements[index].normal();
 #ifdef AXOM_DEBUG
-    my_elements.push_back( cpt->element_ids[ index ] );
+    my_elements.push_back(cpt->element_ids[index]);
 #endif
-
   }
-  else if ( cpt_loc < 0 )
+  else if(cpt_loc < 0)
   {
-
     // CASE 2: closest point is on an edge, sum normals of adjacent facets
-    for ( int i=0 ; i < nelems ; ++i )
+    for(int i = 0; i < nelems; ++i)
     {
+      double dist =
+        axom::primal::squared_distance(cpt->closest_point, cpt->closest_pts[i]);
 
-      double dist = axom::primal::squared_distance( cpt->closest_point,
-                                                    cpt->closest_pts[i]  );
-
-      if ( axom::utilities::isNearlyEqual( dist, 0.0 ) )
+      if(axom::utilities::isNearlyEqual(dist, 0.0))
       {
-        N += cpt->surface_elements[ i ].normal();
+        N += cpt->surface_elements[i].normal();
 #ifdef AXOM_DEBUG
-        my_elements.push_back( cpt->element_ids[ i ] );
+        my_elements.push_back(cpt->element_ids[i]);
 #endif
-      } // END if
+      }  // END if
 
-    } // END for
-
+    }  // END for
   }
   else
   {
-
     // CASE 3: closest point is on a node, use angle weighted pseudo-normal
-    for ( int i=0 ; i < nelems ; ++i )
+    for(int i = 0; i < nelems; ++i)
     {
+      double dist =
+        axom::primal::squared_distance(cpt->closest_point, cpt->closest_pts[i]);
 
-      double dist = axom::primal::squared_distance( cpt->closest_point,
-                                                    cpt->closest_pts[i] );
-
-      if ( axom::utilities::isNearlyEqual( dist, 0.0 ) )
+      if(axom::utilities::isNearlyEqual(dist, 0.0))
       {
-        double alpha = cpt->surface_elements[ i ].angle( cpt->cpt_locs[ i ] );
-        N += ( cpt->surface_elements[ i ].normal().unitVector()*alpha );
+        double alpha = cpt->surface_elements[i].angle(cpt->cpt_locs[i]);
+        N += (cpt->surface_elements[i].normal().unitVector() * alpha);
 #ifdef AXOM_DEBUG
-        my_elements.push_back( cpt->element_ids[ i ] );
+        my_elements.push_back(cpt->element_ids[i]);
 #endif
-      } // END if
+      }  // END if
 
-    } // END for
-
+    }  // END for
   }
 
   // STEP 2: Given the pseudo-normal, N, and the vector r from the closest point
   // to the query point, compute the sign by checking the sign of their dot
   // product.
-  VectorType r( cpt->closest_point, pt );
-  double dotprod = r.dot( N );
-  double sign = ( dotprod >= 0.0 ) ? 1.0 : -1.0;
-  SLIC_ASSERT( sign==-1.0 || sign==1.0 );
+  VectorType r(cpt->closest_point, pt);
+  double dotprod = r.dot(N);
+  double sign = (dotprod >= 0.0) ? 1.0 : -1.0;
+  SLIC_ASSERT(sign == -1.0 || sign == 1.0);
 
   return sign;
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS >
-double SignedDistance< NDIMS >::getMinSqDistance( const PointType& pt,
-                                                  const int* candidates,
-                                                  int nelems,
-                                                  cpt_data* cpt ) const
+template <int NDIMS>
+double SignedDistance<NDIMS>::getMinSqDistance(const PointType& pt,
+                                               const int* candidates,
+                                               int nelems,
+                                               cpt_data* cpt) const
 {
-  SLIC_ASSERT( candidates != nullptr );
-  SLIC_ASSERT( cpt != nullptr );
+  SLIC_ASSERT(candidates != nullptr);
+  SLIC_ASSERT(cpt != nullptr);
 
   cpt->nelems = nelems;
-  cpt->surface_elements.resize( nelems );
-  cpt->closest_pts.resize( nelems );
-  cpt->cpt_locs.resize( nelems );
-  cpt->element_ids.resize( nelems );
+  cpt->surface_elements.resize(nelems);
+  cpt->closest_pts.resize(nelems);
+  cpt->cpt_locs.resize(nelems);
+  cpt->element_ids.resize(nelems);
 
   PointType* closest_pts = &(cpt->closest_pts)[0];
-  int* cpt_locs          = &(cpt->cpt_locs)[0];
+  int* cpt_locs = &(cpt->cpt_locs)[0];
 
-  double minSqDist = std::numeric_limits< double >::max();
+  double minSqDist = std::numeric_limits<double>::max();
 
-  for ( int i=0 ; i < nelems ; ++i )
+  for(int i = 0; i < nelems; ++i)
   {
-
-    const int cellIdx = candidates[ i ];
-    cpt->element_ids[ i ] = cellIdx;
+    const int cellIdx = candidates[i];
+    cpt->element_ids[i] = cellIdx;
 
     axom::IndexType cellIds[3];
-    m_surfaceMesh->getCellNodeIDs( cellIdx, cellIds );
+    m_surfaceMesh->getCellNodeIDs(cellIdx, cellIds);
 
     TriangleType surface_element;
-    m_surfaceMesh->getNode( cellIds[0], surface_element[0].data() );
-    m_surfaceMesh->getNode( cellIds[1], surface_element[1].data() );
-    m_surfaceMesh->getNode( cellIds[2], surface_element[2].data() );
-    cpt->surface_elements[ i ] = surface_element;
+    m_surfaceMesh->getNode(cellIds[0], surface_element[0].data());
+    m_surfaceMesh->getNode(cellIds[1], surface_element[1].data());
+    m_surfaceMesh->getNode(cellIds[2], surface_element[2].data());
+    cpt->surface_elements[i] = surface_element;
 
-    closest_pts[ i ] =
-      axom::primal::closest_point( pt,surface_element,&cpt_locs[i] );
+    closest_pts[i] =
+      axom::primal::closest_point(pt, surface_element, &cpt_locs[i]);
 
-    double sqDist = axom::primal::squared_distance( pt,closest_pts[i] );
-    if ( sqDist < minSqDist )
+    double sqDist = axom::primal::squared_distance(pt, closest_pts[i]);
+    if(sqDist < minSqDist)
     {
-      minSqDist             = sqDist;
-      cpt->closest_point    = closest_pts[i];
-      cpt->cpt_location     = cpt_locs[i];
-      cpt->candidate_index  = i;
+      minSqDist = sqDist;
+      cpt->closest_point = closest_pts[i];
+      cpt->cpt_location = cpt_locs[i];
+      cpt->candidate_index = i;
     }
 
-  } // END for all elements
+  }  // END for all elements
 
   return minSqDist;
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS >
-double SignedDistance< NDIMS >::getMaxSqDistance( const BoxType& b,
-                                                  const PointType& pt ) const
+template <int NDIMS>
+double SignedDistance<NDIMS>::getMaxSqDistance(const BoxType& b,
+                                               const PointType& pt) const
 {
-  std::vector< PointType > pnts;
-  BoxType::getPoints( b, pnts );
+  std::vector<PointType> pnts;
+  BoxType::getPoints(b, pnts);
 
   const int npoints = pnts.size();
-  SLIC_ASSERT( npoints==4 || npoints==8 );
+  SLIC_ASSERT(npoints == 4 || npoints == 8);
 
-  double dist = std::numeric_limits< double >::min();
-  for ( int i=0 ; i < npoints ; ++i )
+  double dist = std::numeric_limits<double>::min();
+  for(int i = 0; i < npoints; ++i)
   {
-    dist = std::max( dist, axom::primal::squared_distance(pt,pnts[i]) );
-  } // END for all points
+    dist = std::max(dist, axom::primal::squared_distance(pt, pnts[i]));
+  }  // END for all points
 
   return dist;
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS >
-void SignedDistance< NDIMS >::getCandidateSurfaceElements(
+template <int NDIMS>
+void SignedDistance<NDIMS>::getCandidateSurfaceElements(
   const PointType& pt,
   const int* bins,
   int nbins,
-  std::vector< int >& candidates ) const
+  std::vector<int>& candidates) const
 {
   // Sanity checks
-  SLIC_ASSERT( m_surfaceMesh != nullptr );
-  SLIC_ASSERT( bins != nullptr );
+  SLIC_ASSERT(m_surfaceMesh != nullptr);
+  SLIC_ASSERT(bins != nullptr);
 
   // STEP 0: count total number of surface elements
   int nelems = 0;
-  for ( int ibin=0 ; ibin < nbins ; ++ibin )
+  for(int ibin = 0; ibin < nbins; ++ibin)
   {
-    const int bucketIdx = bins[ ibin ];
-    nelems += m_bvhTree->getBucketNumObjects( bucketIdx );
+    const int bucketIdx = bins[ibin];
+    nelems += m_bvhTree->getBucketNumObjects(bucketIdx);
   }
 
   // STEP 0: allocate array to store the distance of the bounding box of each
   // surface element to the query point.
-  int* surface_elements = new int[ nelems ];
-  double* dist          = new double[ nelems ];
-  int* objectIds        = new int[ nelems ];
-  int* indx             = new int[ nelems ];
+  int* surface_elements = new int[nelems];
+  double* dist = new double[nelems];
+  int* objectIds = new int[nelems];
+  int* indx = new int[nelems];
 
   // STEP 1: get flat array of the surface elements and compute distances
-  int icount( static_cast< int >(0) );
-  for ( int ibin=0 ; ibin < nbins ; ++ibin )
+  int icount(static_cast<int>(0));
+  for(int ibin = 0; ibin < nbins; ++ibin)
   {
+    const int binIdx = bins[ibin];
+    const int nobjects = m_bvhTree->getBucketNumObjects(binIdx);
+    const int* objList = m_bvhTree->getBucketObjectArray(binIdx);
 
-    const int binIdx   = bins[ ibin ];
-    const int nobjects = m_bvhTree->getBucketNumObjects( binIdx );
-    const int* objList = m_bvhTree->getBucketObjectArray( binIdx );
-
-    for ( int iobject=0 ; iobject < nobjects ; ++iobject )
+    for(int iobject = 0; iobject < nobjects; ++iobject)
     {
+      const int objectId = objList[iobject];
+      const int cellIdx = m_bvhTree->getObjectData(objectId);
+      BoxType bbox = m_bvhTree->getObjectBox(objectId);
 
-      const int objectId = objList[ iobject ];
-      const int cellIdx  = m_bvhTree->getObjectData( objectId );
-      BoxType bbox       = m_bvhTree->getObjectBox( objectId );
-
-//        dist[ icount ]           = this->getMaxSqDistance( bbox, pt );
-      dist[ icount ]           = axom::primal::squared_distance( pt, bbox );
-      objectIds[ icount ]      = objectId;
+      //        dist[ icount ]           = this->getMaxSqDistance( bbox, pt );
+      dist[icount] = axom::primal::squared_distance(pt, bbox);
+      objectIds[icount] = objectId;
       surface_elements[icount] = cellIdx;
-      indx[ icount ]           = icount;
+      indx[icount] = icount;
       ++icount;
 
     }  // END for all objects within the bin
 
-  } // END for all bins
+  }  // END for all bins
 
-  SLIC_ASSERT( icount==nelems );
+  SLIC_ASSERT(icount == nelems);
 
   // STEP 2: sort the indices based on distance
-  std::sort( indx, indx+nelems, detail::SortByDistance(dist) );
+  std::sort(indx, indx + nelems, detail::SortByDistance(dist));
 
   // STEP 3: filter out candidates
-  candidates.push_back( surface_elements[ indx[0] ] );
-  const BoxType& bbox = m_bvhTree->getObjectBox( objectIds[ indx[0] ] );
-  double maxDist = this->getMaxSqDistance( bbox, pt );
+  candidates.push_back(surface_elements[indx[0]]);
+  const BoxType& bbox = m_bvhTree->getObjectBox(objectIds[indx[0]]);
+  double maxDist = this->getMaxSqDistance(bbox, pt);
 
-  for ( int i=1 ; i < nelems ; ++i )
+  for(int i = 1; i < nelems; ++i)
   {
     const int idx = indx[i];
-    if ( dist[ idx ] < maxDist )
+    if(dist[idx] < maxDist)
     {
-      candidates.push_back( surface_elements[ idx ] );
+      candidates.push_back(surface_elements[idx]);
     }
   }
 
   // STEP 4: delete temporary distance array
-  delete [] dist;
-  delete [] objectIds;
-  delete [] indx;
-  delete [] surface_elements;
+  delete[] dist;
+  delete[] objectIds;
+  delete[] indx;
+  delete[] surface_elements;
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS >
-inline axom::primal::BoundingBox< double,NDIMS >
-SignedDistance< NDIMS >::getCellBoundingBox( axom::IndexType icell )
+template <int NDIMS>
+inline axom::primal::BoundingBox<double, NDIMS>
+SignedDistance<NDIMS>::getCellBoundingBox(axom::IndexType icell)
 {
   // Sanity checks
-  SLIC_ASSERT( m_surfaceMesh != nullptr );
-  SLIC_ASSERT( icell >= 0 && icell < m_surfaceMesh->getNumberOfCells() );
+  SLIC_ASSERT(m_surfaceMesh != nullptr);
+  SLIC_ASSERT(icell >= 0 && icell < m_surfaceMesh->getNumberOfCells());
 
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.
-  const mint::CellType cellType = m_surfaceMesh->getCellType( icell );
-  SLIC_ASSERT( cellType == mint::TRIANGLE ||
-               cellType == mint::QUAD ||
-               cellType == mint::SEGMENT );
-  const int nnodes = axom::mint::getCellInfo( cellType ).num_nodes;
+  const mint::CellType cellType = m_surfaceMesh->getCellType(icell);
+  SLIC_ASSERT(cellType == mint::TRIANGLE || cellType == mint::QUAD ||
+              cellType == mint::SEGMENT);
+  const int nnodes = axom::mint::getCellInfo(cellType).num_nodes;
 
   // Get the cell node IDs that make up the cell
-  axom::IndexType* cellIds = new axom::IndexType[ nnodes ];
-  m_surfaceMesh->getCellNodeIDs( icell, cellIds );
+  axom::IndexType* cellIds = new axom::IndexType[nnodes];
+  m_surfaceMesh->getCellNodeIDs(icell, cellIds);
 
   // compute the cell's bounding box
   BoxType bb;
   PointType pt;
 
-  for ( int i=0 ; i < nnodes ; ++i )
+  for(int i = 0; i < nnodes; ++i)
   {
-    m_surfaceMesh->getNode( cellIds[ i ], pt.data() );
-    bb.addPoint( pt );
-  } // END for all cell nodes
+    m_surfaceMesh->getNode(cellIds[i], pt.data());
+    bb.addPoint(pt);
+  }  // END for all cell nodes
 
   // clean up all dynamically allocated memory
-  delete [] cellIds;
+  delete[] cellIds;
 
-  return ( bb );
+  return (bb);
 }
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom
 
 #endif /* SIGNEDDISTANCE_HPP_ */

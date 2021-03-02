@@ -1,11 +1,10 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef SLAM_FIELD_REGISTRY_H_
 #define SLAM_FIELD_REGISTRY_H_
-
 
 #include "axom/slic.hpp"
 
@@ -19,14 +18,13 @@ namespace axom
 {
 namespace slam
 {
-
 /**
  * \brief Simple container for fields of type DataType w/ minimal error checking
  *
  * \note We are using concrete instances for int and double in the code below.
  *       This should eventually be replaced with the sidre datastore.
  */
-template<typename SetType, typename TheDataType>
+template <typename SetType, typename TheDataType>
 class FieldRegistry
 {
 public:
@@ -37,23 +35,21 @@ public:
   using BufferType = typename MapType::OrderedMap;
 
   using DataVecMap = std::map<KeyType, MapType>;
-  using DataBufferMap =  std::map<KeyType, BufferType>;
+  using DataBufferMap = std::map<KeyType, BufferType>;
   using DataAttrMap = std::map<KeyType, DataType>;
 
 public:
-
-
-  bool      hasField(const KeyType & key) const
+  bool hasField(const KeyType& key) const
   {
     return m_maps.find(key) != m_maps.end();
   }
 
-  MapType&  addField(KeyType key, const SetType* theSet)
+  MapType& addField(KeyType key, const SetType* theSet)
   {
     return m_maps[key] = MapType(theSet);
   }
 
-  MapType&  addNamelessField(const SetType* theSet)
+  MapType& addNamelessField(const SetType* theSet)
   {
     static int cnt = 0;
     std::stringstream key;
@@ -74,8 +70,7 @@ public:
     return m_maps[key];
   }
 
-
-  bool        hasBuffer(const KeyType & key) const
+  bool hasBuffer(const KeyType& key) const
   {
     return m_buff.find(key) != m_buff.end();
   }
@@ -99,22 +94,18 @@ public:
     verifyBufferKey(key);
     return m_buff[key];
   }
-  const BufferType & getBuffer(KeyType key) const
+  const BufferType& getBuffer(KeyType key) const
   {
     verifyBufferKey(key);
     return m_buff[key];
   }
 
-
-  bool      hasScalar(const KeyType & key) const
+  bool hasScalar(const KeyType& key) const
   {
     return m_scal.find(key) != m_scal.end();
   }
 
-  DataType& addScalar(KeyType key, DataType val)
-  {
-    return m_scal[key] = val;
-  }
+  DataType& addScalar(KeyType key, DataType val) { return m_scal[key] = val; }
 
   DataType& getScalar(KeyType key)
   {
@@ -129,40 +120,38 @@ public:
   }
 
 private:
-
-  std::string dataTypeString() const {
+  std::string dataTypeString() const
+  {
     return axom::slam::util::TypeToString<DataType>::to_string();
   }
 
   inline void verifyFieldsKey(const KeyType& AXOM_DEBUG_PARAM(key)) const
   {
-    SLIC_ASSERT_MSG(
-      hasField(key),
-      "Didn't find " << dataTypeString() << " field named " << key );
+    SLIC_ASSERT_MSG(hasField(key),
+                    "Didn't find " << dataTypeString() << " field named " << key);
   }
 
-  inline void verifyBufferKey(const KeyType & AXOM_DEBUG_PARAM(key)) const
+  inline void verifyBufferKey(const KeyType& AXOM_DEBUG_PARAM(key)) const
   {
     SLIC_ASSERT_MSG(
       hasBuffer(key),
-      "Didn't find " << dataTypeString() << " buffer named " <<  key );
+      "Didn't find " << dataTypeString() << " buffer named " << key);
   }
 
-  inline void verifyScalarKey(const KeyType & AXOM_DEBUG_PARAM(key)) const
+  inline void verifyScalarKey(const KeyType& AXOM_DEBUG_PARAM(key)) const
   {
     SLIC_ASSERT_MSG(
       hasScalar(key),
-      "Didn't find " << dataTypeString() << " scalar named " <<  key );
+      "Didn't find " << dataTypeString() << " scalar named " << key);
   }
 
 private:
-
   DataVecMap m_maps;
   DataBufferMap m_buff;
   DataAttrMap m_scal;
 };
 
-} // end namespace slam
-} // end namespace axom
+}  // end namespace slam
+}  // end namespace axom
 
-#endif // SLAM_FIELD_REGISTRY_H_
+#endif  // SLAM_FIELD_REGISTRY_H_

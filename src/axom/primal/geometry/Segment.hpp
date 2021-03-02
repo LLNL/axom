@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,18 +15,15 @@ namespace axom
 {
 namespace primal
 {
-
 // Forward declare the templated classes and operator functions
-template < typename T, int DIM >
+template <typename T, int DIM>
 class Segment;
-
 
 /*!
  * \brief Overloaded output operator for Segment
  */
-template < typename T, int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Segment< T,NDIMS > & seg);
-
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Segment<T, NDIMS>& seg);
 
 /*!
  * \class
@@ -38,14 +35,13 @@ std::ostream& operator<<(std::ostream & os, const Segment< T,NDIMS > & seg);
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  */
-template < typename T,int NDIMS >
+template <typename T, int NDIMS>
 class Segment
 {
 public:
-  typedef Point< T,NDIMS > PointType;
+  typedef Point<T, NDIMS> PointType;
 
 public:
-
   /*!
    * \brief Creates a segment instance from point A to point B.
    * \param A user-supplied source point
@@ -78,7 +74,7 @@ public:
    * \post If \f$ t = 0, \f$ the return point \f$ P = A. \f$
    * \post If \f$ t = 1, \f$ the return point \f$ P = B. \f$
    */
-  PointType at( const T& t) const
+  PointType at(const T& t) const
   {
     return PointType::lerp(m_source, m_target, t);
   }
@@ -88,7 +84,7 @@ public:
    */
   double length() const
   {
-    typedef Vector< T, NDIMS > VectorType;
+    typedef Vector<T, NDIMS> VectorType;
     return VectorType(m_source, m_target).norm();
   }
 
@@ -99,18 +95,17 @@ public:
    */
   std::ostream& print(std::ostream& os) const
   {
-    os <<"{source:"<< m_source<<"; target:"<< m_target<< "}";
+    os << "{source:" << m_source << "; target:" << m_target << "}";
 
     return os;
   }
 
 private:
-
   /*!
    * \brief Default Constructor. Does nothing.
    * \note Made private to prevent its use in application code.
    */
-  Segment() { };
+  Segment() {};
 
   PointType m_source;
   PointType m_target;
@@ -126,27 +121,26 @@ namespace axom
 {
 namespace primal
 {
-
-template < typename T, int NDIMS >
-Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B) :
-  m_source( A ),
-  m_target( B )
-{}
+template <typename T, int NDIMS>
+Segment<T, NDIMS>::Segment(const PointType& A, const PointType& B)
+  : m_source(A)
+  , m_target(B)
+{ }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-Segment< T,NDIMS >::~Segment() { }
+template <typename T, int NDIMS>
+Segment<T, NDIMS>::~Segment()
+{ }
 
 //------------------------------------------------------------------------------
 /// Free functions implementing Segments's operators
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Segment< T,NDIMS > & seg)
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Segment<T, NDIMS>& seg)
 {
   seg.print(os);
   return os;
 }
-
 
 } /* namespace primal */
 } /* namespace axom */

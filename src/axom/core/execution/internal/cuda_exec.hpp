@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,16 +13,15 @@
 #include "umpire/Umpire.hpp"
 
 #ifndef RAJA_ENABLE_CUDA
-#error *** CUDA_EXEC requires a CUDA enabled RAJA ***
+  #error CUDA_EXEC requires a CUDA enabled RAJA
 #endif
 
 #if !defined(UMPIRE_ENABLE_CUDA) && !defined(UMPIRE_ENABLE_UM)
-#error *** CUDA_EXEC requires a CUDA enabled UMPIRE with UM support ***
+  #error CUDA_EXEC requires a CUDA enabled UMPIRE with UM support
 #endif
 
 namespace axom
 {
-
 enum ExecutionMode
 {
   SYNCHRONOUS,
@@ -35,8 +34,9 @@ enum ExecutionMode
  * \tparam BLOCK_SIZE the number of CUDA threads in a block.
  * \tparam ExecutionMode indicates synchronous or asynchronous execution.
  */
-template < int BLOCK_SIZE, ExecutionMode EXEC_MODE=SYNCHRONOUS >
-struct CUDA_EXEC { };
+template <int BLOCK_SIZE, ExecutionMode EXEC_MODE = SYNCHRONOUS>
+struct CUDA_EXEC
+{ };
 
 /*!
  * \brief execution_space traits specialization for CUDA_EXEC.
@@ -44,22 +44,23 @@ struct CUDA_EXEC { };
  * \tparam BLOCK_SIZE the number of CUDA threads to launch
  *
  */
-template < int BLOCK_SIZE >
-struct execution_space< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
+template <int BLOCK_SIZE>
+struct execution_space<CUDA_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
 {
-  using loop_policy   = RAJA::cuda_exec< BLOCK_SIZE >;
+  using loop_policy = RAJA::cuda_exec<BLOCK_SIZE>;
 
   using reduce_policy = RAJA::cuda_reduce;
   using atomic_policy = RAJA::cuda_atomic;
-  using sync_policy   = RAJA::cuda_synchronize;
+  using sync_policy = RAJA::cuda_synchronize;
 
   static constexpr bool async() noexcept { return false; };
   static constexpr bool valid() noexcept { return true; };
   static constexpr bool onDevice() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC]"; };
   static int allocatorID() noexcept
-  { return axom::getUmpireResourceAllocatorID(umpire::resource::Unified); };
-
+  {
+    return axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  };
 };
 
 /*!
@@ -68,24 +69,26 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
  * \tparam BLOCK_SIZE the number of CUDA threads to launch
  *
  */
-template < int BLOCK_SIZE >
-struct execution_space< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
+template <int BLOCK_SIZE>
+struct execution_space<CUDA_EXEC<BLOCK_SIZE, ASYNC>>
 {
-  using loop_policy = RAJA::cuda_exec_async< BLOCK_SIZE >;
+  using loop_policy = RAJA::cuda_exec_async<BLOCK_SIZE>;
 
   using reduce_policy = RAJA::cuda_reduce;
   using atomic_policy = RAJA::cuda_atomic;
-  using sync_policy   = RAJA::cuda_synchronize;
+  using sync_policy = RAJA::cuda_synchronize;
 
   static constexpr bool async() noexcept { return true; };
   static constexpr bool valid() noexcept { return true; };
   static constexpr bool onDevice() noexcept { return true; };
-  static constexpr char* name() noexcept {
+  static constexpr char* name() noexcept
+  {
     return (char*)"[CUDA_EXEC] (async)";
   };
   static int allocatorID() noexcept
-  { return axom::getUmpireResourceAllocatorID(umpire::resource::Unified); };
-
+  {
+    return axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  };
 };
 } /* namespace axom */
 

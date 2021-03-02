@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,26 +7,26 @@
 
 #include "axom/sidre/core/sidre.hpp"
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
+using axom::sidre::Group;
+using axom::sidre::indexIsValid;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
-using axom::sidre::indexIsValid;
 using axom::sidre::InvalidName;
 using axom::sidre::nameIsValid;
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_smoke,create_datastore)
+TEST(sidre_smoke, create_datastore)
 {
   DataStore* ds = new DataStore();
   delete ds;
-  EXPECT_TRUE( true );
+  EXPECT_TRUE(true);
 }
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_smoke,valid_invalid)
+TEST(sidre_smoke, valid_invalid)
 {
   DataStore* ds = new DataStore();
 
@@ -46,10 +46,10 @@ TEST(sidre_smoke,valid_invalid)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_smoke,conduit_in_sidre_smoke)
+TEST(sidre_smoke, conduit_in_sidre_smoke)
 {
   // make sure we are linking with conduit ok.
   conduit::Node n;
   n["field"] = 100;
-  EXPECT_EQ(n["field"].to_index_t(),100u);
+  EXPECT_EQ(n["field"].to_index_t(), 100u);
 }

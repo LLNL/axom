@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,25 +10,23 @@
 #include <sstream>
 #include <cerrno>
 
-#include <cstdio>                       // defines FILENAME_MAX
+#include <cstdio>  // defines FILENAME_MAX
 
 #ifdef WIN32
-    #include <direct.h>
-    #include <sys/stat.h>
+  #include <direct.h>
+  #include <sys/stat.h>
 
-    #define GetCurrentDir    _getcwd
-    #define ChangeCurrentDir _chdir
-    #define Stat _stat
+  #define GetCurrentDir _getcwd
+  #define ChangeCurrentDir _chdir
+  #define Stat _stat
 #else
-    #include <unistd.h>                 // for getcwd
-    #include <sys/stat.h>               // for stat
+  #include <unistd.h>    // for getcwd
+  #include <sys/stat.h>  // for stat
 
-    #define GetCurrentDir    getcwd
-    #define ChangeCurrentDir chdir
-    #define Stat stat
+  #define GetCurrentDir getcwd
+  #define ChangeCurrentDir chdir
+  #define Stat stat
 #endif
-
-
 
 namespace axom
 {
@@ -36,12 +34,11 @@ namespace utilities
 {
 namespace filesystem
 {
-
 std::string getCWD()
 {
   char cCurrentPath[FILENAME_MAX];
 
-  if (!GetCurrentDir(cCurrentPath, FILENAME_MAX))
+  if(!GetCurrentDir(cCurrentPath, FILENAME_MAX))
   {
     //Note: Cannot use logging in COMMON component -- topic of JIRA issue
     // ATK-463
@@ -55,7 +52,7 @@ std::string getCWD()
 
 int changeCWD(const std::string& dirName)
 {
-  return ChangeCurrentDir( dirName.c_str() );
+  return ChangeCurrentDir(dirName.c_str());
 }
 
 //-----------------------------------------------------------------------------
@@ -68,18 +65,17 @@ bool pathExists(const std::string& fileName)
 }
 
 //-----------------------------------------------------------------------------
-std::string joinPath(const std::string& fileDir, const std::string& fileName,
+std::string joinPath(const std::string& fileDir,
+                     const std::string& fileName,
                      const std::string& separator)
 {
   // Check if we need to add a separator
-  bool pathNeedsSep = !fileDir.empty()
-                      && (fileDir[ fileDir.size() -1] != separator[0]);
+  bool pathNeedsSep =
+    !fileDir.empty() && (fileDir[fileDir.size() - 1] != separator[0]);
 
   // Concatenate the path with the fileName to create the full path
   std::stringstream fullFileNameStream;
-  fullFileNameStream << fileDir
-                     << (pathNeedsSep ? separator : "" )
-                     << fileName;
+  fullFileNameStream << fileDir << (pathNeedsSep ? separator : "") << fileName;
 
   return fullFileNameStream.str();
 }
@@ -87,25 +83,23 @@ std::string joinPath(const std::string& fileDir, const std::string& fileName,
 //-----------------------------------------------------------------------------
 int makeDirsForPath(const std::string& path)
 {
-
   char separator = '/';
   std::string::size_type pos = 0;
   int err = 0;
 
   do
   {
-    pos = path.find(separator, pos+1);
+    pos = path.find(separator, pos + 1);
     std::string dir_name = path.substr(0, pos);
 #ifdef WIN32
     err = _mkdir(dir_name.c_str());
 #else
-    mode_t mode = 0770;     // user and group rwx permissions
+    mode_t mode = 0770;  // user and group rwx permissions
     err = mkdir(dir_name.c_str(), mode);
 #endif
     err = (err && (errno != EEXIST)) ? 1 : 0;
 
-  }
-  while (pos != std::string::npos);
+  } while(pos != std::string::npos);
 
   return err;
 }
@@ -116,9 +110,9 @@ void getDirName(std::string& dir, const std::string& path)
   char separator = '/';
 
   std::size_t found = path.rfind(separator);
-  if (found != std::string::npos)
+  if(found != std::string::npos)
   {
-    dir = path.substr(0,found);
+    dir = path.substr(0, found);
   }
   else
   {
@@ -126,6 +120,6 @@ void getDirName(std::string& dir, const std::string& path)
   }
 }
 
-}   // end namespace filesystem
-}   // end namespace utilities
-}   // end namespace axom
+}  // end namespace filesystem
+}  // end namespace utilities
+}  // end namespace axom

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,8 +18,7 @@ namespace axom
 {
 namespace mint
 {
-
-static const double TRI_ONE_THIRD =  1.0/3.0;
+static const double TRI_ONE_THIRD = 1.0 / 3.0;
 
 /*!
  * \brief Lagrange Finite Element definition for the Linear Triangle.
@@ -40,12 +39,10 @@ static const double TRI_ONE_THIRD =  1.0/3.0;
  *
  * \see ShapeFunction
  */
-template < >
-class Lagrange< mint::TRIANGLE > :
-  public ShapeFunction< Lagrange< mint::TRIANGLE > >
+template <>
+class Lagrange<mint::TRIANGLE> : public ShapeFunction<Lagrange<mint::TRIANGLE>>
 {
 public:
-
   static CellType getCellType() { return mint::TRIANGLE; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
@@ -60,58 +57,56 @@ public:
 
   static double getMax() { return 1; }
 
-  static void getCenter( double* center )
+  static void getCenter(double* center)
   {
-    SLIC_ASSERT( center != nullptr );
-    center[ 0 ] = center[ 1 ] = TRI_ONE_THIRD;
+    SLIC_ASSERT(center != nullptr);
+    center[0] = center[1] = TRI_ONE_THIRD;
   }
 
-  static void getCoords( double* coords )
+  static void getCoords(double* coords)
   {
-    SLIC_ASSERT( coords != nullptr );
+    SLIC_ASSERT(coords != nullptr);
 
     // node 0
-    coords[ 0 ] = 0.0;
-    coords[ 1 ] = 0.0;
+    coords[0] = 0.0;
+    coords[1] = 0.0;
 
     // node 1
-    coords[ 2 ] = 1.0;
-    coords[ 3 ] = 0.0;
+    coords[2] = 1.0;
+    coords[3] = 0.0;
 
     // node 2
-    coords[ 4 ] = 0.0;
-    coords[ 5 ] = 1.0;
+    coords[4] = 0.0;
+    coords[5] = 1.0;
   }
 
-  static void computeShape( const double* xr, double* phi )
+  static void computeShape(const double* xr, double* phi)
   {
-    SLIC_ASSERT(  xr != nullptr );
-    SLIC_ASSERT(  phi != nullptr );
+    SLIC_ASSERT(xr != nullptr);
+    SLIC_ASSERT(phi != nullptr);
 
-    const double r  = xr[0];
-    const double s  = xr[1];
+    const double r = xr[0];
+    const double s = xr[1];
 
-    phi[ 0 ] = 1 - r - s;
-    phi[ 1 ] = r;
-    phi[ 2 ] = s;
+    phi[0] = 1 - r - s;
+    phi[1] = r;
+    phi[2] = s;
   }
 
-  static void computeDerivatives( const double* AXOM_NOT_USED(xr),
-                                  double* phidot )
+  static void computeDerivatives(const double* AXOM_NOT_USED(xr), double* phidot)
   {
-    SLIC_ASSERT( phidot != nullptr );
+    SLIC_ASSERT(phidot != nullptr);
 
     // r derivatives
-    phidot[ 0 ] = -1;
-    phidot[ 1 ] = 1;
-    phidot[ 2 ] = 0;
+    phidot[0] = -1;
+    phidot[1] = 1;
+    phidot[2] = 0;
 
     // s derivatives
-    phidot[ 3 ] = -1;
-    phidot[ 4 ] = 0;
-    phidot[ 5 ] = 1;
+    phidot[3] = -1;
+    phidot[4] = 0;
+    phidot[5] = 1;
   }
-
 };
 
 } /* namespace mint */

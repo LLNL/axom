@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,7 +15,6 @@ namespace axom
 {
 namespace sidre
 {
-
 /*
  * Groups are traversed in a depth first order by keeping a stack of
  * Groups in the current path starting with the initial group at the
@@ -60,38 +59,29 @@ struct Iterator::Cursor
   bool m_is_group;
   bool m_is_first_view;
 
-/*
+  /*
  *************************************************************************
  * Return true if Cursor references a Group.
  *************************************************************************
  */
-  bool isGroup()
-  {
-    return m_iview == InvalidIndex ? true : false;
-  }
+  bool isGroup() { return m_iview == InvalidIndex ? true : false; }
 
-/*
+  /*
  *************************************************************************
  * Return true if Cursor references a View.
  *************************************************************************
  */
-  bool isView()
-  {
-    return m_iview == InvalidIndex ? false : true;
-  }
+  bool isView() { return m_iview == InvalidIndex ? false : true; }
 
-/*
+  /*
  *************************************************************************
  *  If the Cursor represents a Group, return the Group. Else,
  *  return nullptr
  *************************************************************************
  */
-  Group* getCurrentGroup()
-  {
-    return m_iview == InvalidIndex ? m_grp : nullptr;
-  }
+  Group* getCurrentGroup() { return m_iview == InvalidIndex ? m_grp : nullptr; }
 
-/*
+  /*
  *************************************************************************
  *  If the Cursor represents a View, return the View. Else,
  *  return nullptr
@@ -116,18 +106,18 @@ struct Iterator::Cursor
  */
 void Iterator::findDeepestGroup(Group* grp)
 {
-  while (true)
+  while(true)
   {
     Iterator::Cursor* state = new Iterator::Cursor;
-    state->m_grp    = grp;
+    state->m_grp = grp;
     state->m_igroup = grp->getFirstValidGroupIndex();
-    state->m_iview  = grp->getFirstValidViewIndex();
+    state->m_iview = grp->getFirstValidViewIndex();
     state->m_is_group = false;
     state->m_is_first_view = false;
 
     m_stack.push(state);
 
-    if (state->m_igroup == InvalidIndex)
+    if(state->m_igroup == InvalidIndex)
     {
       // This Group has no Groups.
       break;
@@ -139,7 +129,7 @@ void Iterator::findDeepestGroup(Group* grp)
 
   // Check last Group pushed to see if it represents a Group or View
   Iterator::Cursor* state = m_stack.top();
-  if (state->isView())
+  if(state->isView())
   {
     // Start by visiting the first View
     state->m_is_first_view = true;
@@ -148,7 +138,6 @@ void Iterator::findDeepestGroup(Group* grp)
   {
     state->m_is_group = true;
   }
-
 }
 
 /*
@@ -158,10 +147,7 @@ void Iterator::findDeepestGroup(Group* grp)
  * Setup for a depth first query by following down grp to the bottom.
  *************************************************************************
  */
-Iterator::Iterator(Group* grp)
-{
-  findDeepestGroup(grp);
-}
+Iterator::Iterator(Group* grp) { findDeepestGroup(grp); }
 
 /*
  *************************************************************************
@@ -172,13 +158,12 @@ Iterator::~Iterator()
 {
   // If the Iterator is destoryed before it has iterated over all
   // Groups or Views, m_stack will not be empty.
-  while ( !m_stack.empty())
+  while(!m_stack.empty())
   {
     delete m_stack.top();
     m_stack.pop();
   }
 }
-
 
 /*
  *************************************************************************
@@ -186,10 +171,7 @@ Iterator::~Iterator()
  *  Return false if the Iterator has finished its traversal.
  *************************************************************************
  */
-bool Iterator::isValid()
-{
-  return !m_stack.empty();
-}
+bool Iterator::isValid() { return !m_stack.empty(); }
 
 /*
  *************************************************************************
@@ -204,40 +186,40 @@ bool Iterator::isValid()
  */
 void Iterator::advanceToNext()
 {
-  while ( !m_stack.empty())
+  while(!m_stack.empty())
   {
     Iterator::Cursor* state = m_stack.top();
     Group* grp = state->m_grp;
 
-    if (state->m_igroup != InvalidIndex)
+    if(state->m_igroup != InvalidIndex)
     {
       state->m_igroup = grp->getNextValidGroupIndex(state->m_igroup);
-      if (state->m_igroup != InvalidIndex)
+      if(state->m_igroup != InvalidIndex)
       {
         Group* nextgrp = grp->getGroup(state->m_igroup);
         findDeepestGroup(nextgrp);
-        return; // Found a Group
+        return;  // Found a Group
       }
     }
 
-    if (state->m_iview != InvalidIndex)
+    if(state->m_iview != InvalidIndex)
     {
-      if (state->m_is_first_view == false)
+      if(state->m_is_first_view == false)
       {
         state->m_is_first_view = true;
-        return; // iview is the first view
+        return;  // iview is the first view
       }
       else
       {
         state->m_iview = grp->getNextValidViewIndex(state->m_iview);
-        if (state->m_iview != InvalidIndex)
+        if(state->m_iview != InvalidIndex)
         {
-          return; // Found a View.
+          return;  // Found a View.
         }
       }
     }
 
-    if (state->m_is_group == false)
+    if(state->m_is_group == false)
     {
       state->m_is_group = true;
       return;
@@ -259,7 +241,7 @@ void Iterator::advanceToNext()
  */
 bool Iterator::isGroup() const
 {
-  if (m_stack.empty())
+  if(m_stack.empty())
   {
     return false;
   }
@@ -276,7 +258,7 @@ bool Iterator::isGroup() const
  */
 bool Iterator::isView() const
 {
-  if (m_stack.empty())
+  if(m_stack.empty())
   {
     return false;
   }
@@ -293,7 +275,7 @@ bool Iterator::isView() const
  */
 Group* Iterator::asGroup()
 {
-  if (m_stack.empty())
+  if(m_stack.empty())
   {
     return nullptr;
   }
@@ -310,7 +292,7 @@ Group* Iterator::asGroup()
  */
 Group const* Iterator::asGroup() const
 {
-  if (m_stack.empty())
+  if(m_stack.empty())
   {
     return nullptr;
   }
@@ -327,7 +309,7 @@ Group const* Iterator::asGroup() const
  */
 View* Iterator::asView()
 {
-  if (m_stack.empty())
+  if(m_stack.empty())
   {
     return nullptr;
   }
@@ -344,7 +326,7 @@ View* Iterator::asView()
  */
 View const* Iterator::asView() const
 {
-  if (m_stack.empty())
+  if(m_stack.empty())
   {
     return nullptr;
   }
@@ -359,16 +341,16 @@ View const* Iterator::asView() const
  *
  *************************************************************************
  */
-const std::string & Iterator::getName() const
+const std::string& Iterator::getName() const
 {
-  if (m_stack.empty())
+  if(m_stack.empty())
   {
     return InvalidName;
   }
 
   Iterator::Cursor* state = m_stack.top();
 
-  if (state->isView())
+  if(state->isView())
   {
     View* view = state->m_grp->getView(state->m_iview);
     return view->getName();
@@ -387,9 +369,9 @@ const std::string & Iterator::getName() const
  */
 std::string Iterator::getPath() const
 {
-#if 1
+  #if 1
   std::string thePath("here");
-#else
+  #else
   const Group* root = getDataStore()->getRoot();
   const Group* curr = getParent();
   std::string thePath = curr->getName();
@@ -400,7 +382,7 @@ std::string Iterator::getPath() const
     thePath = curr->getName() + s_path_delimiter + thePath;
     curr = curr->getParent();
   }
-#endif
+  #endif
 
   return thePath;
 }

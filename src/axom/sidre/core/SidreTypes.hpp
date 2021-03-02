@@ -1,8 +1,7 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-
 
 /**
  *  \file SidreTypes.hpp
@@ -39,7 +38,6 @@ using DataType = conduit::DataType;
  */
 using Schema = conduit::Schema;
 
-
 /*!
  * \brief IndexType is used for any labeling of a sidre object by an
  *        integer identifier.
@@ -57,10 +55,7 @@ const IndexType InvalidIndex = SIDRE_InvalidIndex;
  * Used for the loop test when iterating over the
  * Buffers or Attributes in a DataStore or the Views or Groups in a Group.
  */
-inline bool indexIsValid(IndexType idx)
-{
-  return idx != InvalidIndex;
-}
+inline bool indexIsValid(IndexType idx) { return idx != InvalidIndex; }
 
 /*!
  * \brief Common invalid name (string) identifier used in sidre.
@@ -70,10 +65,7 @@ const std::string InvalidName;
 /*!
  * \brief Returns true if name is valid, else false.
  */
-inline bool nameIsValid(const std::string& name)
-{
-  return name != InvalidName;
-}
+inline bool nameIsValid(const std::string& name) { return name != InvalidName; }
 
 /*!
  * \brief Enum that holds the numeric data type id options for sidre types.
@@ -82,18 +74,18 @@ inline bool nameIsValid(const std::string& name)
 enum DataTypeId
 {
   NO_TYPE_ID = SIDRE_NO_TYPE_ID,
-  INT8_ID  = SIDRE_INT8_ID,
+  INT8_ID = SIDRE_INT8_ID,
   INT16_ID = SIDRE_INT16_ID,
   INT32_ID = SIDRE_INT32_ID,
   INT64_ID = SIDRE_INT64_ID,
 
-  UINT8_ID  = SIDRE_UINT8_ID,
+  UINT8_ID = SIDRE_UINT8_ID,
   UINT16_ID = SIDRE_UINT16_ID,
   UINT32_ID = SIDRE_UINT32_ID,
   UINT64_ID = SIDRE_UINT64_ID,
 
-  FLOAT32_ID   = SIDRE_FLOAT32_ID,
-  FLOAT64_ID   = SIDRE_FLOAT64_ID,
+  FLOAT32_ID = SIDRE_FLOAT32_ID,
+  FLOAT64_ID = SIDRE_FLOAT64_ID,
 
   CHAR8_STR_ID = SIDRE_CHAR8_STR_ID,
 
@@ -113,55 +105,65 @@ enum DataTypeId
  */
 namespace detail
 {
-
 /*!
  * \brief Type traits to assist in converting compiler types to the appropriate
  *  data type ids.
  */
-template<typename T> struct SidreTT
+template <typename T>
+struct SidreTT
 {
   static const DataTypeId id = NO_TYPE_ID;
 };
 
-template<> struct SidreTT<axom::int8>
+template <>
+struct SidreTT<axom::int8>
 {
   static const DataTypeId id = INT8_ID;
 };
-template<> struct SidreTT<axom::int16>
+template <>
+struct SidreTT<axom::int16>
 {
   static const DataTypeId id = INT16_ID;
 };
-template<> struct SidreTT<axom::int32>
+template <>
+struct SidreTT<axom::int32>
 {
   static const DataTypeId id = INT32_ID;
 };
-template<> struct SidreTT<axom::int64>
+template <>
+struct SidreTT<axom::int64>
 {
   static const DataTypeId id = INT64_ID;
 };
 
-template<> struct SidreTT<axom::uint8>
+template <>
+struct SidreTT<axom::uint8>
 {
   static const DataTypeId id = UINT8_ID;
 };
-template<> struct SidreTT<axom::uint16>
+template <>
+struct SidreTT<axom::uint16>
 {
   static const DataTypeId id = UINT16_ID;
 };
-template<> struct SidreTT<axom::uint32>
+template <>
+struct SidreTT<axom::uint32>
 {
   static const DataTypeId id = UINT32_ID;
 };
-template<> struct SidreTT<axom::uint64>
+template <>
+struct SidreTT<axom::uint64>
 {
   static const DataTypeId id = UINT64_ID;
 };
 
-template<> struct SidreTT<axom::float32>
+template <>
+struct SidreTT<axom::float32>
 {
   static const DataTypeId id = FLOAT32_ID;
 };
-template<> struct SidreTT<axom::float64>
+template <>
+struct SidreTT<axom::float64>
 {
   static const DataTypeId id = FLOAT64_ID;
 };
@@ -178,13 +180,12 @@ using TypeID = DataTypeId;
  *
  *  Used to convert C defines to C++ enumerations.
  */
-inline TypeID getTypeID( const int typeID )
+inline TypeID getTypeID(const int typeID)
 {
   return static_cast<TypeID>(typeID);
 }
 
 } /* end namespace sidre */
 } /* end namespace axom */
-
 
 #endif /* SIDRE_TYPES_HPP_ */

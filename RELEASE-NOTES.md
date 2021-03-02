@@ -1,3 +1,13 @@
+
+[comment]: # (#################################################################)
+[comment]: # (Copyright 2017-2021, Lawrence Livermore National Security, LLC)
+[comment]: # (and Axom Project Developers. See the top-level COPYRIGHT file)
+[comment]: # (for details.)
+[comment]: #
+[comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
+[comment]: # (#################################################################)
+
+
 # Axom Software Release Notes
 
 Notes describing significant changes in each Axom release are documented
@@ -7,9 +17,78 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Release date yyyy-mm-dd
+## Unreleased
 
 ### Added
+- Added the MFEMSidreDataCollection class for HDF5-format simulation data collection.  This
+  class was adapted from MFEM's SidreDataCollection and is enabled when Axom is built with MFEM
+  *and* the `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` CMake option is enabled.
+- Added `slic::setAbortFunction` to configure a custom callback when SLIC aborts.
+- Added a `batched` option to quest's InOutOctree containment query example application.
+  This uses a kernel to test for containment on an array of points.
+  The query uses OpenMP threading, when available.
+- Inlet: Added support for user-defined conversions from Inlet tables to user-defined
+  types, and support for arrays of user-defined types
+- Added compiler define `NOMINMAX` to `axom/config.hpp.in` to avoid problems with
+  the Windows `min` and `max` macros.
+- Added `cpp14` variant to Spack package to allow `Inlet::LuaReader` to be used easier.
+- Inlet: Added support for string-keyed associative arrays (dictionaries)
+- Inlet: Added support for defining and retrieving functions from the input file
+- Inlet: Added support for YAML and JSON input files
+- Inlet: Added support for mixed-key (integer and string) associative arrays
+- Inlet: Added support for deeply nested containers of structs
+- Inlet: Added support for `void` and strings in Lua-defined functions
+- Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
+
+### Changed
+- The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
+  You can explicitly rewire using the static
+  `DataStore::setConduitSLICMessageHandlers()` method.
+- Inlet: Fixed `SchemaCreator` to an abstract class and added missing functions
+- Inlet: Added ability to access the `Reader` class from `Inlet` and Sol Lua state
+  from the `LuaReader` class
+- Inlet: Switched accessor interface to match that of the STL with operator[] and
+  T get<T>()
+- Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
+  and `std::unique_ptr<T>` in owning contexts - specifically, within Inlet's internal
+  tree structure
+- Unified core and SPIO unit tests into fewer executables to limit size of build directory
+- Renamed `axom::slic::UnitTestLogger` to `axom::slic:SimpleLogger` because it's used in
+  more than just unit tests.
+- Inlet: Input file functions can now be of arbitrary signature subject to type and arity
+  restrictions
+- Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
+- Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
+- Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
+- Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
+- The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
+  datastore is `Load` ed in
+- Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
+- Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
+- Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
+- Inlet: Renamed `Table` to `Container`
+- Inlet collections of mixed or incorrect type will now fail verification, even if they're
+  not marked as required
+- Required collections no longer fail Inlet verification if they are empty in the input file
+
+### Fixed
+- Updated to new BLT version that does not fail when ClangFormat returns an empty
+  version string.  BLT/Axom now issues a warning and disables the `style` build
+  target if version is unknown or wrong.
+- Inlet: Apply lambda verifiers on generic containers to individual elements
+  for consistency
+- Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
+- Fixed a bug relating to deeply nested callback functions in Inlet
+- Inlet: Always ignore primitive array elements that do not match the requested type
+- Inlet: Empty structs/collections of structs with required sub-elements no longer fail
+  verification
+
+
+## [Version 0.4.0] - Release date 2020-09-22
+
+### Added
+- Exposed the tolerance parameter `EPS` that is used to determine intersections between
+  triangles in `primal:intersect()` as an optional final parameter.
 - Added BVH spatial index option to the `mesh_tester` utility for calculating
   triangle-triangle intersection.
 - Added `axom::execution_space< ExecSpace >::onDevice()` to check if execution
@@ -25,8 +104,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   an input deck.
 - Added the ability to specify an [Umpire] allocator ID to use with the
   BVH. This allows the application to use a device allocator for the BVH and 
-  avoid use of UM on the GPU, which can hinder perfomrmance, or use a pool
-  allocator to mitigate the latencies associated with allocation/deallocation.
+  avoid use of Unified Memory (UM) on the GPU, which can hinder perfomrmance, 
+  or use a pool allocator to mitigate the latencies associated with allocation/deallocation.
   The allocator ID is specified as an optional argument to the BVH constructor.
 - Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
   annotations in Axom. Default is OFF.
@@ -53,17 +132,27 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   candidate BVH bins that intersect each bounding box.
 - Added an `axom-config.cmake` file to axom's installation to streamline incorporating axom
   into user applications. See `<axom-install>/examples/axom` for example usages.
+- Added [Sol] as a built-in TPL for fast and simple `C++` and `Lua` binding.
+  Sol is automatically enabled when `LUA_DIR` is found. 
+  The version of Sol used in this release is `v2.20.6`, which requires `C++14`.
 
 ### Removed
+- Removed the `AXOM_ENABLE_CUB` option, since `CUB` is no lonher used directly in
+  Axom code. Instead, we use `RAJA::stable_sort` with RAJA-v0.12.1 and fallback
+  to `std::stable_sort` with older versions of RAJA and when the code is built
+  without RAJA.
 
 ### Deprecated
 
 ### Changed
+- Updated Axom to support RAJA-v0.12.1 and Umpire-v4.01, but the code remains
+  backwards compatible with previous versions of RAJA and Umpire.
+- Transitioned Axom's code formatting tool from `Uncrustify` to [clang-format].
+  Axom's clang-format rules depend on clang 10.
 - Modified the command line interface for `mesh_tester` utility. Interface
   now uses a *-m, --method* option to select the spatial index, and *-p, policy*
   option now accepts a string or integer value.
 - Renamed the `AXOM_USE_MPI3`option to `AXOM_ENABLE_MPI3` for consistency.
-- Renamed the `AXOM_USE_CUB` option to `AXOM_ENABLE_CUB` for consistency.
 - Modified the API for the BVH to accomodate different query types. The queries are now
   more explicitly called `BVH::findPoints()` and `BVH::findRays()`.
 - Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
@@ -79,6 +168,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `iomanager_new` is now `IOManager`
 
 ### Fixed
+- Fixed a bug in `primal::intersect(Segment, BoundingBox)` and added regression tests.
+- Spin's octrees can now be used with 64-bit indexes. This allows octrees 
+  with up to 64 levels of resolution when using a 64-bit index type.
+- Resolved issue with `AXOM_USE_64BIT_INDEXTYPE` configurations. Axom can once again
+  be configured with 64-bit index types.
+- Fixed a triangle-triangle intersection case in primal that produced inconsistent results
+  depending on the order of the triangle's vertices.
 - Fixed issue in the parallel construction of the BVH on GPUs, due to incoherent
   L1 cache that could result in some data corruption in the BVH. The code now
   calls ``__threadfence_system()`` after the parent is computed and stored back
@@ -105,7 +201,15 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   ("zero-to-axom support on Windows")
 
 ### Known Bugs
-
+- Encountered a compiler bug on IBM LC platforms when using the IBM XL C/C++
+  compiler. The issue is manifested in the `generate_aabbs_and_centroids` method
+  in the `spin_bvh.cpp` unit test. It seems that the compiler does not handle
+  the lambda capture of the arrays correctly which leads to a segfault. A
+  workaround for the IBM XL compiler is provided.
+- There is a known bug in MVAPICH that prevents consecutive creation/deletion
+  of MPI windows. This was encountered on LC platforms when enabling shared
+  memory in the Signed Distance Query. See the corresponding 
+  [Github Issue](https://github.com/LLNL/axom/issues/257) for details.
 
 ## [Version 0.3.3] - Release date 2020-01-31
 
@@ -118,7 +222,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in third party library.
 
 ### Removed
-
+  
 ### Deprecated
 
 ### Changed
@@ -159,7 +263,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated Raja TPL to v0.9.0
 - Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
-  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  auto-detected based on whether `_OPENMP` is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
   Axom in parts of the code where OpenMP is enabled.
 
@@ -382,7 +486,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.3...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.4.0...develop
+[Version 0.4.0]: https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
 [Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
 [Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
@@ -392,3 +497,5 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
 [Umpire]: https://github.com/LLNL/Umpire
+[clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+[Sol]: https://github.com/ThePhD/sol2

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,7 +25,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *******************************************************************************
  * \class RootCommunicator
@@ -129,6 +128,7 @@ public:
    *****************************************************************************
    */
   bool isOutputNode();
+
 private:
   MPI_Comm m_mpiComm;
   int m_mpiCommRank;
@@ -136,7 +136,7 @@ private:
   int m_ranksLimit;
 };
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,25 +10,23 @@
 #include "axom/sidre/core/sidre.hpp"
 
 using axom::sidre::Buffer;
-using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::View;
 using axom::sidre::DataType;
+using axom::sidre::Group;
+using axom::sidre::View;
 
 namespace classtest
 {
-
 class Class1
 {
 public:
-
   Class1() { }
 
   explicit Class1(size_t len)
   {
     m_idata = std::vector<int>(len);
 
-    for (size_t ii = 0 ; ii < len ; ++ii)
+    for(size_t ii = 0; ii < len; ++ii)
     {
       m_idata[ii] = 3 * ii;
     }
@@ -38,8 +36,7 @@ public:
 
   void copyToGroup(Group* gp)
   {
-    gp->createView("idata",
-                   &m_idata[0])->apply(DataType::c_int(m_idata.size()));
+    gp->createView("idata", &m_idata[0])->apply(DataType::c_int(m_idata.size()));
   }
 
   void copyFromGroup(Group* gp)
@@ -49,29 +46,24 @@ public:
     m_idata = std::vector<int>(ilen);
 
     int* g_idata = iview->getData();
-    for (size_t ii = 0 ; ii < ilen ; ++ii)
+    for(size_t ii = 0; ii < ilen; ++ii)
     {
       m_idata[ii] = g_idata[ii];
     }
   }
 
-  void checkState(const Class1& class1)
-  {
-    checkState( &(class1.m_idata[0]) );
-  }
+  void checkState(const Class1& class1) { checkState(&(class1.m_idata[0])); }
 
   void checkState(Group* gp)
   {
-    int* idata_chk =
-      gp->getView("idata")->getData();
+    int* idata_chk = gp->getView("idata")->getData();
     checkState(idata_chk);
   }
 
 private:
-
   void checkState(const int* tidata)
   {
-    for (size_t ii = 0 ; ii < m_idata.size() ; ++ii)
+    for(size_t ii = 0; ii < m_idata.size(); ++ii)
     {
       EXPECT_EQ(m_idata[ii], tidata[ii]);
     }
@@ -83,7 +75,6 @@ private:
 class Class2
 {
 public:
-
   Class2() { }
 
   explicit Class2(size_t len)
@@ -92,7 +83,7 @@ public:
     m_ddata = std::vector<double>(len);
     m_class1 = Class1(len);
 
-    for (size_t ii = 0 ; ii < len ; ++ii)
+    for(size_t ii = 0; ii < len; ++ii)
     {
       m_idata[ii] = ii;
       m_ddata[ii] = 2.0 * m_idata[ii];
@@ -105,12 +96,14 @@ public:
 
   void copyToGroup(Group* gp)
   {
-    gp->createView("idata", &m_idata[0])->
-//     apply(DataType::c_int(m_idata.size()));
-    apply(axom::sidre::INT_ID, m_idata.size());
-    gp->createView("ddata", &m_ddata[0])->
-//     apply(DataType::c_double(m_ddata.size()));
-    apply(axom::sidre::DOUBLE_ID, m_ddata.size());
+    gp->createView("idata", &m_idata[0])
+      ->
+      //     apply(DataType::c_int(m_idata.size()));
+      apply(axom::sidre::INT_ID, m_idata.size());
+    gp->createView("ddata", &m_ddata[0])
+      ->
+      //     apply(DataType::c_double(m_ddata.size()));
+      apply(axom::sidre::DOUBLE_ID, m_ddata.size());
 
     Group* gp1 = gp->createGroup("myclass1");
 
@@ -120,12 +113,12 @@ public:
   void copyFromGroup(Group* gp)
   {
     View* iview = gp->getView("idata");
-    size_t ilen = iview->getBuffer()->getTotalBytes() /
-                  sizeof(CONDUIT_NATIVE_INT);
+    size_t ilen =
+      iview->getBuffer()->getTotalBytes() / sizeof(CONDUIT_NATIVE_INT);
     m_idata = std::vector<int>(ilen);
 
     int* g_idata = iview->getData();
-    for (size_t ii = 0 ; ii < ilen ; ++ii)
+    for(size_t ii = 0; ii < ilen; ++ii)
     {
       m_idata[ii] = g_idata[ii];
     }
@@ -135,7 +128,7 @@ public:
     m_ddata = std::vector<double>(dlen);
 
     double* g_ddata = dview->getData();
-    for (size_t ii = 0 ; ii < dlen ; ++ii)
+    for(size_t ii = 0; ii < dlen; ++ii)
     {
       m_ddata[ii] = g_ddata[ii];
     }
@@ -146,8 +139,8 @@ public:
 
   void checkState(const Class2& class2)
   {
-    checkState( &(class2.m_idata[0]), &(class2.m_ddata[0]) );
-    m_class1.checkState( class2.m_class1 );
+    checkState(&(class2.m_idata[0]), &(class2.m_ddata[0]));
+    m_class1.checkState(class2.m_class1);
   }
 
   void checkState(Group* gp)
@@ -161,14 +154,13 @@ public:
   }
 
 private:
-
   void checkState(const int* tidata, const double* tddata)
   {
-    for (size_t ii = 0 ; ii < m_idata.size() ; ++ii)
+    for(size_t ii = 0; ii < m_idata.size(); ++ii)
     {
       EXPECT_EQ(m_idata[ii], tidata[ii]);
     }
-    for (size_t ii = 0 ; ii < m_ddata.size() ; ++ii)
+    for(size_t ii = 0; ii < m_ddata.size(); ++ii)
     {
       EXPECT_EQ(m_ddata[ii], tddata[ii]);
     }
@@ -179,8 +171,7 @@ private:
   Class1 m_class1;
 };
 
-
-} // end namespace classtest
+}  // end namespace classtest
 
 //------------------------------------------------------------------------------
 // Test copying class data to group hierarchy
@@ -199,7 +190,7 @@ TEST(sidre_class, class_to_group)
 
   myclass2.checkState(myclass2);
 
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
   Group* c2group = root->createGroup("myclass2");

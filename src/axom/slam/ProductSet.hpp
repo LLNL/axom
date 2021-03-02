@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,7 +22,6 @@ namespace axom
 {
 namespace slam
 {
-
 /**
  * \class ProductSet
  *
@@ -35,24 +34,22 @@ namespace slam
  *
  * \see   BivariateSet
  */
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
-class ProductSet
-  : public BivariateSet<PosType,ElemType>
-  , RangeSet<PosType,ElemType>
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
+class ProductSet : public BivariateSet<PosType, ElemType>,
+                   RangeSet<PosType, ElemType>
 {
 public:
-  using BivariateSetType = BivariateSet<PosType,ElemType>;
+  using BivariateSetType = BivariateSet<PosType, ElemType>;
   using PositionType = typename BivariateSetType::PositionType;
   using ElementType = typename BivariateSetType::ElementType;
   using SetType = typename BivariateSetType::SetType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
 
-  using RangeSetType = RangeSet<PosType,ElemType>;
+  using RangeSetType = RangeSet<PosType, ElemType>;
 
   /** \brief Default constructor */
-  ProductSet() {}
+  ProductSet() { }
 
   /**
    * \brief Constructor taking in pointers of two Sets.
@@ -61,8 +58,9 @@ public:
    * \param set2  Pointer to the second Set.
    */
 
-  ProductSet(SetType* set1, SetType* set2) :
-    BivariateSetType(set1,set2), RangeSetType(set1->size()*set2->size())
+  ProductSet(SetType* set1, SetType* set2)
+    : BivariateSetType(set1, set2)
+    , RangeSetType(set1->size() * set2->size())
   {
     using OrderedSetBuilder = typename OrderedSetType::SetBuilder;
 
@@ -70,14 +68,11 @@ public:
     //since every row is the same, a call to getElements() returns the same set.
     PositionType size2 = this->secondSetSize();
     m_rowSet_data.resize(size2);
-    for (int s2 = 0 ; s2 < size2 ; s2++)
+    for(int s2 = 0; s2 < size2; s2++)
     {
       m_rowSet_data[s2] = s2;
     }
-    m_rowSet = OrderedSetBuilder()
-               .size(size2)
-               .offset(0)
-               .data(&m_rowSet_data);
+    m_rowSet = OrderedSetBuilder().size(size2).offset(0).data(&m_rowSet_data);
   }
 
   /**
@@ -90,8 +85,7 @@ public:
    *
    * \return  The element's SparseIndex, which is the same as pos2
    */
-  PositionType findElementIndex(PositionType pos1,
-                                PositionType pos2) const override
+  PositionType findElementIndex(PositionType pos1, PositionType pos2) const override
   {
     isValidIndex(pos1, pos2);
     return pos2;
@@ -136,21 +130,21 @@ public:
    *
    * \return  An OrderedSet of the elements in the row.
    */
-  const OrderedSetType getElements(
-    PositionType AXOM_DEBUG_PARAM(pos1) ) const override
+  const OrderedSetType getElements(PositionType AXOM_DEBUG_PARAM(pos1)) const override
   {
     SLIC_ASSERT(pos1 >= 0 && pos1 < this->firstSetSize());
 
     return m_rowSet;
   }
 
-  ElementType at(PositionType pos) const override {
+  ElementType at(PositionType pos) const override
+  {
     return pos % this->secondSetSize();
   }
 
   PositionType size() const override
   {
-    return this->firstSetSize()*this->secondSetSize();
+    return this->firstSetSize() * this->secondSetSize();
   }
 
   PositionType size(PositionType) const override
@@ -168,42 +162,37 @@ public:
   bool isValid(bool verboseOutput = false) const override
   {
     return BivariateSetType::isValid(verboseOutput) &&
-           RangeSetType::isValid(verboseOutput);
+      RangeSetType::isValid(verboseOutput);
   }
 
 private:
   /** \brief verify the FlatIndex \a pos is within the valid range. */
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos) ) const override
-  { //from RangeSet, overloading to avoid warning in compiler
+  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos)) const override
+  {  //from RangeSet, overloading to avoid warning in compiler
     SLIC_ASSERT_MSG(
       pos >= 0 && pos < size(),
       "SLAM::ProductSet -- requested out-of-range element at position "
-      << pos << ", but set only has " << size() << " elements.");
+        << pos << ", but set only has " << size() << " elements.");
   }
 
   /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
    *         within the valid range. */
   void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos1),
-                      PositionType AXOM_DEBUG_PARAM(pos2) ) const override
+                      PositionType AXOM_DEBUG_PARAM(pos2)) const override
   {
     SLIC_ASSERT_MSG(
-      isValidIndex(pos1,pos2),
+      isValidIndex(pos1, pos2),
       "SLAM::ProductSet -- requested out-of-range element at position ("
-      << pos1 << "," << pos2 << "), but set only has "
-      << this->firstSetSize() << "x"
-      << this->secondSetSize() << " elements.");
+        << pos1 << "," << pos2 << "), but set only has " << this->firstSetSize()
+        << "x" << this->secondSetSize() << " elements.");
   }
 
 private:
-
   std::vector<PositionType> m_rowSet_data;
   OrderedSetType m_rowSet;
-
 };
 
+}  // end namespace slam
+}  // end namespace axom
 
-
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_PRODUCT_SET_H
+#endif  //  SLAM_PRODUCT_SET_H

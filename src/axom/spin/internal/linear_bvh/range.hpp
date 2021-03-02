@@ -1,14 +1,13 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-
 
 #ifndef AXOM_SPIN_BVH_RANGE_H_
 #define AXOM_SPIN_BVH_RANGE_H_
 
 #include "axom/core/Macros.hpp"
-#include "axom/core/Types.hpp"    // for fixed bitwidth types
+#include "axom/core/Types.hpp"  // for fixed bitwidth types
 #include "axom/spin/internal/linear_bvh/math.hpp"
 
 #include <iostream>
@@ -21,50 +20,37 @@ namespace internal
 {
 namespace linear_bvh
 {
-
 // Forward declarations
-template < typename FloatType >
+template <typename FloatType>
 class Range;
 
-template < typename FloatType >
-std::ostream& operator<<( std::ostream &os,
-                          const Range< FloatType >& range);
+template <typename FloatType>
+std::ostream& operator<<(std::ostream& os, const Range<FloatType>& range);
 
-template < typename FloatType >
+template <typename FloatType>
 class Range
 {
-  AXOM_STATIC_ASSERT( std::is_floating_point< FloatType >::value );
+  AXOM_STATIC_ASSERT(std::is_floating_point<FloatType>::value);
 
 public:
-
+  AXOM_HOST_DEVICE
+  FloatType min() const { return m_min; }
 
   AXOM_HOST_DEVICE
-  FloatType min() const
-  {
-    return m_min;
-  }
+  FloatType max() const { return m_max; }
 
   AXOM_HOST_DEVICE
-  FloatType max() const
-  {
-    return m_max;
-  }
-
-  AXOM_HOST_DEVICE
-  bool is_empty() const
-  {
-    return m_min > m_max;
-  }
+  bool is_empty() const { return m_min > m_max; }
 
   AXOM_HOST_DEVICE
   void include(const FloatType& val)
   {
-    m_min = fmin( m_min, FloatType(val) );
-    m_max = fmax( m_max, FloatType(val) );
+    m_min = fmin(m_min, FloatType(val));
+    m_max = fmax(m_max, FloatType(val));
   }
 
   AXOM_HOST_DEVICE
-  void include(const Range &other)
+  void include(const Range& other)
   {
     if(!other.is_empty())
     {
@@ -74,10 +60,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  Range identity() const
-  {
-    return Range();
-  }
+  Range identity() const { return Range(); }
 
   AXOM_HOST_DEVICE
   FloatType center() const
@@ -86,7 +69,8 @@ public:
     {
       return nan32();
     }
-    else return 0.5f * (m_min + m_max);
+    else
+      return 0.5f * (m_min + m_max);
   }
 
   AXOM_HOST_DEVICE
@@ -96,7 +80,8 @@ public:
     {
       return nan32();
     }
-    else return m_max - m_min;
+    else
+      return m_max - m_min;
   }
 
   AXOM_HOST_DEVICE
@@ -113,9 +98,8 @@ public:
     include(c + delta);
   }
 
-
   AXOM_HOST_DEVICE
-  Range operator+(const Range &other) const
+  Range operator+(const Range& other) const
   {
     Range res;
     res.include(*this);
@@ -126,20 +110,17 @@ public:
 private:
   FloatType m_min = infinity32();
   FloatType m_max = neg_infinity32();
-
 };
 
-template < typename FloatType >
-std::ostream& operator<<( std::ostream &os,
-                          const Range< FloatType >& range)
+template <typename FloatType>
+std::ostream& operator<<(std::ostream& os, const Range<FloatType>& range)
 {
-  os<<"[";
-  os<<range.min()<<", ";
-  os<<range.max();
-  os<<"]";
+  os << "[";
+  os << range.min() << ", ";
+  os << range.max();
+  os << "]";
   return os;
 }
-
 
 } /* namespace linear_bvh */
 } /* namespace internal */

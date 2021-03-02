@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,51 +25,47 @@ using namespace axom;
 
 #define N 20
 
-slic::message::Level getRandomEvent( const int start, const int end )
+slic::message::Level getRandomEvent(const int start, const int end)
 {
-  return( static_cast<slic::message::Level>(std::rand() % (end-start) + start));
+  return (static_cast<slic::message::Level>(std::rand() % (end - start) + start));
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
   // Initialize MPI
-  MPI_Init( &argc, &argv );
-  int rank=-1;
-  MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+  MPI_Init(&argc, &argv);
+  int rank = -1;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // Initialize SLIC
-  std::string format = std::string( "<MESSAGE>\n") +
-                       std::string( "\t<TIMESTAMP>\n" ) +
-                       std::string( "\tLEVEL=<LEVEL>\n") +
-                       std::string( "\tRANKS=<RANK>\n") +
-                       std::string( "\tFILE=<FILE>\n") +
-                       std::string( "\tLINE=<LINE>\n");
+  std::string format = std::string("<MESSAGE>\n") +
+    std::string("\t<TIMESTAMP>\n") + std::string("\tLEVEL=<LEVEL>\n") +
+    std::string("\tRANKS=<RANK>\n") + std::string("\tFILE=<FILE>\n") +
+    std::string("\tLINE=<LINE>\n");
   slic::initialize();
 
   // Set SLIC logging level and Lumberjack Logging stream
-  slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::setLoggingMsgLevel(slic::message::Debug);
   slic::disableAbortOnError();
   slic::LumberjackStream* ljStream =
-    new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, RANKSLIMIT,
-                                format );
-  slic::addStreamToAllMsgLevels( ljStream );
+    new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RANKSLIMIT, format);
+  slic::addStreamToAllMsgLevels(ljStream);
 
   // Queue messages
   int cycleCount = 0;
-  for (int i = 0 ; i < N ; ++i)
+  for(int i = 0; i < N; ++i)
   {
     std::ostringstream oss;
-    oss << "message " << i << "/" << N-1;
+    oss << "message " << i << "/" << N - 1;
 
-    slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
-                      oss.str(),
-                      __FILE__,
-                      __LINE__
-                      );
+    slic::logMessage(getRandomEvent(0, slic::message::Num_Levels),
+                     oss.str(),
+                     __FILE__,
+                     __LINE__);
 
     ++cycleCount;
-    if (cycleCount > CYCLELIMIT)
+    if(cycleCount > CYCLELIMIT)
     {
       // Incrementally push messages through the log stream
       slic::pushStreams();

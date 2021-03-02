@@ -208,7 +208,7 @@ void quitProgram(int exitCode = 0)
 
 int main(int argc, char* argv[])
 {
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   MPI_Init(&argc, &argv);
 

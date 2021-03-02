@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,9 +10,24 @@
 
 // RAJA includes
 #ifdef AXOM_USE_RAJA
-#include "RAJA/RAJA.hpp"
-#endif
+  #include "RAJA/RAJA.hpp"
 
+  // NOTE: add RAJA alias for older versions of RAJA prior to RAJA-v0.11.0
+  #if(RAJA_VERSION_MAJOR == 0) && (RAJA_VERSION_MINOR < 11)
+
+/* clang-format off */
+
+    namespace RAJA
+    {
+      template < int SIZE >
+      using tile_fixed = ::RAJA::statement::tile_fixed< SIZE >;
+    } // namespace RAJA
+
+    /* clang-format on */
+
+  #endif
+
+#endif
 
 namespace axom
 {
@@ -20,8 +35,7 @@ namespace mint
 {
 namespace internal
 {
-
-template < typename ExecSpace >
+template <typename ExecSpace>
 struct structured_exec
 {
   using loop2d_policy = void;
@@ -29,11 +43,11 @@ struct structured_exec
 };
 
 //--------------------------------------------------------| SEQ_EXEC |----------
-template < >
-struct structured_exec< SEQ_EXEC >
+template <>
+struct structured_exec<SEQ_EXEC>
 {
 #ifdef AXOM_USE_RAJA
-  /* *INDENT-OFF* */
+  /* clang-format off */
   using loop2d_policy = RAJA::KernelPolicy<
     RAJA::statement::For< 1, RAJA::loop_exec,   // j
       RAJA::statement::For< 0, RAJA::loop_exec, // i
@@ -51,7 +65,7 @@ struct structured_exec< SEQ_EXEC >
       > // END j
     > // END k
   >; // END kernel
-  /* *INDENT-ON* */
+    /* clang-format on */
 
 #else
   using loop2d_policy = void;
@@ -61,10 +75,10 @@ struct structured_exec< SEQ_EXEC >
 
 //--------------------------------------------------------| OMP_EXEC |----------
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-template < >
-struct structured_exec< OMP_EXEC >
+template <>
+struct structured_exec<OMP_EXEC>
 {
-  /* *INDENT-OFF* */
+  /* clang-format off */
 
   using loop2d_policy = RAJA::KernelPolicy<
     RAJA::statement::For< 1, RAJA::omp_parallel_for_exec, // j
@@ -84,33 +98,33 @@ struct structured_exec< OMP_EXEC >
     > // END k
   >; // END kernel
 
-  /* *INDENT-ON* */
+  /* clang-format on */
 };
 #endif
 
-// CUDA Kernel settings: 
-// 
+// CUDA Kernel settings:
+//
 // CudaKernel launches 256 threads total
 // - In 2D, the launch configuration is 16 x 16
 // - In 3D, the launch configuration is 8 x 8 x 4
 constexpr int CUDA_KERNEL_FIXED_SIZE = 256;
 constexpr int TILE_SIZE_2D = 16;
-constexpr int TILE_SIZE_X  = 8;
-constexpr int TILE_SIZE_Y  = 8;
-constexpr int TILE_SIZE_Z  = 4;
+constexpr int TILE_SIZE_X = 8;
+constexpr int TILE_SIZE_Y = 8;
+constexpr int TILE_SIZE_Z = 4;
 
 //--------------------------------------------------------| CUDA_EXEC |---------
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
 
-template < int BLOCK_SIZE >
-struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
+template <int BLOCK_SIZE>
+struct structured_exec<CUDA_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
 {
-  /* *INDENT-OFF* */
+  /* clang-format off */
 
   using loop2d_policy = RAJA::KernelPolicy<
     RAJA::statement::CudaKernelFixed< CUDA_KERNEL_FIXED_SIZE,
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<1, RAJA::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_x_loop,
           RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
             RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
               RAJA::statement::Lambda<0>
@@ -123,9 +137,9 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
 
   using loop3d_policy = RAJA::KernelPolicy<
     RAJA::statement::CudaKernelFixed< CUDA_KERNEL_FIXED_SIZE, 
-      RAJA::statement::Tile<2, RAJA::statement::tile_fixed< TILE_SIZE_Z >, RAJA::cuda_block_z_loop,
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed< TILE_SIZE_Y >, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed< TILE_SIZE_X >, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<2, RAJA::tile_fixed< TILE_SIZE_Z >, RAJA::cuda_block_z_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed< TILE_SIZE_Y >, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed< TILE_SIZE_X >, RAJA::cuda_block_x_loop,
             RAJA::statement::For<2, RAJA::cuda_thread_z_direct,
               RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
                 RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
@@ -139,19 +153,18 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
     >
   >;
 
-  /* *INDENT-ON*  */
-
+  /* clang-format on */
 };
 
-template < int BLOCK_SIZE >
-struct structured_exec< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
+template <int BLOCK_SIZE>
+struct structured_exec<CUDA_EXEC<BLOCK_SIZE, ASYNC>>
 {
-  /* *INDENT-OFF* */
+  /* clang-format off */
 
   using loop2d_policy = RAJA::KernelPolicy <
     RAJA::statement::CudaKernelFixedAsync< CUDA_KERNEL_FIXED_SIZE,
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<1, RAJA::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_x_loop,
           RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
             RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
               RAJA::statement::Lambda<0>
@@ -164,9 +177,9 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
 
   using loop3d_policy = RAJA::KernelPolicy<
     RAJA::statement::CudaKernelFixedAsync< CUDA_KERNEL_FIXED_SIZE,
-      RAJA::statement::Tile<2, RAJA::statement::tile_fixed< TILE_SIZE_Z >, RAJA::cuda_block_z_loop,
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed< TILE_SIZE_Y >, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed< TILE_SIZE_X >, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<2, RAJA::tile_fixed< TILE_SIZE_Z >, RAJA::cuda_block_z_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed< TILE_SIZE_Y >, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed< TILE_SIZE_X >, RAJA::cuda_block_x_loop,
             RAJA::statement::For<2, RAJA::cuda_thread_z_direct,
               RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
                 RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
@@ -180,7 +193,7 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
     >
   >;
 
-  /* *INDENT-ON*  */
+  /* clang-format on */
 };
 
 #endif

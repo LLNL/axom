@@ -1,11 +1,10 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef SPARSE_OCTREE_LEVEL__HXX_
 #define SPARSE_OCTREE_LEVEL__HXX_
-
 
 #include "axom/config.hpp"
 
@@ -15,7 +14,6 @@
 
 #include "axom/spin/Brood.hpp"
 #include "axom/spin/OctreeLevel.hpp"
-
 
 #include <type_traits>
 
@@ -29,7 +27,6 @@ namespace axom
 {
 namespace spin
 {
-
 /**
  * \brief Traits class to manage types for different point representations in a
  * SparseOctreeLevel
@@ -38,19 +35,18 @@ namespace spin
  * integers
  * and uses a Morton-based index as the hashmap key.
  */
-template<typename CoordType, int DIM, typename BroodDataType,
-         typename RepresentationType>
+template <typename CoordType, int DIM, typename BroodDataType, typename RepresentationType>
 struct BroodRepresentationTraits
 {
-  using GridPt = primal::Point<CoordType,DIM>;
+  using GridPt = primal::Point<CoordType, DIM>;
   using PointRepresenationType = RepresentationType;
 
-  AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
-                          "CoordType must be integral" );
-  AXOM_STATIC_ASSERT_MSG( std::is_integral<PointRepresenationType>::value,
-                          "RepresentationType must be integral" );
-  AXOM_STATIC_ASSERT_MSG( std::is_unsigned<PointRepresenationType>::value,
-                          "RepresentationType must be unsigned" );
+  AXOM_STATIC_ASSERT_MSG(std::is_integral<CoordType>::value,
+                         "CoordType must be integral");
+  AXOM_STATIC_ASSERT_MSG(std::is_integral<PointRepresenationType>::value,
+                         "RepresentationType must be integral");
+  AXOM_STATIC_ASSERT_MSG(std::is_unsigned<PointRepresenationType>::value,
+                         "RepresentationType must be unsigned");
 
   // Requires a uint for RepresentationType with 8-,16-,32-, or 64- bits
 #if defined(AXOM_USE_SPARSEHASH)
@@ -77,8 +73,8 @@ struct BroodRepresentationTraits
 #if defined(AXOM_USE_SPARSEHASH)
     const PointRepresenationType maxVal =
       std::numeric_limits<PointRepresenationType>::max();
-    map.set_empty_key( maxVal );
-    map.set_deleted_key( maxVal-1 );
+    map.set_empty_key(maxVal);
+    map.set_deleted_key(maxVal - 1);
 #endif
   }
 };
@@ -91,21 +87,20 @@ struct BroodRepresentationTraits
  * that use an integer grid point.  The underlying hashmap uses a Morton-based
  * hash function.
  */
-template<typename CoordType, int DIM, typename BroodDataType>
-struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
-                                 primal::Point<CoordType,DIM> >
+template <typename CoordType, int DIM, typename BroodDataType>
+struct BroodRepresentationTraits<CoordType, DIM, BroodDataType, primal::Point<CoordType, DIM>>
 {
-  using GridPt = primal::Point<CoordType,DIM>;
-  using PointRepresenationType = GridPt;
+  using GridPt = primal::Point<CoordType, DIM>;
+  using PointRepresentationType = GridPt;
   using PointHashType = PointHash<CoordType>;
 
-  AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
-                          "CoordType must be integral" );
+  AXOM_STATIC_ASSERT_MSG(std::is_integral<CoordType>::value,
+                         "CoordType must be integral");
 
 #if defined(AXOM_USE_SPARSEHASH)
-  using MapType = google::dense_hash_map<GridPt, BroodDataType,PointHashType>;
+  using MapType = google::dense_hash_map<GridPt, BroodDataType, PointHashType>;
 #else
-  using MapType = std::unordered_map<GridPt, BroodDataType,PointHashType >;
+  using MapType = std::unordered_map<GridPt, BroodDataType, PointHashType>;
 #endif
 
   using BroodType = Brood<GridPt, GridPt>;
@@ -114,9 +109,9 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
    *  \note This is a pass through function
    *        since the representation and grid point types are the same
    */
-  static const PointRepresenationType& convertPoint(const GridPt& pt)
+  static const PointRepresentationType& convertPoint(const GridPt& pt)
   {
-    return pt;          // simple pass through function
+    return pt;  // simple pass through function
   }
 
   /**
@@ -129,14 +124,13 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
 #if defined(AXOM_USE_SPARSEHASH)
     CoordType maxCoord = std::numeric_limits<CoordType>::max();
     GridPt maxPt(maxCoord);
-    map.set_empty_key( maxPt );
+    map.set_empty_key(maxPt);
 
-    maxPt[DIM-1]--;
-    map.set_deleted_key( maxPt );
+    maxPt[DIM - 1]--;
+    map.set_deleted_key(maxPt);
 #endif
   }
 };
-
 
 /**
  * \class
@@ -154,8 +148,8 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
  *
  *  \see OctreeLevel
  */
-template<int DIM, typename BlockDataType, typename PointRepresenationType>
-class SparseOctreeLevel : public OctreeLevel<DIM,BlockDataType>
+template <int DIM, typename BlockDataType, typename PointRepresenationType>
+class SparseOctreeLevel : public OctreeLevel<DIM, BlockDataType>
 {
 public:
   using Base = OctreeLevel<DIM, BlockDataType>;
@@ -164,51 +158,41 @@ public:
   using BaseBlockIteratorHelper = typename Base::BlockIteratorHelper;
   using ConstBaseBlockIteratorHelper = typename Base::ConstBlockIteratorHelper;
 
-  using BroodTraits =
-          BroodRepresentationTraits<typename GridPt::CoordType,
-                                    GridPt::DIMENSION,
-                                    BroodData,
-                                    PointRepresenationType>;
+  using BroodTraits = BroodRepresentationTraits<typename GridPt::CoordType,
+                                                GridPt::DIMENSION,
+                                                BroodData,
+                                                PointRepresenationType>;
   using MapType = typename BroodTraits::MapType;
   using BroodType = typename BroodTraits::BroodType;
 
   using MapIter = typename MapType::iterator;
   using ConstMapIter = typename MapType::const_iterator;
 
-  template<typename OctreeLevelType,
-           typename AdaptedIterType,
-           typename ParentType> class IteratorHelper;
+  template <typename OctreeLevelType, typename AdaptedIterType, typename ParentType>
+  class IteratorHelper;
 
-  using IterHelper = IteratorHelper<SparseOctreeLevel,
-                                    MapIter,
-                                    BaseBlockIteratorHelper>;
-  using ConstIterHelper = IteratorHelper<const SparseOctreeLevel,
-                                         ConstMapIter,
-                                         ConstBaseBlockIteratorHelper>;
-
+  using IterHelper =
+    IteratorHelper<SparseOctreeLevel, MapIter, BaseBlockIteratorHelper>;
+  using ConstIterHelper =
+    IteratorHelper<const SparseOctreeLevel, ConstMapIter, ConstBaseBlockIteratorHelper>;
 
 public:
-
   /**
    * \brief Concrete instance of the BlockIteratorHelper class
    * defined in the OctreeLevel base class.
    */
-  template<typename OctreeLevelType,
-           typename AdaptedIterType,
-           typename ParentType>
+  template <typename OctreeLevelType, typename AdaptedIterType, typename ParentType>
   class IteratorHelper : public ParentType
   {
-public:
+  public:
     using self = IteratorHelper<OctreeLevelType, AdaptedIterType, ParentType>;
     using BaseBlockItType = ParentType;
 
     IteratorHelper(OctreeLevelType* octLevel, bool begin)
-      : m_offset(0),
-      m_isLevelZero( octLevel->level() == 0)
+      : m_offset(0)
+      , m_isLevelZero(octLevel->level() == 0)
     {
-      m_currentIter = begin
-                      ? octLevel->m_map.begin()
-                      : octLevel->m_map.end();
+      m_currentIter = begin ? octLevel->m_map.begin() : octLevel->m_map.end();
     }
 
     /** Increment to next block in the level */
@@ -232,7 +216,8 @@ public:
     /** Accessor for data associated with the iterator's block */
     BlockDataType* data() { return &m_currentIter->second[m_offset]; }
     /** Const accessor for data associated with the iterator's block */
-    const BlockDataType* data() const {
+    const BlockDataType* data() const
+    {
       return &m_currentIter->second[m_offset];
     }
 
@@ -241,29 +226,23 @@ public:
     {
       const self* pother = dynamic_cast<const self*>(other);
 
-      return (pother != nullptr)
-             && (m_currentIter == pother->m_currentIter)           // iterators
-                                                                   // are the
-                                                                   // same
-             && (m_offset == pother->m_offset);                    // brood
-                                                                   // indices
-                                                                   // are the
-                                                                   // same
+      // check that iterators are the same and brood indices are the same
+      return (pother != nullptr) && (m_currentIter == pother->m_currentIter) &&
+        (m_offset == pother->m_offset);
     }
-private:
+
+  private:
     AdaptedIterType m_currentIter;
     int m_offset;
     bool m_isLevelZero;
   };
 
 public:
-
   /** \brief Default constructor for an octree level */
   SparseOctreeLevel(int level = -1) : Base(level)
   {
     BroodTraits::initializeMap(m_map);
   }
-
 
   /**
    * \brief Factory function to return a SparseBlockIterHelper for this level
@@ -288,7 +267,6 @@ public:
     return new ConstIterHelper(this, begin);
   }
 
-
   /**
    * \brief Predicate to check whether the block associated with
    * the given GridPt pt is in the current level
@@ -310,24 +288,20 @@ public:
    */
   void addAllChildren(const GridPt& pt)
   {
-    SLIC_ASSERT_MSG(
-      this->inBounds(pt),
-      "Problem while inserting children of point "
-      << pt << " into octree level " << this->m_level
-      << ". Point was out of bounds -- "
-      << "each coordinate must be between 0 and "
-      << this->maxCoord() << ".");
+    SLIC_ASSERT_MSG(this->inBounds(pt),
+                    "Problem while inserting children of point "
+                      << pt << " into octree level " << this->m_level
+                      << ". Point was out of bounds -- "
+                      << "each coordinate must be between 0 and "
+                      << this->maxCoord() << ".");
 
-    BroodData& bd = getBroodData(pt);           // Adds entire brood at once
-                                                // (default constructed)
-    if( this->level() == 0)
+    BroodData& bd = getBroodData(pt);  // Adds entire brood at once
+                                       // (default constructed)
+    if(this->level() == 0)
     {
-      for(int j=1 ; j< Base::BROOD_SIZE ; ++j)
-        bd[j].setNonBlock();
+      for(int j = 1; j < Base::BROOD_SIZE; ++j) bd[j].setNonBlock();
     }
   }
-
-
 
   /** \brief Accessor for the data associated with pt */
   BlockDataType& operator[](const GridPt& pt)
@@ -339,10 +313,9 @@ public:
   /** \brief Const accessor for the data associated with pt */
   const BlockDataType& operator[](const GridPt& pt) const
   {
-    SLIC_ASSERT_MSG(
-      hasBlock(pt),
-      "(" << pt <<", "<< this->m_level
-          << ") was not a block in the tree at level.");
+    SLIC_ASSERT_MSG(hasBlock(pt),
+                    "(" << pt << ", " << this->m_level
+                        << ") was not a block in the tree at level.");
 
     // Note: Using find() method on hashmap since operator[] is non-const
     const BroodType brood(pt);
@@ -353,18 +326,18 @@ public:
   /** \brief Access the data associated with the entire brood */
   BroodData& getBroodData(const GridPt& pt)
   {
-    return m_map[ BroodTraits::convertPoint(pt)];
+    return m_map[BroodTraits::convertPoint(pt)];
   }
 
   /** \brief Const access to data associated with the entire brood */
-  const BroodData& getBroodData(const GridPt& pt) const {
-    SLIC_ASSERT_MSG(
-      hasBlock(pt),
-      "(" << pt <<", "<< this->m_level
-          << ") was not a block in the tree at level.");
+  const BroodData& getBroodData(const GridPt& pt) const
+  {
+    SLIC_ASSERT_MSG(hasBlock(pt),
+                    "(" << pt << ", " << this->m_level
+                        << ") was not a block in the tree at level.");
 
     // Note: Using find() method on hashmap since operator[] is non-const
-    ConstMapIter blockIt = m_map.find( BroodTraits::convertPoint(pt) );
+    ConstMapIter blockIt = m_map.find(BroodTraits::convertPoint(pt));
     return blockIt->second;
   }
 
@@ -374,11 +347,11 @@ public:
   /** \brief Returns the number of blocks (internal and leaf) in the level */
   int numBlocks() const
   {
-    if(empty())
-      return 0;
+    if(empty()) return 0;
 
-    return ( (this->m_level == 0) ?
-                1 : ( static_cast< int >( m_map.size() ) * Base::BROOD_SIZE ) );
+    return ((this->m_level == 0)
+              ? 1
+              : (static_cast<int>(m_map.size()) * Base::BROOD_SIZE));
   }
 
   /** \brief Returns the number of internal blocks in the level */
@@ -387,18 +360,15 @@ public:
   /** \brief Returns the number of leaf blocks in the level */
   int numLeafBlocks() const
   {
-    if(empty())
-      return 0;
+    if(empty()) return 0;
 
     int count = 0;
-    for(ConstMapIter it = m_map.begin(),
-        itEnd = m_map.end() ; it != itEnd ; ++it)
+    for(ConstMapIter it = m_map.begin(), itEnd = m_map.end(); it != itEnd; ++it)
     {
-      const BroodData& bd  = it->second;
-      for(int i=0 ; i< Base::BROOD_SIZE ; ++i)
+      const BroodData& bd = it->second;
+      for(int i = 0; i < Base::BROOD_SIZE; ++i)
       {
-        if(bd[i].isLeaf())
-          ++count;
+        if(bd[i].isLeaf()) ++count;
       }
     }
     return count;
@@ -412,16 +382,14 @@ public:
    * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock,
    *...)
    */
-  TreeBlockStatus blockStatus(const GridPt & pt) const
+  TreeBlockStatus blockStatus(const GridPt& pt) const
   {
     const BroodType brood(pt);
     ConstMapIter blockIt = m_map.find(brood.base());
 
     return (blockIt == m_map.end())
-           ? BlockNotInTree
-           : (blockIt->second[brood.offset()].isLeaf())
-           ? LeafBlock
-           : InternalBlock;
+      ? BlockNotInTree
+      : (blockIt->second[brood.offset()].isLeaf()) ? LeafBlock : InternalBlock;
   }
 
 private:
@@ -432,7 +400,7 @@ private:
   MapType m_map;
 };
 
-} // end namespace spin
-} // end namespace axom
+}  // end namespace spin
+}  // end namespace axom
 
 #endif  // SPARSE_OCTREE_LEVEL__HXX_

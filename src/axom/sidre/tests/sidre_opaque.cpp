@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,10 +7,10 @@
 
 #include "axom/sidre/core/sidre.hpp"
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::View;
 using axom::sidre::DataType;
+using axom::sidre::Group;
+using axom::sidre::View;
 
 //------------------------------------------------------------------------------
 // Some simple types and functions used in tests
@@ -18,45 +18,49 @@ using axom::sidre::DataType;
 //------------------------------------------------------------------------------
 namespace sidreopaquetest
 {
+enum Centering
+{
+  _Zone_,
+  _Node_,
+  _UnknownCentering_
+};
 
-enum Centering { _Zone_,
-                 _Node_,
-                 _UnknownCentering_};
-
-enum DType { _Double_,
-             _Int_,
-             _UnknownType_};
-
+enum DType
+{
+  _Double_,
+  _Int_,
+  _UnknownType_
+};
 
 class Extent
 {
 public:
-
-  Extent(int lo, int hi)
-    : m_ilo(lo), m_ihi(hi) {; }
+  Extent(int lo, int hi) : m_ilo(lo), m_ihi(hi) { ; }
 
   int getNumPts(Centering cent) const
   {
     int retval = 0;
 
-    switch ( cent )
+    switch(cent)
     {
-
-    case _Zone_: {
+    case _Zone_:
+    {
       retval = (m_ihi - m_ilo + 1);
       break;
     }
 
-    case _Node_: {
+    case _Node_:
+    {
       retval = (m_ihi - m_ilo + 2);
       break;
     }
 
-    default: {
-      retval = -1;         // I know magic numbers are bad. So sue me.
+    default:
+    {
+      retval = -1;  // I know magic numbers are bad. So sue me.
     }
 
-    }   // switch on centering
+    }  // switch on centering
 
     return retval;
   }
@@ -65,17 +69,20 @@ public:
   int m_ihi;
 };
 
-
 class MeshVar
 {
 public:
-
   MeshVar(Centering cent, DType type, int depth = 1)
-    : m_cent(cent), m_type(type), m_depth(depth) {; }
+    : m_cent(cent)
+    , m_type(type)
+    , m_depth(depth)
+  {
+    ;
+  }
 
   int getNumVals(const Extent* ext) const
   {
-    return ( ext->getNumPts(m_cent) * m_depth );
+    return (ext->getNumPts(m_cent) * m_depth);
   }
 
   Centering m_cent;
@@ -83,21 +90,20 @@ public:
   int m_depth;
 };
 
-
-}  // closing brace for sidreopaquetest namespace
+}  // namespace sidreopaquetest
 
 //------------------------------------------------------------------------------
 //
 // Simple test that adds an opaque data object, retrieves it and checks if
 // the retrieved object is in the expected state.
 //
-TEST(sidre_opaque,basic_inout)
+TEST(sidre_opaque, basic_inout)
 {
   using namespace sidreopaquetest;
 
   const int ihi_val = 9;
 
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
   Group* problem_gp = root->createGroup("problem");
@@ -111,8 +117,7 @@ TEST(sidre_opaque,basic_inout)
   EXPECT_TRUE(ext_view->isOpaque());
   EXPECT_EQ(ext, ext_view->getVoidPtr());
 
-  Extent* test_extent =
-    static_cast<Extent*>(ext_view->getVoidPtr());
+  Extent* test_extent = static_cast<Extent*>(ext_view->getVoidPtr());
   EXPECT_EQ(ext, test_extent);
 
   int test_ihi = test_extent->m_ihi;
@@ -122,8 +127,7 @@ TEST(sidre_opaque,basic_inout)
 
   Extent* ext2 = new Extent(0, 2 * ihi_val);
 
-  View* ext2_view =
-    problem_gp->createView("ext2")->setExternalDataPtr(ext2);
+  View* ext2_view = problem_gp->createView("ext2")->setExternalDataPtr(ext2);
 
   EXPECT_TRUE(ext2_view->isOpaque());
   EXPECT_EQ(ext2, ext2_view->getVoidPtr());
@@ -147,20 +151,19 @@ TEST(sidre_opaque,basic_inout)
 // domain size, and depth), and then checks to if the allocated data
 // lengths match the expected values.
 //
-TEST(sidre_opaque,meshvar)
+TEST(sidre_opaque, meshvar)
 {
   using namespace sidreopaquetest;
 
   const int NUM_DOMAINS = 2;
   const int ilo_val[] = {0, 10};
   const int ihi_val[] = {9, 21};
-  const std::string dom_name[] = { std::string("domain0"),
-                                   std::string("domain1") };
+  const std::string dom_name[] = {std::string("domain0"), std::string("domain1")};
 
   const int zone_var_depth = 1;
   const int node_var_depth = 2;
 
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
   Group* problem_gp = root->createGroup("problem");
@@ -179,41 +182,37 @@ TEST(sidre_opaque,meshvar)
   // Create domain groups, add extents
   // Create data views for mesh var data on domains and allocate
   //
-  for (int idom = 0 ; idom < NUM_DOMAINS ; ++idom)
+  for(int idom = 0; idom < NUM_DOMAINS; ++idom)
   {
     Group* dom_gp = problem_gp->createGroup(dom_name[idom]);
     Extent* dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
     dom_gp->createView("ext", dom_ext);
     EXPECT_EQ(dom_ext, dom_gp->getView("ext")->getVoidPtr());
 
-    MeshVar* zonemv = static_cast<MeshVar*>( zone_mv_view->getVoidPtr() );
+    MeshVar* zonemv = static_cast<MeshVar*>(zone_mv_view->getVoidPtr());
     View* dom_zone_view = dom_gp->createView("zone_data");
-    dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
+    dom_zone_view->allocate(DataType::c_int(zonemv->getNumVals(dom_ext)));
 
-    MeshVar* nodemv = static_cast<MeshVar*>( node_mv_view->getVoidPtr() );
+    MeshVar* nodemv = static_cast<MeshVar*>(node_mv_view->getVoidPtr());
     View* dom_node_view = dom_gp->createView("node_data");
-    dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
-
+    dom_node_view->allocate(DataType::c_double(nodemv->getNumVals(dom_ext)));
   }
 
-//
-//  Print datastore contents to see what's going on.
-//
-//  ds->print();
-
+  //
+  //  Print datastore contents to see what's going on.
+  //
+  //  ds->print();
 
   //
   // Check data lengths
   //
-  for (int idom = 0 ; idom < 2 ; ++idom)
+  for(int idom = 0; idom < 2; ++idom)
   {
-
     Group* dom_gp = problem_gp->getGroup(dom_name[idom]);
-    Extent* dom_ext = static_cast<Extent*>(
-      dom_gp->getView("ext")->getVoidPtr() );
+    Extent* dom_ext = static_cast<Extent*>(dom_gp->getView("ext")->getVoidPtr());
 
-    MeshVar* zonemv = static_cast<MeshVar*>( zone_mv_view->getVoidPtr() );
-    MeshVar* nodemv = static_cast<MeshVar*>( node_mv_view->getVoidPtr() );
+    MeshVar* zonemv = static_cast<MeshVar*>(zone_mv_view->getVoidPtr());
+    MeshVar* nodemv = static_cast<MeshVar*>(node_mv_view->getVoidPtr());
 
     int num_zone_vals = zonemv->getNumVals(dom_ext);
     int test_num_zone_vals = dom_gp->getView("zone_data")->getNumElements();
@@ -222,16 +221,15 @@ TEST(sidre_opaque,meshvar)
     int num_node_vals = nodemv->getNumVals(dom_ext);
     int test_num_node_vals = dom_gp->getView("node_data")->getNumElements();
     EXPECT_EQ(num_node_vals, test_num_node_vals);
-
   }
 
   // clean up...
   delete zone_mv;
   delete node_mv;
-  for (int idom = 0 ; idom < 2 ; ++idom)
+  for(int idom = 0; idom < 2; ++idom)
   {
     delete static_cast<Extent*>(
-      problem_gp->getGroup(dom_name[idom])->getView("ext")->getVoidPtr() );
+      problem_gp->getGroup(dom_name[idom])->getView("ext")->getVoidPtr());
   }
   delete ds;
 }

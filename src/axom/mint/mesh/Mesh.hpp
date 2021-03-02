@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,21 +6,19 @@
 #ifndef MINT_MESH_HPP_
 #define MINT_MESH_HPP_
 
-#include "axom/core/Macros.hpp"                  // for Axom macros
+#include "axom/core/Macros.hpp"  // for Axom macros
 
-#include "axom/mint/mesh/CellTypes.hpp"          // for CellType enum
-#include "axom/mint/config.hpp"                  // for mint compile-time type
-#include "axom/mint/mesh/FieldAssociation.hpp"   // for FieldAssociation enum
-#include "axom/mint/mesh/FieldData.hpp"          // for mint::FieldData
-#include "axom/mint/mesh/MeshCoordinates.hpp"    // for mint::MeshCoordinates
-#include "axom/mint/mesh/MeshTypes.hpp"          // for MeshType enum
+#include "axom/mint/mesh/CellTypes.hpp"         // for CellType enum
+#include "axom/mint/config.hpp"                 // for mint compile-time type
+#include "axom/mint/mesh/FieldAssociation.hpp"  // for FieldAssociation enum
+#include "axom/mint/mesh/FieldData.hpp"         // for mint::FieldData
+#include "axom/mint/mesh/MeshCoordinates.hpp"   // for mint::MeshCoordinates
+#include "axom/mint/mesh/MeshTypes.hpp"         // for MeshType enum
 
-#include "axom/slic/interface/slic.hpp"               // for SLIC macros
-
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 namespace axom
 {
-
 /* Forward declarations */
 #ifdef AXOM_MINT_USE_SIDRE
 namespace sidre
@@ -31,7 +29,6 @@ class Group;
 
 namespace mint
 {
-
 /* Forward declarations */
 class Field;
 class Mesh;
@@ -64,12 +61,11 @@ class Mesh;
  * \pre  blueprint::isValidRootGroup( group ) == true
  * \post m != nullptr
  */
-Mesh* getMesh( sidre::Group* group, const std::string& topo="" );
+Mesh* getMesh(sidre::Group* group, const std::string& topo = "");
 
 #endif
 
 /// @}
-
 
 /*!
  * \class Mesh
@@ -208,22 +204,21 @@ Mesh* getMesh( sidre::Group* group, const std::string& topo="" );
 class Mesh
 {
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
   Mesh() = delete;
 
-/// \name Virtual methods
-/// @{
+  /// \name Virtual methods
+  /// @{
 
   /*!
    * \brief Destructor.
    */
   virtual ~Mesh();
 
-/// \name Cells
-/// @{
+  /// \name Cells
+  /// @{
 
   /*!
    * \brief Returns the number of cells in this mesh instance.
@@ -237,8 +232,7 @@ public:
    * \return N the cell capacity
    * \post N >= 0
    */
-  virtual IndexType getCellCapacity() const
-  { return getNumberOfCells(); }
+  virtual IndexType getCellCapacity() const { return getNumberOfCells(); }
 
   /*!
    * \brief Return the type of the given cell.
@@ -248,7 +242,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual CellType getCellType( IndexType cellID=0 ) const = 0;
+  virtual CellType getCellType(IndexType cellID = 0) const = 0;
 
   /*!
    * \brief Return the number of nodes associated with the given cell.
@@ -258,7 +252,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) const = 0;
+  virtual IndexType getNumberOfCellNodes(IndexType cellID = 0) const = 0;
 
   /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
@@ -273,16 +267,16 @@ public:
    * \pre nodes != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCellNodeIDs( IndexType AXOM_NOT_USED(cellID),
-                                    IndexType* AXOM_NOT_USED(nodes) ) const = 0;
+  virtual IndexType getCellNodeIDs(IndexType AXOM_NOT_USED(cellID),
+                                   IndexType* AXOM_NOT_USED(nodes)) const = 0;
 
   /*!
    * \brief Return the number of faces associated with the given cell.
    *
    * \param [in] cellID the ID of the cell in question.
    */
-  virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID)=0 )
-  const = 0;
+  virtual IndexType getNumberOfCellFaces(
+    IndexType AXOM_NOT_USED(cellID) = 0) const = 0;
 
   /*!
    * \brief Populates the given buffer with the IDs of the faces of the given
@@ -295,13 +289,13 @@ public:
    * \pre faces != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCellFaceIDs( IndexType AXOM_NOT_USED(cellID),
-                                    IndexType* AXOM_NOT_USED(faces) ) const = 0;
+  virtual IndexType getCellFaceIDs(IndexType AXOM_NOT_USED(cellID),
+                                   IndexType* AXOM_NOT_USED(faces)) const = 0;
 
-/// @}
+  /// @}
 
-/// \name Nodes
-/// @{
+  /// \name Nodes
+  /// @{
 
   /*!
    * \brief Returns the number of nodes in this mesh instance.
@@ -315,8 +309,7 @@ public:
    * \return N the node capacity
    * \post N >= 0
    */
-  virtual IndexType getNodeCapacity() const
-  { return getNumberOfNodes(); }
+  virtual IndexType getNodeCapacity() const { return getNumberOfNodes(); }
 
   /*!
    * \brief Copy the coordinates of the given node into the provided buffer.
@@ -328,7 +321,7 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != nullptr
    */
-  virtual void getNode( IndexType nodeID, double* node ) const = 0;
+  virtual void getNode(IndexType nodeID, double* node) const = 0;
 
   /*!
    * \brief Returns pointer to the requested mesh coordinate buffer.
@@ -346,14 +339,14 @@ public:
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
    */
   /// @{
-  virtual double* getCoordinateArray( int dim ) = 0;
-  virtual const double* getCoordinateArray( int dim ) const = 0;
+  virtual double* getCoordinateArray(int dim) = 0;
+  virtual const double* getCoordinateArray(int dim) const = 0;
   /// @}
 
-/// @}
+  /// @}
 
-/// \name Faces
-/// @{
+  /// \name Faces
+  /// @{
 
   /*!
    * \brief Returns the number of faces in this mesh instance.
@@ -367,23 +360,21 @@ public:
    * \return N the face capacity
    * \post N >= 0
    */
-  virtual IndexType getFaceCapacity() const
-  { return getNumberOfFaces(); }
+  virtual IndexType getFaceCapacity() const { return getNumberOfFaces(); }
 
   /*!
    * \brief Return the type of the given face.
    *
    * \param [in] faceID the ID of the face in question.
    */
-  virtual CellType getFaceType( IndexType AXOM_NOT_USED(faceID) ) const = 0;
+  virtual CellType getFaceType(IndexType AXOM_NOT_USED(faceID)) const = 0;
 
   /*!
    * \brief Return the number of nodes associated with the given face.
    *
    * \param [in] faceID the ID of the face in question.
    */
-  virtual IndexType
-  getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID) ) const = 0;
+  virtual IndexType getNumberOfFaceNodes(IndexType AXOM_NOT_USED(faceID)) const = 0;
 
   /*!
    * \brief Copy the IDs of the nodes that compose the given face into the
@@ -398,8 +389,8 @@ public:
    * \pre nodes != nullptr
    * \pre 0 <= faceID < getNumberOfFaces()
    */
-  virtual IndexType getFaceNodeIDs( IndexType AXOM_NOT_USED(faceID),
-                                    IndexType* AXOM_NOT_USED(nodes) ) const = 0;
+  virtual IndexType getFaceNodeIDs(IndexType AXOM_NOT_USED(faceID),
+                                   IndexType* AXOM_NOT_USED(nodes)) const = 0;
 
   /*!
    * \brief Copy the IDs of the cells adjacent to the given face into the
@@ -414,14 +405,14 @@ public:
    *
    * \pre 0 <= faceID < getNumberOfFaces()
    */
-  virtual void getFaceCellIDs( IndexType AXOM_NOT_USED(faceID),
-                               IndexType& AXOM_NOT_USED(cellIDOne),
-                               IndexType& AXOM_NOT_USED(cellIDTwo) ) const = 0;
+  virtual void getFaceCellIDs(IndexType AXOM_NOT_USED(faceID),
+                              IndexType& AXOM_NOT_USED(cellIDOne),
+                              IndexType& AXOM_NOT_USED(cellIDTwo)) const = 0;
 
-/// @}
+  /// @}
 
-/// \name Edges
-/// @{
+  /// \name Edges
+  /// @{
 
   /*!
    * \brief Returns the number of edges in this mesh instance.
@@ -435,8 +426,7 @@ public:
    * \return N the edge capacity
    * \post N >= 0
    */
-  virtual IndexType getEdgeCapacity() const
-  { return getNumberOfEdges(); }
+  virtual IndexType getEdgeCapacity() const { return getNumberOfEdges(); }
 
   /*!
    * \brief Returns true iff the mesh was constructed with external arrays.
@@ -444,27 +434,25 @@ public:
    */
   virtual bool isExternal() const = 0;
 
-/// @}
+  /// @}
 
-/// @}
+  /// @}
 
-/// \name Mesh Attribute get/set Methods
-/// @{
+  /// \name Mesh Attribute get/set Methods
+  /// @{
 
   /*!
    * \brief Returns the dimension for this mesh instance.
    * \return ndims the dimension of this mesh instance.
    * \post ndims >= 1 && ndims <= 3
    */
-  inline int getDimension() const
-  { return m_ndims; }
+  inline int getDimension() const { return m_ndims; }
 
   /*!
    * \brief Returns the ID of this mesh instance.
    * \return Id the ID of the mesh.
    */
-  inline int getBlockId() const
-  { return m_block_idx; }
+  inline int getBlockId() const { return m_block_idx; }
 
   /*!
    * \brief set the block ID of this mesh instance.
@@ -473,14 +461,13 @@ public:
    *
    * \post getBlockId() == ID
    */
-  void setBlockId( int ID );
+  void setBlockId(int ID);
 
   /*!
    * \brief Returns the partition ID of this mesh instance.
    * \return partitionId the partition ID of the mesh.
    */
-  inline int getPartitionId() const
-  { return m_part_idx; }
+  inline int getPartitionId() const { return m_part_idx; }
 
   /*!
    * \brief set the partition ID of this mesh instance.
@@ -489,37 +476,36 @@ public:
    *
    * \post getPartitionId() == ID
    */
-  void setPartitionId( int ID );
+  void setPartitionId(int ID);
 
   /*!
    * \brief Returns the mesh type of this mesh instance.
    * \return meshType the mesh type
    * \see MeshType
    */
-  inline int getMeshType() const
-  { return m_type; }
+  inline int getMeshType() const { return m_type; }
 
   /*!
    * \brief Checks if this mesh instance has explicit coordinates.
    * \return status true iff the mesh defines coordinates explicitly.
    */
-  inline bool hasExplicitCoordinates() const
-  { return m_explicit_coords; }
+  inline bool hasExplicitCoordinates() const { return m_explicit_coords; }
 
   /*!
    * \brief Checks if this mesh instance has explicit connectivity.
    * \return status true iff the mesh defines cell connectivity explicitly.
    */
   inline bool hasExplicitConnectivity() const
-  { return m_explicit_connectivity; }
+  {
+    return m_explicit_connectivity;
+  }
 
   /*!
    * \brief Checks if the mesh has mixed cell types, e.g., consisting of both
    *  triangle and quad elements or hex,pyramid,prisms and tets in 3-D.
    * \return status true iff the mesh has mixed cell types.
    */
-  inline bool hasMixedCellTypes() const
-  { return m_has_mixed_topology; }
+  inline bool hasMixedCellTypes() const { return m_has_mixed_topology; }
 
   /*!
    * \brief Returns true if the mesh type is structured.
@@ -527,17 +513,16 @@ public:
    */
   inline bool isStructured() const
   {
-    return ( (m_type==STRUCTURED_CURVILINEAR_MESH) ||
-             (m_type==STRUCTURED_RECTILINEAR_MESH) ||
-             (m_type==STRUCTURED_UNIFORM_MESH) );
+    return ((m_type == STRUCTURED_CURVILINEAR_MESH) ||
+            (m_type == STRUCTURED_RECTILINEAR_MESH) ||
+            (m_type == STRUCTURED_UNIFORM_MESH));
   }
 
   /*!
    * \brief Returns true if the mesh type is unstructured.
    * \return status true if the mesh type is unstructured, else, false.
    */
-  inline bool isUnstructured() const
-  { return ( m_type==UNSTRUCTURED_MESH); }
+  inline bool isUnstructured() const { return (m_type == UNSTRUCTURED_MESH); }
 
   /*!
    * \brief Checks if this Mesh instance is associated with a Sidre Group.
@@ -551,28 +536,25 @@ public:
    * \brief Return a pointer to the sidre::Group associated with this Mesh
    *  instance or nullptr if none exists.
    */
-  inline sidre::Group* getSidreGroup()
-  { return m_group; }
+  inline sidre::Group* getSidreGroup() { return m_group; }
 
   /*!
    * \brief Return the name of the topology associated with this Mesh instance,
    *  the return value is undefined if the mesh is not in sidre.
    */
-  inline const std::string& getTopologyName() const
-  { return m_topology; }
+  inline const std::string& getTopologyName() const { return m_topology; }
 
   /*!
    * \brief Return the name of the coordset associated with this Mesh instance,
    *  the return value is undefined if the mesh is not in sidre.
    */
-  inline const std::string& getCoordsetName() const
-  { return m_coordset; }
+  inline const std::string& getCoordsetName() const { return m_coordset; }
 #endif
 
-/// @}
+  /// @}
 
-/// \name Methods to Create, Access & Remove Fields from a Mesh
-/// @{
+  /// \name Methods to Create, Access & Remove Fields from a Mesh
+  /// @{
 
   /*!
    * \brief Returns const pointer to the FieldData instance with the specified
@@ -587,7 +569,7 @@ public:
    * \see FieldAssociation
    * \see FieldData
    */
-  inline const FieldData* getFieldData( int association ) const;
+  inline const FieldData* getFieldData(int association) const;
 
   /*!
    * \brief Check if a field with the given name and association exists.
@@ -605,8 +587,8 @@ public:
    *
    * \see FieldAssociation
    */
-  inline bool hasField( const std::string& name,
-                        int association=ANY_CENTERING ) const;
+  inline bool hasField(const std::string& name,
+                       int association = ANY_CENTERING) const;
 
   /*!
    * \brief Creates a new field with the given name and specified mesh field
@@ -633,11 +615,11 @@ public:
    *
    * \see FieldAssociation
    */
-  template < typename T >
-  inline T* createField( const std::string& name,
-                         int association,
-                         IndexType num_components=1,
-                         bool storeInSidre=true );
+  template <typename T>
+  inline T* createField(const std::string& name,
+                        int association,
+                        IndexType num_components = 1,
+                        bool storeInSidre = true);
 
   /*!
    * \brief Creates a new field from an external buffer that has the given name
@@ -665,12 +647,12 @@ public:
    *
    * \see FieldAssociation
    */
-  template < typename T >
-  inline T* createField( const std::string& name,
-                         int association,
-                         T* data,
-                         IndexType num_components=1,
-                         IndexType capacity=USE_DEFAULT );
+  template <typename T>
+  inline T* createField(const std::string& name,
+                        int association,
+                        T* data,
+                        IndexType num_components = 1,
+                        IndexType capacity = USE_DEFAULT);
 
   /*!
    * \brief Removes the field with the given name and specified association.
@@ -685,7 +667,7 @@ public:
    *
    * \see FieldAssociation
    */
-  inline bool removeField( const std::string& name, int association );
+  inline bool removeField(const std::string& name, int association);
 
   /*!
    * \brief Returns pointer to buffer of the field with the given ane and
@@ -704,42 +686,39 @@ public:
    * \see FieldAssociation
    */
   /// @{
-  template < typename T >
-  inline T* getFieldPtr( const std::string& name,
-                         int association,
-                         IndexType& num_components );
+  template <typename T>
+  inline T* getFieldPtr(const std::string& name,
+                        int association,
+                        IndexType& num_components);
 
-  template < typename T >
-  inline T* getFieldPtr( const std::string& name,
-                         int association );
+  template <typename T>
+  inline T* getFieldPtr(const std::string& name, int association);
 
-  template < typename T >
-  inline const T* getFieldPtr( const std::string& name,
-                               int association,
-                               IndexType& num_components ) const;
+  template <typename T>
+  inline const T* getFieldPtr(const std::string& name,
+                              int association,
+                              IndexType& num_components) const;
 
-  template < typename T >
-  inline const T* getFieldPtr( const std::string& name,
-                               int association ) const;
+  template <typename T>
+  inline const T* getFieldPtr(const std::string& name, int association) const;
   /// @}
 
-/// @}
+  /// @}
 
 protected:
+  /// \name Protected Members
+  /// @{
 
-/// \name Protected Members
-/// @{
-
-  int m_ndims;                    /*! mesh dimension */
-  int m_type;                     /*! the type of the mesh */
-  int m_block_idx;                /*! the Block ID of the mesh */
-  int m_part_idx;                 /*! the partition ID of the mesh */
+  int m_ndims;     /*! mesh dimension */
+  int m_type;      /*! the type of the mesh */
+  int m_block_idx; /*! the Block ID of the mesh */
+  int m_part_idx;  /*! the partition ID of the mesh */
 
   bool m_explicit_coords;
   bool m_explicit_connectivity;
   bool m_has_mixed_topology;
 
-  FieldData* m_mesh_fields[ NUM_FIELD_ASSOCIATIONS ];
+  FieldData* m_mesh_fields[NUM_FIELD_ASSOCIATIONS];
 
 #ifdef AXOM_MINT_USE_SIDRE
   sidre::Group* m_group;
@@ -747,10 +726,10 @@ protected:
   std::string m_coordset;
 #endif
 
-/// @}
+  /// @}
 
-/// \name Protected Constructors (used in derived classes )
-/// @{
+  /// \name Protected Constructors (used in derived classes )
+  /// @{
 
   /*!
    * \brief Mesh Constructor.
@@ -760,7 +739,7 @@ protected:
    * \param [in] blockId the block ID for this mesh instance.
    * \param [in] partId the partition ID for this mesh instance.
    */
-  Mesh( int ndims, int type );
+  Mesh(int ndims, int type);
 
 #ifdef AXOM_MINT_USE_SIDRE
 
@@ -780,7 +759,7 @@ protected:
    *
    * \see sidre::Group
    */
-  Mesh( sidre::Group* group, const std::string& topo="" );
+  Mesh(sidre::Group* group, const std::string& topo = "");
 
   /*!
    * \brief Constructor for use with an empty group.
@@ -801,8 +780,11 @@ protected:
    *
    * \see sidre::Group
    */
-  Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
-        const std::string& coordset );
+  Mesh(int ndims,
+       int type,
+       sidre::Group* group,
+       const std::string& topo,
+       const std::string& coordset);
 
   /*!
    * \brief Helper method to return the associated coordset group.
@@ -826,10 +808,9 @@ protected:
 
 #endif
 
-/// @}
+  /// @}
 
 private:
-
   /*!
    * \brief Get the info corresponding to the given mesh field association.
    *
@@ -837,37 +818,39 @@ private:
    * \param [out] num_tuples the number of tuples in the associated FieldData.
    * \param [out] capacity the capacity of the associated FieldData.
    */
-  void getFieldInfo( int association, IndexType& num_tuples,
-                     IndexType& capacity ) const;
+  void getFieldInfo(int association,
+                    IndexType& num_tuples,
+                    IndexType& capacity) const;
 
   /*!
    * \brief Helper method to check if the mesh type is valid.
    * \return status true if the mesh type is valie, else, false.
    */
-  inline bool validMeshType( ) const
-  { return ( (m_type >= 0) && (m_type < mint::NUM_MESH_TYPES) ); }
+  inline bool validMeshType() const
+  {
+    return ((m_type >= 0) && (m_type < mint::NUM_MESH_TYPES));
+  }
 
   /*!
    * \brief Helper method to check if the mesh dimension is valid.
    * \return status true if the mesh dimension is valid, else, false.
    */
-  inline bool validDimension( ) const
-  { return ( m_ndims >= 1 && m_ndims <= 3 ); }
+  inline bool validDimension() const { return (m_ndims >= 1 && m_ndims <= 3); }
 
   /*!
    * \brief Allocates the FieldData internal data-structures.
    * \note Helper method that is called from the constructor.
    */
-  void allocateFieldData( );
+  void allocateFieldData();
 
   /*!
    * \brief Deallocates the FieldData internal data-structures.
    * \note Helper method that is called by the destructor.
    */
-  void deallocateFieldData( );
+  void deallocateFieldData();
 
-  DISABLE_COPY_AND_ASSIGNMENT( Mesh );
-  DISABLE_MOVE_AND_ASSIGNMENT( Mesh );
+  DISABLE_COPY_AND_ASSIGNMENT(Mesh);
+  DISABLE_MOVE_AND_ASSIGNMENT(Mesh);
 };
 
 //------------------------------------------------------------------------------
@@ -875,174 +858,167 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline bool Mesh::hasSidreGroup( ) const
+inline bool Mesh::hasSidreGroup() const
 {
 #ifdef AXOM_MINT_USE_SIDRE
-  return ( m_group != nullptr );
+  return (m_group != nullptr);
 #else
   return false;
 #endif
 }
 
 //------------------------------------------------------------------------------
-inline const FieldData* Mesh::getFieldData( int association ) const
+inline const FieldData* Mesh::getFieldData(int association) const
 {
-  SLIC_ERROR_IF( association < 0 || association >= NUM_FIELD_ASSOCIATIONS,
-                 "invalid field association [" << association << "]" );
-  SLIC_ERROR_IF( m_mesh_fields[ association ]==nullptr,
-                 "null field data object w/association [" << association <<
-                 "]" );
-  SLIC_ERROR_IF( m_type==PARTICLE_MESH && association != NODE_CENTERED,
-                 "a particle mesh may only store node-centered fields" );
+  SLIC_ERROR_IF(association < 0 || association >= NUM_FIELD_ASSOCIATIONS,
+                "invalid field association [" << association << "]");
+  SLIC_ERROR_IF(m_mesh_fields[association] == nullptr,
+                "null field data object w/association [" << association << "]");
+  SLIC_ERROR_IF(m_type == PARTICLE_MESH && association != NODE_CENTERED,
+                "a particle mesh may only store node-centered fields");
 
-  return m_mesh_fields[ association ];
+  return m_mesh_fields[association];
 }
 
 //------------------------------------------------------------------------------
-inline bool Mesh::hasField( const std::string& name,
-                            int association ) const
+inline bool Mesh::hasField(const std::string& name, int association) const
 {
   bool found = false;
 
-  if ( association == mint::ANY_CENTERING )
+  if(association == mint::ANY_CENTERING)
   {
-
-    int N = ( m_type==mint::PARTICLE_MESH ) ? 1 : mint::NUM_FIELD_ASSOCIATIONS;
-    for ( int i=0 ; !found && i < N ; ++i )
+    int N = (m_type == mint::PARTICLE_MESH) ? 1 : mint::NUM_FIELD_ASSOCIATIONS;
+    for(int i = 0; !found && i < N; ++i)
     {
-      const FieldData* fd = getFieldData( i );
-      SLIC_ASSERT( fd != nullptr );
-      found = fd->hasField( name );
+      const FieldData* fd = getFieldData(i);
+      SLIC_ASSERT(fd != nullptr);
+      found = fd->hasField(name);
     }
-
   }
   else
   {
-    const FieldData* fd = getFieldData( association );
-    SLIC_ASSERT( fd != nullptr );
-    found = fd->hasField( name );
+    const FieldData* fd = getFieldData(association);
+    SLIC_ASSERT(fd != nullptr);
+    found = fd->hasField(name);
   }
 
-  return ( found );
+  return (found);
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* Mesh::createField( const std::string& name,
-                             int association,
-                             IndexType num_components,
-                             bool storeInSidre )
+template <typename T>
+inline T* Mesh::createField(const std::string& name,
+                            int association,
+                            IndexType num_components,
+                            bool storeInSidre)
 {
-  SLIC_ERROR_IF( hasField( name ),
-                 "a field with the same name already exists!" );
+  SLIC_ERROR_IF(hasField(name), "a field with the same name already exists!");
 
-  FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
-  SLIC_ASSERT( fd != nullptr );
+  FieldData* fd = const_cast<FieldData*>(getFieldData(association));
+  SLIC_ASSERT(fd != nullptr);
 
   IndexType num_tuples, capacity;
-  getFieldInfo( association, num_tuples, capacity );
-  T* ptr = fd->createField< T >( name, num_tuples, num_components, capacity,
-                                 storeInSidre );
-  if ( num_tuples > 0 )
+  getFieldInfo(association, num_tuples, capacity);
+  T* ptr =
+    fd->createField<T>(name, num_tuples, num_components, capacity, storeInSidre);
+  if(num_tuples > 0)
   {
-    SLIC_ASSERT( ptr != nullptr );
+    SLIC_ASSERT(ptr != nullptr);
   }
 
-  return ( ptr );
+  return (ptr);
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* Mesh::createField( const std::string& name,
-                             int association,
-                             T* data,
-                             IndexType num_components,
-                             IndexType capacity )
+template <typename T>
+inline T* Mesh::createField(const std::string& name,
+                            int association,
+                            T* data,
+                            IndexType num_components,
+                            IndexType capacity)
 {
-  SLIC_ERROR_IF( hasField( name ),
-                 "a field with the same name already exists!" );
+  SLIC_ERROR_IF(hasField(name), "a field with the same name already exists!");
 
-  SLIC_ASSERT( data != nullptr );
+  SLIC_ASSERT(data != nullptr);
 
-  FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
-  SLIC_ASSERT( fd != nullptr );
+  FieldData* fd = const_cast<FieldData*>(getFieldData(association));
+  SLIC_ASSERT(fd != nullptr);
 
   IndexType num_tuples, dummy1;
-  getFieldInfo( association, num_tuples, dummy1 );
-  T* ptr = fd->createField< T >( name, data, num_tuples, num_components,
-                                 capacity );
-  SLIC_ASSERT( ptr == data );
+  getFieldInfo(association, num_tuples, dummy1);
+  T* ptr = fd->createField<T>(name, data, num_tuples, num_components, capacity);
+  SLIC_ASSERT(ptr == data);
 
-  return ( ptr );
+  return (ptr);
 }
 
 //------------------------------------------------------------------------------
-inline bool Mesh::removeField( const std::string& name, int association )
+inline bool Mesh::removeField(const std::string& name, int association)
 {
-  bool status   = false;
-  FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
+  bool status = false;
+  FieldData* fd = const_cast<FieldData*>(getFieldData(association));
 
-  const bool hasField = fd->hasField( name );
-  SLIC_WARNING_IF( !hasField, "field [" << name << "] does not exist!" );
+  const bool hasField = fd->hasField(name);
+  SLIC_WARNING_IF(!hasField, "field [" << name << "] does not exist!");
 
-  if ( hasField )
+  if(hasField)
   {
-    fd->removeField( name );
+    fd->removeField(name);
     status = true;
   }
 
-  return ( status );
+  return (status);
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* Mesh::getFieldPtr( const std::string& name,int association )
+template <typename T>
+inline T* Mesh::getFieldPtr(const std::string& name, int association)
 {
   IndexType num_components = 0;
-  return getFieldPtr< T >( name, association, num_components );
+  return getFieldPtr<T>(name, association, num_components);
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* Mesh::getFieldPtr( const std::string& name,
-                             int association,
-                             IndexType& num_components )
+template <typename T>
+inline T* Mesh::getFieldPtr(const std::string& name,
+                            int association,
+                            IndexType& num_components)
 {
-  const Mesh* self = const_cast< const Mesh* >( this );
-  const T* ptr = self->getFieldPtr< T >( name, association, num_components );
-  return ( const_cast< T* >( ptr ) );
+  const Mesh* self = const_cast<const Mesh*>(this);
+  const T* ptr = self->getFieldPtr<T>(name, association, num_components);
+  return (const_cast<T*>(ptr));
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline const T* Mesh::getFieldPtr( const std::string& name,
-                                   int association ) const
+template <typename T>
+inline const T* Mesh::getFieldPtr(const std::string& name, int association) const
 {
   IndexType num_components = 0;
-  return getFieldPtr< T >( name, association, num_components );
+  return getFieldPtr<T>(name, association, num_components);
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline const T* Mesh::getFieldPtr( const std::string& name,
-                                   int association,
-                                   IndexType& num_components ) const
+template <typename T>
+inline const T* Mesh::getFieldPtr(const std::string& name,
+                                  int association,
+                                  IndexType& num_components) const
 {
-  const FieldData* fd = getFieldData( association );
-  SLIC_ASSERT( fd != nullptr );
+  const FieldData* fd = getFieldData(association);
+  SLIC_ASSERT(fd != nullptr);
 
   IndexType num_tuples = 0;
-  const T* ptr = fd->getFieldPtr< T >( name, num_tuples, num_components );
-  SLIC_ASSERT( ptr != nullptr );
+  const T* ptr = fd->getFieldPtr<T>(name, num_tuples, num_components);
+  SLIC_ASSERT(ptr != nullptr);
 
-  return ( ptr );
+  return (ptr);
 }
 
 //------------------------------------------------------------------------------
-inline void Mesh::getFieldInfo( int association, IndexType& num_tuples,
-                                IndexType& capacity ) const
+inline void Mesh::getFieldInfo(int association,
+                               IndexType& num_tuples,
+                               IndexType& capacity) const
 {
-  switch ( association )
+  switch(association)
   {
   case NODE_CENTERED:
     num_tuples = getNumberOfNodes();
@@ -1057,11 +1033,11 @@ inline void Mesh::getFieldInfo( int association, IndexType& num_tuples,
     capacity = getFaceCapacity();
     break;
   default:
-    SLIC_ASSERT( association == EDGE_CENTERED );
+    SLIC_ASSERT(association == EDGE_CENTERED);
     num_tuples = getNumberOfEdges();
     capacity = getEdgeCapacity();
     break;
-  } // END switch
+  }  // END switch
 }
 
 } /* namespace mint */

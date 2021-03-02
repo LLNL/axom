@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,36 +14,34 @@
 #include "axom/core/execution/execution_space.hpp"  // for execution spaces
 
 // C/C++ includes
-#include <type_traits> // for std::is_floating_point(), std::is_same()
+#include <type_traits>  // for std::is_floating_point(), std::is_same()
 
 #if !defined(AXOM_USE_RAJA) || !defined(AXOM_USE_UMPIRE)
-#error *** The spin::BVH class requires RAJA and Umpire ***
+  #error*** The spin::BVH class requires RAJA and Umpire ***
 #endif
 
 namespace axom
 {
 namespace spin
 {
-
 // forward declarations
 namespace internal
 {
 namespace linear_bvh
 {
-template < typename FloatType, int NDIMS >
+template <typename FloatType, int NDIMS>
 struct BVHData;
 }
-}
+}  // namespace internal
 
 /*!
  * \brief Enumerates the list of return codes for various BVH operations.
  */
 enum BVHReturnCodes
 {
-  BVH_BUILD_FAILED=-1, //!< indicates that generation of the BVH failed
-  BVH_BUILD_OK,        //!< indicates that the BVH was generated successfully
+  BVH_BUILD_FAILED = -1,  //!< indicates that generation of the BVH failed
+  BVH_BUILD_OK,           //!< indicates that the BVH was generated successfully
 };
-
 
 /*!
  * \class BVH
@@ -114,22 +112,20 @@ enum BVHReturnCodes
  *  \endcode
  *
  */
-template < int NDIMS, 
-           typename ExecSpace = axom::SEQ_EXEC, 
-           typename FloatType = double >
+template <int NDIMS, typename ExecSpace = axom::SEQ_EXEC, typename FloatType = double>
 class BVH
 {
 private:
-
   // compile time checks
-  AXOM_STATIC_ASSERT_MSG( ( (NDIMS==2) || (NDIMS==3) ),
-                          "The BVH class may be used only in 2D or 3D." );
-  AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
-                          "A valid FloatingType must be used for the BVH." );
-  AXOM_STATIC_ASSERT_MSG( axom::execution_space< ExecSpace >::valid(),
-                          "A valid execution space must be supplied to the BVH." );
-public:
+  AXOM_STATIC_ASSERT_MSG(((NDIMS == 2) || (NDIMS == 3)),
+                         "The BVH class may be used only in 2D or 3D.");
+  AXOM_STATIC_ASSERT_MSG(std::is_floating_point<FloatType>::value,
+                         "A valid FloatingType must be used for the BVH.");
+  AXOM_STATIC_ASSERT_MSG(
+    axom::execution_space<ExecSpace>::valid(),
+    "A valid execution space must be supplied to the BVH.");
 
+public:
   /*!
    * \brief Default constructor. Disabled.
    */
@@ -172,8 +168,9 @@ public:
    * \pre boxes != nullptr
    * \pre numItems > 0
    */
-  BVH( const FloatType* boxes, IndexType numItems,
-       int allocatorID=axom::execution_space< ExecSpace >::allocatorID() );
+  BVH(const FloatType* boxes,
+      IndexType numItems,
+      int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
 
   /*!
    * \brief Destructor.
@@ -184,8 +181,7 @@ public:
    * \brief Get the ID of the allocator used by the BVH.
    * \return allocatorID the ID of the allocator used by the BVH.
    */
-  int getAllocatorID( ) const
-  { return m_AllocatorID; };
+  int getAllocatorID() const { return m_AllocatorID; };
 
   /*!
    * \brief Sets the scale factor for scaling the supplied bounding boxes.
@@ -193,15 +189,13 @@ public:
    *
    * \note The default scale factor is set to 1.001
    */
-  void setScaleFactor( FloatType scale_factor )
-  { m_scaleFactor = scale_factor; };
+  void setScaleFactor(FloatType scale_factor) { m_scaleFactor = scale_factor; };
 
   /*!
    * \brief Returns the scale factor used when constructing the BVH.
    * \return scale_factor the scale factor
    */
-  FloatType getScaleFacor( ) const
-  { return m_scaleFactor; };
+  FloatType getScaleFacor() const { return m_scaleFactor; };
 
   /*!
    * \brief Sets the tolerance used for querying the BVH.
@@ -209,21 +203,19 @@ public:
    *
    * \note Default tolerance set to floating_point_limits<FloatType>::epsilon()
    */
-  void setTolerance( FloatType TOL )
-  { m_Tolernace = TOL; };
+  void setTolerance(FloatType TOL) { m_Tolernace = TOL; };
 
   /*!
    * \brief Returns the tolerance value used for BVH queries.
    * \return TOL the tolerance
    */
-  FloatType getTolerance() const
-  { return m_Tolernace; };
+  FloatType getTolerance() const { return m_Tolernace; };
 
   /*!
    * \brief Generates the BVH
    * \return status set to BVH_BUILD_OK on success.
    */
-  int build( );
+  int build();
 
   /*!
    * \brief Returns the bounds of the BVH, given by the the root bounding box.
@@ -236,7 +228,7 @@ public:
    * \pre min != nullptr
    * \pre max != nullptr
    */
-  void getBounds( FloatType* min, FloatType* max ) const;
+  void getBounds(FloatType* min, FloatType* max) const;
 
   /*!
    * \brief Finds the candidate bins that contain each of the query points.
@@ -268,11 +260,13 @@ public:
    * \pre y != nullptr if dimension==2 || dimension==3
    * \pre z != nullptr if dimension==3
    */
-  void findPoints( IndexType* offsets, IndexType* counts,
-                   IndexType*& candidates, IndexType numPts,
-                   const FloatType* x,
-                   const FloatType* y,
-                   const FloatType* z=nullptr ) const;
+  void findPoints(IndexType* offsets,
+                  IndexType* counts,
+                  IndexType*& candidates,
+                  IndexType numPts,
+                  const FloatType* x,
+                  const FloatType* y,
+                  const FloatType* z = nullptr) const;
 
   /*!
    * \brief Finds the candidate bins that intersect the given rays.
@@ -305,16 +299,16 @@ public:
    * \pre z0 != nullptr if dimension==3
    * \pre nz != nullptr if dimension==3
    */
-  void findRays( IndexType* offsets,
-                 IndexType* counts,
-                 IndexType*& candidates,
-                 IndexType numRays,
-                 const FloatType* x0,
-                 const FloatType* nx,
-                 const FloatType* y0,
-                 const FloatType* ny,
-                 const FloatType* z0=nullptr,
-                 const FloatType* nz=nullptr  ) const;
+  void findRays(IndexType* offsets,
+                IndexType* counts,
+                IndexType*& candidates,
+                IndexType numRays,
+                const FloatType* x0,
+                const FloatType* nx,
+                const FloatType* y0,
+                const FloatType* ny,
+                const FloatType* z0 = nullptr,
+                const FloatType* nz = nullptr) const;
 
   /*!
    * \brief Finds the candidate bins that intersect the given bounding boxes.
@@ -349,43 +343,44 @@ public:
    * \pre zmin != nullptr if dimension==3
    * \pre zmax != nullptr if dimension==3
    */
-  void findBoundingBoxes( IndexType* offsets, IndexType* counts,
-                          IndexType*& candidates, IndexType numBoxes,
-                          const FloatType* xmin,
-                          const FloatType* xmax,
-                          const FloatType* ymin,
-                          const FloatType* ymax,
-                          const FloatType* zmin=nullptr,
-                          const FloatType* zmax=nullptr ) const;
+  void findBoundingBoxes(IndexType* offsets,
+                         IndexType* counts,
+                         IndexType*& candidates,
+                         IndexType numBoxes,
+                         const FloatType* xmin,
+                         const FloatType* xmax,
+                         const FloatType* ymin,
+                         const FloatType* ymax,
+                         const FloatType* zmin = nullptr,
+                         const FloatType* zmax = nullptr) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
    * \param [in] fileName the name of VTK file.
    * \note Primarily used for debugging.
    */
-  void writeVtkFile( const std::string& fileName ) const;
+  void writeVtkFile(const std::string& fileName) const;
 
 private:
-
-/// \name Private Members
-/// @{
+  /// \name Private Members
+  /// @{
 
   int m_AllocatorID;
   FloatType m_Tolernace;
   FloatType m_scaleFactor;
   IndexType m_numItems;
   const FloatType* m_boxes;
-  internal::linear_bvh::BVHData< FloatType,NDIMS > m_bvh;
+  internal::linear_bvh::BVHData<FloatType, NDIMS> m_bvh;
 
   static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.001;
-/// @}
+  /// @}
 
   DISABLE_COPY_AND_ASSIGNMENT(BVH);
   DISABLE_MOVE_AND_ASSIGNMENT(BVH);
 };
 
-}
-}
+}  // namespace spin
+}  // namespace axom
 
 #include "axom/spin/internal/linear_bvh/BVH_impl.hpp"
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,9 +13,9 @@
 #include "axom/slic/core/MessageLevel.hpp"
 
 // C/C++ includes
-#include <string> // for STL string
-#include <vector> // for STL vector
-#include <map>    // for STL map
+#include <string>  // for STL string
+#include <vector>  // for STL vector
+#include <map>     // for STL map
 
 #include "axom/core/Macros.hpp"
 
@@ -23,9 +23,11 @@ namespace axom
 {
 namespace slic
 {
-
 // Forward declarations
 class LogStream;
+
+// Type alias for readability
+using AbortFunctionPtr = void (*)();
 
 /*!
  * \class Logger
@@ -47,15 +49,13 @@ class LogStream;
  */
 class Logger
 {
-
 public:
-
   /*!
    * \brief Gets the currently set logging level.
    *
    * \return The currently set logging level.
    */
-  message::Level getLoggingMsgLevel( );
+  message::Level getLoggingMsgLevel();
 
   /*!
    * \brief Sets the logging level to the given level. This controls which
@@ -63,25 +63,25 @@ public:
    *  severity to the given level will be logged.
    * \param [in] level the logging level.
    */
-  void setLoggingMsgLevel( message::Level level );
+  void setLoggingMsgLevel(message::Level level);
 
   /*!
    * \brief Toggles the abort behavior for error messages. Default is false.
    * \param [in] status user-supplied flag.
    */
-  void setAbortOnError( bool status ) { m_abortOnError=status; };
+  void setAbortOnError(bool status) { m_abortOnError = status; };
 
   /*!
    * \brief Enables abort on error messages.
    * \post this->isAbortOnErrorsEnabled() == true.
    */
-  void enableAbortOnError() { m_abortOnError=true; };
+  void enableAbortOnError() { m_abortOnError = true; };
 
   /*!
    * \brief Disables abort on error messages.
    * \post this->isAbortOnErrorsEnabled() == false.
    */
-  void disableAbortOnError() { m_abortOnError=false; };
+  void disableAbortOnError() { m_abortOnError = false; };
 
   /*!
    * \brief Checks the status of the abort behavior on error messages.
@@ -93,25 +93,31 @@ public:
    * \brief Toggles the abort behavior for warning messages. Default is false.
    * \param [in] status user-supplied flag.
    */
-  void setAbortOnWarning( bool status ) { m_abortOnWarning=status; };
+  void setAbortOnWarning(bool status) { m_abortOnWarning = status; };
 
   /*!
    * \brief Enables abort on warning messages.
    * \post this->isAbortOnWarningsEnabled() == true.
    */
-  void enableAbortOnWarning() { m_abortOnWarning=true; };
+  void enableAbortOnWarning() { m_abortOnWarning = true; };
 
   /*!
    * \brief Disables abort on warnings messages.
    * \post this->isAbortOnWarningsEnabled() == false.
    */
-  void disableAbortOnWarning() { m_abortOnWarning=false; };
+  void disableAbortOnWarning() { m_abortOnWarning = false; };
 
   /*!
    * \brief Checks the status of the abort behavior on warning messages.
    * \return status true if the code will abort on warnings, otherwise, false.
    */
   bool isAbortOnWarningsEnabled() const { return m_abortOnWarning; };
+
+  /*!
+   * \brief Sets the function to call when program abort is requested
+   * \param [in] abort_func The user-specified function to call
+   */
+  void setAbortFunction(AbortFunctionPtr abort_func);
 
   /*!
    * \brief Returns the name of this logger instance.
@@ -130,8 +136,9 @@ public:
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    */
-  void addStreamToMsgLevel( LogStream* ls, message::Level level,
-                            bool pass_ownership=true );
+  void addStreamToMsgLevel(LogStream* ls,
+                           message::Level level,
+                           bool pass_ownership = true);
 
   /*!
    * \brief Binds the given stream to all the levels for this Logger instance.
@@ -139,7 +146,7 @@ public:
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    */
-  void addStreamToAllMsgLevels( LogStream* ls );
+  void addStreamToAllMsgLevels(LogStream* ls);
 
   /*!
    * \brief Returns the number of streams at the given level.
@@ -147,7 +154,7 @@ public:
    * \return N the number of streams at the given level.
    * \post N >= 0
    */
-  int getNumStreamsAtMsgLevel( message::Level level );
+  int getNumStreamsAtMsgLevel(message::Level level);
 
   /*!
    * \brief Returns the ith stream at the given level.
@@ -157,7 +164,7 @@ public:
    * \pre i >= 0 && i < this->getNumStreamsAtLevel( level )
    * \post stream_ptr != NULL.
    */
-  LogStream* getStream( message::Level level, int i );
+  LogStream* getStream(message::Level level, int i);
 
   /*!
    * \brief Logs the given message to all registered streams.
@@ -167,8 +174,9 @@ public:
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
    */
-  void logMessage( message::Level level, const std::string& message,
-                   bool filter_duplicates=false );
+  void logMessage(message::Level level,
+                  const std::string& message,
+                  bool filter_duplicates = false);
 
   /*!
    * \brief Logs the given message to all registered streams.
@@ -179,10 +187,10 @@ public:
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
    */
-  void logMessage( message::Level level,
-                   const std::string& message,
-                   const std::string& tagName,
-                   bool filter_duplicates=false );
+  void logMessage(message::Level level,
+                  const std::string& message,
+                  const std::string& tagName,
+                  bool filter_duplicates = false);
 
   /*!
    * \brief Logs the given message to all registered streams.
@@ -194,11 +202,11 @@ public:
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
    */
-  void logMessage( message::Level level,
-                   const std::string& message,
-                   const std::string& fileName,
-                   int line,
-                   bool filter_duplicates=false );
+  void logMessage(message::Level level,
+                  const std::string& message,
+                  const std::string& fileName,
+                  int line,
+                  bool filter_duplicates = false);
 
   /*!
    * \brief Logs the given message to all registered streams.
@@ -211,12 +219,12 @@ public:
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
    */
-  void logMessage( message::Level level,
-                   const std::string& message,
-                   const std::string& tagName,
-                   const std::string& fileName,
-                   int line,
-                   bool filter_duplicates=false );
+  void logMessage(message::Level level,
+                  const std::string& message,
+                  const std::string& tagName,
+                  const std::string& fileName,
+                  int line,
+                  bool filter_duplicates = false);
 
   /*!
    * \brief Flushes all streams.
@@ -253,7 +261,7 @@ public:
    *  already exists.
    */
   static bool createLogger(const std::string& name,
-                           char imask=inherit::nothing );
+                           char imask = inherit::nothing);
 
   /*!
    * \brief Activates the logger with the associate name.
@@ -293,7 +301,6 @@ public:
   ///@}
 
 private:
-
   /*!
    * \brief Default constructor, made private since this is a singleton.
    */
@@ -317,10 +324,11 @@ private:
   std::string m_name;
   bool m_abortOnError;
   bool m_abortOnWarning;
+  void (*m_abortFunction)(void);
 
-  bool m_isEnabled[ message::Num_Levels ];
-  std::map< LogStream*, LogStream* > m_streamObjectsManager;
-  std::vector< LogStream* > m_logStreams[ message::Num_Levels ];
+  bool m_isEnabled[message::Num_Levels];
+  std::map<LogStream*, LogStream*> m_streamObjectsManager;
+  std::vector<LogStream*> m_logStreams[message::Num_Levels];
 
   ///@}
 
@@ -328,13 +336,12 @@ private:
   ///@{
 
   static Logger* s_Logger;
-  static std::map< std::string, Logger* > s_loggers;
+  static std::map<std::string, Logger*> s_loggers;
 
   ///@}
 
   DISABLE_COPY_AND_ASSIGNMENT(Logger);
   DISABLE_MOVE_AND_ASSIGNMENT(Logger);
-
 };
 
 } /* namespace slic */

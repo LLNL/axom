@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,12 +14,12 @@
 #include "axom/slic/interface/slic.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-#include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre/core/sidre.hpp"
 #endif
 
-#include <cmath>                 /* for std::ceil */
-#include <string>                /* for std:string */
-#include <cstring>               /* for std::srcmp */
+#include <cmath>   /* for std::ceil */
+#include <string>  /* for std:string */
+#include <cstring> /* for std::srcmp */
 
 namespace axom
 {
@@ -27,7 +27,6 @@ namespace mint
 {
 namespace internal
 {
-
 #ifdef AXOM_MINT_USE_SIDRE
 
 /*!
@@ -46,105 +45,112 @@ namespace internal
  * \pre group != nullptr
  * \pre m_values != nullptr
  */
-inline CellType 
-initializeFromGroup( sidre::Group* group,
-                     Array< IndexType >** m_values,
-                     Array< IndexType >** m_offsets=nullptr,
-                     Array< CellType >** m_types=nullptr )
+inline CellType initializeFromGroup(sidre::Group* group,
+                                    Array<IndexType>** m_values,
+                                    Array<IndexType>** m_offsets = nullptr,
+                                    Array<CellType>** m_types = nullptr)
 {
-  SLIC_ERROR_IF( group == nullptr,
-                 "sidre::Group pointer must not be null." );
-  SLIC_ERROR_IF( m_values == nullptr,
-                 "Pointer values array must not be null." );
+  SLIC_ERROR_IF(group == nullptr, "sidre::Group pointer must not be null.");
+  SLIC_ERROR_IF(m_values == nullptr, "Pointer values array must not be null.");
 
-  SLIC_ERROR_IF( !group->hasView( "coordset" ),
-                 "sidre::Group " << group->getPathName() <<
-                 " does not conform to mesh blueprint. No child view 'coordset'." );
-  SLIC_ERROR_IF( !group->getView( "coordset" )->isString(),
-                 "sidre::Group " << group->getPathName() <<
-                 " does not conform to mesh blueprint. Child view 'coordset' " <<
-                 "does not hold a string." );
+  SLIC_ERROR_IF(
+    !group->hasView("coordset"),
+    "sidre::Group "
+      << group->getPathName()
+      << " does not conform to mesh blueprint. No child view 'coordset'.");
+  SLIC_ERROR_IF(
+    !group->getView("coordset")->isString(),
+    "sidre::Group "
+      << group->getPathName()
+      << " does not conform to mesh blueprint. Child view 'coordset' "
+      << "does not hold a string.");
 
-  SLIC_ERROR_IF( !group->hasView( "type" ),
-                 "sidre::Group " << group->getPathName() <<
-                 " does not conform to mesh blueprint. No child view 'type'." );
-  sidre::View* type_view = group->getView( "type" );
-  SLIC_ERROR_IF( !type_view->isString(),
-                 "sidre::Group " << group->getPathName() <<
-                 " does not conform to mesh blueprint. Child view 'type' " <<
-                 "does not hold a string." );
-  SLIC_ERROR_IF( std::strcmp( type_view->getString(), "unstructured" ) != 0,
-                 "Incorrect type found. Expected 'unstructured' but got '" <<
-                 type_view->getString() << "'.");
+  SLIC_ERROR_IF(
+    !group->hasView("type"),
+    "sidre::Group "
+      << group->getPathName()
+      << " does not conform to mesh blueprint. No child view 'type'.");
+  sidre::View* type_view = group->getView("type");
+  SLIC_ERROR_IF(!type_view->isString(),
+                "sidre::Group "
+                  << group->getPathName()
+                  << " does not conform to mesh blueprint. Child view 'type' "
+                  << "does not hold a string.");
+  SLIC_ERROR_IF(std::strcmp(type_view->getString(), "unstructured") != 0,
+                "Incorrect type found. Expected 'unstructured' but got '"
+                  << type_view->getString() << "'.");
 
-  SLIC_ERROR_IF( !group->hasGroup( "elements" ),
-                 "sidre::Group " << group->getPathName() <<
-                 " does not conform to mesh blueprint. No 'elements' group " <<
-                 "found." );
-  sidre::Group* elems_group = group->getGroup( "elements" );
+  SLIC_ERROR_IF(!group->hasGroup("elements"),
+                "sidre::Group "
+                  << group->getPathName()
+                  << " does not conform to mesh blueprint. No 'elements' group "
+                  << "found.");
+  sidre::Group* elems_group = group->getGroup("elements");
 
-  SLIC_ERROR_IF( !elems_group->hasView( "shape" ),
-                 "sidre::Group " << group->getPathName() <<
-                 " does not conform to mesh blueprint. The elements group " <<
-                 "does not have a child view 'shape'." );
+  SLIC_ERROR_IF(!elems_group->hasView("shape"),
+                "sidre::Group "
+                  << group->getPathName()
+                  << " does not conform to mesh blueprint. The elements group "
+                  << "does not have a child view 'shape'.");
 
-  sidre::View* shape_view = elems_group->getView( "shape" );
+  sidre::View* shape_view = elems_group->getView("shape");
   std::string bp_name = shape_view->getString();
   CellType cell_type = UNDEFINED_CELL;
 
-  for ( IndexType i = 0 ; i < NUM_CELL_TYPES ; ++i )
+  for(IndexType i = 0; i < NUM_CELL_TYPES; ++i)
   {
-    if ( cell_info[i].blueprint_name == bp_name )
+    if(cell_info[i].blueprint_name == bp_name)
     {
       cell_type = cell_info[i].cell_type;
       break;
     }
   }
 
-  SLIC_ERROR_IF( !elems_group->hasView( "connectivity" ),
-                 "sidre::Group " << group->getPathName() <<
-                 " does not conform to mesh blueprint. The elements group " <<
-                 "does not have a child view 'connectivity'."  );
+  SLIC_ERROR_IF(!elems_group->hasView("connectivity"),
+                "sidre::Group "
+                  << group->getPathName()
+                  << " does not conform to mesh blueprint. The elements group "
+                  << "does not have a child view 'connectivity'.");
 
-  sidre::View* connec_view = elems_group->getView( "connectivity" );
-  *m_values = new sidre::Array< IndexType >( connec_view );
-  SLIC_ERROR_IF( *m_values == nullptr, "Error in Array allocation." );
+  sidre::View* connec_view = elems_group->getView("connectivity");
+  *m_values = new sidre::Array<IndexType>(connec_view);
+  SLIC_ERROR_IF(*m_values == nullptr, "Error in Array allocation.");
 
-  if ( m_offsets != nullptr )
+  if(m_offsets != nullptr)
   {
-    SLIC_ERROR_IF( !elems_group->hasView( "offsets" ),
-                   "sidre::Group " << group->getPathName() <<
-                   " does not conform to mesh blueprint." );
+    SLIC_ERROR_IF(!elems_group->hasView("offsets"),
+                  "sidre::Group " << group->getPathName()
+                                  << " does not conform to mesh blueprint.");
 
-    sidre::View* offsets_view = elems_group->getView( "offsets" );
-    *m_offsets = new sidre::Array< IndexType >( offsets_view );
+    sidre::View* offsets_view = elems_group->getView("offsets");
+    *m_offsets = new sidre::Array<IndexType>(offsets_view);
 
-    SLIC_ERROR_IF( *m_offsets == nullptr, "Error in Array allocation." );
-    SLIC_ERROR_IF( (*m_offsets)->numComponents() != 1,
-                   "offsets array must have only 1 component not " <<
-                   (*m_offsets)->numComponents() << "." );
+    SLIC_ERROR_IF(*m_offsets == nullptr, "Error in Array allocation.");
+    SLIC_ERROR_IF((*m_offsets)->numComponents() != 1,
+                  "offsets array must have only 1 component not "
+                    << (*m_offsets)->numComponents() << ".");
 
-    if ( (*m_offsets)->size() == 0 )
+    if((*m_offsets)->size() == 0)
     {
       (*m_offsets)->append(0);
     }
-    SLIC_ERROR_IF( (**m_offsets)[0] != 0, "The offset of ID 0 must be 0 not " <<
-                   (**m_offsets)[0] << "." );
+    SLIC_ERROR_IF((**m_offsets)[0] != 0,
+                  "The offset of ID 0 must be 0 not " << (**m_offsets)[0] << ".");
   }
 
-  if ( m_types != nullptr )
+  if(m_types != nullptr)
   {
-    SLIC_ERROR_IF( !elems_group->hasView( "types" ),
-                   "sidre::Group " << group->getPathName() <<
-                   " does not conform to mesh blueprint." );
+    SLIC_ERROR_IF(!elems_group->hasView("types"),
+                  "sidre::Group " << group->getPathName()
+                                  << " does not conform to mesh blueprint.");
 
-    sidre::View* type_view = elems_group->getView( "types" );
-    *m_types = new sidre::Array< CellType >( type_view );
+    sidre::View* type_view = elems_group->getView("types");
+    *m_types = new sidre::Array<CellType>(type_view);
 
-    SLIC_ERROR_IF( *m_types == nullptr, "Error in Array allocation." );
-    SLIC_ERROR_IF( (*m_types)->numComponents() != 1,
-                   "Types array must have only 1 component not " <<
-                   (*m_types)->numComponents() << "." );
+    SLIC_ERROR_IF(*m_types == nullptr, "Error in Array allocation.");
+    SLIC_ERROR_IF((*m_types)->numComponents() != 1,
+                  "Types array must have only 1 component not "
+                    << (*m_types)->numComponents() << ".");
   }
 
   return cell_type;
@@ -162,34 +168,36 @@ initializeFromGroup( sidre::Group* group,
  * \pee group != nullptr
  * \pre group->getNumGroups() == group->getNumViews() == 0
  */
-inline void initializeGroup( sidre::Group* group, const std::string& coordset,
-                             CellType cell_type, bool create_offsets=false,
-                             bool create_types=false )
+inline void initializeGroup(sidre::Group* group,
+                            const std::string& coordset,
+                            CellType cell_type,
+                            bool create_offsets = false,
+                            bool create_types = false)
 {
-  SLIC_ERROR_IF( group == nullptr,
-                 "sidre::Group pointer must not be null." );
-  SLIC_ERROR_IF( group->getNumGroups() != 0, "sidre::Group is not empty." );
-  SLIC_ERROR_IF( group->getNumViews() != 0, "sidre::Group is not empty." );
+  SLIC_ERROR_IF(group == nullptr, "sidre::Group pointer must not be null.");
+  SLIC_ERROR_IF(group->getNumGroups() != 0, "sidre::Group is not empty.");
+  SLIC_ERROR_IF(group->getNumViews() != 0, "sidre::Group is not empty.");
 
-  group->createView( "coordset" )->setString( coordset );
-  group->createView( "type" )->setString( "unstructured" );
+  group->createView("coordset")->setString(coordset);
+  group->createView("type")->setString("unstructured");
 
-  const std::string bp_name = ( cell_type == UNDEFINED_CELL ) ? "mixed" :
-                              getCellInfo( cell_type ).blueprint_name;
+  const std::string bp_name = (cell_type == UNDEFINED_CELL)
+    ? "mixed"
+    : getCellInfo(cell_type).blueprint_name;
 
-  sidre::Group* elems_group = group->createGroup( "elements" );
-  elems_group->createView( "shape" )->setString( bp_name );
+  sidre::Group* elems_group = group->createGroup("elements");
+  elems_group->createView("shape")->setString(bp_name);
 
-  elems_group->createView( "connectivity" );
+  elems_group->createView("connectivity");
 
-  if ( create_offsets )
+  if(create_offsets)
   {
-    elems_group->createView( "offsets" );
+    elems_group->createView("offsets");
   }
 
-  if ( create_types )
+  if(create_types)
   {
-    elems_group->createView( "types" );
+    elems_group->createView("types");
   }
 }
 
@@ -201,14 +209,13 @@ inline void initializeGroup( sidre::Group* group, const std::string& coordset,
  *
  * \pre group != nullptr
  */
-inline void setStride( sidre::Group* group, IndexType stride )
+inline void setStride(sidre::Group* group, IndexType stride)
 {
-  SLIC_ERROR_IF( group == nullptr,
-                 "sidre::Group pointer must not be null." );
+  SLIC_ERROR_IF(group == nullptr, "sidre::Group pointer must not be null.");
 
-  sidre::Group* elems_group = group->getGroup( "elements" );
-  SLIC_ERROR_IF( elems_group == nullptr, "No group found" );
-  elems_group->createView( "stride" )->setScalar( stride );
+  sidre::Group* elems_group = group->getGroup("elements");
+  SLIC_ERROR_IF(elems_group == nullptr, "No group found");
+  elems_group->createView("stride")->setScalar(stride);
 }
 
 /*!
@@ -218,15 +225,14 @@ inline void setStride( sidre::Group* group, IndexType stride )
  *
  * \pee group != nullptr
  */
-inline IndexType getStride( const sidre::Group* group )
+inline IndexType getStride(const sidre::Group* group)
 {
-  SLIC_ERROR_IF( group == nullptr,
-                 "sidre::Group pointer must not be null." );
+  SLIC_ERROR_IF(group == nullptr, "sidre::Group pointer must not be null.");
 
-  const sidre::Group* elems_group = group->getGroup( "elements" );
-  SLIC_ERROR_IF( elems_group == nullptr, "No group found" );
-  const sidre::View* stride_view = elems_group->getView( "stride" );
-  SLIC_ERROR_IF( stride_view == nullptr, "No view found" );
+  const sidre::Group* elems_group = group->getGroup("elements");
+  SLIC_ERROR_IF(elems_group == nullptr, "No group found");
+  const sidre::View* stride_view = elems_group->getView("stride");
+  SLIC_ERROR_IF(stride_view == nullptr, "No view found");
   return stride_view->getScalar();
 }
 
@@ -251,28 +257,30 @@ inline IndexType getStride( const sidre::Group* group )
  * \pre m_values != nullptr
  * \pre m_offsets != nullptr
  */
-inline void append( IndexType n_IDs, const IndexType* values,
-                    const IndexType* offsets, Array< IndexType >* m_values,
-                    Array< IndexType >* m_offsets )
+inline void append(IndexType n_IDs,
+                   const IndexType* values,
+                   const IndexType* offsets,
+                   Array<IndexType>* m_values,
+                   Array<IndexType>* m_offsets)
 {
-  SLIC_ASSERT( values != nullptr );
-  SLIC_ASSERT( offsets != nullptr );
-  SLIC_ASSERT( m_values != nullptr );
-  SLIC_ASSERT( m_offsets != nullptr );
+  SLIC_ASSERT(values != nullptr);
+  SLIC_ASSERT(offsets != nullptr);
+  SLIC_ASSERT(m_values != nullptr);
+  SLIC_ASSERT(m_offsets != nullptr);
 
-  IndexType n_values_to_add = offsets[ n_IDs ] - offsets[0];
+  IndexType n_values_to_add = offsets[n_IDs] - offsets[0];
   IndexType old_n_values = m_values->size();
   IndexType old_n_offsets = m_offsets->size();
 
-  m_offsets->append( offsets + 1, n_IDs );
-  m_values->append( values, n_values_to_add );
+  m_offsets->append(offsets + 1, n_IDs);
+  m_values->append(values, n_values_to_add);
 
   /* Correct the appended offsets. */
   IndexType* m_offsets_ptr = m_offsets->getData();
   const IndexType correction = old_n_values - offsets[0];
-  for ( IndexType i = 0 ; i < n_IDs ; ++i )
+  for(IndexType i = 0; i < n_IDs; ++i)
   {
-    m_offsets_ptr[ old_n_offsets + i ] += correction;
+    m_offsets_ptr[old_n_offsets + i] += correction;
   }
 }
 
@@ -290,18 +298,20 @@ inline void append( IndexType n_IDs, const IndexType* values,
  * \pre values != nullptr
  * \pre m_values != nullptr
  */
-inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
-                 Array< IndexType >* m_values,
-                 Array< IndexType >* m_offsets )
+inline void set(IndexType start_ID,
+                const IndexType* values,
+                IndexType n_IDs,
+                Array<IndexType>* m_values,
+                Array<IndexType>* m_offsets)
 {
-  SLIC_ASSERT( start_ID >= 0 );
-  SLIC_ASSERT( start_ID + n_IDs <= m_offsets->size() - 1 );
-  SLIC_ASSERT( values != nullptr );
-  SLIC_ASSERT( m_values != nullptr );
+  SLIC_ASSERT(start_ID >= 0);
+  SLIC_ASSERT(start_ID + n_IDs <= m_offsets->size() - 1);
+  SLIC_ASSERT(values != nullptr);
+  SLIC_ASSERT(m_values != nullptr);
 
-  IndexType offset = (*m_offsets)[ start_ID ];
-  IndexType n_values = (*m_offsets)[ start_ID + n_IDs ] - offset;
-  m_values->set( values, n_values, offset );
+  IndexType offset = (*m_offsets)[start_ID];
+  IndexType n_values = (*m_offsets)[start_ID + n_IDs] - offset;
+  m_values->set(values, n_values, offset);
 }
 
 /*!
@@ -325,39 +335,41 @@ inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
  * \pre m_values != nullptr
  * \pre m_offsets != nullptr
  */
-inline void insert( IndexType start_ID, IndexType n_IDs,
-                    const IndexType* values, const IndexType* offsets,
-                    Array< IndexType >* m_values,
-                    Array< IndexType >* m_offsets )
+inline void insert(IndexType start_ID,
+                   IndexType n_IDs,
+                   const IndexType* values,
+                   const IndexType* offsets,
+                   Array<IndexType>* m_values,
+                   Array<IndexType>* m_offsets)
 {
-  SLIC_ASSERT( start_ID >= 0 );
-  SLIC_ASSERT( start_ID <= m_offsets->size() - 1 );
-  SLIC_ASSERT( n_IDs >= 0 );
-  SLIC_ASSERT( values != nullptr );
-  SLIC_ASSERT( offsets != nullptr );
-  SLIC_ASSERT( m_values != nullptr );
-  SLIC_ASSERT( m_offsets != nullptr );
+  SLIC_ASSERT(start_ID >= 0);
+  SLIC_ASSERT(start_ID <= m_offsets->size() - 1);
+  SLIC_ASSERT(n_IDs >= 0);
+  SLIC_ASSERT(values != nullptr);
+  SLIC_ASSERT(offsets != nullptr);
+  SLIC_ASSERT(m_values != nullptr);
+  SLIC_ASSERT(m_offsets != nullptr);
 
-  IndexType n_values = offsets[ n_IDs ] - offsets[0];
+  IndexType n_values = offsets[n_IDs] - offsets[0];
   IndexType* m_offsets_ptr = m_offsets->getData();
-  IndexType insert_pos = m_offsets_ptr[ start_ID ];
+  IndexType insert_pos = m_offsets_ptr[start_ID];
 
   /* Increment the offsets after the insertion position. */
   IndexType n_offsets = m_offsets->size();
-  for ( IndexType i = start_ID + 1 ; i < n_offsets ; ++i )
+  for(IndexType i = start_ID + 1; i < n_offsets; ++i)
   {
-    m_offsets_ptr[ i ] += n_values;
+    m_offsets_ptr[i] += n_values;
   }
 
-  m_offsets->insert( offsets + 1, n_IDs, start_ID + 1 );
-  m_values->insert( values, n_values, insert_pos );
+  m_offsets->insert(offsets + 1, n_IDs, start_ID + 1);
+  m_values->insert(values, n_values, insert_pos);
 
   /* Correct the inserted offsets. */
   m_offsets_ptr = m_offsets->getData();
   const IndexType correction = insert_pos - offsets[0];
-  for ( IndexType i = 0 ; i < n_IDs ; ++i )
+  for(IndexType i = 0; i < n_IDs; ++i)
   {
-    m_offsets_ptr[ start_ID + 1 + i ] += correction;
+    m_offsets_ptr[start_ID + 1 + i] += correction;
   }
 }
 
@@ -372,29 +384,29 @@ inline void insert( IndexType start_ID, IndexType n_IDs,
  *  If this is not USE_DEFAULT it simply returns the given capacity, otherwise
  *  it calculates the capacity given the other three parameters.
  */
-inline IndexType calcValueCapacity( IndexType n_IDs, IndexType ID_capacity,
-                                    IndexType n_values,
-                                    IndexType value_capacity )
+inline IndexType calcValueCapacity(IndexType n_IDs,
+                                   IndexType ID_capacity,
+                                   IndexType n_values,
+                                   IndexType value_capacity)
 {
-  if ( value_capacity == USE_DEFAULT )
+  if(value_capacity == USE_DEFAULT)
   {
-    if ( n_IDs == 0 )
+    if(n_IDs == 0)
     {
       value_capacity = ID_capacity * MAX_CELL_NODES;
     }
     else
     {
-      const double avg_n_vals =  double( n_values ) / n_IDs;
-      value_capacity = static_cast< IndexType >( std::ceil(avg_n_vals*n_IDs) );
+      const double avg_n_vals = double(n_values) / n_IDs;
+      value_capacity = static_cast<IndexType>(std::ceil(avg_n_vals * n_IDs));
     }
   }
 
   return value_capacity;
 }
 
-
 } /* namespace internal */
 } /* namespace mint */
 } /* namespace axom */
 
-#endif  /* MINT_ConnectivityArrayHelpers_HPP_ */
+#endif /* MINT_ConnectivityArrayHelpers_HPP_ */

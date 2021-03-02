@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,8 +22,6 @@ namespace axom
 {
 namespace spin
 {
-
-
 /*!
  * \class ImplicitGrid
  *
@@ -52,7 +50,7 @@ namespace spin
  * is designed for quick indexing and searching over a static (and relatively
  * small index space) in a relatively coarse grid.
  */
-template<int NDIMS, typename TheIndexType = int>
+template <int NDIMS, typename TheIndexType = int>
 class ImplicitGrid
 {
 public:
@@ -65,12 +63,11 @@ public:
   using LatticeType = RectangularLattice<NDIMS, double, IndexType>;
 
   using SizePolicy = slam::policies::RuntimeSize<IndexType>;
-  using ElementSet = slam::OrderedSet<IndexType,IndexType,SizePolicy>;
-  using BinSet = slam::OrderedSet<IndexType,IndexType, SizePolicy>;
-
+  using ElementSet = slam::OrderedSet<IndexType, IndexType, SizePolicy>;
+  using BinSet = slam::OrderedSet<IndexType, IndexType, SizePolicy>;
 
   using BitsetType = slam::BitSet;
-  using BinBitMap = slam::Map<slam::Set<>, BitsetType>;
+  using BinBitMap = slam::Map<slam::Set<IndexType, IndexType>, BitsetType>;
 
   /*!
    * \brief Default constructor for an ImplicitGrid
@@ -78,7 +75,7 @@ public:
    * \note Users must call initialize() to initialize the ImplicitGrid
    *       after constructing with the default constructor
    */
-  ImplicitGrid() : m_initialized(false) {}
+  ImplicitGrid() : m_initialized(false) { }
 
   /*!
    * \brief Constructor for an implicit grid from a bounding box,
@@ -95,7 +92,8 @@ public:
   ImplicitGrid(const SpatialBoundingBox& boundingBox,
                const GridCell* gridRes,
                int numElts)
-    : m_bb(boundingBox), m_initialized(false)
+    : m_bb(boundingBox)
+    , m_initialized(false)
   {
     initialize(m_bb, gridRes, numElts);
   }
@@ -119,26 +117,25 @@ public:
                int numElts)
     : m_initialized(false)
   {
-    SLIC_ASSERT( bbMin != nullptr);
-    SLIC_ASSERT( bbMax != nullptr);
+    SLIC_ASSERT(bbMin != nullptr);
+    SLIC_ASSERT(bbMax != nullptr);
 
     // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
-   
+
     GridCell res;
-    if(gridRes != nullptr){
+    if(gridRes != nullptr)
+    {
       res = GridCell(gridRes, NDIMS);
     }
 
-    initialize(
-      SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
-      (gridRes != nullptr) ? &res : nullptr, 
-      numElts);
+    initialize(SpatialBoundingBox(SpacePoint(bbMin), SpacePoint(bbMax)),
+               (gridRes != nullptr) ? &res : nullptr,
+               numElts);
   }
 
   /*! Predicate to check if the ImplicitGrid has been initialized */
   bool isInitialized() const { return m_initialized; }
-
 
   /*!
    * \brief Initializes an implicit grid or resolution gridRes over an axis
@@ -159,14 +156,14 @@ public:
                   const GridCell* gridRes,
                   int numElts)
   {
-    SLIC_ASSERT( !m_initialized);
+    SLIC_ASSERT(!m_initialized);
 
     // Setup Grid Resolution, dealing with possible null pointer
     if(gridRes == nullptr)
     {
       // Heuristic: use the n^th root of the number of elements
       // add 0.5 to round to nearest integer
-      double nthRoot = std::pow(static_cast<double>(numElts), 1./ NDIMS );
+      double nthRoot = std::pow(static_cast<double>(numElts), 1. / NDIMS);
       int dimRes = static_cast<int>(nthRoot + 0.5);
       m_gridRes = GridCell(dimRes);
     }
@@ -176,9 +173,9 @@ public:
     }
 
     // ensure that resolution in each dimension is at least one
-    for(int i=0 ; i< NDIMS ; ++i)
+    for(int i = 0; i < NDIMS; ++i)
     {
-      m_gridRes[i] = axom::utilities::max( m_gridRes[i], 1);
+      m_gridRes[i] = axom::utilities::max(m_gridRes[i], IndexType(1));
     }
 
     // Setup lattice
@@ -187,10 +184,10 @@ public:
                                                             m_gridRes.array());
     m_elementSet = ElementSet(numElts);
 
-    for(int i=0 ; i<NDIMS ; ++i)
+    for(int i = 0; i < NDIMS; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i], BitsetType(m_elementSet.size()));
+      m_binData[i] = BinBitMap(&m_bins[i], BitsetType(numElts));
     }
 
     // Set the expansion factor for each element to a small fraction of the
@@ -228,19 +225,19 @@ public:
 
     bbox.expand(m_expansionFactor);
 
-    const GridCell lowerCell = m_lattice.gridCell( bbox.getMin() );
-    const GridCell upperCell = m_lattice.gridCell( bbox.getMax() );
+    const GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
+    const GridCell upperCell = m_lattice.gridCell(bbox.getMax());
 
-    for(int i=0 ; i< NDIMS ; ++i)
+    for(int i = 0; i < NDIMS; ++i)
     {
       BinBitMap& binData = m_binData[i];
 
       const IndexType lower =
-        axom::utilities::clampLower(lowerCell[i], IndexType() );
+        axom::utilities::clampLower(lowerCell[i], IndexType());
       const IndexType upper =
-        axom::utilities::clampUpper(upperCell[i], highestBin(i) );
+        axom::utilities::clampUpper(upperCell[i], highestBin(i));
 
-      for(int j= lower ; j <= upper ; ++j)
+      for(int j = lower; j <= upper; ++j)
       {
         binData[j].set(idx);
       }
@@ -258,8 +255,7 @@ public:
    */
   BitsetType getCandidates(const SpacePoint& pt) const
   {
-    if(!m_initialized || !m_bb.contains(pt) )
-      return BitsetType(0);
+    if(!m_initialized || !m_bb.contains(pt)) return BitsetType(0);
 
     const GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -267,9 +263,9 @@ public:
     //       to handle points on the upper boundaries of the bbox
     //       This is valid since we've already ensured that pt is in the bbox.
     IndexType idx = axom::utilities::clampUpper(gridCell[0], highestBin(0));
-    BitsetType res = m_binData[0][ idx ];
+    BitsetType res = m_binData[0][idx];
 
-    for(int i=1 ; i< NDIMS ; ++i)
+    for(int i = 1; i < NDIMS; ++i)
     {
       idx = axom::utilities::clampUpper(gridCell[i], highestBin(i));
       res &= m_binData[i][idx];
@@ -289,15 +285,14 @@ public:
    */
   BitsetType getCandidates(const SpatialBoundingBox& box) const
   {
-    if(!m_initialized || !m_bb.intersectsWith(box) )
-      return BitsetType(0);
+    if(!m_initialized || !m_bb.intersectsWith(box)) return BitsetType(0);
 
     const GridCell lowerCell = m_lattice.gridCell(box.getMin());
     const GridCell upperCell = m_lattice.gridCell(box.getMax());
 
     BitsetType bits = getBitsInRange(0, lowerCell[0], upperCell[0]);
 
-    for(int dim=1 ; dim< NDIMS ; ++dim)
+    for(int dim = 1; dim < NDIMS; ++dim)
     {
       bits &= getBitsInRange(dim, lowerCell[dim], upperCell[dim]);
     }
@@ -323,23 +318,21 @@ public:
    *
    * \sa getCandidates()
    */
-  template<typename QueryGeom>
+  template <typename QueryGeom>
   std::vector<IndexType> getCandidatesAsArray(const QueryGeom& query) const
   {
     std::vector<IndexType> candidatesVec;
 
     BitsetType candidateBits = getCandidates(query);
-    candidatesVec.reserve( candidateBits.count() );
-    for(IndexType eltIdx = candidateBits.find_first() ;
-        eltIdx != BitsetType::npos ;
-        eltIdx = candidateBits.find_next( eltIdx) )
+    candidatesVec.reserve(candidateBits.count());
+    for(IndexType eltIdx = candidateBits.find_first(); eltIdx != BitsetType::npos;
+        eltIdx = candidateBits.find_next(eltIdx))
     {
-      candidatesVec.push_back( eltIdx );
+      candidatesVec.push_back(eltIdx);
     }
 
     return candidatesVec;
   }
-
 
   /*!
    * Tests whether grid cell gridPt indexes the element with index idx
@@ -355,21 +348,18 @@ public:
   {
     bool ret = true;
 
-    if(!m_elementSet.isValidIndex(idx) )
-      ret = false;
+    if(!m_elementSet.isValidIndex(idx)) ret = false;
 
-    for(int i=0 ; i< NDIMS ; ++i)
+    for(int i = 0; i < NDIMS; ++i)
     {
-      ret = ret
-            && m_bins[i].isValidIndex(gridCell[i])
-            && m_binData[ i][ gridCell[i] ].test( idx);
+      ret = ret && m_bins[i].isValidIndex(gridCell[i]) &&
+        m_binData[i][gridCell[i]].test(idx);
     }
 
     return ret;
   }
 
 private:
-
   /*!
    * \brief Returns the bin index in the given dimension dim
    *
@@ -378,7 +368,7 @@ private:
   IndexType highestBin(int dim) const
   {
     SLIC_ASSERT(0 <= dim && dim < NDIMS);
-    return m_bins[dim].size()-1;
+    return m_bins[dim].size() - 1;
   }
 
   /*!
@@ -402,11 +392,11 @@ private:
   {
     // Note: Need to clamp the gridCell ranges since the input box boundaries
     //       are not restricted to the implicit grid's bounding box
-    lower = axom::utilities::clampLower(lower, IndexType() );
+    lower = axom::utilities::clampLower(lower, IndexType());
     upper = axom::utilities::clampUpper(upper, highestBin(dim));
 
     BitsetType bits = m_binData[dim][lower];
-    for(int i = lower+1 ; i<= upper ; ++i)
+    for(int i = lower + 1; i <= upper; ++i)
     {
       bits |= m_binData[dim][i];
     }
@@ -415,7 +405,6 @@ private:
   }
 
 private:
-
   //! The bounding box of the ImplicitGrid
   SpatialBoundingBox m_bb;
 
@@ -441,8 +430,7 @@ private:
   bool m_initialized;
 };
 
-
-} // end namespace spin
-} // end namespace axom
+}  // end namespace spin
+}  // end namespace axom
 
 #endif  // SPIN_IMPLICIT_GRID__HPP_

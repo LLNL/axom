@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -79,7 +79,7 @@ if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     #set(_code_check_targets "docs" "doxygen_docs"
     set(_code_check_targets "docs"
                             "check" "style" 
-                            "uncrustify_check" "uncrustify_style" )
+                            "clangformat_check" "clangformat_style" )
     foreach(_tgt ${_code_check_targets})
         if(TARGET ${_tgt})
             set_target_properties(${_tgt} PROPERTIES FOLDER "axom/code_checks")

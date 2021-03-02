@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,18 +6,17 @@
 #ifndef AXOM_NUMERICS_LU_HPP_
 #define AXOM_NUMERICS_LU_HPP_
 
-#include "axom/core/utilities/Utilities.hpp" // NearlyEqual(), swap() and abs()
-#include "axom/core/memory_management.hpp"   // alloc() and free()
-#include "axom/core/numerics/Matrix.hpp"     // for Matrix
+#include "axom/core/utilities/Utilities.hpp"  // NearlyEqual(), swap() and abs()
+#include "axom/core/memory_management.hpp"    // alloc() and free()
+#include "axom/core/numerics/Matrix.hpp"      // for Matrix
 
 // C/C++ includes
-#include <cstring> // for memcpy()
+#include <cstring>  // for memcpy()
 
 namespace axom
 {
 namespace numerics
 {
-
 enum ReturnCodes
 {
   LU_SUCCESS,
@@ -54,8 +53,8 @@ enum ReturnCodes
  * \pre pivots must be able to hold A.getNumRows() entries
  * \pre A.isSquare()==true
  */
-template < typename T >
-int lu_decompose( Matrix< T >& A, int* pivots );
+template <typename T>
+int lu_decompose(Matrix<T>& A, int* pivots);
 
 /*!
  * \brief Solve the system \f$ Ax=b \f$ by back-substitution, where, A is an LU
@@ -72,8 +71,8 @@ int lu_decompose( Matrix< T >& A, int* pivots );
  * \pre b != nullptr
  * \pre x != nullptr
  */
-template < typename T >
-int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x );
+template <typename T>
+int lu_solve(const Matrix<T>& A, const int* pivots, const T* b, T* x);
 
 /// @}
 
@@ -87,125 +86,119 @@ namespace axom
 {
 namespace numerics
 {
-
-template < typename T >
-int lu_decompose( Matrix< T >& LU, int* pivots )
+template <typename T>
+int lu_decompose(Matrix<T>& LU, int* pivots)
 {
   // Sanity Checks
-  assert( "pre: pivots buffer is NULL" && (pivots != nullptr) );
+  assert("pre: pivots buffer is NULL" && (pivots != nullptr));
 
-  if ( !LU.isSquare() )
+  if(!LU.isSquare())
   {
     return LU_NONSQUARE_MATRIX;
   }
 
   const int size = LU.getNumRows();
 
-  for ( IndexType i=0 ; i < size ; ++i )
+  for(IndexType i = 0; i < size; ++i)
   {
-
     // descend down the ith column and find pivot
-    T max_element = utilities::abs( LU(i,i) );  // stores max element
-    pivots[ i ]   = i;                 // row of max element
-    for ( IndexType j=i+1 ; j < size ; ++j )
+    T max_element = utilities::abs(LU(i, i));  // stores max element
+    pivots[i] = i;                             // row of max element
+    for(IndexType j = i + 1; j < size; ++j)
     {
-
-      T abs_value = utilities::abs( LU(j,i) );
-      if ( max_element < abs_value )
+      T abs_value = utilities::abs(LU(j, i));
+      if(max_element < abs_value)
       {
         max_element = abs_value;
-        pivots[ i ] = j;
+        pivots[i] = j;
       }
 
     }  // END for all rows
 
     // swap rows to place the max element on the diagonal LU(i,i)
-    if ( pivots[ i ] != i )
+    if(pivots[i] != i)
     {
-      LU.swapRows( i, pivots[ i ] );
+      LU.swapRows(i, pivots[i]);
     }
 
-    if ( utilities::isNearlyEqual( LU(i,i), static_cast< T >( 0 ) ) )
+    if(utilities::isNearlyEqual(LU(i, i), static_cast<T>(0)))
     {
       return LU_SINGULAR_MATRIX;
-    } // END if
+    }  // END if
 
     // scale upper triangular entries by the diagonal
-    const T scale_factor = static_cast< T >( 1 ) / LU( i,i );
+    const T scale_factor = static_cast<T>(1) / LU(i, i);
 
-    for ( IndexType j=i+1 ; j < size ; ++j )
+    for(IndexType j = i + 1; j < size; ++j)
     {
-      LU( i,j ) *= scale_factor;
+      LU(i, j) *= scale_factor;
     }
 
     // update sub-matrix by subtracting the upper triangular part
-    for ( IndexType irow=i+1 ; irow < size ; ++irow )
+    for(IndexType irow = i + 1; irow < size; ++irow)
     {
-      for ( IndexType jcol=i+1 ; jcol < size ; ++jcol )
+      for(IndexType jcol = i + 1; jcol < size; ++jcol)
       {
-        LU( irow,jcol ) -= LU( irow,i ) * LU( i,jcol );
+        LU(irow, jcol) -= LU(irow, i) * LU(i, jcol);
       }  // END for all columns
-    } // END for all rows
+    }    // END for all rows
 
-  } // END for all columns
+  }  // END for all columns
 
   return LU_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
+template <typename T>
+int lu_solve(const Matrix<T>& A, const int* pivots, const T* b, T* x)
 {
   // Sanity checks
-  assert( "pre: pivots buffer is NULL!" && (pivots != nullptr) );
-  assert( "pre: rhs vector is NULL!" && (b != nullptr) );
-  assert( "pre: solution vector is NULL!" && (x != nullptr) );
+  assert("pre: pivots buffer is NULL!" && (pivots != nullptr));
+  assert("pre: rhs vector is NULL!" && (b != nullptr));
+  assert("pre: solution vector is NULL!" && (x != nullptr));
 
-  if ( !A.isSquare() )
+  if(!A.isSquare())
   {
     return LU_NONSQUARE_MATRIX;
   }
 
   const int size = A.getNumRows();
-  T* rhs = axom::allocate< T >( size );
-  memcpy( rhs, b, size*sizeof( T ) );
+  T* rhs = axom::allocate<T>(size);
+  memcpy(rhs, b, size * sizeof(T));
 
   // forward-solve L part (top-to-bottom)
-  for ( IndexType i=0 ; i < size ; ++i )
+  for(IndexType i = 0; i < size; ++i)
   {
-
     // account for row-interchanges
-    if ( pivots[ i ] != i )
+    if(pivots[i] != i)
     {
-      utilities::swap( rhs[i], rhs[ pivots[i] ] );
+      utilities::swap(rhs[i], rhs[pivots[i]]);
     }
 
-    x[ i ] = rhs[ i ];
+    x[i] = rhs[i];
 
-    for ( IndexType j=0 ; j < i ; ++j )
+    for(IndexType j = 0; j < i; ++j)
     {
-      x[ i ] -= A(i,j) * x[ j ];
+      x[i] -= A(i, j) * x[j];
     }
 
-    x[ i ] /= A( i,i );
-  } // END for
+    x[i] /= A(i, i);
+  }  // END for
 
   // back-substitute U part (bottom-to-top)
-  for ( IndexType i=size-1 ; i >= 0 ; --i )
+  for(IndexType i = size - 1; i >= 0; --i)
   {
-    for ( IndexType j=i+1 ; j < size ; ++j )
+    for(IndexType j = i + 1; j < size; ++j)
     {
-      x[ i ] -= A(i,j) * x[ j ];
+      x[i] -= A(i, j) * x[j];
     }  // END for j
-  } // END for i
+  }    // END for i
 
-  axom::deallocate( rhs );
+  axom::deallocate(rhs);
   return LU_SUCCESS;
 }
 
-
 } /* end namespace numerics */
 } /* end namespace axom */
-
 
 #endif /* AXOM_NUMERICS_LU_HPP_ */

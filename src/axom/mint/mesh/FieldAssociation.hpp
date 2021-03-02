@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,18 +10,17 @@ namespace axom
 {
 namespace mint
 {
-
 /*!
  * \brief Enumerates the number of supported associations of field variables
  *  with a corresponding mesh entity, e.g., node, cell-center, face-center, etc.
  */
 enum FieldAssociation
 {
-  ANY_CENTERING = -1,     //!< wild-card used to indicate any centering
-  NODE_CENTERED = 0,      //!< used for fields computed at mesh nodes
-  CELL_CENTERED,          //!< used for fields computed at cell centers
-  FACE_CENTERED,          //!< used for fields computed at face centers
-  EDGE_CENTERED,          //!< used for fields computed at edge centers
+  ANY_CENTERING = -1,  //!< wild-card used to indicate any centering
+  NODE_CENTERED = 0,   //!< used for fields computed at mesh nodes
+  CELL_CENTERED,       //!< used for fields computed at cell centers
+  FACE_CENTERED,       //!< used for fields computed at face centers
+  EDGE_CENTERED,       //!< used for fields computed at edge centers
 
   NUM_FIELD_ASSOCIATIONS  //!< max number of field associations
 };

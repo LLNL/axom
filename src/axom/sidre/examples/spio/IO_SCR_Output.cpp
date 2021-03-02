@@ -119,7 +119,7 @@ void quitProgram(int exitCode = 0)
 int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   int my_rank, num_ranks;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);

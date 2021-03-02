@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,18 +22,17 @@ namespace axom
 {
 namespace slam
 {
-
-template<typename PosType, typename ElemType>
+template <typename PosType, typename ElemType>
 class NullSet;
 
-template<typename SetType>
+template <typename SetType>
 struct EmptySetTraits
 {
   using EmptySetType = SetType*;
   static EmptySetType emptySet() { return nullptr; }
 
-  template<typename ASetType>
-  static bool         isEmpty(ASetType* set)
+  template <typename ASetType>
+  static bool isEmpty(ASetType* set)
   {
     return set == nullptr || set->empty();
   }
@@ -57,10 +56,8 @@ struct EmptySetTraits
    };
  */
 
-
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
 class Relation
 {
 public:
@@ -69,31 +66,26 @@ public:
 
   using RelationVec = std::vector<SetPosition>;
   using RelationVecIterator = typename RelationVec::iterator;
-  using RelationVecIteratorPair = std::pair<RelationVecIterator,
-                                            RelationVecIterator>;
+  using RelationVecIteratorPair =
+    std::pair<RelationVecIterator, RelationVecIterator>;
   using RelationVecConstIterator = typename RelationVec::const_iterator;
-  using RelationVecConstIteratorPair = std::pair<RelationVecConstIterator,
-                                                 RelationVecConstIterator>;
+  using RelationVecConstIteratorPair =
+    std::pair<RelationVecConstIterator, RelationVecConstIterator>;
 
-  static NullSet<PosType,ElemType> s_nullSet;
+  static NullSet<PosType, ElemType> s_nullSet;
 
 public:
-  virtual ~Relation(){}
+  virtual ~Relation() { }
 
-  virtual RelationVecConstIterator      begin(SetPosition fromSetIndex)
-  const  = 0;
+  virtual RelationVecConstIterator begin(SetPosition fromSetIndex) const = 0;
 
-  virtual RelationVecConstIterator      end(SetPosition fromSetIndex)
-  const  = 0;
+  virtual RelationVecConstIterator end(SetPosition fromSetIndex) const = 0;
 
-  virtual RelationVecConstIteratorPair  range(SetPosition fromSetIndex)
-  const  = 0;
+  virtual RelationVecConstIteratorPair range(SetPosition fromSetIndex) const = 0;
 
-  virtual SetPosition                   size(SetPosition fromSetIndex)
-  const  = 0;
+  virtual SetPosition size(SetPosition fromSetIndex) const = 0;
 
-  virtual bool                          isValid(bool verboseOutput =
-                                                  false) const = 0;
+  virtual bool isValid(bool verboseOutput = false) const = 0;
 
 #if 0
   // Go through the relation's data and ensure that no entity from the ToSet
@@ -117,7 +109,6 @@ public:
   // unstructured
   ArrType* relationData() = 0;
 #endif
-
 };
 
 /**
@@ -125,11 +116,10 @@ public:
  * \note Should this be a singleton or a global object?  Should the scope be
  *  public?
  */
-template<typename PosType, typename ElemType>
-NullSet<PosType,ElemType> Relation<PosType, ElemType>::s_nullSet;
+template <typename PosType, typename ElemType>
+NullSet<PosType, ElemType> Relation<PosType, ElemType>::s_nullSet;
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-#endif // SLAM_RELATION_HPP_
+#endif  // SLAM_RELATION_HPP_

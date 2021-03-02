@@ -1,27 +1,25 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/utilities/Utilities.hpp" // for utilities::swap()
-#include "axom/core/memory_management.hpp"   // for alloc(), free()
-
+#include "axom/core/utilities/Utilities.hpp"  // for utilities::swap()
+#include "axom/core/memory_management.hpp"    // for alloc(), free()
 
 // C/C++ includes
-#include <cassert>  // for assert()
-#include <cstring>  // for memcpy()
-#include <iostream> // for std::ostream
+#include <cassert>   // for assert()
+#include <cstring>   // for memcpy()
+#include <iostream>  // for std::ostream
 
 #ifndef AXOM_MATRIX_HPP_
-#define AXOM_MATRIX_HPP_
+  #define AXOM_MATRIX_HPP_
 
 namespace axom
 {
 namespace numerics
 {
-
 // Forward Declaration
-template < typename T >
+template <typename T>
 class Matrix;
 
 /// \name Overloaded Matrix Operators
@@ -35,8 +33,8 @@ class Matrix;
  * \param [in] A user-supplied matrix instance.
  * \return os the updated output stream object.
  */
-template < typename T >
-std::ostream& operator<<( std::ostream& os, const Matrix< T >& A );
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Matrix<T>& A);
 
 /// @}
 
@@ -57,8 +55,8 @@ std::ostream& operator<<( std::ostream& os, const Matrix< T >& A );
  * \pre A.isSquare() == true
  * \post upper-triangular of matrix L is set to zeros (0s)
  */
-template < typename T >
-Matrix< T > lower_triangular( const Matrix< T >& A, bool unit_diagonal=false );
+template <typename T>
+Matrix<T> lower_triangular(const Matrix<T>& A, bool unit_diagonal = false);
 
 /*!
  * \brief Extract the upper triangular part of a square matrix.
@@ -74,8 +72,8 @@ Matrix< T > lower_triangular( const Matrix< T >& A, bool unit_diagonal=false );
  * \pre A.isSquare() == true
  * \post lower-triangular of matrix U is set to zeros (0s)
  */
-template < typename T >
-Matrix< T > upper_triangular( const Matrix< T >& A, bool unit_diagonal=true );
+template <typename T>
+Matrix<T> upper_triangular(const Matrix<T>& A, bool unit_diagonal = true);
 
 /// @}
 
@@ -113,11 +111,10 @@ Matrix< T > upper_triangular( const Matrix< T >& A, bool unit_diagonal=true );
  *
  * \tparam T the underlying matrix data type, e.g., float, double, etc.
  */
-template < typename T >
+template <typename T>
 class Matrix
 {
 public:
-
   /*!
    * \brief Constructor, creates a Matrix with the given rows and columns.
    *
@@ -129,7 +126,7 @@ public:
    * \pre rows >= 1
    * \pre cols >= 1
    */
-  Matrix( int rows, int cols, T val=static_cast< T >( 0 ) );
+  Matrix(int rows, int cols, T val = static_cast<T>(0));
 
   /*!
    * \brief Array constructor, creates a Matrix with the given rows and columns
@@ -145,14 +142,13 @@ public:
    * \pre cols >= 1
    * \pre data != nullptr
    */
-  AXOM_HOST_DEVICE Matrix( int rows, int cols, T* data,
-                           bool useExternal=false );
+  AXOM_HOST_DEVICE Matrix(int rows, int cols, T* data, bool useExternal = false);
 
   /*!
    * \brief Copy constructor.
    * \param [in] m the matrix instance that is being passed.
    */
-  Matrix( const Matrix< T >& m );
+  Matrix(const Matrix<T>& m);
 
   /*!
    * \brief Destructor.
@@ -163,13 +159,13 @@ public:
    * \brief Check to see if the matrix is square.
    * \return status true iff this instance is a square matrix, else, false.
    */
-  bool isSquare() const { return (m_rows==m_cols); };
+  bool isSquare() const { return (m_rows == m_cols); };
 
   /*!
    * \brief Checks if the matrix is empty
    * \return status true iff the matrix is empty, else, false.
    */
-  bool empty() const { return (m_rows*m_cols==0); };
+  bool empty() const { return (m_rows * m_cols == 0); };
 
   /*!
    * \brief Checks to see if the matrix has an external buffer.
@@ -208,7 +204,7 @@ public:
    *  along the main diagonal, \f$ \alpha_{ii} \in \mathcal{A} \f$, where,
    *  \f$ i \in [0,N] \f$, \f$ N=min(num\_rows, num\_cols) \f$
    */
-  void getDiagonal( T* diagonal ) const;
+  void getDiagonal(T* diagonal) const;
 
   /*!
    * \brief Assigns <em>val</em> to all entries in the diagonal.
@@ -218,7 +214,7 @@ public:
    *  along the main diagonal, \f$ \alpha_{ii} \in \mathcal{A} \f$, where,
    *  \f$ i \in [0,N] \f$, \f$ N=min(num\_rows, num\_cols) \f$
    */
-  void fillDiagonal( const T& val );
+  void fillDiagonal(const T& val);
 
   /*!
    * \brief Assigns <em>val</em> to all elements in the given matrix row.
@@ -226,7 +222,7 @@ public:
    * \param [in] val value to assign to all elements in the given row.
    * \pre i >= 0 && i < m_rows
    */
-  void fillRow( IndexType i, const T& val );
+  void fillRow(IndexType i, const T& val);
 
   /*!
    * \brief Assigns <em>val</em> to all elements in the given matrix column.
@@ -234,13 +230,13 @@ public:
    * \param [in] val value to assign to all elements in the given column.
    * \pre j >= 0 && j < m_cols
    */
-  void fillColumn( IndexType j, const T& val );
+  void fillColumn(IndexType j, const T& val);
 
   /*!
    * \brief Assigns <em>val</em> to all elements of the matrix.
    * \param [in] val value to assign to all elements of the matrix.
    */
-  void fill( const T& val );
+  void fill(const T& val);
 
   /*!
    * \brief Swaps the rows of this matrix instance.
@@ -249,7 +245,7 @@ public:
    * \pre i >= 0 && i < m_rows
    * \pre j >= 0 && j < m_rows
    */
-  void swapRows( IndexType i, IndexType j );
+  void swapRows(IndexType i, IndexType j);
 
   /*!
    * \brief Swaps the columns of this matrix instance.
@@ -258,7 +254,7 @@ public:
    * \pre i >= 0 && i < m_cols
    * \pre j >= 0 && j < m_cols
    */
-  void swapColumns( IndexType i, IndexType j );
+  void swapColumns(IndexType i, IndexType j);
 
   /// \name Random Access Operators
   /// @{
@@ -308,7 +304,7 @@ public:
    *  ...
    * \endcode
    */
-  AXOM_HOST_DEVICE const T* getColumn( IndexType j ) const;
+  AXOM_HOST_DEVICE const T* getColumn(IndexType j) const;
 
   /*!
    * \brief Returns pointer to the \f$ jth \f$ column of an \f$ M \times N \f$
@@ -329,7 +325,7 @@ public:
    *  ...
    * \endcode
    */
-  AXOM_HOST_DEVICE T* getColumn( IndexType j );
+  AXOM_HOST_DEVICE T* getColumn(IndexType j);
 
   /*!
    * \brief Returns a const pointer for strided access along the main diagonal.
@@ -360,7 +356,7 @@ public:
    *  ...
    * \endcode
    */
-  const T* getDiagonal( IndexType& p, IndexType& N ) const;
+  const T* getDiagonal(IndexType& p, IndexType& N) const;
 
   /*!
    * \brief Returns a pointer for strided access along the main diagonal.
@@ -391,7 +387,7 @@ public:
    *  ...
    * \endcode
    */
-  T* getDiagonal( IndexType& p, IndexType& N );
+  T* getDiagonal(IndexType& p, IndexType& N);
 
   /*!
    * \brief Returns a const pointer to the \f$ ith \f$ row of an
@@ -420,7 +416,7 @@ public:
    *   ...
    * \endcode
    */
-  const T* getRow( IndexType i, IndexType& p, IndexType& N ) const;
+  const T* getRow(IndexType i, IndexType& p, IndexType& N) const;
 
   /*!
    * \brief Returns a pointer to the \f$ ith \f$ row of an  \f$ M \times N \f$
@@ -450,7 +446,7 @@ public:
    * \endcode
    *
    */
-  T* getRow( IndexType i, IndexType& p, IndexType& N );
+  T* getRow(IndexType i, IndexType& p, IndexType& N);
 
   /*!
    * \brief Returns a const pointer to the raw data.
@@ -481,7 +477,7 @@ public:
    * \param [in] rhs matrix instance on the right-hand side.
    * \return M a copy of the matrix instance in rhs.
    */
-  Matrix< T >& operator=(const Matrix< T >& rhs);
+  Matrix<T>& operator=(const Matrix<T>& rhs);
 
   /// @}
 
@@ -498,7 +494,7 @@ public:
    * \post M.isSquare()==true
    * \post M.getNumRows() == M.getNumCols() == n
    */
-  static Matrix< T > identity( int n );
+  static Matrix<T> identity(int n);
 
   /*!
    * \brief Returns a <em>zero</em> matrix, \f$ \mathcal{A} \f$
@@ -511,7 +507,7 @@ public:
    * \pre ncols >= 1
    * \post \f$ \alpha_{ij}=0 \forall \alpha_{ij} \in \mathcal{A} \f$
    */
-  static Matrix< T > zeros( int nrows, int ncols );
+  static Matrix<T> zeros(int nrows, int ncols);
 
   /*!
    * \brief Returns a <em>unity</em> matrix, \f$ \mathcal{A} \f$
@@ -524,17 +520,16 @@ public:
    * \pre ncols >= 1
    * \post \f$ \alpha_{ij}=1 \forall \alpha_{ij} \in \mathcal{A} \f$
    */
-  static Matrix< T > ones( int nrows, int ncols );
+  static Matrix<T> ones(int nrows, int ncols);
 
   /// @}
 
 private:
-
   /*!
    * \brief Default constructor. Does nothing.
    * \note Made private to prevent host-code from calling this.
    */
-  Matrix() : m_rows(0), m_cols(0), m_data(nullptr) { };
+  Matrix() : m_rows(0), m_cols(0), m_data(nullptr) {};
 
   /// \name Private Helper Methods
   /// @{
@@ -543,7 +538,7 @@ private:
    * \brief Copies the matrix into this matrix instance.
    * \param [in] rhs matrix on the right-hand side.
    */
-  void copy( const Matrix< T >& rhs );
+  void copy(const Matrix<T>& rhs);
 
   /*!
    * \brief Deallocates all matrix data.
@@ -561,7 +556,6 @@ private:
   bool m_usingExternal; /*!< indicates if an external buffer is used */
 
   /// @}
-
 };
 
 } /* end namespace numerics */
@@ -574,281 +568,269 @@ namespace axom
 {
 namespace numerics
 {
-
-template < typename T >
-Matrix< T >::Matrix( int rows, int cols, T val ) :
-  m_rows( rows ),
-  m_cols( cols ),
-  m_usingExternal( false )
+template <typename T>
+Matrix<T>::Matrix(int rows, int cols, T val)
+  : m_rows(rows)
+  , m_cols(cols)
+  , m_usingExternal(false)
 {
   // sanity checks
-  assert( m_rows > 0 );
-  assert( m_cols > 0 );
+  assert(m_rows > 0);
+  assert(m_cols > 0);
 
-  m_data = allocate< T >( m_rows * m_cols );
-  this->fill( val );
+  m_data = allocate<T>(m_rows * m_cols);
+  this->fill(val);
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data,
-                                      bool external ) :
-  m_rows( rows ),
-  m_cols( cols ),
-  m_usingExternal( external )
+template <typename T>
+AXOM_HOST_DEVICE Matrix<T>::Matrix(int rows, int cols, T* data, bool external)
+  : m_rows(rows)
+  , m_cols(cols)
+  , m_usingExternal(external)
 {
-  assert( data != nullptr );
+  assert(data != nullptr);
 
-
-  if ( m_usingExternal )
+  if(m_usingExternal)
   {
     m_data = data;
   }
   else
   {
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(false);
-#else
+  #else
     const int nitems = m_rows * m_cols;
-    m_data = allocate< T >( nitems );
-    memcpy( m_data, data, nitems * sizeof(T) );
-#endif
+    m_data = allocate<T>(nitems);
+    memcpy(m_data, data, nitems * sizeof(T));
+  #endif
   }
-
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-Matrix< T >::Matrix( const Matrix< T >& rhs )
+template <typename T>
+Matrix<T>::Matrix(const Matrix<T>& rhs)
 {
   m_usingExternal = false;
-  m_rows     = m_cols = 0;
-  m_data     = nullptr;
-  this->copy( rhs );
+  m_rows = m_cols = 0;
+  m_data = nullptr;
+  this->copy(rhs);
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-AXOM_HOST_DEVICE Matrix< T >::~Matrix( )
+template <typename T>
+AXOM_HOST_DEVICE Matrix<T>::~Matrix()
 {
   this->clear();
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-void Matrix< T >::getDiagonal( T* diagonal ) const
+template <typename T>
+void Matrix<T>::getDiagonal(T* diagonal) const
 {
-  assert( diagonal != nullptr );
+  assert(diagonal != nullptr);
 
   const int N = this->getDiagonalSize();
-  const int p = m_rows+1;
-  for ( IndexType i=0, j=0 ; i < N ; ++i, j+=p )
+  const int p = m_rows + 1;
+  for(IndexType i = 0, j = 0; i < N; ++i, j += p)
   {
-    diagonal[ i ] = m_data[ j ];
+    diagonal[i] = m_data[j];
   }
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-void Matrix< T >::fillDiagonal( const T& val )
+template <typename T>
+void Matrix<T>::fillDiagonal(const T& val)
 {
-  const int N = this->getDiagonalSize()*m_rows;
-  const int p = m_rows+1;
-  for ( IndexType i=0 ; i < N ; i+=p )
+  const int N = this->getDiagonalSize() * m_rows;
+  const int p = m_rows + 1;
+  for(IndexType i = 0; i < N; i += p)
   {
-    m_data[ i ] = val;
+    m_data[i] = val;
   }
-
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-void Matrix< T >::fillRow( IndexType i, const T& val )
+template <typename T>
+void Matrix<T>::fillRow(IndexType i, const T& val)
 {
-  assert( (i>=0) && (i < m_rows) );
+  assert((i >= 0) && (i < m_rows));
 
-  const int N = (m_cols-1)*m_rows + i + 1;
+  const int N = (m_cols - 1) * m_rows + i + 1;
   const int p = m_rows;
-  for ( IndexType j=i ; j < N ; j+=p )
+  for(IndexType j = i; j < N; j += p)
   {
-    m_data[ j ] = val;
+    m_data[j] = val;
   }
-
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-void Matrix< T >::fillColumn( IndexType j, const T& val )
+template <typename T>
+void Matrix<T>::fillColumn(IndexType j, const T& val)
 {
-  assert( (j>=0) && (j < m_cols) );
+  assert((j >= 0) && (j < m_cols));
 
-  const IndexType offset = j*m_rows;
-  for ( IndexType i=0 ; i < m_rows ; ++i )
+  const IndexType offset = j * m_rows;
+  for(IndexType i = 0; i < m_rows; ++i)
   {
-    m_data[ offset+i ] = val;
+    m_data[offset + i] = val;
   }
-
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-void Matrix< T >::fill( const T& val )
+template <typename T>
+void Matrix<T>::fill(const T& val)
 {
-  const int nitems = m_rows*m_cols;
-  for ( IndexType i=0 ; i < nitems ; ++i )
+  const int nitems = m_rows * m_cols;
+  for(IndexType i = 0; i < nitems; ++i)
   {
-    m_data[ i ] = val;
+    m_data[i] = val;
   }
-
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-void Matrix< T >::swapRows( IndexType irow, IndexType jrow )
+template <typename T>
+void Matrix<T>::swapRows(IndexType irow, IndexType jrow)
 {
-  assert( (irow>=0) && (irow < m_rows) );
-  assert( (jrow>=0) && (jrow < m_rows) );
+  assert((irow >= 0) && (irow < m_rows));
+  assert((jrow >= 0) && (jrow < m_rows));
 
-  if ( irow == jrow )
+  if(irow == jrow)
   {
     /* short-circuit */
     return;
   }
 
   // convenience reference to *this
-  Matrix< T >& A = *this;
+  Matrix<T>& A = *this;
 
-  for ( IndexType k=0 ; k < m_cols ; ++k )
+  for(IndexType k = 0; k < m_cols; ++k)
   {
-    utilities::swap( A( irow,k ), A( jrow,k ) );
+    utilities::swap(A(irow, k), A(jrow, k));
   }
-
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-void Matrix< T >::swapColumns( IndexType icol, IndexType jcol )
+template <typename T>
+void Matrix<T>::swapColumns(IndexType icol, IndexType jcol)
 {
-  assert( (icol >= 0) && (icol < m_cols) );
-  assert( (jcol >= 0) && (jcol < m_cols) );
+  assert((icol >= 0) && (icol < m_cols));
+  assert((jcol >= 0) && (jcol < m_cols));
 
-  if ( icol == jcol )
+  if(icol == jcol)
   {
     /* short-circuit */
     return;
   }
 
-  T* icol_data = this->getColumn( icol );
-  T* jcol_data = this->getColumn( jcol );
-  for ( IndexType i=0 ; i < m_rows ; ++i )
+  T* icol_data = this->getColumn(icol);
+  T* jcol_data = this->getColumn(jcol);
+  for(IndexType i = 0; i < m_rows; ++i)
   {
-    const T temp   = icol_data[ i ];
-    icol_data[ i ] = jcol_data[ i ];
-    jcol_data[ i ] = temp;
+    const T temp = icol_data[i];
+    icol_data[i] = jcol_data[i];
+    jcol_data[i] = temp;
   }
-
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-AXOM_HOST_DEVICE const T& Matrix< T >::operator()(IndexType i,
-                                                  IndexType j ) const
+template <typename T>
+AXOM_HOST_DEVICE const T& Matrix<T>::operator()(IndexType i, IndexType j) const
 {
-  assert( (i>=0) && (i < m_rows) );
-  assert( (j>=0) && (j < m_cols) );
-  return m_data[ j*m_rows+i ];
+  assert((i >= 0) && (i < m_rows));
+  assert((j >= 0) && (j < m_cols));
+  return m_data[j * m_rows + i];
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-AXOM_HOST_DEVICE T& Matrix< T >::operator()(IndexType i, IndexType j)
+template <typename T>
+AXOM_HOST_DEVICE T& Matrix<T>::operator()(IndexType i, IndexType j)
 {
-  assert( (i>=0) && (i < m_rows) );
-  assert( (j>=0) && (j < m_cols) );
-  return m_data[ j*m_rows+i ];
+  assert((i >= 0) && (i < m_rows));
+  assert((j >= 0) && (j < m_cols));
+  return m_data[j * m_rows + i];
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-AXOM_HOST_DEVICE const T* Matrix< T >::getColumn( IndexType j ) const
+template <typename T>
+AXOM_HOST_DEVICE const T* Matrix<T>::getColumn(IndexType j) const
 {
-  assert( (j>=0) && (j < m_cols) );
-  return &m_data[ j*m_rows ];
+  assert((j >= 0) && (j < m_cols));
+  return &m_data[j * m_rows];
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-AXOM_HOST_DEVICE T* Matrix< T >::getColumn( IndexType j )
+template <typename T>
+AXOM_HOST_DEVICE T* Matrix<T>::getColumn(IndexType j)
 {
-  assert( (j>=0) && (j < m_cols) );
-  return &m_data[ j*m_rows ];
+  assert((j >= 0) && (j < m_cols));
+  return &m_data[j * m_rows];
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-const T* Matrix< T >::getRow( IndexType i, IndexType& p, IndexType& N ) const
+template <typename T>
+const T* Matrix<T>::getRow(IndexType i, IndexType& p, IndexType& N) const
 {
-  assert( (i >= 0) && (i < m_rows) );
+  assert((i >= 0) && (i < m_rows));
   p = m_rows;
-  N = (m_cols-1)*m_rows + i + 1;
-  return &m_data[ i ];
+  N = (m_cols - 1) * m_rows + i + 1;
+  return &m_data[i];
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-T* Matrix< T>::getRow( IndexType i, IndexType& p, IndexType& N )
+template <typename T>
+T* Matrix<T>::getRow(IndexType i, IndexType& p, IndexType& N)
 {
-  assert( (i >= 0) && (i < m_rows) );
+  assert((i >= 0) && (i < m_rows));
   p = m_rows;
-  N = (m_cols-1)*m_rows + i + 1;
-  return &m_data[ i ];
+  N = (m_cols - 1) * m_rows + i + 1;
+  return &m_data[i];
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-const T* Matrix< T >::getDiagonal( IndexType& p, IndexType& N ) const
+template <typename T>
+const T* Matrix<T>::getDiagonal(IndexType& p, IndexType& N) const
 {
   p = m_rows + 1;
-  N = this->getDiagonalSize()*m_rows;
-  return &m_data[ 0 ];
+  N = this->getDiagonalSize() * m_rows;
+  return &m_data[0];
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-T* Matrix< T >::getDiagonal( IndexType& p, IndexType& N )
+template <typename T>
+T* Matrix<T>::getDiagonal(IndexType& p, IndexType& N)
 {
   p = m_rows + 1;
-  N = this->getDiagonalSize()*m_rows;
-  return &m_data[ 0 ];
+  N = this->getDiagonalSize() * m_rows;
+  return &m_data[0];
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-const T* Matrix< T >::data() const
+template <typename T>
+const T* Matrix<T>::data() const
 {
   return m_data;
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-T* Matrix< T  >::data()
+template <typename T>
+T* Matrix<T>::data()
 {
   return m_data;
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-Matrix< T >& Matrix< T >::operator=( const Matrix< T >& rhs )
+template <typename T>
+Matrix<T>& Matrix<T>::operator=(const Matrix<T>& rhs)
 {
-  if ( this != &rhs )
+  if(this != &rhs)
   {
-
-    if ( (m_rows != rhs.m_rows) || (m_cols != rhs.m_cols) )
+    if((m_rows != rhs.m_rows) || (m_cols != rhs.m_cols))
     {
       this->clear();
     }
 
-    this->copy( rhs );
+    this->copy(rhs);
   }
 
   return *this;
@@ -857,186 +839,175 @@ Matrix< T >& Matrix< T >::operator=( const Matrix< T >& rhs )
 //-----------------------------------------------------------------------------
 // STATIC METHODS
 //-----------------------------------------------------------------------------
-template < typename T >
-Matrix< T > Matrix< T >::identity( int n )
+template <typename T>
+Matrix<T> Matrix<T>::identity(int n)
 {
-  Matrix< T > In( n, n );
+  Matrix<T> In(n, n);
 
-  for ( IndexType i=0 ; i < n ; ++i )
+  for(IndexType i = 0; i < n; ++i)
   {
-    for ( IndexType j=0 ; j < n ; ++j )
+    for(IndexType j = 0; j < n; ++j)
     {
-      In( i,j ) = static_cast< T >( ( i==j ) ? 1.0 : 0.0 );
+      In(i, j) = static_cast<T>((i == j) ? 1.0 : 0.0);
     }  // END for all columns
-  } // END for all rows
+  }    // END for all rows
 
-  return ( In );
+  return (In);
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-Matrix< T > Matrix< T >::zeros( int nrows, int ncols )
+template <typename T>
+Matrix<T> Matrix<T>::zeros(int nrows, int ncols)
 {
-  Matrix< T > M( nrows, ncols );
-  M.fill( static_cast< T >( 0 ) );
-  return ( M );
+  Matrix<T> M(nrows, ncols);
+  M.fill(static_cast<T>(0));
+  return (M);
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-Matrix< T > Matrix< T >::ones( int nrows, int ncols )
+template <typename T>
+Matrix<T> Matrix<T>::ones(int nrows, int ncols)
 {
-  Matrix< T > M( nrows, ncols );
-  M.fill( static_cast< T >( 1 ) );
-  return ( M );
+  Matrix<T> M(nrows, ncols);
+  M.fill(static_cast<T>(1));
+  return (M);
 }
 
 //-----------------------------------------------------------------------------
 // PRIVATE HELPER METHODS
 //-----------------------------------------------------------------------------
-template < typename T >
-void Matrix< T >::copy( const Matrix< T >& rhs )
+template <typename T>
+void Matrix<T>::copy(const Matrix<T>& rhs)
 {
   bool do_allocate =
     m_usingExternal || (m_rows != rhs.m_rows) || (m_cols != rhs.m_cols);
 
-  if ( do_allocate )
+  if(do_allocate)
   {
-
-    assert( m_data == nullptr );
+    assert(m_data == nullptr);
 
     m_rows = rhs.m_rows;
     m_cols = rhs.m_cols;
-    m_data = allocate< T >( m_rows*m_cols );
+    m_data = allocate<T>(m_rows * m_cols);
   }
 
-  assert( m_rows==rhs.m_rows );
-  assert( m_cols==rhs.m_cols );
-  assert( m_data != nullptr );
+  assert(m_rows == rhs.m_rows);
+  assert(m_cols == rhs.m_cols);
+  assert(m_data != nullptr);
 
-  const int nitems   = m_rows*m_cols;
-  const int bytesize = nitems*sizeof(T);
-  memcpy( m_data, rhs.m_data, bytesize );
+  const int nitems = m_rows * m_cols;
+  const int bytesize = nitems * sizeof(T);
+  memcpy(m_data, rhs.m_data, bytesize);
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-AXOM_HOST_DEVICE void Matrix< T >::clear( )
+template <typename T>
+AXOM_HOST_DEVICE void Matrix<T>::clear()
 {
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
   assert(m_usingExternal);
-#else
-  if ( !m_usingExternal )
+  #else
+  if(!m_usingExternal)
   {
-    deallocate( m_data );
+    deallocate(m_data);
   }
-#endif
+  #endif
 
   m_rows = m_cols = 0;
 }
-
 
 //-----------------------------------------------------------------------------
 // FREE METHODS
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-template < typename T >
-Matrix< T > lower_triangular( const Matrix< T >& A, bool unit_diagonal )
+template <typename T>
+Matrix<T> lower_triangular(const Matrix<T>& A, bool unit_diagonal)
 {
-  assert( A.isSquare() );
+  assert(A.isSquare());
 
-  if ( !A.isSquare() )
+  if(!A.isSquare())
   {
-    return Matrix< T >::zeros( 1,1 );
-  }
-
-  const int N  = A.getNumRows();
-
-  Matrix< T > L( N,N );
-
-  for ( IndexType i=0 ; i < N ; ++i )
-  {
-    for ( IndexType j=0 ; j < N ; ++j )
-    {
-
-      if ( i==j )
-      {
-
-        L( i,j ) = ( unit_diagonal ) ? static_cast< T >( 1 ) : A( i,j );
-
-      }
-      else
-      {
-
-        L( i,j ) = ( i > j ) ? A( i,j ) : static_cast< T >( 0 );
-      }
-
-    }  // END for all columns
-  } // END for all rows
-
-  return ( L );
-}
-
-//-----------------------------------------------------------------------------
-template < typename T >
-Matrix< T > upper_triangular( const Matrix< T >& A, bool unit_diagonal )
-{
-  assert( A.isSquare() );
-
-  if ( !A.isSquare() )
-  {
-    return Matrix< T >::zeros( 1,1 );
+    return Matrix<T>::zeros(1, 1);
   }
 
   const int N = A.getNumRows();
 
-  Matrix< T > U( N,N );
+  Matrix<T> L(N, N);
 
-  for ( IndexType i=0 ; i < N ; ++i )
+  for(IndexType i = 0; i < N; ++i)
   {
-    for ( IndexType j=0 ; j < N ; ++j )
+    for(IndexType j = 0; j < N; ++j)
     {
-
-      if ( i==j )
+      if(i == j)
       {
-
-        U( i,j ) = ( unit_diagonal ) ? static_cast< T >( 1 ) : A( i,j );
-
+        L(i, j) = (unit_diagonal) ? static_cast<T>(1) : A(i, j);
       }
       else
       {
-
-        U( i,j ) = ( i < j ) ? A( i,j ) : static_cast< T >( 0 );
-
+        L(i, j) = (i > j) ? A(i, j) : static_cast<T>(0);
       }
 
     }  // END for all columns
-  } // END for all rows
+  }    // END for all rows
 
-  return ( U );
+  return (L);
 }
 
 //-----------------------------------------------------------------------------
-template < typename T >
-std::ostream& operator<<( std::ostream& os, const Matrix< T >& M )
+template <typename T>
+Matrix<T> upper_triangular(const Matrix<T>& A, bool unit_diagonal)
+{
+  assert(A.isSquare());
+
+  if(!A.isSquare())
+  {
+    return Matrix<T>::zeros(1, 1);
+  }
+
+  const int N = A.getNumRows();
+
+  Matrix<T> U(N, N);
+
+  for(IndexType i = 0; i < N; ++i)
+  {
+    for(IndexType j = 0; j < N; ++j)
+    {
+      if(i == j)
+      {
+        U(i, j) = (unit_diagonal) ? static_cast<T>(1) : A(i, j);
+      }
+      else
+      {
+        U(i, j) = (i < j) ? A(i, j) : static_cast<T>(0);
+      }
+
+    }  // END for all columns
+  }    // END for all rows
+
+  return (U);
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Matrix<T>& M)
 {
   const int nrows = M.getNumRows();
   const int ncols = M.getNumColumns();
 
-  for ( IndexType i=0 ; i < nrows ; ++i )
+  for(IndexType i = 0; i < nrows; ++i)
   {
     os << "[ ";
-    for ( int j=0 ; j < ncols ; ++j )
+    for(int j = 0; j < ncols; ++j)
     {
-      os << M( i,j ) << " ";
+      os << M(i, j) << " ";
     }  // END for all j
 
     os << "]\n";
 
-  } // END for all i
+  }  // END for all i
 
-  return ( os );
+  return (os);
 }
 
 } /* end namespace numerics */

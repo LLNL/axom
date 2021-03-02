@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,8 +6,8 @@
 #ifndef AXOM_UTILS_ABOUT_H_
 #define AXOM_UTILS_ABOUT_H_
 
-#include <ostream> // for std::ostream
-#include <string>  // for std::string
+#include <ostream>  // for std::ostream
+#include <string>   // for std::string
 
 namespace axom
 {
@@ -32,6 +32,6 @@ void about(std::ostream &oss);
  */
 std::string getVersion();
 
-} // end namespace axom
+}  // end namespace axom
 
-#endif //  AXOM_UTILS_ABOUT_H_
+#endif  //  AXOM_UTILS_ABOUT_H_

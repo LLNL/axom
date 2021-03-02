@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,5 +29,5 @@ TEST(fmt_smoke, basic_use)
   // Test printf-style formatting.
   // It should produce two significant digits -- i.e. 1.23
   std::string fltFormat = fmt::sprintf("%.2f", 1.234567);
-  EXPECT_EQ( "1.23", fltFormat);
+  EXPECT_EQ("1.23", fltFormat);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,16 +72,18 @@
  *
  */
 #if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CUDA)
-#define AXOM_NVTX_SECTION( __name__, ... )                                    \
-  do {                                                                        \
-    axom::nvtx::Range r(__name__);                                            \
-    __VA_ARGS__                                                               \
-  } while( false )
+  #define AXOM_NVTX_SECTION(__name__, ...) \
+    do                                     \
+    {                                      \
+      axom::nvtx::Range r(__name__);       \
+      __VA_ARGS__                          \
+    } while(false)
 #else
-#define AXOM_NVTX_SECTION( __name__, ... )                                    \
-  do {                                                                        \
-    __VA_ARGS__                                                               \
-  } while( false )
+  #define AXOM_NVTX_SECTION(__name__, ...) \
+    do                                     \
+    {                                      \
+      __VA_ARGS__                          \
+    } while(false)
 #endif
 
 /*!
@@ -106,12 +108,11 @@
  *
  */
 #if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CUDA)
-#define AXOM_NVTX_FUNCTION( __name__ ) axom::nvtx::Range __func_range(__name__)
+  #define AXOM_NVTX_FUNCTION(__name__) axom::nvtx::Range __func_range(__name__)
 #else
-#define AXOM_NVTX_FUNCTION( __name__ )
+  #define AXOM_NVTX_FUNCTION(__name__)
 #endif
 
 ///@}
-
 
 #endif /* AXOM_NVTX_MACROS_HPP_ */

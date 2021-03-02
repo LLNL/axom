@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -61,6 +61,7 @@ Library dependencies
 ================== ==================================== ======================
   `Conduit`_         Sidre (required)                    CONDUIT_DIR
   `HDF5`_            Sidre (optional)                    HDF5_DIR
+  `Lua`_             Inlet (optional)                    LUA_DIR
   `MFEM`_            Quest (optional)                    MFEM_DIR
   `RAJA`_            Mint (optional)                     RAJA_DIR
   `SCR`_             Sidre (optional)                    SCR_DIR
@@ -68,8 +69,9 @@ Library dependencies
 ================== ==================================== ======================
 
 .. _Conduit: https://llnl-conduit.readthedocs.io/en/latest
-.. _MFEM: https://mfem.org/
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
+.. _Lua: https://www.lua.org/
+.. _MFEM: https://mfem.org/
 .. _RAJA: https://raja.readthedocs.io/en/main/
 .. _SCR: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 .. _Umpire: https://umpire.readthedocs.io/en/latest/
@@ -82,25 +84,25 @@ For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``.
 Tool dependencies
 """""""""""""""""
 
-================== ==================================== =====================
+================== ==================================== ======================
   Tool               Purpose                            Build system variable
-================== ==================================== =====================
+================== ==================================== ======================
+  `clang-format`_    Code Style Checks                  CLANGFORMAT_EXECUTABLE
   `CppCheck`_        Static C/C++ code analysis         CPPCHECK_EXECUTABLE
   `Doxygen`_         Source Code Docs                   DOXYGEN_EXECUTABLE
   `Lcov`_            Code Coverage Reports              LCOV_EXECUTABLE
   `Shroud`_          Multi-language binding generation  SHROUD_EXECUTABLE
   `Sphinx`_          User Docs                          SPHINX_EXECUTABLE
-  `Uncrustify`_      Code Style Checks                  UNCRUSTIFY_EXECUTABLE
-================== ==================================== =====================
+================== ==================================== ======================
 
 .. TODO: add ``python`` if we return to using it as a tool
 
+.. _clang-format: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormat.html
 .. _CppCheck: http://cppcheck.sourceforge.net/
 .. _Doxygen: http://www.doxygen.nl/
 .. _Lcov: http://ltp.sourceforge.net/coverage/lcov.php
 .. _Shroud: https://shroud.readthedocs.io/en/develop/
 .. _Sphinx: http://www.sphinx-doc.org/en/master/
-.. _Uncrustify: http://uncrustify.sourceforge.net/
 
 
 Each tool has a corresponding build system variable (with the suffix ``_EXECUTABLE``)

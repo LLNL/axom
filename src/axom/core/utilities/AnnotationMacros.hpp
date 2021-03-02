@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,7 +9,7 @@
 #include "axom/config.hpp"
 
 #ifndef AXOM_USE_CALIPER
-#include "axom/core/utilities/nvtx/interface.hpp"
+  #include "axom/core/utilities/nvtx/interface.hpp"
 #endif
 
 /*!
@@ -37,11 +37,12 @@
  * \endcode
  */
 #if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CALIPER)
-#error "Support for Caliper has not yet been implemented in Axom!"
+  #error "Support for Caliper has not yet been implemented in Axom!"
 #elif defined(AXOM_USE_ANNOTATIONS)
-#define AXOM_PERF_MARK_FUNCTION(__func_name__) AXOM_NVTX_FUNCTION(__func_name__)
+  #define AXOM_PERF_MARK_FUNCTION(__func_name__) \
+    AXOM_NVTX_FUNCTION(__func_name__)
 #else
-#define AXOM_PERF_MARK_FUNCTION(__func_name__)
+  #define AXOM_PERF_MARK_FUNCTION(__func_name__)
 #endif
 
 /*!
@@ -85,15 +86,16 @@
  * 
  */
 #if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CALIPER)
-#error "Support for Caliper has not yet been implemented in Axom!"
+  #error "Support for Caliper has not yet been implemented in Axom!"
 #elif defined(AXOM_USE_ANNOTATIONS)
-#define AXOM_PERF_MARK_SECTION(__name__, ... ) \
-        AXOM_NVTX_SECTION( __name__ , __VA_ARGS__ )
+  #define AXOM_PERF_MARK_SECTION(__name__, ...) \
+    AXOM_NVTX_SECTION(__name__, __VA_ARGS__)
 #else
-#define AXOM_PERF_MARK_SECTION(__name__,...) \
-  do {                                      \
-    __VA_ARGS__                             \
-  } while( false )
+  #define AXOM_PERF_MARK_SECTION(__name__, ...) \
+    do                                          \
+    {                                           \
+      __VA_ARGS__                               \
+    } while(false)
 #endif
 
 #endif

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,11 +6,11 @@
 #ifndef PRIMAL_PLANE_HPP_
 #define PRIMAL_PLANE_HPP_
 
-#include "axom/core/Macros.hpp"                 // for Axom macros
-#include "axom/core/numerics/matvecops.hpp"        // for vector operators
+#include "axom/core/Macros.hpp"                        // for Axom macros
+#include "axom/core/numerics/matvecops.hpp"            // for vector operators
 #include "axom/primal/geometry/OrientationResult.hpp"  // for OrientedSide
 
-#include "axom/slic/interface/slic.hpp"                   // for SLIC macros
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 namespace numerics = axom::numerics;
 
@@ -18,15 +18,14 @@ namespace axom
 {
 namespace primal
 {
-
 /// \name Forward Declared Overloaded Operators
 /// @{
 
-template < typename T, int NDIMS >
+template <typename T, int NDIMS>
 class Plane;
 
-template < typename T, int NDIMS >
-std::ostream& operator<<( std::ostream & os, const Plane< T,NDIMS >& p );
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Plane<T, NDIMS>& p);
 
 /// @}
 
@@ -60,13 +59,12 @@ std::ostream& operator<<( std::ostream & os, const Plane< T,NDIMS >& p );
  *
  * \pre NDIMS==2 || NDIMS==3
  */
-template < typename T, int NDIMS >
+template <typename T, int NDIMS>
 class Plane
 {
 public:
-
-/// \name Constructors
-/// @{
+  /// \name Constructors
+  /// @{
 
   /*!
    * \brief Constructs a Plane with a given normal, \f$ \mathcal{N} \f$, that
@@ -84,7 +82,7 @@ public:
    * \pre normal != nullptr
    * \pre x != nullptr
    */
-  Plane( const T* normal, const T* x );
+  Plane(const T* normal, const T* x);
 
   /*!
    * \brief Constructs a plane with a specified normal, \f$ \mathcal{N} \f$,
@@ -98,7 +96,7 @@ public:
    *
    * \pre normal != nullptr
    */
-  Plane( const T* normal, T offset );
+  Plane(const T* normal, T offset);
 
   /*!
    * \brief Constructs a Plane that goes through the specified points.
@@ -119,34 +117,34 @@ public:
    * \pre In 2D, x1 should not be equal to x2
    * \pre In 3D, the user-supplied points, x1, x2, x3 should not be collinear.
    */
-  Plane( const T* x1, const T* x2, const T* x3 );
+  Plane(const T* x1, const T* x2, const T* x3);
 
-/// @}
+  /// @}
 
   /*!
    * \brief Destructor.
    */
-  ~Plane( );
+  ~Plane();
 
   /*!
    * \brief Returns the dimension of the Plane
    * \return dim the dimension of the Plane.
    * \post (dim==2) || (dim==3)
    */
-  inline int getDimension( ) const { return NDIMS; };
+  inline int getDimension() const { return NDIMS; };
 
   /*!
    * \brief Returns a const pointer to the plane's unit normal.
    * \return N the unit normal.
    * \post N != nullptr
    */
-  inline const T* getNormal( ) const { return m_normal; }
+  inline const T* getNormal() const { return m_normal; }
 
   /*!
    * \brief Returns the offset of the plane from origin.
    * \return offSet the offset of the plane from origin.
    */
-  inline T getOffset( ) const { return m_offset; }
+  inline T getOffset() const { return m_offset; }
 
   /*!
    * \brief Computes the signed distance of the specified point to this Plane.
@@ -158,8 +156,10 @@ public:
    *
    * \pre x != nullptr
    */
-  inline T computeSignedDistance( const T* x ) const
-  { return ( numerics::dot_product( m_normal, x, NDIMS ) - m_offset ); }
+  inline T computeSignedDistance(const T* x) const
+  {
+    return (numerics::dot_product(m_normal, x, NDIMS) - m_offset);
+  }
 
   /*!
    * \brief Computes the projection of a given point, x, onto this Plane.
@@ -174,7 +174,7 @@ public:
    * \pre projx != nullptr
    * \post this->getOrientedSide( projx ) == ON_BOUNDARY
    */
-  inline void projectPoint( const T* x, T* projx ) const;
+  inline void projectPoint(const T* x, T* projx) const;
 
   /*!
    * \brief Flips the orientation of the plane.
@@ -199,7 +199,7 @@ public:
    *
    * \pre x != nullptr
    */
-  inline int getOrientation( const T* x, double TOL=1.e-9 ) const;
+  inline int getOrientation(const T* x, double TOL = 1.e-9) const;
 
   /*!
    * \brief Prints the Plane information in the given output stream.
@@ -210,7 +210,6 @@ public:
   std::ostream& print(std::ostream& os) const;
 
 private:
-
   /*!
    * \brief Sets the normal of this Plane instance.
    *
@@ -218,15 +217,15 @@ private:
    * \note The supplied buffer must be at least NDIMS long.
    * \pre normal != nullptr
    */
-  inline void setNormal( const T* normal );
+  inline void setNormal(const T* normal);
 
   /*!
    * \brief Default constructor. Private to prevent its use in application code.
    */
-  Plane() { };
+  Plane() {};
 
-  T m_normal[ NDIMS ]; /*!< plane unit-normal  */
-  T m_offset;          /*!< offset from origin */
+  T m_normal[NDIMS]; /*!< plane unit-normal  */
+  T m_offset;        /*!< offset from origin */
 };
 
 } /* namespace primal */
@@ -239,126 +238,124 @@ namespace axom
 {
 namespace primal
 {
-
-template < typename T, int NDIMS >
-Plane< T, NDIMS >::Plane( const T* normal, const T* x )
+template <typename T, int NDIMS>
+Plane<T, NDIMS>::Plane(const T* normal, const T* x)
 {
-  AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
-                          "A plane object may be defined in 2-D or 3-D" );
+  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
+                         "A plane object may be defined in 2-D or 3-D");
 
-  SLIC_ASSERT( normal != nullptr );
-  SLIC_ASSERT( x != nullptr );
+  SLIC_ASSERT(normal != nullptr);
+  SLIC_ASSERT(x != nullptr);
 
-  this->setNormal( normal );
-  numerics::normalize( m_normal, NDIMS );
-  m_offset = numerics::dot_product( m_normal, x, NDIMS );
+  this->setNormal(normal);
+  numerics::normalize(m_normal, NDIMS);
+  m_offset = numerics::dot_product(m_normal, x, NDIMS);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-Plane< T, NDIMS >::Plane( const T* normal, T offset ) :
-  m_offset( offset )
+template <typename T, int NDIMS>
+Plane<T, NDIMS>::Plane(const T* normal, T offset) : m_offset(offset)
 {
-  AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
-                          "A plane object may be defined in 2-D or 3-D" );
+  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
+                         "A plane object may be defined in 2-D or 3-D");
 
-  SLIC_ASSERT( normal != nullptr );
+  SLIC_ASSERT(normal != nullptr);
 
-  this->setNormal( normal );
-  numerics::normalize( m_normal, NDIMS );
+  this->setNormal(normal);
+  numerics::normalize(m_normal, NDIMS);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-Plane< T, NDIMS >::Plane( const T* x1, const T* x2, const T* x3 )
+template <typename T, int NDIMS>
+Plane<T, NDIMS>::Plane(const T* x1, const T* x2, const T* x3)
 {
-  AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
-                          "A plane object may be defined in 2-D or 3-D");
+  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
+                         "A plane object may be defined in 2-D or 3-D");
 
-  SLIC_ASSERT( x1 != nullptr );
-  SLIC_ASSERT( x2 != nullptr );
+  SLIC_ASSERT(x1 != nullptr);
+  SLIC_ASSERT(x2 != nullptr);
 
-  if ( x3==nullptr )
+  if(x3 == nullptr)
   {
-    SLIC_ASSERT( NDIMS==2 );
-    m_normal[ 0 ] = x1[ 1 ] - x2[ 1 ]; // -dy
-    m_normal[ 1 ] = x2[ 0 ] - x1[ 0 ]; //  dx
+    SLIC_ASSERT(NDIMS == 2);
+    m_normal[0] = x1[1] - x2[1];  // -dy
+    m_normal[1] = x2[0] - x1[0];  //  dx
 
-  } // END if
+  }  // END if
   else
   {
-    SLIC_ASSERT( NDIMS==3 );
+    SLIC_ASSERT(NDIMS == 3);
 
-    T r1[ 3 ];
-    T r2[ 3 ];
+    T r1[3];
+    T r2[3];
 
-    for ( int i=0 ; i < 3 ; ++i )
+    for(int i = 0; i < 3; ++i)
     {
-      r1[ i ] = x2[ i ] - x1[ i ];
-      r2[ i ] = x3[ i ] - x1[ i ];
+      r1[i] = x2[i] - x1[i];
+      r2[i] = x3[i] - x1[i];
     }
 
-    numerics::cross_product( r1, r2, m_normal );
+    numerics::cross_product(r1, r2, m_normal);
 
-  } // END else
+  }  // END else
 
   // check for degenerate line or triangle
-  bool degenerate = utilities::isNearlyEqual( m_normal[0], 0.0 );
-  for ( int i=0 ; i < NDIMS ; ++i )
+  bool degenerate = utilities::isNearlyEqual(m_normal[0], 0.0);
+  for(int i = 0; i < NDIMS; ++i)
   {
-    degenerate = degenerate && utilities::isNearlyEqual( m_normal[i], 0.0 );
+    degenerate = degenerate && utilities::isNearlyEqual(m_normal[i], 0.0);
   }
 
-  SLIC_ERROR_IF( degenerate,
-                 "Supplied points form a degenerate " <<
-                 ( (NDIMS==2) ? "line" : "triangle" ) );
+  SLIC_ERROR_IF(degenerate,
+                "Supplied points form a degenerate "
+                  << ((NDIMS == 2) ? "line" : "triangle"));
 
-  numerics::normalize( m_normal, NDIMS );
-  m_offset = numerics::dot_product( m_normal, x1, NDIMS );
+  numerics::normalize(m_normal, NDIMS);
+  m_offset = numerics::dot_product(m_normal, x1, NDIMS);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-Plane< T,NDIMS >::~Plane( )
-{}
+template <typename T, int NDIMS>
+Plane<T, NDIMS>::~Plane()
+{ }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-inline void Plane< T,NDIMS >::projectPoint( const T* x, T* projx ) const
+template <typename T, int NDIMS>
+inline void Plane<T, NDIMS>::projectPoint(const T* x, T* projx) const
 {
-  const T signed_distance = this->computeSignedDistance( x );
-  for ( int i=0 ; i < NDIMS ; ++i )
+  const T signed_distance = this->computeSignedDistance(x);
+  for(int i = 0; i < NDIMS; ++i)
   {
-    projx[ i ] = x[ i ] - signed_distance * m_normal[ i ];
+    projx[i] = x[i] - signed_distance * m_normal[i];
   }
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-inline void Plane< T,NDIMS >::flip()
+template <typename T, int NDIMS>
+inline void Plane<T, NDIMS>::flip()
 {
-  for ( int i=0 ; i < NDIMS ; ++i )
+  for(int i = 0; i < NDIMS; ++i)
   {
-    m_normal[ i ] *= static_cast< T >( -1.0 );
+    m_normal[i] *= static_cast<T>(-1.0);
   }
 
-  m_offset *= static_cast< T >( -1.0 );
+  m_offset *= static_cast<T>(-1.0);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-inline int Plane< T,NDIMS >::getOrientation( const T* x, double TOL ) const
+template <typename T, int NDIMS>
+inline int Plane<T, NDIMS>::getOrientation(const T* x, double TOL) const
 {
   int oriented_side = -1;
 
-  const T signed_distance = this->computeSignedDistance( x );
+  const T signed_distance = this->computeSignedDistance(x);
 
-  if ( utilities::isNearlyEqual( signed_distance, 0.0, TOL) )
+  if(utilities::isNearlyEqual(signed_distance, 0.0, TOL))
   {
     // on the plane
     oriented_side = ON_BOUNDARY;
   }
-  else if ( signed_distance < 0.0 )
+  else if(signed_distance < 0.0)
   {
     // below the plane
     oriented_side = ON_NEGATIVE_SIDE;
@@ -373,35 +370,35 @@ inline int Plane< T,NDIMS >::getOrientation( const T* x, double TOL ) const
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-std::ostream& Plane< T, NDIMS >::print( std::ostream& os ) const
+template <typename T, int NDIMS>
+std::ostream& Plane<T, NDIMS>::print(std::ostream& os) const
 {
   os << "unit normal: [ ";
-  for ( int i=0 ; i < NDIMS ; ++i )
+  for(int i = 0; i < NDIMS; ++i)
   {
-    os << m_normal[ i ] << " ";
+    os << m_normal[i] << " ";
   }
   os << "] offset: " << m_offset;
-  return ( os );
+  return (os);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-inline void Plane< T,NDIMS >::setNormal( const T* normal )
+template <typename T, int NDIMS>
+inline void Plane<T, NDIMS>::setNormal(const T* normal)
 {
-  for ( int i=0 ; i < NDIMS ; ++i )
+  for(int i = 0; i < NDIMS; ++i)
   {
-    m_normal[ i ] = normal[ i ];
+    m_normal[i] = normal[i];
   }
 }
 
 //------------------------------------------------------------------------------
 //  implementation of free functions
 //------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Plane< T,NDIMS >& p )
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const Plane<T, NDIMS>& p)
 {
-  return( p.print( os ) );
+  return (p.print(os));
 }
 
 } /* namespace primal */

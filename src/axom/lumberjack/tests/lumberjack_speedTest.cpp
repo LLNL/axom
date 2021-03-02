@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,7 +20,7 @@
 int main(int argc, char** argv)
 {
   //Process command line options
-  if (argc != 4)
+  if(argc != 4)
   {
     std::cout << "Error: Wrong amount of command line arguments given. "
               << "Usage:" << std::endl
@@ -34,24 +34,24 @@ int main(int argc, char** argv)
   int cycleLimit = std::stoi(argv[2]);
   char* fileName = argv[3];
 
-  if (std::string(argv[1]) == "b")
+  if(std::string(argv[1]) == "b")
   {
     communicatorName = "binary";
   }
-  else if (std::string(argv[1]) == "r")
+  else if(std::string(argv[1]) == "r")
   {
     communicatorName = "root";
   }
   else
   {
-    std::cout << "Error: First parameter must be either 'b' or 'r' for " <<
-      "BinaryTreeCommunicator or RootCommunicator respectively." <<
-      std::endl;
+    std::cout << "Error: First parameter must be either 'b' or 'r' for "
+              << "BinaryTreeCommunicator or RootCommunicator respectively."
+              << std::endl;
     return 1;
   }
 
   std::ifstream file(fileName);
-  if (!file.good())
+  if(!file.good())
   {
     std::cout << "Error: Given file was unable to open: " << fileName
               << std::endl;
@@ -67,15 +67,15 @@ int main(int argc, char** argv)
   MPI_Comm_size(MPI_COMM_WORLD, &commSize);
 
   // Determine how many ranks we want to individually track per message
-  int ranksLimit = commSize/2;
+  int ranksLimit = commSize / 2;
 
   // Initialize which lumberjack communicator we want
   axom::lumberjack::Communicator* communicator = nullptr;
-  if (communicatorName == "binary")
+  if(communicatorName == "binary")
   {
     communicator = new axom::lumberjack::BinaryTreeCommunicator;
   }
-  else if (communicatorName == "root")
+  else if(communicatorName == "root")
   {
     communicator = new axom::lumberjack::RootCommunicator;
   }
@@ -102,11 +102,11 @@ int main(int argc, char** argv)
   // Queue messages into lumberjack
   int cycleCount = 0;
   int linesSize = (int)lines.size();
-  for (int i = 0 ; i < linesSize ; ++i)
+  for(int i = 0; i < linesSize; ++i)
   {
     lj.queueMessage(lines[i]);
     ++cycleCount;
-    if (cycleCount > cycleLimit)
+    if(cycleCount > cycleLimit)
     {
       lj.pushMessagesOnce();
       cycleCount = 0;
@@ -120,13 +120,13 @@ int main(int argc, char** argv)
   std::clock_t end = clock();
 
   // Get messages back out of lumberjack since they have been pushed.
-  if (lj.isOutputNode())
+  if(lj.isOutputNode())
   {
     std::vector<axom::lumberjack::Message*> messages = lj.getMessages();
 
     std::ofstream outFile;
     outFile.open("speedTestOutput");
-    for(int i=0 ; i<(int)(messages.size()) ; ++i)
+    for(int i = 0; i < (int)(messages.size()); ++i)
     {
       outFile << messages[i]->text();
     }
@@ -135,10 +135,10 @@ int main(int argc, char** argv)
   }
 
   // Output elapsed time
-  if (commRank == 0)
+  if(commRank == 0)
   {
     std::cout << "Elapsed time: "
-              << ((double)(end - begin)*1000)/ CLOCKS_PER_SEC << std::endl;
+              << ((double)(end - begin) * 1000) / CLOCKS_PER_SEC << std::endl;
   }
 
   // Finalize lumberjack

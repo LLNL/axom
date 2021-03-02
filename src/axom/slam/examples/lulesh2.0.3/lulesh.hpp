@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -37,9 +37,9 @@ namespace slamLulesh {
   typedef double      real8;
   typedef long double real10;  // 10 bytes on x86
 
-  typedef int         Index_t; // array subscript and loop index
-  typedef real8       Real_t; // floating point representation
-  typedef int         Int_t; // integer representation
+  typedef axom::IndexType  Index_t; // array subscript and loop index
+  typedef real8            Real_t; // floating point representation
+  typedef axom::IndexType  Int_t; // integer representation
 
   enum { VolumeError = -1, QStopError = -2 };
 
@@ -690,7 +690,7 @@ namespace slamLulesh {
 
 // lulesh-util
   void  ParseCommandLineOptions(int argc, char *argv[],
-      Int_t myRank, struct cmdLineOpts *opts);
+      int myRank, struct cmdLineOpts *opts);
   void  VerifyAndWriteFinalOutput(Real_t elapsed_time,
       Domain& locDom,
       Int_t nx,
@@ -700,9 +700,9 @@ namespace slamLulesh {
   void  DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks);
 
 // lulesh-comm
-  void  CommRecv(Domain& domain, Int_t msgType, Index_t xferFields, Index_t dx, Index_t dy, Index_t dz, bool doRecv, bool planeOnly);
-  void  CommSend(Domain& domain, Int_t msgType, Index_t xferFields, Domain_member *fieldData, Index_t dx, Index_t dy, Index_t dz, bool doSend, bool planeOnly);
-  void  CommSBN(Domain& domain, Int_t xferFields, Domain_member *fieldData);
+  void  CommRecv(Domain& domain, int msgType, Index_t xferFields, Index_t dx, Index_t dy, Index_t dz, bool doRecv, bool planeOnly);
+  void  CommSend(Domain& domain, int msgType, Index_t xferFields, Domain_member *fieldData, Index_t dx, Index_t dy, Index_t dz, bool doSend, bool planeOnly);
+  void  CommSBN(Domain& domain, int xferFields, Domain_member *fieldData);
   void  CommSyncPosVel(Domain& domain);
   void  CommMonoQ(Domain& domain);
 

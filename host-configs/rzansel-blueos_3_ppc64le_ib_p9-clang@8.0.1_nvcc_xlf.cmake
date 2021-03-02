@@ -24,9 +24,9 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACH
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2020_08_11_23_54_55/clang-8.0.1_nvcc_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_01_06_14_06_47/clang-8.0.1_nvcc_xlf" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.6.0" CACHE PATH "")
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.1.0" CACHE PATH "")
 
@@ -36,9 +36,9 @@ set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
 # SCR not built
 
-set(RAJA_DIR "${TPL_ROOT}/raja-0.11.0" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.12.1" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-4.0.1" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # MPI
@@ -54,9 +54,9 @@ set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-re
 
 set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/bin/mpirun" CACHE PATH "")
 
-set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG "-np" CACHE STRING "")
 
-set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE PATH "")
+set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # Devtools
@@ -75,9 +75,9 @@ set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/sphinx-build" CACHE PAT
 
 set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/shroud" CACHE PATH "")
 
-set(UNCRUSTIFY_EXECUTABLE "${DEVTOOLS_ROOT}/uncrustify-0.61/bin/uncrustify" CACHE PATH "")
-
 set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-1.87/bin/cppcheck" CACHE PATH "")
+
+set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # Other machine specifics
@@ -87,13 +87,15 @@ set(ENABLE_OPENMP OFF CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS OFF CACHE BOOL "")
 
-set(CMAKE_Fortran_COMPILER_ID "XL" CACHE PATH "Override to proper compiler family for XL")
+set(CMAKE_Fortran_COMPILER_ID "XL" CACHE STRING "Override to proper compiler family for XL")
 
-set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
+set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE STRING "Converts C-style comments to Fortran style in preprocessed files")
 
-set(BLT_EXE_LINKER_FLAGS "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.12.23/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
+set(BLT_EXE_LINKER_FLAGS "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.12.23/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
 
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.12.23/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.12.23/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
+
+set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # Cuda
@@ -109,11 +111,9 @@ set(CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "")
 
 set(AXOM_ENABLE_ANNOTATIONS ON CACHE BOOL "")
 
-set(AXOM_ENABLE_CUB ON CACHE BOOL "")
+set(CMAKE_CUDA_ARCHITECTURES "70" CACHE STRING "")
 
-set(AXOM_CUDA_ARCH "sm_70" CACHE PATH "")
-
-set(CMAKE_CUDA_FLAGS "-restrict -arch ${AXOM_CUDA_ARCH} -std=c++11 --expt-extended-lambda -G " CACHE PATH "")
+set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -arch sm_${CMAKE_CUDA_ARCHITECTURES} -std=c++11 " CACHE STRING "")
 
 set(CMAKE_CUDA_HOST_COMPILER "${MPI_CXX_COMPILER}" CACHE PATH "")
 

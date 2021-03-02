@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,8 +30,6 @@ namespace axom
 {
 namespace slam
 {
-
-
 // This class is missing some simplifying copy constructors
 // -- or at least ways of interacting with the data store
 // We should probably support copy on write shallow copies when possible...
@@ -57,18 +55,14 @@ namespace slam
  *
  */
 
-template<
-  typename SetType,
-  typename DataType,
-  typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
-  >
-class Map : public MapBase, public StridePolicy
+template <typename SetType,
+          typename DataType,
+          typename StridePolicy = policies::StrideOne<typename SetType::PositionType>>
+class Map : public MapBase<typename SetType::PositionType>, public StridePolicy
 {
 public:
-
   using OrderedMap = std::vector<DataType>;
   using StridePolicyType = StridePolicy;
-
 
   using SetPosition = typename SetType::PositionType;
   using SetElement = typename SetType::ElementType;
@@ -84,7 +78,6 @@ public:
   using iterator_pair = const_iterator_pair;
 
 public:
-
   /**
    * \brief Constructor for Map using a Set pointer
    *
@@ -100,10 +93,11 @@ public:
 
   Map(const SetType* theSet = &s_nullSet,
       DataType defaultValue = DataType(),
-      SetPosition stride = StridePolicyType::DEFAULT_VALUE )
-    :  StridePolicyType(stride), m_set(theSet)
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+    : StridePolicyType(stride)
+    , m_set(theSet)
   {
-    m_data.resize( m_set->size() * StridePolicy::stride(), defaultValue);
+    m_data.resize(m_set->size() * StridePolicy::stride(), defaultValue);
   }
 
   /**
@@ -113,8 +107,8 @@ public:
     : StridePolicyType(otherMap.StridePolicyType::stride())
     , m_set(otherMap.m_set)
   {
-    m_data.resize( otherMap.m_data.size() );
-    copy( otherMap );
+    m_data.resize(otherMap.m_data.size());
+    copy(otherMap);
   }
 
   /**
@@ -124,10 +118,9 @@ public:
     : Map(builder.m_set, builder.m_defaultValue, builder.m_stride.stride())
   {
     //copy the data if exists
-    if (builder.m_data_ptr)
+    if(builder.m_data_ptr)
     {
-      for (SetPosition idx = SetPosition() ; idx < builder.m_set->size() ;
-           ++idx)
+      for(SetPosition idx = SetPosition(); idx < builder.m_set->size(); ++idx)
       {
         m_data[idx] = builder.m_data_ptr[idx];
       }
@@ -167,13 +160,13 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= setIndex < size() * numComp()
    */
-  const DataType & operator[](SetPosition setIndex) const
+  const DataType& operator[](SetPosition setIndex) const
   {
     verifyPosition(setIndex);
     return m_data[setIndex];
   }
 
-  DataType & operator[](SetPosition setIndex)
+  DataType& operator[](SetPosition setIndex)
   {
     verifyPosition(setIndex);
     return m_data[setIndex];
@@ -186,14 +179,14 @@ public:
    * \pre `0 <= setIdx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType & operator()(SetPosition setIdx, SetPosition comp = 0) const
+  const DataType& operator()(SetPosition setIdx, SetPosition comp = 0) const
   {
     verifyPosition(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
     return m_data[setIndex];
   }
 
-  DataType & operator()(SetPosition setIdx, SetPosition comp = 0)
+  DataType& operator()(SetPosition setIdx, SetPosition comp = 0)
   {
     verifyPosition(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
@@ -201,7 +194,6 @@ public:
   }
 
   /// @}
-
 
   /// \name Map cardinality functions
   /// @{
@@ -214,26 +206,25 @@ public:
   SetPosition size() const { return SetPosition(m_set->size()); }
 
   /*
-   * \brief  Gets the number of component values associalted with each element.
+   * \brief  Gets the number of component values associated with each element.
    *         Equivalent to stride().
    */
   SetPosition numComp() const { return StridePolicyType::stride(); }
 
   /// @}
 
-
   /// \name Map modifying functions for all entries
   /// @{
 
   /** \brief replace all elements in the Map with the default DataType */
-  void        clear() { fill(); }
+  void clear() { fill(); }
 
   /** Set each entry in the map to the given value  */
-  void        fill(DataType val = DataType())
+  void fill(DataType val = DataType())
   {
-    const SetPosition sz = static_cast< SetPosition >( m_data.size() );
+    const SetPosition sz = static_cast<SetPosition>(m_data.size());
 
-    for(SetPosition idx = SetPosition() ; idx < sz ; ++idx)
+    for(SetPosition idx = SetPosition(); idx < sz; ++idx)
     {
       m_data[idx] = val;
     }
@@ -242,11 +233,11 @@ public:
   /** \brief Element-wise copy of data from another map */
   void copy(const Map& other)
   {
-    SLIC_ASSERT( other.size() == size() );
-    SLIC_ASSERT( other.stride() == StridePolicyType::stride() );
+    SLIC_ASSERT(other.size() == size());
+    SLIC_ASSERT(other.stride() == StridePolicyType::stride());
 
     const SetPosition sz = size() * StridePolicyType::stride();
-    for(SetPosition idx = SetPosition() ; idx < sz ; ++idx)
+    for(SetPosition idx = SetPosition(); idx < sz; ++idx)
     {
       m_data[idx] = other[idx];
     }
@@ -254,14 +245,12 @@ public:
 
   ///@}
 
-
-
   /** \brief print information on the map, including every element inside Map
    */
-  void        print() const;
+  void print() const;
 
   /** \brief returns true if the map is valid, false otherwise.  */
-  bool        isValid(bool verboseOutput = false) const;
+  bool isValid(bool verboseOutput = false) const;
 
 public:
   /**
@@ -270,10 +259,10 @@ public:
    **/
   class MapBuilder
   {
-public:
+  public:
     friend class Map;
 
-    MapBuilder() : m_set(&s_nullSet) {}
+    MapBuilder() : m_set(&s_nullSet) { }
 
     /** \brief Provide the Set to be used by the Map */
     MapBuilder& set(const SetType* set)
@@ -298,14 +287,12 @@ public:
       return *this;
     }
 
-private:
+  private:
     const SetType* m_set = &s_nullSet;
     StridePolicyType m_stride;
     DataType* m_data_ptr = nullptr;
     DataType m_defaultValue = DataType();
   };
-
-
 
   /**
    * \class   MapIterator
@@ -325,7 +312,7 @@ private:
    */
   class MapIterator : public IteratorBase<MapIterator, SetPosition>
   {
-public:
+  public:
     using iterator_category = std::random_access_iterator_tag;
     using value_type = DataType;
     using difference_type = SetPosition;
@@ -335,86 +322,73 @@ public:
     using PositionType = SetPosition;
     using IterBase::m_pos;
 
-public:
-
-    MapIterator(PositionType pos, Map* oMap)
-      : IterBase(pos), m_mapPtr(oMap) {}
+  public:
+    MapIterator(PositionType pos, Map* oMap) : IterBase(pos), m_mapPtr(oMap) { }
 
     /**
      * \brief Returns the current iterator value. If the map has multiple
      *        components, this will return the first component. To access
      *        the other components, use iter(comp)
      */
-    DataType & operator*()
-    {
-      return (*m_mapPtr)(m_pos, 0);
-    }
+    DataType& operator*() { return (*m_mapPtr)(m_pos, 0); }
 
     /**
      * \brief Returns the iterator's value at the specified component.
      *        Returns the first component if comp_idx is not specified.
      * \param comp_idx  (Optional) Zero-based index of the component.
      */
-    DataType & operator()(SetPosition comp_idx = 0)
+    DataType& operator()(SetPosition comp_idx = 0)
     {
       return (*m_mapPtr)(m_pos, comp_idx);
     }
 
     /** \brief Returns the first component value after n increments.  */
-    const DataType & operator[](PositionType n) const
+    const DataType& operator[](PositionType n) const
     {
       return *(this->operator+(n));
     }
 
-    DataType & operator[](PositionType n)
-    {
-      return *(*this+n);
-    }
+    DataType& operator[](PositionType n) { return *(*this + n); }
 
     /** \brief Returns the number of components per element in the Map. */
     PositionType numComp() const { return m_mapPtr->stride(); }
 
-protected:
+  protected:
     /** Implementation of advance() as required by IteratorBase */
-    void advance(PositionType n) {
-      m_pos += n;
-    }
+    void advance(PositionType n) { m_pos += n; }
 
-protected:
+  protected:
     Map* const m_mapPtr;
   };
 
-public:     // Functions related to iteration
-
-  MapIterator         begin()   {    return MapIterator(0, this);  }
-  MapIterator         end()     {    return MapIterator(size(), this); }
+public:  // Functions related to iteration
+  MapIterator begin() { return MapIterator(0, this); }
+  MapIterator end() { return MapIterator(size(), this); }
   const_iterator_pair range() const { return std::make_pair(begin(), end()); }
-
 
 public:
   /**
    * \brief Returns a reference to the underlying map data
    */
-  OrderedMap &        data()       { return m_data; }
-  const OrderedMap &  data() const { return m_data; }
+  OrderedMap& data() { return m_data; }
+  const OrderedMap& data() const { return m_data; }
 
 private:
-  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx))      const
+  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx)) const
   {
-    SLIC_ASSERT_MSG(
-      idx >= 0 && idx < SetPosition( m_data.size()),
-      "Attempted to access element "
-      << idx << " but map's data has size "  << m_data.size() );
+    SLIC_ASSERT_MSG(idx >= 0 && idx < SetPosition(m_data.size()),
+                    "Attempted to access element "
+                      << idx << " but map's data has size " << m_data.size());
   }
 
   inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(setIdx),
-                             SetPosition AXOM_DEBUG_PARAM(compIdx))     const
+                             SetPosition AXOM_DEBUG_PARAM(compIdx)) const
   {
     SLIC_ASSERT_MSG(
       setIdx >= 0 && setIdx < size() && compIdx >= 0 && compIdx < numComp(),
       "Attempted to access element at ("
-      << setIdx << "," << compIdx << ",) but map's set has size " << size()
-      << " with " << numComp() << " components." );
+        << setIdx << "," << compIdx << ",) but map's set has size " << size()
+        << " with " << numComp() << " components.");
   }
 
   // setStride function should not be called after constructor is called.
@@ -430,19 +404,16 @@ private:
   OrderedMap m_data;
 };
 
-
-
 /**
  * \brief Definition of static instance of nullSet for all maps
  * \note Should this be a singleton or a global object?  Should the scope be
  * public?
  */
-template<typename SetType, typename DataType, typename StridePolicy>
-NullSet<typename SetType::PositionType, typename SetType::ElementType>
-const Map<SetType, DataType, StridePolicy>::s_nullSet;
+template <typename SetType, typename DataType, typename StridePolicy>
+NullSet<typename SetType::PositionType, typename SetType::ElementType> const
+  Map<SetType, DataType, StridePolicy>::s_nullSet;
 
-
-template<typename SetType, typename DataType, typename StridePolicy>
+template <typename SetType, typename DataType, typename StridePolicy>
 bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
 {
   bool bValid = true;
@@ -451,7 +422,7 @@ bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
 
   if(*m_set == s_nullSet)
   {
-    if(!m_data.empty() )
+    if(!m_data.empty())
     {
       if(verboseOutput)
       {
@@ -465,8 +436,8 @@ bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
   }
   else
   {
-    if( static_cast<SetPosition>(m_data.size())
-        != m_set->size() * StridePolicyType::stride() )
+    if(static_cast<SetPosition>(m_data.size()) !=
+       m_set->size() * StridePolicyType::stride())
     {
       if(verboseOutput)
       {
@@ -481,7 +452,6 @@ bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
     }
   }
 
-
   if(verboseOutput)
   {
     std::stringstream sstr;
@@ -493,9 +463,7 @@ bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
     }
     else
     {
-      sstr << "Map was NOT valid.\n"
-           << sstr.str()
-           << std::endl;
+      sstr << "Map was NOT valid.\n" << sstr.str() << std::endl;
     }
 
     std::cout << sstr.str() << std::endl;
@@ -504,32 +472,30 @@ bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
   return bValid;
 }
 
-
-template<typename SetType, typename DataType, typename StridePolicy>
+template <typename SetType, typename DataType, typename StridePolicy>
 void Map<SetType, DataType, StridePolicy>::print() const
 {
   bool valid = isValid(true);
   std::stringstream sstr;
 
-  if (valid)
+  if(valid)
   {
-    if (!m_set)
+    if(!m_set)
     {
       sstr << "** map is empty.";
     }
     else
     {
       sstr << "** underlying set has size " << m_set->size() << ": ";
-      sstr << "\n** the stride of the map is " << StridePolicy::stride()
-           << ": ";
+      sstr << "\n** the stride of the map is " << StridePolicy::stride() << ": ";
 
       sstr << "\n** Mapped data:";
-      for (SetPosition idx = 0 ; idx < this->size() ; ++idx)
+      for(SetPosition idx = 0; idx < this->size(); ++idx)
       {
-        for (SetPosition idx2 = 0 ; idx2 < StridePolicy::stride() ; ++idx2)
+        for(SetPosition idx2 = 0; idx2 < StridePolicy::stride(); ++idx2)
         {
           sstr << "\n\telt[" << idx << "," << idx2 << "]:\t"
-               << (*this)[idx*StridePolicyType::stride() + idx2];
+               << (*this)[idx * StridePolicyType::stride() + idx2];
         }
       }
     }
@@ -538,10 +504,7 @@ void Map<SetType, DataType, StridePolicy>::print() const
   std::cout << sstr.str() << std::endl;
 }
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-
-
-#endif // SLAM_MAP_HPP_
+#endif  // SLAM_MAP_HPP_

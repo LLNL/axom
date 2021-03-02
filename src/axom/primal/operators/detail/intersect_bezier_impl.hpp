@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,7 +28,6 @@ namespace primal
 {
 namespace detail
 {
-
 //---------------------------- FUNCTION DECLARATIONS ---------------------------
 
 /*!
@@ -58,15 +57,18 @@ namespace detail
  * \return True if the two curves intersect, False otherwise
  * \sa intersect_bezier
  */
-template < typename T, int NDIMS>
-bool intersect_bezier_curves( const BezierCurve< T, NDIMS>& c1,
-                              const BezierCurve< T, NDIMS>& c2,
-                              std::vector< T >& sp,
-                              std::vector< T >& tp,
-                              double sq_tol,
-                              int order1, int order2,
-                              double s_offset, double s_scale,
-                              double t_offset, double t_scale);
+template <typename T, int NDIMS>
+bool intersect_bezier_curves(const BezierCurve<T, NDIMS> &c1,
+                             const BezierCurve<T, NDIMS> &c2,
+                             std::vector<T> &sp,
+                             std::vector<T> &tp,
+                             double sq_tol,
+                             int order1,
+                             int order2,
+                             double s_offset,
+                             double s_scale,
+                             double t_offset,
+                             double t_scale);
 
 /*!
  * \brief Tests intersection of two line segments defined by
@@ -95,42 +97,44 @@ bool intersect_bezier_curves( const BezierCurve< T, NDIMS>& c1,
  * \note This function does not properly handle collinear lines
  */
 
-template < typename T, int NDIMS>
-bool intersect_2d_linear( const Point<T,NDIMS> &a, const Point<T,NDIMS> &b,
-                          const Point<T,NDIMS> &c, const Point<T,NDIMS> &d,
-                          T &s, T &t);
-
-
-
+template <typename T, int NDIMS>
+bool intersect_2d_linear(const Point<T, NDIMS> &a,
+                         const Point<T, NDIMS> &b,
+                         const Point<T, NDIMS> &c,
+                         const Point<T, NDIMS> &d,
+                         T &s,
+                         T &t);
 
 //------------------------------ IMPLEMENTATIONS ------------------------------
 
-
-template < typename T, int NDIMS>
-bool intersect_bezier_curves( const BezierCurve< T, NDIMS>& c1,
-                              const BezierCurve< T, NDIMS>& c2,
-                              std::vector< T >& sp,
-                              std::vector< T >& tp,
-                              double sq_tol,
-                              int order1, int order2,
-                              double s_offset, double s_scale,
-                              double t_offset, double t_scale)
+template <typename T, int NDIMS>
+bool intersect_bezier_curves(const BezierCurve<T, NDIMS> &c1,
+                             const BezierCurve<T, NDIMS> &c2,
+                             std::vector<T> &sp,
+                             std::vector<T> &tp,
+                             double sq_tol,
+                             int order1,
+                             int order2,
+                             double s_offset,
+                             double s_scale,
+                             double t_offset,
+                             double t_scale)
 {
-  using BCurve = BezierCurve< T, NDIMS>;
-  SLIC_ASSERT(NDIMS==2);
+  using BCurve = BezierCurve<T, NDIMS>;
+  SLIC_ASSERT(NDIMS == 2);
 
   // Check bounding boxes to short-circuit the intersection
-  if(!intersect(c1.boundingBox(), c2.boundingBox()) )
+  if(!intersect(c1.boundingBox(), c2.boundingBox()))
   {
     return false;
   }
 
   bool foundIntersection = false;
 
-  if ( c1.isLinear(sq_tol) && c2.isLinear(sq_tol))
+  if(c1.isLinear(sq_tol) && c2.isLinear(sq_tol))
   {
-    T s,t;
-    if(intersect_2d_linear(c1[0],c1[order1],c2[0],c2[order2],s,t))
+    T s, t;
+    if(intersect_2d_linear(c1[0], c1[order1], c2[0], c2[order2], s, t))
     {
       sp.push_back(s_offset + s_scale * s);
       tp.push_back(t_offset + t_scale * t);
@@ -144,33 +148,50 @@ bool intersect_bezier_curves( const BezierCurve< T, NDIMS>& c1,
 
     BCurve c3(order1);
     BCurve c4(order1);
-    c1.split(splitVal,c3,c4);
+    c1.split(splitVal, c3, c4);
 
     s_scale *= scaleFac;
 
-    if (intersect_bezier_curves(c2,c3,tp,sp, sq_tol, order2, order1,
-                                t_offset, t_scale, s_offset, s_scale))
+    if(intersect_bezier_curves(c2,
+                               c3,
+                               tp,
+                               sp,
+                               sq_tol,
+                               order2,
+                               order1,
+                               t_offset,
+                               t_scale,
+                               s_offset,
+                               s_scale))
     {
       foundIntersection = true;
-
-
     }
-    if (intersect_bezier_curves(c2,c4,tp,sp, sq_tol, order2, order1,
-                                t_offset, t_scale, s_offset + s_scale, s_scale))
+    if(intersect_bezier_curves(c2,
+                               c4,
+                               tp,
+                               sp,
+                               sq_tol,
+                               order2,
+                               order1,
+                               t_offset,
+                               t_scale,
+                               s_offset + s_scale,
+                               s_scale))
     {
       foundIntersection = true;
     }
   }
 
   return foundIntersection;
-
 }
 
-
-template < typename T, int NDIMS>
-bool intersect_2d_linear( const Point<T,NDIMS> &a, const Point<T,NDIMS> &b,
-                          const Point<T,NDIMS> &c, const Point<T,NDIMS> &d,
-                          T &s, T &t)
+template <typename T, int NDIMS>
+bool intersect_2d_linear(const Point<T, NDIMS> &a,
+                         const Point<T, NDIMS> &b,
+                         const Point<T, NDIMS> &c,
+                         const Point<T, NDIMS> &d,
+                         T &s,
+                         T &t)
 {
   // Implementation inspired by Section 5.1.9.1 of
   // C. Ericson's Real-Time Collision Detection book
@@ -178,34 +199,32 @@ bool intersect_2d_linear( const Point<T,NDIMS> &a, const Point<T,NDIMS> &b,
   // Note: Uses exact floating point comparisons since the subdivision algorithm
   // provides both sides of the line segments for interior curve points.
 
-  AXOM_STATIC_ASSERT( NDIMS==2);
+  AXOM_STATIC_ASSERT(NDIMS == 2);
 
   // compute signed areas of endpoints of segment (c,d) w.r.t. segment (a,b)
-  auto area1 = twoDcross(a,b,c);
-  auto area2 = twoDcross(a,b,d);
+  auto area1 = twoDcross(a, b, c);
+  auto area2 = twoDcross(a, b, d);
 
   // early return if both have same orientation, or if d is collinear w/ (a,b)
-  if( area2 == 0. || (area1 * area2) > 0.)
-    return false;
+  if(area2 == 0. || (area1 * area2) > 0.) return false;
 
   // compute signed areas of endpoints of segment (a,b) w.r.t. segment (c,d)
-  auto area3 = twoDcross(c,d,a);
-  auto area4 = area3+area1-area2; // equivalent to twoDcross(c,d,b)
+  auto area3 = twoDcross(c, d, a);
+  auto area4 = area3 + area1 - area2;  // equivalent to twoDcross(c,d,b)
 
   // early return if both have same orientation, or if b is collinear w/ (c,d)
-  if( area4 == 0. || (area3 * area4) > 0.)
-    return false;
+  if(area4 == 0. || (area3 * area4) > 0.) return false;
 
   // Compute intersection parameters using linear interpolation
   // Divisions are safe due to early return conditions
-  s = area3 / (area3-area4);
-  t = area1 / (area1-area2);
+  s = area3 / (area3 - area4);
+  t = area1 / (area1 - area2);
 
   return true;
 }
 
-} // end namespace detail
-} // end namespace primal
-} // end namespace axom
+}  // end namespace detail
+}  // end namespace primal
+}  // end namespace axom
 
-#endif // PRIMAL_INTERSECT_BEZIER_IMPL_HPP_
+#endif  // PRIMAL_INTERSECT_BEZIER_IMPL_HPP_

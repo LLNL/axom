@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,7 +30,6 @@ namespace sidre
 {
 namespace detail
 {
-
 /*
  *************************************************************************
  *
@@ -38,26 +37,28 @@ namespace detail
  *
  *************************************************************************
  */
-std::vector<std::string> split(const std::string& s, char c,
-                               std::string::size_type pos, bool keep_empty)
+std::vector<std::string> split(const std::string& s,
+                               char c,
+                               std::string::size_type pos,
+                               bool keep_empty)
 {
   std::vector<std::string> v;
   std::string::size_type i = 0;
 
-  if (pos == std::string::npos)
+  if(pos == std::string::npos)
   {
     pos = s.find(c);
   }
-  while (pos != std::string::npos)
+  while(pos != std::string::npos)
   {
-    if (keep_empty || pos-i > 0)
+    if(keep_empty || pos - i > 0)
     {
-      v.push_back(s.substr(i, pos-i));
+      v.push_back(s.substr(i, pos - i));
     }
     i = ++pos;
     pos = s.find(c, pos);
 
-    if (pos == std::string::npos && (keep_empty || s.length() - i > 0))
+    if(pos == std::string::npos && (keep_empty || s.length() - i > 0))
     {
       v.push_back(s.substr(i, s.length()));
     }
@@ -75,14 +76,14 @@ std::vector<std::string> split(const std::string& s, char c,
  *
  *************************************************************************
  */
-std::string::size_type find_exclusive( const std::string& s, char c)
+std::string::size_type find_exclusive(const std::string& s, char c)
 {
   std::string::size_type pos = s.find(c);
 
-  SLIC_ASSERT( pos != 0);
-  SLIC_ASSERT( pos != s.size()-1 );
+  SLIC_ASSERT(pos != 0);
+  SLIC_ASSERT(pos != s.size() - 1);
 
-  if (pos == 0 || pos == s.size()-1)
+  if(pos == 0 || pos == s.size() - 1)
   {
     pos = std::string::npos;
   }
@@ -90,10 +91,9 @@ std::string::size_type find_exclusive( const std::string& s, char c)
   return pos;
 }
 
+}  //end namespace detail
 
-} //end namespace detail
+}  //end namespace sidre
 
-} //end namespace sidre
-
-} // end namespace axom
+}  // end namespace axom
 /// @endcond

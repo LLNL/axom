@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,8 +7,7 @@
 
 #include "axom/slic/interface/slic.hpp"
 
-
-TEST(slic_interface,initialize_finalize)
+TEST(slic_interface, initialize_finalize)
 {
   EXPECT_FALSE(axom::slic::isInitialized());
 
@@ -27,12 +26,12 @@ TEST(slic_interface,initialize_finalize)
   EXPECT_FALSE(axom::slic::isInitialized());
 }
 
-TEST(slic_interface,logging_level)
+TEST(slic_interface, logging_level)
 {
   axom::slic::initialize();
 
   // test get and set for each level
-  for(int i=0 ; i < axom::slic::message::Num_Levels ; ++i)
+  for(int i = 0; i < axom::slic::message::Num_Levels; ++i)
   {
     axom::slic::message::Level lev = static_cast<axom::slic::message::Level>(i);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,7 +27,7 @@ namespace slamLulesh {
 /////////////////////////////////////////////////////////////////////
   Domain::Domain(Int_t numRanks, Index_t colLoc,
       Index_t rowLoc, Index_t planeLoc,
-      Index_t nx, int tp, int nr, int balance, Int_t cost)
+      Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost)
       : m_e_cut(Real_t(1.0e-7)),
         m_p_cut(Real_t(1.0e-7)),
         m_q_cut(Real_t(1.0e-7)),
@@ -394,7 +394,7 @@ namespace slamLulesh {
     using RegionToElemDynamicRelation = axom::slam::DynamicVariableRelation<PositionType, ElementType>;
 
 #ifdef AXOM_USE_MPI
-    Index_t myRank;
+    int myRank;
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     srand(myRank);
 #else

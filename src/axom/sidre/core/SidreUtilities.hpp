@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,7 +17,6 @@ namespace sidre
 {
 namespace detail
 {
-
 /*! \brief Splits a string using the given delimiter into a vector of strings.
  *
  *  \param s The string to split
@@ -25,7 +24,8 @@ namespace detail
  *  \param pos Starting position (std::string::npos to start from beginning)
  *  \param keep_empty Include empty substrings in the result (default false)
  */
-std::vector<std::string> split(const std::string& s, char c,
+std::vector<std::string> split(const std::string& s,
+                               char c,
                                std::string::size_type pos,
                                bool keep_empty = false);
 
@@ -43,13 +43,13 @@ std::vector<std::string> split(const std::string& s, char c,
  * and the path delimiter is not considered valid when in the first
  * or last spot of the string.
  */
-std::string::size_type find_exclusive( const std::string& s, char c);
+std::string::size_type find_exclusive(const std::string& s, char c);
 
-} // end namespace detail
+}  // end namespace detail
 /// @endcond
 
-} // end namespace sidre
+}  // end namespace sidre
 
-} // end namespace axom
+}  // end namespace axom
 
 #endif /* SIDRE_UTILITIES_HPP_ */

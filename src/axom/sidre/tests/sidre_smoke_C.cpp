@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,18 +9,18 @@
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_smoke,create_datastore)
+TEST(C_sidre_smoke, create_datastore)
 {
   SIDRE_DataStore ds_buf;
 
   SIDRE_DataStore* ds = SIDRE_DataStore_new(&ds_buf);
   SIDRE_DataStore_delete(ds);
-  EXPECT_TRUE( true );
+  EXPECT_TRUE(true);
 }
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_smoke,valid_invalid)
+TEST(sidre_smoke, valid_invalid)
 {
   SIDRE_DataStore ds_buf;
   SIDRE_Group root_buf;
@@ -39,8 +39,7 @@ TEST(sidre_smoke,valid_invalid)
   EXPECT_TRUE(gp_name == NULL);
   EXPECT_TRUE(gp_name == SIDRE_InvalidName);
   EXPECT_FALSE(SIDRE_name_is_valid(gp_name));
-  EXPECT_TRUE(SIDRE_Group_get_group_index(root,
-                                          name) == SIDRE_InvalidIndex);
+  EXPECT_TRUE(SIDRE_Group_get_group_index(root, name) == SIDRE_InvalidIndex);
 
   SIDRE_DataStore_delete(ds);
 }

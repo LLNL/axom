@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -62,12 +62,25 @@ White space and code alignment
 --------------------------------------------------------------------
 
 Most conventions for indentation, spacing and code alignment 
-preferred by the team are enforced by using the `uncrustify` tool. 
-It can be run from the top-level Axom directory...
+preferred by the team are enforced by using the `clang-format` tool. 
 
-.. important:: Insert section on our use of uncrustify for code formatting.
+There are several build system targets related to code formatting grouped 
+under the `check` and `style` targets. The former verify that the code is 
+properly formatted, while the latter modify source files to conform to 
+axom's rules.
 
-Not all preferred formatting conventions are supported by uncrustify.
+.. important:: Axom's `style` targets modify source files. Please ensure
+   that you've committed/staged all your changes before running them.
+
+.. tip:: When axom is configured to use the `make`-based generator, the 
+   entire codebase can be formatted by running ``make clangformat_style`` 
+   from the build directory. Simiarly, one can verify that the code if 
+   properly formatted by running ``make clangformat_check``. There are 
+   also component-specific variants for these targets, e.g. for axom's
+   `core` component, we have ``core_clangformat_style`` and 
+   ``core_clangformat_check``.
+
+Not all preferred formatting conventions are supported by `clang-format`.
 The following guidelines provide additional recommendations to make
 code easier to read and understand.
 

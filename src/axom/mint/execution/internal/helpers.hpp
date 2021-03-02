@@ -1,17 +1,17 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
-// 
+//
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef MINT_EXECUTION_HELPERS_HPP_
 #define MINT_EXECUTION_HELPERS_HPP_
 
 // mint includes
-#include "axom/mint/config.hpp"                 // for compile-time definitions
-#include "axom/mint/mesh/Mesh.hpp"              // for Mesh
+#include "axom/mint/config.hpp"     // for compile-time definitions
+#include "axom/mint/mesh/Mesh.hpp"  // for Mesh
 
-#include "axom/core/StackArray.hpp"             // for axom::StackArray
-#include "axom/core/numerics/Matrix.hpp"        // for Matrix
+#include "axom/core/StackArray.hpp"       // for axom::StackArray
+#include "axom/core/numerics/Matrix.hpp"  // for Matrix
 
 namespace axom
 {
@@ -19,7 +19,6 @@ namespace mint
 {
 namespace internal
 {
-
 /*!
  * \brief Iterate over the objects (cells or faces) in a mesh and for each
  *  object construct a NDIM x NNODES matrix of the nodal coordinates of the
@@ -39,50 +38,52 @@ namespace internal
  * \param [in] kernel the kernel to call on each object.
  */
 
-template < typename ExecPolicy, int NDIM, int NNODES, typename FOR_ALL_FUNCTOR,
-           typename MeshType, typename KernelType >
-inline void for_all_coords( const FOR_ALL_FUNCTOR & for_all_nodes,
-                            const MeshType& m,
-                            KernelType&& kernel )
+template <typename ExecPolicy,
+          int NDIM,
+          int NNODES,
+          typename FOR_ALL_FUNCTOR,
+          typename MeshType,
+          typename KernelType>
+inline void for_all_coords(const FOR_ALL_FUNCTOR& for_all_nodes,
+                           const MeshType& m,
+                           KernelType&& kernel)
 {
-  AXOM_STATIC_ASSERT_MSG( NDIM >= 1 && NDIM <= 3,
-                          "NDIM must be a valid dimension." );
-  AXOM_STATIC_ASSERT_MSG( NNODES > 0, "NNODES must be greater than zero." );
-  
-  constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
-  AXOM_STATIC_ASSERT( valid_mesh_type );
+  AXOM_STATIC_ASSERT_MSG(NDIM >= 1 && NDIM <= 3,
+                         "NDIM must be a valid dimension.");
+  AXOM_STATIC_ASSERT_MSG(NNODES > 0, "NNODES must be greater than zero.");
 
-  SLIC_ERROR_IF( m.getDimension() != NDIM, "Dimension mismatch!" );
+  constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
+  AXOM_STATIC_ASSERT(valid_mesh_type);
+
+  SLIC_ERROR_IF(m.getDimension() != NDIM, "Dimension mismatch!");
 
   constexpr bool NO_COPY = true;
 
-  const StackArray< const double*, 3 > coords = {{ 
-                               m.getCoordinateArray(X_COORDINATE),
-                  (NDIM > 1) ? m.getCoordinateArray(Y_COORDINATE) : nullptr,
-                  (NDIM > 2) ? m.getCoordinateArray(Z_COORDINATE) : nullptr }};
+  const StackArray<const double*, 3> coords = {
+    {m.getCoordinateArray(X_COORDINATE),
+     (NDIM > 1) ? m.getCoordinateArray(Y_COORDINATE) : nullptr,
+     (NDIM > 2) ? m.getCoordinateArray(Z_COORDINATE) : nullptr}};
 
-  for_all_nodes( ExecPolicy(), m, 
-    AXOM_LAMBDA( IndexType objectID, const IndexType * nodeIDs, 
-                 IndexType numNodes )
-    {
+  for_all_nodes(
+    ExecPolicy(),
+    m,
+    AXOM_LAMBDA(IndexType objectID, const IndexType* nodeIDs, IndexType numNodes) {
       AXOM_DEBUG_VAR(numNodes);
-      assert( numNodes == NNODES );
+      assert(numNodes == NNODES);
 
-      double localCoords[ NDIM * NNODES ];
-      for ( int i = 0; i < NNODES; ++i )
+      double localCoords[NDIM * NNODES];
+      for(int i = 0; i < NNODES; ++i)
       {
         const int i_offset = NDIM * i;
-        for ( int dim = 0; dim < NDIM; ++dim )
+        for(int dim = 0; dim < NDIM; ++dim)
         {
-          localCoords[ i_offset + dim ] = coords[ dim ][ nodeIDs[ i ] ];
+          localCoords[i_offset + dim] = coords[dim][nodeIDs[i]];
         }
       }
 
-      numerics::Matrix<double> coordsMatrix( NDIM, NNODES, localCoords,
-                                             NO_COPY );
-      kernel( objectID, coordsMatrix, nodeIDs );
-    }
-  );
+      numerics::Matrix<double> coordsMatrix(NDIM, NNODES, localCoords, NO_COPY);
+      kernel(objectID, coordsMatrix, nodeIDs);
+    });
 }
 
 } /* namespace internal */

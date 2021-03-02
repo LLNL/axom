@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -69,9 +69,9 @@ foreach(test ${gtest_sidre_tests})
                         FOLDER axom/sidre/tests
                         )
 
-    blt_add_test( NAME ${test_name}
-                  COMMAND ${test_name}_test
-                  )
+    axom_add_test( NAME    ${test_name}
+                   COMMAND ${test_name}_test
+                   )
 endforeach()
 
 #------------------------------------------------------------------------------
@@ -87,9 +87,9 @@ if (ENABLE_FORTRAN)
                             DEPENDS_ON ${sidre_test_depends} gtest
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name}
-                      COMMAND ${test_name}_test
-                      )
+        axom_add_test( NAME    ${test_name}
+                       COMMAND ${test_name}_test
+                       )
     endforeach()
 endif()
 
@@ -105,11 +105,34 @@ if (ENABLE_FORTRAN)
                             DEPENDS_ON ${sidre_test_depends} fruit
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name}
-                      COMMAND ${test_name}_test
-                      )
+        axom_add_test( NAME    ${test_name}
+                       COMMAND ${test_name}_test
+                       )
     endforeach()
 endif()
+
+#------------------------------------------------------------------------------
+# Add MFEMSidreDataCollection tests
+#------------------------------------------------------------------------------
+if (AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    blt_add_executable( NAME sidre_mfem_datacollection_test
+                        SOURCES sidre_mfem_datacollection.cpp
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON ${sidre_test_depends} gtest
+                        FOLDER axom/sidre/tests
+                        )
+    if (ENABLE_MPI)
+        axom_add_test( NAME sidre_mfem_datacollection
+                       COMMAND sidre_mfem_datacollection_test
+                       NUM_MPI_TASKS 2
+                       )
+    else()
+        axom_add_test( NAME    sidre_mfem_datacollection
+                       COMMAND sidre_mfem_datacollection_test
+                       )
+    endif()
+endif()
+
 
 if (ENABLE_MPI)
     add_subdirectory(spio)

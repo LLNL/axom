@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,13 +6,12 @@
 #ifndef MINT_UTILS_SU2_UTILS_HPP_
 #define MINT_UTILS_SU2_UTILS_HPP_
 
-#include <string> // for std::string
+#include <string>  // for std::string
 
 namespace axom
 {
 namespace mint
 {
-
 // Forward Declarations
 class Mesh;
 
@@ -37,7 +36,7 @@ class Mesh;
  * \pre mesh == nullptr
  * \post mesh->isUnstructured()==true
  */
-int read_su2( const std::string& file, Mesh*& mesh );
+int read_su2(const std::string& file, Mesh*& mesh);
 
 /*!
  * \brief Writes an unstructured mesh to the specified file according to the
@@ -57,12 +56,10 @@ int read_su2( const std::string& file, Mesh*& mesh );
  * \pre mesh->isUnstructured()==true
  * \pre file.lenght() > 0
  */
-int write_su2( const mint::Mesh* mesh, const std::string& file );
+int write_su2(const mint::Mesh* mesh, const std::string& file);
 
 } /* namespace mint */
 
 } /* namespace axom */
-
-
 
 #endif /* MINT_UTILS_SU2_UTILS_HPP_ */

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,10 +7,10 @@
 #define AXOM_SPIN_BVHDATA_HPP_
 
 // axom core includes
-#include "axom/core/Types.hpp"               // for fixed bitwidth types
-#include "axom/core/memory_management.hpp"   // for alloc()/free()
+#include "axom/core/Types.hpp"              // for fixed bitwidth types
+#include "axom/core/memory_management.hpp"  // for alloc()/free()
 
-#include "axom/core/utilities/AnnotationMacros.hpp" // for annotations
+#include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
 
 // spin includes
 #include "axom/spin/internal/linear_bvh/vec.hpp"
@@ -22,14 +22,12 @@ namespace spin
 {
 namespace internal
 {
-
 // Internal datatype used to store each of the 4 segments of a BVH node.
-template < typename FloatType >
-using vec4_t = linear_bvh::Vec< FloatType, 4 >;
+template <typename FloatType>
+using vec4_t = linear_bvh::Vec<FloatType, 4>;
 
 namespace linear_bvh
 {
-
 /*!
  * \brief BVHData provides a data-structure that represent the internal data
  *  layout of the BVH.
@@ -59,37 +57,31 @@ namespace linear_bvh
  *  allows for additional performance optimizations down the road
  *
  */
-template < typename FloatType, int NDIMS >
+template <typename FloatType, int NDIMS>
 struct BVHData
 {
-  vec4_t< FloatType >* m_inner_nodes;  // BVH bins including leafs
-  int32* m_leaf_nodes;    // leaf data
-  AABB< FloatType, NDIMS > m_bounds;
+  vec4_t<FloatType>* m_inner_nodes;  // BVH bins including leafs
+  int32* m_leaf_nodes;               // leaf data
+  AABB<FloatType, NDIMS> m_bounds;
 
-  BVHData() :
-    m_inner_nodes( nullptr ),
-    m_leaf_nodes( nullptr )
-  {}
+  BVHData() : m_inner_nodes(nullptr), m_leaf_nodes(nullptr) { }
 
-  void allocate( int32 size, int allocID )
+  void allocate(int32 size, int allocID)
   {
-    AXOM_PERF_MARK_FUNCTION( "BVHData::allocate" );
-    m_inner_nodes = axom::allocate< Vec< FloatType,4 > >( (size-1)*4, allocID );
-    m_leaf_nodes  = axom::allocate< int32 >( size, allocID );
+    AXOM_PERF_MARK_FUNCTION("BVHData::allocate");
+    m_inner_nodes = axom::allocate<Vec<FloatType, 4>>((size - 1) * 4, allocID);
+    m_leaf_nodes = axom::allocate<int32>(size, allocID);
   }
 
   void deallocate()
   {
-    AXOM_PERF_MARK_FUNCTION( "BVHData::deallocate" );
-    axom::deallocate( m_inner_nodes );
-    axom::deallocate( m_leaf_nodes );
+    AXOM_PERF_MARK_FUNCTION("BVHData::deallocate");
+    axom::deallocate(m_inner_nodes);
+    axom::deallocate(m_leaf_nodes);
   }
 
-  ~BVHData()
-  {}
-
+  ~BVHData() { }
 };
-
 
 } /* namespace linear_bvh */
 } /* namespace internal */

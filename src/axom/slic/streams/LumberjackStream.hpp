@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,28 +16,26 @@
 #include "axom/core/Macros.hpp"
 
 // C/C++ includes
-#include <iostream> // for std::ostream
+#include <iostream>  // for std::ostream
 
 // MPI
-#include <mpi.h> // For MPI
+#include <mpi.h>  // For MPI
 
 // Forward declarations
 namespace axom
 {
 namespace lumberjack
 {
-
 class Lumberjack;
 class Communicator;
 
-}
-}
+}  // namespace lumberjack
+}  // namespace axom
 
 namespace axom
 {
 namespace slic
 {
-
 /*!
  * \class LumberjackStream
  *
@@ -48,14 +46,15 @@ namespace slic
 class LumberjackStream : public LogStream
 {
 public:
-  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit );
-  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
-                    const std::string& format );
-  LumberjackStream( std::ostream* stream,
-                    axom::lumberjack::Lumberjack* lj );
-  LumberjackStream( std::ostream* stream,
-                    axom::lumberjack::Lumberjack* lj,
-                    const std::string& format );
+  LumberjackStream(std::ostream* stream, MPI_Comm comm, int ranksLimit);
+  LumberjackStream(std::ostream* stream,
+                   MPI_Comm comm,
+                   int ranksLimit,
+                   const std::string& format);
+  LumberjackStream(std::ostream* stream, axom::lumberjack::Lumberjack* lj);
+  LumberjackStream(std::ostream* stream,
+                   axom::lumberjack::Lumberjack* lj,
+                   const std::string& format);
 
   virtual ~LumberjackStream();
 
@@ -74,12 +73,12 @@ public:
    *  messages are cached locally to each ranks and are dumped to the console
    *  in rank order when flush is called.
    */
-  virtual void append( message::Level msgLevel,
-                       const std::string& message,
-                       const std::string& tagName,
-                       const std::string& fileName,
-                       int line,
-                       bool filter_duplicates );
+  virtual void append(message::Level msgLevel,
+                      const std::string& message,
+                      const std::string& tagName,
+                      const std::string& fileName,
+                      int line,
+                      bool filter_duplicates);
 
   /*!
    * \brief Pushes all messages to the output node according to Lumberjack's
@@ -104,7 +103,7 @@ public:
   virtual void write();
 
 private:
-  void initializeLumberjack( MPI_Comm comm, int ranksLimit );
+  void initializeLumberjack(MPI_Comm comm, int ranksLimit);
   void finalizeLumberjack();
 
   /// \name Private Members
@@ -122,10 +121,9 @@ private:
    * instance
    *  should be used.
    */
-  LumberjackStream() : m_lj( static_cast< axom::lumberjack::Lumberjack* >(
-                               nullptr) ),
-    m_stream( static_cast< std::ostream* >(nullptr) )
-  { };
+  LumberjackStream()
+    : m_lj(static_cast<axom::lumberjack::Lumberjack*>(nullptr))
+    , m_stream(static_cast<std::ostream*>(nullptr)) {};
 
   DISABLE_COPY_AND_ASSIGNMENT(LumberjackStream);
   DISABLE_MOVE_AND_ASSIGNMENT(LumberjackStream);

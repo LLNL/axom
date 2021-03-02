@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,23 +10,22 @@ namespace axom
 {
 namespace mint
 {
-
 /*!
  * \brief Defines the basic mesh types supported by mint.
  */
 enum MeshTypes
 {
-  UNDEFINED_MESH = -1,           ///< UNDEFINED_MESH
+  UNDEFINED_MESH = -1,  ///< UNDEFINED_MESH
 
-  UNSTRUCTURED_MESH,             ///< UNSTRUCTURED_MESH
+  UNSTRUCTURED_MESH,  ///< UNSTRUCTURED_MESH
 
-  STRUCTURED_CURVILINEAR_MESH,   ///< STRUCTURED_MESH
-  STRUCTURED_RECTILINEAR_MESH,   ///< RECTILINEAR_MESH
-  STRUCTURED_UNIFORM_MESH,       ///< UNIFORM_MESH
+  STRUCTURED_CURVILINEAR_MESH,  ///< STRUCTURED_MESH
+  STRUCTURED_RECTILINEAR_MESH,  ///< RECTILINEAR_MESH
+  STRUCTURED_UNIFORM_MESH,      ///< UNIFORM_MESH
 
-  PARTICLE_MESH,                 ///< PARTICLE_MESH
+  PARTICLE_MESH,  ///< PARTICLE_MESH
 
-  NUM_MESH_TYPES                 ///< NUM_MESH_TYPES
+  NUM_MESH_TYPES  ///< NUM_MESH_TYPES
 };
 
 } /* namespace mint */

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,7 +8,6 @@
  *
  * \brief Some bit twiddling operations in support of slam::BitSet
  */
-
 
 #ifndef SLAM_BIT_TWIDDLE_H_
 #define SLAM_BIT_TWIDDLE_H_
@@ -21,14 +20,14 @@ namespace slam
 {
 namespace internal
 {
-
 /**
  * Helper traits template for determining the number of bits and bytes
  * required to represent a given type \a T.
  */
-template<typename T> struct BitTraits;
+template <typename T>
+struct BitTraits;
 
-template<>
+template <>
 struct BitTraits<axom::uint64>
 {
   enum
@@ -39,7 +38,7 @@ struct BitTraits<axom::uint64>
   };
 };
 
-template<>
+template <>
 struct BitTraits<axom::uint32>
 {
   enum
@@ -50,7 +49,7 @@ struct BitTraits<axom::uint32>
   };
 };
 
-template<>
+template <>
 struct BitTraits<axom::uint16>
 {
   enum
@@ -61,7 +60,7 @@ struct BitTraits<axom::uint16>
   };
 };
 
-template<>
+template <>
 struct BitTraits<axom::uint8>
 {
   enum
@@ -72,14 +71,13 @@ struct BitTraits<axom::uint8>
   };
 };
 
-
 /**
  * Counts the number of trailing zeros in \a word
  *
  * \return The number of zeros to the right of the first set bit in \word,
  * starting with the least significant bit, or 64 if \a word == 0.
  */
-/* *INDENT-OFF* */
+/* clang-format off */
 inline int trailingZeros(axom::uint64 word)
 {
   // Explicit implementation adapted from bit twiddling hacks
@@ -100,7 +98,7 @@ inline int trailingZeros(axom::uint64 word)
 
   return cnt;
 }
-/* *INDENT-ON* */
+/* clang-format on */
 
 /** Counts the number of set bits in \a word */
 inline int popCount(axom::uint64 word)
@@ -111,21 +109,21 @@ inline int popCount(axom::uint64 word)
   using Word = axom::uint64;
 
   const Word masks[] = {
-    0x5555555555555555,                  //  0 --  -1/3
-    0x3333333333333333,                  //  1 --  -1/5
-    0x0F0F0F0F0F0F0F0F,                  //  2 --  -1/17
-    0x0101010101010101,                  //  3 --  -1/255
+    0x5555555555555555,  //  0 --  -1/3
+    0x3333333333333333,  //  1 --  -1/5
+    0x0F0F0F0F0F0F0F0F,  //  2 --  -1/17
+    0x0101010101010101,  //  3 --  -1/255
   };
 
   // aggregate counts of 2-,4-,8- and 16-bits
-  word = word - ((word >> 1)  & masks[0]);
-  word = (word & masks[1]) + ((word >> 2)  & masks[1]);
+  word = word - ((word >> 1) & masks[0]);
+  word = (word & masks[1]) + ((word >> 2) & masks[1]);
   word = (word + (word >> 4)) & masks[2];
   return static_cast<int>((word * masks[3]) >> 56);
 }
 
-} // end namespace internal
-} // end namespace slam
-} // end namespace axom
+}  // end namespace internal
+}  // end namespace slam
+}  // end namespace axom
 
-#endif //  SLAM_BIT_TWIDDLE_H_
+#endif  //  SLAM_BIT_TWIDDLE_H_

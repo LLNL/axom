@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,11 +7,11 @@
 
 #include "axom/sidre/core/sidre.hpp"
 
-using axom::sidre::DataStore;
 using axom::sidre::Attribute;
+using axom::sidre::DataStore;
 using axom::sidre::Group;
-using axom::sidre::View;
 using axom::sidre::Iterator;
+using axom::sidre::View;
 
 // Create some attribute values
 const std::string name_color("color");
@@ -28,7 +28,6 @@ const std::string name_dump("dump");
 const int dump_no = 0;
 //const int dump_yes = 1;
 
-
 //------------------------------------------------------------------------------
 // Internal routine to create a datastore to be used with various iteration
 // schemes
@@ -44,16 +43,16 @@ DataStore* sample_datastore(void)
   Attribute* attr_color = ds->createAttributeString(name_color, color_none);
   Attribute* attr_animal = ds->createAttributeString(name_animal, animal_none);
 
-  EXPECT_TRUE( attr_dump   != nullptr );
-  EXPECT_TRUE( attr_color  != nullptr );
-  EXPECT_TRUE( attr_animal != nullptr );
+  EXPECT_TRUE(attr_dump != nullptr);
+  EXPECT_TRUE(attr_color != nullptr);
+  EXPECT_TRUE(attr_animal != nullptr);
 
   Group* root = ds->getRoot();
 
   Group* grpA = root->createGroup("grpA");
   Group* grpB = root->createGroup("grpB");
   Group* grpBB = grpB->createGroup("grpBB");
-  root->createGroup("grpC");                 // No Views
+  root->createGroup("grpC");  // No Views
 
   // Tree of empty views
   Group* grpD0 = root->createGroup("grpD0");
@@ -64,9 +63,9 @@ DataStore* sample_datastore(void)
   Group* grpD5 = grpD4->createGroup("grpD5");
 
   // checks to silence compiler about unused variables
-  EXPECT_TRUE( grpD2 != nullptr );
-  EXPECT_TRUE( grpD3 != nullptr );
-  EXPECT_TRUE( grpD5 != nullptr );
+  EXPECT_TRUE(grpD2 != nullptr);
+  EXPECT_TRUE(grpD3 != nullptr);
+  EXPECT_TRUE(grpD5 != nullptr);
 
   grpA->createViewScalar("grpA_view1", 1);
   grpA->createViewScalar("grpA_view2", 2);
@@ -85,9 +84,13 @@ DataStore* sample_datastore(void)
 //------------------------------------------------------------------------------
 // Iterate thru datastore with a cursor
 
-TEST(sidre_iterator,depth_first)
+TEST(sidre_iterator, depth_first)
 {
-  enum nodeclass { GROUP, VIEW };
+  enum nodeclass
+  {
+    GROUP,
+    VIEW
+  };
 
   struct reference
   {
@@ -126,12 +129,12 @@ TEST(sidre_iterator,depth_first)
   while(qitr.isValid())
   {
     // find our current path
-    const std::string & name = qitr.getName();
+    const std::string& name = qitr.getName();
     //std::cout << name << std::endl;
 
     EXPECT_EQ(order[iorder].name, name);
 
-    if (order[iorder].cls == GROUP)
+    if(order[iorder].cls == GROUP)
     {
       EXPECT_TRUE(qitr.isGroup());
       EXPECT_FALSE(qitr.isView());

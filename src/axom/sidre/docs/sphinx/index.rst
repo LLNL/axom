@@ -1,10 +1,10 @@
-.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Sidre User Documentation
-=========================
+Sidre User Guide
+================
 
 The Sidre (Simulation data repository) component of Axom provides tools to
 centralize data management in HPC applications: data description, allocation, 
@@ -20,6 +20,13 @@ placement to run efficiently. Related capabilities in existing codes were
 typically developed independently for each code with little regard to sharing. 
 In contrast, Sidre is designed from inception to be shared by different 
 applications.
+
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/sidretop.html>`_
+
 
 Introduction
 -------------
@@ -83,9 +90,8 @@ Support for these enhancements and others will be added based on application
 needs and use cases.
 
 
-**Contents:**
-
 .. toctree::
+   :caption: Contents
    :maxdepth: 2
 
    first_example
@@ -93,4 +99,4 @@ needs and use cases.
    file_io
    parallel_io_concepts
    sidre_conduit
-
+   mfem_sidre_datacollection

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,13 +13,14 @@
 #include <iostream>
 #include <cstdlib>
 
-
 int main()
 {
-  int* result;          // Note: variable not allocated or initialized
+  int* result;  // Note: variable not allocated or initialized
 
-  if( rand()%2 == 0 )
+  if(rand() % 2 == 0)
+  {
     *result = 5;
+  }
 
   return 0;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,13 +16,12 @@
 #include "axom/core/Macros.hpp"
 
 // C/C++ includes
-#include <iostream> // for ostream
+#include <iostream>  // for ostream
 
 namespace axom
 {
 namespace slic
 {
-
 /*!
  * \class GenericOutputStream
  *
@@ -35,13 +34,12 @@ namespace slic
 class GenericOutputStream : public LogStream
 {
 public:
-
   /*!
    * \brief Constructs a GenericOutpuStream instance with the given stream.
    * \param [in] os pointer to a user-supplied ostream instance.
    * \pre os != NULL
    */
-  GenericOutputStream( std::ostream* os );
+  GenericOutputStream(std::ostream* os);
 
   /*!
    * \brief Constructs a GenericOutputStream instance with the given stream and
@@ -50,7 +48,7 @@ public:
    * \param [in] format the format string.
    * \see LogStream::setFormatString for the format string.
    */
-  GenericOutputStream( std::ostream* os, const std::string& format );
+  GenericOutputStream(std::ostream* os, const std::string& format);
 
   /*!
    * \brief Destructor.
@@ -58,27 +56,24 @@ public:
   virtual ~GenericOutputStream();
 
   /// \see LogStream::append
-  virtual void append( message::Level msgLevel,
-                       const std::string& message,
-                       const std::string& tagName,
-                       const std::string& fileName,
-                       int line,
-                       bool filter_duplicates );
-private:
+  virtual void append(message::Level msgLevel,
+                      const std::string& message,
+                      const std::string& tagName,
+                      const std::string& fileName,
+                      int line,
+                      bool filter_duplicates);
 
+private:
   std::ostream* m_stream;
 
   /*!
    * \brief Default constructor.
    * \note Made private to prevent applications from using it.
    */
-  GenericOutputStream() : m_stream(
-      static_cast< std::ostream* >( nullptr ) )
-  {};
+  GenericOutputStream() : m_stream(static_cast<std::ostream*>(nullptr)) {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
   DISABLE_MOVE_AND_ASSIGNMENT(GenericOutputStream);
-
 };
 
 } /* namespace slic */

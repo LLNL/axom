@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,7 +7,7 @@
 #define MINT_LAGRANGE_SHAPEFUNCTION_HPP_
 
 // Axom includes
-#include "axom/core/Macros.hpp" // For AXOM_STATIC_ASSERT(), AXOM_NOT_USED()
+#include "axom/core/Macros.hpp"  // For AXOM_STATIC_ASSERT(), AXOM_NOT_USED()
 
 // Mint includes
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -21,7 +21,6 @@ namespace axom
 {
 namespace mint
 {
-
 /*!
  * \brief Defines the Lagrange family of Finite Elements
  *
@@ -30,12 +29,10 @@ namespace mint
  * \note This is the default implementation. Only stubs are defined at this
  *  level.This class is specialized according to cell type.
  */
-template < CellType CELLTYPE >
-class Lagrange : public ShapeFunction< Lagrange< CELLTYPE > >
+template <CellType CELLTYPE>
+class Lagrange : public ShapeFunction<Lagrange<CELLTYPE>>
 {
-
 public:
-
   /*!
    * \brief Returns the cell type of this instance.
    * \return c the cell type, e.g., MINT_QUAD etc.
@@ -45,9 +42,9 @@ public:
    */
   static CellType getCellType()
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
     return CELLTYPE;
   }
 
@@ -60,9 +57,9 @@ public:
    */
   static int getType()
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
     return MINT_UNDEFINED_BASIS;
   }
 
@@ -74,9 +71,9 @@ public:
    */
   static int getNumDofs()
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
     return 0;
   }
 
@@ -89,9 +86,9 @@ public:
    */
   static int getMaxNewtonIters()
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
     return 0;
   }
 
@@ -104,9 +101,9 @@ public:
    */
   static int getDimension()
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
     return 0;
   }
 
@@ -118,9 +115,9 @@ public:
    */
   static int getMin()
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
     return 0;
   }
 
@@ -132,9 +129,9 @@ public:
    */
   static int getMax()
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
     return 0;
   }
 
@@ -146,11 +143,11 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static void getCenter( double* AXOM_NOT_USED(center) )
+  static void getCenter(double* AXOM_NOT_USED(center))
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
   }
 
   /*!
@@ -162,11 +159,11 @@ public:
    * \note The coordinates are arranged in column-major flat array layout.
    * \note This method is implemented in specialized instances.
    */
-  static void getCoords( double* AXOM_NOT_USED(coords) )
+  static void getCoords(double* AXOM_NOT_USED(coords))
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
   }
 
   /*!
@@ -181,12 +178,12 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static void computeShape( const double* AXOM_NOT_USED(nc),
-                            double* AXOM_NOT_USED(phi) )
+  static void computeShape(const double* AXOM_NOT_USED(nc),
+                           double* AXOM_NOT_USED(phi))
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
   }
 
   /*!
@@ -201,33 +198,30 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static void computeDerivatives( const double* AXOM_NOT_USED(nc),
-                                  double* AXOM_NOT_USED(phidot) )
+  static void computeDerivatives(const double* AXOM_NOT_USED(nc),
+                                 double* AXOM_NOT_USED(phidot))
   {
-    constexpr int cell_value = mint::cellTypeToInt( CELLTYPE );
-    AXOM_STATIC_ASSERT( cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES );
-    Lagrange< CELLTYPE >::checkCellType();
+    constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
+    AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
+    Lagrange<CELLTYPE>::checkCellType();
   }
 
 private:
-
   /*!
    * \brief Checks if the CELLTYPE is valid and supported in the Lagrange basis.
    */
-  static void checkCellType( )
+  static void checkCellType()
   {
-    if ( CELLTYPE != UNDEFINED_CELL )
+    if(CELLTYPE != UNDEFINED_CELL)
     {
-      SLIC_ERROR( "Lagrange shape functions for [" <<
-                  getCellInfo( CELLTYPE ).name  << "] are not defined!" );
+      SLIC_ERROR("Lagrange shape functions for [" << getCellInfo(CELLTYPE).name
+                                                  << "] are not defined!");
     }
     else
     {
-      SLIC_ERROR( "Invalid CellType: " << cellTypeToInt( CELLTYPE ) );
+      SLIC_ERROR("Invalid CellType: " << cellTypeToInt(CELLTYPE));
     }
-
   }
-
 };
 
 } /* namespace mint */

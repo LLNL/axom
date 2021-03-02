@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,7 +24,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *******************************************************************************
  * \class TextEqualityCombiner
@@ -41,7 +40,7 @@ namespace lumberjack
 class TextEqualityCombiner : public Combiner
 {
 public:
-  TextEqualityCombiner() : m_id("TextEqualityCombiner") {}
+  TextEqualityCombiner() : m_id("TextEqualityCombiner") { }
 
   /*!
    *****************************************************************************
@@ -49,10 +48,7 @@ public:
    *  Lumberjack to differentiate between other combiners.
    *****************************************************************************
    */
-  const std::string id()
-  {
-    return m_id;
-  }
+  const std::string id() { return m_id; }
 
   /*!
    *****************************************************************************
@@ -69,7 +65,7 @@ public:
   bool shouldMessagesBeCombined(const Message& leftMessage,
                                 const Message& rightMessage)
   {
-    if (leftMessage.text().compare(rightMessage.text()) == 0)
+    if(leftMessage.text().compare(rightMessage.text()) == 0)
     {
       return true;
     }
@@ -93,11 +89,12 @@ public:
   {
     combined.addRanks(combinee.ranks(), combinee.count(), ranksLimit);
   }
+
 private:
   std::string m_id;
 };
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

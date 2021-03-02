@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,16 +16,15 @@
 #include "axom/core/Macros.hpp"
 
 // C/C++ includes
-#include <iostream> // for std::ostream
+#include <iostream>  // for std::ostream
 
 // MPI
-#include <mpi.h> // For MPI
+#include <mpi.h>  // For MPI
 
 namespace axom
 {
 namespace slic
 {
-
 /*!
  * \class SynchronizedStream
  *
@@ -44,9 +43,10 @@ namespace slic
 class SynchronizedStream : public LogStream
 {
 public:
-  SynchronizedStream( std::ostream* stream, MPI_Comm comm );
-  SynchronizedStream( std::ostream* stream, MPI_Comm comm,
-                      const std::string& format);
+  SynchronizedStream(std::ostream* stream, MPI_Comm comm);
+  SynchronizedStream(std::ostream* stream,
+                     MPI_Comm comm,
+                     const std::string& format);
 
   virtual ~SynchronizedStream();
 
@@ -65,12 +65,12 @@ public:
    *  messages are cached locally to each ranks and are dumped to the console
    *  in rank order when flush is called.
    */
-  virtual void append( message::Level msgLevel,
-                       const std::string& message,
-                       const std::string& tagName,
-                       const std::string& fileName,
-                       int line,
-                       bool filter_duplicates );
+  virtual void append(message::Level msgLevel,
+                      const std::string& message,
+                      const std::string& tagName,
+                      const std::string& fileName,
+                      int line,
+                      bool filter_duplicates);
 
   /*!
    * \brief Dumps the messages to the console in rank-order.
@@ -78,7 +78,6 @@ public:
   virtual void flush();
 
 private:
-
   /// Forward declarations
   struct MessageCache;
 
@@ -95,10 +94,10 @@ private:
    *  using it. Instead the constructor that passes the underlying MPI comm
    *  should be used.
    */
-  SynchronizedStream() : m_comm(MPI_COMM_NULL),
-    m_cache( static_cast< MessageCache* >(nullptr) ),
-    m_stream( static_cast< std::ostream* >(nullptr) )
-  { };
+  SynchronizedStream()
+    : m_comm(MPI_COMM_NULL)
+    , m_cache(static_cast<MessageCache*>(nullptr))
+    , m_stream(static_cast<std::ostream*>(nullptr)) {};
 
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
   DISABLE_MOVE_AND_ASSIGNMENT(SynchronizedStream);

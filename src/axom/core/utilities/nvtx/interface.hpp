@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,23 +12,22 @@ namespace axom
 {
 namespace nvtx
 {
-
 /*!
  * \brief Predefined set of NVTX colors to use with NVTXRange.
  */
 enum class Color : uint32_t
 {
-  BLACK   = 0x00000000,
-  GREEN   = 0x0000FF00,
-  LIME    = 0x00BFFF00,
-  RED     = 0x00FF0000,
-  BLUE    = 0x000000FF,
-  YELLOW  = 0x00FFFF00,
-  CYAN    = 0x0000FFFF,
+  BLACK = 0x00000000,
+  GREEN = 0x0000FF00,
+  LIME = 0x00BFFF00,
+  RED = 0x00FF0000,
+  BLUE = 0x000000FF,
+  YELLOW = 0x00FFFF00,
+  CYAN = 0x0000FFFF,
   MAGENTA = 0x00FF00FF,
-  WHITE   = 0x00FFFFFF,
-  ORANGE  = 0x00FFA500,
-  PINK    = 0x00FF69B4
+  WHITE = 0x00FFFFFF,
+  ORANGE = 0x00FFA500,
+  PINK = 0x00FF69B4
 };
 
 /// \name Glocal Definitions
@@ -67,14 +66,14 @@ constexpr uint32_t DEFAULT_CATEGORY = ANY_CATEGORY;
  * 
  * \post axom::nvtx::get_color() == c
  */
-void set_color( Color c );
+void set_color(Color c);
 
 /*!
  * \brief Returns the color use by NVTX
  * \return Color the color used by NVTX
  * \see nvtx::Color
  */
-Color get_color( );
+Color get_color();
 
 /*!
  * \brief Set the category to use with NVTX.
@@ -84,13 +83,13 @@ Color get_color( );
  * 
  * \post axom::nvtx::get_category() == category
  */
-void set_category( uint32_t  category );
+void set_category(uint32_t category);
 
 /*!
  * \brief Get the category used with NVTX.
  * \return category the category used with NVTX.
  */
-uint32_t get_category( );
+uint32_t get_category();
 
 /*!
  * \brief Resets the NVTX setting to the defaults.
@@ -104,6 +103,6 @@ void reset();
 
 } /* namespace nvtx */
 
-} /* namespace axom */ 
+} /* namespace axom */
 
 #endif /* AXOM_NVTX_INTERFACE_HPP_ */

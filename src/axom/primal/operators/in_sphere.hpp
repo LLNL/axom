@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -23,7 +23,6 @@ namespace axom
 {
 namespace primal
 {
-
 /*!
  * \brief Tests whether a query point lies inside a 2D triangle's circumcircle
  *
@@ -37,21 +36,22 @@ namespace primal
  * \return true if the point is inside the circumcircle, false if it is on
  * the circle's boundary or outside the circle
  */
-template < typename T >
-inline bool in_sphere( const Point< T, 2 >&  q,
-                       const Point< T, 2 >& p0,
-                       const Point< T, 2 >& p1,
-                       const Point< T, 2 >& p2)
+template <typename T>
+inline bool in_sphere(const Point<T, 2>& q,
+                      const Point<T, 2>& p0,
+                      const Point<T, 2>& p1,
+                      const Point<T, 2>& p2)
 {
+  // clang-format off
   double det = axom::numerics::determinant(
     1.0, p0[0], p0[1], p0[0]*p0[0] + p0[1]*p0[1],
     1.0, p1[0], p1[1], p1[0]*p1[0] + p1[1]*p1[1],
     1.0, p2[0], p2[1], p2[0]*p2[0] + p2[1]*p2[1],
     1.0,  q[0],  q[1],  q[0]* q[0] +  q[1]* q[1]);
+  // clang-format on
 
   return det < 0;
 }
-
 
 /*!
  * \brief Tests whether a query point lies inside a 3D tetrahedron's
@@ -68,22 +68,21 @@ inline bool in_sphere( const Point< T, 2 >&  q,
  * \return true if the point is inside the circumsphere, false if it is on
  * the sphere's boundary or outside the sphere
  */
-template < typename T >
-inline bool in_sphere( const Point< T, 3 >&  q,
-                       const Point< T, 3 >& p0,
-                       const Point< T, 3 >& p1,
-                       const Point< T, 3 >& p2,
-                       const Point< T, 3 >& p3)
+template <typename T>
+inline bool in_sphere(const Point<T, 3>& q,
+                      const Point<T, 3>& p0,
+                      const Point<T, 3>& p1,
+                      const Point<T, 3>& p2,
+                      const Point<T, 3>& p3)
 {
   double mat_val[] = {
-    1.0, p0[0], p0[1], p0[2], p0[0]*p0[0] + p0[1]*p0[1] + p0[2]*p0[2],
-    1.0, p1[0], p1[1], p1[2], p1[0]*p1[0] + p1[1]*p1[1] + p1[2]*p1[2],
-    1.0, p2[0], p2[1], p2[2], p2[0]*p2[0] + p2[1]*p2[1] + p2[2]*p2[2],
-    1.0, p3[0], p3[1], p3[2], p3[0]*p3[0] + p3[1]*p3[1] + p3[2]*p3[2],
-    1.0,  q[0],  q[1],  q[2],  q[0]* q[0] +  q[1]* q[1] +  q[2]* q[2]
-  };
+    1.0, p0[0], p0[1], p0[2], p0[0] * p0[0] + p0[1] * p0[1] + p0[2] * p0[2],
+    1.0, p1[0], p1[1], p1[2], p1[0] * p1[0] + p1[1] * p1[1] + p1[2] * p1[2],
+    1.0, p2[0], p2[1], p2[2], p2[0] * p2[0] + p2[1] * p2[1] + p2[2] * p2[2],
+    1.0, p3[0], p3[1], p3[2], p3[0] * p3[0] + p3[1] * p3[1] + p3[2] * p3[2],
+    1.0, q[0],  q[1],  q[2],  q[0] * q[0] + q[1] * q[1] + q[2] * q[2]};
 
-  axom::numerics::Matrix<double> mat( 5, 5, mat_val, true);
+  axom::numerics::Matrix<double> mat(5, 5, mat_val, true);
 
   double det = axom::numerics::determinant(mat);
   return det < 0;

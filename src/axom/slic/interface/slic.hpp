@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,19 +16,17 @@
 #include "axom/slic/interface/slic_macros.hpp"
 
 // C/C++ includes
-#include <iostream> // for std::endl, std::ends
-#include <sstream>  // for std::ostringstream
+#include <iostream>  // for std::endl, std::ends
+#include <sstream>   // for std::ostringstream
 
 namespace axom
 {
 namespace slic
 {
-
 struct debug
 {
-  static bool checksAreErrors;
+  AXOM_API static bool checksAreErrors;
 };
-
 
 /*!
  * \brief Initializes the SLIC logging environment.
@@ -47,15 +45,14 @@ bool isInitialized();
  * \param [in] imask inheritance mask, indicates the log level streams that
  *  will be inherited from the "root" logger. By default, nothing is inherited.
  */
-void createLogger( const std::string& name,
-                   char imask=inherit::nothing );
+void createLogger(const std::string& name, char imask = inherit::nothing);
 
 /*!
  * \brief Activates the logger associated with the given name.
  * \param [in] name the name of the logger to activate.
  * \return True if the named logger was activated, False otherwise
  */
-bool activateLogger( const std::string& name );
+bool activateLogger(const std::string& name);
 
 /*!
  * \brief Returns the name of the active logger.
@@ -67,19 +64,18 @@ std::string getActiveLoggerName();
  * \brief Sets desired logging level.
  * \param [in] level user-supplied level to log.
  */
-void setLoggingMsgLevel( message::Level level );
+void setLoggingMsgLevel(message::Level level);
 
 /*!
  * \brief Gets the current logging level.
  */
-message::Level getLoggingMsgLevel( );
-
+message::Level getLoggingMsgLevel();
 
 /*!
  * \brief Toggles the abort behavior for errors on the current active logger.
  * \param [in] status user-supplied flag.
  */
-void setAbortOnError( bool status );
+void setAbortOnError(bool status);
 
 /*!
  * \brief Enables aborts on error messages for the current active logger.
@@ -108,7 +104,7 @@ bool isAbortOnErrorsEnabled();
  * \brief Toggles the abort behavior for warnings on the current active logger.
  * \param [in] status user-supplied flag.
  */
-void setAbortOnWarning( bool status );
+void setAbortOnWarning(bool status);
 
 /*!
  * \brief Enables aborts on warnings messages for the current active logger.
@@ -134,19 +130,26 @@ void disableAbortOnWarning();
 bool isAbortOnWarningsEnabled();
 
 /*!
+ * \brief Sets the function to call when program abort is requested
+ * \param [in] abort_func The user-specified function to call
+ * \pre slic::isInitialized() == true.
+ */
+void setAbortFunction(AbortFunctionPtr abort_func);
+
+/*!
  * \brief Adds the given stream to the the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
  * \pre ls != nullptr
  */
-void addStreamToMsgLevel( LogStream* ls, message::Level level);
+void addStreamToMsgLevel(LogStream* ls, message::Level level);
 
 /*!
  * \brief Adds the given stream to all levels.
  * \param [in] ls pointer to the log stream.
  * \pre ls != nullptr.
  */
-void addStreamToAllMsgLevels( LogStream* ls );
+void addStreamToAllMsgLevels(LogStream* ls);
 
 /*!
  * \brief Logs the given message to all registered streams.
@@ -156,9 +159,9 @@ void addStreamToAllMsgLevels( LogStream* ls );
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
  */
-void logMessage( message::Level level,
-                 const std::string& message,
-                 bool filter_duplicates=false );
+void logMessage(message::Level level,
+                const std::string& message,
+                bool filter_duplicates = false);
 
 /*!
  * \brief Logs the given message to all registered streams.
@@ -169,10 +172,10 @@ void logMessage( message::Level level,
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
  */
-void logMessage( message::Level level,
-                 const std::string& message,
-                 const std::string& tag,
-                 bool filter_duplicates=false );
+void logMessage(message::Level level,
+                const std::string& message,
+                const std::string& tag,
+                bool filter_duplicates = false);
 
 /*!
  * \brief Logs the given message to all registered streams.
@@ -184,11 +187,11 @@ void logMessage( message::Level level,
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
  */
-void logMessage( message::Level level,
-                 const std::string& message,
-                 const std::string& fileName,
-                 int line,
-                 bool filter_duplicates=false );
+void logMessage(message::Level level,
+                const std::string& message,
+                const std::string& fileName,
+                int line,
+                bool filter_duplicates = false);
 
 /*!
  * \brief Logs the given message to all registered streams.
@@ -201,12 +204,12 @@ void logMessage( message::Level level,
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
  */
-void logMessage( message::Level level,
-                 const std::string& message,
-                 const std::string& tag,
-                 const std::string& fileName,
-                 int line,
-                 bool filter_duplicates=false );
+void logMessage(message::Level level,
+                const std::string& message,
+                const std::string& tag,
+                const std::string& fileName,
+                int line,
+                bool filter_duplicates = false);
 
 /*!
  * \brief Convenience method to log an error message.
@@ -214,9 +217,9 @@ void logMessage( message::Level level,
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
  */
-void logErrorMessage( const std::string& message,
-                      const std::string& fileName,
-                      int line);
+void logErrorMessage(const std::string& message,
+                     const std::string& fileName,
+                     int line);
 
 /*!
  * \brief Convenience method to log warning messages.
@@ -224,9 +227,9 @@ void logErrorMessage( const std::string& message,
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
  */
-void logWarningMessage( const std::string& message,
-                        const std::string& fileName,
-                        int line );
+void logWarningMessage(const std::string& message,
+                       const std::string& fileName,
+                       int line);
 
 /*!
  * \brief Flushes all streams.
@@ -249,8 +252,7 @@ void finalize();
  * \brief Uses glibc's backtrace() functionality to return a stacktrace
  * \return s a string corresponding to the stacktrace.
  */
-std::string stacktrace( );
-
+std::string stacktrace();
 
 } /* namespace slic */
 

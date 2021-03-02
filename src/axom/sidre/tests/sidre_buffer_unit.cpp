@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,15 +7,14 @@
 
 #include "axom/sidre/core/sidre.hpp"
 
-
-using axom::sidre::DataStore;
-using axom::sidre::View;
-using axom::sidre::Group;
 using axom::sidre::Buffer;
+using axom::sidre::DataStore;
+using axom::sidre::DataTypeId;
+using axom::sidre::Group;
+using axom::sidre::indexIsValid;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
-using axom::sidre::indexIsValid;
-using axom::sidre::DataTypeId;
+using axom::sidre::View;
 
 using axom::sidre::getTypeID;
 
@@ -23,20 +22,19 @@ using axom::sidre::getTypeID;
 
 //------------------------------------------------------------------------------
 
-int countMismatch(unsigned int elts, int* standard, int* undertest,
+int countMismatch(unsigned int elts,
+                  int* standard,
+                  int* undertest,
                   bool printTest = false)
 {
   int retval = 0;
 
-  for (unsigned int i = 0 ; i < elts ; ++i)
+  for(unsigned int i = 0; i < elts; ++i)
   {
-    if (standard[i] != undertest[i])
-      ++retval;
-    if (printTest)
-      std::cout << "  " << undertest[i];
+    if(standard[i] != undertest[i]) ++retval;
+    if(printTest) std::cout << "  " << undertest[i];
   }
-  if (printTest)
-    std::cout << std::endl;
+  if(printTest) std::cout << std::endl;
 
   return retval;
 }
@@ -63,8 +61,11 @@ TEST(sidre_buffer, buffer_create)
   delete ds;
 }
 
-void verifyDescribedBuffer(Buffer* buf, bool isDescribed,
-                           DataTypeId tid, int eltsize, int eltcount)
+void verifyDescribedBuffer(Buffer* buf,
+                           bool isDescribed,
+                           DataTypeId tid,
+                           int eltsize,
+                           int eltcount)
 {
   EXPECT_FALSE(buf->isAllocated());
   EXPECT_EQ(isDescribed, buf->isDescribed());
@@ -75,8 +76,7 @@ void verifyDescribedBuffer(Buffer* buf, bool isDescribed,
   EXPECT_EQ(static_cast<void*>(nullptr), buf->getVoidPtr());
 }
 
-void verifyAllocatedBuffer(Buffer* buf, DataTypeId tid, int eltsize,
-                           int eltcount)
+void verifyAllocatedBuffer(Buffer* buf, DataTypeId tid, int eltsize, int eltcount)
 {
   EXPECT_TRUE(buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());
@@ -89,7 +89,7 @@ void verifyAllocatedBuffer(Buffer* buf, DataTypeId tid, int eltsize,
 }
 
 // Test describe methods
-TEST(sidre_buffer,buffer_describe)
+TEST(sidre_buffer, buffer_describe)
 {
   DataStore* ds = new DataStore();
 
@@ -172,7 +172,7 @@ TEST(sidre_buffer,buffer_describe)
 }
 
 // Test allocate methods
-TEST(sidre_buffer,buffer_allocate)
+TEST(sidre_buffer, buffer_allocate)
 {
   DataStore* ds = new DataStore();
 
@@ -279,7 +279,7 @@ TEST(sidre_buffer,buffer_allocate)
 }
 
 // Specifically test for successful reallocation-to-zero-elements
-TEST(sidre_databuffer,buffer_reallocate_zero_elements)
+TEST(sidre_databuffer, buffer_reallocate_zero_elements)
 {
   DataStore* ds = new DataStore();
 
@@ -331,7 +331,7 @@ TEST(sidre_databuffer,buffer_reallocate_zero_elements)
 }
 
 // Test reallocate methods
-TEST(sidre_buffer,buffer_reallocate)
+TEST(sidre_buffer, buffer_reallocate)
 {
   DataStore* ds = new DataStore();
 
@@ -403,12 +403,12 @@ TEST(sidre_buffer,buffer_reallocate)
 }
 
 // Test interaction of buffer deletion with views
-TEST(sidre_buffer,buffer_delete_view_detach)
+TEST(sidre_buffer, buffer_delete_view_detach)
 {
   DataStore* ds = new DataStore();
 
-  int vAtest[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-  int vB1test[] = { 1, 2, 3, 4, 5, 6, 7 };
+  int vAtest[] = {0, 1, 2, 3, 4, 5, 6, 7};
+  int vB1test[] = {1, 2, 3, 4, 5, 6, 7};
   //int vB2test[] = { 16, 15, 14, -2 };
 
   DataTypeId tid = getTypeID(SIDRE_INT_ID);
@@ -452,7 +452,6 @@ TEST(sidre_buffer,buffer_delete_view_detach)
   EXPECT_FALSE(ds->hasBuffer(aidx));
   // Destroy bB; verify that vB now has no buffer and cannot access data
 
-
   // TODO: test effect of Buffer::deallocate();
 
   delete ds;
@@ -464,19 +463,18 @@ TEST(sidre_buffer, buffer_iterate)
   DataStore* ds = new DataStore();
 
   Buffer* buf1 = ds->createBuffer();
-  (void) ds->createBuffer();
-  (void) ds->createBuffer();
+  (void)ds->createBuffer();
+  (void)ds->createBuffer();
   Buffer* buf2 = ds->createBuffer();
-  (void) ds->createBuffer();
+  (void)ds->createBuffer();
   Buffer* buf3 = ds->createBuffer();
 
   ds->destroyBuffer(buf1);
   ds->destroyBuffer(buf3);
 
   int bufcount = 0;
-  for (IndexType idx = ds->getFirstValidBufferIndex() ;
-       indexIsValid(idx) ;
-       idx = ds->getNextValidBufferIndex(idx))
+  for(IndexType idx = ds->getFirstValidBufferIndex(); indexIsValid(idx);
+      idx = ds->getNextValidBufferIndex(idx))
   {
     bufcount += 1;
   }
@@ -486,9 +484,8 @@ TEST(sidre_buffer, buffer_iterate)
   ds->destroyBuffer(buf2);
 
   bufcount = 0;
-  for (IndexType idx = ds->getFirstValidBufferIndex() ;
-       indexIsValid(idx) ;
-       idx = ds->getNextValidBufferIndex(idx))
+  for(IndexType idx = ds->getFirstValidBufferIndex(); indexIsValid(idx);
+      idx = ds->getNextValidBufferIndex(idx))
   {
     bufcount += 1;
   }
@@ -497,7 +494,7 @@ TEST(sidre_buffer, buffer_iterate)
 }
 
 // Tests that alloc(0) and realloc(0) are valid and have same behavior
-TEST(sidre_buffer,buffer_alloc_realloc_0)
+TEST(sidre_buffer, buffer_alloc_realloc_0)
 {
   const DataTypeId tid = getTypeID(SIDRE_INT_ID);
   const int ELT_SIZE = sizeof(int);
@@ -505,7 +502,7 @@ TEST(sidre_buffer,buffer_alloc_realloc_0)
   DataStore* ds = new DataStore();
 
   Buffer* buf1 = ds->createBuffer();
-  buf1->allocate(tid,0);
+  buf1->allocate(tid, 0);
   {
     SCOPED_TRACE("allocate(0) on new buffer");
     verifyAllocatedBuffer(buf1, tid, ELT_SIZE, 0);
@@ -534,10 +531,10 @@ TEST(sidre_buffer,buffer_alloc_realloc_0)
   const bool expDescribed = true;
   {
     SCOPED_TRACE("deallocate() but still described");
-    verifyDescribedBuffer(buf1, expDescribed,tid, ELT_SIZE, 0);
+    verifyDescribedBuffer(buf1, expDescribed, tid, ELT_SIZE, 0);
   }
 
-  buf1->allocate();//tid, ZERO_COUNT);
+  buf1->allocate();  //tid, ZERO_COUNT);
   {
     SCOPED_TRACE("allocate() after deallocate()");
     verifyAllocatedBuffer(buf1, tid, ELT_SIZE, 0);
@@ -558,7 +555,7 @@ TEST(sidre_buffer,buffer_alloc_realloc_0)
   }
 
   Buffer* buf2 = ds->createBuffer();
-  buf2->describe(tid,0);
+  buf2->describe(tid, 0);
   buf2->reallocate(0);
   {
     SCOPED_TRACE("reallocate(0) on empty buffer");

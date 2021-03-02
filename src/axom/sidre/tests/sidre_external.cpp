@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,68 +10,64 @@
 #include "axom/core/Types.hpp"
 #include "axom/sidre/core/sidre.hpp"
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::View;
-using axom::sidre::IndexType;
 using axom::sidre::DOUBLE_ID;
+using axom::sidre::Group;
+using axom::sidre::IndexType;
 using axom::sidre::INT_ID;
+using axom::sidre::View;
 
 //------------------------------------------------------------------------------
 // Test Group::createView() -- external
 //------------------------------------------------------------------------------
 TEST(sidre_external, create_external_view)
 {
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
   const IndexType len = 11;
   const int ndims = 1;
-  IndexType shape[] = { len };
+  IndexType shape[] = {len};
 
   int* idata = new int[len];
 
-  for (int ii = 0 ; ii < len ; ++ii)
+  for(int ii = 0; ii < len; ++ii)
   {
     idata[ii] = ii;
   }
 
-  for (unsigned int i=0 ; i < 8 ; i++)
+  for(unsigned int i = 0; i < 8; i++)
   {
     View* view = nullptr;
 
-    switch (i)
+    switch(i)
     {
     case 0:
       view = root->createView("data0", INT_ID, len, idata);
       break;
     case 1:
-      view = root->createView("data1", INT_ID, len)
-             ->setExternalDataPtr(idata);
+      view = root->createView("data1", INT_ID, len)->setExternalDataPtr(idata);
       break;
     case 2:
-      view = root->createView("data2")
-             ->setExternalDataPtr(INT_ID, len, idata);
+      view = root->createView("data2")->setExternalDataPtr(INT_ID, len, idata);
       break;
     case 3:
-      view = root->createView("data3", idata)
-             ->apply(INT_ID, len);
+      view = root->createView("data3", idata)->apply(INT_ID, len);
       break;
 
     case 4:
       view = root->createView("data4", INT_ID, ndims, shape, idata);
       break;
     case 5:
-      view = root->createView("data5", INT_ID, ndims, shape)
-             ->setExternalDataPtr(idata);
+      view =
+        root->createView("data5", INT_ID, ndims, shape)->setExternalDataPtr(idata);
       break;
     case 6:
-      view = root->createView("data6")
-             ->setExternalDataPtr(INT_ID, ndims, shape, idata);
+      view =
+        root->createView("data6")->setExternalDataPtr(INT_ID, ndims, shape, idata);
       break;
     case 7:
-      view = root->createView("data7", idata)
-             ->apply(INT_ID, ndims, shape);
+      view = root->createView("data7", idata)->apply(INT_ID, ndims, shape);
       break;
     }
 
@@ -92,14 +88,13 @@ TEST(sidre_external, create_external_view)
     view->print();
 
     int* idata_chk = view->getData();
-    for (int ii = 0 ; ii < len ; ++ii)
+    for(int ii = 0; ii < len; ++ii)
     {
       EXPECT_EQ(idata_chk[ii], idata[ii]);
     }
-
   }
   delete ds;
-  delete [] idata;
+  delete[] idata;
 }
 
 //------------------------------------------------------------------------------
@@ -107,15 +102,15 @@ TEST(sidre_external, create_external_view)
 //------------------------------------------------------------------------------
 TEST(sidre_external, create_external_view_null)
 {
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
   int* idata = nullptr;
 
-  for (int i=0 ; i < 2 ; i++)
+  for(int i = 0; i < 2; i++)
   {
     View* view = nullptr;
 
-    switch (i)
+    switch(i)
     {
     case 0:
       view = root->createView("null0", idata)->apply(INT_ID, 0);
@@ -148,7 +143,6 @@ TEST(sidre_external, create_external_view_null)
     //EXPECT_EQ(idata_chk, nullptr);
 
     view->print();
-
   }
   delete ds;
 }
@@ -158,18 +152,17 @@ TEST(sidre_external, create_external_view_null)
 //------------------------------------------------------------------------------
 TEST(sidre_external, transition_external_view_to_empty)
 {
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
   const IndexType len = 11;
   int idata[len];
 
-  for (int ii = 0 ; ii < len ; ++ii)
+  for(int ii = 0; ii < len; ++ii)
   {
     idata[ii] = ii;
   }
 
-  View* view = root->createView("data0", INT_ID, len)
-               ->setExternalDataPtr(idata);
+  View* view = root->createView("data0", INT_ID, len)->setExternalDataPtr(idata);
   EXPECT_TRUE(view->isExternal());
   EXPECT_EQ(idata, view->getVoidPtr());
 
@@ -195,32 +188,31 @@ TEST(sidre_external, transition_external_view_to_empty)
   delete ds;
 }
 
-
 TEST(sidre_external, verify_external_layout)
 {
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
   const int SZ = 11;
   int extData[SZ];
 
-  SLIC_INFO("Tests that the hierarchy generated by Group::"
-            << "createExternalLayout() consists only of groups and views"
-            << " associated with external pointers (described or undescribed).");
+  SLIC_INFO(
+    "Tests that the hierarchy generated by Group::"
+    << "createExternalLayout() consists only of groups and views"
+    << " associated with external pointers (described or undescribed).");
 
   // Create some internal views
-  root->createViewAndAllocate("int/desc/bufferview", axom::sidre::INT_ID,
-                              SZ);
+  root->createViewAndAllocate("int/desc/bufferview", axom::sidre::INT_ID, SZ);
   root->createViewScalar("int/scalar/scalarview", SZ);
   root->createViewString("int/string/stringview", "A string");
 
   // Sanity check on internal views
-  EXPECT_FALSE(root->getView("int/desc/bufferview")->isExternal() );
-  EXPECT_TRUE(root->getView("int/desc/bufferview")->isDescribed() );
-  EXPECT_FALSE(root->getView("int/scalar/scalarview")->isExternal() );
-  EXPECT_TRUE(root->getView("int/scalar/scalarview")->isDescribed() );
-  EXPECT_FALSE(root->getView("int/string/stringview")->isExternal() );
-  EXPECT_TRUE(root->getView("int/string/stringview")->isDescribed() );
+  EXPECT_FALSE(root->getView("int/desc/bufferview")->isExternal());
+  EXPECT_TRUE(root->getView("int/desc/bufferview")->isDescribed());
+  EXPECT_FALSE(root->getView("int/scalar/scalarview")->isExternal());
+  EXPECT_TRUE(root->getView("int/scalar/scalarview")->isDescribed());
+  EXPECT_FALSE(root->getView("int/string/stringview")->isExternal());
+  EXPECT_TRUE(root->getView("int/string/stringview")->isDescribed());
 
   // Check that the generated external layout is empty
   {
@@ -234,21 +226,19 @@ TEST(sidre_external, verify_external_layout)
   }
 
   // Create some external views
-  root->createView("ext/desc/external_desc", axom::sidre::INT_ID, SZ,
-                   extData);
+  root->createView("ext/desc/external_desc", axom::sidre::INT_ID, SZ, extData);
   root->createView("ext/undesc/external_opaque")->setExternalDataPtr(extData);
 
   // Sanity check on the external views
-  EXPECT_TRUE( root->getView("ext/desc/external_desc")->isExternal());
-  EXPECT_TRUE( root->getView("ext/desc/external_desc")->isDescribed());
+  EXPECT_TRUE(root->getView("ext/desc/external_desc")->isExternal());
+  EXPECT_TRUE(root->getView("ext/desc/external_desc")->isDescribed());
 
-  EXPECT_TRUE( root->getView("ext/undesc/external_opaque")->isExternal());
-  EXPECT_FALSE( root->getView("ext/undesc/external_opaque")->isDescribed());
-
+  EXPECT_TRUE(root->getView("ext/undesc/external_opaque")->isExternal());
+  EXPECT_FALSE(root->getView("ext/undesc/external_opaque")->isDescribed());
 
   // Initialize the data so we can test it later
   int* bufData = root->getView("int/desc/bufferview")->getData();
-  for (int i = 0 ; i < SZ ; ++i)
+  for(int i = 0; i < SZ; ++i)
   {
     extData[i] = i;
     bufData[i] = 100 + i;
@@ -262,31 +252,27 @@ TEST(sidre_external, verify_external_layout)
 
     SLIC_INFO("External node's json: \n\t" << node.to_json());
 
-    EXPECT_TRUE( node.number_of_children() == 1);
-    EXPECT_TRUE( node.has_path("ext"));
-    EXPECT_TRUE( node["ext"].number_of_children() == 2);
+    EXPECT_TRUE(node.number_of_children() == 1);
+    EXPECT_TRUE(node.has_path("ext"));
+    EXPECT_TRUE(node["ext"].number_of_children() == 2);
 
     // Described external views are present and we can access the data
-    EXPECT_TRUE( node.has_path("ext/desc"));
-    EXPECT_TRUE( node.has_path("ext/desc/external_desc"));
+    EXPECT_TRUE(node.has_path("ext/desc"));
+    EXPECT_TRUE(node.has_path("ext/desc/external_desc"));
     int* extLayoutData = node["ext/desc/external_desc"].value();
-    for (int i = 0 ; i < SZ ; ++i)
+    for(int i = 0; i < SZ; ++i)
     {
       EXPECT_EQ(extData[i], extLayoutData[i]);
     }
 
     // Opaque views are not present, but their containing groups are present
-    EXPECT_TRUE( node.has_path("ext/undesc"));
-    EXPECT_FALSE( node.has_path("ext/undesc/external_opaque"));
-
+    EXPECT_TRUE(node.has_path("ext/undesc"));
+    EXPECT_FALSE(node.has_path("ext/undesc/external_opaque"));
 
     // Buffer and scalar views are not present in the external layout
-    EXPECT_FALSE( node.has_path("int"));
+    EXPECT_FALSE(node.has_path("int"));
   }
 }
-
-
-
 
 #if 0
 //------------------------------------------------------------------------------

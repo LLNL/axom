@@ -1,4 +1,4 @@
--- Basic example of a simulation Input Deck
+-- Basic example of a simulation Input File
 thermal_solver={}
 thermal_solver.mesh = {
  filename = "/data/star.mesh",
@@ -19,4 +19,27 @@ thermal_solver.solver = {
  max_iter = 100,
  dt = 1.0,
  steps = 1 
+}
+-- boundary conditions
+thermal_solver.bcs = {
+  ["temperature_1"] = {
+    attrs = {3, 4, 7},
+    coef = function (v)
+      -- Constant is defined as a function
+      return 12.55
+    end
+  },
+  ["temperature_2"] = {
+    attrs = {4, 6, 1},
+    coef = function (v)
+      return v.x * 0.12
+    end
+  },
+  ["flux"] = {
+    attrs = {14, 62, 11},
+    vec_coef = function (v)
+      scale = 0.12
+      return v * scale
+    end
+  }
 }

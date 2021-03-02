@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,12 +16,11 @@
 
 #include "quest_test_utilities.hpp"
 
-
 namespace
 {
 const int NUM_PT_TESTS = 50000;
 const int DIM = 3;
-}
+}  // namespace
 
 // _quest_inout_cpp_typedef_start
 using Octree3D = axom::quest::InOutOctree<DIM>;
@@ -34,7 +33,6 @@ using SpaceVector = Octree3D::SpaceVector;
 using GridPt = Octree3D::GridPt;
 using BlockIndex = Octree3D::BlockIndex;
 
-
 #include <cstdlib>
 #include <limits>
 
@@ -44,9 +42,8 @@ using BlockIndex = Octree3D::BlockIndex;
 #endif
 
 #ifdef INOUT_OCTREE_TESTER_SHOULD_SEED
-  #include <ctime>      // for time() used by srand()
+  #include <ctime>  // for time() used by srand()
 #endif
-
 
 /// Returns a SpacePt corresponding to the given vertex id \a vIdx  in \a mesh
 SpacePt getVertex(axom::mint::Mesh*& mesh, int vIdx)
@@ -60,17 +57,16 @@ SpacePt getVertex(axom::mint::Mesh*& mesh, int vIdx)
 GeometricBoundingBox computeBoundingBox(axom::mint::Mesh*& mesh)
 {
   GeometricBoundingBox bbox;
-  for(int i=0 ; i < mesh->getNumberOfNodes() ; ++i)
+  for(int i = 0; i < mesh->getNumberOfNodes(); ++i)
   {
-    bbox.addPoint( getVertex(mesh, i) );
+    bbox.addPoint(getVertex(mesh, i));
   }
 
   return bbox;
 }
 
 /// Runs randomized inout queries on an octahedron mesh
-void queryOctahedronMesh(axom::mint::Mesh*& mesh,
-                         const GeometricBoundingBox& bbox)
+void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
 {
   const double bbMin = bbox.getMin()[0];
   const double bbMax = bbox.getMax()[0];
@@ -87,54 +83,73 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh,
 
   // Query the mesh containment
   axom::utilities::Timer timer(true);
-  for(int i=0 ; i < NUM_PT_TESTS ; ++i)
+  for(int i = 0; i < NUM_PT_TESTS; ++i)
   {
     SpacePt pt;
 
     // test a few special points and a lot of random points
     switch(i)
     {
-    case 0: case 1:  case 2:                // Test point at mesh vertices
-    case 3: case 4:  case 5:
+    case 0:
+    case 1:
+    case 2:  // Test point at mesh vertices
+    case 3:
+    case 4:
+    case 5:
       pt = getVertex(mesh, i);
       break;
-    case 6:  case 7:  case 8:  case 9:      // Test point at triangle centers
-    case 10: case 11: case 12: case 13:
+    case 6:
+    case 7:
+    case 8:
+    case 9:  // Test point at triangle centers
+    case 10:
+    case 11:
+    case 12:
+    case 13:
     {
-      axom::IndexType tIdx = (i-6);
+      axom::IndexType tIdx = (i - 6);
       GridPt vertInds;
-      mesh->getCellNodeIDs( tIdx, vertInds.data() );
+      mesh->getCellNodeIDs(tIdx, vertInds.data());
 
-      pt = axom::quest::utilities::getCentroid( getVertex(mesh, vertInds[0]),
-                                                getVertex(mesh, vertInds[1]),
-                                                getVertex(mesh, vertInds[2]));
+      pt = axom::quest::utilities::getCentroid(getVertex(mesh, vertInds[0]),
+                                               getVertex(mesh, vertInds[1]),
+                                               getVertex(mesh, vertInds[2]));
     }
     break;
 
-    case 14: case 15: case 16: case 17:     // Test point at edge centers
-    case 18: case 19: case 20: case 21:
-    case 22: case 23: case 24: case 25:
+    case 14:
+    case 15:
+    case 16:
+    case 17:  // Test point at edge centers
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+    case 23:
+    case 24:
+    case 25:
     {
       // Define explicit vertex indices for edges of octahedron
-      const int v1[] = {0,0,0,0,1,2,3,4,5,5,5,5};
-      const int v2[] = {1,2,3,4,2,3,4,1,1,2,3,4};
+      const int v1[] = {0, 0, 0, 0, 1, 2, 3, 4, 5, 5, 5, 5};
+      const int v2[] = {1, 2, 3, 4, 2, 3, 4, 1, 1, 2, 3, 4};
 
-      int eIdx = (i-14);
-      pt = axom::quest::utilities::getCentroid( getVertex(mesh, v1[eIdx]),
-                                                getVertex(mesh, v2[eIdx]));
+      int eIdx = (i - 14);
+      pt = axom::quest::utilities::getCentroid(getVertex(mesh, v1[eIdx]),
+                                               getVertex(mesh, v2[eIdx]));
     }
     break;
 
-    case 26:                     // origin
+    case 26:  // origin
       pt = SpacePt();
       break;
-    case 27:                     // outside bounding box
-      pt = SpacePt(2* bbMin);
+    case 27:  // outside bounding box
+      pt = SpacePt(2 * bbMin);
       break;
-    case 28:                     // outside bounding box
-      pt = SpacePt(2* bbMax);
+    case 28:  // outside bounding box
+      pt = SpacePt(2 * bbMax);
       break;
-    default:                    // random points in bounding box
+    default:  // random points in bounding box
       pt = axom::quest::utilities::randomSpacePt<DIM>(bbMin, bbMax);
       break;
     }
@@ -146,27 +161,22 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh,
     // For the time being, we allow the within() test to fail when the
     // query point is sufficiently close to the surface
     bool expectInside = absCoordSum < 1.;
-    EXPECT_TRUE( octree.within(pt) == expectInside
-                 || axom::utilities::isNearlyEqual(absCoordSum, 1.) )
-      << "Point " << pt << " was not "
-      << (expectInside ? "inside" : "outside")
+    EXPECT_TRUE(octree.within(pt) == expectInside ||
+                axom::utilities::isNearlyEqual(absCoordSum, 1.))
+      << "Point " << pt << " was not " << (expectInside ? "inside" : "outside")
       << " surface of octahedron as expected."
       << " Sum of absolute values of coords was: " << absCoordSum
       << " and point is inside when this is less than 1.";
-
   }
   timer.stop();
   SLIC_INFO("--]==]");
 
-  SLIC_INFO("-- querying octahedron with "
-            << NUM_PT_TESTS
-            << " points took " << timer.elapsed() << " seconds.");
+  SLIC_INFO("-- querying octahedron with " << NUM_PT_TESTS << " points took "
+                                           << timer.elapsed() << " seconds.");
   SLIC_INFO("***");
 }
 
-
-
-TEST( quest_inout_octree, octahedron_mesh)
+TEST(quest_inout_octree, octahedron_mesh)
 {
   SLIC_INFO("*** This test creates a simple mesh of an octahedron "
             << " and tests point containment.\n");
@@ -177,32 +187,28 @@ TEST( quest_inout_octree, octahedron_mesh)
 
   ///
   SpacePt ptNeg1(-1.);
-  SpacePt ptPos1( 1.);
+  SpacePt ptPos1(1.);
   GeometricBoundingBox bbox1(ptNeg1, ptPos1);
-  SLIC_INFO(
-    "Testing InOutOctree on octahedron mesh with bounding box " << bbox1);
+  SLIC_INFO("Testing InOutOctree on octahedron mesh with bounding box " << bbox1);
   queryOctahedronMesh(mesh, bbox1);
 
   ///
   SpacePt ptNeg2(-2.);
-  SpacePt ptPos2( 2.);
+  SpacePt ptPos2(2.);
   GeometricBoundingBox bbox2(ptNeg2, ptPos2);
-  SLIC_INFO(
-    "Testing InOutOctree on octahedron mesh with bounding box " << bbox2);
+  SLIC_INFO("Testing InOutOctree on octahedron mesh with bounding box " << bbox2);
   queryOctahedronMesh(mesh, bbox2);
 
-  bbox2.shift( SpaceVector(0.01));
-  SLIC_INFO(
-    "Testing InOutOctree on octahedron mesh with shifted bounding box "
-    << bbox2);
+  bbox2.shift(SpaceVector(0.01));
+  SLIC_INFO("Testing InOutOctree on octahedron mesh with shifted bounding box "
+            << bbox2);
   queryOctahedronMesh(mesh, bbox2);
 
   delete mesh;
   mesh = nullptr;
 }
 
-
-TEST( quest_inout_octree, tetrahedron_mesh)
+TEST(quest_inout_octree, tetrahedron_mesh)
 {
   SLIC_INFO("*** Exercises InOutOctree queries for several thresholds.\n");
 
@@ -221,14 +227,14 @@ TEST( quest_inout_octree, tetrahedron_mesh)
 
     octree.generateIndex();
 
-    SpacePt queryInside = quest::utilities::getCentroid( getVertex(mesh, 0),
-                                                         getVertex(mesh, 1),
-                                                         getVertex(mesh, 2),
-                                                         getVertex(mesh, 3));
-    SpacePt queryOutside = SpacePt( 2. * bbox.getMax().array() );
+    SpacePt queryInside = quest::utilities::getCentroid(getVertex(mesh, 0),
+                                                        getVertex(mesh, 1),
+                                                        getVertex(mesh, 2),
+                                                        getVertex(mesh, 3));
+    SpacePt queryOutside = SpacePt(2. * bbox.getMax().array());
 
-    EXPECT_TRUE( octree.within(queryInside) );
-    EXPECT_FALSE( octree.within(queryOutside) );
+    EXPECT_TRUE(octree.within(queryInside));
+    EXPECT_FALSE(octree.within(queryOutside));
 
     delete mesh;
   }
@@ -241,13 +247,12 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   namespace slic = axom::slic;
-  slic::UnitTestLogger logger;  // create & initialize test logger,
-  slic::setLoggingMsgLevel( slic::message::Debug);
+  slic::SimpleLogger logger;  // create & initialize test logger,
 
 #ifdef INOUT_OCTREE_TESTER_SHOULD_SEED
-  std::srand( std::time(0) );
+  std::srand(std::time(0));
 #else
-  std::srand( 105);
+  std::srand(105);
 #endif
 
   int result = RUN_ALL_TESTS();

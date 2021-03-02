@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,28 +7,20 @@
 #define AXOM_MEMORYMANAGEMENT_HPP_
 
 // Axom includes
-#include "axom/config.hpp" // for AXOM compile-time definitions
+#include "axom/config.hpp"  // for AXOM compile-time definitions
 
 // Umpire includes
 #ifdef AXOM_USE_UMPIRE
-#include "umpire/config.hpp"
-#include "umpire/ResourceManager.hpp"
-#include "umpire/op/MemoryOperationRegistry.hpp"
+  #include "umpire/config.hpp"
+  #include "umpire/ResourceManager.hpp"
+  #include "umpire/op/MemoryOperationRegistry.hpp"
 #else
-#include <cstring>  // for std::memcpy
-#include <cstdlib>  // for std::malloc, std::realloc, std::free
+  #include <cstring>  // for std::memcpy
+  #include <cstdlib>  // for std::malloc, std::realloc, std::free
 #endif
 
 namespace axom
 {
-
-#ifdef AXOM_USE_UMPIRE
-const int DEFAULT_ALLOCATOR_ID =
-  umpire::ResourceManager::getInstance().getAllocator("HOST").getId();
-#else
-constexpr int DEFAULT_ALLOCATOR_ID = 0;
-#endif
-
 constexpr int INVALID_ALLOCATOR_ID = -1;
 
 /// \name Memory Management Routines
@@ -42,45 +34,43 @@ constexpr int INVALID_ALLOCATOR_ID = -1;
  * \return ID the id of the predefined umpire allocator.
  */
 inline int getUmpireResourceAllocatorID(
-  umpire::resource::MemoryResourceType resource_type )
+  umpire::resource::MemoryResourceType resource_type)
 {
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator alloc     = rm.getAllocator( resource_type );
+  umpire::Allocator alloc = rm.getAllocator(resource_type);
   return alloc.getId();
 }
 
 #endif
 
 /*!
- * \brief Sets the default memory space to use. Default is set to HOST
- * \param [in] allocatorID ID of the allocator to use.
+ * \brief Sets the default memory allocator to use.
+ * \param [in] allocatorID ID of the Umpire allocator to use.
+ * 
+ * \note This function has no effect when Axom is not compiled with Umpire.
  */
-inline void setDefaultAllocator( int allocatorID )
+inline void setDefaultAllocator(int allocatorID)
 {
 #ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator allocator = rm.getAllocator( allocatorID );
-  rm.setDefaultAllocator( allocator );
+  umpire::Allocator allocator = rm.getAllocator(allocatorID);
+  rm.setDefaultAllocator(allocator);
 #else
-  static_cast< void >( allocatorID ); // silence compiler warnings
+  static_cast<void>(allocatorID);  // silence compiler warnings
 #endif
 }
 
 /*!
- * \brief Returns the current default memory space used.
- * \note If Umpire is used, the corresponding umpire allocator can be retrieved
- * by:
- *  <code>
- *    umpire::Allocator alloc =
- * umpire::ResourceManager::getInstance().getAllocator( allocID );
- *  </code>
+ * \brief Returns the ID of the current default allocator.
+ * \return ID the ID of the current default allocator.
+ * \post ID != INVALID_ALLOCATOR_ID
  */
 inline int getDefaultAllocatorID()
 {
 #ifdef AXOM_USE_UMPIRE
   return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
 #else
-  return axom::DEFAULT_ALLOCATOR_ID;
+  return 0;
 #endif
 }
 
@@ -88,22 +78,19 @@ inline int getDefaultAllocatorID()
  * \brief Allocates a chunk of memory of type T.
  *
  * \param [in] n the number of elements to allocate.
- * \param [in] allocator the Umpire allocator to use
- *(optional)
+ * \param [in] allocID the Umpire allocator to use (optional)
  *
  * \tparam T the type of pointer returned.
  *
- * \note By default allocate() will use the current default memory space. The
- *  caller may explicitly specify the memory space to use by specifying the
- *  second, optional argument, or change the default memory space by calling
+ * \note By default allocate() will use the current default allocator. The
+ *  caller may explicitly specify a different allocator to use by supplying the
+ *  second, optional argument, or change the default allocator by calling
  *  axom::setDefaultAllocator().
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
  */
-template < typename T >
-inline T* allocate(std::size_t n,
-                   int allocID=getDefaultAllocatorID() ) noexcept;
-
+template <typename T>
+inline T* allocate(std::size_t n, int allocID = getDefaultAllocatorID()) noexcept;
 
 /*!
  * \brief Frees the chunk of memory pointed to by the supplied pointer, p.
@@ -111,8 +98,8 @@ inline T* allocate(std::size_t n,
  * nullptr.
  * \post p == nullptr
  */
-template < typename T >
-inline void deallocate( T*& p ) noexcept;
+template <typename T>
+inline void deallocate(T*& p) noexcept;
 
 /*!
  * \brief Reallocates the chunk of memory pointed to by the supplied pointer.
@@ -129,8 +116,8 @@ inline void deallocate( T*& p ) noexcept;
  * current allocator's memory space. This follows the semantics of
  * Umpire's reallocate function.
  */
-template < typename T >
-inline T* reallocate( T* p, std::size_t n ) noexcept;
+template <typename T>
+inline T* reallocate(T* p, std::size_t n) noexcept;
 
 /*!
  * \brief Copies memory from the source to the destination.
@@ -143,7 +130,7 @@ inline T* reallocate( T* p, std::size_t n ) noexcept;
  *  ResourceManager then the default host allocation strategy is assumed for
  *  that pointer.
  */
-inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
+inline void copy(void* dst, void* src, std::size_t numbytes) noexcept;
 
 /// @}
 
@@ -151,38 +138,36 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
 //                        IMPLEMENTATION
 //------------------------------------------------------------------------------
 
-template < typename T >
-inline T* allocate( std::size_t n, int allocID ) noexcept
+template <typename T>
+inline T* allocate(std::size_t n, int allocID) noexcept
 {
-  const std::size_t numbytes = n * sizeof( T );
+  const std::size_t numbytes = n * sizeof(T);
 
 #ifdef AXOM_USE_UMPIRE
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator allocator = rm.getAllocator( allocID );
-  return static_cast< T* >( allocator.allocate( numbytes ) );
+  umpire::Allocator allocator = rm.getAllocator(allocID);
+  return static_cast<T*>(allocator.allocate(numbytes));
 
 #else
-  static_cast< void >( allocID ); // silence compiler warnings
-  return static_cast< T* >( std::malloc( numbytes ) );
+  static_cast<void>(allocID);  // silence compiler warnings
+  return static_cast<T*>(std::malloc(numbytes));
 #endif
-
 }
 //------------------------------------------------------------------------------
-template < typename T >
-inline void deallocate( T*& pointer ) noexcept
+template <typename T>
+inline void deallocate(T*& pointer) noexcept
 {
-  if ( pointer == nullptr )
-    return;
+  if(pointer == nullptr) return;
 
 #ifdef AXOM_USE_UMPIRE
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  rm.deallocate( pointer );
+  rm.deallocate(pointer);
 
 #else
 
-  std::free( pointer );
+  std::free(pointer);
 
 #endif
 
@@ -190,10 +175,10 @@ inline void deallocate( T*& pointer ) noexcept
 }
 
 //------------------------------------------------------------------------------
-template < typename T >
-inline T* reallocate( T* pointer, std::size_t n ) noexcept
+template <typename T>
+inline T* reallocate(T* pointer, std::size_t n) noexcept
 {
-  const std::size_t numbytes = n * sizeof( T );
+  const std::size_t numbytes = n * sizeof(T);
 
 #if defined(AXOM_USE_UMPIRE) && !defined(UMPIRE_VERSION_MAJOR)
 
@@ -203,7 +188,7 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
   // NOTE: The UMPIRE_VERSION_MAJOR macro was added in umpire-v2.0.0. If the
   // macro is not defined, we assume that the Umpire version is less than 2.0.0
   // and that the workaround is needed.
-  if(n==0)
+  if(n == 0)
   {
     axom::deallocate<T>(pointer);
     pointer = axom::allocate<T>(0);
@@ -226,21 +211,22 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
     }
   }
 
-  pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
+  pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
 
-#elif defined(AXOM_USE_UMPIRE) && (UMPIRE_VERSION_MAJOR >= 2) && \
-  (UMPIRE_VERSION_MINOR >= 1)
+#elif defined(AXOM_USE_UMPIRE) &&                                   \
+    ((UMPIRE_VERSION_MAJOR == 2) && (UMPIRE_VERSION_MINOR >= 1)) || \
+  (UMPIRE_VERSION_MAJOR > 2)
 
   // Umpire 2.1.0 and above handles reallocate(0) natively
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
+  pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
 
 #else
 
-  pointer = static_cast< T* >( std::realloc( pointer, numbytes ) );
+  pointer = static_cast<T*>(std::realloc(pointer, numbytes));
 
   // Consistently handle realloc(0) for std::realloc to match Umpire's behavior
-  if(n==0 && pointer == nullptr)
+  if(n == 0 && pointer == nullptr)
   {
     pointer = axom::allocate<T>(0);
   }
@@ -250,33 +236,40 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
   return pointer;
 }
 
-inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept
+//------------------------------------------------------------------------------
+inline void copy(void* dst, void* src, std::size_t numbytes) noexcept
 {
 #ifdef AXOM_USE_UMPIRE
-  umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
-  umpire::op::MemoryOperationRegistry & op_registry =
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::op::MemoryOperationRegistry& op_registry =
     umpire::op::MemoryOperationRegistry::getInstance();
 
-  auto dstStrategy = rm.getAllocator( "HOST" ).getAllocationStrategy();
+  auto dstStrategy = rm.getAllocator("HOST").getAllocationStrategy();
   auto srcStrategy = dstStrategy;
 
-  if (rm.hasAllocator(dst))
+  using AllocationRecord = umpire::util::AllocationRecord;
+  AllocationRecord* dstRecord = nullptr;
+  AllocationRecord* srcRecord = nullptr;
+
+  if(rm.hasAllocator(dst))
   {
-    dstStrategy = rm.findAllocationRecord( dst )->strategy;
+    dstRecord = const_cast<AllocationRecord*>(rm.findAllocationRecord(dst));
+    dstStrategy = dstRecord->strategy;
   }
 
-  if (rm.hasAllocator(src))
+  if(rm.hasAllocator(src))
   {
-    srcStrategy = rm.findAllocationRecord( src )->strategy;
+    srcRecord = const_cast<AllocationRecord*>(rm.findAllocationRecord(src));
+    srcStrategy = srcRecord->strategy;
   }
 
-  auto op = op_registry.find( "COPY", srcStrategy, dstStrategy );
-  op->transform( src, &dst, nullptr, nullptr, numbytes );
+  auto op = op_registry.find("COPY", srcStrategy, dstStrategy);
+  op->transform(src, &dst, srcRecord, dstRecord, numbytes);
 #else
-  std::memcpy( dst, src, numbytes );
+  std::memcpy(dst, src, numbytes);
 #endif
 }
 
-} // namespace axom
+}  // namespace axom
 
 #endif /* AXOM_MEMORYMANAGEMENT_HPP_ */

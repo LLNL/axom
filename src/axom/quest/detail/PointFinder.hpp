@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,25 +9,19 @@
 #include "axom/spin/ImplicitGrid.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
-
 namespace axom
 {
 namespace quest
 {
-
 // Predeclare mesh traits class
 template <typename mesh_tag>
 struct PointInCellTraits;
 
-
 namespace detail
 {
-
 // Predeclare mesh wrapper class
 template <typename mesh_tag>
 class PointInCellMeshWrapper;
-
-
 
 /*!
  * \class PointFinder
@@ -44,7 +38,7 @@ class PointInCellMeshWrapper;
  *   \arg axom::quest::PointInCellTraits
  *   \arg axom::quest::detail::PointInCellMeshWrapper
  */
-template<int NDIMS, typename mesh_tag>
+template <int NDIMS, typename mesh_tag>
 class PointFinder
 {
 public:
@@ -72,8 +66,8 @@ public:
               double bboxScaleFactor)
     : m_meshWrapper(meshWrapper)
   {
-    SLIC_ASSERT( m_meshWrapper != nullptr);
-    SLIC_ASSERT( bboxScaleFactor >= 1.);
+    SLIC_ASSERT(m_meshWrapper != nullptr);
+    SLIC_ASSERT(bboxScaleFactor >= 1.);
 
     const int numCells = m_meshWrapper->numElements();
 
@@ -82,7 +76,8 @@ public:
     SpatialBoundingBox meshBBox;
     m_cellBBoxes = std::vector<SpatialBoundingBox>(numCells);
     m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor,
-                                                        m_cellBBoxes, meshBBox);
+                                                        m_cellBBoxes,
+                                                        meshBBox);
 
     // initialize implicit grid, handle case where resolution is a NULL pointer
     if(res != nullptr)
@@ -97,9 +92,9 @@ public:
     }
 
     // add mesh elements to grid
-    for(int i=0 ; i< numCells ; ++i)
+    for(int i = 0; i < numCells; ++i)
     {
-      m_grid.insert( m_cellBBoxes[i], i);
+      m_grid.insert(m_cellBBoxes[i], i);
     }
   }
 
@@ -114,7 +109,7 @@ public:
 
     IndexType containingCell = PointInCellTraits<mesh_tag>::NO_CELL;
 
-    SLIC_ASSERT( pos != nullptr);
+    SLIC_ASSERT(pos != nullptr);
     SpacePoint pt(pos);
     SpacePoint isopar;
 
@@ -122,16 +117,15 @@ public:
     BitsetType candidates = m_grid.getCandidates(pt);
 
     bool foundContainingCell = false;
-    for(IndexType cellIdx = candidates.find_first() ;
-        !foundContainingCell && cellIdx != BitsetType::npos ;
-        cellIdx = candidates.find_next( cellIdx) )
+    for(IndexType cellIdx = candidates.find_first();
+        !foundContainingCell && cellIdx != BitsetType::npos;
+        cellIdx = candidates.find_next(cellIdx))
     {
       // First check that pt is in bounding box of element
-      if( cellBoundingBox(cellIdx).contains(pt) )
+      if(cellBoundingBox(cellIdx).contains(pt))
       {
         // if isopar is in the proper range
-        if( m_meshWrapper->locatePointInCell(cellIdx, pt.data(),
-                                             isopar.data() ) )
+        if(m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data()))
         {
           // then we have found the cellID
           foundContainingCell = true;
@@ -155,17 +149,14 @@ public:
     return m_cellBBoxes[cellIdx];
   }
 
-
 private:
   GridType m_grid;
   const MeshWrapperType* m_meshWrapper;
   std::vector<SpatialBoundingBox> m_cellBBoxes;
 };
 
+}  // end namespace detail
+}  // end namespace quest
+}  // end namespace axom
 
-} // end namespace detail
-} // end namespace quest
-} // end namespace axom
-
-
-#endif // QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
+#endif  // QUEST_POINT_IN_CELL_POINT_FINDER_HPP_

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,7 +7,7 @@
 #define QUEST_PSTLREADER_HPP_
 
 #include "axom/core/Macros.hpp"
-#include "axom/quest/stl/STLReader.hpp" // base class
+#include "axom/quest/stl/STLReader.hpp"  // base class
 
 #include "mpi.h"
 
@@ -15,16 +15,14 @@ namespace axom
 {
 namespace quest
 {
-
 class PSTLReader : public STLReader
 {
 public:
-
   /*!
    * \brief Constructor.
    * \param [in] comm user-supplied MPI communicator.
    */
-  PSTLReader( MPI_Comm comm );
+  PSTLReader(MPI_Comm comm);
 
   /*!
    * \brief Destructor.
@@ -40,21 +38,20 @@ public:
   virtual int read() final override;
 
 private:
-
   /*!
    * \brief Default constructor. Does nothing.
    * \note Made private to prevent its use in application code.
    */
-  PSTLReader() : m_comm(MPI_COMM_NULL), m_my_rank(0) { };
+  PSTLReader() : m_comm(MPI_COMM_NULL), m_my_rank(0) {};
 
   MPI_Comm m_comm; /*!< MPI communicator */
   int m_my_rank;   /*!< MPI rank ID      */
 
-  DISABLE_COPY_AND_ASSIGNMENT( PSTLReader );
-  DISABLE_MOVE_AND_ASSIGNMENT( PSTLReader );
+  DISABLE_COPY_AND_ASSIGNMENT(PSTLReader);
+  DISABLE_MOVE_AND_ASSIGNMENT(PSTLReader);
 };
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom
 
 #endif /* QUEST_PSTLREADER_HPP_ */

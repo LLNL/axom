@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,7 +22,6 @@ namespace axom
 {
 namespace slam
 {
-
 /**
  * \class   MapBase
  *
@@ -33,10 +32,11 @@ namespace slam
  *
  */
 
+template <typename SetPositionType = slam::DefaultPositionType>
 class MapBase
 {
 public:
-  using SetPosition = slam::DefaultPositionType;
+  using SetPosition = SetPositionType;
 
 public:
   virtual ~MapBase() {};
@@ -57,14 +57,10 @@ private:
   /**
    * \brief Utility function to verify that a SetPosition is in a valid range.
    */
-  virtual void verifyPosition(SetPosition)       const = 0;
-
+  virtual void verifyPosition(SetPosition) const = 0;
 };
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-
-
-#endif // SLAM_MAPBASE_HPP_
+#endif  // SLAM_MAPBASE_HPP_

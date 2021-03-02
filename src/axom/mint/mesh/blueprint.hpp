@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,11 +7,11 @@
 #define MINT_MESH_BLUEPRINT_HPP_
 
 // mint includes
-#include "axom/mint/config.hpp"      // for compile-time definitions
-#include "axom/mint/mesh/CellTypes.hpp"   // for Topology
+#include "axom/mint/config.hpp"          // for compile-time definitions
+#include "axom/mint/mesh/CellTypes.hpp"  // for Topology
 
 // C/C++ includes
-#include <string>           // for std::string
+#include <string>  // for std::string
 
 /*!
  * \file
@@ -24,7 +24,6 @@
 
 namespace axom
 {
-
 // Sidre Forward Declarations
 namespace sidre
 {
@@ -35,7 +34,6 @@ namespace mint
 {
 namespace blueprint
 {
-
 #ifdef AXOM_MINT_USE_SIDRE
 
 /*!
@@ -54,7 +52,7 @@ namespace blueprint
  *
  * \pre group != nullptr
  */
-bool isValidRootGroup( const sidre::Group* group );
+bool isValidRootGroup(const sidre::Group* group);
 
 /*!
  * \brief Checks if the given topology group conforms to the blueprint.
@@ -74,7 +72,7 @@ bool isValidRootGroup( const sidre::Group* group );
  *
  * \pre topo != nullptr
  */
-bool isValidTopologyGroup( const sidre::Group* topo );
+bool isValidTopologyGroup(const sidre::Group* topo);
 
 /*!
  * \brief Checks if the given coordset group conforms to the blueprint.
@@ -93,7 +91,7 @@ bool isValidTopologyGroup( const sidre::Group* topo );
  *
  * \pre coordset != nullptr
  */
-bool isValidCoordsetGroup( const sidre::Group* coordset );
+bool isValidCoordsetGroup(const sidre::Group* coordset);
 
 /*!
  * \brief Returns the requested mesh topology group.
@@ -112,8 +110,8 @@ bool isValidCoordsetGroup( const sidre::Group* coordset );
  * \post blueprint::isValidTopologyGroup( topo ) == true
  *
  */
-const sidre::Group* getTopologyGroup( const sidre::Group* group,
-                                      const std::string& topo="" );
+const sidre::Group* getTopologyGroup(const sidre::Group* group,
+                                     const std::string& topo = "");
 
 /*!
  * \brief Initialize the topology group.
@@ -125,10 +123,10 @@ const sidre::Group* getTopologyGroup( const sidre::Group* group,
  *
  * \pre group != nullptr
  */
-void initializeTopologyGroup( sidre::Group* group,
-                              const std::string& topo,
-                              const std::string& coordset,
-                              const std::string& type );
+void initializeTopologyGroup(sidre::Group* group,
+                             const std::string& topo,
+                             const std::string& coordset,
+                             const std::string& type);
 
 /*!
  * \brief Returns the coordset group associated with the given topology group.
@@ -144,8 +142,8 @@ void initializeTopologyGroup( sidre::Group* group,
  * \pre blueprint::isValidTopologyGroup( topology )
  * \post blueprint::isValidCoordsetGroup( coordset )
  */
-const sidre::Group* getCoordsetGroup( const sidre::Group* group,
-                                      const sidre::Group* topology );
+const sidre::Group* getCoordsetGroup(const sidre::Group* group,
+                                     const sidre::Group* topology);
 
 /*!
  * \brief Returns the coordset group associated with the given topology group.
@@ -160,8 +158,8 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
  * \pre blueprint::isValidTopologyGroup( topology )
  * \post blueprint::isValidCoordsetGroup( coordset )
  */
-const sidre::Group* getCoordsetGroup( const sidre::Group* group,
-                                      const std::string& coords="" );
+const sidre::Group* getCoordsetGroup(const sidre::Group* group,
+                                     const std::string& coords = "");
 
 /*!
  * \brief Returns the mesh type and dimension given a root group that conforms
@@ -179,9 +177,10 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
  *
  * \see MeshTypes
  */
-void getMeshTypeAndDimension( int& mesh_type, int& dimension,
-                              const sidre::Group* group,
-                              const std::string& topology="" );
+void getMeshTypeAndDimension(int& mesh_type,
+                             int& dimension,
+                             const sidre::Group* group,
+                             const std::string& topology = "");
 
 /*
  * \brief Return the whether the mesh has mixed cell types.
@@ -192,7 +191,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
  * \note If a topology is not specified, the code assumes that the first group
  *  under the 'topologies' group corresponds to the mesh topology.
  */
-bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
+bool hasMixedCellTypes(const sidre::Group* group, const std::string& topo = "");
 
 /*!
  * \brief Get the nodal dimensions and the global node extent of a
@@ -211,9 +210,10 @@ bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
  *
  * \see setStructuredMeshProperties()
  */
-void getStructuredMeshProperties( int dimension, IndexType node_dims[3],
-                                  int64 node_ext[6],
-                                  const sidre::Group* coordset );
+void getStructuredMeshProperties(int dimension,
+                                 IndexType node_dims[3],
+                                 int64 node_ext[6],
+                                 const sidre::Group* coordset);
 
 /*!
  * \brief Put the nodal dimensions and the global node extent of a
@@ -231,9 +231,10 @@ void getStructuredMeshProperties( int dimension, IndexType node_dims[3],
  *
  * \see getStructuredMeshProperties()
  */
-void setStructuredMeshProperties( int dimension, const IndexType node_dims[3],
-                                  const int64 node_ext[6],
-                                  sidre::Group* coordset );
+void setStructuredMeshProperties(int dimension,
+                                 const IndexType node_dims[3],
+                                 const int64 node_ext[6],
+                                 sidre::Group* coordset);
 
 /*!
  * \brief Put the global node extent of a StructuredMesh into sidre.
@@ -246,7 +247,7 @@ void setStructuredMeshProperties( int dimension, const IndexType node_dims[3],
  *
  * \see setStructuredMeshProperties()
  */
-void setExtent( sidre::Group* coordset, const int64 node_ext[6] );
+void setExtent(sidre::Group* coordset, const int64 node_ext[6]);
 
 /*!
  * \brief Returns the origin, spacing and extent of a uniform mesh from the
@@ -268,8 +269,10 @@ void setExtent( sidre::Group* coordset, const int64 node_ext[6] );
  *
  * \see setUniformMeshProperties()
  */
-void getUniformMeshProperties( int dim, double* origin, double* spacing,
-                               const sidre::Group* coordset );
+void getUniformMeshProperties(int dim,
+                              double* origin,
+                              double* spacing,
+                              const sidre::Group* coordset);
 
 /*!
  * \brief Populates the specified Coordset & Topology groups with the metadata
@@ -292,9 +295,10 @@ void getUniformMeshProperties( int dim, double* origin, double* spacing,
  *
  * \see getUniformMeshProperties()
  */
-void setUniformMeshProperties( int dim, const double* origin,
-                               const double* spacing,
-                               sidre::Group* coordset );
+void setUniformMeshProperties(int dim,
+                              const double* origin,
+                              const double* spacing,
+                              sidre::Group* coordset);
 
 #endif /* AXOM_MINT_USE_SIDRE */
 

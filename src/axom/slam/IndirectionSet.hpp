@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,8 +21,6 @@ namespace axom
 {
 namespace slam
 {
-
-
 /**
  * \brief Alias template for an OrderedSet with indirection over an array
  *
@@ -30,17 +28,15 @@ namespace slam
  * \tparam ElemType The type for the set's elements
  * \sa OrderedSet
  */
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
 using ArrayIndirectionSet =
-        OrderedSet<
-          PosType,
-          ElemType,
-          policies::RuntimeSize<PosType>,
-          policies::ZeroOffset<PosType>,
-          policies::StrideOne<PosType>,
-          policies::ArrayIndirection<PosType, ElemType> >;
+  OrderedSet<PosType,
+             ElemType,
+             policies::RuntimeSize<PosType>,
+             policies::ZeroOffset<PosType>,
+             policies::StrideOne<PosType>,
+             policies::ArrayIndirection<PosType, ElemType>>;
 
 /**
  * \brief Alias template for an OrderedSet with indirection over an stl vector
@@ -49,20 +45,17 @@ using ArrayIndirectionSet =
  * \tparam ElemType The type for the set's elements
  * \sa OrderedSet
  */
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
 using VectorIndirectionSet =
-        OrderedSet<
-          PosType,
-          ElemType,
-          policies::RuntimeSize<PosType>,
-          policies::ZeroOffset<PosType>,
-          policies::StrideOne<PosType>,
-          policies::STLVectorIndirection<PosType, ElemType> >;
+  OrderedSet<PosType,
+             ElemType,
+             policies::RuntimeSize<PosType>,
+             policies::ZeroOffset<PosType>,
+             policies::StrideOne<PosType>,
+             policies::STLVectorIndirection<PosType, ElemType>>;
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_INDIRECTION_SET_H_
+#endif  //  SLAM_INDIRECTION_SET_H_

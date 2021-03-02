@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,20 +17,17 @@ namespace axom
 {
 namespace spin
 {
-
-
 /**
  * \class SpatialOctree
  * \brief Adds spatial extents to an OctreeBase, allowing point location
  */
-template<int DIM, typename BlockDataType>
+template <int DIM, typename BlockDataType>
 class SpatialOctree : public OctreeBase<DIM, BlockDataType>
 {
 public:
-
-  using GeometricBoundingBox = primal::BoundingBox<double,DIM>;
-  using SpacePt = primal::Point<double,DIM>;
-  using SpaceVector = primal::Vector<double,DIM>;
+  using GeometricBoundingBox = primal::BoundingBox<double, DIM>;
+  using SpacePt = primal::Point<double, DIM>;
+  using SpaceVector = primal::Vector<double, DIM>;
 
   using BaseOctree = OctreeBase<DIM, BlockDataType>;
 
@@ -39,8 +36,8 @@ public:
 
   using BlockIndex = typename BaseOctree::BlockIndex;
 
-  using SpaceVectorLevelMap = slam::Map<slam::Set<>,
-                                        SpaceVector>;
+  using SpaceVectorLevelMap = slam::Map<slam::Set<>, SpaceVector>;
+
 public:
   /**
    * \brief Construct a spatial octree from a spatial bounding box
@@ -48,22 +45,21 @@ public:
    * \param [in] bb The spatial extent to be indexed by the octree
    */
   SpatialOctree(const GeometricBoundingBox& bb)
-    : BaseOctree(),
-    m_deltaLevelMap(&this->m_levels),
-    m_invDeltaLevelMap(&this->m_levels),
-    m_boundingBox(bb)
+    : BaseOctree()
+    , m_deltaLevelMap(&this->m_levels)
+    , m_invDeltaLevelMap(&this->m_levels)
+    , m_boundingBox(bb)
   {
     // Cache the extents of a grid cell at each level of resolution
     const SpaceVector bbRange = m_boundingBox.range();
-    for(int lev = 0 ; lev < this->m_levels.size() ; ++lev)
+    for(int lev = 0; lev < this->m_levels.size(); ++lev)
     {
-      m_deltaLevelMap[lev] = bbRange / static_cast<double>(1<<lev);
+      m_deltaLevelMap[lev] = bbRange / static_cast<double>(CoordType(1) << lev);
 
-      for(int dim=0 ; dim < DIM ; ++dim)
-        m_invDeltaLevelMap[lev][dim] = 1./m_deltaLevelMap[lev][dim];
+      for(int dim = 0; dim < DIM; ++dim)
+        m_invDeltaLevelMap[lev][dim] = 1. / m_deltaLevelMap[lev][dim];
     }
   }
-
 
   /**
    * \brief Returns a reference to the octree's bounding box
@@ -71,35 +67,33 @@ public:
    */
   const GeometricBoundingBox& boundingBox() const { return m_boundingBox; }
 
-
   /**
    * \brief Return the spatial bounding box of a grid cell
    * at the given level or resolution
    */
-  GeometricBoundingBox blockBoundingBox(const BlockIndex & block) const
+  GeometricBoundingBox blockBoundingBox(const BlockIndex& block) const
   {
-    return blockBoundingBox( block.pt(), block.level() );
+    return blockBoundingBox(block.pt(), block.level());
   }
 
   /**
    * \brief Return the spatial bounding box of a grid cell
    * at the given level or resolution
    */
-  GeometricBoundingBox blockBoundingBox(const GridPt & gridPt, int level) const
+  GeometricBoundingBox blockBoundingBox(const GridPt& gridPt, int level) const
   {
-    const SpaceVector& deltaVec = m_deltaLevelMap[ level];
+    const SpaceVector& deltaVec = m_deltaLevelMap[level];
 
     SpacePt lower(m_boundingBox.getMin());
     SpacePt upper(m_boundingBox.getMin());
-    for(int i=0 ; i< DIM ; ++i)
+    for(int i = 0; i < DIM; ++i)
     {
-      lower[i] += gridPt[i]   * deltaVec[i];
-      upper[i] += (gridPt[i]+1)* deltaVec[i];
+      lower[i] += gridPt[i] * deltaVec[i];
+      upper[i] += (gridPt[i] + 1) * deltaVec[i];
     }
 
-    return GeometricBoundingBox( lower,upper );
+    return GeometricBoundingBox(lower, upper);
   }
-
 
   /**
    * Returns the width of an octree block at level of resolution level
@@ -127,39 +121,38 @@ public:
    */
   BlockIndex findLeafBlock(const SpacePt& pt, int startingLevel = -1) const
   {
-    SLIC_ASSERT_MSG(
-      m_boundingBox.contains(pt),
-      "SpatialOctree::findLeafNode -- Did not find "
-      << pt << " in bounding box " << m_boundingBox );
+    SLIC_ASSERT_MSG(m_boundingBox.contains(pt),
+                    "SpatialOctree::findLeafNode -- Did not find "
+                      << pt << " in bounding box " << m_boundingBox);
 
     // Perform binary search on levels to find the leaf block containing the
     // point
-    int minLev = 0;
-    int maxLev = this->maxLeafLevel();
-    int lev = (startingLevel == -1) ? maxLev >> 1 : startingLevel;
+    CoordType minLev = 0;
+    CoordType maxLev = this->maxLeafLevel();
+    CoordType lev = (startingLevel == -1) ? maxLev >> 1 : startingLevel;
 
     while(minLev <= maxLev)
     {
       GridPt gridPt = findGridCellAtLevel(pt, lev);
-      switch( this->blockStatus(gridPt,lev) )
+      switch(this->blockStatus(gridPt, lev))
       {
       case BlockNotInTree:
         // Block must be in coarser levels -- update upper bound
-        maxLev = lev-1;
-        lev = (maxLev + minLev)>>1;
+        maxLev = lev - 1;
+        lev = (maxLev + minLev) >> 1;
         break;
       case InternalBlock:
         // Block must be in deeper levels -- update lower bound
-        minLev = lev+1;
-        lev = (maxLev + minLev)>>1;
+        minLev = lev + 1;
+        lev = (maxLev + minLev) >> 1;
         break;
       case LeafBlock:
         return BlockIndex(gridPt, lev);
       }
     }
 
-    SLIC_ASSERT_MSG(false, "Point " << pt << " not found "
-                                    <<"in a leaf block of the octree");
+    SLIC_ASSERT_MSG(false,
+                    "Point " << pt << " not found in a leaf block of the octree");
 
     return BlockIndex::invalid_index();
   }
@@ -182,18 +175,18 @@ public:
     GridPt quantizedPt;
 
     const SpacePt& bbMin = m_boundingBox.getMin();
-    const SpaceVector& invDelta = m_invDeltaLevelMap[ lev];
+    const SpaceVector& invDelta = m_invDeltaLevelMap[lev];
     const CoordType highestCell = this->maxCoordAtLevel(lev);
 
-    for(int i=0 ; i< DIM ; ++i)
+    for(int i = 0; i < DIM; ++i)
     {
       // Note: quantCell is always positive, and within range of CoordType
       //       so truncating is equivalent to the floor function
       // Note: we need to clamp to avoid setting coordinates past the upper
       // boundaries
       const CoordType quantCell =
-        static_cast<CoordType>( (pt[i] - bbMin[i]) * invDelta[i] );
-      quantizedPt[i] = std::min( quantCell, highestCell);
+        static_cast<CoordType>((pt[i] - bbMin[i]) * invDelta[i]);
+      quantizedPt[i] = std::min(quantCell, highestCell);
     }
 
     return quantizedPt;
@@ -204,15 +197,14 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(SpatialOctree);
 
 protected:
-  SpaceVectorLevelMap m_deltaLevelMap;          // The width of a cell at each
-                                                // level or resolution
-  SpaceVectorLevelMap m_invDeltaLevelMap;       // Its inverse is useful for
-                                                // quantizing
+  SpaceVectorLevelMap m_deltaLevelMap;     // The width of a cell at each
+                                           // level or resolution
+  SpaceVectorLevelMap m_invDeltaLevelMap;  // Its inverse is useful for
+                                           // quantizing
   GeometricBoundingBox m_boundingBox;
 };
 
-
-} // end namespace spin
-} // end namespace axom
+}  // end namespace spin
+}  // end namespace axom
 
 #endif  // SPATIAL_OCTREE__HXX_
