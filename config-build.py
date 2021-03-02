@@ -93,8 +93,9 @@ def parse_arguments():
                     '201764': 'Visual Studio 15 2017 Win64',
                     '2019': 'Visual Studio 16 2019',
                     '201964': 'Visual Studio 16 2019'}
-    # Newer versions  of MSVC might supply an archicecture flag
-    generator_archs = {'201964': 'x64'}
+    # Newer versions  of MSVC might supply an architecture flag
+    generator_archs = {'2019': 'Win32',
+                       '201964': 'x64'}
     parser.add_argument(
         "--msvc",
         type=str,
