@@ -60,6 +60,8 @@ private:
   std::string m_fileName;
   bool m_rootPathInitialized = false;
   std::string m_rootPath;
+  std::vector<std::string> m_ArrayPaths;
+  std::vector<std::string> m_DictionaryPaths;
 };
 
 }  // namespace inlet
