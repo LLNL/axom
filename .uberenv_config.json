@@ -5,6 +5,8 @@
 "package_source_dir" : "../..",
 "spack_url": "https://github.com/spack/spack",
 "spack_commit": "e4c1cb380beb088393e47ba9caa27a2e5953b4db",
+"spack_configs_path": "scripts/spack/configs",
+"spack_packages_path": "scripts/spack/packages",
 "vcpkg_url": "https://github.com/microsoft/vcpkg",
 "vcpkg_commit": "b79f7675aaa82eb6c5a96ae764fb1ce379a9d5d6",
 "vcpkg_triplet": "x64-windows"
