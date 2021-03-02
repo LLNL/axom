@@ -6,8 +6,8 @@ include(vcpkg_common_functions)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/conduit
-    REF v0.5.1
-    SHA512 fcc03c5bceb8b68c351be4df85cfab86ca9f1d2c39db735f375ff5efcd6921d6e9498ccfd96d914891492d376d0c334b5eff5aad5253630d991095c1fea1fb95
+    REF v0.6.0
+    SHA512 b65ce01a5aabee660b62bf80daf629af200e6c489bdb2e5c359154bc212c740cca663d421c12181b2d8fe40a694430f246f3fc052c6945b430892e01e58b59f0
     HEAD_REF master
 )
 
