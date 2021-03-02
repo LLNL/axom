@@ -639,7 +639,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
     for spec in specs:
         start_time = time.time()
         fullspec = "{0}".format(spec)
-        res = uberenv_build(prefix, fullspec, project_file, config_dir, mirror_dir)
+        res = uberenv_build(prefix, fullspec, "", config_dir, mirror_dir)
         end_time = time.time()
         print("[build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time)))
         if res != 0:
@@ -830,6 +830,10 @@ def get_shared_libs_dir():
     return pjoin(get_shared_base_dir(), "libs")
 
 
+def get_uberenv_path():
+    return pjoin(get_script_dir(), "../uberenv/uberenv.py")
+
+
 def get_shared_devtool_dir():
     return pjoin(get_shared_collab_dir(), "devtools")
 
@@ -854,6 +858,10 @@ def on_rz():
     if machine_name.startswith("rz"):
         return True
     return False
+
+
+def get_script_dir():
+    return os.path.dirname(os.path.abspath(__file__))
 
 
 def get_compiler_from_spec(spec):
