@@ -321,7 +321,7 @@ def uberenv_build(prefix, spec, project_file, config_dir, mirror_path):
 # helpers for testing a set of host configs
 ############################################################
 
-def build_and_test_host_config(test_root,host_config, report_to_stdout = False):
+def build_and_test_host_config(test_root, host_config, report_to_stdout = False, extra_cmake_options = ""):
     host_config_root = get_host_config_root(host_config)
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
@@ -334,7 +334,7 @@ def build_and_test_host_config(test_root,host_config, report_to_stdout = False):
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print("[starting configure of %s]" % host_config)
     print("[log file: %s]" % cfg_output_file)
-    res = sexe("python config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+    res = sexe("python config-build.py -bp %s -ip %s -hc %s %s" % (build_dir, install_dir, host_config, extra_cmake_options),
                output_file = cfg_output_file,
                echo=True)
 
@@ -790,7 +790,7 @@ def get_repo_dir():
 
 
 def get_build_and_test_root(prefix, timestamp):
-    dirname = "_axom_build_and_test_{1}".format(timestamp)
+    dirname = "_axom_build_and_test_{0}".format(timestamp)
     return pjoin(prefix, dirname)
 
 
