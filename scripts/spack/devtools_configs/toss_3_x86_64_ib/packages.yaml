@@ -57,10 +57,20 @@ packages:
     externals:
     - spec: bzip2
       prefix: /usr
+  diffutils:
+    buildable: false
+    externals:
+    - spec: diffutils
+      prefix: /usr
   epoxy:
     buildable: false
     externals:
     - spec: epoxy
+      prefix: /usr
+  findutils:
+    buildable: false
+    externals:
+    - spec: findutils
       prefix: /usr
   gettext:
     buildable: false
@@ -96,6 +106,11 @@ packages:
     buildable: false
     externals:
     - spec: pkg-config
+      prefix: /usr
+  readline:
+    buildable: false
+    externals:
+    - spec: readline
       prefix: /usr
   tar:
     buildable: false
