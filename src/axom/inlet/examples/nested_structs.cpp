@@ -46,20 +46,20 @@ struct Operator
   static void defineSchema(inlet::Container& container)
   {
     // The rotation is in degrees
-    container.addDouble("rotate").range(-180, 180);
+    container.addDouble("rotate", "Degrees of rotation").range(-180, 180);
     // Vectors are defined as arrays of doubles
-    container.addDoubleArray("axis");
-    container.addDoubleArray("center");
-    container.addDoubleArray("translate");
+    container.addDoubleArray("axis", "Axis on which to rotate");
+    container.addDoubleArray("center", "Center of rotation");
+    container.addDoubleArray("translate", "Translation vector");
     // The slice operation can have sub-entries, so we represent it as a struct
     // Note that Inlet does not require a 1-1 correspondence (or any correspondence)
     // between structures defined in the schema via addStruct and structures extracted
     // from the input file with FromInlet specializations (defined below)
-    auto& slice = container.addStruct("slice");
-    slice.addDouble("x");
-    slice.addDouble("y");
-    slice.addDouble("z");
-    slice.addDoubleArray("origin");
+    auto& slice = container.addStruct("slice", "Options for a slice operation");
+    slice.addDouble("x", "x-axis point to slice on");
+    slice.addDouble("y", "y-axis point to slice on");
+    slice.addDouble("z", "z-axis point to slice on");
+    slice.addDoubleArray("origin", "Origin for the slice operation");
 
     // Verify that exactly one type of operator is defined
     container.registerVerifier([](const inlet::Container& container) {
@@ -166,14 +166,21 @@ struct Geometry
   int start_dim;
   static void defineSchema(inlet::Container& container)
   {
-    container.addString("format");
-    container.addString("path");
+    container.addString("format", "File format for the shape").required();
+    container.addString("path", "Path to the shape file").required();
     // A string is used to represent the enumeration
-    container.addString("units").defaultValue("cm").validValues({"cm", "m"});
-    container.addInt("start_dimensions").defaultValue(3);
+    container.addString("units", "Units for length")
+      .defaultValue("cm")
+      .validValues({"cm", "m"});
+    container
+      .addInt("start_dimensions",
+              "Dimension in which to begin applying operations")
+      .defaultValue(3);
     // addStructArray is used to represent std::vector<T> where
     // T is any non-primitive type
-    auto& ops_schema = container.addStructArray("operators");
+    auto& ops_schema =
+      container.addStructArray("operators", "List of shape operations to apply")
+        .required();
     Operator::defineSchema(ops_schema);
   }
 };
@@ -226,10 +233,14 @@ struct Shape
   Geometry geom;
   static void defineSchema(inlet::Container& container)
   {
-    container.addString("name").required();
-    container.addString("material").validValues({"steel", "wood", "plastic"});
+    container.addString("name", "Name of the shape").required();
+    container.addString("material", "Material of the shape")
+      .validValues({"steel", "wood", "plastic"})
+      .required();
     // addStruct is used for a single instance of a user-defined type
-    auto& geom_schema = container.addStruct("geometry");
+    auto& geom_schema =
+      container.addStruct("geometry", "Geometric information on the shape")
+        .required();
     Geometry::defineSchema(geom_schema);
   }
 };

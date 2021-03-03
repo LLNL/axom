@@ -169,6 +169,26 @@ void filterCollectionPaths(std::string& target,
   }
 }
 
+void pruneEmptyNodes(conduit::Node& parent)
+{
+  // Can't use iterators here due to iterator invalidation by deletion,
+  // node.remove() also does not return an iterator like the STL container erase()
+  conduit::index_t idx = 0;
+  while(idx < parent.number_of_children())
+  {
+    auto& child = parent[idx];
+    if(child.dtype().is_empty())
+    {
+      parent.remove(idx);
+    }
+    else
+    {
+      pruneEmptyNodes(child);
+      idx++;
+    }
+  }
+}
+
 }  // namespace detail
 
 JSONSchemaWriter::JSONSchemaWriter(const std::string& fileName)
@@ -289,7 +309,11 @@ void JSONSchemaWriter::documentContainer(const Container& container)
   }
 }
 
-void JSONSchemaWriter::finalize() { m_schemaRoot.save(m_fileName, "json"); }
+void JSONSchemaWriter::finalize()
+{
+  detail::pruneEmptyNodes(m_schemaRoot);
+  m_schemaRoot.save(m_fileName, "json");
+}
 
 }  // namespace inlet
 }  // namespace axom
