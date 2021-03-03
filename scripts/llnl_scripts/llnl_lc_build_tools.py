@@ -264,7 +264,7 @@ def assertUberenvExists():
         sys.exit(1)
 
 
-def uberenv_create_mirror(prefix, spec, project_file, config_dir, mirror_path):
+def uberenv_create_mirror(prefix, spec, project_file, mirror_path):
     """
     Calls uberenv to create a spack mirror.
     """
@@ -273,7 +273,7 @@ def uberenv_create_mirror(prefix, spec, project_file, config_dir, mirror_path):
     cmd += " --prefix=\"{0}\" --mirror=\"{1}\"".format(prefix, mirror_path)
     if project_file:
         cmd += " --project-json=\"{0}\" ".format(project_file)
-    cmd += "--spack-config-dir=\"{0}\" ".format(config_dir)
+
     print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
     print("[ It is expected for 'spack --create-mirror' to throw warnings.                ]")
     print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
@@ -285,19 +285,16 @@ def uberenv_create_mirror(prefix, spec, project_file, config_dir, mirror_path):
     return res
 
 
-def uberenv_build(prefix, spec, project_file, config_dir, mirror_path, install=False):
+def uberenv_build(prefix, spec, project_file, mirror_path):
     """
     Calls uberenv to install tpls for a given spec to given prefix.
     """
     assertUberenvExists()
     cmd  = "python {0} -k ".format(get_uberenv_path())
-    if install:
-        cmd += "--install "
     cmd += "--prefix=\"{0}\" --spec=\"{1}\" ".format(prefix, spec)
     cmd += "--mirror=\"{0}\" ".format(mirror_path)
     if project_file:
         cmd += "--project-json=\"{0}\" ".format(project_file)
-    cmd += "--spack-config-dir=\"{0}\" ".format(config_dir)
         
     spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec.replace(" ", "_"))
     print("[starting tpl install of spec %s]" % spec)
@@ -597,8 +594,6 @@ def set_group_and_perms(directory):
 
 
 def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to_stdout = False, mirror_location = ''):
-    config_dir = "scripts/spack/configs/{0}".format(get_system_type())
-
     if spec:
         if not spec.startswith("%"):
             spec = "%{0}".format(spec)
@@ -626,7 +621,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
     prefix = pjoin(prefix, timestamp)
 
     # create a mirror
-    uberenv_create_mirror(prefix, spec, "", config_dir, mirror_dir)
+    uberenv_create_mirror(prefix, spec, "", mirror_dir)
     # write info about this build
     write_build_info(pjoin(prefix, "info.json"), job_name)
 
@@ -642,7 +637,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
     for spec in specs:
         start_time = time.time()
         fullspec = "{0}".format(spec)
-        res = uberenv_build(prefix, fullspec, "", config_dir, mirror_dir)
+        res = uberenv_build(prefix, fullspec, "", mirror_dir)
         end_time = time.time()
         print("[build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time)))
         if res != 0:
@@ -682,7 +677,6 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
 
 def build_devtools(builds_dir, job_name, timestamp):
     sys_type = get_system_type()
-    config_dir = "scripts/spack/configs/{0}/devtools".format(sys_type)
     project_file = "scripts/spack/devtools.json"
 
     if "toss_3" in sys_type:
@@ -705,14 +699,14 @@ def build_devtools(builds_dir, job_name, timestamp):
     # Use shared mirror
     mirror_dir = get_shared_mirror_dir()
     print("[Using mirror location: {0}]".format(mirror_dir))
-    uberenv_create_mirror(prefix, compiler_spec, project_file, config_dir, mirror_dir)
+    uberenv_create_mirror(prefix, compiler_spec, project_file, mirror_dir)
 
     # write info about this build
     write_build_info(pjoin(prefix,"info.json"), job_name)
 
     # use uberenv to install devtools
     start_time = time.time()
-    res = uberenv_build(prefix, compiler_spec, project_file, config_dir, mirror_dir, True)
+    res = uberenv_build(prefix, compiler_spec, project_file, mirror_dir)
     end_time = time.time()
 
     print("[Build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time)))
