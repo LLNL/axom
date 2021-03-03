@@ -264,7 +264,7 @@ def assertUberenvExists():
         sys.exit(1)
 
 
-def uberenv_create_mirror(prefix, project_file, mirror_path):
+def uberenv_create_mirror(prefix, spec, project_file, config_dir, mirror_path):
     """
     Calls uberenv to create a spack mirror.
     """
@@ -273,6 +273,7 @@ def uberenv_create_mirror(prefix, project_file, mirror_path):
     cmd += " --prefix=\"{0}\" --mirror=\"{1}\"".format(prefix, mirror_path)
     if project_file:
         cmd += " --project-json=\"{0}\" ".format(project_file)
+    cmd += "--spack-config-dir=\"{0}\" ".format(config_dir)
     print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
     print("[ It is expected for 'spack --create-mirror' to throw warnings.                ]")
     print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
@@ -284,12 +285,14 @@ def uberenv_create_mirror(prefix, project_file, mirror_path):
     return res
 
 
-def uberenv_build(prefix, spec, project_file, config_dir, mirror_path):
+def uberenv_build(prefix, spec, project_file, config_dir, mirror_path, install=False):
     """
     Calls uberenv to install tpls for a given spec to given prefix.
     """
     assertUberenvExists()
     cmd  = "python {0} -k ".format(get_uberenv_path())
+    if install:
+        cmd += "--install "
     cmd += "--prefix=\"{0}\" --spec=\"{1}\" ".format(prefix, spec)
     cmd += "--mirror=\"{0}\" ".format(mirror_path)
     if project_file:
@@ -623,7 +626,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
     prefix = pjoin(prefix, timestamp)
 
     # create a mirror
-    uberenv_create_mirror(prefix, "", mirror_dir)
+    uberenv_create_mirror(prefix, spec, "", config_dir, mirror_dir)
     # write info about this build
     write_build_info(pjoin(prefix, "info.json"), job_name)
 
@@ -702,14 +705,14 @@ def build_devtools(builds_dir, job_name, timestamp):
     # Use shared mirror
     mirror_dir = get_shared_mirror_dir()
     print("[Using mirror location: {0}]".format(mirror_dir))
-    uberenv_create_mirror(prefix, project_file, mirror_dir)
+    uberenv_create_mirror(prefix, compiler_spec, project_file, config_dir, mirror_dir)
 
     # write info about this build
     write_build_info(pjoin(prefix,"info.json"), job_name)
 
     # use uberenv to install devtools
     start_time = time.time()
-    res = uberenv_build(prefix, compiler_spec, project_file, config_dir, mirror_dir)
+    res = uberenv_build(prefix, compiler_spec, project_file, config_dir, mirror_dir, True)
     end_time = time.time()
 
     print("[Build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time)))
