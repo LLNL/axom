@@ -47,15 +47,35 @@ packages:
     externals:
     - spec: automake
       prefix: /usr
+  binutils:
+    buildable: false
+    externals:
+    - spec: binutils
+      prefix: /usr
   bzip2:
     buildable: false
     externals:
     - spec: bzip2
       prefix: /usr
+  epoxy:
+    buildable: false
+    externals:
+    - spec: epoxy
+      prefix: /usr
   gettext:
     buildable: false
     externals:
     - spec: gettext
+      prefix: /usr
+  ghostscript:
+    buildable: false
+    externals:
+    - spec: ghostscript
+      prefix: /usr
+  groff:
+    buildable: false
+    externals:
+    - spec: groff
       prefix: /usr
   libtool:
     buildable: false
