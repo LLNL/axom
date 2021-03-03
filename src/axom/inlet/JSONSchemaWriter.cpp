@@ -183,33 +183,28 @@ JSONSchemaWriter::JSONSchemaWriter(const std::string& fileName)
 void JSONSchemaWriter::documentContainer(const Container& container)
 {
   const auto sidreGroup = container.sidreGroup();
-  // Ignore everything before the root - intended for situations when the Inlet
-  // root is not the root of the datastore
-  if(!m_rootPathInitialized)
-  {
-    m_rootPath = sidreGroup->getPath();
-    m_rootPathInitialized = true;
-  }
 
-  // The "level" of the schema to add to - adjusted "up" if we're an element
+  // The "level" of the schema to add properties to - adjusted "up" if we're an element
   // of a collection
   const sidre::Group* propertyGroup = sidreGroup;
   if(isCollectionGroup(sidreGroup->getParent()->getName()))
   {
     propertyGroup = sidreGroup->getParent();
   }
-  // FIXME: Use path class for some of this logic - all this is doing is inserting
-  // a 'properties' in after each token
-  std::string filteredPathName =
-    removePrefix(m_rootPath, propertyGroup->getPathName());
+  // FIXME: Can we use in-progress path class for some of this logic?
+  // JBE: I think this produces incorrect schema when the Inlet root is not the Sidre root,
+  // but using the Path::dirname/parent functions will fix this
+  std::string filteredPathName = propertyGroup->getPathName();
+  // The location that the schema for collection elements should be defined in
   // Note: additionalItems is **not** analogous to additionalProperties
-  detail::filterCollectionPaths(filteredPathName, m_ArrayPaths, "items");
+  static const auto arrayElementSchema = "items";
+  static const auto dictionaryElementSchema = "additionalProperties";
+  detail::filterCollectionPaths(filteredPathName, m_ArrayPaths, arrayElementSchema);
   detail::filterCollectionPaths(filteredPathName,
                                 m_DictionaryPaths,
-                                "additionalProperties");
+                                dictionaryElementSchema);
   std::vector<std::string> tokens;
   utilities::string::split(tokens, filteredPathName, '/');
-  // Remove the collection group annotations
   auto iter =
     std::find(tokens.begin(), tokens.end(), detail::COLLECTION_GROUP_NAME);
   // Replace collection group annotations with a token corresponding to the correct path
@@ -231,15 +226,15 @@ void JSONSchemaWriter::documentContainer(const Container& container)
   }
   std::string containerPath =
     fmt::format("properties/{}", fmt::join(tokens, "/properties/"));
-  // Needed so we can reassign without calling the op= on the Node itself
-  std::reference_wrapper<conduit::Node> containerNode =
+
+  conduit::Node& containerNode =
     container.name().empty() ? m_schemaRoot : m_schemaRoot[containerPath];
 
-  // Annotate with the default type of object, but arrays should be labeled
-  // with "array"
-  if(!containerNode.get().has_child("type"))
+  // Annotate with the "object" as the default since almost everything nested
+  // (structs and dictionaries of structs) is considered an "object"
+  if(!containerNode.has_child("type"))
   {
-    containerNode.get()["type"] = "object";
+    containerNode["type"] = "object";
   }
 
   // We need to record the names of collections so they can be used to properly
@@ -252,7 +247,7 @@ void JSONSchemaWriter::documentContainer(const Container& container)
          return key.type() == InletType::Integer;
        }))
     {
-      containerNode.get()["type"] = "array";
+      containerNode["type"] = "array";
       m_ArrayPaths.push_back(filteredPathName);
     }
     else
@@ -263,18 +258,33 @@ void JSONSchemaWriter::documentContainer(const Container& container)
 
   if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
   {
-    containerNode.get()["description"] =
+    containerNode["description"] =
       std::string(sidreGroup->getView("description")->getString());
   }
 
-  for(const auto& fieldEntry : container.getChildFields())
+  // If this is the collection container for a primitive array, we need to treat it specially (by only visiting one element to get the type
+  // info), otherwise, visit each sub-field
+  if(isCollectionGroup(container.name()) &&
+     !sidreGroup->hasView(detail::STRUCT_COLLECTION_FLAG) &&
+     !container.getChildFields().empty())
   {
-    const auto name = removeBeforeDelimiter(fieldEntry.first);
-    auto& childNode = containerNode.get()["properties"][name];
-    detail::recordFieldSchema(*fieldEntry.second, childNode);
-    if(fieldEntry.second->isRequired())
+    const auto& location = (containerNode["type"].as_string() == "array")
+      ? arrayElementSchema
+      : dictionaryElementSchema;
+    detail::recordFieldSchema(*container.getChildFields().begin()->second,
+                              containerNode[location]);
+  }
+  else
+  {
+    for(const auto& fieldEntry : container.getChildFields())
     {
-      containerNode.get()["required"].append() = name;
+      const auto name = removeBeforeDelimiter(fieldEntry.first);
+      auto& childNode = containerNode["properties"][name];
+      detail::recordFieldSchema(*fieldEntry.second, childNode);
+      if(fieldEntry.second->isRequired())
+      {
+        containerNode["required"].append() = name;
+      }
     }
   }
 }
