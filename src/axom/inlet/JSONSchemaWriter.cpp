@@ -202,9 +202,8 @@ void JSONSchemaWriter::documentContainer(const Container& container)
   // a 'properties' in after each token
   std::string filteredPathName =
     removePrefix(m_rootPath, propertyGroup->getPathName());
-  detail::filterCollectionPaths(filteredPathName,
-                                m_ArrayPaths,
-                                "additionalItems");
+  // Note: additionalItems is **not** analogous to additionalProperties
+  detail::filterCollectionPaths(filteredPathName, m_ArrayPaths, "items");
   detail::filterCollectionPaths(filteredPathName,
                                 m_DictionaryPaths,
                                 "additionalProperties");
@@ -212,8 +211,24 @@ void JSONSchemaWriter::documentContainer(const Container& container)
   utilities::string::split(tokens, filteredPathName, '/');
   // Remove the collection group annotations
   auto iter =
-    std::remove(tokens.begin(), tokens.end(), detail::COLLECTION_GROUP_NAME);
-  tokens.erase(iter, tokens.end());
+    std::find(tokens.begin(), tokens.end(), detail::COLLECTION_GROUP_NAME);
+  // Replace collection group annotations with a token corresponding to the correct path
+  while(iter != tokens.end())
+  {
+    auto afterRemoved = tokens.erase(iter);
+    // If the collection tag wasn't the last element, collapse the thing following it
+    // with the thing preceding it
+    if(afterRemoved != tokens.end())
+    {
+      // e.g. for {"foo", COLLECTION_GROUP_NAME, "baz"}, we want just {"foo/baz"}
+      // so after removing the GROUP_NAME we prepend to the "baz" element and remove
+      // the "foo" element
+      // in practice "baz" will always be "items" or "additionalProperties"
+      *afterRemoved = appendPrefix(*(afterRemoved - 1), *afterRemoved);
+      tokens.erase(afterRemoved - 1);
+    }
+    iter = std::find(tokens.begin(), tokens.end(), detail::COLLECTION_GROUP_NAME);
+  }
   std::string containerPath =
     fmt::format("properties/{}", fmt::join(tokens, "/properties/"));
   // Needed so we can reassign without calling the op= on the Node itself
@@ -226,6 +241,9 @@ void JSONSchemaWriter::documentContainer(const Container& container)
   {
     containerNode.get()["type"] = "object";
   }
+
+  // We need to record the names of collections so they can be used to properly
+  // query the schema when documenting their elements
   if(isCollectionGroup(container.name()))
   {
     auto indices = detail::collectionIndices(container);
