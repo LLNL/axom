@@ -24,6 +24,17 @@ namespace inlet
 {
 namespace detail
 {
+/*!
+ *******************************************************************************
+ * \brief Writes range information (maximum/minimum) to a node corresponding
+ * to the properties of a field
+ * 
+ * \param [in] view The view containing a size-2 array with max/min data
+ * \param [inout] node The node to write to
+ * 
+ * \return The type of the min/max values
+ *******************************************************************************
+ */
 sidre::TypeID recordRange(const sidre::View* view, conduit::Node& node)
 {
   auto type = view->getTypeID();
@@ -43,6 +54,17 @@ sidre::TypeID recordRange(const sidre::View* view, conduit::Node& node)
   return type;
 }
 
+/*!
+ *******************************************************************************
+ * \brief Writes information on the set of valid values to a node corresponding
+ * to the properties of a field
+ * 
+ * \param [in] view The view containing the array of valid numerical values
+ * \param [inout] node The node to write to
+ * 
+ * \return The type of the valid values
+ *******************************************************************************
+ */
 sidre::TypeID recordEnum(const sidre::View* view, conduit::Node& node)
 {
   sidre::TypeID type = view->getTypeID();
@@ -65,7 +87,16 @@ sidre::TypeID recordEnum(const sidre::View* view, conduit::Node& node)
   }
   return type;
 }
-
+/*!
+ *******************************************************************************
+ * \overload
+ * 
+ * \param [in] group The group containing the array of valid string values
+ * 
+ * \note This version is intended for string enumerations, which must be stored
+ * in a Group instead of a view
+ *******************************************************************************
+ */
 sidre::TypeID recordEnum(const sidre::Group* group, conduit::Node& node)
 {
   auto idx = group->getFirstValidViewIndex();
@@ -77,6 +108,15 @@ sidre::TypeID recordEnum(const sidre::Group* group, conduit::Node& node)
   return sidre::CHAR8_STR_ID;
 }
 
+/*!
+ *******************************************************************************
+ * \brief Writes information on a Field object to a node corresponding
+ * to the properties in the schema
+ * 
+ * \param [in] field The field whose JSON schema is to be extracted
+ * \param [inout] node The node to write to
+ *******************************************************************************
+ */
 void recordFieldSchema(const Field& field, conduit::Node& node)
 {
   const static auto jsonTypeNames = []() {
@@ -148,9 +188,19 @@ void recordFieldSchema(const Field& field, conduit::Node& node)
   }
 }
 
-void filterCollectionPaths(std::string& target,
-                           const std::vector<std::string>& collectionPaths,
-                           const std::string& label)
+/*!
+ *******************************************************************************
+ * \brief Augments the paths in the input file corresponding to collections
+ * with a label (via appending just after the path)
+ * 
+ * \param [inout] target The string to modify
+ * \param [in] collectionPaths The paths of collections to look for
+ * \param [in] label The label to append to collection paths found in the target
+ *******************************************************************************
+ */
+void augmentCollectionPaths(std::string& target,
+                            const std::vector<std::string>& collectionPaths,
+                            const std::string& label)
 {
   for(const auto& path : collectionPaths)
   {
@@ -169,6 +219,14 @@ void filterCollectionPaths(std::string& target,
   }
 }
 
+/*!
+ *******************************************************************************
+ * \brief Recursively removes empty nodes from a conduit::Node - used as null
+ * values cannot be present in the final JSON schema
+ * 
+ * \param [inout] parent The node to prune from
+ *******************************************************************************
+ */
 void pruneEmptyNodes(conduit::Node& parent)
 {
   // Can't use iterators here due to iterator invalidation by deletion,
@@ -219,10 +277,12 @@ void JSONSchemaWriter::documentContainer(const Container& container)
   // Note: additionalItems is **not** analogous to additionalProperties
   static const auto arrayElementSchema = "items";
   static const auto dictionaryElementSchema = "additionalProperties";
-  detail::filterCollectionPaths(filteredPathName, m_ArrayPaths, arrayElementSchema);
-  detail::filterCollectionPaths(filteredPathName,
-                                m_DictionaryPaths,
-                                dictionaryElementSchema);
+  detail::augmentCollectionPaths(filteredPathName,
+                                 m_ArrayPaths,
+                                 arrayElementSchema);
+  detail::augmentCollectionPaths(filteredPathName,
+                                 m_DictionaryPaths,
+                                 dictionaryElementSchema);
   std::vector<std::string> tokens;
   utilities::string::split(tokens, filteredPathName, '/');
   auto iter =
@@ -282,8 +342,8 @@ void JSONSchemaWriter::documentContainer(const Container& container)
       std::string(sidreGroup->getView("description")->getString());
   }
 
-  // If this is the collection container for a primitive array, we need to treat it specially (by only visiting one element to get the type
-  // info), otherwise, visit each sub-field
+  // If this is the collection container for a primitive array, we need to treat it specially
+  // (by only visiting one element to get the type info), otherwise, visit each sub-field
   if(isCollectionGroup(container.name()) &&
      !sidreGroup->hasView(detail::STRUCT_COLLECTION_FLAG) &&
      !container.getChildFields().empty())
