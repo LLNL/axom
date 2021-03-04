@@ -13,6 +13,7 @@
 # Add Serial GTests based tests
 set(gtest_inlet_tests
     inlet_Reader.cpp
+    inlet_writer.cpp
     inlet_Inlet.cpp 
     inlet_object.cpp )
 
