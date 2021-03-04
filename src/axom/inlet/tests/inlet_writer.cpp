@@ -21,19 +21,16 @@ using axom::inlet::Inlet;
 using axom::inlet::JSONSchemaWriter;
 using axom::sidre::DataStore;
 
-bool hasSchemaUtility() { return std::system("jsonschema --version") == 0; }
+bool hasSchemaUtility()
+{
+  const static bool hasUtility = std::system("jsonschema --version") == 0;
+  return hasUtility;
+}
 
 bool validateString(Inlet& inlet, const std::string& luaString)
 {
-  const static bool hasUtility = hasSchemaUtility();
-  if(!hasUtility)
-  {
-    SLIC_WARNING("Skipping test, jsonschema tool was not found");
-    return true;
-  }
-
-  const auto instanceFile = "test_input.json";
-  const auto schemaFile = "input_schema.json";
+  const static auto instanceFile = "test_input.json";
+  const static auto schemaFile = "input_schema.json";
 
   std::ofstream jsonInstance(instanceFile);
   jsonInstance << axom::inlet::detail::fromLuaTo<axom::inlet::JSONReader>(
@@ -60,7 +57,16 @@ Inlet createBasicInlet(DataStore* ds, const std::string& luaString)
 
 template <typename InletReader>
 class inlet_writer : public ::testing::Test
-{ };
+{
+protected:
+  void SetUp() override
+  {
+    if(!hasSchemaUtility())
+    {
+      GTEST_SKIP() << "Skipping test, jsonschema tool was not found";
+    }
+  }
+};
 
 TYPED_TEST_SUITE(inlet_writer, axom::inlet::detail::ReaderTypes);
 
