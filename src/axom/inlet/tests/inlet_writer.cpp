@@ -23,7 +23,8 @@ using axom::sidre::DataStore;
 
 bool hasSchemaUtility()
 {
-  const static bool hasUtility = std::system("jsonschema --version") == 0;
+  const static bool hasUtility =
+    std::system("/usr/bin/jsonschema --version") == 0;
   return hasUtility;
 }
 
@@ -42,7 +43,7 @@ bool validateString(Inlet& inlet, const std::string& luaString)
   inlet.writeDoc();
 
   const std::string cmd =
-    fmt::format("jsonschema -i {0} {1}", instanceFile, schemaFile);
+    fmt::format("/usr/bin/jsonschema -i {0} {1}", instanceFile, schemaFile);
   return std::system(cmd.c_str()) == 0;
 }
 
@@ -63,7 +64,7 @@ protected:
   {
     if(!hasSchemaUtility())
     {
-      GTEST_SKIP() << "Skipping test, jsonschema tool was not found";
+      GTEST_SKIP() << "jsonschema tool was not found";
     }
   }
 };
