@@ -344,11 +344,13 @@ int main(int argc, char** argv)
 
   if(docsEnabled)
   {
-    // std::unique_ptr<inlet::SphinxWriter> writer(
-    //   new inlet::SphinxWriter("nested_structs.rst"));
-    std::unique_ptr<inlet::JSONSchemaWriter> writer(
+    std::unique_ptr<inlet::SphinxWriter> sphinxWriter(
+      new inlet::SphinxWriter("nested_structs.rst"));
+    inlet.registerWriter(std::move(sphinxWriter));
+    inlet.writeDoc();
+    std::unique_ptr<inlet::JSONSchemaWriter> schemaWriter(
       new inlet::JSONSchemaWriter("nested_structs.json"));
-    inlet.registerWriter(std::move(writer));
+    inlet.registerWriter(std::move(schemaWriter));
     inlet.writeDoc();
   }
 }
