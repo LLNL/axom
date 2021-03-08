@@ -338,4 +338,8 @@ int main(int argc, char** argv)
     inlet.registerWriter(std::move(writer));
     inlet.writeDoc();
   }
+  conduit::Node node;
+  ds.getRoot()->createNativeLayout(node);
+  node.save("stuff.yaml", "yaml");
+  // ds.getRoot()->save("stuff.json", "conduit_json");
 }

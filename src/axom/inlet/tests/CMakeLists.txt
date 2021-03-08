@@ -14,7 +14,8 @@
 set(gtest_inlet_tests
     inlet_Reader.cpp
     inlet_Inlet.cpp 
-    inlet_object.cpp )
+    inlet_object.cpp
+    inlet_restart.cpp )
 
 blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_function.cpp IF SOL_FOUND)
 

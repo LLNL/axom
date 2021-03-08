@@ -13,6 +13,80 @@ namespace axom
 {
 namespace inlet
 {
+Container::Container(const std::string& name,
+                     const std::string& description,
+                     Reader& reader,
+                     axom::sidre::Group* sidreRootGroup,
+                     bool docEnabled)
+  : m_name(name)
+  , m_reader(reader)
+  , m_sidreRootGroup(sidreRootGroup)
+  , m_docEnabled(docEnabled)
+{
+  SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
+                  "Inlet's Sidre Datastore class not set");
+
+  if(m_name == "")
+  {
+    m_sidreGroup = m_sidreRootGroup;
+  }
+  else
+  {
+    if(!m_sidreRootGroup->hasGroup(name))
+    {
+      m_sidreGroup = m_sidreRootGroup->createGroup(name);
+      m_sidreGroup->createViewString("InletType", "Container");
+    }
+    else
+    {
+      m_sidreGroup = m_sidreRootGroup->getGroup(name);
+    }
+  }
+
+  for(auto idx = m_sidreGroup->getFirstValidGroupIndex();
+      sidre::indexIsValid(idx);
+      idx = m_sidreGroup->getNextValidGroupIndex(idx))
+  {
+    auto group = m_sidreGroup->getGroup(idx);
+    if(group->hasView("InletType"))
+    {
+      const std::string inletType = group->getView("InletType")->getString();
+      const std::string childName = appendPrefix(m_name, group->getName());
+
+      if(inletType == "Container")
+      {
+        m_containerChildren.emplace(
+          childName,
+          cpp11_compat::make_unique<Container>(childName,
+                                               "",
+                                               m_reader,
+                                               m_sidreRootGroup,
+                                               m_docEnabled));
+      }
+      else if(inletType == "Field")
+      {
+        // FIXME: We probably need to write the type to the datastore
+        m_fieldChildren.emplace(
+          childName,
+          cpp11_compat::make_unique<Field>(group,
+                                           m_sidreRootGroup,
+                                           sidre::DataTypeId::NO_TYPE_ID,
+                                           m_docEnabled));
+      }
+    }
+  }
+
+  if(!description.empty())
+  {
+    if(m_sidreGroup->hasView("description"))
+    {
+      //TODO: warn user?
+      m_sidreGroup->destroyViewAndData("description");
+    }
+    m_sidreGroup->createViewString("description", description);
+  }
+}
+
 template <typename Func>
 void Container::forEachCollectionElement(Func&& func) const
 {
@@ -684,7 +758,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
 {
   if(isStructCollection() || !m_nested_aggregates.empty())
   {
-    // If it has indices, we're adding a primitive field to an array
+    // If it has indices, we're adding a function to an array
     // of structs, so we need to iterate over the subcontainers
     // corresponding to elements of the array
     std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
@@ -704,7 +778,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
       }
     }
 
-    // Create an aggregate field so requirements can be collectively imposed
+    // Create an aggregate function so requirements can be collectively imposed
     // on all elements of the array
     m_aggregate_funcs.emplace_back(std::move(funcs));
 
@@ -713,7 +787,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
   }
   else
   {
-    // Otherwise actually add a Field
+    // Otherwise actually add a Function
     std::string fullName = appendPrefix(m_name, name);
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(

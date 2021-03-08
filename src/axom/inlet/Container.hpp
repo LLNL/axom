@@ -306,42 +306,7 @@ public:
             const std::string& description,
             Reader& reader,
             axom::sidre::Group* sidreRootGroup,
-            bool docEnabled = true)
-    : m_name(name)
-    , m_reader(reader)
-    , m_sidreRootGroup(sidreRootGroup)
-    , m_docEnabled(docEnabled)
-  {
-    SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
-                    "Inlet's Sidre Datastore class not set");
-
-    if(m_name == "")
-    {
-      m_sidreGroup = m_sidreRootGroup;
-    }
-    else
-    {
-      if(!m_sidreRootGroup->hasGroup(name))
-      {
-        m_sidreGroup = m_sidreRootGroup->createGroup(name);
-        m_sidreGroup->createViewString("InletType", "Container");
-      }
-      else
-      {
-        m_sidreGroup = m_sidreRootGroup->getGroup(name);
-      }
-    }
-
-    if(description != "")
-    {
-      if(m_sidreGroup->hasView("description"))
-      {
-        //TODO: warn user?
-        m_sidreGroup->destroyViewAndData("description");
-      }
-      m_sidreGroup->createViewString("description", description);
-    }
-  }
+            bool docEnabled = true);
 
   // Containers must be move-only - delete the implicit shallow copy constructor
   Container(const Container&) = delete;
