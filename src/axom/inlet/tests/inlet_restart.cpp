@@ -103,3 +103,61 @@ TYPED_TEST(inlet_restart, simple_scalars_repeat_schema)
   value = restartInlet.get<bool>("bar");
   EXPECT_FALSE(value);
 }
+
+struct Foo
+{
+  bool bar;
+  bool baz;
+};
+
+template <>
+struct FromInlet<Foo>
+{
+  Foo operator()(const axom::inlet::Container& base)
+  {
+    Foo f {base["bar"], base["baz"]};
+    return f;
+  }
+};
+
+TYPED_TEST(inlet_restart, simple_struct)
+{
+  std::string testString = "foo = { bar = true; baz = false }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Check for existing fields
+  auto& foo = inlet.addStruct("foo", "foo's description");
+  foo.addBool("bar", "bar's description");
+  foo.addBool("baz", "baz's description");
+
+  // No input provided - the datastore should already contain all the data
+  Inlet restartInlet = createBasicInlet<TypeParam>(&ds);
+
+  Foo f = restartInlet["foo"].get<Foo>();
+  EXPECT_TRUE(f.bar);
+  EXPECT_FALSE(f.baz);
+}
+
+TYPED_TEST(inlet_restart, simple_struct_repeat_schema)
+{
+  std::string testString = "foo = { bar = true; baz = false }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  // Check for existing fields
+  auto& foo = inlet.addStruct("foo", "foo's description");
+  foo.addBool("bar", "bar's description");
+  foo.addBool("baz", "baz's description");
+
+  // No input provided - the datastore should already contain all the data
+  Inlet restartInlet = createBasicInlet<TypeParam>(&ds);
+
+  auto& restartFoo = restartInlet.addStruct("foo", "foo's description");
+  restartFoo.addBool("bar", "bar's description");
+  restartFoo.addBool("baz", "baz's description");
+
+  Foo f = restartInlet["foo"].get<Foo>();
+  EXPECT_TRUE(f.bar);
+  EXPECT_FALSE(f.baz);
+}

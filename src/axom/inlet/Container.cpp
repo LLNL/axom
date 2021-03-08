@@ -438,6 +438,12 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
   {
     // Otherwise actually add a Field
     std::string fullName = appendPrefix(m_name, name);
+    // First check if the field already exists
+    auto iter = m_fieldChildren.find(fullName);
+    if(iter != m_fieldChildren.end())
+    {
+      return *iter->second;
+    }
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
@@ -789,6 +795,12 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
   {
     // Otherwise actually add a Function
     std::string fullName = appendPrefix(m_name, name);
+    // First check if the function already exists
+    auto iter = m_functionChildren.find(fullName);
+    if(iter != m_functionChildren.end())
+    {
+      return *iter->second;
+    }
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
