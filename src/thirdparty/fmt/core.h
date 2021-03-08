@@ -1571,12 +1571,10 @@ class format_arg_store
 
   friend class basic_format_args<Context>;
 
+  static constexpr unsigned long long type_encoding = detail::encode_types<Context, Args...>();
   static constexpr unsigned long long desc =
-      (is_packed ? detail::encode_types<Context, Args...>()
-                 : detail::is_unpacked_bit | num_args) |
-      (num_named_args != 0
-           ? static_cast<unsigned long long>(detail::has_named_args_bit)
-           : 0);
+      (is_packed ? type_encoding : detail::is_unpacked_bit | num_args) |
+      (num_named_args != 0 ? static_cast<unsigned long long>(detail::has_named_args_bit) : 0);
 
  public:
   format_arg_store(const Args&... args)
