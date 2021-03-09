@@ -79,6 +79,7 @@ match the length the given vector:
 .. note::  ``Inlet::getGlobalContainer()->registerVerifier()`` can be used to add a verifier to apply rules
   to the Fields at the global level.
 
+For a full description of Inlet's verification rules, see :ref:`Verification <inlet_verification_page_label>`.
 
 .. _inlet_accessing_data_label:
 

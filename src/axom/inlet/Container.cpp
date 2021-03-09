@@ -210,10 +210,12 @@ Container& Container::addStructCollection(const std::string& name,
     std::vector<Key> indices;
     std::string fullName = appendPrefix(m_name, name);
     fullName = removeAllInstances(fullName, detail::COLLECTION_GROUP_NAME + "/");
-    if(m_reader.getIndices(fullName, indices))
+    const auto result = m_reader.getIndices(fullName, indices);
+    if(result == ReaderResult::Success)
     {
       container.addIndicesGroup(indices, description);
     }
+    markRetrievalStatus(*container.m_sidreGroup, result);
     markAsStructCollection(*container.m_sidreGroup);
   }
   return container;
@@ -383,10 +385,12 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<bool>(
   bool forArray,
   bool val)
 {
-  if(forArray || m_reader.getBool(lookupPath, val))
+  const auto result = m_reader.getBool(lookupPath, val);
+  if(forArray || result == ReaderResult::Success)
   {
     sidreGroup->createViewScalar("value", val ? int8(1) : int8(0));
   }
+  markRetrievalStatus(*sidreGroup, result);
   return axom::sidre::DataTypeId::INT8_ID;
 }
 
@@ -397,10 +401,12 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<int>(
   bool forArray,
   int val)
 {
-  if(forArray || m_reader.getInt(lookupPath, val))
+  const auto result = m_reader.getInt(lookupPath, val);
+  if(forArray || result == ReaderResult::Success)
   {
     sidreGroup->createViewScalar("value", val);
   }
+  markRetrievalStatus(*sidreGroup, result);
   return axom::sidre::DataTypeId::INT_ID;
 }
 
@@ -411,10 +417,12 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<double>(
   bool forArray,
   double val)
 {
-  if(forArray || m_reader.getDouble(lookupPath, val))
+  const auto result = m_reader.getDouble(lookupPath, val);
+  if(forArray || result == ReaderResult::Success)
   {
     sidreGroup->createViewScalar("value", val);
   }
+  markRetrievalStatus(*sidreGroup, result);
   return axom::sidre::DataTypeId::DOUBLE_ID;
 }
 
@@ -425,10 +433,12 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<std::string>(
   bool forArray,
   std::string val)
 {
-  if(forArray || m_reader.getString(lookupPath, val))
+  const auto result = m_reader.getString(lookupPath, val);
+  if(forArray || result == ReaderResult::Success)
   {
     sidreGroup->createViewString("value", val);
   }
+  markRetrievalStatus(*sidreGroup, result);
   return axom::sidre::DataTypeId::CHAR8_STR_ID;
 }
 
@@ -436,7 +446,7 @@ namespace detail
 {
 /*!
   *****************************************************************************
-  * \brief Adds the contents of an array to the table
+  * \brief Adds the contents of an array to the container
   * 
   * \return The keys that were added
   *****************************************************************************
@@ -456,7 +466,7 @@ std::vector<VariantKey> registerCollection(Container& container,
 
 /*!
   *****************************************************************************
-  * \brief Adds the contents of a dict to the table
+  * \brief Adds the contents of a dict to the container
   * 
   * \return The keys that were added
   *****************************************************************************
@@ -512,7 +522,8 @@ struct PrimitiveArrayHelper<Key, bool>
   {
     std::unordered_map<Key, bool> map;
     // Failure to retrieve a map is not necessarily an error
-    reader.getBoolMap(lookupPath, map);
+    const auto result = reader.getBoolMap(lookupPath, map);
+    markRetrievalStatus(*container.sidreGroup(), result);
     return registerCollection(container, map);
   }
 };
@@ -525,7 +536,8 @@ struct PrimitiveArrayHelper<Key, int>
                                      const std::string& lookupPath)
   {
     std::unordered_map<Key, int> map;
-    reader.getIntMap(lookupPath, map);
+    const auto result = reader.getIntMap(lookupPath, map);
+    markRetrievalStatus(*container.sidreGroup(), result);
     return registerCollection(container, map);
   }
 };
@@ -538,7 +550,8 @@ struct PrimitiveArrayHelper<Key, double>
                                      const std::string& lookupPath)
   {
     std::unordered_map<Key, double> map;
-    reader.getDoubleMap(lookupPath, map);
+    const auto result = reader.getDoubleMap(lookupPath, map);
+    markRetrievalStatus(*container.sidreGroup(), result);
     return registerCollection(container, map);
   }
 };
@@ -551,7 +564,8 @@ struct PrimitiveArrayHelper<Key, std::string>
                                      const std::string& lookupPath)
   {
     std::unordered_map<Key, std::string> map;
-    reader.getStringMap(lookupPath, map);
+    const auto result = reader.getStringMap(lookupPath, map);
+    markRetrievalStatus(*container.sidreGroup(), result);
     return registerCollection(container, map);
   }
 };
@@ -815,41 +829,48 @@ Container& Container::registerVerifier(std::function<bool(const Container&)> lam
 
 bool Container::verify() const
 {
-  bool verified = true;
+  // Whether the calling container has any "truthy" subcontainers, fields, or functions
+  // If the name is empty then we're the global (root) container, which we always
+  // consider to be defined
+  const bool this_container_defined = static_cast<bool>(*this) || m_name.empty();
+
   // If this container was required, make sure something was defined in it
-  verified &=
-    verifyRequired(*m_sidreGroup, static_cast<bool>(*this), "Container");
+  bool verified =
+    verifyRequired(*m_sidreGroup, this_container_defined, "Container");
+
   // Verify this Container if a lambda was configured
-  if(m_verifier && !m_verifier(*this))
+  if(this_container_defined && m_verifier && !m_verifier(*this))
   {
     verified = false;
     SLIC_WARNING(
       fmt::format("[Inlet] Container failed verification: {0}", m_name));
   }
-  // Verify the child Fields of this Container
-  for(const auto& field : m_fieldChildren)
-  {
-    if(!field.second->verify())
-    {
-      verified = false;
-    }
-  }
-  // Verify the child Containers of this Container
-  for(const auto& container : m_containerChildren)
-  {
-    if(!container.second->verify())
-    {
-      verified = false;
-    }
-  }
 
-  // Verify the child Functions of this Container
-  for(const auto& function : m_functionChildren)
+  // Checking the child objects is not needed if the container is empty
+  if(this_container_defined)
   {
-    if(!function.second->verify())
+    // Verify the child Fields of this Container
+    for(const auto& field : m_fieldChildren)
     {
-      verified = false;
+      verified = verified && field.second->verify();
     }
+    // Verify the child Containers of this Container
+    for(const auto& container : m_containerChildren)
+    {
+      verified = verified && container.second->verify();
+    }
+
+    // Verify the child Functions of this Container
+    for(const auto& function : m_functionChildren)
+    {
+      verified = verified && function.second->verify();
+    }
+  }
+  // If this has a collection group, it always needs to be verified, as annotations
+  // may have been applied to the collection group and not the calling group
+  else if(hasContainer(detail::COLLECTION_GROUP_NAME))
+  {
+    verified = verified && getContainer(detail::COLLECTION_GROUP_NAME).verify();
   }
 
   return verified;
