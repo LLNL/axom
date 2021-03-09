@@ -70,7 +70,7 @@ def clone_axom():
     os.mkdir(tmp_dir)
     os.chdir(tmp_dir)
     print("[cloning axom into {0}]".format(pjoin(tmp_dir,"axom")))
-    res = sexe("git clone git@github.com:LLNL/axom.git",echo=True)
+    res = sexe("git clone https://github.com/LLNL/axom.git",echo=True)
     if res != 0:
         print("[ERROR: clone of axom repo failed]")
         sys.exit(res)
