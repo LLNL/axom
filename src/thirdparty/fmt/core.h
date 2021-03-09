@@ -1571,10 +1571,23 @@ class format_arg_store
 
   friend class basic_format_args<Context>;
 
+// AXOM PATCH: workaround for bug in combination of xlc@16.1.1 + nvcc
+//    desc ended up being undefined, pulling out new type_encoding worked
+
+  // original:
+  // static constexpr unsigned long long desc =
+  //     (is_packed ? detail::encode_types<Context, Args...>()
+  //                : detail::is_unpacked_bit | num_args) |
+  //     (num_named_args != 0
+  //          ? static_cast<unsigned long long>(detail::has_named_args_bit)
+  //          : 0);
+
   static constexpr unsigned long long type_encoding = detail::encode_types<Context, Args...>();
   static constexpr unsigned long long desc =
       (is_packed ? type_encoding : detail::is_unpacked_bit | num_args) |
       (num_named_args != 0 ? static_cast<unsigned long long>(detail::has_named_args_bit) : 0);
+
+// END AXOM PATCH
 
  public:
   format_arg_store(const Args&... args)
