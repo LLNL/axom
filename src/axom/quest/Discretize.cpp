@@ -6,6 +6,7 @@
 #include "axom/quest/Discretize.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Transform.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include <cmath>
@@ -19,7 +20,18 @@ constexpr double PTINY = 1e-80;
 
 using PointType = primal::Point<double, 3>;
 using NAType = primal::NumericArray<double, 3>;
+using TransformType = primal::Transform<double, 3>;
 
+enum {
+   P = 0,
+   Q,
+   R,
+   S,
+   T,
+   U
+};
+
+/* ------------------------------------------------------------ */
 /* Project a Point onto a sphere.
  * Do we want to modify the passed-in point, or return a new one?
  */
@@ -33,6 +45,16 @@ PointType project_to_shape(const PointType & p, const SphereType &sphere)
    return PointType::make_point(drat * p[0] - dratc * ctr[0],
                                 drat * p[1] - dratc * ctr[1],
                                 drat * p[2] - dratc * ctr[2]);
+}
+
+PointType rescale_YZ(const PointType & p, double new_dst)
+{
+   double cur_dst = sqrt(p[1]*p[1] + p[2]*p[2]);
+   PointType retval;
+   retval[0] = p[0];
+   retval[1] = p[1] * new_dst / cur_dst;
+   retval[2] = p[2] * new_dst / cur_dst;
+   return retval;
 }
 
 /* Return an octahedron whose six points lie on the given sphere.
@@ -61,6 +83,23 @@ OctType from_sphere(const SphereType & sphere)
    return OctType(P, Q, R, S, T, U);
 }
 
+/* Return an octahedron whose six points lie on the truncated cone
+ * described by rotating the line segment ab around the positive X-axis.
+ */
+OctType from_segment(const TwoDPointType & a, const TwoDPointType & b)
+{
+   const double SQ_3_2 = sqrt(3.)/2.;
+   
+   PointType p{a[0],  0.,  a[1]};
+   PointType q{b[0], -SQ_3_2 * b[1], -0.5 * b[1]};
+   PointType r{a[0], -SQ_3_2 * a[1], -0.5 * a[1]};
+   PointType s{b[0],  SQ_3_2 * b[1], -0.5 * b[1]};
+   PointType t{a[0],  SQ_3_2 * a[1], -0.5 * a[1]};
+   PointType u{b[0],  0.,  b[1]};
+
+   return OctType(p, q, r, s, t, u);
+}
+
 /* Given a sphere, a parent octahedron with vertices lying on the
  * sphere, and vertex indices s, t, u defining a face on that
  * octahedron, return a new oct sharing the face (s,t,u) and all other
@@ -83,10 +122,26 @@ OctType new_inscribed_oct(const SphereType & sphere,
    return OctType(P, Q, R, o[s], o[t], o[u]);
 }
 
-/* Given a primitive shape and level of refinement, return the list of
- * octahedra that approximate the shape at that LOR.
+OctType new_inscribed_prism(OctType & old_oct, int p_off, int s_off, int t_off,
+                            int u_off, TwoDPointType pa, TwoDPointType pb)
+{
+   OctType retval;
+   retval[P] = old_oct[p_off];
+   PointType new_q = PointType::lerp(old_oct[u_off], old_oct[s_off], 0.5);
+   retval[Q] = rescale_YZ(new_q, pb[1]);
+   PointType new_r = PointType::lerp(old_oct[p_off], old_oct[t_off], 0.5);
+   retval[R] = rescale_YZ(new_r, pa[1]);
+   retval[S] = old_oct[s_off];
+   retval[T] = old_oct[t_off];
+   retval[U] = old_oct[u_off];
+   return retval;
+}
+
+
+/* Given a sphere and level of refinement, return the list of
+ * octahedra that approximate that sphere at that LOR.
  *
- * As noted in the doxygen, this function chops a shape into O(4^levels)
+ * As noted in the doxygen, this function chops a sphere into O(4^levels)
  * octahedra.  That is exponential growth.  Use appropriate caution.
  */
 void discretize(const SphereType & sphere,
@@ -156,6 +211,156 @@ void discretize(const SphereType & sphere,
    }
 }
 
+/* ------------------------------------------------------------ */
+/* Discretize a cylinder (or truncated cone) into a hierarchy of
+ * triangular prisms (or truncated tetrahedra) stored as octahedra.
+ * Each level of refinement places a new prism/tet on all exposed faces.
+ *
+ * Input:  the axis of rotation, stored as a geometric ray; 2D points
+ *         a and b; number of levels of refinement, index into the
+ *         output vector
+ *
+ * Output: the output vector of prisms (placed at the index)
+ *
+ * Conceptually, the axis is transformed to the positive X-axis and the
+ * end points a and b are revolved around it, describing circles that are
+ * the truncated cone's end-caps.  The segment ab revolved about the axis
+ * becomes the side-wall.
+ *
+ * The level-zero prism is constructed by inscribing a triangle in
+ * each of the end-cap circles.  In one circle, put the points PRT; in the
+ * other circle, put the points UQS.  The edges UP, QR, and ST lie in the
+ * side-wall described by rotating the segment ab about the x-axis.
+ * (This five-sided prism, with six vertices, two end-caps, and three side-
+ * walls, is stored in an Octahedron data record.  The edges PQ, RS, and TU
+ * split the quadrilateral prism side-walls into pairs of coplanar
+ * triangles.)
+ *
+ * The next level of refinement always adds a prism to each exposed
+ * quadrilateral side-wall.
+ *
+ * After 
+ */
+void discrSeg(const RayType & axis,
+              const TwoDPointType & a,
+              const TwoDPointType & b,
+              int levels,
+              std::vector<OctType> & out,
+              int idx)
+{
+   // Establish a prism (in an octahedron record) with one triangular
+   // end lying on the circle described by rotating point a around the
+   // x-axis and the other lying on circle from rotating b.
+   out[idx+0] = from_segment(a, b);
+
+   // curr_lvl indexes to the first prism in the level we're currently refining
+   int curr_lvl = idx;
+   int curr_lvl_count = 1;
+   int next_lvl = curr_lvl + curr_lvl_count;
+
+   TwoDPointType pa, pb;
+
+   // Refine: add an octahedron to each exposed face.
+   for (int level = 0; level < levels; ++level)
+   {
+      // Each level of refinement generates a prism for each exposed
+      // face, so twice the prisms in the preceding level.  Refining the
+      // initial prism is the only different step, since all three of its
+      // side-faces are exposed.
+      int lvl_factor = 2;
+      if (level == 0) { lvl_factor = 3; }
+
+      // The ends of the prisms switch each level.
+      if (level & 1)
+      {
+         pa = b;
+         pb = a;
+      }
+      else
+      {
+         pa = a;
+         pb = b;
+      }
+
+      // This loop generates the prisms of the next level of refinement.
+      // The specified vertices ensure that the new prisms always have
+      // triangular end-caps QSU and RTP, and that side-face PTSU faces
+      // the parent-level prism.
+      // Of note, the child-level end-cap QSU is coplanar with parent-
+      // level cap RTP, and vice versa.  Hence the preceding if-statement
+      // with comment "the ends switch each level."
+      for (int i = 0; i < curr_lvl_count; ++i)
+      {
+         out[next_lvl + i*lvl_factor + 0] =
+            new_inscribed_prism(out[curr_lvl + i], Q, T, S, R, pa, pb);
+         out[next_lvl + i*lvl_factor + 1] =
+            new_inscribed_prism(out[curr_lvl + i], U, R, Q, P, pa, pb);
+         if (curr_lvl == 0)
+         {
+            out[next_lvl + i*lvl_factor + 2] =
+               new_inscribed_prism(out[curr_lvl + i], S, P, U, T, pa, pb);
+         }
+      }
+
+      curr_lvl = next_lvl;
+      curr_lvl_count *= lvl_factor;
+      next_lvl = curr_lvl + curr_lvl_count;
+   }
+
+   // Transform: move all the prisms from the +X axis to the actual axis
+   TransformType t = TransformType(axis.origin()) *
+      TransformType::RotateToXAxisFrom(axis.direction());
+   for (OctType & o : out)
+   {
+      o = t * o;
+   }
+}
+
+
+/* Given a surface of revolution and level of refinement, return the list of
+ * octahedra that approximate that shape at that LOR.
+ *
+ * As noted in the doxygen, this function chops a surface of revolution into
+ * n*O(2^levels) octahedra, where n is the number of segments in the SoR (one
+ * less than the polyline's length).  That is exponential growth.  Use
+ * appropriate caution.
+ */
+void discretize(const RayType & axis, std::vector<TwoDPointType> & polyline,
+                int levels, std::vector<OctType> & out)
+{
+   // How many octahedra will we generate in each segment of the polyline?
+   // This is done in discretizeSegment() (which see for further details).
+   // - One oct for the central octahedron (level 0),
+   // - three more for its side faces (level 1),
+   // - and for level i > 1, two times the octahedron count in level i-1,
+   //   to refine each exposed face.
+   // 
+   // Total = 1 + 3*sum[i=0 to levels-1](2^i)
+   int octcount = 1;
+   for (int level = levels; level > 0; --level)
+   {
+      if (level == 1)
+      {
+         octcount *= 3;
+      }
+      else
+      {
+         octcount *= 2;
+      }
+      octcount += 1;
+   }
+
+   // That was the octahedron count for one segment.  Multiply by the number
+   // of segments we will compute.
+   int n = polyline.size() - 1;
+   int totaloctcount = octcount * n;
+   out.resize(totaloctcount);
+
+   for (int seg = 0; seg < n; ++seg)
+   {
+      discrSeg(axis, polyline[seg], polyline[seg+1], levels, out, seg*octcount);
+   }
+}
 }  // end namespace quest
 }  // end namespace axom
 

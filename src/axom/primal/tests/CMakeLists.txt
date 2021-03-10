@@ -27,6 +27,7 @@ set( primal_tests
     primal_squared_distance.cpp
     primal_tetrahedron.cpp
     primal_octahedron.cpp
+    primal_transform.cpp
     primal_triangle.cpp
     primal_vector.cpp
    )
