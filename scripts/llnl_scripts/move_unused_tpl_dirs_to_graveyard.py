@@ -51,9 +51,13 @@ def main():
     print "[# of active %d ]" % len(r["active"])
     print "[# of unused %d ]" % len(r["unused"])
 
+    success = True
     for d in r["unused"]:
         cmd = "mv %s %s" % (d, graveyard_path(d)) 
-        sexe(cmd)
+        res = sexe(cmd)
+        if res != 0:
+            success = False
+    return success
 
 
 if __name__ == "__main__":
