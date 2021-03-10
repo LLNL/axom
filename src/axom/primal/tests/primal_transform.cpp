@@ -43,27 +43,39 @@ TEST(primal_transform, twoDconstructor)
   using ValueType = double;
   using TransformType = primal::Transform<ValueType, DIM>;
   using VectorType = primal::Vector<ValueType, DIM>;
-    
-  double array_id[ARRAY] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-  TransformType idtr;
-  expect_array_eq(idtr.getTransform().data(), array_id, ARRAY);
 
-  double array_matrix[ARRAY] = {0, 1, 0, -1, 0, 0, 0, 0, 1};
-  TransformType arraytr(array_matrix);
-  expect_array_eq(arraytr.getTransform().data(), array_matrix, ARRAY);
+  {
+    SCOPED_TRACE("Default ctor gives identity transform");
+    double array_id[ARRAY] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    TransformType idtr;
+    expect_array_eq(idtr.getTransform().data(), array_id, ARRAY);
+  }
 
-  double array_translate[ARRAY] = {1, 0, 0, 0, 1, 0, 3.1, -2.4, 1};
-  double vector_data[DIM] = {3.1, -2.4};
-  VectorType translate(vector_data, ARRAY);
-  TransformType translatetr(translate);
-  expect_array_eq(translatetr.getTransform().data(), array_translate, ARRAY);
+  {
+    SCOPED_TRACE("Ctor from array");
+    double array_matrix[ARRAY] = {0, 1, 0, -1, 0, 0, 0, 0, 1};
+    TransformType arraytr(array_matrix);
+    expect_array_eq(arraytr.getTransform().data(), array_matrix, ARRAY);
+  }
 
-  double theta = M_PI / 3.;
-  double s = sin(theta);
-  double c = cos(theta);
-  double array_rotate[ARRAY] {c, s, 0, -s, c, 0, 0, 0, 1};
-  TransformType rotatetr(0, theta);
-  expect_array_eq(rotatetr.getTransform().data(), array_rotate, ARRAY);
+  {
+    SCOPED_TRACE("Translation ctor");
+    double array_translate[ARRAY] = {1, 0, 0, 0, 1, 0, 3.1, -2.4, 1};
+    double vector_data[DIM] = {3.1, -2.4};
+    VectorType translate(vector_data, ARRAY);
+    TransformType translatetr(translate);
+    expect_array_eq(translatetr.getTransform().data(), array_translate, ARRAY);
+  }
+
+  {
+    SCOPED_TRACE("Rotation ctor");
+    double theta = M_PI / 3.;
+    double s = sin(theta);
+    double c = cos(theta);
+    double array_rotate[ARRAY] {c, s, 0, -s, c, 0, 0, 0, 1};
+    TransformType rotatetr(0, theta);
+    expect_array_eq(rotatetr.getTransform().data(), array_rotate, ARRAY);
+  }
 }
 
 //------------------------------------------------------------------------------
