@@ -87,8 +87,8 @@ clean :
 
 
 .PHONY : help
-.PHONY : src-cz src-cz-toss3 src-cz-blueos src-cz-blueosp9
-.PHONY : tpl-cz tpl-cz-toss3 tpl-cz-blueos tpl-cz-blueosp9
+.PHONY : src-cz src-cz-toss3 src-cz-blueos
+.PHONY : tpl-cz tpl-cz-toss3 tpl-cz-blueos
 .PHONY : src-rz src-rz-toss3 src-rz-blueos src-rz-blueosp9
 .PHONY : tpl-rz tpl-rz-toss3 tpl-rz-blueos tpl-rz-blueosp9
 .PHONY : clean
