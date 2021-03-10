@@ -64,6 +64,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
   datastore is `Load` ed in
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
+- Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
+- Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
@@ -71,6 +73,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   target if version is unknown or wrong.
 - Inlet: Apply lambda verifiers on generic containers to individual elements
   for consistency
+- Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
+- Fixed a bug relating to deeply nested callback functions in Inlet
 
 
 ## [Version 0.4.0] - Release date 2020-09-22

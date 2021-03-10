@@ -213,17 +213,17 @@ TYPED_TEST(inlet_Inlet_basic, getNestedBoolsThroughTable)
   bool value = false;
 
   // Grab the subtable
-  Table& table = inlet.getTable("foo");
+  auto foo = inlet["foo"];
 
   // Check for existing fields
-  value = table["bar"];
+  value = foo["bar"];
   EXPECT_TRUE(value);
 
-  value = table["baz"];
+  value = foo["baz"];
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
-  auto proxy = table["nonexistant"];
+  auto proxy = foo["nonexistant"];
   EXPECT_EQ(proxy.type(), InletType::Nothing);
 }
 
@@ -252,7 +252,7 @@ TYPED_TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughTable)
 
   bool value = false;
 
-  Table& table = inlet.getTable("foo/quux/corge");
+  auto table = inlet["foo/quux/corge"];
 
   // Check for existing fields
   value = table["quuz/grault/bar"];
@@ -291,7 +291,7 @@ TYPED_TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughField)
 
   bool value = false;
 
-  Table& table = inlet.getTable("foo/quux/corge");
+  auto table = inlet["foo/quux/corge"];
 
   // Check for existing fields
   value = table["quuz/grault/bar"];
@@ -529,7 +529,7 @@ TYPED_TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   // Check for existing fields
-  Table& table = inlet.addTable("foo", "A table called foo");
+  Table& table = inlet.addStruct("foo", "A table called foo");
   table.required(true);
 
   table.addString("bar", "bar's description").required(true);
@@ -569,7 +569,7 @@ TYPED_TEST(inlet_Inlet_views, NestedTableViewCheck1)
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
   inlet.addBool("field1", "this is field #1, a boolean value").required(true);
   inlet.addInt("field2", "this is field #2, an integer").required(false);
-  Table& t = inlet.addTable("NewTable", "It's blue").required(false);
+  Table& t = inlet.addStruct("NewTable", "It's blue").required(false);
   t.addString("str", "str's description").required(true);
   t.addInt("integer", "a whole number").required(false);
 
@@ -601,10 +601,10 @@ TYPED_TEST(inlet_Inlet_views, NestedTableViewCheck2)
   inlet.addBool("foo", "foo's description").required(true);
   inlet.addBool("bar", "bar's description").required(false);
 
-  auto& t = inlet.addTable("Table1", "The first table").required(false);
+  auto& t = inlet.addStruct("Table1", "The first table").required(false);
   t.addDouble("float1", "floating point number within table 1").required(true);
-  auto& t2 = t.addTable("Table11", "Table within Table 1");
-  auto& t3 = t2.addTable("Table111", "Table within Table 11");
+  auto& t2 = t.addStruct("Table11", "Table within Table 1");
+  auto& t3 = t2.addStruct("Table111", "Table within Table 11");
   t3.addInt("x", "A variable");
 
   axom::sidre::Group* sidreGroup = inlet.sidreGroup();
@@ -631,11 +631,11 @@ TYPED_TEST(inlet_Inlet_views, NestedTableViewCheck3)
   DataStore ds;
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
-  auto& t = inlet.addTable("Table1", "The first table");
+  auto& t = inlet.addStruct("Table1", "The first table");
   t.addDouble("float1", " A floating point number in Table 1");
-  auto& t2 = inlet.addTable("Table2", "The second table");
+  auto& t2 = inlet.addStruct("Table2", "The second table");
   t2.addInt("int1", "An integer in Table 2");
-  auto& t3 = inlet.addTable("Table3", "The third table");
+  auto& t3 = inlet.addStruct("Table3", "The third table");
   t3.addBool("bool1", "A boolean value in Table 3");
 
   axom::sidre::Group* sidreGroup = inlet.sidreGroup();
@@ -949,7 +949,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyRequired)
   EXPECT_TRUE(inlet.verify());
 
   inlet.addBool("NewTable/field3").required(true);
-  inlet.addTable("NewTable/LastTable").addDouble("field4").required(true);
+  inlet.addStruct("NewTable/LastTable").addDouble("field4").required(true);
   EXPECT_FALSE(inlet.verify());
 }
 
@@ -1186,7 +1186,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyTableLambda1)
 
   inlet.addBool("field1");
   auto& field2 = inlet.addString("field2");
-  Table& table1 = inlet.addTable("NewTable");
+  Table& table1 = inlet.addStruct("NewTable");
   auto& field3 = table1.addString("field3");
 
   field2.registerVerifier([](const Field& field) {
@@ -1201,7 +1201,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyTableLambda1)
   });
   EXPECT_TRUE(inlet.verify());
 
-  EXPECT_TRUE(table1.hasField("field3"));
+  EXPECT_TRUE(table1.contains("field3"));
 
   table1.registerVerifier(
     [](const Table& table) { return table.contains("field3"); });
@@ -1218,7 +1218,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyTableLambda3)
   DataStore ds;
   auto myInlet = createBasicInlet<TypeParam>(&ds, testString);
   myInlet.addInt("dimensions").required(true);
-  auto& v = myInlet.addTable("vector").required(true);
+  auto& v = myInlet.addStruct("vector").required(true);
   v.addInt("x");
 
   v.registerVerifier([&myInlet](const Table& table) {
@@ -1306,7 +1306,8 @@ TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
 
   inlet.addIntArray("luaArrays/arr1");
 
-  auto group = inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_container");
+  const axom::sidre::Group* group =
+    inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_container");
   auto idx = group->getGroup("0");
   EXPECT_TRUE(idx);
   int val = idx->getView("value")->getScalar();
@@ -1328,7 +1329,7 @@ TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
   EXPECT_EQ(val, 6);
 
   inlet.addBoolArray("luaArrays/arr2");
-  group = inlet.getTable("luaArrays/arr2/_inlet_container").sidreGroup();
+  group = inlet["luaArrays/arr2/_inlet_container"].sidreGroup();
 
   idx = group->getGroup("0");
   EXPECT_TRUE(idx);
@@ -1341,7 +1342,7 @@ TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
   EXPECT_EQ(boolVal, 0);
 
   inlet.addStringArray("luaArrays/arr3");
-  group = inlet.getTable("luaArrays/arr3/_inlet_container").sidreGroup();
+  group = inlet["luaArrays/arr3/_inlet_container"].sidreGroup();
 
   idx = group->getGroup("0");
   EXPECT_TRUE(idx);
@@ -1354,7 +1355,7 @@ TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
   EXPECT_EQ(str, "bye");
 
   inlet.addDoubleArray("luaArrays/arr4");
-  group = inlet.getTable("luaArrays/arr4/_inlet_container").sidreGroup();
+  group = inlet["luaArrays/arr4/_inlet_container"].sidreGroup();
 
   idx = group->getGroup("0");
   EXPECT_TRUE(idx);
@@ -1456,7 +1457,7 @@ TEST(inlet_Inlet_verify_lua, verifyTableLambda2)
   inlet.addString("solid_solver/timestepper");
   inlet.addInt("material/attribute");
   auto& globalTable = inlet.getGlobalTable();
-  Table& material = globalTable.getTable("material");
+  auto material = globalTable["material"];
 
   globalTable.registerVerifier([](const Table& table) {
     bool verifySuccess = true;
@@ -1477,19 +1478,18 @@ TEST(inlet_Inlet_verify_lua, verifyTableLambda2)
   inlet.addString("material/thermalview");
   inlet.addString("material/solidview");
 
-  EXPECT_TRUE(material.hasField("solidview"));
-  EXPECT_TRUE(material.hasField("thermalview"));
+  EXPECT_TRUE(material.contains("solidview"));
+  EXPECT_TRUE(material.contains("thermalview"));
 
   EXPECT_TRUE(inlet.verify());
 
-  auto& thing = inlet.addTable("test");
-  auto& thing2 = thing.addTable("test2");
-  thing2.addTable("test3/test4/test5");
+  auto& thing = inlet.addStruct("test");
+  auto& thing2 = thing.addStruct("test2");
+  thing2.addStruct("test3/test4/test5");
 
-  EXPECT_EQ(globalTable.getTable("test").name(), "test");
-  EXPECT_EQ(thing.getTable("test2").name(), "test/test2");
-  EXPECT_EQ(thing2.getTable("test3/test4/test5").name(),
-            "test/test2/test3/test4/test5");
+  EXPECT_EQ(globalTable["test"].name(), "test");
+  EXPECT_EQ(thing["test2"].name(), "test/test2");
+  EXPECT_EQ(thing2["test3/test4/test5"].name(), "test/test2/test3/test4/test5");
 }
 
 TEST(inlet_Inlet_verify_lua, requiredTable)
@@ -1507,7 +1507,7 @@ TEST(inlet_Inlet_verify_lua, requiredTable)
     "material.solidview = 'hyperelastic'";
   DataStore ds;
   Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
-  auto& material = inlet.addTable("material");
+  auto& material = inlet.addStruct("material");
   material.required(true);
 
   EXPECT_FALSE(inlet.verify());
@@ -1515,8 +1515,8 @@ TEST(inlet_Inlet_verify_lua, requiredTable)
   inlet.addString("material/thermalview");
   inlet.addString("material/solidview");
 
-  EXPECT_TRUE(inlet.hasField("material/thermalview"));
-  EXPECT_TRUE(inlet.hasField("material/solidview"));
+  EXPECT_TRUE(inlet.contains("material/thermalview"));
+  EXPECT_TRUE(inlet.contains("material/solidview"));
 
   EXPECT_TRUE(inlet.verify());
 }
@@ -1569,7 +1569,8 @@ TEST(inlet_Inlet_array_lua, inletArraysInSidre)
 
   inlet.addIntArray("luaArrays/arr1");
 
-  auto group = inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_container");
+  const axom::sidre::Group* group =
+    inlet.sidreGroup()->getGroup("luaArrays/arr1/_inlet_container");
   auto idx = group->getGroup("1");
   EXPECT_TRUE(idx);
   int val = idx->getView("value")->getScalar();
@@ -1591,7 +1592,7 @@ TEST(inlet_Inlet_array_lua, inletArraysInSidre)
   EXPECT_EQ(val, 6);
 
   inlet.addBoolArray("luaArrays/arr2");
-  group = inlet.getTable("luaArrays/arr2/_inlet_container").sidreGroup();
+  group = inlet["luaArrays/arr2/_inlet_container"].sidreGroup();
 
   idx = group->getGroup("4");
   EXPECT_TRUE(idx);
@@ -1604,7 +1605,7 @@ TEST(inlet_Inlet_array_lua, inletArraysInSidre)
   EXPECT_EQ(boolVal, 0);
 
   inlet.addStringArray("luaArrays/arr3");
-  group = inlet.getTable("luaArrays/arr3/_inlet_container").sidreGroup();
+  group = inlet["luaArrays/arr3/_inlet_container"].sidreGroup();
 
   idx = group->getGroup("33");
   EXPECT_TRUE(idx);
@@ -1617,7 +1618,7 @@ TEST(inlet_Inlet_array_lua, inletArraysInSidre)
   EXPECT_EQ(str, "bye");
 
   inlet.addDoubleArray("luaArrays/arr4");
-  group = inlet.getTable("luaArrays/arr4/_inlet_container").sidreGroup();
+  group = inlet["luaArrays/arr4/_inlet_container"].sidreGroup();
 
   idx = group->getGroup("12");
   EXPECT_TRUE(idx);

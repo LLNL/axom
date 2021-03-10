@@ -80,17 +80,30 @@ struct BoundaryCondition
                         inlet::FunctionTag::Double},  // Multiple argument types
                        "The function representing the BC coefficient");
 
+    // _inlet_mfem_func_coef_start
     schema
       .addFunction("coef",
                    inlet::FunctionTag::Double,
                    {inlet::FunctionTag::Vector, inlet::FunctionTag::Double},
                    "The function representing the BC coefficient")
+    // _inlet_mfem_func_coef_end
       .registerVerifier([](const inlet::Function& func) {
         // An arbitrary restriction, but this calls the function and checks its result
         return func.call<double>(inlet::FunctionType::Vector {1, 1, 1}, 1.0) < 15;
       });
   }
 };
+
+inlet::InletVector toInletVector(const mfem::Vector& vec)
+{
+  return {vec.GetData(), vec.Size()};
+}
+
+// Uses out-params to match MFEM semantics
+void toMFEMVector(const inlet::InletVector& input, mfem::Vector& result)
+{
+  std::copy(input.vec.data(), input.vec.data() + input.dim, result.GetData());
+}
 
 /**
  * Example Lua definition:
@@ -129,7 +142,7 @@ struct FromInlet<BoundaryCondition::InputInfo>
       // _inlet_mfem_coef_simple_retrieve_end
       result.scalar_func = [func(std::move(func))](const mfem::Vector& vec,
                                                    double t) {
-        return func({vec.GetData(), vec.Size()}, t);
+        return func(toInletVector(vec), t);
       };
     }
     else if(base.contains("vec_coef"))
@@ -140,9 +153,8 @@ struct FromInlet<BoundaryCondition::InputInfo>
       result.vec_func = [func(std::move(func))](const mfem::Vector& input,
                                                 double t,
                                                 mfem::Vector& output) {
-        auto ret = func({input.GetData(), input.Size()}, t);
-        // Copy from the primal vector into the MFEM vector
-        std::copy(ret.vec.data(), ret.vec.data() + input.Size(), output.GetData());
+        auto ret = func(toInletVector(input), t);
+        toMFEMVector(ret, output);
       };
     }
     else
@@ -175,8 +187,8 @@ int main(int argc, char** argv)
   Inlet inlet(std::move(lr), ds.getRoot());
 
   // We only need the boundary condition sub-table
-  auto& bc_table = inlet.addGenericArray("bcs", "List of boundary conditions");
-  BoundaryCondition::defineSchema(bc_table);
+  auto& bc_schema = inlet.addStructArray("bcs", "List of boundary conditions");
+  BoundaryCondition::defineSchema(bc_schema);
 
   if(!inlet.verify())
   {
@@ -190,8 +202,28 @@ int main(int argc, char** argv)
   // Then construct the actual boundary conditions once the mesh dimension is known
   const int dim = 3;
   std::unordered_map<int, BoundaryCondition> bcs;
+  mfem::Vector input_vec(dim);
+  input_vec[0] = 1;
+  input_vec[1] = 2;
+  input_vec[2] = 3;
+  const double t = 0.0;
+  mfem::Vector output_vec(dim);
   for(auto&& info : bc_infos)
   {
+    if(info.second.scalar_func)
+    {
+      const double result = info.second.scalar_func(input_vec, t);
+      SLIC_INFO(fmt::format("Calling scalar function with {0} returned: {1}",
+                            toInletVector(input_vec),
+                            result));
+    }
+    else if(info.second.vec_func)
+    {
+      info.second.vec_func(input_vec, t, output_vec);
+      SLIC_INFO(fmt::format("Calling vector function with {0} returned: {1}",
+                            toInletVector(input_vec),
+                            toInletVector(output_vec)));
+    }
     bcs.emplace(info.first, BoundaryCondition {std::move(info.second), dim});
   }
 

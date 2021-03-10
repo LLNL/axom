@@ -5,14 +5,14 @@
 
 /*!
  *******************************************************************************
- * \file SphinxDocWriter.hpp
+ * \file SphinxWriter.hpp
  *
- * \brief This file contains the class definition of the SphinxDocWriter.
+ * \brief This file contains the class definition of the SphinxWriter.
  *******************************************************************************
  */
 
-#ifndef INLET_SPHINXDOCWRITER_HPP
-#define INLET_SPHINXDOCWRITER_HPP
+#ifndef INLET_SPHINXWRITER_HPP
+#define INLET_SPHINXWRITER_HPP
 
 #include <string>
 #include <vector>
@@ -20,7 +20,7 @@
 #include <unordered_map>
 
 #include "axom/sidre.hpp"
-#include "axom/inlet/DocWriter.hpp"
+#include "axom/inlet/Writer.hpp"
 
 namespace axom
 {
@@ -28,57 +28,33 @@ namespace inlet
 {
 /*!
  *******************************************************************************
- * \class SphinxDocWriter
+ * \class SphinxWriter
  *
- * \brief A DocWriter that is able write documentation in Sphinx RST format for 
+ * \brief A Writer that is able write documentation in Sphinx RST format for 
  * a given input file.
  *
- * \see DocWriter
+ * \see Writer
  *******************************************************************************
  */
-class SphinxDocWriter : public DocWriter
+class SphinxWriter : public Writer
 {
 public:
   /*!
   *******************************************************************************
-  * \brief A constructor for SphinxDocWriter.
+  * \brief A constructor for SphinxWriter.
   * 
   * \param [in] fileName The name of the file the documentation should be written to.
-  * 
-  * \param [in] sidreRootGroup The root of the sidre group that will be traversed
-  * to create documentation.
-  *
   *******************************************************************************
   */
-  SphinxDocWriter(const std::string& fileName,
-                  axom::sidre::Group* sidreRootGroup);
+  SphinxWriter(const std::string& fileName);
 
-  /*!
-  *******************************************************************************
-  * \brief Writes all documentation to a file.
-  * 
-  * This generates all RST-syntax documentation and writes it to the pre-specified
-  * file.
-  *
-  *******************************************************************************
-  */
-  void writeDocumentation();
+  void documentTable(const Table& table) override;
 
-  virtual ~SphinxDocWriter() = default;
+  void finalize() override;
+
+  virtual ~SphinxWriter() = default;
 
 private:
-  /*!
-   *****************************************************************************
-   * \brief Accumulate the rstTables vector with documentation data.
-   *
-   * This recursively identifies all Fields and Tables for the documentation.
-   *
-   * \param [in] sidreGroup The root of the sidre tree to traverse
-   *
-   *****************************************************************************
-   */
-  void writeDocumentationHelper(axom::sidre::Group* sidreGroup);
-
   /*!
    *****************************************************************************
    * \brief Writes the title in RST syntax.
@@ -146,17 +122,19 @@ private:
     * \brief A constructor for the TableData struct
     * 
     * This initializes the RST table's column labels.
+    * 
+    * \param[in] labels The column labels for the RST table
     *
     *******************************************************************************
     */
-    TableData()
+    TableData(const std::vector<std::string>& labels)
     {
-      rstTable = {{"Field Name",
-                   "Description",
-                   "Default Value",
-                   "Range/Valid Values",
-                   "Required"}};
+      rstTable.push_back(labels);
     }
+
+    TableData(TableData&&) = default;
+    // Shouldn't be needed, these will always be managed in a container
+    TableData(const TableData&) = delete;
 
     std::string tableName;
     std::string description;
@@ -176,19 +154,19 @@ private:
   * extracted and then stored.
   *******************************************************************************
   */
-  void extractFieldMetadata(axom::sidre::Group* sidreGroup);
+  void extractFieldMetadata(const axom::sidre::Group* sidreGroup);
 
   /*!
   *******************************************************************************
-  * \brief Gets default value information from the given Sidre View and returns
+  * \brief Gets value information from the given Sidre View and returns
   * it as a string.
   * 
-  * \param [in] view The Sidre View containing default value information.
+  * \param [in] view The Sidre View containing value information.
   *
-  * \return String representation of default value information.
+  * \return String representation of value information.
   *******************************************************************************
   */
-  std::string getDefaultValueAsString(axom::sidre::View* view);
+  std::string getValueAsString(const axom::sidre::View* view);
 
   /*!
   *******************************************************************************
@@ -200,7 +178,7 @@ private:
   * \return String representation of range information.
   *******************************************************************************
   */
-  std::string getRangeAsString(axom::sidre::View* view);
+  std::string getRangeAsString(const axom::sidre::View* view);
 
   /*!
   *******************************************************************************
@@ -212,7 +190,7 @@ private:
   * \return String representation of valid value(s) information.
   *******************************************************************************
   */
-  std::string getValidValuesAsString(axom::sidre::View* view);
+  std::string getValidValuesAsString(const axom::sidre::View* view);
 
   /*!
   *******************************************************************************
@@ -224,15 +202,16 @@ private:
   * \return String listing the valid string values.
   *******************************************************************************
   */
-  std::string getValidStringValues(axom::sidre::Group* sidreGroup);
+  std::string getValidStringValues(const axom::sidre::Group* sidreGroup);
 
-  axom::sidre::Group* m_sidreRootGroup;
   std::ofstream m_outFile;
   std::ostringstream m_oss;
   // This is needed to preserve the traversal order of the Inlet::Tables
   std::vector<std::string> m_inletTablePathNames;
   std::unordered_map<std::string, TableData> m_rstTables;
   std::string m_fileName;
+  // Used for the RST tables for fields
+  std::vector<std::string> m_colLabels;
 };
 
 }  // namespace inlet

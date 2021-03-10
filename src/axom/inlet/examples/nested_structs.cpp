@@ -34,6 +34,7 @@ struct Operator
   double x;
   double y;
   double z;
+  Vector origin;
   enum class Type
   {
     Translate,
@@ -58,6 +59,7 @@ struct Operator
     slice.addDouble("x");
     slice.addDouble("y");
     slice.addDouble("z");
+    slice.addDoubleArray("origin");
 
     // Verify that exactly one type of operator is defined
     table.registerVerifier([](const inlet::Table& table) {
@@ -116,6 +118,10 @@ struct FromInlet<Operator>
       {
         result.z = slice["z"];
       }
+      if(slice.contains("origin"))
+      {
+        result.origin = toVector(slice["origin"]);
+      }
     }
     return result;
   }
@@ -139,6 +145,7 @@ std::ostream& operator<<(std::ostream& os, const Operator& op)
     os << fmt::format("      with x-coord: {0}\n", op.x);
     os << fmt::format("      with y-coord: {0}\n", op.y);
     os << fmt::format("      with z-coord: {0}\n", op.z);
+    os << fmt::format("       with origin: {0}\n", op.origin);
     break;
   default:
     SLIC_ERROR("Operator had unknown type");
@@ -191,12 +198,7 @@ struct FromInlet<Geometry>
       result.units = Geometry::Units::Meters;
     }
 
-    // FIXME: Remove when PR #429 is merged
-    auto ops = base["operators"].get<std::unordered_map<int, Operator>>();
-    for(const auto& ele : ops)
-    {
-      result.operators.push_back(ele.second);
-    }
+    result.operators = base["operators"].get<std::vector<Operator>>();
     return result;
   }
 };
@@ -282,6 +284,7 @@ shapes:
           center: [4, 5, 6]
         - slice:
             x: 10
+            origin: [40, 50, 60]
         - translate: [5, 6]
   - name: tire
     material: rubber
@@ -308,8 +311,10 @@ int main(int argc, char** argv)
   reader->parseString(input);
   inlet::Inlet inlet(std::move(reader), ds.getRoot());
 
+  // _inlet_nested_struct_array_start
   auto& shapes_table = inlet.addStructArray("shapes");
   Shape::defineSchema(shapes_table);
+  // _inlet_nested_struct_array_end
 
   if(inlet.verify())
   {
@@ -328,9 +333,9 @@ int main(int argc, char** argv)
 
   if(docsEnabled)
   {
-    std::unique_ptr<inlet::SphinxDocWriter> docWriter(
-      new inlet::SphinxDocWriter("nested_structs.rst", inlet.sidreGroup()));
-    inlet.registerDocWriter(std::move(docWriter));
+    std::unique_ptr<inlet::SphinxWriter> writer(
+      new inlet::SphinxWriter("nested_structs.rst"));
+    inlet.registerWriter(std::move(writer));
     inlet.writeDoc();
   }
 }
