@@ -54,9 +54,6 @@ def lc_tpl_root_dirs():
         libs_dir = pjoin(get_shared_libs_dir(), sys_type)
         root_dirs.append(libs_dir)
 
-        devtools_dir = pjoin(get_shared_devtool_dir(), sys_type)
-        root_dirs.append(devtools_dir)
-
     return root_dirs    
 
 def clone_axom():
@@ -117,7 +114,7 @@ def find_tpl_dirs_in_host_configs():
             for p in prefixes:
                if p in l:
                    ent = l[l.find(p):]
-                   ent = ent[:ent.find("spack")]
+                   ent = ent[:ent.find("\" CACHE")]
                    ent = os.path.abspath(ent)
                    res.append(ent)
     return unique(res)
@@ -152,8 +149,8 @@ def check_installed_tpl_dirs():
     found (or active, unused) b/c host-configs reference dirs
     across the center (ex: cz + rz)
     """
-    res = {"referenced":[],
-           "found":[],
+    res = {"referenced": [],
+           "found": [],
            "active": [], 
            "unused": []}
 
@@ -171,10 +168,21 @@ def check_installed_tpl_dirs():
     shutil.rmtree(tmp_dir)
 
     for l in res["found"]:
-        if not l in res["referenced"]:
+        found = False
+        for referenced in res["referenced"]:
+            if referenced.startswith(l):
+                found = True
+
+        if not found:
            res["unused"].append(l)
         else:
            res["active"].append(l)
+
+    res["referenced"].sort()
+    res["found"].sort()
+    res["active"].sort()
+    res["unused"].sort()
+
     return res
 
 
