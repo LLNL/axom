@@ -390,7 +390,10 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<bool>(
   {
     sidreGroup->createViewScalar("value", val ? int8(1) : int8(0));
   }
-  markRetrievalStatus(*sidreGroup, result);
+  if(!forArray)
+  {
+    markRetrievalStatus(*sidreGroup, result);
+  }
   return axom::sidre::DataTypeId::INT8_ID;
 }
 
@@ -406,7 +409,10 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<int>(
   {
     sidreGroup->createViewScalar("value", val);
   }
-  markRetrievalStatus(*sidreGroup, result);
+  if(!forArray)
+  {
+    markRetrievalStatus(*sidreGroup, result);
+  }
   return axom::sidre::DataTypeId::INT_ID;
 }
 
@@ -422,7 +428,10 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<double>(
   {
     sidreGroup->createViewScalar("value", val);
   }
-  markRetrievalStatus(*sidreGroup, result);
+  if(!forArray)
+  {
+    markRetrievalStatus(*sidreGroup, result);
+  }
   return axom::sidre::DataTypeId::DOUBLE_ID;
 }
 
@@ -438,7 +447,10 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<std::string>(
   {
     sidreGroup->createViewString("value", val);
   }
-  markRetrievalStatus(*sidreGroup, result);
+  if(!forArray)
+  {
+    markRetrievalStatus(*sidreGroup, result);
+  }
   return axom::sidre::DataTypeId::CHAR8_STR_ID;
 }
 
