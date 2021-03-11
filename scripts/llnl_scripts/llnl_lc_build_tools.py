@@ -581,16 +581,10 @@ def set_group_and_perms(directory):
         print("[Skipping update of group and access permissions. Provided directory was not a known shared location: {0}]".format(directory))
     else:
         print("[changing group and access perms of: %s]" % directory)
-        # change group to axomdev
-        print("[changing group to axomdev]")
-        sexe("chgrp -f -R axomdev %s" % (directory),echo=True,error_prefix="WARNING:")
-        # change group perms to rwX
-        print("[changing perms for axomdev members to rwX]")
-        sexe("chmod -f -R g+rwX %s" % (directory),echo=True,error_prefix="WARNING:")
-        # change perms for all to rX
-        print("[changing perms for all users to rX]")
-        sexe("chmod -f -R a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
-        print("[done setting perms for: %s]" % directory)
+        print("[changing group to axom]")
+        sexe("chgrp -f -R axom %s" % (directory),echo=True,error_prefix="WARNING:")
+        print("[changing perms for axom members to 'rwX' and all to 'rX']")
+        sexe("chmod -f -R g+rwX,a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
     return 0
 
 
@@ -803,6 +797,9 @@ def get_system_type():
 def get_platform():
     return get_system_type() if "SYS_TYPE" in os.environ else get_machine_name()
 
+
+def get_supported_sys_types():
+    return ["blueos_3_ppc64le_ib_p9", "blueos_3_ppc64le_ib", "toss_3_x86_64_ib"]
 
 def get_username():
     return getpass.getuser()
