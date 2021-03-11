@@ -297,6 +297,20 @@ InletType Field::type() const
   }
 }
 
+Field::operator bool() const
+{
+  if(m_sidreGroup->hasView("retrieval_status"))
+  {
+    auto status = static_cast<ReaderResult>(
+      static_cast<int>(m_sidreGroup->getView("retrieval_status")->getData()));
+    if(status != ReaderResult::Success)
+    {
+      return false;
+    }
+  }
+  return m_sidreGroup->hasView("value");
+}
+
 template <typename T>
 void Field::setScalarValidValues(std::vector<T> set)
 {

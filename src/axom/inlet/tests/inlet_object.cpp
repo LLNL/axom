@@ -939,6 +939,69 @@ TYPED_TEST(inlet_object, struct_arrays_as_std_vector)
   EXPECT_EQ(foos, expected_foos);
 }
 
+TYPED_TEST(inlet_object, default_scalar_marked_false)
+{
+  std::string testString = " ";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& scalar = inlet.addInt("foo").defaultValue(2);
+  // The field itself should evaluate to false because nothing was provided
+  auto& field = static_cast<axom::inlet::Field&>(scalar);
+  EXPECT_FALSE(static_cast<bool>(field));
+
+  // ...but it should still be possible to retrieve the default
+  const int foo = inlet["foo"];
+  EXPECT_EQ(foo, 2);
+
+  // and it should not impede verification
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, default_struct_field_marked_false)
+{
+  std::string testString = " ";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_container = inlet.addStruct("foo");
+  foo_container.addBool("bar", "bar's description").defaultValue(true);
+  foo_container.addBool("baz", "baz's description").defaultValue(false);
+
+  // The struct itself should evaluate to false because nothing was provided
+  EXPECT_FALSE(static_cast<bool>(foo_container));
+
+  // ...but it should still be possible to retrieve the default
+  const Foo expected_foo {true, false};
+  const auto foo = inlet["foo"].get<Foo>();
+  EXPECT_EQ(foo, expected_foo);
+
+  // and it should not impede verification
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, default_struct_field_marked_true)
+{
+  std::string testString = "foo = { bar = true }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_container = inlet.addStruct("foo");
+  foo_container.addBool("bar", "bar's description").defaultValue(true);
+  foo_container.addBool("baz", "baz's description").defaultValue(false);
+
+  // The struct itself should evaluate to true because at least one field was provided
+  EXPECT_TRUE(static_cast<bool>(foo_container));
+
+  // ...and it should still be possible to retrieve the full struct
+  const Foo expected_foo {true, false};
+  const auto foo = inlet["foo"].get<Foo>();
+  EXPECT_EQ(foo, expected_foo);
+
+  // and it verification should succeed
+  EXPECT_TRUE(inlet.verify());
+}
+
 template <typename InletReader>
 class inlet_object_dict : public ::testing::Test
 { };

@@ -314,10 +314,10 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns whether an actual value is stored
+   * \brief Returns whether a value was provided in the input file
    *****************************************************************************
    */
-  explicit operator bool() const { return m_sidreGroup->hasView("value"); }
+  explicit operator bool() const;
 
 private:
   /*!
