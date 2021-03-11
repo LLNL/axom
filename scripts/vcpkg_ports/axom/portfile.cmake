@@ -39,12 +39,22 @@ set(_host-config_hdr [=[
 # CMake executable path: @CMAKE_COMMAND@
 #------------------------------------------------------------------------------
 # To configure the code using the vcpkg toolchain:
-#   cmake -C @_hc_file@ \
+#   cmake -C @_hc_file@  \
 #         -G <generator> \
 #         ../src
 #
-#   For x86 MSVC builds, use "Visual Studio 2017" as the generator
-#   For x64 MSVC builds, use "Visual Studio 2017 Win64" as the genererator
+# Supported MSVC generators:
+#   For x86 MSVC builds, use "Visual Studio 2017" or "Visual Studio 2019"
+#   For x64 MSVC builds, use "Visual Studio 2017 Win64" or "Visual Studio 2019 -A x64"
+#   (note: msvc 2019 uses the -A flag to set the architecture)
+#
+#
+# One can also use Axom's `config-build` script:
+#   cd <axom>
+#   config-build.py -hc @_hc_file@                   \
+#                   --msvc {2017,201764,2019,201964} \
+#                   [other options]
+#
 #------------------------------------------------------------------------------
 # To build the code through the command line:
 #   cmake --build . --target ALL_BUILD --config Debug  [ -- -m:8 [-v:m] ]  

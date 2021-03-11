@@ -15,14 +15,11 @@
 # -------------------------------------------------------------------------
 packages:
   all:
-    # This defaults us to machine specific flags of ivybridge which allows
-    # us to run on broadwell as well
-    target: [ivybridge]
     compiler: [gcc, intel, pgi, clang, xl, nag]
     providers:
       blas: [netlib-lapack]
       lapack: [netlib-lapack]
-      mpi: [mvapich2]
+      mpi: [spectrum-mpi]
   cuda:
     buildable: false
   mpi:
@@ -47,15 +44,45 @@ packages:
     externals:
     - spec: automake
       prefix: /usr
+  binutils:
+    buildable: false
+    externals:
+    - spec: binutils
+      prefix: /usr
   bzip2:
     buildable: false
     externals:
     - spec: bzip2
       prefix: /usr
+  diffutils:
+    buildable: false
+    externals:
+    - spec: diffutils
+      prefix: /usr
+  epoxy:
+    buildable: false
+    externals:
+    - spec: epoxy
+      prefix: /usr
+  findutils:
+    buildable: false
+    externals:
+    - spec: findutils
+      prefix: /usr
   gettext:
     buildable: false
     externals:
     - spec: gettext
+      prefix: /usr
+  ghostscript:
+    buildable: false
+    externals:
+    - spec: ghostscript
+      prefix: /usr
+  groff:
+    buildable: false
+    externals:
+    - spec: groff
       prefix: /usr
   libtool:
     buildable: false
@@ -76,6 +103,11 @@ packages:
     buildable: false
     externals:
     - spec: pkg-config
+      prefix: /usr
+  readline:
+    buildable: false
+    externals:
+    - spec: readline
       prefix: /usr
   tar:
     buildable: false

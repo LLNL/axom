@@ -25,7 +25,7 @@ namespace slic
 {
 struct debug
 {
-  AXOM_API static bool checksAreErrors;
+  static bool checksAreErrors;
 };
 
 /*!

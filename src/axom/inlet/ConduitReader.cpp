@@ -14,6 +14,7 @@
 #include "axom/inlet/ConduitReader.hpp"
 
 #include <fstream>
+#include <numeric>
 
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
