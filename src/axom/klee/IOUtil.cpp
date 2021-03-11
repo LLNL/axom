@@ -5,7 +5,9 @@
 
 #include "axom/klee/IOUtil.hpp"
 
-#include <stdexcept>
+#include "axom/inlet/Proxy.hpp"
+#include "axom/inlet/Table.hpp"
+#include "axom/klee/KleeError.hpp"
 
 namespace axom
 {
@@ -13,95 +15,137 @@ namespace klee
 {
 namespace internal
 {
-std::vector<double> toDoubleVector(const conduit::Node &listNode,
-                                   std::size_t expectedSize)
+std::vector<double> toDoubleVector(inlet::Proxy const &field,
+                                   Dimensions expectedDims,
+                                   char const *fieldName)
 {
-  if(!listNode.dtype().is_number())
+  auto expectedSize = static_cast<std::size_t>(expectedDims);
+  auto values = field.get<std::vector<double>>();
+  auto actualSize = values.size();
+  if(actualSize != expectedSize)
   {
-    std::ostringstream message;
-    message << "Not an array of numbers: " << listNode.path();
-    throw std::invalid_argument(message.str());
+    throw KleeError(fmt::format("Wrong size for {}. Expected {}. Got {}.",
+                                fieldName,
+                                expectedSize,
+                                actualSize));
   }
-
-  conduit::Node valueAsDoubleArray;
-  listNode.to_double_array(valueAsDoubleArray);
-  double *values = valueAsDoubleArray.as_double_ptr();
-  std::vector<double> result(valueAsDoubleArray.dtype().number_of_elements());
-  std::copy(values, values + result.size(), result.begin());
-
-  if(result.size() != expectedSize)
-  {
-    std::ostringstream message;
-    message << listNode.name() << " should be a list of " << expectedSize
-            << " numbers";
-    throw std::invalid_argument(message.str());
-  }
-  return result;
+  return values;
 }
 
-double toDouble(const conduit::Node &value)
+template <typename T>
+T toArrayLike(inlet::Proxy const &parent,
+              char const *fieldName,
+              Dimensions expectedDims)
 {
-  auto &type = value.dtype();
-  if(!type.is_number() || type.number_of_elements() != 1)
-  {
-    std::ostringstream message;
-    message << value.name() << " should be a single number";
-    throw std::invalid_argument(message.str());
-  }
-  return value.to_double();
+  auto values = toDoubleVector(parent[fieldName], expectedDims, fieldName);
+  return T {values.data(), static_cast<int>(expectedDims)};
 }
 
-Dimensions toDimensions(const conduit::Node &dimensionsNode)
+template <typename T>
+T toArrayLike(inlet::Proxy const &parent,
+              char const *fieldName,
+              Dimensions expectedDims,
+              const T &defaultValue)
 {
-  int dimensions = dimensionsNode.to_int();
-  if(dimensions == 2)
+  if(parent.contains(fieldName))
   {
-    return Dimensions::Two;
+    return toArrayLike<T>(parent, fieldName, expectedDims);
   }
-  else if(dimensions == 3)
-  {
-    return Dimensions::Three;
-  }
-  throw std::invalid_argument("'dimensions' must be either 2 or 3");
+  return defaultValue;
+}
+
+primal::Point3D toPoint(inlet::Proxy const &parent,
+                        char const *fieldName,
+                        Dimensions expectedDims)
+{
+  return toArrayLike<primal::Point3D>(parent, fieldName, expectedDims);
+}
+
+primal::Point3D toPoint(inlet::Proxy const &parent,
+                        char const *fieldName,
+                        Dimensions expectedDims,
+                        const primal::Point3D &defaultValue)
+{
+  return toArrayLike(parent, fieldName, expectedDims, defaultValue);
+}
+
+primal::Vector3D toVector(inlet::Proxy const &parent,
+                          char const *fieldName,
+                          Dimensions expectedDims)
+{
+  return toArrayLike<primal::Vector3D>(parent, fieldName, expectedDims);
+}
+
+primal::Vector3D toVector(inlet::Proxy const &parent,
+                          char const *fieldName,
+                          Dimensions expectedDims,
+                          const primal::Vector3D &defaultValue)
+{
+  return toArrayLike(parent, fieldName, expectedDims, defaultValue);
 }
 
 std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
-  const conduit::Node &node)
+  const inlet::Proxy &proxy)
 {
-  bool hasStartUnits = node.has_child("start_units");
-  bool hasEndUnits = node.has_child("end_units");
-  if(node.has_child("units"))
+  bool hasStartUnits = proxy.contains("start_units");
+  bool hasEndUnits = proxy.contains("end_units");
+  if(proxy.contains("units"))
   {
     if(hasStartUnits || hasEndUnits)
     {
-      throw std::invalid_argument(
+      throw KleeError(
         "Can't specify 'units' with 'start_units' or 'end_units'");
     }
-    auto units = parseLengthUnits(node["units"].as_string());
+    auto units = parseLengthUnits(proxy["units"]);
     return std::make_tuple(units, units);
   }
   else if(hasStartUnits || hasEndUnits)
   {
     if(!(hasStartUnits && hasEndUnits))
     {
-      throw std::invalid_argument(
-        "Must specify both 'start_units' and 'end_units'");
+      throw KleeError("Must specify both 'start_units' and 'end_units'");
     }
-    auto startUnits = parseLengthUnits(node["start_units"].as_string());
-    auto endUnits = parseLengthUnits(node["end_units"].as_string());
+    auto startUnits = parseLengthUnits(proxy["start_units"]);
+    auto endUnits = parseLengthUnits(proxy["end_units"]);
     return std::make_tuple(startUnits, endUnits);
   }
   return std::make_tuple(LengthUnit::unspecified, LengthUnit::unspecified);
 }
 
-std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const conduit::Node &node)
+std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy)
 {
-  auto units = getOptionalStartAndEndUnits(node);
+  auto units = getOptionalStartAndEndUnits(proxy);
   if(std::get<0>(units) == LengthUnit::unspecified)
   {
-    throw std::invalid_argument("Did not specify units");
+    throw KleeError("Did not specify units");
   }
   return units;
+}
+
+void defineUnitsSchema(inlet::Table &table,
+                       const char *unitsDescription,
+                       const char *startUnitsDescription,
+                       const char *endUnitsDescription)
+{
+  table.addString("start_units", startUnitsDescription);
+  table.addString("end_units", endUnitsDescription);
+  table.addString("units", unitsDescription);
+  // Don't do custom validator here because getOptionalStartAndEndUnits()
+  // verifies the right combination is specified. If we were to add a
+  // custom validator, we would have to repeat some of the logic when
+  // figuring out which fields to use.
+}
+
+inlet::VerifiableScalar &defineDimensionsField(inlet::Table &parent,
+                                               const char *name,
+                                               const char *description)
+{
+  return parent.addInt(name, description).range(2, 3);
+}
+
+Dimensions toDimensions(const inlet::Proxy &dimProxy)
+{
+  return static_cast<Dimensions>(dimProxy.get<int>());
 }
 
 }  // namespace internal

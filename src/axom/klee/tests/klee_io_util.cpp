@@ -8,9 +8,15 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "conduit.hpp"
+#include "axom/inlet/Inlet.hpp"
+#include "axom/inlet/Table.hpp"
+#include "axom/inlet/YAMLReader.hpp"
+#include "axom/klee/KleeError.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 
 #include "KleeMatchers.hpp"
+
+#include <memory>
 
 namespace axom
 {
@@ -18,105 +24,282 @@ namespace klee
 {
 namespace internal
 {
+using inlet::Table;
+using primal::Point3D;
+using primal::Vector3D;
+
 using test::AlmostEqArray;
+using test::AlmostEqPoint;
+using test::AlmostEqVector;
 using ::testing::ElementsAre;
 
-conduit::Node parseValue(const std::string &value)
+static std::unique_ptr<inlet::Reader> readYaml(const std::string &input)
 {
-  conduit::Node node;
-  std::string input = "value: ";
-  input += value;
-  node.parse(input, "yaml");
-  return node["value"];
+  auto reader = std::unique_ptr<inlet::YAMLReader>(new inlet::YAMLReader());
+  reader->parseString(input);
+  return reader;
 }
 
-TEST(io_util, toDouble)
+class InletTestData
 {
-  EXPECT_DOUBLE_EQ(123.456, toDouble(parseValue("123.456")));
-  EXPECT_DOUBLE_EQ(123, toDouble(parseValue("123")));
-  EXPECT_THROW(toDouble(parseValue("abc")), std::invalid_argument);
-  EXPECT_THROW(toDouble(parseValue("[1, 2]")), std::invalid_argument);
+public:
+  template <typename DefOp>
+  InletTestData(const std::string &input, DefOp defOp);
+
+private:
+  sidre::DataStore m_store;
+
+public:
+  inlet::Inlet doc;
+};
+
+template <typename DefOp>
+InletTestData::InletTestData(const std::string &input, DefOp defOp)
+  : m_store {}
+  , doc {readYaml(input), m_store.getRoot()}
+{
+  defOp(doc.getGlobalTable());
+  // Typically this would be done by the main parsing functions. Since
+  // we're testing small pieces out of context, we need to check here
+  // if everything is fine.
+  if(!doc.verify())
+  {
+    throw KleeError("Got bad input");
+  }
+}
+
+std::vector<double> parseDoubleVector(const std::string &vectorInput,
+                                      Dimensions dims)
+{
+  std::string fullInput = "values: ";
+  fullInput += vectorInput;
+  InletTestData data {fullInput, [](Table &t) { t.addDoubleArray("values"); }};
+  return toDoubleVector(data.doc["values"], dims, "values");
 }
 
 TEST(io_util, toDoubleVector)
 {
-  EXPECT_THAT(toDoubleVector(parseValue("[1.2, 3.4]"), 2), ElementsAre(1.2, 3.4));
-  EXPECT_THAT(toDoubleVector(parseValue("[1, 2]"), 2), ElementsAre(1.0, 2.0));
-  EXPECT_THROW(toDoubleVector(parseValue("[1, 2]"), 3), std::invalid_argument)
+  EXPECT_THAT(parseDoubleVector("[1.2, 3.4]", Dimensions::Two),
+              ElementsAre(1.2, 3.4));
+  EXPECT_THAT(parseDoubleVector("[1, 2]", Dimensions::Two),
+              ElementsAre(1.0, 2.0));
+  EXPECT_THROW(parseDoubleVector("[1, 2]", Dimensions::Three), KleeError)
     << "Wrong length";
-  EXPECT_THROW(toDoubleVector(parseValue("[a, b]"), 2), std::invalid_argument)
-    << "Wrong type";
+  // TODO Would like to test this, but it results in a crash.
+  // See https://github.com/LLNL/axom/issues/476.
+  // EXPECT_THROW(parseDoubleVector("[a, b]", Dimensions::Three),
+  //          KleeError) << "Wrong type";
 }
 
-TEST(io_util, toDimensions)
+Dimensions defineAndParseDimension(const char *input)
 {
-  EXPECT_EQ(Dimensions::Two, toDimensions(parseValue("2")));
-  EXPECT_EQ(Dimensions::Three, toDimensions(parseValue("3")));
-  EXPECT_THROW(toDimensions(parseValue("4")), std::invalid_argument);
+  std::string fullInput = "dims: ";
+  fullInput += input;
+  InletTestData data {fullInput, [](Table &t) {
+                        defineDimensionsField(t, "dims", "some description");
+                      }};
+  return toDimensions(data.doc["dims"]);
 }
+
+TEST(io_util, defineAndConvertDimensions)
+{
+  EXPECT_EQ(Dimensions::Two, defineAndParseDimension("2"));
+  EXPECT_EQ(Dimensions::Three, defineAndParseDimension("3"));
+  EXPECT_THROW(defineAndParseDimension("4"), KleeError);
+}
+
+/**
+ * Wrapper around defineUnitsSchema which calls it with default descriptions
+ * to make it easy to test.
+ *
+ * @param table the table on which to define the units fields
+ */
+void defineUnitsSchemaWithDefaults(Table &table) { defineUnitsSchema(table); }
 
 TEST(io_util, getOptionalStartAndEndUnits_nothingSpecified)
 {
-  conduit::Node node;
-  auto units = getOptionalStartAndEndUnits(node);
+  // Random input or Inlet issues a warning about blank input
+  InletTestData data {"foo: 123", defineUnitsSchemaWithDefaults};
+  auto units = getOptionalStartAndEndUnits(data.doc.getGlobalTable());
   EXPECT_EQ(LengthUnit::unspecified, std::get<0>(units));
   EXPECT_EQ(LengthUnit::unspecified, std::get<1>(units));
 }
 
 TEST(io_util, getOptionalStartAndEndUnits_unitsSpecified)
 {
-  conduit::Node node;
-  node["units"] = "cm";
-  auto units = getOptionalStartAndEndUnits(node);
+  InletTestData data {"units: cm", defineUnitsSchemaWithDefaults};
+  auto units = getOptionalStartAndEndUnits(data.doc.getGlobalTable());
   EXPECT_EQ(LengthUnit::cm, std::get<0>(units));
   EXPECT_EQ(LengthUnit::cm, std::get<1>(units));
 }
 
 TEST(io_util, getOptionalStartAndEndUnits_startAndEndSpecified)
 {
-  conduit::Node node;
-  node["start_units"] = "cm";
-  node["end_units"] = "in";
-  auto units = getOptionalStartAndEndUnits(node);
+  InletTestData data {R"(
+        start_units: cm
+        end_units: in
+    )",
+                      defineUnitsSchemaWithDefaults};
+  auto units = getOptionalStartAndEndUnits(data.doc.getGlobalTable());
   EXPECT_EQ(LengthUnit::cm, std::get<0>(units));
   EXPECT_EQ(LengthUnit::inches, std::get<1>(units));
 }
 
 TEST(io_util, getOptionalStartAndEndUnits_partialSpecification)
 {
-  conduit::Node startOnly;
-  startOnly["start_units"] = "cm";
-  EXPECT_THROW(getOptionalStartAndEndUnits(startOnly), std::invalid_argument);
-
-  conduit::Node endOnly;
-  endOnly["end_units"] = "cm";
-  EXPECT_THROW(getOptionalStartAndEndUnits(startOnly), std::invalid_argument);
+  InletTestData startOnly {"start_units: cm", defineUnitsSchemaWithDefaults};
+  EXPECT_THROW(getOptionalStartAndEndUnits(startOnly.doc.getGlobalTable()),
+               KleeError);
+  InletTestData endOnly {"end_units: cm", defineUnitsSchemaWithDefaults};
+  EXPECT_THROW(getOptionalStartAndEndUnits(endOnly.doc.getGlobalTable()),
+               KleeError);
 }
 
 TEST(io_util, getOptionalStartAndEndUnits_startEndAndUnits)
 {
-  conduit::Node node;
-  node["start_units"] = "cm";
-  node["end_units"] = "cm";
-  node["units"] = "cm";
-  EXPECT_THROW(getOptionalStartAndEndUnits(node), std::invalid_argument);
+  InletTestData data {R"(
+        start_units: cm
+        end_units: cm
+        units: cm
+    )",
+                      defineUnitsSchemaWithDefaults};
+  EXPECT_THROW(getOptionalStartAndEndUnits(data.doc.getGlobalTable()), KleeError);
 }
 
 TEST(io_util, getStartAndEndUnits_unitsPresent)
 {
-  conduit::Node node;
-  node["units"] = "cm";
-  auto units = getStartAndEndUnits(node);
+  InletTestData data {"units: cm", defineUnitsSchemaWithDefaults};
+  auto units = getStartAndEndUnits(data.doc.getGlobalTable());
   EXPECT_EQ(LengthUnit::cm, std::get<0>(units));
   EXPECT_EQ(LengthUnit::cm, std::get<1>(units));
 }
 
 TEST(io_util, getStartAndEndUnits_nothingSpecified)
 {
-  conduit::Node node;
-  EXPECT_THROW(getStartAndEndUnits(node), std::invalid_argument);
+  // Random input or Inlet issues a warning about blank input
+  InletTestData data {"foo: 123", defineUnitsSchemaWithDefaults};
+  EXPECT_THROW(getStartAndEndUnits(data.doc.getGlobalTable()), KleeError);
+}
+
+template <typename T, typename Op>
+T parseArray(const char *value, Dimensions dims, Op op)
+{
+  std::string input = "value: ";
+  input += value;
+  InletTestData data {input, [](Table &t) { t.addDoubleArray("value"); }};
+  return op(data.doc.getGlobalTable(), "value", dims);
+}
+
+template <typename T, typename Op>
+T parseArray(const char *value, Dimensions dims, const T &defaultValue, Op op)
+{
+  std::string input;
+  if(value != nullptr)
+  {
+    input = "value: ";
+    input += value;
+  }
+  else
+  {
+    // avoid warning about empty input
+    input = "foo: bar";
+  }
+  InletTestData data {input, [](Table &t) { t.addDoubleArray("value"); }};
+  return op(data.doc.getGlobalTable(), "value", dims, defaultValue);
+}
+
+Point3D parsePoint(const char *value, Dimensions dims)
+{
+  return parseArray<Point3D>(
+    value,
+    dims,
+    static_cast<Point3D (*)(const inlet::Proxy &, char const *, Dimensions)>(
+      toPoint));
+}
+
+Point3D parsePoint(const char *value, Dimensions dims, Point3D defaultValue)
+{
+  return parseArray<Point3D>(
+    value,
+    dims,
+    defaultValue,
+    static_cast<
+      Point3D (*)(const inlet::Proxy &, char const *, Dimensions, const Point3D &)>(
+      toPoint));
+}
+
+Vector3D parseVector(const char *value, Dimensions dims)
+{
+  return parseArray<Vector3D>(
+    value,
+    dims,
+    static_cast<Vector3D (*)(const inlet::Proxy &, char const *, Dimensions)>(
+      toVector));
+}
+
+Vector3D parseVector(const char *value, Dimensions dims, Vector3D defaultValue)
+{
+  return parseArray<Vector3D>(
+    value,
+    dims,
+    defaultValue,
+    static_cast<Vector3D (
+        *)(const inlet::Proxy &, char const *, Dimensions, const Vector3D &)>(
+      toVector));
+}
+
+TEST(io_util, toPoint)
+{
+  EXPECT_THAT(parsePoint("[1, 2]", Dimensions::Two),
+              AlmostEqPoint(Point3D {1, 2, 0}));
+  EXPECT_THAT(parsePoint("[1, 2, 3]", Dimensions::Three),
+              AlmostEqPoint(Point3D {1, 2, 3}));
+  EXPECT_THROW(parsePoint("[1, 2]", Dimensions::Three), KleeError);
+  EXPECT_THROW(parsePoint("[1, 2, 3]", Dimensions::Two), KleeError);
+}
+
+TEST(io_util, toVector)
+{
+  EXPECT_THAT(parseVector("[1, 2]", Dimensions::Two),
+              AlmostEqVector(Vector3D {1, 2, 0}));
+  EXPECT_THAT(parseVector("[1, 2, 3]", Dimensions::Three),
+              AlmostEqVector(Vector3D {1, 2, 3}));
+  EXPECT_THROW(parseVector("[1, 2]", Dimensions::Three), KleeError);
+  EXPECT_THROW(parseVector("[1, 2, 3]", Dimensions::Two), KleeError);
+}
+
+TEST(io_util, toPoint_default)
+{
+  EXPECT_THAT(parsePoint("[1, 2]", Dimensions::Two, Point3D {4, 5, 6}),
+              AlmostEqPoint(Point3D {1, 2, 0}));
+  EXPECT_THAT(parsePoint("[1, 2, 3]", Dimensions::Three, Point3D {4, 5, 6}),
+              AlmostEqPoint(Point3D {1, 2, 3}));
+  EXPECT_THAT(parsePoint(nullptr, Dimensions::Two, Point3D {4, 5, 0}),
+              AlmostEqPoint(Point3D {4, 5, 0}));
+  EXPECT_THAT(parsePoint(nullptr, Dimensions::Three, Point3D {4, 5, 6}),
+              AlmostEqPoint(Point3D {4, 5, 6}));
+}
+
+TEST(io_util, toVector_default)
+{
+  EXPECT_THAT(parseVector("[1, 2]", Dimensions::Two, Vector3D {4, 5, 6}),
+              AlmostEqVector(Vector3D {1, 2, 0}));
+  EXPECT_THAT(parseVector("[1, 2, 3]", Dimensions::Three, Vector3D {4, 5, 6}),
+              AlmostEqVector(Vector3D {1, 2, 3}));
+  EXPECT_THAT(parseVector(nullptr, Dimensions::Two, Vector3D {4, 5, 0}),
+              AlmostEqVector(Vector3D {4, 5, 0}));
+  EXPECT_THAT(parseVector(nullptr, Dimensions::Three, Vector3D {4, 5, 6}),
+              AlmostEqVector(Vector3D {4, 5, 6}));
 }
 
 }  // namespace internal
 }  // namespace klee
 }  // namespace axom
+
+int main(int argc, char *argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  axom::slic::SimpleLogger logger;
+  int result = RUN_ALL_TESTS();
+  return result;
+}

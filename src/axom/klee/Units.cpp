@@ -5,6 +5,8 @@
 
 #include "axom/klee/Units.hpp"
 
+#include "axom/klee/KleeError.hpp"
+
 #include <stdexcept>
 #include <unordered_map>
 
@@ -52,7 +54,7 @@ LengthUnit parseLengthUnits(const std::string &unitsAsString)
   {
     std::string message = "Unrecognized units: ";
     message += unitsAsString;
-    throw std::invalid_argument(message.c_str());
+    throw KleeError(message.c_str());
   }
 
   return iter->second;
@@ -74,9 +76,10 @@ double getConversionFactor(LengthUnit sourceUnits, LengthUnit targetUnits)
     {LengthUnit::inches, 2.54},
     {LengthUnit::mils, 2.54e-3}};
 
-  if (sourceUnits == LengthUnit::unspecified
-      || targetUnits == LengthUnit::unspecified) {
-      throw std::invalid_argument("Cannot convert with unspecified units");
+  if(sourceUnits == LengthUnit::unspecified ||
+     targetUnits == LengthUnit::unspecified)
+  {
+    throw std::invalid_argument("Cannot convert with unspecified units");
   }
 
   if(sourceUnits == targetUnits)

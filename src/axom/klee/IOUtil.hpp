@@ -8,76 +8,158 @@
 #include <tuple>
 #include <vector>
 
-#include "conduit.hpp"
-
 #include "axom/klee/Dimensions.hpp"
 #include "axom/klee/Units.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 namespace axom
 {
+namespace inlet
+{
+class Table;
+class Proxy;
+class VerifiableScalar;
+}  // namespace inlet
+
 namespace klee
 {
 namespace internal
 {
 /**
- * Convert a Conduit node to a vector of doubles.
+ * Convert the given field to a std::vector<double>, ensuring that it
+ * has the expected number of entries.
  *
- * \param listNode the Conduit node containing the list of values
- * \param expectedSize the number of entries that should be in the list
- * \return a vector with the values in the list
- * \throws std::invalid_argument if the node does not represent a list
- * of exactly the specified number of elements.
+ * @param field the field to convert
+ * @param expectedDims the expected dimensionality of the array
+ * @param fieldName the name of the field (used for error reporting)
+ * @return the field as a std::vector<double>
  */
-std::vector<double> toDoubleVector(const conduit::Node &listNode,
-                                   std::size_t expectedSize);
+std::vector<double> toDoubleVector(inlet::Proxy const &field,
+                                   Dimensions expectedDims,
+                                   char const *fieldName);
 
 /**
- * Convert a Conduit node to a double, or throw an exception with a nice
- * error message when this is not possible.
+ * Convert the specified field to a Point3D, ensuring that it
+ * has the expected number of entries.
  *
- * \param value the value as a Conduit node.
- * \return the value of the node as a double
- * \throws std::invalid_argument if the node is not a double
+ * @param parent the parent of the field
+ * @param fieldName the name of the field
+ * @param expectedDims the expected dimensionality of the point
+ * @return the field as a primal::Point3D
  */
-double toDouble(const conduit::Node &value);
+primal::Point3D toPoint(inlet::Proxy const &parent,
+                        char const *fieldName,
+                        Dimensions expectedDims);
 
 /**
- * Convert a Conduit node to Dimensions. Must be an integer with a value of
- * 2 or 3/
- * \param dimensionsNode the node to convert
- * \return the number of dimensions
- * \throws std::invalid_argument if the node is not a valid dimension value
+ * Convert the specified field to a Point3D, ensuring that it
+ * has the expected number of entries. If the field is not present, the
+ * default value is used.
+ *
+ * @param parent the parent of the field
+ * @param fieldName the name of the field
+ * @param expectedDims the expected dimensionality of the point
+ * @param defaultValue the default value of the field if it is not present
+ * @return the field as a primal::Point3D
  */
-Dimensions toDimensions(const conduit::Node &dimensionsNode);
+primal::Point3D toPoint(inlet::Proxy const &parent,
+                        char const *fieldName,
+                        Dimensions expectedDims,
+                        const primal::Point3D &defaultValue);
 
 /**
- * Get the start and end units in a node.
+ * Convert the specified field to a Vector3D, ensuring that it
+ * has the expected number of entries.
  *
- * The node may either have a "units" field, or a "start_units" and "end_units".
+ * @param parent the parent of the field
+ * @param fieldName the name of the field
+ * @param expectedDims the expected dimensionality of the vector
+ * @return the field as a primal::Vector3D
+ */
+primal::Vector3D toVector(inlet::Proxy const &parent,
+                          char const *fieldName,
+                          Dimensions expectedDims);
+
+/**
+ * Convert the specified field to a Vector3D, ensuring that it
+ * has the expected number of entries. If the field is not present, the
+ * default value is used.
+ *
+ * @param parent the parent of the field
+ * @param fieldName the name of the field
+ * @param expectedDims the expected dimensionality of the vector
+ * @param defaultValue the default value of the field if it is not present
+ * @return the field as a primal::Vector3D
+ */
+primal::Vector3D toVector(inlet::Proxy const &parent,
+                          char const *fieldName,
+                          Dimensions expectedDims,
+                          const primal::Vector3D &defaultValue);
+
+/**
+ * Get the start and end units in a Proxy.
+ *
+ * The Proxy may either have a "units" field, or a "start_units" and "end_units".
  * In the first case, "units" will be used for both the start and end. In the
  * second, both must be present. In the case where no units are present at
  * all, both returned units will be LengthUnit::unspecified.
  *
- * \param node the node from which to get the units
+ * \param proxy the Proxy from which to get the units
  * \return the start and end units
- * \throws std::invalid_argument if an invalid combination of fields is specified
+ * \throws KleeError if an invalid combination of fields is specified
  */
 std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
-  const conduit::Node &node);
+  const inlet::Proxy &proxy);
 
 /**
- * Get the start and end units in a node.
+ * Get the start and end units in a Proxy.
  *
- * The node may either have a "units" field, or a "start_units" and "end_units".
+ * The Proxy may either have a "units" field, or a "start_units" and "end_units".
  * In the first case, "units" will be used for both the start and end. In the
  * second, both must be present.
  *
- * \param node the node from which to get the units
+ * \param proxy the Proxy from which to get the units
  * \return the start and end units
- * \throws std::invalid_argument if an invalid combination of fields is
+ * \throws KleeError if an invalid combination of fields is
  * specified or if no units are specified.
  */
-std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const conduit::Node &node);
+std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy);
+
+/**
+ * Define the schema for units. This is the schema that will be
+ * expected by getOptionalStartAndEndUnits() and getStartAndEndUnits().
+ *
+ * @param table the table to which to add the expected fields
+ * @param unitsDescription the description of the "units" field
+ * @param startUnitsDescription the description of the "start_units" field
+ * @param endUnitsDescription the description of the "end_units" field
+ */
+void defineUnitsSchema(inlet::Table &table,
+                       const char *unitsDescription = "",
+                       const char *startUnitsDescription = "",
+                       const char *endUnitsDescription = "");
+
+/**
+ * Define a field which can hold a number of dimensions
+ *
+ * @param parent the parent table on which to define the field
+ * @param name the name of the field
+ * @param description and optional description of the field
+ * @return the field, which can have additional restrictions set on it
+ */
+inlet::VerifiableScalar &defineDimensionsField(inlet::Table &parent,
+                                               const char *name,
+                                               const char *description = "");
+
+/**
+ * Convert the given proxy to a Dimensions object. The field should have been
+ * created by defineDimensionsField()
+ *
+ * @param dimProxy the proxy to the dimensions field
+ * @return the value of the dimensions
+ */
+Dimensions toDimensions(const inlet::Proxy &dimProxy);
 
 }  // namespace internal
 }  // namespace klee

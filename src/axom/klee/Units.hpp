@@ -37,7 +37,7 @@ enum class LengthUnit
  *
  * \param unitsAsString the units as a string
  * \return the parsed units
- * \throws std::invalid_argument if the string does not represent known
+ * \throws KleeError if the string does not represent known
  * units
  */
 LengthUnit parseLengthUnits(const std::string &unitsAsString);

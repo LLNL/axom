@@ -40,7 +40,7 @@ foreach(test ${gtest_klee_tests})
                         SOURCES ${test}
                         INCLUDES .
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON klee gtest gmock klee_test_utils
+                        DEPENDS_ON klee sidre gtest gmock klee_test_utils
                         FOLDER      axom/klee/tests )
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )

@@ -3,8 +3,7 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 axom_component_requires(NAME       Klee
-                        COMPONENTS PRIMAL SLIC
-                        TPLS       Conduit )
+                        COMPONENTS PRIMAL SLIC INLET SIDRE)
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
@@ -17,6 +16,7 @@ set(klee_headers
         Shape.hpp
         ShapeSet.hpp
         Units.hpp
+        KleeError.hpp
     )
 
 set(klee_internal_headers
@@ -38,7 +38,7 @@ set(klee_sources
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(klee_depends core primal slic conduit::conduit)
+set(klee_depends core primal slic sidre inlet fmt)
 
 blt_add_library(NAME        klee
                 SOURCES     ${klee_sources}
