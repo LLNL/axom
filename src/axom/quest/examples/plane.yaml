@@ -1,3 +1,4 @@
+dimensions: 3
 shapes:
   - name: plane
     material: steel

@@ -384,7 +384,7 @@ public:
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
-  axom::slic::UnitTestLogger logger;  // create & initialize logger
+  axom::slic::SimpleLogger logger;  // create & initialize logger
   // slic::debug::checksAreErrors = true;
 
   // Set up and parse command line arguments
