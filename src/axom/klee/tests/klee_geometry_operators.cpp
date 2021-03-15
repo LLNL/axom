@@ -274,6 +274,7 @@ TEST(UnitConverter, basics)
   TransformableGeometryProperties expectedEndProperties {Dimensions::Three,
                                                          LengthUnit::m};
   EXPECT_EQ(expectedEndProperties, converter.getEndProperties());
+  EXPECT_DOUBLE_EQ(0.01, converter.getConversionFactor());
 }
 
 TEST(UnitConverter, toMatrix)

@@ -266,9 +266,18 @@ private:
   double m_zFactor;
 };
 
+/**
+ * A Converter for converting units.
+ */
 class UnitConverter : public MatrixOperator
 {
 public:
+  /**
+   * Convert from the units specified in the start properties to the
+   * given end units
+   * @param endUnits the units at the end of the operation
+   * @param startProperties the properties before the operation
+   */
   UnitConverter(LengthUnit endUnits,
                 const TransformableGeometryProperties &startProperties);
 
@@ -278,6 +287,12 @@ public:
 
   void accept(GeometryOperatorVisitor &visitor) const override;
 
+  /**
+   * Get the conversion factor used to convert from the start units to the
+   * end units
+   * @return the unit conversion factor
+   */
+  double getConversionFactor() const;
 private:
   LengthUnit m_endUnits;
 };

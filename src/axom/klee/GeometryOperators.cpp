@@ -6,6 +6,7 @@
 #include "axom/klee/GeometryOperators.hpp"
 
 #include "axom/core/numerics/matvecops.hpp"
+#include "axom/klee/Units.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
 
 #include <stdexcept>
@@ -158,7 +159,7 @@ TransformableGeometryProperties UnitConverter::getEndProperties() const
 
 numerics::Matrix<double> UnitConverter::toMatrix() const
 {
-  double factor = convert(1, getStartProperties().units, m_endUnits);
+  double factor = getConversionFactor();
   Scale scale(factor, factor, factor, getStartProperties());
   return scale.toMatrix();
 }
@@ -166,6 +167,11 @@ numerics::Matrix<double> UnitConverter::toMatrix() const
 void UnitConverter::accept(GeometryOperatorVisitor &visitor) const
 {
   visitor.visit(*this);
+};
+
+double UnitConverter::getConversionFactor() const
+{
+  return klee::getConversionFactor(getStartProperties().units, m_endUnits);
 };
 
 SliceOperator::SliceOperator(const primal::Point3D &origin,
