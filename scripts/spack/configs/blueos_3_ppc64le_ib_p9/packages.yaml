@@ -115,7 +115,7 @@ packages:
     version: [0.6.0]
     variants: ~shared
   mfem:
-    variants: ~mpi~metis~zlib
+    version: [4.2.0]
   umpire:
     variants: ~shared
 

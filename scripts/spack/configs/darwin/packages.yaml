@@ -80,4 +80,4 @@ packages:
     version: [0.5.1]
     variants: ~shared
   mfem:
-    variants: ~mpi~metis~zlib
+    version: [4.2.0]
