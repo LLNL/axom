@@ -470,6 +470,12 @@ public:
     return m_globalContainer.addStructDictionary(name, description);
   }
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the global list of unexpected names, i.e., entries
+   * in the input file that were not added via an add* call
+   *****************************************************************************
+   */
   const std::unordered_set<std::string>& unexpectedNames() const
   {
     return m_unexpectedNames;
