@@ -1024,6 +1024,32 @@ Function& Container::getFunction(const std::string& funcName) const
 
 std::string Container::name() const { return m_name; }
 
+std::unordered_set<std::string> Container::unexpectedNames() const
+{
+  // The name of the Lua table, YAML dictionary, etc of this container
+  // in the input file - need to filter out the collection group
+  const auto accessedName =
+    removeAllInstances(m_name, detail::COLLECTION_GROUP_NAME + "/");
+  std::unordered_set<std::string> result;
+  std::vector<std::string> accessedTokens;
+  utilities::string::split(accessedTokens, accessedName, '/');
+  std::vector<std::string> unexpectedTokens;
+  std::copy_if(
+    m_unexpectedNames.begin(),
+    m_unexpectedNames.end(),
+    std::inserter(result, result.begin()),
+    [&accessedName, &unexpectedTokens, &accessedTokens](const std::string& name) {
+      // Check if the possibly unexpected name is an "ancestor" of the accessed name,
+      // if it is, then it gets marked as expected via removal
+      unexpectedTokens.clear();
+      axom::utilities::string::split(unexpectedTokens, name, '/');
+      return std::equal(accessedTokens.begin(),
+                        accessedTokens.end(),
+                        unexpectedTokens.begin());
+    });
+  return result;
+}
+
 bool Container::contains(const std::string& name) const
 {
   if(auto container = getChildInternal<Container>(name))

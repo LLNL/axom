@@ -957,6 +957,10 @@ TYPED_TEST(inlet_object, basic_unused_names)
 
   std::unordered_set<std::string> expected_unused {"foo/0/baz", "foo/1/baz"};
   EXPECT_EQ(expected_unused, inlet.unexpectedNames());
+
+  const auto& foo_container =
+    inlet.getGlobalContainer().getChildContainers().at("foo");
+  EXPECT_EQ(expected_unused, foo_container->unexpectedNames());
 }
 
 TYPED_TEST(inlet_object, basic_unused_names_substring)
@@ -978,6 +982,10 @@ TYPED_TEST(inlet_object, basic_unused_names_substring)
   // Check to make sure that a naive substring is not used and that checks are path-aware
   std::unordered_set<std::string> expected_unused {"foo/0/bar", "foo/1/bar"};
   EXPECT_EQ(expected_unused, inlet.unexpectedNames());
+
+  const auto& foo_container =
+    inlet.getGlobalContainer().getChildContainers().at("foo");
+  EXPECT_EQ(expected_unused, foo_container->unexpectedNames());
 }
 
 template <typename InletReader>

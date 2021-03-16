@@ -882,6 +882,16 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns the list of unexpected names "below" the calling container,
+   * i.e., entries in the input file structure (e.g., a Lua table or
+   * YAML dictionary) corresponding to the calling container that were not
+   * added via an add* call
+   *****************************************************************************
+   */
+  std::unordered_set<std::string> unexpectedNames() const;
+
+  /*!
+   *****************************************************************************
    * \brief Add a Field to the input file schema.
    *
    * Adds a primitive Field to the input file schema. It may or may not be required
