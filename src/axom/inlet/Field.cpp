@@ -297,7 +297,9 @@ InletType Field::type() const
   }
 }
 
-Field::operator bool() const
+bool Field::exists() const { return m_sidreGroup->hasView("value"); }
+
+bool Field::isUserProvided() const
 {
   if(m_sidreGroup->hasView("retrieval_status"))
   {
@@ -308,7 +310,7 @@ Field::operator bool() const
       return false;
     }
   }
-  return m_sidreGroup->hasView("value");
+  return exists();
 }
 
 template <typename T>

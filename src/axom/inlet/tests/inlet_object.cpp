@@ -946,9 +946,10 @@ TYPED_TEST(inlet_object, default_scalar_marked_false)
   Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
 
   auto& scalar = inlet.addInt("foo").defaultValue(2);
-  // The field itself should evaluate to false because nothing was provided
+  // The field itself exists but was not provided by the user
   auto& field = static_cast<axom::inlet::Field&>(scalar);
-  EXPECT_FALSE(static_cast<bool>(field));
+  EXPECT_TRUE(field.exists());
+  EXPECT_FALSE(field.isUserProvided());
 
   // ...but it should still be possible to retrieve the default
   const int foo = inlet["foo"];
@@ -968,8 +969,9 @@ TYPED_TEST(inlet_object, default_struct_field_marked_false)
   foo_container.addBool("bar", "bar's description").defaultValue(true);
   foo_container.addBool("baz", "baz's description").defaultValue(false);
 
-  // The struct itself should evaluate to false because nothing was provided
-  EXPECT_FALSE(static_cast<bool>(foo_container));
+  // The container itself exists but was not provided by the user
+  EXPECT_TRUE(foo_container.exists());
+  EXPECT_FALSE(foo_container.isUserProvided());
 
   // ...but it should still be possible to retrieve the default
   const Foo expected_foo {true, false};
@@ -990,8 +992,9 @@ TYPED_TEST(inlet_object, default_struct_field_marked_true)
   foo_container.addBool("bar", "bar's description").defaultValue(true);
   foo_container.addBool("baz", "baz's description").defaultValue(false);
 
-  // The struct itself should evaluate to true because at least one field was provided
-  EXPECT_TRUE(static_cast<bool>(foo_container));
+  // The container itself exists and was provided by the user
+  EXPECT_TRUE(foo_container.exists());
+  EXPECT_TRUE(foo_container.isUserProvided());
 
   // ...and it should still be possible to retrieve the full struct
   const Foo expected_foo {true, false};

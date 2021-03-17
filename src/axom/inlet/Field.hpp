@@ -314,10 +314,18 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns whether a value for the Field exists, i.e., if a value 
+   * was provided in the input file or if a default was provided
+   *****************************************************************************
+   */
+  bool exists() const;
+
+  /*!
+   *****************************************************************************
    * \brief Returns whether a value was provided in the input file
    *****************************************************************************
    */
-  explicit operator bool() const;
+  bool isUserProvided() const;
 
 private:
   /*!
