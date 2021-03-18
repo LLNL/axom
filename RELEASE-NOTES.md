@@ -70,8 +70,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet collections of mixed or incorrect type will now fail verification, even if they're
   not marked as required
 - Required collections no longer fail Inlet verification if they are empty in the input file
-- Inlet: Default values no longer impact the "truthiness" of `Field` objects - a `Field` evaluates
-  to true only if a value was provided in the input file
+- Inlet: `operator bool` for `Field` and `Container` has been replaced with more precise `isUserProvided`
+  and `exists`, which also returns `true` if a default value was specified.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
