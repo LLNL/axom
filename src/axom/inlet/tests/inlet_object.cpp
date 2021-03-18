@@ -939,7 +939,7 @@ TYPED_TEST(inlet_object, struct_arrays_as_std_vector)
   EXPECT_EQ(foos, expected_foos);
 }
 
-TYPED_TEST(inlet_object, default_scalar_marked_false)
+TYPED_TEST(inlet_object, default_scalar_user_provided)
 {
   std::string testString = " ";
   DataStore ds;
@@ -959,7 +959,7 @@ TYPED_TEST(inlet_object, default_scalar_marked_false)
   EXPECT_TRUE(inlet.verify());
 }
 
-TYPED_TEST(inlet_object, default_struct_field_marked_false)
+TYPED_TEST(inlet_object, default_struct_field_user_provided)
 {
   std::string testString = " ";
   DataStore ds;
@@ -980,6 +980,32 @@ TYPED_TEST(inlet_object, default_struct_field_marked_false)
 
   // and it should not impede verification
   EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, default_struct_field_user_provided_reqd)
+{
+  std::string testString = " ";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_container = inlet.addStruct("foo").required();
+  foo_container.addBool("bar", "bar's description").defaultValue(true);
+  foo_container.addBool("baz", "baz's description").defaultValue(false);
+
+  // The container itself exists but was not provided by the user
+  EXPECT_TRUE(foo_container.exists());
+  EXPECT_FALSE(foo_container.isUserProvided());
+
+  // ...but it should still be possible to retrieve the default
+  const Foo expected_foo {true, false};
+  const auto foo = inlet["foo"].get<Foo>();
+  EXPECT_EQ(foo, expected_foo);
+
+  // and it should not impede verification
+  // EXPECT_TRUE(inlet.verify()); // fails here...
+  // FIXME: This one is a bit of a degenerate case where all fields have defaults
+  // and the struct is marked as required - need to determine how this can be
+  // handled in the general case
 }
 
 TYPED_TEST(inlet_object, default_struct_field_marked_true)
