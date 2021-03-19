@@ -259,6 +259,75 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
                                          mesh_name);
   }
 }
+
+void generate_multidomain_blueprint(DataStore* ds, const std::string& filename, int num_files)
+{
+  int my_rank;
+  int comm_size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
+  // 3 domains on even ranks, 2 domains on odd ranks
+  int64_t domain_begin = (5 * (my_rank/2) ) + (3 * (my_rank%2));
+  int64_t domain_end = domain_begin + (3 - (my_rank%2));
+
+  std::string holder_name = "domain_data";
+  std::string mesh_name = "mesh";
+  Group* holder = ds->getRoot()->createGroup(holder_name);
+
+
+  for (int64_t i = domain_begin; i < domain_end; ++i)
+  {
+    std::string domain_name = fmt::sprintf("domain_%03d", i);
+
+    Group* mroot = holder->createGroup(domain_name);
+    Group* coords = mroot->createGroup("coordsets/coords");
+    Group* topos = mroot->createGroup("topologies");
+    // no material sets in this example
+    Group* fields = mroot->createGroup("fields");
+    // no adjacency sets in this (single-domain) example
+    mroot->createViewScalar("state/domain_id", i);
+
+    setup_blueprint_coords(ds, coords);
+
+    setup_blueprint_topos(ds, topos);
+
+    setup_blueprint_fields(ds, fields);
+  }
+
+  IOManager writer(MPI_COMM_WORLD);
+
+  conduit::Node info, mesh_node, root_node;
+  ds->getRoot()->createNativeLayout(mesh_node);
+  std::string bp_protocol = "mesh";
+  if(conduit::blueprint::mpi::verify(bp_protocol,
+                                     mesh_node[holder_name],
+                                     info,
+                                     MPI_COMM_WORLD))
+  {
+  #if defined(AXOM_USE_HDF5)
+    std::string protocol = "sidre_hdf5";
+  #else
+    std::string protocol = "sidre_json";
+  #endif
+
+    std::string output_name = filename;
+
+    if(comm_size > 1)
+    {
+      output_name = output_name + "_par";
+    }
+
+    std::string bp_rootfile = output_name + ".root";
+
+    writer.write(ds->getRoot()->getGroup("domain_data"), std::min(num_files,comm_size), output_name, protocol);
+
+    writer.writeBlueprintIndexToRootFile(ds,
+                                         holder_name,
+                                         bp_rootfile,
+                                         mesh_name);
+  }
+}
 #endif
 
 int main(int argc, char** argv)
@@ -278,6 +347,21 @@ int main(int argc, char** argv)
   DataStore* spds = create_tiny_datastore();
   generate_spio_blueprint(sds, true);    //dense
   generate_spio_blueprint(spds, false);  //sparse
+  spds->getRoot()->destroyGroups();
+  spds->getRoot()->destroyViews();
+  spds = create_tiny_datastore();
+  generate_multidomain_blueprint(spds, "multi1", 1);
+  if (num_ranks > 1)
+  {
+    spds->getRoot()->destroyGroups();
+    spds->getRoot()->destroyViews();
+    spds = create_tiny_datastore();
+    generate_multidomain_blueprint(spds, "multi2", 2);
+    spds->getRoot()->destroyGroups();
+    spds->getRoot()->destroyViews();
+    spds = create_tiny_datastore();
+    generate_multidomain_blueprint(spds, "multi_all", num_ranks);
+  }
   MPI_Finalize();
 #endif
 

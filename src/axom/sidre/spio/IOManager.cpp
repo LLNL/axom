@@ -17,6 +17,7 @@
 
 // Conduit headers
 #include "conduit_relay.hpp"
+#include "conduit_relay_mpi.hpp"
 
 #ifdef AXOM_USE_HDF5
   #include "conduit_relay_io_hdf5.hpp"
@@ -599,6 +600,7 @@ void IOManager::createRootFile(const std::string& file_base,
   }
 #endif
 
+
   conduit::relay::io::save(n, root_file_name, relay_protocol);
 }
 
@@ -867,6 +869,36 @@ std::string IOManager::getFileNameForRank(const std::string& file_pattern,
   return file_name;
 }
 
+void IOManager::getRankToFileMap(conduit::Node& rank_to_file_map,
+                               int num_files)
+{
+  if(m_baton)
+  { 
+    if(m_baton->getNumFiles() != num_files)
+    { 
+      delete m_baton;
+      m_baton = nullptr;
+    }
+  }
+
+  if(!m_baton)
+  {
+    m_baton = new IOBaton(m_mpi_comm, num_files, m_comm_size);
+  }
+
+  std::vector<int64_t> map_vec(m_comm_size, 0); 
+
+  int set_id = m_baton->wait();
+  map_vec[m_my_rank] = static_cast<int64_t>(set_id);
+  (void)m_baton->pass();
+
+  conduit::Node map_local;
+  map_local.set_external(&map_vec[0], map_vec.size());
+
+  conduit::relay::mpi::max_all_reduce(map_local, rank_to_file_map, m_mpi_comm);
+
+}
+
 /*
  *************************************************************************
  *
@@ -1092,9 +1124,36 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   std::string bp_index("blueprint_index/" + blueprint_name);
 
+  bool multi_domain = false;
+  if (m_comm_size > 1)
+  {
+    multi_domain = true;
+  }
+  else
+  {
+    Group* domain;
+    if(domain_path == "/")
+    {
+      domain = datastore->getRoot();
+    }
+    else if(datastore->getRoot()->hasGroup(domain_path))
+    {
+      domain = datastore->getRoot()->getGroup(domain_path);
+    }
+    else
+    {
+      domain = nullptr;
+    }
+
+    if (domain && !domain->hasChildGroup("coordsets"))
+    {
+      multi_domain = true;
+    }
+  }
+
   bool success = false;
 
-  if(m_comm_size > 1)
+  if(multi_domain)
   {
     success = datastore->generateBlueprintIndex(MPI_COMM_WORLD,
                                                 domain_path,
@@ -1108,6 +1167,9 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
                                                 bp_index,
                                                 m_comm_size);
   }
+
+  Node rank_map;
+  getRankToFileMap(rank_map, getNumFilesFromRoot(file_name));
 
   if(success)
   {
