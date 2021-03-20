@@ -175,10 +175,7 @@ void IOManager::write(sidre::Group* datagroup,
     SCR_Start_checkpoint();
   }
 #endif
-  if(m_my_rank == 0)
-  {
-    createRootFile(root_string, num_files, protocol, tree_pattern);
-  }
+  createRootFile(root_string, num_files, protocol, tree_pattern);
   MPI_Barrier(m_mpi_comm);
 
   std::string root_name = root_string + ".root";
@@ -521,87 +518,91 @@ void IOManager::createRootFile(const std::string& file_base,
                                const std::string& tree_pattern)
 {
   conduit::Node n;
-  std::string root_file_name;
-  std::string local_file_base;
+  getRankToFileMap(n["rank_to_file_map"], num_files);
 
-  std::string relay_protocol = correspondingRelayProtocol(protocol);
-
-  if(protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
+  if (m_my_rank == 0)
   {
-#ifdef AXOM_USE_HDF5
-    n["number_of_files"] = num_files;
-    if(protocol == "sidre_hdf5")
+    std::string root_file_name;
+    std::string local_file_base;
+
+    std::string relay_protocol = correspondingRelayProtocol(protocol);
+
+    if(protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
     {
-      std::string next;
-      std::string slash = "/";
-      conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
-      n["file_pattern"] =
+#ifdef AXOM_USE_HDF5
+      n["number_of_files"] = num_files;
+      if(protocol == "sidre_hdf5")
+      {
+        std::string next;
+        std::string slash = "/";
+        conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
+        n["file_pattern"] =
         local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
+      }
+      else
+      {
+        n["file_pattern"] = file_base + "_" + "%07d.conduit_hdf5";
+      }
+      n["number_of_trees"] = m_comm_size;
+
+      n["tree_pattern"] = tree_pattern;
+      n["protocol/name"] = protocol;
+      n["protocol/version"] = "0.0";
+
+      root_file_name = file_base + ".root";
+#else
+      SLIC_WARNING("IOManager::createRootFile() -- '"
+                   << protocol << "' protocol only available "
+                   << "when Axom is configured with hdf5");
+#endif /* AXOM_USE_HDF5 */
     }
     else
     {
-      n["file_pattern"] = file_base + "_" + "%07d.conduit_hdf5";
+      n["number_of_files"] = num_files;
+      n["file_pattern"] = file_base + "_" + "%07d." + protocol;
+      n["number_of_trees"] = m_comm_size;
+
+      n["tree_pattern"] = tree_pattern;
+      n["protocol/name"] = protocol;
+      n["protocol/version"] = "0.0";
+
+      root_file_name = file_base + ".root";
     }
-    n["number_of_trees"] = m_comm_size;
-
-    n["tree_pattern"] = tree_pattern;
-    n["protocol/name"] = protocol;
-    n["protocol/version"] = "0.0";
-
-    root_file_name = file_base + ".root";
-#else
-    SLIC_WARNING("IOManager::createRootFile() -- '"
-                 << protocol << "' protocol only available "
-                 << "when Axom is configured with hdf5");
-#endif /* AXOM_USE_HDF5 */
-  }
-  else
-  {
-    n["number_of_files"] = num_files;
-    n["file_pattern"] = file_base + "_" + "%07d." + protocol;
-    n["number_of_trees"] = m_comm_size;
-
-    n["tree_pattern"] = tree_pattern;
-    n["protocol/name"] = protocol;
-    n["protocol/version"] = "0.0";
-
-    root_file_name = file_base + ".root";
-  }
 
 #ifdef AXOM_USE_SCR
-  if(m_use_scr)
-  {
-    if(protocol == "sidre_hdf5")
+    if(m_use_scr)
     {
-      n["file_pattern"] = local_file_base + "_" + "%07d.hdf5";
-    }
+      if(protocol == "sidre_hdf5")
+      {
+        n["file_pattern"] = local_file_base + "_" + "%07d.hdf5";
+      }
 
-    std::string root_name = root_file_name;
-    char checkpoint_file[256];
-    sprintf(checkpoint_file, "%s", root_name.c_str());
-    char scr_file[SCR_MAX_FILENAME];
-    if(SCR_Route_file(checkpoint_file, scr_file) == SCR_SUCCESS)
-    {
-      root_file_name = scr_file;
-    }
-    else
-    {
-      SLIC_WARNING("Attempt to create SCR route for file: "
-                   << root_name << " failed. Writing root file without SCR.");
-    }
+      std::string root_name = root_file_name;
+      char checkpoint_file[256];
+      sprintf(checkpoint_file, "%s", root_name.c_str());
+      char scr_file[SCR_MAX_FILENAME];
+      if(SCR_Route_file(checkpoint_file, scr_file) == SCR_SUCCESS)
+      {
+        root_file_name = scr_file;
+      }
+      else
+      {
+        SLIC_WARNING("Attempt to create SCR route for file: "
+                     << root_name << " failed. Writing root file without SCR.");
+      }
 
-    std::string dir_name;
-    utilities::filesystem::getDirName(dir_name, root_file_name);
-    if(!dir_name.empty())
-    {
-      utilities::filesystem::makeDirsForPath(dir_name);
+      std::string dir_name;
+      utilities::filesystem::getDirName(dir_name, root_file_name);
+      if(!dir_name.empty())
+      {
+        utilities::filesystem::makeDirsForPath(dir_name);
+      }
+      m_scr_checkpoint_dir = dir_name;
     }
-    m_scr_checkpoint_dir = dir_name;
-  }
 #endif
 
-
-  conduit::relay::io::save(n, root_file_name, relay_protocol);
+    conduit::relay::io::save(n, root_file_name, relay_protocol);
+  }
 }
 
 /*
@@ -1167,9 +1168,6 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
                                                 bp_index,
                                                 m_comm_size);
   }
-
-  Node rank_map;
-  getRankToFileMap(rank_map, getNumFilesFromRoot(file_name));
 
   if(success)
   {
