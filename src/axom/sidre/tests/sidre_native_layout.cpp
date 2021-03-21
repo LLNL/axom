@@ -546,6 +546,9 @@ TEST(sidre_native_layout, basic_demo_compare)
     a5_view_ptr[i] = sidre_vals_1[i];
   }
 
+  // one array of size 0
+  group3->createViewAndAllocate("a0_i64", axom::sidre::DataType::int64(0));
+
   // one external array
   group3->createView("a5_i64_ext", conduit::DataType::int64(5))
     ->setExternalDataPtr(sidre_vals_1);
@@ -564,8 +567,13 @@ TEST(sidre_native_layout, basic_demo_compare)
     buff_ptr[i] = sidre_vals_2[i];
   }
 
+  View* v0 = group3->createView("b_v0");
   View* v1 = group3->createView("b_v1");
   View* v2 = group3->createView("b_v2");
+
+  // v0 is a view of size zero into this buffer
+  v0->attachBuffer(buff);
+  v0->apply(conduit::DataType::float64(0));
 
   // with these settings, bv1 should have 1.0 as all vals
   v1->attachBuffer(buff);
@@ -604,6 +612,7 @@ TEST(sidre_native_layout, basic_demo_compare)
   // create an equiv conduit tree for testing
   //
 
+  axom::int64 conduit_vals_0[] = {};
   axom::int64 conduit_vals_1[5] = {0, 1, 2, 3, 4};
   axom::float64 conduit_vals_2[6] = {
     1.0,
@@ -620,7 +629,9 @@ TEST(sidre_native_layout, basic_demo_compare)
   n["my_strings/s0"] = "s0 string";
   n["my_strings/s1"] = "s1 string";
   n["my_arrays/a5_i64"].set(conduit_vals_1, 5);
+  n["my_arrays/a0_i64"].set(conduit_vals_0, 0);
   n["my_arrays/a5_i64_ext"].set_external(conduit_vals_1, 5);
+  n["my_arrays/b_v0"].set(conduit_vals_2, 0);
   n["my_arrays/b_v1"].set(conduit_vals_2, 3, 0, 2 * sizeof(conduit::float64));
   n["my_arrays/b_v2"].set(conduit_vals_2,
                           3,
