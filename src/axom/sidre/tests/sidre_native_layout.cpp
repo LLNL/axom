@@ -645,6 +645,7 @@ TEST(sidre_native_layout, basic_demo_compare)
 
   axom::sidre::Node n_info;
   EXPECT_FALSE(n.diff(n_sidre, n_info));
+  n_info.print();
 
   //
   // TODO: When using newer conduit that has relay support for sidre i/o
