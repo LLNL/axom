@@ -314,10 +314,18 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns whether an actual value is stored
+   * \brief Returns whether a value for the Field exists, i.e., if a value 
+   * was provided in the input file or if a default was provided
    *****************************************************************************
    */
-  explicit operator bool() const { return m_sidreGroup->hasView("value"); }
+  bool exists() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether a value was provided in the input file
+   *****************************************************************************
+   */
+  bool isUserProvided() const;
 
 private:
   /*!

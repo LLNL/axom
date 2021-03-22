@@ -329,7 +329,10 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<bool>(
   {
     sidreGroup->createViewScalar("value", val ? int8(1) : int8(0));
   }
-  markRetrievalStatus(*sidreGroup, result);
+  if(!forArray)
+  {
+    markRetrievalStatus(*sidreGroup, result);
+  }
   return axom::sidre::DataTypeId::INT8_ID;
 }
 
@@ -345,7 +348,10 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<int>(
   {
     sidreGroup->createViewScalar("value", val);
   }
-  markRetrievalStatus(*sidreGroup, result);
+  if(!forArray)
+  {
+    markRetrievalStatus(*sidreGroup, result);
+  }
   return axom::sidre::DataTypeId::INT_ID;
 }
 
@@ -361,7 +367,10 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<double>(
   {
     sidreGroup->createViewScalar("value", val);
   }
-  markRetrievalStatus(*sidreGroup, result);
+  if(!forArray)
+  {
+    markRetrievalStatus(*sidreGroup, result);
+  }
   return axom::sidre::DataTypeId::DOUBLE_ID;
 }
 
@@ -377,7 +386,10 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<std::string>(
   {
     sidreGroup->createViewString("value", val);
   }
-  markRetrievalStatus(*sidreGroup, result);
+  if(!forArray)
+  {
+    markRetrievalStatus(*sidreGroup, result);
+  }
   return axom::sidre::DataTypeId::CHAR8_STR_ID;
 }
 
@@ -832,10 +844,10 @@ Container& Container::registerVerifier(std::function<bool(const Container&)> lam
 
 bool Container::verify() const
 {
-  // Whether the calling container has any "truthy" subcontainers, fields, or functions
+  // Whether the calling container has anything in it
   // If the name is empty then we're the global (root) container, which we always
   // consider to be defined
-  const bool this_container_defined = static_cast<bool>(*this) || m_name.empty();
+  const bool this_container_defined = isUserProvided() || m_name.empty();
 
   // If this container was required, make sure something was defined in it
   bool verified =
@@ -849,7 +861,7 @@ bool Container::verify() const
       fmt::format("[Inlet] Container failed verification: {0}", m_name));
   }
 
-  // Checking the child objects is not needed if the container is empty
+  // Checking the child objects is not needed if the container wasn't defined in the input file
   if(this_container_defined)
   {
     // Verify the child Fields of this Container
@@ -990,13 +1002,13 @@ bool Container::contains(const std::string& name) const
 {
   if(auto container = getChildInternal<Container>(name))
   {
-    // call operator bool on the container itself
-    return static_cast<bool>(*container);
+    // Check if the container itself exists
+    return container->exists();
   }
   else if(auto field = getChildInternal<Field>(name))
   {
-    // call operator bool on the field itself
-    return static_cast<bool>(*field);
+    // Check if the field itself exists
+    return field->exists();
   }
   else if(auto function = getChildInternal<Function>(name))
   {
@@ -1006,23 +1018,52 @@ bool Container::contains(const std::string& name) const
   return false;
 }
 
-Container::operator bool() const
+bool Container::exists() const
 {
-  // Check if any of its child containers are nontrivial
+  // Check if any of its child containers exist
   const bool has_containers =
     std::any_of(m_containerChildren.begin(),
                 m_containerChildren.end(),
                 [](const decltype(m_containerChildren)::value_type& entry) {
-                  return static_cast<bool>(*entry.second);
+                  return entry.second->exists();
                 });
 
   const bool has_fields =
     std::any_of(m_fieldChildren.begin(),
                 m_fieldChildren.end(),
                 [](const decltype(m_fieldChildren)::value_type& entry) {
+                  return entry.second->exists();
+                });
+
+  // Functions cannot be defaulted and thus have an unambiguous operator bool
+  const bool has_functions =
+    std::any_of(m_functionChildren.begin(),
+                m_functionChildren.end(),
+                [](const decltype(m_functionChildren)::value_type& entry) {
                   return static_cast<bool>(*entry.second);
                 });
 
+  return has_containers || has_fields || has_functions;
+}
+
+bool Container::isUserProvided() const
+{
+  // Check if any of its child containers had user-provided fields
+  const bool has_containers =
+    std::any_of(m_containerChildren.begin(),
+                m_containerChildren.end(),
+                [](const decltype(m_containerChildren)::value_type& entry) {
+                  return entry.second->isUserProvided();
+                });
+
+  const bool has_fields =
+    std::any_of(m_fieldChildren.begin(),
+                m_fieldChildren.end(),
+                [](const decltype(m_fieldChildren)::value_type& entry) {
+                  return entry.second->isUserProvided();
+                });
+
+  // Functions cannot be defaulted and thus have an unambiguous operator bool
   const bool has_functions =
     std::any_of(m_functionChildren.begin(),
                 m_functionChildren.end(),

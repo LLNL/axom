@@ -862,11 +862,20 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns whether this container or any of its subcontainers contain a non-
-   * empty field
+   * \brief Returns whether this container or any of its subcontainers exist, 
+   * i.e., if they contain a Field or Function that exists
    *****************************************************************************
    */
-  explicit operator bool() const;
+  bool exists() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether this container or any of its subcontainers were
+   * provided in the input file, i.e., if they contain a Field or Function that
+   * was provided in the input file
+   *****************************************************************************
+   */
+  bool isUserProvided() const;
 
   /*!
    *****************************************************************************
