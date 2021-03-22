@@ -120,7 +120,7 @@ sidre::TypeID recordEnum(const sidre::Group* group, conduit::Node& node)
 void recordFieldSchema(const Field& field, conduit::Node& node)
 {
   const static auto jsonTypeNames = []() {
-    std::unordered_map<sidre::TypeID, std::string> result;
+    std::unordered_map<std::underlying_type<sidre::TypeID>::type, std::string> result;
     result[sidre::TypeID::INT_ID] = "integer";
     result[sidre::TypeID::CHAR8_STR_ID] = "string";
     result[sidre::TypeID::FLOAT64_ID] = "number";
