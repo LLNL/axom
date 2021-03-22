@@ -205,12 +205,12 @@ int main(int argc, char** argv)
   auto sphinxWriter = std::make_unique<SphinxWriter>("example_doc.rst");
   inlet.registerWriter(std::move(sphinxWriter));
   // _inlet_documentation_generation_end
-  inlet.writeDoc();
+  inlet.write();
 
   auto schemaWriter =
     std::make_unique<axom::inlet::JSONSchemaWriter>("example_doc.json");
   inlet.registerWriter(std::move(schemaWriter));
-  inlet.writeDoc();
+  inlet.write();
 
   if(docsEnabled)
   {

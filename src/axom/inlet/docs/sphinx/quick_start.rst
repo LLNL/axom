@@ -116,12 +116,12 @@ instantiation of a ``Writer`` class and register it with your ``Inlet`` class.
    :end-before: _inlet_documentation_generation_end
    :language: C++
 
-Then after you are finishing defining your schema, call ``writeDoc()`` on your ``Inlet`` class
+Then after you are finishing defining your schema, call ``write()`` on your ``Inlet`` class
 to write out your documentation to the given file.
 
 .. code-block:: C++
 
-   inlet.writeDoc();
+   inlet.write();
 
 We provided a basic Sphinx documentation writing class but you may want to customize it to your
 own style.  The link below shows the example output from the ``documentation_generation.cpp`` example:

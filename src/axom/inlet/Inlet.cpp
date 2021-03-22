@@ -97,7 +97,7 @@ void writerHelper(Writer& writer, const Container& container)
 
 }  // end namespace detail
 
-void Inlet::writeDoc()
+void Inlet::write()
 {
   if(m_docEnabled)
   {

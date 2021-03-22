@@ -347,10 +347,10 @@ int main(int argc, char** argv)
     std::unique_ptr<inlet::SphinxWriter> sphinxWriter(
       new inlet::SphinxWriter("nested_structs.rst"));
     inlet.registerWriter(std::move(sphinxWriter));
-    inlet.writeDoc();
+    inlet.write();
     std::unique_ptr<inlet::JSONSchemaWriter> schemaWriter(
       new inlet::JSONSchemaWriter("nested_structs.json"));
     inlet.registerWriter(std::move(schemaWriter));
-    inlet.writeDoc();
+    inlet.write();
   }
 }

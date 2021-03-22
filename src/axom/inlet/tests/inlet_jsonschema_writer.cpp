@@ -40,7 +40,7 @@ bool validateString(Inlet& inlet, const std::string& luaString)
 
   std::unique_ptr<JSONSchemaWriter> writer(new JSONSchemaWriter(schemaFile));
   inlet.registerWriter(std::move(writer));
-  inlet.writeDoc();
+  inlet.write();
 
   const std::string cmd =
     fmt::format("/usr/bin/jsonschema -i {0} {1}", instanceFile, schemaFile);
@@ -57,7 +57,7 @@ Inlet createBasicInlet(DataStore* ds, const std::string& luaString)
 }
 
 template <typename InletReader>
-class inlet_writer : public ::testing::Test
+class inlet_jsonschema_writer : public ::testing::Test
 {
 protected:
   void SetUp() override
@@ -69,9 +69,9 @@ protected:
   }
 };
 
-TYPED_TEST_SUITE(inlet_writer, axom::inlet::detail::ReaderTypes);
+TYPED_TEST_SUITE(inlet_jsonschema_writer, axom::inlet::detail::ReaderTypes);
 
-TYPED_TEST(inlet_writer, top_level_bools)
+TYPED_TEST(inlet_jsonschema_writer, top_level_bools)
 {
   std::string testString = "foo = true; bar = false";
   DataStore ds;
@@ -90,7 +90,7 @@ TYPED_TEST(inlet_writer, top_level_bools)
   EXPECT_EQ(inlet.verify(), jsonVerified);
 }
 
-TYPED_TEST(inlet_writer, top_level_bools_reqd)
+TYPED_TEST(inlet_jsonschema_writer, top_level_bools_reqd)
 {
   std::string testString = "foo = true";
   DataStore ds;
@@ -109,7 +109,7 @@ TYPED_TEST(inlet_writer, top_level_bools_reqd)
   EXPECT_EQ(inlet.verify(), jsonVerified);
 }
 
-TYPED_TEST(inlet_writer, top_level_ints)
+TYPED_TEST(inlet_jsonschema_writer, top_level_ints)
 {
   std::string testString = "foo = 12; bar = 16";
   DataStore ds;
@@ -124,7 +124,7 @@ TYPED_TEST(inlet_writer, top_level_ints)
   EXPECT_EQ(inlet.verify(), jsonVerified);
 }
 
-TYPED_TEST(inlet_writer, top_level_ints_wrong_type)
+TYPED_TEST(inlet_jsonschema_writer, top_level_ints_wrong_type)
 {
   std::string testString = "foo = 'first'; bar = 'second'";
   DataStore ds;
@@ -141,7 +141,7 @@ TYPED_TEST(inlet_writer, top_level_ints_wrong_type)
   EXPECT_EQ(inlet.verify(), jsonVerified);
 }
 
-TYPED_TEST(inlet_writer, top_level_ints_range_pass)
+TYPED_TEST(inlet_jsonschema_writer, top_level_ints_range_pass)
 {
   std::string testString = "foo = 5; bar = 12";
   DataStore ds;
@@ -156,7 +156,7 @@ TYPED_TEST(inlet_writer, top_level_ints_range_pass)
   EXPECT_EQ(inlet.verify(), jsonVerified);
 }
 
-TYPED_TEST(inlet_writer, top_level_ints_range_fail)
+TYPED_TEST(inlet_jsonschema_writer, top_level_ints_range_fail)
 {
   std::string testString = "foo = 12; bar = 5";
   DataStore ds;
@@ -171,7 +171,7 @@ TYPED_TEST(inlet_writer, top_level_ints_range_fail)
   EXPECT_EQ(inlet.verify(), jsonVerified);
 }
 
-TYPED_TEST(inlet_writer, top_level_ints_valid_set)
+TYPED_TEST(inlet_jsonschema_writer, top_level_ints_valid_set)
 {
   std::string testString = "foo = 5; bar = 8";
   DataStore ds;
@@ -186,7 +186,7 @@ TYPED_TEST(inlet_writer, top_level_ints_valid_set)
   EXPECT_EQ(inlet.verify(), jsonVerified);
 }
 
-TYPED_TEST(inlet_writer, top_level_ints_valid_set_fail)
+TYPED_TEST(inlet_jsonschema_writer, top_level_ints_valid_set_fail)
 {
   std::string testString = "foo = 8; bar = 5";
   DataStore ds;
@@ -203,7 +203,7 @@ TYPED_TEST(inlet_writer, top_level_ints_valid_set_fail)
 
 // Valid string values use different logic than other "simple" primitives
 // so we test this separately
-TYPED_TEST(inlet_writer, top_level_strings_valid_set)
+TYPED_TEST(inlet_jsonschema_writer, top_level_strings_valid_set)
 {
   std::string testString = "foo = 'first'; bar = 'second'";
   DataStore ds;
@@ -218,7 +218,7 @@ TYPED_TEST(inlet_writer, top_level_strings_valid_set)
   EXPECT_EQ(inlet.verify(), jsonVerified);
 }
 
-TYPED_TEST(inlet_writer, top_level_strings_valid_set_fail)
+TYPED_TEST(inlet_jsonschema_writer, top_level_strings_valid_set_fail)
 {
   std::string testString = "foo = 'first'; bar = 'third'";
   DataStore ds;
