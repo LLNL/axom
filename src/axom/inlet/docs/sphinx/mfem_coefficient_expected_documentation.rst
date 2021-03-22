@@ -12,7 +12,7 @@ bcs
 
 --------------------
 Collection contents:
--------------------
+--------------------
 
 Description: List of boundary conditions
 

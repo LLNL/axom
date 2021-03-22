@@ -73,22 +73,6 @@ void SphinxWriter::documentContainer(const Container& container)
     return;
   }
 
-  // Avoid duplicating schema containers by selecting a single element to display
-  // By keeping track of these selections, this logic extends to subtrees
-  for(const auto& selection : m_selectedElements)
-  {
-    std::string selectedElement =
-      appendPrefix(selection.first, detail::COLLECTION_GROUP_NAME);
-    selectedElement = appendPrefix(selectedElement, selection.second);
-    // If we *are* part of an array/dict for which an element is selected,
-    // but we *are not* the selected element, bail out
-    if((pathName.find(selection.first) != std::string::npos) &&
-       (pathName.find(selectedElement) == std::string::npos))
-    {
-      return;
-    }
-  }
-
   // Replace the "implementation-defined" name with something a bit more readable
   if(isCollectionGroup(containerName))
   {
@@ -102,7 +86,6 @@ void SphinxWriter::documentContainer(const Container& container)
     // The collection that this Container is a part of
     const std::string collectionName =
       sidreGroup->getParent()->getParent()->getPathName();
-    m_selectedElements.push_back({collectionName, containerName});
     isSelectedElement = true;
   }
 

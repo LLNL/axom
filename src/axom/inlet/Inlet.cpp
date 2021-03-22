@@ -73,34 +73,32 @@ void writerHelper(Writer& writer, const Container& container)
 {
   // Use a pre-order traversal for readability
   writer.documentContainer(container);
-  // If the current container contains a collection, visit that last to ensure
-  // that singleton fields present in the current table (those not part of struct
-  // elements) are displayed before the sub-container struct schema
-  const auto& child_containers = container.getChildContainers();
-  for(const auto& sub_container_entry : child_containers)
+  // Only visit a single element of a collection
+  if(isCollectionGroup(container.name()) &&
+     container.sidreGroup()->hasView(detail::STRUCT_COLLECTION_FLAG))
   {
-    // Ignore the collection group as it will be visited later
-    if(!isCollectionGroup(sub_container_entry.first))
+    auto indices = detail::collectionIndices(container);
+    // Just use the first index
+    if(!indices.empty())
     {
-      writerHelper(writer, *sub_container_entry.second);
+      writerHelper(
+        writer,
+        *container.getChildContainers().at(
+          appendPrefix(container.name(), detail::indexToString(indices[0]))));
     }
   }
-  auto iter = child_containers.find(
-    appendPrefix(container.name(), detail::COLLECTION_GROUP_NAME));
-  if(iter != child_containers.end())
+  else
   {
-    const auto& coll_container = *iter->second;
-    // Make sure that the collection is "real"
-    if(coll_container.sidreGroup()->hasGroup(detail::COLLECTION_INDICES_NAME))
+    for(const auto& sub_container_entry : container.getChildContainers())
     {
-      writerHelper(writer, coll_container);
+      writerHelper(writer, *sub_container_entry.second);
     }
   }
 }
 
 }  // end namespace detail
 
-void Inlet::writeDoc()
+void Inlet::write()
 {
   if(m_docEnabled)
   {

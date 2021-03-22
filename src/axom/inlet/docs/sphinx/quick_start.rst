@@ -116,12 +116,12 @@ instantiation of a ``Writer`` class and register it with your ``Inlet`` class.
    :end-before: _inlet_documentation_generation_end
    :language: C++
 
-Then after you are finishing defining your schema, call ``writeDoc()`` on your ``Inlet`` class
+Then after you are finishing defining your schema, call ``write()`` on your ``Inlet`` class
 to write out your documentation to the given file.
 
 .. code-block:: C++
 
-   inlet->writeDoc();
+   inlet.write();
 
 We provided a basic Sphinx documentation writing class but you may want to customize it to your
 own style.  The link below shows the example output from the ``documentation_generation.cpp`` example:
@@ -132,3 +132,12 @@ own style.  The link below shows the example output from the ``documentation_gen
    example1_expected_documentation
    mfem_coefficient_expected_documentation
    nested_structs_expected_documentation
+
+Inlet also provides a utility for generating a `JSON schema <https://json-schema.org/>`_ from your input file schema.
+This allows for integration with text editors like Visual Studio Code, which allows you to associate a JSON schema
+with an input file and subsequently provides autocompletion, linting, tooltips, and more.
+
+Using the same  ``documentation_generation.cpp`` example, the automatically generated schema can be used to assist
+with input file writing:
+
+.. image:: json_schema_example.gif

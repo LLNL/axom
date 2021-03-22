@@ -249,9 +249,6 @@ private:
   std::vector<std::string> m_fieldColLabels;
   // Used for the RST tables for functions
   std::vector<std::string> m_functionColLabels;
-  // Used to denote the element of dicts/arrays that will be displayed
-  // To avoid cluttering the output with duplicate entries for arrays/dicts
-  std::vector<std::pair<std::string, std::string>> m_selectedElements;
 };
 
 }  // namespace inlet

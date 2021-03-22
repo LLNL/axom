@@ -237,7 +237,7 @@ int main(int argc, char** argv)
     std::unique_ptr<inlet::SphinxWriter> writer(
       new inlet::SphinxWriter(docFileName));
     inlet.registerWriter(std::move(writer));
-    inlet.writeDoc();
+    inlet.write();
     SLIC_INFO("Documentation was written to " << docFileName);
   }
 

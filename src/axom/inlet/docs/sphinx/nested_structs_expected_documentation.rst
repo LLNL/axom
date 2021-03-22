@@ -28,12 +28,12 @@ For brevity, only one instance is displayed here.
      - Range/Valid Values
      - Required
    * - material
-     - 
+     - Material of the shape
      - 
      - steel, wood, plastic
-     - |uncheck|
+     - |check|
    * - name
-     - 
+     - Name of the shape
      - 
      - 
      - |check|
@@ -41,6 +41,8 @@ For brevity, only one instance is displayed here.
 --------
 geometry
 --------
+
+Description: Geometric information on the shape
 
 .. list-table:: Fields
    :widths: 25 25 25 25 25
@@ -53,25 +55,25 @@ geometry
      - Range/Valid Values
      - Required
    * - start_dimensions
-     - 
+     - Dimension in which to begin applying operations
      - 3
      - 
      - |uncheck|
    * - units
-     - 
+     - Units for length
      - cm
      - cm, m
      - |uncheck|
    * - path
+     - Path to the shape file
      - 
      - 
-     - 
-     - |uncheck|
+     - |check|
    * - format
+     - File format for the shape
      - 
      - 
-     - 
-     - |uncheck|
+     - |check|
 
 ---------
 operators
@@ -81,6 +83,8 @@ operators
 --------------------
 Collection contents:
 --------------------
+
+Description: List of shape operations to apply
 
 The input schema defines a collection of this container.
 For brevity, only one instance is displayed here.
@@ -96,7 +100,7 @@ For brevity, only one instance is displayed here.
      - Range/Valid Values
      - Required
    * - rotate
-     - 
+     - Degrees of rotation
      - 
      - -1.800e+02 to 1.800e+02
      - |uncheck|
@@ -104,6 +108,8 @@ For brevity, only one instance is displayed here.
 -----
 slice
 -----
+
+Description: Options for a slice operation
 
 .. list-table:: Fields
    :widths: 25 25 25 25 25
@@ -116,17 +122,17 @@ slice
      - Range/Valid Values
      - Required
    * - z
-     - 
+     - z-axis point to slice on
      - 
      - 
      - |uncheck|
    * - y
-     - 
+     - y-axis point to slice on
      - 
      - 
      - |uncheck|
    * - x
-     - 
+     - x-axis point to slice on
      - 
      - 
      - |uncheck|
@@ -139,6 +145,8 @@ translate
 --------------------
 Collection contents:
 --------------------
+
+Description: Translation vector
 
 .. list-table:: Fields
    :widths: 25 25 25 25 25
@@ -156,6 +164,11 @@ Collection contents:
      - 
      - |uncheck|
    * - 1
+     - 
+     - 
+     - 
+     - |uncheck|
+   * - 2
      - 
      - 
      - 
