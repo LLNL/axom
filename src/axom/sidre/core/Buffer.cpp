@@ -308,8 +308,6 @@ void Buffer::importFrom(conduit::Node& buffer_holder)
     {
       copyBytesIntoBuffer(buffer_data_holder.element_ptr(0), num_bytes);
     }
-
-    this->print();
   }
 }
 
