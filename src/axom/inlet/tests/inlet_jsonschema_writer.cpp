@@ -21,9 +21,12 @@ using axom::inlet::Inlet;
 using axom::inlet::JSONSchemaWriter;
 using axom::sidre::DataStore;
 
+#define JSONSCHEMA_EXECUTABLE "jsonschema"
+
 bool hasSchemaUtility()
 {
-  const static bool hasUtility = std::system("jsonschema --version") == 0;
+  const static bool hasUtility =
+    std::system(JSONSCHEMA_EXECUTABLE " --version") == 0;
   return hasUtility;
 }
 
@@ -42,7 +45,7 @@ bool validateString(Inlet& inlet, const std::string& luaString)
   inlet.write();
 
   const std::string cmd =
-    fmt::format("jsonschema -i {0} {1}", instanceFile, schemaFile);
+    fmt::format(JSONSCHEMA_EXECUTABLE " -i {0} {1}", instanceFile, schemaFile);
   return std::system(cmd.c_str()) == 0;
 }
 
