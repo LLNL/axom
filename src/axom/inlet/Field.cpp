@@ -297,6 +297,22 @@ InletType Field::type() const
   }
 }
 
+bool Field::exists() const { return m_sidreGroup->hasView("value"); }
+
+bool Field::isUserProvided() const
+{
+  if(m_sidreGroup->hasView("retrieval_status"))
+  {
+    auto status = static_cast<ReaderResult>(
+      static_cast<int>(m_sidreGroup->getView("retrieval_status")->getData()));
+    if(status != ReaderResult::Success)
+    {
+      return false;
+    }
+  }
+  return exists();
+}
+
 template <typename T>
 void Field::setScalarValidValues(std::vector<T> set)
 {
