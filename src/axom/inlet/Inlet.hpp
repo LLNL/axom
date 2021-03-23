@@ -261,11 +261,11 @@ public:
    *****************************************************************************
    * \brief Writes input file documentation.
    *
-   * This writes the input file's documentation through the registered Writer.
+   * This runs the calling Inlet object through the registered Writer.
    *
    *****************************************************************************
    */
-  void writeDoc();
+  void write();
 
   /*!
    *****************************************************************************

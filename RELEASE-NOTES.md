@@ -39,6 +39,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for deeply nested containers of structs
 - Inlet: Added support for `void` and strings in Lua-defined functions
 - Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
+- Inlet: Added a new `Writer` for generating JSON schemas which can be used by text editors
+  for autocompletion
 - Inlet: Added a method to `inlet::Inlet` that retrieves the set of unexpected names
   in the input file
 
@@ -72,6 +74,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet collections of mixed or incorrect type will now fail verification, even if they're
   not marked as required
 - Required collections no longer fail Inlet verification if they are empty in the input file
+- Inlet: `operator bool` for `Field` and `Container` has been replaced with more precise `isUserProvided`
+  and `exists`, which also returns `true` if a default value was specified.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
