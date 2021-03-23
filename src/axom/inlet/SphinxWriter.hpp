@@ -145,6 +145,7 @@ private:
     bool isSelectedElement;
     std::vector<std::vector<std::string>> fieldTable;
     std::vector<std::vector<std::string>> functionTable;
+    std::vector<std::pair<std::string, std::string>> childContainers;
   };
 
   /*!

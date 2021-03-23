@@ -123,6 +123,27 @@ void SphinxWriter::documentContainer(const Container& container)
   {
     extractFunctionMetadata(function_entry.second->sidreGroup(), currContainer);
   }
+
+  // If it's not a collection,  we need to record the child containers
+  if(!isCollectionGroup(container.name()))
+  {
+    for(const auto& container_entry : container.getChildContainers())
+    {
+      if(!isCollectionGroup(container_entry.first) &&
+         !detail::isTrivial(*container_entry.second))
+      {
+        const auto name = removeBeforeDelimiter(container_entry.first);
+        std::string description;
+        if(container_entry.second->sidreGroup()->hasView("description"))
+        {
+          description =
+            container_entry.second->sidreGroup()->getView("description")->getString();
+        }
+        currContainer.childContainers.push_back(
+          {std::move(name), std::move(description)});
+      }
+    }
+  }
 }
 
 void SphinxWriter::finalize()
@@ -232,8 +253,10 @@ void SphinxWriter::writeNestedTables()
 
     const auto& fields = currContainer.fieldTable;
     const auto& functions = currContainer.functionTable;
+    const auto& containers =
+      currContainer.childContainers;  // Contains only names and descriptions
 
-    if(fields.size() > 1 || functions.size() > 1)
+    if(fields.size() > 1 || functions.size() > 1 || !containers.empty())
     {
       m_oss << ".. list-table::\n";
       m_oss << "   :widths: 25 50\n";
@@ -252,12 +275,15 @@ void SphinxWriter::writeNestedTables()
     };
 
     // FIXME: Would it be useful to alphabetize these??
+    for(const auto& container : containers)
+    {
+      m_oss << fmt::format("   * - `{0}`_\n", container.first);
+      m_oss << fmt::format("     - {0}\n", container.second);
+    }
 
     // Need to skip first element (header row), hence no range-based for loop
     std::for_each(fields.begin() + 1, fields.end(), writeTOCEntry);
     std::for_each(functions.begin() + 1, functions.end(), writeTOCEntry);
-
-    // FIXME: Also want to dump the names of child containers...
 
     m_oss << "\n\n";
 
