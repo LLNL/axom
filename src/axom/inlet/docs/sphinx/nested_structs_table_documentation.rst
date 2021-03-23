@@ -1,9 +1,9 @@
 .. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX
 .. |check|      unicode:: U+2611 .. CHECKED BOX
 
-=========================================
-Nested Structs Output: Input file Options
-=========================================
+======================================================
+Nested Structs Output: Input file Options (table mode)
+======================================================
 
 ------
 shapes

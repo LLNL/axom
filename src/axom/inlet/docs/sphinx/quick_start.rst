@@ -111,7 +111,7 @@ Generating Documentation
 ------------------------
 
 We provide a slightly more complex but closer to a real world Inlet usage example of the usage of Inlet.
-You can find that example in our repository `here <https://github.com/LLNL/axom/blob/develop/src/axom/inlet/examples/document_generation.cpp>`_.
+You can find that example in our repository `here <https://github.com/LLNL/axom/blob/develop/src/axom/inlet/examples/documentation_generation.cpp>`_.
 
 After you create your ``Inlet`` class but before you start defining your schema, create a concrete
 instantiation of a ``Writer`` class and register it with your ``Inlet`` class.
@@ -128,24 +128,5 @@ to write out your documentation to the given file.
 
    inlet.write();
 
-We provided a basic Sphinx documentation writing class but you may want to customize it to your
-own style.  The link below shows the example output from the ``documentation_generation.cpp`` example:
-
-.. toctree::
-   :maxdepth: 1
-
-   example1_expected_documentation
-   mfem_coefficient_expected_documentation
-   nested_structs_expected_documentation
-
-Inlet also provides a utility for generating a `JSON schema <https://json-schema.org/>`_ from your input file schema.
-This allows for integration with text editors like Visual Studio Code, which allows you to associate a JSON schema
-with an input file and subsequently provides autocompletion, linting, tooltips, and more.  VSCode and other editors
-currently support verification of JSON and YAML input files with JSON schemas.
-
-Using the same  ``documentation_generation.cpp`` example, the automatically generated schema can be used to assist
-with input file writing:
-
-.. image:: json_schema_example.gif
-
-For a full description of Inlet's ``Writer`` implementations, see :ref:`Writers <inlet_writer_page_label>`.
+Inlet provides a few basic options but you can also implement a custom ``Writer`` that fits your own style.  
+For a full description of Inlet's ``Writer`` interface and implementations, see :ref:`Writers <inlet_writer_page_label>`.

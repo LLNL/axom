@@ -62,6 +62,7 @@ Glossary
 
    quick_start
    readers
+   writers
    simple_types
    advanced_types
    functions
