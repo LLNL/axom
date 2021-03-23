@@ -41,12 +41,28 @@ class SphinxWriter : public Writer
 public:
   /*!
   *******************************************************************************
+  * \brief Supported phinx style options
+  *******************************************************************************
+  */
+  enum class Style
+  {
+    // FIXME: These names are not clear at all
+    Table,  // Tables for the child Fields/Functions of each Container
+    Nested  // Table of contents for each Container, then sections for each child
+  };
+
+  /*!
+  *******************************************************************************
   * \brief A constructor for SphinxWriter.
   * 
   * \param [in] fileName The name of the file the documentation should be written to.
+  * \param [in] title The title of the generated rst file
+  * \param [in] style The style of docs to generate
   *******************************************************************************
   */
-  SphinxWriter(const std::string& fileName);
+  SphinxWriter(const std::string& fileName,
+               const std::string& title = {},
+               const Style style = Style::Table);
 
   void documentContainer(const Container& container) override;
 
@@ -262,6 +278,7 @@ private:
   std::vector<std::string> m_fieldColLabels;
   // Used for the RST tables for functions
   std::vector<std::string> m_functionColLabels;
+  Style m_style;
 };
 
 }  // namespace inlet

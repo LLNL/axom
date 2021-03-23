@@ -235,7 +235,7 @@ int main(int argc, char** argv)
   {
     const std::string docFileName = "mfem_coefficient.rst";
     std::unique_ptr<inlet::SphinxWriter> writer(
-      new inlet::SphinxWriter(docFileName));
+      new inlet::SphinxWriter(docFileName, "MFEM Coefficient Output"));
     inlet.registerWriter(std::move(writer));
     inlet.write();
     SLIC_INFO("Documentation was written to " << docFileName);

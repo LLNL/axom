@@ -49,7 +49,7 @@ For comparison, the following is produced from the ``documentation_generation.cp
   :maxdepth: 1
 
   nested_structs_table_documentation
-  nested_structs_nested_documentatiom
+  nested_structs_nested_documentation
 
 -----------
 JSON Schema

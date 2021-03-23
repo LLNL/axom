@@ -1,9 +1,9 @@
 .. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX
 .. |check|      unicode:: U+2611 .. CHECKED BOX
 
-======================================================
-Nested Structs Output: Input file Options (table mode)
-======================================================
+==================================
+Nested Structs Output (table mode)
+==================================
 
 ------
 shapes
@@ -147,29 +147,3 @@ Collection contents:
 --------------------
 
 Description: Translation vector
-
-.. list-table:: Fields
-   :widths: 25 25 25 25 25
-   :header-rows: 1
-   :stub-columns: 1
-
-   * - Field Name
-     - Description
-     - Default Value
-     - Range/Valid Values
-     - Required
-   * - 0
-     - 
-     - 
-     - 
-     - |uncheck|
-   * - 1
-     - 
-     - 
-     - 
-     - |uncheck|
-   * - 2
-     - 
-     - 
-     - 
-     - |uncheck|

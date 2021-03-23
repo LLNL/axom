@@ -58,7 +58,9 @@ constexpr typename std::underlying_type<E>::type to_underlying(const E e)
 
 }  // namespace detail
 
-SphinxWriter::SphinxWriter(const std::string& fileName)
+SphinxWriter::SphinxWriter(const std::string& fileName,
+                           const std::string& title,
+                           const Style style)
   : m_fieldColLabels({"Field Name",
                       "Description",
                       "Default Value",
@@ -66,11 +68,19 @@ SphinxWriter::SphinxWriter(const std::string& fileName)
                       "Required"})
   , m_functionColLabels(
       {"Function Name", "Description", "Signature", "Required"})
+  , m_style(style)
 {
   m_fileName = fileName;
   m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX\n";
   m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX\n\n";
-  writeTitle("Input file Options");
+  if(title.empty())
+  {
+    writeTitle("Input file Options");
+  }
+  else
+  {
+    writeTitle(title);
+  }
 }
 
 void SphinxWriter::documentContainer(const Container& container)
@@ -166,8 +176,14 @@ void SphinxWriter::documentContainer(const Container& container)
 
 void SphinxWriter::finalize()
 {
-  // writeAllTables();
-  writeNestedTables();
+  if(m_style == Style::Nested)
+  {
+    writeNestedTables();
+  }
+  else
+  {
+    writeAllTables();
+  }
   m_outFile.open(m_fileName);
   m_outFile << m_oss.str();
   m_outFile.close();
@@ -338,9 +354,34 @@ void SphinxWriter::writeNestedTables()
         }
 
         // Whether it's required
-        if(!fieldData[3].empty())
+        if(!fieldData[4].empty())
         {
           const bool isRequired = fieldData[3] == "|check|";
+          m_oss << fmt::format("  - {0}\n", isRequired ? "Required" : "Optional");
+        }
+        m_oss << "\n\n";
+      });
+
+    std::for_each(
+      functions.begin() + 1,
+      functions.end(),
+      [this](const std::vector<std::string>& functionData) {
+        // Insert a hyperlink target for the name
+        m_oss << fmt::format(".. _{0}:\n\n", functionData[0]);
+        m_oss << fmt::format("**{0}**\n\n", functionData[0]);  // name
+        // description - ideally this would be an extended description
+        m_oss << functionData[1] << "\n\n";
+
+        // The function's signature
+        if(!functionData[2].empty())
+        {
+          m_oss << fmt::format("  - Signature: {0}\n", functionData[2]);
+        }
+
+        // Whether it's required
+        if(!functionData[3].empty())
+        {
+          const bool isRequired = functionData[3] == "|check|";
           m_oss << fmt::format("  - {0}\n", isRequired ? "Required" : "Optional");
         }
         m_oss << "\n\n";
