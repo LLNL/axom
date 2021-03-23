@@ -43,6 +43,19 @@ bool isTrivial(const Container& container)
     container.getChildContainers().end(),
     [](const value_type& entry) { return isTrivial(*entry.second); });
 }
+
+/**
+ * \brief Converts an enumeration to its underlying type
+ * \param [in] e The enumeration value to convert
+ * This function should be removed once C++23 is available
+ * \see https://en.cppreference.com/w/cpp/utility/to_underlying
+ */
+template <typename E>
+constexpr typename std::underlying_type<E>::type to_underlying(const E e)
+{
+  return static_cast<typename std::underlying_type<E>::type>(e);
+}
+
 }  // namespace detail
 
 SphinxWriter::SphinxWriter(const std::string& fileName)
@@ -324,26 +337,27 @@ void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup,
 
 std::string SphinxWriter::getSignatureAsString(const axom::sidre::Group* sidreGroup)
 {
+  using underlying = std::underlying_type<FunctionTag>::type;
   static const auto type_names = []() {
-    std::unordered_map<FunctionTag, std::string> result;
-    result[FunctionTag::Vector] = "Vector";
-    result[FunctionTag::Double] = "Double";
-    result[FunctionTag::Void] = "Void";
-    result[FunctionTag::String] = "String";
+    std::unordered_map<underlying, std::string> result;
+    result[detail::to_underlying(FunctionTag::Vector)] = "Vector";
+    result[detail::to_underlying(FunctionTag::Double)] = "Double";
+    result[detail::to_underlying(FunctionTag::Void)] = "Void";
+    result[detail::to_underlying(FunctionTag::String)] = "String";
     return result;
   }();
 
   // View::getData<T> does not have a const version...
-  const auto ret_type = static_cast<FunctionTag>(
-    static_cast<int>(sidreGroup->getView("return_type")->getData()));
+  const auto ret_type =
+    static_cast<underlying>(sidreGroup->getView("return_type")->getData());
 
   const auto args_view = sidreGroup->getView("function_arguments");
-  const int* arg_tags = args_view->getData();
+  const underlying* arg_tags = args_view->getData();
   const int num_args = args_view->getNumElements();
   std::vector<std::string> arg_types(num_args);
   for(int i = 0; i < num_args; i++)
   {
-    arg_types[i] = type_names.at(static_cast<FunctionTag>(arg_tags[i]));
+    arg_types[i] = type_names.at(arg_tags[i]);
   }
   return fmt::format("{0}({1})",
                      type_names.at(ret_type),
