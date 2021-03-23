@@ -1,3 +1,8 @@
+.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
+.. ##
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
+
 .. _inlet_quick_start_label:
 
 Quick Start
@@ -142,3 +147,5 @@ Using the same  ``documentation_generation.cpp`` example, the automatically gene
 with input file writing:
 
 .. image:: json_schema_example.gif
+
+For a full description of Inlet's ``Writer`` implementations, see :ref:`Writers <inlet_writer_page_label>`.
