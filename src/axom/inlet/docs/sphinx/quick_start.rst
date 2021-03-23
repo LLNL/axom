@@ -135,7 +135,8 @@ own style.  The link below shows the example output from the ``documentation_gen
 
 Inlet also provides a utility for generating a `JSON schema <https://json-schema.org/>`_ from your input file schema.
 This allows for integration with text editors like Visual Studio Code, which allows you to associate a JSON schema
-with an input file and subsequently provides autocompletion, linting, tooltips, and more.
+with an input file and subsequently provides autocompletion, linting, tooltips, and more.  VSCode and other editors
+currently support verification of JSON and YAML input files with JSON schemas.
 
 Using the same  ``documentation_generation.cpp`` example, the automatically generated schema can be used to assist
 with input file writing:

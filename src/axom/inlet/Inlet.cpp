@@ -73,7 +73,7 @@ void writerHelper(Writer& writer, const Container& container)
 {
   // Use a pre-order traversal for readability
   writer.documentContainer(container);
-  // Only visit a single element of a collection
+  // Only visit a single element of a *struct* collection
   if(isCollectionGroup(container.name()) &&
      container.sidreGroup()->hasView(detail::STRUCT_COLLECTION_FLAG))
   {
