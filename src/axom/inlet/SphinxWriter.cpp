@@ -114,6 +114,16 @@ void SphinxWriter::documentContainer(const Container& container)
     currContainer.description = sidreGroup->getView("description")->getString();
   }
 
+  // Bail out if this is a collection of primitives -
+  // it doesn't make sense to document each individual primitive
+  // FIXME: Implement something analogous to the logic for struct collections that displays the
+  // "schema" for the primitive elements of the collection
+  if(isCollectionGroup(container.name()) &&
+     !sidreGroup->hasView(detail::STRUCT_COLLECTION_FLAG))
+  {
+    return;
+  }
+
   for(const auto& field_entry : container.getChildFields())
   {
     extractFieldMetadata(field_entry.second->sidreGroup(), currContainer);
@@ -129,18 +139,26 @@ void SphinxWriter::documentContainer(const Container& container)
   {
     for(const auto& container_entry : container.getChildContainers())
     {
-      if(!isCollectionGroup(container_entry.first) &&
-         !detail::isTrivial(*container_entry.second))
+      if(!isCollectionGroup(container_entry.first))
       {
         const auto name = removeBeforeDelimiter(container_entry.first);
         std::string description;
-        if(container_entry.second->sidreGroup()->hasView("description"))
+        const auto group = container_entry.second->sidreGroup();
+        const static auto collectionDescriptionPath =
+          appendPrefix(detail::COLLECTION_GROUP_NAME, "description");
+        if(group->hasView("description"))
         {
-          description =
-            container_entry.second->sidreGroup()->getView("description")->getString();
+          description = group->getView("description")->getString();
+        }
+        else if(group->hasView(collectionDescriptionPath))
+        {
+          // If the label is applied to the collection group itself, we can use that instead
+          description = group->getView(collectionDescriptionPath)->getString();
         }
         currContainer.childContainers.push_back(
-          {std::move(name), std::move(description)});
+          {std::move(name),
+           std::move(description),
+           detail::isTrivial(*container_entry.second)});
       }
     }
   }
@@ -277,8 +295,17 @@ void SphinxWriter::writeNestedTables()
     // FIXME: Would it be useful to alphabetize these??
     for(const auto& container : containers)
     {
-      m_oss << fmt::format("   * - `{0}`_\n", container.first);
-      m_oss << fmt::format("     - {0}\n", container.second);
+      // We can set up a hyperlink to non-trivial tables because they will
+      // be subsequently documented
+      if(container.isTrivial)
+      {
+        m_oss << fmt::format("   * - {0}\n", container.name);
+      }
+      else
+      {
+        m_oss << fmt::format("   * - `{0}`_\n", container.name);
+      }
+      m_oss << fmt::format("     - {0}\n", container.description);
     }
 
     // Need to skip first element (header row), hence no range-based for loop

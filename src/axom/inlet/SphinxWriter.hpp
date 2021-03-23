@@ -145,7 +145,17 @@ private:
     bool isSelectedElement;
     std::vector<std::vector<std::string>> fieldTable;
     std::vector<std::vector<std::string>> functionTable;
-    std::vector<std::pair<std::string, std::string>> childContainers;
+    /**
+     * \brief Stores a minimal set of data about child containers
+     * Used only for the table of contents in nested "mode"
+     */
+    struct ChildContainerData
+    {
+      std::string name;
+      std::string description;
+      bool isTrivial;
+    };
+    std::vector<ChildContainerData> childContainers;
   };
 
   /*!
