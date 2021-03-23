@@ -127,7 +127,8 @@ void SphinxWriter::documentContainer(const Container& container)
 
 void SphinxWriter::finalize()
 {
-  writeAllTables();
+  // writeAllTables();
+  writeNestedTables();
   m_outFile.open(m_fileName);
   m_outFile << m_oss.str();
   m_outFile.close();
@@ -210,6 +211,87 @@ void SphinxWriter::writeAllTables()
     {
       writeTable("Functions", currContainer.functionTable);
     }
+  }
+}
+
+void SphinxWriter::writeNestedTables()
+{
+  for(const auto& pathName : m_inletContainerPathNames)
+  {
+    const auto& currContainer = m_rstTables.at(pathName);
+
+    if(!currContainer.isSelectedElement)
+    {
+      writeSubtitle(currContainer.containerName);
+    }
+
+    if(currContainer.description != "")
+    {
+      m_oss << currContainer.description << "\n\n";
+    }
+
+    const auto& fields = currContainer.fieldTable;
+    const auto& functions = currContainer.functionTable;
+
+    if(fields.size() > 1 || functions.size() > 1)
+    {
+      m_oss << ".. list-table::\n";
+      m_oss << "   :widths: 25 50\n";
+      m_oss << "   :header-rows: 1\n";
+      m_oss << "   :stub-columns: 1\n\n";
+      m_oss << "   * - Name\n";
+      m_oss << "     - Description\n";
+    }
+
+    // Writes a name + description to the "table of contents"
+    // for each Container
+    auto writeTOCEntry = [this](const std::vector<std::string>& data) {
+      // FIXME: Overlapping link names? Need to use the full path or a hash??
+      m_oss << fmt::format("   * - `{0}`_\n", data[0]);
+      m_oss << fmt::format("     - {0}\n", data[1]);
+    };
+
+    // FIXME: Would it be useful to alphabetize these??
+
+    // Need to skip first element (header row), hence no range-based for loop
+    std::for_each(fields.begin() + 1, fields.end(), writeTOCEntry);
+    std::for_each(functions.begin() + 1, functions.end(), writeTOCEntry);
+
+    // FIXME: Also want to dump the names of child containers...
+
+    m_oss << "\n\n";
+
+    // Now, dump the full descriptions
+    std::for_each(
+      fields.begin() + 1,
+      fields.end(),
+      [this](const std::vector<std::string>& fieldData) {
+        // Insert a hyperlink target for the name
+        m_oss << fmt::format(".. _{0}:\n\n", fieldData[0]);
+        m_oss << fmt::format("**{0}**\n\n", fieldData[0]);  // name
+        // description - ideally this would be an extended description
+        m_oss << fieldData[1] << "\n\n";
+
+        // The default value
+        if(!fieldData[2].empty())
+        {
+          m_oss << fmt::format("  - Default value: {0}\n", fieldData[2]);
+        }
+
+        // The valid values
+        if(!fieldData[3].empty())
+        {
+          m_oss << fmt::format("  - Valid values: {0}\n", fieldData[3]);
+        }
+
+        // Whether it's required
+        if(!fieldData[3].empty())
+        {
+          const bool isRequired = fieldData[3] == "|check|";
+          m_oss << fmt::format("  - {0}\n", isRequired ? "Required" : "Optional");
+        }
+        m_oss << "\n\n";
+      });
   }
 }
 
