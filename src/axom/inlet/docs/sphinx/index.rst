@@ -49,7 +49,7 @@ Glossary
 * **struct**: Refers to something that maps to a C++ ``struct``.  This can be a Lua table, a YAML dictionary, or a JSON object.
 * **dictionary**: Refers to an associative array whose keys are either strings or a mix of strings and integers, and whose values
   are of homogeneous type
-* **array**: Refers to either a contiguous array or an integer-keyed associative arrays whose values are of homogeneous type
+* **array**: Refers to either a contiguous array or an integer-keyed associative array whose values are of homogeneous type
 * **collection**: Refers to either an array or dictionary
 
 .. toctree::
@@ -61,3 +61,4 @@ Glossary
    simple_types
    advanced_types
    functions
+   verification
