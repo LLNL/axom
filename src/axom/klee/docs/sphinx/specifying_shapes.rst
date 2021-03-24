@@ -328,7 +328,7 @@ object. This is a list where each entry has the following values:
   which the operator is specified
 :start_units (optional, must specify this or units): the units in which the
   first operator is specified
-:end_units (optiona, must specify this or units): the units in which the
+:end_units (optional, must specify this or units): the units in which the
   last operator is specified. It is an error if the right conversion are
   not done.
 

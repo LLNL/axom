@@ -30,7 +30,7 @@ def parse_args():
                       dest="directory",
                       default="",
                       help="Location to build all TPL's, timestamp directory will be created (Defaults to shared location)")
-    # Directory to do all the building
+    # Spack spec to use for the build
     parser.add_option("-s", "--spec",
                       dest="spec",
                       default="",
@@ -53,7 +53,7 @@ def parse_args():
     ###############
     # parse args
     ###############
-    opts, extras = parser.parse_args()
+    opts, _ = parser.parse_args()
     # we want a dict b/c the values could 
     # be passed without using optparse
     opts = vars(opts)

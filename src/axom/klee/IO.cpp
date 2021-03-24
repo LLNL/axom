@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,8 +11,7 @@
 #include <string>
 #include <tuple>
 
-#include "axom/inlet/Inlet.hpp"
-#include "axom/inlet/YAMLReader.hpp"
+#include "axom/inlet.hpp"
 #include "axom/klee/GeometryOperators.hpp"
 #include "axom/klee/GeometryOperatorsIO.hpp"
 #include "axom/klee/IOUtil.hpp"
@@ -56,7 +55,7 @@ struct ShapeData
 template <>
 struct FromInlet<axom::klee::ShapeData>
 {
-  axom::klee::ShapeData operator()(const axom::inlet::Table &base)
+  axom::klee::ShapeData operator()(const axom::inlet::Container &base)
   {
     return axom::klee::ShapeData {
       base.get<std::string>("name"),
@@ -70,7 +69,7 @@ struct FromInlet<axom::klee::ShapeData>
 template <>
 struct FromInlet<axom::klee::GeometryData>
 {
-  axom::klee::GeometryData operator()(const axom::inlet::Table &base)
+  axom::klee::GeometryData operator()(const axom::inlet::Container &base)
   {
     axom::klee::GeometryData data;
     data.format = base["format"];
@@ -101,16 +100,16 @@ namespace klee
 {
 namespace
 {
+using inlet::Container;
 using inlet::Field;
 using inlet::Inlet;
-using inlet::Table;
 
 /**
  * Define the schema for the "geometry" member of shapes
  *
- * @param geometry the Table representing a "geometry" object.
+ * @param geometry the Container representing a "geometry" object.
  */
-void defineGeometry(Table &geometry)
+void defineGeometry(Container &geometry)
 {
   geometry.addString("format", "The format of the input file");  //.required();
   geometry.addString(
@@ -140,7 +139,7 @@ void defineGeometry(Table &geometry)
  */
 void defineShapeList(Inlet &document)
 {
-  Table &shapeList = document.addStructArray("shapes", "The list of shapes");
+  Container &shapeList = document.addStructArray("shapes", "The list of shapes");
   shapeList.addString("name", "The shape's name");          //.required();
   shapeList.addString("material", "The shape's material");  //.required();
   shapeList.addStringArray("replaces",
@@ -148,7 +147,7 @@ void defineShapeList(Inlet &document)
   shapeList.addStringArray("does_not_replace",
                            "The list of materials this shape does not replace");
   // Verify syntax here, semantics later!!!
-  shapeList.registerVerifier([](const Table &shape) -> bool {
+  shapeList.registerVerifier([](const Container &shape) -> bool {
     if(shape.contains("replaces") && shape.contains("does_not_replace"))
     {
       SLIC_WARNING("Can't specify both 'replaces' and 'does_not_replace'");
@@ -169,9 +168,10 @@ void defineShapeList(Inlet &document)
  */
 void defineKleeSchema(Inlet &document)
 {
-  internal::defineDimensionsField(document.getGlobalTable(), "dimensions").required();
+  internal::defineDimensionsField(document.getGlobalContainer(), "dimensions")
+    .required();
   defineShapeList(document);
-  internal::NamedOperatorMapData::defineSchema(document.getGlobalTable(),
+  internal::NamedOperatorMapData::defineSchema(document.getGlobalContainer(),
                                                "named_operators");
 }
 

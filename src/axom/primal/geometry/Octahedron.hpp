@@ -25,7 +25,7 @@ namespace primal
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of spatial dimensions
  */
-template <typename T, int NDIMS=3>
+template <typename T, int NDIMS = 3>
 class Octahedron
 {
 public:
@@ -96,32 +96,36 @@ public:
     return m_points[idx];
   }
 
-   /*!
+  /*!
     * \brief Test if this Octahedron is equal to another, within a tolerance
     */
-   bool equals(const Octahedron & other, double eps=1.e-24) const
-   {
-      // Two octs are equal if each vertex is closer than eps to a vertex of the other.
-      int matched[NUM_OCT_VERTS];
-      for (int i = 0; i < NUM_OCT_VERTS; ++i) { matched[i] = 0; }
-      for (int ourvert = 0; ourvert < NUM_OCT_VERTS; ++ourvert)
+  bool equals(const Octahedron& other, double eps = 1.e-24) const
+  {
+    // Two octs are equal if each vertex is closer than eps to a vertex of the other.
+    int matched[NUM_OCT_VERTS];
+    for(int i = 0; i < NUM_OCT_VERTS; ++i)
+    {
+      matched[i] = 0;
+    }
+    for(int ourvert = 0; ourvert < NUM_OCT_VERTS; ++ourvert)
+    {
+      for(int theirvert = 0; theirvert < NUM_OCT_VERTS; ++theirvert)
       {
-         for (int theirvert = 0; theirvert < NUM_OCT_VERTS; ++theirvert)
-         {
-            if (!matched[theirvert] && squared_distance(m_points[ourvert], other[theirvert]) < eps)
-            {
-               matched[theirvert] = 1;
-            }
-         }
+        if(!matched[theirvert] &&
+           squared_distance(m_points[ourvert], other[theirvert]) < eps)
+        {
+          matched[theirvert] = 1;
+        }
       }
-      int matchedcount = 0;
-      for (int i = 0; i < NUM_OCT_VERTS; ++i)
-      {
-         matchedcount += matched[i];
-      }
-      
-      return (matchedcount == NUM_OCT_VERTS);
-   }
+    }
+    int matchedcount = 0;
+    for(int i = 0; i < NUM_OCT_VERTS; ++i)
+    {
+      matchedcount += matched[i];
+    }
+
+    return (matchedcount == NUM_OCT_VERTS);
+  }
 
   /*!
    * \brief Simple formatted print of an octahedron instance

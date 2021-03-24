@@ -1,12 +1,11 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/klee/IOUtil.hpp"
 
-#include "axom/inlet/Proxy.hpp"
-#include "axom/inlet/Table.hpp"
+#include "axom/inlet.hpp"
 #include "axom/klee/KleeError.hpp"
 
 namespace axom
@@ -122,21 +121,21 @@ std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy
   return units;
 }
 
-void defineUnitsSchema(inlet::Table &table,
+void defineUnitsSchema(inlet::Container &container,
                        const char *unitsDescription,
                        const char *startUnitsDescription,
                        const char *endUnitsDescription)
 {
-  table.addString("start_units", startUnitsDescription);
-  table.addString("end_units", endUnitsDescription);
-  table.addString("units", unitsDescription);
+  container.addString("start_units", startUnitsDescription);
+  container.addString("end_units", endUnitsDescription);
+  container.addString("units", unitsDescription);
   // Don't do custom validator here because getOptionalStartAndEndUnits()
   // verifies the right combination is specified. If we were to add a
   // custom validator, we would have to repeat some of the logic when
   // figuring out which fields to use.
 }
 
-inlet::VerifiableScalar &defineDimensionsField(inlet::Table &parent,
+inlet::VerifiableScalar &defineDimensionsField(inlet::Container &parent,
                                                const char *name,
                                                const char *description)
 {

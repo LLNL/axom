@@ -46,6 +46,11 @@ else()
     set(AXOM_ENABLE_KLEE OFF CACHE BOOL "")
 endif()
 
+if(ENABLE_CUDA)
+    # Force "early" device linking to avoid propagating an NVCC link dependency
+    set_target_properties(core ${AXOM_COMPONENTS_ENABLED} PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+endif()
+
 # Combine all component object libraries into a unified library
 blt_add_library(NAME       axom
                 SOURCES    Axom.cpp
