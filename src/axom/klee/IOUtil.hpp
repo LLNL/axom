@@ -130,12 +130,12 @@ std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy
  * Define the schema for units. This is the schema that will be
  * expected by getOptionalStartAndEndUnits() and getStartAndEndUnits().
  *
- * @param table the table to which to add the expected fields
+ * @param container the container to which to add the expected fields
  * @param unitsDescription the description of the "units" field
  * @param startUnitsDescription the description of the "start_units" field
  * @param endUnitsDescription the description of the "end_units" field
  */
-void defineUnitsSchema(inlet::Container &table,
+void defineUnitsSchema(inlet::Container &container,
                        const char *unitsDescription = "",
                        const char *startUnitsDescription = "",
                        const char *endUnitsDescription = "");
@@ -143,7 +143,7 @@ void defineUnitsSchema(inlet::Container &table,
 /**
  * Define a field which can hold a number of dimensions
  *
- * @param parent the parent table on which to define the field
+ * @param parent the parent Container on which to define the field
  * @param name the name of the field
  * @param description and optional description of the field
  * @return the field, which can have additional restrictions set on it

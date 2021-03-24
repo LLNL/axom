@@ -30,7 +30,7 @@ using NamedOperatorMap =
  */
 struct SingleOperatorData
 {
-  const inlet::Container *m_table;
+  const inlet::Container *m_container;
 };
 
 /**
@@ -52,10 +52,10 @@ public:
 
   /**
      * Define the schema for geometry operators
-     * @param parent the parent table
+     * @param parent the parent container
      * @param fieldName the name of the field
      * @param description a description of the field
-     * @return the table for the new item
+     * @return the Container for the new item
      */
   static inlet::Container &defineSchema(inlet::Container &parent,
                                         const std::string &fieldName,
@@ -93,9 +93,9 @@ struct NamedOperatorData
   /**
      * Define the schema for a named operator.
      *
-     * @param table the table in which to describe a single named operator
+     * @param container the container in which to describe a single named operator
      */
-  static void defineSchema(inlet::Container &table);
+  static void defineSchema(inlet::Container &container);
 };
 
 /**

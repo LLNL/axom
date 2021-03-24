@@ -38,7 +38,7 @@ using FieldSet = std::unordered_set<std::string>;
  * Verify that a Proxy has the correct fields.
  *
  * \param proxyToTest the Proxy to test
- * \param name the name of the table. This must be one of its fields.
+ * \param name the name of the container. This must be one of its fields.
  * \param additionalRequiredFields any additional required fields
  * \param optionalFields any additional optional fields
  */
@@ -416,14 +416,14 @@ OpPtr convertOperator(SingleOperatorData const &data,
 
   for(auto &entry : parsers)
   {
-    if(data.m_table->contains(entry.first))
+    if(data.m_container->contains(entry.first))
     {
-      return entry.second(inlet::Proxy(*data.m_table), startProperties);
+      return entry.second(inlet::Proxy(*data.m_container), startProperties);
     }
   }
 
   std::string message = "Invalid transformation: \n";
-  message += data.m_table->name();
+  message += data.m_container->name();
   throw KleeError(message);
 }
 
@@ -438,19 +438,19 @@ inlet::Container &GeometryOperatorData::defineSchema(inlet::Container &parent,
                                                      const std::string &fieldName,
                                                      const std::string &description)
 {
-  auto &opTable = parent.addStructArray(fieldName, description);
+  auto &opContainer = parent.addStructArray(fieldName, description);
 
-  opTable.addDoubleArray("translate");
+  opContainer.addDoubleArray("translate");
 
-  opTable.addDouble("rotate");
-  opTable.addDoubleArray("center");
-  opTable.addDoubleArray("axis");
+  opContainer.addDouble("rotate");
+  opContainer.addDoubleArray("center");
+  opContainer.addDoubleArray("axis");
 
-  opTable.addDoubleArray("scale");
+  opContainer.addDoubleArray("scale");
 
-  opTable.addString("convert_units_to");
+  opContainer.addString("convert_units_to");
 
-  auto &slice = opTable.addStruct("slice");
+  auto &slice = opContainer.addStruct("slice");
   slice.addDouble("x");
   slice.addDouble("y");
   slice.addDouble("z");
@@ -458,8 +458,8 @@ inlet::Container &GeometryOperatorData::defineSchema(inlet::Container &parent,
   slice.addDoubleArray("normal");
   slice.addDoubleArray("up");
 
-  opTable.addString("ref");
-  return opTable;
+  opContainer.addString("ref");
+  return opContainer;
 }
 
 std::shared_ptr<GeometryOperator> GeometryOperatorData::makeOperator(
@@ -483,17 +483,17 @@ std::shared_ptr<GeometryOperator> GeometryOperatorData::makeOperator(
   return composite;
 }
 
-void NamedOperatorData::defineSchema(inlet::Container &table)
+void NamedOperatorData::defineSchema(inlet::Container &container)
 {
-  table.addString("name").required();
-  defineDimensionsField(table,
+  container.addString("name").required();
+  defineDimensionsField(container,
                         "start_dimensions",
                         "The initial dimensions of the operator");
-  defineUnitsSchema(table,
+  defineUnitsSchema(container,
                     "The units (both start and end) of the operator",
                     "The start units of the operator",
                     "The end units of the operator");
-  GeometryOperatorData::defineSchema(table,
+  GeometryOperatorData::defineSchema(container,
                                      "value",
                                      "The operation to apply");  //.required();
 }
@@ -506,8 +506,8 @@ NamedOperatorMapData::NamedOperatorMapData(
 void NamedOperatorMapData::defineSchema(inlet::Container &parent,
                                         const std::string &name)
 {
-  auto &table = parent.addStructArray(name);
-  NamedOperatorData::defineSchema(table);
+  auto &container = parent.addStructArray(name);
+  NamedOperatorData::defineSchema(container);
 }
 
 NamedOperatorMap NamedOperatorMapData::makeNamedOperatorMap(

@@ -121,14 +121,14 @@ std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy
   return units;
 }
 
-void defineUnitsSchema(inlet::Container &table,
+void defineUnitsSchema(inlet::Container &container,
                        const char *unitsDescription,
                        const char *startUnitsDescription,
                        const char *endUnitsDescription)
 {
-  table.addString("start_units", startUnitsDescription);
-  table.addString("end_units", endUnitsDescription);
-  table.addString("units", unitsDescription);
+  container.addString("start_units", startUnitsDescription);
+  container.addString("end_units", endUnitsDescription);
+  container.addString("units", unitsDescription);
   // Don't do custom validator here because getOptionalStartAndEndUnits()
   // verifies the right combination is specified. If we were to add a
   // custom validator, we would have to repeat some of the logic when
