@@ -123,7 +123,7 @@ int main()
   // Extract the cars in the fleet
   auto fleet = inlet["fleet"].get<std::vector<Car>>();
   std::cout << "\nInfo on cars in fleet:" << std::endl;
-  for (const Car& car: fleet)
+  for(const Car& car : fleet)
   {
     std::cout << "make = " << car.make << std::endl;
     std::cout << "color = " << car.color << std::endl;

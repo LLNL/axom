@@ -10,7 +10,7 @@
 #include "axom/core/Macros.hpp"  // for axom macros
 
 // Geometry
-#include "axom/primal/geometry/Sphere.hpp"  
+#include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 
 // C/C++ includes
@@ -20,7 +20,6 @@ namespace axom
 {
 namespace quest
 {
-
 /// \name Discretize primitive shapes to linear shapes
 /// @{
 
@@ -37,7 +36,7 @@ using OctType = primal::Octahedron<double, 3>;
  * This routine generates O(4^level) octahedra.  That's exponential growth.
  * Use appropriate caution.
  */
-void discretize(const SphereType & s, int levels, std::vector<OctType> & out);
+void discretize(const SphereType& s, int levels, std::vector<OctType>& out);
 
 /*!
  * \brief Return a discretized unit sphere.
@@ -46,8 +45,8 @@ void discretize(const SphereType & s, int levels, std::vector<OctType> & out);
  * is useful for testing or for use until the general discretize routine is
  * ready.
  */
-void discretized_sphere(std::vector<OctType> & out);
-   
+void discretized_sphere(std::vector<OctType>& out);
+
 /// @}
 
 }  // end namespace quest

@@ -293,6 +293,7 @@ public:
    * @return the unit conversion factor
    */
   double getConversionFactor() const;
+
 private:
   LengthUnit m_endUnits;
 };
