@@ -1247,9 +1247,9 @@ private:
   /*!
    *****************************************************************************
    * \brief Applies a provided function to nested elements of the calling table
-   * and stores the result in a range
+   * and stores the result in a range pointed to by an output iterator \a output
    * 
-   * \pre The function must accept two arguments of type Table& and
+   * \pre The function \a func must accept two arguments of type Table& and
    * const std::string&, respectively.  
    * 
    * This function will pass to the provided function the nested table
