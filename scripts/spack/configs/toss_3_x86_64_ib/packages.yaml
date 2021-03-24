@@ -107,10 +107,10 @@ packages:
       prefix: /usr
   tar:
     buildable: false
-
     externals:
     - spec: tar
       prefix: /usr
+
 # Globally lock version of third party libraries
   conduit:
     version: [0.6.0]
