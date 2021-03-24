@@ -5,7 +5,6 @@
 
 #include "axom/klee/GeometryOperatorsIO.hpp"
 
-#include "axom/inlet/Proxy.hpp"
 #include "axom/klee/Geometry.hpp"
 #include "axom/klee/GeometryOperators.hpp"
 #include "axom/klee/IOUtil.hpp"
@@ -435,9 +434,9 @@ GeometryOperatorData::GeometryOperatorData(
   : m_singleOperatorData {singleOperatorData}
 { }
 
-inlet::Table &GeometryOperatorData::defineSchema(inlet::Table &parent,
-                                                 const std::string &fieldName,
-                                                 const std::string &description)
+inlet::Container &GeometryOperatorData::defineSchema(inlet::Container &parent,
+                                                     const std::string &fieldName,
+                                                     const std::string &description)
 {
   auto &opTable = parent.addStructArray(fieldName, description);
 
@@ -484,7 +483,7 @@ std::shared_ptr<GeometryOperator> GeometryOperatorData::makeOperator(
   return composite;
 }
 
-void NamedOperatorData::defineSchema(inlet::Table &table)
+void NamedOperatorData::defineSchema(inlet::Container &table)
 {
   table.addString("name").required();
   defineDimensionsField(table,
@@ -504,7 +503,7 @@ NamedOperatorMapData::NamedOperatorMapData(
   : m_operatorData {operatorData}
 { }
 
-void NamedOperatorMapData::defineSchema(inlet::Table &parent,
+void NamedOperatorMapData::defineSchema(inlet::Container &parent,
                                         const std::string &name)
 {
   auto &table = parent.addStructArray(name);
@@ -546,7 +545,8 @@ NamedOperatorMap NamedOperatorMapData::makeNamedOperatorMap(
 template <>
 struct FromInlet<axom::klee::internal::SingleOperatorData>
 {
-  axom::klee::internal::SingleOperatorData operator()(const axom::inlet::Table &base)
+  axom::klee::internal::SingleOperatorData operator()(
+    const axom::inlet::Container &base)
   {
     return axom::klee::internal::SingleOperatorData {&base};
   }
@@ -554,7 +554,7 @@ struct FromInlet<axom::klee::internal::SingleOperatorData>
 
 axom::klee::internal::GeometryOperatorData
 FromInlet<axom::klee::internal::GeometryOperatorData>::operator()(
-  const axom::inlet::Table &base)
+  const axom::inlet::Container &base)
 {
   std::vector<axom::klee::internal::SingleOperatorData> v =
     base.get<std::vector<axom::klee::internal::SingleOperatorData>>();
@@ -563,7 +563,7 @@ FromInlet<axom::klee::internal::GeometryOperatorData>::operator()(
 
 axom::klee::internal::NamedOperatorData
 FromInlet<axom::klee::internal::NamedOperatorData>::operator()(
-  const axom::inlet::Table &base)
+  const axom::inlet::Container &base)
 {
   axom::klee::internal::NamedOperatorData data;
   std::tie(data.startUnits, data.endUnits) =
@@ -585,7 +585,7 @@ FromInlet<axom::klee::internal::NamedOperatorData>::operator()(
 
 axom::klee::internal::NamedOperatorMapData
 FromInlet<axom::klee::internal::NamedOperatorMapData>::operator()(
-  const axom::inlet::Table &base)
+  const axom::inlet::Container &base)
 {
   return axom::klee::internal::NamedOperatorMapData {
     base.get<std::vector<axom::klee::internal::NamedOperatorData>>()};

@@ -5,8 +5,7 @@
 
 #include "axom/klee/IOUtil.hpp"
 
-#include "axom/inlet/Proxy.hpp"
-#include "axom/inlet/Table.hpp"
+#include "axom/inlet.hpp"
 #include "axom/klee/KleeError.hpp"
 
 namespace axom
@@ -122,7 +121,7 @@ std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy
   return units;
 }
 
-void defineUnitsSchema(inlet::Table &table,
+void defineUnitsSchema(inlet::Container &table,
                        const char *unitsDescription,
                        const char *startUnitsDescription,
                        const char *endUnitsDescription)
@@ -136,7 +135,7 @@ void defineUnitsSchema(inlet::Table &table,
   // figuring out which fields to use.
 }
 
-inlet::VerifiableScalar &defineDimensionsField(inlet::Table &parent,
+inlet::VerifiableScalar &defineDimensionsField(inlet::Container &parent,
                                                const char *name,
                                                const char *description)
 {

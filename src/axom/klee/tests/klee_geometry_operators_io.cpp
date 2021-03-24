@@ -10,8 +10,7 @@
 #include "axom/klee/GeometryOperatorsIO.hpp"
 #include "axom/klee/KleeError.hpp"
 
-#include "axom/inlet/Inlet.hpp"
-#include "axom/inlet/YAMLReader.hpp"
+#include "axom/inlet.hpp"
 
 #include "axom/slic/core/SimpleLogger.hpp"
 
@@ -58,7 +57,7 @@ OperatorPointer readOperators(
 
   sidre::DataStore dataStore;
   inlet::Inlet doc(std::move(reader), dataStore.getRoot());
-  GeometryOperatorData::defineSchema(doc.getGlobalTable(),
+  GeometryOperatorData::defineSchema(doc.getGlobalContainer(),
                                      "test_list",
                                      "The test list");
   if(!doc.verify())
@@ -86,7 +85,7 @@ NamedOperatorMap readNamedOperators(Dimensions startingDimensions,
 
   sidre::DataStore dataStore;
   inlet::Inlet doc(std::move(reader), dataStore.getRoot());
-  NamedOperatorMapData::defineSchema(doc.getGlobalTable(), "op_list");
+  NamedOperatorMapData::defineSchema(doc.getGlobalContainer(), "op_list");
   if(!doc.verify())
   {
     throw KleeError("Got bad input");

@@ -8,9 +8,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "axom/inlet/Inlet.hpp"
-#include "axom/inlet/Table.hpp"
-#include "axom/inlet/YAMLReader.hpp"
+#include "axom/inlet.hpp"
 #include "axom/klee/KleeError.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 
@@ -24,7 +22,7 @@ namespace klee
 {
 namespace internal
 {
-using inlet::Table;
+using inlet::Container;
 using primal::Point3D;
 using primal::Vector3D;
 
@@ -58,7 +56,7 @@ InletTestData::InletTestData(const std::string &input, DefOp defOp)
   : m_store {}
   , doc {readYaml(input), m_store.getRoot()}
 {
-  defOp(doc.getGlobalTable());
+  defOp(doc.getGlobalContainer());
   // Typically this would be done by the main parsing functions. Since
   // we're testing small pieces out of context, we need to check here
   // if everything is fine.
@@ -73,7 +71,8 @@ std::vector<double> parseDoubleVector(const std::string &vectorInput,
 {
   std::string fullInput = "values: ";
   fullInput += vectorInput;
-  InletTestData data {fullInput, [](Table &t) { t.addDoubleArray("values"); }};
+  InletTestData data {fullInput,
+                      [](Container &t) { t.addDoubleArray("values"); }};
   return toDoubleVector(data.doc["values"], dims, "values");
 }
 
@@ -95,7 +94,7 @@ Dimensions defineAndParseDimension(const char *input)
 {
   std::string fullInput = "dims: ";
   fullInput += input;
-  InletTestData data {fullInput, [](Table &t) {
+  InletTestData data {fullInput, [](Container &t) {
                         defineDimensionsField(t, "dims", "some description");
                       }};
   return toDimensions(data.doc["dims"]);
@@ -114,13 +113,16 @@ TEST(io_util, defineAndConvertDimensions)
  *
  * @param table the table on which to define the units fields
  */
-void defineUnitsSchemaWithDefaults(Table &table) { defineUnitsSchema(table); }
+void defineUnitsSchemaWithDefaults(Container &table)
+{
+  defineUnitsSchema(table);
+}
 
 TEST(io_util, getOptionalStartAndEndUnits_nothingSpecified)
 {
   // Random input or Inlet issues a warning about blank input
   InletTestData data {"foo: 123", defineUnitsSchemaWithDefaults};
-  auto units = getOptionalStartAndEndUnits(data.doc.getGlobalTable());
+  auto units = getOptionalStartAndEndUnits(data.doc.getGlobalContainer());
   EXPECT_EQ(LengthUnit::unspecified, std::get<0>(units));
   EXPECT_EQ(LengthUnit::unspecified, std::get<1>(units));
 }
@@ -128,7 +130,7 @@ TEST(io_util, getOptionalStartAndEndUnits_nothingSpecified)
 TEST(io_util, getOptionalStartAndEndUnits_unitsSpecified)
 {
   InletTestData data {"units: cm", defineUnitsSchemaWithDefaults};
-  auto units = getOptionalStartAndEndUnits(data.doc.getGlobalTable());
+  auto units = getOptionalStartAndEndUnits(data.doc.getGlobalContainer());
   EXPECT_EQ(LengthUnit::cm, std::get<0>(units));
   EXPECT_EQ(LengthUnit::cm, std::get<1>(units));
 }
@@ -140,7 +142,7 @@ TEST(io_util, getOptionalStartAndEndUnits_startAndEndSpecified)
         end_units: in
     )",
                       defineUnitsSchemaWithDefaults};
-  auto units = getOptionalStartAndEndUnits(data.doc.getGlobalTable());
+  auto units = getOptionalStartAndEndUnits(data.doc.getGlobalContainer());
   EXPECT_EQ(LengthUnit::cm, std::get<0>(units));
   EXPECT_EQ(LengthUnit::inches, std::get<1>(units));
 }
@@ -148,10 +150,10 @@ TEST(io_util, getOptionalStartAndEndUnits_startAndEndSpecified)
 TEST(io_util, getOptionalStartAndEndUnits_partialSpecification)
 {
   InletTestData startOnly {"start_units: cm", defineUnitsSchemaWithDefaults};
-  EXPECT_THROW(getOptionalStartAndEndUnits(startOnly.doc.getGlobalTable()),
+  EXPECT_THROW(getOptionalStartAndEndUnits(startOnly.doc.getGlobalContainer()),
                KleeError);
   InletTestData endOnly {"end_units: cm", defineUnitsSchemaWithDefaults};
-  EXPECT_THROW(getOptionalStartAndEndUnits(endOnly.doc.getGlobalTable()),
+  EXPECT_THROW(getOptionalStartAndEndUnits(endOnly.doc.getGlobalContainer()),
                KleeError);
 }
 
@@ -163,13 +165,14 @@ TEST(io_util, getOptionalStartAndEndUnits_startEndAndUnits)
         units: cm
     )",
                       defineUnitsSchemaWithDefaults};
-  EXPECT_THROW(getOptionalStartAndEndUnits(data.doc.getGlobalTable()), KleeError);
+  EXPECT_THROW(getOptionalStartAndEndUnits(data.doc.getGlobalContainer()),
+               KleeError);
 }
 
 TEST(io_util, getStartAndEndUnits_unitsPresent)
 {
   InletTestData data {"units: cm", defineUnitsSchemaWithDefaults};
-  auto units = getStartAndEndUnits(data.doc.getGlobalTable());
+  auto units = getStartAndEndUnits(data.doc.getGlobalContainer());
   EXPECT_EQ(LengthUnit::cm, std::get<0>(units));
   EXPECT_EQ(LengthUnit::cm, std::get<1>(units));
 }
@@ -178,7 +181,7 @@ TEST(io_util, getStartAndEndUnits_nothingSpecified)
 {
   // Random input or Inlet issues a warning about blank input
   InletTestData data {"foo: 123", defineUnitsSchemaWithDefaults};
-  EXPECT_THROW(getStartAndEndUnits(data.doc.getGlobalTable()), KleeError);
+  EXPECT_THROW(getStartAndEndUnits(data.doc.getGlobalContainer()), KleeError);
 }
 
 template <typename T, typename Op>
@@ -186,8 +189,8 @@ T parseArray(const char *value, Dimensions dims, Op op)
 {
   std::string input = "value: ";
   input += value;
-  InletTestData data {input, [](Table &t) { t.addDoubleArray("value"); }};
-  return op(data.doc.getGlobalTable(), "value", dims);
+  InletTestData data {input, [](Container &t) { t.addDoubleArray("value"); }};
+  return op(data.doc.getGlobalContainer(), "value", dims);
 }
 
 template <typename T, typename Op>
@@ -204,8 +207,8 @@ T parseArray(const char *value, Dimensions dims, const T &defaultValue, Op op)
     // avoid warning about empty input
     input = "foo: bar";
   }
-  InletTestData data {input, [](Table &t) { t.addDoubleArray("value"); }};
-  return op(data.doc.getGlobalTable(), "value", dims, defaultValue);
+  InletTestData data {input, [](Container &t) { t.addDoubleArray("value"); }};
+  return op(data.doc.getGlobalContainer(), "value", dims, defaultValue);
 }
 
 Point3D parsePoint(const char *value, Dimensions dims)

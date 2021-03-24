@@ -9,7 +9,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "axom/inlet/Table.hpp"
+#include "axom/inlet.hpp"
 #include "axom/klee/Dimensions.hpp"
 #include "axom/klee/Units.hpp"
 
@@ -30,7 +30,7 @@ using NamedOperatorMap =
  */
 struct SingleOperatorData
 {
-  const inlet::Table *m_table;
+  const inlet::Container *m_table;
 };
 
 /**
@@ -57,9 +57,9 @@ public:
      * @param description a description of the field
      * @return the table for the new item
      */
-  static inlet::Table &defineSchema(inlet::Table &parent,
-                                    const std::string &fieldName,
-                                    const std::string &description);
+  static inlet::Container &defineSchema(inlet::Container &parent,
+                                        const std::string &fieldName,
+                                        const std::string &description);
 
   /**
      * Make an operator describing the transformation to apply to the geomtry.
@@ -95,7 +95,7 @@ struct NamedOperatorData
      *
      * @param table the table in which to describe a single named operator
      */
-  static void defineSchema(inlet::Table &table);
+  static void defineSchema(inlet::Container &table);
 };
 
 /**
@@ -130,7 +130,7 @@ struct NamedOperatorMapData
      * @param parent the parent object in which to define the operator map
      * @param name the name of the map
      */
-  static void defineSchema(inlet::Table &parent, const std::string &name);
+  static void defineSchema(inlet::Container &parent, const std::string &name);
 
 private:
   std::vector<NamedOperatorData> m_operatorData;
@@ -144,20 +144,21 @@ template <>
 struct FromInlet<axom::klee::internal::GeometryOperatorData>
 {
   axom::klee::internal::GeometryOperatorData operator()(
-    const axom::inlet::Table &base);
+    const axom::inlet::Container &base);
 };
 
 template <>
 struct FromInlet<axom::klee::internal::NamedOperatorData>
 {
-  axom::klee::internal::NamedOperatorData operator()(const axom::inlet::Table &base);
+  axom::klee::internal::NamedOperatorData operator()(
+    const axom::inlet::Container &base);
 };
 
 template <>
 struct FromInlet<axom::klee::internal::NamedOperatorMapData>
 {
   axom::klee::internal::NamedOperatorMapData operator()(
-    const axom::inlet::Table &base);
+    const axom::inlet::Container &base);
 };
 
 #endif  //AXOM_KLEE_GEOMETRYOPERATORSIO_HPP

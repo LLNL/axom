@@ -17,7 +17,7 @@ namespace axom
 {
 namespace inlet
 {
-class Table;
+class Container;
 class Proxy;
 class VerifiableScalar;
 }  // namespace inlet
@@ -135,7 +135,7 @@ std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy
  * @param startUnitsDescription the description of the "start_units" field
  * @param endUnitsDescription the description of the "end_units" field
  */
-void defineUnitsSchema(inlet::Table &table,
+void defineUnitsSchema(inlet::Container &table,
                        const char *unitsDescription = "",
                        const char *startUnitsDescription = "",
                        const char *endUnitsDescription = "");
@@ -148,7 +148,7 @@ void defineUnitsSchema(inlet::Table &table,
  * @param description and optional description of the field
  * @return the field, which can have additional restrictions set on it
  */
-inlet::VerifiableScalar &defineDimensionsField(inlet::Table &parent,
+inlet::VerifiableScalar &defineDimensionsField(inlet::Container &parent,
                                                const char *name,
                                                const char *description = "");
 
