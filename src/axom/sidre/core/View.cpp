@@ -1270,6 +1270,13 @@ void View::importFrom(conduit::Node& data_holder,
   }
 }
 
+/*
+ *************************************************************************
+ *
+ * Import Node holding an array into a View with an attached Buffer.
+ *
+ *************************************************************************
+ */
 View* View::importArrayNode(const Node& array)
 {
 
