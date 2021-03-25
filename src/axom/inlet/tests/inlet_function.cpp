@@ -86,7 +86,7 @@ TEST(inlet_function, simple_vec3_to_vec3_raw_partial_init)
   EXPECT_FLOAT_EQ(result[2], 0);
 }
 
-TEST(inlet_function, simple_vec3_to_double_through_table)
+TEST(inlet_function, simple_vec3_to_double_through_container)
 {
   std::string testString = "function foo (v) return v.x + v.y + v.z end";
   DataStore ds;
@@ -102,7 +102,7 @@ TEST(inlet_function, simple_vec3_to_double_through_table)
   EXPECT_FLOAT_EQ(result, 6);
 }
 
-TEST(inlet_function, simple_vec3_to_vec3_through_table)
+TEST(inlet_function, simple_vec3_to_vec3_through_container)
 {
   std::string testString = "function foo (v) return 2*v end";
   DataStore ds;
@@ -121,7 +121,7 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table)
   EXPECT_FLOAT_EQ(result[2], 6);
 }
 
-TEST(inlet_function, simple_double_to_double_through_table)
+TEST(inlet_function, simple_double_to_double_through_container)
 {
   std::string testString = "function foo (a) return (a * 3.4) + 9.64 end";
   DataStore ds;
@@ -139,7 +139,7 @@ TEST(inlet_function, simple_double_to_double_through_table)
   EXPECT_FLOAT_EQ(result, (arg * 3.4) + 9.64);
 }
 
-TEST(inlet_function, simple_void_to_double_through_table)
+TEST(inlet_function, simple_void_to_double_through_container)
 {
   std::string testString = "function foo () return 9.64 end";
   DataStore ds;
@@ -152,7 +152,7 @@ TEST(inlet_function, simple_void_to_double_through_table)
   EXPECT_FLOAT_EQ(result, 9.64);
 }
 
-TEST(inlet_function, simple_double_to_void_through_table)
+TEST(inlet_function, simple_double_to_void_through_container)
 {
   // Test a function that returns nothing by using it to modify a global
   std::string testString = "bar = 19.9; function foo (a) bar = a end";
@@ -174,7 +174,7 @@ TEST(inlet_function, simple_double_to_void_through_table)
   EXPECT_FLOAT_EQ(result, arg);
 }
 
-TEST(inlet_function, simple_string_to_double_through_table)
+TEST(inlet_function, simple_string_to_double_through_container)
 {
   std::string testString =
     "function foo(s) "
@@ -198,7 +198,7 @@ TEST(inlet_function, simple_string_to_double_through_table)
   EXPECT_FLOAT_EQ(callable("c"), 66.5);
 }
 
-TEST(inlet_function, simple_double_to_string_through_table)
+TEST(inlet_function, simple_double_to_string_through_container)
 {
   std::string testString =
     "function foo(d) "
@@ -221,7 +221,7 @@ TEST(inlet_function, simple_double_to_string_through_table)
   EXPECT_EQ(callable(3), "c");
 }
 
-TEST(inlet_function, simple_vec3_to_double_through_table_call)
+TEST(inlet_function, simple_vec3_to_double_through_container_call)
 {
   std::string testString = "function foo (v) return v.x + v.y + v.z end";
   DataStore ds;
@@ -236,7 +236,7 @@ TEST(inlet_function, simple_vec3_to_double_through_table_call)
   EXPECT_FLOAT_EQ(result, 6);
 }
 
-TEST(inlet_function, simple_vec3_to_vec3_through_table_call)
+TEST(inlet_function, simple_vec3_to_vec3_through_container_call)
 {
   std::string testString = "function foo (v) return 2*v end";
   DataStore ds;
@@ -254,7 +254,7 @@ TEST(inlet_function, simple_vec3_to_vec3_through_table_call)
   EXPECT_FLOAT_EQ(result[2], 6);
 }
 
-TEST(inlet_function, simple_vec3_double_to_double_through_table_call)
+TEST(inlet_function, simple_vec3_double_to_double_through_container_call)
 {
   std::string testString =
     "function foo (v, t) return t * (v.x + v.y + v.z) end";
@@ -270,7 +270,7 @@ TEST(inlet_function, simple_vec3_double_to_double_through_table_call)
   EXPECT_FLOAT_EQ(result, 12);
 }
 
-TEST(inlet_function, simple_vec3_double_to_vec3_through_table_call)
+TEST(inlet_function, simple_vec3_double_to_vec3_through_container_call)
 {
   std::string testString = "function foo (v, t) return t*v end";
   DataStore ds;
@@ -337,7 +337,7 @@ struct Foo
 template <>
 struct FromInlet<Foo>
 {
-  Foo operator()(const axom::inlet::Table& base)
+  Foo operator()(const axom::inlet::Container& base)
   {
     Foo f {base["bar"], base["baz"]};
     return f;
@@ -378,11 +378,11 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  auto& arr_table = inlet.addStructArray("foo");
+  auto& arr_container = inlet.addStructArray("foo");
 
   // Define schema
-  arr_table.addBool("bar", "bar's description");
-  arr_table
+  arr_container.addBool("bar", "bar's description");
+  arr_container
     .addFunction("baz",
                  FunctionTag::Vector,
                  {FunctionTag::Vector},
@@ -440,6 +440,50 @@ TEST(inlet_function, dimension_dependent_result)
   EXPECT_EQ(result.dim, 2);
   EXPECT_FLOAT_EQ(result.vec[0], 7);
   EXPECT_FLOAT_EQ(result.vec[1], 1);
+}
+
+struct FooWithScalarFunc
+{
+  std::function<double(double)> bar;
+};
+
+template <>
+struct FromInlet<FooWithScalarFunc>
+{
+  FooWithScalarFunc operator()(const axom::inlet::Container& base)
+  {
+    return {base["foo/bar"]};
+  }
+};
+
+TEST(inlet_function, nested_function_in_struct)
+{
+  std::string testString =
+    "quux = { [0] = { foo = { bar = function (x) return x + 1 end } }, "
+    "         [1] = { foo = { bar = function (x) return x + 3 end } } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto& quux_schema = inlet.addStructArray("quux");
+  auto& foo_schema = quux_schema.addStruct("foo");
+
+  foo_schema.addFunction("bar",
+                         FunctionTag::Double,
+                         {FunctionTag::Double},
+                         "bar's description");
+
+  auto foos = inlet["quux"].get<std::vector<FooWithScalarFunc>>();
+  EXPECT_EQ(foos.size(), 2);
+
+  auto& first_func = foos[0].bar;
+  // Check that the function object contains a valid target
+  EXPECT_TRUE(static_cast<bool>(first_func));
+  EXPECT_DOUBLE_EQ(first_func(4.0), 5.0);
+
+  auto& second_func = foos[1].bar;
+  // Check that the function object contains a valid target
+  EXPECT_TRUE(static_cast<bool>(second_func));
+  EXPECT_DOUBLE_EQ(second_func(4.0), 7.0);
 }
 
 template <typename Ret, typename... Args>

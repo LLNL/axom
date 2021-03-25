@@ -39,6 +39,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for deeply nested containers of structs
 - Inlet: Added support for `void` and strings in Lua-defined functions
 - Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
+- Inlet: Added a new `Writer` for generating JSON schemas which can be used by text editors
+  for autocompletion
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -65,6 +67,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   datastore is `Load` ed in
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 - Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
+- Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
+- Inlet: Renamed `Table` to `Container`
+- Inlet collections of mixed or incorrect type will now fail verification, even if they're
+  not marked as required
+- Required collections no longer fail Inlet verification if they are empty in the input file
+- Inlet: `operator bool` for `Field` and `Container` has been replaced with more precise `isUserProvided`
+  and `exists`, which also returns `true` if a default value was specified.
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
@@ -73,6 +82,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Apply lambda verifiers on generic containers to individual elements
   for consistency
 - Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
+- Fixed a bug relating to deeply nested callback functions in Inlet
+- Inlet: Always ignore primitive array elements that do not match the requested type
+- Inlet: Empty structs/collections of structs with required sub-elements no longer fail
+  verification
 
 
 ## [Version 0.4.0] - Release date 2020-09-22
