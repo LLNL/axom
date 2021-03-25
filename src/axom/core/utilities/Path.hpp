@@ -60,6 +60,7 @@ public:
 
   /*!
      * \brief Returns a path representing the parent of the calling path
+     * If the calling path is the root, the root will be returned
      */
   Path parent() const;
 
@@ -94,6 +95,25 @@ private:
   // The delimiter character
   char m_delim = '/';
 };
+
+/*!
+ * \brief Equality operator (equals)
+ * \param [in] lhs The first Path to compare
+ * \param [in] rhs The second Path to compare
+ * Two paths are equal if they use the same delimiter and contain the same components
+ */
+bool operator==(const Path& lhs, const Path& rhs);
+
+/*!
+ * \brief Equality operator (not equals)
+ * \param [in] lhs The first Path to compare
+ * \param [in] rhs The second Path to compare
+ * Two paths are equal if they use the same delimiter and contain the same components
+ */
+inline bool operator!=(const Path& lhs, const Path& rhs)
+{
+  return !(lhs == rhs);
+}
 
 }  // end namespace utilities
 }  // end namespace axom

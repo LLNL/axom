@@ -115,3 +115,14 @@ TEST(utils_Path, dirname_basename_multi_component_alt_delim)
   EXPECT_EQ(path.dirName(), "foo;bar");
   EXPECT_EQ(path.baseName(), "baz");
 }
+
+TEST(utils_Path, basic_equals)
+{
+  axom::utilities::Path first("foo/bar/baz");
+  axom::utilities::Path second("foo/bar/baz");
+  axom::utilities::Path third("foo:bar:baz", ':');
+  EXPECT_TRUE(first == second);
+  EXPECT_FALSE(first != second);
+  EXPECT_FALSE(first == third);
+  EXPECT_TRUE(first != third);
+}

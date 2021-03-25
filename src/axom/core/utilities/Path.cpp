@@ -50,22 +50,16 @@ Path Path::join(std::initializer_list<Path> paths, const char delim)
 
 Path::operator std::string() const
 {
-  // Start with empty separator to avoid trailing delimiter
-  std::string delim_str = "";
-  std::string result;
-  for(const auto& component : m_components)
-  {
-    result += delim_str;
-    result += component;
-    delim_str = m_delim;
-  }
-  return result;
+  return fmt::format("{0}", fmt::join(m_components, std::string(1, m_delim)));
 }
 
 Path Path::parent() const
 {
   Path result(*this);
-  result.m_components.pop_back();
+  if(!result.m_components.empty())  // [[likely]] - uncomment when C++20 available
+  {
+    result.m_components.pop_back();
+  }
   return result;
 }
 
@@ -73,13 +67,17 @@ std::string Path::baseName() const
 {
   if(m_components.empty())
   {
-    std::cerr << "Cannot retrieve the basename of an empty path\n";
-    // FIXME: Should we throw an exception/terminate here vs. deref a nullptr?
+    return {};
   }
   return m_components.back();
 }
 
 std::string Path::dirName() const { return static_cast<std::string>(parent()); }
+
+bool operator==(const Path& lhs, const Path& rhs)
+{
+  return static_cast<std::string>(lhs) == static_cast<std::string>(rhs);
+}
 
 }  // end namespace utilities
 }  // end namespace axom
