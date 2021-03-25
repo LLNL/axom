@@ -1317,7 +1317,7 @@ View* View::importArrayNode(const Node& array)
     {
       SLIC_CHECK_MSG(m_state == EMPTY,
                      SIDRE_VIEW_LOG_PREPEND
-                       << "Unable to set Buffer on view with state: "
+                       << "Unable to import array Node to View with state: "
                        << getStateStringName(m_state));
     }
   }
@@ -1325,7 +1325,7 @@ View* View::importArrayNode(const Node& array)
   {
     SLIC_CHECK_MSG(array_dtype.is_number(),
                    SIDRE_VIEW_LOG_PREPEND
-                     << "Unable to set Buffer view using Node of type: "
+                     << "Unable to import array from Node of type: "
                      << array_dtype.name());
   }
 
