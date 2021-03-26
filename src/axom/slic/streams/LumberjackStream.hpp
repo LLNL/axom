@@ -118,8 +118,7 @@ private:
   /*!
    * \brief Default constructor. Made private to prevent applications from
    *  using it. Instead the constructor that passes the underlying Lumberjack
-   * instance
-   *  should be used.
+   *  instance should be used.
    */
   LumberjackStream()
     : m_lj(static_cast<axom::lumberjack::Lumberjack*>(nullptr))

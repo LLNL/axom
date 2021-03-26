@@ -1,0 +1,99 @@
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+// C/C++ includes
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
+// axom includes
+#include "axom/core/Types.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/streams/LumberjackStream.hpp"
+
+// MPI
+#include <mpi.h>
+
+using namespace axom;
+
+#define CYCLELIMIT 5
+#define RANKSLIMIT 5
+
+#define N 20
+
+slic::message::Level getRandomEvent(const int start, const int end)
+{
+  return (static_cast<slic::message::Level>(std::rand() % (end - start) + start));
+}
+
+//------------------------------------------------------------------------------
+int main(int argc, char** argv)
+{
+  // Initialize MPI
+  MPI_Init(&argc, &argv);
+  int rank = -1;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  // Initialize SLIC
+  std::string format = std::string("<MESSAGE>\n") +
+    std::string("\t<TIMESTAMP>\n") + std::string("\tLEVEL=<LEVEL>\n") +
+    std::string("\tRANKS=<RANK>\n") + std::string("\tFILE=<FILE>\n") +
+    std::string("\tLINE=<LINE>\n");
+  slic::initialize();
+
+  // Set SLIC logging level
+  slic::setLoggingMsgLevel(slic::message::Debug);
+  slic::disableAbortOnError();
+
+  // Create SLIC Lumberjack Stream for each node
+  std::ostream* file_stream = nullptr;
+  if (rank == 0) {
+    // Only create file stream on root node because it is the only one to write to that file
+    file_stream = new std::fstream("lumberjack_file_logging.output", std::ofstream::out);
+  } else {
+    // Create a noop stream for ranks that are not output nodes
+    file_stream = new std::ostream(nullptr);
+  }
+  slic::LumberjackStream* ljStream =
+    new slic::LumberjackStream(file_stream, MPI_COMM_WORLD, RANKSLIMIT, format);
+  slic::addStreamToAllMsgLevels(ljStream);
+
+  // Queue messages
+  int cycleCount = 0;
+  for(int i = 0; i < N; ++i)
+  {
+    std::ostringstream oss;
+    oss << "message " << i << "/" << N - 1;
+
+    slic::logMessage(getRandomEvent(0, slic::message::Num_Levels),
+                     oss.str(),
+                     __FILE__,
+                     __LINE__);
+
+    ++cycleCount;
+    if(cycleCount > CYCLELIMIT)
+    {
+      // Incrementally push messages through the log stream
+      slic::pushStreams();
+      cycleCount = 0;
+    }
+  }
+
+  // Fully flush system of messages
+  slic::flushStreams();
+
+  // Shutdown SLIC which in turn shutsdown Lumberjack
+  slic::finalize();
+
+  // Cleanup file streams
+  delete file_stream;
+
+  // Finalize MPI
+  MPI_Finalize();
+
+  return 0;
+}

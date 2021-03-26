@@ -19,7 +19,9 @@ set(mpi_example_sources
     )
 
 if (AXOM_ENABLE_LUMBERJACK)
-    list(APPEND mpi_example_sources basic/lumberjack_logging.cpp )
+    list(APPEND mpi_example_sources
+         basic/lumberjack_logging.cpp
+         basic/lumberjack_file_logging.cpp)
 endif()
 
 foreach( example_source ${example_sources} )
