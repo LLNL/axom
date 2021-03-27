@@ -59,6 +59,7 @@ mark_as_advanced(CLI11_FOUND)
 
 set(fmt_headers
     fmt/fmt.hpp
+    fmt/args.h
     fmt/compile.h
     fmt/core.h
     fmt/format.h
