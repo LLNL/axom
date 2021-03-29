@@ -36,22 +36,14 @@ struct formatting_range : formatting_base<Char> {
   static FMT_CONSTEXPR_DECL const size_t range_length_limit =
       FMT_RANGE_OUTPUT_LENGTH_LIMIT;  // output only up to N items from the
                                       // range.
-  Char prefix;
-  Char delimiter;
-  Char postfix;
-  formatting_range() : prefix('{'), delimiter(','), postfix('}') {}
-  static FMT_CONSTEXPR_DECL const bool add_delimiter_spaces = true;
-  static FMT_CONSTEXPR_DECL const bool add_prepostfix_space = false;
+  Char prefix = '{';
+  Char postfix = '}';
 };
 
 template <typename Char, typename Enable = void>
 struct formatting_tuple : formatting_base<Char> {
-  Char prefix;
-  Char delimiter;
-  Char postfix;
-  formatting_tuple() : prefix('('), delimiter(','), postfix(')') {}
-  static FMT_CONSTEXPR_DECL const bool add_delimiter_spaces = true;
-  static FMT_CONSTEXPR_DECL const bool add_prepostfix_space = false;
+  Char prefix = '(';
+  Char postfix = ')';
 };
 
 namespace detail {
@@ -95,12 +87,100 @@ template <typename... Ts> struct conditional_helper {};
 template <typename T, typename _ = void> struct is_range_ : std::false_type {};
 
 #if !FMT_MSC_VER || FMT_MSC_VER > 1800
+
+#  define FMT_DECLTYPE_RETURN(val)  \
+    ->decltype(val) { return val; } \
+    static_assert(                  \
+        true, "")  // This makes it so that a semicolon is required after the
+                   // macro, which helps clang-format handle the formatting.
+
+// C array overload
+template <typename T, std::size_t N>
+auto range_begin(const T (&arr)[N]) -> const T* {
+  return arr;
+}
+template <typename T, std::size_t N>
+auto range_end(const T (&arr)[N]) -> const T* {
+  return arr + N;
+}
+
+template <typename T, typename Enable = void>
+struct has_member_fn_begin_end_t : std::false_type {};
+
 template <typename T>
-struct is_range_<
-    T, conditional_t<false,
-                     conditional_helper<decltype(std::declval<T>().begin()),
-                                        decltype(std::declval<T>().end())>,
-                     void>> : std::true_type {};
+struct has_member_fn_begin_end_t<T, void_t<decltype(std::declval<T>().begin()),
+                                           decltype(std::declval<T>().end())>>
+    : std::true_type {};
+
+// Member function overload
+template <typename T>
+auto range_begin(T&& rng) FMT_DECLTYPE_RETURN(static_cast<T&&>(rng).begin());
+template <typename T>
+auto range_end(T&& rng) FMT_DECLTYPE_RETURN(static_cast<T&&>(rng).end());
+
+// ADL overload. Only participates in overload resolution if member functions
+// are not found.
+template <typename T>
+auto range_begin(T&& rng)
+    -> enable_if_t<!has_member_fn_begin_end_t<T&&>::value,
+                   decltype(begin(static_cast<T&&>(rng)))> {
+  return begin(static_cast<T&&>(rng));
+}
+template <typename T>
+auto range_end(T&& rng) -> enable_if_t<!has_member_fn_begin_end_t<T&&>::value,
+                                       decltype(end(static_cast<T&&>(rng)))> {
+  return end(static_cast<T&&>(rng));
+}
+
+template <typename T, typename Enable = void>
+struct has_const_begin_end : std::false_type {};
+template <typename T, typename Enable = void>
+struct has_mutable_begin_end : std::false_type {};
+
+template <typename T>
+struct has_const_begin_end<
+    T, void_t<decltype(detail::range_begin(
+                  std::declval<const remove_cvref_t<T>&>())),
+              decltype(detail::range_begin(
+                  std::declval<const remove_cvref_t<T>&>()))>>
+    : std::true_type {};
+
+template <typename T>
+struct has_mutable_begin_end<
+    T, void_t<decltype(detail::range_begin(std::declval<T>())),
+              decltype(detail::range_begin(std::declval<T>())),
+              enable_if_t<std::is_copy_constructible<T>::value>>>
+    : std::true_type {};
+
+template <typename T>
+struct is_range_<T, void>
+    : std::integral_constant<bool, (has_const_begin_end<T>::value ||
+                                    has_mutable_begin_end<T>::value)> {};
+
+template <typename T, typename Enable = void> struct range_to_view;
+template <typename T>
+struct range_to_view<T, enable_if_t<has_const_begin_end<T>::value>> {
+  struct view_t {
+    const T* m_range_ptr;
+
+    auto begin() const FMT_DECLTYPE_RETURN(detail::range_begin(*m_range_ptr));
+    auto end() const FMT_DECLTYPE_RETURN(detail::range_end(*m_range_ptr));
+  };
+  static auto view(const T& range) -> view_t { return {&range}; }
+};
+
+template <typename T>
+struct range_to_view<T, enable_if_t<!has_const_begin_end<T>::value &&
+                                    has_mutable_begin_end<T>::value>> {
+  struct view_t {
+    T m_range_copy;
+
+    auto begin() FMT_DECLTYPE_RETURN(detail::range_begin(m_range_copy));
+    auto end() FMT_DECLTYPE_RETURN(detail::range_end(m_range_copy));
+  };
+  static auto view(const T& range) -> view_t { return {range}; }
+};
+#  undef FMT_DECLTYPE_RETURN
 #endif
 
 /// tuple_size and tuple_element check.
@@ -158,33 +238,42 @@ template <class Tuple, class F> void for_each(Tuple&& tup, F&& f) {
 }
 
 template <typename Range>
-using value_type = remove_cvref_t<decltype(*std::declval<Range>().begin())>;
+using value_type =
+    remove_cvref_t<decltype(*detail::range_begin(std::declval<Range>()))>;
 
-template <typename Arg, FMT_ENABLE_IF(!is_like_std_string<
-                                      typename std::decay<Arg>::type>::value)>
-FMT_CONSTEXPR const char* format_str_quoted(bool add_space, const Arg&) {
-  return add_space ? " {}" : "{}";
-}
-
-template <typename Arg, FMT_ENABLE_IF(is_like_std_string<
-                                      typename std::decay<Arg>::type>::value)>
-FMT_CONSTEXPR const char* format_str_quoted(bool add_space, const Arg&) {
-  return add_space ? " \"{}\"" : "\"{}\"";
+template <typename OutputIt> OutputIt write_delimiter(OutputIt out) {
+  *out++ = ',';
+  *out++ = ' ';
+  return out;
 }
 
-FMT_CONSTEXPR const char* format_str_quoted(bool add_space, const char*) {
-  return add_space ? " \"{}\"" : "\"{}\"";
-}
-FMT_CONSTEXPR const wchar_t* format_str_quoted(bool add_space, const wchar_t*) {
-  return add_space ? L" \"{}\"" : L"\"{}\"";
+template <
+    typename Char, typename OutputIt, typename Arg,
+    FMT_ENABLE_IF(is_like_std_string<typename std::decay<Arg>::type>::value)>
+OutputIt write_range_entry(OutputIt out, const Arg& v) {
+  *out++ = '"';
+  out = write<Char>(out, v);
+  *out++ = '"';
+  return out;
 }
 
-FMT_CONSTEXPR const char* format_str_quoted(bool add_space, const char) {
-  return add_space ? " '{}'" : "'{}'";
+template <typename Char, typename OutputIt, typename Arg,
+          FMT_ENABLE_IF(std::is_same<Arg, Char>::value)>
+OutputIt write_range_entry(OutputIt out, const Arg v) {
+  *out++ = '\'';
+  *out++ = v;
+  *out++ = '\'';
+  return out;
 }
-FMT_CONSTEXPR const wchar_t* format_str_quoted(bool add_space, const wchar_t) {
-  return add_space ? L" '{}'" : L"'{}'";
+
+template <
+    typename Char, typename OutputIt, typename Arg,
+    FMT_ENABLE_IF(!is_like_std_string<typename std::decay<Arg>::type>::value &&
+                  !std::is_same<Arg, Char>::value)>
+OutputIt write_range_entry(OutputIt out, const Arg& v) {
+  return write<Char>(out, v);
 }
+
 }  // namespace detail
 
 template <typename T> struct is_tuple_like {
@@ -198,19 +287,10 @@ struct formatter<TupleT, Char, enable_if_t<fmt::is_tuple_like<TupleT>::value>> {
   // C++11 generic lambda for format()
   template <typename FormatContext> struct format_each {
     template <typename T> void operator()(const T& v) {
-      if (i > 0) {
-        if (formatting.add_prepostfix_space) {
-          *out++ = ' ';
-        }
-        out = detail::copy(formatting.delimiter, out);
-      }
-      out = format_to(out,
-                      detail::format_str_quoted(
-                          (formatting.add_delimiter_spaces && i > 0), v),
-                      v);
+      if (i > 0) out = detail::write_delimiter(out);
+      out = detail::write_range_entry<Char>(out, v);
       ++i;
     }
-
     formatting_tuple<Char>& formatting;
     size_t& i;
     typename std::add_lvalue_reference<decltype(
@@ -229,12 +309,9 @@ struct formatter<TupleT, Char, enable_if_t<fmt::is_tuple_like<TupleT>::value>> {
   auto format(const TupleT& values, FormatContext& ctx) -> decltype(ctx.out()) {
     auto out = ctx.out();
     size_t i = 0;
-    detail::copy(formatting.prefix, out);
 
+    detail::copy(formatting.prefix, out);
     detail::for_each(values, format_each<FormatContext>{formatting, i, out});
-    if (formatting.add_prepostfix_space) {
-      *out++ = ' ';
-    }
     detail::copy(formatting.postfix, out);
 
     return ctx.out();
@@ -271,23 +348,17 @@ struct formatter<
   typename FormatContext::iterator format(const T& values, FormatContext& ctx) {
     auto out = detail::copy(formatting.prefix, ctx.out());
     size_t i = 0;
-    auto it = values.begin();
-    auto end = values.end();
+    auto view = detail::range_to_view<T>::view(values);
+    auto it = view.begin();
+    auto end = view.end();
     for (; it != end; ++it) {
-      if (i > 0) {
-        if (formatting.add_prepostfix_space) *out++ = ' ';
-        out = detail::copy(formatting.delimiter, out);
-      }
-      out = format_to(out,
-                      detail::format_str_quoted(
-                          (formatting.add_delimiter_spaces && i > 0), *it),
-                      *it);
+      if (i > 0) out = detail::write_delimiter(out);
+      out = detail::write_range_entry<Char>(out, *it);
       if (++i > formatting.range_length_limit) {
-        out = format_to(out, " ... <other elements>");
+        out = format_to(out, FMT_STRING("{}"), " ... <other elements>");
         break;
       }
     }
-    if (formatting.add_prepostfix_space) *out++ = ' ';
     return detail::copy(formatting.postfix, out);
   }
 };
@@ -297,7 +368,7 @@ template <typename Char, typename... T> struct tuple_arg_join : detail::view {
   basic_string_view<Char> sep;
 
   tuple_arg_join(const std::tuple<T...>& t, basic_string_view<Char> s)
-      : tuple{t}, sep{s} {}
+      : tuple(t), sep{s} {}
 };
 
 template <typename Char, typename... T>
