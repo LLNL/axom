@@ -36,14 +36,9 @@ Path Path::join(std::initializer_list<Path> paths, const char delim)
   for(const auto& path : paths)
   {
     // Insert everything in order
-    // It seems useful to ignore empty elements here, but maybe this is short-sighted?
-    if(!path.m_components.empty())
-    {
-      result.m_components.insert(
-        result.m_components.end(),
-        std::make_move_iterator(path.m_components.begin()),
-        std::make_move_iterator(path.m_components.end()));
-    }
+    std::move(path.m_components.begin(),
+              path.m_components.end(),
+              std::back_inserter(result.m_components));
   }
   return result;
 }
