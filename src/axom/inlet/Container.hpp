@@ -896,6 +896,15 @@ public:
 
   /*!
    *****************************************************************************
+   * \return An unordered map from Function names to the child Function pointers for 
+   * this Container.
+   *****************************************************************************
+   */
+  const std::unordered_map<std::string, std::unique_ptr<Function>>&
+  getChildFunctions() const;
+
+  /*!
+   *****************************************************************************
    * \return The full name of this Container.
    *****************************************************************************
    */
@@ -1191,16 +1200,18 @@ private:
   /*!
    *******************************************************************************
    * \brief Adds a group containing the indices of a collection to the calling 
-   * container and a subcontainer for each index
+   * container and optionally a subcontainer for each index
    * 
    * \param [in] indices The indices to add
    * \param [in] description The optional description of the subcontainers
+   * \param [in] add_containers Whether to add a subcontainer for each index
    * \tparam Key The type of the indices to add
    *******************************************************************************
    */
   template <typename Key>
   void addIndicesGroup(const std::vector<Key>& indices,
-                       const std::string& description = "");
+                       const std::string& description = "",
+                       const bool add_containers = false);
 
   /*!
    *****************************************************************************

@@ -41,6 +41,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
 - Inlet: Added a new `Writer` for generating JSON schemas which can be used by text editors
   for autocompletion
+- Inlet: SphinxWriter will now document the signature of function callbacks added to a schema
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -59,7 +60,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   more than just unit tests.
 - Inlet: Input file functions can now be of arbitrary signature subject to type and arity
   restrictions
-- Updated built-in TPL `fmt` to master branch snapshot, March 26, 2021.
 - Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
 - Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
@@ -74,7 +74,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Required collections no longer fail Inlet verification if they are empty in the input file
 - Inlet: `operator bool` for `Field` and `Container` has been replaced with more precise `isUserProvided`
   and `exists`, which also returns `true` if a default value was specified.
-- Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
+- Updated built-in TPL `fmt` to master branch snapshot, March 26, 2021.
+- Inlet: SphinxWriter will now print only one element schema per container instead of
+  printing the same schema for each element in the container
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
