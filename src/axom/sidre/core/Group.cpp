@@ -2181,28 +2181,8 @@ bool Group::importConduitTree(const conduit::Node& node, bool preserve_contents)
         }
         else
         {
-          // create view with buffer
-          Buffer* buff = getDataStore()->createBuffer();
-
-          conduit::index_t num_ele = cld_dtype.number_of_elements();
-          conduit::index_t ele_bytes = DataType::default_bytes(cld_dtype.id());
-
-          buff->allocate((TypeID)cld_dtype.id(), num_ele);
-          // copy the data in a way that matches
-          // to compact representation of the buffer
-          conduit::uint8* data_ptr = (conduit::uint8*)buff->getVoidPtr();
-          for(conduit::index_t i = 0; i < num_ele; i++)
-          {
-            memcpy(data_ptr, cld_node.element_ptr(i), ele_bytes);
-            data_ptr += ele_bytes;
-          }
-
           View* view = createView(cld_name);
-          view->attachBuffer(buff);
-          // it is important to not use the data type directly
-          // it could contain offsets that are no longer
-          // valid our new buffer
-          view->apply((TypeID)cld_dtype.id(), cld_dtype.number_of_elements());
+          view->importArrayNode(cld_node);
         }
       }
       else
