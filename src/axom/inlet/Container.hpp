@@ -1244,6 +1244,34 @@ private:
   template <typename Func>
   void forEachCollectionElement(Func&& func) const;
 
+  /*!
+   *****************************************************************************
+   * \brief Applies a provided function to nested elements of the calling table
+   * and stores the result in a range pointed to by an output iterator \a output
+   * 
+   * \pre The function \a func must accept two arguments of type Table& and
+   * const std::string&, respectively.  
+   * 
+   * This function will pass to the provided function the nested table
+   * as the first argument and the path of the nested element in the input file
+   * as the second argument, when applicable.
+   * 
+   * \param [out] output An iterator to the beginning of the output range
+   * \param [in] name The name to append to the path described above
+   * \param [in] func The function to apply to individual nested elements
+   * 
+   * \return Whether the calling container had any nested elements (or
+   * was a struct container)
+   * 
+   * \note This function can be thought of as a variant of std::transform that
+   * operates on nested elements instead of a provided input range
+   *****************************************************************************
+   */
+  template <typename OutputIt, typename Func>
+  bool transformFromNestedElements(OutputIt output,
+                                   const std::string& name,
+                                   Func&& func) const;
+
   std::string m_name;
   Reader& m_reader;
   // Inlet's Root Sidre Group
