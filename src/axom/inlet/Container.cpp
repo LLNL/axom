@@ -162,7 +162,7 @@ Container& Container::addStructCollection(const std::string& name,
     const auto result = m_reader.getIndices(fullName, indices);
     if(result == ReaderResult::Success)
     {
-      container.addIndicesGroup(indices, description);
+      container.addIndicesGroup(indices, description, true);
     }
     markRetrievalStatus(*container.m_sidreGroup, result);
     markAsStructCollection(*container.m_sidreGroup);
@@ -547,6 +547,36 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
   }
 }
 
+/*!
+ *****************************************************************************
+ * \brief Writes function signature information to the sidre Group associated
+ * with an inlet::Function
+ * 
+ * \param [in] ret_type The function's return type
+ * \param [in] arg_types The function's argument types
+ * \param [inout] group The group to add to
+ * 
+ * The structure of the function signature information is as follows:
+ * <group>
+ *  ├─• function_arguments <integer array>
+ *  └─• return_type <integer>
+ *****************************************************************************
+ */
+void addSignatureToGroup(const FunctionTag ret_type,
+                         const std::vector<FunctionTag>& arg_types,
+                         sidre::Group* group)
+{
+  group->createViewScalar("return_type", static_cast<int>(ret_type));
+  auto args_view = group->createViewAndAllocate("function_arguments",
+                                                sidre::INT_ID,
+                                                arg_types.size());
+  int* args_array = args_view->getArray();
+  for(const auto arg_type : arg_types)
+  {
+    *args_array++ = static_cast<int>(arg_type);
+  }
+}
+
 std::vector<VariantKey> collectionIndices(const Container& container,
                                           bool trimAbsolute)
 {
@@ -615,7 +645,8 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
 
 template <typename Key>
 void Container::addIndicesGroup(const std::vector<Key>& indices,
-                                const std::string& description)
+                                const std::string& description,
+                                const bool add_containers)
 {
   sidre::Group* indices_group =
     m_sidreGroup->createGroup(detail::COLLECTION_INDICES_NAME,
@@ -626,7 +657,10 @@ void Container::addIndicesGroup(const std::vector<Key>& indices,
   {
     const std::string string_idx =
       removeBeforeDelimiter(detail::indexToString(idx));
-    addContainer(string_idx, description);
+    if(add_containers)
+    {
+      addContainer(string_idx, description);
+    }
     std::string absolute = appendPrefix(m_name, detail::indexToString(idx));
     absolute = removeAllInstances(absolute, detail::COLLECTION_GROUP_NAME + "/");
     detail::addIndexViewToGroup(*indices_group, absolute);
@@ -682,7 +716,7 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
     // Copy the indices to the datastore to keep track of integer vs. string indices
     if(!indices.empty())
     {
-      container.addIndicesGroup(indices, description);
+      container.addIndicesGroup(indices, description, false);
     }
     return container;
   }
@@ -724,6 +758,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
       fmt::format("Failed to create Sidre group with name '{0}'", fullName));
+    detail::addSignatureToGroup(ret_type, arg_types, sidreGroup);
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
@@ -1076,5 +1111,11 @@ Container::getChildFields() const
   return m_fieldChildren;
 }
 
-}  // end namespace inlet
-}  // end namespace axom
+const std::unordered_map<std::string, std::unique_ptr<Function>>&
+Container::getChildFunctions() const
+{
+  return m_functionChildren;
+}
+
+}  // namespace inlet
+}  // namespace axom

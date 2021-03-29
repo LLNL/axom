@@ -552,6 +552,16 @@ public:
   }
 
   /*!
+   *****************************************************************************
+   * \brief Returns pointer to the Sidre Group class for this Function.
+   *
+   * Provides access to the Sidre Group class that holds all the stored
+   * information for this Function instance.
+   *****************************************************************************
+   */
+  const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
+
+  /*!
    *******************************************************************************
    * \brief Checks whether the function exists
    *******************************************************************************
