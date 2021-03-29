@@ -58,14 +58,17 @@ public:
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether documentation generation
    * is enabled. This also toggles the storing of documentation-specific information.
+   * \param [in] reconstruct Whether or not to attempt to reconstruct child Containers
+   * and Fields from the data in the sidre Group
    *****************************************************************************
    */
   Inlet(std::unique_ptr<Reader> reader,
         axom::sidre::Group* sidreRootGroup,
-        bool docEnabled = true)
+        bool docEnabled = true,
+        bool reconstruct = false)
     : m_reader(std::move(reader))
     , m_sidreRootGroup(sidreRootGroup)
-    , m_globalContainer("", "", *m_reader, m_sidreRootGroup, docEnabled)
+    , m_globalContainer("", "", *m_reader, m_sidreRootGroup, docEnabled, reconstruct)
     , m_docEnabled(docEnabled)
   { }
 

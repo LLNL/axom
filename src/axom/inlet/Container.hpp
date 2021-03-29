@@ -329,13 +329,16 @@ public:
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether or not documentation
    * generation is enabled for input feck this Container instance belongs to.
+   * \param [in] reconstruct Whether or not to attempt to reconstruct child Containers
+   * and Fields from the data in the sidre Group
    *****************************************************************************
    */
   Container(const std::string& name,
             const std::string& description,
             Reader& reader,
             axom::sidre::Group* sidreRootGroup,
-            bool docEnabled = true);
+            bool docEnabled = true,
+            bool reconstruct = false);
 
   // Containers must be move-only - delete the implicit shallow copy constructor
   Container(const Container&) = delete;

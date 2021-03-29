@@ -17,7 +17,8 @@ Container::Container(const std::string& name,
                      const std::string& description,
                      Reader& reader,
                      axom::sidre::Group* sidreRootGroup,
-                     bool docEnabled)
+                     bool docEnabled,
+                     bool reconstruct)
   : m_name(name)
   , m_reader(reader)
   , m_sidreRootGroup(sidreRootGroup)
@@ -43,35 +44,39 @@ Container::Container(const std::string& name,
     }
   }
 
-  for(auto idx = m_sidreGroup->getFirstValidGroupIndex();
-      sidre::indexIsValid(idx);
-      idx = m_sidreGroup->getNextValidGroupIndex(idx))
+  if(reconstruct)
   {
-    auto group = m_sidreGroup->getGroup(idx);
-    if(group->hasView("InletType"))
+    for(auto idx = m_sidreGroup->getFirstValidGroupIndex();
+        sidre::indexIsValid(idx);
+        idx = m_sidreGroup->getNextValidGroupIndex(idx))
     {
-      const std::string inletType = group->getView("InletType")->getString();
-      const std::string childName = appendPrefix(m_name, group->getName());
+      auto group = m_sidreGroup->getGroup(idx);
+      if(group->hasView("InletType"))
+      {
+        const std::string inletType = group->getView("InletType")->getString();
+        const std::string childName = appendPrefix(m_name, group->getName());
 
-      if(inletType == "Container")
-      {
-        m_containerChildren.emplace(
-          childName,
-          cpp11_compat::make_unique<Container>(childName,
-                                               "",
-                                               m_reader,
-                                               m_sidreRootGroup,
-                                               m_docEnabled));
-      }
-      else if(inletType == "Field")
-      {
-        // FIXME: We probably need to write the type to the datastore
-        m_fieldChildren.emplace(
-          childName,
-          cpp11_compat::make_unique<Field>(group,
-                                           m_sidreRootGroup,
-                                           sidre::DataTypeId::NO_TYPE_ID,
-                                           m_docEnabled));
+        if(inletType == "Container")
+        {
+          m_containerChildren.emplace(
+            childName,
+            cpp11_compat::make_unique<Container>(childName,
+                                                 "",
+                                                 m_reader,
+                                                 m_sidreRootGroup,
+                                                 m_docEnabled,
+                                                 true));
+        }
+        else if(inletType == "Field")
+        {
+          // FIXME: We probably need to write the type to the datastore
+          m_fieldChildren.emplace(
+            childName,
+            cpp11_compat::make_unique<Field>(group,
+                                             m_sidreRootGroup,
+                                             sidre::DataTypeId::NO_TYPE_ID,
+                                             m_docEnabled));
+        }
       }
     }
   }

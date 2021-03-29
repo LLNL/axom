@@ -27,7 +27,8 @@ using axom::sidre::DataStore;
 template <typename InletReader>
 Inlet createBasicInlet(DataStore* ds,
                        const std::string& luaString = {},
-                       bool enableDocs = true)
+                       bool enableDocs = true,
+                       bool reconstruct = true)
 {
   std::unique_ptr<InletReader> reader(new InletReader());
   if(!luaString.empty())
@@ -35,7 +36,7 @@ Inlet createBasicInlet(DataStore* ds,
     reader->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
   }
 
-  return Inlet(std::move(reader), ds->getRoot(), enableDocs);
+  return Inlet(std::move(reader), ds->getRoot(), enableDocs, reconstruct);
 }
 
 template <typename InletReader>
@@ -56,6 +57,9 @@ TYPED_TEST(inlet_restart, simple_scalars)
 
   // No input provided - the datastore should already contain all the data
   Inlet restartInlet = createBasicInlet<TypeParam>(&ds);
+
+  ASSERT_TRUE(restartInlet.contains("foo"));
+  ASSERT_TRUE(restartInlet.contains("bar"));
 
   bool value = false;
   // Check for existing fields
@@ -134,6 +138,8 @@ TYPED_TEST(inlet_restart, simple_struct)
   // No input provided - the datastore should already contain all the data
   Inlet restartInlet = createBasicInlet<TypeParam>(&ds);
 
+  ASSERT_TRUE(restartInlet.contains("foo"));
+
   Foo f = restartInlet["foo"].get<Foo>();
   EXPECT_TRUE(f.bar);
   EXPECT_FALSE(f.baz);
@@ -152,6 +158,8 @@ TYPED_TEST(inlet_restart, simple_struct_repeat_schema)
 
   // No input provided - the datastore should already contain all the data
   Inlet restartInlet = createBasicInlet<TypeParam>(&ds);
+
+  ASSERT_TRUE(restartInlet.contains("foo"));
 
   auto& restartFoo = restartInlet.addStruct("foo", "foo's description");
   restartFoo.addBool("bar", "bar's description");
