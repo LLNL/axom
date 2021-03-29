@@ -1657,7 +1657,7 @@ TEST(sidre_view, import_array_node)
 
   //Import Node holding int array
   std::vector<int> int_vec;
-  for (int i = 0; i < 10; ++i)
+  for(int i = 0; i < 10; ++i)
   {
     int_vec.push_back(i * i + 3);
   }
@@ -1675,16 +1675,16 @@ TEST(sidre_view, import_array_node)
 
   int* v_ints = v1->getData();
 
-  for (int i = 0; i < 10; ++i)
+  for(int i = 0; i < 10; ++i)
   {
     EXPECT_EQ(v_ints[i], i * i + 3);
   }
 
   //Import Node holding double array
   std::vector<double> dbl_vec;
-  for (int i = 0; i < 8; ++i)
+  for(int i = 0; i < 8; ++i)
   {
-    dbl_vec.push_back(static_cast<double>(i)/2.0 + 1.1);
+    dbl_vec.push_back(static_cast<double>(i) / 2.0 + 1.1);
   }
 
   conduit::Node n_dbls;
@@ -1700,9 +1700,9 @@ TEST(sidre_view, import_array_node)
 
   double* v_dbls = v2->getData();
 
-  for (int i = 0; i < 8; ++i)
+  for(int i = 0; i < 8; ++i)
   {
-    EXPECT_NEAR(v_dbls[i], static_cast<double>(i)/2.0 + 1.1, 1.0e-12);
+    EXPECT_NEAR(v_dbls[i], static_cast<double>(i) / 2.0 + 1.1, 1.0e-12);
   }
 
   //Attempt to import a non-array node, will not work.
@@ -1714,13 +1714,12 @@ TEST(sidre_view, import_array_node)
 
   EXPECT_TRUE(v3->isEmpty());
 
-  //Attempt to import into View that is already a string, will not work. 
+  //Attempt to import into View that is already a string, will not work.
   View* v4 = root->createView("v4");
   v4->setString("string_view");
 
   v4->importArrayNode(n_ints);
   EXPECT_TRUE(v4->isString());
-
 }
 
 #ifdef AXOM_USE_UMPIRE

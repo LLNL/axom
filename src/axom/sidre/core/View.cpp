@@ -1279,7 +1279,6 @@ void View::importFrom(conduit::Node& data_holder,
  */
 View* View::importArrayNode(const Node& array)
 {
-
   conduit::DataType array_dtype = array.dtype();
 
   if(array_dtype.is_number())
@@ -1331,7 +1330,6 @@ View* View::importArrayNode(const Node& array)
 
   return this;
 }
-
 
 /*
  *************************************************************************
