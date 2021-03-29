@@ -23,6 +23,26 @@ void Container::forEachCollectionElement(Func&& func) const
   }
 }
 
+template <typename OutputIt, typename Func>
+bool Container::transformFromNestedElements(OutputIt output,
+                                            const std::string& name,
+                                            Func&& func) const
+{
+  for(Container& container : m_nested_aggregates)
+  {
+    *output++ = func(container, {});
+  }
+
+  if(isStructCollection())
+  {
+    for(const auto& indexPath : detail::collectionIndicesWithPaths(*this, name))
+    {
+      *output++ = func(getContainer(indexPath.first), indexPath.second);
+    }
+  }
+  return isStructCollection() || !m_nested_aggregates.empty();
+}
+
 Container& Container::addContainer(const std::string& name,
                                    const std::string& description)
 {
@@ -64,19 +84,11 @@ Container& Container::addStruct(const std::string& name,
                                 const std::string& description)
 {
   auto& base_container = addContainer(name, description);
-  for(Container& sub_container : m_nested_aggregates)
-  {
-    base_container.m_nested_aggregates.push_back(
-      sub_container.addStruct(name, description));
-  }
-  if(isStructCollection())
-  {
-    for(const auto& index : detail::collectionIndices(*this))
-    {
-      base_container.m_nested_aggregates.push_back(
-        getContainer(detail::indexToString(index)).addStruct(name, description));
-    }
-  }
+  transformFromNestedElements(
+    std::back_inserter(base_container.m_nested_aggregates),
+    name,
+    [&name, &description](Container& subcontainer, const std::string&)
+      -> Container& { return subcontainer.addStruct(name, description); });
   return base_container;
 }
 
@@ -110,19 +122,17 @@ Container& Container::addStructCollection(const std::string& name,
 {
   auto& container =
     addContainer(appendPrefix(name, detail::COLLECTION_GROUP_NAME), description);
-  for(Container& sub_container : m_nested_aggregates)
-  {
-    container.m_nested_aggregates.push_back(
-      sub_container.addStructCollection<Key>(name, description));
-  }
+
+  transformFromNestedElements(
+    std::back_inserter(container.m_nested_aggregates),
+    name,
+    [&name, &description](Container& subcontainer,
+                          const std::string&) -> Container& {
+      return subcontainer.addStructCollection<Key>(name, description);
+    });
+
   if(isStructCollection())
   {
-    // Iterate over each element and forward the call to addPrimitiveArray
-    for(const auto& indexPath : detail::collectionIndicesWithPaths(*this, name))
-    {
-      container.m_nested_aggregates.push_back(
-        getContainer(indexPath.first).addStructCollection<Key>(name, description));
-    }
     markAsStructCollection(*container.m_sidreGroup);
   }
   else
@@ -133,7 +143,7 @@ Container& Container::addStructCollection(const std::string& name,
     const auto result = m_reader.getIndices(fullName, indices);
     if(result == ReaderResult::Success)
     {
-      container.addIndicesGroup(indices, description);
+      container.addIndicesGroup(indices, description, true);
     }
     markRetrievalStatus(*container.m_sidreGroup, result);
     markAsStructCollection(*container.m_sidreGroup);
@@ -252,27 +262,21 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
                                           T val,
                                           const std::string& pathOverride)
 {
-  if(isStructCollection() || !m_nested_aggregates.empty())
+  // If it has indices, we're adding a primitive field to an array
+  // of structs, so we need to iterate over the subcontainers
+  // corresponding to elements of the array
+  std::vector<std::reference_wrapper<VerifiableScalar>> fields;
+  const bool is_nested = transformFromNestedElements(
+    std::back_inserter(fields),
+    name,
+    [&name, &description, forArray, &val](
+      Container& subcontainer,
+      const std::string& path) -> VerifiableScalar& {
+      return subcontainer.addPrimitive<T>(name, description, forArray, val, path);
+    });
+
+  if(is_nested)
   {
-    // If it has indices, we're adding a primitive field to an array
-    // of structs, so we need to iterate over the subcontainers
-    // corresponding to elements of the array
-    std::vector<std::reference_wrapper<VerifiableScalar>> fields;
-    for(Container& container : m_nested_aggregates)
-    {
-      fields.push_back(
-        container.addPrimitive<T>(name, description, forArray, val));
-    }
-    if(isStructCollection())
-    {
-      for(const auto& indexPath : detail::collectionIndicesWithPaths(*this, name))
-      {
-        // Add a primitive to an array element (which is a struct)
-        fields.push_back(
-          getContainer(indexPath.first)
-            .addPrimitive<T>(name, description, forArray, val, indexPath.second));
-      }
-    }
     // Create an aggregate field so requirements can be collectively imposed
     // on all elements of the array
     m_aggregate_fields.emplace_back(std::move(fields));
@@ -524,6 +528,36 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
   }
 }
 
+/*!
+ *****************************************************************************
+ * \brief Writes function signature information to the sidre Group associated
+ * with an inlet::Function
+ * 
+ * \param [in] ret_type The function's return type
+ * \param [in] arg_types The function's argument types
+ * \param [inout] group The group to add to
+ * 
+ * The structure of the function signature information is as follows:
+ * <group>
+ *  ├─• function_arguments <integer array>
+ *  └─• return_type <integer>
+ *****************************************************************************
+ */
+void addSignatureToGroup(const FunctionTag ret_type,
+                         const std::vector<FunctionTag>& arg_types,
+                         sidre::Group* group)
+{
+  group->createViewScalar("return_type", static_cast<int>(ret_type));
+  auto args_view = group->createViewAndAllocate("function_arguments",
+                                                sidre::INT_ID,
+                                                arg_types.size());
+  int* args_array = args_view->getArray();
+  for(const auto arg_type : arg_types)
+  {
+    *args_array++ = static_cast<int>(arg_type);
+  }
+}
+
 std::vector<VariantKey> collectionIndices(const Container& container,
                                           bool trimAbsolute)
 {
@@ -591,7 +625,8 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
 
 template <typename Key>
 void Container::addIndicesGroup(const std::vector<Key>& indices,
-                                const std::string& description)
+                                const std::string& description,
+                                const bool add_containers)
 {
   sidre::Group* indices_group =
     m_sidreGroup->createGroup(detail::COLLECTION_INDICES_NAME,
@@ -602,7 +637,10 @@ void Container::addIndicesGroup(const std::vector<Key>& indices,
   {
     const std::string string_idx =
       removeBeforeDelimiter(detail::indexToString(idx));
-    addContainer(string_idx, description);
+    if(add_containers)
+    {
+      addContainer(string_idx, description);
+    }
     std::string absolute = appendPrefix(m_name, detail::indexToString(idx));
     absolute = removeAllInstances(absolute, detail::COLLECTION_GROUP_NAME + "/");
     detail::addIndexViewToGroup(*indices_group, absolute);
@@ -615,26 +653,19 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
                                                     const bool isDict,
                                                     const std::string& pathOverride)
 {
-  if(isStructCollection() || !m_nested_aggregates.empty())
-  {
-    // Adding an array of primitive field to an array of structs
-    std::vector<std::reference_wrapper<Verifiable>> containers;
-    for(Container& container : m_nested_aggregates)
-    {
-      containers.push_back(
-        container.addPrimitiveArray<T>(name, description, isDict));
-    }
-    if(isStructCollection())
-    {
-      // Iterate over each element and forward the call to addPrimitiveArray
-      for(const auto& indexPath : detail::collectionIndicesWithPaths(*this, name))
-      {
-        containers.push_back(
-          getContainer(indexPath.first)
-            .addPrimitiveArray<T>(name, description, isDict, indexPath.second));
-      }
-    }
+  // Adding an array of primitive field to an array of structs
+  std::vector<std::reference_wrapper<Verifiable>> containers;
+  const bool is_nested = transformFromNestedElements(
+    std::back_inserter(containers),
+    name,
+    [&name, &description, isDict](
+      Container& subcontainer,
+      const std::string& path) -> Verifiable<Container>& {
+      return subcontainer.addPrimitiveArray<T>(name, description, isDict, path);
+    });
 
+  if(is_nested)
+  {
     m_aggregate_containers.emplace_back(std::move(containers));
 
     // Remove when C++17 is available
@@ -665,7 +696,7 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
     // Copy the indices to the datastore to keep track of integer vs. string indices
     if(!indices.empty())
     {
-      container.addIndicesGroup(indices, description);
+      container.addIndicesGroup(indices, description, false);
     }
     return container;
   }
@@ -677,28 +708,21 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
                                              const std::string& description,
                                              const std::string& pathOverride)
 {
-  if(isStructCollection() || !m_nested_aggregates.empty())
-  {
-    // If it has indices, we're adding a primitive field to an array
-    // of structs, so we need to iterate over the subcontainers
-    // corresponding to elements of the array
-    std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
-    for(Container& container : m_nested_aggregates)
-    {
-      funcs.push_back(
-        container.addFunction(name, ret_type, arg_types, description));
-    }
-    if(isStructCollection())
-    {
-      for(const auto& indexPath : detail::collectionIndicesWithPaths(*this, name))
-      {
-        // Add a primitive to an array element (which is a struct)
-        funcs.push_back(
-          getContainer(indexPath.first)
-            .addFunction(name, ret_type, arg_types, description, indexPath.second));
-      }
-    }
+  // If it has indices, we're adding a primitive field to an array
+  // of structs, so we need to iterate over the subcontainers
+  // corresponding to elements of the array
+  std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
 
+  const bool is_nested = transformFromNestedElements(
+    std::back_inserter(funcs),
+    name,
+    [&name, &ret_type, &arg_types, &description](
+      Container& subcontainer,
+      const std::string& path) -> Verifiable<Function>& {
+      return subcontainer.addFunction(name, ret_type, arg_types, description, path);
+    });
+  if(is_nested)
+  {
     // Create an aggregate field so requirements can be collectively imposed
     // on all elements of the array
     m_aggregate_funcs.emplace_back(std::move(funcs));
@@ -714,6 +738,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
       fmt::format("Failed to create Sidre group with name '{0}'", fullName));
+    detail::addSignatureToGroup(ret_type, arg_types, sidreGroup);
     // If a pathOverride is specified, needed when Inlet-internal groups
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
@@ -1067,5 +1092,11 @@ Container::getChildFields() const
   return m_fieldChildren;
 }
 
-}  // end namespace inlet
-}  // end namespace axom
+const std::unordered_map<std::string, std::unique_ptr<Function>>&
+Container::getChildFunctions() const
+{
+  return m_functionChildren;
+}
+
+}  // namespace inlet
+}  // namespace axom
