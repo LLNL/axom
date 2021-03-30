@@ -850,6 +850,21 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Set the strictness of this Container.
+   *
+   * Set whether this Container is strict, or not - i.e., whether entries other
+   * than those added to the schema should be allowed.
+   * The default behavior is to not be strict.
+   *
+   * \param [in] isStrict Boolean value of whether Container is strict
+   *
+   * \return Reference to this instance of Container
+   *****************************************************************************
+   */
+  Container& strict(bool isStrict = true);
+
+  /*!
+   *****************************************************************************
    * \brief Registers the function object that will verify this Container's contents
    * during the verification stage.
    * 

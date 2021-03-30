@@ -680,6 +680,42 @@ void updateUnexpectedNames(const std::string& accessedName,
   }
 }
 
+bool checkStrictness(const sidre::Group* group,
+                     const std::unordered_set<std::string>& unexpectedNames)
+{
+  const std::string callerName = group->getPathName();
+  std::vector<std::string> callerTokens;
+  axom::utilities::string::split(callerTokens, callerName, '/');
+  callerTokens.erase(std::remove(callerTokens.begin(),
+                                 callerTokens.end(),
+                                 detail::COLLECTION_GROUP_NAME),
+                     callerTokens.end());
+  std::vector<std::string> unexpectedTokens;
+  bool unexpectedFound = false;
+  for(const auto& name : unexpectedNames)
+  {
+    unexpectedTokens.clear();
+    axom::utilities::string::split(unexpectedTokens, name, '/');
+    // If it's smaller it can't be a descendant
+    if(unexpectedTokens.size() >= callerTokens.size())
+    {
+      // If the beginning of the unexpected tokens sequence is equal to the tokens
+      // of the calling Container's name
+      if(std::equal(callerTokens.begin(),
+                    callerTokens.end(),
+                    unexpectedTokens.begin()))
+      {
+        unexpectedFound = true;
+        SLIC_WARNING(
+          fmt::format("[Inlet] Container '{0}' contained unexpected child: {1}",
+                      callerName,
+                      name));
+      }
+    }
+  }
+  return !unexpectedFound;
+}
+
 }  // end namespace detail
 
 template <typename Key>
@@ -867,7 +903,7 @@ Container& Container::required(bool isRequired)
 
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Container specific Sidre Datastore Group not set");
-  setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
+  setFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG, isRequired);
   return *this;
 }
 
@@ -887,7 +923,20 @@ bool Container::isRequired() const
 
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Container specific Sidre Datastore Group not set");
-  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
+  return checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG);
+}
+
+Container& Container::strict(bool isStrict)
+{
+  if(isStructCollection())
+  {
+    forEachCollectionElement(
+      [isStrict](Container& container) { container.strict(isStrict); });
+  }
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                  "[Inlet] Container specific Sidre Datastore Group not set");
+  setFlag(*m_sidreGroup, *m_sidreRootGroup, detail::STRICT_FLAG, isStrict);
+  return *this;
 }
 
 Container& Container::registerVerifier(std::function<bool(const Container&)> lambda)
@@ -925,6 +974,13 @@ bool Container::verify() const
     verified = false;
     SLIC_WARNING(
       fmt::format("[Inlet] Container failed verification: {0}", m_name));
+  }
+
+  // If the strict flag is set
+  if(checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::STRICT_FLAG))
+  {
+    verified =
+      verified && detail::checkStrictness(m_sidreGroup, m_unexpectedNames);
   }
 
   // Checking the child objects is not needed if the container wasn't defined in the input file
