@@ -17,12 +17,16 @@ void setWarningFlag(axom::sidre::Group* root)
   }
 }
 
-void setRequired(axom::sidre::Group& target, axom::sidre::Group& root, bool required)
+void setFlag(axom::sidre::Group& target,
+             axom::sidre::Group& root,
+             const std::string& flag,
+             bool value)
 {
-  if(target.hasView("required"))
+  if(target.hasView(flag))
   {
     const std::string msg =
-      fmt::format("[Inlet] Required value has already been defined for: {0}",
+      fmt::format("[Inlet] '{0}' value has already been defined for: {1}",
+                  flag,
                   target.getName());
 
     SLIC_WARNING(msg);
@@ -30,24 +34,26 @@ void setRequired(axom::sidre::Group& target, axom::sidre::Group& root, bool requ
   }
   else
   {
-    if(required)
+    if(value)
     {
-      target.createViewScalar("required", static_cast<int8>(1));
+      target.createViewScalar(flag, static_cast<int8>(1));
     }
     else
     {
-      target.createViewScalar("required", static_cast<int8>(0));
+      target.createViewScalar(flag, static_cast<int8>(0));
     }
   }
 }
 
-bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root)
+bool checkFlag(const axom::sidre::Group& target,
+               axom::sidre::Group& root,
+               const std::string& flag)
 {
-  if(!target.hasView("required"))
+  if(!target.hasView(flag))
   {
     return false;
   }
-  const axom::sidre::View* valueView = target.getView("required");
+  const axom::sidre::View* valueView = target.getView(flag);
   if(valueView == nullptr)
   {
     //TODO: is this possible after it says it has the view?
@@ -58,8 +64,9 @@ bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root)
   {
     const std::string msg = fmt::format(
       "[Inlet] Invalid integer value stored in "
-      " boolean value named {0}",
-      target.getName());
+      " boolean value named {0} for flag '{1}'",
+      target.getName(),
+      flag);
     SLIC_WARNING(msg);
     setWarningFlag(&root);
     return false;

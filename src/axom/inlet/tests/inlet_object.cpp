@@ -1051,6 +1051,23 @@ TYPED_TEST(inlet_object, basic_unused_names)
   EXPECT_EQ(expected_unused, inlet.unexpectedNames());
 }
 
+TYPED_TEST(inlet_object, basic_unused_names_strict)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; baz = false}, "
+    "        [1] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_container = inlet.addStructArray("foo").strict();
+
+  arr_container.addBool("bar", "bar's description");
+  // Baz is left unused
+
+  // Should fail verification, marked as strict
+  EXPECT_FALSE(inlet.verify());
+}
+
 TYPED_TEST(inlet_object, basic_unused_names_substring)
 {
   std::string testString =
@@ -1070,6 +1087,23 @@ TYPED_TEST(inlet_object, basic_unused_names_substring)
   // Check to make sure that a naive substring is not used and that checks are path-aware
   std::unordered_set<std::string> expected_unused {"foo/0/bar", "foo/1/bar"};
   EXPECT_EQ(expected_unused, inlet.unexpectedNames());
+}
+
+TYPED_TEST(inlet_object, basic_unused_names_substring_strict)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; barz = false}, "
+    "        [1] = { bar = false; barz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_container = inlet.addStructArray("foo").strict();
+
+  arr_container.addBool("barz", "barz's description");
+  // Baz is left unused
+
+  // Should fail verification, marked as strict
+  EXPECT_FALSE(inlet.verify());
 }
 
 template <typename InletReader>
