@@ -13,10 +13,9 @@
   #include <type_traits>  // for checking layout
 
   #include "conduit_blueprint.hpp"
+  #include "fmt/fmt.hpp"
 
   #include "MFEMSidreDataCollection.hpp"
-
-  #include "axom/core/utilities/StringUtilities.hpp"
 
 using mfem::Array;
 using mfem::GridFunction;
@@ -1329,7 +1328,8 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
     }
   }
 
-  sidre::Group* grp = f->createGroup(field_name);
+  // This will return the existing field (if external), otherwise, a new group
+  sidre::Group* grp = alloc_group(f, field_name);
 
   // A QField has the following schema:
   // <m_bp_grp>/fields/<field_name>/
@@ -1343,9 +1343,8 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
   // necessary.
   sidre::View* v = alloc_view(grp, "basis");
   // In the future, we should be able to have mfem::QuadratureFunction provide us this name.
-  const std::string basis_name = "QF_Default_" +
-    std::to_string(qf->GetSpace()->GetOrder()) + "_" +
-    std::to_string(qf->GetVDim());
+  const std::string basis_name =
+    fmt::format("QF_Default_{0}_{1}", qf->GetSpace()->GetOrder(), qf->GetVDim());
   v->setString(basis_name);
 
   // Set the topology of the QuadratureFunction.
@@ -1369,26 +1368,7 @@ void MFEMSidreDataCollection::DeregisterQField(const std::string& field_name)
 {
   // Deregister field_name from field_map.
   mfem::DataCollection::DeregisterQField(field_name);
-
-  sidre::Group* fields_grp = m_bp_grp->getGroup("fields/");
-  SLIC_WARNING_IF(fields_grp->hasGroup(field_name),
-                  "No field exists in blueprint with name " << field_name);
-
-  // Delete field_name from the blueprint group.
-
-  // Note: This will destroy all orphaned views or buffer classes under this
-  // group also.  If sidre owns this field data, the memory will be deleted
-  // unless it's referenced somewhere else in sidre.
-  fields_grp->destroyGroup(field_name);
-
-  // Delete field_name from the blueprint_index group.
-  if(myid == 0)
-  {
-    DeregisterFieldInBPIndex(field_name);
-  }
-
-  // Delete field_name from the named_buffers group, if allocated.
-  FreeNamedBuffer(field_name);
+  removeField(field_name);
 }
 
 void MFEMSidreDataCollection::RegisterAttributeField(const std::string& attr_name,
@@ -1515,11 +1495,8 @@ void MFEMSidreDataCollection::addIntegerAttributeField(const std::string& attr_n
   attr_grp->createViewString("topology", topo_name);
 }
 
-void MFEMSidreDataCollection::DeregisterField(const std::string& field_name)
+void MFEMSidreDataCollection::removeField(const std::string& field_name)
 {
-  // Deregister field_name from field_map.
-  DataCollection::DeregisterField(field_name);
-
   sidre::Group* fields_grp = m_bp_grp->getGroup("fields");
   SLIC_WARNING_IF(!fields_grp->hasGroup(field_name),
                   "No field exists in blueprint with name " << field_name);
@@ -1539,6 +1516,13 @@ void MFEMSidreDataCollection::DeregisterField(const std::string& field_name)
 
   // Delete field_name from the named_buffers group, if allocated.
   FreeNamedBuffer(field_name);
+}
+
+void MFEMSidreDataCollection::DeregisterField(const std::string& field_name)
+{
+  // Deregister field_name from field_map.
+  DataCollection::DeregisterField(field_name);
+  removeField(field_name);
 }
 
 // private method
@@ -2235,8 +2219,8 @@ void MFEMSidreDataCollection::reconstructFields()
     if(!field_grp->hasView("association"))
     {
       int vdim = 1;  // The default
-      bool is_gridfunc =
-        true;  // GridFunction vs QuadratureFunction - assume the former
+      // GridFunction vs QuadratureFunction
+      bool is_gridfunc = true;
       // FiniteElementCollection/QuadratureSpace construction
       const std::string basis_name = field_grp->getView("basis")->getString();
       // Check if it's a QuadratureFunction

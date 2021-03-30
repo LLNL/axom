@@ -578,6 +578,10 @@ private:
       attribute field named @a field_name */
   void addIntegerAttributeField(const std::string& field_name, bool is_bdry);
 
+  /** @brief A private helper function to remove a GridFunction or QuadratureFunction
+   *  @a field_name from the blueprint and index groups */
+  void removeField(const std::string& field_name);
+
   /// Sets up the four main mesh blueprint groups.
   /**
    * \param hasBP Indicates whether the blueprint has already been set up.
