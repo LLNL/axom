@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "axom/inlet/Function.hpp"
+#include "axom/inlet/VariantKey.hpp"
 
 namespace axom
 {
@@ -88,10 +89,10 @@ public:
    * \param [in] id The identifier to the bool that will be retrieved
    * \param [out] value The value of the bool that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the file
+   * \return The status of the retrieval, \see ReaderResult
    *****************************************************************************
    */
-  virtual bool getBool(const std::string& id, bool& value) = 0;
+  virtual ReaderResult getBool(const std::string& id, bool& value) = 0;
 
   /*!
    *****************************************************************************
@@ -103,10 +104,10 @@ public:
    * \param [in]  id    The identifier to the double that will be retrieved
    * \param [out] value The value of the double that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the file
+   * \return The status of the retrieval, \see ReaderResult
    *****************************************************************************
    */
-  virtual bool getDouble(const std::string& id, double& value) = 0;
+  virtual ReaderResult getDouble(const std::string& id, double& value) = 0;
 
   /*!
    *****************************************************************************
@@ -118,10 +119,10 @@ public:
    * \param [in]  id    The identifier to the int that will be retrieved
    * \param [out] value The value of the int that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the file
+   * \return The status of the retrieval, \see ReaderResult
    *****************************************************************************
    */
-  virtual bool getInt(const std::string& id, int& value) = 0;
+  virtual ReaderResult getInt(const std::string& id, int& value) = 0;
 
   /*!
    *****************************************************************************
@@ -133,10 +134,10 @@ public:
    * \param [in]  id    The identifier to the string that will be retrieved
    * \param [out] value The value of the string that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the file
+   * \return The status of the retrieval, \see ReaderResult
    *****************************************************************************
    */
-  virtual bool getString(const std::string& id, std::string& value) = 0;
+  virtual ReaderResult getString(const std::string& id, std::string& value) = 0;
 
   /*!
    *****************************************************************************
@@ -148,14 +149,14 @@ public:
    * \param [in]  id    The identifier to the string that will be retrieved
    * \param [out] map The values of the ints that were retrieved
    *
-   * \return true if the array was able to be retrieved from the file
+   * \return The status of the retrieval, \see ReaderResult
    *****************************************************************************
    */
-  virtual bool getIntMap(const std::string& id,
-                         std::unordered_map<int, int>& values) = 0;
+  virtual ReaderResult getIntMap(const std::string& id,
+                                 std::unordered_map<int, int>& values) = 0;
   /// \overload
-  virtual bool getIntMap(const std::string& id,
-                         std::unordered_map<std::string, int>& values) = 0;
+  virtual ReaderResult getIntMap(const std::string& id,
+                                 std::unordered_map<VariantKey, int>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -167,14 +168,14 @@ public:
    * \param [in]  id    The identifier to the string that will be retrieved
    * \param [out] map The values of the bools that were retrieved
    *
-   * \return true if the array was able to be retrieved from the file
+   * \return The status of the retrieval, \see ReaderResult
    *****************************************************************************
    */
-  virtual bool getBoolMap(const std::string& id,
-                          std::unordered_map<int, bool>& values) = 0;
+  virtual ReaderResult getBoolMap(const std::string& id,
+                                  std::unordered_map<int, bool>& values) = 0;
   /// \overload
-  virtual bool getBoolMap(const std::string& id,
-                          std::unordered_map<std::string, bool>& values) = 0;
+  virtual ReaderResult getBoolMap(const std::string& id,
+                                  std::unordered_map<VariantKey, bool>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -186,14 +187,15 @@ public:
    * \param [in]  id    The identifier to the string that will be retrieved
    * \param [out] map The values of the doubles that were retrieved
    *
-   * \return true if the array was able to be retrieved from the file
+   * \return The status of the retrieval, \see ReaderResult
    *****************************************************************************
    */
-  virtual bool getDoubleMap(const std::string& id,
-                            std::unordered_map<int, double>& values) = 0;
+  virtual ReaderResult getDoubleMap(const std::string& id,
+                                    std::unordered_map<int, double>& values) = 0;
   /// \overload
-  virtual bool getDoubleMap(const std::string& id,
-                            std::unordered_map<std::string, double>& values) = 0;
+  virtual ReaderResult getDoubleMap(
+    const std::string& id,
+    std::unordered_map<VariantKey, double>& values) = 0;
 
   /*!
    *****************************************************************************
@@ -205,29 +207,31 @@ public:
    * \param [in]  id    The identifier to the string that will be retrieved
    * \param [out] map The values of the strings that were retrieved
    *
-   * \return true if the array was able to be retrieved from the file
+   * \return The status of the retrieval, \see ReaderResult
    *****************************************************************************
    */
-  virtual bool getStringMap(const std::string& id,
-                            std::unordered_map<int, std::string>& values) = 0;
+  virtual ReaderResult getStringMap(const std::string& id,
+                                    std::unordered_map<int, std::string>& values) = 0;
   /// \overload
-  virtual bool getStringMap(const std::string& id,
-                            std::unordered_map<std::string, std::string>& values) = 0;
+  virtual ReaderResult getStringMap(
+    const std::string& id,
+    std::unordered_map<VariantKey, std::string>& values) = 0;
 
   /*!
    *****************************************************************************
-   * \brief Get the list of indices for an container
+   * \brief Get the list of indices for a collection
    *
-   * \param [in]  id    The identifier to the container that will be retrieved
+   * \param [in]  id    The identifier to the collection that will be retrieved
    * \param [out] indices The values of the indices that were retrieved
    *
-   * \return true if the indices were able to be retrieved from the file
+   * \return The status of the retrieval, \see ReaderResult
    *****************************************************************************
    */
-  virtual bool getIndices(const std::string& id, std::vector<int>& indices) = 0;
+  virtual ReaderResult getIndices(const std::string& id,
+                                  std::vector<int>& indices) = 0;
   /// \overload
-  virtual bool getIndices(const std::string& id,
-                          std::vector<std::string>& indices) = 0;
+  virtual ReaderResult getIndices(const std::string& id,
+                                  std::vector<VariantKey>& indices) = 0;
 
   /*!
    *****************************************************************************
@@ -241,8 +245,8 @@ public:
    *****************************************************************************
    */
   virtual FunctionVariant getFunction(const std::string& id,
-                                      const FunctionType ret_type,
-                                      const std::vector<FunctionType>& arg_types) = 0;
+                                      const FunctionTag ret_type,
+                                      const std::vector<FunctionTag>& arg_types) = 0;
 };
 
 }  // end namespace inlet

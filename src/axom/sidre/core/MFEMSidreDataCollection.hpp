@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -165,13 +165,10 @@ namespace sidre
 
     @note QuadratureFunction%s (q-fields) are not supported.
 
-    @note MFEMSidreDataCollection does not manage the FiniteElementSpace%s and
-    FiniteElementCollection%s associated with registered GridFunction%s.
-    Therefore, field registration is left to the user of MFEMSidreDataCollection
-       and
-    there are no methods that automatically register GridFunction%s using just
-    the content of the Sidre DataStore. Such capabilities can be implemented in
-    a derived class, adding any desired object management routines.
+    @note MFEMSidreDataCollection will attempt to reconstruct meshes and fields
+    on a restart, and will automatically register them.  This functionality is
+    experimental and only applies to meshes and fields written to a file by an
+    instance of this class.
 
     @warning This class is still _experimental_, meaning that in future
     releases, it may not be backward compatible, and the output files generated
@@ -259,17 +256,18 @@ public:
                      const std::string& buffer_name,
                      IndexType offset);
 
-   /// Register a mfem::QuadratureFunction in the Sidre DataStore.
-   /** This method is a shortcut for the call
+  /// Register a mfem::QuadratureFunction in the Sidre DataStore.
+  /** This method is a shortcut for the call
        `RegisterQField(field_name, qf, field_name, 0)`.
     */
-   virtual void RegisterQField(const std::string &field_name, mfem::QuadratureFunction *qf)
-   {
-      RegisterQField(field_name, qf, field_name, 0);
-   }
+  virtual void RegisterQField(const std::string& field_name,
+                              mfem::QuadratureFunction* qf)
+  {
+    RegisterQField(field_name, qf, field_name, 0);
+  }
 
-   /// Register a mfem::QuadratureFunction in the Sidre DataStore.
-   /** The registration procedure is as follows:
+  /// Register a mfem::QuadratureFunction in the Sidre DataStore.
+  /** The registration procedure is as follows:
        - if (@a qf's data is NULL), error out since this means there's no quadrature
          space associated with it;
        - else, if (DataStore has a named buffer @a buffer_name), replace @a qf's
@@ -284,18 +282,19 @@ public:
        @note If the QuadratureFunction pointer @a qf or it's QuadratureSpace
        pointers are NULL, the method does nothing.
     */
-   void RegisterQField(const std::string &field_name, mfem::QuadratureFunction *gf,
-                      const std::string &buffer_name,
+  void RegisterQField(const std::string& field_name,
+                      mfem::QuadratureFunction* gf,
+                      const std::string& buffer_name,
                       axom::sidre::IndexType offset);
-   
-   /// Returns the QuadratureSpace order useful for reconstructing a QuadratureFunction
-   int GetQFieldOrder(const std::string &field_name);
 
-   /// Returns the QuadratureSpace VDim useful for reconstructing a QuadratureFunction
-   int GetQFieldVDim(const std::string &field_name);
+  /// Returns the QuadratureSpace order useful for reconstructing a QuadratureFunction
+  int GetQFieldOrder(const std::string& field_name);
 
-   /// Returns a pointer to the raw data useful for reconstructing a QuadratureFunction
-   double* GetQFieldData(const std::string &field_name);
+  /// Returns the QuadratureSpace VDim useful for reconstructing a QuadratureFunction
+  int GetQFieldVDim(const std::string& field_name);
+
+  /// Returns a pointer to the raw data useful for reconstructing a QuadratureFunction
+  double* GetQFieldData(const std::string& field_name);
 
   /// Registers an attribute field in the Sidre DataStore
   /** The registration process is similar to that of RegisterField()
@@ -340,11 +339,10 @@ public:
       deleting it from the named_buffers group, if allocated. */
   virtual void DeregisterField(const std::string& field_name);
 
-
-   /// De-register @a field_name from the MFEMSidreDataCollection.
-   /** The field is removed from the #qfield_map and the DataStore, including
+  /// De-register @a field_name from the MFEMSidreDataCollection.
+  /** The field is removed from the #qfield_map and the DataStore, including
        deleting it from the named_buffers group, if allocated. */
-   virtual void DeregisterQField(const std::string& field_name);
+  virtual void DeregisterQField(const std::string& field_name);
 
   /// Delete all owned data.
   virtual ~MFEMSidreDataCollection();
@@ -386,7 +384,7 @@ public:
   void Save(const std::string& filename, const std::string& protocol);
 
   /// Load the Sidre DataStore from file.
-  /** No mesh or fields are read from the loaded DataStore.
+  /** The mesh and fields will be read from the loaded datastore
 
       If the data collection created the datastore, it knows the layout of
       where the domain and global groups are, and can restore them after the
@@ -447,10 +445,21 @@ public:
                          IndexType sz,
                          TypeID type = DOUBLE_ID);
 
-  /// Deallocate the named buffer @a buffer_name.
+  /// Deallocate the named buffer @a buffer_name, if allocated.
   void FreeNamedBuffer(const std::string& buffer_name)
   {
-    named_buffers_grp()->destroyViewAndData(buffer_name);
+    if(named_buffers_grp()->hasView(buffer_name))
+    {
+      named_buffers_grp()->destroyViewAndData(buffer_name);
+    }
+  }
+
+  /** @brief Updates the DataCollection's mesh and registered fields
+      with the values from the data store. */
+  void UpdateMeshAndFieldsFromDS()
+  {
+    reconstructMesh();
+    reconstructFields();
   }
 
   /// Verifies that the contents of the mesh blueprint data is valid.
@@ -501,15 +510,25 @@ private:
   // This is stored for convenience.
   Group* m_named_bufs_grp;
 
+  // Used to retain ownership of components of reconstructed Meshes and GridFuncs
+  // Instead of using flags to keep track of ownership between this class
+  // and the mfem::DataCollection subobject, always have the subobject
+  // retain a non-owning pointer and manage memory via unique_ptr in
+  // this class for consistency
+  std::unique_ptr<mfem::Mesh> m_owned_mesh;
+  std::vector<std::unique_ptr<mfem::FiniteElementCollection>> m_fecolls;
+  std::vector<std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
+  std::vector<std::unique_ptr<mfem::GridFunction>> m_owned_gridfuncs;
+
   // Private helper functions
 
   void RegisterFieldInBPIndex(const std::string& field_name,
                               mfem::GridFunction* gf);
   void DeregisterFieldInBPIndex(const std::string& field_name);
 
-   void RegisterQFieldInBPIndex(const std::string& field_name,
-                               mfem::QuadratureFunction *qf);
-   void DeregisterQFieldInBPIndex(const std::string & field_name);
+  void RegisterQFieldInBPIndex(const std::string& field_name,
+                               mfem::QuadratureFunction* qf);
+  void DeregisterQFieldInBPIndex(const std::string& field_name);
 
   void RegisterAttributeFieldInBPIndex(const std::string& attr_name);
   void DeregisterAttributeFieldInBPIndex(const std::string& attr_name);
@@ -517,6 +536,19 @@ private:
   /** @brief Return a string with the conduit blueprint name for the given
       Element::Type. */
   std::string getElementName(mfem::Element::Type elementEnum);
+
+  /** @brief Return an mfem::Geometry::Type for the given
+      string with the conduit blueprint name. */
+  // Why is there mfem::Element::Type and mfem::Geometry::Type? They look the same
+  mfem::Geometry::Type getElementTypeFromName(const std::string& name);
+
+  // Reconstructs a mesh using the current contents of the datastore
+  // Used as part of Load()
+  void reconstructMesh();
+
+  // Reconstructs all non-mesh-related fields using the current contents
+  // of the datastore, used as part of Load()
+  void reconstructFields();
 
   /**
    * \brief A private helper function to set up the views associated with the
@@ -546,7 +578,7 @@ private:
                                   const std::string& buffer_name,
                                   IndexType offset);
 
-   /**
+  /**
     * \brief A private helper function to set up the views associated with the
        data of a quadrature function in the blueprint style.
     * \pre qf is not null
@@ -555,10 +587,10 @@ private:
     *      where the data was allocated by this data collection
     *      and where the quadraturefunction data is external to Sidre
     */
-   void addQuadratureFunction(const std::string& field_name,
-                              mfem::QuadratureFunction* qf,
-                              const std::string &buffer_name,
-                              axom::sidre::IndexType offset);
+  void addQuadratureFunction(const std::string& field_name,
+                             mfem::QuadratureFunction* qf,
+                             const std::string& buffer_name,
+                             axom::sidre::IndexType offset);
 
   /** @brief A private helper function to set up the Views associated with
       attribute field named @a field_name */
@@ -603,6 +635,13 @@ private:
 
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();
+
+  // The names for the mesh and boundary topologies in the blueprint group,
+  // and the suffix used to store their attributes (as fields)
+  static const std::string s_mesh_topology_name;
+  static const std::string s_boundary_topology_name;
+  static const std::string s_attribute_suffix;
+  static const std::string s_coordset_name;
 };
 
 } /* namespace sidre */

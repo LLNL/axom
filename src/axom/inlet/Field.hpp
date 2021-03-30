@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,6 +15,7 @@
 #define INLET_FIELD_HPP
 
 #include "axom/sidre.hpp"
+#include "axom/inlet/VariantKey.hpp"
 #include "axom/inlet/VerifiableScalar.hpp"
 
 #include <memory>
@@ -27,33 +28,13 @@ namespace inlet
 {
 /*!
  *******************************************************************************
- * \enum InletType
- *
- * \brief Enumeration of basic types for things in inlet
- *******************************************************************************
- */
-enum class InletType
-{
-  Nothing,
-  Bool,
-  String,
-  Integer,
-  // TODO: Unsigned integer
-  Double,
-  Object,
-  Container,
-  Function
-};
-
-/*!
- *******************************************************************************
  * \class Field
  *
  * \brief Provides functions to help define how individual field variables in an
  * input file are expected to behave.  It also holds the Sidre Group to 
  * the individual field.
  *
- * \see Inlet Table
+ * \see Inlet Container
  *******************************************************************************
  */
 class Field : public VerifiableScalar
@@ -96,7 +77,7 @@ public:
    * \return Pointer to the Sidre Group class for this Field
    *****************************************************************************
    */
-  axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
+  const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
 
   /*!
    *****************************************************************************
@@ -333,10 +314,18 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns whether an actual value is stored
+   * \brief Returns whether a value for the Field exists, i.e., if a value 
+   * was provided in the input file or if a default was provided
    *****************************************************************************
    */
-  explicit operator bool() const { return m_sidreGroup->hasView("value"); }
+  bool exists() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether a value was provided in the input file
+   *****************************************************************************
+   */
+  bool isUserProvided() const;
 
 private:
   /*!

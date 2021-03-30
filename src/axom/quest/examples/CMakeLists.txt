@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -49,13 +49,13 @@ set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
     if (ENABLE_MPI)
-        blt_add_test(
+        axom_add_test(
             NAME quest_inout_interface_mpi_test
             COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
             NUM_MPI_TASKS 2
             )
     else()
-        blt_add_test(
+        axom_add_test(
             NAME quest_inout_interface_test
             COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
             )
@@ -80,30 +80,33 @@ if (ENABLE_FORTRAN)
         FOLDER      axom/quest/examples
         )
 
-    # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly. 
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-        set_target_properties( quest_signed_distance_interface_F_ex
-                               PROPERTIES LINKER_LANGUAGE Fortran)
+    # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
+    if (NOT ENABLE_CUDA)
+        # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly.
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+            set_target_properties( quest_signed_distance_interface_F_ex
+                                   PROPERTIES LINKER_LANGUAGE Fortran)
 
-        set_target_properties(quest_inout_interface_F_ex
-                              PROPERTIES LINKER_LANGUAGE Fortran)
-    else()
-        set_target_properties( quest_signed_distance_interface_F_ex
-                               PROPERTIES LINKER_LANGUAGE CXX)
+            set_target_properties(quest_inout_interface_F_ex
+                                  PROPERTIES LINKER_LANGUAGE Fortran)
+        else()
+            set_target_properties( quest_signed_distance_interface_F_ex
+                                   PROPERTIES LINKER_LANGUAGE CXX)
 
-        set_target_properties(quest_inout_interface_F_ex
-                              PROPERTIES LINKER_LANGUAGE CXX)
+            set_target_properties(quest_inout_interface_F_ex
+                                  PROPERTIES LINKER_LANGUAGE CXX)
+        endif()
     endif()
 
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         if (ENABLE_MPI)
-            blt_add_test(
+            axom_add_test(
                 NAME quest_inout_interface_mpi_F_test
                 COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
                 NUM_MPI_TASKS 2
                 )
         else()
-            blt_add_test(
+            axom_add_test(
                 NAME quest_inout_interface_F_test
                 COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
                 )

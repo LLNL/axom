@@ -1,7 +1,7 @@
 #!/bin/sh
 "exec" "python" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -35,7 +35,7 @@ import sys
 
 from os.path import join as pjoin
 
-from llnl_lc_build_tools import sexe, get_timestamp, get_shared_libs_dir
+from llnl_lc_build_tools import *
 
 
 def unique(lst):
@@ -50,15 +50,9 @@ def lc_tpl_root_dirs():
     Returns list of root dirs Axom have used for tpl installs on LC
     """
     root_dirs = []
-    for sys_type in ["blueos_3_ppc64le_ib_p9", "blueos_3_ppc64le_ib", "toss_3_x86_64_ib"]:
+    for sys_type in get_supported_sys_types():
         libs_dir = pjoin(get_shared_libs_dir(), sys_type)
-        root_dirs.append(root_dir)
-
-        devtools_dir = pjoin(get_shared_devtool_dir(), sys_type)
-        root_dirs.append(devtools_dir)
-
-    # Add legacy dir until we have moved fully to new directories
-    root_dirs.append("/usr/WS1/axom/thirdparty_libs/builds")
+        root_dirs.append(libs_dir)
 
     return root_dirs    
 
@@ -72,10 +66,10 @@ def clone_axom():
         shutil.rmdir(tmp_dir)
     os.mkdir(tmp_dir)
     os.chdir(tmp_dir)
-    print "[cloning axom into %s]" % pjoin(tmp_dir,"axom")
-    res = sexe("git clone git@github.com:LLNL/axom.git",echo=True)
+    print("[cloning axom into {0}]".format(pjoin(tmp_dir,"axom")))
+    res = sexe("git clone https://github.com/LLNL/axom.git",echo=True)
     if res != 0:
-        print "[ERROR: clone of axom repo failed]"
+        print("[ERROR: clone of axom repo failed]")
         sys.exit(res)
     os.chdir(cwd)
     return tmp_dir
@@ -101,7 +95,7 @@ def find_tpl_dirs_in_host_configs_for_all_branches():
     """
     res = []
     for branch in list_git_branches():
-        print "\n[checking host configs in branch %s]" % branch
+        print("\n[checking host configs in branch {0}]".format(branch))
         sexe("git checkout %s" % branch,echo=True)
         for tpl_dir in find_tpl_dirs_in_host_configs():
             res.append(tpl_dir)
@@ -120,7 +114,7 @@ def find_tpl_dirs_in_host_configs():
             for p in prefixes:
                if p in l:
                    ent = l[l.find(p):]
-                   ent = ent[:ent.find("spack")]
+                   ent = ent[:ent.find("\" CACHE")]
                    ent = os.path.abspath(ent)
                    res.append(ent)
     return unique(res)
@@ -155,8 +149,8 @@ def check_installed_tpl_dirs():
     found (or active, unused) b/c host-configs reference dirs
     across the center (ex: cz + rz)
     """
-    res = {"referenced":[],
-           "found":[],
+    res = {"referenced": [],
+           "found": [],
            "active": [], 
            "unused": []}
 
@@ -170,14 +164,25 @@ def check_installed_tpl_dirs():
     res["referenced"].extend(refed_dirs)
 
     os.chdir(cwd)
-    print "[cleaning up %s]" % tmp_dir
+    print("[cleaning up {0}]]".format(tmp_dir))
     shutil.rmtree(tmp_dir)
 
     for l in res["found"]:
-        if not l in res["referenced"]:
+        found = False
+        for referenced in res["referenced"]:
+            if referenced.startswith(l):
+                found = True
+
+        if not found:
            res["unused"].append(l)
         else:
            res["active"].append(l)
+
+    res["referenced"].sort()
+    res["found"].sort()
+    res["active"].sort()
+    res["unused"].sort()
+
     return res
 
 
@@ -186,12 +191,12 @@ def main():
     r = check_installed_tpl_dirs()
     rjson= json.dumps(r,indent=2)
     open(summary_file,"w").write(rjson)
-    print rjson
-    print ""
-    print "[# of referenced %d ]" % len(r["referenced"])
-    print "[# of found %d ]" % len(r["found"])
-    print "[# of active %d ]" % len(r["active"])
-    print "[# of unused %d ]" % len(r["unused"])
+    print(rjson)
+    print("")
+    print("[# of referenced {0} ]".format(len(r["referenced"])))
+    print("[# of found {0} ]".format(len(r["found"])))
+    print("[# of active {0} ]".format(len(r["active"])))
+    print("[# of unused {0} ]".format(len(r["unused"])))
 
 
 if __name__ == "__main__":

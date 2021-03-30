@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -419,7 +419,7 @@ int main(int argc, char* argv[])
 #endif
 
   // create & initialize test logger, finalized when exiting main scope
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
   //axom::slic::debug::checksAreErrors = true;
 
   result = RUN_ALL_TESTS();

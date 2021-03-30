@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,9 +21,9 @@ int main()
   axom::inlet::Inlet inlet(std::move(lr), ds.getRoot());
 
   // Register the verifier, which will verify the array values
-  auto& vals = inlet.getGlobalTable().addStringArray("values");
-  vals.registerVerifier([](const axom::inlet::Table& table) -> bool {
-    auto map = table.get<std::unordered_map<int, std::string>>();
+  auto& vals = inlet.getGlobalContainer().addStringArray("values");
+  vals.registerVerifier([](const axom::inlet::Container& container) -> bool {
+    auto map = container.get<std::unordered_map<int, std::string>>();
     bool startFound = false;
     bool stopFound = false;
     for(auto p : map)

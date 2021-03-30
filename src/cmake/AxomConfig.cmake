@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -76,7 +76,7 @@ if(ENABLE_FORTRAN)
 
 endif(ENABLE_FORTRAN)
 
-configure_file(
+axom_configure_file(
     ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
     ${CMAKE_BINARY_DIR}/include/axom/config.hpp
 )

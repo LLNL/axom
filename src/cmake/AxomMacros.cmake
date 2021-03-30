@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -113,6 +113,46 @@ macro(axom_add_component)
     unset(COMPONENT_NAME_CAPITALIZED)
     unset(COMPONENT_NAME_LOWERED)
 endmacro(axom_add_component)
+
+
+##------------------------------------------------------------------------------
+## axom_add_test(NAME            [name]
+##               COMMAND         [command] 
+##               NUM_MPI_TASKS   [n]
+##               NUM_OMP_THREADS [n]
+##               CONFIGURATIONS  [config1 [config2...]])
+##
+## Wrapper around blt_add_test() that handles functionality that Axom applies to all
+## tests.
+##------------------------------------------------------------------------------
+macro(axom_add_test)
+
+    set(options )
+    set(singleValueArgs NAME NUM_MPI_TASKS NUM_OMP_THREADS)
+    set(multiValueArgs COMMAND CONFIGURATIONS)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+
+    blt_add_test(NAME            ${arg_NAME}
+                 COMMAND         ${arg_COMMAND}
+                 NUM_MPI_TASKS   ${arg_NUM_MPI_TASKS}
+                 NUM_OMP_THREADS ${arg_NUM_OMP_THREADS}
+                 CONFIGURATIONS  ${arg_CONFIGURATIONS} )
+
+    ###########################################################################
+    # Newer versions of OpenMPI require OMPI_MCA_rmaps_base_oversubscribe=1
+    # to run with more tasks than actual cores
+    # Since this is an OpenMPI specific env var, it shouldn't interfere
+    # with other mpi implementations.
+    ###########################################################################
+    set_property(TEST ${arg_NAME}
+                 APPEND
+                 PROPERTY ENVIRONMENT  "OMPI_MCA_rmaps_base_oversubscribe=1")
+
+endmacro(axom_add_test)
 
 
 ##------------------------------------------------------------------------------
@@ -298,18 +338,19 @@ macro(axom_write_unified_header)
     string(TOUPPER ${arg_NAME} _ucname)
     string(TOLOWER ${arg_NAME} _lcname)
     set(_header ${CMAKE_BINARY_DIR}/include/axom/${_lcname}.hpp)
+    set(_tmp_header ${_header}.tmp)
 
-    file(WRITE ${_header} "\/\/ Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+    file(WRITE ${_tmp_header} "\/\/ Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 \/\/ other Axom Project Developers. See the top-level COPYRIGHT file for details.
 \/\/
 \/\/ SPDX-License-Identifier: (BSD-3-Clause)
 \n
 ")
 
-    file(APPEND ${_header} "#ifndef AXOM_UNIFIED_${_ucname}_HPP\n")
-    file(APPEND ${_header} "#define AXOM_UNIFIED_${_ucname}_HPP\n\n")
+    file(APPEND ${_tmp_header} "#ifndef AXOM_UNIFIED_${_ucname}_HPP\n")
+    file(APPEND ${_tmp_header} "#define AXOM_UNIFIED_${_ucname}_HPP\n\n")
 
-    file(APPEND ${_header} "#include \"axom\/config.hpp\"\n\n")
+    file(APPEND ${_tmp_header} "#include \"axom\/config.hpp\"\n\n")
 
     foreach(_file ${arg_HEADERS})
         set(_headerPath "axom\/${_lcname}\/${_file}")
@@ -319,13 +360,31 @@ macro(axom_write_unified_header)
         elseif(${_headerPath} MATCHES "(\/detail\/)|(\/internal\/)")
             continue()
         else()
-            file(APPEND ${_header} "#include \"${_headerPath}\"\n")
+            file(APPEND ${_tmp_header} "#include \"${_headerPath}\"\n")
         endif()
     endforeach()
 
-    file(APPEND ${_header} "\n#endif // AXOM_UNIFIED_${_ucname}_HPP\n")
+    file(APPEND ${_tmp_header} "\n#endif // AXOM_UNIFIED_${_ucname}_HPP\n")
+
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_tmp_header} ${_header})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${_tmp_header})
 
     install(FILES       ${_header}
             DESTINATION include/axom)
 
 endmacro(axom_write_unified_header)
+
+##------------------------------------------------------------------------------
+## axom_configure_file
+##
+## This macro is a thin wrapper over the builtin configure_file command.
+## It has the same arguments/options as configure_file but introduces an
+## intermediate file that is only copied to the target file if the target differs
+## from the intermediate.
+##------------------------------------------------------------------------------
+macro(axom_configure_file _source _target)
+    set(_tmp_target ${_target}.tmp)
+    configure_file(${_source} ${_tmp_target} ${ARGN})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_tmp_target} ${_target})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${_tmp_target})
+endmacro(axom_configure_file)

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,14 +41,14 @@ blt_add_executable(
 
 if(AXOM_ENABLE_TESTS)
     if(ENABLE_MPI)
-        blt_add_test(NAME        slam_lulesh
-                     COMMAND     slam_lulesh_ex
-                     NUM_MPI_TASKS   8
-                     NUM_OMP_THREADS 4 )
+        axom_add_test(NAME        slam_lulesh
+                      COMMAND     slam_lulesh_ex
+                      NUM_MPI_TASKS   8
+                      NUM_OMP_THREADS 4 )
     else()
-        blt_add_test(NAME        slam_lulesh
-                     COMMAND     slam_lulesh_ex
-                     NUM_OMP_THREADS 4 )
+        axom_add_test(NAME        slam_lulesh
+                      COMMAND     slam_lulesh_ex
+                      NUM_OMP_THREADS 4 )
     endif()
 endif()
 

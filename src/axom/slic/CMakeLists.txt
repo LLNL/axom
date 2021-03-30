@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,7 +13,7 @@ set(slic_headers
     core/Logger.hpp
     core/LogStream.hpp
     core/MessageLevel.hpp
-    core/UnitTestLogger.hpp
+    core/SimpleLogger.hpp
 
     interface/slic.hpp
     interface/slic_macros.hpp
@@ -74,6 +74,13 @@ blt_add_library(NAME        slic
                 FOLDER      axom/slic
                 OBJECT      TRUE
                 )
+
+# If we're compiling as a dynamic-link library, define AXOM_EXPORTS so we export symbols.
+if(BUILD_SHARED_LIBS)
+    blt_add_target_definitions( TO slic
+                                SCOPE PRIVATE
+                                TARGET_DEFINITIONS AXOM_EXPORTS)
+endif()
 
 axom_write_unified_header( NAME slic
                            HEADERS ${slic_headers}

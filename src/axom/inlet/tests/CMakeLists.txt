@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,21 +11,26 @@
 #------------------------------------------------------------------------------
 
 # Add Serial GTests based tests
-if (SOL_FOUND)
-    set(gtest_inlet_tests
-        inlet_LuaReader.cpp
-        inlet_Inlet.cpp 
-        inlet_object.cpp
-        inlet_function.cpp )
+set(gtest_inlet_tests
+    inlet_Reader.cpp
+    inlet_jsonschema_writer.cpp
+    inlet_Inlet.cpp 
+    inlet_object.cpp )
 
-    foreach(test ${gtest_inlet_tests})
-        get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable( NAME       ${test_name}_test
-                            SOURCES    ${test}
-                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON inlet gtest 
-                            FOLDER     axom/inlet/tests )
-        blt_add_test( NAME    ${test_name} 
-                      COMMAND ${test_name}_test )
-    endforeach()
-endif()
+blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_function.cpp IF SOL_FOUND)
+
+blt_add_library(NAME        inlet_test_utils
+                SOURCES     inlet_test_utils.cpp
+                HEADERS     inlet_test_utils.hpp
+                DEPENDS_ON  inlet gtest )
+
+foreach(test ${gtest_inlet_tests})
+    get_filename_component( test_name ${test} NAME_WE )
+    blt_add_executable( NAME       ${test_name}_test
+                        SOURCES    ${test}
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON gtest inlet_test_utils
+                        FOLDER     axom/inlet/tests )
+    axom_add_test( NAME    ${test_name} 
+                   COMMAND ${test_name}_test )
+endforeach()

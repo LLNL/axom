@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1268,6 +1268,67 @@ void View::importFrom(conduit::Node& data_holder,
                     SIDRE_VIEW_LOG_PREPEND << "View is in unexpected state: "
                                            << getStateStringName(m_state));
   }
+}
+
+/*
+ *************************************************************************
+ *
+ * Import Node holding an array into a View with an attached Buffer.
+ *
+ *************************************************************************
+ */
+View* View::importArrayNode(const Node& array)
+{
+  conduit::DataType array_dtype = array.dtype();
+
+  if(array_dtype.is_number())
+  {
+    if(m_state == BUFFER)
+    {
+      setBufferViewToEmpty();
+    }
+    if(m_state == EMPTY)
+    {
+      Buffer* buff = m_owning_group->getDataStore()->createBuffer();
+
+      conduit::index_t num_ele = array_dtype.number_of_elements();
+      conduit::index_t ele_bytes = DataType::default_bytes(array_dtype.id());
+
+      buff->allocate((TypeID)array_dtype.id(), num_ele);
+
+      // copy the data in a way that matches
+      // to compact representation of the buffer
+      conduit::uint8* data_ptr = (conduit::uint8*)buff->getVoidPtr();
+      for(conduit::index_t i = 0; i < num_ele; i++)
+      {
+        memcpy(data_ptr, array.element_ptr(i), ele_bytes);
+        data_ptr += ele_bytes;
+      }
+
+      attachBuffer(buff);
+
+      // it is important to not use the data type directly
+      // it could contain offsets that are no longer
+      // valid our new buffer
+      apply((TypeID)array_dtype.id(), array_dtype.number_of_elements());
+    }
+    else
+    {
+      SLIC_CHECK_MSG(m_state == EMPTY,
+                     SIDRE_VIEW_LOG_PREPEND
+                       << "Unable to import array Node to View with state: "
+                       << getStateStringName(m_state));
+    }
+  }
+  else
+  {
+    SLIC_CHECK_MSG(array_dtype.is_number(),
+                   SIDRE_VIEW_LOG_PREPEND
+                     << "Unable to import array from Node of type: "
+                     << array_dtype.name());
+  }
+
+  return this;
 }
 
 /*

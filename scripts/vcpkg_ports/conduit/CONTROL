@@ -1,0 +1,5 @@
+Source: conduit
+Version: v0.6.0
+Homepage: https://github.com/llnl/conduit
+Description: Simplified Data Exchange for HPC Simulations
+Build-Depends: hdf5, blt

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -63,8 +63,8 @@ blt_add_executable( NAME       core_serial_tests
 
 foreach(test_suite ${gtest_utils_tests})
     get_filename_component( test_suite ${test_suite} NAME_WE )
-    blt_add_test( NAME    ${test_suite}_serial
-                  COMMAND core_serial_tests --gtest_filter=${test_suite}* )
+    axom_add_test( NAME    ${test_suite}_serial
+                   COMMAND core_serial_tests --gtest_filter=${test_suite}* )
 endforeach()
 
 #------------------------------------------------------------------------------
@@ -84,9 +84,9 @@ if (ENABLE_MPI)
 
   foreach( test_suite ${core_mpi_tests} )
     get_filename_component( test_suite ${test_suite} NAME_WE )
-    blt_add_test( NAME          ${test_suite}_mpi
-                  COMMAND       core_mpi_tests --gtest_filter=${test_suite}*
-                  NUM_MPI_TASKS 1 )
+    axom_add_test( NAME          ${test_suite}_mpi
+                   COMMAND       core_mpi_tests --gtest_filter=${test_suite}*
+                   NUM_MPI_TASKS 1 )
   endforeach()
 endif()
 
@@ -104,8 +104,8 @@ blt_add_executable( NAME       utils_config_test
                     DEPENDS_ON ${utils_config_test_depends}
                     FOLDER     axom/core/tests )
 
-blt_add_test( NAME    utils_config
-              COMMAND utils_config_test )
+axom_add_test( NAME    utils_config
+               COMMAND utils_config_test )
 
 # Add flag to ignore unknown openmp pragmas in utils_config
 set_property(TARGET utils_config_test

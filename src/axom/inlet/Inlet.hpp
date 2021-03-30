@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,14 +20,14 @@
 #include <vector>
 #include <functional>
 
-#include "axom/inlet/Table.hpp"
+#include "axom/inlet/Container.hpp"
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Proxy.hpp"
 #include "axom/inlet/Reader.hpp"
 
 #include "axom/sidre.hpp"
 
-#include "axom/inlet/DocWriter.hpp"
+#include "axom/inlet/Writer.hpp"
 
 namespace axom
 {
@@ -41,7 +41,7 @@ namespace inlet
  *        from defining the schema of the users input file to getting the values
  *        out of the Sidre DataStore.
  *
- * \see Table Field
+ * \see Container Field
  *******************************************************************************
  */
 class Inlet
@@ -65,7 +65,7 @@ public:
         bool docEnabled = true)
     : m_reader(std::move(reader))
     , m_sidreRootGroup(sidreRootGroup)
-    , m_globalTable("", "", *m_reader, m_sidreRootGroup, docEnabled)
+    , m_globalContainer("", "", *m_reader, m_sidreRootGroup, docEnabled)
     , m_docEnabled(docEnabled)
   { }
 
@@ -104,20 +104,21 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Table to the input file schema.
+   * \brief Add a structure to the input file schema.
    *
-   * Adds a Table to the input file schema. Tables hold a varying amount Fields
-   * defined by the user.  By default, it is not required unless marked with
-   * Table::isRequired(). This creates the Sidre Group class with the given name and
+   * Adds a structure/record to the input file schema. Structures can contain
+   * fields and/or substructures.  By default, it is not required unless marked with
+   * Container::isRequired(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
-   * \param [in] name Name of the Table expected in the input file
-   * \param [in] description Description of the Table
+   * \param [in] name Name of the struct expected in the input file
+   * \param [in] description Description of the struct
    *
-   * \return Reference to the created Table
+   * \return Reference to the created struct, as a Container
    *****************************************************************************
    */
-  Table& addTable(const std::string& name, const std::string& description = "");
+  Container& addStruct(const std::string& name,
+                       const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -182,8 +183,8 @@ public:
    * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Table expected in the input file
-   * \param [in] description Description of the Table
+   * \param [in] name Name of the Container expected in the input file
+   * \param [in] description Description of the Container
    *
    * \return Reference to the created Field
    *****************************************************************************
@@ -199,12 +200,12 @@ public:
    *******************************************************************************
    * \brief Gets a value of arbitrary type out of the datastore
    * 
-   * Retrieves a value of user-defined type, i.e., not double, int, bool, or string.
+   * Retrieves a value of primitive or user-defined type.
    * 
-   * \param [in] name The name of the subtable representing the root of the object
+   * \param [in] name The name of the subcontainer representing the root of the object
    * \return The retrieved value
    * \tparam The type to retrieve
-   * \pre Requires a specialization of FromInlet<T>
+   * \pre Requires a specialization of FromInlet<T> for user-defined types
    * \note This function does not indicate failure in a way that can be handled
    * by a program - if an object of requested type does not exist at the specified
    * location, the program will terminate
@@ -213,7 +214,7 @@ public:
   template <typename T>
   T get(const std::string& name) const
   {
-    return m_globalTable.get<T>(name);
+    return m_globalContainer.get<T>(name);
   }
 
   /*!
@@ -221,55 +222,55 @@ public:
    * \brief Return whether a subobject with the given name is present in 
    * the datastore.
    *
-   * \see Table::contains
+   * \see Container::contains
    *****************************************************************************
    */
   bool contains(const std::string& name) const
   {
-    return m_globalTable.contains(name);
+    return m_globalContainer.contains(name);
   }
 
   /*!
    *******************************************************************************
    * \brief Obtains a proxy view into the datastore.
    * 
-   * \see Table::operator[]
+   * \see Container::operator[]
    *******************************************************************************
    */
   Proxy operator[](const std::string& name) const
   {
-    return m_globalTable[name];
+    return m_globalContainer[name];
   }
 
   /*!
    *****************************************************************************
-   * \brief Sets the associated DocWriter for the Inlet instance.
+   * \brief Sets the associated Writer for the Inlet instance.
    *
-   * Sets the associated DocWriter. If the DocWriter is already set, it will be
+   * Sets the associated Writer. If the Writer is already set, it will be
    * replaced by the one that was most recently set.
    *
-   * \param [in] writer An owning pointer to a DocWriter object
+   * \param [in] writer An owning pointer to a Writer object
    *
    *****************************************************************************
    */
-  void registerDocWriter(std::unique_ptr<DocWriter> writer);
+  void registerWriter(std::unique_ptr<Writer> writer);
 
   /*!
    *****************************************************************************
    * \brief Writes input file documentation.
    *
-   * This writes the input file's documentation through the registered DocWriter.
+   * This runs the calling Inlet object through the registered Writer.
    *
    *****************************************************************************
    */
-  void writeDoc();
+  void write();
 
   /*!
    *****************************************************************************
    * \brief Verifies the contents of the sidreGroup according to Inlet 
    * requirements.
    *
-   * This recursively checks the correctness of each Field and Table in the Sidre
+   * This recursively checks the correctness of each Field and Container in the Sidre
    * Group: ensuring that required Fields are specified, each Field's value 
    * and default value are within the specified range or are equal to a valid 
    * value, and types are consistent. Also ensures that the registered verification
@@ -283,86 +284,10 @@ public:
 
   /*!
    *****************************************************************************
-   * \return The global Table.
+   * \return The global Container.
    *****************************************************************************
    */
-  Table& getGlobalTable() { return m_globalTable; }
-
-  /*!
-   *****************************************************************************
-   * \brief Retrieves the matching Table.
-   * 
-   * \param [in] The string indicating the target name of the Table to be searched for.
-   * 
-   * \return The Table matching the target name. If no such Table is found,
-   * a nullptr is returned.
-   *****************************************************************************
-   */
-  Table& getTable(const std::string& name) const
-  {
-    return m_globalTable.getTable(name);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Retrieves the matching Field.
-   * 
-   * \param [in] The string indicating the target name of the Field to be searched for.
-   * 
-   * \return The child Field matching the target name. If no such Field is found,
-   * a nullptr is returned.
-   *****************************************************************************
-   */
-  Field& getField(const std::string& name) const
-  {
-    return m_globalTable.getField(name);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Return whether a Table with the given name is present in Inlet.
-   *
-   * \return Boolean value indicating whether this Inlet contains the Table.
-   *****************************************************************************
-   */
-  bool hasTable(const std::string& name) const
-  {
-    return m_globalTable.hasTable(name);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Return whether a Field with the given name is present in Inlet.
-   *
-   * \return Boolean value indicating whether this Inlet contains the Field.
-   *****************************************************************************
-   */
-  bool hasField(const std::string& name) const
-  {
-    return m_globalTable.hasField(name);
-  }
-
-  /*!
-   *****************************************************************************
-   * \return An unordered map from Field names to the child Field pointers for 
-   * this Table.
-   *****************************************************************************
-   */
-  const std::unordered_map<std::string, std::unique_ptr<Field>>& getChildFields() const
-  {
-    return m_globalTable.getChildFields();
-  }
-
-  /*!
-   *****************************************************************************
-   * \return An unordered map from Table names to the child Table pointers for 
-   * this Table.
-   *****************************************************************************
-   */
-  const std::unordered_map<std::string, std::unique_ptr<Table>>& getChildTables() const
-  {
-    return m_globalTable.getChildTables();
-  }
+  Container& getGlobalContainer() { return m_globalContainer; }
 
   /*!
    *****************************************************************************
@@ -374,10 +299,10 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable<Table>& addBoolArray(const std::string& name,
-                                  const std::string& description = "")
+  Verifiable<Container>& addBoolArray(const std::string& name,
+                                      const std::string& description = "")
   {
-    return m_globalTable.addBoolArray(name, description);
+    return m_globalContainer.addBoolArray(name, description);
   }
 
   /*!
@@ -390,10 +315,10 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable<Table>& addIntArray(const std::string& name,
-                                 const std::string& description = "")
+  Verifiable<Container>& addIntArray(const std::string& name,
+                                     const std::string& description = "")
   {
-    return m_globalTable.addIntArray(name, description);
+    return m_globalContainer.addIntArray(name, description);
   }
 
   /*!
@@ -406,10 +331,10 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable<Table>& addDoubleArray(const std::string& name,
-                                    const std::string& description = "")
+  Verifiable<Container>& addDoubleArray(const std::string& name,
+                                        const std::string& description = "")
   {
-    return m_globalTable.addDoubleArray(name, description);
+    return m_globalContainer.addDoubleArray(name, description);
   }
 
   /*!
@@ -422,15 +347,15 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Verifiable<Table>& addStringArray(const std::string& name,
-                                    const std::string& description = "")
+  Verifiable<Container>& addStringArray(const std::string& name,
+                                        const std::string& description = "")
   {
-    return m_globalTable.addStringArray(name, description);
+    return m_globalContainer.addStringArray(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Add an array of user-defined types to the input file schema.
+   * \brief Add an array of user-defined type to the input file schema.
    *
    * \param [in] name Name of the array
    * \param [in] description Description of the array
@@ -438,10 +363,10 @@ public:
    * \return Reference to the created array
    *****************************************************************************
    */
-  Table& addGenericArray(const std::string& name,
-                         const std::string& description = "")
+  Container& addStructArray(const std::string& name,
+                            const std::string& description = "")
   {
-    return m_globalTable.addGenericArray(name, description);
+    return m_globalContainer.addStructArray(name, description);
   }
 
   /*!
@@ -457,11 +382,11 @@ public:
    *****************************************************************************
    */
   Verifiable<Function>& addFunction(const std::string& name,
-                                    const FunctionType ret_type,
-                                    const std::vector<FunctionType>& arg_types,
+                                    const FunctionTag ret_type,
+                                    const std::vector<FunctionTag>& arg_types,
                                     const std::string& description = "")
   {
-    return m_globalTable.addFunction(name, ret_type, arg_types, description);
+    return m_globalContainer.addFunction(name, ret_type, arg_types, description);
   }
   /*!
    *****************************************************************************
@@ -473,10 +398,10 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable<Table>& addBoolDictionary(const std::string& name,
-                                       const std::string& description = "")
+  Verifiable<Container>& addBoolDictionary(const std::string& name,
+                                           const std::string& description = "")
   {
-    return m_globalTable.addBoolDictionary(name, description);
+    return m_globalContainer.addBoolDictionary(name, description);
   }
 
   /*!
@@ -489,10 +414,10 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable<Table>& addIntDictionary(const std::string& name,
-                                      const std::string& description = "")
+  Verifiable<Container>& addIntDictionary(const std::string& name,
+                                          const std::string& description = "")
   {
-    return m_globalTable.addIntDictionary(name, description);
+    return m_globalContainer.addIntDictionary(name, description);
   }
 
   /*!
@@ -505,10 +430,10 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable<Table>& addDoubleDictionary(const std::string& name,
-                                         const std::string& description = "")
+  Verifiable<Container>& addDoubleDictionary(const std::string& name,
+                                             const std::string& description = "")
   {
-    return m_globalTable.addDoubleDictionary(name, description);
+    return m_globalContainer.addDoubleDictionary(name, description);
   }
 
   /*!
@@ -521,34 +446,34 @@ public:
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Verifiable<Table>& addStringDictionary(const std::string& name,
-                                         const std::string& description = "")
+  Verifiable<Container>& addStringDictionary(const std::string& name,
+                                             const std::string& description = "")
   {
-    return m_globalTable.addStringDictionary(name, description);
+    return m_globalContainer.addStringDictionary(name, description);
   }
 
   /*!
    *****************************************************************************
-   * \brief Add a dictionary of user-defined types to the input file schema.
+   * \brief Add an dictionary of user-defined type to the input file schema.
    *
-   * \param [in] name Name of the dict
+   * \param [in] name Name of the dictionary
    * \param [in] description Description of the dictionary
    *
    * \return Reference to the created dictionary
    *****************************************************************************
    */
-  Table& addGenericDictionary(const std::string& name,
-                              const std::string& description = "")
+  Container& addStructDictionary(const std::string& name,
+                                 const std::string& description = "")
   {
-    return m_globalTable.addGenericDictionary(name, description);
+    return m_globalContainer.addStructDictionary(name, description);
   }
 
   // TODO add update value functions
 private:
   std::unique_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
-  Table m_globalTable;
-  std::unique_ptr<DocWriter> m_docWriter;
+  Container m_globalContainer;
+  std::unique_ptr<Writer> m_writer;
   bool m_docEnabled;
 };
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -37,6 +37,11 @@ else()
     set(AXOM_ENABLE_INLET OFF CACHE BOOL "")
 endif()
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+
+if(ENABLE_CUDA)
+    # Force "early" device linking to avoid propagating an NVCC link dependency
+    set_target_properties(core ${AXOM_COMPONENTS_ENABLED} PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+endif()
 
 # Combine all component object libraries into a unified library
 blt_add_library(NAME       axom
