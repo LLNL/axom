@@ -41,11 +41,11 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Generates documentation for a Container and its child Fields
+   * \brief Generates documentation for a Container and its child Fields/Functions
    * \param [in] container The Container to generate documentation for
    *
    * \note Implementers of this function are not responsible for generating
-   * documentation for child Containers of this Container - only child Fields
+   * documentation for child Containers of this Container - only child Fields/Functions
    *****************************************************************************
    */
   virtual void documentContainer(const Container& container) = 0;

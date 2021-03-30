@@ -76,7 +76,7 @@ if(ENABLE_FORTRAN)
 
 endif(ENABLE_FORTRAN)
 
-configure_file(
+axom_configure_file(
     ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
     ${CMAKE_BINARY_DIR}/include/axom/config.hpp
 )

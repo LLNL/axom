@@ -913,6 +913,15 @@ public:
 
   /*!
    *****************************************************************************
+   * \return An unordered map from Function names to the child Function pointers for 
+   * this Container.
+   *****************************************************************************
+   */
+  const std::unordered_map<std::string, std::unique_ptr<Function>>&
+  getChildFunctions() const;
+
+  /*!
+   *****************************************************************************
    * \return The full name of this Container.
    *****************************************************************************
    */
@@ -1208,16 +1217,18 @@ private:
   /*!
    *******************************************************************************
    * \brief Adds a group containing the indices of a collection to the calling 
-   * container and a subcontainer for each index
+   * container and optionally a subcontainer for each index
    * 
    * \param [in] indices The indices to add
    * \param [in] description The optional description of the subcontainers
+   * \param [in] add_containers Whether to add a subcontainer for each index
    * \tparam Key The type of the indices to add
    *******************************************************************************
    */
   template <typename Key>
   void addIndicesGroup(const std::vector<Key>& indices,
-                       const std::string& description = "");
+                       const std::string& description = "",
+                       const bool add_containers = false);
 
   /*!
    *****************************************************************************
@@ -1260,6 +1271,34 @@ private:
    */
   template <typename Func>
   void forEachCollectionElement(Func&& func) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Applies a provided function to nested elements of the calling table
+   * and stores the result in a range pointed to by an output iterator \a output
+   * 
+   * \pre The function \a func must accept two arguments of type Table& and
+   * const std::string&, respectively.  
+   * 
+   * This function will pass to the provided function the nested table
+   * as the first argument and the path of the nested element in the input file
+   * as the second argument, when applicable.
+   * 
+   * \param [out] output An iterator to the beginning of the output range
+   * \param [in] name The name to append to the path described above
+   * \param [in] func The function to apply to individual nested elements
+   * 
+   * \return Whether the calling container had any nested elements (or
+   * was a struct container)
+   * 
+   * \note This function can be thought of as a variant of std::transform that
+   * operates on nested elements instead of a provided input range
+   *****************************************************************************
+   */
+  template <typename OutputIt, typename Func>
+  bool transformFromNestedElements(OutputIt output,
+                                   const std::string& name,
+                                   Func&& func) const;
 
   std::string m_name;
   Reader& m_reader;
