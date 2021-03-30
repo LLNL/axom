@@ -7,34 +7,45 @@
 Axom
 ****
 
-Axom is a project in WCI/WSC that is funded by ECP/ATDM.
-Its principal goal is to provide a collection of robust and flexible software 
-components that serve as building blocks for LLNL simulation tools. The 
-emphasis is on sharing core infrastructure software amongst applications 
-rather than having different codes develop and maintain similar capabilities.
+Axom is an open source project that provides robust and flexible software 
+components that serve as building blocks for high performance scientific 
+computing applications. A key goal of the project is to have different 
+application teams co-develop and share general core infrastructure software 
+across their projects instead of individually developing and maintaining 
+capabilities that are similar in functionality but are not easily shared.
 
-A key objective of Axom is to facilitate integration of novel, 
-forward-looking computer science capabilities into LLNL simulation codes. 
-Thus, a central function of Axom is to enable and simplify data exchange 
-between applications and tools that Axom provides. To meet these 
-objectives, developers of Axom components emphasize the following features 
-in software design and implementation:
+An important objective of Axom is to facilitate integration of novel, 
+forward-looking computer science capabilities into simulation codes. 
+A pillar of Axom design is to enable and simplify the exchange of 
+simulation data between applications and tools. Axom developers 
+emphasize the following principles in software design and implementation:
 
-  * Flexibility to meet the needs of a diverse set of applications
-  * High-quality, with well designed APIs, good documentation, tested well, high performance, etc.
-  * Consistency in software engineering practices
-  * Integrability so that components work well together and are easily adopted by applications
+  * Start design and implementation based on concrete application use cases and maintain flexibility to meet the needs of a diverse set of applications
+  * Develop high-quality, robust, high performance software that has well-designed APIs, good documentation, and solid testing
+  * Apply consistent software engineering practices across all Axom components so developers can easily work on them
+  * Ensure that components integrate well together and are easy for applications to adopt
 
-The main drivers of the Axom project are to:
+The main drivers of Axom capabilities originate in the needs of multiphysics
+applications in the `Advanced Simulation and Computing (ASC) Program <https://asc.llnl.gov>`_ at `Lawrence Livermore National Laboratory (LLNL) <https://www.llnl.gov>`_ . However, Axom can be employed in a wide range of applications 
+beyond that scope, including research codes, proxy application, etc. Often,
+developing these types of applications using Axom can facilitate technology
+transfer from research efforts into production applications.
 
-  *  Provide the CS infrastructure foundation of the ECP/ATDM multi-physics application at LLNL
-  *  Support current ASC and other production applications and as they continue to evolve
-  *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology
-     transfer from research efforts into production applications
+==============
+Axom Software
+==============
 
-==========
-Components
-==========
+Axom software components are maintained and developed on the
+`Axom GitHub Project <https://github.com/LLNL/axom>`_. 
+
+.. note:: While Axom is developed in C++, its components have native 
+          interfaces in C and Fortran for straightforward usage in 
+          applications developed in those languages. Python interfaces 
+          are in development.
+
+Our current collection of components is listed here. The number of 
+components and their capabilities will expand over time as new needs
+are identified.
 
    * Inlet: Input file parsing and information storage/retrieval
    * Lumberjack: Scalable parallel message logging and filtering
@@ -44,11 +55,13 @@ Components
    * Sidre: Simulation data repository
    * Slam: Set-theoretic lightweight API for meshes
    * Slic: Simple Logging Interface Code
-   * Spin: Spatial indexes
+   * Spin: Spatial index structures for managing and accelerating spatial searches
 
 =============
 Documentation
 =============
+
+User guides and source code documentation are always linked on this site.
 
   * :doc:`Quickstart Guide <docs/sphinx/quickstart_guide/index>`
   *  `Source documentation <doxygen/html/index.html>`__
@@ -92,17 +105,17 @@ Documentation
 Component Level Dependencies
 ============================
 
-Dependencies between components are as follows:
+Axom has the following inter-component dependencies:
 
-- Core has no dependencies, and the other components depend on Core
+- Core has no dependencies and the other components depend on Core
 - Slic optionally depends on Lumberjack
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
 - Quest depends on Slam, Spin, Primal, and Mint
-- Inlet depends on Sidre, and Slic
+- Inlet depends on Sidre, Slic, and Primal
 
-The figure below summarizes the dependencies between the components.  Solid links
-indicate hard dependencies; dashed links indicate optional dependencies.
+The figure below summarizes these dependencies. Solid links indicate hard 
+dependencies; dashed links indicate optional dependencies.
 
 .. graphviz:: docs/dependencies.dot
 
@@ -111,16 +124,19 @@ indicate hard dependencies; dashed links indicate optional dependencies.
 Other Tools Application Developers May Find Useful
 ======================================================
 
-Axom developers support other tools that can be used by software 
-projects independent of the Axom. These include:
+The Axom team develops and supports other software tools that are useful
+for software projects independent of the Axom. These include:
 
-  *  `BLT <https://github.com/LLNL/blt>`_: CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration
-  *  `Shroud <https://github.com/LLNL/shroud>`_: Generator for native C and Fortran APIs from C++ code
-  *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_: Library for describing and managing in-memory data structures
+  *  `BLT <https://github.com/LLNL/blt>`_ CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration
+  *  `Shroud <https://github.com/LLNL/shroud>`_ Generator for C, Fortran, and Python interfaces to C++ libraries, and Fortran and Python interfaces to C libraries
+  *  `Conduit <https://github.com/LLNL/conduit>`_ Library for describing and managing in-memory simulation data
 
 ===================
 Developer Resources
 ===================
+
+Folks interested in contributing to Axom may be interested in our developer
+resource guides.
 
   * :doc:`Developer Guide <docs/sphinx/dev_guide/index>`
   * :doc:`Coding Guide <docs/sphinx/coding_guide/index>`
@@ -133,26 +149,20 @@ Communicating with the Axom Team
 Mailing Lists
 --------------
 
-The project maintains two email lists: 
+The most effective way to communicate with the Axom team is by using one
+of our email lists:
 
-  * 'axom-users@llnl.gov' is how Axom users can contact developers for questions, report issues, etc. 
-  * 'axom-dev@llnl.gov' is for communication among team members. 
+  * 'axom-users@llnl.gov' is for Axom users to contact developers to ask questions, report issues, etc. 
+  * 'axom-dev@llnl.gov' is mainly for communication among Axom team members 
 
 
 ---------
 Chat Room
 ---------
 
-We also have a chat room on LLNL's Microsoft Teams called 'Axom'. They open to
-anyone on the LLNL network. Just log onto Teams and join the room.
-
-
----------------------------------
-Git repository and Issue Tracking
----------------------------------
-
-The main interaction hub for Axom is on `Github <https://github.com/LLNL/axom>`_
-
+We also have the 'Axom' chat room on the LLNL Microsoft Teams server. This 
+is open to anyone with access to the LLNL network. Just log onto Teams and 
+join the room.
 
 
 ======================================================

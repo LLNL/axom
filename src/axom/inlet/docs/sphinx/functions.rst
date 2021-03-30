@@ -8,7 +8,7 @@ into a ``std::function``, the wrapper for callables provided by the C++ standard
 Defining And Storing
 --------------------
 
-This is accomplished by calling ``addFunction`` on an Inlet or Table object.
+This is accomplished by calling ``addFunction`` on an Inlet or Container object.
 
 Consider the following Lua function that accepts a vector in **R**\ :sup:`2` or **R**\ :sup:`3` and returns a double:
 

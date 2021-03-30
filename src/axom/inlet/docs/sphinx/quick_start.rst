@@ -16,25 +16,25 @@ Defining Schema
 ---------------
 
 The first step in using Inlet is to define the schema of your input file.
-Inlet defines an input file into two basic classes: Tables and Fields. Basically
-Fields are individual values and Tables hold groups of Fields and Tables.
+Inlet defines an input file into two basic classes: Containers and Fields. Basically
+Fields are individual values and Containers hold groups of Fields and Containers.
 
 Define the schema by using the following functions, on either the main Inlet class, for
-global Tables and Fields, or on individual Table instances, for Tables and Fields under that Table:
+global Containers and Fields, or on individual Container instances, for Containers and Fields under that Container:
 
 ========================= ===================
 Name                      Description
 ========================= ===================
-addTable                  Adds a Table to the input file schema with the given name.
-addBool                   Adds a boolean Field to the global or parent Table with the given name.
-addDouble                 Adds a double Field to the global or parent Table with the given name.
-addInt                    Adds a integer Field to the global or parent Table with the given name.
-addString                 Adds a string Field to the global or parent Table with the given name.
+addContainer              Adds a Container to the input file schema with the given name.
+addBool                   Adds a boolean Field to the global or parent Container with the given name.
+addDouble                 Adds a double Field to the global or parent Container with the given name.
+addInt                    Adds a integer Field to the global or parent Container with the given name.
+addString                 Adds a string Field to the global or parent Container with the given name.
 ========================= ===================
 
-All possible Tables and Fields that are can be found in the input file must be defined
+All possible Containers and Fields that are can be found in the input file must be defined
 at this step.  The value of the Field is read and stored into the Sidre datastore when you call the appropriate
-add function. Use the ``required`` class member function on the Table and Field class to indicate that
+add function. Use the ``required`` class member function on the Container and Field class to indicate that
 they have to present in the given input file. You can also set a default value to each field via the type-safe
 ``Field::defaultValue()`` member functions. Doing so will populate the corresponding Fields value
 if the specific Field is not present in the input file. The following example shows these concepts:
@@ -54,9 +54,9 @@ This step helps ensure that the given input file follows the rules expected by t
 be done after completely defining your schema, which also reads in the values in the input
 file.  This allows you to access any other part of the user-provided input. These
 rules are not verified until you call ``Inlet::verify()``.  Doing so will return true/false and
-output SLIC warnings to indicate which Field or Table violated which rule.
+output SLIC warnings to indicate which Field or Container violated which rule.
 
-As shown above, both Tables and Fields can be marked as ``required``. Fields have two additional
+As shown above, both Containers and Fields can be marked as ``required``. Fields have two additional
 basic rules that can be enforced with the following ``Field`` class member functions:
 
 ========================= ===================
@@ -67,7 +67,7 @@ range                     Indicates the Field can only be set to inclusively bet
 ========================= ===================
 
 Inlet also provides functionality to write your own custom rules via callable lambda verifiers.
-Fields and Tables can both register one lambda each via their ``registerVerifier()`` member functions.
+Fields and Containers can both register one lambda each via their ``registerVerifier()`` member functions.
 The following example adds a custom verifier that simply verifies that the given ``dimensions`` field
 match the length the given vector:
 
@@ -76,9 +76,10 @@ match the length the given vector:
    :end-before: _inlet_workflow_verification_end
    :language: C++
 
-.. note::  ``Inlet::getGlobalTable()->registerVerifier()`` can be used to add a verifier to apply rules
+.. note::  ``Inlet::getGlobalContainer()->registerVerifier()`` can be used to add a verifier to apply rules
   to the Fields at the global level.
 
+For a full description of Inlet's verification rules, see :ref:`Verification <inlet_verification_page_label>`.
 
 .. _inlet_accessing_data_label:
 
@@ -115,12 +116,12 @@ instantiation of a ``Writer`` class and register it with your ``Inlet`` class.
    :end-before: _inlet_documentation_generation_end
    :language: C++
 
-Then after you are finishing defining your schema, call ``writeDoc()`` on your ``Inlet`` class
+Then after you are finishing defining your schema, call ``write()`` on your ``Inlet`` class
 to write out your documentation to the given file.
 
 .. code-block:: C++
 
-   inlet->writeDoc();
+   inlet.write();
 
 We provided a basic Sphinx documentation writing class but you may want to customize it to your
 own style.  The link below shows the example output from the ``documentation_generation.cpp`` example:
@@ -129,3 +130,13 @@ own style.  The link below shows the example output from the ``documentation_gen
    :maxdepth: 1
 
    example1_expected_documentation
+
+Inlet also provides a utility for generating a `JSON schema <https://json-schema.org/>`_ from your input file schema.
+This allows for integration with text editors like Visual Studio Code, which allows you to associate a JSON schema
+with an input file and subsequently provides autocompletion, linting, tooltips, and more.  VSCode and other editors
+currently support verification of JSON and YAML input files with JSON schemas.
+
+Using the same  ``documentation_generation.cpp`` example, the automatically generated schema can be used to assist
+with input file writing:
+
+.. image:: json_schema_example.gif

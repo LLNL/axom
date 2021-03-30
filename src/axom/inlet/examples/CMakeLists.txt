@@ -21,7 +21,7 @@ blt_list_append(
     documentation_generation.cpp
     fields.cpp
     lua_library.cpp
-    tables.cpp
+    containers.cpp
     user_defined_type.cpp
     verification.cpp
   IF
@@ -70,8 +70,8 @@ if (SOL_FOUND)
     axom_add_test( NAME    inlet_lua_library_ex
                    COMMAND inlet_lua_library_ex )
 
-    axom_add_test( NAME    inlet_tables_ex
-                   COMMAND inlet_tables_ex)
+    axom_add_test( NAME    inlet_containers_ex
+                   COMMAND inlet_containers_ex)
 
     axom_add_test( NAME    inlet_user_defined_type_ex
                    COMMAND inlet_user_defined_type_ex --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua)

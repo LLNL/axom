@@ -67,7 +67,7 @@ struct BoundaryCondition
     }
   }
 
-  static void defineSchema(inlet::Table& schema)
+  static void defineSchema(inlet::Container& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
     // Inlet does not support sum types, so options are added to the schema
@@ -86,7 +86,7 @@ struct BoundaryCondition
                    inlet::FunctionTag::Double,
                    {inlet::FunctionTag::Vector, inlet::FunctionTag::Double},
                    "The function representing the BC coefficient")
-    // _inlet_mfem_func_coef_end
+      // _inlet_mfem_func_coef_end
       .registerVerifier([](const inlet::Function& func) {
         // An arbitrary restriction, but this calls the function and checks its result
         return func.call<double>(inlet::FunctionType::Vector {1, 1, 1}, 1.0) < 15;
@@ -129,7 +129,7 @@ void toMFEMVector(const inlet::InletVector& input, mfem::Vector& result)
 template <>
 struct FromInlet<BoundaryCondition::InputInfo>
 {
-  BoundaryCondition::InputInfo operator()(const inlet::Table& base)
+  BoundaryCondition::InputInfo operator()(const inlet::Container& base)
   {
     BoundaryCondition::InputInfo result;
     result.attrs = base["attrs"];
@@ -159,7 +159,8 @@ struct FromInlet<BoundaryCondition::InputInfo>
     }
     else
     {
-      SLIC_ERROR("Table did not contain a coefficient function: " << base.name());
+      SLIC_ERROR(
+        "Container did not contain a coefficient function: " << base.name());
     }
     return result;
   }
