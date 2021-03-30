@@ -2293,43 +2293,44 @@ Group* Group::walkPath(std::string& path, bool create_groups_in_path)
 {
   Group* group_ptr = this;
 
-  const std::vector<std::string> path_parts =
+  // Split path into parts and remove empty parts
+  std::vector<std::string> path_parts =
     axom::Path(path, s_path_delimiter).parts();
+  path_parts.erase(std::remove_if(path_parts.begin(), path_parts.end(),
+                                  [](std::string const& s) { return s.size() == 0;}),
+                   path_parts.end());
 
-  // Find stopping point (right before last part of path)
-  std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
-
-  // Navigate path down to desired Group
-  for(std::vector<std::string>::const_iterator iter = path_parts.begin();
-      iter < stop;
-      ++iter)
+  if (path_parts.size() > 0)
   {
-    if(*iter == "")
-    {
-      // skip empty names
-      continue;
-    }
+    // Find stopping point (right before last part of path)
+    std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
 
-    if(group_ptr->hasChildGroup(*iter))
+    // Navigate path down to desired Group
+    for(std::vector<std::string>::const_iterator iter = path_parts.begin();
+        iter < stop;
+        ++iter)
     {
-      group_ptr = group_ptr->getGroup(*iter);
-    }
-    else if(create_groups_in_path)
-    {
-      group_ptr = group_ptr->createGroup(*iter);
+      if(group_ptr->hasChildGroup(*iter))
+      {
+        group_ptr = group_ptr->getGroup(*iter);
+      }
+      else if(create_groups_in_path)
+      {
+        group_ptr = group_ptr->createGroup(*iter);
 
-      if(group_ptr == nullptr)
+        if(group_ptr == nullptr)
+        {
+          iter = stop;
+        }
+      }
+      else
       {
         iter = stop;
+        group_ptr = nullptr;
       }
     }
-    else
-    {
-      iter = stop;
-      group_ptr = nullptr;
-    }
+    path = path_parts.back();
   }
-  path = path_parts.back();
 
   return group_ptr;
 }
@@ -2347,34 +2348,35 @@ const Group* Group::walkPath(std::string& path) const
 {
   const Group* group_ptr = this;
 
-  const std::vector<std::string> path_parts =
+  // Split path into parts and remove empty parts
+  std::vector<std::string> path_parts =
     axom::Path(path, s_path_delimiter).parts();
+  path_parts.erase(std::remove_if(path_parts.begin(), path_parts.end(),
+                                  [](std::string const& s) { return s.size() == 0;}),
+                   path_parts.end());
 
-  // Find stopping point (right before last part of path)
-  std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
-
-  // Navigate path down to desired Group
-  for(std::vector<std::string>::const_iterator iter = path_parts.begin();
-      iter < stop;
-      ++iter)
+  if (path_parts.size() > 0)
   {
-    if(*iter == "")
-    {
-      // skip empty names
-      continue;
-    }
+    // Find stopping point (right before last part of path)
+    std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
 
-    if(group_ptr->hasChildGroup(*iter))
+    // Navigate path down to desired Group
+    for(std::vector<std::string>::const_iterator iter = path_parts.begin();
+        iter < stop;
+        ++iter)
     {
-      group_ptr = group_ptr->getGroup(*iter);
+      if(group_ptr->hasChildGroup(*iter))
+      {
+        group_ptr = group_ptr->getGroup(*iter);
+      }
+      else
+      {
+        group_ptr = nullptr;
+        iter = stop;
+      }
     }
-    else
-    {
-      group_ptr = nullptr;
-      iter = stop;
-    }
+    path = path_parts.back();
   }
-  path = path_parts.back();
 
   return group_ptr;
 }
