@@ -18,7 +18,6 @@ set(core_headers
     utilities/Timer.hpp
     utilities/Utilities.hpp
     utilities/About.hpp
-    utilities/Path.hpp
 
     utilities/nvtx/interface.hpp
     utilities/nvtx/Macros.hpp
@@ -41,6 +40,7 @@ set(core_headers
     ## core
     Array.hpp
     Macros.hpp
+    Path.hpp
     StackArray.hpp
     Types.hpp
     memory_management.hpp
@@ -61,12 +61,13 @@ set(core_sources
     utilities/StringUtilities.cpp
     utilities/Utilities.cpp
     utilities/About.cpp
-    utilities/Path.cpp
 
     utilities/nvtx/interface.cpp
     utilities/nvtx/Range.cpp
 
     numerics/polynomial_solvers.cpp
+
+    Path.cpp
     Types.cpp
     )
 

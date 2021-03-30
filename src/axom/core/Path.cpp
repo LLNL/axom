@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/utilities/Path.hpp"
+#include "axom/core/Path.hpp"
 
 #include <iostream>
 #include <iterator>
@@ -14,8 +14,7 @@
 
 namespace axom
 {
-namespace utilities
-{
+
 Path::Path(const std::string& path, const char delim) : m_delim(delim)
 {
   // Check if the path has more than one component
@@ -74,5 +73,4 @@ bool operator==(const Path& lhs, const Path& rhs)
   return static_cast<std::string>(lhs) == static_cast<std::string>(rhs);
 }
 
-}  // end namespace utilities
 }  // end namespace axom

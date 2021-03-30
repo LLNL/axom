@@ -12,7 +12,7 @@
   #include "conduit_relay_io_hdf5.hpp"
 #endif
 
-#include "axom/core/utilities/Path.hpp"
+#include "axom/core/Path.hpp"
 
 // Sidre headers
 #include "ListCollection.hpp"
@@ -2293,7 +2293,7 @@ Group* Group::walkPath(std::string& path, bool create_groups_in_path)
 {
   Group* group_ptr = this;
 
-  const std::vector<std::string> path_parts = axom::utilities::Path(path, s_path_delimiter).parts();
+  const std::vector<std::string> path_parts = axom::Path(path, s_path_delimiter).parts();
 
   // Find stopping point (right before last part of path)
   std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
@@ -2346,7 +2346,7 @@ const Group* Group::walkPath(std::string& path) const
 {
   const Group* group_ptr = this;
 
-  const std::vector<std::string> path_parts = axom::utilities::Path(path, s_path_delimiter).parts();
+  const std::vector<std::string> path_parts = axom::Path(path, s_path_delimiter).parts();
 
   // Find stopping point (right before last part of path)
   std::vector<std::string>::const_iterator stop = path_parts.end() - 1;

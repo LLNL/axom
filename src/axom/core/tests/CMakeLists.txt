@@ -15,6 +15,7 @@ set(gtest_utils_tests
     core_execution_for_all.hpp
     core_execution_space.hpp
     core_memory_management.hpp
+    core_Path.hpp
     core_stack_array.hpp
 
     numerics_determinants.hpp
@@ -34,7 +35,6 @@ set(gtest_utils_tests
     utils_nvtx_settings.hpp
     utils_utilities.hpp
     utils_about.hpp
-    utils_Path.hpp
     )
 
 set(utils_tests_depends

@@ -11,6 +11,7 @@
 #include "core_execution_for_all.hpp"
 #include "core_execution_space.hpp"
 #include "core_memory_management.hpp"
+#include "core_Path.hpp"
 #include "core_stack_array.hpp"
 
 #ifndef AXOM_USE_MPI
@@ -34,7 +35,6 @@
 #include "utils_nvtx_settings.hpp"
 #include "utils_utilities.hpp"
 #include "utils_about.hpp"
-#include "utils_Path.hpp"
 
 int main(int argc, char** argv)
 {

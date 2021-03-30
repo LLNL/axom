@@ -6,7 +6,7 @@
 #include "axom/inlet/Container.hpp"
 
 #include "axom/slic.hpp"
-#include "axom/core/utilities/Path.hpp"
+#include "axom/core/Path.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 #include "axom/inlet/Proxy.hpp"
 
@@ -47,14 +47,13 @@ Container& Container::addContainer(const std::string& name,
                                    const std::string& description)
 {
   auto currContainer = this;
-  utilities::Path path(name);
+  Path path(name);
 
   // Create intermediate Containers if they don't already exist
   for(const auto& pathPart : path.parts())
   {
     // Need to watch out for empty paths here
-    auto currContainerName =
-      utilities::Path::join({currContainer->m_name, pathPart});
+    auto currContainerName = Path::join({currContainer->m_name, pathPart});
     // Leave the description empty for intermediate containers
     const std::string currDescr = (pathPart == name) ? description : "";
     if(!currContainer->hasChild<Container>(pathPart))
@@ -610,11 +609,11 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
   std::vector<std::pair<std::string, std::string>> result;
   for(const auto& index : collectionIndices(container, false))
   {
-    utilities::Path indexPath = detail::indexToString(index);
+    Path indexPath = detail::indexToString(index);
     // Since the index is absolute, we only care about the last segment of it
     // But since it's an absolute path then it gets used as the fullPath
     // which is used by the Reader to search in the input file
-    const auto fullPath = utilities::Path::join({indexPath, name});
+    const auto fullPath = Path::join({indexPath, name});
     // e.g. fullPath could be foo/1/bar for field "bar" at index 1 of array "foo"
     result.push_back({indexPath.baseName(), fullPath});
   }
@@ -927,7 +926,7 @@ bool Container::hasChild(const std::string& childName) const
 template <typename T>
 T* Container::getChildInternal(const std::string& childName) const
 {
-  utilities::Path path(childName);
+  Path path(childName);
   const std::string baseName = path.baseName();
   auto currContainer = this;
 
@@ -939,8 +938,7 @@ T* Container::getChildInternal(const std::string& childName) const
     {
       currContainer =
         currContainer->m_containerChildren
-          .at(utilities::Path::join({currContainer->m_name, pathPart}))
-          .get();
+          .at(Path::join({currContainer->m_name, pathPart})).get();
     }
     else
     {
@@ -951,8 +949,7 @@ T* Container::getChildInternal(const std::string& childName) const
   if(currContainer->hasChild<T>(baseName))
   {
     const auto& children = currContainer->*getChildren<T>();
-    return children.at(utilities::Path::join({currContainer->m_name, baseName}))
-      .get();
+    return children.at(Path::join({currContainer->m_name, baseName})).get();
   }
   return nullptr;
 }

@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef CORE_PATH_UTILITIES_H_
-#define CORE_PATH_UTILITIES_H_
+#ifndef AXOM_CORE_PATH_H_
+#define AXOM_CORE_PATH_H_
 
 #include <initializer_list>
 #include <string>
@@ -13,8 +13,7 @@
 
 namespace axom
 {
-namespace utilities
-{
+
 /*!
  * \brief Path class for performing basic path operations with user-selectable
  * delimiter characters
@@ -115,7 +114,6 @@ inline bool operator!=(const Path& lhs, const Path& rhs)
   return !(lhs == rhs);
 }
 
-}  // end namespace utilities
 }  // end namespace axom
 
-#endif  // CORE_PATH_UTILITIES_H_
+#endif  // AXOM_CORE_PATH_H_
