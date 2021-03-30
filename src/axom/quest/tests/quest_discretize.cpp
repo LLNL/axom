@@ -16,6 +16,7 @@
 using SphereType = axom::primal::Sphere<double, 3>;
 using OctType = axom::primal::Octahedron<double, 3>;
 using PointType = axom::primal::Point<double, 3>;
+using TwoDPointType = axom::primal::Point<double, 2>;
 using NAType = axom::primal::NumericArray<double, 3>;
 
 //------------------------------------------------------------------------------
@@ -233,6 +234,92 @@ void discretized_sphere(std::vector<OctType> & out)
    out[offset+3+octant*4] = reflect(rd2, reflect(rd1, reflect(rd0, out[offset+3])));
 }
 
+/* Return a handwritten list of the octahedra discretizing a one-segment polyline.
+ */
+void discretized_segment(std::vector<OctType> & out)
+{
+   // We're going to return three generations in the out-vector:
+   // one in the first generation, three in the second (covering each of the
+   // side-walls of the first generation), eight in the third (covering the
+   // two exposed side-walls in each of the second-gen octs).
+   //
+   // These octahedra are actually triangular prisms (if the polyline
+   // is parallel to the X-axis) or truncated tetrahedra.  They have two parallel
+   // triangle end-caps and three quadrilateral side-walls.  Because we store 
+   // them in Octahedron objects, those side-walls are actually two triangles
+   // that are coplanar.
+   constexpr int FIRST_GEN_COUNT = 1;
+   constexpr int SECOND_GEN_COUNT = 3;
+   constexpr int THIRD_GEN_COUNT = 6;
+   out.resize(FIRST_GEN_COUNT + SECOND_GEN_COUNT + THIRD_GEN_COUNT);
+
+   TwoDPointType a{1.0, 1.0};
+   TwoDPointType b{1.8, 0.8};
+
+   // The first generation puts a triangle in the end-discs of the truncated
+   // cones with vertices at 12, 4, and 8 o'clock.
+   // The second generation puts three triangles in the end-discs;
+   //     the first has vertices at 12, 2, and 4 o'clock,
+   //     the second at 4, 6, and 8 o'clock,
+   //     the third at 8, 10, and 12 o'clock.
+   // The third generation puts six more triangles in the ends;
+   //     first at 12, 1, 2 o'clock,
+   //     second at 2, 3, 4 o'clock,
+   //     third at 4, 5, 6, o'clock,
+   //     fourth at 6, 7, 8 o'clock,
+   //     fifth at 8, 9, 10 o'clock,
+   //     sixth at 10, 11, 12 o'clock.
+   // These are constructed with 1, 1/2, and sqrt(3)/2 in discs perpendicular
+   // to the X-axis at a[0] and b[0].  We're looking out the X-axis so a
+   // clockwise spin corresponds to the right-hand spin in the function
+   // from_segment() in Discretize.cpp.
+   
+   const double SQ_3_2 = sqrt(3.)/2.;
+
+   PointType Ia   {a[0], -0.5*a[1], SQ_3_2*a[1]};
+   PointType IIa  {a[0], -SQ_3_2*a[1], 0.5*a[1]};
+   PointType IIIa {a[0], -1*a[1], 0*a[1]};
+   PointType IVa  {a[0], -SQ_3_2*a[1], -0.5*a[1]};
+   PointType Va   {a[0], -0.5*a[1], -SQ_3_2*a[1]};
+   PointType VIa  {a[0],  0*a[1], -1*a[1]};
+   PointType VIIa {a[0],  0.5*a[1], -SQ_3_2*a[1]};
+   PointType VIIIa{a[0],  SQ_3_2*a[1], -0.5*a[1]};
+   PointType IXa  {a[0],  1*a[1], 0*a[1]};
+   PointType Xa   {a[0],  SQ_3_2*a[1], 0.5*a[1]};
+   PointType XIa  {a[0],  0.5*a[1], SQ_3_2*a[1]};
+   PointType XIIa {a[0],  0*a[1], 1*a[1]};
+
+   PointType Ib   {b[0], -0.5*b[1], SQ_3_2*b[1]};
+   PointType IIb  {b[0], -SQ_3_2*b[1], 0.5*b[1]};
+   PointType IIIb {b[0], -1*b[1], 0*b[1]};
+   PointType IVb  {b[0], -SQ_3_2*b[1], -0.5*b[1]};
+   PointType Vb   {b[0], -0.5*b[1], -SQ_3_2*b[1]};
+   PointType VIb  {b[0],  0*b[1], -1*b[1]};
+   PointType VIIb {b[0],  0.5*b[1], -SQ_3_2*b[1]};
+   PointType VIIIb{b[0],  SQ_3_2*b[1], -0.5*b[1]};
+   PointType IXb  {b[0],  1*b[1], 0*b[1]};
+   PointType Xb   {b[0],  SQ_3_2*b[1], 0.5*b[1]};
+   PointType XIb  {b[0],  0.5*b[1], SQ_3_2*b[1]};
+   PointType XIIb {b[0],  0*b[1], 1*b[1]};
+
+
+   // First generation: a single prism
+   out[0] = OctType(XIIa, IVb, IVa, VIIIb, VIIIa, XIIb);
+
+   // Second generation: a prism on the outside of each side wall.
+   out[1] = OctType(XIIa, IIb, IIa, IVb, IVa, XIIb);
+   out[2] = OctType(IVa, VIb, VIa, VIIIb, VIIIa, IVb);
+   out[3] = OctType(VIIIa, Xb, Xa, XIIb, XIIa, VIIIb);
+
+   // Third generation: a prism on the outside of each exterior side wall.
+   out[4] = OctType(XIIa, Ib, Ia, IIb, IIa, XIIb);
+   out[5] = OctType(IIa, IIIb, IIIa, IVb, IVa, IIb);
+   out[6] = OctType(IVa, Vb, Va, VIb, VIa, IVb);
+   out[7] = OctType(VIa, VIIb, VIIa, VIIIb, VIIIa, VIb);
+   out[8] = OctType(VIIIa, IXb, IXa, Xb, Xa, VIIIb);
+   out[9] = OctType(Xa, XIb, XIa, XIIb, XIIa, Xb);
+}
+
 //------------------------------------------------------------------------------
 TEST(quest_discretize, sphere_test)
 {
@@ -275,6 +362,77 @@ TEST(quest_discretize, sphere_test)
                                 generated,
                                 generation,
                                 FIRST_GEN_COUNT + SECOND_GEN_COUNT,
+                                THIRD_GEN_COUNT));
+}
+
+//------------------------------------------------------------------------------
+TEST(quest_discretize, segment_test)
+{
+
+   // The discretized_segment() routine produces a list of 20 hand-calculated
+   // octahedra (three generations) that discretize the surface of revolution
+   // (SoR) produced by revolving a polyline ( (1, 1), (1.8, 0.8) ) around
+   // the positive X-axis.
+   std::vector<OctType> handcut;
+   discretized_segment(handcut);
+
+   // The discretize() routine chops up a given SoR into the specified
+   // number of generations of octahedra.  Here, we'll discretize the polyline
+   // in the previous comment in three generations, to match the hand-calculated
+   // octs from discretized_segment().
+   std::vector<TwoDPointType> polyline;
+   polyline.push_back(TwoDPointType{1.0, 1.0});
+   polyline.push_back(TwoDPointType{1.8, 0.8});
+
+   constexpr int generations = 3;
+   std::vector<OctType> generated;
+   axom::quest::discretize(polyline, generations, generated);
+
+   // Test each of the three generations.
+   // We don't know what order they'll be in, but we do know how many octahedra
+   // will be in each generation.
+   constexpr int FIRST_GEN_COUNT = 1;
+   constexpr int SECOND_GEN_COUNT = 3;
+   constexpr int THIRD_GEN_COUNT = 6;
+   constexpr int SECOND_SEGMENT =
+      FIRST_GEN_COUNT + SECOND_GEN_COUNT + THIRD_GEN_COUNT;
+   
+   int generation = 0;
+   EXPECT_TRUE(check_generation(handcut,
+                                generated,
+                                generation,
+                                0,
+                                FIRST_GEN_COUNT));
+   generation += 1;
+   EXPECT_TRUE(check_generation(handcut,
+                                generated,
+                                generation,
+                                FIRST_GEN_COUNT,
+                                SECOND_GEN_COUNT));
+   generation += 1;
+   EXPECT_TRUE(check_generation(handcut,
+                                generated,
+                                generation,
+                                FIRST_GEN_COUNT + SECOND_GEN_COUNT,
+                                THIRD_GEN_COUNT));
+
+   generation = 0;
+   EXPECT_TRUE(check_generation(handcut,
+                                generated,
+                                generation,
+                                SECOND_SEGMENT + 0,
+                                FIRST_GEN_COUNT));
+   generation += 1;
+   EXPECT_TRUE(check_generation(handcut,
+                                generated,
+                                generation,
+                                SECOND_SEGMENT + FIRST_GEN_COUNT,
+                                SECOND_GEN_COUNT));
+   generation += 1;
+   EXPECT_TRUE(check_generation(handcut,
+                                generated,
+                                generation,
+                                SECOND_SEGMENT + FIRST_GEN_COUNT + SECOND_GEN_COUNT,
                                 THIRD_GEN_COUNT));
 }
 

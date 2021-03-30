@@ -43,10 +43,9 @@ using TwoDPointType = primal::Point<double, 2>;
 void discretize(const SphereType & s, int levels, std::vector<OctType> & out);
 
 /*!
- * \brief Given a 2D polyline revolved around an axis, return a list
+ * \brief Given a 2D polyline revolved around the positive X-axis, return a list
  *   of Octahedra approximating the shape.
- * \param [in] axis The axis of revolution
- * \param [in] polyline The polyline to revolve around \a axis
+ * \param [in] polyline The polyline to revolve around the X-axis
  * \param [in] levels The number of refinements to perform
  * \param [out] out The collection of octahedra representing the revolved
  *   polyline
@@ -55,8 +54,7 @@ void discretize(const SphereType & s, int levels, std::vector<OctType> & out);
  * segments in \a polyline (one less than the length).
  * That's exponential growth.  Use appropriate caution.
  */
-void discretize(const RayType & axis,
-                std::vector<TwoDPointType> & polyline,
+void discretize(std::vector<TwoDPointType> & polyline,
                 int levels,
                 std::vector<OctType> & out);
 

@@ -33,7 +33,6 @@ enum {
 
 /* ------------------------------------------------------------ */
 /* Project a Point onto a sphere.
- * Do we want to modify the passed-in point, or return a new one?
  */
 PointType project_to_shape(const PointType & p, const SphereType &sphere)
 {
@@ -84,7 +83,9 @@ OctType from_sphere(const SphereType & sphere)
 }
 
 /* Return an octahedron whose six points lie on the truncated cone
- * described by rotating the line segment ab around the positive X-axis.
+ * described by rotating the line segment ab around the positive X-axis
+ * in a right-handed way (thumb points out the axis, fingers spin segment
+ * toward wrist).
  */
 OctType from_segment(const TwoDPointType & a, const TwoDPointType & b)
 {
@@ -241,8 +242,7 @@ void discretize(const SphereType & sphere,
  *
  * After 
  */
-void discrSeg(const RayType & axis,
-              const TwoDPointType & a,
+void discrSeg(const TwoDPointType & a,
               const TwoDPointType & b,
               int levels,
               std::vector<OctType> & out,
@@ -306,14 +306,6 @@ void discrSeg(const RayType & axis,
       curr_lvl_count *= lvl_factor;
       next_lvl = curr_lvl + curr_lvl_count;
    }
-
-   // Transform: move all the prisms from the +X axis to the actual axis
-   TransformType t = TransformType(axis.origin()) *
-      TransformType::RotateToXAxisFrom(axis.direction());
-   for (OctType & o : out)
-   {
-      o = t * o;
-   }
 }
 
 
@@ -325,7 +317,7 @@ void discrSeg(const RayType & axis,
  * less than the polyline's length).  That is exponential growth.  Use
  * appropriate caution.
  */
-void discretize(const RayType & axis, std::vector<TwoDPointType> & polyline,
+void discretize(std::vector<TwoDPointType> & polyline,
                 int levels, std::vector<OctType> & out)
 {
    // How many octahedra will we generate in each segment of the polyline?
@@ -358,9 +350,10 @@ void discretize(const RayType & axis, std::vector<TwoDPointType> & polyline,
 
    for (int seg = 0; seg < n; ++seg)
    {
-      discrSeg(axis, polyline[seg], polyline[seg+1], levels, out, seg*octcount);
+      discrSeg(polyline[seg], polyline[seg+1], levels, out, seg*octcount);
    }
 }
+
 }  // end namespace quest
 }  // end namespace axom
 
