@@ -42,6 +42,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added a new `Writer` for generating JSON schemas which can be used by text editors
   for autocompletion
 - Inlet: SphinxWriter will now document the signature of function callbacks added to a schema
+- Axom::Path - New class for performing basic path operations with user-selectable
+  delimiter characters
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
