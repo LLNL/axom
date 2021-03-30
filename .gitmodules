@@ -4,6 +4,3 @@
 [submodule "axom_data"]
 	path = data
 	url = https://github.com/LLNL/axom_data.git
-[submodule "scripts/uberenv"]
-	path = scripts/uberenv
-	url = https://github.com/LLNL/uberenv.git

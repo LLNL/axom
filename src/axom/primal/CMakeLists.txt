@@ -32,7 +32,6 @@ set( primal_headers
      geometry/Tetrahedron.hpp
      geometry/Octahedron.hpp
      geometry/Triangle.hpp
-     geometry/Transform.hpp
      geometry/Vector.hpp
 
      ## operators

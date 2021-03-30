@@ -6,7 +6,6 @@
 #include "axom/quest/Discretize.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Transform.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include <cmath>
@@ -20,7 +19,6 @@ constexpr double PTINY = 1e-80;
 
 using PointType = primal::Point<double, 3>;
 using NAType = primal::NumericArray<double, 3>;
-using TransformType = primal::Transform<double, 3>;
 
 enum {
    P = 0,
@@ -187,8 +185,8 @@ void discretize(const SphereType & sphere,
       max_last_gen = out.size();
       while (last_gen <= max_last_gen)
       {
-         // Octahedra are defined by points P, Q, R, S, T, U (indexes 0--5).
-         // Point oct[i] is opposite point oct[(i+3)%6].
+         // Octahedra are defined by points P, Q, R, S, T, U (indexes 0--5; see
+         // previous enum).  Point oct[i] is opposite point oct[(i+3)%6].
          // Convention for new octahedra: P, Q, R are new points from midpoints,
          // S, T, U are inherited from the last gen.
          /* newoct[0] uses (P,Q,R)-old. */
@@ -217,30 +215,25 @@ void discretize(const SphereType & sphere,
  * triangular prisms (or truncated tetrahedra) stored as octahedra.
  * Each level of refinement places a new prism/tet on all exposed faces.
  *
- * Input:  the axis of rotation, stored as a geometric ray; 2D points
- *         a and b; number of levels of refinement, index into the
- *         output vector
+ * Input:  2D points a and b, number of levels of refinement, index into
+ * the output vector
  *
  * Output: the output vector of prisms (placed at the index)
  *
- * Conceptually, the axis is transformed to the positive X-axis and the
- * end points a and b are revolved around it, describing circles that are
- * the truncated cone's end-caps.  The segment ab revolved about the axis
- * becomes the side-wall.
+ * Conceptually, end points a and b are revolved around the X-axis, describing
+ * circles that are the truncated cone's end-caps.  The segment ab revolved
+ * about the X-axis becomes the side-wall.
  *
- * The level-zero prism is constructed by inscribing a triangle in
- * each of the end-cap circles.  In one circle, put the points PRT; in the
- * other circle, put the points UQS.  The edges UP, QR, and ST lie in the
- * side-wall described by rotating the segment ab about the x-axis.
- * (This five-sided prism, with six vertices, two end-caps, and three side-
- * walls, is stored in an Octahedron data record.  The edges PQ, RS, and TU
- * split the quadrilateral prism side-walls into pairs of coplanar
- * triangles.)
+ * The level-zero prism is constructed by inscribing a triangle in each of the
+ * end-cap circles.  In one circle, put the points PRT; in the other circle, put
+ * the points UQS.  The edges UP, QR, and ST lie in the side-wall described by
+ * rotating the segment ab about the x-axis and are each co-planar with the
+ * X-axis.  (This five-sided prism, with two end-caps, three side-walls, and six
+ * vertices, is stored in an Octahedron data record.  The edges PQ, RS, and TU
+ * split the quadrilateral prism side-walls into pairs of coplanar triangles.)
  *
- * The next level of refinement always adds a prism to each exposed
+ * Each subsequent level of refinement adds a prism to each exposed
  * quadrilateral side-wall.
- *
- * After 
  */
 void discrSeg(const TwoDPointType & a,
               const TwoDPointType & b,
@@ -273,13 +266,13 @@ void discrSeg(const TwoDPointType & a,
       // The ends of the prisms switch each level.
       if (level & 1)
       {
-         pa = b;
-         pb = a;
+         pa = a;
+         pb = b;
       }
       else
       {
-         pa = a;
-         pb = b;
+         pa = b;
+         pb = a;
       }
 
       // This loop generates the prisms of the next level of refinement.
