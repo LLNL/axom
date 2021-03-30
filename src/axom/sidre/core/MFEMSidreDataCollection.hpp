@@ -520,6 +520,10 @@ private:
   std::vector<std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
   std::vector<std::unique_ptr<mfem::GridFunction>> m_owned_gridfuncs;
 
+  // Used for reconstructed QuadratureFunctions
+  std::vector<std::unique_ptr<mfem::QuadratureSpace>> m_quadspaces;
+  std::vector<std::unique_ptr<mfem::QuadratureFunction>> m_owned_quadfuncs;
+
   // Private helper functions
 
   void RegisterFieldInBPIndex(const std::string& field_name,

@@ -246,7 +246,7 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, sol::table& table)
   {
     auto key = *curr;
     int key_as_int;
-    bool is_int = checkedConvertToInt(key, key_as_int);
+    bool is_int = utilities::string::checkedConvertToInt(key, key_as_int);
     if(is_int && table[key_as_int].valid())
     {
       table = table[key_as_int];

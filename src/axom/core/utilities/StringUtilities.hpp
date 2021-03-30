@@ -85,6 +85,18 @@ void toLower(std::string& str);
  */
 void toUpper(std::string& str);
 
+/*!
+*****************************************************************************
+* \brief This function performs a checked conversion of a string to an integer
+*
+* \param [in] number The string to be converted
+* \param [out] result The integer to store the result in, if successful
+*
+* \return Whether the conversion was successful
+*****************************************************************************
+*/
+bool checkedConvertToInt(const std::string& number, int& result);
+
 }  // end namespace string
 }  // end namespace utilities
 }  // end namespace axom

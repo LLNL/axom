@@ -236,7 +236,7 @@ template <>
 inline int toIndex(const std::string& idx)
 {
   int idx_as_int;
-  SLIC_ERROR_IF(!checkedConvertToInt(idx, idx_as_int),
+  SLIC_ERROR_IF(!utilities::string::checkedConvertToInt(idx, idx_as_int),
                 fmt::format("[Inlet] Expected an integer, got: {0}", idx));
   return idx_as_int;
 }

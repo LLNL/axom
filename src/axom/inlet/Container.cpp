@@ -602,7 +602,7 @@ std::vector<VariantKey> collectionIndices(const Container& container,
           string_idx = removeBeforeDelimiter(string_idx);
           // The basename might be an integer, so check and convert accordingly
           int idx_as_int;
-          if(checkedConvertToInt(string_idx, idx_as_int))
+          if(utilities::string::checkedConvertToInt(string_idx, idx_as_int))
           {
             key = idx_as_int;
           }

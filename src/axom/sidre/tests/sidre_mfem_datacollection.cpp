@@ -240,85 +240,70 @@ TEST(sidre_datacollection, dc_reload_mesh)
 TEST(sidre_datacollection, dc_qf_reload)
 {
   //Set up a small mesh and a couple of grid function on that mesh
-  mfem::Mesh* mesh =
-    new mfem::Mesh(2, 3, mfem::Element::QUADRILATERAL, 0, 2.0, 3.0);
-  mfem::FiniteElementCollection* fec = new mfem::LinearFECollection;
-  mfem::FiniteElementSpace* fespace = new mfem::FiniteElementSpace(mesh, fec);
+  mfem::Mesh mesh(2, 3, mfem::Element::QUADRILATERAL, 0, 2.0, 3.0);
+  mfem::LinearFECollection fec;
+  mfem::FiniteElementSpace fes(&mesh, &fec);
 
   const int intOrder = 3;
   const int qs_vdim = 1;
   const int qv_vdim = 2;
 
-  mfem::QuadratureSpace* qspace = new mfem::QuadratureSpace(mesh, intOrder);
+  mfem::QuadratureSpace qspace(&mesh, intOrder);
   // We want Sidre to allocate the data for us and to own the internal data.
   // If we don't do the below then the data collection doesn't save off the data
   // structure.
-  mfem::QuadratureFunction* qs =
-    new mfem::QuadratureFunction(qspace, nullptr, qs_vdim);
-  mfem::QuadratureFunction* qv =
-    new mfem::QuadratureFunction(qspace, nullptr, qv_vdim);
+  mfem::QuadratureFunction qs(&qspace, nullptr, qs_vdim);
+  mfem::QuadratureFunction qv(&qspace, nullptr, qv_vdim);
 
-  int Nq = qs->Size();
+  int Nq = qs.Size();
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
   bool owns_mesh = true;
-  MFEMSidreDataCollection sdc_writer(COLL_NAME, mesh, owns_mesh);
+  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh);
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_writer.SetComm(MPI_COMM_WORLD);
+#endif
 
   // sdc_writer owns the quadrature function fields and the underlying data
-  sdc_writer.RegisterQField("qs", qs);
-  sdc_writer.RegisterQField("qv", qv);
+  sdc_writer.RegisterQField("qs", &qs);
+  sdc_writer.RegisterQField("qv", &qv);
 
   // The data needs to be instantiated before we save it off
   for(int i = 0; i < Nq; ++i)
   {
-    (*qs)(i) = double(i);
-    (*qv)(2 * i + 0) = double(i);
-    (*qv)(2 * i + 1) = double(Nq - i - 1);
+    qs(i) = double(i);
+    qv(2 * i + 0) = double(i);
+    qv(2 * i + 1) = double(Nq - i - 1);
   }
 
-  sdc_writer.SetPrefixPath("/tmp/dc_qf_test");
-  sdc_writer.SetCycle(5);
+  // sdc_writer.SetCycle(5);
   sdc_writer.SetTime(8.0);
   sdc_writer.Save();
 
-  MFEMSidreDataCollection sdc_reader(COLL_NAME);
-  sdc_reader.SetPrefixPath("/tmp/dc_qf_test");
+  MFEMSidreDataCollection sdc_reader(testName());
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+#endif
   sdc_reader.Load(sdc_writer.GetCycle());
 
-  const int order_qs = sdc_reader.GetQFieldOrder("qs");
-  const int vdim_qs = sdc_reader.GetQFieldVDim("qs");
-  double* data_qs = sdc_reader.GetQFieldData("qs");
-
-  const int order_qv = sdc_reader.GetQFieldOrder("qv");
-  const int vdim_qv = sdc_reader.GetQFieldVDim("qv");
+  ASSERT_TRUE(sdc_reader.HasQField("qs"));
+  ASSERT_TRUE(sdc_reader.HasQField("qv"));
+  mfem::QuadratureFunction* reader_qs = sdc_reader.GetQField("qs");
+  mfem::QuadratureFunction* reader_qv = sdc_reader.GetQField("qv");
 
   // order_qs should also equal order_qv in this trivial case
-  EXPECT_TRUE(order_qs == intOrder);
-  EXPECT_TRUE(order_qv == intOrder);
+  EXPECT_EQ(reader_qs->GetSpace()->GetOrder(), intOrder);
+  EXPECT_EQ(reader_qv->GetSpace()->GetOrder(), intOrder);
 
-  EXPECT_TRUE(vdim_qs == qs_vdim);
-  EXPECT_TRUE(vdim_qv == qv_vdim);
+  EXPECT_EQ(reader_qs->GetVDim(), qs_vdim);
+  EXPECT_EQ(reader_qv->GetVDim(), qv_vdim);
 
-  mfem::QuadratureSpace qspace_new(mesh, order_qs);
+  *(reader_qs) -= qs;
+  *(reader_qv) -= qv;
 
-  // Just showing different ways in which you could restore a QuadratureFunction
-  mfem::QuadratureFunction qs_new(&qspace_new, data_qs, vdim_qs);
-  mfem::QuadratureFunction qv_new(&qspace_new,
-                                  sdc_reader.GetQFieldData("qv"),
-                                  sdc_reader.GetQFieldVDim("qv"));
-
-  qs_new -= *qs;
-  qv_new -= *qv;
-
-  EXPECT_TRUE(qs_new.Norml2() < 1e-15);
-  EXPECT_TRUE(qv_new.Norml2() < 1e-15);
-
-  delete fespace;
-  delete qs;
-  delete qv;
-  delete qspace;
-  delete mesh;
+  EXPECT_LT(reader_qs->Norml2(), 1e-15);
+  EXPECT_LT(reader_qv->Norml2(), 1e-15);
 }
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
