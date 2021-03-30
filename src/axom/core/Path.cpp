@@ -14,7 +14,6 @@
 
 namespace axom
 {
-
 Path::Path(const std::string& path, const char delim) : m_delim(delim)
 {
   // Check if the path has more than one component

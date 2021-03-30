@@ -936,9 +936,9 @@ T* Container::getChildInternal(const std::string& childName) const
   {
     if(currContainer->hasChild<Container>(pathPart))
     {
-      currContainer =
-        currContainer->m_containerChildren
-          .at(Path::join({currContainer->m_name, pathPart})).get();
+      currContainer = currContainer->m_containerChildren
+                        .at(Path::join({currContainer->m_name, pathPart}))
+                        .get();
     }
     else
     {
