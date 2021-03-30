@@ -193,6 +193,12 @@ else()
 endif()
 
 #------------------------------------------------------------------------------
+# jsonschema - for Inlet testing purposes
+#------------------------------------------------------------------------------
+set(ENABLE_JSONSCHEMA ON) # required by blt_find_executable
+blt_find_executable(NAME jsonschema)
+
+#------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------
 blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)

@@ -13,6 +13,7 @@
 #include <fstream>
 #include <streambuf>
 
+#include "axom/config.hpp"
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/JSONSchemaWriter.hpp"
 #include "axom/inlet/tests/inlet_test_utils.hpp"
@@ -20,8 +21,6 @@
 using axom::inlet::Inlet;
 using axom::inlet::JSONSchemaWriter;
 using axom::sidre::DataStore;
-
-#define JSONSCHEMA_EXECUTABLE "jsonschema"
 
 bool hasSchemaUtility()
 {

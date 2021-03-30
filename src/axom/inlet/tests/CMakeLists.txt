@@ -13,11 +13,11 @@
 # Add Serial GTests based tests
 set(gtest_inlet_tests
     inlet_Reader.cpp
-    inlet_jsonschema_writer.cpp
     inlet_Inlet.cpp 
     inlet_object.cpp )
 
 blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_function.cpp IF SOL_FOUND)
+blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_jsonschema_writer.cpp IF JSONSCHEMA_FOUND)
 
 blt_add_library(NAME        inlet_test_utils
                 SOURCES     inlet_test_utils.cpp

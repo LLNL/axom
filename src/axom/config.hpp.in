@@ -75,6 +75,10 @@
 #cmakedefine AXOM_USE_SPARSEHASH
 #cmakedefine AXOM_USE_UMPIRE
 
+/*
+ * Compiler defines for third-party executables
+ */
+#cmakedefine JSONSCHEMA_EXECUTABLE "@JSONSCHEMA_EXECUTABLE@"
 
 /*
  * We need to explicitly add some definitions on Windows
@@ -160,4 +164,3 @@
 #endif  /* defined(_WIN32) */
 
 #endif  /* AXOM_COMMON_CONFIG_HPP */
-
