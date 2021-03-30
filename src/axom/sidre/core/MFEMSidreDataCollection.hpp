@@ -287,15 +287,6 @@ public:
                       const std::string& buffer_name,
                       axom::sidre::IndexType offset);
 
-  /// Returns the QuadratureSpace order useful for reconstructing a QuadratureFunction
-  int GetQFieldOrder(const std::string& field_name);
-
-  /// Returns the QuadratureSpace VDim useful for reconstructing a QuadratureFunction
-  int GetQFieldVDim(const std::string& field_name);
-
-  /// Returns a pointer to the raw data useful for reconstructing a QuadratureFunction
-  double* GetQFieldData(const std::string& field_name);
-
   /// Registers an attribute field in the Sidre DataStore
   /** The registration process is similar to that of RegisterField()
       The attribute field is associated with the elements of the mesh
