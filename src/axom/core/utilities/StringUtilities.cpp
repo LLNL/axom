@@ -39,16 +39,6 @@ void toUpper(std::string& str)
   });
 }
 
-bool checkedConvertToInt(const std::string& number, int& result)
-{
-  // Use the C versions to avoid the exceptions
-  // thrown by std::stoi on conversion failure
-  // FIXME: Switch to std::from_chars when C++17 is available
-  char* ptr;
-  result = strtol(number.c_str(), &ptr, 10);
-  return *ptr == 0;
-}
-
 }  // end namespace string
 }  // end namespace utilities
 }  // end namespace axom

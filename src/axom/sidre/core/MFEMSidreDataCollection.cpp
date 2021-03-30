@@ -91,13 +91,12 @@ mfem::QuadratureSpace* NewQuadratureSpace(const std::string& name,
     // Right now only the Default type is supported
     if(tokens[1] == "Default")
     {
-      int order;
-      int tmp_vdim;
-      if(utilities::string::checkedConvertToInt(tokens[2], order) &&
-         utilities::string::checkedConvertToInt(tokens[3], tmp_vdim))
+      if(conduit::utils::string_is_integer(tokens[2]) &&
+         conduit::utils::string_is_integer(tokens[3]))
       {
+        int order = conduit::utils::string_to_value<int>(tokens[2]);
+        vdim = conduit::utils::string_to_value<int>(tokens[3]);
         qspace = new mfem::QuadratureSpace(mesh, order);
-        vdim = tmp_vdim;
       }
     }
   }
