@@ -1,8 +1,7 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-
 
 /*!
  * \file containment_driver.cpp
@@ -12,16 +11,19 @@
 // Axom includes
 #include "axom/core.hpp"
 #include "axom/primal.hpp"
-#include "axom/quest.hpp"
+#include "axom/sidre.hpp"
 #include "axom/spin.hpp"
+#include "axom/quest.hpp"
 #include "axom/mint.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 #include "axom/klee.hpp"
 
 #include "fmt/fmt.hpp"
+#include "fmt/locale.h"
 #include "CLI11/CLI11.hpp"
 
+#include "mfem.hpp"
 
 // C/C++ includes
 #include <algorithm>
@@ -31,6 +33,9 @@
 #include <fstream>
 #include <iomanip>  // for setprecision()
 
+#include "mpi.h"
+
+// NOTE: Axom must be configured with AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION compiler define for the klee containment driver
 
 namespace mint = axom::mint;
 namespace primal = axom::primal;
@@ -38,9 +43,9 @@ namespace quest = axom::quest;
 namespace slic = axom::slic;
 namespace klee = axom::klee;
 
-using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
+using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
-using TriVertIndices = primal::Point<axom::IndexType,3>;
+using TriVertIndices = primal::Point<axom::IndexType, 3>;
 using SpaceTriangle = primal::Triangle<double, 3>;
 
 using Octree3D = quest::InOutOctree<3>;
@@ -51,263 +56,438 @@ using SpaceVector = Octree3D::SpaceVector;
 using GridPt = Octree3D::GridPt;
 using BlockIndex = Octree3D::BlockIndex;
 
-
 //------------------------------------------------------------------------------
 
 /** Computes the bounding box of the surface mesh */
-GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
+GeometricBoundingBox compute_bounds(mint::Mesh* mesh)
 {
-  SLIC_ASSERT( mesh != nullptr );
+  SLIC_ASSERT(mesh != nullptr);
 
   GeometricBoundingBox meshBB;
   SpacePt pt;
 
-  for ( int i=0 ; i < mesh->getNumberOfNodes() ; ++i )
+  for(int i = 0; i < mesh->getNumberOfNodes(); ++i)
   {
-    mesh->getNode( i, pt.data() );
-    meshBB.addPoint( pt );
+    mesh->getNode(i, pt.data());
+    meshBB.addPoint(pt);
   }
 
-  SLIC_ASSERT( meshBB.isValid() );
+  SLIC_ASSERT(meshBB.isValid());
 
   return meshBB;
 }
 
-/**
- * Query the inOutOctree using uniform grid of resolution \a gridRes
- * in region defined by bounding box \a queryBounds
- */
-void testContainmentOnRegularGrid(
-  const Octree3D& inOutOctree,
-  const GeometricBoundingBox& queryBounds,
-  const GridPt& gridRes)
+void FCT_project(mfem::DenseMatrix& M,
+                 mfem::DenseMatrixInverse& M_inv,
+                 mfem::Vector& m,
+                 mfem::Vector& x,  // indicators
+                 double y_min,
+                 double y_max,
+                 mfem::Vector& xy)  // indicators * rho
 {
-  const double* low = queryBounds.getMin().data();
-  const double* high = queryBounds.getMax().data();
-  mint::UniformMesh* umesh =
-    new mint::UniformMesh(low, high, gridRes[0], gridRes[1], gridRes[2]);
+  // [IN]  - M, M_inv, m, x, y_min, y_max
+  // [OUT] - xy
 
-  const int nnodes = umesh->getNumberOfNodes();
-  int* containment =
-    umesh->createField< int >( "containment", mint::NODE_CENTERED );
+  using namespace mfem;
 
-  SLIC_ASSERT( containment != nullptr );
+  const int s = M.Size();
 
-  axom::utilities::Timer timer(true);
-  for ( int inode=0 ; inode < nnodes ; ++inode )
+  xy.SetSize(s);
+
+  // Compute the high-order projection in xy
+  M_inv.Mult(m, xy);
+
+  // Q0 solutions can't be adjusted conservatively. It's what it is.
+  if(xy.Size() == 1)
   {
-    primal::Point< double,3 > pt;
-    umesh->getNode( inode, pt.data() );
-
-    containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
+    return;
   }
-  timer.stop();
-  SLIC_INFO(
-    fmt::format("\tQuerying {}^3 containment field "
-                "took {} seconds (@ {} queries per second)",
-                gridRes, timer.elapsed(), nnodes / timer.elapsed()));
 
-  #ifdef DUMP_VTK_MESH
+  // Compute the lumped mass matrix in ML
+  Vector ML(s);
+  M.GetRowSums(ML);
+
+  //Ensure dot product is done on the CPU
+  double dMLX(0);
+  for(int i = 0; i < x.Size(); ++i)
   {
-    std::stringstream sstr;
-    const auto& res = gridRes;
-
-    const bool resAllSame = (res[0] == res[1] && res[1] == res[2]);
-    std::string resStr = resAllSame
-                         ? fmt::format("{}", res[0])
-                         : fmt::format("{}_{}_{}", res[0], res[1], res[2]);
-
-    sstr << "gridContainment_" << resStr << ".vtk";
-    mint::write_vtk( umesh, sstr.str());
+    dMLX += ML(i) * x(i);
   }
-  #endif
 
-  delete umesh;
-}
+  const double y_avg = m.Sum() / dMLX;
 
+#ifdef AXOM_DEBUG
+  SLIC_WARNING_IF(!(y_min < y_avg + 1e-12 && y_avg < y_max + 1e-12),
+                  fmt::format("Average ({}) is out of bounds [{},{}]: ",
+                              y_avg,
+                              y_min - 1e-12,
+                              y_max + 1e-12));
+#endif
 
-/**
- * \brief Extracts the vertex indices of cell cellIndex from the mesh
- */
-TriVertIndices getTriangleVertIndices(mint::Mesh* mesh,
-                                      axom::IndexType cellIndex)
-{
-  SLIC_ASSERT(mesh != nullptr);
-  SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getNumberOfCells());
-
-  TriVertIndices tvInd;
-  mesh->getCellNodeIDs( cellIndex, tvInd.data() );
-  return tvInd;
-}
-
-/**
- * \brief Extracts the positions of a traingle's vertices from the mesh
- * \return The triangle vertex positions in a SpaceTriangle instance
- */
-SpaceTriangle getMeshTriangle(mint::Mesh* mesh,
-                              const TriVertIndices& vertIndices )
-{
-  SLIC_ASSERT(mesh != nullptr);
-
-  SpaceTriangle tri;
-  for(int i=0 ; i< 3 ; ++i)
-    mesh->getNode( vertIndices[i], tri[i].data() );
-
-  return tri;
-}
-
-/**
- * \brief Computes some statistics about the surface mesh.
- *
- * Specifically, computes histograms (and ranges) of the edge lengths and
- * triangle areas on a logarithmic scale and logs the results
- */
-void print_surface_stats( mint::Mesh* mesh)
-{
-  SLIC_ASSERT( mesh != nullptr );
-
-  SpacePt pt;
-
-  using MinMaxRange = primal::BoundingBox<double,1>;
-  using LengthType = MinMaxRange::PointType;
-
-  MinMaxRange meshEdgeLenRange;
-  MinMaxRange meshTriAreaRange;
-  const int nCells = mesh->getNumberOfCells();
-  using TriIdxSet = std::set<axom::IndexType>;
-  TriIdxSet badTriangles;
-
-  // simple binning based on the exponent
-  using LogHistogram = std::map<int,int>;
-  LogHistogram edgeLenHist;    // Create histogram of edge lengths (log scale)
-  LogHistogram areaHist;       // Create histogram of triangle areas (log scale)
-
-  using LogRangeMap = std::map<int,MinMaxRange>;
-  LogRangeMap edgeLenRangeMap; // Tracks range of edge lengths at each scale
-  LogRangeMap areaRangeMap;    // Tracks range of triangle areas at each scale
-
-  using TriVertIndices= primal::Point<axom::IndexType,3>;
-  int expBase2;
-
-  // Traverse mesh triangles and bin the edge lengths and areas
-  for ( int i=0 ; i < nCells ; ++i )
+  Vector z(s);
+  Vector beta(s);
+  Vector Mxy(s);
+  M.Mult(xy, Mxy);
+  for(int i = 0; i < s; i++)
   {
-    // Get the indices and positions of the triangle's three vertices
-    TriVertIndices vertIndices = getTriangleVertIndices(mesh, i);
-    SpaceTriangle tri = getMeshTriangle(mesh, vertIndices);
+    // Some different options for beta:
+    //beta(i) = 1.0;
+    beta(i) = ML(i) * x(i);
+    //beta(i) = ML(i)*(x(i) + 1e-14);
+    //beta(i) = ML(i);
+    //beta(i) = Mxy(i);
 
-    // Compute edge stats -- note edges are double counted
-    for(int j=0 ; j<3 ; ++j)
+    // The low order flux correction
+    z(i) = m(i) - ML(i) * x(i) * y_avg;
+  }
+
+  // Make beta_i sum to 1
+  beta /= beta.Sum();
+
+  DenseMatrix F(s);
+  for(int i = 1; i < s; i++)
+  {
+    for(int j = 0; j < i; j++)
     {
-      double len = SpaceVector(tri[j],tri[(j+1)%3]).norm();
-      if(axom::utilities::isNearlyEqual(len,0.))
+      F(i, j) = M(i, j) * (xy(i) - xy(j)) + (beta(j) * z(i) - beta(i) * z(j));
+    }
+  }
+
+  Vector gp(s), gm(s);
+  gp = 0.0;
+  gm = 0.0;
+  for(int i = 1; i < s; i++)
+  {
+    for(int j = 0; j < i; j++)
+    {
+      double fij = F(i, j);
+      if(fij >= 0.0)
       {
-        badTriangles.insert(i);
+        gp(i) += fij;
+        gm(j) -= fij;
       }
       else
       {
-        LengthType edgeLen(len);
-        meshEdgeLenRange.addPoint( edgeLen );
-        std::frexp (len, &expBase2);
-        edgeLenHist[expBase2]++;
-        edgeLenRangeMap[expBase2].addPoint( edgeLen );
+        gm(i) += fij;
+        gp(j) -= fij;
       }
     }
-
-    // Compute triangle area stats
-    double area = tri.area();
-    if( axom::utilities::isNearlyEqual(area, 0.))
-    {
-      badTriangles.insert(i);
-    }
-    else
-    {
-      LengthType triArea(area);
-      meshTriAreaRange.addPoint ( triArea );
-      std::frexp (area, &expBase2);
-      areaHist[expBase2]++;
-      areaRangeMap[expBase2].addPoint( triArea);
-    }
   }
 
-
-  // Log the results
-  const int nVerts = mesh->getNumberOfNodes();
-  SLIC_INFO(fmt::format("Mesh has {} vertices  and {} triangles.",
-                        nVerts, nCells));
-
-  SLIC_INFO("Edge length range: " << meshEdgeLenRange);
-  SLIC_INFO("Triangle area range is: " << meshTriAreaRange);
-
-  fmt::memory_buffer edgeHistStr;
-  fmt::format_to(edgeHistStr,"Edge length histogram (lg-arithmic): ");
-  for(LogHistogram::const_iterator it = edgeLenHist.begin()
-      ; it != edgeLenHist.end()
-      ; ++it)
+  for(int i = 0; i < s; i++)
   {
-    fmt::format_to(edgeHistStr,"\n\texp: {}\tcount: {}\tRange: {}",
-                   it->first, it->second / 2, edgeLenRangeMap[it->first]);
+    xy(i) = x(i) * y_avg;
   }
-  SLIC_DEBUG(fmt::to_string(edgeHistStr));
 
-  fmt::memory_buffer triHistStr;
-  fmt::format_to(triHistStr,"Triangle areas histogram (lg-arithmic): ");
-  for(LogHistogram::const_iterator it =areaHist.begin()
-      ; it != areaHist.end()
-      ; ++it)
+  for(int i = 0; i < s; i++)
   {
-    fmt::format_to(triHistStr,"\n\texp: {}\tcount: {}\tRange: {}",
-                   it->first, it->second, areaRangeMap[it->first]);
+    double mi = ML(i), xyLi = xy(i);
+    double rp = std::max(mi * (x(i) * y_max - xyLi), 0.0);
+    double rm = std::min(mi * (x(i) * y_min - xyLi), 0.0);
+    double sp = gp(i), sm = gm(i);
+
+    gp(i) = (rp < sp) ? rp / sp : 1.0;
+    gm(i) = (rm > sm) ? rm / sm : 1.0;
   }
-  SLIC_DEBUG(fmt::to_string(triHistStr));
 
-  if(!badTriangles.empty() )
+  for(int i = 1; i < s; i++)
   {
-    fmt::memory_buffer badTriStr;
-    fmt::format_to(badTriStr,
-                   "The following triangle(s) have zero area/edge lengths:");
-    for(TriIdxSet::const_iterator it = badTriangles.begin()
-        ; it != badTriangles.end()
-        ; ++it)
+    for(int j = 0; j < i; j++)
     {
-      fmt::format_to(badTriStr,"\n\tTriangle {}",*it);
-      TriVertIndices vertIndices;
-      mesh->getCellNodeIDs( *it, vertIndices.data() );
+      double fij = F(i, j), aij;
 
-      SpacePt vertPos;
-      for(int j=0 ; j<3 ; ++j)
+      if(fij >= 0.0)
       {
-        mesh->getNode( vertIndices[j], vertPos.data() );
-        fmt::format_to(badTriStr,"\n\t\t vId: {} @ position: {}",
-                       vertIndices[j], vertPos);
+        aij = std::min(gp(i), gm(j));
+      }
+      else
+      {
+        aij = std::min(gm(i), gp(j));
+      }
+
+      fij *= aij;
+      xy(i) += fij / ML(i);
+      xy(j) -= fij / ML(j);
+    }
+  }
+}
+
+void generate_volume_fractions_baseline(mfem::DataCollection* dc,
+                                        mfem::QuadratureFunction* inout,
+                                        const std::string& name,  // vol_frac
+                                        int /*order*/)
+{
+  const int order = inout->GetSpace()->GetElementIntRule(0).GetOrder();
+
+  mfem::Mesh* mesh = dc->GetMesh();
+  const int dim = mesh->Dimension();
+  const int NE = mesh->GetNE();
+
+  std::cout << fmt::format("Mesh has dim {} and {} elements", dim, NE)
+            << std::endl;
+
+  mfem::L2_FECollection* fec =
+    new mfem::L2_FECollection(order, dim, mfem::BasisType::Positive);
+  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
+  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
+  volFrac->MakeOwner(fec);
+  dc->RegisterField(name, volFrac);
+
+  (*volFrac) = (*inout);
+}
+
+void generate_volume_fractions(mfem::DataCollection* dc,
+                               mfem::QuadratureFunction* inout,
+                               const std::string& name,  // vol_frac
+                               int order)
+{
+  const int sampleOrder = inout->GetSpace()->GetElementIntRule(0).GetOrder();
+  const int sampleNQ = inout->GetSpace()->GetElementIntRule(0).GetNPoints();
+  const int sampleSZ = inout->GetSpace()->GetSize();
+
+  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
+                        "In generate_volume_fractions: sample order {} | "
+                        "sample num qpts {} |  total samples {:L}",
+                        sampleOrder,
+                        sampleNQ,
+                        sampleSZ));
+
+  mfem::Mesh* mesh = dc->GetMesh();
+  const int dim = mesh->Dimension();
+  const int NE = mesh->GetNE();
+
+  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
+                        "Mesh has dim {} and {:L} elements",
+                        dim,
+                        NE));
+
+  mfem::L2_FECollection* fec =
+    new mfem::L2_FECollection(order, dim, mfem::BasisType::Positive);
+  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
+  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
+  volFrac->MakeOwner(fec);
+  dc->RegisterField(name, volFrac);
+
+  axom::utilities::Timer timer(true);
+  {
+    mfem::MassIntegrator mass_integrator;  // use the default for exact integration; lower for approximate
+
+    mfem::QuadratureFunctionCoefficient qfc(*inout);
+    mfem::DomainLFIntegrator rhs(qfc);
+
+    // assume all elts are the same
+    const auto& ir = inout->GetSpace()->GetElementIntRule(0);
+    rhs.SetIntRule(&ir);
+
+    mfem::DenseMatrix m;
+    mfem::DenseMatrixInverse mInv;
+    mfem::Vector b, x;
+    mfem::Array<int> dofs;
+    mfem::Vector one;
+    const double minY = 0.;
+    const double maxY = 1.;
+
+    for(int i = 0; i < NE; ++i)
+    {
+      auto* T = mesh->GetElementTransformation(i);
+      auto* el = fes->GetFE(i);
+
+      mass_integrator.AssembleElementMatrix(*el, *T, m);
+      rhs.AssembleRHSElementVect(*el, *T, b);
+      mInv.Factor(m);
+
+      // Use FCT limiting -- similar to Remap
+      // Limit the function to be between 0 and 1
+      // Q: Is there a better way limiting algorithm for this?
+      if(one.Size() != b.Size())
+      {
+        one.SetSize(b.Size());
+        one = 1.0;
+      }
+      FCT_project(m, mInv, b, one, minY, maxY, x);
+
+      fes->GetElementDofs(i, dofs);
+      volFrac->SetSubVector(dofs, x);
+    }
+  }
+  timer.stop();
+  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
+                        "\t Generating volume fractions took {:.3f} seconds (@ "
+                        "{:L} dofs processed per second)",
+                        timer.elapsed(),
+                        static_cast<int>(fes->GetNDofs() / timer.elapsed())));
+
+  // // Alt strategy for Q0: take a simple average of samples
+  // const int nq = sampleNQ;
+  // double sc = 1. / nq;
+  // for(int i = 0; i < NE; ++i)
+  // {
+  //   int sum = 0;
+  //   for(int k = 0; k < nq; ++k)
+  //   {
+  //     sum += (*inout)(i * nq + k);
+  //   }
+  //   (*volFrac)[i] = sum * sc;
+  // }
+}
+
+/**
+ * Compute volume fractions function for shape on a grid of resolution \a gridRes
+ * in region defined by bounding box \a queryBounds
+ */
+void computeVolumeFractionsBaseline(const Octree3D& inOutOctree,
+                                    mfem::DataCollection* dc,
+                                    int AXOM_NOT_USED(sampleRes),
+                                    int outputOrder)
+{
+  // Step 1 -- generate a QField w/ the spatial coordinates
+  mfem::Mesh* mesh = dc->GetMesh();
+  const int NE = mesh->GetNE();
+  const int dim = mesh->Dimension();
+
+  if(NE < 1)
+  {
+    SLIC_WARNING("Mesh has no elements!");
+    return;
+  }
+
+  mfem::L2_FECollection* coll =
+    new mfem::L2_FECollection(outputOrder, dim, mfem::BasisType::Positive);
+  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, coll);
+  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
+  volFrac->MakeOwner(coll);
+  dc->RegisterField("vol_frac_baseline", volFrac);
+
+  auto* fe = fes->GetFE(0);
+  auto& ir = fe->GetNodes();
+
+  // Assume all elements have the same integration rule
+  const int nq = ir.GetNPoints();
+  const auto* geomFactors =
+    mesh->GetGeometricFactors(ir, mfem::GeometricFactors::COORDINATES);
+
+  mfem::DenseTensor pos_coef(dim, nq, NE);
+
+  // Rearrange positions into quadrature function
+  {
+    for(int i = 0; i < NE; ++i)
+    {
+      for(int j = 0; j < dim; ++j)
+      {
+        for(int k = 0; k < nq; ++k)
+        {
+          pos_coef(j, k, i) = geomFactors->X((i * nq * dim) + (j * nq) + k);
+        }
       }
     }
-    SLIC_DEBUG(fmt::to_string(badTriStr));
+  }
+
+  // Step 2 -- sample the in/out field at each point -- store directly in volFrac grid function
+  mfem::Vector res(nq);
+  mfem::Array<int> dofs;
+  for(int i = 0; i < NE; ++i)
+  {
+    mfem::DenseMatrix& m = pos_coef(i);
+    for(int p = 0; p < nq; ++p)
+    {
+      const axom::primal::Point3D pt(m.GetColumn(p), dim);
+      const bool in = inOutOctree.within(pt);
+      res(p) = in ? 1. : 0.;
+    }
+
+    fes->GetElementDofs(i, dofs);
+    volFrac->SetSubVector(dofs, res);
   }
 }
 
 /**
- * \brief Finds the octree leaf containing the given query point,
- * and optionally refines the leaf
+ * Compute volume fractions function for shape on a grid of resolution \a gridRes
+ * in region defined by bounding box \a queryBounds
  */
-void refineAndPrint(Octree3D& octree, const SpacePt& queryPt,
-                    bool shouldRefine = true)
+void computeVolumeFractions(const Octree3D& inOutOctree,
+                            mfem::DataCollection* dc,
+                            int sampleRes,
+                            int outputOrder)
 {
-  BlockIndex leafBlock = octree.findLeafBlock(queryPt);
+  // Step 1 -- generate a QField w/ the spatial coordinates
+  mfem::Mesh* mesh = dc->GetMesh();
+  const int NE = mesh->GetNE();
+  const int dim = mesh->Dimension();
 
-  if(shouldRefine)
+  if(NE < 1)
   {
-    octree.refineLeaf( leafBlock );
-    leafBlock = octree.findLeafBlock(queryPt);
+    SLIC_WARNING("Mesh has no elements!");
+    return;
   }
 
-  GeometricBoundingBox blockBB = octree.blockBoundingBox( leafBlock);
-  bool containsPt = blockBB.contains(queryPt);
+  // convert requested samples into a compatible polynomial order
+  // that will use that many samples: 2n-1 and 2n-2 will work
+  // NOTE: Might be different for simplices
+  const int sampleOrder = 2 * sampleRes - 1;
+  mfem::QuadratureSpace sp(mesh, sampleOrder);
 
-  SLIC_INFO(
-    fmt::format("\t(gridPt: {}; lev: {}) with bounds {} {} query point.",
-                leafBlock.pt(), leafBlock.level(), blockBB,
-                (containsPt ? " contains " : "does not contain ") ));
+  // TODO: Should the samples be along a uniform grid
+  //       instead of Guassian quadrature?
+  //       This would need quadrature weights for the uniform
+  //       samples -- Newton-Cotes ?
+  //       With uniform points, we could do HO polynomial fitting
+  //       Using 0s and 1s is non-oscillatory in Bernstein basis
+
+  // Assume all elements have the same integration rule
+  const auto& ir = sp.GetElementIntRule(0);
+  const int nq = ir.GetNPoints();
+  const auto* geomFactors =
+    mesh->GetGeometricFactors(ir, mfem::GeometricFactors::COORDINATES);
+
+  mfem::QuadratureFunction pos_coef(&sp, dim);
+
+  // Rearrange positions into quadrature function
+  {
+    for(int i = 0; i < NE; ++i)
+    {
+      for(int j = 0; j < dim; ++j)
+      {
+        for(int k = 0; k < nq; ++k)
+        {
+          //X has dims nqpts x sdim x ne
+          pos_coef((i * nq * dim) + (k * dim) + j) =
+            geomFactors->X((i * nq * dim) + (j * nq) + k);
+        }
+      }
+    }
+  }
+
+  const int vdim = 1;
+  mfem::QuadratureFunction inout(&sp, vdim);
+
+  // Step 2 -- sample the in/out field at each point -- store in QField 'inout'
+  mfem::DenseMatrix m;
+  mfem::Vector res;
+
+  axom::utilities::Timer timer(true);
+  for(int i = 0; i < NE; ++i)
+  {
+    pos_coef.GetElementValues(i, m);
+    inout.GetElementValues(i, res);
+
+    for(int p = 0; p < nq; ++p)
+    {
+      const axom::primal::Point3D pt(m.GetColumn(p), dim);
+      const bool in = inOutOctree.within(pt);
+      res(p) = in ? 1. : 0.;
+
+      // SLIC_INFO(fmt::format("[{},{}] Pt: {}, In: {}", i,p,pt, (in? "yes" : "no") ));
+    }
+  }
+  timer.stop();
+  SLIC_INFO(fmt::format(
+    std::locale("en_US.UTF-8"),
+    "\t Sampling inout field took {} seconds (@ {:L} queries per second)",
+    timer.elapsed(),
+    static_cast<int>((NE * nq) / timer.elapsed())));
+
+  // Step 3 -- project QField onto volume fractions field
+  generate_volume_fractions(dc, &inout, "vol_frac", outputOrder);
 }
 
 /** Struct to parse and store the input parameters */
@@ -316,26 +496,25 @@ struct Input
 public:
   std::string shapeFile;
   std::string stlFile;
-  int maxQueryLevel;
+
+  int maxQueryLevel {7};
+  int quadratureOrder {5};
+  int outputOrder {2};
+
   std::vector<double> queryBoxMins;
   std::vector<double> queryBoxMaxs;
 
 private:
-  bool m_verboseOutput;
-  bool m_hasUserQueryBox;
+  bool m_verboseOutput {false};
+  bool m_hasUserQueryBox {false};
 
 public:
   Input()
-    : shapeFile("")
-    , stlFile("")
-    , maxQueryLevel(7)
-    , m_verboseOutput(false)
-    , m_hasUserQueryBox(false)
   {
-    // increase default for max query resolution in release builds
-    #ifndef AXOM_DEBUG
+// increase default for max query resolution in release builds
+#ifndef AXOM_DEBUG
     maxQueryLevel += 2;
-    #endif
+#endif
   }
 
   bool isVerbose() const { return m_verboseOutput; }
@@ -345,45 +524,63 @@ public:
   void parse(int argc, char** argv, CLI::App& app)
   {
     app.add_option("shapeFile", shapeFile, "Path to input shape file")
-    ->check(CLI::ExistingFile)
-    ->required();
+      ->check(CLI::ExistingFile)
+      ->required();
 
-    app.add_flag("-v,--verbose", m_verboseOutput,
-                 "Enable/disable verbose output")
-    ->capture_default_str();
+    app
+      .add_flag("-v,--verbose", m_verboseOutput, "Enable/disable verbose output")
+      ->capture_default_str();
 
-    app.add_option("-l,--levels", maxQueryLevel,
-                   "Max query resolution. \n"
-                   "Will query uniform grids at levels 1 through the provided level")
-    ->capture_default_str()
-    ->check(CLI::PositiveNumber);
+    app
+      .add_option(
+        "-l,--levels",
+        maxQueryLevel,
+        "Max query resolution. \n"
+        "Will query uniform grids at levels 1 through the provided level")
+      ->capture_default_str()
+      ->check(CLI::PositiveNumber);
+
+    app
+      .add_option("-o,--order", outputOrder, "order of the output grid function")
+      ->capture_default_str()
+      ->check(CLI::PositiveNumber);
+
+    app
+      .add_option("-q,--quadrature-order",
+                  quadratureOrder,
+                  "Quadrature order for sampling the inout field. \n"
+                  "Determines number of samples per element in determining "
+                  "volume fraction field")
+      ->capture_default_str()
+      ->check(CLI::PositiveNumber);
 
     // Optional bounding box for query region
-    auto* minbb = app.add_option("--min", queryBoxMins,
-                                 "Min bounds for query box (x,y,z)")
-                  ->expected(3);
-    auto* maxbb = app.add_option("--max", queryBoxMaxs,
-                                 "Max bounds for query box (x,y,z)")
-                  ->expected(3);
+    auto* minbb =
+      app.add_option("--min", queryBoxMins, "Min bounds for query box (x,y,z)")
+        ->expected(3);
+    auto* maxbb =
+      app.add_option("--max", queryBoxMaxs, "Max bounds for query box (x,y,z)")
+        ->expected(3);
     minbb->needs(maxbb);
     maxbb->needs(minbb);
 
     app.get_formatter()->column_width(35);
 
     // could throw an exception
-    app.parse( argc, argv);
+    app.parse(argc, argv);
 
-    slic::setLoggingMsgLevel( m_verboseOutput
-                              ? slic::message::Debug
-                              : slic::message::Info);
+    slic::setLoggingMsgLevel(m_verboseOutput ? slic::message::Debug
+                                             : slic::message::Info);
 
     m_hasUserQueryBox = app.count("--min") == 3 && app.count("--max") == 3;
   }
 };
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
+  MPI_Init(&argc, &argv);
+
   axom::slic::SimpleLogger logger;  // create & initialize logger
   // slic::debug::checksAreErrors = true;
 
@@ -395,7 +592,7 @@ int main( int argc, char** argv )
   {
     params.parse(argc, argv, app);
   }
-  catch (const CLI::ParseError &e)
+  catch(const CLI::ParseError& e)
   {
     return app.exit(e);
   }
@@ -404,11 +601,11 @@ int main( int argc, char** argv )
   {
     std::fstream file(params.shapeFile);
     auto shapeSet = klee::readShapeSet(file);
-    for(const auto& s: shapeSet.getShapes() )
+    for(const auto& s : shapeSet.getShapes())
     {
-      SLIC_INFO(fmt::format("Reading shape '{}' of material '{}'", 
-        s.getName(),
-        s.getMaterial()));
+      SLIC_INFO(fmt::format("Reading shape '{}' of material '{}'",
+                            s.getName(),
+                            s.getMaterial()));
 
       auto& geom = s.getGeometry();
       SLIC_ASSERT(geom.getFormat() == "stl");
@@ -416,67 +613,116 @@ int main( int argc, char** argv )
     }
   }
 
-
   // Load mesh file
   mint::Mesh* surface_mesh = nullptr;
   {
-    SLIC_INFO(fmt::format("{:*^80}"," Loading the mesh "));
+    SLIC_INFO(fmt::format("{:*^80}", " Loading the mesh "));
     SLIC_INFO("Reading file: " << params.stlFile << "...");
 
     quest::STLReader* reader = new quest::STLReader();
-    reader->setFileName( params.stlFile );
+    reader->setFileName(params.stlFile);
     reader->read();
 
     // Create surface mesh
-    surface_mesh = new UMesh( 3, mint::TRIANGLE );
-    reader->getMesh( static_cast<UMesh*>( surface_mesh ) );
+    surface_mesh = new UMesh(3, mint::TRIANGLE);
+    reader->getMesh(static_cast<UMesh*>(surface_mesh));
 
-    SLIC_INFO("Mesh has "
-              << surface_mesh->getNumberOfNodes() << " nodes and "
-              << surface_mesh->getNumberOfCells() << " cells.");
+    SLIC_INFO("Mesh has " << surface_mesh->getNumberOfNodes() << " nodes and "
+                          << surface_mesh->getNumberOfCells() << " cells.");
 
     delete reader;
     reader = nullptr;
   }
   SLIC_ASSERT(surface_mesh != nullptr);
 
+  // TODO: Add this triangle mesh to the blueprint
+#ifdef DUMP_VTK_MESH
+  {
+    std::stringstream sstr;
+    const auto& res = gridRes;
+
+    const bool resAllSame = (res[0] == res[1] && res[1] == res[2]);
+    std::string resStr = resAllSame
+      ? fmt::format("{}", res[0])
+      : fmt::format("{}_{}_{}", res[0], res[1], res[2]);
+
+    sstr << "gridContainment_" << resStr << ".vtk";
+    mint::write_vtk(umesh, sstr.str());
+  }
+#endif
+
   // Compute mesh bounding box and log some stats about the surface
-  GeometricBoundingBox meshBB = compute_bounds( surface_mesh );
-  SLIC_INFO( "Mesh bounding box: " << meshBB );
-  print_surface_stats(surface_mesh);
+  GeometricBoundingBox meshBB = compute_bounds(surface_mesh);
+  SLIC_INFO("Mesh bounding box: " << meshBB);
 
   // Create octree over mesh's bounding box
-  SLIC_INFO(fmt::format("{:*^80}"," Generating the octree "));
+  SLIC_INFO(fmt::format("{:*^80}", " Generating the octree "));
   Octree3D octree(meshBB, surface_mesh);
   octree.generateIndex();
 
-  print_surface_stats(surface_mesh);
-  mint::write_vtk(surface_mesh, "meldedTriMesh.vtk");
+  {
+    const int nVerts = surface_mesh->getNumberOfNodes();
+    const int nCells = surface_mesh->getNumberOfCells();
 
+    SLIC_INFO(fmt::format(
+      "After welding, surface mesh has {} vertices  and {} triangles.",
+      nVerts,
+      nCells));
+    mint::write_vtk(surface_mesh, "meldedTriMesh.vtk");
+  }
 
-  SLIC_INFO(fmt::format("{:*^80}"," Querying the octree "));
+  SLIC_INFO(fmt::format("{:*^80}", " Querying the octree "));
 
   // Define the query bounding box
   GeometricBoundingBox queryBB;
-  if( params.hasUserQueryBox() )
+  if(params.hasUserQueryBox())
   {
-    queryBB.addPoint( SpacePt(params.queryBoxMins.data(),3) );
-    queryBB.addPoint( SpacePt(params.queryBoxMaxs.data(),3) );
+    queryBB.addPoint(SpacePt(params.queryBoxMins.data(), 3));
+    queryBB.addPoint(SpacePt(params.queryBoxMaxs.data(), 3));
   }
   else
   {
     queryBB = octree.boundingBox();
   }
-  SLIC_INFO( "Bounding box for query points: " << queryBB );
+  SLIC_INFO("Bounding box for query points: " << queryBB);
 
   // Query the mesh
-  for(int i=1 ; i< params.maxQueryLevel ; ++i)
   {
-    int res = 1 << i;
-    testContainmentOnRegularGrid( octree, queryBB,
-                                  GridPt::make_point(res, res, res));
+    // Generate an mfem Cartesian mesh, scaled to the bounding box range
+    const int res = 1 << params.maxQueryLevel;
+    auto range = queryBB.range();
+    auto low = queryBB.getMin();
+    mfem::Mesh mesh(res,
+                    res,
+                    res,
+                    mfem::Element::HEXAHEDRON,
+                    false,
+                    range[0],
+                    range[1],
+                    range[2]);
+
+    // Offset to the mesh to lie w/in the bounding box
+    for(int i = 0; i < mesh.GetNV(); ++i)
+    {
+      double* v = mesh.GetVertex(i);
+      v[0] += low[0];
+      v[1] += low[1];
+      v[2] += low[2];
+    }
+
+    // Add the mesh to an mfem data collection
+    axom::sidre::MFEMSidreDataCollection dc("shaping", &mesh);
+    dc.SetComm(MPI_COMM_WORLD);
+
+    // Generate volume fractions of the desired output order and sampling resolution
+    const int sampleOrder = params.quadratureOrder;
+    const int outputOrder = params.outputOrder;
+    computeVolumeFractions(octree, &dc, sampleOrder, outputOrder);
+    computeVolumeFractionsBaseline(octree, &dc, sampleOrder, outputOrder);
+
+    // Save meshes and fields
+    dc.Save();
   }
- 
 
   // Reclaim memory
   if(surface_mesh != nullptr)
@@ -484,6 +730,8 @@ int main( int argc, char** argv )
     delete surface_mesh;
     surface_mesh = nullptr;
   }
+
+  MPI_Finalize();
 
   return 0;
 }
