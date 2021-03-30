@@ -518,7 +518,7 @@ private:
   // Private helper functions
 
   void RegisterFieldInBPIndex(const std::string& field_name,
-                              mfem::GridFunction* gf);
+                              const int number_of_components);
   void DeregisterFieldInBPIndex(const std::string& field_name);
 
   void RegisterQFieldInBPIndex(const std::string& field_name,

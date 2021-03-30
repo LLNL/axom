@@ -1167,7 +1167,7 @@ void MFEMSidreDataCollection::addVectorBasedGridFunction(
 // private method
 // Should only be called on mpi rank 0 ( or if serial problem ).
 void MFEMSidreDataCollection::RegisterFieldInBPIndex(const std::string& field_name,
-                                                     GridFunction* gf)
+                                                     const int number_of_components)
 {
   sidre::Group* bp_field_grp = m_bp_grp->getGroup("fields/" + field_name);
   sidre::Group* bp_index_field_grp =
@@ -1180,7 +1180,6 @@ void MFEMSidreDataCollection::RegisterFieldInBPIndex(const std::string& field_na
   // Note: The bp index requires GridFunction::VectorDim()
   //       since the GF might be scalar valued and have a vector basis
   //       (e.g. hdiv and hcurl spaces)
-  const int number_of_components = gf->VectorDim();
   bp_index_field_grp->createViewScalar("number_of_components",
                                        number_of_components);
 }
@@ -1191,7 +1190,7 @@ void MFEMSidreDataCollection::DeregisterFieldInBPIndex(const std::string& field_
 {
   sidre::Group* fields_grp = m_bp_index_grp->getGroup("fields");
   SLIC_WARNING_IF(!fields_grp->hasGroup(field_name),
-                  "No field exists in blueprint index with name " << name);
+                  "No field exists in blueprint index with name " << field_name);
 
   // Note: This will destroy all orphaned views or buffer classes under this
   // group also.  If sidre owns this field data, the memory will be deleted
@@ -1279,31 +1278,11 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
   // Register field_name in the blueprint_index group.
   if(myid == 0)
   {
-    RegisterFieldInBPIndex(field_name, gf);
+    RegisterFieldInBPIndex(field_name, gf->VectorDim());
   }
 
   // Register field_name + gf in field_map.
   DataCollection::RegisterField(field_name, gf);
-}
-
-// private method
-// Should only be called on mpi rank 0 ( or if serial problem ).
-void MFEMSidreDataCollection::RegisterQFieldInBPIndex(const std::string& field_name,
-                                                      mfem::QuadratureFunction* qf)
-{
-  sidre::Group* bp_field_grp = m_bp_grp->getGroup("fields/" + field_name);
-  sidre::Group* bp_index_field_grp =
-    m_bp_index_grp->createGroup("fields/" + field_name);
-
-  bp_index_field_grp->createViewString("path", bp_field_grp->getPathName());
-  bp_index_field_grp->copyView(bp_field_grp->getView("topology"));
-  bp_index_field_grp->copyView(bp_field_grp->getView("basis"));
-  //  bp_index_field_grp->copyView( bp_field_grp->getView("vdim") );
-  //  bp_index_field_grp->copyView( bp_field_grp->getView("qspace_order") );
-
-  const int number_of_components = qf->GetVDim();
-  bp_index_field_grp->createViewScalar("number_of_components",
-                                       number_of_components);
 }
 
 void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
@@ -1379,25 +1358,11 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
   // Register field_name in the blueprint_index group.
   if(myid == 0)
   {
-    RegisterQFieldInBPIndex(field_name, qf);
+    RegisterFieldInBPIndex(field_name, qf->GetVDim());
   }
 
   // Register field_name + qf in field_map.
   mfem::DataCollection::RegisterQField(field_name, qf);
-}
-
-// private method
-// Should only be called on mpi rank 0 ( or if serial problem ).
-void MFEMSidreDataCollection::DeregisterQFieldInBPIndex(const std::string& field_name)
-{
-  sidre::Group* fields_grp = m_bp_index_grp->getGroup("fields/");
-  SLIC_WARNING_IF(fields_grp->hasGroup(field_name),
-                  "No field exists in blueprint index with name " << field_name);
-
-  // Note: This will destroy all orphaned views or buffer classes under this
-  // group also.  If sidre owns this field data, the memory will be deleted
-  // unless it's referenced somewhere else in sidre.
-  fields_grp->destroyGroup(field_name);
 }
 
 void MFEMSidreDataCollection::DeregisterQField(const std::string& field_name)
@@ -1419,7 +1384,7 @@ void MFEMSidreDataCollection::DeregisterQField(const std::string& field_name)
   // Delete field_name from the blueprint_index group.
   if(myid == 0)
   {
-    DeregisterQFieldInBPIndex(field_name);
+    DeregisterFieldInBPIndex(field_name);
   }
 
   // Delete field_name from the named_buffers group, if allocated.
