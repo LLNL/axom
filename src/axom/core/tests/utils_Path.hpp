@@ -126,3 +126,30 @@ TEST(utils_Path, basic_equals)
   EXPECT_FALSE(first == third);
   EXPECT_TRUE(first != third);
 }
+
+TEST(utils_Path, parts_empty)
+{
+  axom::utilities::Path path("");
+  auto parts = path.parts();
+
+  EXPECT_EQ(parts.size(), 0);
+}
+
+TEST(utils_Path, parts_single)
+{
+  axom::utilities::Path path("foo");
+  auto parts = path.parts();
+
+  EXPECT_EQ(parts.size(), 1);
+}
+
+TEST(utils_Path, parts_multipart)
+{
+  axom::utilities::Path path("foo/bar/baz");
+  auto parts = path.parts();
+
+  EXPECT_EQ(parts.size(), 3);
+  EXPECT_EQ(parts[0], "foo");
+  EXPECT_EQ(parts[1], "bar");
+  EXPECT_EQ(parts[2], "baz");
+}
