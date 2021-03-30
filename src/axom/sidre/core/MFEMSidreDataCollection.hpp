@@ -547,17 +547,18 @@ private:
 
   /**
    * \brief A private helper function to set up the views associated with the
-      data of a scalar valued grid function in the blueprint style.
-   * \pre gf is not null
+      data of a scalar valued grid *or* quadrature function in the blueprint style.
+   * \pre field is not null
    * \note This function is expected to be called by RegisterField()
    * \note Handles cases where hierarchy is already set up,
    *      where the data was allocated by this data collection
    *      and where the gridfunction data is external to Sidre
    */
-  void addScalarBasedGridFunction(const std::string& field_name,
-                                  mfem::GridFunction* gf,
-                                  const std::string& buffer_name,
-                                  IndexType offset);
+  void addScalarBasedField(const std::string& field_name,
+                           mfem::Vector* field,
+                           const std::string& buffer_name,
+                           IndexType offset,
+                           const int num_dofs);
 
   /**
    * \brief A private helper function to set up the views associated with the
@@ -572,20 +573,6 @@ private:
                                   mfem::GridFunction* gf,
                                   const std::string& buffer_name,
                                   IndexType offset);
-
-  /**
-    * \brief A private helper function to set up the views associated with the
-       data of a quadrature function in the blueprint style.
-    * \pre qf is not null
-    * \note This function is expected to be called by RegisterQField()
-    * \note Handles cases where hierarchy is already set up,
-    *      where the data was allocated by this data collection
-    *      and where the quadraturefunction data is external to Sidre
-    */
-  void addQuadratureFunction(const std::string& field_name,
-                             mfem::QuadratureFunction* qf,
-                             const std::string& buffer_name,
-                             axom::sidre::IndexType offset);
 
   /** @brief A private helper function to set up the Views associated with
       attribute field named @a field_name */

@@ -1014,21 +1014,19 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
 }
 
 // private method
-void MFEMSidreDataCollection::addScalarBasedGridFunction(
-  const std::string& field_name,
-  GridFunction* gf,
-  const std::string& buffer_name,
-  IndexType offset)
+void MFEMSidreDataCollection::addScalarBasedField(const std::string& field_name,
+                                                  mfem::Vector* field,
+                                                  const std::string& buffer_name,
+                                                  IndexType offset,
+                                                  const int num_dofs)
 {
   sidre::Group* grp = m_bp_grp->getGroup("fields/" + field_name);
   SLIC_ASSERT_MSG(grp != nullptr, "field " << field_name << " does not exist");
 
-  const int numDofs = gf->FESpace()->GetVSize();
-
-  if(gf->GetData() == nullptr)
+  if(field->GetData() == nullptr)
   {
-    AllocNamedBuffer(buffer_name, offset + numDofs);
-    // gf->data is set below.
+    AllocNamedBuffer(buffer_name, offset + num_dofs);
+    // field->data is set below.
   }
 
   /*
@@ -1036,7 +1034,7 @@ void MFEMSidreDataCollection::addScalarBasedGridFunction(
    *    /fields/field_name/basis
    *              -- string value is GridFunction's FEC::Name
    *    /fields/field_name/values
-   *              -- array of size numDofs
+   *              -- array of size num_dofs
    */
 
   // Make sure we have the View "values".
@@ -1052,27 +1050,27 @@ void MFEMSidreDataCollection::addScalarBasedGridFunction(
 
     // named buffers always have offset 0
     SLIC_ASSERT_MSG(bv->getSchema().dtype().offset() == 0, "");
-    SLIC_ASSERT_MSG(bv->getNumElements() >= offset + numDofs, "");
+    SLIC_ASSERT_MSG(bv->getNumElements() >= offset + num_dofs, "");
 
     if(vv->isEmpty())
     {
-      vv->attachBuffer(bv->getBuffer())->apply(sidre::DOUBLE_ID, numDofs, offset);
+      vv->attachBuffer(bv->getBuffer())->apply(sidre::DOUBLE_ID, num_dofs, offset);
     }
 
-    gf->NewDataAndSize(vv->getData(), numDofs);
+    field->NewDataAndSize(vv->getData(), num_dofs);
   }
   else
   {
     // If we are not managing the grid function's data,
     // create a view with the external data
-    vv->setExternalDataPtr(sidre::DOUBLE_ID, numDofs, gf->GetData());
+    vv->setExternalDataPtr(sidre::DOUBLE_ID, num_dofs, field->GetData());
   }
-  SLIC_ASSERT_MSG((numDofs > 0 && vv->isApplied()) ||
-                    (numDofs == 0 && vv->isEmpty() && vv->isDescribed()),
+  SLIC_ASSERT_MSG((num_dofs > 0 && vv->isApplied()) ||
+                    (num_dofs == 0 && vv->isEmpty() && vv->isDescribed()),
                   "invalid View state");
-  SLIC_ASSERT_MSG(numDofs == 0 || vv->getData() == gf->GetData(),
+  SLIC_ASSERT_MSG(num_dofs == 0 || vv->getData() == field->GetData(),
                   "View data is different from GridFunction data");
-  SLIC_ASSERT_MSG(vv->getNumElements() == numDofs,
+  SLIC_ASSERT_MSG(vv->getNumElements() == num_dofs,
                   "View size is different from GridFunction size");
 }
 
@@ -1267,7 +1265,11 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
   if(isScalarValued)
   {
     // Set the View "<m_bp_grp>/fields/<field_name>/values"
-    addScalarBasedGridFunction(field_name, gf, buffer_name, offset);
+    addScalarBasedField(field_name,
+                        gf,
+                        buffer_name,
+                        offset,
+                        gf->FESpace()->GetVSize());
   }
   else  // vector valued
   {
@@ -1283,71 +1285,6 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
 
   // Register field_name + gf in field_map.
   DataCollection::RegisterField(field_name, gf);
-}
-
-// private method
-void MFEMSidreDataCollection::addQuadratureFunction(const std::string& field_name,
-                                                    mfem::QuadratureFunction* qf,
-                                                    const std::string& buffer_name,
-                                                    axom::sidre::IndexType offset)
-{
-  sidre::Group* grp = nullptr;
-  if(m_bp_grp->hasGroup("fields/" + field_name))
-  {
-    grp = m_bp_grp->getGroup("fields/" + field_name);
-  }
-  else
-  {
-    SLIC_WARNING("Qfield " << field_name << " does not exist");
-  }
-
-  const int numDofs = qf->Size();
-
-  if(qf->GetData() == nullptr)
-  {
-    AllocNamedBuffer(buffer_name, offset + numDofs);
-  }
-
-  // Make sure we have the View "values".
-  sidre::View* vv = alloc_view(grp, "values");
-
-  // Describe and apply the "values" View.
-  // If the data store has buffer for field_name (e.g. AllocNamedBuffer was
-  // called, or it was loaded from file), use that buffer.
-  sidre::View* bv = nullptr;
-  if(named_buffers_grp()->hasView(buffer_name))
-  {
-    bv = named_buffers_grp()->getView(buffer_name);
-  }
-
-  if(bv)
-  {
-    SLIC_ASSERT_MSG(bv->hasBuffer() && bv->isDescribed(), "");
-
-    // named buffers always have offset 0
-    SLIC_ASSERT_MSG(bv->getSchema().dtype().offset() == 0, "");
-    SLIC_ASSERT_MSG(bv->getNumElements() >= offset + numDofs, "");
-
-    if(vv->isEmpty())
-    {
-      vv->attachBuffer(bv->getBuffer())->apply(sidre::DOUBLE_ID, numDofs, offset);
-    }
-
-    qf->NewDataAndSize(vv->getData(), numDofs);
-  }
-  else
-  {
-    // If we are not managing the grid function's data,
-    // create a view with the external data
-    vv->setExternalDataPtr(sidre::DOUBLE_ID, numDofs, qf->GetData());
-  }
-  SLIC_ASSERT_MSG((numDofs > 0 && vv->isApplied()) ||
-                    (numDofs == 0 && vv->isEmpty() && vv->isDescribed()),
-                  "invalid View state");
-  SLIC_ASSERT_MSG(numDofs == 0 || vv->getData() == qf->GetData(),
-                  "View data is different from QuadratureFunction data");
-  SLIC_ASSERT_MSG(vv->getNumElements() == numDofs,
-                  "View size is different from QuadratureFunction size");
 }
 
 // private method
@@ -1438,7 +1375,7 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
   v = alloc_view(grp, "topology")->setString("mesh");
 
   // Set the View "<m_bp_grp>/fields/<field_name>/values"
-  addQuadratureFunction(field_name, qf, buffer_name, offset);
+  addScalarBasedField(field_name, qf, buffer_name, offset, qf->Size());
 
   // Register field_name in the blueprint_index group.
   if(myid == 0)
