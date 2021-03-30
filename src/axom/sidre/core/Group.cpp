@@ -2293,14 +2293,9 @@ Group* Group::walkPath(std::string& path, bool create_groups_in_path)
 {
   Group* group_ptr = this;
 
-  // Split path into parts and remove empty parts
+  // Split path into parts
   std::vector<std::string> path_parts =
     axom::Path(path, s_path_delimiter).parts();
-  path_parts.erase(
-    std::remove_if(path_parts.begin(),
-                   path_parts.end(),
-                   [](std::string const& s) { return s.size() == 0; }),
-    path_parts.end());
 
   if(path_parts.size() > 0)
   {
@@ -2350,14 +2345,9 @@ const Group* Group::walkPath(std::string& path) const
 {
   const Group* group_ptr = this;
 
-  // Split path into parts and remove empty parts
+  // Split path into parts
   std::vector<std::string> path_parts =
     axom::Path(path, s_path_delimiter).parts();
-  path_parts.erase(
-    std::remove_if(path_parts.begin(),
-                   path_parts.end(),
-                   [](std::string const& s) { return s.size() == 0; }),
-    path_parts.end());
 
   if(path_parts.size() > 0)
   {

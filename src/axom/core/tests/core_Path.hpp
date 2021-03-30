@@ -129,23 +129,43 @@ TEST(core_Path, basic_equals)
 
 TEST(core_Path, parts_empty)
 {
-  axom::Path path("");
-  auto parts = path.parts();
+  axom::Path first("");
+  axom::Path second("/");
+  axom::Path third(":", ':');
 
-  EXPECT_EQ(parts.size(), 0);
+  EXPECT_EQ(first.parts().size(), 0);
+  EXPECT_EQ(second.parts().size(), 0);
+  EXPECT_EQ(third.parts().size(), 0);
 }
 
 TEST(core_Path, parts_single)
 {
-  axom::Path path("foo");
-  auto parts = path.parts();
+  axom::Path first("foo");
+  axom::Path second("/foo");
+  axom::Path third("foo:", ':');
 
-  EXPECT_EQ(parts.size(), 1);
+  EXPECT_EQ(first.parts().size(), 1);
+  EXPECT_EQ(first.parts()[0], "foo");
+  EXPECT_EQ(second.parts().size(), 1);
+  EXPECT_EQ(second.parts()[0], "foo");
+  EXPECT_EQ(third.parts().size(), 1);
+  EXPECT_EQ(third.parts()[0], "foo");
 }
 
 TEST(core_Path, parts_multipart)
 {
   axom::Path path("foo/bar/baz");
+  auto parts = path.parts();
+
+  EXPECT_EQ(parts.size(), 3);
+  EXPECT_EQ(parts[0], "foo");
+  EXPECT_EQ(parts[1], "bar");
+  EXPECT_EQ(parts[2], "baz");
+}
+
+TEST(core_Path, parts_multipart_empty)
+{
+  axom::Path path("foo//bar/baz");
   auto parts = path.parts();
 
   EXPECT_EQ(parts.size(), 3);

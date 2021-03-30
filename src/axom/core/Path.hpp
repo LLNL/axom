@@ -25,6 +25,8 @@ public:
      *
      * \param [in] path The string representing the path
      * \param [in] delim The character that delimits the path
+     *
+     * Empty parts in \p path are removed
      * 
      * FIXME: Should this be marked \p explicit ?
      */

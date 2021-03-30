@@ -20,6 +20,13 @@ Path::Path(const std::string& path, const char delim) : m_delim(delim)
   if(path.find(delim) != std::string::npos)
   {
     utilities::string::split(m_components, path, delim);
+
+    // Remove empty parts
+    m_components.erase(
+      std::remove_if(m_components.begin(),
+                     m_components.end(),
+                     [](std::string const& s) { return s.empty(); }),
+      m_components.end());
   }
   else if(!path.empty())
   {
