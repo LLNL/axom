@@ -626,6 +626,16 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
   return result;
 }
 
+/*!
+ *****************************************************************************
+ * \brief Filters through the global list of unexpected names to retrieve the
+ * ones that are
+ * 
+ * \param [in] ret_type The function's return type
+ * \param [in] arg_types The function's argument types
+ * \param [inout] group The group to add to
+ *****************************************************************************
+ */
 void updateUnexpectedNames(const std::string& accessedName,
                            std::unordered_set<std::string>& unexpectedNames)
 {
@@ -658,8 +668,19 @@ void updateUnexpectedNames(const std::string& accessedName,
   }
 }
 
-bool checkStrictness(const sidre::Group* group,
-                     const std::unordered_set<std::string>& unexpectedNames)
+/*!
+ *****************************************************************************
+ * \brief Filters through the global list of unexpected names to retrieve the
+ * ones that are within the Container that corresponds to \a group
+ * 
+ * \param [in] group The Sidre group for a Container object
+ * \param [in] unexpectedNames The global (within the Inlet hierarchy) list
+ * of unexpected names
+ *****************************************************************************
+ */
+std::vector<std::string> filterUnexpectedNames(
+  const sidre::Group* group,
+  const std::unordered_set<std::string>& unexpectedNames)
 {
   const std::string callerName = group->getPathName();
   std::vector<std::string> callerTokens;
@@ -669,7 +690,9 @@ bool checkStrictness(const sidre::Group* group,
                                  detail::COLLECTION_GROUP_NAME),
                      callerTokens.end());
   std::vector<std::string> unexpectedTokens;
-  bool unexpectedFound = false;
+  // The items of unexpected items below/within the Container corresponding
+  // to the "group" argument
+  std::vector<std::string> unexpectedNamesWithinGroup;
   for(const auto& name : unexpectedNames)
   {
     unexpectedTokens.clear();
@@ -683,15 +706,11 @@ bool checkStrictness(const sidre::Group* group,
                     callerTokens.end(),
                     unexpectedTokens.begin()))
       {
-        unexpectedFound = true;
-        SLIC_WARNING(
-          fmt::format("[Inlet] Container '{0}' contained unexpected child: {1}",
-                      callerName,
-                      name));
+        unexpectedNamesWithinGroup.push_back(name);
       }
     }
   }
-  return !unexpectedFound;
+  return unexpectedNamesWithinGroup;
 }
 
 }  // end namespace detail
@@ -957,8 +976,16 @@ bool Container::verify() const
   // If the strict flag is set
   if(checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::STRICT_FLAG))
   {
-    verified =
-      verified && detail::checkStrictness(m_sidreGroup, m_unexpectedNames);
+    // Unexpected names below/within the calling object
+    const auto currUnexpectedNames = unexpectedNames();
+    verified = verified && currUnexpectedNames.empty();
+    for(const auto& name : currUnexpectedNames)
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] Container '{0}' contained unexpected child: {1}",
+                    m_name,
+                    name));
+    }
   }
 
   // Checking the child objects is not needed if the container wasn't defined in the input file
@@ -1096,6 +1123,13 @@ Function& Container::getFunction(const std::string& funcName) const
 }
 
 std::string Container::name() const { return m_name; }
+
+// TODO: Should we return a std::unordered_set for consistency with Inlet::unexpectedNames?
+// Inlet stores a set for faster?? existence checks
+std::vector<std::string> Container::unexpectedNames() const
+{
+  return detail::filterUnexpectedNames(m_sidreGroup, m_unexpectedNames);
+}
 
 bool Container::contains(const std::string& name) const
 {
