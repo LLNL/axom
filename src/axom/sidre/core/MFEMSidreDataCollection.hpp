@@ -163,12 +163,10 @@ namespace sidre
     @note blueprint_index is used both in serial and in parallel. In parallel,
     only rank 0 will add entries to the blueprint index.
 
-    @note QuadratureFunction%s (q-fields) are not supported.
-
-    @note MFEMSidreDataCollection will attempt to reconstruct meshes and fields
-    on a restart, and will automatically register them.  This functionality is
-    experimental and only applies to meshes and fields written to a file by an
-    instance of this class.
+    @note MFEMSidreDataCollection will attempt to reconstruct meshes, fields,
+    and qfields on a restart, and will automatically register them.  This
+    functionality is experimental and only applies to meshes, fields, and
+    qfields written to a file by an instance of this class.
 
     @warning This class is still _experimental_, meaning that in future
     releases, it may not be backward compatible, and the output files generated
@@ -520,10 +518,6 @@ private:
   void RegisterFieldInBPIndex(const std::string& field_name,
                               const int number_of_components);
   void DeregisterFieldInBPIndex(const std::string& field_name);
-
-  void RegisterQFieldInBPIndex(const std::string& field_name,
-                               mfem::QuadratureFunction* qf);
-  void DeregisterQFieldInBPIndex(const std::string& field_name);
 
   void RegisterAttributeFieldInBPIndex(const std::string& attr_name);
   void DeregisterAttributeFieldInBPIndex(const std::string& attr_name);

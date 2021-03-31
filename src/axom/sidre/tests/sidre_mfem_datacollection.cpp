@@ -237,7 +237,7 @@ TEST(sidre_datacollection, dc_reload_mesh)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
-TEST(sidre_datacollection, dc_qf_reload)
+TEST(sidre_datacollection, dc_reload_qf)
 {
   //Set up a small mesh and a couple of grid function on that mesh
   mfem::Mesh mesh(2, 3, mfem::Element::QUADRILATERAL, 0, 2.0, 3.0);
