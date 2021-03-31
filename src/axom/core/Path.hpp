@@ -14,8 +14,8 @@
 namespace axom
 {
 /*!
- * \brief Path class for performing basic path operations with user-selectable
- * delimiter characters
+ * \brief Path class for performing basic path operations with a user-selectable
+ * delimiter character.
  */
 class Path
 {
