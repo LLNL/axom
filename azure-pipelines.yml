@@ -97,7 +97,7 @@ jobs:
 - job: Check_Style
   variables:
     VM_ImageName: 'ubuntu-18.04'
-    Compiler_ImageName: 'axom/tpls:clang-10_12-21-20_20h-48m'
+    Compiler_ImageName: 'axom/tpls:clang-10_04-01-21_17h-36m'
     TEST_TARGET: 'linux_clang10'
     HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
   pool:
