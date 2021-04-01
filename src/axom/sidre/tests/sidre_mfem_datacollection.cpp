@@ -293,8 +293,9 @@ TEST(sidre_datacollection, dc_reload_qf)
   mfem::QuadratureFunction* reader_qv = sdc_reader.GetQField("qv");
 
   // order_qs should also equal order_qv in this trivial case
-  EXPECT_EQ(reader_qs->GetSpace()->GetOrder(), intOrder);
-  EXPECT_EQ(reader_qv->GetSpace()->GetOrder(), intOrder);
+  // FIXME: QF order can be retrieved directly as of MFEM 4.3
+  EXPECT_EQ(reader_qs->GetSpace()->GetElementIntRule(0).GetOrder(), intOrder);
+  EXPECT_EQ(reader_qv->GetSpace()->GetElementIntRule(0).GetOrder(), intOrder);
 
   EXPECT_EQ(reader_qs->GetVDim(), qs_vdim);
   EXPECT_EQ(reader_qv->GetVDim(), qv_vdim);
