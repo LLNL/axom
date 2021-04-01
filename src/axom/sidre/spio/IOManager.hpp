@@ -289,6 +289,9 @@ public:
   void getRankToFileMap(conduit::Node& rank_to_file_map,
                         int num_files);
 
+  void getRankToFileMap(View* rank_to_file_map,
+                        int num_files);
+
 private:
   DISABLE_COPY_AND_ASSIGNMENT(IOManager);
 

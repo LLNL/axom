@@ -10,6 +10,7 @@
 #include "axom/core/utilities/FileUtilities.hpp"
 
 // SiDRe project headers
+#include "axom/sidre/core/Buffer.hpp"
 #include "axom/sidre/core/Group.hpp"
 #include "axom/sidre/core/DataStore.hpp"
 #include "axom/sidre/core/SidreTypes.hpp"
@@ -871,7 +872,7 @@ std::string IOManager::getFileNameForRank(const std::string& file_pattern,
 }
 
 void IOManager::getRankToFileMap(conduit::Node& rank_to_file_map,
-                               int num_files)
+                                 int num_files)
 {
   if(m_baton)
   { 
@@ -897,7 +898,16 @@ void IOManager::getRankToFileMap(conduit::Node& rank_to_file_map,
   map_local.set_external(&map_vec[0], map_vec.size());
 
   conduit::relay::mpi::max_all_reduce(map_local, rank_to_file_map, m_mpi_comm);
+}
 
+void IOManager::getRankToFileMap(View* rank_to_file_map,
+int num_files)
+{
+
+  conduit::Node map_node;
+  getRankToFileMap(map_node, num_files);
+//  rank_to_file_map->importArrayNode(map_node);
+(void)rank_to_file_map;
 }
 
 /*
@@ -1171,6 +1181,11 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   if(success)
   {
+    Group* state_group = datastore->getRoot()->getGroup(bp_index)->getGroup("state");
+
+    View* file_map = state_group->createView("rank_to_file_map");
+    getRankToFileMap(file_map, m_baton->getNumFiles());
+
     if(m_my_rank == 0)
     {
       Group* ind_group = datastore->getRoot()->getGroup("blueprint_index");
