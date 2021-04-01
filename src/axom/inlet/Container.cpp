@@ -626,18 +626,8 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
   return result;
 }
 
-/*!
- *****************************************************************************
- * \brief Filters through the global list of unexpected names to retrieve the
- * ones that are
- * 
- * \param [in] ret_type The function's return type
- * \param [in] arg_types The function's argument types
- * \param [inout] group The group to add to
- *****************************************************************************
- */
 void updateUnexpectedNames(const std::string& accessedName,
-                           std::unordered_set<std::string>& unexpectedNames)
+                           std::vector<std::string>& unexpectedNames)
 {
   std::vector<std::string> accessed_tokens;
   axom::utilities::string::split(accessed_tokens, accessedName, '/');
@@ -680,7 +670,7 @@ void updateUnexpectedNames(const std::string& accessedName,
  */
 std::vector<std::string> filterUnexpectedNames(
   const sidre::Group* group,
-  const std::unordered_set<std::string>& unexpectedNames)
+  const std::vector<std::string>& unexpectedNames)
 {
   const std::string callerName = group->getPathName();
   std::vector<std::string> callerTokens;
