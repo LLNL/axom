@@ -297,6 +297,21 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
   const Container& container,
   const std::string& name);
 
+/*!
+ *******************************************************************************
+ * \brief Updates the set of unexpected names to reflect an user-requested access
+ * 
+ * \param [in] accessedName The path within the input file that will be accessed
+ * \param [inout] unexpectedNames The set of input file paths that have not yet
+ * been requested by the user
+ * 
+ * \note To maintain consistency, this function should always be followed by an
+ * access to a Reader
+ *******************************************************************************
+ */
+void updateUnexpectedNames(const std::string& accessedName,
+                           std::unordered_set<std::string>& unexpectedNames);
+
 }  // namespace detail
 
 class Proxy;
@@ -334,10 +349,12 @@ public:
             const std::string& description,
             Reader& reader,
             axom::sidre::Group* sidreRootGroup,
+            std::unordered_set<std::string>& expected_names,
             bool docEnabled = true)
     : m_name(name)
     , m_reader(reader)
     , m_sidreRootGroup(sidreRootGroup)
+    , m_unexpectedNames(expected_names)
     , m_docEnabled(docEnabled)
   {
     SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
@@ -1288,6 +1305,9 @@ private:
   axom::sidre::Group* m_sidreRootGroup;
   // This Container's Sidre Group
   axom::sidre::Group* m_sidreGroup;
+  // Hold a reference to the global set of unexpected names so it can be updated when
+  // things are added to this Container
+  std::unordered_set<std::string>& m_unexpectedNames;
   bool m_docEnabled;
   std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;

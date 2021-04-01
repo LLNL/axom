@@ -336,6 +336,12 @@ int main(int argc, char** argv)
     SLIC_INFO("Verification was unsuccessful");
   }
 
+  // TODO: Remove this when a strict() option is available, as it will behave identically
+  for(const auto& item : inlet.unexpectedNames())
+  {
+    SLIC_WARNING("Input contained unexpected item: " << item);
+  }
+
   auto shapes = inlet["shapes"].get<std::unordered_map<int, Shape>>();
   for(const auto& entry : shapes)
   {

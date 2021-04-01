@@ -41,8 +41,7 @@ set(sidre_sources
     core/View.cpp
     core/Attribute.cpp
     core/AttrValues.cpp
-    core/Iterator.cpp
-    core/SidreUtilities.cpp )
+    core/Iterator.cpp )
 
 # Add spio headers and sources when MPI is available
 if(ENABLE_MPI)
