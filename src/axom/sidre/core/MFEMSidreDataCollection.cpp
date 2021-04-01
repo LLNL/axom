@@ -1343,8 +1343,11 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
   // necessary.
   sidre::View* v = alloc_view(grp, "basis");
   // In the future, we should be able to have mfem::QuadratureFunction provide us this name.
+  // FIXME: QF order can be retrieved directly as of MFEM 4.3
   const std::string basis_name =
-    fmt::format("QF_Default_{0}_{1}", qf->GetSpace()->GetOrder(), qf->GetVDim());
+    fmt::format("QF_Default_{0}_{1}",
+                qf->GetSpace()->GetElementIntRule(0).GetOrder(),
+                qf->GetVDim());
   v->setString(basis_name);
 
   // Set the topology of the QuadratureFunction.

@@ -32,7 +32,7 @@ jobs:
       linux_clang10:
         VM_ImageName: 'ubuntu-18.04'
         Compiler_ImageName: 'axom/tpls:clang-10_12-21-20_20h-48m'
-        CMAKE_EXTRA_FLAGS: ''
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
