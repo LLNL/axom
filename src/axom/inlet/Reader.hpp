@@ -17,7 +17,6 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "axom/inlet/Function.hpp"
@@ -258,7 +257,7 @@ public:
    * entries
    *****************************************************************************
    */
-  virtual std::unordered_set<std::string> getAllNames() = 0;
+  virtual std::vector<std::string> getAllNames() = 0;
 };
 
 }  // end namespace inlet

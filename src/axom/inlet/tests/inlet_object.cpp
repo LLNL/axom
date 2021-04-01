@@ -1047,7 +1047,7 @@ TYPED_TEST(inlet_object, basic_unused_names)
   // Should still verify - unexpected fields do not mean invalid
   EXPECT_TRUE(inlet.verify());
 
-  std::unordered_set<std::string> expected_unused {"foo/0/baz", "foo/1/baz"};
+  std::vector<std::string> expected_unused {"foo/0/baz", "foo/1/baz"};
   EXPECT_EQ(expected_unused, inlet.unexpectedNames());
 }
 
@@ -1085,7 +1085,7 @@ TYPED_TEST(inlet_object, basic_unused_names_substring)
   EXPECT_TRUE(inlet.verify());
 
   // Check to make sure that a naive substring is not used and that checks are path-aware
-  std::unordered_set<std::string> expected_unused {"foo/0/bar", "foo/1/bar"};
+  std::vector<std::string> expected_unused {"foo/0/bar", "foo/1/bar"};
   EXPECT_EQ(expected_unused, inlet.unexpectedNames());
 }
 
