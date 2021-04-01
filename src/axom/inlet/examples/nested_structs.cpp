@@ -362,8 +362,4 @@ int main(int argc, char** argv)
     SLIC_INFO("Documentation was written to " << docFileName
                                               << " (rst and json)");
   }
-  conduit::Node node;
-  ds.getRoot()->createNativeLayout(node);
-  node.save("stuff.yaml", "yaml");
-  // ds.getRoot()->save("stuff.json", "conduit_json");
 }
