@@ -33,7 +33,7 @@ RUN  python3 config-build.py -hc *.cmake -bp build && cd build && make -j8 VERBO
 
 # Copy host-config into easy location to copy out
 RUN mkdir -p /home/axom/export_hostconfig
-RUN cp ./axom/*.cmake /home/axom/export_hostconfig
+RUN cp ./*.cmake /home/axom/export_hostconfig
 
 # Clean up repository that will be cloned each CI job
 RUN rm -rf axom
