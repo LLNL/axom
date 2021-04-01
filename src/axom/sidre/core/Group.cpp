@@ -12,12 +12,13 @@
   #include "conduit_relay_io_hdf5.hpp"
 #endif
 
+#include "axom/core/Path.hpp"
+
 // Sidre headers
 #include "ListCollection.hpp"
 #include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "DataStore.hpp"
-#include "SidreUtilities.hpp"
 
 namespace axom
 {
@@ -2181,28 +2182,8 @@ bool Group::importConduitTree(const conduit::Node& node, bool preserve_contents)
         }
         else
         {
-          // create view with buffer
-          Buffer* buff = getDataStore()->createBuffer();
-
-          conduit::index_t num_ele = cld_dtype.number_of_elements();
-          conduit::index_t ele_bytes = DataType::default_bytes(cld_dtype.id());
-
-          buff->allocate((TypeID)cld_dtype.id(), num_ele);
-          // copy the data in a way that matches
-          // to compact representation of the buffer
-          conduit::uint8* data_ptr = (conduit::uint8*)buff->getVoidPtr();
-          for(conduit::index_t i = 0; i < num_ele; i++)
-          {
-            memcpy(data_ptr, cld_node.element_ptr(i), ele_bytes);
-            data_ptr += ele_bytes;
-          }
-
           View* view = createView(cld_name);
-          view->attachBuffer(buff);
-          // it is important to not use the data type directly
-          // it could contain offsets that are no longer
-          // valid our new buffer
-          view->apply((TypeID)cld_dtype.id(), cld_dtype.number_of_elements());
+          view->importArrayNode(cld_node);
         }
       }
       else
@@ -2312,21 +2293,20 @@ Group* Group::walkPath(std::string& path, bool create_groups_in_path)
 {
   Group* group_ptr = this;
 
-  std::string::size_type pos = detail::find_exclusive(path, s_path_delimiter);
-  if(pos != std::string::npos)
+  // Split path into parts
+  std::vector<std::string> path_parts =
+    axom::Path(path, s_path_delimiter).parts();
+
+  if(path_parts.size() > 0)
   {
-    std::vector<std::string> tokens = detail::split(path, s_path_delimiter, pos);
-    std::vector<std::string>::iterator stop = tokens.end() - 1;
+    // Find stopping point (right before last part of path)
+    std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
 
     // Navigate path down to desired Group
-    for(std::vector<std::string>::const_iterator iter = tokens.begin();
+    for(std::vector<std::string>::const_iterator iter = path_parts.begin();
         iter < stop;
         ++iter)
     {
-      SLIC_ASSERT_MSG(iter->size() > 0,
-                      SIDRE_GROUP_LOG_PREPEND << "Empty name in provided path '"
-                                              << path << "'.");
-
       if(group_ptr->hasChildGroup(*iter))
       {
         group_ptr = group_ptr->getGroup(*iter);
@@ -2346,7 +2326,7 @@ Group* Group::walkPath(std::string& path, bool create_groups_in_path)
         group_ptr = nullptr;
       }
     }
-    path = tokens.back();
+    path = path_parts.back();
   }
 
   return group_ptr;
@@ -2365,21 +2345,20 @@ const Group* Group::walkPath(std::string& path) const
 {
   const Group* group_ptr = this;
 
-  std::string::size_type pos = detail::find_exclusive(path, s_path_delimiter);
-  if(pos != std::string::npos)
+  // Split path into parts
+  std::vector<std::string> path_parts =
+    axom::Path(path, s_path_delimiter).parts();
+
+  if(path_parts.size() > 0)
   {
-    std::vector<std::string> tokens = detail::split(path, s_path_delimiter, pos);
-    std::vector<std::string>::iterator stop = tokens.end() - 1;
+    // Find stopping point (right before last part of path)
+    std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
 
     // Navigate path down to desired Group
-    for(std::vector<std::string>::const_iterator iter = tokens.begin();
+    for(std::vector<std::string>::const_iterator iter = path_parts.begin();
         iter < stop;
         ++iter)
     {
-      SLIC_ASSERT_MSG(iter->size() > 0,
-                      SIDRE_GROUP_LOG_PREPEND << "Empty name in provided path '"
-                                              << path << "'.");
-
       if(group_ptr->hasChildGroup(*iter))
       {
         group_ptr = group_ptr->getGroup(*iter);
@@ -2390,7 +2369,7 @@ const Group* Group::walkPath(std::string& path) const
         iter = stop;
       }
     }
-    path = tokens.back();
+    path = path_parts.back();
   }
 
   return group_ptr;

@@ -102,6 +102,8 @@ public:
                               const FunctionTag ret_type,
                               const std::vector<FunctionTag>& arg_types) override;
 
+  std::unordered_set<std::string> getAllNames() override;
+
   /*!
    *****************************************************************************
    * \brief The base index for Conduit arrays

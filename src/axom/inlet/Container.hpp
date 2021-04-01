@@ -298,6 +298,21 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
   const Container& container,
   const std::string& name);
 
+/*!
+ *******************************************************************************
+ * \brief Updates the set of unexpected names to reflect an user-requested access
+ * 
+ * \param [in] accessedName The path within the input file that will be accessed
+ * \param [inout] unexpectedNames The set of input file paths that have not yet
+ * been requested by the user
+ * 
+ * \note To maintain consistency, this function should always be followed by an
+ * access to a Reader
+ *******************************************************************************
+ */
+void updateUnexpectedNames(const std::string& accessedName,
+                           std::unordered_set<std::string>& unexpectedNames);
+
 }  // namespace detail
 
 class Proxy;
@@ -337,6 +352,7 @@ public:
             const std::string& description,
             Reader& reader,
             axom::sidre::Group* sidreRootGroup,
+            std::unordered_set<std::string>& expected_names,
             bool docEnabled = true,
             bool reconstruct = false);
 
@@ -864,6 +880,15 @@ public:
 
   /*!
    *****************************************************************************
+   * \return An unordered map from Function names to the child Function pointers for 
+   * this Container.
+   *****************************************************************************
+   */
+  const std::unordered_map<std::string, std::unique_ptr<Function>>&
+  getChildFunctions() const;
+
+  /*!
+   *****************************************************************************
    * \return The full name of this Container.
    *****************************************************************************
    */
@@ -1159,16 +1184,18 @@ private:
   /*!
    *******************************************************************************
    * \brief Adds a group containing the indices of a collection to the calling 
-   * container and a subcontainer for each index
+   * container and optionally a subcontainer for each index
    * 
    * \param [in] indices The indices to add
    * \param [in] description The optional description of the subcontainers
+   * \param [in] add_containers Whether to add a subcontainer for each index
    * \tparam Key The type of the indices to add
    *******************************************************************************
    */
   template <typename Key>
   void addIndicesGroup(const std::vector<Key>& indices,
-                       const std::string& description = "");
+                       const std::string& description = "",
+                       const bool add_containers = false);
 
   /*!
    *****************************************************************************
@@ -1246,6 +1273,9 @@ private:
   axom::sidre::Group* m_sidreRootGroup;
   // This Container's Sidre Group
   axom::sidre::Group* m_sidreGroup;
+  // Hold a reference to the global set of unexpected names so it can be updated when
+  // things are added to this Container
+  std::unordered_set<std::string>& m_unexpectedNames;
   bool m_docEnabled;
   std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
