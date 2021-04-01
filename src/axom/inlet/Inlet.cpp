@@ -73,15 +73,32 @@ void writerHelper(Writer& writer, const Container& container)
 {
   // Use a pre-order traversal for readability
   writer.documentContainer(container);
-  for(const auto& sub_container_entry : container.getChildContainers())
+  // Only visit a single element of a *struct* collection
+  if(isCollectionGroup(container.name()) &&
+     container.sidreGroup()->hasView(detail::STRUCT_COLLECTION_FLAG))
   {
-    writerHelper(writer, *sub_container_entry.second);
+    auto indices = detail::collectionIndices(container);
+    // Just use the first index
+    if(!indices.empty())
+    {
+      writerHelper(
+        writer,
+        *container.getChildContainers().at(
+          appendPrefix(container.name(), detail::indexToString(indices[0]))));
+    }
+  }
+  else
+  {
+    for(const auto& sub_container_entry : container.getChildContainers())
+    {
+      writerHelper(writer, *sub_container_entry.second);
+    }
   }
 }
 
 }  // end namespace detail
 
-void Inlet::writeDoc()
+void Inlet::write()
 {
   if(m_docEnabled)
   {

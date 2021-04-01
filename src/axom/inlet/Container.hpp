@@ -269,6 +269,50 @@ bool matchesKeyType(const VariantKey& key)
   return false;
 }
 
+/*!
+ *****************************************************************************
+ * \brief This is an internal utility intended to be used with arrays/dicts of 
+ * user-defined types that returns the indices as strings - integer indices
+ * will be converted to strings
+ * 
+ * \param [in] container The container to retrieve indices from
+ * \param [in] trimAbsolute Whether to only return the "basename" if the path
+ * is absolute, e.g., an absolute path foo/0/bar will be trimmed to "bar"
+ *****************************************************************************
+ */
+std::vector<VariantKey> collectionIndices(const Container& container,
+                                          bool trimAbsolute = true);
+
+/*!
+ *****************************************************************************
+ * \brief This is an internal utility intended to be used with arrays of 
+ * user-defined types that returns the a list of pairs, each of which contain
+ * an index (a number) and a fully qualified path within the input file to
+ * the array element at the corresponding index.
+ * 
+ * \param [in] container The container to retrieve indices from
+ * \param [in] name The name of the array object in the input file
+ *****************************************************************************
+ */
+std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
+  const Container& container,
+  const std::string& name);
+
+/*!
+ *******************************************************************************
+ * \brief Updates the set of unexpected names to reflect an user-requested access
+ * 
+ * \param [in] accessedName The path within the input file that will be accessed
+ * \param [inout] unexpectedNames The set of input file paths that have not yet
+ * been requested by the user
+ * 
+ * \note To maintain consistency, this function should always be followed by an
+ * access to a Reader
+ *******************************************************************************
+ */
+void updateUnexpectedNames(const std::string& accessedName,
+                           std::unordered_set<std::string>& unexpectedNames);
+
 }  // namespace detail
 
 class Proxy;
@@ -306,10 +350,12 @@ public:
             const std::string& description,
             Reader& reader,
             axom::sidre::Group* sidreRootGroup,
+            std::unordered_set<std::string>& expected_names,
             bool docEnabled = true)
     : m_name(name)
     , m_reader(reader)
     , m_sidreRootGroup(sidreRootGroup)
+    , m_unexpectedNames(expected_names)
     , m_docEnabled(docEnabled)
   {
     SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
@@ -636,7 +682,7 @@ public:
     if(!hasField(name))
     {
       const std::string msg = fmt::format(
-        "[Inlet] Field with specified path"
+        "[Inlet] Field with specified path "
         "does not exist: {0}",
         name);
       SLIC_ERROR(msg);
@@ -833,11 +879,20 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns whether this container or any of its subcontainers contain a non-
-   * empty field
+   * \brief Returns whether this container or any of its subcontainers exist, 
+   * i.e., if they contain a Field or Function that exists
    *****************************************************************************
    */
-  explicit operator bool() const;
+  bool exists() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether this container or any of its subcontainers were
+   * provided in the input file, i.e., if they contain a Field or Function that
+   * was provided in the input file
+   *****************************************************************************
+   */
+  bool isUserProvided() const;
 
   /*!
    *****************************************************************************
@@ -855,6 +910,15 @@ public:
    */
   const std::unordered_map<std::string, std::unique_ptr<Container>>&
   getChildContainers() const;
+
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Function names to the child Function pointers for 
+   * this Container.
+   *****************************************************************************
+   */
+  const std::unordered_map<std::string, std::unique_ptr<Function>>&
+  getChildFunctions() const;
 
   /*!
    *****************************************************************************
@@ -1132,31 +1196,6 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief This is an internal utility intended to be used with arrays/dicts of 
-   * user-defined types that returns the indices as strings - integer indices
-   * will be converted to strings
-   * 
-   * \param [in] trimAbsolute Whether to only return the "basename" if the path
-   * is absolute, e.g., an absolute path foo/0/bar will be trimmed to "bar"
-   *****************************************************************************
-   */
-  std::vector<VariantKey> collectionIndices(bool trimAbsolute = true) const;
-
-  /*!
-   *****************************************************************************
-   * \brief This is an internal utility intended to be used with arrays of 
-   * user-defined types that returns the a list of pairs, each of which contain
-   * an index (a number) and a fully qualified path within the input file to
-   * the array element at the corresponding index.
-   * 
-   * \param [in] name The name of the array object in the input file
-   *****************************************************************************
-   */
-  std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
-    const std::string& name) const;
-
-  /*!
-   *****************************************************************************
    * \brief Get a collection represented as an unordered map from the input file
    *****************************************************************************
    */
@@ -1164,7 +1203,7 @@ private:
   std::unordered_map<Key, Val> getCollection() const
   {
     std::unordered_map<Key, Val> map;
-    for(const auto& indexLabel : collectionIndices())
+    for(const auto& indexLabel : detail::collectionIndices(*this))
     {
       if(detail::matchesKeyType<Key>(indexLabel))
       {
@@ -1178,16 +1217,18 @@ private:
   /*!
    *******************************************************************************
    * \brief Adds a group containing the indices of a collection to the calling 
-   * container and a subcontainer for each index
+   * container and optionally a subcontainer for each index
    * 
    * \param [in] indices The indices to add
    * \param [in] description The optional description of the subcontainers
+   * \param [in] add_containers Whether to add a subcontainer for each index
    * \tparam Key The type of the indices to add
    *******************************************************************************
    */
   template <typename Key>
   void addIndicesGroup(const std::vector<Key>& indices,
-                       const std::string& description = "");
+                       const std::string& description = "",
+                       const bool add_containers = false);
 
   /*!
    *****************************************************************************
@@ -1231,12 +1272,43 @@ private:
   template <typename Func>
   void forEachCollectionElement(Func&& func) const;
 
+  /*!
+   *****************************************************************************
+   * \brief Applies a provided function to nested elements of the calling table
+   * and stores the result in a range pointed to by an output iterator \a output
+   * 
+   * \pre The function \a func must accept two arguments of type Table& and
+   * const std::string&, respectively.  
+   * 
+   * This function will pass to the provided function the nested table
+   * as the first argument and the path of the nested element in the input file
+   * as the second argument, when applicable.
+   * 
+   * \param [out] output An iterator to the beginning of the output range
+   * \param [in] name The name to append to the path described above
+   * \param [in] func The function to apply to individual nested elements
+   * 
+   * \return Whether the calling container had any nested elements (or
+   * was a struct container)
+   * 
+   * \note This function can be thought of as a variant of std::transform that
+   * operates on nested elements instead of a provided input range
+   *****************************************************************************
+   */
+  template <typename OutputIt, typename Func>
+  bool transformFromNestedElements(OutputIt output,
+                                   const std::string& name,
+                                   Func&& func) const;
+
   std::string m_name;
   Reader& m_reader;
   // Inlet's Root Sidre Group
   axom::sidre::Group* m_sidreRootGroup;
   // This Container's Sidre Group
   axom::sidre::Group* m_sidreGroup;
+  // Hold a reference to the global set of unexpected names so it can be updated when
+  // things are added to this Container
+  std::unordered_set<std::string>& m_unexpectedNames;
   bool m_docEnabled;
   std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
