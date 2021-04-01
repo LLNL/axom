@@ -19,7 +19,7 @@ RUN wget https://cmake.org/files/v3.18/cmake-3.18.5-Linux-x86_64.sh
 RUN sudo sh cmake-3.18.5-Linux-x86_64.sh --prefix=/usr --exclude-subdir
 
 # Clone axom
-RUN git clone -b $branch --recursive https://github.com/LLNL/axom.git
+RUN git clone --recursive -branch $branch --single-branch --depth 1 https://github.com/LLNL/axom.git
 
 # Build TPLs
 WORKDIR "/home/axom/axom"
@@ -27,7 +27,8 @@ RUN python3 ./scripts/uberenv/uberenv.py --spack-config-dir=./scripts/spack/conf
                                          --spec=%clang@10.0.0+mfem --prefix=/home/axom/axom_tpls -k
 
 # Make sure the new hostconfig worked
-RUN python3 config-build.py -hc *.cmake -bp build -DBLT_CXX_STD=c++14 && cd build && make -j8 && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS="-T Test -VV -j8"
+RUN python3 config-build.py -hc *.cmake -bp build -DBLT_CXX_STD=c++14 && cd build && make -j8 VERBOSE=1 && \
+    make CTEST_OUTPUT_ON_FAILURE=1 test ARGS="-T Test -VV -j8"
 
 # Copy host-config into easy location to copy out
 RUN mkdir -p /home/axom/export_hostconfig
@@ -37,3 +38,4 @@ RUN cp ./*.cmake /home/axom/export_hostconfig
 WORKDIR "/home/axom"
 RUN rm -rf axom
 RUN rm -rf axom_tpls/builds
+
