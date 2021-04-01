@@ -1114,8 +1114,6 @@ Function& Container::getFunction(const std::string& funcName) const
 
 std::string Container::name() const { return m_name; }
 
-// TODO: Should we return a std::unordered_set for consistency with Inlet::unexpectedNames?
-// Inlet stores a set for faster?? existence checks
 std::vector<std::string> Container::unexpectedNames() const
 {
   return detail::filterUnexpectedNames(m_sidreGroup, m_unexpectedNames);

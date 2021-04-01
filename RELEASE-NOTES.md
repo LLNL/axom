@@ -46,6 +46,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   delimiter characters
 - Inlet: Added a method to `inlet::Inlet` that retrieves the set of unexpected names
   in the input file
+- Inlet: Added an option to mark `Container`s as strict, which fail verification when unexpected
+  entries are present
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
