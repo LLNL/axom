@@ -66,6 +66,7 @@ Container& Container::addContainer(const std::string& name,
                                              currDescr,
                                              m_reader,
                                              m_sidreRootGroup,
+                                             m_unexpectedNames,
                                              m_docEnabled));
       // emplace_result is a pair whose first element is an iterator to the inserted element
       currContainer = emplaceResult.first->second.get();
@@ -139,6 +140,7 @@ Container& Container::addStructCollection(const std::string& name,
     std::vector<Key> indices;
     std::string fullName = appendPrefix(m_name, name);
     fullName = removeAllInstances(fullName, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(fullName, m_unexpectedNames);
     const auto result = m_reader.getIndices(fullName, indices);
     if(result == ReaderResult::Success)
     {
@@ -296,6 +298,7 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     auto typeId = addPrimitiveHelper(sidreGroup, lookupPath, forArray, val);
     return addField(sidreGroup, typeId, fullName, name);
   }
@@ -416,10 +419,13 @@ std::vector<VariantKey> registerCollection(
   {
     result.push_back(entry.first);
     auto string_key = indexToString(entry.first);
+    const auto illegal_char_loc = string_key.find_first_of("/[]");
     SLIC_ERROR_IF(
-      string_key.find('/') != std::string::npos,
-      fmt::format("[Inlet] Dictionary key '{0}' contains illegal character '/'",
-                  string_key));
+      illegal_char_loc != std::string::npos,
+      fmt::format(
+        "[Inlet] Dictionary key '{0}' contains illegal character '{1}'",
+        string_key,
+        string_key[illegal_char_loc]));
     SLIC_ERROR_IF(string_key.empty(),
                   "[Inlet] Dictionary key cannot be the empty string");
     container.addPrimitive(string_key, "", true, entry.second);
@@ -620,6 +626,38 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
   return result;
 }
 
+void updateUnexpectedNames(const std::string& accessedName,
+                           std::unordered_set<std::string>& unexpectedNames)
+{
+  std::vector<std::string> accessed_tokens;
+  axom::utilities::string::split(accessed_tokens, accessedName, '/');
+  std::vector<std::string> unexpected_tokens;
+  for(auto iter = unexpectedNames.begin(); iter != unexpectedNames.end();)
+  {
+    // Check if the possibly unexpected name is an "ancestor" of the accessed name,
+    // if it is, then it gets marked as expected via removal
+    unexpected_tokens.clear();
+    axom::utilities::string::split(unexpected_tokens, *iter, '/');
+    // If it's bigger, it can't be an ancestor so we can bail out early
+    if(unexpected_tokens.size() > accessed_tokens.size())
+    {
+      ++iter;
+    }
+    // Check if the beginning of the accessed tokens sequence is equal to the tokens in the possibly
+    // unexpected name
+    else if(std::equal(unexpected_tokens.begin(),
+                       unexpected_tokens.end(),
+                       accessed_tokens.begin()))
+    {
+      iter = unexpectedNames.erase(iter);
+    }
+    else
+    {
+      ++iter;
+    }
+  }
+}
+
 }  // end namespace detail
 
 template <typename Key>
@@ -680,6 +718,7 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     std::vector<VariantKey> indices;
     if(isDict)
     {
@@ -743,6 +782,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     auto func = m_reader.getFunction(lookupPath, ret_type, arg_types);
     return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
   }

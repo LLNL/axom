@@ -44,6 +44,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: SphinxWriter will now document the signature of function callbacks added to a schema
 - Axom::Path - New class for performing basic path operations with user-selectable
   delimiter characters
+- Inlet: Added a method to `inlet::Inlet` that retrieves the set of unexpected names
+  in the input file
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
