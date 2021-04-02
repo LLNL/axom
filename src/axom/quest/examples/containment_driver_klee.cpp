@@ -248,7 +248,7 @@ void generate_volume_fractions_baseline(mfem::DataCollection* dc,
  * Compute volume fractions function for shape on a grid of resolution \a gridRes
  * in region defined by bounding box \a queryBounds
  */
-void computeVolumeFractionsBaseline(int id,
+void computeVolumeFractionsBaseline(const std::string shapeName,
                                     const Octree3D& inOutOctree,
                                     mfem::DataCollection* dc,
                                     int AXOM_NOT_USED(sampleRes),
@@ -270,7 +270,8 @@ void computeVolumeFractionsBaseline(int id,
   mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, coll);
   mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
   volFrac->MakeOwner(coll);
-  dc->RegisterField(fmt::format("vol_frac_{:03}", id), volFrac);
+  auto volFracName = fmt::format("vol_frac_{}", shapeName);
+  dc->RegisterField(volFracName, volFrac);
 
   auto* fe = fes->GetFE(0);
   auto& ir = fe->GetNodes();
@@ -370,7 +371,7 @@ void generatePositionsQFunction(mfem::Mesh* mesh,
   inoutQFuncs.Register("positions", pos_coef, true);
 }
 
-void sampleInOutField(int id,
+void sampleInOutField(const std::string& shapeName,
                       const Octree3D& inOutOctree,
                       mfem::DataCollection* dc,
                       QFunctionCollection& inoutQFuncs,
@@ -394,7 +395,7 @@ void sampleInOutField(int id,
 
   // Sample the in/out field at each point
   // store in QField which we register with the QFunc collection
-  const std::string inoutName = fmt::format("inout_{:03}", id);
+  const std::string inoutName = fmt::format("inout_{}", shapeName);
   const int vdim = 1;
   auto* inout = new mfem::QuadratureFunction(sp, vdim);
   inoutQFuncs.Register(inoutName, inout, true);
@@ -431,13 +432,13 @@ void sampleInOutField(int id,
  * Compute volume fractions function for shape on a grid of resolution \a gridRes
  * in region defined by bounding box \a queryBounds
  */
-void computeVolumeFractions(int id,
+void computeVolumeFractions(const std::string& shapeName,
                             mfem::DataCollection* dc,
                             QFunctionCollection& inoutQFuncs,
                             int outputOrder)
 {
-  auto inoutName = fmt::format("inout_{:03}", id);
-  auto volFracName = fmt::format("vol_frac_{:03}", id);
+  auto inoutName = fmt::format("inout_{}", shapeName);
+  auto volFracName = fmt::format("vol_frac_{}", shapeName);
 
   // Grab a pointer to the inout samples QFunc
   mfem::QuadratureFunction* inout = inoutQFuncs.Get(inoutName);
@@ -752,6 +753,8 @@ int main(int argc, char** argv)
   {
     SLIC_ASSERT(s.getGeometry().getFormat() == "stl");
 
+    const std::string shapeName = s.getName();
+
     std::string stlPath = s.getGeometry().getPath();
     std::string outMsg = fmt::format(" Loading mesh {} ", id);
     SLIC_INFO(fmt::format("{:*^80}", outMsg));
@@ -796,11 +799,15 @@ int main(int argc, char** argv)
     switch(params.vfSampling)
     {
     case SAMPLE_AT_QPTS:
-      sampleInOutField(id, octree, &dc, inoutQFuncs, sampleOrder);
-      computeVolumeFractions(id, &dc, inoutQFuncs, outputOrder);
+      sampleInOutField(shapeName, octree, &dc, inoutQFuncs, sampleOrder);
+      computeVolumeFractions(shapeName, &dc, inoutQFuncs, outputOrder);
       break;
     case SAMPLE_AT_DOFS:
-      computeVolumeFractionsBaseline(id, octree, &dc, sampleOrder, outputOrder);
+      computeVolumeFractionsBaseline(shapeName,
+                                     octree,
+                                     &dc,
+                                     sampleOrder,
+                                     outputOrder);
       break;
     }
 
