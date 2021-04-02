@@ -57,6 +57,11 @@ using GridPt = Octree3D::GridPt;
 using BlockIndex = Octree3D::BlockIndex;
 
 //------------------------------------------------------------------------------
+enum VolFracSampling
+{
+  SAMPLE_AT_DOFS,
+  SAMPLE_AT_QPTS
+};
 
 /** Computes the bounding box of the surface mesh */
 GeometricBoundingBox compute_bounds(mint::Mesh* mesh)
@@ -357,7 +362,7 @@ void computeVolumeFractionsBaseline(int id,
   mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, coll);
   mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
   volFrac->MakeOwner(coll);
-  dc->RegisterField(fmt::format("vol_frac_baseline_{:03}", id), volFrac);
+  dc->RegisterField(fmt::format("vol_frac_{:03}", id), volFrac);
 
   auto* fe = fes->GetFE(0);
   auto& ir = fe->GetNodes();
@@ -505,6 +510,7 @@ public:
   int maxQueryLevel {7};
   int quadratureOrder {5};
   int outputOrder {2};
+  VolFracSampling vfSampling {SAMPLE_AT_QPTS};
 
   std::vector<double> queryBoxMins;
   std::vector<double> queryBoxMaxs;
@@ -558,6 +564,18 @@ public:
                   "volume fraction field")
       ->capture_default_str()
       ->check(CLI::PositiveNumber);
+
+    std::map<std::string, VolFracSampling> vfsamplingMap {
+      {"qpts", VolFracSampling::SAMPLE_AT_QPTS},
+      {"dofs", VolFracSampling::SAMPLE_AT_DOFS}};
+    app
+      .add_option("-s,--sampling-type",
+                  vfSampling,
+                  "Sampling strategy. \n"
+                  "Sampling either at quadrature points or collocated with "
+                  "degrees of freedom")
+      ->capture_default_str()
+      ->transform(CLI::CheckedTransformer(vfsamplingMap, CLI::ignore_case));
 
     // Optional bounding box for query region
     auto* minbb =
@@ -715,8 +733,15 @@ int main(int argc, char** argv)
       // Generate volume fractions of the desired output order and sampling resolution
       const int sampleOrder = params.quadratureOrder;
       const int outputOrder = params.outputOrder;
-      computeVolumeFractions(id, octree, &dc, sampleOrder, outputOrder);
-      computeVolumeFractionsBaseline(id, octree, &dc, sampleOrder, outputOrder);
+      switch(params.vfSampling)
+      {
+      case SAMPLE_AT_QPTS:
+        computeVolumeFractions(id, octree, &dc, sampleOrder, outputOrder);
+        break;
+      case SAMPLE_AT_DOFS:
+        computeVolumeFractionsBaseline(id, octree, &dc, sampleOrder, outputOrder);
+        break;
+      }
 
       delete surface_mesh;
       surface_mesh = nullptr;
