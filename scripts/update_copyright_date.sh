@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
 #=============================================================================
 # Change the copyright date in all files that contain the text
-# "other Axom Project Developers. See the top-level COPYRIGHT file for details.".
+# "other Axom Project Developers. See the top-level LICENSE file for details.".
 # We restrict to this subset of files
 # since we do not want to modify files we do not own (e.g., other repos
 # included as submodules). Note that this file and *.git files are omitted
