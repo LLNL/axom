@@ -25,8 +25,8 @@ if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION AND ENABLE_MPI)
 
     blt_print_target_properties(TARGET mfem)
     blt_add_executable(
-        NAME        quest_containment_driver_klee_ex
-        SOURCES     containment_driver_klee.cpp
+        NAME        quest_shaping_driver_ex
+        SOURCES     shaping_driver.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${quest_example_depends} fmt cli11 sidre inlet klee mfem mpi
         FOLDER      axom/quest/examples
