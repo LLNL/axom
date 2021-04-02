@@ -518,6 +518,7 @@ public:
 private:
   bool m_verboseOutput {false};
   bool m_hasUserQueryBox {false};
+  GeometricBoundingBox m_problemBoundingBox;
 
 public:
   Input()
@@ -531,6 +532,8 @@ public:
   bool isVerbose() const { return m_verboseOutput; }
 
   bool hasUserQueryBox() const { return m_hasUserQueryBox; }
+
+  GeometricBoundingBox problemBoundingBox() { return m_problemBoundingBox; }
 
   void parse(int argc, char** argv, CLI::App& app)
   {
@@ -597,7 +600,75 @@ public:
 
     m_hasUserQueryBox = app.count("--min") == 3 && app.count("--max") == 3;
   }
+
+  void initializeProblemBoundingBox()
+  {
+    m_problemBoundingBox.clear();
+
+    if(this->hasUserQueryBox())
+    {
+      m_problemBoundingBox.addPoint(SpacePt(queryBoxMins.data(), 3));
+      m_problemBoundingBox.addPoint(SpacePt(queryBoxMaxs.data(), 3));
+    }
+    else
+    {
+      // Hack -- If not supplied by user, create problem bounding box by reading all STL meshes
+      for(const auto& s : shapeSet.getShapes())
+      {
+        // SLIC_INFO(fmt::format("Reading shape '{}' of material '{}'",
+        //                       s.getName(),
+        //                       s.getMaterial()));
+
+        // Initial assumption is that all shapes are provided as STL files
+        auto& geom = s.getGeometry();
+        if(geom.getFormat() == "stl")
+        {
+          quest::STLReader reader;
+          reader.setFileName(geom.getPath());
+          reader.read();
+
+          UMesh surface_mesh(3, mint::TRIANGLE);
+          reader.getMesh(&surface_mesh);
+
+          // NOTE: We're not yet applying transformations!
+
+          GeometricBoundingBox bb = compute_bounds(&surface_mesh);
+          m_problemBoundingBox.addBox(bb);
+        }
+      }
+    }
+  }
 };
+
+void initializeMesh(Input& params, axom::sidre::MFEMSidreDataCollection* dc)
+{
+  // Create a background mesh
+  // Generate an mfem Cartesian mesh, scaled to the bounding box range
+  const int res = 1 << params.maxQueryLevel;
+
+  auto bbox = params.problemBoundingBox();
+  auto range = bbox.range();
+  auto low = bbox.getMin();
+  mfem::Mesh* mesh = new mfem::Mesh(res,
+                                    res,
+                                    res,
+                                    mfem::Element::HEXAHEDRON,
+                                    false,
+                                    range[0],
+                                    range[1],
+                                    range[2]);
+
+  // Offset to the mesh to lie w/in the bounding box
+  for(int i = 0; i < mesh->GetNV(); ++i)
+  {
+    double* v = mesh->GetVertex(i);
+    v[0] += low[0];
+    v[1] += low[1];
+    v[2] += low[2];
+  }
+
+  dc->SetMesh(MPI_COMM_WORLD, mesh);
+}
 
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -620,138 +691,83 @@ int main(int argc, char** argv)
     return app.exit(e);
   }
 
-  GeometricBoundingBox bbox;
-  if(params.hasUserQueryBox())
-  {
-    bbox.addPoint(SpacePt(params.queryBoxMins.data(), 3));
-    bbox.addPoint(SpacePt(params.queryBoxMaxs.data(), 3));
-  }
-
   // Load shape file and extract info
-  // Initial assumption is that all shapes are provided as STL files
+  std::fstream file(params.shapeFile);
+  params.shapeSet = klee::readShapeSet(file);
+
+  params.initializeProblemBoundingBox();
+
+  auto bbox = params.problemBoundingBox();
+  SLIC_INFO("Mesh bounding box: " << bbox);
+
+  // Add the mesh to an mfem data collection
+  axom::sidre::MFEMSidreDataCollection dc("shaping", nullptr, true);
+
+  initializeMesh(params, &dc);
+
+  // for each shape, generate a volume fraction field
+  int id = 0;
+  for(const auto& s : params.shapeSet.getShapes())
   {
-    std::fstream file(params.shapeFile);
-    params.shapeSet = klee::readShapeSet(file);
-    for(const auto& s : params.shapeSet.getShapes())
+    std::string stlPath = s.getGeometry().getPath();
+    std::string outMsg = fmt::format(" Loading mesh {} ", id);
+    SLIC_INFO(fmt::format("{:*^80}", outMsg));
+    SLIC_INFO("Reading file: " << stlPath << "...");
+
+    quest::STLReader reader;
+    reader.setFileName(stlPath);
+    reader.read();
+
+    // Create surface mesh
+    mint::Mesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
+    reader.getMesh(static_cast<UMesh*>(surface_mesh));
+
+    SLIC_INFO("Mesh has " << surface_mesh->getNumberOfNodes() << " nodes and "
+                          << surface_mesh->getNumberOfCells() << " cells.");
+
+    // Compute mesh bounding box and log some stats about the surface
+    GeometricBoundingBox meshBB = compute_bounds(surface_mesh);
+    SLIC_INFO("Mesh bounding box: " << meshBB);
+
+    // Create octree over mesh's bounding box
+    SLIC_INFO(fmt::format("{:*^80}", " Generating the octree "));
+    Octree3D octree(meshBB, surface_mesh);
+    octree.generateIndex();
+
     {
-      SLIC_INFO(fmt::format("Reading shape '{}' of material '{}'",
-                            s.getName(),
-                            s.getMaterial()));
+      const int nVerts = surface_mesh->getNumberOfNodes();
+      const int nCells = surface_mesh->getNumberOfCells();
 
-      auto& geom = s.getGeometry();
-      SLIC_ASSERT(geom.getFormat() == "stl");
-
-      // Hack -- create initial bounding box for mesh
-      // TODO: Replace w/ required user-defined bounding box and/or mesh
-      if(!params.hasUserQueryBox())
-      {
-        quest::STLReader reader;
-        reader.setFileName(geom.getPath());
-        reader.read();
-
-        UMesh surface_mesh(3, mint::TRIANGLE);
-        reader.getMesh(&surface_mesh);
-
-        // NOTE: We're not yet applying transformations!
-
-        GeometricBoundingBox bb = compute_bounds(&surface_mesh);
-        bbox.addBox(bb);
-      }
+      SLIC_INFO(fmt::format(
+        "After welding, surface mesh has {} vertices  and {} triangles.",
+        nVerts,
+        nCells));
+      mint::write_vtk(surface_mesh, fmt::format("meldedTriMesh_{:03}.vtk", id));
     }
 
-    SLIC_INFO("Mesh bounding box: " << bbox);
+    SLIC_INFO(fmt::format("{:*^80}", " Querying the octree "));
 
-    // Create a background mesh
-    // Generate an mfem Cartesian mesh, scaled to the bounding box range
-    const int res = 1 << params.maxQueryLevel;
-    auto range = bbox.range();
-    auto low = bbox.getMin();
-    mfem::Mesh mesh(res,
-                    res,
-                    res,
-                    mfem::Element::HEXAHEDRON,
-                    false,
-                    range[0],
-                    range[1],
-                    range[2]);
-
-    // Offset to the mesh to lie w/in the bounding box
-    for(int i = 0; i < mesh.GetNV(); ++i)
+    // Generate volume fractions of the desired output order and sampling resolution
+    const int sampleOrder = params.quadratureOrder;
+    const int outputOrder = params.outputOrder;
+    switch(params.vfSampling)
     {
-      double* v = mesh.GetVertex(i);
-      v[0] += low[0];
-      v[1] += low[1];
-      v[2] += low[2];
+    case SAMPLE_AT_QPTS:
+      computeVolumeFractions(id, octree, &dc, sampleOrder, outputOrder);
+      break;
+    case SAMPLE_AT_DOFS:
+      computeVolumeFractionsBaseline(id, octree, &dc, sampleOrder, outputOrder);
+      break;
     }
 
-    // Add the mesh to an mfem data collection
-    axom::sidre::MFEMSidreDataCollection dc("shaping", &mesh);
-    dc.SetComm(MPI_COMM_WORLD);
+    delete surface_mesh;
+    surface_mesh = nullptr;
 
-    // for each shape, generate a volume fraction field
-    int id = 0;
-    for(const auto& s : params.shapeSet.getShapes())
-    {
-      std::string stlPath = s.getGeometry().getPath();
-      std::string outMsg = fmt::format(" Loading mesh {} ", id);
-      SLIC_INFO(fmt::format("{:*^80}", outMsg));
-      SLIC_INFO("Reading file: " << stlPath << "...");
-
-      quest::STLReader reader;
-      reader.setFileName(stlPath);
-      reader.read();
-
-      // Create surface mesh
-      mint::Mesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
-      reader.getMesh(static_cast<UMesh*>(surface_mesh));
-
-      SLIC_INFO("Mesh has " << surface_mesh->getNumberOfNodes() << " nodes and "
-                            << surface_mesh->getNumberOfCells() << " cells.");
-
-      // Compute mesh bounding box and log some stats about the surface
-      GeometricBoundingBox meshBB = compute_bounds(surface_mesh);
-      SLIC_INFO("Mesh bounding box: " << meshBB);
-
-      // Create octree over mesh's bounding box
-      SLIC_INFO(fmt::format("{:*^80}", " Generating the octree "));
-      Octree3D octree(meshBB, surface_mesh);
-      octree.generateIndex();
-
-      {
-        const int nVerts = surface_mesh->getNumberOfNodes();
-        const int nCells = surface_mesh->getNumberOfCells();
-
-        SLIC_INFO(fmt::format(
-          "After welding, surface mesh has {} vertices  and {} triangles.",
-          nVerts,
-          nCells));
-        mint::write_vtk(surface_mesh, fmt::format("meldedTriMesh_{:03}.vtk", id));
-      }
-
-      SLIC_INFO(fmt::format("{:*^80}", " Querying the octree "));
-
-      // Generate volume fractions of the desired output order and sampling resolution
-      const int sampleOrder = params.quadratureOrder;
-      const int outputOrder = params.outputOrder;
-      switch(params.vfSampling)
-      {
-      case SAMPLE_AT_QPTS:
-        computeVolumeFractions(id, octree, &dc, sampleOrder, outputOrder);
-        break;
-      case SAMPLE_AT_DOFS:
-        computeVolumeFractionsBaseline(id, octree, &dc, sampleOrder, outputOrder);
-        break;
-      }
-
-      delete surface_mesh;
-      surface_mesh = nullptr;
-
-      ++id;
-    }
-
-    // Save meshes and fields
-    dc.Save();
+    ++id;
   }
+
+  // Save meshes and fields
+  dc.Save();
 
   MPI_Finalize();
 
