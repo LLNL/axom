@@ -56,6 +56,9 @@ using SpaceVector = Octree3D::SpaceVector;
 using GridPt = Octree3D::GridPt;
 using BlockIndex = Octree3D::BlockIndex;
 
+using QFunctionCollection = mfem::NamedFieldsMap<mfem::QuadratureFunction>;
+using DenseTensorCollection = mfem::NamedFieldsMap<mfem::DenseTensor>;
+
 //------------------------------------------------------------------------------
 enum VolFracSampling
 {
@@ -241,101 +244,6 @@ void generate_volume_fractions_baseline(mfem::DataCollection* dc,
   (*volFrac) = (*inout);
 }
 
-void generate_volume_fractions(mfem::DataCollection* dc,
-                               mfem::QuadratureFunction* inout,
-                               const std::string& name,  // vol_frac
-                               int order)
-{
-  const int sampleOrder = inout->GetSpace()->GetElementIntRule(0).GetOrder();
-  const int sampleNQ = inout->GetSpace()->GetElementIntRule(0).GetNPoints();
-  const int sampleSZ = inout->GetSpace()->GetSize();
-
-  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
-                        "In generate_volume_fractions: sample order {} | "
-                        "sample num qpts {} |  total samples {:L}",
-                        sampleOrder,
-                        sampleNQ,
-                        sampleSZ));
-
-  mfem::Mesh* mesh = dc->GetMesh();
-  const int dim = mesh->Dimension();
-  const int NE = mesh->GetNE();
-
-  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
-                        "Mesh has dim {} and {:L} elements",
-                        dim,
-                        NE));
-
-  mfem::L2_FECollection* fec =
-    new mfem::L2_FECollection(order, dim, mfem::BasisType::Positive);
-  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
-  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
-  volFrac->MakeOwner(fec);
-  dc->RegisterField(name, volFrac);
-
-  axom::utilities::Timer timer(true);
-  {
-    mfem::MassIntegrator mass_integrator;  // use the default for exact integration; lower for approximate
-
-    mfem::QuadratureFunctionCoefficient qfc(*inout);
-    mfem::DomainLFIntegrator rhs(qfc);
-
-    // assume all elts are the same
-    const auto& ir = inout->GetSpace()->GetElementIntRule(0);
-    rhs.SetIntRule(&ir);
-
-    mfem::DenseMatrix m;
-    mfem::DenseMatrixInverse mInv;
-    mfem::Vector b, x;
-    mfem::Array<int> dofs;
-    mfem::Vector one;
-    const double minY = 0.;
-    const double maxY = 1.;
-
-    for(int i = 0; i < NE; ++i)
-    {
-      auto* T = mesh->GetElementTransformation(i);
-      auto* el = fes->GetFE(i);
-
-      mass_integrator.AssembleElementMatrix(*el, *T, m);
-      rhs.AssembleRHSElementVect(*el, *T, b);
-      mInv.Factor(m);
-
-      // Use FCT limiting -- similar to Remap
-      // Limit the function to be between 0 and 1
-      // Q: Is there a better way limiting algorithm for this?
-      if(one.Size() != b.Size())
-      {
-        one.SetSize(b.Size());
-        one = 1.0;
-      }
-      FCT_project(m, mInv, b, one, minY, maxY, x);
-
-      fes->GetElementDofs(i, dofs);
-      volFrac->SetSubVector(dofs, x);
-    }
-  }
-  timer.stop();
-  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
-                        "\t Generating volume fractions took {:.3f} seconds (@ "
-                        "{:L} dofs processed per second)",
-                        timer.elapsed(),
-                        static_cast<int>(fes->GetNDofs() / timer.elapsed())));
-
-  // // Alt strategy for Q0: take a simple average of samples
-  // const int nq = sampleNQ;
-  // double sc = 1. / nq;
-  // for(int i = 0; i < NE; ++i)
-  // {
-  //   int sum = 0;
-  //   for(int k = 0; k < nq; ++k)
-  //   {
-  //     sum += (*inout)(i * nq + k);
-  //   }
-  //   (*volFrac)[i] = sum * sc;
-  // }
-}
-
 /**
  * Compute volume fractions function for shape on a grid of resolution \a gridRes
  * in region defined by bounding box \a queryBounds
@@ -406,18 +314,11 @@ void computeVolumeFractionsBaseline(int id,
   }
 }
 
-/**
- * Compute volume fractions function for shape on a grid of resolution \a gridRes
- * in region defined by bounding box \a queryBounds
- */
-void computeVolumeFractions(int id,
-                            const Octree3D& inOutOctree,
-                            mfem::DataCollection* dc,
-                            int sampleRes,
-                            int outputOrder)
+void generatePositionsQFunction(mfem::Mesh* mesh,
+                                QFunctionCollection& inoutQFuncs,
+                                int sampleRes)
 {
-  // Step 1 -- generate a QField w/ the spatial coordinates
-  mfem::Mesh* mesh = dc->GetMesh();
+  SLIC_ASSERT(mesh != nullptr);
   const int NE = mesh->GetNE();
   const int dim = mesh->Dimension();
 
@@ -431,7 +332,7 @@ void computeVolumeFractions(int id,
   // that will use that many samples: 2n-1 and 2n-2 will work
   // NOTE: Might be different for simplices
   const int sampleOrder = 2 * sampleRes - 1;
-  mfem::QuadratureSpace sp(mesh, sampleOrder);
+  mfem::QuadratureSpace* sp = new mfem::QuadratureSpace(mesh, sampleOrder);
 
   // TODO: Should the samples be along a uniform grid
   //       instead of Guassian quadrature?
@@ -441,12 +342,13 @@ void computeVolumeFractions(int id,
   //       Using 0s and 1s is non-oscillatory in Bernstein basis
 
   // Assume all elements have the same integration rule
-  const auto& ir = sp.GetElementIntRule(0);
+  const auto& ir = sp->GetElementIntRule(0);
   const int nq = ir.GetNPoints();
   const auto* geomFactors =
     mesh->GetGeometricFactors(ir, mfem::GeometricFactors::COORDINATES);
 
-  mfem::QuadratureFunction pos_coef(&sp, dim);
+  mfem::QuadratureFunction* pos_coef = new mfem::QuadratureFunction(sp, dim);
+  pos_coef->SetOwnsSpace(true);
 
   // Rearrange positions into quadrature function
   {
@@ -457,25 +359,54 @@ void computeVolumeFractions(int id,
         for(int k = 0; k < nq; ++k)
         {
           //X has dims nqpts x sdim x ne
-          pos_coef((i * nq * dim) + (k * dim) + j) =
+          (*pos_coef)((i * nq * dim) + (k * dim) + j) =
             geomFactors->X((i * nq * dim) + (j * nq) + k);
         }
       }
     }
   }
 
-  const int vdim = 1;
-  mfem::QuadratureFunction inout(&sp, vdim);
+  // register positions with the QFunction collection, which wil handle its deletion
+  inoutQFuncs.Register("positions", pos_coef, true);
+}
 
-  // Step 2 -- sample the in/out field at each point -- store in QField 'inout'
+void sampleInOutField(int id,
+                      const Octree3D& inOutOctree,
+                      mfem::DataCollection* dc,
+                      QFunctionCollection& inoutQFuncs,
+                      int sampleRes)
+{
+  auto* mesh = dc->GetMesh();
+  SLIC_ASSERT(mesh != nullptr);
+  const int NE = mesh->GetNE();
+  const int dim = mesh->Dimension();
+
+  // Generate a Quadrature Function with the geometric positions, if not already available
+  if(!inoutQFuncs.Has("positions"))
+  {
+    generatePositionsQFunction(mesh, inoutQFuncs, sampleRes);
+  }
+
+  // Access the positions QFunc and associated QuadratureSpace
+  mfem::QuadratureFunction* pos_coef = inoutQFuncs.Get("positions");
+  mfem::QuadratureSpace* sp = pos_coef->GetSpace();
+  const int nq = sp->GetElementIntRule(0).GetNPoints();
+
+  // Sample the in/out field at each point
+  // store in QField which we register with the QFunc collection
+  const std::string inoutName = fmt::format("inout_{:03}", id);
+  const int vdim = 1;
+  auto* inout = new mfem::QuadratureFunction(sp, vdim);
+  inoutQFuncs.Register(inoutName, inout, true);
+
   mfem::DenseMatrix m;
   mfem::Vector res;
 
   axom::utilities::Timer timer(true);
   for(int i = 0; i < NE; ++i)
   {
-    pos_coef.GetElementValues(i, m);
-    inout.GetElementValues(i, res);
+    pos_coef->GetElementValues(i, m);
+    inout->GetElementValues(i, res);
 
     for(int p = 0; p < nq; ++p)
     {
@@ -487,17 +418,121 @@ void computeVolumeFractions(int id,
     }
   }
   timer.stop();
+
   SLIC_INFO(fmt::format(
     std::locale("en_US.UTF-8"),
-    "\t Sampling inout field took {} seconds (@ {:L} queries per second)",
+    "\t Sampling inout field '{}' took {} seconds (@ {:L} queries per second)",
+    inoutName,
     timer.elapsed(),
     static_cast<int>((NE * nq) / timer.elapsed())));
+}
 
-  // Step 3 -- project QField onto volume fractions field
-  generate_volume_fractions(dc,
-                            &inout,
-                            fmt::format("vol_frac_{:03}", id),
-                            outputOrder);
+/**
+ * Compute volume fractions function for shape on a grid of resolution \a gridRes
+ * in region defined by bounding box \a queryBounds
+ */
+void computeVolumeFractions(int id,
+                            mfem::DataCollection* dc,
+                            QFunctionCollection& inoutQFuncs,
+                            int outputOrder)
+{
+  auto inoutName = fmt::format("inout_{:03}", id);
+  auto volFracName = fmt::format("vol_frac_{:03}", id);
+
+  // Grab a pointer to the inout samples QFunc
+  mfem::QuadratureFunction* inout = inoutQFuncs.Get(inoutName);
+
+  const int sampleOrder = inout->GetSpace()->GetElementIntRule(0).GetOrder();
+  const int sampleNQ = inout->GetSpace()->GetElementIntRule(0).GetNPoints();
+  const int sampleSZ = inout->GetSpace()->GetSize();
+  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
+                        "In computeVolumeFractions(): sample order {} | "
+                        "sample num qpts {} |  total samples {:L}",
+                        sampleOrder,
+                        sampleNQ,
+                        sampleSZ));
+
+  mfem::Mesh* mesh = dc->GetMesh();
+  const int dim = mesh->Dimension();
+  const int NE = mesh->GetNE();
+
+  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
+                        "Mesh has dim {} and {:L} elements",
+                        dim,
+                        NE));
+
+  // Project QField onto volume fractions field
+
+  mfem::L2_FECollection* fec =
+    new mfem::L2_FECollection(outputOrder, dim, mfem::BasisType::Positive);
+  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
+  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
+  volFrac->MakeOwner(fec);
+  dc->RegisterField(volFracName, volFrac);
+
+  axom::utilities::Timer timer(true);
+  {
+    mfem::MassIntegrator mass_integrator;  // use the default for exact integration; lower for approximate
+
+    mfem::QuadratureFunctionCoefficient qfc(*inout);
+    mfem::DomainLFIntegrator rhs(qfc);
+
+    // assume all elts are the same
+    const auto& ir = inout->GetSpace()->GetElementIntRule(0);
+    rhs.SetIntRule(&ir);
+
+    mfem::DenseMatrix m;
+    mfem::DenseMatrixInverse mInv;
+    mfem::Vector b, x;
+    mfem::Array<int> dofs;
+    mfem::Vector one;
+    const double minY = 0.;
+    const double maxY = 1.;
+
+    for(int i = 0; i < NE; ++i)
+    {
+      auto* T = mesh->GetElementTransformation(i);
+      auto* el = fes->GetFE(i);
+
+      mass_integrator.AssembleElementMatrix(*el, *T, m);
+      rhs.AssembleRHSElementVect(*el, *T, b);
+      mInv.Factor(m);
+
+      // Use FCT limiting -- similar to Remap
+      // Limit the function to be between 0 and 1
+      // Q: Is there a better way limiting algorithm for this?
+      if(one.Size() != b.Size())
+      {
+        one.SetSize(b.Size());
+        one = 1.0;
+      }
+      FCT_project(m, mInv, b, one, minY, maxY, x);
+
+      fes->GetElementDofs(i, dofs);
+      volFrac->SetSubVector(dofs, x);
+    }
+  }
+  timer.stop();
+  SLIC_INFO(
+    fmt::format(std::locale("en_US.UTF-8"),
+                "\t Generating volume fractions '{}' took {:.3f} seconds (@ "
+                "{:L} dofs processed per second)",
+                volFracName,
+                timer.elapsed(),
+                static_cast<int>(fes->GetNDofs() / timer.elapsed())));
+
+  // // Alt strategy for Q0: take a simple average of samples
+  // const int nq = sampleNQ;
+  // double sc = 1. / nq;
+  // for(int i = 0; i < NE; ++i)
+  // {
+  //   int sum = 0;
+  //   for(int k = 0; k < nq; ++k)
+  //   {
+  //     sum += (*inout)(i * nq + k);
+  //   }
+  //   (*volFrac)[i] = sum * sc;
+  // }
 }
 
 /** Struct to parse and store the input parameters */
@@ -667,6 +702,8 @@ void initializeMesh(Input& params, axom::sidre::MFEMSidreDataCollection* dc)
     v[2] += low[2];
   }
 
+  mesh->EnsureNodes();
+  dc->SetMeshNodesName("positions");
   dc->SetMesh(MPI_COMM_WORLD, mesh);
 }
 
@@ -705,10 +742,16 @@ int main(int argc, char** argv)
 
   initializeMesh(params, &dc);
 
+  // TODO: Use MfemSidreDataCollection QFuncs for this when we upgrade to post mfem@4.3
+  QFunctionCollection inoutQFuncs;
+  DenseTensorCollection inoutDofs;
+
   // for each shape, generate a volume fraction field
   int id = 0;
   for(const auto& s : params.shapeSet.getShapes())
   {
+    SLIC_ASSERT(s.getGeometry().getFormat() == "stl");
+
     std::string stlPath = s.getGeometry().getPath();
     std::string outMsg = fmt::format(" Loading mesh {} ", id);
     SLIC_INFO(fmt::format("{:*^80}", outMsg));
@@ -730,7 +773,7 @@ int main(int argc, char** argv)
     SLIC_INFO("Mesh bounding box: " << meshBB);
 
     // Create octree over mesh's bounding box
-    SLIC_INFO(fmt::format("{:*^80}", " Generating the octree "));
+    SLIC_INFO(fmt::format("{:-^80}", " Generating the octree "));
     Octree3D octree(meshBB, surface_mesh);
     octree.generateIndex();
 
@@ -745,7 +788,7 @@ int main(int argc, char** argv)
       mint::write_vtk(surface_mesh, fmt::format("meldedTriMesh_{:03}.vtk", id));
     }
 
-    SLIC_INFO(fmt::format("{:*^80}", " Querying the octree "));
+    SLIC_INFO(fmt::format("{:-^80}", " Querying the octree "));
 
     // Generate volume fractions of the desired output order and sampling resolution
     const int sampleOrder = params.quadratureOrder;
@@ -753,7 +796,8 @@ int main(int argc, char** argv)
     switch(params.vfSampling)
     {
     case SAMPLE_AT_QPTS:
-      computeVolumeFractions(id, octree, &dc, sampleOrder, outputOrder);
+      sampleInOutField(id, octree, &dc, inoutQFuncs, sampleOrder);
+      computeVolumeFractions(id, &dc, inoutQFuncs, outputOrder);
       break;
     case SAMPLE_AT_DOFS:
       computeVolumeFractionsBaseline(id, octree, &dc, sampleOrder, outputOrder);
