@@ -429,6 +429,82 @@ void sampleInOutField(const std::string& shapeName,
 }
 
 /**
+ * Utility function to take the union of inouts on all shapes for a given material
+ * 
+ * Note: Registers the new QFunction with \a inoutQFuncs
+ */
+void mergeQFuncs(const std::string& material,
+                 const std::vector<std::string>& shapes,
+                 QFunctionCollection& inoutQFuncs)
+{
+  if(shapes.empty())
+  {
+    return;
+  }
+
+  std::vector<std::pair<std::string, mfem::QuadratureFunction*>> shapeQFuncs;
+  for(auto& s : shapes)
+  {
+    std::string name = fmt::format("inout_{}", s);
+    auto* q = inoutQFuncs.Get(name);
+    SLIC_ASSERT(q != nullptr);
+    shapeQFuncs.push_back({name, q});
+  }
+
+  // initialize material Q function from first shape
+  auto* firstQFunc = shapeQFuncs[0].second;
+  auto* mat_inout = new mfem::QuadratureFunction(*firstQFunc);
+  inoutQFuncs.Register(fmt::format("mat_inout_{}", material), mat_inout, true);
+
+  const int SZ = mat_inout->Size();
+  double* mdata = mat_inout->GetData();
+
+  // add in Q functions from other shapes
+  const int nShapes = shapes.size();
+  for(int i = 1; i < nShapes; ++i)
+  {
+    auto& pair = shapeQFuncs[i];
+    double* sdata = pair.second->GetData();
+    for(int j = 0; j < SZ; ++j)
+    {
+      mdata[j] = (mdata[j] + sdata[j] > 0) ? 1 : 0;
+    }
+  }
+}
+
+/**
+ * Utility function to zero out inout quadrature points when a material is replaced
+ */
+void replaceMaterials(const std::string& material,
+                      const std::set<std::string>& replacements,
+                      QFunctionCollection& inoutQFuncs)
+{
+  if(replacements.empty())
+  {
+    return;
+  }
+
+  auto* matQFunc = inoutQFuncs.Get(fmt::format("mat_inout_{}", material));
+  SLIC_ASSERT(matQFunc != nullptr);
+
+  const int SZ = matQFunc->Size();
+  double* mData = matQFunc->GetData();
+
+  for(auto& m : replacements)
+  {
+    std::string name = fmt::format("mat_inout_{}", m);
+    auto* q = inoutQFuncs.Get(name);
+    SLIC_ASSERT(q != nullptr);
+    double* rData = q->GetData();
+
+    for(int j = 0; j < SZ; ++j)
+    {
+      mData[j] = rData[j] > 0 ? 0 : mData[j];
+    }
+  }
+}
+
+/**
  * Compute volume fractions function for shape on a grid of resolution \a gridRes
  * in region defined by bounding box \a queryBounds
  */
@@ -437,7 +513,7 @@ void computeVolumeFractions(const std::string& shapeName,
                             QFunctionCollection& inoutQFuncs,
                             int outputOrder)
 {
-  auto inoutName = fmt::format("inout_{}", shapeName);
+  auto inoutName = fmt::format("mat_inout_{}", shapeName);
   auto volFracName = fmt::format("vol_frac_{}", shapeName);
 
   // Grab a pointer to the inout samples QFunc
@@ -747,8 +823,9 @@ int main(int argc, char** argv)
   QFunctionCollection inoutQFuncs;
   DenseTensorCollection inoutDofs;
 
-  // for each shape, generate a volume fraction field
-  int id = 0;
+  // Sample the InOut quadrature field for each shape using an InOut octree
+  // Assumptions: Each shape has a unique name
+  SLIC_INFO(fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
   for(const auto& s : params.shapeSet.getShapes())
   {
     SLIC_ASSERT(s.getGeometry().getFormat() == "stl");
@@ -756,8 +833,8 @@ int main(int argc, char** argv)
     const std::string shapeName = s.getName();
 
     std::string stlPath = s.getGeometry().getPath();
-    std::string outMsg = fmt::format(" Loading mesh {} ", id);
-    SLIC_INFO(fmt::format("{:*^80}", outMsg));
+    std::string outMsg = fmt::format(" Loading mesh '{}' ", shapeName);
+    SLIC_INFO(fmt::format("{:-^80}", outMsg));
     SLIC_INFO("Reading file: " << stlPath << "...");
 
     quest::STLReader reader;
@@ -767,9 +844,6 @@ int main(int argc, char** argv)
     // Create surface mesh
     mint::Mesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
     reader.getMesh(static_cast<UMesh*>(surface_mesh));
-
-    SLIC_INFO("Mesh has " << surface_mesh->getNumberOfNodes() << " nodes and "
-                          << surface_mesh->getNumberOfCells() << " cells.");
 
     // Compute mesh bounding box and log some stats about the surface
     GeometricBoundingBox meshBB = compute_bounds(surface_mesh);
@@ -788,19 +862,19 @@ int main(int argc, char** argv)
         "After welding, surface mesh has {} vertices  and {} triangles.",
         nVerts,
         nCells));
-      mint::write_vtk(surface_mesh, fmt::format("meldedTriMesh_{:03}.vtk", id));
+      mint::write_vtk(surface_mesh,
+                      fmt::format("meldedTriMesh_{}.vtk", shapeName));
     }
 
     SLIC_INFO(fmt::format("{:-^80}", " Querying the octree "));
 
-    // Generate volume fractions of the desired output order and sampling resolution
+    // Sample the InOut field at the mesh quadrature points
     const int sampleOrder = params.quadratureOrder;
     const int outputOrder = params.outputOrder;
     switch(params.vfSampling)
     {
     case SAMPLE_AT_QPTS:
       sampleInOutField(shapeName, octree, &dc, inoutQFuncs, sampleOrder);
-      computeVolumeFractions(shapeName, &dc, inoutQFuncs, outputOrder);
       break;
     case SAMPLE_AT_DOFS:
       computeVolumeFractionsBaseline(shapeName,
@@ -813,8 +887,79 @@ int main(int argc, char** argv)
 
     delete surface_mesh;
     surface_mesh = nullptr;
+  }
 
-    ++id;
+  // Apply replacement rules to the quadrature points
+  // Assumptions: The replacement rules have been validated, yielding a valid DAG for the replacements
+  SLIC_INFO(
+    fmt::format("{:=^80}", "Applying replacement rules over the shapes"));
+
+  // generate a map from materials to shape names
+  std::map<std::string, std::vector<std::string>> materialsToShapes;
+  {
+    for(const auto& s : params.shapeSet.getShapes())
+    {
+      materialsToShapes[s.getMaterial()].push_back(s.getName());
+    }
+
+    // generate a map from materials to set of materials that it is replaced by
+    std::map<std::string, std::set<std::string>> replaced_by;
+    for(const auto& s : params.shapeSet.getShapes())
+    {
+      auto& material_s = s.getMaterial();
+      for(const auto& t : params.shapeSet.getShapes())
+      {
+        auto& material_t = t.getMaterial();
+        if(material_s != material_t && s.replaces(material_t))
+        {
+          replaced_by[material_t].insert(material_s);
+        }
+      }
+    }
+
+    SLIC_INFO("Replacement rules:");
+    for(const auto& s : params.shapeSet.getShapes())
+    {
+      SLIC_INFO(fmt::format("Shape '{}' of material {} is replaced by: [{}]",
+                            s.getName(),
+                            s.getMaterial(),
+                            fmt::join(replaced_by[s.getMaterial()], " ")));
+    }
+
+    // Merge all shapes of a given material into a single material QFunc
+    for(const auto& kv : materialsToShapes)
+    {
+      auto& mat = kv.first;
+      mergeQFuncs(mat, kv.second, inoutQFuncs);
+    }
+
+    // Merge all shapes of a given material into a single material QFunc
+    for(const auto& kv : replaced_by)
+    {
+      auto& mat = kv.first;
+      replaceMaterials(mat, kv.second, inoutQFuncs);
+    }
+  }
+  // Generate the volume fractions from the InOut quadrature fields
+  SLIC_INFO(
+    fmt::format("{:=^80}", "Generating volume fraction fields for materials"));
+  for(const auto& kv : materialsToShapes)
+  {
+    const std::string shapeName = kv.first;
+    const int outputOrder = params.outputOrder;
+
+    SLIC_INFO(fmt::format("Generating volume fraction fields for '{}' shape",
+                          shapeName));
+
+    switch(params.vfSampling)
+    {
+    case SAMPLE_AT_QPTS:
+      computeVolumeFractions(shapeName, &dc, inoutQFuncs, outputOrder);
+      break;
+    case SAMPLE_AT_DOFS:
+      /* no-op for now */
+      break;
+    }
   }
 
   // Save meshes and fields
