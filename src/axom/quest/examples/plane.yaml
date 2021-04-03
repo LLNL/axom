@@ -1,7 +1,0 @@
-dimensions: 3
-shapes:
-  - name: plane
-    material: steel
-    geometry:
-      format: stl
-      path: "/usr/WS1/weiss27/tmp/axom_klee/data/quest/plane_simp.stl"
