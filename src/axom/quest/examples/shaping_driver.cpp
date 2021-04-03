@@ -736,7 +736,7 @@ public:
         if(geom.getFormat() == "stl")
         {
           quest::STLReader reader;
-          reader.setFileName(geom.getPath());
+          reader.setFileName(shapeSet.resolvePath(geom.getPath()));
           reader.read();
 
           UMesh surface_mesh(3, mint::TRIANGLE);
@@ -806,8 +806,7 @@ int main(int argc, char** argv)
   }
 
   // Load shape file and extract info
-  std::fstream file(params.shapeFile);
-  params.shapeSet = klee::readShapeSet(file);
+  params.shapeSet = klee::readShapeSet(params.shapeFile);
 
   params.initializeProblemBoundingBox();
 
@@ -832,7 +831,7 @@ int main(int argc, char** argv)
 
     const std::string shapeName = s.getName();
 
-    std::string stlPath = s.getGeometry().getPath();
+    std::string stlPath = params.shapeSet.resolvePath(s.getGeometry().getPath());
     std::string outMsg = fmt::format(" Loading mesh '{}' ", shapeName);
     SLIC_INFO(fmt::format("{:-^80}", outMsg));
     SLIC_INFO("Reading file: " << stlPath << "...");
