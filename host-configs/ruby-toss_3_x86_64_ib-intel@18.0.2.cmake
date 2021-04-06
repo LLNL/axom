@@ -7,31 +7,25 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: xl@16.1.1_coral
+# Compiler Spec: intel@18.0.2
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_03_31_18_14_32/spack/lib/spack/env/xl/xlc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_03_31_18_05_44/spack/lib/spack/env/intel/icc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_03_31_18_14_32/spack/lib/spack/env/xl/xlc++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_03_31_18_05_44/spack/lib/spack/env/intel/icpc" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_03_31_18_14_32/spack/lib/spack/env/xl/xlf90" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_03_31_18_05_44/spack/lib/spack/env/intel/ifort" CACHE PATH "")
 
 else()
 
-  set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/tce/packages/intel/intel-18.0.2/bin/icc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlC" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/tce/packages/intel/intel-18.0.2/bin/icpc" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-18.0.2/bin/ifort" CACHE PATH "")
 
 endif()
-
-set(CMAKE_Fortran_COMPILER_ID "XL" CACHE STRING "Override to proper compiler family for XL")
-
-set(CMAKE_C_COMPILER_ID "XL" CACHE STRING "Override to proper compiler family for XL")
-
-set(CMAKE_CXX_COMPILER_ID "XL" CACHE STRING "Override to proper compiler family for XL")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
@@ -39,19 +33,17 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 # MPI
 #------------------------------------------------------------------------------
 
-set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpixlc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpixlC" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpixlf" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpirun" CACHE PATH "")
+set(MPIEXEC_EXECUTABLE "/usr/bin/srun" CACHE PATH "")
 
-set(MPIEXEC_NUMPROC_FLAG "-np" CACHE STRING "")
+set(MPIEXEC_NUMPROC_FLAG "-n" CACHE STRING "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
-
-set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # Hardware
@@ -61,17 +53,9 @@ set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE STRING "")
 # Hardware Specifics
 #------------------------------------------------
 
-set(ENABLE_OPENMP OFF CACHE BOOL "")
+set(ENABLE_OPENMP ON CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
-
-set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE STRING "Converts C-style comments to Fortran style in preprocessed files")
-
-set(BLT_EXE_LINKER_FLAGS "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.12.23/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
-
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.12.23/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
-
-set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # TPLs
@@ -79,7 +63,7 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_03_31_18_14_32/xl-16.1.1_coral" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_03_31_18_05_44/intel-18.0.2" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.6.0" CACHE PATH "")
 
@@ -101,7 +85,7 @@ set(UMPIRE_DIR "${TPL_ROOT}/umpire-4.0.1" CACHE PATH "")
 
 # Root directory for generated developer tools
 
-set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/2020_08_21_21_29_26/gcc-8.3.1" CACHE PATH "")
+set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/2020_08_21_22_18_57/gcc-8.1.0" CACHE PATH "")
 
 set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
 
