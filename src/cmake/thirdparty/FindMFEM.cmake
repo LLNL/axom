@@ -121,6 +121,14 @@ else()
         list(APPEND MFEM_LIBRARIES ${CUDA_CUBLAS_LIBRARIES})
     endif()
 
+    # Check if MFEM was built with MPI
+    if(mfem_cfg_file_txt MATCHES "MFEM_USE_MPI += YES")
+        if(NOT ENABLE_MPI)
+            message(WARNING "MFEM was built with MPI but MPI is not enabled")
+        endif()
+        set(MFEM_USE_MPI ON CACHE BOOL "")
+    endif()
+
 endif()
 
 include(FindPackageHandleStandardArgs)
