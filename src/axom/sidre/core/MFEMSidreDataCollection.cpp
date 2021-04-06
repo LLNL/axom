@@ -16,6 +16,8 @@
 
   #include "MFEMSidreDataCollection.hpp"
 
+  #include "axom/core/Path.hpp"
+
 using mfem::Array;
 using mfem::GridFunction;
 using mfem::Mesh;
@@ -429,7 +431,7 @@ void MFEMSidreDataCollection::createMeshBlueprintTopologies(
     topology_grp->createViewAndAllocate("elements/connectivity",
                                         sidre::INT_ID,
                                         num_indices);
-    topology_grp->createViewString("coordset", "coords");
+    topology_grp->createViewString("coordset", s_coordset_name);
 
     // If the mesh has nodes, set the name of the GridFunction holding the
     // mesh nodes in the blueprint group.
@@ -473,8 +475,10 @@ void MFEMSidreDataCollection::createMeshBlueprintTopologies(
       // "Shallow" copy the m_bp_grp view into the m_bp_index_grp sub-group.
       // Note that the "topologies/mesh" sub-group has to exist, i.e. this
       // method should be called first with mesh_name = "mesh".
-      m_bp_index_grp->getGroup("topologies/mesh")
-        ->copyView(m_bp_grp->getView("topologies/mesh/boundary_topology"));
+      const std::string mesh_topo_group_name =
+        "topologies/" + s_mesh_topology_name;
+      m_bp_index_grp->getGroup(mesh_topo_group_name)
+        ->copyView(m_bp_grp->getView(mesh_topo_group_name + "/boundary_topology"));
     }
 
     sidre::Group* bp_index_topo_grp = m_bp_index_grp->createGroup(mesh_topo_str);
@@ -512,7 +516,7 @@ void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
   {
     adjset_grp = m_bp_grp->createGroup("adjsets/mesh");
     adjset_grp->createViewString("association", "vertex");
-    adjset_grp->createViewString("topology", "mesh");
+    adjset_grp->createViewString("topology", s_mesh_topology_name);
 
     if(myid == 0)
     {
@@ -1183,7 +1187,7 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
   // Set the topology of the GridFunction.
   // This is always 'mesh' except for a special case with the boundary material
   // attributes field.
-  v = alloc_view(grp, "topology")->setString("mesh");
+  v = alloc_view(grp, "topology")->setString(s_mesh_topology_name);
 
   SLIC_ASSERT_MSG(gf->Size() == gf->FESpace()->GetVSize(),
                   "GridFunction size does not match FiniteElementSpace size");
@@ -1329,7 +1333,8 @@ void MFEMSidreDataCollection::addIntegerAttributeField(const std::string& attr_n
   SLIC_ASSERT_MSG(fld_grp != nullptr, "'fields' group does not exist");
 
   const int num_elem = is_bdry ? mesh->GetNBE() : mesh->GetNE();
-  std::string topo_name = is_bdry ? "boundary" : "mesh";
+  const std::string topo_name =
+    is_bdry ? s_boundary_topology_name : s_mesh_topology_name;
 
   sidre::Group* attr_grp = fld_grp->createGroup(attr_name);
   attr_grp->createViewString("association", "element");
@@ -1910,10 +1915,12 @@ void MFEMSidreDataCollection::reconstructMesh()
     !verifyMeshBlueprint(),
     "Cannot reconstruct mesh, data does not satisfy Conduit Blueprint");
 
-  SLIC_ERROR_IF(!m_bp_grp->hasView("coordsets/coords/values/x"),
+  const auto coordset_values =
+    Path::join({"coordsets", s_coordset_name, "values/x"});
+  SLIC_ERROR_IF(!m_bp_grp->hasView(coordset_values),
                 "Cannot reconstruct a mesh without a Cartesian coordinate set");
 
-  View* vertex_view = m_bp_grp->getView("coordsets/coords/values/x");
+  View* vertex_view = m_bp_grp->getView(coordset_values);
   SLIC_ERROR_IF(vertex_view->isExternal(),
                 "Cannot reconstruct a mesh that was built using external data");
 
@@ -1935,116 +1942,118 @@ void MFEMSidreDataCollection::reconstructMesh()
   // Use the x to get the number of vertices
   int num_vertices = vertex_view->getNumElements();
 
-  const std::string mesh_elements_path =
-    "topologies/" + s_mesh_topology_name + "/elements";
+  const auto mesh_elements =
+    Path::join({"topologies", s_mesh_topology_name, "elements"});
 
-  SLIC_ERROR_IF(!m_bp_grp->hasGroup(mesh_elements_path),
+  SLIC_ERROR_IF(!m_bp_grp->hasGroup(mesh_elements),
                 "Cannot reconstruct mesh without mesh topology");
 
   int* element_indices =
-    m_bp_grp->getView(mesh_elements_path + "/connectivity")->getData<int*>();
+    m_bp_grp->getView(Path::join({mesh_elements, "connectivity"}))->getData<int*>();
 
   // Name of the element type - convert to mfem::Geometry::Type later
   std::string element_name =
-    m_bp_grp->getView(mesh_elements_path + "/shape")->getString();
+    m_bp_grp->getView(Path::join({mesh_elements, "shape"}))->getString();
 
-  const std::string element_attribute_path =
-    "fields/" + s_mesh_topology_name + s_attribute_suffix;
-  View* element_attribute_view =
-    m_bp_grp->getView(element_attribute_path + "/values");
+  const auto element_attribute_path =
+    Path::join({"fields", s_mesh_topology_name + s_attribute_suffix, "values"});
+  View* element_attribute_view = m_bp_grp->getView(element_attribute_path);
 
   int* element_attributes = element_attribute_view->getData<int*>();
   int num_elements = element_attribute_view->getNumElements();
 
-  const std::string boundary_elements_path =
-    "topologies/" + s_boundary_topology_name + "/elements";
+  const auto boundary_elements =
+    Path::join({"topologies", s_boundary_topology_name, "elements"});
 
-  SLIC_ERROR_IF(!m_bp_grp->hasGroup(boundary_elements_path),
+  SLIC_ERROR_IF(!m_bp_grp->hasGroup(boundary_elements),
                 "Cannot reconstruct mesh without boundary topology");
 
   int* boundary_indices =
-    m_bp_grp->getView(boundary_elements_path + "/connectivity")->getData<int*>();
+    m_bp_grp->getView(Path::join({boundary_elements, "connectivity"}))
+      ->getData<int*>();
 
   // Name of the element type - convert to mfem::Geometry::Type later
   std::string bdr_element_name =
-    m_bp_grp->getView(boundary_elements_path + "/shape")->getString();
+    m_bp_grp->getView(Path::join({boundary_elements, "shape"}))->getString();
 
-  const std::string boundary_attribute_path =
-    "fields/" + s_boundary_topology_name + s_attribute_suffix;
-  View* bdr_attribute_view =
-    m_bp_grp->getView(boundary_attribute_path + "/values");
+  const auto boundary_attribute_path = Path::join(
+    {"fields", s_boundary_topology_name + s_attribute_suffix, "values"});
+  View* bdr_attribute_view = m_bp_grp->getView(boundary_attribute_path);
 
   int* boundary_attributes = bdr_attribute_view->getData<int*>();
   int num_boundary_elements = bdr_attribute_view->getNumElements();
 
-  const std::string coordset_path = "coordsets/" + s_coordset_name;
+  const auto coordset_path = Path::join({"coordsets", s_coordset_name});
 
   int dimension = 1;
 
-  if(m_bp_grp->hasView(coordset_path + "/values/z"))
+  if(m_bp_grp->hasView(Path::join(coordset_path, "values/z"
+})))
   {
     dimension = 3;
   }
 
-  else if(m_bp_grp->hasView(coordset_path + "/values/y"))
+  else if(m_bp_grp->hasView(Path::join(coordset_path, "values/y"
+  }  // namespace sidre
+)))
   {
     dimension = 2;
   }
 
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  SLIC_ERROR_IF(m_comm == MPI_COMM_NULL,
-                "Must set the communicator with SetComm before a ParMesh can "
-                "be reconstructed");
-  // If it has an adjacencies group, the reloaded state was a ParMesh
-  if(m_bp_grp->hasGroup("adjsets/" + s_mesh_topology_name))
-  {
-    m_owned_mesh = std::unique_ptr<detail::SidreParMeshWrapper>(
-      new detail::SidreParMeshWrapper(m_bp_grp,
-                                      m_comm,
-                                      s_mesh_topology_name,
-                                      vertices,
-                                      num_vertices,
-                                      element_indices,
-                                      getElementTypeFromName(element_name),
-                                      element_attributes,
-                                      num_elements,
-                                      boundary_indices,
-                                      getElementTypeFromName(bdr_element_name),
-                                      boundary_attributes,
-                                      num_boundary_elements,
-                                      dimension));
-  }
-  else
-  #endif
-  {
-    m_owned_mesh = std::unique_ptr<mfem::Mesh>(
-      new mfem::Mesh(vertices,
-                     num_vertices,
-                     element_indices,
-                     getElementTypeFromName(element_name),
-                     element_attributes,
-                     num_elements,
-                     boundary_indices,
-                     getElementTypeFromName(bdr_element_name),
-                     boundary_attributes,
-                     num_boundary_elements,
-                     dimension));
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    // If this is a vacuously parallel run (MPI enabled, but only one rank),
-    // we don't know whether the original mesh was a ParMesh.  In case the user
-    // is expecting a ParMesh, we create a trivial ParMesh.  Since an
-    // mfem::ParMesh is-an mfem::Mesh, this won't affect users who don't need it
-    if(num_procs == 1)
-    {
-      m_owned_mesh =
-        std::unique_ptr<mfem::ParMesh>(new mfem::ParMesh(m_comm, *m_owned_mesh));
-    }
-  #endif
-  }
-  // Now that we've initialized an owning pointer, set the base subobject's
-  // mesh pointer as a non-owning pointer
-  mesh = m_owned_mesh.get();
+SLIC_ERROR_IF(m_comm == MPI_COMM_NULL,
+              "Must set the communicator with SetComm before a ParMesh can "
+              "be reconstructed");
+// If it has an adjacencies group, the reloaded state was a ParMesh
+if(m_bp_grp->hasGroup("adjsets/" + s_mesh_topology_name))
+{
+  m_owned_mesh = std::unique_ptr<detail::SidreParMeshWrapper>(
+    new detail::SidreParMeshWrapper(m_bp_grp,
+                                    m_comm,
+                                    s_mesh_topology_name,
+                                    vertices,
+                                    num_vertices,
+                                    element_indices,
+                                    getElementTypeFromName(element_name),
+                                    element_attributes,
+                                    num_elements,
+                                    boundary_indices,
+                                    getElementTypeFromName(bdr_element_name),
+                                    boundary_attributes,
+                                    num_boundary_elements,
+                                    dimension));
 }
+else
+  #endif
+{
+  m_owned_mesh = std::unique_ptr<mfem::Mesh>(
+    new mfem::Mesh(vertices,
+                   num_vertices,
+                   element_indices,
+                   getElementTypeFromName(element_name),
+                   element_attributes,
+                   num_elements,
+                   boundary_indices,
+                   getElementTypeFromName(bdr_element_name),
+                   boundary_attributes,
+                   num_boundary_elements,
+                   dimension));
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  // If this is a vacuously parallel run (MPI enabled, but only one rank),
+  // we don't know whether the original mesh was a ParMesh.  In case the user
+  // is expecting a ParMesh, we create a trivial ParMesh.  Since an
+  // mfem::ParMesh is-an mfem::Mesh, this won't affect users who don't need it
+  if(num_procs == 1)
+  {
+    m_owned_mesh =
+      std::unique_ptr<mfem::ParMesh>(new mfem::ParMesh(m_comm, *m_owned_mesh));
+  }
+  #endif
+}
+// Now that we've initialized an owning pointer, set the base subobject's
+// mesh pointer as a non-owning pointer
+mesh = m_owned_mesh.get();
+}  // namespace axom
 
 void MFEMSidreDataCollection::reconstructFields()
 {

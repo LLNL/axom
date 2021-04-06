@@ -33,6 +33,20 @@ public:
   Path(const std::string& path, const char delim = '/');
 
   /*!
+     * \brief Constructs a path from a string
+     *
+     * \param [in] path The string representing the path
+     * \param [in] delim The character that delimits the path
+     *
+     * Empty parts in \p path are removed
+     * 
+     * FIXME: Should this be marked \p explicit ?
+     */
+  Path(const char* path, const char delim = '/')
+    : Path(std::string(path), delim)
+  { }
+
+  /*!
      * \brief Default constructor for an empty path
      */
   Path() = default;
