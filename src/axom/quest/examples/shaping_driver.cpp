@@ -647,6 +647,21 @@ public:
 
   GeometricBoundingBox problemBoundingBox() { return m_problemBoundingBox; }
 
+  // HACK to allow 2D querying.
+  // For now, use a 2D mesh if the supplied 3rd parameter in the bounding boxes are 0
+  // TODO: Generalize to better support for 2D querying by allowing the user
+  //       to more easily supply the 2D bounding box
+  //       Alternatively, we will be using the "slice" operation, when supported by klee/quest
+  int meshDimension() const
+  {
+    if(hasUserQueryBox())
+    {
+      return (queryBoxMins[2] == 0. && queryBoxMaxs[2] == 0) ? 2 : 3;
+    }
+
+    return 3;
+  }
+
   void parse(int argc, char** argv, CLI::App& app)
   {
     app.add_option("shapeFile", shapeFile, "Path to input shape file")
@@ -693,11 +708,16 @@ public:
       ->transform(CLI::CheckedTransformer(vfsamplingMap, CLI::ignore_case));
 
     // Optional bounding box for query region
+    // Note: We're using CLI11@1.8; CLI11@1.9 allows expected(min,max) to simplify 2D and 3D processing
     auto* minbb =
       app.add_option("--min", queryBoxMins, "Min bounds for query box (x,y,z)")
         ->expected(3);
     auto* maxbb =
-      app.add_option("--max", queryBoxMaxs, "Max bounds for query box (x,y,z)")
+      app
+        .add_option("--max",
+                    queryBoxMaxs,
+                    "Max bounds for query box (x,y,z). \n"
+                    "Query mesh will be 2D if min[2] == max[2] == 0")
         ->expected(3);
     minbb->needs(maxbb);
     maxbb->needs(minbb);
@@ -758,25 +778,43 @@ void initializeMesh(Input& params, axom::sidre::MFEMSidreDataCollection* dc)
   // Generate an mfem Cartesian mesh, scaled to the bounding box range
   const int res = 1 << params.maxQueryLevel;
 
+  const int dim = params.meshDimension();
+
   auto bbox = params.problemBoundingBox();
   auto range = bbox.range();
   auto low = bbox.getMin();
-  mfem::Mesh* mesh = new mfem::Mesh(res,
-                                    res,
-                                    res,
-                                    mfem::Element::HEXAHEDRON,
-                                    false,
-                                    range[0],
-                                    range[1],
-                                    range[2]);
+  mfem::Mesh* mesh = nullptr;
+
+  switch(dim)
+  {
+  case 2:
+    mesh = new mfem::Mesh(res,
+                          res,
+                          mfem::Element::QUADRILATERAL,
+                          false,
+                          range[0],
+                          range[1]);
+    break;
+  case 3:
+    mesh = new mfem::Mesh(res,
+                          res,
+                          res,
+                          mfem::Element::HEXAHEDRON,
+                          false,
+                          range[0],
+                          range[1],
+                          range[2]);
+    break;
+  }
 
   // Offset to the mesh to lie w/in the bounding box
   for(int i = 0; i < mesh->GetNV(); ++i)
   {
     double* v = mesh->GetVertex(i);
-    v[0] += low[0];
-    v[1] += low[1];
-    v[2] += low[2];
+    for(int d = 0; d < dim; ++d)
+    {
+      v[d] += low[d];
+    }
   }
 
   mesh->EnsureNodes();
