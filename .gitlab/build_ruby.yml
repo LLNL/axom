@@ -1,10 +1,10 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
 ####
-# This is the share configuration of jobs for ruby
+# This is the shared configuration of jobs for ruby
 .on_ruby:
   tags:
     - shell
@@ -12,7 +12,7 @@
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_RUBY == "OFF"' #run except if ...
       when: never
-    - if: '$CI_JOB_NAME =~ /release_resources/'
+    - if: '$CI_JOB_NAME =~ /release_resources_build_ruby/'
       when: always
     - when: on_success
 
@@ -44,6 +44,7 @@ release_resources_build_ruby:
 .pr_build_on_ruby:
   stage: r_build
   extends: [.srun_build_script, .on_ruby, .pr_workflow]
+  needs: [allocate_resources_build_ruby]
 
 .main_build_with_deps_on_ruby:
   stage: r_build_with_deps
