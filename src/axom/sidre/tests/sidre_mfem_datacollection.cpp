@@ -277,7 +277,7 @@ TEST(sidre_datacollection, dc_reload_qf)
     qv(2 * i + 1) = double(Nq - i - 1);
   }
 
-  // sdc_writer.SetCycle(5);
+  sdc_writer.SetCycle(5);
   sdc_writer.SetTime(8.0);
   sdc_writer.Save();
 
