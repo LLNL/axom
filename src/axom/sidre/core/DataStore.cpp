@@ -665,7 +665,7 @@ bool DataStore::generateBlueprintIndex(MPI_Comm comm,
     conduit::Node index;
     conduit::blueprint::mpi::mesh::generate_index(mesh_node, mesh_name, index, comm);
 
-    Node& domain_rank_map = index["state/domain_to_rank_map"];
+    Node& domain_rank_map = index["state/partition_map/datagroup"];
     conduit::blueprint::mpi::mesh::generate_domain_to_rank_map(
        mesh_node, domain_rank_map, comm);
 
