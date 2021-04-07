@@ -32,7 +32,7 @@
   #include "conduit_blueprint_mpi.hpp"
 #endif
 
-//fmt format header
+// fmt format header
 #include "fmt/fmt.hpp"
 
 // C++ headers
@@ -275,17 +275,19 @@ void generate_multidomain_blueprint(DataStore* ds, const std::string& filename, 
   std::string mesh_name = "mesh";
   Group* holder = ds->getRoot()->createGroup(holder_name);
 
+  std::string domain_pattern = "domain_{domain:06d}";
+  ds->getRoot()->createViewString("domain_pattern", domain_pattern);
 
   for (int64_t i = domain_begin; i < domain_end; ++i)
   {
-    std::string domain_name = fmt::sprintf("domain_%03d", i);
+    std::string domain_name = fmt::format("domain_{:06d}", i);
 
     Group* mroot = holder->createGroup(domain_name);
     Group* coords = mroot->createGroup("coordsets/coords");
     Group* topos = mroot->createGroup("topologies");
     // no material sets in this example
     Group* fields = mroot->createGroup("fields");
-    // no adjacency sets in this (single-domain) example
+    // no adjacency sets in this example
     mroot->createViewScalar("state/domain_id", i);
 
     setup_blueprint_coords(ds, coords);

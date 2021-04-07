@@ -1186,28 +1186,48 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
     if (state_group->hasGroup("partition_map"))
     { 
-    View* domain_to_rank = state_group->getGroup("partition_map")->getView("datagroup");
+      View* domain_to_rank = state_group->getView("partition_map/datagroup");
 
-    View* domain_to_file = state_group->createViewAndAllocate(
-      "partition_map/file",
-      domain_to_rank->getTypeID(),
-      domain_to_rank->getNumElements());
+      View* domain_to_file = state_group->createViewAndAllocate(
+        "partition_map/file",
+        domain_to_rank->getTypeID(),
+        domain_to_rank->getNumElements());
 
-    View* domain_ids = state_group->createViewAndAllocate(
-      "partition_map/domain",
-      domain_to_rank->getTypeID(),
-      domain_to_rank->getNumElements());
+      View* domain_ids = state_group->createViewAndAllocate(
+        "partition_map/domain",
+        domain_to_rank->getTypeID(),
+        domain_to_rank->getNumElements());
 
-    int64_t* rank_file_map = rank_to_file->getArray();
-    int64_t* domain_rank_map = domain_to_rank->getArray();
-    int64_t* domain_file_map = domain_to_file->getArray();
-    int64_t* domain_ids_array = domain_ids->getArray();
+      int64_t* rank_file_map = rank_to_file->getArray();
+      int64_t* domain_rank_map = domain_to_rank->getArray();
+      int64_t* domain_file_map = domain_to_file->getArray();
+      int64_t* domain_ids_array = domain_ids->getArray();
 
-    for (IndexType i = 0; i < domain_to_file->getNumElements(); ++i)
-    {
-      domain_ids_array[i] = i;
-      domain_file_map[i] = rank_file_map[domain_rank_map[i]];
-    }
+      for (IndexType i = 0; i < domain_to_file->getNumElements(); ++i)
+      {
+        domain_ids_array[i] = i;
+        domain_file_map[i] = rank_file_map[domain_rank_map[i]];
+      }
+
+      std::string file_pattern = getFilePatternFromRoot(file_name, "sidre_hdf5");
+
+      std::string domain_pattern;
+      if (datastore->getRoot()->hasView("domain_pattern") &&
+          datastore->getRoot()->getView("domain_pattern")->isString())
+      {
+        domain_pattern =
+          std::string(datastore->getRoot()->getView("domain_pattern")->getString());
+      }
+
+      std::string partition_pattern = file_pattern +
+        "/datagroup_{datagroup:07d}";
+
+      if (!domain_pattern.empty())
+      {
+        partition_pattern = partition_pattern + "/" + domain_pattern;
+      }
+ 
+      state_group->createViewString("partition_pattern", partition_pattern);
     }
 
     if(m_my_rank == 0)
