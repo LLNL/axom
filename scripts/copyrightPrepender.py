@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 # 
 # SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -17,7 +17,7 @@ import sys
 import argparse
 
 axom_copyright_str = """// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 \n\n"""
