@@ -54,7 +54,7 @@ Container::Container(const std::string& name,
         idx = m_sidreGroup->getNextValidGroupIndex(idx))
     {
       auto group = m_sidreGroup->getGroup(idx);
-      if(group->hasView("InletType"))
+      if(group->isUsingMap() && group->hasView("InletType"))
       {
         const std::string inletType = group->getView("InletType")->getString();
         const std::string childName = appendPrefix(m_name, group->getName());
