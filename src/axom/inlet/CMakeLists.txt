@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -21,13 +21,14 @@ set(inlet_headers
     Inlet.hpp
     InletVector.hpp
     Reader.hpp
-    Table.hpp 
+    Container.hpp 
     Proxy.hpp
     VariantKey.hpp
     Verifiable.hpp
     VerifiableScalar.hpp
     Writer.hpp
     SphinxWriter.hpp
+    JSONSchemaWriter.hpp
     ConduitReader.hpp
     YAMLReader.hpp
     JSONReader.hpp
@@ -37,10 +38,11 @@ set(inlet_sources
     Field.cpp
     Function.cpp
     Inlet.cpp
-    Table.cpp
+    Container.cpp
     Proxy.cpp
     VariantKey.cpp
     SphinxWriter.cpp
+    JSONSchemaWriter.cpp
     ConduitReader.cpp
     inlet_utils.cpp )
 

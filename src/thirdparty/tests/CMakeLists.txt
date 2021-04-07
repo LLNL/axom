@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -17,6 +17,7 @@ if ( UMPIRE_FOUND )
   set( umpire_smoke_dependencies umpire gtest )
 
   blt_list_append( TO umpire_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
+  blt_list_append( TO umpire_smoke_dependencies ELEMENTS cuda_runtime IF ENABLE_CUDA)
 
   blt_add_executable( NAME umpire_smoke_test
                       SOURCES umpire_smoke.cpp

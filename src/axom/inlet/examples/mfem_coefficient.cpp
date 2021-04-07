@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -67,7 +67,7 @@ struct BoundaryCondition
     }
   }
 
-  static void defineSchema(inlet::Table& schema)
+  static void defineSchema(inlet::Container& schema)
   {
     schema.addIntArray("attrs", "List of boundary attributes");
     // Inlet does not support sum types, so options are added to the schema
@@ -129,7 +129,7 @@ void toMFEMVector(const inlet::InletVector& input, mfem::Vector& result)
 template <>
 struct FromInlet<BoundaryCondition::InputInfo>
 {
-  BoundaryCondition::InputInfo operator()(const inlet::Table& base)
+  BoundaryCondition::InputInfo operator()(const inlet::Container& base)
   {
     BoundaryCondition::InputInfo result;
     result.attrs = base["attrs"];
@@ -159,7 +159,8 @@ struct FromInlet<BoundaryCondition::InputInfo>
     }
     else
     {
-      SLIC_ERROR("Table did not contain a coefficient function: " << base.name());
+      SLIC_ERROR(
+        "Container did not contain a coefficient function: " << base.name());
     }
     return result;
   }
@@ -178,6 +179,9 @@ int main(int argc, char** argv)
   std::string inputFileName;
   auto opt = app.add_option("--file", inputFileName, "Path to input file");
   opt->check(CLI::ExistingFile);
+
+  bool docsEnabled {false};
+  app.add_flag("--docs", docsEnabled, "Enables documentation generation");
 
   CLI11_PARSE(app, argc, argv);
 
@@ -225,6 +229,16 @@ int main(int argc, char** argv)
                             toInletVector(output_vec)));
     }
     bcs.emplace(info.first, BoundaryCondition {std::move(info.second), dim});
+  }
+
+  if(docsEnabled)
+  {
+    const std::string docFileName = "mfem_coefficient.rst";
+    std::unique_ptr<inlet::SphinxWriter> writer(
+      new inlet::SphinxWriter(docFileName));
+    inlet.registerWriter(std::move(writer));
+    inlet.write();
+    SLIC_INFO("Documentation was written to " << docFileName);
   }
 
   return 0;

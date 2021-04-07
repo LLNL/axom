@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -17,7 +17,7 @@
 #include <type_traits>
 
 #include "axom/inlet/Field.hpp"
-#include "axom/inlet/Table.hpp"
+#include "axom/inlet/Container.hpp"
 
 namespace axom
 {
@@ -31,7 +31,7 @@ namespace inlet
  * and user-defined types
  *
  * \see Inlet Field
- * \see Inlet Table
+ * \see Inlet Container
  *******************************************************************************
  */
 class Proxy
@@ -40,12 +40,12 @@ public:
   Proxy() = default;
   /*!
    *******************************************************************************
-   * \brief Constructs a proxy view onto a table
+   * \brief Constructs a proxy view onto a container
    * 
-   * \param [in] table The table to construct a proxy into
+   * \param [in] container The container to construct a proxy into
    *******************************************************************************
    */
-  Proxy(const Table& table) : m_table(&table) { }
+  Proxy(const Container& container) : m_container(&container) { }
 
   /*!
    *******************************************************************************
@@ -90,10 +90,10 @@ public:
   /*!
    *****************************************************************************
    * \brief Return whether a subobject with the given name is present in 
-   * the table referred to by the calling proxy.
+   * the container referred to by the calling proxy.
    *
-   * \return Boolean value indicating whether this Table's subtree contains a
-   * Field or Table with the given name.
+   * \return Boolean value indicating whether this Container's subtree contains a
+   * Field or Container with the given name.
    *****************************************************************************
    */
   bool contains(const std::string& name) const;
@@ -110,11 +110,11 @@ public:
 
   /*!
    *******************************************************************************
-   * \brief Obtains a proxy view into the proxy for either a Field/Table subobject
+   * \brief Obtains a proxy view into the proxy for either a Field/Container subobject
    * 
    * Returns a reference via a lightweight proxy object to the element in the 
    * datastore at the index specified by the name.  This can be a field 
-   * or a table.
+   * or a container.
    * 
    * \param [in] name The name of the subobject
    * \return A view onto the subobject
@@ -145,7 +145,7 @@ public:
    * 
    * \tparam T The type of the object to retrieve
    * \return The retrieved object
-   * \pre The Proxy must refer to a table object
+   * \pre The Proxy must refer to a container object
    *******************************************************************************
    */
   template <typename T>
@@ -154,10 +154,10 @@ public:
                           T>::type
   get() const
   {
-    SLIC_ASSERT_MSG(m_table != nullptr,
+    SLIC_ASSERT_MSG(m_container != nullptr,
                     "[Inlet] Tried to read a user-defined type from a Proxy "
                     "containing a single field or function");
-    return m_table->get<T>();
+    return m_container->get<T>();
   }
 
   /*!
@@ -174,7 +174,7 @@ public:
   {
     SLIC_ASSERT_MSG(m_func != nullptr,
                     "[Inlet] Tried to read a function from a Proxy "
-                    "containing a field or table");
+                    "containing a field or container");
     return m_func->get<typename detail::std_function_signature<T>::type>();
   }
 
@@ -195,7 +195,7 @@ public:
   {
     SLIC_ASSERT_MSG(m_func != nullptr,
                     "[Inlet] Tried to call a Proxy "
-                    "containing a field or table");
+                    "containing a field or container");
     return m_func->call<Ret>(std::forward<Args>(args)...);
   }
 
@@ -213,12 +213,12 @@ public:
   {
     SLIC_ASSERT_MSG(m_field != nullptr,
                     "[Inlet] Tried to read a primitive type from a Proxy "
-                    "containing a table or function");
+                    "containing a container or function");
     return m_field->get<T>();
   }
 
 private:
-  const Table* const m_table = nullptr;
+  const Container* const m_container = nullptr;
   const Field* const m_field = nullptr;
   const Function* const m_func = nullptr;
 };

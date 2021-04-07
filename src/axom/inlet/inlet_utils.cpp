@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -72,10 +72,24 @@ bool verifyRequired(const axom::sidre::Group& target,
                     const bool condition,
                     const std::string& type)
 {
+  // Assume that it wasn't found
+  ReaderResult status = ReaderResult::NotFound;
+  if(target.hasView("retrieval_status"))
+  {
+    status = static_cast<ReaderResult>(
+      static_cast<int>(target.getView("retrieval_status")->getData()));
+  }
+
   if(target.hasView("required"))
   {
     int8 required = target.getView("required")->getData();
-    if(required && !condition)
+    // If it wasn't found at all, it's only an error if the object was required and not provided
+    // The retrieval_status will typically (but not always) be NotFound in these cases, but that
+    // information isn't needed here unless it's a collection group - empty collections are permissible,
+    // so they shouldn't impede verification if they existed but were empty (hence Success check)
+    if(required && !condition &&
+       (!isCollectionGroup(target.getPathName()) ||
+        status != ReaderResult::Success))
     {
       const std::string msg = fmt::format(
         "[Inlet] Required {0} not "
@@ -85,6 +99,19 @@ bool verifyRequired(const axom::sidre::Group& target,
       SLIC_WARNING(msg);
       return false;
     }
+  }
+
+  // If it was the wrong type or part of a non-homogeneous array, it's always an error,
+  // even if the object wasn't marked as required
+  if(status == ReaderResult::WrongType || status == ReaderResult::NotHomogeneous)
+  {
+    const std::string reason = (status == ReaderResult::WrongType)
+      ? "of the wrong type"
+      : "not homogeneous";
+    const std::string msg =
+      fmt::format("[Inlet] {0} '{1}' was {2}", type, target.getPathName(), reason);
+    SLIC_WARNING(msg);
+    return false;
   }
   return true;
 }
@@ -163,6 +190,29 @@ void markAsStructCollection(axom::sidre::Group& target)
   {
     target.createViewScalar(detail::STRUCT_COLLECTION_FLAG, static_cast<int8>(1));
   }
+}
+
+void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result)
+{
+  target.createViewScalar("retrieval_status", static_cast<int>(result));
+}
+
+ReaderResult collectionRetrievalResult(const bool contains_other_type,
+                                       const bool contains_requested_type)
+{
+  // First check if the collection was entirely the wrong type
+  if(contains_other_type && !contains_requested_type)
+  {
+    return ReaderResult::WrongType;
+  }
+  // Then check if some values were of the correct type, but others weren't
+  else if(contains_other_type)
+  {
+    return ReaderResult::NotHomogeneous;
+  }
+  // Otherwise we mark it as successful - having just an empty collection
+  // counts as success
+  return ReaderResult::Success;
 }
 
 }  // namespace inlet

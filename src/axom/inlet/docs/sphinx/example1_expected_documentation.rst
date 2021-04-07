@@ -34,7 +34,7 @@ thermal_solver
 solver
 ------
 
-Description: This is the solver sub-table in the thermal_solver table
+Description: This is the solver sub-container in the thermal_solver container
 
 .. list-table:: Fields
    :widths: 25 25 25 25 25

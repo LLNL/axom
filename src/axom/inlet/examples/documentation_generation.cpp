@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -63,11 +63,11 @@ void defineSchema(Inlet& inlet)
 {
   // Add the description to the thermal_solver/mesh/filename Field
   auto& filename_field =
-    inlet.addString("thermal_solver/mesh/filename", "file for thermal solver");
+    inlet.addString("thermal_solver/mesh/filename", "mesh filename");
   // Set the field's required property to true
   filename_field.required();
 
-  inlet.addInt("thermal_solver/mesh/serial", "serial value")
+  inlet.addInt("thermal_solver/mesh/serial", "number of serial refinements")
     .range(0, std::numeric_limits<int>::max())
     .defaultValue(1);
 
@@ -76,7 +76,7 @@ void defineSchema(Inlet& inlet)
     .range(1, std::numeric_limits<int>::max())
     .defaultValue(1);
 
-  inlet.addInt("thermal_solver/order", "thermal solver order")
+  inlet.addInt("thermal_solver/order", "polynomial order")
     .required()
     .range(1, std::numeric_limits<int>::max());
 
@@ -96,47 +96,46 @@ void defineSchema(Inlet& inlet)
     .validValues({"constant", "function"});
 
   inlet
-    .addDouble("thermal_solver/kappa/constant", "description for kappa constant")
+    .addDouble("thermal_solver/kappa/constant", "thermal conductivity constant")
     .required();
 
-  // Add description to solver table by using the addStruct function
+  // Add description to solver container by using the addStruct function
   auto& solver_schema =
-    inlet.addStruct("thermal_solver/solver",
-                    "This is the solver sub-table in the thermal_solver table");
+    inlet.addStruct("thermal_solver/solver", "linear equation solver options");
 
-  // You can also add fields through a table
+  // You can also add fields through a container
 
   auto& rel_tol_field =
-    solver_schema.addDouble("rel_tol", "description for solver rel tol");
+    solver_schema.addDouble("rel_tol", "solver relative tolerance");
   rel_tol_field.required(false);
   rel_tol_field.defaultValue(1.e-6);
   rel_tol_field.range(0.0, std::numeric_limits<double>::max());
 
   auto& abs_tol_field =
-    solver_schema.addDouble("abs_tol", "description for solver abs tol");
+    solver_schema.addDouble("abs_tol", "solver absolute tolerance");
   abs_tol_field.required(true);
   abs_tol_field.defaultValue(1.e-12);
   abs_tol_field.range(0.0, std::numeric_limits<double>::max());
 
   auto& print_level_field =
-    solver_schema.addInt("print_level", "description for solver print level");
+    solver_schema.addInt("print_level", "solver print/debug level");
   print_level_field.required(true);
   print_level_field.defaultValue(0);
   print_level_field.range(0, 3);
 
   auto& max_iter_field =
-    solver_schema.addInt("max_iter", "description for solver max iter");
+    solver_schema.addInt("max_iter", "maximum iteration limit");
   max_iter_field.required(false);
   max_iter_field.defaultValue(100);
   max_iter_field.range(1, std::numeric_limits<int>::max());
 
-  auto& dt_field = solver_schema.addDouble("dt", "description for solver dt");
+  auto& dt_field = solver_schema.addDouble("dt", "time step");
   dt_field.required(true);
   dt_field.defaultValue(1);
   dt_field.range(0.0, std::numeric_limits<double>::max());
 
   auto& steps_field =
-    solver_schema.addInt("steps", "description for solver steps");
+    solver_schema.addInt("steps", "number of steps/cycles to take");
   steps_field.required(true);
   steps_field.defaultValue(1);
   steps_field.range(1, std::numeric_limits<int>::max());
@@ -198,20 +197,25 @@ int main(int argc, char** argv)
   lr->parseFile(inputFileName);
   Inlet inlet(std::move(lr), ds.getRoot(), docsEnabled);
 
-  // _inlet_documentation_generation_start
-  auto writer = std::make_unique<SphinxWriter>("example_doc.rst");
-  inlet.registerWriter(std::move(writer));
-  // _inlet_documentation_generation_end
-
   defineSchema(inlet);
   checkValues(inlet);
 
   // Generate the documentation
-  inlet.writeDoc();
+  // _inlet_documentation_generation_start
+  auto sphinxWriter = std::make_unique<SphinxWriter>("example_doc.rst");
+  inlet.registerWriter(std::move(sphinxWriter));
+  // _inlet_documentation_generation_end
+  inlet.write();
+
+  auto schemaWriter =
+    std::make_unique<axom::inlet::JSONSchemaWriter>("example_doc.json");
+  inlet.registerWriter(std::move(schemaWriter));
+  inlet.write();
 
   if(docsEnabled)
   {
-    SLIC_INFO("Documentation was written to example_doc.rst\n");
+    SLIC_INFO("Sphinx documentation was written to example_doc.rst\n");
+    SLIC_INFO("A JSON schema was written to example_doc.json\n");
   }
 
   return 0;

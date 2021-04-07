@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -16,7 +16,7 @@ namespace slic
 // Initialize static variables for controlling runtime behavior of asserts and
 // error macros.
 //------------------------------------------------------------------------------
-AXOM_API bool debug::checksAreErrors = false;
+bool debug::checksAreErrors = false;
 
 void initialize() { Logger::initialize(); }
 

@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -43,9 +43,9 @@ Function& Function::registerVerifier(std::function<bool(const Function&)> lambda
 bool Function::verify() const
 {
   const bool this_function_exists = static_cast<bool>(m_func);
-  bool verified = true;
   // If this function was required, make sure something was defined in it
-  verified &= verifyRequired(*m_sidreGroup, this_function_exists, "Function");
+  bool verified =
+    verifyRequired(*m_sidreGroup, this_function_exists, "Function");
   // Verify this Function if a lambda was configured
   if(this_function_exists && m_verifier && !m_verifier(*this))
   {

@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -17,6 +17,14 @@ namespace axom
 {
 namespace inlet
 {
+enum class ReaderResult
+{
+  Success,         // Found with no issue
+  NotFound,        // Path does not exist in the input file
+  NotHomogeneous,  // Found, but elements of other type exist
+  WrongType  // Found, but item at specified path was not of requested type
+};
+
 /*!
 *****************************************************************************
 * \brief This function is used to mark if anything went wrong during the 
@@ -89,7 +97,7 @@ std::string appendPrefix(const std::string& prefix, const std::string& name);
 
 /*!
 *****************************************************************************
-* \brief This function extracts the Table name from the full name.
+* \brief This function extracts the Container name from the full name.
 *
 * \param [in] The prefix of the name, to be removed.
 * \param [in] The full name.
@@ -154,9 +162,9 @@ const std::string STRUCT_COLLECTION_FLAG = "_inlet_struct_collection";
 
 /*!
 *****************************************************************************
-* \brief Determines whether a Table is a collection group
+* \brief Determines whether a Container is a collection group
 *
-* \param [in] name The name of the table
+* \param [in] name The name of the container
 *****************************************************************************
 */
 inline bool isCollectionGroup(const std::string& name)
@@ -173,6 +181,32 @@ inline bool isCollectionGroup(const std::string& name)
 *****************************************************************************
 */
 void markAsStructCollection(axom::sidre::Group& target);
+
+/*!
+*****************************************************************************
+* \brief Adds a ReaderResult to a sidre::Group corresponding to an inlet
+* object
+*
+* \param [inout] target The group to tag
+* \param [in] result The retrieval result
+*****************************************************************************
+*/
+void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result);
+
+/*!
+*****************************************************************************
+* \brief Returns the corresponding retrieval result for a collection depending
+* on whether the collection contained any elements of the requested or of
+* other type
+*
+* \param [in] contains_other_type Whether any collection elements were of type
+* other than the requested type
+* \param [in] contains_requested_type Whether the collection of requested type
+* was not empty, i.e., if any elements of the requested type were present
+*****************************************************************************
+*/
+ReaderResult collectionRetrievalResult(const bool contains_other_type,
+                                       const bool contains_requested_type);
 
 namespace cpp11_compat
 {

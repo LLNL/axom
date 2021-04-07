@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -552,6 +552,16 @@ public:
   }
 
   /*!
+   *****************************************************************************
+   * \brief Returns pointer to the Sidre Group class for this Function.
+   *
+   * Provides access to the Sidre Group class that holds all the stored
+   * information for this Function instance.
+   *****************************************************************************
+   */
+  const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
+
+  /*!
    *******************************************************************************
    * \brief Checks whether the function exists
    *******************************************************************************
@@ -575,21 +585,21 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Set the required status of this Table.
+   * \brief Set the required status of this Container.
    *
-   * Set whether this Table is required, or not, to be in the input file.
+   * Set whether this Container is required, or not, to be in the input file.
    * The default behavior is to not be required.
    *
-   * \param [in] isRequired Boolean value of whether Table is required
+   * \param [in] isRequired Boolean value of whether Container is required
    *
-   * \return Reference to this instance of Table
+   * \return Reference to this instance of Container
    *****************************************************************************
    */
   Function& required(bool isRequired = true);
 
   /*!
    *****************************************************************************
-   * \brief Return the required status of this Table.
+   * \brief Return the required status of this Container.
    *
    * Return that this Function is required, or not, to be in the input file.
    * The default behavior is to not be required.
@@ -604,7 +614,7 @@ public:
    * \brief Registers the function object that will verify this function
    * during the verification stage.
    * 
-   * \param [in] The function object that will be called by Table::verify().
+   * \param [in] The function object that will be called by Container::verify().
    *****************************************************************************
   */
   Function& registerVerifier(std::function<bool(const Function&)> lambda);
