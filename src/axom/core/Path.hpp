@@ -102,6 +102,17 @@ public:
    */
   const std::vector<std::string>& parts() const { return m_components; }
 
+  /*!
+ * \brief Appends a Path to another path
+ * \param [in] lhs The base path to add to
+ * \param [in] rhs The path to add
+ * \note The delimiter in the first path will be used in the result
+ */
+  friend Path operator+(const Path& lhs, const Path& rhs)
+  {
+    return Path::join({lhs, rhs}, lhs.m_delim);
+  }
+
 private:
   // The components (tokens) that make up the path
   std::vector<std::string> m_components;
