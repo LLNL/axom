@@ -15,6 +15,8 @@
     - if: '$CI_JOB_NAME =~ /release_resources_build_rzgenie/'
       when: always
     - when: on_success
+  before_script:
+    - module load cmake/3.14.5
 
 ####
 # In pre-build phase, allocate a node for builds
