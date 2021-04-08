@@ -271,6 +271,8 @@ void SphinxWriter::writeAllTables()
 
 void SphinxWriter::writeNestedTables()
 {
+  // Used to avoid duplicate hyperlinks
+  int containerCount = 0;
   for(const auto& pathName : m_inletContainerPathNames)
   {
     const auto& currContainer = m_rstTables.at(pathName);
@@ -302,9 +304,10 @@ void SphinxWriter::writeNestedTables()
 
     // Writes a name + description to the "table of contents"
     // for each Container
-    auto writeTOCEntry = [this](const std::vector<std::string>& data) {
+    auto writeTOCEntry = [this,
+                          containerCount](const std::vector<std::string>& data) {
       // FIXME: Overlapping link names? Need to use the full path or a hash??
-      m_oss << fmt::format("   * - `{0}`_\n", data[0]);
+      m_oss << fmt::format("   * - :ref:`{0}<{0}{1}>`\n", data[0], containerCount);
       m_oss << fmt::format("     - {0}\n", data[1]);
     };
 
@@ -334,9 +337,9 @@ void SphinxWriter::writeNestedTables()
     std::for_each(
       fields.begin() + 1,
       fields.end(),
-      [this](const std::vector<std::string>& fieldData) {
+      [this, containerCount](const std::vector<std::string>& fieldData) {
         // Insert a hyperlink target for the name
-        m_oss << fmt::format(".. _{0}:\n\n", fieldData[0]);
+        m_oss << fmt::format(".. _{0}{1}:\n\n", fieldData[0], containerCount);
         m_oss << fmt::format("**{0}**\n\n", fieldData[0]);  // name
         // description - ideally this would be an extended description
         m_oss << fieldData[1] << "\n\n";
@@ -365,9 +368,9 @@ void SphinxWriter::writeNestedTables()
     std::for_each(
       functions.begin() + 1,
       functions.end(),
-      [this](const std::vector<std::string>& functionData) {
+      [this, containerCount](const std::vector<std::string>& functionData) {
         // Insert a hyperlink target for the name
-        m_oss << fmt::format(".. _{0}:\n\n", functionData[0]);
+        m_oss << fmt::format(".. _{0}{1}:\n\n", functionData[0], containerCount);
         m_oss << fmt::format("**{0}**\n\n", functionData[0]);  // name
         // description - ideally this would be an extended description
         m_oss << functionData[1] << "\n\n";
@@ -386,6 +389,7 @@ void SphinxWriter::writeNestedTables()
         }
         m_oss << "\n\n";
       });
+    containerCount++;
   }
 }
 

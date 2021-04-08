@@ -29,20 +29,20 @@ thermal_solver
    * - Name
      - Description
    * - `solver`_
-     - linear equation solver options
+     - 
    * - `kappa`_
      - 
    * - `u0`_
      - 
    * - `mesh`_
      - 
-   * - `timestepper`_
+   * - :ref:`timestepper<timestepper1>`
      - thermal solver timestepper
-   * - `order`_
+   * - :ref:`order<order1>`
      - polynomial order
 
 
-.. _timestepper:
+.. _timestepper1:
 
 **timestepper**
 
@@ -53,7 +53,7 @@ thermal solver timestepper
   - Optional
 
 
-.. _order:
+.. _order1:
 
 **order**
 
@@ -68,8 +68,6 @@ polynomial order
 solver
 ------
 
-linear equation solver options
-
 .. list-table::
    :widths: 25 50
    :header-rows: 1
@@ -77,21 +75,21 @@ linear equation solver options
 
    * - Name
      - Description
-   * - `dt`_
+   * - :ref:`dt<dt2>`
      - time step
-   * - `max_iter`_
+   * - :ref:`max_iter<max_iter2>`
      - maximum iteration limit
-   * - `print_level`_
+   * - :ref:`print_level<print_level2>`
      - solver print/debug level
-   * - `abs_tol`_
+   * - :ref:`abs_tol<abs_tol2>`
      - solver absolute tolerance
-   * - `steps`_
+   * - :ref:`steps<steps2>`
      - number of steps/cycles to take
-   * - `rel_tol`_
+   * - :ref:`rel_tol<rel_tol2>`
      - solver relative tolerance
 
 
-.. _dt:
+.. _dt2:
 
 **dt**
 
@@ -102,7 +100,7 @@ time step
   - Optional
 
 
-.. _max_iter:
+.. _max_iter2:
 
 **max_iter**
 
@@ -113,7 +111,7 @@ maximum iteration limit
   - Optional
 
 
-.. _print_level:
+.. _print_level2:
 
 **print_level**
 
@@ -124,7 +122,7 @@ solver print/debug level
   - Optional
 
 
-.. _abs_tol:
+.. _abs_tol2:
 
 **abs_tol**
 
@@ -135,7 +133,7 @@ solver absolute tolerance
   - Optional
 
 
-.. _steps:
+.. _steps2:
 
 **steps**
 
@@ -146,7 +144,7 @@ number of steps/cycles to take
   - Optional
 
 
-.. _rel_tol:
+.. _rel_tol2:
 
 **rel_tol**
 
@@ -169,21 +167,22 @@ kappa
 
    * - Name
      - Description
-   * - `constant`_
+   * - :ref:`constant<constant3>`
      - thermal conductivity constant
-   * - `type`_
+   * - :ref:`type<type3>`
      - description for kappa type
 
 
-.. _constant:
+.. _constant3:
 
 **constant**
 
 thermal conductivity constant
 
+  - Optional
 
 
-.. _type:
+.. _type3:
 
 **type**
 
@@ -205,21 +204,22 @@ u0
 
    * - Name
      - Description
-   * - `func`_
+   * - :ref:`func<func4>`
      - description for u0 func
-   * - `type`_
+   * - :ref:`type<type4>`
      - description for u0 type
 
 
-.. _func:
+.. _func4:
 
 **func**
 
 description for u0 func
 
+  - Optional
 
 
-.. _type:
+.. _type4:
 
 **type**
 
@@ -242,15 +242,15 @@ mesh
 
    * - Name
      - Description
-   * - `parallel`_
+   * - :ref:`parallel<parallel5>`
      - 
-   * - `serial`_
+   * - :ref:`serial<serial5>`
      - number of serial refinements
-   * - `filename`_
+   * - :ref:`filename<filename5>`
      - mesh filename
 
 
-.. _parallel:
+.. _parallel5:
 
 **parallel**
 
@@ -261,7 +261,7 @@ mesh
   - Optional
 
 
-.. _serial:
+.. _serial5:
 
 **serial**
 
@@ -272,8 +272,10 @@ number of serial refinements
   - Optional
 
 
-.. _filename:
+.. _filename5:
 
 **filename**
 
 mesh filename
+
+  - Optional
