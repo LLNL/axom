@@ -26,9 +26,7 @@ bool check_generation(std::vector<OctType> & standard,
                       int offset,
                       int count)
 {
-   int *matched = new int[count];
-   // Clear the array of "matched" flags
-   for (int i = 0; i < count; ++i) { matched[i] = 0; }
+   std::vector<int> matched(count, 0);
 
    for (int i = 0; i < count; ++i)
    {
@@ -70,7 +68,6 @@ bool check_generation(std::vector<OctType> & standard,
       }
    }
 
-   delete[] matched;
    return matches;
 }
 
