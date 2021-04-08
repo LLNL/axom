@@ -351,14 +351,8 @@ int main(int argc, char** argv)
   if(docsEnabled)
   {
     const std::string docFileName = "nested_structs";
-    std::unique_ptr<inlet::SphinxWriter> sphinxWriter(
-      new inlet::SphinxWriter(docFileName + ".rst"));
-    inlet.registerWriter(std::move(sphinxWriter));
-    inlet.write();
-    std::unique_ptr<inlet::JSONSchemaWriter> schemaWriter(
-      new inlet::JSONSchemaWriter(docFileName + ".json"));
-    inlet.registerWriter(std::move(schemaWriter));
-    inlet.write();
+    inlet.write(inlet::SphinxWriter(docFileName + ".rst"));
+    inlet.write(inlet::JSONSchemaWriter(docFileName + ".json"));
     SLIC_INFO("Documentation was written to " << docFileName
                                               << " (rst and json)");
   }

@@ -53,11 +53,6 @@ VerifiableScalar& Inlet::addString(const std::string& name,
   return m_globalContainer.addString(name, description);
 }
 
-void Inlet::registerWriter(std::unique_ptr<Writer> writer)
-{
-  m_writer = std::move(writer);
-}
-
 namespace detail
 {
 /*!
@@ -98,12 +93,12 @@ void writerHelper(Writer& writer, const Container& container)
 
 }  // end namespace detail
 
-void Inlet::write()
+void Inlet::write(Writer&& writer)
 {
   if(m_docEnabled)
   {
-    detail::writerHelper(*m_writer, m_globalContainer);
-    m_writer->finalize();
+    detail::writerHelper(writer, m_globalContainer);
+    writer.finalize();
   }
 }
 

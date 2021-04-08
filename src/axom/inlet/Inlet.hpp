@@ -246,26 +246,15 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Sets the associated Writer for the Inlet instance.
-   *
-   * Sets the associated Writer. If the Writer is already set, it will be
-   * replaced by the one that was most recently set.
-   *
-   * \param [in] writer An owning pointer to a Writer object
-   *
-   *****************************************************************************
-   */
-  void registerWriter(std::unique_ptr<Writer> writer);
-
-  /*!
-   *****************************************************************************
    * \brief Writes input file documentation.
    *
-   * This runs the calling Inlet object through the registered Writer.
+   * This runs the calling Inlet object through the \a writer.
+   * 
+   * \param [in] writer The writer object to use
    *
    *****************************************************************************
    */
-  void write();
+  void write(Writer&& writer);
 
   /*!
    *****************************************************************************
@@ -486,7 +475,6 @@ private:
   std::unique_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   Container m_globalContainer;
-  std::unique_ptr<Writer> m_writer;
   bool m_docEnabled;
   std::unordered_set<std::string> m_unexpectedNames;
 };
