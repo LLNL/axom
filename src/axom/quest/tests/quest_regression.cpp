@@ -27,26 +27,7 @@
  *  'bvh_containment' and 'bvh_distance' and the '--distance' command line
  *  option.
  *
- * \note For usage run
- * \verbatim
- *
- *  [mpirun -np N] ./quest_regression <options>
- *  --help                        Output this message and quit
- *  --mesh <file>                 (required) Surface mesh file
- *                                (STL files are currently supported)
- *  --baseline <file>             root file of baseline, a sidre rootfile.
- *                                (Only supported when Axom configured w/ hdf5)
- *
- *  At least one of the following must be enabled:
- *  --[no-]distance               Indicates whether to test signed distance
- *                                (default: on)
- *  --[no-]containment            Indicates whether to test point containment
- *                                (default: on)
- *  The following are only used when baseline is not supplied (or is disabled)
- *  --resolution nx ny nz         The resolution of the sample grid
- *  --bounding-box x y z x y z    The bounding box to test (min then max)
- *
- * \endverbatim
+ * Usage: run with "-h" or "--help" to see command line options
  */
 
 // axom includes
@@ -61,6 +42,7 @@
 #include "axom/quest/interface/signed_distance.hpp"
 
 #include "fmt/fmt.hpp"
+#include "CLI11/CLI11.hpp"
 
 // MPI includes
 #include "mpi.h"
@@ -85,25 +67,17 @@ namespace sidre = axom::sidre;
 namespace slic = axom::slic;
 namespace utilities = axom::utilities;
 
-typedef primal::BoundingBox<double, DIM> SpaceBoundingBox;
-typedef primal::Point<double, DIM> SpacePt;
-typedef primal::Vector<double, DIM> SpaceVec;
-typedef primal::Point<int, DIM> GridPt;
+using SpaceBoundingBox = primal::BoundingBox<double, DIM>;
+using SpacePt = primal::Point<double, DIM>;
+using SpaceVec = primal::Vector<double, DIM>;
+using GridPt = primal::Point<int, DIM>;
 
 /** Simple structure to hold the command line arguments */
-struct CommandLineArguments
+struct Input
 {
-  CommandLineArguments()
-    : meshName("")
-    , baselineRoot("")
-    , meshBoundingBox()
-    , queryResolution(DEFAULT_RESOLUTION)
-    , queryMesh(nullptr)
-    , testDistance(true)
-    , testContainment(true)
-  { }
+  Input() = default;
 
-  ~CommandLineArguments()
+  ~Input()
   {
     if(queryMesh != nullptr)
     {
@@ -115,181 +89,121 @@ struct CommandLineArguments
   std::string meshName;
   std::string baselineRoot;
 
+  std::vector<int> m_resolution;
+  std::vector<double> m_queryBoxMins;
+  std::vector<double> m_queryBoxMaxs;
+
   SpaceBoundingBox meshBoundingBox;
-  GridPt queryResolution;
+  GridPt queryResolution {DEFAULT_RESOLUTION};
 
-  mint::UniformMesh* queryMesh;
+  mint::UniformMesh* queryMesh {nullptr};
 
-  bool testDistance;
-  bool testContainment;
+  bool testDistance {true};
+  bool testContainment {true};
 
   bool hasBaseline() const { return !baselineRoot.empty(); }
-  bool hasMeshName() const { return !meshName.empty(); }
   bool hasBoundingBox() const { return meshBoundingBox != SpaceBoundingBox(); }
   bool hasQueryMesh() const { return queryMesh != nullptr; }
 
-  void usage()
+  /**
+ * \brief Parses the command line options
+ */
+  void parse(int argc, char** argv, CLI::App& app)
   {
-    fmt::memory_buffer out;
-    fmt::format_to(out, "Usage ./quest_regression <options>");
-    fmt::format_to(out,
-                   "\n\t{:<30}{}",
-                   "--help",
-                   "Output this message and quit");
-    fmt::format_to(
-      out,
-      "\n\t{:<30}{}",
-      "--mesh <file>",
-      "(required) Surface mesh file (STL files are currently supported)");
-    fmt::format_to(out,
-                   "\n\t{:<30}{}",
-                   "--baseline <file>",
+    app
+      .add_option("-m,--mesh",
+                  meshName,
+                  "Surface mesh file (STL files are currently supported)")
+      ->required();
+
+    app
+      .add_flag("--distance,!--no-distance",
+                testDistance,
+                "Indicates whether to test the signed distance")
+      ->capture_default_str();
+    app
+      .add_flag("--containment,!--no-containment",
+                testContainment,
+                "Indicates whether to test the point containment")
+      ->capture_default_str();
+
+    // Note: Baselines comparisons only supported when Axom is configured with hdf5
+#ifdef AXOM_USE_HDF5
+    app.add_option("-b,--baseline",
+                   baselineRoot,
                    "root file of baseline, a sidre rootfile. "
                    "Note: Only supported when Axom configured with hdf5");
-
-    fmt::format_to(out, "\n  At least one of the following must be enabled:");
-    fmt::format_to(
-      out,
-      "\n\t{:<30}{}",
-      "--[no-]distance",
-      "Indicates whether to test the signed distance (default: on)");
-    fmt::format_to(
-      out,
-      "\n\t{:<30}{}",
-      "--[no-]containment",
-      "Indicates whether to test the point containment (default: on)");
-
-    fmt::format_to(out,
-                   "\n  The following options are only used "
-                   "when --baseline is not supplied (or is disabled)");
-    fmt::format_to(out,
-                   "\n\t{:<30}{}",
-                   "--resolution nx ny nz",
-                   "The resolution of the sample grid");
-    fmt::format_to(out,
-                   "\n\t{:<30}{}",
-                   "--bounding-box x y z x y z",
-                   "The bounding box to test (min then max)");
-
-    SLIC_INFO(out.data());
-  }
-};
-
-/**
- * \brief Utility to parse the command line options
- * \return An instance of the CommandLineArguments struct.
- */
-CommandLineArguments parseArguments(int argc, char** argv)
-{
-  CommandLineArguments clargs;
-  bool hasBaseline = false;
-  bool hasResolution = false;
-  bool hasBoundingBox = false;
-
-  for(int i = 1; i < argc; ++i)
-  {
-    std::string arg(argv[i]);
-    if(arg == "--baseline")
-    {
-#ifdef AXOM_USE_HDF5
-      clargs.baselineRoot = std::string(argv[++i]);
-      hasBaseline = true;
-#else
-      std::string bline = std::string(argv[++i]);
-      SLIC_INFO("Comparisons to baselines only supported"
-                << " when Axom is configured with hdf5."
-                << " Skipping comparison to baseline file " << bline);
 #endif
-    }
-    else if(arg == "--mesh")
-    {
-      clargs.meshName = std::string(argv[++i]);
-    }
-    //
-    else if(arg == "--distance")
-    {
-      clargs.testDistance = true;
-    }
-    else if(arg == "--no-distance")
-    {
-      clargs.testDistance = false;
-    }
-    else if(arg == "--containment")
-    {
-      clargs.testContainment = true;
-    }
-    else if(arg == "--no-containment")
-    {
-      clargs.testContainment = false;
-    }
-    else if(arg == "--resolution")
-    {
-      clargs.queryResolution[0] = std::atoi(argv[++i]);
-      clargs.queryResolution[1] = std::atoi(argv[++i]);
-      clargs.queryResolution[2] = std::atoi(argv[++i]);
-      hasResolution = true;
-    }
-    else if(arg == "--bounding-box")
-    {
-      SpacePt bbMin;
-      SpacePt bbMax;
 
-      bbMin[0] = std::atof(argv[++i]);
-      bbMin[1] = std::atof(argv[++i]);
-      bbMin[2] = std::atof(argv[++i]);
+    // user can supply 1 or 3 values for resolution
+    // the following is not quite right
+    app
+      .add_option("-r,--resolution",
+                  m_resolution,
+                  "Resolution of the sample grid. "
+                  "Note: Only used when baseline not supplied.")
+      ->expected(-1);
 
-      bbMax[0] = std::atof(argv[++i]);
-      bbMax[1] = std::atof(argv[++i]);
-      bbMax[2] = std::atof(argv[++i]);
+    // Optional bounding box for query region
+    auto* minbb = app
+                    .add_option("--min",
+                                m_queryBoxMins,
+                                "Min bounds for query box (x,y,z). "
+                                "Note: Only used when baseline not supplied.")
+                    ->expected(3);
+    auto* maxbb = app
+                    .add_option("--max",
+                                m_queryBoxMaxs,
+                                "Max bounds for query box (x,y,z)"
+                                "Note: Only used when baseline not supplied.")
+                    ->expected(3);
+    minbb->needs(maxbb);
+    maxbb->needs(minbb);
 
-      clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
-      hasBoundingBox = true;
-    }
-    else if(arg == "--help")
+    app.get_formatter()->column_width(35);
+
+    // could throw an exception
+    app.parse(argc, argv);
+
+    // Check if resolution or bounding box values were provided in addition
+    // to baseline. If so, inform user that these will be overridden by baseline
+    bool hasRes = !m_resolution.empty();
+    bool hasBBox = !m_queryBoxMins.empty();
+    if(!baselineRoot.empty())
     {
-      clargs.usage();
-      axom::utilities::processAbort();
+      if(hasRes || hasBBox)
+      {
+        SLIC_INFO(
+          "Baseline mesh will override values for resolution and bounding box");
+      }
+    }
+    else if(!hasRes || !hasBBox)
+    {
+      throw CLI::Error(
+        "IncorrectConstruction",
+        "Resolution and bounding box required when baseline is not supplied");
     }
     else
     {
-      SLIC_WARNING(fmt::format("Unknown argument: '{}'", arg));
-      clargs.usage();
-      axom::utilities::processAbort();
+      const int dim = 3;
+      queryResolution = (m_resolution.size() == 1)
+        ? GridPt(m_resolution[0])
+        : GridPt(m_resolution.data(), dim);
+      meshBoundingBox.addPoint(SpacePt(m_queryBoxMins.data(), dim));
+      meshBoundingBox.addPoint(SpacePt(m_queryBoxMaxs.data(), dim));
+    }
+
+    if(!testContainment && !testDistance)
+    {
+      throw CLI::Error(
+        "IncorrectConstruction",
+        "At least one of {--distance; --containment} must be enabled.");
     }
   }
-
-  // Mesh is required
-  bool isValid = clargs.hasMeshName();
-  if(!isValid)
-  {
-    SLIC_INFO("Must supply a path to an input surface mesh");
-  }
-
-  // Check if resolution or bounding box values were provided in addition
-  // to baseline. If so, inform user that these will be overridden by baseline
-  if(hasBaseline && (hasResolution || hasBoundingBox))
-  {
-    SLIC_INFO(
-      "Baseline mesh will override values for resolution and bounding box");
-  }
-
-  if(!clargs.testContainment && !clargs.testDistance)
-  {
-    isValid = false;
-    SLIC_INFO("At least one of {--distance; --containment} must be enabled.");
-  }
-
-  if(!isValid)
-  {
-    clargs.usage();
-    axom::utilities::processAbort();
-  }
-
-  return clargs;
-}
+};
 
 /** Loads the baseline dataset into the given sidre group */
-void loadBaselineData(sidre::Group* grp, CommandLineArguments& args)
+void loadBaselineData(sidre::Group* grp, Input& args)
 {
   sidre::IOManager reader(MPI_COMM_WORLD);
   reader.read(grp, args.baselineRoot, "sidre_hdf5");
@@ -393,7 +307,7 @@ mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res
  * Runs the InOutOctree point containment queries and adds results as scalar
  * field on uniform mesh
  */
-void runContainmentQueries(CommandLineArguments& clargs)
+void runContainmentQueries(Input& clargs)
 {
   SLIC_INFO(
     fmt::format("Initializing InOutOctree over mesh '{}'...", clargs.meshName));
@@ -487,7 +401,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
  * Runs the SignedDistance point containment and distance queries and adds
  * results as scalar field on uniform mesh
  */
-void runDistanceQueries(CommandLineArguments& clargs)
+void runDistanceQueries(Input& clargs)
 {
   constexpr int maxDepth = 10;
   constexpr int maxEltsPerBucket = 25;
@@ -599,7 +513,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
  * \return True if all results agree, False otherwise.
  * \note When there are differences, the first few are logged
  */
-bool compareDistanceAndContainment(CommandLineArguments& clargs)
+bool compareDistanceAndContainment(Input& clargs)
 {
   SLIC_ASSERT(clargs.hasQueryMesh());
 
@@ -675,8 +589,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
  * \return True if all results agree, False otherwise.
  * \note When there are differences, the first few are logged
  */
-bool compareToBaselineResults(axom::sidre::Group* grp,
-                              CommandLineArguments& clargs)
+bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
 {
   SLIC_ASSERT(grp != nullptr);
   SLIC_ASSERT(clargs.hasQueryMesh());
@@ -787,7 +700,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
  *       and a corresponding folder ./<mesh>_<res>_baseline/
  *       (both in the same directory)
  */
-void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
+void saveBaseline(axom::sidre::Group* grp, Input& clargs)
 {
   SLIC_ASSERT(grp != nullptr);
   SLIC_ASSERT(clargs.hasQueryMesh());
@@ -866,15 +779,24 @@ int main(int argc, char** argv)
   MPI_Init(&argc, &argv);
 
   {
-    // Note: this code is in a different context since SimpleLogger's
-    // destructor
-    //       might have MPI calls and would otherwise be invoked after
-    // MPI_Finalize()
+    // Note: this code is in a different context since SimpleLogger's destructor
+    //       might have MPI calls and would otherwise be invoked after MPI_Finalize()
     slic::SimpleLogger logger;
     sidre::DataStore ds;
 
     // parse the command arguments
-    CommandLineArguments args = parseArguments(argc, argv);
+    Input args;
+    CLI::App app {
+      "Regression tester for point containment and signed distance tests"};
+
+    try
+    {
+      args.parse(argc, argv, app);
+    }
+    catch(const CLI::ParseError& e)
+    {
+      return app.exit(e);
+    }
 
 #ifdef AXOM_USE_HDF5
     // load the baseline file for comparisons and additional test parameters
