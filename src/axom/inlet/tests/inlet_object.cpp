@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -1029,6 +1029,47 @@ TYPED_TEST(inlet_object, default_struct_field_marked_true)
 
   // and it verification should succeed
   EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, basic_unused_names)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; baz = false}, "
+    "        [1] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_container = inlet.addStructArray("foo");
+
+  arr_container.addBool("bar", "bar's description");
+  // Baz is left unused
+
+  // Should still verify - unexpected fields do not mean invalid
+  EXPECT_TRUE(inlet.verify());
+
+  std::unordered_set<std::string> expected_unused {"foo/0/baz", "foo/1/baz"};
+  EXPECT_EQ(expected_unused, inlet.unexpectedNames());
+}
+
+TYPED_TEST(inlet_object, basic_unused_names_substring)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; barz = false}, "
+    "        [1] = { bar = false; barz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_container = inlet.addStructArray("foo");
+
+  arr_container.addBool("barz", "barz's description");
+  // Baz is left unused
+
+  // Should still verify - unexpected fields do not mean invalid
+  EXPECT_TRUE(inlet.verify());
+
+  // Check to make sure that a naive substring is not used and that checks are path-aware
+  std::unordered_set<std::string> expected_unused {"foo/0/bar", "foo/1/bar"};
+  EXPECT_EQ(expected_unused, inlet.unexpectedNames());
 }
 
 template <typename InletReader>

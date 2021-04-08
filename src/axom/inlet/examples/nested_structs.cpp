@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -334,6 +334,12 @@ int main(int argc, char** argv)
   else
   {
     SLIC_INFO("Verification was unsuccessful");
+  }
+
+  // TODO: Remove this when a strict() option is available, as it will behave identically
+  for(const auto& item : inlet.unexpectedNames())
+  {
+    SLIC_WARNING("Input contained unexpected item: " << item);
   }
 
   auto shapes = inlet["shapes"].get<std::unordered_map<int, Shape>>();

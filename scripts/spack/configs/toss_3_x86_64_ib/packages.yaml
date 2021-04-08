@@ -54,10 +54,10 @@ packages:
   # the following per spack docs
   netlib-lapack:
     buildable: false
-
     externals:
     - spec: netlib-lapack@3.6.1
       prefix: /usr
+
 # System level packages to not build
   autoconf:
     buildable: false

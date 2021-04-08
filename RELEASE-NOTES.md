@@ -1,7 +1,7 @@
 
 [comment]: # (#################################################################)
 [comment]: # (Copyright 2017-2021, Lawrence Livermore National Security, LLC)
-[comment]: # (and Axom Project Developers. See the top-level COPYRIGHT file)
+[comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
@@ -42,6 +42,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added a new `Writer` for generating JSON schemas which can be used by text editors
   for autocompletion
 - Inlet: SphinxWriter will now document the signature of function callbacks added to a schema
+- Axom::Path - New class for performing basic path operations with user-selectable
+  delimiter characters
+- Inlet: Added a method to `inlet::Inlet` that retrieves the set of unexpected names
+  in the input file
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 

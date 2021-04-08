@@ -1,11 +1,12 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/inlet/Container.hpp"
 
 #include "axom/slic.hpp"
+#include "axom/core/Path.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 #include "axom/inlet/Proxy.hpp"
 
@@ -45,55 +46,35 @@ bool Container::transformFromNestedElements(OutputIt output,
 Container& Container::addContainer(const std::string& name,
                                    const std::string& description)
 {
-  // Create intermediate Containers if they don't already exist
-  std::string currName = name;
-  size_t found = currName.find("/");
   auto currContainer = this;
+  Path path(name);
 
-  while(found != std::string::npos)
+  // Create intermediate Containers if they don't already exist
+  for(const auto& pathPart : path.parts())
   {
-    const std::string currContainerName =
-      appendPrefix(currContainer->m_name, currName.substr(0, found));
-    // The current container will prepend its own prefix - just pass the basename
-    if(!currContainer->hasChild<Container>(currName.substr(0, found)))
+    // Need to watch out for empty paths here
+    auto currContainerName = Path::join({currContainer->m_name, pathPart});
+    // Leave the description empty for intermediate containers
+    const std::string currDescr = (pathPart == name) ? description : "";
+    if(!currContainer->hasChild<Container>(pathPart))
     {
       // Will the copy always be elided here with a move ctor
       // or do we need std::piecewise_construct/std::forward_as_tuple?
-      const auto& emplace_result = currContainer->m_containerChildren.emplace(
+      const auto& emplaceResult = currContainer->m_containerChildren.emplace(
         currContainerName,
         cpp11_compat::make_unique<Container>(currContainerName,
-                                             "",
+                                             currDescr,
                                              m_reader,
                                              m_sidreRootGroup,
+                                             m_unexpectedNames,
                                              m_docEnabled));
       // emplace_result is a pair whose first element is an iterator to the inserted element
-      currContainer = emplace_result.first->second.get();
+      currContainer = emplaceResult.first->second.get();
     }
     else
     {
       currContainer = currContainer->m_containerChildren[currContainerName].get();
     }
-    currName = currName.substr(found + 1);
-    found = currName.find("/");
-  }
-
-  const std::string currContainerName =
-    appendPrefix(currContainer->m_name, currName.substr(0, found));
-
-  if(!currContainer->hasChild<Container>(currName))
-  {
-    const auto& emplace_result = currContainer->m_containerChildren.emplace(
-      currContainerName,
-      cpp11_compat::make_unique<Container>(currContainerName,
-                                           description,
-                                           m_reader,
-                                           m_sidreRootGroup,
-                                           m_docEnabled));
-    currContainer = emplace_result.first->second.get();
-  }
-  else
-  {
-    currContainer = currContainer->m_containerChildren[currContainerName].get();
   }
 
   return *currContainer;
@@ -159,6 +140,7 @@ Container& Container::addStructCollection(const std::string& name,
     std::vector<Key> indices;
     std::string fullName = appendPrefix(m_name, name);
     fullName = removeAllInstances(fullName, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(fullName, m_unexpectedNames);
     const auto result = m_reader.getIndices(fullName, indices);
     if(result == ReaderResult::Success)
     {
@@ -316,6 +298,7 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     auto typeId = addPrimitiveHelper(sidreGroup, lookupPath, forArray, val);
     return addField(sidreGroup, typeId, fullName, name);
   }
@@ -436,10 +419,13 @@ std::vector<VariantKey> registerCollection(
   {
     result.push_back(entry.first);
     auto string_key = indexToString(entry.first);
+    const auto illegal_char_loc = string_key.find_first_of("/[]");
     SLIC_ERROR_IF(
-      string_key.find('/') != std::string::npos,
-      fmt::format("[Inlet] Dictionary key '{0}' contains illegal character '/'",
-                  string_key));
+      illegal_char_loc != std::string::npos,
+      fmt::format(
+        "[Inlet] Dictionary key '{0}' contains illegal character '{1}'",
+        string_key,
+        string_key[illegal_char_loc]));
     SLIC_ERROR_IF(string_key.empty(),
                   "[Inlet] Dictionary key cannot be the empty string");
     container.addPrimitive(string_key, "", true, entry.second);
@@ -627,18 +613,49 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
   const std::string& name)
 {
   std::vector<std::pair<std::string, std::string>> result;
-  for(const auto& indexLabel : collectionIndices(container, false))
+  for(const auto& index : collectionIndices(container, false))
   {
-    auto stringLabel = detail::indexToString(indexLabel);
+    Path indexPath = detail::indexToString(index);
     // Since the index is absolute, we only care about the last segment of it
     // But since it's an absolute path then it gets used as the fullPath
     // which is used by the Reader to search in the input file
-    const auto baseName = removeBeforeDelimiter(stringLabel);
-    const auto fullPath = appendPrefix(stringLabel, name);
+    const auto fullPath = Path::join({indexPath, name});
     // e.g. fullPath could be foo/1/bar for field "bar" at index 1 of array "foo"
-    result.push_back({baseName, fullPath});
+    result.push_back({indexPath.baseName(), fullPath});
   }
   return result;
+}
+
+void updateUnexpectedNames(const std::string& accessedName,
+                           std::unordered_set<std::string>& unexpectedNames)
+{
+  std::vector<std::string> accessed_tokens;
+  axom::utilities::string::split(accessed_tokens, accessedName, '/');
+  std::vector<std::string> unexpected_tokens;
+  for(auto iter = unexpectedNames.begin(); iter != unexpectedNames.end();)
+  {
+    // Check if the possibly unexpected name is an "ancestor" of the accessed name,
+    // if it is, then it gets marked as expected via removal
+    unexpected_tokens.clear();
+    axom::utilities::string::split(unexpected_tokens, *iter, '/');
+    // If it's bigger, it can't be an ancestor so we can bail out early
+    if(unexpected_tokens.size() > accessed_tokens.size())
+    {
+      ++iter;
+    }
+    // Check if the beginning of the accessed tokens sequence is equal to the tokens in the possibly
+    // unexpected name
+    else if(std::equal(unexpected_tokens.begin(),
+                       unexpected_tokens.end(),
+                       accessed_tokens.begin()))
+    {
+      iter = unexpectedNames.erase(iter);
+    }
+    else
+    {
+      ++iter;
+    }
+  }
 }
 
 }  // end namespace detail
@@ -701,6 +718,7 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     std::vector<VariantKey> indices;
     if(isDict)
     {
@@ -764,6 +782,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+    detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     auto func = m_reader.getFunction(lookupPath, ret_type, arg_types);
     return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
   }
@@ -947,31 +966,30 @@ bool Container::hasChild(const std::string& childName) const
 template <typename T>
 T* Container::getChildInternal(const std::string& childName) const
 {
-  std::string name = childName;
-  size_t found = name.find("/");
+  Path path(childName);
+  const std::string baseName = path.baseName();
   auto currContainer = this;
 
-  while(found != std::string::npos)
+  // Traverse the intermediate paths
+  const auto parent = path.parent();
+  for(const auto& pathPart : parent.parts())
   {
-    const std::string& currName = name.substr(0, found);
-    if(currContainer->hasChild<Container>(currName))
+    if(currContainer->hasChild<Container>(pathPart))
     {
       currContainer = currContainer->m_containerChildren
-                        .at(appendPrefix(currContainer->m_name, currName))
+                        .at(Path::join({currContainer->m_name, pathPart}))
                         .get();
     }
     else
     {
       return nullptr;
     }
-    name = name.substr(found + 1);
-    found = name.find("/");
   }
 
-  if(currContainer->hasChild<T>(name))
+  if(currContainer->hasChild<T>(baseName))
   {
     const auto& children = currContainer->*getChildren<T>();
-    return children.at(appendPrefix(currContainer->m_name, name)).get();
+    return children.at(Path::join({currContainer->m_name, baseName})).get();
   }
   return nullptr;
 }
