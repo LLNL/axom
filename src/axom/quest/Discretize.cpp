@@ -10,6 +10,17 @@
 
 #include <cmath>
 
+namespace {
+enum {
+   P = 0,
+   Q,
+   R,
+   S,
+   T,
+   U
+};
+}
+
 namespace axom
 {
 namespace quest
@@ -19,15 +30,6 @@ constexpr double PTINY = 1e-80;
 
 using PointType = primal::Point<double, 3>;
 using NAType = primal::NumericArray<double, 3>;
-
-enum {
-   P = 0,
-   Q,
-   R,
-   S,
-   T,
-   U
-};
 
 /* ------------------------------------------------------------ */
 /* Project a Point onto a sphere.
