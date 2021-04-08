@@ -949,12 +949,13 @@ public:
    *
    * \param [in] bb The spatial extent covered by the octree
    * \note We slightly scale the bounding box so all mesh elements are
-   * guaranteed to be enclosed by the octree.
+   * guaranteed to be enclosed by the octree and to remedy problems we've
+   * encountered related to meshes that are aligned with the octree grid
    * \note The InOutOctree modifies its mesh in an effort to repair common
    * problems.  Please make sure to discard all old copies of the meshPtr.
    */
   InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
-    : SpatialOctreeType(GeometricBoundingBox(bb).scale(1.0001))
+    : SpatialOctreeType(GeometricBoundingBox(bb).scale(1.00123))
     , m_meshWrapper(meshPtr)
     , m_vertexToBlockMap(&m_meshWrapper.vertexSet())
     //
