@@ -10,7 +10,7 @@
 #include "axom/core/Macros.hpp"  // for axom macros
 
 // Geometry
-#include "axom/primal/geometry/Sphere.hpp"  
+#include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 
@@ -21,7 +21,6 @@ namespace axom
 {
 namespace quest
 {
-
 /// \name Discretize primitive shapes to linear shapes
 /// @{
 
@@ -40,7 +39,7 @@ using TwoDPointType = primal::Point<double, 2>;
  * This routine generates O(4^level) octahedra.  That's exponential growth.
  * Use appropriate caution.
  */
-void discretize(const SphereType & s, int levels, std::vector<OctType> & out);
+void discretize(const SphereType& s, int levels, std::vector<OctType>& out);
 
 /*!
  * \brief Given a 2D polyline revolved around the positive X-axis, return a list
@@ -54,9 +53,9 @@ void discretize(const SphereType & s, int levels, std::vector<OctType> & out);
  * segments in \a polyline (one less than the length).
  * That's exponential growth.  Use appropriate caution.
  */
-void discretize(std::vector<TwoDPointType> & polyline,
+void discretize(std::vector<TwoDPointType>& polyline,
                 int levels,
-                std::vector<OctType> & out);
+                std::vector<OctType>& out);
 
 /// @}
 
