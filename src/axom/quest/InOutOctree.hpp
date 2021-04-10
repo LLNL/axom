@@ -1253,6 +1253,9 @@ protected:
   IndexRegistry m_indexRegistry;
 
   double m_vertexWeldThresholdSquared;
+
+  /// Bounding box scaling factor for dealing with grazing triangles
+  double m_boundingBoxScaleFactor {1.005};
 };
 
 template <int DIM>
@@ -1563,6 +1566,9 @@ void InOutOctree<DIM>::insertMeshTriangles()
         {
           childBlk[j] = blk.child(j);
           childBB[j] = this->blockBoundingBox(childBlk[j]);
+
+          // expand bounding box slightly to deal with grazing triangles
+          childBB[j].scale(m_boundingBoxScaleFactor);
 
           const InOutBlockData& childBlockData = broodData[j];
           if(!childBlockData.hasData())
@@ -1924,9 +1930,6 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
   /// against this triangle's normal indicates queryPt's containment.
   /// It is inside when the dot product is positive.
 
-  // Bounding box scaling factor for dealing with grazing triangles
-  const double BB_SCALE_FACTOR = 1.005;
-
   SLIC_ASSERT(leafData.color() == InOutBlockData::Gray);
   SLIC_ASSERT(leafData.hasData());
 
@@ -1959,7 +1962,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
       // produces an empty polygon.  To resolve this, clip against a
       // slightly expanded bounding box
       GeometricBoundingBox expandedBB = blockBB;
-      expandedBB.scale(BB_SCALE_FACTOR);
+      expandedBB.scale(m_boundingBoxScaleFactor);
 
       poly = primal::clip(tri, expandedBB);
 
@@ -2933,6 +2936,8 @@ public:
       "--Checking that internal blocks have no data, and that leaves satisfy "
       "all PM conditions");
 
+    const double bb_scale_factor = m_octree.m_boundingBoxScaleFactor;
+
     for(int lev = 0; lev < m_octree.m_levels.size(); ++lev)
     {
       const auto& levelLeafMap = m_octree.getOctreeLevel(lev);
@@ -2971,6 +2976,7 @@ public:
               // Check that this triangle intersects the bounding box of the
               // block
               GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
+              blockBB.expand(bb_scale_factor);
               SLIC_ASSERT_MSG(
                 m_octree.blockIndexesElementVertex(tIdx, block) ||
                   intersect(m_octree.m_meshWrapper.trianglePositions(tIdx),
