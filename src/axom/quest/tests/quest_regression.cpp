@@ -540,32 +540,40 @@ bool compareDistanceAndContainment(Input& clargs)
     int diffCount = 0;
     fmt::memory_buffer out;
 
-    int* bvh_containment =
-      umesh->getFieldPtr<int>("bvh_containment", mint::NODE_CENTERED);
     int* oct_containment =
       umesh->getFieldPtr<int>("octree_containment", mint::NODE_CENTERED);
+    int* bvh_containment =
+      umesh->getFieldPtr<int>("bvh_containment", mint::NODE_CENTERED);
+    double* bvh_distance =
+      umesh->getFieldPtr<double>("bvh_distance", mint::NODE_CENTERED);
 
     for(int inode = 0; inode < nnodes; ++inode)
     {
-      const int bvh_c = bvh_containment[inode];
       const int oct_c = oct_containment[inode];
+      const int bvh_c = bvh_containment[inode];
 
       if(bvh_c != oct_c)
       {
-        if(diffCount < MAX_RESULTS)
+        // allow for differences between the two approaches really close to the boundary
+        const double bvh_d = bvh_distance[inode];
+        if(!axom::utilities::isNearlyEqual(bvh_d, 0.))
         {
-          primal::Point<double, 3> pt;
-          umesh->getNode(inode, pt.data());
+          if(diffCount < MAX_RESULTS)
+          {
+            primal::Point<double, 3> pt;
+            umesh->getNode(inode, pt.data());
 
-          fmt::format_to(out,
-                         "\n  Disagreement on sample {} @ {}.  Signed "
-                         "distance: {} -- InOutOctree: {} ",
-                         inode,
-                         pt,
-                         bvh_c ? "inside" : "outside",
-                         oct_c ? "inside" : "outside");
+            fmt::format_to(out,
+                           "\n  Disagreement on sample {} @ {}.  "
+                           "Signed distance: {} ({}) -- InOutOctree: {} ",
+                           inode,
+                           pt,
+                           bvh_d,
+                           bvh_c ? "inside" : "outside",
+                           oct_c ? "inside" : "outside");
+          }
+          ++diffCount;
         }
-        ++diffCount;
       }
     }
 
