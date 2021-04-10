@@ -1856,9 +1856,11 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
             break;
           case InOutBlockData::Gray:
           {
-            SpacePt faceCenter = SpacePt::midpoint(
+            // Check the center of the shared face betwen the same-level neighbor of the gray block
+            SpacePt faceCenter = SpacePt::lerp(
               this->blockBoundingBox(leafBlk).getCentroid(),
-              this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid());
+              this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid(),
+              .55);
 
             if(withinGrayBlock(faceCenter, leafBlk, leafData))
               neighborData.setBlack();
