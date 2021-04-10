@@ -30,21 +30,21 @@
 #define DEBUG_VERT_IDX -2  // 1160
 #define DEBUG_TRI_IDX -2   // 1654
 
-#define DEBUG_BLOCK_1 BlockIndex(GridPt::make_point(32, 61, 20), 6)
-//BlockIndex::invalid_index()
-#define DEBUG_BLOCK_2 BlockIndex(GridPt::make_point(32, 60, 20), 6)
-//BlockIndex::invalid_index()
+#define DEBUG_BLOCK_2 BlockIndex::invalid_index()
+//                     BlockIndex(GridPt::make_point(32, 61, 20), 6)
+#define DEBUG_BLOCK_1 BlockIndex::invalid_index()
+//                     BlockIndex(GridPt::make_point(32, 60, 20), 6)
 
 #ifndef DUMP_VTK_MESH
-  #define DUMP_VTK_MESH
+//    #define DUMP_VTK_MESH
 #endif
 
 #ifndef DUMP_OCTREE_INFO
-  #define DUMP_OCTREE_INFO 1
+//    #define DUMP_OCTREE_INFO 1
 #endif
 
 #ifndef DEBUG_OCTREE_ACTIVE
-  #define DEBUG_OCTREE_ACTIVE
+//    #define DEBUG_OCTREE_ACTIVE
 #endif
 
 #if defined(DEBUG_OCTREE_ACTIVE) && defined(AXOM_DEBUG)
@@ -1867,11 +1867,10 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
             break;
           case InOutBlockData::Gray:
           {
-            // Check the center of the shared face betwen the same-level neighbor of the gray block
-            SpacePt faceCenter = SpacePt::lerp(
+            // Check the center of the shared face between the same-level neighbor of the gray block
+            SpacePt faceCenter = SpacePt::midpoint(
               this->blockBoundingBox(leafBlk).getCentroid(),
-              this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid(),
-              .55);
+              this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid());
 
             if(withinGrayBlock(faceCenter, leafBlk, leafData))
               neighborData.setBlack();
