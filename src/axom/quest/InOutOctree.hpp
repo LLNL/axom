@@ -1934,6 +1934,14 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
 
   SpacePt triPt;
 
+  // Use the following parameters to track the closest intersection
+  // Note: It is not always safe to short circuit on an intersection
+  // along a ray with the first triangle that we find,
+  // See: https://github.com/LLNL/axom/issues/513
+  bool intersectionFound = false;
+  bool isInside = false;
+  double minIntersectionDistanceSquared = std::numeric_limits<double>::infinity();
+
   TriangleIndexSet triSet = leafTriangles(leafBlk, leafData);
   const int numTris = triSet.size();
   for(int i = 0; i < numTris; ++i)
@@ -2025,18 +2033,33 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
       continue;
     }
 
-    // Inside when the dot product of the normal with this triangle is positive
-    SpaceVector normal = (tIdx == idx)
-      ? tri.normal()
-      : m_meshWrapper.trianglePositions(tIdx).normal();
+    intersectionFound = true;
+    double dist = primal::squared_distance(ray.at(minRayParam), queryPt);
 
-    return normal.dot(ray.direction()) > 0.;
+    if(dist < minIntersectionDistanceSquared)
+    {
+      // Inside when the dot product of the normal with this triangle is positive
+      SpaceVector normal = (tIdx == idx)
+        ? tri.normal()
+        : m_meshWrapper.trianglePositions(tIdx).normal();
+
+      isInside = normal.dot(ray.direction()) > 0.;
+      minIntersectionDistanceSquared = dist;
+    }
   }
 
-  SLIC_DEBUG("Could not determine inside/outside for point "
-             << queryPt << " on block " << leafBlk);
+  if(intersectionFound)
+  {
+    return isInside;
+  }
 
-  return false;  // query points on boundary might get here -- revisit this.
+  // query points on boundary might get here -- revisit this.
+  SLIC_DEBUG(
+    fmt::format("Could not determine inside/outside for point {} on block {}",
+                queryPt,
+                leafBlk));
+
+  return false;
 }
 
 template <int DIM>
