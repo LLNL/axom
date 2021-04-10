@@ -515,6 +515,7 @@ private:
   };
 
   static double DEFAULT_VERTEX_WELD_THRESHOLD;
+  static double DEFAULT_BOUNDING_BOX_SCALE_FACTOR;
 
   /**
    * \brief A utility class that wraps the access to the mesh data
@@ -960,7 +961,8 @@ public:
    * problems.  Please make sure to discard all old copies of the meshPtr.
    */
   InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
-    : SpatialOctreeType(GeometricBoundingBox(bb).scale(1.00123))
+    : SpatialOctreeType(
+        GeometricBoundingBox(bb).scale(DEFAULT_BOUNDING_BOX_SCALE_FACTOR))
     , m_meshWrapper(meshPtr)
     , m_vertexToBlockMap(&m_meshWrapper.vertexSet())
     //
@@ -1255,11 +1257,14 @@ protected:
   double m_vertexWeldThresholdSquared;
 
   /// Bounding box scaling factor for dealing with grazing triangles
-  double m_boundingBoxScaleFactor {1.005};
+  double m_boundingBoxScaleFactor {DEFAULT_BOUNDING_BOX_SCALE_FACTOR};
 };
 
 template <int DIM>
 double InOutOctree<DIM>::DEFAULT_VERTEX_WELD_THRESHOLD = 1E-9;
+
+template <int DIM>
+double InOutOctree<DIM>::DEFAULT_BOUNDING_BOX_SCALE_FACTOR = 1.000123;
 
 namespace
 {
