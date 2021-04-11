@@ -20,6 +20,7 @@
 #include "axom/spin.hpp"
 
 #include "fmt/fmt.hpp"
+#include "fmt/ostream.h"
 
 #include <vector>    // For InOutLeafData triangle lists
 #include <iterator>  // For back_inserter
@@ -1647,11 +1648,13 @@ void InOutOctree<DIM>::insertMeshTriangles()
               QUEST_OCTREE_DEBUG_LOG_IF(
                 DEBUG_BLOCK_1 == childBlk[j] || DEBUG_BLOCK_2 == childBlk[j],
                 //&& tIdx == DEBUG_TRI_IDX
-                fmt::format("Added triangle {} @ {} ", tIdx, spaceTri)
-                  << " with verts " << m_meshWrapper.triangleVertexIndices(tIdx)
-                  << fmt::format("\n\tinto block {} with data {}.",
-                                 childBlk[j],
-                                 *(childDataPtr[j])));
+                fmt::format("Added triangle {} @ {} with verts {}"
+                            "\n\tinto block {} with data {}.",
+                            tIdx,
+                            spaceTri,
+                            m_meshWrapper.triangleVertexIndices(tIdx),
+                            childBlk[j],
+                            *(childDataPtr[j])));
             }
           }
         }
