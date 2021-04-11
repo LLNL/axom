@@ -786,86 +786,82 @@ int main(int argc, char** argv)
   // initialize the problem
   MPI_Init(&argc, &argv);
 
+  slic::SimpleLogger logger;
+  sidre::DataStore ds;
+
+  // parse the command arguments
+  Input args;
+  CLI::App app {
+    "Regression tester for point containment and signed distance tests"};
+
+  try
   {
-    // Note: this code is in a different context since SimpleLogger's destructor
-    //       might have MPI calls and would otherwise be invoked after MPI_Finalize()
-    slic::SimpleLogger logger;
-    sidre::DataStore ds;
-
-    // parse the command arguments
-    Input args;
-    CLI::App app {
-      "Regression tester for point containment and signed distance tests"};
-
-    try
-    {
-      args.parse(argc, argv, app);
-    }
-    catch(const CLI::ParseError& e)
-    {
-      return app.exit(e);
-    }
-
-#ifdef AXOM_USE_HDF5
-    // load the baseline file for comparisons and additional test parameters
-    // This is currently only supported when hdf5 is enabled.
-    if(args.hasBaseline())
-    {
-      loadBaselineData(ds.getRoot(), args);
-    }
-#endif
-
-    // run the containment queries
-    if(args.testContainment)
-    {
-      SLIC_INFO("Running containment queries");
-      runContainmentQueries(args);
-      SLIC_INFO("--");
-    }
-
-    // run the distance queries
-    if(args.testDistance)
-    {
-      SLIC_INFO("Running distance queries");
-      runDistanceQueries(args);
-      SLIC_INFO("--");
-    }
-
-    // Compare signs of current results on SignedDistance and InOutOctree
-    bool methodsAgree = true;
-    if(args.testContainment && args.testDistance)
-    {
-      SLIC_INFO("Comparing results from containment and distance queries");
-
-      methodsAgree = compareDistanceAndContainment(args);
-
-      SLIC_INFO("** Methods " << (methodsAgree ? "agree" : "do not agree"));
-
-      allTestsPassed = allTestsPassed && methodsAgree;
-
-      SLIC_INFO("--");
-    }
-
-#ifdef AXOM_USE_HDF5
-    // compare current results to baselines or generate new baselines
-    // This is currently only supported when hdf5 is enabled.
-    bool baselinePassed = true;
-    if(args.hasBaseline())
-    {
-      SLIC_INFO("Comparing results to baselines");
-      baselinePassed = compareToBaselineResults(ds.getRoot(), args);
-
-      SLIC_INFO("** Baseline tests " << (baselinePassed ? "passed" : "failed"));
-      allTestsPassed = allTestsPassed && baselinePassed;
-    }
-    else
-    {
-      SLIC_INFO("Saving results as new baseline.");
-      saveBaseline(ds.getRoot(), args);
-    }
-    SLIC_INFO("--");
-#endif
+    args.parse(argc, argv, app);
   }
+  catch(const CLI::ParseError& e)
+  {
+    return app.exit(e);
+  }
+
+#ifdef AXOM_USE_HDF5
+  // load the baseline file for comparisons and additional test parameters
+  // This is currently only supported when hdf5 is enabled.
+  if(args.hasBaseline())
+  {
+    loadBaselineData(ds.getRoot(), args);
+  }
+#endif
+
+  // run the containment queries
+  if(args.testContainment)
+  {
+    SLIC_INFO("Running containment queries");
+    runContainmentQueries(args);
+    SLIC_INFO("--");
+  }
+
+  // run the distance queries
+  if(args.testDistance)
+  {
+    SLIC_INFO("Running distance queries");
+    runDistanceQueries(args);
+    SLIC_INFO("--");
+  }
+
+  // Compare signs of current results on SignedDistance and InOutOctree
+  bool methodsAgree = true;
+  if(args.testContainment && args.testDistance)
+  {
+    SLIC_INFO("Comparing results from containment and distance queries");
+
+    methodsAgree = compareDistanceAndContainment(args);
+
+    SLIC_INFO("** Methods " << (methodsAgree ? "agree" : "do not agree"));
+
+    allTestsPassed = allTestsPassed && methodsAgree;
+
+    SLIC_INFO("--");
+  }
+
+#ifdef AXOM_USE_HDF5
+  // compare current results to baselines or generate new baselines
+  // This is currently only supported when hdf5 is enabled.
+  bool baselinePassed = true;
+  if(args.hasBaseline())
+  {
+    SLIC_INFO("Comparing results to baselines");
+    baselinePassed = compareToBaselineResults(ds.getRoot(), args);
+
+    SLIC_INFO("** Baseline tests " << (baselinePassed ? "passed" : "failed"));
+    allTestsPassed = allTestsPassed && baselinePassed;
+  }
+  else
+  {
+    SLIC_INFO("Saving results as new baseline.");
+    saveBaseline(ds.getRoot(), args);
+  }
+  SLIC_INFO("--");
+#endif
 
   // finalize
   MPI_Finalize();
