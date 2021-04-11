@@ -207,7 +207,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
                     COMMAND ${test_name}
                             --mesh ${quest_data_dir}/${dataset}.stl
                             --baseline ${quest_data_dir}/regression/${dataset}_${res}_baseline.root
-                            --resolution ${res} ${res} ${res}
                     NUM_MPI_TASKS 1
                 )
             endforeach()
