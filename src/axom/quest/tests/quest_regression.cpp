@@ -128,39 +128,46 @@ struct Input
       ->capture_default_str();
 
     // Note: Baselines comparisons only supported when Axom is configured with hdf5
+    // Users must supply either a baseline, or both the query resolution and bounding box
 #ifdef AXOM_USE_HDF5
     app.add_option("-b,--baseline",
                    baselineRoot,
-                   "root file of baseline, a sidre rootfile. "
+                   "root file of baseline, a sidre rootfile.\n"
                    "Note: Only supported when Axom configured with hdf5");
 #endif
 
     // user can supply 1 or 3 values for resolution
     // the following is not quite right
-    app
-      .add_option("-r,--resolution",
-                  m_resolution,
-                  "Resolution of the sample grid. "
-                  "Note: Only used when baseline not supplied.")
-      ->expected(-1);
+    auto* res = app
+                  .add_option("-r,--resolution",
+                              m_resolution,
+                              "Resolution of the sample grid.\n"
+                              "Note: Only used when baseline not supplied.")
+                  ->expected(-1);
 
     // Optional bounding box for query region
     auto* minbb = app
                     .add_option("--min",
                                 m_queryBoxMins,
-                                "Min bounds for query box (x,y,z). "
+                                "Min bounds for query box (x,y,z).\n"
                                 "Note: Only used when baseline not supplied.")
                     ->expected(3);
     auto* maxbb = app
                     .add_option("--max",
                                 m_queryBoxMaxs,
-                                "Max bounds for query box (x,y,z)"
+                                "Max bounds for query box (x,y,z)\n"
                                 "Note: Only used when baseline not supplied.")
                     ->expected(3);
-    minbb->needs(maxbb);
-    maxbb->needs(minbb);
 
-    app.get_formatter()->column_width(35);
+    // Add some requirements
+    minbb->needs(maxbb);
+    minbb->needs(res);
+    maxbb->needs(minbb);
+    maxbb->needs(res);
+    res->needs(minbb);
+    res->needs(maxbb);
+
+    app.get_formatter()->column_width(45);
 
     // could throw an exception
     app.parse(argc, argv);
@@ -260,8 +267,7 @@ void loadBaselineData(sidre::Group* grp, Input& args)
     }
   }
 
-  // Optionally check for the Signed distance point containment and distance
-  // data
+  // Optionally check for the Signed distance point containment and distance data
   if(args.testDistance)
   {
     if(!grp->hasView("bvh_distance"))
@@ -291,8 +297,7 @@ void loadBaselineData(sidre::Group* grp, Input& args)
 }
 
 /**
- * \brief Generates a mint Uniform mesh with the given bounding box and
- * resolution
+ * \brief Generates a mint Uniform mesh with the given bounding box and resolution
  * \note Allocates a UniformMesh instance, which must be deleted by the user
  */
 mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res)
