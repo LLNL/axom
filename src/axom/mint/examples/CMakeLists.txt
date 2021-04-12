@@ -20,6 +20,11 @@ set( mint_examples
      user_guide/mint_getting_started.cpp
    )
 
+set( mint_example_dependencies mint )
+
+blt_list_append( TO mint_example_dependencies ELEMENTS cuda
+                 IF ${ENABLE_CUDA} )
+
 foreach( example ${mint_examples} )
 
    get_filename_component( example_name ${example} NAME_WE )
@@ -28,7 +33,7 @@ foreach( example ${mint_examples} )
         NAME       ${example_name}_ex
         SOURCES    ${example}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON mint
+        DEPENDS_ON ${mint_example_dependencies}
         FOLDER     axom/mint/examples
         )
 

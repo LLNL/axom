@@ -11,6 +11,8 @@ set(spin_example_depends
         fmt
         )
 
+blt_list_append( TO spin_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 blt_add_executable(
     NAME        spin_introduction_ex
     SOURCES     spin_introduction.cpp

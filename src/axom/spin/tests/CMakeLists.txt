@@ -22,6 +22,8 @@ set(spin_depends
     fmt
     )
 
+blt_list_append( TO spin_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 foreach ( test ${spin_tests} )
 
     get_filename_component( test_name ${test} NAME_WE )

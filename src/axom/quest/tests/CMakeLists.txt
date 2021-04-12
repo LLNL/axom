@@ -25,6 +25,8 @@ set(quest_tests_depends
     gtest
    )
 
+blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
+
 set(quest_vertex_weld_extra_depends mint)
 
 foreach(test ${quest_tests})

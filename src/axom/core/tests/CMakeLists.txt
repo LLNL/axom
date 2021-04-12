@@ -42,6 +42,8 @@ set(utils_tests_depends
     gtest
     )
 
+blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 #------------------------------------------------------------------------------
 # Serial GTests
 #------------------------------------------------------------------------------

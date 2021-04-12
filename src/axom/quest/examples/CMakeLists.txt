@@ -10,6 +10,7 @@ set(quest_example_depends
         quest
         )
 
+blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
 blt_add_executable(
