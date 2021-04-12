@@ -20,7 +20,6 @@
 #include "axom/spin.hpp"
 
 #include "fmt/fmt.hpp"
-#include "fmt/ostream.h"
 
 #include <vector>    // For InOutLeafData triangle lists
 #include <iterator>  // For back_inserter
