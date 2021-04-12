@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -12,6 +12,8 @@
 if(POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
 endif()
+
+set(TPL_DEPS)
 
 #------------------------------------------------------------------------------
 # UMPIRE
@@ -202,7 +204,6 @@ else()
     message(STATUS "LUA support is OFF")
     set(LUA_FOUND OFF CACHE BOOL "")
 endif()
-
 
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file

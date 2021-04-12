@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -41,8 +41,7 @@ set(sidre_sources
     core/View.cpp
     core/Attribute.cpp
     core/AttrValues.cpp
-    core/Iterator.cpp
-    core/SidreUtilities.cpp )
+    core/Iterator.cpp )
 
 # Add spio headers and sources when MPI is available
 if(ENABLE_MPI)
@@ -117,6 +116,7 @@ endif()
 # Include additional dependencides for spio when MPI is available
 if(ENABLE_MPI)
     list(APPEND sidre_depends fmt mpi)
+    blt_list_append(TO sidre_depends ELEMENTS conduit::conduit_mpi IF ENABLE_MPI)
     blt_list_append(TO sidre_depends ELEMENTS scr IF SCR_FOUND)
 endif()
 

@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -32,7 +32,7 @@ class Field;
  *
  * \brief Basic interface for verifiable scalar values of Inlet primitive type,
  * namely int, double, bool, or std::string - implementations can use this
- * directly (inlet::Field) or forward to all elements of a container (inlet::AggregrateField)
+ * directly (inlet::Field) or forward to all elements of a collection (inlet::AggregrateField)
  * 
  * In practice this interface is used for the Field and AggregateField types.
  * In addition to the ability to mark things as required and use user-defined lambdas

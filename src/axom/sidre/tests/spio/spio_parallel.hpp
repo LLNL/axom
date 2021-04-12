@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -81,9 +81,12 @@ TEST(spio_parallel, parallel_writeread)
   Group* flds = root->createGroup("fields");
   Group* flds2 = root->createGroup("fields2");
 
+  // Add a scalar view under group "a"
   Group* ga = flds->createGroup("a");
-  Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", 101 * my_rank);
+
+  // Add an array view under group "b"
+  Group* gb = flds2->createGroup("b");
   gb->createView("i1")->allocate(DataType::c_int(10));
   int* i1_vals = gb->getView("i1")->getData();
 
@@ -91,6 +94,10 @@ TEST(spio_parallel, parallel_writeread)
   {
     i1_vals[i] = (i + 10) * (404 - my_rank - i);
   }
+
+  // Add an array view of size 0 under group "c"
+  Group* gc = flds2->createGroup("c");
+  gc->createView("i2")->allocate(DataType::c_int(0));
 
   // The namespace qualifying IOManager is not necessary for compilation
   // (because are already using axom::sidre::IOManager), but we've kept it
@@ -188,29 +195,48 @@ TEST(spio_parallel, parallel_writeread)
    */
   EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root));
 
-  int testvalue =
-    ds->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
-  int testvalue2 =
-    ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
-
-  EXPECT_EQ(testvalue, testvalue2);
-
-  View* view_i1_orig =
-    ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-  View* view_i1_restored =
-    ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-
-  int num_elems = view_i1_orig->getNumElements();
-  EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
-  if(view_i1_restored->getNumElements() == num_elems)
+  // check group "a", which should contain a view with a single scalar
   {
-    int* i1_orig = view_i1_orig->getData();
-    int* i1_restored = view_i1_restored->getData();
+    int testvalue =
+      ds->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
+    int testvalue2 =
+      ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
 
-    for(int i = 0; i < num_elems; ++i)
+    EXPECT_EQ(testvalue, testvalue2);
+  }
+
+  // check group "b", which should contain a view with an array of ints
+  {
+    View* view_i1_orig =
+      ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
+    View* view_i1_restored =
+      ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
+
+    int num_elems = view_i1_orig->getNumElements();
+    EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
+    if(view_i1_restored->getNumElements() == num_elems)
     {
-      EXPECT_EQ(i1_orig[i], i1_restored[i]);
+      int* i1_orig = view_i1_orig->getData();
+      int* i1_restored = view_i1_restored->getData();
+
+      for(int i = 0; i < num_elems; ++i)
+      {
+        EXPECT_EQ(i1_orig[i], i1_restored[i]);
+      }
     }
+  }
+
+  // check group "c", which should contain a view with an array of size 0
+  {
+    View* view_i2_orig =
+      ds->getRoot()->getGroup("fields2")->getGroup("c")->getView("i2");
+    View* view_i2_restored =
+      ds2->getRoot()->getGroup("fields2")->getGroup("c")->getView("i2");
+
+    int num_elems_orig = view_i2_orig->getNumElements();
+    int num_elems_rest = view_i2_restored->getNumElements();
+    EXPECT_EQ(0, num_elems_orig);
+    EXPECT_EQ(0, num_elems_rest);
   }
 
   delete ds;
@@ -996,14 +1022,11 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   // to add the blueprint index to the root file
   MPI_Barrier(MPI_COMM_WORLD);
 
-  // rank 0 adds the bp index to the root file
-  if(my_rank == 0)
-  {
-    writer.writeBlueprintIndexToRootFile(&ds,
-                                         "mesh",
-                                         "out_spio_blueprint_example.root",
-                                         "mesh");
-  }
+  // Add the bp index to the root file
+  writer.writeBlueprintIndexToRootFile(&ds,
+                                       "mesh",
+                                       "out_spio_blueprint_example.root",
+                                       "mesh");
 
 #endif
 }

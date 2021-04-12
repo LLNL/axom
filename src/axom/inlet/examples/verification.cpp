@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -23,20 +23,20 @@ int main()
   // defines a required global field named "dimensions" with a default value of 2
   myInlet.addInt("dimensions").required(true).defaultValue(2);
 
-  // defines a required table named vector with an internal field named 'x'
-  auto& v = myInlet.addTable("vector").required(true);
+  // defines a required container named vector with an internal field named 'x'
+  auto& v = myInlet.addStruct("vector").required(true);
   v.addDouble("x");
   // _inlet_workflow_defining_schema_end
 
   // _inlet_workflow_verification_start
-  v.registerVerifier([&myInlet](const axom::inlet::Table& table) -> bool {
+  v.registerVerifier([&myInlet](const axom::inlet::Container& container) -> bool {
     int dim = myInlet["dimensions"];
-    bool x_present = table.contains("x") &&
-      (table["x"].type() == axom::inlet::InletType::Double);
-    bool y_present = table.contains("y") &&
-      (table["y"].type() == axom::inlet::InletType::Double);
-    bool z_present = table.contains("z") &&
-      (table["z"].type() == axom::inlet::InletType::Double);
+    bool x_present = container.contains("x") &&
+      (container["x"].type() == axom::inlet::InletType::Double);
+    bool y_present = container.contains("y") &&
+      (container["y"].type() == axom::inlet::InletType::Double);
+    bool z_present = container.contains("z") &&
+      (container["z"].type() == axom::inlet::InletType::Double);
     if(dim == 1 && x_present)
     {
       return true;

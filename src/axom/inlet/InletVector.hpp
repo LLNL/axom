@@ -1,0 +1,129 @@
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+/*!
+ *******************************************************************************
+ * \file InletVector.hpp
+ *
+ * \brief This file contains the class definition of Inlet's InletVector class,
+ * which wraps Primal's Vector class
+ *******************************************************************************
+ */
+
+#ifndef INLET_INLETVECTOR_HPP
+#define INLET_INLETVECTOR_HPP
+
+#include "axom/primal/geometry/Vector.hpp"
+
+namespace axom
+{
+namespace inlet
+{
+/*!
+ *******************************************************************************
+ * \brief A wrapper over Primal's Vector3D that also includes dimension
+ * information
+ * 
+ * Vector3D is a statically-sized (stack-allocated) three-element vector.
+ * To represent two-element vectors using this type, additional dimension
+ * information is required
+ * 
+ * \note To use vector operations on this class, perform them using the \p vec
+ * member directly
+ *******************************************************************************
+ */
+struct InletVector
+{
+  primal::Vector3D vec;
+  int dim = 3;
+
+  /*!
+   *******************************************************************************
+   * \brief Constructs an empty vector (size defaults to 3)
+   *******************************************************************************
+   */
+  InletVector() = default;
+
+  /*!
+   *******************************************************************************
+   * \brief Constructs a vector with an initializer list
+   * 
+   * \param [in] values The vector components to construct with
+   *******************************************************************************
+   */
+  InletVector(std::initializer_list<double> values)
+    : vec(values)
+    , dim(values.size())
+  { }
+
+  /*!
+   *******************************************************************************
+   * \brief Constructs a vector with an existing Primal vector and a dimension
+   * 
+   * \param [in] v The existing Primal vector
+   * \param [in] d The dimension of the vector
+   *******************************************************************************
+   */
+  InletVector(primal::Vector3D&& v, int d = 3) : vec(std::move(v)), dim(d) { }
+
+  /*!
+   *******************************************************************************
+   * \brief Retrieves an element of the vector
+   * 
+   * \param [in] i The index of the element to retrieve (zero-indexed)
+   *******************************************************************************
+   */
+  double operator[](const int i) const { return vec[i]; }
+  /// \overload
+  double& operator[](const int i) { return vec[i]; }
+
+  /*!
+   *******************************************************************************
+   * \brief Retrieves the underlying Primal vector
+   *******************************************************************************
+   */
+  operator axom::primal::Vector3D &() { return vec; }
+  /// \overload
+  operator const axom::primal::Vector3D &() const { return vec; }
+};
+
+/*!
+ *******************************************************************************
+ * \brief Compares two InletVectors
+ * 
+ * \param [in] u The comparison LHS
+ * \param [in] v The comparison RHS
+ * 
+ * \return Whether the two vectors are equivalent
+ *******************************************************************************
+ */
+inline bool operator==(const InletVector& u, const InletVector& v)
+{
+  return (u.vec == v.vec) && (u.dim == v.dim);
+}
+
+/*!
+ *******************************************************************************
+ * \brief "Prints" the vector to a stream
+ * 
+ * \param [inout] os The stream to insert into
+ * \param [in] v The vector to insert into the stream
+ *******************************************************************************
+ */
+inline std::ostream& operator<<(std::ostream& os, const InletVector& v)
+{
+  os << "<";
+  for(int i = 0; i < v.dim - 1; i++)
+  {
+    os << v[i] << ",";
+  }
+  os << v[v.dim - 1] << ">";
+  return os;
+}
+
+}  // end namespace inlet
+}  // end namespace axom
+
+#endif  // INLET_INLETVECTOR_HPP

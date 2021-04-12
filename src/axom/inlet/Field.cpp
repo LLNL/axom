@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -257,11 +257,11 @@ const axom::sidre::View* Field::checkExistenceAndType(
   if(valueView->getTypeID() != expected)
   {
     const std::string msg = fmt::format(
-      "[Inlet] Field with name '{0}' was expected to be of type {1}"
-      " but was actually of type {2}",
+      "[Inlet] Field with name '{0}' was expected to be of type '{1}'"
+      " but was actually of type '{2}'",
       name(),
-      expected,
-      valueView->getTypeID());
+      conduit::DataType::id_to_name(expected),
+      conduit::DataType::id_to_name(valueView->getTypeID()));
     SLIC_ERROR(msg);
   }
 
@@ -295,6 +295,22 @@ InletType Field::type() const
     SLIC_WARNING(msg);
     return InletType::Nothing;
   }
+}
+
+bool Field::exists() const { return m_sidreGroup->hasView("value"); }
+
+bool Field::isUserProvided() const
+{
+  if(m_sidreGroup->hasView("retrieval_status"))
+  {
+    auto status = static_cast<ReaderResult>(
+      static_cast<int>(m_sidreGroup->getView("retrieval_status")->getData()));
+    if(status != ReaderResult::Success)
+    {
+      return false;
+    }
+  }
+  return exists();
 }
 
 template <typename T>
