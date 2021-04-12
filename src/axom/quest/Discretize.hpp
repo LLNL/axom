@@ -12,7 +12,6 @@
 // Geometry
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
-#include "axom/primal/geometry/Ray.hpp"
 
 // C/C++ includes
 #include <vector>  // for std::vector
@@ -26,7 +25,6 @@ namespace quest
 
 using SphereType = primal::Sphere<double, 3>;
 using OctType = primal::Octahedron<double, 3>;
-using RayType = primal::Ray<double, 3>;
 using TwoDPointType = primal::Point<double, 2>;
 
 /*!
