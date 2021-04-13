@@ -46,7 +46,7 @@ ruby_release:
   variables:
     ALLOC_COMMAND: "srun -p pdebug -t 30 -N 1 ${ASSIGN_ID}"
   extends: [.src_build_script, .on_ruby, .src_workflow]
-  needs: [allocate_resources_build_ruby]
+  needs: [ruby_allocate]
 
 .full_build_on_ruby:
   stage: build
