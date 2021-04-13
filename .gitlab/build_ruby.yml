@@ -102,36 +102,36 @@ ruby-clang_10_0_0-develop-full:
   variables:
     COMPILER: "clang@10.0.0"
     SPEC: "@develop%+mfem${COMPILER}"
-  extends: .full_build_with_deps_on_ruby
+  extends: .full_build_on_ruby
 
 ruby-clang_9_0_0-develop-full:
   variables:
     COMPILER: "clang@9.0.0"
     SPEC: "@develop%+mfem${COMPILER}"
-  extends: .full_build_with_deps_on_ruby
+  extends: .full_build_on_ruby
 
 ruby-gcc_8_1_0-develop-full:
   variables:
     COMPILER: "gcc@8.1.0"
     SPEC: "@develop%+mfem${COMPILER}"
-  extends: .full_build_with_deps_on_ruby
+  extends: .full_build_on_ruby
 
 ruby-gcc_8_1_no_fortran-develop-full:
   variables:
     COMPILER: "gcc@8.1_no_fortran"
     SPEC: "@develop%+mfem${COMPILER}"
-  extends: .full_build_with_deps_on_ruby
+  extends: .full_build_on_ruby
 
 # disabled due to time limit
 # ruby-intel_18_0_2-develop-full:
 #   variables:
 #     COMPILER: "intel@18.0.2"
 #     SPEC: "@develop%+mfem${COMPILER}"
-#   extends: .full_build_with_deps_on_ruby
+#   extends: .full_build_on_ruby
 
 # disabled due to time limit
 # ruby-intel_19_0_4-develop-full:
 #   variables:
 #     COMPILER: "intel@19.0.4"
 #     SPEC: "@develop%+mfem${COMPILER}"
-#   extends: .full_build_with_deps_on_ruby
+#   extends: .full_build_on_ruby
