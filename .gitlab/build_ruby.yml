@@ -22,7 +22,7 @@ allocate_resources_build_ruby:
   variables:
     GIT_STRATEGY: none
   extends: [.on_ruby, .pr_workflow]
-  stage: r_allocate_resources
+  stage: allocate
   script:
     - salloc ${SLURM_ACCOUNT} -N 1 -c 36 -t 60 --no-shell --job-name=${PROJECT_ALLOC_NAME}
   needs: []
@@ -34,7 +34,7 @@ release_resources_build_ruby:
   variables:
     GIT_STRATEGY: none
   extends: [.on_ruby, .pr_workflow]
-  stage: r_release_resources
+  stage: release
   script:
     - export JOBID=$(squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A)
     - if [[ -n "${JOBID}" ]]; then scancel ${JOBID}; fi
@@ -42,12 +42,12 @@ release_resources_build_ruby:
 ####
 # Template
 .pr_build_on_ruby:
-  stage: r_build
+  stage: build
   extends: [.srun_build_script, .on_ruby, .pr_workflow]
   needs: [allocate_resources_build_ruby]
 
 .main_build_with_deps_on_ruby:
-  stage: r_build_with_deps
+  stage: build
   extends: [.srun_build_with_deps_script, .on_ruby, .main_workflow]
   needs: []
 

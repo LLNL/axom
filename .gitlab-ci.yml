@@ -11,13 +11,9 @@ variables:
   LSF_ACCOUNT: -q pdebug
 
 stages:
-  - l_build
-  - l_build_with_deps
-  - r_allocate_resources
-  - r_build
-  - r_build_with_deps
-  - r_build_devtools
-  - r_release_resources
+  - allocate
+  - build
+  - release
 
 .pr_workflow:
   rules:
