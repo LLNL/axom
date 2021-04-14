@@ -21,7 +21,7 @@
 ruby_allocate:
   variables:
     GIT_STRATEGY: none
-  extends: [.on_ruby, .always_rule]
+  extends: [.on_ruby, .src_workflow]
   stage: allocate
   script:
     - salloc -p pdebug -N 1 -c 36 -t 60 --no-shell --job-name=${PROJECT_ALLOC_NAME}
@@ -33,7 +33,7 @@ ruby_allocate:
 ruby_release:
   variables:
     GIT_STRATEGY: none
-  extends: [.on_ruby, .always_rule]
+  extends: [.on_ruby, .src_workflow]
   stage: release
   script:
     - export JOBID=$(squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A)
@@ -45,14 +45,14 @@ ruby_release:
   stage: build
   variables:
     ALLOC_COMMAND: "srun -p pdebug -t 30 -N 1 ${ASSIGN_ID}"
-  extends: [.src_build_script, .on_ruby, .always_rule]
+  extends: [.src_build_script, .on_ruby, .src_workflow]
   needs: [ruby_allocate]
 
 .full_build_on_ruby:
   stage: build
   variables:
     ALLOC_COMMAND: "srun -p pdebug -t 45 -N 1"
-  extends: [.full_build_script, .on_ruby, .manual_rule]
+  extends: [.full_build_script, .on_ruby, .full_workflow]
   needs: []
 
 ####
