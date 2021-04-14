@@ -25,14 +25,14 @@ stages:
 # Template
 .src_build_script:
   script:
-    #Use pre-existing allocation if any
+    # Use pre-existing allocation if any
     - JOBID=$(if [[ "$SYS_TYPE" == "toss_3_x86_64_ib" ]]; then squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A; fi)
     - ASSIGN_ID=$(if [[ -n "${JOBID}" ]]; then echo "--jobid=${JOBID}"; fi)
-   #BUILD + TEST
-    - echo -e "section_start:$(date +%s):build_and_test\r\e[0K
-      Build and test ${CI_PROJECT_NAME}"
+    # BUILD + TEST
+    - echo -e "section_start:$(date +%s):src_build_and_test\r\e[0K
+      Source Build and Test ${CI_PROJECT_NAME}"
     - ${ALLOC_COMMAND} scripts/llnl_scripts/build_src.py -v --host-config ${HOST_CONFIG} --extra-cmake-options -DENABLE_DOCS=OFF
-    - echo -e "section_end:$(date +%s):build_and_test\r\e[0K"
+    - echo -e "section_end:$(date +%s):src_build_and_test\r\e[0K"
   artifacts:
     paths:
       - _axom_build_and_test_*/output.log*.txt
@@ -42,19 +42,18 @@ stages:
 
 .full_build_script:
   script:
-    - echo -e "section_start:$(date +%s):dependencies\r\e[0K
-      Build dependencies and generate host-config file (uberenv)"
-    - ${ALLOC_COMMAND} scripts/llnl_scripts/build_tpls.py -v --spec="${SPEC} ${EXTRA_SPEC}" --directory=${CI_BUILDS_DIR}/axom_tpls/${CI_RUNNER_ID} --mirror=${CI_BUILDS_DIR}/axom_tpls
-    - echo -e "section_end:$(date +%s):dependencies\r\e[0K"
+    - echo -e "section_start:$(date +%s):full_build_and_test\r\e[0K
+      Full Build and Test ${CI_PROJECT_NAME}"
+    - ${ALLOC_COMMAND} scripts/llnl_scripts/build_tpls.py -v --spec="${SPEC} ${EXTRA_SPEC}" --directory=${CI_BUILDS_DIR}/axom_tpls/${CI_RUNNER_ID}/${CI_JOB_NAME} --mirror=${CI_BUILDS_DIR}/axom_tpls
+    - echo -e "section_end:$(date +%s):full_build_and_test\r\e[0K"
   artifacts:
     paths:
-      - _axom_build_and_test_*/output.log*.txt
-      - _axom_build_and_test_*/build-*/output.log*.txt
+      - ${CI_BUILDS_DIR}/axom_tpls/${CI_RUNNER_ID}/${CI_JOB_NAME}/_axom_build_and_test_*/output.log*.txt
+      - ${CI_BUILDS_DIR}/axom_tpls/${CI_RUNNER_ID}/${CI_JOB_NAME}/_axom_build_and_test_*/build-*/output.log*.txt
     reports:
-      junit: _axom_build_and_test_*/build-*/junit.xml
+      junit: ${CI_BUILDS_DIR}/axom_tpls/${CI_RUNNER_ID}/${CI_JOB_NAME}/_axom_build_and_test_*/build-*/junit.xml
 
 # This is where jobs are included
 include:
   - local: .gitlab/build_ruby.yml
   - local: .gitlab/build_lassen.yml
-
