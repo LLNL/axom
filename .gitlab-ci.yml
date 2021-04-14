@@ -13,13 +13,13 @@ stages:
   - build
   - release
 
-.src_workflow:
+.always_rule:
   rules:
-    - if: '$CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != "develop" && $BUILD_DEPS != "ON"' #run only if ...
+    - when: always
 
-.full_workflow:
+.manual_rule:
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop" || $BUILD_DEPS == "ON"' #run only if ...
+    - when: manual
 
 ####
 # Template

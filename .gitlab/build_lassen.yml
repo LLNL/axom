@@ -27,14 +27,14 @@
   stage: build
   variables:
     ALLOC_COMMAND: "lalloc 1 -W 25 -q pdebug"
-  extends: [.src_build_script, .on_lassen, .src_workflow]
+  extends: [.src_build_script, .on_lassen, .always_rule]
   needs: []
 
 .full_build_on_lassen:
   stage: build
   variables:
     ALLOC_COMMAND: "lalloc 1 -W 45 -q pdebug"
-  extends: [.full_build_script, .on_lassen, .full_workflow]
+  extends: [.full_build_script, .on_lassen, .manual_rule]
   needs: []
 
 ####
