@@ -12,7 +12,7 @@
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_RUBY == "OFF"' #run except if ...
       when: never
-    - if: '$CI_JOB_NAME =~ /release_resources_build_ruby/'
+    - if: '$CI_JOB_NAME =~ /ruby_release/'
       when: always
     - when: on_success
 
@@ -24,7 +24,7 @@ ruby_allocate:
   extends: [.on_ruby, .src_workflow]
   stage: allocate
   script:
-    - salloc ${SLURM_ACCOUNT} -N 1 -c 36 -t 60 --no-shell --job-name=${PROJECT_ALLOC_NAME}
+    - salloc -p pdebug -N 1 -c 36 -t 60 --no-shell --job-name=${PROJECT_ALLOC_NAME}
   needs: []
 
 ####
