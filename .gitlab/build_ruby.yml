@@ -119,7 +119,7 @@ ruby-gcc_8_1_0-full:
 ruby-gcc_8_1_no_fortran-full:
   variables:
     COMPILER: "gcc@8.1_no_fortran"
-    SPEC: "%${COMPILER}+mfem"
+    SPEC: "%${COMPILER}~fortran+mfem"
   extends: .full_build_on_ruby
 
 # disabled due to time limit
