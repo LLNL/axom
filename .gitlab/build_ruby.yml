@@ -125,11 +125,11 @@ ruby-gcc_8_1_no_fortran-full:
 ruby-intel_18_0_2-full:
   variables:
     COMPILER: "intel@18.0.2"
-    SPEC: "%${COMPILER}+mfem"
+    SPEC: "%${COMPILER}+mfem~cpp14"
   extends: .full_build_on_ruby
 
 ruby-intel_19_0_4-full:
   variables:
     COMPILER: "intel@19.0.4"
-    SPEC: "%${COMPILER}+mfem"
+    SPEC: "%${COMPILER}+mfem~cpp14"
   extends: .full_build_on_ruby
