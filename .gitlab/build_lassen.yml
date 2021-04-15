@@ -82,7 +82,7 @@ lassen-clang_8_0_1_nvcc_xlf-full:
 lassen-clang_9_0_0_upstream_xlf-full:
   variables:
     COMPILER: "clang@9.0.0_upstream_xlf"
-    SPEC: "%${COMPILER}+mfem"
+    SPEC: "%${COMPILER}+mfem~openmp"
   extends: [.full_build_on_lassen]
 
 lassen-gcc_7_3_1-full:
@@ -94,7 +94,7 @@ lassen-gcc_7_3_1-full:
 lassen-xl_16_1_1_coral-full:
   variables:
     COMPILER: "xl@16.1.1_coral"
-    SPEC: "%${COMPILER}+mfem"
+    SPEC: "%${COMPILER}+mfem~openmp"
   extends: [.full_build_on_lassen]
 
 lassen-xl_16_1_1_nvcc-full:
