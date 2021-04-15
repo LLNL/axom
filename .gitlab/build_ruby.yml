@@ -51,7 +51,7 @@ ruby_release:
 .full_build_on_ruby:
   stage: build
   variables:
-    ALLOC_COMMAND: "srun -p pdebug -t 45 -N 1"
+    ALLOC_COMMAND: "srun -p pdebug -t 60 -N 1"
   extends: [.full_build_script, .on_ruby, .full_workflow]
   needs: []
 
