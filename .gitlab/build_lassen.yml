@@ -75,7 +75,7 @@ lassen-xl_16_1_1_nvcc-src:
 lassen-clang_8_0_1_nvcc_xlf-full:
   variables:
     COMPILER: "clang@8.0.1_nvcc_xlf"
-    SPEC: "%${COMPILER}+mfem+cuda"
+    SPEC: "%${COMPILER}+mfem+cuda~openmp"
     EXTRA_SPEC: "cuda_arch=70"
   extends: [.full_build_on_lassen, .with_cuda]
 
@@ -100,6 +100,6 @@ lassen-xl_16_1_1_coral-full:
 lassen-xl_16_1_1_nvcc-full:
   variables:
     COMPILER: "xl@16.1.1_nvcc"
-    SPEC: "%${COMPILER}+mfem+cuda"
+    SPEC: "%${COMPILER}+mfem+cuda~openmp"
     EXTRA_SPEC: "cuda_arch=70"
   extends: [.full_build_on_lassen, .with_cuda]
