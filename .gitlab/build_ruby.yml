@@ -51,7 +51,7 @@ ruby_release:
 .full_build_on_ruby:
   stage: build
   variables:
-    ALLOC_COMMAND: "srun -p pdebug -t 45 -N 1"
+    ALLOC_COMMAND: "srun -p pdebug -t 60 -N 1"
   extends: [.full_build_script, .on_ruby, .full_workflow]
   needs: []
 
@@ -98,40 +98,38 @@ ruby-gcc_8_1_no_fortran-src:
 
 ####
 # Full Build jobs
-ruby-clang_10_0_0-develop-full:
+ruby-clang_10_0_0-full:
   variables:
     COMPILER: "clang@10.0.0"
-    SPEC: "@develop%+mfem${COMPILER}"
+    SPEC: "%${COMPILER}+mfem"
   extends: .full_build_on_ruby
 
-ruby-clang_9_0_0-develop-full:
+ruby-clang_9_0_0-full:
   variables:
     COMPILER: "clang@9.0.0"
-    SPEC: "@develop%+mfem${COMPILER}"
+    SPEC: "%${COMPILER}+mfem"
   extends: .full_build_on_ruby
 
-ruby-gcc_8_1_0-develop-full:
+ruby-gcc_8_1_0-full:
   variables:
     COMPILER: "gcc@8.1.0"
-    SPEC: "@develop%+mfem${COMPILER}"
+    SPEC: "%${COMPILER}+mfem"
   extends: .full_build_on_ruby
 
-ruby-gcc_8_1_no_fortran-develop-full:
+ruby-gcc_8_1_no_fortran-full:
   variables:
     COMPILER: "gcc@8.1_no_fortran"
-    SPEC: "@develop%+mfem${COMPILER}"
+    SPEC: "%${COMPILER}~fortran+mfem"
   extends: .full_build_on_ruby
 
-# disabled due to time limit
-# ruby-intel_18_0_2-develop-full:
-#   variables:
-#     COMPILER: "intel@18.0.2"
-#     SPEC: "@develop%+mfem${COMPILER}"
-#   extends: .full_build_on_ruby
+ruby-intel_18_0_2-full:
+  variables:
+    COMPILER: "intel@18.0.2"
+    SPEC: "%${COMPILER}+mfem~cpp14"
+  extends: .full_build_on_ruby
 
-# disabled due to time limit
-# ruby-intel_19_0_4-develop-full:
-#   variables:
-#     COMPILER: "intel@19.0.4"
-#     SPEC: "@develop%+mfem${COMPILER}"
-#   extends: .full_build_on_ruby
+ruby-intel_19_0_4-full:
+  variables:
+    COMPILER: "intel@19.0.4"
+    SPEC: "%${COMPILER}+mfem~cpp14"
+  extends: .full_build_on_ruby
