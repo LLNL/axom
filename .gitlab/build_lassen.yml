@@ -94,12 +94,12 @@ lassen-gcc_7_3_1-full:
 lassen-xl_16_1_1_coral-full:
   variables:
     COMPILER: "xl@16.1.1_coral"
-    SPEC: "%${COMPILER}+mfem~openmp"
+    SPEC: "%${COMPILER}+mfem~openmp~cpp14"
   extends: [.full_build_on_lassen]
 
 lassen-xl_16_1_1_nvcc-full:
   variables:
     COMPILER: "xl@16.1.1_nvcc"
-    SPEC: "%${COMPILER}+mfem+cuda~openmp"
+    SPEC: "%${COMPILER}+mfem+cuda~openmp~cpp14"
     EXTRA_SPEC: "cuda_arch=70"
   extends: [.full_build_on_lassen, .with_cuda]
