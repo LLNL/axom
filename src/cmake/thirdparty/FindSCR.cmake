@@ -27,6 +27,22 @@ find_path( SCR_INCLUDE_DIRS scr.h
            NO_CMAKE_SYSTEM_PATH)
 
 find_library( SCR_LIBRARY NAMES scr libscr
+              PATHS ${SCR_DIR}/lib64
+              NO_DEFAULT_PATH
+              NO_CMAKE_ENVIRONMENT_PATH
+              NO_CMAKE_PATH
+              NO_SYSTEM_ENVIRONMENT_PATH
+              NO_CMAKE_SYSTEM_PATH)
+
+find_library( KVTREE_LIBRARY NAMES kvtree
+              PATHS ${SCR_DIR}/lib64
+              NO_DEFAULT_PATH
+              NO_CMAKE_ENVIRONMENT_PATH
+              NO_CMAKE_PATH
+              NO_SYSTEM_ENVIRONMENT_PATH
+              NO_CMAKE_SYSTEM_PATH)
+
+find_library( DTCMP_LIBRARY NAMES dtcmp
               PATHS ${SCR_DIR}/lib
               NO_DEFAULT_PATH
               NO_CMAKE_ENVIRONMENT_PATH
@@ -34,6 +50,7 @@ find_library( SCR_LIBRARY NAMES scr libscr
               NO_SYSTEM_ENVIRONMENT_PATH
               NO_CMAKE_SYSTEM_PATH)
 
+set(SCR_LIBRARIES ${SCR_LIBRARY} ${KVTREE_LIBRARY} ${DTCMP_LIBRARY})
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set SCR_FOUND to TRUE

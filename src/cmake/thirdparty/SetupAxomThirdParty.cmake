@@ -144,7 +144,7 @@ if (SCR_DIR)
     include(cmake/thirdparty/FindSCR.cmake)
     blt_register_library( NAME      scr
                           INCLUDES  ${SCR_INCLUDE_DIRS}
-                          LIBRARIES ${SCR_LIBRARY}
+                          LIBRARIES ${SCR_LIBRARIES}
                           TREAT_INCLUDES_AS_SYSTEM ON)
 else()
     message(STATUS "SCR support is OFF")
