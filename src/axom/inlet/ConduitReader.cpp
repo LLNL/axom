@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -14,6 +14,7 @@
 #include "axom/inlet/ConduitReader.hpp"
 
 #include <fstream>
+#include <numeric>
 
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
@@ -154,6 +155,32 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
   {
     // No begin/end iterators are provided by DataArray
     map[i] = array[i];
+  }
+}
+
+/*!
+ *******************************************************************************
+ * \brief Recursive name retrieval function - adds the names of all descendents
+ * of @p node as an Inlet-style path
+ * 
+ * \param [in] node The Conduit node to "visit"
+ * \param [out] names The set of paths to add to
+ *******************************************************************************
+ */
+void nameRetrievalHelper(const conduit::Node& node,
+                         std::unordered_set<std::string>& names)
+{
+  // Conduit paths use [0] for array indices, Inlet does not, so they need
+  // to be removed - e.g., foo/[0]/bar vs foo/0/bar
+  auto filter_name = [](std::string name) {
+    name.erase(std::remove(name.begin(), name.end(), '['), name.end());
+    name.erase(std::remove(name.begin(), name.end(), ']'), name.end());
+    return name;
+  };
+  for(const auto& child : node.children())
+  {
+    names.insert(filter_name(child.path()));
+    nameRetrievalHelper(child, names);
   }
 }
 
@@ -369,6 +396,13 @@ FunctionVariant ConduitReader::getFunction(const std::string&,
 {
   SLIC_ERROR("[Inlet] Conduit YAML/JSON does not support functions");
   return {};
+}
+
+std::unordered_set<std::string> ConduitReader::getAllNames()
+{
+  std::unordered_set<std::string> result;
+  detail::nameRetrievalHelper(m_root, result);
+  return result;
 }
 
 template <typename T>

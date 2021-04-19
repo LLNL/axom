@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -314,10 +314,18 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns whether an actual value is stored
+   * \brief Returns whether a value for the Field exists, i.e., if a value 
+   * was provided in the input file or if a default was provided
    *****************************************************************************
    */
-  explicit operator bool() const { return m_sidreGroup->hasView("value"); }
+  bool exists() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether a value was provided in the input file
+   *****************************************************************************
+   */
+  bool isUserProvided() const;
 
 private:
   /*!

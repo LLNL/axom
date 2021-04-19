@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -74,7 +74,8 @@ GeometricBoundingBox compute_bounds(mint::Mesh* mesh)
 void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
                                   const GeometricBoundingBox& queryBounds,
                                   const GridPt& gridRes,
-                                  bool isBatched)
+                                  bool isBatched,
+                                  bool shouldOutputMeshes)
 {
   const double* low = queryBounds.getMin().data();
   const double* high = queryBounds.getMax().data();
@@ -146,7 +147,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
                 timer.elapsed(),
                 nnodes / timer.elapsed()));
 
-#ifdef DUMP_VTK_MESH
+  if(shouldOutputMeshes)
   {
     std::stringstream sstr;
     const auto& res = gridRes;
@@ -159,7 +160,6 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
     sstr << "gridContainment_" << resStr << ".vtk";
     mint::write_vtk(umesh, sstr.str());
   }
-#endif
 
   delete umesh;
 }
@@ -397,7 +397,10 @@ public:
     app.add_option("stlFile", stlFile, "Path to input mesh")->check(CLI::ExistingFile);
 
     app
-      .add_flag("-v,--verbose", m_verboseOutput, "Enable/disable verbose output")
+      .add_flag("-v,--verbose",
+                m_verboseOutput,
+                "Enable/disable verbose output, "
+                "including outputting generated containment grids.")
       ->capture_default_str();
 
     app
@@ -514,7 +517,8 @@ int main(int argc, char** argv)
     testContainmentOnRegularGrid(octree,
                                  queryBB,
                                  GridPt::make_point(res, res, res),
-                                 params.useBatchedQuery());
+                                 params.useBatchedQuery(),
+                                 params.isVerbose());
   }
 
   if(!params.isVerbose())

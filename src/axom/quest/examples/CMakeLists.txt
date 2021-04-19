@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -80,19 +80,22 @@ if (ENABLE_FORTRAN)
         FOLDER      axom/quest/examples
         )
 
-    # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly. 
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-        set_target_properties( quest_signed_distance_interface_F_ex
-                               PROPERTIES LINKER_LANGUAGE Fortran)
+    # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
+    if (NOT ENABLE_CUDA)
+        # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly.
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+            set_target_properties( quest_signed_distance_interface_F_ex
+                                   PROPERTIES LINKER_LANGUAGE Fortran)
 
-        set_target_properties(quest_inout_interface_F_ex
-                              PROPERTIES LINKER_LANGUAGE Fortran)
-    else()
-        set_target_properties( quest_signed_distance_interface_F_ex
-                               PROPERTIES LINKER_LANGUAGE CXX)
+            set_target_properties(quest_inout_interface_F_ex
+                                  PROPERTIES LINKER_LANGUAGE Fortran)
+        else()
+            set_target_properties( quest_signed_distance_interface_F_ex
+                                   PROPERTIES LINKER_LANGUAGE CXX)
 
-        set_target_properties(quest_inout_interface_F_ex
-                              PROPERTIES LINKER_LANGUAGE CXX)
+            set_target_properties(quest_inout_interface_F_ex
+                                  PROPERTIES LINKER_LANGUAGE CXX)
+        endif()
     endif()
 
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)

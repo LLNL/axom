@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -15,6 +15,7 @@ set(gtest_utils_tests
     core_execution_for_all.hpp
     core_execution_space.hpp
     core_memory_management.hpp
+    core_Path.hpp
     core_stack_array.hpp
 
     numerics_determinants.hpp
@@ -116,4 +117,3 @@ if(MFEM_FOUND)
     set_property(TARGET utils_config_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 endif()
-

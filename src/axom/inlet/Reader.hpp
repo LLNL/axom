@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -17,6 +17,7 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "axom/inlet/Function.hpp"
@@ -247,6 +248,17 @@ public:
   virtual FunctionVariant getFunction(const std::string& id,
                                       const FunctionTag ret_type,
                                       const std::vector<FunctionTag>& arg_types) = 0;
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves all paths present in the input file
+   *
+   * \return The set of all paths/full names in the input file - this represents
+   * a full traversal of the input file "tree" and includes paths to array/dictionary
+   * entries
+   *****************************************************************************
+   */
+  virtual std::unordered_set<std::string> getAllNames() = 0;
 };
 
 }  // end namespace inlet

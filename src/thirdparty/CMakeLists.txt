@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -59,6 +59,7 @@ mark_as_advanced(CLI11_FOUND)
 
 set(fmt_headers
     fmt/fmt.hpp
+    fmt/args.h
     fmt/compile.h
     fmt/core.h
     fmt/format.h
@@ -71,16 +72,6 @@ set(fmt_headers
     fmt/chrono.h
     fmt/color.h
     fmt/locale.h
-    fmt/time.h
-    )
-
-# Do not include the following source files in the headers list even
-# though they are explicitly included by the headers. It will cause CMake
-# to try to compile them in anything that depends on fmt outside
-# of this directory due to CMake's file property scope (directory based)
-
-set(fmt_headers_sources
-    fmt/format.cc
     )
 
 blt_add_library(NAME    fmt

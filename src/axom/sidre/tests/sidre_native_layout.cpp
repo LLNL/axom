@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -546,6 +546,9 @@ TEST(sidre_native_layout, basic_demo_compare)
     a5_view_ptr[i] = sidre_vals_1[i];
   }
 
+  // one array of size 0
+  group3->createViewAndAllocate("a0_i64", axom::sidre::DataType::int64(0));
+
   // one external array
   group3->createView("a5_i64_ext", conduit::DataType::int64(5))
     ->setExternalDataPtr(sidre_vals_1);
@@ -564,8 +567,13 @@ TEST(sidre_native_layout, basic_demo_compare)
     buff_ptr[i] = sidre_vals_2[i];
   }
 
+  View* v0 = group3->createView("b_v0");
   View* v1 = group3->createView("b_v1");
   View* v2 = group3->createView("b_v2");
+
+  // v0 is a view of size zero into this buffer
+  v0->attachBuffer(buff);
+  v0->apply(conduit::DataType::float64(0));
 
   // with these settings, bv1 should have 1.0 as all vals
   v1->attachBuffer(buff);
@@ -613,14 +621,19 @@ TEST(sidre_native_layout, basic_demo_compare)
     1.0,
     2.0,
   };
+  // Note: use a std::vector for the empty array as workaround for
+  // MSVC error C2466 about allocating arrays of constant size 0
+  std::vector<conduit::int64> conduit_vals_0;
 
   axom::sidre::Node n;
   n["my_scalars/i64"].set_int64(1);
   n["my_scalars/f64"].set_float64(10.0);
   n["my_strings/s0"] = "s0 string";
   n["my_strings/s1"] = "s1 string";
+  n["my_arrays/a0_i64"].set(conduit_vals_0.data(), 0);
   n["my_arrays/a5_i64"].set(conduit_vals_1, 5);
   n["my_arrays/a5_i64_ext"].set_external(conduit_vals_1, 5);
+  n["my_arrays/b_v0"].set(conduit_vals_2, 0);
   n["my_arrays/b_v1"].set(conduit_vals_2, 3, 0, 2 * sizeof(conduit::float64));
   n["my_arrays/b_v2"].set(conduit_vals_2,
                           3,
@@ -634,6 +647,7 @@ TEST(sidre_native_layout, basic_demo_compare)
 
   axom::sidre::Node n_info;
   EXPECT_FALSE(n.diff(n_sidre, n_info));
+  n_info.print();
 
   //
   // TODO: When using newer conduit that has relay support for sidre i/o

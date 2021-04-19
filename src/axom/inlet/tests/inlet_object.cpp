@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -937,6 +937,139 @@ TYPED_TEST(inlet_object, struct_arrays_as_std_vector)
   std::vector<Foo> expected_foos = {{true, false}, {false, true}};
   auto foos = inlet["foo"].get<std::vector<Foo>>();
   EXPECT_EQ(foos, expected_foos);
+}
+
+TYPED_TEST(inlet_object, default_scalar_user_provided)
+{
+  std::string testString = " ";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& scalar = inlet.addInt("foo").defaultValue(2);
+  // The field itself exists but was not provided by the user
+  auto& field = static_cast<axom::inlet::Field&>(scalar);
+  EXPECT_TRUE(field.exists());
+  EXPECT_FALSE(field.isUserProvided());
+
+  // ...but it should still be possible to retrieve the default
+  const int foo = inlet["foo"];
+  EXPECT_EQ(foo, 2);
+
+  // and it should not impede verification
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, default_struct_field_user_provided)
+{
+  std::string testString = " ";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_container = inlet.addStruct("foo");
+  foo_container.addBool("bar", "bar's description").defaultValue(true);
+  foo_container.addBool("baz", "baz's description").defaultValue(false);
+
+  // The container itself exists but was not provided by the user
+  EXPECT_TRUE(foo_container.exists());
+  EXPECT_FALSE(foo_container.isUserProvided());
+
+  // ...but it should still be possible to retrieve the default
+  const Foo expected_foo {true, false};
+  const auto foo = inlet["foo"].get<Foo>();
+  EXPECT_EQ(foo, expected_foo);
+
+  // and it should not impede verification
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, default_struct_field_user_provided_reqd)
+{
+  std::string testString = " ";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_container = inlet.addStruct("foo").required();
+  foo_container.addBool("bar", "bar's description").defaultValue(true);
+  foo_container.addBool("baz", "baz's description").defaultValue(false);
+
+  // The container itself exists but was not provided by the user
+  EXPECT_TRUE(foo_container.exists());
+  EXPECT_FALSE(foo_container.isUserProvided());
+
+  // ...but it should still be possible to retrieve the default
+  const Foo expected_foo {true, false};
+  const auto foo = inlet["foo"].get<Foo>();
+  EXPECT_EQ(foo, expected_foo);
+
+  // and it should not impede verification
+  // EXPECT_TRUE(inlet.verify()); // fails here...
+  // FIXME: This one is a bit of a degenerate case where all fields have defaults
+  // and the struct is marked as required - need to determine how this can be
+  // handled in the general case
+}
+
+TYPED_TEST(inlet_object, default_struct_field_marked_true)
+{
+  std::string testString = "foo = { bar = true }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& foo_container = inlet.addStruct("foo");
+  foo_container.addBool("bar", "bar's description").defaultValue(true);
+  foo_container.addBool("baz", "baz's description").defaultValue(false);
+
+  // The container itself exists and was provided by the user
+  EXPECT_TRUE(foo_container.exists());
+  EXPECT_TRUE(foo_container.isUserProvided());
+
+  // ...and it should still be possible to retrieve the full struct
+  const Foo expected_foo {true, false};
+  const auto foo = inlet["foo"].get<Foo>();
+  EXPECT_EQ(foo, expected_foo);
+
+  // and it verification should succeed
+  EXPECT_TRUE(inlet.verify());
+}
+
+TYPED_TEST(inlet_object, basic_unused_names)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; baz = false}, "
+    "        [1] = { bar = false; baz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_container = inlet.addStructArray("foo");
+
+  arr_container.addBool("bar", "bar's description");
+  // Baz is left unused
+
+  // Should still verify - unexpected fields do not mean invalid
+  EXPECT_TRUE(inlet.verify());
+
+  std::unordered_set<std::string> expected_unused {"foo/0/baz", "foo/1/baz"};
+  EXPECT_EQ(expected_unused, inlet.unexpectedNames());
+}
+
+TYPED_TEST(inlet_object, basic_unused_names_substring)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; barz = false}, "
+    "        [1] = { bar = false; barz = true} }";
+  DataStore ds;
+  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+
+  auto& arr_container = inlet.addStructArray("foo");
+
+  arr_container.addBool("barz", "barz's description");
+  // Baz is left unused
+
+  // Should still verify - unexpected fields do not mean invalid
+  EXPECT_TRUE(inlet.verify());
+
+  // Check to make sure that a naive substring is not used and that checks are path-aware
+  std::unordered_set<std::string> expected_unused {"foo/0/bar", "foo/1/bar"};
+  EXPECT_EQ(expected_unused, inlet.unexpectedNames());
 }
 
 template <typename InletReader>

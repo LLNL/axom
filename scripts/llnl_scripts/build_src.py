@@ -2,7 +2,7 @@
 "exec" "python" "-u" "-B" "$0" "$@"
 
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -37,6 +37,11 @@ def parse_args():
                       dest="hostconfig",
                       default="",
                       help="Specific host-config file to build (Tries multiple known paths to locate given file)")
+    # Extra cmake options to pass to config build
+    parser.add_option("--extra-cmake-options",
+                      dest="extra_cmake_options",
+                      default="",
+                      help="Extra cmake options to add to the cmake configure line")
     parser.add_option("--automation-mode",
                       action="store_true",
                       dest="automation",
@@ -54,6 +59,12 @@ def parse_args():
     # we want a dict b/c the values could 
     # be passed without using optparse
     opts = vars(opts)
+
+    # Ensure correctness
+    if opts["automation"] and opts["hostconfig"] != "":
+        print("[ERROR: automation and host-config modes are mutually exclusive]")
+        sys.exit(1)
+
     return opts
 
 
@@ -64,14 +75,14 @@ def main():
     if os.environ.get("UBERENV_PREFIX") != None:
         repo_dir = os.environ["UBERENV_PREFIX"]
         if not os.path.isdir(repo_dir):
-            print "[ERROR: Given environment variable 'UBERENV_PREFIX' is not a valid directory]"
-            print "[    'UBERENV_PREFIX' = %s]" % repo_dir
+            print("[ERROR: Given environment variable 'UBERENV_PREFIX' is not a valid directory]")
+            print("[    'UBERENV_PREFIX' = %s]" % repo_dir)
             return 1
     if opts["directory"] != "":
         repo_dir = opts["directory"]
         if not os.path.isdir(repo_dir):
-            print "[ERROR: Given command line variable '--directory' is not a valid directory]"
-            print "[    '--directory' = %s]" % repo_dir
+            print("[ERROR: Given command line variable '--directory' is not a valid directory]")
+            print("[    '--directory' = %s]" % repo_dir)
             return 1
     else:
         repo_dir = get_repo_dir()
@@ -89,7 +100,7 @@ def main():
         # Default to build all SYS_TYPE's host-configs in host-config/
         build_all = not opts["hostconfig"] and not opts["automation"]
         if build_all:
-            res = build_and_test_host_configs(repo_dir, job_name, timestamp, False, opts["verbose"])
+            res = build_and_test_host_configs(repo_dir, job_name, timestamp, False, opts["verbose"], opts["extra_cmake_options"])
         # Otherwise try to build a specific host-config
         else:
             # Command-line arg has highest priority
@@ -137,7 +148,7 @@ def main():
 
             test_root = get_build_and_test_root(repo_dir, timestamp)
             os.mkdir(test_root)
-            res = build_and_test_host_config(test_root, hostconfig_path, opts["verbose"])
+            res = build_and_test_host_config(test_root, hostconfig_path, opts["verbose"], opts["extra_cmake_options"])
 
         # Archive logs
         if opts["archive"] != "":

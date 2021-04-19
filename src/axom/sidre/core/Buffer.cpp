@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -194,8 +194,11 @@ Buffer* Buffer::copyBytesIntoBuffer(void* src, IndexType nbytes)
 {
   if(src == nullptr || nbytes < 0 || nbytes > getTotalBytes())
   {
-    SLIC_CHECK_MSG(src != nullptr,
-                   "Cannot copy data into Buffer from null pointer.");
+    if(src == nullptr)
+    {
+      SLIC_CHECK_MSG(nbytes == 0,
+                     "Cannot copy data into Buffer from null pointer.");
+    }
     SLIC_CHECK_MSG(nbytes >= 0, "Cannot copy < 0 bytes of data into Buffer.");
     SLIC_CHECK_MSG(nbytes <= getTotalBytes(),
                    "Unable to copy " << nbytes << " bytes of data into Buffer with "
@@ -299,8 +302,12 @@ void Buffer::importFrom(conduit::Node& buffer_holder)
   {
     allocate();
     conduit::Node& buffer_data_holder = buffer_holder["data"];
-    copyBytesIntoBuffer(buffer_data_holder.element_ptr(0),
-                        buffer_data_holder.total_strided_bytes());
+
+    const auto num_bytes = buffer_data_holder.total_strided_bytes();
+    if(num_bytes > 0)
+    {
+      copyBytesIntoBuffer(buffer_data_holder.element_ptr(0), num_bytes);
+    }
   }
 }
 

@@ -1,7 +1,7 @@
 
 [comment]: # (#################################################################)
 [comment]: # (Copyright 2017-2021, Lawrence Livermore National Security, LLC)
-[comment]: # (and Axom Project Developers. See the top-level COPYRIGHT file)
+[comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
@@ -39,6 +39,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Added support for deeply nested containers of structs
 - Inlet: Added support for `void` and strings in Lua-defined functions
 - Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
+- Inlet: Added a new `Writer` for generating JSON schemas which can be used by text editors
+  for autocompletion
+- Inlet: SphinxWriter will now document the signature of function callbacks added to a schema
+- Axom::Path - New class for performing basic path operations with user-selectable
+  delimiter characters
+- Inlet: Added a method to `inlet::Inlet` that retrieves the set of unexpected names
+  in the input file
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -57,7 +64,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   more than just unit tests.
 - Inlet: Input file functions can now be of arbitrary signature subject to type and arity
   restrictions
-- Updated built-in TPL `fmt` to version 7.1.3 released Nov 24, 2020.
 - Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
 - Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
@@ -70,6 +76,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet collections of mixed or incorrect type will now fail verification, even if they're
   not marked as required
 - Required collections no longer fail Inlet verification if they are empty in the input file
+- Inlet: `operator bool` for `Field` and `Container` has been replaced with more precise `isUserProvided`
+  and `exists`, which also returns `true` if a default value was specified.
+- Updated built-in TPL `fmt` to master branch snapshot, March 26, 2021.
+- Inlet: SphinxWriter will now print only one element schema per container instead of
+  printing the same schema for each element in the container
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
@@ -82,7 +93,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Always ignore primitive array elements that do not match the requested type
 - Inlet: Empty structs/collections of structs with required sub-elements no longer fail
   verification
-
+- Quest: Fixed a bug with InOutOctree for triangles that lie on faces of octree blocks
 
 ## [Version 0.4.0] - Release date 2020-09-22
 
