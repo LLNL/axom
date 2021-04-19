@@ -161,7 +161,12 @@ class Axom(CachedCMakePackage, CudaPackage):
             flags = ""
             for _libpath in [libdir, libdir + "64"]:
                 if os.path.exists(_libpath):
-                    flags += " -Wl,-rpath,{0}".format(_libpath)
+                    # BLT_EXE_LINKER_FLAGS aren't filtered
+                    # for the Wl/Xlinker incompability
+                    if "+cuda" in spec:
+                        flags += " -Xlinker -rpath -Xlinker {0}".format(_libpath)
+                    else:
+                        flags += " -Wl,-rpath,{0}".format(_libpath)
             description = ("Adds a missing libstdc++ rpath")
             if flags:
                 entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
@@ -238,7 +243,14 @@ class Axom(CachedCMakePackage, CudaPackage):
                                "lib")
                 description = ("Adds a missing rpath for libraries "
                                "associated with the fortran compiler")
-                linker_flags = "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," + libdir
+                # BLT_EXE_LINKER_FLAGS aren't filtered
+                # for the Wl/Xlinker incompability
+                if "+cuda" in spec:
+                    linker_flags = "${BLT_EXE_LINKER_FLAGS} -Xlinker -rpath" \
+                                   + "-Xlinker " + libdir
+                else:
+                    linker_flags = "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," \
+                                   + libdir
                 entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS",
                                                   linker_flags, description))
                 if "+shared" in spec:
