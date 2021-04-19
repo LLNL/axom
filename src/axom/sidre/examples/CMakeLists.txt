@@ -29,18 +29,14 @@ set(F_example_sources
 )
 
 if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
-    list(APPEND example_sources sidre_mfem_datacollection.cpp)
+    list(APPEND example_sources sidre_mfem_datacollection_vis.cpp)
+    list(APPEND example_sources sidre_mfem_datacollection_restart.cpp)
 endif()
 
 if(APPLE)
     set(EXTRA_LIBS "")
 elseif(UNIX)
     set(EXTRA_LIBS rt)
-endif()
-
-if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
-    list(APPEND example_sources sidre_mfem_datacollection_vis.cpp)
-    list(APPEND example_sources sidre_mfem_datacollection_restart.cpp)
 endif()
 
 #------------------------------------------------------------------------------

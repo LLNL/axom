@@ -80,6 +80,7 @@ endif()
 #------------------------------------------------------------------------------
 if (HDF5_DIR)
     include(cmake/thirdparty/SetupHDF5.cmake)
+    blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
 else()
     message(STATUS "HDF5 support is OFF")
 endif()
@@ -102,8 +103,6 @@ if (CONDUIT_DIR)
 else()
     message(STATUS "Conduit support is OFF")
 endif()
-
-set(TPL_DEPS)
 
 #------------------------------------------------------------------------------
 # MFEM

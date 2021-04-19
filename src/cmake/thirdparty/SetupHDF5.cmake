@@ -115,12 +115,14 @@ if(WIN32 AND TARGET hdf5::hdf5-shared AND BUILD_SHARED_LIBS)
     # reg shared ver of imported lib target
     message(STATUS "HDF5 using hdf5::hdf5-shared target")
     blt_import_library(NAME      hdf5
-                       LIBRARIES hdf5::hdf5-shared)
+                       LIBRARIES hdf5::hdf5-shared
+                       EXPORTABLE ON)
 elseif(WIN32 AND TARGET hdf5::hdf5-static )
     # reg static ver of imported lib target
     message(STATUS "HDF5 using hdf5::hdf5-static target")
     blt_import_library(NAME      hdf5
-                       LIBRARIES hdf5::hdf5-static)
+                       LIBRARIES hdf5::hdf5-static
+                       EXPORTABLE ON)
 else()
     # reg includes and libs with blt
     message(STATUS "HDF5 using HDF5_DEFINITIONS + HDF5_INCLUDE_DIRS + HDF5_LIBRARIES")
@@ -131,5 +133,6 @@ else()
                        DEFINES   ${HDF5_DEFINITIONS}
                        INCLUDES  ${HDF5_INCLUDE_DIRS}
                        LIBRARIES ${HDF5_LIBRARIES}
-                       TREAT_INCLUDES_AS_SYSTEM ON )
+                       TREAT_INCLUDES_AS_SYSTEM ON
+                       EXPORTABLE ON )
 endif()
