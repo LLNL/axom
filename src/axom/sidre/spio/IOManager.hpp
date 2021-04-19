@@ -331,7 +331,7 @@ private:
    * a string containing the SCR-controlled path.
    *
    * When SCR is not being used, either because the IOManager instance was
-   * constructed with the SCR flag set to fales, or because Sidre was not
+   * constructed with the SCR flag set to false, or because Sidre was not
    * built with SCR, the returned string is identical to the argument string.
    *
    * \param  path  The file path in the parallel file system known by the
