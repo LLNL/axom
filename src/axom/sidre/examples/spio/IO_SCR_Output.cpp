@@ -15,12 +15,12 @@
 #include "CLI11/CLI11.hpp"
 
 #ifdef AXOM_USE_SCR
-#include "scr.h"
+  #include "scr.h"
 #endif
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
+using axom::sidre::Group;
 using axom::sidre::IOManager;
 using namespace axom::utilities;
 
@@ -41,7 +41,9 @@ void initializeDS(int my_rank, DataStore* ds)
 }
 
 /** Write an output dataset via SCR */
-bool dumpOutput(MPI_Comm comm, const std::string& file_base, int num_files,
+bool dumpOutput(MPI_Comm comm,
+                const std::string& file_base,
+                int num_files,
                 DataStore* ds)
 {
   // Tell SCR we're starting an output dataset.
@@ -79,10 +81,7 @@ struct CommandLineArguments
   int m_numFiles;
   std::string m_fileBase;
 
-  CommandLineArguments()
-    : m_numFiles(0)
-    , m_fileBase("test.hdf")
-  {}
+  CommandLineArguments() : m_numFiles(0), m_fileBase("test.hdf") { }
 
   void parse(int argc, char** argv, CLI::App& app);
 };
@@ -90,12 +89,10 @@ struct CommandLineArguments
 /** Parse the command line arguments */
 void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
 {
-  app.add_option("-n,--num", m_numFiles,
-                 "Number of files per checkpoint")
-  ->check(CLI::PositiveNumber);
+  app.add_option("-n,--num", m_numFiles, "Number of files per checkpoint")
+    ->check(CLI::PositiveNumber);
 
-  app.add_option("-f,--file", m_fileBase,
-                 "Base name of checkpoint files");
+  app.add_option("-f,--file", m_fileBase, "Base name of checkpoint files");
 
   app.get_formatter()->column_width(35);
 
@@ -133,10 +130,10 @@ int main(int argc, char* argv[])
   {
     args.parse(argc, argv, app);
   }
-  catch (const CLI::ParseError &e)
+  catch(const CLI::ParseError& e)
   {
     int retval = -1;
-    if(my_rank==0)
+    if(my_rank == 0)
     {
       retval = app.exit(e);
     }
@@ -149,7 +146,7 @@ int main(int argc, char* argv[])
   std::string file_base = args.m_fileBase;
 
   // Default to write a file per process.
-  if (num_files == 0)
+  if(num_files == 0)
   {
     num_files = num_ranks;
   }

@@ -15,12 +15,12 @@
 #include "CLI11/CLI11.hpp"
 
 #ifdef AXOM_USE_SCR
-#include "scr.h"
+  #include "scr.h"
 #endif
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
+using axom::sidre::Group;
 using axom::sidre::IOManager;
 using namespace axom::utilities;
 
@@ -46,7 +46,7 @@ bool loadRestart(MPI_Comm comm, const std::string& file_base, DataStore* ds)
     // SCR_Have_restart must be called by all processes in MPI_COMM_WORLD.
     char ckptname[SCR_MAX_FILENAME];
     SCR_Have_restart(&have_restart, ckptname);
-    if (have_restart)
+    if(have_restart)
     {
       // Tell SCR we're starting to read the checkpoint.
       // One must only call SCR_Start_restart if SCR_Have_restart
@@ -80,11 +80,10 @@ bool loadRestart(MPI_Comm comm, const std::string& file_base, DataStore* ds)
       int rc = SCR_Complete_restart(valid);
       restarted = (rc == SCR_SUCCESS);
     }
-  }
-  while (have_restart && !restarted);
+  } while(have_restart && !restarted);
 
   // tell the caller whether we loaded a restart from SCR
-  return (bool) restarted;
+  return (bool)restarted;
 }
 
 /** Ask SCR whether we should take a defensive checkpoint */
@@ -100,12 +99,15 @@ bool needCheckpoint(void)
   // SCR_Need_checkpoint must be called by all processes in MPI_COMM_WORLD.
   int need_checkpoint;
   SCR_Need_checkpoint(&need_checkpoint);
-  return (bool) need_checkpoint;
+  return (bool)need_checkpoint;
 }
 
 /** Write a checkpoint via SCR */
-bool dumpCheckpoint(MPI_Comm comm, const std::string& file_base, int t,
-                    int num_files, DataStore* ds)
+bool dumpCheckpoint(MPI_Comm comm,
+                    const std::string& file_base,
+                    int t,
+                    int num_files,
+                    DataStore* ds)
 {
   // Tell SCR we're starting a checkpoint.
   // Each SCR output set should be given a name.
@@ -153,7 +155,7 @@ bool shouldExit(void)
   // SCR_Should_exit must be called by all processes in MPI_COMM_WORLD.
   int should_exit;
   SCR_Should_exit(&should_exit);
-  return (bool) should_exit;
+  return (bool)should_exit;
 }
 
 /** Simple structure to hold the parsed command line arguments */
@@ -163,11 +165,8 @@ struct CommandLineArguments
   int m_numFiles;
   std::string m_fileBase;
 
-  CommandLineArguments()
-    : m_numSteps(1)
-    , m_numFiles(0)
-    , m_fileBase("test.hdf")
-  {}
+  CommandLineArguments() : m_numSteps(1), m_numFiles(0), m_fileBase("test.hdf")
+  { }
 
   void parse(int argc, char** argv, CLI::App& app);
 };
@@ -175,16 +174,13 @@ struct CommandLineArguments
 /** Parse the command line arguments */
 void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
 {
-  app.add_option("-s,--steps", m_numSteps,
-                 "Number of time steps")
-  ->check(CLI::PositiveNumber);
+  app.add_option("-s,--steps", m_numSteps, "Number of time steps")
+    ->check(CLI::PositiveNumber);
 
-  app.add_option("-n,--num", m_numFiles,
-                 "Number of files per checkpoint")
-  ->check(CLI::PositiveNumber);
+  app.add_option("-n,--num", m_numFiles, "Number of files per checkpoint")
+    ->check(CLI::PositiveNumber);
 
-  app.add_option("-f,--file", m_fileBase,
-                 "Base name of checkpoint files");
+  app.add_option("-f,--file", m_fileBase, "Base name of checkpoint files");
 
   app.get_formatter()->column_width(35);
 
@@ -224,10 +220,10 @@ int main(int argc, char* argv[])
   {
     args.parse(argc, argv, app);
   }
-  catch (const CLI::ParseError &e)
+  catch(const CLI::ParseError& e)
   {
     int retval = -1;
-    if(my_rank==0)
+    if(my_rank == 0)
     {
       retval = app.exit(e);
     }
@@ -241,7 +237,7 @@ int main(int argc, char* argv[])
   std::string file_base = args.m_fileBase;
 
   // Default to write a file per process.
-  if (num_files == 0)
+  if(num_files == 0)
   {
     num_files = num_ranks;
   }
@@ -263,7 +259,7 @@ int main(int argc, char* argv[])
   SLIC_ASSERT(ds);
 
   // Attempt to load a restart from SCR.
-  if (loadRestart(MPI_COMM_WORLD, file_base, ds))
+  if(loadRestart(MPI_COMM_WORLD, file_base, ds))
   {
     // We successfully read a restart from SCR.
     // Use the dataset it filled in to initialize our state,
@@ -283,7 +279,7 @@ int main(int argc, char* argv[])
   }
 
   // Application work loop
-  for (t = t_start ; t < t_start + num_steps ; t++)
+  for(t = t_start; t < t_start + num_steps; t++)
   {
     /////////////////////////
     // Do actual work which changes internal state ...
@@ -293,7 +289,7 @@ int main(int argc, char* argv[])
     // Optionally, one can ask SCR whether it's time to checkpoint.
     // This call is purely advisory for defensive checkpoints,
     // and the application is free to checkpoint whenever it needs to.
-    if (needCheckpoint())
+    if(needCheckpoint())
     {
       // Time for a checkpoint, update the Datastore to capture current state.
       ds->getRoot()->getView("timestep")->setScalar<int>(t);
@@ -308,7 +304,7 @@ int main(int argc, char* argv[])
       // When using SCR to cache datasets, the application should
       // exit early enough to leave SCR time to flush those datasets
       // before the job allocation expires.
-      if (shouldExit())
+      if(shouldExit())
       {
         break;
       }

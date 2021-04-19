@@ -171,7 +171,7 @@ void IOManager::write(sidre::Group* datagroup,
                 "SCR requires a file per process");
 
   std::string root_string = file_string;
-  if (m_my_rank == 0)
+  if(m_my_rank == 0)
   {
     createRootFile(root_string, num_files, protocol, tree_pattern);
   }
@@ -194,11 +194,11 @@ void IOManager::write(sidre::Group* datagroup,
     if(m_baton->isFirstInGroup())
     {
       // no need to create directories in SCR
-      if (!m_use_scr)
+      if(!m_use_scr)
       {
         std::string dir_name;
         utilities::filesystem::getDirName(dir_name, hdf5_name);
-        if (!dir_name.empty())
+        if(!dir_name.empty())
         {
           utilities::filesystem::makeDirsForPath(dir_name);
         }
@@ -318,14 +318,14 @@ void IOManager::read(sidre::Group* datagroup,
   read(datagroup, root_file, protocol, preserve_contents);
 }
 
-std::string IOManager::getSCRPath(const std::string & path)
+std::string IOManager::getSCRPath(const std::string& path)
 {
 #ifdef AXOM_USE_SCR
-  if (m_use_scr)
+  if(m_use_scr)
   {
     char scr_name[SCR_MAX_FILENAME];
     std::string scr_path;
-    if (SCR_Route_file(path.c_str(), scr_name) == SCR_SUCCESS)
+    if(SCR_Route_file(path.c_str(), scr_name) == SCR_SUCCESS)
     {
       // SCR gave us a path to use to open this file
       scr_path = scr_name;
@@ -530,12 +530,11 @@ void IOManager::createRootFile(const std::string& file_base,
  *
  *************************************************************************
  */
-std::string IOManager::getProtocol(
-  const std::string& root_orig)
+std::string IOManager::getProtocol(const std::string& root_orig)
 {
   std::string protocol;
 
-  if (m_my_rank == 0)
+  if(m_my_rank == 0)
   {
     std::string root_name = getSCRPath(root_orig);
 
@@ -549,7 +548,7 @@ std::string IOManager::getProtocol(
 
     SLIC_CHECK_MSG(extension == "root",
                    "The root file name should always end in 'root'."
-                   << " File name was '"<< root_name <<"'");
+                     << " File name was '" << root_name << "'");
 
     std::string relay_protocol = "json";
 #ifdef AXOM_USE_HDF5
@@ -818,7 +817,7 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
     std::string root_path = getSCRPath(root_file);
 
     conduit::Node n;
-    conduit::relay::io::load(root_path + ":number_of_files","hdf5",n);
+    conduit::relay::io::load(root_path + ":number_of_files", "hdf5", n);
     read_num_files = n.to_int();
     SLIC_ASSERT(read_num_files > 0);
   }
@@ -844,7 +843,7 @@ int IOManager::getNumGroupsFromRoot(const std::string& root_file)
     std::string root_path = getSCRPath(root_file);
 
     conduit::Node n;
-    conduit::relay::io::load(root_path + ":number_of_trees","hdf5",n);
+    conduit::relay::io::load(root_path + ":number_of_trees", "hdf5", n);
     read_num_trees = n.to_int();
     SLIC_ASSERT(read_num_trees > 0);
   }

@@ -83,8 +83,7 @@ int main(int argc, char* argv[])
 
   int valid = 1;
   int complete_rc = SCR_Complete_output(valid);
-  SLIC_ERROR_IF(complete_rc != SCR_SUCCESS,
-                "SCR output failed.\n");
+  SLIC_ERROR_IF(complete_rc != SCR_SUCCESS, "SCR output failed.\n");
 
   SCR_Finalize();
   MPI_Finalize();
