@@ -146,6 +146,7 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
         ${quest_tests_depends}
         conduit::conduit
         sidre
+        cli11
         )
 
     blt_list_append(TO quest_regression_depends ELEMENTS hdf5 IF HDF5_FOUND)
@@ -184,17 +185,20 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
             16
         )
 
-        if( ${AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS} )
-           list(APPEND quest_regression_datasets
-               naca0012
-               plane_simp
-               plane_binary
-               aatbase_3_binary
+        blt_list_append(
+            TO          quest_regression_datasets
+            ELEMENTS    aatbase_3_binary
+                        cap
+                        naca0012
+                        plane_binary
+                        plane_simp
+            IF          AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
            )
-           list(APPEND quest_regression_resolutions
-               32
+        blt_list_append(
+            TO          quest_regression_resolutions
+            ELEMENTS    32
+            IF          AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
            )
-        endif()
 
         foreach(dataset ${quest_regression_datasets})
             foreach(res ${quest_regression_resolutions})
@@ -203,7 +207,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
                     COMMAND ${test_name}
                             --mesh ${quest_data_dir}/${dataset}.stl
                             --baseline ${quest_data_dir}/regression/${dataset}_${res}_baseline.root
-                            --resolution ${res} ${res} ${res}
                     NUM_MPI_TASKS 1
                 )
             endforeach()
