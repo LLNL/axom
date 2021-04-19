@@ -39,3 +39,11 @@ foreach(src ${example_sources})
         )
 endforeach()
 
+    if(AXOM_ENABLE_TESTS)
+        if(SCR_FOUND)
+            axom_add_test(
+                NAME spio_IO_SCR_Ckpt
+                COMMAND spio_IO_SCR_Ckpt_ex )
+        endif()
+    endif()
+
