@@ -342,10 +342,10 @@ class Axom(CachedCMakePackage, CudaPackage):
                 python_path = python_path.replace(key, path_replacements[key])
             entries.append(cmake_cache_path("PYTHON_EXECUTABLE", python_path))
 
-        enable_docs = "doxygen" in spec or "py-sphinx" in spec
+        enable_docs = "+doxygen" in spec or "+py-sphinx" in spec
         entries.append(cmake_cache_option("ENABLE_DOCS", enable_docs))
 
-        if "py-sphinx" in spec:
+        if "+py-sphinx" in spec:
             python_bin_dir = get_spec_path(spec, "python",
                                            path_replacements,
                                            use_bin=True)
@@ -353,14 +353,14 @@ class Axom(CachedCMakePackage, CudaPackage):
                                             pjoin(python_bin_dir,
                                                   "sphinx-build")))
 
-        if "py-shroud" in spec:
+        if "+py-shroud" in spec:
             shroud_bin_dir = get_spec_path(spec, "py-shroud",
                                            path_replacements, use_bin=True)
             entries.append(cmake_cache_path("SHROUD_EXECUTABLE",
                                             pjoin(shroud_bin_dir, "shroud")))
 
-        for dep in ('uncrustify', 'cppcheck', 'doxygen'):
-            if dep in spec:
+        for dep in ('cppcheck', 'doxygen'):
+            if '+%s' % dep in spec:
                 dep_bin_dir = get_spec_path(spec, dep, path_replacements,
                                             use_bin=True)
                 entries.append(cmake_cache_path('%s_EXECUTABLE' % dep.upper(),
