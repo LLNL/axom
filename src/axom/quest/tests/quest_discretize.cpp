@@ -365,28 +365,88 @@ TEST(quest_discretize, sphere_test)
 }
 
 //------------------------------------------------------------------------------
+TEST(quest_discretize, degenerate_segment_test)
+{
+  // Test each of the three generations.
+  // We don't know what order they'll be in, but we do know how many octahedra
+  // will be in each generation.
+  constexpr int generations = 3;
+  std::vector<TwoDPointType> polyline;
+
+  {
+    SCOPED_TRACE("a.x == b.x, a.y == b.y");
+    TwoDPointType a {0., 0.};
+    TwoDPointType b {0., 0.};
+    polyline.clear();
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    std::vector<OctType> generated;
+    EXPECT_TRUE(axom::quest::discretize(polyline, generations, generated));
+    EXPECT_EQ(0, generated.size());
+  }
+
+  {
+    SCOPED_TRACE("a.x == b.x, a.y != b.y");
+    TwoDPointType a {1., 0.};
+    TwoDPointType b {1., 1.};
+    polyline.clear();
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    std::vector<OctType> generated;
+    EXPECT_TRUE(axom::quest::discretize(polyline, generations, generated));
+    EXPECT_EQ(0, generated.size());
+  }
+
+  {
+    SCOPED_TRACE("a.y < 0");
+    TwoDPointType a {1., -0.1};
+    TwoDPointType b {1.5, 1.};
+    polyline.clear();
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    std::vector<OctType> generated;
+    EXPECT_FALSE(axom::quest::discretize(polyline, generations, generated));
+    EXPECT_EQ(0, generated.size());
+  }
+
+  {
+    SCOPED_TRACE("b.y < 0");
+    TwoDPointType a {1.,  1.};
+    TwoDPointType b {1.5, -.1};
+    polyline.clear();
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    std::vector<OctType> generated;
+    EXPECT_FALSE(axom::quest::discretize(polyline, generations, generated));
+    EXPECT_EQ(0, generated.size());
+  }
+
+  {
+    SCOPED_TRACE("a.x > b.x");
+    TwoDPointType a {.5, 1.};
+    TwoDPointType b {0., 1.};
+    polyline.clear();
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    std::vector<OctType> generated;
+    EXPECT_FALSE(axom::quest::discretize(polyline, generations, generated));
+    EXPECT_EQ(0, generated.size());
+  }
+
+}
+
+//------------------------------------------------------------------------------
 TEST(quest_discretize, segment_test)
 {
-  // The discretize() routine chops up a given SoR into the specified
-  // number of generations of octahedra.  Here, we'll discretize the polyline
-  // in the previous comment in three generations, to match the hand-calculated
-  // octs from discretized_segment().
-  TwoDPointType a {1.0, 1.0};
-  TwoDPointType b {1.8, 0.8};
   std::vector<TwoDPointType> polyline;
-  polyline.push_back(a);
-  polyline.push_back(b);
-
-  // The discretized_segment() routine produces a list of 10 hand-calculated
-  // octahedra (three generations) that discretize the surface of revolution
-  // (SoR) produced by revolving a one-segment polyline around the positive
-  // X-axis.
   std::vector<OctType> handcut;
-  discretized_segment(a, b, handcut);
-
   constexpr int generations = 3;
   std::vector<OctType> generated;
-  axom::quest::discretize(polyline, generations, generated);
 
   // Test each of the three generations.
   // We don't know what order they'll be in, but we do know how many octahedra
@@ -396,21 +456,170 @@ TEST(quest_discretize, segment_test)
   constexpr int THIRD_GEN_COUNT = 6;
 
   int generation = 0;
-  EXPECT_TRUE(
-    check_generation(handcut, generated, generation, 0, FIRST_GEN_COUNT));
-  generation += 1;
-  EXPECT_TRUE(check_generation(handcut,
-                               generated,
-                               generation,
-                               FIRST_GEN_COUNT,
-                               SECOND_GEN_COUNT));
-  generation += 1;
-  EXPECT_TRUE(check_generation(handcut,
-                               generated,
-                               generation,
-                               FIRST_GEN_COUNT + SECOND_GEN_COUNT,
-                               THIRD_GEN_COUNT));
+
+  {
+    SCOPED_TRACE("Cone (pointing left)");
+    polyline.clear();
+    TwoDPointType a {0.5, 0.};
+    TwoDPointType b {1.8, 0.8};
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    // The discretized_segment() routine produces a list of 10 hand-calculated
+    // octahedra (three generations) that discretize the surface of revolution
+    // (SoR) produced by revolving a one-segment polyline around the positive
+    // X-axis.
+    handcut.clear();
+    discretized_segment(a, b, handcut);
+
+    axom::quest::discretize(polyline, generations, generated);
+
+    generation = 0;
+    EXPECT_TRUE(
+      check_generation(handcut, generated, generation, 0, FIRST_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT,
+                                 SECOND_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT + SECOND_GEN_COUNT,
+                                 THIRD_GEN_COUNT));
+  }
+
+  {
+    SCOPED_TRACE("Cone (pointing right)");
+    polyline.clear();
+    TwoDPointType a {1.0, 1.0};
+    TwoDPointType b {1.8, 0.};
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    // The discretized_segment() routine produces a list of 10 hand-calculated
+    // octahedra (three generations) that discretize the surface of revolution
+    // (SoR) produced by revolving a one-segment polyline around the positive
+    // X-axis.
+    handcut.clear();
+    discretized_segment(a, b, handcut);
+
+    axom::quest::discretize(polyline, generations, generated);
+
+    generation = 0;
+    EXPECT_TRUE(
+      check_generation(handcut, generated, generation, 0, FIRST_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT,
+                                 SECOND_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT + SECOND_GEN_COUNT,
+                                 THIRD_GEN_COUNT));
+  }
+
+  {
+    SCOPED_TRACE("Truncated cone");
+    polyline.clear();
+    TwoDPointType a {1.0, 1.0};
+    TwoDPointType b {1.8, 0.8};
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    // The discretized_segment() routine produces a list of 10 hand-calculated
+    // octahedra (three generations) that discretize the surface of revolution
+    // (SoR) produced by revolving a one-segment polyline around the positive
+    // X-axis.
+    handcut.clear();
+    discretized_segment(a, b, handcut);
+
+    axom::quest::discretize(polyline, generations, generated);
+
+    generation = 0;
+    EXPECT_TRUE(
+      check_generation(handcut, generated, generation, 0, FIRST_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT,
+                                 SECOND_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT + SECOND_GEN_COUNT,
+                                 THIRD_GEN_COUNT));
+  }
+
+  {
+    SCOPED_TRACE("Cylinder");
+    polyline.clear();
+    TwoDPointType a {1., 1.};
+    TwoDPointType b {3., 1.};
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    handcut.clear();
+    discretized_segment(a, b, handcut);
+
+    axom::quest::discretize(polyline, generations, generated);
+
+    generation = 0;
+    EXPECT_TRUE(
+      check_generation(handcut, generated, generation, 0, FIRST_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT,
+                                 SECOND_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT + SECOND_GEN_COUNT,
+                                 THIRD_GEN_COUNT));
+  }
+
+  {
+    SCOPED_TRACE("a.x < 0, b.x > 0");
+    polyline.clear();
+    TwoDPointType a {-.4, 1.2};
+    TwoDPointType b {1.2, 1.};
+    polyline.push_back(a);
+    polyline.push_back(b);
+
+    handcut.clear();
+    discretized_segment(a, b, handcut);
+
+    axom::quest::discretize(polyline, generations, generated);
+
+    generation = 0;
+    EXPECT_TRUE(
+      check_generation(handcut, generated, generation, 0, FIRST_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT,
+                                 SECOND_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(handcut,
+                                 generated,
+                                 generation,
+                                 FIRST_GEN_COUNT + SECOND_GEN_COUNT,
+                                 THIRD_GEN_COUNT));
+  }
 }
+
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------

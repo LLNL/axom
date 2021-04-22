@@ -52,8 +52,8 @@ PointType rescale_YZ(const PointType &p, double new_dst)
   double cur_dst = sqrt(p[1] * p[1] + p[2] * p[2]);
   PointType retval;
   retval[0] = p[0];
-  retval[1] = p[1] * new_dst / cur_dst;
-  retval[2] = p[2] * new_dst / cur_dst;
+  retval[1] = p[1] * new_dst / (cur_dst + PTINY);
+  retval[2] = p[2] * new_dst / (cur_dst + PTINY);
   return retval;
 }
 
@@ -140,14 +140,21 @@ OctType new_inscribed_prism(OctType &old_oct,
   return retval;
 }
 
-/* Given a sphere and level of refinement, return the list of
- * octahedra that approximate that sphere at that LOR.
+/* Given a sphere and level of refinement, place the list of octahedra that
+ * approximate that sphere at that LOR into the output argument.  Return true for
+ * valid input and no errors, false for bad input or an error.  If we return
+ * false, no octahedra are placed in the output argument.
  *
  * As noted in the doxygen, this function chops a sphere into O(4^levels)
  * octahedra.  That is exponential growth.  Use appropriate caution.
  */
-void discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
+bool discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
 {
+  // Check input.  Negative radius: return false.
+  if (sphere.getRadius() < 0) { return false; }
+  // Zero radius: return true without generating octahedra.
+  if (sphere.getRadius() < PTINY) { return true; }
+
   // How many octahedra will we generate?  One oct for the central octahedron
   // (level 0), eight more for its faces (level 1), and four more to refine
   // each exposed face of the last generation.
@@ -213,6 +220,8 @@ void discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
       last_gen += 1;
     }
   }
+
+  return true;
 }
 
 /* ------------------------------------------------------------ */
@@ -221,9 +230,13 @@ void discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
  * Each level of refinement places a new prism/tet on all exposed faces.
  *
  * Input:  2D points a and b, number of levels of refinement, index into
- * the output vector
+ * the output vector.  The routine assumes a.x <= b.x, a.y >= 0, b.y >= 0.
  *
- * Output: the output vector of prisms (placed at the index)
+ * Output: the output vector of prisms (placed in the output std::vector
+ * starting at the index).
+ *
+ * Return value: the number of prisms generated: zero for degenerate segments,
+ * or a value of order 2^(levels) calculated within the routine.
  *
  * Conceptually, end points a and b are revolved around the X-axis, describing
  * circles that are the truncated cone's end-caps.  The segment ab revolved
@@ -240,12 +253,16 @@ void discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
  * Each subsequent level of refinement adds a prism to each exposed
  * quadrilateral side-wall.
  */
-void discrSeg(const TwoDPointType &a,
-              const TwoDPointType &b,
-              int levels,
-              std::vector<OctType> &out,
-              int idx)
+int discrSeg(const TwoDPointType &a,
+             const TwoDPointType &b,
+             int levels,
+             std::vector<OctType> &out,
+             int idx)
 {
+  // Deal with degenerate segments
+  if (abs(a[0] - b[0]) < PTINY) { return 0; }
+  if (a[1] < PTINY && b[1] < PTINY) { return 0; }
+
   // Establish a prism (in an octahedron record) with one triangular
   // end lying on the circle described by rotating point a around the
   // x-axis and the other lying on circle from rotating b.
@@ -255,6 +272,7 @@ void discrSeg(const TwoDPointType &a,
   int curr_lvl = idx;
   int curr_lvl_count = 1;
   int next_lvl = curr_lvl + curr_lvl_count;
+  int total_count = 0;
 
   TwoDPointType pa, pb;
 
@@ -306,21 +324,39 @@ void discrSeg(const TwoDPointType &a,
     curr_lvl = next_lvl;
     curr_lvl_count *= lvl_factor;
     next_lvl = curr_lvl + curr_lvl_count;
+    total_count += curr_lvl_count;
   }
+
+  return total_count;
 }
 
-/* Given a surface of revolution and level of refinement, return the list of
- * octahedra that approximate that shape at that LOR.
+/* Given a surface of revolution and level of refinement, place the list of
+ * octahedra that approximate that shape at that LOR in an output argument.
+ * Return true for valid input and lack of errors, false otherwise.  If we
+ * return false, put nothing in the output argument.
  *
  * As noted in the doxygen, this function chops a surface of revolution into
  * n*O(2^levels) octahedra, where n is the number of segments in the SoR (one
  * less than the polyline's length).  That is exponential growth.  Use
  * appropriate caution.
  */
-void discretize(std::vector<TwoDPointType> &polyline,
+bool discretize(std::vector<TwoDPointType> &polyline,
                 int levels,
                 std::vector<OctType> &out)
 {
+  // Check for invalid input.  If any segment is invalid, exit returning false.
+  bool stillValid = true;
+  int segmentcount = polyline.size() - 1;
+  for (int seg = 0; seg < segmentcount && stillValid; ++seg)
+  {
+    TwoDPointType & a = polyline[seg];
+    TwoDPointType & b = polyline[seg + 1];
+    // invalid if a.x > b.x
+    if (a[0] > b[0]) { stillValid = false; }
+    if (a[1] < 0 || b[1] < 0) { stillValid = false; }
+  }
+  if (!stillValid) { return false; }
+
   // How many octahedra will we generate in each segment of the polyline?
   // This is done in discretizeSegment() (which see for further details).
   // - One oct for the central octahedron (level 0),
@@ -345,14 +381,20 @@ void discretize(std::vector<TwoDPointType> &polyline,
 
   // That was the octahedron count for one segment.  Multiply by the number
   // of segments we will compute.
-  int n = polyline.size() - 1;
-  int totaloctcount = octcount * n;
+  int totaloctcount = octcount * segmentcount;
   out.resize(totaloctcount);
+  int total_prism_count = 0;
 
-  for(int seg = 0; seg < n; ++seg)
+  for(int seg = 0; seg < segmentcount; ++seg)
   {
-    discrSeg(polyline[seg], polyline[seg + 1], levels, out, seg * octcount);
+    int segment_prism_count = discrSeg(polyline[seg], polyline[seg + 1], levels, out, total_prism_count);
+    total_prism_count += segment_prism_count;
   }
+
+  out.resize(total_prism_count);
+
+  // TODO check for errors in each segment's computation
+  return true;
 }
 
 }  // end namespace quest

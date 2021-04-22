@@ -33,11 +33,12 @@ using TwoDPointType = primal::Point<double, 2>;
  * \param [in] s The sphere to approximate
  * \param [in] levels The number of refinements to perform
  * \param [out] out The collection of octahedra representing s
+ * \return false for invalid input or error in computation; true otherwise
  *
  * This routine generates O(4^level) octahedra.  That's exponential growth.
  * Use appropriate caution.
  */
-void discretize(const SphereType& s, int levels, std::vector<OctType>& out);
+bool discretize(const SphereType& s, int levels, std::vector<OctType>& out);
 
 /*!
  * \brief Given a 2D polyline revolved around the positive X-axis, return a list
@@ -46,12 +47,13 @@ void discretize(const SphereType& s, int levels, std::vector<OctType>& out);
  * \param [in] levels The number of refinements to perform
  * \param [out] out The collection of octahedra representing the revolved
  *   polyline
+ * \return false for invalid input or error in computation; true otherwise
  *
  * This routine generates n*O(2^level) octahedra, where n is the number of
  * segments in \a polyline (one less than the length).
  * That's exponential growth.  Use appropriate caution.
  */
-void discretize(std::vector<TwoDPointType>& polyline,
+bool discretize(std::vector<TwoDPointType>& polyline,
                 int levels,
                 std::vector<OctType>& out);
 
