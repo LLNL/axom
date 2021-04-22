@@ -365,6 +365,30 @@ TEST(quest_discretize, sphere_test)
 }
 
 //------------------------------------------------------------------------------
+TEST(quest_discretize, degenerate_sphere_test)
+{
+  constexpr int generations = 3;
+  std::vector<OctType> generated;
+
+  {
+    SCOPED_TRACE("Negative sphere radius");
+    SphereType sph(-.2);  // BAD sphere at the origin with negative radius
+    generated.clear();
+    EXPECT_FALSE(axom::quest::discretize(sph, generations, generated));
+    EXPECT_EQ(0, generated.size());
+  }
+
+  {
+    SCOPED_TRACE("Zero sphere radius");
+    SphereType sph(0.);  // Degenerate sphere at the origin with zero radius
+    generated.clear();
+    EXPECT_TRUE(axom::quest::discretize(sph, generations, generated));
+    EXPECT_EQ(0, generated.size());
+  }
+
+}
+
+//------------------------------------------------------------------------------
 TEST(quest_discretize, degenerate_segment_test)
 {
   // Test each of the three generations.
