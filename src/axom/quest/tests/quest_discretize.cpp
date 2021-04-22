@@ -15,8 +15,8 @@
 
 using SphereType = axom::primal::Sphere<double, 3>;
 using OctType = axom::primal::Octahedron<double, 3>;
-using PointType = axom::primal::Point<double, 3>;
-using TwoDPointType = axom::primal::Point<double, 2>;
+using Point3D = axom::primal::Point<double, 3>;
+using Point2D = axom::primal::Point<double, 2>;
 using NAType = axom::primal::NumericArray<double, 3>;
 
 //------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ OctType reflect(ReflectDimension d, OctType o)
   OctType out(o);
   for(int i = 0; i < OctType::NUM_OCT_VERTS; ++i)
   {
-    PointType& pt = out[i];
+    Point3D& pt = out[i];
     pt[d] *= -1;
   }
   return out;
@@ -112,23 +112,23 @@ void discretized_sphere(std::vector<OctType>& out)
   NAType jhat({0., 1., 0.});
   NAType khat({0., 0., 1.});
 
-  OctType center(PointType(ihat),
-                 PointType(jhat),
-                 PointType(khat),
-                 PointType(-1 * ihat),
-                 PointType(-1 * jhat),
-                 PointType(-1 * khat));
+  OctType center(Point3D(ihat),
+                 Point3D(jhat),
+                 Point3D(khat),
+                 Point3D(-1 * ihat),
+                 Point3D(-1 * jhat),
+                 Point3D(-1 * khat));
   out[0] = center;
 
   // Second generation: eight octs, one for each face of the unit oct.
   // Point ij is halfway between (1, 0, 0) and (0, 1, 0),
   // point jk is halfway between (0, 1, 0) and (0, 0, 1),
   // point ki is halfway between (0, 0, 1) and (1, 0, 0).
-  PointType ij(NAType({M_SQRT1_2, M_SQRT1_2, 0.}));
-  PointType jk(NAType({0., M_SQRT1_2, M_SQRT1_2}));
-  PointType ki(NAType({M_SQRT1_2, 0., M_SQRT1_2}));
+  Point3D ij(NAType({M_SQRT1_2, M_SQRT1_2, 0.}));
+  Point3D jk(NAType({0., M_SQRT1_2, M_SQRT1_2}));
+  Point3D ki(NAType({M_SQRT1_2, 0., M_SQRT1_2}));
 
-  OctType second_gen(PointType(ihat), PointType(jhat), PointType(khat), jk, ki, ij);
+  OctType second_gen(Point3D(ihat), Point3D(jhat), Point3D(khat), jk, ki, ij);
   out[1] = second_gen;
   out[2] = reflect(X, second_gen);
   out[3] = reflect(Y, second_gen);
@@ -143,28 +143,28 @@ void discretized_sphere(std::vector<OctType>& out)
   double SQRT1_6 = 1. / sqrt(6.);
   // There are three interior points, derived from ij, jk, and ki.
   // Point a is halfway between ij and ki, at (1/sqrt(6))(2, 1, 1).
-  PointType a(SQRT1_6 * NAType({2, 1, 1}));
+  Point3D a(SQRT1_6 * NAType({2, 1, 1}));
   // Point b is halfway between ij and jk, at (1/sqrt(6))(1, 2, 1).
-  PointType b(SQRT1_6 * NAType({1, 2, 1}));
+  Point3D b(SQRT1_6 * NAType({1, 2, 1}));
   // Point c is halfway between jk and ki, at (1/sqrt(6))(1, 1, 2).
-  PointType c(SQRT1_6 * NAType({1, 1, 2}));
+  Point3D c(SQRT1_6 * NAType({1, 1, 2}));
 
   // There are six edge points, derived from the original corner points and
   // ij, jk, and ki.
   // Point d is halfway between ihat and ij, at
   // (1/sqrt(4 + 2 sqrt(2)))(1+sqrt(2), 1, 0)
   double FACTOR_3G = 1. / sqrt(2. * M_SQRT2 + 4);
-  PointType d(FACTOR_3G * NAType({1. + M_SQRT2, 1., 0}));
+  Point3D d(FACTOR_3G * NAType({1. + M_SQRT2, 1., 0}));
   // Point e splits jhat and ij, at (1/sqrt(2 sqrt(2) + 2))(1, 1+sqrt(2), 0)
-  PointType e(FACTOR_3G * NAType({1., 1. + M_SQRT2, 0}));
+  Point3D e(FACTOR_3G * NAType({1., 1. + M_SQRT2, 0}));
   // Point f splits jhat and jk, at (1/sqrt(2 sqrt(2) + 2))(0, 1+sqrt(2), 1)
-  PointType f(FACTOR_3G * NAType({0, 1. + M_SQRT2, 1.}));
+  Point3D f(FACTOR_3G * NAType({0, 1. + M_SQRT2, 1.}));
   // Point g splits khat and jk, at (1/sqrt(2 sqrt(2) + 2))(0, 1, 1+sqrt(2))
-  PointType g(FACTOR_3G * NAType({0, 1., 1. + M_SQRT2}));
+  Point3D g(FACTOR_3G * NAType({0, 1., 1. + M_SQRT2}));
   // Point m splits khat and ki, at (1/sqrt(2 sqrt(2) + 2))(1, 0, 1+sqrt(2))
-  PointType m(FACTOR_3G * NAType({1., 0, 1. + M_SQRT2}));
+  Point3D m(FACTOR_3G * NAType({1., 0, 1. + M_SQRT2}));
   // Point n splits ihat and ki, at (1/sqrt(2 sqrt(2) + 2))(1+sqrt(2), 0, 1)
-  PointType n(FACTOR_3G * NAType({1. + M_SQRT2, 0, 1.}));
+  Point3D n(FACTOR_3G * NAType({1. + M_SQRT2, 0, 1.}));
 
   int offset = FIRST_GEN_COUNT + SECOND_GEN_COUNT;
   // Here's the first octant of third-generation octahedra (octant 0).
@@ -172,11 +172,11 @@ void discretized_sphere(std::vector<OctType>& out)
   // First, the interior oct
   out[offset + 0 + octant * 4] = OctType(ij, jk, ki, c, a, b);
   // The one next to ihat
-  out[offset + 1 + octant * 4] = OctType(PointType(ihat), ij, ki, a, n, d);
+  out[offset + 1 + octant * 4] = OctType(Point3D(ihat), ij, ki, a, n, d);
   // The one next to jhat
-  out[offset + 2 + octant * 4] = OctType(PointType(jhat), jk, ij, b, e, f);
+  out[offset + 2 + octant * 4] = OctType(Point3D(jhat), jk, ij, b, e, f);
   // The one next to khat
-  out[offset + 3 + octant * 4] = OctType(PointType(khat), ki, jk, c, g, m);
+  out[offset + 3 + octant * 4] = OctType(Point3D(khat), ki, jk, c, g, m);
 
   // Now we get to transform these into all seven remaining octants.
   // Reflect in X
@@ -241,7 +241,7 @@ void discretized_sphere(std::vector<OctType>& out)
 
 /* Return a handwritten list of the octahedra discretizing a one-segment polyline.
  */
-void discretized_segment(TwoDPointType a, TwoDPointType b, std::vector<OctType>& out)
+void discretized_segment(Point2D a, Point2D b, std::vector<OctType>& out)
 {
   // We're going to return three generations in the out-vector:
   // one in the first generation, three in the second (covering each of the
@@ -279,31 +279,31 @@ void discretized_segment(TwoDPointType a, TwoDPointType b, std::vector<OctType>&
   const double SQ_3_2 = sqrt(3.) / 2.;
 
   // clang-format off
-  PointType Ia   {a[0],    -0.5*a[1],  SQ_3_2*a[1]};
-  PointType IIa  {a[0], -SQ_3_2*a[1],     0.5*a[1]};
-  PointType IIIa {a[0],      -1*a[1],       0*a[1]};
-  PointType IVa  {a[0], -SQ_3_2*a[1],    -0.5*a[1]};
-  PointType Va   {a[0],    -0.5*a[1], -SQ_3_2*a[1]};
-  PointType VIa  {a[0],       0*a[1],      -1*a[1]};
-  PointType VIIa {a[0],     0.5*a[1], -SQ_3_2*a[1]};
-  PointType VIIIa{a[0],  SQ_3_2*a[1],    -0.5*a[1]};
-  PointType IXa  {a[0],       1*a[1],       0*a[1]};
-  PointType Xa   {a[0],  SQ_3_2*a[1],     0.5*a[1]};
-  PointType XIa  {a[0],     0.5*a[1],  SQ_3_2*a[1]};
-  PointType XIIa {a[0],       0*a[1],       1*a[1]};
+  Point3D Ia   {a[0],    -0.5*a[1],  SQ_3_2*a[1]};
+  Point3D IIa  {a[0], -SQ_3_2*a[1],     0.5*a[1]};
+  Point3D IIIa {a[0],      -1*a[1],       0*a[1]};
+  Point3D IVa  {a[0], -SQ_3_2*a[1],    -0.5*a[1]};
+  Point3D Va   {a[0],    -0.5*a[1], -SQ_3_2*a[1]};
+  Point3D VIa  {a[0],       0*a[1],      -1*a[1]};
+  Point3D VIIa {a[0],     0.5*a[1], -SQ_3_2*a[1]};
+  Point3D VIIIa{a[0],  SQ_3_2*a[1],    -0.5*a[1]};
+  Point3D IXa  {a[0],       1*a[1],       0*a[1]};
+  Point3D Xa   {a[0],  SQ_3_2*a[1],     0.5*a[1]};
+  Point3D XIa  {a[0],     0.5*a[1],  SQ_3_2*a[1]};
+  Point3D XIIa {a[0],       0*a[1],       1*a[1]};
 
-  PointType Ib   {b[0],    -0.5*b[1],  SQ_3_2*b[1]};
-  PointType IIb  {b[0], -SQ_3_2*b[1],     0.5*b[1]};
-  PointType IIIb {b[0],      -1*b[1],       0*b[1]};
-  PointType IVb  {b[0], -SQ_3_2*b[1],    -0.5*b[1]};
-  PointType Vb   {b[0],    -0.5*b[1], -SQ_3_2*b[1]};
-  PointType VIb  {b[0],       0*b[1],      -1*b[1]};
-  PointType VIIb {b[0],     0.5*b[1], -SQ_3_2*b[1]};
-  PointType VIIIb{b[0],  SQ_3_2*b[1],    -0.5*b[1]};
-  PointType IXb  {b[0],       1*b[1],       0*b[1]};
-  PointType Xb   {b[0],  SQ_3_2*b[1],     0.5*b[1]};
-  PointType XIb  {b[0],     0.5*b[1],  SQ_3_2*b[1]};
-  PointType XIIb {b[0],       0*b[1],       1*b[1]};
+  Point3D Ib   {b[0],    -0.5*b[1],  SQ_3_2*b[1]};
+  Point3D IIb  {b[0], -SQ_3_2*b[1],     0.5*b[1]};
+  Point3D IIIb {b[0],      -1*b[1],       0*b[1]};
+  Point3D IVb  {b[0], -SQ_3_2*b[1],    -0.5*b[1]};
+  Point3D Vb   {b[0],    -0.5*b[1], -SQ_3_2*b[1]};
+  Point3D VIb  {b[0],       0*b[1],      -1*b[1]};
+  Point3D VIIb {b[0],     0.5*b[1], -SQ_3_2*b[1]};
+  Point3D VIIIb{b[0],  SQ_3_2*b[1],    -0.5*b[1]};
+  Point3D IXb  {b[0],       1*b[1],       0*b[1]};
+  Point3D Xb   {b[0],  SQ_3_2*b[1],     0.5*b[1]};
+  Point3D XIb  {b[0],     0.5*b[1],  SQ_3_2*b[1]};
+  Point3D XIIb {b[0],       0*b[1],       1*b[1]};
   // clang-format on
 
   // First generation: a single prism
@@ -395,12 +395,12 @@ TEST(quest_discretize, degenerate_segment_test)
   // We don't know what order they'll be in, but we do know how many octahedra
   // will be in each generation.
   constexpr int generations = 3;
-  std::vector<TwoDPointType> polyline;
+  std::vector<Point2D> polyline;
 
   {
     SCOPED_TRACE("a.x == b.x, a.y == b.y");
-    TwoDPointType a {0., 0.};
-    TwoDPointType b {0., 0.};
+    Point2D a {0., 0.};
+    Point2D b {0., 0.};
     polyline.clear();
     polyline.push_back(a);
     polyline.push_back(b);
@@ -412,8 +412,8 @@ TEST(quest_discretize, degenerate_segment_test)
 
   {
     SCOPED_TRACE("a.x == b.x, a.y != b.y");
-    TwoDPointType a {1., 0.};
-    TwoDPointType b {1., 1.};
+    Point2D a {1., 0.};
+    Point2D b {1., 1.};
     polyline.clear();
     polyline.push_back(a);
     polyline.push_back(b);
@@ -425,8 +425,8 @@ TEST(quest_discretize, degenerate_segment_test)
 
   {
     SCOPED_TRACE("a.y < 0");
-    TwoDPointType a {1., -0.1};
-    TwoDPointType b {1.5, 1.};
+    Point2D a {1., -0.1};
+    Point2D b {1.5, 1.};
     polyline.clear();
     polyline.push_back(a);
     polyline.push_back(b);
@@ -438,8 +438,8 @@ TEST(quest_discretize, degenerate_segment_test)
 
   {
     SCOPED_TRACE("b.y < 0");
-    TwoDPointType a {1.,  1.};
-    TwoDPointType b {1.5, -.1};
+    Point2D a {1.,  1.};
+    Point2D b {1.5, -.1};
     polyline.clear();
     polyline.push_back(a);
     polyline.push_back(b);
@@ -451,8 +451,8 @@ TEST(quest_discretize, degenerate_segment_test)
 
   {
     SCOPED_TRACE("a.x > b.x");
-    TwoDPointType a {.5, 1.};
-    TwoDPointType b {0., 1.};
+    Point2D a {.5, 1.};
+    Point2D b {0., 1.};
     polyline.clear();
     polyline.push_back(a);
     polyline.push_back(b);
@@ -467,7 +467,7 @@ TEST(quest_discretize, degenerate_segment_test)
 //------------------------------------------------------------------------------
 TEST(quest_discretize, segment_test)
 {
-  std::vector<TwoDPointType> polyline;
+  std::vector<Point2D> polyline;
   std::vector<OctType> handcut;
   constexpr int generations = 3;
   std::vector<OctType> generated;
@@ -484,8 +484,8 @@ TEST(quest_discretize, segment_test)
   {
     SCOPED_TRACE("Cone (pointing left)");
     polyline.clear();
-    TwoDPointType a {0.5, 0.};
-    TwoDPointType b {1.8, 0.8};
+    Point2D a {0.5, 0.};
+    Point2D b {1.8, 0.8};
     polyline.push_back(a);
     polyline.push_back(b);
 
@@ -518,8 +518,8 @@ TEST(quest_discretize, segment_test)
   {
     SCOPED_TRACE("Cone (pointing right)");
     polyline.clear();
-    TwoDPointType a {1.0, 1.0};
-    TwoDPointType b {1.8, 0.};
+    Point2D a {1.0, 1.0};
+    Point2D b {1.8, 0.};
     polyline.push_back(a);
     polyline.push_back(b);
 
@@ -552,8 +552,8 @@ TEST(quest_discretize, segment_test)
   {
     SCOPED_TRACE("Truncated cone");
     polyline.clear();
-    TwoDPointType a {1.0, 1.0};
-    TwoDPointType b {1.8, 0.8};
+    Point2D a {1.0, 1.0};
+    Point2D b {1.8, 0.8};
     polyline.push_back(a);
     polyline.push_back(b);
 
@@ -586,8 +586,8 @@ TEST(quest_discretize, segment_test)
   {
     SCOPED_TRACE("Cylinder");
     polyline.clear();
-    TwoDPointType a {1., 1.};
-    TwoDPointType b {3., 1.};
+    Point2D a {1., 1.};
+    Point2D b {3., 1.};
     polyline.push_back(a);
     polyline.push_back(b);
 
@@ -616,8 +616,8 @@ TEST(quest_discretize, segment_test)
   {
     SCOPED_TRACE("a.x < 0, b.x > 0");
     polyline.clear();
-    TwoDPointType a {-.4, 1.2};
-    TwoDPointType b {1.2, 1.};
+    Point2D a {-.4, 1.2};
+    Point2D b {1.2, 1.};
     polyline.push_back(a);
     polyline.push_back(b);
 
