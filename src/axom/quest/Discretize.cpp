@@ -289,7 +289,7 @@ int discrSeg(const Point2D &a,
              int idx)
 {
   // Deal with degenerate segments
-  if (abs(a[0] - b[0]) < PTINY) { return 0; }
+  if (b[0] - a[0] < PTINY) { return 0; }
   if (a[1] < PTINY && b[1] < PTINY) { return 0; }
 
   int total_count = count_segment_prisms(levels);
