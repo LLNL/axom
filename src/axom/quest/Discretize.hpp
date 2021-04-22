@@ -25,7 +25,7 @@ namespace quest
 
 using SphereType = primal::Sphere<double, 3>;
 using OctType = primal::Octahedron<double, 3>;
-using TwoDPointType = primal::Point<double, 2>;
+using Point2D = primal::Point<double, 2>;
 
 /*!
  * \brief Given a primitive sphere and a refinement level, return a list
@@ -53,7 +53,7 @@ bool discretize(const SphereType& s, int levels, std::vector<OctType>& out);
  * segments in \a polyline (one less than the length).
  * That's exponential growth.  Use appropriate caution.
  */
-bool discretize(std::vector<TwoDPointType>& polyline,
+bool discretize(std::vector<Point2D>& polyline,
                 int levels,
                 std::vector<OctType>& out);
 

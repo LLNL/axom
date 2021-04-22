@@ -29,31 +29,32 @@ namespace quest
 {
 constexpr double PTINY = 1e-80;
 
-using PointType = primal::Point<double, 3>;
+using Point3D = primal::Point<double, 3>;
 using NAType = primal::NumericArray<double, 3>;
 
 /* ------------------------------------------------------------ */
 /* Project a Point onto a sphere.
  */
-PointType project_to_shape(const PointType &p, const SphereType &sphere)
+Point3D project_to_shape(const Point3D &p, const SphereType &sphere)
 {
   const double *ctr = sphere.getCenter();
   double dist2 = primal::squared_distance(ctr, p.data(), 3);
   double dist = sqrt(dist2);
   double drat = sphere.getRadius() * dist / (dist2 + PTINY);
   double dratc = drat - 1.0;
-  return PointType::make_point(drat * p[0] - dratc * ctr[0],
+  return Point3D::make_point(drat * p[0] - dratc * ctr[0],
                                drat * p[1] - dratc * ctr[1],
                                drat * p[2] - dratc * ctr[2]);
 }
 
-PointType rescale_YZ(const PointType &p, double new_dst)
+Point3D rescale_YZ(const Point3D &p, double new_dst)
 {
   double cur_dst = sqrt(p[1] * p[1] + p[2] * p[2]);
-  PointType retval;
+  if (cur_dst < PTINY) { cur_dst = PTINY; }
+  Point3D retval;
   retval[0] = p[0];
-  retval[1] = p[1] * new_dst / (cur_dst + PTINY);
-  retval[2] = p[2] * new_dst / (cur_dst + PTINY);
+  retval[1] = p[1] * new_dst / cur_dst;
+  retval[2] = p[2] * new_dst / cur_dst;
   return retval;
 }
 
@@ -73,14 +74,64 @@ OctType from_sphere(const SphereType &sphere)
   NAType dt = center - jhat;
   NAType du = center - khat;
 
-  PointType P = project_to_shape(PointType(dp), sphere);
-  PointType Q = project_to_shape(PointType(dq), sphere);
-  PointType R = project_to_shape(PointType(dr), sphere);
-  PointType S = project_to_shape(PointType(ds), sphere);
-  PointType T = project_to_shape(PointType(dt), sphere);
-  PointType U = project_to_shape(PointType(du), sphere);
+  Point3D P = project_to_shape(Point3D(dp), sphere);
+  Point3D Q = project_to_shape(Point3D(dq), sphere);
+  Point3D R = project_to_shape(Point3D(dr), sphere);
+  Point3D S = project_to_shape(Point3D(ds), sphere);
+  Point3D T = project_to_shape(Point3D(dt), sphere);
+  Point3D U = project_to_shape(Point3D(du), sphere);
 
   return OctType(P, Q, R, S, T, U);
+}
+
+/* How many octahedra will we generate in each segment of the polyline?
+ * This is done in discretizeSegment() (which see for further details).
+ *  - One oct for the central octahedron (level 0),
+ *  - three more for its side faces (level 1),
+ *  - and for level i > 1, two times the octahedron count in level i-1,
+ *    to refine each exposed face.
+ *
+ * Total = 1 + 3*sum[i=0 to levels-1](2^i)
+ */
+int count_segment_prisms(int levels)
+{
+  int octcount = 1;
+  for(int level = levels; level > 0; --level)
+  {
+    if(level == 1)
+    {
+      octcount *= 3;
+    }
+    else
+    {
+      octcount *= 2;
+    }
+    octcount += 1;
+  }
+
+  return octcount;
+}
+
+/* How many octahedra will we generate?  One oct for the central octahedron
+ * (level 0), eight more for its faces (level 1), and four more to refine
+ * each exposed face of the last generation.
+ *
+ * Total = 1 + 8*sum[i=0 to levels-1](4^i)
+ */
+int count_sphere_octahedra(int levels)
+{
+  int octcount = 1;
+  for(int level = levels; level > 0; --level)
+  {
+    octcount *= 4;
+    if(level == 1)
+    {
+      octcount *= 2;
+    }
+    octcount += 1;
+  }
+
+  return octcount;
 }
 
 /* Return an octahedron whose six points lie on the truncated cone
@@ -88,16 +139,16 @@ OctType from_sphere(const SphereType &sphere)
  * in a right-handed way (thumb points out the axis, fingers spin segment
  * toward wrist).
  */
-OctType from_segment(const TwoDPointType &a, const TwoDPointType &b)
+OctType from_segment(const Point2D &a, const Point2D &b)
 {
   const double SQ_3_2 = sqrt(3.) / 2.;
 
-  PointType p {a[0], 0., a[1]};
-  PointType q {b[0], -SQ_3_2 * b[1], -0.5 * b[1]};
-  PointType r {a[0], -SQ_3_2 * a[1], -0.5 * a[1]};
-  PointType s {b[0], SQ_3_2 * b[1], -0.5 * b[1]};
-  PointType t {a[0], SQ_3_2 * a[1], -0.5 * a[1]};
-  PointType u {b[0], 0., b[1]};
+  Point3D p {a[0], 0., a[1]};
+  Point3D q {b[0], -SQ_3_2 * b[1], -0.5 * b[1]};
+  Point3D r {a[0], -SQ_3_2 * a[1], -0.5 * a[1]};
+  Point3D s {b[0], SQ_3_2 * b[1], -0.5 * b[1]};
+  Point3D t {a[0], SQ_3_2 * a[1], -0.5 * a[1]};
+  Point3D u {b[0], 0., b[1]};
 
   return OctType(p, q, r, s, t, u);
 }
@@ -109,9 +160,9 @@ OctType from_segment(const TwoDPointType &a, const TwoDPointType &b)
  */
 OctType new_inscribed_oct(const SphereType &sphere, OctType &o, int s, int t, int u)
 {
-  PointType P = PointType::midpoint(o[t], o[u]);
-  PointType Q = PointType::midpoint(o[s], o[u]);
-  PointType R = PointType::midpoint(o[s], o[t]);
+  Point3D P = Point3D::midpoint(o[t], o[u]);
+  Point3D Q = Point3D::midpoint(o[s], o[u]);
+  Point3D R = Point3D::midpoint(o[s], o[t]);
 
   P = project_to_shape(P, sphere);
   Q = project_to_shape(Q, sphere);
@@ -125,14 +176,14 @@ OctType new_inscribed_prism(OctType &old_oct,
                             int s_off,
                             int t_off,
                             int u_off,
-                            TwoDPointType pa,
-                            TwoDPointType pb)
+                            Point2D pa,
+                            Point2D pb)
 {
   OctType retval;
   retval[P] = old_oct[p_off];
-  PointType new_q = PointType::lerp(old_oct[u_off], old_oct[s_off], 0.5);
+  Point3D new_q = Point3D::lerp(old_oct[u_off], old_oct[s_off], 0.5);
   retval[Q] = rescale_YZ(new_q, pb[1]);
-  PointType new_r = PointType::lerp(old_oct[p_off], old_oct[t_off], 0.5);
+  Point3D new_r = Point3D::lerp(old_oct[p_off], old_oct[t_off], 0.5);
   retval[R] = rescale_YZ(new_r, pa[1]);
   retval[S] = old_oct[s_off];
   retval[T] = old_oct[t_off];
@@ -155,21 +206,7 @@ bool discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
   // Zero radius: return true without generating octahedra.
   if (sphere.getRadius() < PTINY) { return true; }
 
-  // How many octahedra will we generate?  One oct for the central octahedron
-  // (level 0), eight more for its faces (level 1), and four more to refine
-  // each exposed face of the last generation.
-  //
-  // Total = 1 + 8*sum[i=0 to levels-1](4^i)
-  int octcount = 1;
-  for(int level = levels; level > 0; --level)
-  {
-    octcount *= 4;
-    if(level == 1)
-    {
-      octcount *= 2;
-    }
-    octcount += 1;
-  }
+  int octcount = count_sphere_octahedra(levels);
   out.reserve(octcount);
 
   // Establish an octahedron with all of its points lying on the sphere (level 0)
@@ -181,16 +218,6 @@ bool discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
   // max_last_gen indexes to the last oct of the last generation.
   int max_last_gen = 0;
 
-  enum
-  {
-    P = 0,
-    Q,
-    R,
-    S,
-    T,
-    U
-  };
-
   // Refine: add an octahedron to each exposed face.
   for(int level = 0; level < levels; ++level)
   {
@@ -198,7 +225,7 @@ bool discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
     while(last_gen <= max_last_gen)
     {
       // Octahedra are defined by points P, Q, R, S, T, U (indexes 0--5; see
-      // previous enum).  Point oct[i] is opposite point oct[(i+3)%6].
+      // enum at file beginning).  Point oct[i] is opposite point oct[(i+3)%6].
       // Convention for new octahedra: P, Q, R are new points from midpoints,
       // S, T, U are inherited from the last gen.
       /* newoct[0] uses (P,Q,R)-old. */
@@ -231,6 +258,8 @@ bool discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
  *
  * Input:  2D points a and b, number of levels of refinement, index into
  * the output vector.  The routine assumes a.x <= b.x, a.y >= 0, b.y >= 0.
+ * The routine also assumes that the output std::vector is resized to hold
+ * the generated prisms at the specified index.
  *
  * Output: the output vector of prisms (placed in the output std::vector
  * starting at the index).
@@ -253,8 +282,8 @@ bool discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
  * Each subsequent level of refinement adds a prism to each exposed
  * quadrilateral side-wall.
  */
-int discrSeg(const TwoDPointType &a,
-             const TwoDPointType &b,
+int discrSeg(const Point2D &a,
+             const Point2D &b,
              int levels,
              std::vector<OctType> &out,
              int idx)
@@ -262,6 +291,10 @@ int discrSeg(const TwoDPointType &a,
   // Deal with degenerate segments
   if (abs(a[0] - b[0]) < PTINY) { return 0; }
   if (a[1] < PTINY && b[1] < PTINY) { return 0; }
+
+  int total_count = count_segment_prisms(levels);
+  
+  SLIC_ASSERT((int)(out.size()) >= idx + total_count);
 
   // Establish a prism (in an octahedron record) with one triangular
   // end lying on the circle described by rotating point a around the
@@ -272,9 +305,8 @@ int discrSeg(const TwoDPointType &a,
   int curr_lvl = idx;
   int curr_lvl_count = 1;
   int next_lvl = curr_lvl + curr_lvl_count;
-  int total_count = 0;
 
-  TwoDPointType pa, pb;
+  Point2D pa, pb;
 
   // Refine: add an octahedron to each exposed face.
   for(int level = 0; level < levels; ++level)
@@ -324,7 +356,6 @@ int discrSeg(const TwoDPointType &a,
     curr_lvl = next_lvl;
     curr_lvl_count *= lvl_factor;
     next_lvl = curr_lvl + curr_lvl_count;
-    total_count += curr_lvl_count;
   }
 
   return total_count;
@@ -340,7 +371,7 @@ int discrSeg(const TwoDPointType &a,
  * less than the polyline's length).  That is exponential growth.  Use
  * appropriate caution.
  */
-bool discretize(std::vector<TwoDPointType> &polyline,
+bool discretize(std::vector<Point2D> &polyline,
                 int levels,
                 std::vector<OctType> &out)
 {
@@ -349,39 +380,19 @@ bool discretize(std::vector<TwoDPointType> &polyline,
   int segmentcount = polyline.size() - 1;
   for (int seg = 0; seg < segmentcount && stillValid; ++seg)
   {
-    TwoDPointType & a = polyline[seg];
-    TwoDPointType & b = polyline[seg + 1];
+    Point2D & a = polyline[seg];
+    Point2D & b = polyline[seg + 1];
     // invalid if a.x > b.x
     if (a[0] > b[0]) { stillValid = false; }
     if (a[1] < 0 || b[1] < 0) { stillValid = false; }
   }
   if (!stillValid) { return false; }
 
-  // How many octahedra will we generate in each segment of the polyline?
-  // This is done in discretizeSegment() (which see for further details).
-  // - One oct for the central octahedron (level 0),
-  // - three more for its side faces (level 1),
-  // - and for level i > 1, two times the octahedron count in level i-1,
-  //   to refine each exposed face.
-  //
-  // Total = 1 + 3*sum[i=0 to levels-1](2^i)
-  int octcount = 1;
-  for(int level = levels; level > 0; --level)
-  {
-    if(level == 1)
-    {
-      octcount *= 3;
-    }
-    else
-    {
-      octcount *= 2;
-    }
-    octcount += 1;
-  }
+  int segoctcount = count_segment_prisms(levels);
 
   // That was the octahedron count for one segment.  Multiply by the number
   // of segments we will compute.
-  int totaloctcount = octcount * segmentcount;
+  int totaloctcount = segoctcount * segmentcount;
   out.resize(totaloctcount);
   int total_prism_count = 0;
 
