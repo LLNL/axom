@@ -288,6 +288,11 @@ int discrSeg(const Point2D &a,
              std::vector<OctType> &out,
              int idx)
 {
+  // Assert input assumptions
+  SLIC_ASSERT(b[0] - a[0] >= 0);
+  SLIC_ASSERT(a[1] >= 0);
+  SLIC_ASSERT(b[1] >= 0);
+
   // Deal with degenerate segments
   if (b[0] - a[0] < PTINY) { return 0; }
   if (a[1] < PTINY && b[1] < PTINY) { return 0; }
