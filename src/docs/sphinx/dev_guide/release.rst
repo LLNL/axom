@@ -1,5 +1,5 @@
 .. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
+.. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -105,7 +105,7 @@ approved. At this point, the release candidate branch can be deleted.
 
 .. note::
 
-   Github will add a corresponding tarbal and zip archives consisting of the
+   Github will add a corresponding tarball and zip archives consisting of the
    source files for each release. However, these files do not include any
    submodules. Consequently, a tarball that includes all of the submodules is
    generated manually in a seperate step.

@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -26,10 +26,10 @@ endif()
 # (i.e. quest depends on mint, so quest follows mint)
 axom_add_component(COMPONENT_NAME slic   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME slam   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME sidre  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 if (AXOM_ENABLE_SIDRE)
     axom_add_component(COMPONENT_NAME inlet  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 else()
@@ -52,7 +52,6 @@ install(TARGETS              axom
         EXPORT               axom-targets
         DESTINATION          lib)
 install(EXPORT axom-targets DESTINATION lib/cmake)
-
 
 #------------------------------------------------------------------------------
 # Output some information about the configuration

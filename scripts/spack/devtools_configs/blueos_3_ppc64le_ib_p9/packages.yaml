@@ -89,6 +89,11 @@ packages:
     externals:
     - spec: libtool
       prefix: /usr
+  libuuid:
+    buildable: false
+    externals:
+    - spec: libuuid
+      prefix: /usr
   m4:
     buildable: false
     externals:
