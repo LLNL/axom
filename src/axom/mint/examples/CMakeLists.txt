@@ -20,20 +20,7 @@ set( mint_examples
      user_guide/mint_getting_started.cpp
    )
 
-set( mint_example_dependencies
-     core
-     mint
-     slic
-   )
-
-blt_list_append( TO mint_example_dependencies ELEMENTS sidre conduit::conduit
-                 IF ${AXOM_MINT_USE_SIDRE} )
-
-blt_list_append( TO mint_example_dependencies ELEMENTS RAJA
-                 IF ${RAJA_FOUND} )
-
-blt_list_append( TO mint_example_dependencies ELEMENTS openmp
-                 IF ${ENABLE_OPENMP} )
+set( mint_example_dependencies mint )
 
 blt_list_append( TO mint_example_dependencies ELEMENTS cuda
                  IF ${ENABLE_CUDA} )

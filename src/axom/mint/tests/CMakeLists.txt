@@ -40,18 +40,8 @@ set( mint_tests
      mint_util_write_vtk.cpp
    )
 
-## lists all axom depencies used for testing
-set( mint_test_dependencies
-     core
-     slic
-     mint
-     )
+set( mint_test_dependencies mint )
 
-blt_list_append( TO mint_test_dependencies
-                 ELEMENTS sidre conduit::conduit
-                 IF AXOM_MINT_USE_SIDRE )
-blt_list_append( TO mint_test_dependencies ELEMENTS RAJA IF ${RAJA_FOUND} )
-blt_list_append( TO mint_test_dependencies ELEMENTS openmp IF ${ENABLE_OPENMP} )
 blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach( test ${mint_tests} )

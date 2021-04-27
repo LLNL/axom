@@ -28,6 +28,10 @@ set(F_example_sources
     sidre_shocktube_F.f
 )
 
+if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    list(APPEND example_sources sidre_mfem_datacollection_vis.cpp)
+    list(APPEND example_sources sidre_mfem_datacollection_restart.cpp)
+endif()
 
 if(APPLE)
     set(EXTRA_LIBS "")
@@ -35,21 +39,11 @@ elseif(UNIX)
     set(EXTRA_LIBS rt)
 endif()
 
-
-set(sidre_example_depends
-    core
-    sidre
-    conduit::conduit
-    slic )
-
-blt_list_append(TO sidre_example_depends ELEMENTS hdf5 IF HDF5_FOUND)
-blt_list_append(TO sidre_example_depends ELEMENTS mpi IF MPI_FOUND)
-
 if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
-    list(APPEND example_sources sidre_mfem_datacollection_vis.cpp)
-    list(APPEND example_sources sidre_mfem_datacollection_restart.cpp)
-    list(APPEND example_sources sidre_mfem_datacollection_materials.cpp)
-    list(APPEND sidre_example_depends mfem)
+    list(APPEND example_sources
+         sidre_mfem_datacollection_vis.cpp
+         sidre_mfem_datacollection_restart.cpp
+         sidre_mfem_datacollection_materials.cpp)
 endif()
 
 #------------------------------------------------------------------------------
@@ -61,7 +55,7 @@ foreach(example_source ${example_sources})
         NAME ${exe_name}_ex
         SOURCES ${example_source}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${sidre_example_depends} ${EXTRA_LIBS}
+        DEPENDS_ON  sidre ${EXTRA_LIBS}
         FOLDER axom/sidre/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -81,7 +75,7 @@ if(ENABLE_MPI)
             NAME ${exe_name}_ex
             SOURCES ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  ${sidre_example_depends} ${EXTRA_LIBS}
+            DEPENDS_ON  sidre ${EXTRA_LIBS}
             FOLDER axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)
@@ -114,7 +108,7 @@ if(ENABLE_FORTRAN)
             NAME ${exe_name}_ex
             SOURCES ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON ${sidre_example_depends} ${EXTRA_LIBS}
+            DEPENDS_ON sidre ${EXTRA_LIBS}
             FOLDER axom/sidre/examples )
 
         if(AXOM_ENABLE_TESTS)

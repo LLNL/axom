@@ -75,6 +75,7 @@ set( quest_depends_on
      slam
      spin
      primal
+     fmt
      )
 
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
