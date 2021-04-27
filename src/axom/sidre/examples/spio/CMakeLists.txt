@@ -15,8 +15,10 @@ set(example_sources
     )
 
 if (SCR_FOUND)
-    list(APPEND example_sources IOSCRRead.cpp)
-    list(APPEND example_sources IOSCRWrite.cpp)
+    list(APPEND example_sources IO_SCR_Read.cpp)
+    list(APPEND example_sources IO_SCR_Write.cpp)
+    list(APPEND example_sources IO_SCR_Ckpt.cpp)
+    list(APPEND example_sources IO_SCR_Output.cpp)
 endif() 
 
 set(spio_example_depends sidre conduit::conduit slic ${EXTRA_LIBS})
@@ -36,4 +38,12 @@ foreach(src ${example_sources})
         FOLDER axom/sidre/examples
         )
 endforeach()
+
+    if(AXOM_ENABLE_TESTS)
+        if(SCR_FOUND)
+            axom_add_test(
+                NAME spio_IO_SCR_Ckpt
+                COMMAND spio_IO_SCR_Ckpt_ex )
+        endif()
+    endif()
 
