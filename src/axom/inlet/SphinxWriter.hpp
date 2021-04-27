@@ -41,13 +41,13 @@ class SphinxWriter : public Writer
 public:
   /*!
   *******************************************************************************
-  * \brief Supported phinx style options
+  * \brief Supported Sphinx style options
   *******************************************************************************
   */
   enum class Style
   {
     // FIXME: These names are not clear at all
-    Table,  // Tables for the child Fields/Functions of each Container
+    Singular,  // Tables for the child Fields/Functions of each Container
     Nested  // Table of contents for each Container, then sections for each child
   };
 
@@ -62,7 +62,7 @@ public:
   */
   SphinxWriter(const std::string& fileName,
                const std::string& title = {},
-               const Style style = Style::Table);
+               const Style style = Style::Singular);
 
   void documentContainer(const Container& container) override;
 
@@ -169,6 +169,10 @@ private:
     {
       std::string name;
       std::string description;
+      /**
+       * \brief Whether the container contains any fields/functions in any of its subcontainers
+       * \see detail::isTrivial
+       */
       bool isTrivial;
     };
     std::vector<ChildContainerData> childContainers;
