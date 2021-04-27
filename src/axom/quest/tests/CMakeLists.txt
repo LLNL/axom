@@ -21,12 +21,9 @@ blt_list_append(TO       quest_tests
 
 set(quest_tests_depends
     quest
-    slic
     fmt
     gtest
    )
-
-blt_list_append( TO quest_tests_depends ELEMENTS openmp IF ENABLE_OPENMP )
 
 blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
 
@@ -88,18 +85,13 @@ blt_list_append(TO       quest_mpi_tests
                 IF       AXOM_DATA_DIR
                 ELEMENTS quest_inout_interface.cpp )
 
-set(quest_mpi_depends ${quest_tests_depends})
-if (ENABLE_MPI)
-    list(APPEND quest_mpi_depends mpi)
-endif()
-
 foreach(test ${quest_mpi_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable(
         NAME ${test_name}_test
         SOURCES ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_mpi_depends}
+        DEPENDS_ON ${quest_tests_depends}
         FOLDER axom/quest/tests
     )
 
