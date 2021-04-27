@@ -42,8 +42,6 @@ set(utils_tests_depends
     gtest
     )
 
-blt_list_append( TO utils_tests_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO utils_tests_depends ELEMENTS RAJA IF ${RAJA_FOUD} )
 blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------
@@ -97,7 +95,6 @@ endif()
 set(utils_config_test_depends core gtest )
 
 blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF ${MFEM_FOUND} )
-blt_list_append( TO utils_config_test_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
 
 blt_add_executable( NAME       utils_config_test
                     SOURCES    utils_config.cpp

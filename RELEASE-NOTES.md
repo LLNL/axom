@@ -94,7 +94,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Always ignore primitive array elements that do not match the requested type
 - Inlet: Empty structs/collections of structs with required sub-elements no longer fail
   verification
-
+- Quest: Fixed a bug with InOutOctree for triangles that lie on faces of octree blocks
 
 ## [Version 0.4.0] - Release date 2020-09-22
 
