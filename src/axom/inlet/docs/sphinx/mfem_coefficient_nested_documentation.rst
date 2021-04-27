@@ -4,6 +4,7 @@
 =====================================
 MFEM Coefficient Output (nested mode)
 =====================================
+
 .. list-table::
    :widths: 25 50
    :header-rows: 1
@@ -12,7 +13,7 @@ MFEM Coefficient Output (nested mode)
    * - Name
      - Description
    * - `bcs`_
-     - List of boundary conditions
+     - 
 
 
 
@@ -27,8 +28,6 @@ bcs
 Collection contents:
 --------------------
 
-List of boundary conditions
-
 
 
 List of boundary conditions
@@ -41,14 +40,14 @@ List of boundary conditions
    * - Name
      - Description
    * - `attrs`_
-     - List of boundary attributes
-   * - `coef`_
+     - 
+   * - :ref:`coef<coef3>`
      - The function representing the BC coefficient
-   * - `vec_coef`_
+   * - :ref:`vec_coef<vec_coef3>`
      - The function representing the BC coefficient
 
 
-.. _coef:
+.. _coef3:
 
 **coef**
 
@@ -58,7 +57,7 @@ The function representing the BC coefficient
   - Optional
 
 
-.. _vec_coef:
+.. _vec_coef3:
 
 **vec_coef**
 
@@ -79,5 +78,3 @@ attrs
 --------------------
 Collection contents:
 --------------------
-
-List of boundary attributes
