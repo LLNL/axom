@@ -1176,9 +1176,6 @@ void MFEMSidreDataCollection::RegisterFieldInBPIndex(const std::string& field_na
   bp_index_field_grp->copyView(bp_field_grp->getView("topology"));
   bp_index_field_grp->copyView(bp_field_grp->getView("basis"));
 
-  // Note: The bp index requires GridFunction::VectorDim()
-  //       since the GF might be scalar valued and have a vector basis
-  //       (e.g. hdiv and hcurl spaces)
   bp_index_field_grp->createViewScalar("number_of_components",
                                        number_of_components);
 }
@@ -1277,6 +1274,9 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
   // Register field_name in the blueprint_index group.
   if(myid == 0)
   {
+    // Note: The bp index requires GridFunction::VectorDim()
+    //       since the GF might be scalar valued and have a vector basis
+    //       (e.g. hdiv and hcurl spaces)
     RegisterFieldInBPIndex(field_name, gf->VectorDim());
   }
 
