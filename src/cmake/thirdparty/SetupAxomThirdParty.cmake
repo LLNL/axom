@@ -80,6 +80,7 @@ endif()
 #------------------------------------------------------------------------------
 if (HDF5_DIR)
     include(cmake/thirdparty/SetupHDF5.cmake)
+    blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
 else()
     message(STATUS "HDF5 support is OFF")
 endif()
@@ -103,16 +104,23 @@ else()
     message(STATUS "Conduit support is OFF")
 endif()
 
-
 #------------------------------------------------------------------------------
 # MFEM
 #------------------------------------------------------------------------------
 if (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
-    blt_register_library( NAME      mfem
-                          INCLUDES  ${MFEM_INCLUDE_DIRS}
-                          LIBRARIES ${MFEM_LIBRARIES}
-                          TREAT_INCLUDES_AS_SYSTEM ON)
+    # If the CMake build system was used, a CMake target for mfem already exists
+    if (NOT TARGET mfem)
+        # Mark mfem (and subsequent dependencies without a CMake config file) as
+        # EXPORTABLE so they can be exported into axom-targets, allowing for a
+        # "shrinkwrapped" CMake config
+        blt_import_library( NAME       mfem
+                            INCLUDES   ${MFEM_INCLUDE_DIRS}
+                            LIBRARIES  ${MFEM_LIBRARIES}
+                            TREAT_INCLUDES_AS_SYSTEM ON
+                            EXPORTABLE ON)
+        blt_list_append(TO TPL_DEPS ELEMENTS mfem)
+    endif()
 else()
     message(STATUS "MFEM support is OFF")
 endif()
@@ -142,10 +150,12 @@ endif()
 #------------------------------------------------------------------------------
 if (SCR_DIR)
     include(cmake/thirdparty/FindSCR.cmake)
-    blt_register_library( NAME      scr
-                          INCLUDES  ${SCR_INCLUDE_DIRS}
-                          LIBRARIES ${SCR_LIBRARIES}
-                          TREAT_INCLUDES_AS_SYSTEM ON)
+    blt_import_library( NAME       scr
+                        INCLUDES   ${SCR_INCLUDE_DIRS}
+                        LIBRARIES  ${SCR_LIBRARIES}
+                        TREAT_INCLUDES_AS_SYSTEM ON
+                        EXPORTABLE ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS scr)
 else()
     message(STATUS "SCR support is OFF")
 endif()
@@ -182,11 +192,13 @@ endforeach()
 #------------------------------------------------------------------------------
 if (LUA_DIR)
     include(cmake/thirdparty/FindLUA.cmake)
-    blt_register_library(
+    blt_import_library(
         NAME          lua
         INCLUDES      ${LUA_INCLUDE_DIR}
         LIBRARIES     ${LUA_LIBRARY}
-        TREAT_INCLUDES_AS_SYSTEM ON)
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE    ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS lua)
 else()
     message(STATUS "LUA support is OFF")
     set(LUA_FOUND OFF CACHE BOOL "")

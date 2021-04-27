@@ -30,7 +30,7 @@ set( primal_tests
     primal_vector.cpp
    )
 
-set(primal_test_depends fmt primal slic gtest)
+set(primal_test_depends fmt primal gtest)
 
 blt_list_append( TO primal_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 

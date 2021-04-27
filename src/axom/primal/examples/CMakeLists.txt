@@ -7,7 +7,6 @@
 #------------------------------------------------------------------------------
 
 set(primal_example_depends
-        core
         primal
         fmt
         )
@@ -21,4 +20,3 @@ blt_add_executable(
     DEPENDS_ON  ${primal_example_depends}
     FOLDER      axom/primal/examples
     )
-
