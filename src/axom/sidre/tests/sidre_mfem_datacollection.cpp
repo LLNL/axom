@@ -440,9 +440,9 @@ TEST(sidre_datacollection, create_material_dependent_field)
   // Then mark the field as material-dependent
   sdc.AssociateMaterialDependentField("density", "matset");
 
-  mfem::GridFunction density_indenpendent(&fes);
-  density_indenpendent = 1.0;
-  sdc.RegisterField("density", &density_indenpendent);
+  mfem::GridFunction density_independent(&fes);
+  density_independent = 1.0;
+  sdc.RegisterField("density", &density_independent);
 
   mfem::GridFunction density_dependent(&fes);
   density_dependent = 0.2;
