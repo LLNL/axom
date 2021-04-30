@@ -25,6 +25,7 @@ namespace quest
 
 using SphereType = primal::Sphere<double, 3>;
 using OctType = primal::Octahedron<double, 3>;
+using Point2D = primal::Point<double, 2>;
 
 /*!
  * \brief Given a primitive sphere and a refinement level, return a list
@@ -32,20 +33,29 @@ using OctType = primal::Octahedron<double, 3>;
  * \param [in] s The sphere to approximate
  * \param [in] levels The number of refinements to perform
  * \param [out] out The collection of octahedra representing s
+ * \return false for invalid input or error in computation; true otherwise
  *
  * This routine generates O(4^level) octahedra.  That's exponential growth.
  * Use appropriate caution.
  */
-void discretize(const SphereType& s, int levels, std::vector<OctType>& out);
+bool discretize(const SphereType& s, int levels, std::vector<OctType>& out);
 
 /*!
- * \brief Return a discretized unit sphere.
+ * \brief Given a 2D polyline revolved around the positive X-axis, return a list
+ *   of Octahedra approximating the shape.
+ * \param [in] polyline The polyline to revolve around the X-axis
+ * \param [in] levels The number of refinements to perform
+ * \param [out] out The collection of octahedra representing the revolved
+ *   polyline
+ * \return false for invalid input or error in computation; true otherwise
  *
- * The octahedra returned by this routine were hand-computed.  This routine
- * is useful for testing or for use until the general discretize routine is
- * ready.
+ * This routine generates n*O(2^level) octahedra, where n is the number of
+ * segments in \a polyline (one less than the length).
+ * That's exponential growth.  Use appropriate caution.
  */
-void discretized_sphere(std::vector<OctType>& out);
+bool discretize(std::vector<Point2D>& polyline,
+                int levels,
+                std::vector<OctType>& out);
 
 /// @}
 

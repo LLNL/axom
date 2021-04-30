@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -13,11 +13,11 @@ variables:
 stages:
   - l_build
   - l_build_with_deps
-  - q_allocate_resources
-  - q_build
-  - q_build_with_deps
-  - q_build_devtools
-  - q_release_resources
+  - r_allocate_resources
+  - r_build
+  - r_build_with_deps
+  - r_build_devtools
+  - r_release_resources
 
 .pr_workflow:
   rules:
@@ -107,6 +107,6 @@ stages:
 
 # This is where jobs are included
 include:
-  - local: .gitlab/build_quartz.yml
-  - local: .gitlab/build_lassen.yml
+  - local: .gitlab/build_rzgenie.yml
+  - local: .gitlab/build_rzansel.yml
 
