@@ -46,8 +46,7 @@ public:
   */
   enum class Style
   {
-    // FIXME: These names are not clear at all
-    Singular,  // Tables for the child Fields/Functions of each Container
+    Flat,   // Tables for the child Fields/Functions of each Container
     Nested  // Table of contents for each Container, then sections for each child
   };
 
@@ -62,7 +61,7 @@ public:
   */
   SphinxWriter(const std::string& fileName,
                const std::string& title = {},
-               const Style style = Style::Singular);
+               const Style style = Style::Flat);
 
   void documentContainer(const Container& container) override;
 
