@@ -17,7 +17,8 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+
+## [Version 0.5.0] - Release date 2021-05-xx
 
 ### Added
 - Added the MFEMSidreDataCollection class for HDF5-format simulation data collection.  This
