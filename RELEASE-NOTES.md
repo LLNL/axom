@@ -1,7 +1,7 @@
 
 [comment]: # (#################################################################)
 [comment]: # (Copyright 2017-2021, Lawrence Livermore National Security, LLC)
-[comment]: # (and Axom Project Developers. See the top-level COPYRIGHT file)
+[comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
@@ -95,7 +95,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Always ignore primitive array elements that do not match the requested type
 - Inlet: Empty structs/collections of structs with required sub-elements no longer fail
   verification
-
+- Quest: Fixed a bug with InOutOctree for triangles that lie on faces of octree blocks
 
 ## [Version 0.4.0] - Release date 2020-09-22
 
