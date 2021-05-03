@@ -16,7 +16,7 @@
     "toss_3_x86_64_ib":
     [ "clang@9.0.0~cpp14+devtools+mfem",
       "clang@10.0.0~cpp14+devtools+mfem",
-      "gcc@8.1.0~cpp14+devtools+mfem+scr",
+      "gcc@8.1.0~cpp14+devtools+mfem+scr+kvtree+dtcmp",
       "gcc@8.1_no_fortran~cpp14~fortran+devtools+mfem",
       "intel@18.0.2~cpp14+devtools+mfem",
       "intel@19.0.4~cpp14+devtools+mfem" ],

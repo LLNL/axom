@@ -35,7 +35,7 @@ find_library( SCR_LIBRARY NAMES scr libscr
               NO_CMAKE_SYSTEM_PATH)
 
 find_library( KVTREE_LIBRARY NAMES kvtree
-              PATHS ${SCR_DIR}/lib64
+              PATHS ${KVTREE_DIR}/lib64
               NO_DEFAULT_PATH
               NO_CMAKE_ENVIRONMENT_PATH
               NO_CMAKE_PATH
@@ -43,7 +43,7 @@ find_library( KVTREE_LIBRARY NAMES kvtree
               NO_CMAKE_SYSTEM_PATH)
 
 find_library( DTCMP_LIBRARY NAMES dtcmp
-              PATHS ${SCR_DIR}/lib
+              PATHS ${DTCMP_DIR}/lib
               NO_DEFAULT_PATH
               NO_CMAKE_ENVIRONMENT_PATH
               NO_CMAKE_PATH
