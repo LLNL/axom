@@ -315,6 +315,10 @@ int main(int argc, char** argv)
   CLI::App app {"Example of Axom's Inlet component for nested structures"};
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");
+  bool strictVerification {false};
+  app.add_flag("--strict",
+               strictVerification,
+               "Warns if any unexpected fields are provided");
   CLI11_PARSE(app, argc, argv);
 
   axom::sidre::DataStore ds;
@@ -327,8 +331,11 @@ int main(int argc, char** argv)
   Shape::defineSchema(shapes_container);
   // _inlet_nested_struct_array_end
 
-  // Mark the entire input as "strict"
-  inlet.getGlobalContainer().strict();
+  if(strictVerification)
+  {
+    // Mark the entire input as "strict"
+    inlet.getGlobalContainer().strict();
+  }
 
   if(inlet.verify())
   {
