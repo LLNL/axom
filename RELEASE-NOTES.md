@@ -65,6 +65,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   more than just unit tests.
 - Inlet: Input file functions can now be of arbitrary signature subject to type and arity
   restrictions
+- Exported all symbols on Windows by default when compiling a dynamic library
 - Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
 - Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
