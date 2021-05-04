@@ -21,18 +21,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Version 0.5.0] - Release date 2021-05-xx
 
 ### Added
-- Added the MFEMSidreDataCollection class for HDF5-format simulation data collection.  This
+- Added the MFEMSidreDataCollection class for describing [MFEM] meshes and associated fields.  This
   class was adapted from MFEM's SidreDataCollection and is enabled when Axom is built with MFEM
   *and* the `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` CMake option is enabled.
 - Added `slic::setAbortFunction` to configure a custom callback when SLIC aborts.
-- Added a `batched` option to quest's InOutOctree containment query example application.
+- Added a `batched` option to quest's `InOutOctree` containment query example application.
   This uses a kernel to test for containment on an array of points.
   The query uses OpenMP threading, when available.
 - Inlet: Added support for user-defined conversions from Inlet tables to user-defined
   types, and support for arrays of user-defined types
 - Added compiler define `NOMINMAX` to `axom/config.hpp.in` to avoid problems with
   the Windows `min` and `max` macros.
-- Added `cpp14` variant to Spack package to allow `Inlet::LuaReader` to be used easier.
+- Added `cpp14` variant to Spack package to allow `Inlet::LuaReader` to be used more easily.
 - Inlet: Added support for string-keyed associative arrays (dictionaries)
 - Inlet: Added support for defining and retrieving functions from the input file
 - Inlet: Added support for YAML and JSON input files
@@ -49,8 +49,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   in the input file
 
 ### Changed
+- Converted [Uberenv] to a git submodule. We previously vendored a copy of this script.
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
-  You can explicitly rewire using the static
+  It can be  explicitly rewired using the static
   `DataStore::setConduitSLICMessageHandlers()` method.
 - Inlet: Fixed `SchemaCreator` to an abstract class and added missing functions
 - Inlet: Added ability to access the `Reader` class from `Inlet` and Sol Lua state
@@ -70,7 +71,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 - The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
-  datastore is `Load` ed in
+  datastore is `Load`ed in
 - Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 - Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
 - Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
@@ -508,8 +509,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
 [Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
 
+[clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+[MFEM]: https://mfem.org
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
 [Umpire]: https://github.com/LLNL/Umpire
-[clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 [Sol]: https://github.com/ThePhD/sol2
+[Uberenv]: https://github.com/LLNL/uberenv
