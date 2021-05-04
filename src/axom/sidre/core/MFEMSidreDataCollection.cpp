@@ -1419,7 +1419,7 @@ void MFEMSidreDataCollection::AssociateMaterialSet(
   m_matset_associations[volume_fraction_field_name] = matset_name;
   Group* matset_group = m_bp_grp->createGroup("matsets/" + matset_name);
   // Since we're creating the matset, associate it with a topology
-  // FIXME: Will these always be associated with the mesh?
+  // These will always be associated with the mesh
   matset_group->createViewString("topology", s_mesh_topology_name);
 }
 
@@ -1429,6 +1429,9 @@ void MFEMSidreDataCollection::AssociateSpeciesSet(
   const std::string& matset_name,
   const bool volume_dependent)
 {
+  SLIC_WARNING_IF(!m_bp_grp->hasGroup("matsets/" + matset_name),
+                  "The material set '"
+                    << matset_name << "' has not been associated with a field");
   auto iter = m_specset_associations.find(species_field_name);
   if(iter != m_specset_associations.end())
   {
@@ -1450,6 +1453,9 @@ void MFEMSidreDataCollection::AssociateMaterialDependentField(
   const std::string& material_dependent_field_name,
   const std::string& matset_name)
 {
+  SLIC_WARNING_IF(!m_bp_grp->hasGroup("matsets/" + matset_name),
+                  "The material set '"
+                    << matset_name << "' has not been associated with a field");
   auto iter = m_material_dependent_fields.find(material_dependent_field_name);
   if(iter != m_material_dependent_fields.end())
   {
@@ -1476,10 +1482,8 @@ View* MFEMSidreDataCollection::getFieldValuesView(const std::string& field_name)
     // Vector-valued field
     values_view = m_bp_grp->getGroup(field_values_name)->getView("x0");
   }
-  else
-  {
-    SLIC_WARNING("Field " << field_name << " was not registered");
-  }
+  SLIC_WARNING_IF(values_view == nullptr,
+                  "Field " << field_name << " was not registered");
   return values_view;
 }
 

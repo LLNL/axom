@@ -250,13 +250,18 @@ void checkReferentialEquality(axom::sidre::Group* grp,
                               const std::string& first,
                               const std::string& second)
 {
-  ASSERT_TRUE(grp->hasView(first));
-  ASSERT_TRUE(grp->hasView(second));
-  // Conduct a pointer comparison to make sure that the two views actually
-  // refer to the same block of memory
-  const double* first_data = grp->getView(first)->getData();
-  const double* second_data = grp->getView(second)->getData();
-  EXPECT_EQ(first_data, second_data);
+  const bool has_first = grp->hasView(first);
+  const bool has_second = grp->hasView(second);
+  EXPECT_TRUE(has_first);
+  EXPECT_TRUE(has_second);
+  if(has_first && has_second)
+  {
+    // Conduct a pointer comparison to make sure that the two views actually
+    // refer to the same block of memory
+    const double* first_data = grp->getView(first)->getData();
+    const double* second_data = grp->getView(second)->getData();
+    EXPECT_EQ(first_data, second_data);
+  }
 }
 
 TEST(sidre_datacollection, create_matset)

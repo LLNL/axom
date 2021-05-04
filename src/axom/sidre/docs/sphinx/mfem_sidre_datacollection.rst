@@ -9,12 +9,16 @@
 Using Sidre with MFEM
 *********************
 
+.. note::
+   The functionality described in this page is only available if Axom is configured with MFEM and if the
+   CMake variable ``AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION`` is set to ``ON``
+
 The ``MFEMSidreDataCollection`` class implements `MFEM <https://mfem.org>`_'s 
 ``DataCollection`` interface for recording simulation data.
-Specifically, it knows about fields (``mfem::GridFunction``) and the mesh on which the fields defined.
+Specifically, it knows about fields (``mfem::GridFunction``) and the mesh on which these fields are defined.
 
-The ``MFEMSidreDataCollection`` internally uses the Mesh Blueprint, a standardized
-representation, to store its data.
+The ``MFEMSidreDataCollection`` internally organizes its date according to the Mesh Blueprint,
+a hierarchical schema for describing mesh data.
 
 See the :ref:`Conduit page <sidre-conduit>` for more information on the Mesh Blueprint.
 
@@ -25,8 +29,8 @@ The workflow for reading saved data back in is discussed in `Restarting a Simula
 Getting Started
 ---------------
 
-In order for the ``MFEMSidreDataCollection`` to save fields and a mesh to a file, the MFEM entities must
-be "registered".  The mesh can be registered when an instance of the class is constructed:
+We begin to describe the data in a ``MFEMSidreDataCollection`` by "registering" a mesh
+with an instance of the class, e.g. at construction time:
 
 .. literalinclude:: ../../examples/sidre_mfem_datacollection_vis.cpp
    :start-after: _sidredc_vis_construct_start
@@ -57,7 +61,7 @@ for more info.
 Saving Data to a File
 ---------------------
 
-The data in an instance of the ``MFEMSidreDataCollection`` class can be saved to a file using a variety of formats.  
+The data in an instance of the ``MFEMSidreDataCollection`` class can be saved to a file using a variety of protocols.  
 These files can be visualized with tools like `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit>`_, or used
 to restart a simulation by loading them back into an instance of the class (see `Restarting a Simulation`_).
 
@@ -134,7 +138,7 @@ example of how a simulation code might utilize the automatic reconstruction logi
 Mixed-material Fields
 ---------------------
 
-The Conduit Blueprint provides support for mixed-material simulations through its "material set" construct.
+The Mesh Blueprint provides support for mixed-material simulations through its "material set" construct.
 Material metadata (stored in ``mfem::GridFunction`` s) can be registered in the ``DataCollection`` like
 any other field (with ``RegisterField``), given that some additional setup is performed and the field names
 match a specific naming convention.

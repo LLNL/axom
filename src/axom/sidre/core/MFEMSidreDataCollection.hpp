@@ -332,6 +332,8 @@ public:
    * @param specset_name The name of the species set to associate added matset values with
    * @param matset_name The material set to associate with the species set
    * @param volume_dependent Whether the species set is volume-dependent
+   * 
+   * @pre A matset called @a matset_name should be associated via AssociateMaterialSet
    *
    */
   void AssociateSpeciesSet(const std::string& species_field_name,
@@ -350,6 +352,8 @@ public:
    * 
    * @param material_dependent_field_name The name of the field to mark as material-dependent
    * @param matset_name The material set to associate with the field
+   * 
+   * @pre A matset called @a matset_name should be associated via AssociateMaterialSet
    *
    */
   void AssociateMaterialDependentField(const std::string& material_dependent_field_name,
