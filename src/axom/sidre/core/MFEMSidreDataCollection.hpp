@@ -266,8 +266,8 @@ public:
 
   /// Register a mfem::QuadratureFunction in the Sidre DataStore.
   /** The registration procedure is as follows:
-       - if (@a qf's data is NULL), error out since this means there's no quadrature
-         space associated with it;
+       - if (@a qf's data is NULL) or if @a qf does not have an associated
+         quadrature space, error out;
        - else, if (DataStore has a named buffer @a buffer_name), replace @a qf's
          data array with that named buffer plus the given @a offset care will be
          taken to ensure the two have compatible sizes;
@@ -281,7 +281,7 @@ public:
        pointers are NULL, the method does nothing.
     */
   void RegisterQField(const std::string& field_name,
-                      mfem::QuadratureFunction* gf,
+                      mfem::QuadratureFunction* qf,
                       const std::string& buffer_name,
                       axom::sidre::IndexType offset);
 

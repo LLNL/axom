@@ -46,7 +46,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   delimiter characters
 - Inlet: Added a method to `inlet::Inlet` that retrieves the set of unexpected names
   in the input file
-- Added support for QFunctions to `MFEMSidreDataCollection`
+- Added support in `MFEMSidreDataCollection` for registering `QFunctions`
+  (data associated with quadrature points on a mesh)
+
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 

@@ -17,6 +17,8 @@
 
   #include "MFEMSidreDataCollection.hpp"
 
+  #include "axom/core/utilities/StringUtilities.hpp"
+
 using mfem::Array;
 using mfem::GridFunction;
 using mfem::Mesh;
@@ -39,37 +41,6 @@ const std::string MFEMSidreDataCollection::s_coordset_name = "coords";
 namespace detail
 {
 /**
- * @brief Retrieves the last "n" tokens of a string split with the specified delimiter
- * @param[in] input The string to split
- * @param[in] n The number of tokens to retrieve
- * @param[in] delim The delimiter to split with
- * 
- * @return A list of tokens (of size @p n )
- * 
- * Splits a string starting from the end of the string into a maximum of @p n tokens
- */
-std::vector<std::string> splitLastNTokens(const std::string& input,
-                                          const std::size_t n,
-                                          const char delim)
-{
-  std::vector<std::string> result;
-
-  auto last_pos = std::string::npos;
-  auto pos = input.find_last_of(delim, last_pos - 1);
-
-  while((pos != std::string::npos) && (result.size() < n - 1))
-  {
-    result.push_back(input.substr(pos + 1, last_pos - pos - 1));
-    last_pos = pos;
-    pos = input.find_last_of(delim, last_pos - 1);
-  }
-  // Add the rest of the string (first token)
-  result.push_back(input.substr(0, last_pos));
-  std::reverse(result.begin(), result.end());
-  return result;
-}
-
-/**
  * @brief Implements an analogue to mfem::FiniteElementCollection::New
  * for mfem::QuadratureSpaces - basis currently must be of form QF_Default_[ORDER]_[VDIM]
  * @param[in] name The name that encodes the QuadratureSpace data
@@ -82,7 +53,7 @@ mfem::QuadratureSpace* NewQuadratureSpace(const std::string& name,
                                           Mesh* mesh,
                                           int& vdim)
 {
-  const auto tokens = splitLastNTokens(name, 4, '_');
+  const auto tokens = utilities::string::splitLastNTokens(name, 4, '_');
   // Uses raw pointers for consistency with MFEM
   mfem::QuadratureSpace* qspace = nullptr;
   if((tokens.size() == 4) && (tokens[0] == "QF"))
@@ -1199,6 +1170,17 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
                                             const std::string& buffer_name,
                                             IndexType offset)
 {
+  #ifdef AXOM_DEBUG
+  SLIC_WARNING_IF(field_name.empty(), "Name for GridFunction was empty");
+  SLIC_WARNING_IF(buffer_name.empty(),
+                  "Name for GridFunction destination buffer was empty");
+
+  SLIC_WARNING_IF(
+    gf == nullptr || gf->FESpace() == nullptr,
+    "Field with the name '"
+      << field_name
+      << "' was provided a null GridFunction, so nothing was done.");
+  #endif
   if(field_name.empty() || buffer_name.empty() || gf == nullptr ||
      gf->FESpace() == nullptr)
   {
@@ -1289,15 +1271,21 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
                                              const std::string& buffer_name,
                                              axom::sidre::IndexType offset)
 {
-  if(field_name.empty() || buffer_name.empty() || qf == NULL ||
-     qf->GetSpace() == NULL)
-  {
   #ifdef AXOM_DEBUG
-    SLIC_WARNING("QField with the name '"
-                 << field_name
-                 << "' was provided a null"
-                    " QuadratureFunction, so nothing was done.");
+  SLIC_WARNING_IF(field_name.empty(), "Name for QuadratureFunction was empty");
+  SLIC_WARNING_IF(buffer_name.empty(),
+                  "Name for QuadratureFunction destination buffer was empty");
+
+  SLIC_WARNING_IF(
+    qf == nullptr || qf->GetSpace() == nullptr,
+    "QField with the name '"
+      << field_name
+      << "' was provided a null QuadratureFunction, so nothing was done.");
   #endif
+
+  if(field_name.empty() || buffer_name.empty() || qf == nullptr ||
+     qf->GetSpace() == nullptr)
+  {
     return;
   }
 
