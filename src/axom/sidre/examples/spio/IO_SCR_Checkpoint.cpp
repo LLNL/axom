@@ -14,9 +14,12 @@
 
 #include "CLI11/CLI11.hpp"
 
-#ifdef AXOM_USE_SCR
-  #include "scr.h"
+#ifndef AXOM_USE_SCR
+#error This file depends on SCR. Configure Axom with SCR to use this.
 #endif
+
+#include "scr.h"
+
 
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
