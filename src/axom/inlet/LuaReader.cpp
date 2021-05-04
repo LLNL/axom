@@ -60,38 +60,38 @@ VariantKey extractAs(const sol::object& obj)
 /*!
  *******************************************************************************
  * \brief Recursive name retrieval function - adds the names of all descendents
- * of @p node as an Inlet-style path
+ * of \a node as an Inlet-style path
  * 
- * \param [in] ignores The set of paths to ignore, used for pre-loaded entries
+ * \param [in] ignores The vector of paths to ignore, used for pre-loaded entries
  * in Lua's global table
  * \param [in] table The Lua table to "visit"
- * \param [in] prefix The Inlet-style path to @p table relative to the "root" of
+ * \param [in] prefix The Inlet-style path to \a table relative to the "root" of
  * the input file
- * \param [out] names The set of paths to add to
+ * \param [out] names The vector of paths to add to
  *******************************************************************************
  */
-void nameRetrievalHelper(const std::unordered_set<std::string>& ignores,
+void nameRetrievalHelper(const std::vector<std::string>& ignores,
                          const sol::table& table,
                          const std::string& prefix,
-                         std::unordered_set<std::string>& names)
+                         std::vector<std::string>& names)
 {
-  auto to_string = [](const VariantKey& key) {
+  auto toString = [](const VariantKey& key) {
     return key.type() == InletType::String
       ? static_cast<std::string>(key)
       : std::to_string(static_cast<int>(key));
   };
   for(const auto& entry : table)
   {
-    const auto variant_key = detail::extractAs<VariantKey>(entry.first);
-    const std::string full_name = appendPrefix(prefix, to_string(variant_key));
-    if(ignores.count(full_name) == 0)
+    const auto variantKey = detail::extractAs<VariantKey>(entry.first);
+    const std::string fullName = appendPrefix(prefix, toString(variantKey));
+    if(std::find(ignores.begin(), ignores.end(), fullName) == ignores.end())
     {
-      names.insert(full_name);
-    }
-    if(entry.second.get_type() == sol::type::table &&
-       (ignores.count(full_name) == 0))
-    {
-      nameRetrievalHelper(ignores, entry.second, full_name, names);
+      names.push_back(fullName);
+      if(entry.second.get_type() == sol::type::table &&
+         (ignores.back() != fullName))
+      {
+        nameRetrievalHelper(ignores, entry.second, fullName, names);
+      }
     }
   }
 }
@@ -563,9 +563,9 @@ ReaderResult LuaReader::getValue(const std::string& id, T& value)
   return ReaderResult::NotFound;
 }
 
-std::unordered_set<std::string> LuaReader::getAllNames()
+std::vector<std::string> LuaReader::getAllNames()
 {
-  std::unordered_set<std::string> result;
+  std::vector<std::string> result;
   detail::nameRetrievalHelper(m_preloaded_globals, m_lua.globals(), "", result);
   return result;
 }
