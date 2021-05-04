@@ -22,25 +22,30 @@ void setFlag(axom::sidre::Group& target,
              const std::string& flag,
              bool value)
 {
+  const int8 bval = value ? 1 : 0;
   if(target.hasView(flag))
   {
-    const std::string msg =
-      fmt::format("[Inlet] '{0}' value has already been defined for: {1}",
-                  flag,
-                  target.getName());
+    auto flagView = target.getView(flag);
+    if(flagView->getData<int8>() != bval)
+    {
+      const std::string msg =
+        fmt::format("[Inlet] '{0}' value has already been defined for: {1}",
+                    flag,
+                    target.getName());
 
-    SLIC_WARNING(msg);
-    setWarningFlag(&root);
+      SLIC_WARNING(msg);
+      setWarningFlag(&root);
+    }
   }
   else
   {
     if(value)
     {
-      target.createViewScalar(flag, static_cast<int8>(1));
+      target.createViewScalar(flag, bval);
     }
     else
     {
-      target.createViewScalar(flag, static_cast<int8>(0));
+      target.createViewScalar(flag, bval);
     }
   }
 }
@@ -54,11 +59,6 @@ bool checkFlag(const axom::sidre::Group& target,
     return false;
   }
   const axom::sidre::View* valueView = target.getView(flag);
-  if(valueView == nullptr)
-  {
-    //TODO: is this possible after it says it has the view?
-    return false;
-  }
   const int8 intValue = valueView->getScalar();
   if(intValue < 0 || intValue > 1)
   {
@@ -69,7 +69,7 @@ bool checkFlag(const axom::sidre::Group& target,
       flag);
     SLIC_WARNING(msg);
     setWarningFlag(&root);
-    return false;
+    return static_cast<bool>(intValue);
   }
 
   return static_cast<bool>(intValue);
