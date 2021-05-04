@@ -17,7 +17,7 @@ set(example_sources
 if (SCR_FOUND)
     list(APPEND example_sources IO_SCR_Read.cpp)
     list(APPEND example_sources IO_SCR_Write.cpp)
-    list(APPEND example_sources IO_SCR_Ckpt.cpp)
+    list(APPEND example_sources IO_SCR_Checkpoint.cpp)
     list(APPEND example_sources IO_SCR_Output.cpp)
 endif() 
 
