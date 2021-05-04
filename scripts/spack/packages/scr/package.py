@@ -46,7 +46,7 @@ class Scr(CMakePackage):
     depends_on('er', when="@3:")
     depends_on('kvtree', when="@3:")
     depends_on('rankstr', when="@3:")
-    depends_on('filo', when="@3")
+    depends_on('filo', when="@3:")
     depends_on('spath', when="@3:")
 
     # DTCMP is an optional dependency up until 3.x
