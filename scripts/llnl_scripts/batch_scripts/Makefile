@@ -32,7 +32,7 @@ src-cz : sleep = sleep 2
 src-cz : src-cz-toss3 src-cz-blueos
 
 src-cz-toss3 :
-	ssh quartz    'cd $(here) && msub -d $(here) msub_llnl_cz_toss3_src.sh'
+	ssh ruby      'cd $(here) && msub -d $(here) msub_llnl_cz_toss3_src.sh'
 	$(sleep)
 src-cz-blueos :
 	ssh lassen    'cd $(here) && msub -d $(here) msub_llnl_cz_blueos_src.sh'
@@ -44,7 +44,7 @@ tpl-cz : tpl-cz-toss3 tpl-cz-blueos
 	$(info Results in /usr/WS1/axom/libs)
 
 tpl-cz-toss3 :
-	ssh quartz    'cd $(here) && msub -d $(here) msub_llnl_cz_toss3_all_compilers.sh'
+	ssh ruby      'cd $(here) && msub -d $(here) msub_llnl_cz_toss3_all_compilers.sh'
 	$(sleep)
 tpl-cz-blueos :
 	ssh lassen    'cd $(here) && msub -d $(here) msub_llnl_cz_blueos_all_compilers.sh'
