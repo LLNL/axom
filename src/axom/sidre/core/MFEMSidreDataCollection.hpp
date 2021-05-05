@@ -505,8 +505,13 @@ private:
   // retain a non-owning pointer and manage memory via unique_ptr in
   // this class for consistency
   std::unique_ptr<mfem::Mesh> m_owned_mesh;
-  std::vector<std::unique_ptr<mfem::FiniteElementCollection>> m_fecolls;
-  std::vector<std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
+  // To avoid wasting memory, mfem::FEColl and mfem::FESpace objects with the same
+  // basis are reused
+  // NOTE: The FESpace objects are tied to a mesh instance, but because these variables
+  // are only modified after m_owned_mesh is reconstructed, no explicit logic
+  // is required to maintain coherency
+  std::unordered_map<std::string, std::unique_ptr<mfem::FiniteElementCollection>> m_fecolls;
+  std::unordered_map<std::string, std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
   std::vector<std::unique_ptr<mfem::GridFunction>> m_owned_gridfuncs;
 
   // Used for reconstructed QuadratureFunctions
