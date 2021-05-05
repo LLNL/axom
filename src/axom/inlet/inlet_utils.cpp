@@ -191,7 +191,10 @@ void markAsStructCollection(axom::sidre::Group& target)
 
 void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result)
 {
-  target.createViewScalar("retrieval_status", static_cast<int>(result));
+  if(!target.hasView("retrieval_status"))
+  {
+    target.createViewScalar("retrieval_status", static_cast<int>(result));
+  }
 }
 
 ReaderResult collectionRetrievalResult(const bool contains_other_type,
