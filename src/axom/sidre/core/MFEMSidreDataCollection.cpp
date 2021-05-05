@@ -41,37 +41,6 @@ const std::string MFEMSidreDataCollection::s_coordset_name = "coords";
 namespace detail
 {
 /**
- * @brief Retrieves the last "n" tokens of a string split with the specified delimiter
- * @param[in] input The string to split
- * @param[in] n The number of tokens to retrieve
- * @param[in] delim The delimiter to split with
- * 
- * @return A list of tokens (of size @p n )
- * 
- * Splits a string starting from the end of the string into a maximum of @p n tokens
- */
-std::vector<std::string> splitLastNTokens(const std::string& input,
-                                          const std::size_t n,
-                                          const char delim)
-{
-  std::vector<std::string> result;
-
-  auto last_pos = std::string::npos;
-  auto pos = input.find_last_of(delim, last_pos - 1);
-
-  while((pos != std::string::npos) && (result.size() < n - 1))
-  {
-    result.push_back(input.substr(pos + 1, last_pos - pos - 1));
-    last_pos = pos;
-    pos = input.find_last_of(delim, last_pos - 1);
-  }
-  // Add the rest of the string (first token)
-  result.push_back(input.substr(0, last_pos));
-  std::reverse(result.begin(), result.end());
-  return result;
-}
-
-/**
  * @brief Implements an analogue to mfem::FiniteElementCollection::New
  * for mfem::QuadratureSpaces - basis currently must be of form QF_Default_[ORDER]_[VDIM]
  * @param[in] name The name that encodes the QuadratureSpace data
@@ -1638,7 +1607,7 @@ View* MFEMSidreDataCollection::getFieldValuesView(const std::string& field_name)
 
 void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 {
-  const auto tokens = detail::splitLastNTokens(field_name, 2, '_');
+  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
   // Expecting [base_field_name, material_id]
   if(tokens.size() != 2)
   {
@@ -1664,7 +1633,7 @@ void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 
 void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
 {
-  const auto tokens = detail::splitLastNTokens(field_name, 3, '_');
+  const auto tokens = utilities::string::splitLastNTokens(field_name, 3, '_');
   // Expecting [base_field_name, material_id, component]
   if(tokens.size() != 3)
   {
@@ -1692,7 +1661,7 @@ void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
 void MFEMSidreDataCollection::checkForMaterialDependentField(
   const std::string& field_name)
 {
-  const auto tokens = detail::splitLastNTokens(field_name, 2, '_');
+  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
   // Expecting [base_field_name, material_id]
   if(tokens.size() != 2)
   {
