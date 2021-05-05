@@ -112,8 +112,8 @@ class Axom(CachedCMakePackage, CudaPackage):
         depends_on('umpire cuda_arch={0}'.format(sm_),
                    when='+umpire cuda_arch={0}'.format(sm_))
 
-    depends_on("mfem+mpi+metis+zlib", when="+mfem+mpi")
-    depends_on("mfem~mpi~metis~zlib", when="+mfem~mpi")
+    depends_on("mfem+mpi", when="+mfem+mpi")
+    depends_on("mfem~mpi", when="+mfem~mpi")
 
     depends_on("python", when="+python")
 
