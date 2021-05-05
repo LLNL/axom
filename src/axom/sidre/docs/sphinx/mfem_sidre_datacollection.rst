@@ -104,24 +104,20 @@ Once state information has been updated, the complete simulation state can be wr
 
 See the ``sidre_mfem_datacollection_vis`` example for a more thorough example of the above functionality.
 
-.. Warning::
-   Although the ``mfem::DataCollection`` interface provides functionality for registering quadrature fields,
-   this is not supported by ``MFEMSidreDataCollection``.
-
 Restarting a Simulation
 -----------------------
 
-Experimental support for complete reconstruction of a simulation's mesh and fields is also provided by
-``MFEMSidreDataCollection``.  That is, when a saved simulation is read in using ``MFEMSidreDataCollection::Load``,
-the data read in will be used to reconstruct MFEM objects than can be accessed with the ``GetField`` and
-``GetMesh`` methods.
+Experimental support for complete reconstruction of a simulation's mesh, fields, and qfields is also provided by
+``MFEMSidreDataCollection``.  That is, when an output file is read in using ``MFEMSidreDataCollection::Load``,
+the data read in will be used to reconstruct MFEM objects than can be accessed with the ``GetField``,
+``GetQField``, and ``GetMesh`` methods.
 
 .. warning::
    Currently, the ``MFEMSidreDataCollection`` must own the mesh and field data in order to completely reconstruct
    simulation state.  Mesh data ownership can be configured with the ``owns_mesh_data`` constructor option (should
    be set to ``true``), and field data ownership requires that the ``GridFunction`` be unallocated when passed to
    ``RegisterField``, which performs the allocation within Sidre-owned memory.  After registering, the ``GridFunction``
-   can be used normally.
+   can be used normally.  The same conditions apply for ``QuadratureFunction`` objects.
 
 A complete demonstration of functionality is provided in the ``sidre_mfem_datacollection_restart`` example, which is a stripped-down
 example of how a simulation code might utilize the automatic reconstruction logic when loading in a datastore.
