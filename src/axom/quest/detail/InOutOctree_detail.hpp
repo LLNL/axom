@@ -1563,4 +1563,4 @@ private:
 }  // namespace quest
 }  // namespace axom
 
-#endif // INOUT_OCTREE_DETAIL__HXX_
+#endif  // INOUT_OCTREE_DETAIL__HXX_
