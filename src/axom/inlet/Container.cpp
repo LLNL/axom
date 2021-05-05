@@ -14,6 +14,88 @@ namespace axom
 {
 namespace inlet
 {
+Container::Container(const std::string& name,
+                     const std::string& description,
+                     Reader& reader,
+                     axom::sidre::Group* sidreRootGroup,
+                     std::vector<std::string>& unexpectedNames,
+                     bool docEnabled,
+                     bool reconstruct)
+  : m_name(name)
+  , m_reader(reader)
+  , m_sidreRootGroup(sidreRootGroup)
+  , m_unexpectedNames(unexpectedNames)
+  , m_docEnabled(docEnabled)
+{
+  SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
+                  "Inlet's Sidre Datastore class not set");
+
+  if(m_name == "")
+  {
+    m_sidreGroup = m_sidreRootGroup;
+  }
+  else
+  {
+    if(!m_sidreRootGroup->hasGroup(name))
+    {
+      m_sidreGroup = m_sidreRootGroup->createGroup(name);
+      m_sidreGroup->createViewString("InletType", "Container");
+    }
+    else
+    {
+      m_sidreGroup = m_sidreRootGroup->getGroup(name);
+    }
+  }
+
+  if(reconstruct)
+  {
+    for(auto idx = m_sidreGroup->getFirstValidGroupIndex();
+        sidre::indexIsValid(idx);
+        idx = m_sidreGroup->getNextValidGroupIndex(idx))
+    {
+      auto group = m_sidreGroup->getGroup(idx);
+      if(group->isUsingMap() && group->hasView("InletType"))
+      {
+        const std::string inletType = group->getView("InletType")->getString();
+        const std::string childName = appendPrefix(m_name, group->getName());
+
+        if(inletType == "Container")
+        {
+          m_containerChildren.emplace(
+            childName,
+            cpp11_compat::make_unique<Container>(childName,
+                                                 "",
+                                                 m_reader,
+                                                 m_sidreRootGroup,
+                                                 m_unexpectedNames,
+                                                 m_docEnabled,
+                                                 true));
+        }
+        else if(inletType == "Field")
+        {
+          // FIXME: We probably need to write the type to the datastore
+          m_fieldChildren.emplace(
+            childName,
+            cpp11_compat::make_unique<Field>(group,
+                                             m_sidreRootGroup,
+                                             sidre::DataTypeId::NO_TYPE_ID,
+                                             m_docEnabled));
+        }
+      }
+    }
+  }
+
+  if(!description.empty())
+  {
+    if(m_sidreGroup->hasView("description"))
+    {
+      //TODO: warn user?
+      m_sidreGroup->destroyViewAndData("description");
+    }
+    m_sidreGroup->createViewString("description", description);
+  }
+}
+
 template <typename Func>
 void Container::forEachCollectionElement(Func&& func) const
 {
@@ -289,6 +371,12 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
   {
     // Otherwise actually add a Field
     std::string fullName = appendPrefix(m_name, name);
+    // First check if the field already exists
+    auto iter = m_fieldChildren.find(fullName);
+    if(iter != m_fieldChildren.end())
+    {
+      return *iter->second;
+    }
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
@@ -790,7 +878,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
                                              const std::string& description,
                                              const std::string& pathOverride)
 {
-  // If it has indices, we're adding a primitive field to an array
+  // If it has indices, we're adding a function to an array
   // of structs, so we need to iterate over the subcontainers
   // corresponding to elements of the array
   std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
@@ -805,7 +893,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     });
   if(is_nested)
   {
-    // Create an aggregate field so requirements can be collectively imposed
+    // Create an aggregate function so requirements can be collectively imposed
     // on all elements of the array
     m_aggregate_funcs.emplace_back(std::move(funcs));
 
@@ -814,8 +902,14 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
   }
   else
   {
-    // Otherwise actually add a Field
+    // Otherwise actually add a Function
     std::string fullName = appendPrefix(m_name, name);
+    // First check if the function already exists
+    auto iter = m_functionChildren.find(fullName);
+    if(iter != m_functionChildren.end())
+    {
+      return *iter->second;
+    }
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(
       sidreGroup == nullptr,

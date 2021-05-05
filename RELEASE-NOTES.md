@@ -50,6 +50,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   entries are present
 - Added support in `MFEMSidreDataCollection` for registering `QFunctions`
   (data associated with quadrature points on a mesh)
+- Inlet: The internal hierarchy of an `Inlet` object can be reconstructed from a Sidre group,
+  excluding callback functions
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
