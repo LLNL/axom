@@ -5,9 +5,9 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
-#BSUB -n 8
+#BSUB -N 1
 #BSUB -W 240
-#BSUB -G guests
+#BSUB -G wbronze
 #BSUB -x 
 #
 # usage: 
