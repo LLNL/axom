@@ -166,16 +166,6 @@ std::string removeAllInstances(const std::string& target,
   return result;
 }
 
-bool checkedConvertToInt(const std::string& number, int& result)
-{
-  // Use the C versions to avoid the exceptions
-  // thrown by std::stoi on conversion failure
-  // FIXME: Switch to std::from_chars when C++17 is available
-  char* ptr;
-  result = strtol(number.c_str(), &ptr, 10);
-  return *ptr == 0;
-}
-
 void markAsStructCollection(axom::sidre::Group& target)
 {
   if(target.hasView(detail::STRUCT_COLLECTION_FLAG))
@@ -201,7 +191,10 @@ void markAsStructCollection(axom::sidre::Group& target)
 
 void markRetrievalStatus(axom::sidre::Group& target, const ReaderResult result)
 {
-  target.createViewScalar("retrieval_status", static_cast<int>(result));
+  if(!target.hasView("retrieval_status"))
+  {
+    target.createViewScalar("retrieval_status", static_cast<int>(result));
+  }
 }
 
 ReaderResult collectionRetrievalResult(const bool contains_other_type,

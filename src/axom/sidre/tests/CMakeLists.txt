@@ -111,7 +111,7 @@ if (AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
                         DEPENDS_ON sidre gtest
                         FOLDER axom/sidre/tests
                         )
-    if (ENABLE_MPI)
+    if (ENABLE_MPI AND MFEM_USE_MPI)
         axom_add_test( NAME sidre_mfem_datacollection
                        COMMAND sidre_mfem_datacollection_test
                        NUM_MPI_TASKS 2

@@ -235,10 +235,9 @@ inline Result toIndex(const From& idx)
 template <>
 inline int toIndex(const std::string& idx)
 {
-  int idx_as_int;
-  SLIC_ERROR_IF(!checkedConvertToInt(idx, idx_as_int),
+  SLIC_ERROR_IF(!conduit::utils::string_is_integer(idx),
                 fmt::format("[Inlet] Expected an integer, got: {0}", idx));
-  return idx_as_int;
+  return conduit::utils::string_to_value<int>(idx);
 }
 
 /*!
@@ -346,6 +345,8 @@ public:
    * hierarchy) list of unexpected names
    * \param [in] docEnabled Boolean indicating whether or not documentation
    * generation is enabled for input feck this Container instance belongs to.
+   * \param [in] reconstruct Whether or not to attempt to reconstruct child Containers
+   * and Fields from the data in the sidre Group
    *****************************************************************************
    */
   Container(const std::string& name,
@@ -353,43 +354,8 @@ public:
             Reader& reader,
             axom::sidre::Group* sidreRootGroup,
             std::vector<std::string>& unexpectedNames,
-            bool docEnabled = true)
-    : m_name(name)
-    , m_reader(reader)
-    , m_sidreRootGroup(sidreRootGroup)
-    , m_unexpectedNames(unexpectedNames)
-    , m_docEnabled(docEnabled)
-  {
-    SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
-                    "Inlet's Sidre Datastore class not set");
-
-    if(m_name == "")
-    {
-      m_sidreGroup = m_sidreRootGroup;
-    }
-    else
-    {
-      if(!m_sidreRootGroup->hasGroup(name))
-      {
-        m_sidreGroup = m_sidreRootGroup->createGroup(name);
-        m_sidreGroup->createViewString("InletType", "Container");
-      }
-      else
-      {
-        m_sidreGroup = m_sidreRootGroup->getGroup(name);
-      }
-    }
-
-    if(description != "")
-    {
-      if(m_sidreGroup->hasView("description"))
-      {
-        //TODO: warn user?
-        m_sidreGroup->destroyViewAndData("description");
-      }
-      m_sidreGroup->createViewString("description", description);
-    }
-  }
+            bool docEnabled = true,
+            bool reconstruct = false);
 
   // Containers must be move-only - delete the implicit shallow copy constructor
   Container(const Container&) = delete;
