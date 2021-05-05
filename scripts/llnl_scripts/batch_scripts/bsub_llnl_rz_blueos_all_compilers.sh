@@ -8,6 +8,7 @@
 #BSUB -N 1
 #BSUB -W 240
 #BSUB -G guests
+#BSUB -o b.out.rz.blueos.all.compilers.%j.%N.txt
 #BSUB -x 
 #
 # usage: 
