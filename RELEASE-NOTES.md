@@ -83,6 +83,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated built-in TPL `fmt` to master branch snapshot, March 26, 2021.
 - Inlet: SphinxWriter will now print only one element schema per container instead of
   printing the same schema for each element in the container
+- Update BLT to release 0.4.0
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
