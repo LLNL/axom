@@ -120,9 +120,9 @@ const conduit::Node* traverseNode(const conduit::Node& root, const std::string& 
     }
     else
     {
-      int token_as_int;
-      bool is_int = checkedConvertToInt(token, token_as_int);
-      if(is_int && token_as_int < node->number_of_children())
+      bool is_int = conduit::utils::string_is_integer(token);
+      int token_as_int = conduit::utils::string_to_value<int>(token);
+      if(is_int && (token_as_int < node->number_of_children()))
       {
         node = &((*node)[token_as_int]);
       }

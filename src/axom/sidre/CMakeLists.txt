@@ -110,7 +110,8 @@ set(sidre_depends
 blt_list_append(TO sidre_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO sidre_depends ELEMENTS sparsehash IF SPARSEHASH_FOUND)
 if(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
-   blt_list_append(TO sidre_depends ELEMENTS mfem IF MFEM_FOUND)
+    blt_list_append(TO sidre_depends ELEMENTS mfem IF MFEM_FOUND)
+    blt_list_append(TO sidre_depends ELEMENTS fmt)
 endif()
 
 # Include additional dependencides for spio when MPI is available

@@ -235,10 +235,9 @@ inline Result toIndex(const From& idx)
 template <>
 inline int toIndex(const std::string& idx)
 {
-  int idx_as_int;
-  SLIC_ERROR_IF(!checkedConvertToInt(idx, idx_as_int),
+  SLIC_ERROR_IF(!conduit::utils::string_is_integer(idx),
                 fmt::format("[Inlet] Expected an integer, got: {0}", idx));
-  return idx_as_int;
+  return conduit::utils::string_to_value<int>(idx);
 }
 
 /*!

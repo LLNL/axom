@@ -237,6 +237,76 @@ TEST(sidre_datacollection, dc_reload_mesh)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
+TEST(sidre_datacollection, dc_reload_qf)
+{
+  //Set up a small mesh and a couple of grid function on that mesh
+  mfem::Mesh mesh(2, 3, mfem::Element::QUADRILATERAL, 0, 2.0, 3.0);
+  mfem::LinearFECollection fec;
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  const int intOrder = 3;
+  const int qs_vdim = 1;
+  const int qv_vdim = 2;
+
+  mfem::QuadratureSpace qspace(&mesh, intOrder);
+  // We want Sidre to allocate the data for us and to own the internal data.
+  // If we don't do the below then the data collection doesn't save off the data
+  // structure.
+  mfem::QuadratureFunction qs(&qspace, nullptr, qs_vdim);
+  mfem::QuadratureFunction qv(&qspace, nullptr, qv_vdim);
+
+  int Nq = qs.Size();
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh);
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_writer.SetComm(MPI_COMM_WORLD);
+#endif
+
+  // sdc_writer owns the quadrature function fields and the underlying data
+  sdc_writer.RegisterQField("qs", &qs);
+  sdc_writer.RegisterQField("qv", &qv);
+
+  // The data needs to be instantiated before we save it off
+  for(int i = 0; i < Nq; ++i)
+  {
+    qs(i) = double(i);
+    qv(2 * i + 0) = double(i);
+    qv(2 * i + 1) = double(Nq - i - 1);
+  }
+
+  sdc_writer.SetCycle(5);
+  sdc_writer.SetTime(8.0);
+  sdc_writer.Save();
+
+  MFEMSidreDataCollection sdc_reader(testName());
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+#endif
+  sdc_reader.Load(sdc_writer.GetCycle());
+
+  ASSERT_TRUE(sdc_reader.HasQField("qs"));
+  ASSERT_TRUE(sdc_reader.HasQField("qv"));
+  mfem::QuadratureFunction* reader_qs = sdc_reader.GetQField("qs");
+  mfem::QuadratureFunction* reader_qv = sdc_reader.GetQField("qv");
+
+  // order_qs should also equal order_qv in this trivial case
+  // FIXME: QF order can be retrieved directly as of MFEM 4.3
+  EXPECT_EQ(reader_qs->GetSpace()->GetElementIntRule(0).GetOrder(), intOrder);
+  EXPECT_EQ(reader_qv->GetSpace()->GetElementIntRule(0).GetOrder(), intOrder);
+
+  EXPECT_EQ(reader_qs->GetVDim(), qs_vdim);
+  EXPECT_EQ(reader_qv->GetVDim(), qv_vdim);
+
+  *(reader_qs) -= qs;
+  *(reader_qv) -= qv;
+
+  EXPECT_LT(reader_qs->Norml2(), 1e-15);
+  EXPECT_LT(reader_qv->Norml2(), 1e-15);
+}
+
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 
 TEST(sidre_datacollection, dc_alloc_owning_parmesh)
