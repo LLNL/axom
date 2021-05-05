@@ -41,9 +41,15 @@ endforeach()
 
     if(AXOM_ENABLE_TESTS)
         if(SCR_FOUND)
-            axom_add_test(
-                NAME spio_IO_SCR_Checkpoint
-                COMMAND spio_IO_SCR_Checkpoint_ex )
+            if(ENABLE_MPI)
+                axom_add_test(
+                    NAME spio_IO_SCR_Checkpoint
+                    COMMAND spio_IO_SCR_Checkpoint_ex 
+                    NUM_MPI_TASKS 1 )
+            else()
+                axom_add_test(
+                    NAME spio_IO_SCR_Checkpoint
+                    COMMAND spio_IO_SCR_Checkpoint_ex )
+            endif()
         endif()
     endif()
-
