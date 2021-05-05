@@ -587,10 +587,9 @@ std::vector<VariantKey> collectionIndices(const Container& container,
           // If the index is full/absolute, we only care about the last segment of it
           string_idx = removeBeforeDelimiter(string_idx);
           // The basename might be an integer, so check and convert accordingly
-          int idx_as_int;
-          if(checkedConvertToInt(string_idx, idx_as_int))
+          if(conduit::utils::string_is_integer(string_idx))
           {
-            key = idx_as_int;
+            key = conduit::utils::string_to_value<int>(string_idx);
           }
           else
           {

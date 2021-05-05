@@ -48,6 +48,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   in the input file
 - Inlet: Added an option to mark `Container`s as strict, which fail verification when unexpected
   entries are present
+- Added support in `MFEMSidreDataCollection` for registering `QFunctions`
+  (data associated with quadrature points on a mesh)
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
