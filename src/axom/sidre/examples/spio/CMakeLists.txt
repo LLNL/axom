@@ -45,7 +45,7 @@ endforeach()
                 axom_add_test(
                     NAME spio_IO_SCR_Checkpoint
                     COMMAND spio_IO_SCR_Checkpoint_ex 
-                    NUM_MPI_TASKS 1 )
+                    NUM_MPI_TASKS 2 )
             else()
                 axom_add_test(
                     NAME spio_IO_SCR_Checkpoint
