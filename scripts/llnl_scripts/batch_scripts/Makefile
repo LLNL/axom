@@ -32,10 +32,10 @@ src-cz : sleep = sleep 2
 src-cz : src-cz-toss3 src-cz-blueos
 
 src-cz-toss3 :
-	ssh ruby      'cd $(here) && msub -d $(here) msub_llnl_cz_toss3_src.sh'
+	ssh ruby      'cd $(here) && msub  msub_llnl_cz_toss3_src.sh'
 	$(sleep)
 src-cz-blueos :
-	ssh lassen    'cd $(here) && msub -d $(here) msub_llnl_cz_blueos_src.sh'
+	ssh lassen    'cd $(here) && bsub  < bsub_llnl_cz_blueos_src.sh'
 	$(sleep)
 
 ##########
@@ -44,10 +44,10 @@ tpl-cz : tpl-cz-toss3 tpl-cz-blueos
 	$(info Results in /usr/WS1/axom/libs)
 
 tpl-cz-toss3 :
-	ssh ruby      'cd $(here) && msub -d $(here) msub_llnl_cz_toss3_all_compilers.sh'
+	ssh ruby      'cd $(here) && msub  msub_llnl_cz_toss3_all_compilers.sh'
 	$(sleep)
 tpl-cz-blueos :
-	ssh lassen    'cd $(here) && msub -d $(here) msub_llnl_cz_blueos_all_compilers.sh'
+	ssh lassen    'cd $(here) && bsub  < bsub_llnl_cz_blueos_all_compilers.sh'
 	$(sleep)
 
 ##########
@@ -55,7 +55,7 @@ src-rz : sleep = sleep 2
 src-rz : src-rz-toss3 src-rz-blueos src-rz-blueosp9
 
 src-rz-toss3 :
-	ssh rzgenie   'cd $(here) && msub -d $(here) msub_llnl_rz_toss3_src.sh'
+	ssh rzgenie   'cd $(here) && msub  msub_llnl_rz_toss3_src.sh'
 	$(sleep)
 src-rz-blueos :
 	ssh rzansel   'cd $(here) && bsub  < bsub_llnl_rz_blueos_src.sh'
@@ -70,7 +70,7 @@ tpl-rz : tpl-rz-toss3 tpl-rz-blueos tpl-rz-blueosp9
 	$(info Results in /usr/WS1/axom/libs)
 
 tpl-rz-toss3 :
-	ssh rzgenie   'cd $(here) && msub -d $(here) msub_llnl_rz_toss3_all_compilers.sh'
+	ssh rzgenie   'cd $(here) && msub  msub_llnl_rz_toss3_all_compilers.sh'
 	$(sleep)
 tpl-rz-blueos :
 	ssh rzansel   'cd $(here) && bsub  < bsub_llnl_rz_blueos_all_compilers.sh'
