@@ -90,7 +90,8 @@ copyright = u'2017-2021, Lawrence Livermore National Security, LLNS'
 
 # -- Option for numbering figures/tables/etc.-----------------------------------
 # Note: numfig requires Sphinx (1.3+)
-numfig = True
+# JBE: Option disabled to avoid potentially confusing table numbers in Inlet docs
+numfig = False
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

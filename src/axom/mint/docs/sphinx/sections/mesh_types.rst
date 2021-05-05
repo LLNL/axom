@@ -154,7 +154,7 @@ the following sections.
 Curvilinear Mesh
 """""""""""""""""
 
-The :ref:`CurvilinearMesh`, shown in :numref:`figs/curvilinearMeshExample`, is
+The :ref:`CurvilinearMesh`, shown in the :ref:`following figure <figs-curvilinearMeshExample>`, is
 logically a *regular* mesh, however in contrast to the :ref:`RectilinearMesh`
 and :ref:`UniformMesh`, the :ref:`Nodes` of a :ref:`CurvilinearMesh` are not
 placed along the *Cartesian* grid lines. Instead, the equations of the governing
@@ -163,7 +163,7 @@ called a *curvilinear coordinate system*. Consequently, the :ref:`Topology` of
 a :ref:`CurvilinearMesh` is *implicit*, however its :ref:`Geometry`, given
 by the constituent :ref:`Nodes` of the mesh, is *explicit*.
 
-.. _figs/curvilinearMeshExample:
+.. _figs-curvilinearMeshExample:
 .. figure:: ../figures/structured_curvilinear_mesh.png
   :align: center
   :scale: 55%
@@ -186,7 +186,7 @@ See the :ref:`sections/tutorial` for an example that demonstrates how to
 Rectilinear Mesh
 """""""""""""""""
 
-A :ref:`RectilinearMesh`, depicted in :numref:`figs/rectilinearMeshExample`,
+A :ref:`RectilinearMesh`, depicted in :ref:`following figure <figs-rectilinearMeshExample>`,
 divides the computational domain into a set of rectangular :ref:`Cells`,
 arranged on a *regular lattice*. However, in contrast to the
 :ref:`CurvilinearMesh`, the :ref:`Geometry` of the mesh is not mapped to a
@@ -195,7 +195,7 @@ comprising a :ref:`RectilinearMesh` are parallel to the axis of the *Cartesian*
 coordinate system. Due to this restriction, the geometric domain and resulting
 mesh are always rectangular.
 
-.. _figs/rectilinearMeshExample:
+.. _figs-rectilinearMeshExample:
 .. figure:: ../figures/structured_rectilinear_mesh.png
   :align: center
   :scale: 35%
@@ -224,7 +224,7 @@ See the :ref:`sections/tutorial` for an example that demonstrates how to
 Uniform Mesh
 """""""""""""
 
-A :ref:`UniformMesh`, depicted in :numref:`figs/uniformMeshExample`, is the
+A :ref:`UniformMesh`, depicted in :ref:`following figure <figs-uniformMeshExample>`, is the
 simplest of all three :ref:`StructuredMesh` types, but also, relatively the most
 restrictive of all :ref:`MeshTypes`. As with the :ref:`RectilinearMesh`,
 a :ref:`UniformMesh` divides the computational domain into a set of rectangular
@@ -233,7 +233,7 @@ imposes the additional restriction that :ref:`Nodes` are uniformly distributed
 parallel to each axis. Therefore, in contrast to the :ref:`RectilinearMesh`, the
 spacing between adjacent :ref:`Nodes` in a :ref:`UniformMesh` is constant.
 
-.. _figs/uniformMeshExample:
+.. _figs-uniformMeshExample:
 .. figure:: ../figures/structured_uniform_mesh.png
   :align: center
   :scale: 35%
@@ -335,11 +335,12 @@ impose any ordering constraints. Moreover, the :ref:`Cells` can also be
 depends on the application, the physics being modeled, and the numerical
 scheme employed. An example tetrahedral :ref:`UnstructuredMesh` of the F-17
 blended wing fuselage configuration is shown in
-:numref:`figs/UnstructuredMeshSingleShape`. For this type of complex geometries
+:ref:`this sample unstructured mesh <figs-UnstructuredMeshSingleShape>`.
+For this type of complex geometries
 it is nearly impossible to obtain a :ref:`StructuredMesh` that is adequate for
 computation.
 
-.. _figs/unstructuredMeshSingleShape:
+.. _figs-unstructuredMeshSingleShape:
 .. figure:: ../figures/f17.png
    :align: center
    :scale: 35%
@@ -360,7 +361,7 @@ equivalent to a 2D row-major array layout where the number of rows corresponds
 to the number of :ref:`Cells` in the mesh and the number of columns corresponds
 to the *stride*, i.e. the number of :ref:`Nodes` per cell.
 
-.. _figs/singleCellTypeRep:
+.. _figs-singleCellTypeRep:
 .. figure:: ../figures/SingleCellTypeMesh.png
     :align: center
     :alt: Mesh Representation of the Unstructured Mesh with Single Cell Topology
@@ -372,7 +373,7 @@ to the *stride*, i.e. the number of :ref:`Nodes` per cell.
     constituent :ref:`Nodes` of each triangle.
 
 This simple concept is best illustrated with an example.
-:numref:`figs/singleCellTypeRep` depicts a sample :ref:`UnstructuredMesh` with
+The :ref:`above figure <figs-singleCellTypeRep>` depicts a sample :ref:`UnstructuredMesh` with
 :ref:`SingleCellTopology` consisting of :math:`N_c=4` triangular :ref:`Cells`.
 Each triangular cell, :math:`C_i`, is defined by :math:`||C_i||` :ref:`Nodes`.
 In this case, :math:`||C_i||=3`.
@@ -387,8 +388,8 @@ In this case, :math:`||C_i||=3`.
 Consequently, the length of the cell-to-node :ref:`Connectivity` array
 is then given by :math:`N_c \times ||C_i||`. The node indices for each of the
 cells are stored from left to right. The base offset for a given cell is given
-as a multiple of the cell index and the *stride*. As illustrated in
-:numref:`figs/singleCellTypeRep`, the base offset for cell :math:`C_0` is
+as a multiple of the cell index and the *stride*. As illustrated in the
+:ref:`above figure <figs-singleCellTypeRep>`, the base offset for cell :math:`C_0` is
 :math:`0 \times 3 = 0`, the offest for cell :math:`C_1` is
 :math:`1 \times 3 = 3`, the offset for cell :math:`C_2` is
 :math:`2 \times 3 = 6` and so on.
@@ -461,11 +462,11 @@ cell type is said to be *mixed*.
    an :ref:`UnstructuredMesh` with :ref:`MixedCellTopology` is sometimes also
    called a *mixed cell mesh* or *hybrid mesh*.
 
-.. _figs/unstructuredMeshMixedShape:
+.. _figs-unstructuredMeshMixedShape:
 .. figure:: ../figures/unstructured_mixed_mesh.png
    :align: center
    :scale: 95%
-   :alt: Sample Unstrucrured Mesh (mixed shape topology)
+   :alt: Sample Unstructured Mesh (mixed shape topology)
 
    Sample :ref:`UnstructuredMesh` with :ref:`MixedCellTopology` of a Generic
    wing/fuselage configuration. The mesh consists of high-aspect ratio prism
@@ -489,8 +490,8 @@ boundary layer normal to the wall. Typically, high-aspect ratio, anisotropic
 viscous region of the computational domain, while isotropic *tetrahedron* or
 *hexahedron* :ref:`Cells` are used in the *inviscid* region to solve the Euler
 equations. The sample :ref:`MixedCellTopology` :ref:`UnstructuredMesh`, of a
-Generic Wing/Fuselage configuration, depicted in
-:numref:`figs/unstructuredMeshMixedShape`, consists of *triangular prism*
+Generic Wing/Fuselage configuration, depicted in the above
+:ref:`unstructured mesh <figs-unstructuredMeshMixedShape>`, consists of *triangular prism*
 :ref:`Cells` for the *viscous* boundary layer portion of the domain that are
 stitched to *tetrahedra* :ref:`Cells` for the inviscid/Euler portion of the
 mesh.
@@ -506,7 +507,7 @@ the :ref:`SingleCellTopology` :ref:`MeshRepresentation`, cannot be employed to
 obtain cell-to-node information. For a :ref:`MixedCellTopology` an
 *indirect addressing* access scheme must be used instead.
 
-.. _figs/mixedCellTypeRep:
+.. _figs-mixedCellTypeRep:
 .. figure:: ../figures/MixedCellTypeMesh.png
     :align: center
     :alt: Mesh Representation of the Unstructured Mesh with Mixed Cell Topology
@@ -527,7 +528,7 @@ There are a number of ways to represent a :ref:`MixedCellTopology` mesh.
 In addition to the cell-to-node :ref:`Connectivity` array, Mint's
 :ref:`MeshRepresentation` for a :ref:`MixedCellTopology` :ref:`UnstructuredMesh`
 employs two additional arrays. See sample mesh and corresponding
-:ref:`MeshRepresentation` in :numref:`figs/mixedCellTypeRep`.
+:ref:`MeshRepresentation` in the :ref:`above figure <figs-mixedCellTypeRep>`.
 First, the *Cell Offsets* array is used to provide indirect addressing to
 the cell-to-node information of each constituent mesh cell. Second, the
 :ref:`CellTypes` array is used to store the cell type of each cell in the
@@ -603,10 +604,10 @@ Cell Types
 """""""""""
 
 Mint currently supports the common Linear :ref:`CellTypes`,
-depicted in :numref:`figs/linearCells`, as well as, support for
-quadratic, quadrilateral and hexahedron :ref:`Cells`, see :numref:`figs/q2Cells`.
+depicted in :ref:`the linear cell types list <figs-linearCells>`, as well as, support for
+quadratic, quadrilateral and hexahedron :ref:`Cells`, see :ref:`the quadratic cell types <figs-q2Cells>`.
 
-.. _figs/linearCells:
+.. _figs-linearCells:
 .. figure:: ../figures/linear_cell_types.png
   :align: center
   :scale: 95%
@@ -615,7 +616,7 @@ quadratic, quadrilateral and hexahedron :ref:`Cells`, see :numref:`figs/q2Cells`
   List of supported linear cell types and their respective local node
   numbering.
 
-.. _figs/q2Cells:
+.. _figs-q2Cells:
 .. figure:: ../figures/q2_cell_types.png
   :align: center
   :scale: 95%
@@ -664,7 +665,7 @@ Add a New Cell Type
 Particle Mesh
 ^^^^^^^^^^^^^^
 
-A :ref:`ParticleMesh`, depicted in :numref:`figs/particleMesh`, discretizes the
+A :ref:`ParticleMesh`, depicted in the :ref:`following figure <figs-particleMesh>`, discretizes the
 computational domain by a set of *particles* which correspond to the :ref:`Nodes`
 at which the solution is evaluated. A :ref:`ParticleMesh` is commonly employed in
 the so called *particle* methods, such as *Smoothed Particle Hydrodynamics*
@@ -681,7 +682,7 @@ a :ref:`ParticleMesh` does not have :ref:`Faces` and any associated
 employ a :ref:`ParticleMesh` discretization are often referred to as
 *meshless* or *mesh-free* methods.
 
-.. _figs/particleMesh:
+.. _figs-particleMesh:
 .. figure:: ../figures/particles.png
    :align: center
    :scale: 35%
@@ -710,6 +711,3 @@ be stored explicitly.
 .. #############################################################################
 
 .. include:: citations.rst
-
-
-

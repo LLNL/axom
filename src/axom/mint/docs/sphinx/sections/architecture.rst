@@ -19,9 +19,9 @@ The :ref:`Architecture` of Mint's *mesh data model* consists of a class
 hierarchy that follows directly the taxonomy of :ref:`MeshTypes` discussed
 earlier. The constituent classes of the *mesh data model* are combined
 using a mix of class *inheritance* and *composition*, as illustrated in
-the class diagram depicted in :numref:`figs/classDiagram`.
+the :ref:`class diagram <figs-classDiagram>`.
 
-.. _figs/classDiagram:
+.. _figs-classDiagram:
 .. figure:: ../figures/class_diagram.png
    :align: center
    :scale: 50%
@@ -61,11 +61,11 @@ Notably, the computational domain can consist of one or more blocks, which are
 usually defined by the user or application. Each block is then subsequently
 partitioned to multiple domains that are distributed across processing units
 for parallel computation. For example, a sample block and domain decomposition
-is depicted in :numref:`figs/decomp`. Each of the constituent domains is
+is depicted in :ref:`the following figure <figs-decomp>`. Each of the constituent domains is
 represented by a corresponding ``mint::Mesh`` instance, which in aggregate
 define the entire problem domain.
 
-.. _figs/decomp:
+.. _figs-decomp:
 .. figure:: ../figures/decomp.png
    :align: center
    :scale: 35%
@@ -152,9 +152,9 @@ Concrete Mesh Classes
 
 The :ref:`ConcreteMeshClasses`, extend :ref:`TheMeshBaseClass` and implement
 the underlying :ref:`MeshRepresentation` of the various :ref:`MeshTypes`,
-depicted in :numref:`figs/meshtypes`.
+depicted in :ref:`the following figure <figs-meshtypes>`.
 
-.. _figs/meshtypes:
+.. _figs-meshtypes:
 .. figure:: ../figures/meshtypes.png
    :align: center
    :scale: 35%

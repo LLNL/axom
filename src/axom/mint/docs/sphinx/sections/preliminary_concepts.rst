@@ -24,7 +24,7 @@ done numerically, which requires discretizing the governing PDE by a numerical
 scheme, such as a Finite Difference (FD), Finite Volume (FV), or, the
 Finite Element Method (FEM), chief among them.
 
-.. _figs/meshedDomain:
+.. _figs-meshedDomain:
 .. figure:: ../figures/meshed_domain.png
    :align: center
    :scale: 100%
@@ -37,12 +37,12 @@ Finite Element Method (FEM), chief among them.
    governing PDE are stored and evaluated.
 
 Discretization of the governing PDE requires the domain to be approximated
-with a mesh. For example, :numref:`figs/meshedDomain` (a) depicts a geometric
+with a mesh. For example, the :ref:`above figure <figs-meshedDomain>` (a) depicts a geometric
 domain, :math:`\Omega`. The corresponding mesh, :math:`\mathcal{M}(\Omega)`,
-is illustrated in :numref:`figs/meshedDomain` (b). The mesh approximates
+is illustrated in :ref:`above figure <figs-meshedDomain>` (b). The mesh approximates
 the geometric domain, :math:`\Omega`, by a finite number of simple geometric
 entities, such as *nodes* and *cells*, depicted in red in
-:numref:`figs/meshedDomain` (b). These geometric entities comprising the mesh
+:ref:`above figure <figs-meshedDomain>` (b). These geometric entities comprising the mesh
 define the discrete locations, in space and time, at which the unknown variables,
 i.e., the *degrees of freedom* of the governing PDE, are evaluated, by the
 numerical scheme being employed.
