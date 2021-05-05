@@ -18,13 +18,13 @@ Container::Container(const std::string& name,
                      const std::string& description,
                      Reader& reader,
                      axom::sidre::Group* sidreRootGroup,
-                     std::unordered_set<std::string>& expected_names,
+                     std::vector<std::string>& unexpectedNames,
                      bool docEnabled,
                      bool reconstruct)
   : m_name(name)
   , m_reader(reader)
   , m_sidreRootGroup(sidreRootGroup)
-  , m_unexpectedNames(expected_names)
+  , m_unexpectedNames(unexpectedNames)
   , m_docEnabled(docEnabled)
 {
   SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
@@ -675,10 +675,9 @@ std::vector<VariantKey> collectionIndices(const Container& container,
           // If the index is full/absolute, we only care about the last segment of it
           string_idx = removeBeforeDelimiter(string_idx);
           // The basename might be an integer, so check and convert accordingly
-          int idx_as_int;
-          if(checkedConvertToInt(string_idx, idx_as_int))
+          if(conduit::utils::string_is_integer(string_idx))
           {
-            key = idx_as_int;
+            key = conduit::utils::string_to_value<int>(string_idx);
           }
           else
           {
@@ -715,7 +714,7 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
 }
 
 void updateUnexpectedNames(const std::string& accessedName,
-                           std::unordered_set<std::string>& unexpectedNames)
+                           std::vector<std::string>& unexpectedNames)
 {
   std::vector<std::string> accessed_tokens;
   axom::utilities::string::split(accessed_tokens, accessedName, '/');
@@ -744,6 +743,51 @@ void updateUnexpectedNames(const std::string& accessedName,
       ++iter;
     }
   }
+}
+
+/*!
+ *****************************************************************************
+ * \brief Filters through the global list of unexpected names to retrieve the
+ * ones that are within the Container that corresponds to \a group
+ * 
+ * \param [in] group The Sidre group for a Container object
+ * \param [in] unexpectedNames The global (within the Inlet hierarchy) list
+ * of unexpected names
+ *****************************************************************************
+ */
+std::vector<std::string> filterUnexpectedNames(
+  const sidre::Group* group,
+  const std::vector<std::string>& unexpectedNames)
+{
+  const std::string callerName = group->getPathName();
+  std::vector<std::string> callerTokens;
+  axom::utilities::string::split(callerTokens, callerName, '/');
+  callerTokens.erase(std::remove(callerTokens.begin(),
+                                 callerTokens.end(),
+                                 detail::COLLECTION_GROUP_NAME),
+                     callerTokens.end());
+  std::vector<std::string> unexpectedTokens;
+  // The items of unexpected items below/within the Container corresponding
+  // to the "group" argument
+  std::vector<std::string> unexpectedNamesWithinGroup;
+  for(const auto& name : unexpectedNames)
+  {
+    unexpectedTokens.clear();
+    axom::utilities::string::split(unexpectedTokens, name, '/');
+    // If it's smaller it can't be a descendant
+    if(unexpectedTokens.size() >= callerTokens.size())
+    {
+      // If the beginning of the unexpected tokens sequence is equal to the tokens
+      // of the calling Container's name
+      if(std::equal(callerTokens.begin(),
+                    callerTokens.end(),
+                    unexpectedTokens.begin()))
+      {
+        unexpectedNamesWithinGroup.push_back(name);
+      }
+    }
+  }
+  return unexpectedNamesWithinGroup;
 }
 
 }  // end namespace detail
@@ -939,7 +983,7 @@ Container& Container::required(bool isRequired)
 
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Container specific Sidre Datastore Group not set");
-  setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
+  setFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG, isRequired);
   return *this;
 }
 
@@ -959,7 +1003,20 @@ bool Container::isRequired() const
 
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Container specific Sidre Datastore Group not set");
-  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
+  return checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG);
+}
+
+Container& Container::strict(bool isStrict)
+{
+  if(isStructCollection())
+  {
+    forEachCollectionElement(
+      [isStrict](Container& container) { container.strict(isStrict); });
+  }
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                  "[Inlet] Container specific Sidre Datastore Group not set");
+  setFlag(*m_sidreGroup, *m_sidreRootGroup, detail::STRICT_FLAG, isStrict);
+  return *this;
 }
 
 Container& Container::registerVerifier(std::function<bool(const Container&)> lambda)
@@ -997,6 +1054,21 @@ bool Container::verify() const
     verified = false;
     SLIC_WARNING(
       fmt::format("[Inlet] Container failed verification: {0}", m_name));
+  }
+
+  // If the strict flag is set
+  if(checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::STRICT_FLAG))
+  {
+    // Unexpected names below/within the calling object
+    const auto currUnexpectedNames = unexpectedNames();
+    verified = verified && currUnexpectedNames.empty();
+    for(const auto& name : currUnexpectedNames)
+    {
+      SLIC_WARNING(
+        fmt::format("[Inlet] Container '{0}' contained unexpected child: {1}",
+                    m_name,
+                    name));
+    }
   }
 
   // Checking the child objects is not needed if the container wasn't defined in the input file
@@ -1134,6 +1206,11 @@ Function& Container::getFunction(const std::string& funcName) const
 }
 
 std::string Container::name() const { return m_name; }
+
+std::vector<std::string> Container::unexpectedNames() const
+{
+  return detail::filterUnexpectedNames(m_sidreGroup, m_unexpectedNames);
+}
 
 bool Container::contains(const std::string& name) const
 {

@@ -235,10 +235,9 @@ inline Result toIndex(const From& idx)
 template <>
 inline int toIndex(const std::string& idx)
 {
-  int idx_as_int;
-  SLIC_ERROR_IF(!checkedConvertToInt(idx, idx_as_int),
+  SLIC_ERROR_IF(!conduit::utils::string_is_integer(idx),
                 fmt::format("[Inlet] Expected an integer, got: {0}", idx));
-  return idx_as_int;
+  return conduit::utils::string_to_value<int>(idx);
 }
 
 /*!
@@ -311,7 +310,7 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
  *******************************************************************************
  */
 void updateUnexpectedNames(const std::string& accessedName,
-                           std::unordered_set<std::string>& unexpectedNames);
+                           std::vector<std::string>& unexpectedNames);
 
 }  // namespace detail
 
@@ -342,6 +341,8 @@ public:
    * \param [in] description Description of the Container
    * \param [in] reader Reference to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
+   * \param [in] unexpectedNames Reference to the global (relative to the Inlet
+   * hierarchy) list of unexpected names
    * \param [in] docEnabled Boolean indicating whether or not documentation
    * generation is enabled for input feck this Container instance belongs to.
    * \param [in] reconstruct Whether or not to attempt to reconstruct child Containers
@@ -352,7 +353,7 @@ public:
             const std::string& description,
             Reader& reader,
             axom::sidre::Group* sidreRootGroup,
-            std::unordered_set<std::string>& expected_names,
+            std::vector<std::string>& unexpectedNames,
             bool docEnabled = true,
             bool reconstruct = false);
 
@@ -817,6 +818,21 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Set the strictness of this Container.
+   *
+   * Set whether this Container is strict, or not - i.e., whether entries other
+   * than those added to the schema should be allowed.
+   * The default behavior is to not be strict.
+   *
+   * \param [in] isStrict Boolean value of whether Container is strict
+   *
+   * \return Reference to this instance of Container
+   *****************************************************************************
+   */
+  Container& strict(bool isStrict = true);
+
+  /*!
+   *****************************************************************************
    * \brief Registers the function object that will verify this Container's contents
    * during the verification stage.
    * 
@@ -893,6 +909,16 @@ public:
    *****************************************************************************
    */
   std::string name() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the list of unexpected names "below" the calling container,
+   * i.e., entries in the input file structure (e.g., a Lua table or
+   * YAML dictionary) corresponding to the calling container that were not
+   * requested/retrieved via an add* call
+   *****************************************************************************
+   */
+  std::vector<std::string> unexpectedNames() const;
 
   /*!
    *****************************************************************************
@@ -1275,7 +1301,7 @@ private:
   axom::sidre::Group* m_sidreGroup;
   // Hold a reference to the global set of unexpected names so it can be updated when
   // things are added to this Container
-  std::unordered_set<std::string>& m_unexpectedNames;
+  std::vector<std::string>& m_unexpectedNames;
   bool m_docEnabled;
   std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;

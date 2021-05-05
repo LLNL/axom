@@ -85,6 +85,20 @@ void toLower(std::string& str);
  */
 void toUpper(std::string& str);
 
+/**
+ * \brief Retrieves the last "n" tokens of a string split with the specified delimiter
+ * \param [in] input The string to split
+ * \param [in] n The number of tokens to retrieve
+ * \param [in] delim The delimiter to split with
+ * 
+ * \return A list of tokens (of size \a n )
+ * 
+ * Splits a string starting from the end of the string into a maximum of \a n tokens
+ */
+std::vector<std::string> splitLastNTokens(const std::string& input,
+                                          const std::size_t n,
+                                          const char delim);
+
 }  // end namespace string
 }  // end namespace utilities
 }  // end namespace axom

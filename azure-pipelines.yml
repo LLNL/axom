@@ -20,7 +20,7 @@ jobs:
       linux_gcc8:
         VM_ImageName: 'ubuntu-16.04'
         Compiler_ImageName: '$(GCC8_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: ''
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc8'
         HOST_CONFIG: 'docker-linux-ubuntu16.04-ivybridge-gcc@8.1.0'

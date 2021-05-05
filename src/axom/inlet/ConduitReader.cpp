@@ -120,9 +120,9 @@ const conduit::Node* traverseNode(const conduit::Node& root, const std::string& 
     }
     else
     {
-      int token_as_int;
-      bool is_int = checkedConvertToInt(token, token_as_int);
-      if(is_int && token_as_int < node->number_of_children())
+      bool is_int = conduit::utils::string_is_integer(token);
+      int token_as_int = conduit::utils::string_to_value<int>(token);
+      if(is_int && (token_as_int < node->number_of_children()))
       {
         node = &((*node)[token_as_int]);
       }
@@ -168,7 +168,7 @@ void arrayToMap(const conduit::DataArray<ConduitType>& array,
  *******************************************************************************
  */
 void nameRetrievalHelper(const conduit::Node& node,
-                         std::unordered_set<std::string>& names)
+                         std::vector<std::string>& names)
 {
   // Conduit paths use [0] for array indices, Inlet does not, so they need
   // to be removed - e.g., foo/[0]/bar vs foo/0/bar
@@ -179,7 +179,7 @@ void nameRetrievalHelper(const conduit::Node& node,
   };
   for(const auto& child : node.children())
   {
-    names.insert(filter_name(child.path()));
+    names.push_back(filter_name(child.path()));
     nameRetrievalHelper(child, names);
   }
 }
@@ -398,9 +398,9 @@ FunctionVariant ConduitReader::getFunction(const std::string&,
   return {};
 }
 
-std::unordered_set<std::string> ConduitReader::getAllNames()
+std::vector<std::string> ConduitReader::getAllNames()
 {
-  std::unordered_set<std::string> result;
+  std::vector<std::string> result;
   detail::nameRetrievalHelper(m_root, result);
   return result;
 }

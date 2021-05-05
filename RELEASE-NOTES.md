@@ -46,7 +46,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   delimiter characters
 - Inlet: Added a method to `inlet::Inlet` that retrieves the set of unexpected names
   in the input file
-- Inlet: The internal hierarchy of an `Inlet` object can be reconstructed from a Sidre group
+- Inlet: Added an option to mark `Container`s as strict, which fail verification when unexpected
+  entries are present
+- Added support in `MFEMSidreDataCollection` for registering `QFunctions`
+  (data associated with quadrature points on a mesh)
+- Inlet: The internal hierarchy of an `Inlet` object can be reconstructed from a Sidre group,
+  excluding callback functions
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
@@ -82,6 +87,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated built-in TPL `fmt` to master branch snapshot, March 26, 2021.
 - Inlet: SphinxWriter will now print only one element schema per container instead of
   printing the same schema for each element in the container
+- Update BLT to release 0.4.0
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty

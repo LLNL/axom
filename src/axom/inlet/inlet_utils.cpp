@@ -17,52 +17,59 @@ void setWarningFlag(axom::sidre::Group* root)
   }
 }
 
-void setRequired(axom::sidre::Group& target, axom::sidre::Group& root, bool required)
+void setFlag(axom::sidre::Group& target,
+             axom::sidre::Group& root,
+             const std::string& flag,
+             bool value)
 {
-  if(target.hasView("required"))
+  const int8 bval = value ? 1 : 0;
+  if(target.hasView(flag))
   {
-    const std::string msg =
-      fmt::format("[Inlet] Required value has already been defined for: {0}",
-                  target.getName());
+    auto flagView = target.getView(flag);
+    if(flagView->getData<int8>() != bval)
+    {
+      const std::string msg =
+        fmt::format("[Inlet] '{0}' value has already been defined for: {1}",
+                    flag,
+                    target.getName());
 
-    SLIC_WARNING(msg);
-    setWarningFlag(&root);
+      SLIC_WARNING(msg);
+      setWarningFlag(&root);
+    }
   }
   else
   {
-    if(required)
+    if(value)
     {
-      target.createViewScalar("required", static_cast<int8>(1));
+      target.createViewScalar(flag, bval);
     }
     else
     {
-      target.createViewScalar("required", static_cast<int8>(0));
+      target.createViewScalar(flag, bval);
     }
   }
 }
 
-bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root)
+bool checkFlag(const axom::sidre::Group& target,
+               axom::sidre::Group& root,
+               const std::string& flag)
 {
-  if(!target.hasView("required"))
+  if(!target.hasView(flag))
   {
     return false;
   }
-  const axom::sidre::View* valueView = target.getView("required");
-  if(valueView == nullptr)
-  {
-    //TODO: is this possible after it says it has the view?
-    return false;
-  }
+  const axom::sidre::View* valueView = target.getView(flag);
   const int8 intValue = valueView->getScalar();
   if(intValue < 0 || intValue > 1)
   {
     const std::string msg = fmt::format(
       "[Inlet] Invalid integer value stored in "
-      " boolean value named {0}",
-      target.getName());
+      " boolean value named {0} for flag '{1}'",
+      target.getName(),
+      flag);
     SLIC_WARNING(msg);
     setWarningFlag(&root);
-    return false;
+    return static_cast<bool>(intValue);
   }
 
   return static_cast<bool>(intValue);
@@ -157,16 +164,6 @@ std::string removeAllInstances(const std::string& target,
     pos = result.find(substr);
   }
   return result;
-}
-
-bool checkedConvertToInt(const std::string& number, int& result)
-{
-  // Use the C versions to avoid the exceptions
-  // thrown by std::stoi on conversion failure
-  // FIXME: Switch to std::from_chars when C++17 is available
-  char* ptr;
-  result = strtol(number.c_str(), &ptr, 10);
-  return *ptr == 0;
 }
 
 void markAsStructCollection(axom::sidre::Group& target)

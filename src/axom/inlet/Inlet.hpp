@@ -485,7 +485,7 @@ public:
    * in the input file that were not added via an add* call
    *****************************************************************************
    */
-  const std::unordered_set<std::string>& unexpectedNames() const
+  const std::vector<std::string>& unexpectedNames() const
   {
     return m_unexpectedNames;
   }
@@ -497,7 +497,7 @@ private:
   Container m_globalContainer;
   std::unique_ptr<Writer> m_writer;
   bool m_docEnabled;
-  std::unordered_set<std::string> m_unexpectedNames;
+  std::vector<std::string> m_unexpectedNames;
 };
 
 }  // end namespace inlet
