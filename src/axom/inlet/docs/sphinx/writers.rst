@@ -23,7 +23,7 @@ compatible with the `Sphinx <https://www.sphinx-doc.org/en/master/>`_ documentat
 
 The ``SphinxWriter`` currently has two styles available:
 
-- A table-based style that, for each ``Container``, generates a table for its child fields and functions
+- A flat style that, for each ``Container``, generates a table for its child fields and functions
 - A nested style that includes a "table of contents" for each ``Container`` with links to full descriptions
   of child fields and functions
 
@@ -32,7 +32,7 @@ For comparison, the following is produced from the ``documentation_generation.cp
 .. toctree::
   :maxdepth: 1
 
-  example1_table_documentation
+  example1_flat_documentation
   example1_nested_documentation
 
 ...from the ``mfem_coefficient.cpp`` example:
@@ -40,7 +40,7 @@ For comparison, the following is produced from the ``documentation_generation.cp
 .. toctree::
   :maxdepth: 1
 
-  mfem_coefficient_table_documentation
+  mfem_coefficient_flat_documentation
   mfem_coefficient_nested_documentation
 
 ...and from the ``nested_structs.cpp`` example:
@@ -48,7 +48,7 @@ For comparison, the following is produced from the ``documentation_generation.cp
 .. toctree::
   :maxdepth: 1
 
-  nested_structs_table_documentation
+  nested_structs_flat_documentation
   nested_structs_nested_documentation
 
 -----------

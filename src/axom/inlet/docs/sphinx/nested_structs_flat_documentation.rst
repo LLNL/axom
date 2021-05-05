@@ -2,7 +2,7 @@
 .. |check|      unicode:: U+2611 .. CHECKED BOX
 
 ==================================
-Nested Structs Output (table mode)
+Nested Structs Output (flat mode)
 ==================================
 
 ------

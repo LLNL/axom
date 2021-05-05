@@ -2,7 +2,7 @@
 .. |check|      unicode:: U+2611 .. CHECKED BOX
 
 ====================================
-MFEM Coefficient Output (table mode)
+MFEM Coefficient Output (flat mode)
 ====================================
 
 ---

@@ -2,7 +2,7 @@
 .. |check|      unicode:: U+2611 .. CHECKED BOX
 
 ===============================================
-Example Output: Input File Options (table mode)
+Example Output: Input File Options (flat mode)
 ===============================================
 
 --------------
