@@ -120,6 +120,8 @@ if (MFEM_DIR)
                             TREAT_INCLUDES_AS_SYSTEM ON
                             EXPORTABLE ON)
         blt_list_append(TO TPL_DEPS ELEMENTS mfem)
+    else()
+        target_include_directories(mfem SYSTEM INTERFACE ${MFEM_INCLUDE_DIRS} )
     endif()
 else()
     message(STATUS "MFEM support is OFF")
