@@ -872,6 +872,30 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
   }
 }
 
+VerifiableScalar& Container::addBool(const std::string& name,
+                                     const std::string& description)
+{
+  return addPrimitive<bool>(name, description);
+}
+
+VerifiableScalar& Container::addDouble(const std::string& name,
+                                       const std::string& description)
+{
+  return addPrimitive<double>(name, description);
+}
+
+VerifiableScalar& Container::addInt(const std::string& name,
+                                    const std::string& description)
+{
+  return addPrimitive<int>(name, description);
+}
+
+VerifiableScalar& Container::addString(const std::string& name,
+                                       const std::string& description)
+{
+  return addPrimitive<std::string>(name, description);
+}
+
 Verifiable<Function>& Container::addFunction(const std::string& name,
                                              const FunctionTag ret_type,
                                              const std::vector<FunctionTag>& arg_types,
