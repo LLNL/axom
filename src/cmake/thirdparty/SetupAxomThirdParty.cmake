@@ -222,3 +222,37 @@ foreach(dep ${TPL_DEPS})
         set_target_properties(${dep} PROPERTIES EXPORT_NAME axom::${dep})
     endif()
 endforeach()
+
+#---------------------------------------------------------------------------
+# -- Temporary fix until we track down root cause --
+# Remove non-existant INTERFACE_INCLUDE_DIRECTORIES from imported targets
+# to work around CMake error
+#---------------------------------------------------------------------------
+set(_imported_targets
+    raja
+    umpire
+    conduit
+    conduit::conduit_mpi
+    conduit::conduit
+    conduit_relay_mpi
+    conduit_relay_mpi_io
+    conduit_blueprint
+    conduit_blueprint_mpi)
+
+foreach(_target ${_imported_targets})
+    if(TARGET ${_target})
+        message(STATUS "Removing non-existant include directories from target[${_target}]")
+
+        get_target_property(_dirs ${_target} INTERFACE_INCLUDE_DIRECTORIES)
+        set(_existing_dirs)
+        foreach(_dir ${_dirs})
+            if (EXISTS "${_dir}")
+                list(APPEND _existing_dirs "${_dir}")
+            endif()
+        endforeach()
+        if (_existing_dirs)
+            set_target_properties(${_target} PROPERTIES
+                                  INTERFACE_INCLUDE_DIRECTORIES "${_existing_dirs}" )
+        endif()
+    endif()
+endforeach()
