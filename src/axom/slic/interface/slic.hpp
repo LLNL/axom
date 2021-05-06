@@ -10,6 +10,7 @@
 #ifndef SLIC_HPP_
 #define SLIC_HPP_
 
+#include "axom/config.hpp"
 #include "axom/slic/core/Logger.hpp"
 #include "axom/slic/core/LogStream.hpp"
 #include "axom/slic/core/MessageLevel.hpp"
@@ -23,7 +24,7 @@ namespace axom
 {
 namespace slic
 {
-struct debug
+struct AXOM_API debug
 {
   static bool checksAreErrors;
 };
