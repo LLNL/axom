@@ -71,7 +71,6 @@ declarations:
                     bool preserve_contents = false)
   - decl: void read(Group * group,
                     const std::string& root_file,
-                    bool preserve_contents = false,
-                    bool use_scr = false)
+                    bool preserve_contents = false)
   - decl: void loadExternalData(Group * group,
                                 const std::string& root_file)
