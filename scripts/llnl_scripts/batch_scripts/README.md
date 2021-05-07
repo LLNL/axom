@@ -7,7 +7,7 @@
 [comment]: # (#################################################################)
 
 
-This directory contains some batch scripts to build third-party-libraries 
+This directory contains some batch scripts to build third-party libraries 
 or source for multiple configurations on different clusters at LLNL.
 
 About

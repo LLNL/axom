@@ -104,8 +104,9 @@ endif()
 #------------------------------------------------------------------------------
 if(WIN32)
     foreach(c ${AXOM_COMPONENTS_ENABLED})
-        blt_add_target_definitions(TO ${c}
-                                SCOPE PRIVATE
-                                TARGET_DEFINITIONS "axom_EXPORTS")
+        blt_add_target_definitions(
+            TO                 ${c}
+            SCOPE              PRIVATE
+            TARGET_DEFINITIONS "axom_EXPORTS")
     endforeach()
 endif()
