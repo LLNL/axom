@@ -40,6 +40,14 @@ jobs:
         dir
         dir scripts
         dir scripts/uberenv
-    - name: Run uberenv (w/ default settings) 
-      run: |
-        python3 ./scripts/uberenv/uberenv.py
+    - name: Run uberenv (x64-windows)
+      run: python3 ./scripts/uberenv/uberenv.py --triplet "x64-windows"
+    - name: Copy host-config
+      run: Copy-Item -Path ".\uberenv_libs\*.cmake" -Destination "hc.cmake"
+    - name: Configure axom
+      run: python3 config-build.py -bp build-axom -ip install-axom -hc hc.cmake --msvc 201964
+    - name: Build axom debug
+      run: cmake --build . --config Debug
+    - name: Test axom debug
+      run: ctest -C Debug
+
