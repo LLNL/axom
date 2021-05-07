@@ -31,4 +31,4 @@ jobs:
       with:
         python-version: '3.7'
     - name: Run uberenv (w/ default settings) 
-      run: ./scripts/uberenv/uberenv.py
+      run: python3 ./scripts/uberenv/uberenv.py
