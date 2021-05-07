@@ -33,7 +33,10 @@ jobs:
     - name: Show path
       run: pwd
     - name: List files
-      run: dir
+      run: |
+        dir
+        dir scripts
+        dir scripts/uberenv
     - name: Run uberenv (w/ default settings) 
       run: |
         python3 .\scripts\uberenv\uberenv.py
