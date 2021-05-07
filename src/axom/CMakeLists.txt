@@ -54,14 +54,11 @@ install(TARGETS              axom
 install(EXPORT axom-targets DESTINATION lib/cmake)
 
 #------------------------------------------------------------------------------
-# Generate export symbols in `axom_export.hpp` and install this file
+# Generate export symbols
 #------------------------------------------------------------------------------
 include(GenerateExportHeader)
-set(_export_header ${CMAKE_BINARY_DIR}/include/axom/axom_export.hpp)
+set(_export_header ${CMAKE_BINARY_DIR}/axom_export_symbols)
 generate_export_header(axom  EXPORT_FILE_NAME ${_export_header})
-
-install(FILES       ${_export_header}
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
 #------------------------------------------------------------------------------
 # Output some information about the configuration

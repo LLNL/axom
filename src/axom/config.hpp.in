@@ -115,11 +115,14 @@
 #cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
 /*
- * Defines AXOM_EXPORT compiler define for dealing with importing/exporting symbols 
- * in shared libraries and disables some MSVC warnings related to shared libraries
+ * Inline axom's symbols, e.g. the AXOM_EXPORT macro
  */
-#include "axom_export.hpp"
+@INLINED_AXOM_EXPORTS@
 
+
+/*
+ * Disables some MSVC warnings related to shared libraries
+ */
 #if defined(_MSC_VER)
 /* Turn off warning about lack of DLL interface */
 #pragma warning(disable:4251)
@@ -128,5 +131,6 @@
 /* Turn off warning about identifier truncation */
 #pragma warning(disable:4786)
 #endif  /* defined(_MSC_VER) */
+
 
 #endif  /* AXOM_COMMON_CONFIG_HPP */

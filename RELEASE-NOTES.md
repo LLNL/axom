@@ -89,6 +89,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   printing the same schema for each element in the container
 - Updated BLT to version 0.4.0 released 9 Apr 2021
 - Updated MFEM to version 4.2 released 30 Oct 2020. Axom no longer requires MFEM to be built serially
+- The macro for exporting symbols is now `AXOM_EXPORT` instead of `AXOM_API`
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
