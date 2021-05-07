@@ -26,6 +26,8 @@
  * each prepended with an underscore.
  */
 
+#include "axom/config.hpp"
+
 // Axom primitives
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"

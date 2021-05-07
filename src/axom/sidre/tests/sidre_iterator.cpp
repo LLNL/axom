@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
 #include "axom/sidre/core/sidre.hpp"
 
 using axom::sidre::Attribute;
