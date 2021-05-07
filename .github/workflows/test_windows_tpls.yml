@@ -42,19 +42,23 @@ jobs:
     - name: Configure axom
       run: |
         python3 config-build.py -bp build-axom -ip install-axom -hc hc.cmake --msvc 201964
-    - name: cd into build directory
-      run: |
-        cd build-axom
-        ls
     - name: Build axom debug
       run: |
+        cd build-axom
         ls
         cmake --build . --config Debug
     - name: Test axom debug
       run: |
+        cd build-axom
         ls
         ctest -C Debug
     - name: Build axom release
-      run: cmake --build . --config Release
+      run: |
+        cd build-axom
+        ls
+        cmake --build . --config Release
     - name: Test axom release
-      run: ctest -C Release
+      run: |
+        cd build-axom
+        ls
+        ctest -C Release
