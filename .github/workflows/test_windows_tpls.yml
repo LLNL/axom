@@ -26,8 +26,9 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - name: Set up python
+      uses: actions/setup-python@v2
       with:
         python-version: '3.7'
-    - name: Send python greeting
-      run: python3 -c "print(F\"Hello ${{ github.event.inputs.name }}\")"
+    - name: Display python version
+      run: python3 -c "import sys; print(sys.version)"
