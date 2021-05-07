@@ -54,6 +54,16 @@ install(TARGETS              axom
 install(EXPORT axom-targets DESTINATION lib/cmake)
 
 #------------------------------------------------------------------------------
+# Generate export symbols in `axom_export.hpp` and install this file
+#------------------------------------------------------------------------------
+include(GenerateExportHeader)
+set(_export_header ${CMAKE_BINARY_DIR}/include/axom/axom_export.hpp)
+generate_export_header(axom  EXPORT_FILE_NAME ${_export_header})
+
+install(FILES       ${_export_header}
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+
+#------------------------------------------------------------------------------
 # Output some information about the configuration
 #------------------------------------------------------------------------------
 foreach(comp ${AXOM_COMPONENTS_FULL})
@@ -87,5 +97,18 @@ if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
         if(TARGET ${_tgt})
             set_target_properties(${_tgt} PROPERTIES FOLDER "axom/code_checks")
         endif()
+    endforeach()
+endif()
+
+
+#------------------------------------------------------------------------------
+# Bugfix for dllimport/dllexport functionality in msvc with object libraries
+# Each axom component needs to have 'axom_EXPORTS' defined when building
+#------------------------------------------------------------------------------
+if(WIN32)
+    foreach(c ${AXOM_COMPONENTS_ENABLED})
+        blt_add_target_definitions(TO ${c}
+                                SCOPE PRIVATE
+                                TARGET_DEFINITIONS "axom_EXPORTS")
     endforeach()
 endif()
