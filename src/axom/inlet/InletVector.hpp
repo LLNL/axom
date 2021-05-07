@@ -55,7 +55,7 @@ struct InletVector
    */
   InletVector(std::initializer_list<double> values)
     : vec(values)
-    , dim(values.size())
+    , dim(static_cast<int>(values.size()))
   { }
 
   /*!
