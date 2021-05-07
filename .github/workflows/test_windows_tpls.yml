@@ -30,4 +30,4 @@ jobs:
       with:
         python-version: '3.7'
     - name: Send python greeting
-      run: python2 -c "print(F'Hello ${{ github.event.inputs.name }}')"
+      run: python3 -c 'print(F"Hello ${{ github.event.inputs.name }}")'
