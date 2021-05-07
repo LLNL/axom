@@ -115,7 +115,7 @@
 #cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
 /*
- * Inline axom's symbols, e.g. the AXOM_EXPORT macro
+ * Inline axom's macros related to export symbols, e.g. AXOM_EXPORT
  */
 @INLINED_AXOM_EXPORTS@
 
