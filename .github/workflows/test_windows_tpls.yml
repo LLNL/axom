@@ -34,7 +34,7 @@ jobs:
       with:
         python-version: '3.7'
     - name: List path and files
-      run: dir
+      run: ls
     - name: Run uberenv (x64-windows)
       run: python3 ./scripts/uberenv/uberenv.py --triplet "x64-windows"
     - name: Copy host-config
@@ -42,11 +42,18 @@ jobs:
     - name: Configure axom
       run: |
         python3 config-build.py -bp build-axom -ip install-axom -hc hc.cmake --msvc 201964
+    - name: cd into build directory
+      run: |
         cd build-axom
+        ls
     - name: Build axom debug
-      run: cmake --build . --config Debug
+      run: |
+        ls
+        cmake --build . --config Debug
     - name: Test axom debug
-      run: ctest -C Debug
+      run: |
+        ls
+        ctest -C Debug
     - name: Build axom release
       run: cmake --build . --config Release
     - name: Test axom release
