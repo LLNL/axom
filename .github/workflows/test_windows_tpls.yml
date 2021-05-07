@@ -25,7 +25,10 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repo w/ submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Set up python
       uses: actions/setup-python@v2
       with:
@@ -39,4 +42,4 @@ jobs:
         dir scripts/uberenv
     - name: Run uberenv (w/ default settings) 
       run: |
-        python3 .\scripts\uberenv\uberenv.py
+        python3 ./scripts/uberenv/uberenv.py
