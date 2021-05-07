@@ -26,6 +26,10 @@ jobs:
         python-version: '3.7'
     - name: List path and files
       run: ls
+    - name: Temp -- checkout update-mfem branch
+      run: |
+        git checkout feature/kweiss/update-mfem
+        git status
     - name: Run uberenv (x64-windows)
       run: python3 ./scripts/uberenv/uberenv.py --triplet "x64-windows"
     - name: Copy host-config
