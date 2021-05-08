@@ -31,12 +31,22 @@ jobs:
     needs: checkout_code
     strategy:
       matrix:
-        triplet: ["x64-windows",      "x86-windows"]
-        msvc:    ["201964",           "2019"]
-        hc:      ["hc_x64.cmake",     "hc_x86.cmake"]
-        prefix:  ["uberenv_libs_x64", "uberenv_libs_x86"]
-        build:   ["build_x64",        "build_x86"]
-        install: ["install_x64",      "install_x86"]
+        arch: ["x64", "x86"]
+        include:
+        - arch: "x64"
+          triplet: "x64-windows"
+          msvc:    "201964"
+          hc:      "hc_x64.cmake"
+          prefix:  "uberenv_libs_x64"
+          build:   "build_x64"
+          install: "install_x64"
+        - arch: "x86"
+          triplet: "x86-windows"
+          msvc:    "2019"
+          hc:      "hc_x86.cmake"
+          prefix:  "uberenv_libs_x86"
+          build:   "build_x86"
+          install: "install_x86"
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -52,24 +62,23 @@ jobs:
 
   # Our next job builds and tests the code in Debug and Release mode
   build_and_test:
-    name: Builds and tests the ${{ matrix.name }} configuration
+    name: Builds and tests the ${{ matrix.arch }}_${{ matrix.cfg }} configuration
     # The type of runner that the job will run on
     runs-on: windows-latest
     needs: run_uberenv
     strategy:
       matrix:
-        name:      ["x64_Debug",  "x64_Release", "x86_Debug",  "x86_Release"]
-        build_dir: ["build_x64",  "build_x64",   "build_x86",  "build_x86"  ]
-        cfg:       ["Debug",      "Release",     "Debug",      "Release"    ]
-
+        arch:  ["x64",  "x86"]
+        cfg:   ["Debug", "Release"] 
+        
     steps:
-    - name: Build axom ${{ matrix.name}}
+    - name: Build axom ${{ matrix.arch }}_${{ matrix.cfg }}
       run: |
-        cd build-${{ matrix.build_dir }}
+        cd build_${{ matrix.arch }}
         ls
         cmake --build . --config ${{ matrix.cfg }}
     - name: Test axom debug
       run: |
-        cd build-axom
+        cd build_${{ matrix.arch }}
         ls
         ctest -C ${{ matrix.cfg }}
