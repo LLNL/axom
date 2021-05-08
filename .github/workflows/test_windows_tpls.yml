@@ -9,12 +9,10 @@ on:
   
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This job will check out the repo and invoke uberenv to build and test our TPLs
-  run_uberenv:
-    # The type of runner that the job will run on
+  # The first job checks out the code and sets up python
+  checkout_code:
     runs-on: windows-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Checkout repo w/ submodules
       uses: actions/checkout@v2
@@ -24,32 +22,54 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.7'
+  
+  # This job invokes uberenv to build our TPLs for two "triplets"
+  run_uberenv:
+    name: Runs uberenv with vckpkg triplet ${{ matrix.triplet }}
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+    needs: checkout_code
+    strategy:
+      matrix:
+        triplet: ["x64-windows",      "x86-windows"]
+        msvc:    ["201964",           "2019"]
+        hc:      ["hc_x64.cmake",     "hc_x86.cmake"]
+        prefix:  ["uberenv_libs_x64", "uberenv_libs_x86"]
+        build:   ["build_x64",        "build_x86"]
+        install: ["install_x64",      "install_x86"]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
     - name: List path and files
       run: ls
-    - name: Run uberenv (x64-windows)
-      run: python3 ./scripts/uberenv/uberenv.py --triplet "x64-windows"
+    - name: Run uberenv
+      run: python3 ./scripts/uberenv/uberenv.py --triplet ${{ matrix.triplet }} --prefix ${{ matrix.prefix }}
     - name: Copy host-config
-      run: Copy-Item -Path ".\uberenv_libs\*.cmake" -Destination "hc.cmake"
+      run: Copy-Item -Path ".\${{ matrix.prefix }}\*.cmake" -Destination "${{ matrix.hc }}"
     - name: Configure axom
       run: |
-        python3 config-build.py -bp build-axom -ip install-axom -hc hc.cmake --msvc 201964
-    - name: Build axom debug
+        python3 config-build.py -bp ${{ matrix.build }} -ip ${{ matrix.install }} -hc ${{ matrix.hc }} --msvc ${{ matrix.msvc }}
+
+  # Our next job builds and tests the code in Debug and Release mode
+  build_and_test:
+    name: Builds and tests the ${{ matrix.name }} configuration
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+    needs: run_uberenv
+    strategy:
+      matrix:
+        name:      ["x64_Debug",  "x64_Release", "x86_Debug",  "x86_Release"]
+        build_dir: ["build_x64",  "build_x64",   "build_x86",  "build_x86"  ]
+        cfg:       ["Debug",      "Release",     "Debug",      "Release"    ]
+
+    steps:
+    - name: Build axom ${{ matrix.name}}
       run: |
-        cd build-axom
+        cd build-${{ matrix.build_dir }}
         ls
-        cmake --build . --config Debug
+        cmake --build . --config ${{ matrix.cfg }}
     - name: Test axom debug
       run: |
         cd build-axom
         ls
-        ctest -C Debug
-    - name: Build axom release
-      run: |
-        cd build-axom
-        ls
-        cmake --build . --config Release
-    - name: Test axom release
-      run: |
-        cd build-axom
-        ls
-        ctest -C Release
+        ctest -C ${{ matrix.cfg }}
