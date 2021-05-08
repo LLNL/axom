@@ -8,78 +8,53 @@ on:
   workflow_dispatch:
   
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:
-  # The first job checks out the code and sets up python
-  checkout_code:
+jobs:  
+  # This job invokes uberenv to build our TPLs for two "triplets"
+  run_uberenv:
+    name: Runs uberenv with vckpkg triplet ${{ matrix.triplet }}
+    # The type of runner that the job will run on
     runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: ["x64", "x86"]
+        cgf: ["Debug", "Release"]
+        include:
+        - arch: "x64"
+          triplet: "x64-windows"
+          msvc:    "201964"
+        - arch: "x86"
+          triplet: "x86-windows"
+          msvc:    "2019"
 
     steps:
     - name: Checkout repo w/ submodules
       uses: actions/checkout@v2
       with:
         submodules: recursive
+        
     - name: Set up python
       uses: actions/setup-python@v2
       with:
         python-version: '3.7'
-  
-  # This job invokes uberenv to build our TPLs for two "triplets"
-  run_uberenv:
-    name: Runs uberenv with vckpkg triplet ${{ matrix.triplet }}
-    # The type of runner that the job will run on
-    runs-on: windows-latest
-    needs: checkout_code
-    strategy:
-      matrix:
-        arch: ["x64", "x86"]
-        include:
-        - arch: "x64"
-          triplet: "x64-windows"
-          msvc:    "201964"
-          hc:      "hc_x64.cmake"
-          prefix:  "uberenv_libs_x64"
-          build:   "build_x64"
-          install: "install_x64"
-        - arch: "x86"
-          triplet: "x86-windows"
-          msvc:    "2019"
-          hc:      "hc_x86.cmake"
-          prefix:  "uberenv_libs_x86"
-          build:   "build_x86"
-          install: "install_x86"
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-    - uses: 
+        
     - name: List path and files
       run: ls
-    - name: Run uberenv
-      run: python3 ./scripts/uberenv/uberenv.py --triplet ${{ matrix.triplet }} --prefix ${{ matrix.prefix }}
+    - name: Run uberenv (${{ matrix.triplet }})
+      run: python3 ./scripts/uberenv/uberenv.py --triplet ${{ matrix.triplet }}
     - name: Copy host-config
-      run: Copy-Item -Path ".\${{ matrix.prefix }}\*.cmake" -Destination "${{ matrix.hc }}"
+      run: Copy-Item -Path ".\uberenv_libs\*.cmake" -Destination "hc.cmake"
     - name: Configure axom
       run: |
-        python3 config-build.py -bp ${{ matrix.build }} -ip ${{ matrix.install }} -hc ${{ matrix.hc }} --msvc ${{ matrix.msvc }}
+        python3 config-build.py -bp build_axom -ip install_axom -hc hc.cmake --msvc ${{ matrix.msvc }}
 
-  # Our next job builds and tests the code in Debug and Release mode
-  build_and_test:
-    name: Builds and tests the ${{ matrix.arch }}_${{ matrix.cfg }} configuration
-    # The type of runner that the job will run on
-    runs-on: windows-latest
-    needs: run_uberenv
-    strategy:
-      matrix:
-        arch:  ["x64",  "x86"]
-        cfg:   ["Debug", "Release"] 
-        
-    steps:
-    - name: Build axom ${{ matrix.arch }}_${{ matrix.cfg }}
+    - name: Build axom (${{ matrix.triplet }} ${{ matrix.cfg }})
       run: |
-        cd build_${{ matrix.arch }}
+        cd build_axom
         ls
         cmake --build . --config ${{ matrix.cfg }}
-    - name: Test axom debug
+        
+    - name: Test axom (${{ matrix.triplet }} ${{ matrix.cfg }})
       run: |
-        cd build_${{ matrix.arch }}
+        cd build_axom
         ls
         ctest -C ${{ matrix.cfg }}
