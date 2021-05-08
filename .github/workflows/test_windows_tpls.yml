@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         arch: ["x64", "x86"]
-        cgf: ["Debug", "Release"]
+        cfg: ["Debug", "Release"]
         include:
         - arch: "x64"
           triplet: "x64-windows"
