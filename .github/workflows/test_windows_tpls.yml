@@ -42,7 +42,9 @@ jobs:
     - name: Run uberenv (${{ matrix.triplet }})
       run: python3 ./scripts/uberenv/uberenv.py --triplet ${{ matrix.triplet }}
     - name: Copy host-config
-      run: Copy-Item -Path ".\uberenv_libs\*.cmake" -Destination "hc.cmake"
+      run: |
+        ls
+        Copy-Item -Path ".\uberenv_libs\*.cmake" -Destination ".\hc.cmake"
     - name: Configure axom
       run: |
         python3 config-build.py -bp build_axom -ip install_axom -hc hc.cmake --msvc ${{ matrix.msvc }}
