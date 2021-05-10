@@ -896,6 +896,7 @@ VerifiableScalar& Container::addString(const std::string& name,
   return addPrimitive<std::string>(name, description);
 }
 
+
 Verifiable<Function>& Container::addFunction(const std::string& name,
                                              const FunctionTag ret_type,
                                              const std::vector<FunctionTag>& arg_types,
