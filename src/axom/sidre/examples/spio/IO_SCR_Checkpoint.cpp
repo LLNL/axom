@@ -15,11 +15,10 @@
 #include "CLI11/CLI11.hpp"
 
 #ifndef AXOM_USE_SCR
-#error This file depends on SCR. Configure Axom with SCR to use this.
+  #error This file depends on SCR. Configure Axom with SCR to use this.
 #endif
 
 #include "scr.h"
-
 
 using axom::sidre::DataStore;
 using axom::sidre::DataType;

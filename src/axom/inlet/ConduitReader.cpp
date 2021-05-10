@@ -471,9 +471,13 @@ ReaderResult ConduitReader::getArray(const std::string& id,
     {
       detail::arrayToMap(node.as_double_array(), values);
     }
-    else if(node.dtype().is_integer())
+    else if(node.dtype().is_int32())
     {
-      detail::arrayToMap(node.as_long_array(), values);
+      detail::arrayToMap(node.as_int32_array(), values);
+    }
+    else if(node.dtype().is_int64())
+    {
+      detail::arrayToMap(node.as_int64_array(), values);
     }
     else
     {

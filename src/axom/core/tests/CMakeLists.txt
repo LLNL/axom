@@ -94,7 +94,7 @@ endif()
 #------------------------------------------------------------------------------
 set(utils_config_test_depends core gtest )
 
-blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF ${MFEM_FOUND} )
+blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF MFEM_FOUND )
 
 blt_add_executable( NAME       utils_config_test
                     SOURCES    utils_config.cpp
