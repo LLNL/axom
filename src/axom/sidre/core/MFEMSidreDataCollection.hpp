@@ -163,12 +163,10 @@ namespace sidre
     @note blueprint_index is used both in serial and in parallel. In parallel,
     only rank 0 will add entries to the blueprint index.
 
-    @note QuadratureFunction%s (q-fields) are not supported.
-
-    @note MFEMSidreDataCollection will attempt to reconstruct meshes and fields
-    on a restart, and will automatically register them.  This functionality is
-    experimental and only applies to meshes and fields written to a file by an
-    instance of this class.
+    @note MFEMSidreDataCollection will attempt to reconstruct meshes, fields,
+    and qfields on a restart, and will automatically register them.  This
+    functionality is experimental and only applies to meshes, fields, and
+    qfields written to a file by an instance of this class.
 
     @warning This class is still _experimental_, meaning that in future
     releases, it may not be backward compatible, and the output files generated
@@ -256,6 +254,37 @@ public:
                      const std::string& buffer_name,
                      IndexType offset);
 
+  /// Register a mfem::QuadratureFunction in the Sidre DataStore.
+  /** This method is a shortcut for the call
+       `RegisterQField(field_name, qf, field_name, 0)`.
+    */
+  virtual void RegisterQField(const std::string& field_name,
+                              mfem::QuadratureFunction* qf)
+  {
+    RegisterQField(field_name, qf, field_name, 0);
+  }
+
+  /// Register a mfem::QuadratureFunction in the Sidre DataStore.
+  /** The registration procedure is as follows:
+       - if (@a qf's data is NULL) or if @a qf does not have an associated
+         quadrature space, error out;
+       - else, if (DataStore has a named buffer @a buffer_name), replace @a qf's
+         data array with that named buffer plus the given @a offset care will be
+         taken to ensure the two have compatible sizes;
+       - else, use @a qf's data as external data associated with @a field_name
+         in the DataStore;
+       - register @a field_name in #qfield_map.
+       Both the @a field_name and @a buffer_name can contain a path prefix.
+       @note If @a field_name or @a buffer_name is empty, the method does
+       nothing.
+       @note If the QuadratureFunction pointer @a qf or it's QuadratureSpace
+       pointers are NULL, the method does nothing.
+    */
+  void RegisterQField(const std::string& field_name,
+                      mfem::QuadratureFunction* qf,
+                      const std::string& buffer_name,
+                      axom::sidre::IndexType offset);
+
   /// Registers an attribute field in the Sidre DataStore
   /** The registration process is similar to that of RegisterField()
       The attribute field is associated with the elements of the mesh
@@ -298,6 +327,11 @@ public:
   /** The field is removed from the #field_map and the DataStore, including
       deleting it from the named_buffers group, if allocated. */
   virtual void DeregisterField(const std::string& field_name);
+
+  /// De-register @a field_name from the MFEMSidreDataCollection.
+  /** The field is removed from the #qfield_map and the DataStore, including
+       deleting it from the named_buffers group, if allocated. */
+  virtual void DeregisterQField(const std::string& field_name);
 
   /// Delete all owned data.
   virtual ~MFEMSidreDataCollection();
@@ -475,10 +509,14 @@ private:
   std::vector<std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
   std::vector<std::unique_ptr<mfem::GridFunction>> m_owned_gridfuncs;
 
+  // Used for reconstructed QuadratureFunctions
+  std::vector<std::unique_ptr<mfem::QuadratureSpace>> m_quadspaces;
+  std::vector<std::unique_ptr<mfem::QuadratureFunction>> m_owned_quadfuncs;
+
   // Private helper functions
 
   void RegisterFieldInBPIndex(const std::string& field_name,
-                              mfem::GridFunction* gf);
+                              const int number_of_components);
   void DeregisterFieldInBPIndex(const std::string& field_name);
 
   void RegisterAttributeFieldInBPIndex(const std::string& attr_name);
@@ -503,17 +541,18 @@ private:
 
   /**
    * \brief A private helper function to set up the views associated with the
-      data of a scalar valued grid function in the blueprint style.
-   * \pre gf is not null
+      data of a scalar valued grid *or* quadrature function in the blueprint style.
+   * \pre field is not null
    * \note This function is expected to be called by RegisterField()
    * \note Handles cases where hierarchy is already set up,
    *      where the data was allocated by this data collection
    *      and where the gridfunction data is external to Sidre
    */
-  void addScalarBasedGridFunction(const std::string& field_name,
-                                  mfem::GridFunction* gf,
-                                  const std::string& buffer_name,
-                                  IndexType offset);
+  void addScalarBasedField(const std::string& field_name,
+                           mfem::Vector* field,
+                           const std::string& buffer_name,
+                           IndexType offset,
+                           const int num_dofs);
 
   /**
    * \brief A private helper function to set up the views associated with the
@@ -532,6 +571,10 @@ private:
   /** @brief A private helper function to set up the Views associated with
       attribute field named @a field_name */
   void addIntegerAttributeField(const std::string& field_name, bool is_bdry);
+
+  /** @brief A private helper function to remove a GridFunction or QuadratureFunction
+   *  @a field_name from the blueprint and index groups */
+  void removeField(const std::string& field_name);
 
   /// Sets up the four main mesh blueprint groups.
   /**

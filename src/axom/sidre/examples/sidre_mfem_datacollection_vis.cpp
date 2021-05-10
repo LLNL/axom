@@ -21,7 +21,11 @@
   #include "mpi.h"
 #endif
 
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 int main(int argc, char* argv[])
+#else
+int main()
+#endif
 {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   MPI_Init(&argc, &argv);

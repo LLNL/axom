@@ -120,6 +120,8 @@ if (MFEM_DIR)
                             TREAT_INCLUDES_AS_SYSTEM ON
                             EXPORTABLE ON)
         blt_list_append(TO TPL_DEPS ELEMENTS mfem)
+    else()
+        target_include_directories(mfem SYSTEM INTERFACE ${MFEM_INCLUDE_DIRS} )
     endif()
 else()
     message(STATUS "MFEM support is OFF")
@@ -152,7 +154,7 @@ if (SCR_DIR)
     include(cmake/thirdparty/FindSCR.cmake)
     blt_import_library( NAME       scr
                         INCLUDES   ${SCR_INCLUDE_DIRS}
-                        LIBRARIES  ${SCR_LIBRARY}
+                        LIBRARIES  ${SCR_LIBRARIES}
                         TREAT_INCLUDES_AS_SYSTEM ON
                         EXPORTABLE ON)
     blt_list_append(TO TPL_DEPS ELEMENTS scr)

@@ -5,10 +5,10 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
-#BSUB -n 8
 #BSUB -W 240
-#BSUB -G guests
-#BSUB -x 
+#BSUB -G wbronze
+#BSUB -o b.out.cz.blueos.src.%J.txt
+#BSUB -q pbatch
 #
 # usage: 
 #  cd {to directory with this script}

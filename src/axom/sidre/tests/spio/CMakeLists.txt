@@ -20,7 +20,8 @@ set(gtest_spio_parallel_tests
    )
 
 if(SCR_FOUND)
-    list(APPEND gtest_spio_parallel_tests spio_scr.hpp)
+# Turn off spio_scr until we solve run-time conflicts with other tests
+#    list(APPEND gtest_spio_parallel_tests spio_scr.hpp)
 endif()
 
 #------------------------------------------------------------------------------

@@ -38,33 +38,38 @@ void setWarningFlag(axom::sidre::Group* root);
 
 /*!
 *****************************************************************************
-* \brief This function is used to configure the Inlet object corresponding
-* to the provided Sidre group as required
+* \brief This function is used to add a flag to the Inlet object
+* corresponding to the provided Sidre group
 *
 * \param [in] target Reference to the Sidre group to set the required 
 * status of
 * \param [in] root Reference to the Sidre Root Group where the warning flag 
 * will be set on failure
-* \param [in] required Whether the Inlet object is required
+* \param [in] flag The name of the flag to set
+* \param [in] value The value of the flag
 *****************************************************************************
 */
-void setRequired(axom::sidre::Group& target,
-                 axom::sidre::Group& root,
-                 bool required);
+void setFlag(axom::sidre::Group& target,
+             axom::sidre::Group& root,
+             const std::string& flag,
+             bool value);
 
 /*!
 *****************************************************************************
-* \brief This function is used to determine if the Inlet object corresponding
-* to the provided Sidre group is required
+* \brief This function is used to determine the value of a flag for the
+* Inlet object corresponding to the provided Sidre group
 *
 * \param [in] target Reference to the Sidre group to check the required 
 * status of
 * \param [in] root Reference to the Sidre Root Group where the warning flag 
 * will be set on failure
-* \return Whether the Inlet object is required
+* \param [in] flag The name of the flag to check
+* \return The value of the flag
 *****************************************************************************
 */
-bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root);
+bool checkFlag(const axom::sidre::Group& target,
+               axom::sidre::Group& root,
+               const std::string& flag);
 
 /*!
 *****************************************************************************
@@ -135,18 +140,6 @@ std::string removeBeforeDelimiter(const std::string& path,
 std::string removeAllInstances(const std::string& target,
                                const std::string& substr);
 
-/*!
-*****************************************************************************
-* \brief This function performs a checked conversion of a string to an integer
-*
-* \param [in] number The string to be converted
-* \param [out] result The integer to store the result in, if successful
-*
-* \return Whether the conversion was successful
-*****************************************************************************
-*/
-bool checkedConvertToInt(const std::string& number, int& result);
-
 namespace detail
 {
 /*!
@@ -158,6 +151,8 @@ namespace detail
 const std::string COLLECTION_GROUP_NAME = "_inlet_collection";
 const std::string COLLECTION_INDICES_NAME = "_inlet_collection_indices";
 const std::string STRUCT_COLLECTION_FLAG = "_inlet_struct_collection";
+const std::string REQUIRED_FLAG = "required";
+const std::string STRICT_FLAG = "strict";
 }  // namespace detail
 
 /*!

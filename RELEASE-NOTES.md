@@ -47,6 +47,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   delimiter characters
 - Inlet: Added a method to `inlet::Inlet` that retrieves the set of unexpected names
   in the input file
+- Inlet: Added an option to mark `Container`s as strict, which fail verification when unexpected
+  entries are present
+- Added support in `MFEMSidreDataCollection` for registering `QFunctions`
+  (data associated with quadrature points on a mesh)
+- Inlet: The internal hierarchy of an `Inlet` object can be reconstructed from a Sidre group,
+  excluding callback functions
 
 ### Changed
 - Converted [Uberenv] to a git submodule. We previously vendored a copy of this script.
@@ -84,6 +90,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated built-in TPL `fmt` to master branch snapshot, March 26, 2021.
 - Inlet: SphinxWriter will now print only one element schema per container instead of
   printing the same schema for each element in the container
+- Updated BLT to version 0.4.0 released 9 Apr 2021
+- Updated MFEM to version 4.2 released 30 Oct 2020. Axom no longer requires MFEM to be built serially
+- The macro for exporting symbols is now `AXOM_EXPORT` instead of `AXOM_API`
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
