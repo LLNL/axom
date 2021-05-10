@@ -15,24 +15,28 @@ if (NOT MFEM_DIR)
   message(FATAL_ERROR "Cannot find MFEM. MFEM_DIR is not defined. ")
 endif()
 
-# Using the CMake build system on Windows, and make-based system otherwise
-set(_use_mfem_config FALSE)
+# Use the CMake build system on Windows - otherwise prefer CMake
+# and fall back on the Make config
+set(_mfem_required)
 if(WIN32)
-    set(_use_mfem_config TRUE)
+    set(_mfem_required REQUIRED)
 endif()
 
-if(_use_mfem_config)
-    # Allow for several different configurations of MFEM
-    find_package(mfem CONFIG 
-        REQUIRED
-        HINTS ${MFEM_DIR}/cmake/mfem 
-              ${MFEM_DIR}/lib/cmake/mfem
-              ${MFEM_DIR}/share/cmake/mfem
-              ${MFEM_DIR}/share/mfem
-              ${MFEM_DIR}/mfem)
+set(_MFEM_DIR ${MFEM_DIR}) # Save MFEM_DIR as a non-cache variable
+# Allow for several different configurations of MFEM
+find_package(MFEM CONFIG NO_DEFAULT_PATH ${_mfem_required} HINTS 
+             ${MFEM_DIR}/cmake/mfem 
+             ${MFEM_DIR}/lib/cmake/mfem
+             ${MFEM_DIR}/share/cmake/mfem
+             ${MFEM_DIR}/share/mfem
+             ${MFEM_DIR}/mfem)
+# find_package will overwrite MFEM_DIR, so restore it here
+set(MFEM_DIR ${_MFEM_DIR} CACHE PATH "" FORCE)
 
+if(MFEM_FOUND)
+    # MFEM was built with CMake so use that config file
+    message(STATUS "Using MFEM's CMake config file")
 else()
-
     find_path(
         MFEM_INCLUDE_DIRS mfem.hpp
         PATHS ${MFEM_DIR}/include
