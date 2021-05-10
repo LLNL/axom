@@ -6,12 +6,11 @@ include(vcpkg_common_functions)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO mfem/mfem
-    REF v4.0
-    SHA512 c1ef3ba4369a5d2a28c3bcf26f07798f9d4d4903549c884feae88f52ed7ec0bbc1ad23ed325cf2bfed4a8dacb08ecea23ed9702d603526fb9777f3c518fda3a1
+    REF v4.2
+    SHA512 8945f51f47d434b100e4054d7a3b20b6813c91e106feda78c4ff7f1f8d97e93fbf5b0c80b839c9b7fa9928b41093af065ccb2acb4a23d233b5b8489c76448e90
     HEAD_REF master
-    PATCHES
-        "./export-extern-vars.patch"        
-)
+    PATCHES "./export-extern-vars.patch"
+    )
 
 set(_is_shared TRUE)
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
