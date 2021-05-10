@@ -56,7 +56,7 @@ compilers:
       f77:
       fc:
     # Note: naming this gcc@8.1.0_no_fortran causes the gcc@8.1.0 spec to lose its
-    #  lose its fortran compiler. See: https://github.com/spack/spack/issues/19332
+    #       fortran compiler. See: https://github.com/spack/spack/issues/19332
     spec: gcc@8.1_no_fortran
     target: x86_64
 - compiler:

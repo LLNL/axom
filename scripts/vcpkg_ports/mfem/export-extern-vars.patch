@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f016de2e2..c30a400c7 100644
+index 25cf0a6..118f4b5 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -383,6 +383,13 @@ set(MFEM_INSTALL_DIR ${CMAKE_INSTALL_PREFIX} CACHE PATH
+@@ -444,6 +444,13 @@ set(MFEM_INSTALL_DIR ${CMAKE_INSTALL_PREFIX} CACHE PATH
  
  # Declaring the library
  add_library(mfem ${SOURCES} ${HEADERS} ${MASTER_HEADERS})
@@ -16,7 +16,7 @@ index f016de2e2..c30a400c7 100644
  # message(STATUS "TPL_LIBRARIES = ${TPL_LIBRARIES}")
  if (CMAKE_VERSION VERSION_GREATER 2.8.11)
    target_link_libraries(mfem PUBLIC ${TPL_LIBRARIES})
-@@ -521,7 +528,7 @@ foreach(Header mfem.hpp mfem-performance.hpp)
+@@ -582,7 +589,7 @@ foreach(Header mfem.hpp mfem-performance.hpp)
    install(FILES ${PROJECT_BINARY_DIR}/InstallHeaders/${Header}
      DESTINATION ${INSTALL_INCLUDE_DIR})
  endforeach()
@@ -26,7 +26,7 @@ index f016de2e2..c30a400c7 100644
  # Install the headers; currently, the miniapps headers are excluded
  install(DIRECTORY ${MFEM_SOURCE_DIRS}
 diff --git a/fem/fe.hpp b/fem/fe.hpp
-index b7b80c4ce..d8c8f93c4 100644
+index bbd956c..4c55f97 100644
 --- a/fem/fe.hpp
 +++ b/fem/fe.hpp
 @@ -13,6 +13,7 @@
@@ -37,17 +37,17 @@ index b7b80c4ce..d8c8f93c4 100644
  #include "../general/array.hpp"
  #include "../linalg/linalg.hpp"
  #include "intrules.hpp"
-@@ -1795,7 +1796,7 @@ public:
+@@ -1994,7 +1995,7 @@ public:
     ~Poly_1D();
  };
  
 -extern Poly_1D poly1d;
 +MFEM_EXPORT extern Poly_1D poly1d;
  
- class TensorBasisElement
- {
+ 
+ /// An element defined as an ND tensor product of 1D elements on a segment,
 diff --git a/fem/geom.hpp b/fem/geom.hpp
-index 819814e04..e92b08043 100644
+index 6a4dfce..df7fcab 100644
 --- a/fem/geom.hpp
 +++ b/fem/geom.hpp
 @@ -13,6 +13,7 @@
@@ -58,6 +58,15 @@ index 819814e04..e92b08043 100644
  #include "../linalg/densemat.hpp"
  #include "intrules.hpp"
  
+@@ -106,7 +107,7 @@ public:
+    int NumBdr(int GeomType) { return NumBdrArray[GeomType]; }
+ };
+ 
+-template <> struct Geometry::Constants<Geometry::POINT>
++template <> struct MFEM_EXPORT Geometry::Constants<Geometry::POINT>
+ {
+    static const int Dimension = 0;
+    static const int NumVert = 1;
 @@ -116,7 +117,7 @@ template <> struct Geometry::Constants<Geometry::POINT>
     static const int InvOrient[NumOrient];
  };
@@ -94,8 +103,8 @@ index 819814e04..e92b08043 100644
  {
     static const int Dimension = 3;
     static const int NumVert = 4;
-@@ -192,7 +193,7 @@ template <> struct Geometry::Constants<Geometry::TETRAHEDRON>
-    };
+@@ -196,7 +197,7 @@ template <> struct Geometry::Constants<Geometry::TETRAHEDRON>
+    static const int InvOrient[NumOrient];
  };
  
 -template <> struct Geometry::Constants<Geometry::CUBE>
@@ -103,7 +112,7 @@ index 819814e04..e92b08043 100644
  {
     static const int Dimension = 3;
     static const int NumVert = 8;
-@@ -210,7 +211,7 @@ template <> struct Geometry::Constants<Geometry::CUBE>
+@@ -214,7 +215,7 @@ template <> struct Geometry::Constants<Geometry::CUBE>
     };
  };
  
@@ -112,7 +121,7 @@ index 819814e04..e92b08043 100644
  {
     static const int Dimension = 3;
     static const int NumVert = 6;
-@@ -229,7 +230,7 @@ template <> struct Geometry::Constants<Geometry::PRISM>
+@@ -233,7 +234,7 @@ template <> struct Geometry::Constants<Geometry::PRISM>
  };
  
  // Defined in fe.cpp to ensure construction after 'mfem::WedgeFE'.
@@ -121,7 +130,7 @@ index 819814e04..e92b08043 100644
  
  
  class RefinedGeometry
-@@ -272,7 +273,7 @@ public:
+@@ -282,7 +283,7 @@ public:
     ~GeometryRefiner();
  };
  
@@ -131,7 +140,7 @@ index 819814e04..e92b08043 100644
  }
  
 diff --git a/fem/intrules.hpp b/fem/intrules.hpp
-index c8bd6dcdc..df759eeb7 100644
+index 49c33a1..f11210a 100644
 --- a/fem/intrules.hpp
 +++ b/fem/intrules.hpp
 @@ -13,6 +13,7 @@
@@ -142,7 +151,7 @@ index c8bd6dcdc..df759eeb7 100644
  #include "../general/array.hpp"
  
  namespace mfem
-@@ -365,10 +366,10 @@ public:
+@@ -375,10 +376,10 @@ public:
  };
  
  /// A global object with all integration rules (defined in intrules.cpp)
@@ -155,8 +164,30 @@ index c8bd6dcdc..df759eeb7 100644
  
  }
  
+diff --git a/general/device.hpp b/general/device.hpp
+index 1c702c8..b4b8a59 100644
+--- a/general/device.hpp
++++ b/general/device.hpp
+@@ -12,6 +12,8 @@
+ #ifndef MFEM_DEVICE_HPP
+ #define MFEM_DEVICE_HPP
+ 
++#include "../config/config.hpp"
++#include "../mfem_export.h"
+ #include "globals.hpp"
+ #include "mem_manager.hpp"
+ 
+@@ -115,7 +117,7 @@ struct Backend
+       priority order is used to select a specific backend from the list of
+       configured backends. See the Backend class and the Configure() method in
+       this class for details. */
+-class Device
++MFEM_EXPORT class Device
+ {
+ private:
+    friend class MemoryManager;
 diff --git a/general/globals.hpp b/general/globals.hpp
-index 076ab579c..b32c624b3 100644
+index 9b14b53..f2efd8e 100644
 --- a/general/globals.hpp
 +++ b/general/globals.hpp
 @@ -13,6 +13,7 @@
@@ -167,18 +198,40 @@ index 076ab579c..b32c624b3 100644
  #include <iostream>
  
  #ifdef MFEM_USE_MPI
-@@ -61,12 +62,12 @@ public:
+@@ -63,12 +64,12 @@ public:
  /** @brief Global stream used by the library for standard output. Initially it
      uses the same std::streambuf as std::cout, however that can be changed.
      @sa OutStream. */
 -extern OutStream out;
-+extern MFEM_EXPORT OutStream out;
++MFEM_EXPORT extern OutStream out;
  /** @brief Global stream used by the library for standard error output.
      Initially it uses the same std::streambuf as std::cerr, however that can be
      changed.
      @sa OutStream. */
 -extern OutStream err;
-+extern MFEM_EXPORT OutStream err;
++MFEM_EXPORT extern OutStream err;
  
  
  /** @brief Construct a string of the form "<prefix><myid><suffix>" where the
+diff --git a/general/mem_manager.hpp b/general/mem_manager.hpp
+index 5661d33..dfb3cd2 100644
+--- a/general/mem_manager.hpp
++++ b/general/mem_manager.hpp
+@@ -12,6 +12,8 @@
+ #ifndef MFEM_MEM_MANAGER_HPP
+ #define MFEM_MEM_MANAGER_HPP
+ 
++#include "../config/config.hpp"
++#include "../mfem_export.h"
+ #include "globals.hpp"
+ #include "error.hpp"
+ #include <cstring> // std::memcpy
+@@ -474,7 +476,7 @@ private:
+ /** The MFEM memory manager class. Host-side pointers are inserted into this
+     manager which keeps track of the associated device pointer, and where the
+     data currently resides. */
+-class MemoryManager
++class MFEM_EXPORT MemoryManager
+ {
+ private:
+ 
