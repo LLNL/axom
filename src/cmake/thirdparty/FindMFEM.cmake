@@ -24,7 +24,9 @@ endif()
 
 set(_MFEM_DIR ${MFEM_DIR}) # Save MFEM_DIR as a non-cache variable
 # Allow for several different configurations of MFEM
-find_package(MFEM CONFIG NO_DEFAULT_PATH ${_mfem_required} HINTS 
+# FIXME: Should this always be QUIET? We don't want to warn when MFEM is
+# built with Make but will this suppress info when the package isn't found otherwise?
+find_package(MFEM CONFIG QUIET NO_DEFAULT_PATH ${_mfem_required} HINTS
              ${MFEM_DIR}/cmake/mfem 
              ${MFEM_DIR}/lib/cmake/mfem
              ${MFEM_DIR}/share/cmake/mfem
