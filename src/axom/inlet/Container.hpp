@@ -544,10 +544,7 @@ public:
    *****************************************************************************
    */
   VerifiableScalar& addBool(const std::string& name,
-                            const std::string& description = "")
-  {
-    return addPrimitive<bool>(name, description);
-  }
+                            const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -565,10 +562,7 @@ public:
    *****************************************************************************
    */
   VerifiableScalar& addDouble(const std::string& name,
-                              const std::string& description = "")
-  {
-    return addPrimitive<double>(name, description);
-  }
+                              const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -586,10 +580,8 @@ public:
    *****************************************************************************
    */
   VerifiableScalar& addInt(const std::string& name,
-                           const std::string& description = "")
-  {
-    return addPrimitive<int>(name, description);
-  }
+                           const std::string& description = "");
+
   /*!
    *****************************************************************************
    * \brief Add a String Field to the input file schema.
@@ -606,10 +598,7 @@ public:
    *****************************************************************************
    */
   VerifiableScalar& addString(const std::string& name,
-                              const std::string& description = "")
-  {
-    return addPrimitive<std::string>(name, description);
-  }
+                              const std::string& description = "");
 
   /*!
    *****************************************************************************
