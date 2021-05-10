@@ -19,7 +19,7 @@ Web Documentation
 
 Describe how to build and install web documentation...
 
-Shared LC web content location axom/src/docs/sphinx/web
+Shared LC web content location ``axom/src/docs/sphinx/web``
 
 
 ==================================
@@ -37,16 +37,16 @@ Building and installing TPLs for all compilers on the current LC platform you ar
 Questions we need to answer include:
 
   * How does one add a new compiler or platform to the mix?
-  * How does one build a new set of TPLs with for a single platform or compiler
+  * How does one build a new set of TPLs for a single platform or compiler
     for testing?
   * What is the procedure for changing versions of one or more TPLs?
   * How do we keep things straight when using different TPL versions for 
     different branches?
   * How to use the scripts for team TPL support vs. local development 
-    experimentation?
+    and experimentation?
   * Others?
 
-.. note :: Pull in content from ../web/build_system/thirdparty_deps.rst ...
+.. note :: Pull in content from ``../web/build_system/thirdparty_deps.rst`` ...
            fill in gaps and make sure it it up-to-date...
 
 Updating a TPL to a new version
@@ -58,18 +58,18 @@ of the TPL libraries.
 #. Create a branch to work on the task.
 
 
-#. Update the `packages.yaml` files in `scripts/uberenv/spack_configs`.
+#. Update the ``packages.yaml`` files in ``scripts/spack/configs/``.
    Find the entry for the library you wish to update and change the
-   version number. Do this for every `packages.yaml` for every system type,
+   version number. Do this for the ``packages.yaml`` file of each system type,
    including those in the `docker` subdirectory.
 
 
-#. Update `scripts/uberenv/packages/[package name]/package.py` for the
+#. Update ``scripts/uberenv/packages/[package name]/package.py`` for the
    library you are changing. Usually this can be done by copying directly
-   from `var/spack/repos/builtin/packages/[package name]/package.py` in
-   the Spack distribution. Clone the repo at `github.com/spack/spack` to
+   from ``var/spack/repos/builtin/packages/[package name]/package.py`` in
+   the Spack distribution. Clone the repo at ``github.com/spack/spack`` to
    find this file and copy it. Verify that the new version you intend to
-   use is included in this file in the list of `version()` entries.
+   use is included in this file in the list of ``version()`` entries.
 
 #. Do a test installation in your local directories
 
@@ -83,7 +83,7 @@ of the TPL libraries.
    with the new TPL update, make these changes and test them.
 
 #. When you are confident that everything is correct, log in as user
-   `atk` to each of the machines named in Axom's standard host-configs and run
+   ``atk`` to each of the machines named in Axom's standard host-configs and run
 
    $ scripts/llnl/build_tpl.py
 
@@ -91,7 +91,7 @@ of the TPL libraries.
    used by Axom developers. When completed, they will produce new host-config
    files for each configuration. Give these files to your regular user account
    and log back in to that account. Copy these new host-config files to the
-   `host-configs` subdirectory and commit them to your branch. Make sure all
+   ``host-configs`` subdirectory and commit them to your branch. Make sure all
    file changes from all previous steps are also committed and pushed upstream.
 
 #. Next, build the docker images for continuous integration using GitHub
@@ -103,17 +103,17 @@ of the TPL libraries.
 #. When the docker image build completes, click on your build and find the
    "Artifacts" listed at the bottom of the page. These contain host-configs
    for building Axom on the docker images. Download them and copy them to
-   Axom's `host-configs/docker` subdirectory.
+   Axom's ``host-configs/docker`` subdirectory.
 
 #. To complete the setup of the new docker images, the Compiler_ImageName
-   entries in `azure-pipelines.yaml` at the top-level directory must be updated
+   entries in ``azure-pipelines.yaml`` at the top-level directory must be updated
    with the timestamped names of the new images. The new names can be found in
    the log files from the successful GitHub action. On the left of the page for
    the successful action is a "Jobs" menu. Click on each job and then find
    the "Build and push" section of the log. Within the first few lines of the
    section there should be an entry of the form
-   `"tags: axom/tpls:clang-10_12-18-20_00h-10m`. Copy the name beginning with
-   `axom/tpls` to the appropriate locations in azure-pipelines.yaml. Repeat
+   ``"tags: axom/tpls:clang-10_12-18-20_00h-10m``. Copy the name beginning with
+   ``axom/tpls`` to the appropriate locations in azure-pipelines.yaml. Repeat
    this with the names from each compiler job used in the GitHub action.
 
 #. Make sure all changes in your branch are committed and pushed, and create

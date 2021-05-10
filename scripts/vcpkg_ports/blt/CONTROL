@@ -1,4 +1,4 @@
 Source: blt
-Version: v0.3.0
+Version: v0.4.0
 Homepage: https://github.com/LLNL/blt
 Description: A streamlined CMake build system foundation for developing HPC software
