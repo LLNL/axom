@@ -46,7 +46,7 @@ jobs:
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
       with:
-        name: artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}.zip
+        name: uberenv_artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}.zip
         path: |
           ${{ github.workspace }}/uberenv_libs/vcpkg/buildtrees/*/*.log
           ${{ github.workspace }}/uberenv_libs/vcpkg/buildtrees/*/*.err
@@ -72,8 +72,10 @@ jobs:
         cd build_axom
         ls
         ctest -C ${{ matrix.cfg }} --no-compress-output -T Test 
-    - name: Publish Unit Test Results (Uberenv ${{ matrix.triplet }} ${{ matrix.cfg }})
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
-      if: always()
+    - name: Save CTest logs
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
       with:
-        files: build_axom/**/*.xml
+        name: ctest_artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}.zip
+        path: |
+          ${{ github.workspace }}/build_axom/**/*.xml
