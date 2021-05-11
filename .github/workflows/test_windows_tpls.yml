@@ -71,7 +71,7 @@ jobs:
       run: |
         cd build_axom
         ls
-        ctest -C ${{ matrix.cfg }}
+        ctest -C ${{ matrix.cfg }} --no-compress-output -T Test 
     - name: Publish Unit Test Results (Uberenv ${{ matrix.triplet }} ${{ matrix.cfg }})
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
