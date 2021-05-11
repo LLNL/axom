@@ -59,11 +59,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
   It can be  explicitly rewired using the static
   `DataStore::setConduitSLICMessageHandlers()` method.
-- Inlet: Fixed `SchemaCreator` to an abstract class and added missing functions
+- Inlet: Changed `SchemaCreator` to an abstract class and added missing functions
 - Inlet: Added ability to access the `Reader` class from `Inlet` and Sol Lua state
   from the `LuaReader` class
-- Inlet: Switched accessor interface to match that of the STL with operator[] and
-  T get<T>()
+- Inlet: Switched accessor interface to match that of the STL with `operator[]` and
+  `T get<T>()`
 - Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
   and `std::unique_ptr<T>` in owning contexts - specifically, within Inlet's internal
   tree structure
@@ -75,20 +75,19 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Exported all symbols on Windows by default when compiling a dynamic library
 - Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
 - Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
-- Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
+- Inlet: Exposed `primal::Vector` in Lua for use in input-file-defined functions
 - The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
   datastore is `Load`ed in
-- Inlet: Exposed primal::Vector in Lua for use in input-file-defined functions
 - Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
 - Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
 - Inlet: Renamed `Table` to `Container`
 - Inlet collections of mixed or incorrect type will now fail verification, even if they're
   not marked as required
-- Required collections no longer fail Inlet verification if they are empty in the input file
+- Required Inlet collections no longer fail Inlet verification if they are empty in the input file
 - Inlet: `operator bool` for `Field` and `Container` has been replaced with more precise `isUserProvided`
   and `exists`, which also returns `true` if a default value was specified.
 - Updated built-in TPL `fmt` to master branch snapshot, March 26, 2021.
-- Inlet: SphinxWriter will now print only one element schema per container instead of
+- Inlet: `SphinxWriter` will now print only one element schema per container instead of
   printing the same schema for each element in the container
 - Updated BLT to version 0.4.0 released 9 Apr 2021
 - Updated MFEM to version 4.2 released 30 Oct 2020. Axom no longer requires MFEM to be built serially
