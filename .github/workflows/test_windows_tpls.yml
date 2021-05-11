@@ -14,8 +14,8 @@ jobs:
     name: Runs ${{ matrix.triplet }} ${{ matrix.cfg }} uberenv with vcpkg
     # The type of runner that the job will run on
     runs-on: windows-latest
-    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         arch: ["x64", "x86"]
         cfg: ["Debug", "Release"]
@@ -46,7 +46,7 @@ jobs:
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
       with:
-        name: artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}
+        name: artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}.zip
         path: |
           ${{ github.workspace }}/uberenv_libs/vcpkg/buildtrees/*/*.log
           ${{ github.workspace }}/uberenv_libs/vcpkg/buildtrees/*/*.err
