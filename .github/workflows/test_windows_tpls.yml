@@ -72,3 +72,8 @@ jobs:
         cd build_axom
         ls
         ctest -C ${{ matrix.cfg }}
+    - name: Publish Unit Test Results (Uberenv ${{ matrix.triplet }} ${{ matrix.cfg }})
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: build_axom/**/*.xml
