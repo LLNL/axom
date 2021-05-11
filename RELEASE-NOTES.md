@@ -52,6 +52,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   (data associated with quadrature points on a mesh)
 - Inlet: The internal hierarchy of an `Inlet` object can be reconstructed from a Sidre group,
   excluding callback functions
+- Added support for registering material and species sets in `MFEMSidreDataCollection`.
+  These correspond to [`matset`](https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#material-sets)s
+  and [`specset`](https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#species-sets)s in the Mesh Blueprint
 
 ### Changed
 - The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
