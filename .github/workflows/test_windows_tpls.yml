@@ -11,7 +11,7 @@ on:
 jobs:  
   # This job invokes uberenv to build our TPLs for two "triplets"
   run_uberenv:
-    name: Runs uberenv with vckpkg triplet ${{ matrix.triplet }}
+    name: Runs ${{ matrix.triplet }} ${{ matrix.cfg }} uberenv with vcpkg
     # The type of runner that the job will run on
     runs-on: windows-latest
     continue-on-error: true
@@ -44,7 +44,9 @@ jobs:
       run: python3 ./scripts/uberenv/uberenv.py --triplet ${{ matrix.triplet }}
     - name: Save Uberenv logs
       uses: actions/upload-artifact@v2
-      with:	
+      if: ${{ always() }}
+      with:
+        name: artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}
         path: |
           ${{ github.workspace }}/uberenv_libs/vcpkg/buildtrees/*/*.log
           ${{ github.workspace }}/uberenv_libs/vcpkg/buildtrees/*/*.err
