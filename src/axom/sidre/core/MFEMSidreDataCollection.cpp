@@ -2215,12 +2215,12 @@ void MFEMSidreDataCollection::reconstructFields()
       // FiniteElementCollection/QuadratureSpace construction
       const std::string basis_name = field_grp->getView("basis")->getString();
       // Check if it's a QuadratureFunction
-      if(basis_name.find("QF") == 0)
+      if(basis_name.find("QF") == 0 && (m_quadspaces.count(basis_name) == 0))
       {
         // The vdim is being overwritten here with the value in the basis string so we
         // can correctly construct the QuadratureFunction
-        m_quadspaces.emplace_back(
-          detail::NewQuadratureSpace(basis_name, mesh, vdim));
+        m_quadspaces.emplace(basis_name,
+                             detail::NewQuadratureSpace(basis_name, mesh, vdim));
         is_gridfunc = false;
       }
       // Only need to create a new FEColl if one doesn't already exist
@@ -2307,7 +2307,9 @@ void MFEMSidreDataCollection::reconstructFields()
       else
       {
         m_owned_quadfuncs.emplace_back(
-          new mfem::QuadratureFunction(m_quadspaces.back().get(), values, vdim));
+          new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(),
+                                       values,
+                                       vdim));
         // Register a non-owning pointer with the base subobject
         DataCollection::RegisterQField(field_grp->getName(),
                                        m_owned_quadfuncs.back().get());

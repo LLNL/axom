@@ -515,7 +515,9 @@ private:
   std::vector<std::unique_ptr<mfem::GridFunction>> m_owned_gridfuncs;
 
   // Used for reconstructed QuadratureFunctions
-  std::vector<std::unique_ptr<mfem::QuadratureSpace>> m_quadspaces;
+  // To avoid wasting memory, mfem::QSpace objects with the same
+  // basis are reused
+  std::unordered_map<std::string, std::unique_ptr<mfem::QuadratureSpace>> m_quadspaces;
   std::vector<std::unique_ptr<mfem::QuadratureFunction>> m_owned_quadfuncs;
 
   // Private helper functions
