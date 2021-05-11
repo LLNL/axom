@@ -11,10 +11,11 @@ on:
 jobs:  
   # This job invokes uberenv to build our TPLs for two "triplets"
   run_uberenv:
-    name: Runs uberenv with vckpkg triplet ${{ matrix.triplet }}
+    name: Runs ${{ matrix.triplet }} ${{ matrix.cfg }} uberenv with vcpkg
     # The type of runner that the job will run on
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         arch: ["x64", "x86"]
         cfg: ["Debug", "Release"]
@@ -41,10 +42,21 @@ jobs:
       run: ls
     - name: Run uberenv (${{ matrix.triplet }})
       run: python3 ./scripts/uberenv/uberenv.py --triplet ${{ matrix.triplet }}
+    - name: Save Uberenv logs
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: uberenv_artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}.zip
+        path: |
+          ${{ github.workspace }}/uberenv_libs/vcpkg/buildtrees/*/*.log
+          ${{ github.workspace }}/uberenv_libs/vcpkg/buildtrees/*/*.err
+          ${{ github.workspace }}/uberenv_libs/*.cmake
+
     - name: Copy host-config
       run: |
         ls
         Copy-Item -Path ".\uberenv_libs\*.cmake" -Destination ".\hc.cmake"
+
     - name: Configure axom
       run: |
         python3 config-build.py -bp build_axom -ip install_axom -hc hc.cmake --msvc ${{ matrix.msvc }}
@@ -59,4 +71,11 @@ jobs:
       run: |
         cd build_axom
         ls
-        ctest -C ${{ matrix.cfg }}
+        ctest -C ${{ matrix.cfg }} --no-compress-output -T Test 
+    - name: Save CTest logs
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: ctest_artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}.zip
+        path: |
+          ${{ github.workspace }}/build_axom/**/*.xml
