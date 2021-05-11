@@ -15,8 +15,10 @@ set(example_sources
     )
 
 if (SCR_FOUND)
-    list(APPEND example_sources IOSCRRead.cpp)
-    list(APPEND example_sources IOSCRWrite.cpp)
+    list(APPEND example_sources IO_SCR_Read.cpp)
+    list(APPEND example_sources IO_SCR_Write.cpp)
+    list(APPEND example_sources IO_SCR_Checkpoint.cpp)
+    list(APPEND example_sources IO_SCR_Output.cpp)
 endif() 
 
 set(spio_example_depends sidre conduit::conduit slic ${EXTRA_LIBS})
@@ -37,3 +39,17 @@ foreach(src ${example_sources})
         )
 endforeach()
 
+    if(AXOM_ENABLE_TESTS)
+        if(SCR_FOUND)
+            if(ENABLE_MPI)
+                axom_add_test(
+                    NAME spio_IO_SCR_Checkpoint
+                    COMMAND spio_IO_SCR_Checkpoint_ex 
+                    NUM_MPI_TASKS 2 )
+            else()
+                axom_add_test(
+                    NAME spio_IO_SCR_Checkpoint
+                    COMMAND spio_IO_SCR_Checkpoint_ex )
+            endif()
+        endif()
+    endif()

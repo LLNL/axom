@@ -1,0 +1,62 @@
+# This is a basic workflow that is manually triggered
+
+name: Manual test for Axom's TPLs on Windows
+
+# Controls when the action will run. 
+# This workflow runs when manually triggered using the UI or API.
+on:
+  workflow_dispatch:
+  
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:  
+  # This job invokes uberenv to build our TPLs for two "triplets"
+  run_uberenv:
+    name: Runs uberenv with vckpkg triplet ${{ matrix.triplet }}
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: ["x64", "x86"]
+        cfg: ["Debug", "Release"]
+        include:
+        - arch: "x64"
+          triplet: "x64-windows"
+          msvc:    "201964"
+        - arch: "x86"
+          triplet: "x86-windows"
+          msvc:    "2019"
+
+    steps:
+    - name: Checkout repo w/ submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        
+    - name: Set up python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+        
+    - name: List path and files
+      run: ls
+    - name: Run uberenv (${{ matrix.triplet }})
+      run: python3 ./scripts/uberenv/uberenv.py --triplet ${{ matrix.triplet }}
+    - name: Copy host-config
+      run: |
+        ls
+        Copy-Item -Path ".\uberenv_libs\*.cmake" -Destination ".\hc.cmake"
+    - name: Configure axom
+      run: |
+        python3 config-build.py -bp build_axom -ip install_axom -hc hc.cmake --msvc ${{ matrix.msvc }}
+
+    - name: Build axom (${{ matrix.triplet }} ${{ matrix.cfg }})
+      run: |
+        cd build_axom
+        ls
+        cmake --build . --config ${{ matrix.cfg }}
+        
+    - name: Test axom (${{ matrix.triplet }} ${{ matrix.cfg }})
+      run: |
+        cd build_axom
+        ls
+        ctest -C ${{ matrix.cfg }}

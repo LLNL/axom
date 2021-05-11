@@ -87,7 +87,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated built-in TPL `fmt` to master branch snapshot, March 26, 2021.
 - Inlet: SphinxWriter will now print only one element schema per container instead of
   printing the same schema for each element in the container
-- Update BLT to release 0.4.0
+- Updated BLT to version 0.4.0 released 9 Apr 2021
+- Updated MFEM to version 4.2 released 30 Oct 2020. Axom no longer requires MFEM to be built serially
+- The macro for exporting symbols is now `AXOM_EXPORT` instead of `AXOM_API`
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
@@ -101,6 +103,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Empty structs/collections of structs with required sub-elements no longer fail
   verification
 - Quest: Fixed a bug with InOutOctree for triangles that lie on faces of octree blocks
+- Updated to use newer Conduit config directory
 
 ## [Version 0.4.0] - Release date 2020-09-22
 
