@@ -14,6 +14,7 @@ jobs:
     name: Runs uberenv with vckpkg triplet ${{ matrix.triplet }}
     # The type of runner that the job will run on
     runs-on: windows-latest
+    continue-on-error: true
     strategy:
       matrix:
         arch: ["x64", "x86"]
