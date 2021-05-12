@@ -19,6 +19,8 @@
 #include "axom/mint.hpp"
 #include "axom/spin.hpp"
 
+#include "inout/MeshWrapper.hpp"
+
 #include "fmt/fmt.hpp"
 
 namespace axom
@@ -450,7 +452,7 @@ public:
   using GridPt = typename InOutOctreeType::GridPt;
   using VertexIndex = typename InOutOctreeType::VertexIndex;
   using TriangleIndex = typename InOutOctreeType::TriangleIndex;
-  using TriVertIndices = typename InOutOctreeType::MeshWrapper::TriVertIndices;
+  using TriVertIndices = typename MeshWrapper::TriVertIndices;
   using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
   using SpaceTriangle = typename InOutOctreeType::SpaceTriangle;
 
@@ -949,7 +951,7 @@ public:
   using SpacePt = typename InOutOctreeType::SpacePt;
   using VertexIndex = typename InOutOctreeType::VertexIndex;
   using TriangleIndex = typename InOutOctreeType::TriangleIndex;
-  using TriVertIndices = typename InOutOctreeType::MeshWrapper::TriVertIndices;
+  using TriVertIndices = typename MeshWrapper::TriVertIndices;
   using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
 
 public:
