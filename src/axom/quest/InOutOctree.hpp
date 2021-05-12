@@ -19,6 +19,7 @@
 #include "axom/mint.hpp"
 #include "axom/spin.hpp"
 
+#include "detail/inout/BlockData.hpp"
 #include "detail/inout/MeshWrapper.hpp"
 #include "detail/InOutOctree_detail.hpp"
 

@@ -25,6 +25,7 @@ set( quest_headers
 
     ## In/out query
     InOutOctree.hpp
+    detail/inout/BlockData.hpp
     detail/inout/MeshWrapper.hpp
     detail/InOutOctree_detail.hpp
 
