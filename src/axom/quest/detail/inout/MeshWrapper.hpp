@@ -4,9 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file InOutOctree_detail.hpp
+ * \file MeshWrapper.hpp
  *
- * \brief Defines helper classes for the InOutOctree.
+ * \brief Defines a templated mesh wrapper class for the InOutOctree.
  */
 
 #ifndef INOUT_OCTREE_MESH_WRAPPER__HXX_
@@ -36,28 +36,39 @@ namespace quest
    * We can later specialize this class for triangle meshes and implement other
    * customized mesh wrappers.
    */
-class MeshWrapper
+template <int DIM>
+class MeshWrapper;
+
+template <>
+class MeshWrapper<2>
+{
+public:
+  static constexpr int DIM = 2;
+  using SpaceCell = primal::Segment<double, DIM>;
+};
+
+template <>
+class MeshWrapper<3>
 {
 public:
   static constexpr int DIM = 3;
+  using SpacePt = axom::primal::Point<double, DIM>;
+  using GeometricBoundingBox = axom::primal::BoundingBox<double, DIM>;
 
   using VertexIndex = axom::IndexType;
-  using TriangleIndex = axom::IndexType;
+  using CellIndex = axom::IndexType;
   using SurfaceMesh = mint::Mesh;
-
-  using SpacePt = primal::Point<double, DIM>;
-  using GeometricBoundingBox = primal::BoundingBox<double, DIM>;
 
   /** \brief A vertex index to indicate that there is no associated vertex */
   static const VertexIndex NO_VERTEX = -1;
 
   /** \brief A vertex index to indicate that there is no associated vertex */
-  static const TriangleIndex NO_TRIANGLE = -1;
+  static const CellIndex NO_TRIANGLE = -1;
 
   /** \brief A constant for the number of boundary vertices in a triangle */
   static const int NUM_TRI_VERTS = 3;
 
-  using SpaceTriangle = primal::Triangle<double, DIM>;
+  using SpaceCell = primal::Triangle<double, DIM>;
 
   using MeshVertexSet = slam::PositionSet<>;
   using MeshElementSet = slam::PositionSet<>;
@@ -70,13 +81,13 @@ public:
   using TVStride = slam::policies::CompileTimeStride<VertexIndex, NUM_TRI_VERTS>;
   using ConstantCardinality =
     slam::policies::ConstantCardinality<VertexIndex, TVStride>;
-  using TriangleVertexRelation = slam::StaticRelation<VertexIndex,
-                                                      VertexIndex,
-                                                      ConstantCardinality,
-                                                      STLIndirection,
-                                                      MeshElementSet,
-                                                      MeshVertexSet>;
-  using TriVertIndices = typename TriangleVertexRelation::RelationSubset;
+  using CellVertexRelation = slam::StaticRelation<VertexIndex,
+                                                  VertexIndex,
+                                                  ConstantCardinality,
+                                                  STLIndirection,
+                                                  MeshElementSet,
+                                                  MeshVertexSet>;
+  using CellVertIndices = typename CellVertexRelation::RelationSubset;
 
 public:
   /** \brief Constructor for a mesh wrapper */
@@ -159,7 +170,7 @@ public:
      *
      * \param idx The index of an element within the surface mesh
      */
-  TriVertIndices triangleVertexIndices(TriangleIndex idx) const
+  CellVertIndices cellVertexIndices(CellIndex idx) const
   {
     return m_triangleToVertexRelation[idx];
   }
@@ -169,10 +180,10 @@ public:
      *
      * \param idx The triangle's index within the surface mesh
      */
-  GeometricBoundingBox triangleBoundingBox(TriangleIndex idx) const
+  GeometricBoundingBox cellBoundingBox(CellIndex idx) const
   {
     // Get the ids of the verts bounding this triangle
-    TriVertIndices vertIds = triangleVertexIndices(idx);
+    CellVertIndices vertIds = cellVertexIndices(idx);
 
     GeometricBoundingBox bb(vertexPosition(vertIds[0]));
     bb.addPoint(vertexPosition(vertIds[1]));
@@ -187,19 +198,19 @@ public:
      *
      * \return A triangle instance whose vertices are positioned in space
      */
-  SpaceTriangle trianglePositions(TriangleIndex idx) const
+  SpaceCell cellPositions(CellIndex idx) const
   {
-    TriVertIndices verts = triangleVertexIndices(idx);
-    return SpaceTriangle(vertexPosition(verts[0]),
-                         vertexPosition(verts[1]),
-                         vertexPosition(verts[2]));
+    CellVertIndices verts = cellVertexIndices(idx);
+    return SpaceCell(vertexPosition(verts[0]),
+                     vertexPosition(verts[1]),
+                     vertexPosition(verts[2]));
   }
 
   /**
      * \brief Checks whether the indexed triangle contains a reference to the
      * given vertex
      */
-  bool incidentInVertex(const TriVertIndices& triVerts, VertexIndex vIdx) const
+  bool incidentInVertex(const CellVertIndices& triVerts, VertexIndex vIdx) const
   {
     return (triVerts[0] == vIdx) || (triVerts[1] == vIdx) ||
       (triVerts[2] == vIdx);
@@ -215,7 +226,7 @@ public:
      * \return The index of a vertex in t1 that is not in t0,
      *         (NO_VERTEX if one does not exist)
      */
-  VertexIndex distinctVertex(TriangleIndex t0, TriangleIndex t1) const
+  VertexIndex distinctVertex(CellIndex t0, CellIndex t1) const
   {
     SLIC_ASSERT_MSG(
       t0 != t1,
@@ -225,8 +236,8 @@ public:
 
     // Find a vertex from the local surface that is not incident in the first
     // triangle
-    TriVertIndices tvRel0 = triangleVertexIndices(t0);
-    TriVertIndices tvRel1 = triangleVertexIndices(t1);
+    CellVertIndices tvRel0 = cellVertexIndices(t0);
+    CellVertIndices tvRel1 = cellVertexIndices(t1);
 
     for(int i = 0; i < NUM_TRI_VERTS; ++i)
       if(!incidentInVertex(tvRel0, tvRel1[i])) return tvRel1[i];
@@ -248,14 +259,12 @@ public:
      * \return true if the two triangles have a vertex
      * in common (returned in sharedVert), false otherwise
      */
-  bool haveSharedVertex(TriangleIndex t0,
-                        TriangleIndex t1,
-                        VertexIndex& sharedVert) const
+  bool haveSharedVertex(CellIndex t0, CellIndex t1, VertexIndex& sharedVert) const
   {
     // There are two triangles -- check that they have at least one common
     // vertex
-    TriVertIndices tvRel0 = triangleVertexIndices(t0);
-    TriVertIndices tvRel1 = triangleVertexIndices(t1);
+    CellVertIndices tvRel0 = cellVertexIndices(t0);
+    CellVertIndices tvRel1 = cellVertexIndices(t1);
 
     for(int i = 0; i < NUM_TRI_VERTS; ++i)
     {
@@ -278,14 +287,14 @@ public:
      * \return true if the three triangles have a vertex in common
      *  (returned in sharedVert), false otherwise
      */
-  bool haveSharedVertex(TriangleIndex t0,
-                        TriangleIndex t1,
-                        TriangleIndex t2,
+  bool haveSharedVertex(CellIndex t0,
+                        CellIndex t1,
+                        CellIndex t2,
                         VertexIndex& sharedVert) const
   {
-    TriVertIndices t0Verts = triangleVertexIndices(t0);
-    TriVertIndices t1Verts = triangleVertexIndices(t1);
-    TriVertIndices t2Verts = triangleVertexIndices(t2);
+    CellVertIndices t0Verts = cellVertexIndices(t0);
+    CellVertIndices t1Verts = cellVertexIndices(t1);
+    CellVertIndices t2Verts = cellVertexIndices(t2);
 
     for(int i = 0; i < NUM_TRI_VERTS; ++i)
     {
@@ -355,8 +364,7 @@ public:
 
     m_elementSet =
       MeshElementSet(static_cast<int>(m_tv_data.size()) / NUM_TRI_VERTS);
-    m_triangleToVertexRelation =
-      TriangleVertexRelation(&m_elementSet, &m_vertexSet);
+    m_triangleToVertexRelation = CellVertexRelation(&m_elementSet, &m_vertexSet);
     m_triangleToVertexRelation.bindIndices(static_cast<int>(m_tv_data.size()),
                                            &m_tv_data);
 
@@ -391,7 +399,7 @@ public:
     // Add triangles to the mesh (i.e. boundary vertices)
     for(int i = 0; i < m_elementSet.size(); ++i)
     {
-      const TriangleIndex* tv = &triangleVertexIndices(i)[0];
+      const CellIndex* tv = &cellVertexIndices(i)[0];
       triMesh->appendCell(tv);
     }
 
@@ -406,11 +414,12 @@ private:
   VertexPositionMap m_vertexPositions;
 
   std::vector<VertexIndex> m_tv_data;
-  TriangleVertexRelation m_triangleToVertexRelation;
+  CellVertexRelation m_triangleToVertexRelation;
 
   bool m_meshWasReindexed;
 };
 
 }  // namespace quest
 }  // namespace axom
-#endif  // INOUT_OCTREE_MESH_WRAPPER__HXX_
+
+#endif  // endif INOUT_OCTREE_MESH_WRAPPER__HXX_

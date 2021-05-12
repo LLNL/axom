@@ -272,9 +272,9 @@ public:
   };
 
   using VertexIndex = axom::IndexType;
-  using TriangleIndex = axom::IndexType;
+  using CellIndex = axom::IndexType;
 
-  using TriangleList = std::vector<TriangleIndex>;
+  using CellList = std::vector<CellIndex>;
 
 public:
   /**
@@ -389,19 +389,19 @@ public:  // Functions related to the associated triangles
   int numTriangles() const { return static_cast<int>(m_tris.size()); }
 
   /** Associates the surface triangle with the given index with this block */
-  void addTriangle(TriangleIndex tInd) { m_tris.push_back(tInd); }
+  void addTriangle(CellIndex tInd) { m_tris.push_back(tInd); }
 
   /** Returns a const reference to the list of triangle indexes associated with
      the block */
-  const TriangleList& triangles() const { return m_tris; }
+  const CellList& triangles() const { return m_tris; }
 
   /** Returns a reference to the list of triangle indexes associated with the
      block */
-  TriangleList& triangles() { return m_tris; }
+  CellList& triangles() { return m_tris; }
 
 private:
   VertexIndex m_vertIndex;
-  TriangleList m_tris;
+  CellList m_tris;
   bool m_isLeaf;
 };
 
@@ -442,7 +442,7 @@ class InOutOctreeMeshDumper
 {
 public:
   using InOutOctreeType = InOutOctree<DIM>;
-  using TriangleIndexSet = typename InOutOctreeType::TriangleIndexSet;
+  using CellIndexSet = typename InOutOctreeType::CellIndexSet;
 
   using OctreeBaseType = typename InOutOctreeType::OctreeBaseType;
   using OctreeLevels = typename OctreeBaseType::OctreeLevels;
@@ -451,10 +451,10 @@ public:
   using SpacePt = typename InOutOctreeType::SpacePt;
   using GridPt = typename InOutOctreeType::GridPt;
   using VertexIndex = typename InOutOctreeType::VertexIndex;
-  using TriangleIndex = typename InOutOctreeType::TriangleIndex;
-  using TriVertIndices = typename MeshWrapper::TriVertIndices;
+  using CellIndex = typename InOutOctreeType::CellIndex;
+  using CellVertIndices = typename MeshWrapper<DIM>::CellVertIndices;
   using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
-  using SpaceTriangle = typename InOutOctreeType::SpaceTriangle;
+  using SpaceCell = typename InOutOctreeType::SpaceCell;
 
   using LeafVertMap = slam::Map<slam::Set<VertexIndex>, VertexIndex>;
   using LeafIntMap = slam::Map<slam::Set<axom::IndexType>, axom::IndexType>;
@@ -574,14 +574,14 @@ public:
 
     // Dump a mesh for the incident triangles
     std::string triStr = fmt::format("{}_triangles", vertStr);
-    std::vector<TriangleIndex> tris;
+    std::vector<CellIndex> tris;
 
-    TriangleIndexSet triSet =
+    CellIndexSet triSet =
       m_octree.leafTriangles(vertexBlock, m_octree[vertexBlock]);
     for(int i = 0; i < triSet.size(); ++i)
     {
-      TriangleIndex tIdx = triSet[i];
-      TriVertIndices tv = m_octree.m_meshWrapper.triangleVertexIndices(tIdx);
+      CellIndex tIdx = triSet[i];
+      CellVertIndices tv = m_octree.m_meshWrapper.cellVertexIndices(tIdx);
       for(int j = 0; j < tv.size(); ++j)
       {
         if(tv[j] == vIdx) tris.push_back(tIdx);
@@ -591,12 +591,12 @@ public:
   }
 
   void dumpLocalOctreeMeshesForTriangle(const std::string& name,
-                                        TriangleIndex tIdx) const
+                                        CellIndex tIdx) const
   {
     std::string triStr = fmt::format("{}triangle_{}", name, tIdx);
 
     // Dump a triangle mesh with the single triangle
-    std::vector<TriangleIndex> tris;
+    std::vector<CellIndex> tris;
     tris.push_back(tIdx);
     dumpTriangleMesh(triStr, tris, true);
 
@@ -611,7 +611,7 @@ public:
         if(it->isLeaf() && it->hasData())
         {
           BlockIndex leafblk(it.pt(), lev);
-          TriangleIndexSet triSet = m_octree.leafTriangles(leafblk, *it);
+          CellIndexSet triSet = m_octree.leafTriangles(leafblk, *it);
 
           bool found = false;
           for(int i = 0; !found && i < triSet.size(); ++i)
@@ -646,8 +646,8 @@ public:
     const InOutBlockData& blkData = m_octree[block];
     if(blkData.isLeaf() && blkData.hasData())
     {
-      std::vector<TriangleIndex> tris;
-      TriangleIndexSet triSet = m_octree.leafTriangles(block, blkData);
+      std::vector<CellIndex> tris;
+      CellIndexSet triSet = m_octree.leafTriangles(block, blkData);
       for(int i = 0; i < triSet.size(); ++i)
       {
         tris.push_back(triSet[i]);
@@ -682,7 +682,7 @@ public:
   {
     const int numElts = m_octree.m_meshWrapper.numMeshElements();
 
-    std::vector<TriangleIndex> tris;
+    std::vector<CellIndex> tris;
     tris.reserve(numElts);
 
     for(int i = 0; i < numElts; ++i)
@@ -732,7 +732,7 @@ private:
       const InOutBlockData& leafData = m_octree[block];
 
       int vIdx = leafData.hasData() ? m_octree.leafVertex(block, leafData)
-                                    : InOutOctreeType::MeshWrapper::NO_VERTEX;
+                                    : MeshWrapper<DIM>::NO_VERTEX;
 
       leafVertID[leafCount] = vIdx;
       leafLevel[leafCount] = block.level();
@@ -742,7 +742,7 @@ private:
       {
         leafVertID_unique[leafCount] = m_octree.blockIndexesVertex(vIdx, block)
           ? vIdx
-          : InOutOctreeType::MeshWrapper::NO_VERTEX;
+          : MeshWrapper<DIM>::NO_VERTEX;
 
         leafTriCount[leafCount] = leafData.hasData()
           ? m_octree.leafTriangles(block, leafData).size()
@@ -801,7 +801,7 @@ private:
   }
 
   void dumpTriangleMesh(const std::string& name,
-                        const std::vector<TriangleIndex>& tris,
+                        const std::vector<CellIndex>& tris,
                         bool shouldLogTris = false) const
   {
     std::string fName = fmt::format("{}.vtk", name);
@@ -810,7 +810,7 @@ private:
 
     for(auto it = tris.begin(); it < tris.end(); ++it)
     {
-      TriangleIndex tIdx = *it;
+      CellIndex tIdx = *it;
       addTriangle(debugMesh, tIdx, shouldLogTris);
     }
 
@@ -828,10 +828,10 @@ private:
 
     for(int i = 0; i < numTris; ++i)
     {
-      TriangleIndex tIdx = tris[i];
+      CellIndex tIdx = tris[i];
       triIdx[i] = tIdx;
 
-      TriVertIndices tv = m_octree.m_meshWrapper.triangleVertexIndices(tIdx);
+      CellVertIndices tv = m_octree.m_meshWrapper.cellVertexIndices(tIdx);
       vertIdx[0][i] = tv[0];
       vertIdx[1][i] = tv[1];
       vertIdx[2][i] = tv[2];
@@ -863,11 +863,9 @@ private:
     return fld;
   }
 
-  void addTriangle(DebugMesh* mesh,
-                   const TriangleIndex& tIdx,
-                   bool shouldLogTris) const
+  void addTriangle(DebugMesh* mesh, const CellIndex& tIdx, bool shouldLogTris) const
   {
-    SpaceTriangle triPos = m_octree.m_meshWrapper.trianglePositions(tIdx);
+    SpaceCell triPos = m_octree.m_meshWrapper.cellPositions(tIdx);
 
     axom::IndexType vStart = mesh->getNumberOfNodes();
     mesh->appendNode(triPos[0][0], triPos[0][1], triPos[0][2]);
@@ -942,7 +940,7 @@ class InOutOctreeValidator
 {
 public:
   using InOutOctreeType = InOutOctree<DIM>;
-  using TriangleIndexSet = typename InOutOctreeType::TriangleIndexSet;
+  using CellIndexSet = typename InOutOctreeType::CellIndexSet;
 
   using OctreeBaseType = typename InOutOctreeType::OctreeBaseType;
   using OctreeLevels = typename OctreeBaseType::OctreeLevels;
@@ -950,8 +948,8 @@ public:
 
   using SpacePt = typename InOutOctreeType::SpacePt;
   using VertexIndex = typename InOutOctreeType::VertexIndex;
-  using TriangleIndex = typename InOutOctreeType::TriangleIndex;
-  using TriVertIndices = typename MeshWrapper::TriVertIndices;
+  using CellIndex = typename InOutOctreeType::CellIndex;
+  using CellVertIndices = typename MeshWrapper<DIM>::CellVertIndices;
   using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
 
 public:
@@ -1042,7 +1040,7 @@ public:
     const axom::IndexType numTriangles = m_octree.m_meshWrapper.numMeshElements();
     for(axom::IndexType tIdx = 0; tIdx < numTriangles; ++tIdx)
     {
-      TriVertIndices tvRel = m_octree.m_meshWrapper.triangleVertexIndices(tIdx);
+      CellVertIndices tvRel = m_octree.m_meshWrapper.cellVertexIndices(tIdx);
       for(int j = 0; j < tvRel.size(); ++j)
       {
         VertexIndex vIdx = tvRel[j];
@@ -1051,7 +1049,7 @@ public:
 
         // Check that this triangle is referenced here.
         bool foundTriangle = false;
-        TriangleIndexSet leafTris = m_octree.leafTriangles(vertBlock, leafData);
+        CellIndexSet leafTris = m_octree.leafTriangles(vertBlock, leafData);
         for(int k = 0; !foundTriangle && k < leafTris.size(); ++k)
         {
           if(leafTris[k] == tIdx) foundTriangle = true;
@@ -1103,14 +1101,14 @@ public:
           if(data.hasData())
           {
             VertexIndex vIdx = m_octree.leafVertex(block, data);
-            TriangleIndexSet triSet = m_octree.leafTriangles(block, data);
+            CellIndexSet triSet = m_octree.leafTriangles(block, data);
             for(int i = 0; i < triSet.size(); ++i)
             {
-              TriangleIndex tIdx = triSet[i];
+              CellIndex tIdx = triSet[i];
 
               // Check that vIdx is one of this triangle's vertices
-              TriVertIndices tvRel =
-                m_octree.m_meshWrapper.triangleVertexIndices(tIdx);
+              CellVertIndices tvRel =
+                m_octree.m_meshWrapper.cellVertexIndices(tIdx);
 
               SLIC_ASSERT_MSG(
                 m_octree.m_meshWrapper.incidentInVertex(tvRel, vIdx),
@@ -1129,8 +1127,7 @@ public:
               blockBB.expand(bb_scale_factor);
               SLIC_ASSERT_MSG(
                 m_octree.blockIndexesElementVertex(tIdx, block) ||
-                  intersect(m_octree.m_meshWrapper.trianglePositions(tIdx),
-                            blockBB),
+                  intersect(m_octree.m_meshWrapper.cellPositions(tIdx), blockBB),
                 fmt::format("Triangle {} was indexed in block {}"
                             " but it does not intersect the block."
                             "\n\tBlock bounding box: {}"
@@ -1141,7 +1138,7 @@ public:
                             tIdx,
                             block,
                             blockBB,
-                            m_octree.m_meshWrapper.trianglePositions(tIdx),
+                            m_octree.m_meshWrapper.cellPositions(tIdx),
                             fmt::join(tvRel, ", "),
                             vIdx,
                             fmt::join(triSet, ", "),
@@ -1247,7 +1244,7 @@ class InOutOctreeStats
 {
 public:
   using InOutOctreeType = InOutOctree<DIM>;
-  using TriangleIndexSet = typename InOutOctreeType::TriangleIndexSet;
+  using CellIndexSet = typename InOutOctreeType::CellIndexSet;
 
   using OctreeBaseType = typename InOutOctreeType::OctreeBaseType;
   using OctreeLevels = typename OctreeBaseType::OctreeLevels;
@@ -1333,7 +1330,7 @@ public:
                 m_octree.leafTriangles(block, blockData).size();
 
               BlockIndex blk(it.pt(), lev);
-              TriangleIndexSet tris = m_octree.leafTriangles(blk, blockData);
+              CellIndexSet tris = m_octree.leafTriangles(blk, blockData);
               for(int i = 0; i < tris.size(); ++i)
               {
                 ++m_triCount[tris[i]];
@@ -1475,7 +1472,7 @@ public:
   {
     std::stringstream sstr;
 
-    using TriVertIndices = typename InOutOctreeType::MeshWrapper::TriVertIndices;
+    using CellVertIndices = typename MeshWrapper<DIM>::CellVertIndices;
 
     // Generate and output histogram of VT relation
     CardinalityVTMap cardVT(&m_octree.m_meshWrapper.vertexSet());
@@ -1483,7 +1480,7 @@ public:
     int numElems = m_octree.m_meshWrapper.numMeshElements();
     for(int i = 0; i < numElems; ++i)
     {
-      TriVertIndices tvRel = m_octree.m_meshWrapper.triangleVertexIndices(i);
+      CellVertIndices tvRel = m_octree.m_meshWrapper.cellVertexIndices(i);
       cardVT[tvRel[0]]++;
       cardVT[tvRel[1]]++;
       cardVT[tvRel[2]]++;

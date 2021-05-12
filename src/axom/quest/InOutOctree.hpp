@@ -39,15 +39,15 @@
 //                     BlockIndex(GridPt::make_point(32, 60, 20), 6)
 
 #ifndef DUMP_VTK_MESH
-//    #define DUMP_VTK_MESH
+  #define DUMP_VTK_MESH
 #endif
 
 #ifndef DUMP_OCTREE_INFO
-//    #define DUMP_OCTREE_INFO 1
+  #define DUMP_OCTREE_INFO 1
 #endif
 
 #ifndef DEBUG_OCTREE_ACTIVE
-//    #define DEBUG_OCTREE_ACTIVE
+  #define DEBUG_OCTREE_ACTIVE
 #endif
 
 #if defined(DEBUG_OCTREE_ACTIVE) && defined(AXOM_DEBUG)
@@ -105,18 +105,18 @@ private:
   static double DEFAULT_BOUNDING_BOX_SCALE_FACTOR;
 
 public:
-  using SurfaceMesh = typename MeshWrapper::SurfaceMesh;
+  using SurfaceMesh = typename MeshWrapper<DIM>::SurfaceMesh;
 
   using VertexIndex = axom::IndexType;
-  using TriangleIndex = axom::IndexType;
+  using CellIndex = axom::IndexType;
   using IndexRegistry = slam::FieldRegistry<slam::Set<VertexIndex>, VertexIndex>;
 
-  using SpaceTriangle = typename MeshWrapper::SpaceTriangle;
+  using SpaceCell = typename MeshWrapper<DIM>::SpaceCell;
 
-  using MeshVertexSet = typename MeshWrapper::MeshVertexSet;
-  using MeshElementSet = typename MeshWrapper::MeshElementSet;
-  using TriVertIndices = typename MeshWrapper::TriVertIndices;
-  using VertexIndexMap = typename MeshWrapper::VertexIndexMap;
+  using MeshVertexSet = typename MeshWrapper<DIM>::MeshVertexSet;
+  using MeshElementSet = typename MeshWrapper<DIM>::MeshElementSet;
+  using CellVertIndices = typename MeshWrapper<DIM>::CellVertIndices;
+  using VertexIndexMap = typename MeshWrapper<DIM>::VertexIndexMap;
 
   // Type aliases for the Relations from Gray leaf blocks to mesh entities
   static const int MAX_VERTS_PER_BLOCK = 1;
@@ -144,7 +144,7 @@ public:
                                                        STLIndirection,
                                                        GrayLeafSet,
                                                        MeshElementSet>;
-  using TriangleIndexSet = typename GrayLeafElementRelation::RelationSubset;
+  using CellIndexSet = typename GrayLeafElementRelation::RelationSubset;
 
   using GrayLeafsLevelMap = slam::Map<slam::Set<>, GrayLeafSet>;
   using GrayLeafVertexRelationLevelMap =
@@ -311,11 +311,11 @@ private:
    * \return true if one of the triangle's vertices are indexed by blk, false
    * otherwise
    */
-  bool blockIndexesElementVertex(TriangleIndex tIdx, const BlockIndex& blk) const
+  bool blockIndexesElementVertex(CellIndex tIdx, const BlockIndex& blk) const
   {
     SLIC_ASSERT(m_generationState >= INOUTOCTREE_MESH_REORDERED);
 
-    TriVertIndices tVerts = m_meshWrapper.triangleVertexIndices(tIdx);
+    CellVertIndices tVerts = m_meshWrapper.cellVertexIndices(tIdx);
     for(int i = 0; i < tVerts.size(); ++i)
     {
       // Using the vertex-to-block cache to avoid numerical degeneracies
@@ -358,8 +358,8 @@ private:
    * \param leafData The data associated with this leaf block
    * \return The set of mesh triangle indices associated with this leaf block
    */
-  TriangleIndexSet leafTriangles(const BlockIndex& leafBlk,
-                                 const InOutBlockData& leafData) const;
+  CellIndexSet leafTriangles(const BlockIndex& leafBlk,
+                             const InOutBlockData& leafData) const;
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(InOutOctree);
@@ -400,16 +400,16 @@ private:
     SpaceVector vec;
 
     BlockIndex vertexBlock = m_vertexToBlockMap[vIdx];
-    TriangleIndexSet triSet = leafTriangles(vertexBlock, (*this)[vertexBlock]);
+    CellIndexSet triSet = leafTriangles(vertexBlock, (*this)[vertexBlock]);
     for(int i = 0; i < triSet.size(); ++i)
     {
-      TriangleIndex tIdx = triSet[i];
-      TriVertIndices tv = m_meshWrapper.triangleVertexIndices(tIdx);
+      CellIndex tIdx = triSet[i];
+      CellVertIndices tv = m_meshWrapper.cellVertexIndices(tIdx);
       if(m_meshWrapper.incidentInVertex(tv, vIdx))
       {
         int idx = (vIdx == tv[0]) ? 0 : (vIdx == tv[1] ? 1 : 2);
 
-        SpaceTriangle tr = m_meshWrapper.trianglePositions(tIdx);
+        SpaceCell tr = m_meshWrapper.cellPositions(tIdx);
         vec += tr.angle(idx) * tr.normal();
       }
     }
@@ -430,15 +430,15 @@ private:
     SpaceVector vec;
 
     BlockIndex vertexBlock = m_vertexToBlockMap[vIdx1];
-    TriangleIndexSet triSet = leafTriangles(vertexBlock, (*this)[vertexBlock]);
+    CellIndexSet triSet = leafTriangles(vertexBlock, (*this)[vertexBlock]);
     for(int i = 0; i < triSet.size(); ++i)
     {
-      TriangleIndex tIdx = triSet[i];
-      TriVertIndices tv = m_meshWrapper.triangleVertexIndices(tIdx);
+      CellIndex tIdx = triSet[i];
+      CellVertIndices tv = m_meshWrapper.cellVertexIndices(tIdx);
       if(m_meshWrapper.incidentInVertex(tv, vIdx1) &&
          m_meshWrapper.incidentInVertex(tv, vIdx2))
       {
-        vec += m_meshWrapper.trianglePositions(tIdx).normal();
+        vec += m_meshWrapper.cellPositions(tIdx).normal();
       }
     }
 
@@ -446,7 +446,7 @@ private:
   }
 
 protected:
-  MeshWrapper m_meshWrapper;
+  MeshWrapper<DIM> m_meshWrapper;
 
   VertexBlockMap m_vertexToBlockMap;
 
@@ -477,7 +477,7 @@ namespace
  * \brief Utility function to print the vertex indices of a cell
  */
 inline std::ostream& operator<<(std::ostream& os,
-                                const InOutOctree<3>::TriVertIndices& tvInd)
+                                const InOutOctree<3>::CellVertIndices& tvInd)
 {
   os << "[";
   for(int i = 0; i < tvInd.size(); ++i)
@@ -487,7 +487,7 @@ inline std::ostream& operator<<(std::ostream& os,
 }
 
 inline std::ostream& operator<<(std::ostream& os,
-                                const InOutOctree<3>::TriangleIndexSet& tSet)
+                                const InOutOctree<3>::CellIndexSet& tSet)
 {
   os << "[";
   for(int i = 0; i < tSet.size(); ++i)
@@ -801,14 +801,14 @@ void InOutOctree<DIM>::insertMeshTriangles()
           nextLevelData.reserve(nextLevelData.size() * 4);
 
         // Add all triangles to intersecting children blocks
-        DynamicGrayBlockData::TriangleList& parentTriangles =
+        DynamicGrayBlockData::CellList& parentTriangles =
           dynamicLeafData.triangles();
         int numTriangles = static_cast<int>(parentTriangles.size());
         for(int i = 0; i < numTriangles; ++i)
         {
-          TriangleIndex tIdx = parentTriangles[i];
-          SpaceTriangle spaceTri = m_meshWrapper.trianglePositions(tIdx);
-          GeometricBoundingBox tBB = m_meshWrapper.triangleBoundingBox(tIdx);
+          CellIndex tIdx = parentTriangles[i];
+          SpaceCell spaceTri = m_meshWrapper.cellPositions(tIdx);
+          GeometricBoundingBox tBB = m_meshWrapper.cellBoundingBox(tIdx);
 
           for(int j = 0; j < BlockIndex::numChildren(); ++j)
           {
@@ -856,7 +856,7 @@ void InOutOctree<DIM>::insertMeshTriangles()
                   "\n\tinto block {} with data {}.",
                   tIdx,
                   spaceTri,
-                  fmt::join(m_meshWrapper.triangleVertexIndices(tIdx), ", "),
+                  fmt::join(m_meshWrapper.cellVertexIndices(tIdx), ", "),
                   childBlk[j],
                   *(childDataPtr[j])));
             }
@@ -1121,7 +1121,7 @@ typename InOutOctree<DIM>::VertexIndex InOutOctree<DIM>::leafVertex(
 }
 
 template <int DIM>
-typename InOutOctree<DIM>::TriangleIndexSet InOutOctree<DIM>::leafTriangles(
+typename InOutOctree<DIM>::CellIndexSet InOutOctree<DIM>::leafTriangles(
   const BlockIndex& leafBlk,
   const InOutBlockData& leafData) const
 {
@@ -1148,13 +1148,13 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
 
   SpacePt triPt;
 
-  TriangleIndexSet triSet = leafTriangles(leafBlk, leafData);
+  CellIndexSet triSet = leafTriangles(leafBlk, leafData);
   const int numTris = triSet.size();
   for(int i = 0; i < numTris; ++i)
   {
     /// Get the triangle
-    TriangleIndex idx = triSet[i];
-    SpaceTriangle tri = m_meshWrapper.trianglePositions(idx);
+    CellIndex idx = triSet[i];
+    SpaceCell tri = m_meshWrapper.cellPositions(idx);
 
     /// Find a point from this triangle within the bounding box of the mesh
     primal::Polygon<double, DIM> poly = primal::clip(tri, blockBB);
@@ -1181,7 +1181,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
     /// Use a ray from the query point to the triangle point to find an
     /// intersection. Note: We have to check all triangles to ensure that
     /// there is not a closer triangle than tri along this direction.
-    TriangleIndex tIdx = MeshWrapper::NO_TRIANGLE;
+    CellIndex tIdx = MeshWrapper<DIM>::NO_TRIANGLE;
     double minRayParam = std::numeric_limits<double>::infinity();
     SpaceRay ray(queryPt, SpaceVector(queryPt, triPt));
 
@@ -1213,10 +1213,10 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
 
     for(int j = 0; j < numTris; ++j)
     {
-      TriangleIndex localIdx = triSet[j];
+      CellIndex localIdx = triSet[j];
       if(localIdx == idx) continue;
 
-      if(primal::intersect(m_meshWrapper.trianglePositions(localIdx), ray, rayParam))
+      if(primal::intersect(m_meshWrapper.cellPositions(localIdx), ray, rayParam))
       {
         if(rayParam < minRayParam)
         {
@@ -1234,15 +1234,14 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
       }
     }
 
-    if(tIdx == MeshWrapper::NO_TRIANGLE)
+    if(tIdx == MeshWrapper<DIM>::NO_TRIANGLE)
     {
       continue;
     }
 
     // Inside when the dot product of the normal with this triangle is positive
-    SpaceVector normal = (tIdx == idx)
-      ? tri.normal()
-      : m_meshWrapper.trianglePositions(tIdx).normal();
+    SpaceVector normal =
+      (tIdx == idx) ? tri.normal() : m_meshWrapper.cellPositions(tIdx).normal();
 
     return normal.dot(ray.direction()) > 0.;
   }
@@ -1258,7 +1257,7 @@ void InOutOctree<DIM>::updateSurfaceMeshVertices()
 {
   // Create a map from old vertex indices to new vertex indices
   MeshVertexSet origVerts(m_meshWrapper.numMeshVertices());
-  VertexIndexMap vertexIndexMap(&origVerts, MeshWrapper::NO_VERTEX);
+  VertexIndexMap vertexIndexMap(&origVerts, MeshWrapper<DIM>::NO_VERTEX);
 
   // Generate unique indices for new mesh vertices
   int uniqueVertexCounter = 0;
@@ -1271,7 +1270,7 @@ void InOutOctree<DIM>::updateSurfaceMeshVertices()
     VertexIndex vInd = (*this)[leafBlock].dataIndex();
 
     // If the indexed vertex doesn't have a new id, give it one
-    if(vertexIndexMap[vInd] == MeshWrapper::NO_VERTEX)
+    if(vertexIndexMap[vInd] == MeshWrapper<DIM>::NO_VERTEX)
       vertexIndexMap[vInd] = uniqueVertexCounter++;
 
     // If this is not the indexed vertex of the block, set the new index
@@ -1314,9 +1313,8 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
     // vertex
     for(int i = 0; i < numTris; ++i)
     {
-      if(!m_meshWrapper.incidentInVertex(
-           m_meshWrapper.triangleVertexIndices(tris[i]),
-           commonVert))
+      if(!m_meshWrapper.incidentInVertex(m_meshWrapper.cellVertexIndices(tris[i]),
+                                         commonVert))
       {
         return false;
       }
@@ -1330,7 +1328,7 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
     {
     case 1:
       /// Choose an arbitrary vertex from this triangle
-      commonVert = m_meshWrapper.triangleVertexIndices(tris[0])[0];
+      commonVert = m_meshWrapper.cellVertexIndices(tris[0])[0];
       shareCommonVert = true;
       break;
     case 2:
@@ -1347,7 +1345,7 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
       for(int i = 3; shareCommonVert && i < numTris; ++i)
       {
         if(!m_meshWrapper.incidentInVertex(
-             m_meshWrapper.triangleVertexIndices(tris[i]),
+             m_meshWrapper.cellVertexIndices(tris[i]),
              commonVert))
           shareCommonVert = false;
       }
