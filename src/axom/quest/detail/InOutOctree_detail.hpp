@@ -302,7 +302,7 @@ private:
     std::string fName = fmt::format("{}.vtk", name);
 
     DebugMesh* debugMesh = new DebugMesh(3, 8 * blocks.size(), blocks.size());
-    const bool hasTriangles =
+    const bool hasCells =
       (m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED);
     const bool hasColors =
       (m_generationState >= InOutOctreeType::INOUTOCTREE_LEAVES_COLORED);
@@ -335,7 +335,7 @@ private:
       leafLevel[leafCount] = block.level();
       leafPoint[leafCount] = block.pt();
 
-      if(hasTriangles)
+      if(hasCells)
       {
         leafVertID_unique[leafCount] = m_octree.blockIndexesVertex(vIdx, block)
           ? vIdx
@@ -373,7 +373,7 @@ private:
       blockCoord[2][i] = leafPoint[i][2];
     }
 
-    if(hasTriangles)
+    if(hasCells)
     {
       axom::IndexType* uniqVertID = addIntField(debugMesh, "uniqVertID");
       axom::IndexType* triCount = addIntField(debugMesh, "triCount");

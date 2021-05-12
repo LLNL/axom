@@ -660,10 +660,10 @@ void InOutOctree<DIM>::insertMeshTriangles()
 
   // Add all triangle references to the root
   int const numTris = m_meshWrapper.numMeshElements();
-  dynamicRootData.triangles().reserve(numTris);
+  dynamicRootData.cells().reserve(numTris);
   for(int idx = 0; idx < numTris; ++idx)
   {
-    dynamicRootData.addTriangle(idx);
+    dynamicRootData.addCell(idx);
   }
 
   // Iterate through octree levels
@@ -710,7 +710,7 @@ void InOutOctree<DIM>::insertMeshTriangles()
       // -- add  them to the current level's relations
       if(!isInternal && !isLeafThatMustRefine)
       {
-        if(dynamicLeafData.hasTriangles())
+        if(dynamicLeafData.hasCells())
         {
           // Set the leaf data in the octree
           blkData.setData(static_cast<int>(gvRelData.size()));
@@ -719,8 +719,8 @@ void InOutOctree<DIM>::insertMeshTriangles()
           gvRelData.push_back(dynamicLeafData.vertexIndex());
 
           // Add the triangles to the gray block's element relations
-          std::copy(dynamicLeafData.triangles().begin(),
-                    dynamicLeafData.triangles().end(),
+          std::copy(dynamicLeafData.cells().begin(),
+                    dynamicLeafData.cells().end(),
                     std::back_inserter(geIndRelData));
           geSizeRelData.push_back(static_cast<int>(geIndRelData.size()));
 
@@ -802,10 +802,9 @@ void InOutOctree<DIM>::insertMeshTriangles()
           nextLevelData.reserve(nextLevelData.size() * 4);
 
         // Add all triangles to intersecting children blocks
-        DynamicGrayBlockData::CellList& parentTriangles =
-          dynamicLeafData.triangles();
-        int numTriangles = static_cast<int>(parentTriangles.size());
-        for(int i = 0; i < numTriangles; ++i)
+        DynamicGrayBlockData::CellList& parentTriangles = dynamicLeafData.cells();
+        int numCells = static_cast<int>(parentTriangles.size());
+        for(int i = 0; i < numCells; ++i)
         {
           CellIndex tIdx = parentTriangles[i];
           SpaceCell spaceTri = m_meshWrapper.cellPositions(tIdx);
@@ -813,8 +812,7 @@ void InOutOctree<DIM>::insertMeshTriangles()
 
           for(int j = 0; j < BlockIndex::numChildren(); ++j)
           {
-            bool shouldAddTriangle =
-              blockIndexesElementVertex(tIdx, childBlk[j]) ||
+            bool shouldAddCell = blockIndexesElementVertex(tIdx, childBlk[j]) ||
               (childDataPtr[j]->isLeaf() ? intersect(spaceTri, childBB[j])
                                          : intersect(tBB, childBB[j]));
 
@@ -830,12 +828,12 @@ void InOutOctree<DIM>::insertMeshTriangles()
                           childBlk[j],
                           childBB[j],
                           *childDataPtr[j],
-                          (shouldAddTriangle ? " yes" : "no")));
+                          (shouldAddCell ? " yes" : "no")));
 
-            if(shouldAddTriangle)
+            if(shouldAddCell)
             {
               // Place the DynamicGrayBlockData in the array before adding its data
-              if(!childDataPtr[j]->hasTriangles())
+              if(!childDataPtr[j]->hasCells())
               {
                 // Copy the DynamicGrayBlockData into the array
                 nextLevelData.push_back(childData[j]);
@@ -847,7 +845,7 @@ void InOutOctree<DIM>::insertMeshTriangles()
                 (*this)[childBlk[j]].setData(nextLevelDataBlockCounter++);
               }
 
-              childDataPtr[j]->addTriangle(tIdx);
+              childDataPtr[j]->addCell(tIdx);
 
               QUEST_OCTREE_DEBUG_LOG_IF(
                 DEBUG_BLOCK_1 == childBlk[j] || DEBUG_BLOCK_2 == childBlk[j],
@@ -1304,17 +1302,17 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
 
   VertexIndex commonVert = leafData.vertexIndex();
 
-  const int numTris = leafData.numTriangles();
-  const auto& tris = leafData.triangles();
+  const int numCells = leafData.numCells();
+  const auto& cells = leafData.cells();
 
   if(blockIndexesVertex(commonVert, leafBlock))
   {
     // This is a leaf node containing the indexed vertex
     // Loop through the triangles and check that all are incident with this
     // vertex
-    for(int i = 0; i < numTris; ++i)
+    for(int i = 0; i < numCells; ++i)
     {
-      if(!m_meshWrapper.incidentInVertex(m_meshWrapper.cellVertexIndices(tris[i]),
+      if(!m_meshWrapper.incidentInVertex(m_meshWrapper.cellVertexIndices(cells[i]),
                                          commonVert))
       {
         return false;
@@ -1324,29 +1322,29 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
   }
   else
   {
-    SLIC_ASSERT(numTris > 0);
-    switch(numTris)
+    SLIC_ASSERT(numCells > 0);
+    switch(numCells)
     {
     case 1:
       /// Choose an arbitrary vertex from this triangle
-      commonVert = m_meshWrapper.cellVertexIndices(tris[0])[0];
+      commonVert = m_meshWrapper.cellVertexIndices(cells[0])[0];
       shareCommonVert = true;
       break;
     case 2:
       /// Find a vertex that both triangles share
       shareCommonVert =
-        m_meshWrapper.haveSharedVertex(tris[0], tris[1], commonVert);
+        m_meshWrapper.haveSharedVertex(cells[0], cells[1], commonVert);
       break;
     default:  // numTris >= 3
       /// Find a vertex that the first three triangles share
       shareCommonVert =
-        m_meshWrapper.haveSharedVertex(tris[0], tris[1], tris[2], commonVert);
+        m_meshWrapper.haveSharedVertex(cells[0], cells[1], cells[2], commonVert);
 
       /// Check that all other triangles have this vertex
-      for(int i = 3; shareCommonVert && i < numTris; ++i)
+      for(int i = 3; shareCommonVert && i < numCells; ++i)
       {
         if(!m_meshWrapper.incidentInVertex(
-             m_meshWrapper.cellVertexIndices(tris[i]),
+             m_meshWrapper.cellVertexIndices(cells[i]),
              commonVert))
           shareCommonVert = false;
       }

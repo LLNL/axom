@@ -292,7 +292,7 @@ public:
    */
   DynamicGrayBlockData(const DynamicGrayBlockData& other)
     : m_vertIndex(other.m_vertIndex)
-    , m_tris(other.m_tris)
+    , m_cells(other.m_cells)
     , m_isLeaf(other.m_isLeaf)
   { }
 
@@ -303,10 +303,10 @@ public:
   {
     this->m_vertIndex = other.m_vertIndex;
 
-    this->m_tris.reserve(other.m_tris.size());
-    std::copy(other.m_tris.begin(),
-              other.m_tris.end(),
-              std::back_inserter(this->m_tris));
+    this->m_cells.reserve(other.m_cells.size());
+    std::copy(other.m_cells.begin(),
+              other.m_cells.end(),
+              std::back_inserter(this->m_cells));
 
     this->m_isLeaf = other.m_isLeaf;
 
@@ -319,9 +319,9 @@ public:
   //        void clear()
   //        {
   //            m_isLeaf = false;
-  //            m_vertIndex = NO_VERTEX;
-  //            m_tris.clear();
-  //            m_tris = TriangleList(0);    // reconstruct to deallocate memory
+  //            m_cellIndex = NO_VERTEX;
+  //            m_cells.clear();
+  //            m_cells = CellList(0);    // reconstruct to deallocate memory
   //        }
 
   /**
@@ -331,15 +331,12 @@ public:
   friend bool operator==(const DynamicGrayBlockData& lhs,
                          const DynamicGrayBlockData& rhs)
   {
+    // Note: We are not checking the contents of the cells array, only the size
     return
-      //(static_cast<const BlockData&>(lhs) == static_cast<const
-      // BlockData&>(rhs))
-      //&&
+      //(static_cast<const BlockData&>(lhs) == static_cast<const BlockData&>(rhs)) &&
       (lhs.m_vertIndex == rhs.m_vertIndex) &&
-      (lhs.m_tris.size() == rhs.m_tris.size())  // Note: We are not
-                                                // checking the contents
-      // && (lhs.m_tris == rhs.m_tris)                //       of the triangle
-      // array, only the size
+      (lhs.m_cells.size() == rhs.m_cells.size())
+      // && (lhs.m_cells == rhs.m_cells)
       && lhs.m_isLeaf == rhs.m_isLeaf;
   }
 
@@ -347,8 +344,7 @@ public:  // Functions related to whether this is a leaf
   /** Predicate to determine if the associated block is a leaf in the octree */
   bool isLeaf() const { return m_isLeaf; }
 
-  /** Sets a flag to determine whether the associated block is a leaf or
-     internal */
+  /** Sets a flag to determine whether the associated block is a leaf or internal */
   void setLeafFlag(bool isLeaf) { m_isLeaf = isLeaf; }
 
 public:  // Functions related to the associated vertex
@@ -371,31 +367,31 @@ public:  // Functions related to the associated vertex
 
 public:  // Functions related to the associated triangles
   /** Check whether this Leaf has any associated triangles */
-  bool hasTriangles() const { return !m_tris.empty(); }
+  bool hasCells() const { return !m_cells.empty(); }
 
   /**
    * Reserves space for a given number of triangles
    * \param count The number of triangles for which to reserve space
    */
-  void reserveTriangles(int count) { m_tris.reserve(count); }
+  void reserveCells(int count) { m_cells.reserve(count); }
 
   /** Find the number of triangles associated with this leaf */
-  int numTriangles() const { return static_cast<int>(m_tris.size()); }
+  int numCells() const { return static_cast<int>(m_cells.size()); }
 
   /** Associates the surface triangle with the given index with this block */
-  void addTriangle(CellIndex tInd) { m_tris.push_back(tInd); }
+  void addCell(CellIndex tInd) { m_cells.push_back(tInd); }
 
   /** Returns a const reference to the list of triangle indexes associated with
      the block */
-  const CellList& triangles() const { return m_tris; }
+  const CellList& cells() const { return m_cells; }
 
   /** Returns a reference to the list of triangle indexes associated with the
      block */
-  CellList& triangles() { return m_tris; }
+  CellList& cells() { return m_cells; }
 
 private:
   VertexIndex m_vertIndex;
-  CellList m_tris;
+  CellList m_cells;
   bool m_isLeaf;
 };
 
@@ -415,13 +411,13 @@ inline std::ostream& operator<<(std::ostream& os,
   else
     os << "<none>";
 
-  os << ", triangles: ";
-  if(bData.hasTriangles())
+  os << ", cells: ";
+  if(bData.hasCells())
   {
-    int numTri = bData.numTriangles();
-    os << "(" << numTri << ") {";
-    for(int i = 0; i < numTri; ++i)
-      os << bData.triangles()[i] << ((i == numTri - 1) ? "} " : ",");
+    int numCell = bData.numCells();
+    os << "(" << numCell << ") {";
+    for(int i = 0; i < numCell; ++i)
+      os << bData.cells()[i] << ((i == numCell - 1) ? "} " : ",");
   }
 
   os << "}";
