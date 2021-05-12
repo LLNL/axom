@@ -125,6 +125,13 @@ elseif(WIN32 AND TARGET hdf5::hdf5-static )
     blt_import_library(NAME      hdf5
                        LIBRARIES hdf5::hdf5-static
                        EXPORTABLE ON)
+elseif(TARGET hdf5)
+    # legacy hdf5 CMake build system support
+    message(STATUS "HDF5 using hdf5 target")
+
+    set_property(TARGET hdf5 
+                 APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                 "${HDF5_INCLUDE_DIRS}")
 else()
     # reg includes and libs with blt
     message(STATUS "HDF5 using HDF5_DEFINITIONS + HDF5_INCLUDE_DIRS + HDF5_LIBRARIES")
