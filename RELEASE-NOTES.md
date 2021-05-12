@@ -107,6 +107,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   verification
 - Quest: Fixed a bug with InOutOctree for triangles that lie on faces of octree blocks
 - Updated to use newer Conduit config directory
+- Add support for legacy hdf5 cmake build system
 
 ## [Version 0.4.0] - Release date 2020-09-22
 
