@@ -126,7 +126,7 @@ elseif(WIN32 AND TARGET hdf5::hdf5-static )
                        LIBRARIES hdf5::hdf5-static
                        EXPORTABLE ON)
 elseif(TARGET hdf5)
-    # legacy hdf5 CMake build system support
+    # legacy hdf5 CMake build system support creates an hdf5 target we use directly
     message(STATUS "HDF5 using hdf5 target")
 
     set_property(TARGET hdf5 
