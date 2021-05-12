@@ -53,6 +53,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   (data associated with quadrature points on a mesh)
 - Inlet: The internal hierarchy of an `Inlet` object can be reconstructed from a Sidre group,
   excluding callback functions
+- Added new overloaded version of  method sidre::DataStore::generateBlueprintIndex to incorporate new MPI features in conduit and allow for generation of a blueprint index on an under-decomposed parallel mesh
+- Added new method sidre::View::importArrayNode to import a conduit::Node holding array data directly into a sidre::View
 
 ### Changed
 - Converted [Uberenv] to a git submodule. We previously vendored a copy of this script.
@@ -92,6 +94,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated BLT to version 0.4.0 released 9 Apr 2021
 - Updated MFEM to version 4.2 released 30 Oct 2020. Axom no longer requires MFEM to be built serially
 - The macro for exporting symbols is now `AXOM_EXPORT` instead of `AXOM_API`
+- Updated Conduit to v0.6.0
+- Updated SCR to compatibility with v3.0rc1
 
 ### Fixed
 - Updated to new BLT version that does not fail when ClangFormat returns an empty
