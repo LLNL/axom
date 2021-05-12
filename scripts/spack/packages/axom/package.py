@@ -126,6 +126,8 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("py-shroud", when="+devtools")
     depends_on("llvm+clang@10.0.0", when="+devtools", type='build')
 
+    conflict("conduit@:0.6.0", when="@0.5.0:")
+
     def _get_sys_type(self, spec):
         sys_type = spec.architecture
         # if on llnl systems, we can use the SYS_TYPE
