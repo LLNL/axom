@@ -58,7 +58,9 @@ constexpr typename std::underlying_type<E>::type to_underlying(const E e)
 
 }  // namespace detail
 
-SphinxWriter::SphinxWriter(const std::string& fileName)
+SphinxWriter::SphinxWriter(const std::string& fileName,
+                           const std::string& title,
+                           const Style style)
   : m_fieldColLabels({"Field Name",
                       "Description",
                       "Default Value",
@@ -66,11 +68,19 @@ SphinxWriter::SphinxWriter(const std::string& fileName)
                       "Required"})
   , m_functionColLabels(
       {"Function Name", "Description", "Signature", "Required"})
+  , m_style(style)
 {
   m_fileName = fileName;
   m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX\n";
   m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX\n\n";
-  writeTitle("Input file Options");
+  if(title.empty())
+  {
+    writeTitle("Input file Options");
+  }
+  else
+  {
+    writeTitle(title);
+  }
 }
 
 void SphinxWriter::documentContainer(const Container& container)
@@ -114,6 +124,16 @@ void SphinxWriter::documentContainer(const Container& container)
     currContainer.description = sidreGroup->getView("description")->getString();
   }
 
+  // Bail out if this is a collection of primitives -
+  // it doesn't make sense to document each individual primitive
+  // FIXME: Implement something analogous to the logic for struct collections that displays the
+  // "schema" for the primitive elements of the collection
+  if(isCollectionGroup(container.name()) &&
+     !sidreGroup->hasView(detail::STRUCT_COLLECTION_FLAG))
+  {
+    return;
+  }
+
   for(const auto& field_entry : container.getChildFields())
   {
     extractFieldMetadata(field_entry.second->sidreGroup(), currContainer);
@@ -123,11 +143,47 @@ void SphinxWriter::documentContainer(const Container& container)
   {
     extractFunctionMetadata(function_entry.second->sidreGroup(), currContainer);
   }
+
+  // If it's not a collection,  we need to record the child containers
+  if(!isCollectionGroup(container.name()))
+  {
+    for(const auto& container_entry : container.getChildContainers())
+    {
+      if(!isCollectionGroup(container_entry.first))
+      {
+        const auto name = removeBeforeDelimiter(container_entry.first);
+        std::string description;
+        const auto group = container_entry.second->sidreGroup();
+        const static auto collectionDescriptionPath =
+          appendPrefix(detail::COLLECTION_GROUP_NAME, "description");
+        if(group->hasView("description"))
+        {
+          description = group->getView("description")->getString();
+        }
+        else if(group->hasView(collectionDescriptionPath))
+        {
+          // If the label is applied to the collection group itself, we can use that instead
+          description = group->getView(collectionDescriptionPath)->getString();
+        }
+        currContainer.childContainers.push_back(
+          {std::move(name),
+           std::move(description),
+           detail::isTrivial(*container_entry.second)});
+      }
+    }
+  }
 }
 
 void SphinxWriter::finalize()
 {
-  writeAllTables();
+  if(m_style == Style::Nested)
+  {
+    writeNestedTables();
+  }
+  else
+  {
+    writeAllTables();
+  }
   m_outFile.open(m_fileName);
   m_outFile << m_oss.str();
   m_outFile.close();
@@ -210,6 +266,130 @@ void SphinxWriter::writeAllTables()
     {
       writeTable("Functions", currContainer.functionTable);
     }
+  }
+}
+
+void SphinxWriter::writeNestedTables()
+{
+  // Used to avoid duplicate hyperlinks
+  int containerCount = 0;
+  for(const auto& pathName : m_inletContainerPathNames)
+  {
+    const auto& currContainer = m_rstTables.at(pathName);
+
+    if(!currContainer.isSelectedElement)
+    {
+      writeSubtitle(currContainer.containerName);
+    }
+
+    if(currContainer.description != "")
+    {
+      m_oss << currContainer.description << "\n\n";
+    }
+
+    const auto& fields = currContainer.fieldTable;
+    const auto& functions = currContainer.functionTable;
+    const auto& containers =
+      currContainer.childContainers;  // Contains only names and descriptions
+
+    if(fields.size() > 1 || functions.size() > 1 || !containers.empty())
+    {
+      m_oss << ".. list-table::\n";
+      m_oss << "   :widths: 25 50\n";
+      m_oss << "   :header-rows: 1\n";
+      m_oss << "   :stub-columns: 1\n\n";
+      m_oss << "   * - Name\n";
+      m_oss << "     - Description\n";
+    }
+
+    // Writes a name + description to the "table of contents"
+    // for each Container
+    auto writeTOCEntry = [this,
+                          containerCount](const std::vector<std::string>& data) {
+      // FIXME: Overlapping link names? Need to use the full path or a hash??
+      m_oss << fmt::format("   * - :ref:`{0}<{0}{1}>`\n", data[0], containerCount);
+      m_oss << fmt::format("     - {0}\n", data[1]);
+    };
+
+    // FIXME: Would it be useful to alphabetize these??
+    for(const auto& container : containers)
+    {
+      // We can set up a hyperlink to non-trivial tables because they will
+      // be subsequently documented
+      if(container.isTrivial)
+      {
+        m_oss << fmt::format("   * - {0}\n", container.name);
+      }
+      else
+      {
+        m_oss << fmt::format("   * - `{0}`_\n", container.name);
+      }
+      m_oss << fmt::format("     - {0}\n", container.description);
+    }
+
+    // Need to skip first element (header row), hence no range-based for loop
+    std::for_each(fields.begin() + 1, fields.end(), writeTOCEntry);
+    std::for_each(functions.begin() + 1, functions.end(), writeTOCEntry);
+
+    m_oss << "\n\n";
+
+    // Now, dump the full descriptions
+    std::for_each(
+      fields.begin() + 1,
+      fields.end(),
+      [this, containerCount](const std::vector<std::string>& fieldData) {
+        // Insert a hyperlink target for the name
+        m_oss << fmt::format(".. _{0}{1}:\n\n", fieldData[0], containerCount);
+        m_oss << fmt::format("**{0}**\n\n", fieldData[0]);  // name
+        // description - ideally this would be an extended description
+        m_oss << fieldData[1] << "\n\n";
+
+        // The default value
+        if(!fieldData[2].empty())
+        {
+          m_oss << fmt::format("  - Default value: {0}\n", fieldData[2]);
+        }
+
+        // The valid values
+        if(!fieldData[3].empty())
+        {
+          m_oss << fmt::format("  - Valid values: {0}\n", fieldData[3]);
+        }
+
+        // Whether it's required
+        if(!fieldData[4].empty())
+        {
+          const bool isRequired = fieldData[3] == "|check|";
+          m_oss << fmt::format("  - {0}\n", isRequired ? "Required" : "Optional");
+        }
+        m_oss << "\n\n";
+      });
+
+    std::for_each(
+      functions.begin() + 1,
+      functions.end(),
+      [this, containerCount](const std::vector<std::string>& functionData) {
+        // Insert a hyperlink target for the name
+        m_oss << fmt::format(".. _{0}{1}:\n\n", functionData[0], containerCount);
+        m_oss << fmt::format("**{0}**\n\n", functionData[0]);  // name
+        // description - ideally this would be an extended description
+        m_oss << functionData[1] << "\n\n";
+
+        // The function's signature
+        if(!functionData[2].empty())
+        {
+          m_oss << fmt::format("  - Signature: {0}\n", functionData[2]);
+        }
+
+        // Whether it's required
+        if(!functionData[3].empty())
+        {
+          const bool isRequired = functionData[3] == "|check|";
+          m_oss << fmt::format("  - {0}\n", isRequired ? "Required" : "Optional");
+        }
+        m_oss << "\n\n";
+      });
+    containerCount++;
   }
 }
 

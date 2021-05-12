@@ -41,12 +41,27 @@ class SphinxWriter : public Writer
 public:
   /*!
   *******************************************************************************
+  * \brief Supported Sphinx style options
+  *******************************************************************************
+  */
+  enum class Style
+  {
+    Flat,   // Tables for the child Fields/Functions of each Container
+    Nested  // Table of contents for each Container, then sections for each child
+  };
+
+  /*!
+  *******************************************************************************
   * \brief A constructor for SphinxWriter.
   * 
   * \param [in] fileName The name of the file the documentation should be written to.
+  * \param [in] title The title of the generated rst file
+  * \param [in] style The style of docs to generate
   *******************************************************************************
   */
-  SphinxWriter(const std::string& fileName);
+  SphinxWriter(const std::string& fileName,
+               const std::string& title = {},
+               const Style style = Style::Flat);
 
   void documentContainer(const Container& container) override;
 
@@ -107,6 +122,8 @@ private:
    */
   void writeAllTables();
 
+  void writeNestedTables();
+
   /*!
   *******************************************************************************
   * \struct ContainerData
@@ -143,6 +160,21 @@ private:
     bool isSelectedElement;
     std::vector<std::vector<std::string>> fieldTable;
     std::vector<std::vector<std::string>> functionTable;
+    /**
+     * \brief Stores a minimal set of data about child containers
+     * Used only for the table of contents in nested "mode"
+     */
+    struct ChildContainerData
+    {
+      std::string name;
+      std::string description;
+      /**
+       * \brief Whether the container contains any fields/functions in any of its subcontainers
+       * \see detail::isTrivial
+       */
+      bool isTrivial;
+    };
+    std::vector<ChildContainerData> childContainers;
   };
 
   /*!
@@ -249,6 +281,7 @@ private:
   std::vector<std::string> m_fieldColLabels;
   // Used for the RST tables for functions
   std::vector<std::string> m_functionColLabels;
+  Style m_style;
 };
 
 }  // namespace inlet

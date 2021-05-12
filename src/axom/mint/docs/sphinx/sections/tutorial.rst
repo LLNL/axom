@@ -44,9 +44,9 @@ can be easily constructed as follows:
    :language: C++
    :linenos:
 
-The resulting mesh is depicted in :numref:`figs/uniformMesh50x50`.
+The resulting mesh is depicted in the :ref:`following figure <figs-uniformMesh50x50>`.
 
-.. _figs/uniformMesh50x50:
+.. _figs-uniformMesh50x50:
 .. figure:: ../figures/structured_uniform_mesh.png
   :align: center
   :scale: 35%
@@ -72,7 +72,7 @@ The following code snippet illustrates how to construct a :math:`25 \times 25`
 :ref:`RectilinearMesh` where the spacing of the :ref:`Nodes` grows according
 to an exponential *stretching function* along the :math:`x` and :math:`y` axis
 respectively. The resulting mesh is depicted in
-:numref:`figs/rectilinearMesh25x25`.
+the :ref:`following figure <figs-rectilinearMesh25x25>`.
 
 .. literalinclude:: ../../../examples/user_guide/mint_tutorial.cpp
    :start-after: sphinx_tutorial_construct_rectilinear_start
@@ -80,7 +80,7 @@ respectively. The resulting mesh is depicted in
    :language: C++
    :linenos:
 
-.. _figs/rectilinearMesh25x25:
+.. _figs-rectilinearMesh25x25:
 .. figure:: ../figures/structured_rectilinear_mesh.png
   :align: center
   :scale: 35%
@@ -106,7 +106,7 @@ separate arrays, :math:`x`, :math:`y`, and :math:`z`.
 The following code snippet illustrates how to construct a :math:`25 \times 25`
 :ref:`CurvilinearMesh`. The coordinates of the :ref:`Nodes` follow from the
 equation of a cylinder with a radius of :math:`2.5`. The resulting mesh is
-depicted in :numref:`figs/curvilinearMesh25x25`.
+depicted in the :ref:`following figure <figs-curvilinearMesh25x25>`.
 
 .. literalinclude:: ../../../examples/user_guide/mint_tutorial.cpp
    :start-after: sphinx_tutorial_construct_curvilinear_start
@@ -114,7 +114,7 @@ depicted in :numref:`figs/curvilinearMesh25x25`.
    :language: C++
    :linenos:
 
-.. _figs/curvilinearMesh25x25:
+.. _figs-curvilinearMesh25x25:
 .. figure:: ../figures/SampleMesh.png
    :align: center
    :scale: 35%
@@ -140,7 +140,7 @@ Since both :ref:`Geometry` and :ref:`Topology` are explicit, an
 #. the :ref:`Cells` comprising the mesh, defined by the *cell-to-node*
    :ref:`Connectivity`
 
-.. _figs/triangularMesh:
+.. _figs-triangularMesh:
 .. figure:: ../figures/sample_unstructured_mesh.png
     :align: center
     :scale: 35%
@@ -149,7 +149,7 @@ Since both :ref:`Geometry` and :ref:`Topology` are explicit, an
     Resulting :ref:`SingleCellTopology` :ref:`UnstructuredMesh`
 
 The following code snippet illustrates how to create  the simple
-:ref:`UnstructuredMesh` depicted in :numref:`figs/triangularMesh`.
+:ref:`UnstructuredMesh` depicted in the :ref:`above figure <figs-triangularMesh>`.
 
 .. literalinclude:: ../../../examples/user_guide/mint_tutorial.cpp
    :start-after: sphinx_tutorial_construct_unstructured_start
@@ -164,7 +164,7 @@ class constructor correspond to the problem  dimension and cell type, which
 in this case, is :math:`2` and ``mint::TRIANGLE`` respectively. Once the mesh
 is constructed, the :ref:`Nodes` and :ref:`Cells` are appended to the mesh by
 calls to the ``appendNode()`` and ``appendCell()`` methods respectively.
-The resulting mesh is shown in :numref:`figs/triangularMesh`.
+The resulting mesh is shown in the :ref:`above figure <figs-triangularMesh>`.
 
 .. tip::
 
@@ -184,9 +184,9 @@ Compared to the :ref:`SingleCellTopology` :ref:`UnstructuredMesh`, a
 :ref:`MixedCellTopology` :ref:`UnstructuredMesh` has also explicit
 :ref:`Topology` and :ref:`Geometry`. However, the cell type is not fixed.
 Notably, the mesh can store different :ref:`CellTypes`, e.g. triangles and quads,
-as shown in the simple 2D mesh depicted in :numref:`figs/mixedMesh`.
+as shown in the simple 2D mesh depicted in the :ref:`following figure <figs-mixedMesh>`.
 
-.. _figs/mixedMesh:
+.. _figs-mixedMesh:
 .. figure:: ../figures/sample_unstructured_mesh_mixed.png
     :align: center
     :scale: 35%
@@ -203,7 +203,7 @@ As with the :ref:`SingleCellTopology` :ref:`UnstructuredMesh`, a
 
 The following code snippet illustrates how to create  the simple
 :ref:`MixedCellTopology` :ref:`UnstructuredMesh` depicted in
-:numref:`figs/mixedMesh`, consisting of :math:`2` *triangles* and
+the :ref:`above figure <figs-mixedMesh>`, consisting of :math:`2` *triangles* and
 :math:`1` *quadrilateral* :ref:`Cells`.
 
 .. literalinclude:: ../../../examples/user_guide/mint_tutorial.cpp

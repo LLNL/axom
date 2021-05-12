@@ -327,9 +327,9 @@ defined on the interval :math:`\mathcal{I}:[-5.0,5.0] \times [-5.0,5.0]`.
 The resulting VTK file is stored in the specified file, ``uniform_mesh.vtk``.
 A depiction of the mesh showing a plot of `Himmelblau's Function`_ computed
 over the constituent :ref:`Nodes` of the mesh is illustrated in
-:numref:`figs/intro_mesh`.
+:ref:`the following plot <figs-intro_mesh>`.
 
-.. _figs/intro_mesh:
+.. _figs-intro_mesh:
 .. figure:: ../figures/intro_mesh.png
    :align: center
    :alt: Resulting Uniform mesh
@@ -348,9 +348,9 @@ the ``--unstructured`` option at the command line as follows:
 The code will generate an :ref:`UnstructuredMesh` by triangulating the
 :ref:`UniformMesh` such that each quadrilateral is subdivided into four triangles.
 The resulting unstructured mesh is stored in a VTK file, ``unstructured_mesh.vtk``,
-depicted in :numref:`figs/intro_mesh_unstructured`.
+depicted in :ref:`the following plot <figs-intro_mesh_unstructured>`.
 
-.. _figs/intro_mesh_unstructured:
+.. _figs-intro_mesh_unstructured:
 .. figure:: ../figures/intro_mesh_unstructured.png
    :align: center
    :alt: Resulting Unstructured mesh

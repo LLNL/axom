@@ -44,10 +44,10 @@ defined by the collection of topological entities, e.g. the :ref:`Cells`,
 broadly referred to as :ref:`Connectivity` information.
 Each topological entity in the mesh is identified by a unique index, as depicted
 in the sample :ref:`UnstructuredMesh` shown in
-:numref:`figs/meshRepresentation`. This provides a convenient way to traverse
+:ref:`the following mesh <figs-meshRepresentation>`. This provides a convenient way to traverse
 and refer to individual entities in the mesh.
 
-.. _figs/meshRepresentation:
+.. _figs-meshRepresentation:
 .. figure:: ../figures/mesh_representation.png
   :align: center
   :scale: 95%
@@ -74,7 +74,8 @@ A cell, :math:`\mathcal{C}_i`, is given by an ordered list of :ref:`Nodes`,
 :math:`n_j \in \mathcal{C}_i`, corresponds to a
 unique node index in the mesh. The order of :ref:`Nodes` defining a cell is
 determined according to a prescribed local numbering convention for a
-particular cell type. See :numref:`figs/linearCells` and :numref:`figs/q2Cells`.
+particular cell type. See the supported :ref:`linear cell types <figs-linearCells>`
+and :ref:`quadratic cell types <figs-q2Cells>`.
 All Mint :ref:`CellTypes` follow the `CGNS Numbering Conventions`_.
 
 .. _Faces:
@@ -85,7 +86,7 @@ Faces
 Similarly, a face, :math:`\mathcal{F}_i`, is defined by an ordered list of
 :ref:`Nodes`, :math:`\mathcal{F}_i=\{n_0,n_1,...,n_k\}`. Faces are essentially
 :ref:`Cells` whose topological dimension is one less than the dimension of the
-:ref:`Cells` they are bound to. See :numref:`figs/cellFaces`.
+:ref:`Cells` they are bound to. See the :ref:`cell faces diagram <figs-cellFaces>`.
 Consequently, the constituent faces of a 3D cell are 2D topological entities,
 such as *triangles* or *quads*, depending on the cell type. The faces of a 2D
 cell are 1D topological entities, i.e. *segments*. Last, the faces of a 1D cell
@@ -97,7 +98,7 @@ are 0D topological entities, i.e. :ref:`Nodes`.
   mesh :ref:`Nodes`, hence, Mint does not explicitly support :ref:`Faces`
   in 1D.
 
-.. _figs/cellFaces:
+.. _figs-cellFaces:
 .. figure:: ../figures/cell_faces.png
   :align: center
   :alt: Cell Faces
@@ -128,9 +129,9 @@ are 0D topological entities, i.e. :ref:`Nodes`.
    As with :ref:`Cells`, the ordering of the constituent nodes of a face is
    determined by the cell type. However, by convention, the orientation of a
    face is according to an outward pointing face normal, as illustrated in
-   :numref:`figs/faceOrientation`.
+   the :ref:`face orientation diagram <figs-faceOrientation>`.
 
-   .. _figs/faceOrientation:
+   .. _figs-faceOrientation:
    .. figure:: ../figures/face_orientation.png
       :align: center
       :alt: Face Orientation
@@ -144,7 +145,8 @@ are 0D topological entities, i.e. :ref:`Nodes`.
    From the viewpoint of a cell, :math:`\mathcal{C}_k`, its constituent faces,
    defined in the local node numbering of the cell, are oriented
    according to an outward facing normal with respect to the cell,
-   :math:`\mathcal{C}_k`. For example, in :numref:`figs/faceOrientation` (a),
+   :math:`\mathcal{C}_k`.
+   For example, in the :ref:`face orientation diagram <figs-faceOrientation>` (a),
    the triangle, :math:`\mathcal{C}_k`, has three faces that are oriented
    according to an outward facing normal and defined using local node numbers
    with respect to their cell as follows, :math:`\mathcal{F}_0=\{0,1\}`,
@@ -154,8 +156,9 @@ are 0D topological entities, i.e. :ref:`Nodes`.
    denoted by :math:`\mathcal{C}_0` and :math:`\mathcal{C}_1`. By convention,
    from the viewpoint of a face, :math:`\mathcal{F}_k`, defined using global node
    numbers, the face is oriented according to an outward facing normal with
-   respect to the cell corresponding to :math:`\mathcal{C}_0`. As depicted in
-   :numref:`figs/faceOrientation` (b), the face denoted by :math:`\mathcal{F}_k`
+   respect to the cell corresponding to :math:`\mathcal{C}_0`. As depicted in the
+   :ref:`face orientation diagram <figs-faceOrientation>` (b),
+   the face denoted by :math:`\mathcal{F}_k`
    has an outward facing normal with respect to :math:`\mathcal{C}_0`,
    consequently it is defined as follows, :math:`\mathcal{F}_k=\{1,2\}`.
 
@@ -198,9 +201,9 @@ Depending on the numerical scheme employed and the :ref:`CellTypes` used,
 additional mesh :ref:`Nodes` may be located on the constituent cell faces,
 edges and in the cell interior.
 For example, in the Finite Element Method (FEM), the nodes for the linear
-Lagrange Finite Elements, see :numref:`figs/linearCells`, are located at the
-cell *vertices*. However, for quadratic :ref:`CellTypes`,
-see :numref:`figs/q2cells`, the *Lagrange* :math:`P^2` finite element,
+Lagrange Finite Elements, see :ref:`the supported linear cell types <figs-linearCells>`,
+are located at the cell *vertices*. However, for quadratic :ref:`CellTypes`,
+see :ref:`the quadratic cell types list <figs-q2Cells>`, the *Lagrange* :math:`P^2` finite element,
 for the quadrilateral and hexahedron (in 3D) cells, includes as :ref:`Nodes`,
 the cell, face and edge (in 3D) centroids in addition to the cell *vertices*.
 Other higher order finite elements may involve additional nodes for each edge
@@ -213,13 +216,14 @@ Connectivity
 
 The topological connections or *adjecencies* between the :ref:`Cells`,
 :ref:`Faces` and :ref:`Nodes` comprising the mesh, give rise to a hierarchical
-topological structure, depicted in :numref:`figs/topological_structure`, that is
+topological structure, depicted in the
+:ref:`topological structure diagram <figs-topological_structure>`, that is
 broadly referred to as :ref:`Connectivity` information. At the top level, a
 mesh consists of one or more :ref:`Cells`, which constitute the highest
 dimensional entity comprising the mesh. Each cell is bounded by zero or more
 :ref:`Faces`, each of which is bounded by one or more :ref:`Nodes`.
 
-.. _figs/topological_structure:
+.. _figs-topological_structure:
 .. figure:: ../figures/topological_structure.png
   :align: center
   :scale: 95%
@@ -230,7 +234,7 @@ dimensional entity comprising the mesh. Each cell is bounded by zero or more
 
 The topological connections between the constituent entities of the mesh can be
 distinguished in (a) *downward* and (b) *upward* topological connections, as
-illustrated in :numref:`figs/topological_structure`.
+illustrated in the :ref:`topological structure diagram <figs-topological_structure>`.
 
 * The downward topological connections encode the connections from
   higher dimensional mesh entities to lower dimensional entities,
@@ -325,6 +329,3 @@ application may need.
 .. #############################################################################
 
 .. include:: citations.rst
-
-
-

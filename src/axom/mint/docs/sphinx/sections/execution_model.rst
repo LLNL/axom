@@ -40,9 +40,9 @@ The :ref:`sections/execution_model` provides :ref:`NodeTraversalFunctions`,
 :ref:`CellTraversalFunctions` and :ref:`FaceTraversalFunctions` to iterate and
 operate on the constituent :ref:`Nodes`, :ref:`Cells` and :ref:`Faces` of the
 mesh respectively. The general form of these functions is shown
-in :numref:`figs/execModel`.
+in :ref:`the execution model diagram <figs-execModel>`.
 
-.. _figs/execModel:
+.. _figs-execModel:
 .. figure:: ../figures/execmodel.png
    :align: center
    :scale: 50%
@@ -51,7 +51,7 @@ in :numref:`figs/execModel`.
    General form of the constituent templated functions of the
    :ref:`sections/execution_model`
 
-As shown in :numref:`figs/execModel`, the key elements of the functions
+As shown in :ref:`the execution model diagram <figs-execModel>`, the key elements of the functions
 that comprise the :ref:`sections/execution_model` are:
 
 * **The Iteration Space:** Indicated by the function suffix, used to

@@ -10,7 +10,7 @@ Component Architecture
 
 Slic provides a simple and easy to use logging interface for applications.
 
-.. _figs/slic_architecture:
+.. _figs-slic_architecture:
 
 .. figure:: ../figures/architecture.png
    :align: center
@@ -20,7 +20,7 @@ Slic provides a simple and easy to use logging interface for applications.
    Basic Component Architecture of Slic.
 
 The basic component architecture of Slic, depicted in
-:numref:`figs/slic_architecture`, consists of three main components:
+:ref:`the above figure <figs-slic_architecture>`, consists of three main components:
 
 #. A static logger API. This serves as the primary interface to the application.
 
@@ -448,6 +448,3 @@ any of the :ref:`BuiltInLogStreams`, as demonstrated in the code snippet below:
 .. #############################################################################
 
 .. include:: citations.rst
-
-
-

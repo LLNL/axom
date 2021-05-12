@@ -356,7 +356,7 @@ int main(int argc, char** argv)
   {
     const std::string docFileName = "nested_structs";
     std::unique_ptr<inlet::SphinxWriter> sphinxWriter(
-      new inlet::SphinxWriter(docFileName + ".rst"));
+      new inlet::SphinxWriter(docFileName + ".rst", "Nested Structs Output"));
     inlet.registerWriter(std::move(sphinxWriter));
     inlet.write();
     std::unique_ptr<inlet::JSONSchemaWriter> schemaWriter(
