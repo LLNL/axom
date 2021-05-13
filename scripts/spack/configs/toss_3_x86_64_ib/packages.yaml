@@ -138,6 +138,11 @@ packages:
   conduit:
     version: [0.6.0]
     variants: ~shared
+  hdf5:
+    buildable: False
+    externals:
+    - spec: hdf5@1.8.10~shared
+      prefix: /usr/gapps/ale3d/toss_3_x86_64_ib/icc19/PUBLIC/packages/hdf5/1.8.10.1c
   mfem:
     variants: ~mpi~metis~zlib
   scr:

@@ -18,7 +18,7 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## [Version 0.5.0] - Release date 2021-05-xx
+## [Version 0.5.0] - Release date 2021-05-14
 
 ### Added
 - Added the MFEMSidreDataCollection class for describing [MFEM] meshes and associated fields.  This
@@ -53,8 +53,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   (data associated with quadrature points on a mesh)
 - Inlet: The internal hierarchy of an `Inlet` object can be reconstructed from a Sidre group,
   excluding callback functions
-- Added new overloaded version of  method sidre::DataStore::generateBlueprintIndex to incorporate new MPI features in conduit and allow for generation of a blueprint index on an under-decomposed parallel mesh
-- Added new method sidre::View::importArrayNode to import a conduit::Node holding array data directly into a sidre::View
+- Added new overloaded version of method
+  sidre::DataStore::generateBlueprintIndex to incorporate new MPI
+  features in conduit and allow for generation of a blueprint index on
+  an under-decomposed parallel mesh
+- Added new method sidre::View::importArrayNode to import a
+  conduit::Node holding array data directly into a sidre::View
+- Added support for registering material and species sets in
+  `MFEMSidreDataCollection`.  These correspond to
+  [`matset`](https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#material-sets)s
+  and
+  [`specset`](https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#species-sets)s
+  in the Mesh Blueprint
 
 ### Changed
 - Converted [Uberenv] to a git submodule. We previously vendored a copy of this script.
@@ -109,6 +119,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Empty structs/collections of structs with required sub-elements no longer fail
   verification
 - Quest: Fixed a bug with InOutOctree for triangles that lie on faces of octree blocks
+- Updated to use newer Conduit config directory
+- Add support for legacy hdf5 cmake build system
 
 ## [Version 0.4.0] - Release date 2020-09-22
 
