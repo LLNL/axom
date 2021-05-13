@@ -29,72 +29,36 @@ namespace quest
    * \brief A utility class that wraps the access to the mesh data
    *
    * This class helps separate the specifics of accessing the underlying mesh
-   * for an InOutOctree. It is customized for unstructured Triangle meshes,
-   * but we will later want to apply the InOutOctree to other mesh types,
-   * e.g. Segments in 2D, Bilinear quads in 3D.
+   * for an InOutOctree. It is customized for unstructured Segment meshes in 2D
+   * and Triangle meshes in 3D. 
    *
-   * We can later specialize this class for triangle meshes and implement other
-   * customized mesh wrappers.
+   * If we want to support other surface mesh types (e.g. quad meshes in 3D),
+   * we'll have to customize it a bit more.
    */
 template <int DIM>
 class MeshWrapper;
 
-template <typename Derived>
-class MeshWrapperBase
+template <int DIM, typename Derived>
+class SimplexMeshWrapper
 {
 public:
-  using MeshVertexSet = slam::PositionSet<>;
-
-public:
-  /** Const accessor to the vertex set of the wrapped surface mesh */
-  const MeshVertexSet& vertexSet() const { return m_vertexSet; }
-
-  /** Accessor to the vertex set of the wrapped surface mesh */
-  MeshVertexSet& vertexSet() { return m_vertexSet; }
-
-protected:
-  MeshVertexSet m_vertexSet {0};
-};
-
-template <>
-class MeshWrapper<2>
-{
-public:
-  static constexpr int DIM = 2;
-  using SpaceCell = primal::Segment<double, DIM>;
-};
-
-template <>
-class MeshWrapper<3> : public MeshWrapperBase<MeshWrapper<3>>
-{
-public:
-  static constexpr int DIM = 3;
-  using SpacePt = axom::primal::Point<double, DIM>;
-  using GeometricBoundingBox = axom::primal::BoundingBox<double, DIM>;
-
   using VertexIndex = axom::IndexType;
   using CellIndex = axom::IndexType;
+
+  using MeshVertexSet = slam::PositionSet<>;
+  using MeshElementSet = slam::PositionSet<>;
   using SurfaceMesh = mint::Mesh;
 
-  /** \brief A vertex index to indicate that there is no associated vertex */
-  static const VertexIndex NO_VERTEX = -1;
-
-  /** \brief A vertex index to indicate that there is no associated vertex */
-  static const CellIndex NO_CELL = -1;
-
-  /** \brief A constant for the number of boundary vertices in a triangle */
-  static const int NUM_TRI_VERTS = 3;
-
-  using SpaceCell = primal::Triangle<double, DIM>;
-
-  using MeshElementSet = slam::PositionSet<>;
+  using SpacePt = axom::primal::Point<double, DIM>;
+  using GeometricBoundingBox = axom::primal::BoundingBox<double, DIM>;
 
   using VertexIndexMap = slam::Map<slam::Set<VertexIndex>, VertexIndex>;
   using VertexPositionMap = slam::Map<slam::Set<VertexIndex>, SpacePt>;
 
+  static constexpr int NUM_CELL_VERTS = DIM;
   using STLIndirection =
     slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>;
-  using TVStride = slam::policies::CompileTimeStride<VertexIndex, NUM_TRI_VERTS>;
+  using TVStride = slam::policies::CompileTimeStride<VertexIndex, NUM_CELL_VERTS>;
   using ConstantCardinality =
     slam::policies::ConstantCardinality<VertexIndex, TVStride>;
   using CellVertexRelation = slam::StaticRelation<VertexIndex,
@@ -105,15 +69,27 @@ public:
                                                   MeshVertexSet>;
   using CellVertIndices = typename CellVertexRelation::RelationSubset;
 
-public:
-  /** \brief Constructor for a mesh wrapper */
-  MeshWrapper(SurfaceMesh*& meshPtr)
+  /** \brief A vertex index to indicate that there is no associated vertex */
+  static const VertexIndex NO_VERTEX = -1;
+
+  /** \brief A vertex index to indicate that there is no associated vertex */
+  static const CellIndex NO_CELL = -1;
+
+protected:
+  SimplexMeshWrapper(SurfaceMesh*& meshPtr)
     : m_surfaceMesh(meshPtr)
-    , m_elementSet(0)
     , m_vertexPositions(&m_vertexSet)
-    , m_triangleToVertexRelation()
-    , m_meshWasReindexed(false)
   { }
+
+public:
+  /** Predicate to determine if the wrapped surface mesh has been reindexed */
+  bool meshWasReindexed() const { return m_meshWasReindexed; }
+
+  /** Const accessor to the vertex set of the wrapped surface mesh */
+  const MeshVertexSet& vertexSet() const { return m_vertexSet; }
+
+  /** Accessor to the vertex set of the wrapped surface mesh */
+  MeshVertexSet& vertexSet() { return m_vertexSet; }
 
   /** Const accessor to the element set of the wrapped surface mesh */
   const MeshElementSet& elementSet() const { return m_elementSet; }
@@ -139,14 +115,13 @@ public:
       return m_surfaceMesh->getNumberOfCells();
   }
 
-  /** Predicate to determine if the wrapped surface mesh has been reindexed */
-  bool meshWasReindexed() const { return m_meshWasReindexed; }
-
   /**
-     * \brief Helper function to retrieve the position of the vertex from the
-     * mesh
-     * \param idx The index of the vertex within the surface mesh
-     */
+   * \brief Returns position of vertex with index \a idx within the surface mesh
+   *
+   * \note Use this function instead of vertexPosition() if calling in a context
+   * where the mesh might not yet have been reindexed
+   * \sa vertexPosition()
+   */
   SpacePt getMeshVertexPosition(VertexIndex idx) const
   {
     if(m_meshWasReindexed)
@@ -165,13 +140,66 @@ public:
   }
 
   /**
-     * \brief Returns the spatial position of the vertex
-     *  with index idx of the wrapped surface mesh
-     */
+   * \brief Returns spatial position of vertex with index \a idx from wrapped surface mesh
+   * 
+   * \note Use after mesh has been reindexed
+   */
   const SpacePt& vertexPosition(VertexIndex idx) const
   {
     return m_vertexPositions[idx];
   }
+
+protected:
+  SurfaceMesh*& m_surfaceMesh;  // ref to pointer to allow changing the mesh
+
+  MeshVertexSet m_vertexSet {0};
+  MeshElementSet m_elementSet {0};
+
+  VertexPositionMap m_vertexPositions;
+
+  bool m_meshWasReindexed {false};
+};
+
+template <>
+class MeshWrapper<2> : public SimplexMeshWrapper<2, MeshWrapper<2>>
+{
+public:
+  static constexpr int DIM = 2;
+  using Base = SimplexMeshWrapper<DIM, MeshWrapper<DIM>>;
+  using SpaceCell = primal::Segment<double, DIM>;
+  using Base::CellIndex;
+  using Base::GeometricBoundingBox;
+  using Base::SpacePt;
+  using Base::SurfaceMesh;
+  using Base::VertexIndex;
+  using Base::VertexIndexMap;
+  using Base::VertexPositionMap;
+};
+
+template <>
+class MeshWrapper<3> : public SimplexMeshWrapper<3, MeshWrapper<3>>
+{
+public:
+  static constexpr int DIM = 3;
+  using Base = SimplexMeshWrapper<DIM, MeshWrapper<DIM>>;
+  using Base::CellIndex;
+  using Base::GeometricBoundingBox;
+  using Base::SpacePt;
+  using Base::SurfaceMesh;
+  using Base::VertexIndex;
+  using Base::VertexIndexMap;
+  using Base::VertexPositionMap;
+
+  /** \brief A constant for the number of boundary vertices in a triangle */
+  static const int NUM_TRI_VERTS = 3;
+  using SpaceCell = primal::Triangle<double, DIM>;
+
+public:
+  /** \brief Constructor for a mesh wrapper */
+  MeshWrapper(SurfaceMesh*& meshPtr)
+    : Base(meshPtr)
+    , m_triangleToVertexRelation()
+  { }
 
   /**
      * \brief Returns the indices of the boundary vertices of the element
@@ -331,8 +359,7 @@ public:
      */
   void reindexMesh(int numVertices, const VertexIndexMap& vertexIndexMap)
   {
-    // Create a vertex set on the new vertices and grab coordinates from the
-    // old ones
+    // Create a vertex set on the new vertices and grab coordinates from the old ones
     m_vertexSet = MeshVertexSet(numVertices);
     m_vertexPositions = VertexPositionMap(&m_vertexSet);
 
@@ -416,15 +443,8 @@ public:
   }
 
 private:
-  SurfaceMesh*& m_surfaceMesh;  // ref to pointer to allow changing the mesh
-
-  MeshElementSet m_elementSet;
-  VertexPositionMap m_vertexPositions;
-
   std::vector<VertexIndex> m_tv_data;
   CellVertexRelation m_triangleToVertexRelation;
-
-  bool m_meshWasReindexed;
 };
 
 }  // namespace quest
