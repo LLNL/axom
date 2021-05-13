@@ -39,6 +39,23 @@ namespace quest
 template <int DIM>
 class MeshWrapper;
 
+template <typename Derived>
+class MeshWrapperBase
+{
+public:
+  using MeshVertexSet = slam::PositionSet<>;
+
+public:
+  /** Const accessor to the vertex set of the wrapped surface mesh */
+  const MeshVertexSet& vertexSet() const { return m_vertexSet; }
+
+  /** Accessor to the vertex set of the wrapped surface mesh */
+  MeshVertexSet& vertexSet() { return m_vertexSet; }
+
+protected:
+  MeshVertexSet m_vertexSet {0};
+};
+
 template <>
 class MeshWrapper<2>
 {
@@ -48,7 +65,7 @@ public:
 };
 
 template <>
-class MeshWrapper<3>
+class MeshWrapper<3> : public MeshWrapperBase<MeshWrapper<3>>
 {
 public:
   static constexpr int DIM = 3;
@@ -70,7 +87,6 @@ public:
 
   using SpaceCell = primal::Triangle<double, DIM>;
 
-  using MeshVertexSet = slam::PositionSet<>;
   using MeshElementSet = slam::PositionSet<>;
 
   using VertexIndexMap = slam::Map<slam::Set<VertexIndex>, VertexIndex>;
@@ -93,21 +109,14 @@ public:
   /** \brief Constructor for a mesh wrapper */
   MeshWrapper(SurfaceMesh*& meshPtr)
     : m_surfaceMesh(meshPtr)
-    , m_vertexSet(0)
     , m_elementSet(0)
     , m_vertexPositions(&m_vertexSet)
     , m_triangleToVertexRelation()
     , m_meshWasReindexed(false)
   { }
 
-  /** Const accessor to the vertex set of the wrapped surface mesh */
-  const MeshVertexSet& vertexSet() const { return m_vertexSet; }
-
   /** Const accessor to the element set of the wrapped surface mesh */
   const MeshElementSet& elementSet() const { return m_elementSet; }
-
-  /** Accessor to the vertex set of the wrapped surface mesh */
-  MeshVertexSet& vertexSet() { return m_vertexSet; }
 
   /** Accessor to the element set of the wrapped surface mesh */
   MeshElementSet& elementSet() { return m_elementSet; }
@@ -409,7 +418,6 @@ public:
 private:
   SurfaceMesh*& m_surfaceMesh;  // ref to pointer to allow changing the mesh
 
-  MeshVertexSet m_vertexSet;
   MeshElementSet m_elementSet;
   VertexPositionMap m_vertexPositions;
 
