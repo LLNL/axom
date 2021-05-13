@@ -63,7 +63,7 @@ public:
   static const VertexIndex NO_VERTEX = -1;
 
   /** \brief A vertex index to indicate that there is no associated vertex */
-  static const CellIndex NO_TRIANGLE = -1;
+  static const CellIndex NO_CELL = -1;
 
   /** \brief A constant for the number of boundary vertices in a triangle */
   static const int NUM_TRI_VERTS = 3;
@@ -122,7 +122,7 @@ public:
   }
 
   /** Accessor for the number of elements in the wrapped surface mesh */
-  int numMeshElements() const
+  int numMeshCells() const
   {
     if(m_meshWasReindexed)
       return m_elementSet.size();
@@ -336,7 +336,7 @@ public:
 
     // Update the vertex IDs of the triangles to the new vertices
     // and create a SLAM relation on these
-    int numOrigTris = numMeshElements();
+    int numOrigTris = numMeshCells();
 
     m_tv_data.clear();
     m_tv_data.reserve(NUM_TRI_VERTS * numOrigTris);

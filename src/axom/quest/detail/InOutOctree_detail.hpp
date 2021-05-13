@@ -173,8 +173,7 @@ public:
     std::string triStr = fmt::format("{}_triangles", vertStr);
     std::vector<CellIndex> tris;
 
-    CellIndexSet triSet =
-      m_octree.leafTriangles(vertexBlock, m_octree[vertexBlock]);
+    CellIndexSet triSet = m_octree.leafCells(vertexBlock, m_octree[vertexBlock]);
     for(int i = 0; i < triSet.size(); ++i)
     {
       CellIndex tIdx = triSet[i];
@@ -208,7 +207,7 @@ public:
         if(it->isLeaf() && it->hasData())
         {
           BlockIndex leafblk(it.pt(), lev);
-          CellIndexSet triSet = m_octree.leafTriangles(leafblk, *it);
+          CellIndexSet triSet = m_octree.leafCells(leafblk, *it);
 
           bool found = false;
           for(int i = 0; !found && i < triSet.size(); ++i)
@@ -244,7 +243,7 @@ public:
     if(blkData.isLeaf() && blkData.hasData())
     {
       std::vector<CellIndex> tris;
-      CellIndexSet triSet = m_octree.leafTriangles(block, blkData);
+      CellIndexSet triSet = m_octree.leafCells(block, blkData);
       for(int i = 0; i < triSet.size(); ++i)
       {
         tris.push_back(triSet[i]);
@@ -277,7 +276,7 @@ public:
   /** Generates a VTK mesh with all triangles in the mesh */
   void dumpTriMeshVTK(const std::string& name) const
   {
-    const int numElts = m_octree.m_meshWrapper.numMeshElements();
+    const int numElts = m_octree.m_meshWrapper.numMeshCells();
 
     std::vector<CellIndex> tris;
     tris.reserve(numElts);
@@ -341,9 +340,8 @@ private:
           ? vIdx
           : MeshWrapper<DIM>::NO_VERTEX;
 
-        leafTriCount[leafCount] = leafData.hasData()
-          ? m_octree.leafTriangles(block, leafData).size()
-          : 0;
+        leafTriCount[leafCount] =
+          leafData.hasData() ? m_octree.leafCells(block, leafData).size() : 0;
       }
 
       if(hasColors)
@@ -634,7 +632,7 @@ public:
       "--Checking that each triangle is referenced by the leaf blocks "
       "containing its vertices.");
 
-    const axom::IndexType numTriangles = m_octree.m_meshWrapper.numMeshElements();
+    const axom::IndexType numTriangles = m_octree.m_meshWrapper.numMeshCells();
     for(axom::IndexType tIdx = 0; tIdx < numTriangles; ++tIdx)
     {
       CellVertIndices tvRel = m_octree.m_meshWrapper.cellVertexIndices(tIdx);
@@ -646,7 +644,7 @@ public:
 
         // Check that this triangle is referenced here.
         bool foundTriangle = false;
-        CellIndexSet leafTris = m_octree.leafTriangles(vertBlock, leafData);
+        CellIndexSet leafTris = m_octree.leafCells(vertBlock, leafData);
         for(int k = 0; !foundTriangle && k < leafTris.size(); ++k)
         {
           if(leafTris[k] == tIdx) foundTriangle = true;
@@ -698,7 +696,7 @@ public:
           if(data.hasData())
           {
             VertexIndex vIdx = m_octree.leafVertex(block, data);
-            CellIndexSet triSet = m_octree.leafTriangles(block, data);
+            CellIndexSet triSet = m_octree.leafCells(block, data);
             for(int i = 0; i < triSet.size(); ++i)
             {
               CellIndex tIdx = triSet[i];
@@ -924,10 +922,10 @@ public:
             if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
             {
               m_levelTriangleRefCount[lev] +=
-                m_octree.leafTriangles(block, blockData).size();
+                m_octree.leafCells(block, blockData).size();
 
               BlockIndex blk(it.pt(), lev);
-              CellIndexSet tris = m_octree.leafTriangles(blk, blockData);
+              CellIndexSet tris = m_octree.leafCells(blk, blockData);
               for(int i = 0; i < tris.size(); ++i)
               {
                 ++m_triCount[tris[i]];
@@ -1009,7 +1007,7 @@ public:
   {
     std::stringstream sstr;
 
-    double meshNumTriangles = m_octree.m_meshWrapper.numMeshElements();
+    double meshNumTriangles = m_octree.m_meshWrapper.numMeshCells();
 
     sstr << fmt::format(
       "  Mesh has {} vertices."
@@ -1040,7 +1038,7 @@ public:
     LogHistogram triCountHist;  // Create histogram of edge lengths (log scale)
     LogRangeMap triCountRange;
 
-    int numElems = m_octree.m_meshWrapper.numMeshElements();
+    int numElems = m_octree.m_meshWrapper.numMeshCells();
 
     for(int i = 0; i < numElems; ++i)
     {
@@ -1074,7 +1072,7 @@ public:
     // Generate and output histogram of VT relation
     CardinalityVTMap cardVT(&m_octree.m_meshWrapper.vertexSet());
 
-    int numElems = m_octree.m_meshWrapper.numMeshElements();
+    int numElems = m_octree.m_meshWrapper.numMeshCells();
     for(int i = 0; i < numElems; ++i)
     {
       CellVertIndices tvRel = m_octree.m_meshWrapper.cellVertexIndices(i);
