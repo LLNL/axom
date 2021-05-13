@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #
@@ -9,99 +9,107 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
+  CLANG10_IMAGENAME: 'axom/tpls:clang-10_05-06-21_00h-37m'
+  GCC8_IMAGENAME: 'axom/tpls:gcc-8_05-06-21_00h-37m'
 
-strategy:
-  matrix:
-# Temporarily disabled due to running out of space
-#    linux_gcc6:
-#      VM_ImageName: 'ubuntu-16.04'
-#      Compiler_ImageName: 'axom/tpls:gcc-6'
-#      CMAKE_EXTRA_FLAGS: ''
-#      COMPILER: 'g++'
-#      TEST_TARGET: 'linux_gcc6'
-#      HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-gcc@6.1.0'
-    linux_gcc7:
-      VM_ImageName: 'ubuntu-16.04'
-      Compiler_ImageName: 'axom/tpls:gcc-7'
-      CMAKE_EXTRA_FLAGS: ''
-      COMPILER: 'g++'
-      TEST_TARGET: 'linux_gcc7'
-      HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-gcc@7.3.0'
-    linux_gcc8:
-      VM_ImageName: 'ubuntu-16.04'
-      Compiler_ImageName: 'axom/tpls:gcc-8'
-      CMAKE_EXTRA_FLAGS: ''
-      COMPILER: 'g++'
-      TEST_TARGET: 'linux_gcc8'
-      HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-gcc@8.1.0'
-    linux_gcc8_64bit:
-      VM_ImageName: 'ubuntu-16.04'
-      Compiler_ImageName: 'axom/tpls:gcc-8'
-      CMAKE_EXTRA_FLAGS: '-DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON'
-      COMPILER: 'g++'
-      TEST_TARGET: 'linux_gcc8_64bit'
-      HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-gcc@8.1.0'
-    linux_clang4:
-       VM_ImageName: 'ubuntu-16.04'
-       Compiler_ImageName: 'axom/tpls:clang-4'
-       CMAKE_EXTRA_FLAGS: ''
-       COMPILER: 'clang++'
-       TEST_TARGET: 'linux_clang4'
-       HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-clang@4.0.0'
-    linux_clang6:
-       VM_ImageName: 'ubuntu-16.04'
-       Compiler_ImageName: 'axom/tpls:clang-6'
-       CMAKE_EXTRA_FLAGS: ''
-       COMPILER: 'clang++'
-       TEST_TARGET: 'linux_clang6'
-       HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-clang@6.0.0'
-    osx_gcc:
-      VM_ImageName: 'macos-10.14'
-      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
-      TEST_TARGET: 'osx_gcc'
-    windows:
-      VM_ImageName: 'windows-2019'
-      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
-      TEST_TARGET: 'win_vs'
+jobs:
+- job: Build_and_Test
 
-pool:
-  vmImage: $(VM_ImageName)
+  strategy:
+    matrix:
+      linux_gcc8:
+        VM_ImageName: 'ubuntu-16.04'
+        Compiler_ImageName: '$(GCC8_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
+        COMPILER: 'g++'
+        TEST_TARGET: 'linux_gcc8'
+        HOST_CONFIG: 'docker-linux-ubuntu16.04-ivybridge-gcc@8.1.0'
+      linux_gcc8_64bit:
+        VM_ImageName: 'ubuntu-16.04'
+        Compiler_ImageName: '$(GCC8_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON'
+        COMPILER: 'g++'
+        TEST_TARGET: 'linux_gcc8_64bit'
+        HOST_CONFIG: 'docker-linux-ubuntu16.04-ivybridge-gcc@8.1.0'
+      linux_clang10:
+        VM_ImageName: 'ubuntu-18.04'
+        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: ''
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
+      linux_clang10_cxx11:
+        VM_ImageName: 'ubuntu-18.04'
+        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBLT_CXX_STD=c++11'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
+      osx_gcc:
+        VM_ImageName: 'macos-10.14'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+        TEST_TARGET: 'osx_gcc'
+      windows:
+        VM_ImageName: 'windows-2019'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+        TEST_TARGET: 'win_vs'
 
-steps:
-- checkout: self
-  clean: true
-  submodules: recursive
-- task: CMake@1
-  inputs:
-    workingDir: 'build'
-    cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
-  condition: or( eq( variables['Agent.OS'], 'Windows_NT'), eq( variables['Agent.OS'], 'Darwin'))
-- task: VSBuild@1
-  inputs:
-    solution: 'build/*.sln'
-    vsVersion: 'latest'
-  condition: eq( variables['Agent.OS'], 'Windows_NT')
-  displayName: 'Visual Studio Build'
-- script: |
-    cd build
-    make
-  displayName: '$(TEST_TARGET) Build'
-  condition: eq( variables['Agent.OS'], 'Darwin')
-- script: |
-    cd build
-    ctest -T test --output-on-failure -V
-  displayName: '$(TEST_TARGET) Test'
-  condition: eq( variables['Agent.OS'], 'Darwin')
-- script:  |
-    echo " -e $TEST_TARGET -e $COMPILER -e $DO_BUILD -e $DO_TEST -e $CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh"
-    docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
-    docker run --rm -v `pwd`:/home/axom/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e DO_CLEAN -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-build_and_test.sh
+  pool:
+    vmImage: $(VM_ImageName)
 
-  condition: eq( variables['Agent.OS'], 'Linux')
-  displayName: '$(TEST_TARGET) Build & Test'
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'cTest'
-    testResultsFiles: '**/Test.xml'
-    testRunTitle: '$(TEST_TARGET) Tests'
-    failTaskOnFailedTests: true
+  steps:
+  - checkout: self
+    clean: true
+    submodules: recursive
+  - task: CMake@1
+    inputs:
+      workingDir: 'build'
+      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
+    condition: or( eq( variables['Agent.OS'], 'Windows_NT'), eq( variables['Agent.OS'], 'Darwin'))
+  - task: VSBuild@1
+    inputs:
+      solution: 'build/*.sln'
+      vsVersion: 'latest'
+    condition: eq( variables['Agent.OS'], 'Windows_NT')
+    displayName: 'Visual Studio Build'
+  - script: |
+      cd build
+      make
+    displayName: '$(TEST_TARGET) Build'
+    condition: eq( variables['Agent.OS'], 'Darwin')
+  - script: |
+      cd build
+      ctest -T test --output-on-failure -V
+    displayName: '$(TEST_TARGET) Test'
+    condition: eq( variables['Agent.OS'], 'Darwin')
+  - script:  |
+      echo " -e $TEST_TARGET -e $COMPILER -e $DO_BUILD -e $DO_TEST -e $CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh"
+      docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
+      docker run --rm -v `pwd`:/home/axom/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e DO_CLEAN -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-build_and_test.sh
+
+    condition: eq( variables['Agent.OS'], 'Linux')
+    displayName: '$(TEST_TARGET) Build & Test'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
+      testRunTitle: '$(TEST_TARGET) Tests'
+      failTaskOnFailedTests: true
+
+- job: Check_Style
+  variables:
+    VM_ImageName: 'ubuntu-18.04'
+    Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+    TEST_TARGET: 'linux_clang10'
+    HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
+  pool:
+      vmImage: $(VM_ImageName)
+  steps:
+  - checkout: self
+    clean: true
+    submodules: recursive
+  - script:  |
+      echo " -e HOST_CONFIG $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-check.sh"
+      docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
+      docker run --rm -v `pwd`:/home/axom/axom -e HOST_CONFIG $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-check.sh
+    displayName: '$(TEST_TARGET) Style Check'

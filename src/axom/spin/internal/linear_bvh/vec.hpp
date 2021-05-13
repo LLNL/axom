@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -33,7 +33,7 @@ public:
   T m_data[S];
 
   //
-  //  Use only default contructors to keep this a POD type
+  //  Use only default constructors to keep this a POD type
   //
   inline Vec<T, S>() = default;
   inline Vec<T, S>(const Vec<T, S> &v) = default;

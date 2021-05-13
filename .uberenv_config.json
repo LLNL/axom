@@ -1,0 +1,14 @@
+{
+"package_name": "axom",
+"package_version": "develop",
+"package_final_phase": "initconfig",
+"package_source_dir": "../..",
+"spack_url": "https://github.com/spack/spack",
+"spack_commit": "764c17053041a65f684ce565a2598d705b04a16b",
+"spack_configs_path": "scripts/spack/configs",
+"spack_packages_path": "scripts/spack/packages",
+"vcpkg_url": "https://github.com/microsoft/vcpkg",
+"vcpkg_commit": "b79f7675aaa82eb6c5a96ae764fb1ce379a9d5d6",
+"vcpkg_triplet": "x64-windows",
+"vcpkg_ports_path": "scripts/vcpkg_ports"
+}

@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -10,26 +10,40 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Inlet
-                        COMPONENTS SLIC Sidre )
+                        COMPONENTS SLIC Sidre PRIMAL )
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 set(inlet_headers
     Field.hpp
+    Function.hpp
     Inlet.hpp
+    InletVector.hpp
     Reader.hpp
-    SchemaCreator.hpp
-    Table.hpp 
-    DocWriter.hpp
-    SphinxDocWriter.hpp 
+    Container.hpp 
+    Proxy.hpp
+    VariantKey.hpp
+    Verifiable.hpp
+    VerifiableScalar.hpp
+    Writer.hpp
+    SphinxWriter.hpp
+    JSONSchemaWriter.hpp
+    ConduitReader.hpp
+    YAMLReader.hpp
+    JSONReader.hpp
     inlet_utils.hpp )
 
 set(inlet_sources
     Field.cpp
+    Function.cpp
     Inlet.cpp
-    Table.cpp
-    SphinxDocWriter.cpp 
+    Container.cpp
+    Proxy.cpp
+    VariantKey.cpp
+    SphinxWriter.cpp
+    JSONSchemaWriter.cpp
+    ConduitReader.cpp
     inlet_utils.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF SOL_FOUND)

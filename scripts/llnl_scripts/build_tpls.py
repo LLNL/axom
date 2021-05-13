@@ -1,8 +1,8 @@
 #!/bin/sh
 "exec" "python" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -30,7 +30,7 @@ def parse_args():
                       dest="directory",
                       default="",
                       help="Location to build all TPL's, timestamp directory will be created (Defaults to shared location)")
-    # Directory to do all the building
+    # Spack spec to use for the build
     parser.add_option("-s", "--spec",
                       dest="spec",
                       default="",
@@ -40,11 +40,20 @@ def parse_args():
                       dest="archive",
                       default="",
                       help="Archive build results under given name (Defaults to off)")
+    parser.add_option("-v", "--verbose",
+                      action="store_true",
+                      dest="verbose",
+                      default=False,
+                      help="Output logs to screen as well as to files")
+    parser.add_option("-m", "--mirror",
+                      dest="mirror",
+                      default="",
+                      help="Mirror location to use (defaults to shared location)")
 
     ###############
     # parse args
     ###############
-    opts, extras = parser.parse_args()
+    opts, _ = parser.parse_args()
     # we want a dict b/c the values could 
     # be passed without using optparse
     opts = vars(opts)
@@ -75,7 +84,7 @@ def main():
         os.chdir(repo_dir)
 
         timestamp = get_timestamp()
-        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp, opts["spec"])
+        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp, opts["spec"], opts["verbose"], opts["mirror"])
 
         if opts["archive"] != "":
             # Get information for archiving

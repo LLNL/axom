@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 #if defined(AXOM_USE_HDF5)
   MPI_Comm problem_comm = MPI_COMM_WORLD;
 
-  slic::UnitTestLogger logger;
+  slic::SimpleLogger logger;
 
   // STEP 0: create some data
   constexpr axom::IndexType NUM_NODES = 10;

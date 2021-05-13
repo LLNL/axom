@@ -1,3 +1,13 @@
+
+[comment]: # (#################################################################)
+[comment]: # (Copyright 2017-2021, Lawrence Livermore National Security, LLC)
+[comment]: # (and Axom Project Developers. See the top-level LICENSE file)
+[comment]: # (for details.)
+[comment]: #
+[comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
+[comment]: # (#################################################################)
+
+
 # Axom Software Release Notes
 
 Notes describing significant changes in each Axom release are documented
@@ -6,6 +16,111 @@ in this file.
 The format of this file is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+
+## [Version 0.5.0] - Release date 2021-05-14
+
+### Added
+- Added the MFEMSidreDataCollection class for describing [MFEM] meshes and associated fields.  This
+  class was adapted from MFEM's SidreDataCollection and is enabled when Axom is built with MFEM
+  *and* the `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` CMake option is enabled.
+- Added `slic::setAbortFunction` to configure a custom callback when SLIC aborts.
+- Added a `batched` option to quest's `InOutOctree` containment query example application.
+  This uses a kernel to test for containment on an array of points.
+  The query uses OpenMP threading, when available.
+- Inlet: Added support for user-defined conversions from Inlet tables to user-defined
+  types, and support for arrays of user-defined types
+- Added compiler define `NOMINMAX` to `axom/config.hpp.in` to avoid problems with
+  the Windows `min` and `max` macros.
+- Added `cpp14` variant to Spack package to allow `Inlet::LuaReader` to be used more easily.
+- Inlet: Added support for string-keyed associative arrays (dictionaries)
+- Inlet: Added support for defining and retrieving functions from the input file
+- Inlet: Added support for YAML and JSON input files
+- Inlet: Added support for mixed-key (integer and string) associative arrays
+- Inlet: Added support for deeply nested containers of structs
+- Inlet: Added support for `void` and strings in Lua-defined functions
+- Inlet: Added `get<std::vector<T>>` for retrieving arrays without index information
+- Inlet: Added a new `Writer` for generating JSON schemas which can be used by text editors
+  for autocompletion
+- Inlet: SphinxWriter will now document the signature of function callbacks added to a schema
+- Axom::Path - New class for performing basic path operations with user-selectable
+  delimiter characters
+- Inlet: Added a method to `inlet::Inlet` that retrieves the set of unexpected names
+  in the input file
+- Inlet: Added an option to mark `Container`s as strict, which fail verification when unexpected
+  entries are present
+- Added support in `MFEMSidreDataCollection` for registering `QFunctions`
+  (data associated with quadrature points on a mesh)
+- Inlet: The internal hierarchy of an `Inlet` object can be reconstructed from a Sidre group,
+  excluding callback functions
+- Added new overloaded version of method
+  sidre::DataStore::generateBlueprintIndex to incorporate new MPI
+  features in conduit and allow for generation of a blueprint index on
+  an under-decomposed parallel mesh
+- Added new method sidre::View::importArrayNode to import a
+  conduit::Node holding array data directly into a sidre::View
+- Added support for registering material and species sets in
+  `MFEMSidreDataCollection`.  These correspond to
+  [`matset`](https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#material-sets)s
+  and
+  [`specset`](https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#species-sets)s
+  in the Mesh Blueprint
+
+### Changed
+- Converted [Uberenv] to a git submodule. We previously vendored a copy of this script.
+- The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
+  It can be  explicitly rewired using the static
+  `DataStore::setConduitSLICMessageHandlers()` method.
+- Inlet: Changed `SchemaCreator` to an abstract class and added missing functions
+- Inlet: Added ability to access the `Reader` class from `Inlet` and Sol Lua state
+  from the `LuaReader` class
+- Inlet: Switched accessor interface to match that of the STL with `operator[]` and
+  `T get<T>()`
+- Inlet: `std::shared_ptr<T>` has been replaced with `T&` in non-owning contexts
+  and `std::unique_ptr<T>` in owning contexts - specifically, within Inlet's internal
+  tree structure
+- Unified core and SPIO unit tests into fewer executables to limit size of build directory
+- Renamed `axom::slic::UnitTestLogger` to `axom::slic:SimpleLogger` because it's used in
+  more than just unit tests.
+- Inlet: Input file functions can now be of arbitrary signature subject to type and arity
+  restrictions
+- Exported all symbols on Windows by default when compiling a dynamic library
+- Updated TPL `conduit` to version 0.6.0 released Nov 2, 2020.
+- Updated built-in TPL `sparsehash` to version 2.0.4 released Aug 11, 2020.
+- Inlet: Exposed `primal::Vector` in Lua for use in input-file-defined functions
+- The `MFEMSidreDataCollection` will now reconstruct fields and the mesh when a
+  datastore is `Load`ed in
+- Inlet: Cleaned up `Table` interface to eliminate ambiguity and duplicated functionality
+- Inlet: Renamed `DocWriter` to `Writer` and refactored its interface
+- Inlet: Renamed `Table` to `Container`
+- Inlet collections of mixed or incorrect type will now fail verification, even if they're
+  not marked as required
+- Required Inlet collections no longer fail Inlet verification if they are empty in the input file
+- Inlet: `operator bool` for `Field` and `Container` has been replaced with more precise `isUserProvided`
+  and `exists`, which also returns `true` if a default value was specified.
+- Updated built-in TPL `fmt` to master branch snapshot, March 26, 2021.
+- Inlet: `SphinxWriter` will now print only one element schema per container instead of
+  printing the same schema for each element in the container
+- Updated BLT to version 0.4.0 released 9 Apr 2021
+- Updated MFEM to version 4.2 released 30 Oct 2020. Axom no longer requires MFEM to be built serially
+- The macro for exporting symbols is now `AXOM_EXPORT` instead of `AXOM_API`
+- Updated Conduit to v0.6.0
+- Updated SCR to compatibility with v3.0rc1
+
+### Fixed
+- Updated to new BLT version that does not fail when ClangFormat returns an empty
+  version string.  BLT/Axom now issues a warning and disables the `style` build
+  target if version is unknown or wrong.
+- Inlet: Apply lambda verifiers on generic containers to individual elements
+  for consistency
+- Inlet: Fixed a bug relating to nested table lookups of primitive arrays and functions
+- Fixed a bug relating to deeply nested callback functions in Inlet
+- Inlet: Always ignore primitive array elements that do not match the requested type
+- Inlet: Empty structs/collections of structs with required sub-elements no longer fail
+  verification
+- Quest: Fixed a bug with InOutOctree for triangles that lie on faces of octree blocks
+- Updated to use newer Conduit config directory
+- Add support for legacy hdf5 cmake build system
 
 ## [Version 0.4.0] - Release date 2020-09-22
 
@@ -186,7 +301,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated Raja TPL to v0.9.0
 - Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
-  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  auto-detected based on whether `_OPENMP` is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
   Axom in parts of the code where OpenMP is enabled.
 
@@ -409,7 +524,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.4.0...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.5.0...develop
+[Version 0.5.0]: https://github.com/LLNL/axom/compare/v0.4.0...v0.5.0
 [Version 0.4.0]: https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
 [Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
 [Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
@@ -417,8 +533,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
 [Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
 
+[clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+[MFEM]: https://mfem.org
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
 [Umpire]: https://github.com/LLNL/Umpire
-[clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 [Sol]: https://github.com/ThePhD/sol2
+[Uberenv]: https://github.com/LLNL/uberenv

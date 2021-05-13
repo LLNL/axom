@@ -1,134 +1,148 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // usage : ./inlet_documentation_generation_example --enableDocs --fil lua_file.lua
 
 #include "axom/inlet.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
 
 #include "CLI11/CLI11.hpp"
 #include <iostream>
+#include <limits>
 
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
-using axom::inlet::SphinxDocWriter;
+using axom::inlet::SphinxWriter;
 using axom::sidre::DataStore;
 
-void findStr(std::string path, std::shared_ptr<Inlet> inlet)
+void findStr(std::string path, const Inlet& inlet)
 {
-  std::string strVal;
-  bool found = inlet->get(path, strVal);
-  std::cout << path << ": ";
-  found ? std::cout << "found " << strVal : std::cout << "not found ";
+  auto proxy = inlet[path];
+  if(proxy.type() == axom::inlet::InletType::String)
+  {
+    std::cout << "found " << proxy.get<std::string>();
+  }
+  else
+  {
+    std::cout << "not found ";
+  }
   std::cout << std::endl;
 }
 
-void findInt(std::string path, std::shared_ptr<Inlet> inlet)
+void findInt(std::string path, const Inlet& inlet)
 {
-  int val;
-  bool found = inlet->get(path, val);
-  std::cout << path << ": ";
-  found ? std::cout << "found " << val : std::cout << "not found ";
+  auto proxy = inlet[path];
+  if(proxy.type() == axom::inlet::InletType::Integer)
+  {
+    std::cout << "found " << proxy.get<int>();
+  }
+  else
+  {
+    std::cout << "not found ";
+  }
   std::cout << std::endl;
 }
 
-void findDouble(std::string path, std::shared_ptr<Inlet> inlet)
+void findDouble(std::string path, const Inlet& inlet)
 {
-  double val;
-  bool found = inlet->get(path, val);
-  std::cout << path << ": ";
-  found ? std::cout << "found " << val : std::cout << "not found ";
+  auto proxy = inlet[path];
+  if(proxy.type() == axom::inlet::InletType::Double)
+  {
+    std::cout << "found " << proxy.get<double>();
+  }
+  else
+  {
+    std::cout << "not found ";
+  }
   std::cout << std::endl;
 }
 
-void defineSchema(std::shared_ptr<Inlet> inlet)
+void defineSchema(Inlet& inlet)
 {
-  std::shared_ptr<axom::inlet::Field> currField;
-
   // Add the description to the thermal_solver/mesh/filename Field
-  currField =
-    inlet->addString("thermal_solver/mesh/filename", "file for thermal solver");
+  auto& filename_field =
+    inlet.addString("thermal_solver/mesh/filename", "mesh filename");
   // Set the field's required property to true
-  currField->required(true);
+  filename_field.required();
 
-  currField = inlet->addInt("thermal_solver/mesh/serial", "serial value");
-  currField->range(0, INT_MAX);
-  currField->defaultValue(1);
+  inlet.addInt("thermal_solver/mesh/serial", "number of serial refinements")
+    .range(0, std::numeric_limits<int>::max())
+    .defaultValue(1);
 
   // The description for thermal_solver/mesh/parallel is left unspecified
-  currField = inlet->addInt("thermal_solver/mesh/parallel");
-  currField->range(1, INT_MAX);
-  currField->defaultValue(1);
+  inlet.addInt("thermal_solver/mesh/parallel")
+    .range(1, std::numeric_limits<int>::max())
+    .defaultValue(1);
 
-  currField = inlet->addInt("thermal_solver/order", "thermal solver order");
-  currField->required(true);
-  currField->range(1, INT_MAX);
+  inlet.addInt("thermal_solver/order", "polynomial order")
+    .required()
+    .range(1, std::numeric_limits<int>::max());
 
-  currField =
-    inlet->addString("thermal_solver/timestepper", "thermal solver timestepper");
-  currField->defaultValue("quasistatic");
-  currField->validValues({"quasistatic", "forwardeuler", "backwardeuler"});
+  auto& timestep_field =
+    inlet.addString("thermal_solver/timestepper", "thermal solver timestepper");
+  timestep_field.defaultValue("quasistatic")
+    .validValues({"quasistatic", "forwardeuler", "backwardeuler"});
 
-  currField =
-    inlet->addString("thermal_solver/u0/type", "description for u0 type");
-  currField->defaultValue("constant");
-  currField->validValues({"constant", "function"});
+  auto& coef_type_field =
+    inlet.addString("thermal_solver/u0/type", "description for u0 type");
+  coef_type_field.defaultValue("constant").validValues({"constant", "function"});
 
-  currField =
-    inlet->addString("thermal_solver/u0/func", "description for u0 func");
-  currField->required(true);
+  inlet.addString("thermal_solver/u0/func", "description for u0 func").required();
 
-  currField =
-    inlet->addString("thermal_solver/kappa/type", "description for kappa type");
-  currField->required(true);
-  currField->validValues({"constant", "function"});
+  inlet.addString("thermal_solver/kappa/type", "description for kappa type")
+    .required()
+    .validValues({"constant", "function"});
 
-  currField = inlet->addDouble("thermal_solver/kappa/constant",
-                               "description for kappa constant");
-  currField->required(true);
+  inlet
+    .addDouble("thermal_solver/kappa/constant", "thermal conductivity constant")
+    .required();
 
-  // Add description to solver table by using the addTable function
-  auto table =
-    inlet->addTable("thermal_solver/solver",
-                    "This is the solver sub-table in the thermal_solver table");
+  // Add description to solver container by using the addStruct function
+  auto& solver_schema =
+    inlet.addStruct("thermal_solver/solver", "linear equation solver options");
 
-  // You can also add fields through a table
+  // You can also add fields through a container
 
-  currField = table->addDouble("rel_tol", "description for solver rel tol");
-  currField->required(false);
-  currField->defaultValue(1.e-6);
-  currField->range(0.0, __DBL_MAX__);
+  auto& rel_tol_field =
+    solver_schema.addDouble("rel_tol", "solver relative tolerance");
+  rel_tol_field.required(false);
+  rel_tol_field.defaultValue(1.e-6);
+  rel_tol_field.range(0.0, std::numeric_limits<double>::max());
 
-  currField = table->addDouble("abs_tol", "description for solver abs tol");
-  currField->required(true);
-  currField->defaultValue(1.e-12);
-  currField->range(0.0, __DBL_MAX__);
+  auto& abs_tol_field =
+    solver_schema.addDouble("abs_tol", "solver absolute tolerance");
+  abs_tol_field.required(true);
+  abs_tol_field.defaultValue(1.e-12);
+  abs_tol_field.range(0.0, std::numeric_limits<double>::max());
 
-  currField = table->addInt("print_level", "description for solver print level");
-  currField->required(true);
-  currField->defaultValue(0);
-  currField->range(0, 3);
+  auto& print_level_field =
+    solver_schema.addInt("print_level", "solver print/debug level");
+  print_level_field.required(true);
+  print_level_field.defaultValue(0);
+  print_level_field.range(0, 3);
 
-  currField = table->addInt("max_iter", "description for solver max iter");
-  currField->required(false);
-  currField->defaultValue(100);
-  currField->range(1, INT_MAX);
+  auto& max_iter_field =
+    solver_schema.addInt("max_iter", "maximum iteration limit");
+  max_iter_field.required(false);
+  max_iter_field.defaultValue(100);
+  max_iter_field.range(1, std::numeric_limits<int>::max());
 
-  currField = table->addDouble("dt", "description for solver dt");
-  currField->required(true);
-  currField->defaultValue(1);
-  currField->range(0.0, __DBL_MAX__);
+  auto& dt_field = solver_schema.addDouble("dt", "time step");
+  dt_field.required(true);
+  dt_field.defaultValue(1);
+  dt_field.range(0.0, std::numeric_limits<double>::max());
 
-  currField = table->addInt("steps", "description for solver steps");
-  currField->required(true);
-  currField->defaultValue(1);
-  currField->range(1, INT_MAX);
+  auto& steps_field =
+    solver_schema.addInt("steps", "number of steps/cycles to take");
+  steps_field.required(true);
+  steps_field.defaultValue(1);
+  steps_field.range(1, std::numeric_limits<int>::max());
 }
 
 // Checking the contents of the passed inlet
-void checkValues(std::shared_ptr<Inlet> inlet)
+void checkValues(const Inlet& inlet)
 {
   findStr("thermal_solver/mesh/filename", inlet);
   findStr("thermal_solver/timestepper", inlet);
@@ -149,7 +163,7 @@ void checkValues(std::shared_ptr<Inlet> inlet)
   findDouble("thermal_solver/kappa/constant", inlet);
 
   // Verify that contents of Inlet meet the requirements of the specified schema
-  if(inlet->verify())
+  if(inlet.verify())
   {
     SLIC_INFO("Inlet verify successful.");
   }
@@ -163,8 +177,9 @@ int main(int argc, char** argv)
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
   // This is a generic basic SLIC logger
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
+  // Handle command line arguments
   CLI::App app {"Basic example of Axom's Inlet component"};
   bool docsEnabled {false};
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");
@@ -178,25 +193,29 @@ int main(int argc, char** argv)
   // Create inlet and parse input file data into the inlet
 
   DataStore ds;
-  auto lr = std::make_shared<LuaReader>();
+  auto lr = std::make_unique<LuaReader>();
   lr->parseFile(inputFileName);
-  auto inlet = std::make_shared<Inlet>(lr, ds.getRoot(), docsEnabled);
-
-  // _inlet_documentation_generation_start
-  auto docWriter =
-    std::make_shared<SphinxDocWriter>("example_doc.rst", inlet->sidreGroup());
-  inlet->registerDocWriter(docWriter);
-  // _inlet_documentation_generation_end
+  Inlet inlet(std::move(lr), ds.getRoot(), docsEnabled);
 
   defineSchema(inlet);
   checkValues(inlet);
 
   // Generate the documentation
-  inlet->writeDoc();
+  // _inlet_documentation_generation_start
+  auto sphinxWriter = std::make_unique<SphinxWriter>("example_doc.rst");
+  inlet.registerWriter(std::move(sphinxWriter));
+  // _inlet_documentation_generation_end
+  inlet.write();
+
+  auto schemaWriter =
+    std::make_unique<axom::inlet::JSONSchemaWriter>("example_doc.json");
+  inlet.registerWriter(std::move(schemaWriter));
+  inlet.write();
 
   if(docsEnabled)
   {
-    SLIC_INFO("Documentation was written to example_doc.rst\n");
+    SLIC_INFO("Sphinx documentation was written to example_doc.rst\n");
+    SLIC_INFO("A JSON schema was written to example_doc.json\n");
   }
 
   return 0;

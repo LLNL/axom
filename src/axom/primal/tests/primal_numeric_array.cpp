@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -7,8 +7,8 @@
 
 #include "axom/primal/geometry/NumericArray.hpp"
 
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 using namespace axom;
 
@@ -56,6 +56,34 @@ TEST(primal_numeric_array, constructors)
   {
     CoordType expVal = i < halfPt ? valsArr[i] : CoordType();
     EXPECT_EQ(arrHalfVec[i], expVal);
+  }
+
+  primal::NumericArray<int, 3> fromInitializerListRightSize = {10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListRightSize[i]);
+  }
+
+  primal::NumericArray<int, 3> fromInitializerListTooLong = {10, 20, 30, 40};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListTooLong[i]);
+  }
+
+  primal::NumericArray<int, 5> fromInitializerListTooShort = {10, 20};
+  for(int i = 0; i < 2; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListTooShort[i]);
+  }
+  for(int i = 2; i < 5; ++i)
+  {
+    EXPECT_EQ(0, fromInitializerListTooShort[i]);
+  }
+
+  primal::NumericArray<int, 3> fromInitializerNoEqualsSign {10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerNoEqualsSign[i]);
   }
 }
 
@@ -226,7 +254,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -21,6 +21,7 @@
 #include <stack>
 
 // Other axom headers
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic/interface/slic.hpp"
@@ -371,8 +372,8 @@ public:
    *        this DataStore.
    *
    * If this DataStore contains data for a mesh that adheres to Conduit's
-   * Blueprint format, this method genearates a Blueprint index and stores
-   * it at a specified locaiton within this DataStore.  It uses as input a
+   * Blueprint format, this method generates a Blueprint index and stores
+   * it at a specified location within this DataStore.  It uses as input a
    * path to a representative domain from that mesh.
    *
    * The domain must be held in a Group stored in this DataStore.  The location
@@ -393,6 +394,22 @@ public:
                               const std::string& index_path,
                               int num_domains);
 
+#ifdef AXOM_USE_MPI
+  /*!
+   * \brief Generate a Conduit Blueprint index from a distributed mesh
+   *        stored in this Datastore
+   *
+   * \param comm            communicator for the mesh distribution
+   * \param domain_path     path where domains are located
+   * \param mesh_name       name for the mesh to be described
+   * \param index_path      path where index written
+   */
+  bool generateBlueprintIndex(MPI_Comm comm,
+                              const std::string& domain_path,
+                              const std::string& mesh_name,
+                              const std::string& index_path);
+#endif
+
   //----------------
 
   /*!
@@ -406,6 +423,18 @@ public:
    *        at root) and Buffer descriptions to given output stream.
    */
   void print(std::ostream& os) const;
+
+  /*!
+   * \brief Wires Conduit `info`, `warning`, and `error` messages to
+   *        SLIC style handling.
+   */
+  static void setConduitSLICMessageHandlers();
+
+  /*!
+   * \brief Wires Conduit `info`, `warning`, and `error` messages to
+   *        Conduit's default handling.
+   */
+  static void setConduitDefaultMessageHandlers();
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(DataStore);

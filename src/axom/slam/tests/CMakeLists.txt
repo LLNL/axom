@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ set(gtest_slam_tests
     )
 
 
-set(slam_tests_depends_on core slic slam gtest)
+set(slam_tests_depends_on slam gtest)
 
 #------------------------------------------------------------------------------
 # Add gtest based tests
@@ -53,6 +53,6 @@ foreach(test ${gtest_slam_tests})
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON ${slam_tests_depends_on}
                         FOLDER axom/slam/tests )
-    blt_add_test( NAME ${test_name}
-                  COMMAND ${test_name}_test )
+    axom_add_test( NAME ${test_name}
+                   COMMAND ${test_name}_test )
 endforeach()

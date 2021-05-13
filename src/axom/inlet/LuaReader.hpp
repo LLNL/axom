@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -39,171 +39,120 @@ namespace inlet
 class LuaReader : public Reader
 {
 public:
-  /*!
-   *****************************************************************************
-   * \brief Parses the given input file.
-   *
-   * This performs any setup work and parses the given input file.
-   * It is required that this is called before using the Reader and overrides
-   * any Lua state that was previously there.
-   *
-   * \param [in] filePath The Input file to be read
-   *
-   * \return true if the input file was able to be parsed
-   *****************************************************************************
-   */
-  bool parseFile(const std::string& filePath);
+  LuaReader();
+
+  bool parseFile(const std::string& filePath) override;
+
+  bool parseString(const std::string& luaString) override;
+
+  ReaderResult getBool(const std::string& id, bool& value) override;
+
+  ReaderResult getDouble(const std::string& id, double& value) override;
+
+  ReaderResult getInt(const std::string& id, int& value) override;
+
+  ReaderResult getString(const std::string& id, std::string& value) override;
+
+  ReaderResult getIntMap(const std::string& id,
+                         std::unordered_map<int, int>& values) override;
+  ReaderResult getIntMap(const std::string& id,
+                         std::unordered_map<VariantKey, int>& values) override;
+
+  ReaderResult getDoubleMap(const std::string& id,
+                            std::unordered_map<int, double>& values) override;
+  ReaderResult getDoubleMap(const std::string& id,
+                            std::unordered_map<VariantKey, double>& values) override;
+
+  ReaderResult getBoolMap(const std::string& id,
+                          std::unordered_map<int, bool>& values) override;
+  ReaderResult getBoolMap(const std::string& id,
+                          std::unordered_map<VariantKey, bool>& values) override;
+
+  ReaderResult getStringMap(const std::string& id,
+                            std::unordered_map<int, std::string>& values) override;
+  ReaderResult getStringMap(
+    const std::string& id,
+    std::unordered_map<VariantKey, std::string>& values) override;
+
+  ReaderResult getIndices(const std::string& id,
+                          std::vector<int>& indices) override;
+  ReaderResult getIndices(const std::string& id,
+                          std::vector<VariantKey>& indices) override;
+
+  FunctionVariant getFunction(const std::string& id,
+                              const FunctionTag ret_type,
+                              const std::vector<FunctionTag>& arg_types) override;
+
+  std::vector<std::string> getAllNames() override;
 
   /*!
    *****************************************************************************
-   * \brief Parses the given Lua string.
-   *
-   * This performs any setup work and parses the given Lua string.
-   * It is required that this is called before using the Reader and overrides
-   * any Lua state that was previously there.
-   *
-   * \param [in] luaString The Input file to be read
-   *
-   * \return true if the string was able to be parsed
+   * \brief The base index for arrays in Lua
    *****************************************************************************
    */
-  bool parseString(const std::string& luaString);
+  static const int baseIndex = 1;
 
   /*!
    *****************************************************************************
-   * \brief Return a boolean out of the input file
+   * \brief Returns the Sol Lua state
    *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
+   * This allows the user to access functionality that was not provided by Inlet.
    *
-   * \param [in]  id    The identifier to the bool that will be retrieved
-   * \param [out] value The value of the bool that was retrieved
-   *
-   * \return true if the variable was able to be retrieved from the file
+   * \return Reference to the Sol Lua state
    *****************************************************************************
    */
-  bool getBool(const std::string& id, bool& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Return a double out of the input file
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the double that will be retrieved
-   * \param [out] value The value of the double that was retrieved
-   *
-   * \return true if the variable was able to be retrieved from the file
-   *****************************************************************************
-   */
-  bool getDouble(const std::string& id, double& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Return a int out of the input file
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the int that will be retrieved from
-   *the file
-   * \param [out] value The value of the int that was retrieved from the file
-   *
-   * \return true if the variable was able to be retrieved from the file
-   *****************************************************************************
-   */
-  bool getInt(const std::string& id, int& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Return a string out of the input file
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the string that will be retrieved
-   * \param [out] value The value of the string that was retrieved
-   *
-   * \return true if the variable was able to be retrieved from the file
-   *****************************************************************************
-   */
-  bool getString(const std::string& id, std::string& value);
-
-  /*!
-   *****************************************************************************
-   * \brief Get an index-integer mapping for the given Lua array
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the string that will be retrieved
-   * \param [out] map The values of the ints that were retrieved
-   *
-   * \return true if the array was able to be retrieved from the file
-   *****************************************************************************
-   */
-  bool getIntMap(const std::string& id, std::unordered_map<int, int>& values);
-
-  /*!
-   *****************************************************************************
-   * \brief Get an index-double mapping for the given Lua array
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the string that will be retrieved
-   * \param [out] map The values of the doubles that were retrieved
-   *
-   * \return true if the array was able to be retrieved from the file
-   *****************************************************************************
-   */
-  bool getDoubleMap(const std::string& id,
-                    std::unordered_map<int, double>& values);
-
-  /*!
-   *****************************************************************************
-   * \brief Get an index-bool mapping for the given Lua array
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the string that will be retrieved
-   * \param [out] map The values of the bools that were retrieved
-   *
-   * \return true if the array was able to be retrieved from the file
-   *****************************************************************************
-   */
-  bool getBoolMap(const std::string& id, std::unordered_map<int, bool>& values);
-
-  /*!
-   *****************************************************************************
-   * \brief Get an index-string mapping for the given Lua array
-   *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input file.
-   *
-   * \param [in]  id    The identifier to the string that will be retrieved
-   * \param [out] map The values of the strings that were retrieved
-   *
-   * \return true if the array was able to be retrieved from the file
-   *****************************************************************************
-   */
-  bool getStringMap(const std::string& id,
-                    std::unordered_map<int, std::string>& values);
+  sol::state& solState() { return m_lua; }
 
 private:
   // Expect this to be called for only Inlet-supported types.
   template <typename T>
-  bool getValue(const std::string& id, T& value);
+  ReaderResult getValue(const std::string& id, T& value);
 
   // Expect this to be called for only Inlet-supported types.
+  template <typename Key, typename Val>
+  ReaderResult getMap(const std::string& id,
+                      std::unordered_map<Key, Val>& values,
+                      sol::type type);
+
   template <typename T>
-  bool getMap(const std::string& id,
-              std::unordered_map<int, T>& values,
-              sol::type type);
+  ReaderResult getIndicesInternal(const std::string& id, std::vector<T>& indices);
+
+  /*!
+   *****************************************************************************
+   * \brief Obtains the Lua table reached by successive indexing through the
+   * range of keys described by a pair of iterators
+   * 
+   * \note For a set of keys {key1, key2, key3, ...}, this function
+   * is equivalent to
+   * \code{.cpp}
+   * table = m_lua[key1][key2][key3][...];
+   * \endcode
+   * 
+   * \param [in] begin Iterator to the beginning of the range of keys
+   * \param [in] end Iterator to one-past-the-end of the range
+   * \param [out] t The table to traverse
+   * 
+   * \return Whether the traversal was successful
+   *****************************************************************************
+   */
+  template <typename Iter>
+  bool traverseToTable(Iter begin, Iter end, sol::table& table);
+
+  /*!
+   *****************************************************************************
+   * \brief Traverses the Lua state to retrieve a sol function object
+   *
+   * \param [in]  id    The identifier to the function that will be retrieved
+   *
+   * \return The function, compares false if not found
+   *****************************************************************************
+   */
+  sol::protected_function getFunctionInternal(const std::string& id);
 
   sol::state m_lua;
+  // The elements in the global table preloaded by Sol/Lua, these are ignored
+  // to ensure that name retrieval only includes user-provided paths
+  std::vector<std::string> m_preloaded_globals;
 };
 
 }  // end namespace inlet

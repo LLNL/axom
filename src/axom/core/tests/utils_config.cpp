@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -21,7 +21,7 @@
 #include <string>     // for C++ string
 #include <vector>     // for STL vector
 
-TEST(core_config, axom_version)
+TEST(utils_config, axom_version)
 {
   const int AXOM_MAJOR = AXOM_VERSION_MAJOR;
   const int AXOM_MINOR = AXOM_VERSION_MINOR;
@@ -46,7 +46,7 @@ TEST(core_config, axom_version)
 #endif
 }
 
-TEST(core_config, config_libraries)
+TEST(utils_config, config_libraries)
 {
   // This test checks which libraries are available in the configuration
 
@@ -103,7 +103,7 @@ TEST(core_config, config_libraries)
   EXPECT_TRUE(true);
 }
 
-TEST(core_config, config_components)
+TEST(utils_config, config_components)
 {
   // This test checks which toolkit components are available in the
   // configuration
@@ -151,7 +151,7 @@ TEST(core_config, config_components)
   EXPECT_TRUE(true);
 }
 
-TEST(core_config, config_openmp)
+TEST(utils_config, config_openmp)
 {
   // This test checks that the per-target OpenMP guards
   // in our configuration file 'axom/config.hpp' are working properly
@@ -190,7 +190,7 @@ TEST(core_config, config_openmp)
 }
 
 #ifdef AXOM_USE_MFEM
-TEST(core_config, mfem_configuration)
+TEST(utils_config, mfem_configuration)
 {
   #ifdef MFEM_VERSION
   std::cout << "Using mfem version " << MFEM_VERSION_MAJOR
@@ -200,21 +200,37 @@ TEST(core_config, mfem_configuration)
             << std::endl;
   #endif  // MFEM_VERSION
 
-  // Verify that this copy of mfem is configured without MPI
-  bool hasMPI = false;
-
-  #ifdef MFEM_USE_MPI
-  hasMPI = true;
+  // Verify that this copy of mfem is configured appropriately with respect to MPI
+  {
+    bool axomHasMPI = false;
+  #ifdef AXOM_USE_MPI
+    axomHasMPI = true;
   #endif
+    std::cout << "Axom is built " << (axomHasMPI ? "with" : "without") << " MPI"
+              << std::endl;
 
-  EXPECT_FALSE(hasMPI) << "Axom expects mfem to be built without MPI";
+    bool mfemHasMPI = false;
+  #ifdef MFEM_USE_MPI
+    mfemHasMPI = true;
+  #endif
+    std::cout << "mfem is built " << (mfemHasMPI ? "with" : "without") << " MPI"
+              << std::endl;
+
+    if(!axomHasMPI)
+    {
+      EXPECT_FALSE(mfemHasMPI) << "Axom expects mfem to be built without MPI "
+                                  "when it is not built with MPI";
+    }
+  }
 
   // Verify that this copy of mfem is configured without Sidre
-  bool hasSidre = false;
+  {
+    bool mfemHasSidre = false;
   #ifdef MFEM_USE_SIDRE
-  hasSidre = true;
+    mfemHasSidre = true;
   #endif
 
-  EXPECT_FALSE(hasSidre) << "Axom expects mfem to be built without Sidre";
+    EXPECT_FALSE(mfemHasSidre) << "Axom expects mfem to be built without Sidre";
+  }
 }
 #endif  // AXOM_USE_MFEM

@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -14,6 +14,7 @@
 #include <cstring>    // For memcpy()
 #include <algorithm>  // For std:: copy and fill
 #include <ostream>    // For print() and operator <<
+#include <initializer_list>
 
 namespace axom
 {
@@ -205,7 +206,17 @@ public:
    */
   AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE
-  NumericArray(const T* vals, int sz = SIZE);
+  explicit NumericArray(const T* vals, int sz = SIZE);
+
+  /*!
+   * \brief Creates a numeric array from an initializer list
+   * \param [in] values an initializer list containing the values of the
+   * array. If the size is not the same as the size of this array, this
+   * behaves the same way as the constructor which takes a pointer and size.
+   */
+  NumericArray(std::initializer_list<T> values)
+    : NumericArray {values.begin(), static_cast<int>(values.size())}
+  { }
 
   /*!
    * \brief Copy constructor.

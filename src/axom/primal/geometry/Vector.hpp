@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -156,6 +156,13 @@ public:
   Vector(const Vector<T, NDIMS>& other) : m_components(other.array()) { }
 
   /*!
+   * \brief Copy assignment operator
+   * \param [in] other The vector to copy
+   */
+  AXOM_HOST_DEVICE
+  Vector& operator=(const Vector<T, NDIMS>& other);
+
+  /*!
    * \brief Constructs a vector from point A to point B.
    * \param [in] A origin point of the vector.
    * \param [in] B destination point of the vector.
@@ -165,6 +172,16 @@ public:
   AXOM_HOST_DEVICE
   Vector(const Point<T, NDIMS>& A, const Point<T, NDIMS>& B)
     : m_components(B.array() - A.array())
+  { }
+
+  /*!
+   * \brief Creates a vector from an initializer list
+   * \param [in] values an initializer list containing the values of the
+   * vector. If the size is not the same as the size of this vector, this
+   * behaves the same way as the constructor which takes a pointer and size.
+   */
+  Vector(std::initializer_list<T> values)
+    : Vector {values.begin(), static_cast<int>(values.size())}
   { }
 
   /*!
@@ -360,6 +377,14 @@ namespace axom
 {
 namespace primal
 {
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator=(const Vector<T, NDIMS>& other)
+{
+  m_components = other.array();
+  return *this;
+}
+
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator*=(T scalar)

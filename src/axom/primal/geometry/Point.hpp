@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -93,6 +93,16 @@ public:
    */
   AXOM_HOST_DEVICE
   Point(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
+
+  /*!
+   * \brief Creates a point from an initializer list
+   * \param [in] values an initializer list containing the values of the
+   * point. If the size is not the same as the size of this point, this
+   * behaves the same way as the constructor which takes a pointer and size.
+   */
+  Point(std::initializer_list<T> values)
+    : Point {values.begin(), static_cast<int>(values.size())}
+  { }
 
   /*!
    * \brief Copy constructor.

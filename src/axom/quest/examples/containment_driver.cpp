@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -73,7 +73,9 @@ GeometricBoundingBox compute_bounds(mint::Mesh* mesh)
  */
 void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
                                   const GeometricBoundingBox& queryBounds,
-                                  const GridPt& gridRes)
+                                  const GridPt& gridRes,
+                                  bool isBatched,
+                                  bool shouldOutputMeshes)
 {
   const double* low = queryBounds.getMin().data();
   const double* high = queryBounds.getMax().data();
@@ -85,15 +87,59 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
 
   SLIC_ASSERT(containment != nullptr);
 
-  axom::utilities::Timer timer(true);
-  for(int inode = 0; inode < nnodes; ++inode)
+  axom::utilities::Timer timer;
+  if(!isBatched)
   {
-    primal::Point<double, 3> pt;
-    umesh->getNode(inode, pt.data());
+    timer.start();
+    for(int inode = 0; inode < nnodes; ++inode)
+    {
+      primal::Point<double, 3> pt;
+      umesh->getNode(inode, pt.data());
 
-    containment[inode] = inOutOctree.within(pt) ? 1 : 0;
+      containment[inode] = inOutOctree.within(pt) ? 1 : 0;
+    }
+    timer.stop();
   }
-  timer.stop();
+  else
+  {
+    timer.start();
+
+    // Allocate space for the coordinate arrays
+    double* x = axom::allocate<double>(nnodes);
+    double* y = axom::allocate<double>(nnodes);
+    double* z = axom::allocate<double>(nnodes);
+
+// Determine an appropriate execution policy
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
+  defined(RAJA_ENABLE_OPENMP)
+    using ExecPolicy = axom::OMP_EXEC;
+#else
+    using ExecPolicy = axom::SEQ_EXEC;
+#endif
+
+    // Fill the coordinate arrays
+    mint::for_all_nodes<ExecPolicy, mint::xargs::xyz>(
+      umesh,
+      AXOM_LAMBDA(axom::IndexType idx, double xx, double yy, double zz) {
+        x[idx] = xx;
+        y[idx] = yy;
+        z[idx] = zz;
+      });
+
+    // Loop through the points using ExecPolicy
+    axom::for_all<ExecPolicy>(0, nnodes, [&](axom::IndexType idx) {
+      const bool inside = inOutOctree.within(SpacePt {x[idx], y[idx], z[idx]});
+      containment[idx] = inside ? 1 : 0;
+    });
+
+    // Deallocate the coordinate arrays
+    axom::deallocate(x);
+    axom::deallocate(y);
+    axom::deallocate(z);
+
+    timer.stop();
+  }
+
   SLIC_INFO(
     fmt::format("\tQuerying {}^3 containment field "
                 "took {} seconds (@ {} queries per second)",
@@ -101,7 +147,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
                 timer.elapsed(),
                 nnodes / timer.elapsed()));
 
-#ifdef DUMP_VTK_MESH
+  if(shouldOutputMeshes)
   {
     std::stringstream sstr;
     const auto& res = gridRes;
@@ -114,7 +160,6 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
     sstr << "gridContainment_" << resStr << ".vtk";
     mint::write_vtk(umesh, sstr.str());
   }
-#endif
 
   delete umesh;
 }
@@ -314,20 +359,17 @@ struct Input
 {
 public:
   std::string stlFile;
-  int maxQueryLevel;
+  int maxQueryLevel {7};
   std::vector<double> queryBoxMins;
   std::vector<double> queryBoxMaxs;
 
 private:
-  bool m_verboseOutput;
-  bool m_hasUserQueryBox;
+  bool m_verboseOutput {false};
+  bool m_hasUserQueryBox {false};
+  bool m_use_batched_query {false};
 
 public:
   Input()
-    : stlFile("")
-    , maxQueryLevel(7)
-    , m_verboseOutput(false)
-    , m_hasUserQueryBox(false)
   {
 // set default stl file, when the 'data' submodule is available
 #ifdef AXOM_DATA_DIR
@@ -346,6 +388,8 @@ public:
 
   bool isVerbose() const { return m_verboseOutput; }
 
+  bool useBatchedQuery() const { return m_use_batched_query; }
+
   bool hasUserQueryBox() const { return m_hasUserQueryBox; }
 
   void parse(int argc, char** argv, CLI::App& app)
@@ -353,7 +397,10 @@ public:
     app.add_option("stlFile", stlFile, "Path to input mesh")->check(CLI::ExistingFile);
 
     app
-      .add_flag("-v,--verbose", m_verboseOutput, "Enable/disable verbose output")
+      .add_flag("-v,--verbose",
+                m_verboseOutput,
+                "Enable/disable verbose output, "
+                "including outputting generated containment grids.")
       ->capture_default_str();
 
     app
@@ -375,6 +422,13 @@ public:
     minbb->needs(maxbb);
     maxbb->needs(minbb);
 
+    app
+      .add_flag("--batched",
+                m_use_batched_query,
+                "uses a single batched query on all points instead of many "
+                "individual queries")
+      ->capture_default_str();
+
     app.get_formatter()->column_width(35);
 
     // could throw an exception
@@ -390,7 +444,7 @@ public:
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-  axom::slic::UnitTestLogger logger;  // create & initialize logger
+  axom::slic::SimpleLogger logger;  // create & initialize logger
   // slic::debug::checksAreErrors = true;
 
   // Set up and parse command line arguments
@@ -462,7 +516,9 @@ int main(int argc, char** argv)
     int res = 1 << i;
     testContainmentOnRegularGrid(octree,
                                  queryBB,
-                                 GridPt::make_point(res, res, res));
+                                 GridPt::make_point(res, res, res),
+                                 params.useBatchedQuery(),
+                                 params.isVerbose());
   }
 
   if(!params.isVerbose())

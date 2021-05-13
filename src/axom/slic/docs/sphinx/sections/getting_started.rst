@@ -1,5 +1,5 @@
-.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
+.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -173,7 +173,8 @@ below.
    By default, ``SLIC_ERROR()`` will print the specified message and a stacktrace
    to the corresponding output destination and call :ref:`axomProcessAbort` to
    gracefully abort the application. This behavior can be toggled by calling
-   ``slic::disableAbortOnError()``. See the `Slic Doxygen API Documentation`_
+   ``slic::disableAbortOnError()``. Additionally, a custom abort function can be
+   registered with ``slic::setAbortFunction()``. See the `Slic Doxygen API Documentation`_
    for more details.
 
 Step 6: Finalize Slic

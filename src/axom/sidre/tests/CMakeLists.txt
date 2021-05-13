@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -47,16 +47,6 @@ set(fruit_sidre_tests
    sidre_allocatable_F.f
    )
 
-
-set(sidre_test_depends
-    sidre
-    conduit::conduit
-    slic
-    )
-
-blt_list_append(TO sidre_test_depends ELEMENTS hdf5 IF HDF5_FOUND )
-
-
 #------------------------------------------------------------------------------
 # Add gtest C++ tests
 #------------------------------------------------------------------------------
@@ -65,13 +55,13 @@ foreach(test ${gtest_sidre_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${sidre_test_depends} gtest
+                        DEPENDS_ON sidre gtest
                         FOLDER axom/sidre/tests
                         )
 
-    blt_add_test( NAME ${test_name}
-                  COMMAND ${test_name}_test
-                  )
+    axom_add_test( NAME    ${test_name}
+                   COMMAND ${test_name}_test
+                   )
 endforeach()
 
 #------------------------------------------------------------------------------
@@ -84,12 +74,12 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON ${sidre_test_depends} gtest
+                            DEPENDS_ON sidre gtest
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name}
-                      COMMAND ${test_name}_test
-                      )
+        axom_add_test( NAME    ${test_name}
+                       COMMAND ${test_name}_test
+                       )
     endforeach()
 endif()
 
@@ -102,14 +92,37 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON ${sidre_test_depends} fruit
+                            DEPENDS_ON sidre fruit
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name}
-                      COMMAND ${test_name}_test
-                      )
+        axom_add_test( NAME    ${test_name}
+                       COMMAND ${test_name}_test
+                       )
     endforeach()
 endif()
+
+#------------------------------------------------------------------------------
+# Add MFEMSidreDataCollection tests
+#------------------------------------------------------------------------------
+if (AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    blt_add_executable( NAME sidre_mfem_datacollection_test
+                        SOURCES sidre_mfem_datacollection.cpp
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON sidre gtest
+                        FOLDER axom/sidre/tests
+                        )
+    if (ENABLE_MPI AND MFEM_USE_MPI)
+        axom_add_test( NAME sidre_mfem_datacollection
+                       COMMAND sidre_mfem_datacollection_test
+                       NUM_MPI_TASKS 2
+                       )
+    else()
+        axom_add_test( NAME    sidre_mfem_datacollection
+                       COMMAND sidre_mfem_datacollection_test
+                       )
+    endif()
+endif()
+
 
 if (ENABLE_MPI)
     add_subdirectory(spio)

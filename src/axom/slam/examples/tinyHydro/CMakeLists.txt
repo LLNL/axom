@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ if(AXOM_ENABLE_TESTS)
         DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on} gtest
         FOLDER      axom/slam/examples )
 
-    blt_add_test(
+    axom_add_test(
         NAME        slam_tinyHydro_unitTests
         COMMAND     slam_tinyHydro_unitTests_ex )
 endif()
@@ -66,7 +66,7 @@ blt_add_executable(
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS)
-    blt_add_test(
+    axom_add_test(
         NAME        slam_tinyHydro_sod
         COMMAND     slam_tinyHydro_sod_ex )
 endif()

@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -62,6 +62,35 @@ TEST(primal_vector, vector_constructors)
   for(int i = 0; i < DIM; ++i)
   {
     EXPECT_EQ(vFromNA[i], valsArr[i]);
+  }
+
+  // Initializer list constructor
+  primal::Vector<int, 3> fromInitializerListRightSize = {10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListRightSize[i]);
+  }
+
+  primal::Vector<int, 3> fromInitializerListTooLong = {10, 20, 30, 40};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListTooLong[i]);
+  }
+
+  primal::Vector<int, 5> fromInitializerListTooShort = {10, 20};
+  for(int i = 0; i < 2; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerListTooShort[i]);
+  }
+  for(int i = 2; i < 5; ++i)
+  {
+    EXPECT_EQ(0, fromInitializerListTooShort[i]);
+  }
+
+  primal::Vector<int, 3> fromInitializerNoEqualsSign {10, 20, 30};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_EQ(10 * (i + 1), fromInitializerNoEqualsSign[i]);
   }
 }
 
@@ -227,8 +256,8 @@ TEST(primal_vector, vector_outer_product)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -236,7 +265,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  SimpleLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 

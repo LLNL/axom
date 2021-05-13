@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -11,125 +11,111 @@
 #------------------------------------------------------------------------------
 
 set(gtest_spio_serial_tests
-   spio_serial.cpp
+   spio_serial.hpp
    )
 
 set(gtest_spio_parallel_tests
-   spio_basic.cpp
-   spio_parallel.cpp
+   spio_basic.hpp
+   spio_parallel.hpp
    )
 
-set(spio_test_depends
-    sidre
-    conduit::conduit
-    mpi
-    )
-
-blt_list_append(TO spio_test_depends ELEMENTS hdf5 IF HDF5_FOUND)
-
 if(SCR_FOUND)
-     list(APPEND spio_test_depends scr)
-     list(APPEND gtest_spio_parallel_tests spio_scr.cpp)
+# Turn off spio_scr until we solve run-time conflicts with other tests
+#    list(APPEND gtest_spio_parallel_tests spio_scr.hpp)
 endif()
 
 #------------------------------------------------------------------------------
 # Add gtest C++ tests
 #------------------------------------------------------------------------------
-if (ENABLE_MPI)
-
-   foreach(test ${gtest_spio_serial_tests})
-       get_filename_component( test_name ${test} NAME_WE )
-       blt_add_executable( NAME ${test_name}_test
-                           SOURCES ${test}
-                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON ${spio_test_depends} gtest
-                           FOLDER axom/sidre/tests
-                           )
-
-       blt_add_test( NAME ${test_name} 
-                     COMMAND ${test_name}_test
-                     NUM_MPI_TASKS 1
+blt_add_executable( NAME       spio_tests
+                    SOURCES    spio_main.cpp
+                    HEADERS    ${gtest_spio_parallel_tests} ${gtest_spio_serial_tests}
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON sidre gtest
+                    FOLDER     axom/sidre/tests
                     )
-   endforeach()
 
+foreach(test ${gtest_spio_serial_tests})
+    get_filename_component( test_name ${test} NAME_WE )
+    axom_add_test( NAME          ${test_name} 
+                   COMMAND       spio_tests --gtest_filter=${test_name}*
+                   NUM_MPI_TASKS 1
+                   )
+endforeach()
 
-   foreach(test ${gtest_spio_parallel_tests})
-       get_filename_component( test_name ${test} NAME_WE )
-       blt_add_executable( NAME ${test_name}_test
-                           SOURCES ${test}
-                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON ${spio_test_depends} gtest
-                           FOLDER axom/sidre/tests
-                           )
-
-       blt_add_test( NAME ${test_name} 
-                     COMMAND ${test_name}_test
-                     NUM_MPI_TASKS 4
-                     )
-   endforeach()
-
-endif()
+foreach(test ${gtest_spio_parallel_tests})
+    get_filename_component( test_name ${test} NAME_WE )
+    axom_add_test( NAME          ${test_name} 
+                   COMMAND       spio_tests --gtest_filter=${test_name}*
+                   NUM_MPI_TASKS 4
+                   )
+endforeach()
 
 #------------------------------------------------------------------------------
 # Add Fortran tests
 #------------------------------------------------------------------------------
 if(ENABLE_FORTRAN)
-   if (ENABLE_MPI)
-      blt_add_executable(NAME spio_basicWriteRead_F_test
-                         SOURCES F_spio_basicWriteRead.F
-                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                         DEPENDS_ON ${spio_test_depends}
-                         FOLDER axom/sidre/tests
-                         )
-      blt_add_test(NAME F_spio_basicWriteRead
-                   COMMAND spio_basicWriteRead_F_test
-                   NUM_MPI_TASKS 1
-                   )
+    # Non-Fruit parallel tests with 1 MPI task
+    set(spio_one_fortran_tests
+        F_spio_basicWriteRead.F
+        F_spio_blueprintIndex.F
+        )
 
-      blt_add_executable(NAME spio_parallelWriteRead_F_test
-                         SOURCES F_spio_parallelWriteRead.F
-                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                         DEPENDS_ON ${spio_test_depends}
-                         FOLDER axom/sidre/tests
-                         )
-      blt_add_test(NAME F_spio_parallelWriteRead
-                   COMMAND spio_parallelWriteRead_F_test
-                   NUM_MPI_TASKS 4
-                   )
+    foreach(test ${spio_one_fortran_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        string(SUBSTRING "${test_name}" 2 -1 test_name) # remove F_
+        blt_add_executable( NAME       ${test_name}_F_test
+                            SOURCES    ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON sidre
+                            FOLDER     axom/sidre/tests
+                            )
+        axom_add_test( NAME    ${test_name}_F
+                      COMMAND ${test_name}_F_test
+                      NUM_MPI_TASKS 1
+                      )
+    endforeach()
 
-      blt_add_executable(NAME spio_irregularWriteRead_F_test
-                         SOURCES F_spio_irregularWriteRead.F
-                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                         DEPENDS_ON ${spio_test_depends}
-                         FOLDER axom/sidre/tests
-                         )
-      blt_add_test(NAME F_spio_irregularWriteRead
-                   COMMAND spio_irregularWriteRead_F_test
-                   NUM_MPI_TASKS 4
-                   )
+    # Non-Fruit parallel tests with 4 MPI task
+    set(spio_four_fortran_tests
+        F_spio_parallelWriteRead.F
+        F_spio_irregularWriteRead.F
+        F_spio_externalWriteRead.F
+        )
 
-      blt_add_executable(NAME spio_externalWriteRead_F_test
-                         SOURCES F_spio_externalWriteRead.F
-                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                         DEPENDS_ON ${spio_test_depends}
-                         FOLDER axom/sidre/tests
-                         )
-      blt_add_test(NAME F_spio_externalWriteRead
-                   COMMAND spio_externalWriteRead_F_test
-                   NUM_MPI_TASKS 4
-                   )
+    foreach(test ${spio_four_fortran_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        string(SUBSTRING "${test_name}" 2 -1 test_name) # remove F_
+        blt_add_executable( NAME       ${test_name}_F_test
+                            SOURCES    ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON sidre
+                            FOLDER     axom/sidre/tests
+                            )
+        axom_add_test( NAME    ${test_name}_F
+                       COMMAND ${test_name}_F_test
+                       NUM_MPI_TASKS 4
+                       )
+    endforeach()
 
-      blt_add_executable(NAME spio_preserveWriteRead_F_test
-                         SOURCES F_spio_preserveWriteRead.F
-                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                         DEPENDS_ON ${spio_test_depends} fruit
-                         FOLDER axom/sidre/tests
-                         )
-      blt_add_test(NAME F_spio_preserveWriteRead
-                   COMMAND spio_preserveWriteRead_F_test
-                   NUM_MPI_TASKS 4
-                   )
+    # Fruit parallel tests with 4 MPI task
+    set(spio_fruit_tests
+        F_spio_preserveWriteRead.F
+        )
 
-   endif()
+    foreach(test ${spio_fruit_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        string(SUBSTRING "${test_name}" 2 -1 test_name) # remove F_
+        blt_add_executable( NAME       ${test_name}_F_test
+                            SOURCES    ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON sidre fruit
+                            FOLDER     axom/sidre/tests
+                            )
+        axom_add_test( NAME    ${test_name}_F
+                       COMMAND ${test_name}_F_test
+                       NUM_MPI_TASKS 4
+                       )
+    endforeach()
+
 endif()
-

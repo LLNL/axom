@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
- * other Axom Project Developers. See the top-level COPYRIGHT file for details.
+ * Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+ * other Axom Project Developers. See the top-level LICENSE file for details.
  *
  * SPDX-License-Identifier: (BSD-3-Clause)
  */
@@ -84,6 +84,7 @@
 #ifdef WIN32
 #define _USE_MATH_DEFINES
 #define NOGDI
+#define NOMINMAX
 #endif
 
 
@@ -113,5 +114,23 @@
 #cmakedefine SPARSEHASH_HASHFUN_HEADER @SPARSEHASH_HASHFUN_HEADER@
 #cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
-#endif  /* AXOM_COMMON_CONFIG_CPP */
+/*
+ * Inline axom's macros related to export symbols, e.g. AXOM_EXPORT
+ */
+@INLINED_AXOM_EXPORTS@
 
+
+/*
+ * Disables some MSVC warnings related to shared libraries
+ */
+#if defined(_MSC_VER)
+/* Turn off warning about lack of DLL interface */
+#pragma warning(disable:4251)
+/* Turn off warning non-dll class is base for dll-interface class */
+#pragma warning(disable:4275)
+/* Turn off warning about identifier truncation */
+#pragma warning(disable:4786)
+#endif  /* defined(_MSC_VER) */
+
+
+#endif  /* AXOM_COMMON_CONFIG_HPP */

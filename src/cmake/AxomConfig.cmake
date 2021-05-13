@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -48,6 +48,9 @@ endforeach()
 convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR)
 convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
 
+# Read axom_exports_symbols into a variable that will be inlined in the config file
+file(READ ${CMAKE_BINARY_DIR}/axom_export_symbols INLINED_AXOM_EXPORTS)
+
 #------------------------------------------------------------------------------
 # Compiler checks
 #------------------------------------------------------------------------------
@@ -76,7 +79,7 @@ if(ENABLE_FORTRAN)
 
 endif(ENABLE_FORTRAN)
 
-configure_file(
+axom_configure_file(
     ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
     ${CMAKE_BINARY_DIR}/include/axom/config.hpp
 )

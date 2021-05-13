@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -21,12 +21,9 @@ blt_list_append(TO       quest_tests
 
 set(quest_tests_depends
     quest
-    slic
     fmt
     gtest
    )
-
-blt_list_append( TO quest_tests_depends ELEMENTS openmp IF ENABLE_OPENMP )
 
 blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
 
@@ -42,7 +39,7 @@ foreach(test ${quest_tests})
         FOLDER axom/quest/tests
         )
 
-    blt_add_test(
+    axom_add_test(
         NAME ${test_name}
         COMMAND ${test_name}_test
         )
@@ -67,7 +64,7 @@ if(MFEM_FOUND)
 
     blt_add_target_compile_flags( TO ${test_name} FLAGS "${MFEM_COMPILE_FLAGS}" )
 
-    blt_add_test(
+    axom_add_test(
         NAME ${test_name}
         COMMAND ${test_name}
         )
@@ -88,18 +85,13 @@ blt_list_append(TO       quest_mpi_tests
                 IF       AXOM_DATA_DIR
                 ELEMENTS quest_inout_interface.cpp )
 
-set(quest_mpi_depends ${quest_tests_depends})
-if (ENABLE_MPI)
-    list(APPEND quest_mpi_depends mpi)
-endif()
-
 foreach(test ${quest_mpi_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable(
         NAME ${test_name}_test
         SOURCES ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_mpi_depends}
+        DEPENDS_ON ${quest_tests_depends}
         FOLDER axom/quest/tests
     )
 
@@ -112,13 +104,13 @@ foreach(test ${quest_mpi_tests})
     endif()
 
     if (ENABLE_MPI)
-        blt_add_test(
+        axom_add_test(
             NAME ${test_name}
             COMMAND ${test_name}_test
             NUM_MPI_TASKS ${_numMPITasks}
         )
     else()
-        blt_add_test(
+        axom_add_test(
             NAME ${test_name}
             COMMAND ${test_name}_test
         )
@@ -146,6 +138,7 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
         ${quest_tests_depends}
         conduit::conduit
         sidre
+        cli11
         )
 
     blt_list_append(TO quest_regression_depends ELEMENTS hdf5 IF HDF5_FOUND)
@@ -173,10 +166,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     endif()
 
-    if ( "$ENV{SYS_TYPE}" STREQUAL "bgqos_0" )
-       blt_add_target_link_flags( TO ${test_name} FLAGS "${AXOM_ALLOW_MULTIPLE_DEFINITIONS}" )
-    endif()
-
     # Add resolution tests for each dataset and resolution
     if(AXOM_DATA_DIR)
         set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
@@ -188,26 +177,28 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
             16
         )
 
-        if( ${AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS} )
-           list(APPEND quest_regression_datasets
-               naca0012
-               plane_simp
-               plane_binary
-               aatbase_3_binary
+        blt_list_append(
+            TO          quest_regression_datasets
+            ELEMENTS    aatbase_3_binary
+                        cap
+                        naca0012
+                        plane_binary
+                        plane_simp
+            IF          AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
            )
-           list(APPEND quest_regression_resolutions
-               32
+        blt_list_append(
+            TO          quest_regression_resolutions
+            ELEMENTS    32
+            IF          AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
            )
-        endif()
 
         foreach(dataset ${quest_regression_datasets})
             foreach(res ${quest_regression_resolutions})
-                blt_add_test(
+                axom_add_test(
                     NAME quest_regression_${dataset}_${res}
                     COMMAND ${test_name}
                             --mesh ${quest_data_dir}/${dataset}.stl
                             --baseline ${quest_data_dir}/regression/${dataset}_${res}_baseline.root
-                            --resolution ${res} ${res} ${res}
                     NUM_MPI_TASKS 1
                 )
             endforeach()

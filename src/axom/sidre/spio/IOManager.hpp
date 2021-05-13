@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -93,7 +93,7 @@ public:
              int num_files,
              const std::string& file_string,
              const std::string& protocol,
-             const std::string& tree_pattern = "datagroup_%07d");
+             const std::string& tree_pattern = "datagroup");
 
   /*!
    * \brief write additional group to existing root file
@@ -252,13 +252,10 @@ public:
    * \param group      Group to fill with input data
    * \param root_file  root file containing input data
    * \param preserve_contents   Preserves group's existing contents if true
-   * \param use_scr    Use SCR to find and read the files.  This should be
-   *                   set to true only if the files were written with SCR.
    */
   void read(sidre::Group* group,
             const std::string& root_file,
-            bool preserve_contents = false,
-            bool use_scr = false);
+            bool preserve_contents = false);
 
   /**
    * \brief Finds conduit relay protocol corresponding to a sidre protocol
@@ -325,11 +322,24 @@ private:
                                  const std::string& root_name,
                                  int rankgroup_id);
 
-#ifdef AXOM_USE_SCR
-  void readWithSCR(sidre::Group* group,
-                   const std::string& root_file,
-                   bool preserve_contents = false);
-#endif
+  /*!
+   * \brief If needed, get a file path created by SCR.
+   *
+   * When using this class with the SCR library, SCR must create a file path
+   * to a storage location that it controls, where the actual I/O operations
+   * will occur.  This private method invokes this SCR operation and returns
+   * a string containing the SCR-controlled path.
+   *
+   * When SCR is not being used, either because the IOManager instance was
+   * constructed with the SCR flag set to false, or because Sidre was not
+   * built with SCR, the returned string is identical to the argument string.
+   *
+   * \param  path  The file path in the parallel file system known by the
+   *               calling code.
+   * \return       The path created by SCR for I/O, or a copy of the argument
+   *               string when SCR is not being used.
+   */
+  std::string getSCRPath(const std::string& path);
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
@@ -339,7 +349,6 @@ private:
   MPI_Comm m_mpi_comm;
 
   bool m_use_scr;
-  std::string m_scr_checkpoint_dir;
 };
 
 } /* end namespace sidre */

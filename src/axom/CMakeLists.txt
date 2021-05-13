@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -26,10 +26,10 @@ endif()
 # (i.e. quest depends on mint, so quest follows mint)
 axom_add_component(COMPONENT_NAME slic   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME slam   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME sidre  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 if (AXOM_ENABLE_SIDRE)
     axom_add_component(COMPONENT_NAME inlet  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 else()
@@ -37,6 +37,11 @@ else()
     set(AXOM_ENABLE_INLET OFF CACHE BOOL "")
 endif()
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+
+if(ENABLE_CUDA)
+    # Force "early" device linking to avoid propagating an NVCC link dependency
+    set_target_properties(core ${AXOM_COMPONENTS_ENABLED} PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+endif()
 
 # Combine all component object libraries into a unified library
 blt_add_library(NAME       axom
@@ -48,6 +53,12 @@ install(TARGETS              axom
         DESTINATION          lib)
 install(EXPORT axom-targets DESTINATION lib/cmake)
 
+#------------------------------------------------------------------------------
+# Generate export symbols
+#------------------------------------------------------------------------------
+include(GenerateExportHeader)
+set(_export_header ${CMAKE_BINARY_DIR}/axom_export_symbols)
+generate_export_header(axom  EXPORT_FILE_NAME ${_export_header})
 
 #------------------------------------------------------------------------------
 # Output some information about the configuration
@@ -83,5 +94,19 @@ if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
         if(TARGET ${_tgt})
             set_target_properties(${_tgt} PROPERTIES FOLDER "axom/code_checks")
         endif()
+    endforeach()
+endif()
+
+
+#------------------------------------------------------------------------------
+# Bugfix for dllimport/dllexport functionality in msvc with object libraries
+# Each axom component needs to have 'axom_EXPORTS' defined when building
+#------------------------------------------------------------------------------
+if(WIN32)
+    foreach(c ${AXOM_COMPONENTS_ENABLED})
+        blt_add_target_definitions(
+            TO                 ${c}
+            SCOPE              PRIVATE
+            TARGET_DEFINITIONS "axom_EXPORTS")
     endforeach()
 endif()

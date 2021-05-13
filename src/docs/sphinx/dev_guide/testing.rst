@@ -1,5 +1,5 @@
-.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
+.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -146,7 +146,7 @@ object to be used in tests::
 
     ::testing::InitGoogleTest(&argc, argv);
 
-    UnitTestLogger logger;  // create & initialize test logger,
+    SimpleLogger logger;  // create & initialize test logger,
                             // finalized when exiting main scope
 
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -156,7 +156,7 @@ object to be used in tests::
   }
 
 Note that Google Test is initialized first, followed by initialization of the
-slic UnitTestLogger object. The `RUN_ALL_TESTS()` Google Test macro will 
+slic SimpleLogger object. The `RUN_ALL_TESTS()` Google Test macro will 
 run all the tests in the file. 
 
 As another example, consider a set of tests that use MPI.  The 'main()' 
@@ -169,7 +169,7 @@ respectively::
 
     ::testing::InitGoogleTest(&argc, argv);
 
-    UnitTestLogger logger;  // create & initialize test logger,
+    SimpleLogger logger;  // create & initialize test logger,
                             // finalized when exiting main scope
 
     MPI_Init(&argc, &argv);
@@ -274,7 +274,7 @@ following items:
 
   #. An executable and test variable for each test executable to be
      generated. These variables use the `blt_add_executable` and
-     `blt_add_test` macros, respectively, as described above.
+     `axom_add_test` macros, respectively, as described above.
 
 .. note:: Fortran executables and tests should be guarded to prevent
           generation when Fortran is not enabled.
@@ -310,7 +310,7 @@ following items:
 
   #. An executable and test variable for each example executable to be
      generated and each executable to be run as a test. These definitions
-     use the `blt_add_executable` and `blt_add_test` macros, respectively.
+     use the `blt_add_executable` and `axom_add_test` macros, respectively.
      For example::
 
        blt_add_executable(NAME  <example executable name>
@@ -320,8 +320,8 @@ following items:
 
      and::
 
-       blt_add_test(NAME <example executable name>
-                    COMMAND <example executable name>)
+       axom_add_test(NAME <example executable name>
+                     COMMAND <example executable name>)
 
      Fortran executables and tests should be guarded to prevent generation if
      Fortran is not enabled.
