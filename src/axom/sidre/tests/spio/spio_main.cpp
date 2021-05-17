@@ -21,7 +21,6 @@ const std::string ROOT_EXT = ".root";
 
 #include "spio_basic.hpp"
 #include "spio_parallel.hpp"
-#include "spio_scr.hpp"
 #include "spio_serial.hpp"
 
 #include "axom/slic/core/SimpleLogger.hpp"
