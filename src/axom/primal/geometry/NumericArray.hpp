@@ -54,8 +54,8 @@ bool operator!=(const NumericArray<T, SIZE>& lhs,
  * \return C resulting numeric array from the component-wise addition.
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> operator+(const NumericArray<T, SIZE>& lhs,
-                                const NumericArray<T, SIZE>& rhs);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator+(const NumericArray<T, SIZE>& lhs,
+                                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Performs component-wise subtraction of two numeric arrays.
@@ -288,6 +288,7 @@ public:
    * Adds the numeric array arr to this instance (component-wise).
    * \return A reference to the NumericArray instance after addition.
    */
+  AXOM_HOST_DEVICE
   NumericArray<T, SIZE>& operator+=(const NumericArray<T, SIZE>& arr);
 
   /*!

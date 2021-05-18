@@ -62,7 +62,8 @@ Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1);
  * \return C resulting vector, \f$ \ni: C_i = scalar*vec_i, \forall i\f$
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec, const T scalar);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec,
+                                            const T scalar);
 
 /*!
  * \brief Scalar multiplication of vector; Scalar on lhs.
@@ -71,7 +72,8 @@ Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec, const T scalar);
  * \return C resulting vector, \f$ \ni: C_i = scalar*vec_i, \forall i\f$
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator*(const T scalar, const Vector<T, NDIMS>& vec);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator*(const T scalar,
+                                            const Vector<T, NDIMS>& vec);
 
 /*!
  * \brief Scalar division of vector; Scalar on rhs.
@@ -263,6 +265,7 @@ public:
    * \param [in] scalar the scalar value to multiply with this vector.
    * \return A reference to the vector instance after scalar multiplication.
    */
+  AXOM_HOST_DEVICE
   Vector<T, NDIMS>& operator*=(T scalar);
 
   /*!

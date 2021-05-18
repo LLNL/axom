@@ -219,6 +219,7 @@ public:
    * \param [in] B user-supplied point
    * \return p point at the midpoint A and B.
    */
+  AXOM_HOST_DEVICE
   static Point midpoint(const Point& A, const Point& B);
 
   /*!
