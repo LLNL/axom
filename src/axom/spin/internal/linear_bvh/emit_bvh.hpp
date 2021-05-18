@@ -106,21 +106,21 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
                                // do the offset now
                                rchild *= 4;
                              }
-                             vec1[0] = l_aabb.m_x.min();
-                             vec1[1] = l_aabb.m_y.min();
-                             vec1[2] = l_aabb.m_z.min();
+                             vec1[0] = l_aabb.getMin()[0];
+                             vec1[1] = l_aabb.getMin()[1];
+                             vec1[2] = l_aabb.getMin()[2];
 
-                             vec1[3] = l_aabb.m_x.max();
-                             vec2[0] = l_aabb.m_y.max();
-                             vec2[1] = l_aabb.m_z.max();
+                             vec1[3] = l_aabb.getMax()[0];
+                             vec2[0] = l_aabb.getMax()[1];
+                             vec2[1] = l_aabb.getMax()[2];
 
-                             vec2[2] = r_aabb.m_x.min();
-                             vec2[3] = r_aabb.m_y.min();
-                             vec3[0] = r_aabb.m_z.min();
+                             vec2[2] = r_aabb.getMin()[0];
+                             vec2[3] = r_aabb.getMin()[1];
+                             vec3[0] = r_aabb.getMin()[2];
 
-                             vec3[1] = r_aabb.m_x.max();
-                             vec3[2] = r_aabb.m_y.max();
-                             vec3[3] = r_aabb.m_z.max();
+                             vec3[1] = r_aabb.getMax()[0];
+                             vec3[2] = r_aabb.getMax()[1];
+                             vec3[3] = r_aabb.getMax()[2];
 
                              const int32 out_offset = node * 4;
                              flat_ptr[out_offset + 0] = vec1;
@@ -198,20 +198,20 @@ void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
                                // do the offset now
                                rchild *= 4;
                              }
-                             vec1[0] = l_aabb.m_x.min();
-                             vec1[1] = l_aabb.m_y.min();
+                             vec1[0] = l_aabb.getMin()[0];
+                             vec1[1] = l_aabb.getMin()[1];
                              vec1[2] = 0.0;
 
-                             vec1[3] = l_aabb.m_x.max();
-                             vec2[0] = l_aabb.m_y.max();
+                             vec1[3] = l_aabb.getMax()[0];
+                             vec2[0] = l_aabb.getMax()[1];
                              vec2[1] = 0.0;
 
-                             vec2[2] = r_aabb.m_x.min();
-                             vec2[3] = r_aabb.m_y.min();
+                             vec2[2] = r_aabb.getMin()[0];
+                             vec2[3] = r_aabb.getMin()[1];
                              vec3[0] = 0.0;
 
-                             vec3[1] = r_aabb.m_x.max();
-                             vec3[2] = r_aabb.m_y.max();
+                             vec3[1] = r_aabb.getMax()[0];
+                             vec3[2] = r_aabb.getMax()[1];
                              vec3[3] = 0.0;
 
                              const int32 out_offset = node * 4;

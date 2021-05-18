@@ -12,6 +12,8 @@
 #include "axom/spin/internal/linear_bvh/range.hpp"
 #include "axom/spin/internal/linear_bvh/vec.hpp"
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+
 #include <iostream>
 
 namespace axom
@@ -23,13 +25,18 @@ namespace internal
 namespace linear_bvh
 {
 // Forward declarations
+/*
 template <typename FloatType, int NDIMS>
 class AABB
 {
   AXOM_STATIC_ASSERT_MSG((NDIMS >= 2 && NDIMS <= 3),
                          "The AABB class is supported only in 2D and 3D.");
 };
+*/
+template <typename FloatType, int NDIMS>
+using AABB = axom::primal::BoundingBox<FloatType, NDIMS>;
 
+/*
 template <typename FloatType, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const AABB<FloatType, NDIMS>& aabb);
 
@@ -193,7 +200,7 @@ std::ostream& operator<<(std::ostream& os, const AABB<FloatType, NDIMS>& aabb)
 
   return aabb.print(os);
 }
-
+*/
 } /* namespace linear_bvh */
 } /* namespace internal */
 } /* namespace spin */

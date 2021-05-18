@@ -13,6 +13,8 @@
 
 #include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
 
+#include "axom/primal/geometry/Point.hpp"
+
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 #include "axom/spin/internal/linear_bvh/vec.hpp"
@@ -116,7 +118,7 @@ void transform_boxes(const FloatType* boxes,
     size,
     AXOM_LAMBDA(int32 i) {
       AABB<FloatType, NDIMS> aabb;
-      Vec<FloatType, NDIMS> min_point, max_point;
+      primal::Point<FloatType, NDIMS> min_point, max_point;
 
       const int32 offset = i * STRIDE;
       min_point[0] = boxes[offset + 0];
@@ -127,8 +129,8 @@ void transform_boxes(const FloatType* boxes,
       max_point[1] = boxes[offset + 4];
       max_point[2] = boxes[offset + 5];
 
-      aabb.include(min_point);
-      aabb.include(max_point);
+      aabb.addPoint(min_point);
+      aabb.addPoint(max_point);
       aabb.scale(scale_factor);
 
       aabbs[i] = aabb;
@@ -151,7 +153,7 @@ void transform_boxes(const FloatType* boxes,
     size,
     AXOM_LAMBDA(int32 i) {
       AABB<FloatType, NDIMS> aabb;
-      Vec<FloatType, NDIMS> min_point, max_point;
+      primal::Point<FloatType, NDIMS> min_point, max_point;
 
       const int32 offset = i * STRIDE;
       min_point[0] = boxes[offset + 0];
@@ -160,8 +162,8 @@ void transform_boxes(const FloatType* boxes,
       max_point[0] = boxes[offset + 2];
       max_point[1] = boxes[offset + 3];
 
-      aabb.include(min_point);
-      aabb.include(max_point);
+      aabb.addPoint(min_point);
+      aabb.addPoint(max_point);
       aabb.scale(scale_factor);
 
       aabbs[i] = aabb;
@@ -190,25 +192,22 @@ AABB<FloatType, 3> reduce(AABB<FloatType, 3>* aabbs, int32 size)
     AXOM_LAMBDA(int32 i) {
       const AABB<FloatType, NDIMS>& aabb = aabbs[i];
 
-      xmin.min(aabb.m_x.min());
-      ymin.min(aabb.m_y.min());
-      zmin.min(aabb.m_z.min());
+      xmin.min(aabb.getMin()[0]);
+      ymin.min(aabb.getMin()[1]);
+      zmin.min(aabb.getMin()[2]);
 
-      xmax.max(aabb.m_x.max());
-      ymax.max(aabb.m_y.max());
-      zmax.max(aabb.m_z.max());
+      xmax.max(aabb.getMax()[0]);
+      ymax.max(aabb.getMax()[1]);
+      zmax.max(aabb.getMax()[2]);
     });
 
   AABB<FloatType, NDIMS> res;
 
-  Vec<FloatType, NDIMS> mins =
-    make_vec<FloatType>(xmin.get(), ymin.get(), zmin.get());
+  primal::Point<FloatType, NDIMS> mins {xmin.get(), ymin.get(), zmin.get()};
+  primal::Point<FloatType, NDIMS> maxs {xmax.get(), ymax.get(), zmax.get()};
 
-  Vec<FloatType, NDIMS> maxs =
-    make_vec<FloatType>(xmax.get(), ymax.get(), zmax.get());
-
-  res.include(mins);
-  res.include(maxs);
+  res.addPoint(mins);
+  res.addPoint(maxs);
   return res;
 }
 
@@ -231,19 +230,19 @@ AABB<FloatType, 2> reduce(AABB<FloatType, 2>* aabbs, int32 size)
     size,
     AXOM_LAMBDA(int32 i) {
       const AABB<FloatType, NDIMS>& aabb = aabbs[i];
-      xmin.min(aabb.m_x.min());
-      ymin.min(aabb.m_y.min());
+      xmin.min(aabb.getMin()[0]);
+      ymin.min(aabb.getMin()[1]);
 
-      xmax.max(aabb.m_x.max());
-      ymax.max(aabb.m_y.max());
+      xmax.max(aabb.getMax()[0]);
+      ymax.max(aabb.getMax()[1]);
     });
 
   AABB<FloatType, NDIMS> res;
-  Vec<FloatType, NDIMS> mins = make_vec<FloatType>(xmin.get(), ymin.get());
-  Vec<FloatType, NDIMS> maxs = make_vec<FloatType>(xmax.get(), ymax.get());
+  primal::Point<FloatType, NDIMS> mins {xmin.get(), ymin.get()};
+  primal::Point<FloatType, NDIMS> maxs {xmax.get(), ymax.get()};
 
-  res.include(mins);
-  res.include(maxs);
+  res.addPoint(mins);
+  res.addPoint(maxs);
   return res;
 }
 
@@ -258,12 +257,11 @@ void get_mcodes(AABB<FloatType, 2>* aabbs,
 
   constexpr int NDIMS = 2;
 
-  Vec<FloatType, NDIMS> extent, inv_extent, min_coord;
-  extent[0] = bounds.m_x.max() - bounds.m_x.min();
-  extent[1] = bounds.m_y.max() - bounds.m_y.min();
+  primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
 
-  min_coord[0] = bounds.m_x.min();
-  min_coord[1] = bounds.m_y.min();
+  extent = bounds.getMax();
+  extent -= bounds.getMin();
+  min_coord = bounds.getMin();
 
   for(int i = 0; i < NDIMS; ++i)
   {
@@ -278,11 +276,9 @@ void get_mcodes(AABB<FloatType, 2>* aabbs,
       const AABB<FloatType, NDIMS>& aabb = aabbs[i];
 
       // get the center and normalize it
-      FloatType dx = aabb.m_x.center() - min_coord[0];
-      FloatType dy = aabb.m_y.center() - min_coord[1];
-      float32 centroid_x = static_cast<float32>(dx * inv_extent[0]);
-      float32 centroid_y = static_cast<float32>(dy * inv_extent[1]);
-      mcodes[i] = morton32_encode(centroid_x, centroid_y);
+      primal::Vector<FloatType, NDIMS> centroid = aabb.getCentroid();
+      centroid = (centroid - min_coord).array() * inv_extent.array();
+      mcodes[i] = morton32_encode(centroid[0], centroid[1]);
     });
 }
 
@@ -297,14 +293,11 @@ void get_mcodes(AABB<FloatType, 3>* aabbs,
 
   constexpr int NDIMS = 3;
 
-  Vec<FloatType, NDIMS> extent, inv_extent, min_coord;
-  extent[0] = bounds.m_x.max() - bounds.m_x.min();
-  extent[1] = bounds.m_y.max() - bounds.m_y.min();
-  extent[2] = bounds.m_z.max() - bounds.m_z.min();
+  primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
 
-  min_coord[0] = bounds.m_x.min();
-  min_coord[1] = bounds.m_y.min();
-  min_coord[2] = bounds.m_z.min();
+  extent = bounds.getMax();
+  extent -= bounds.getMin();
+  min_coord = bounds.getMin();
 
   for(int i = 0; i < NDIMS; ++i)
   {
@@ -319,13 +312,9 @@ void get_mcodes(AABB<FloatType, 3>* aabbs,
       const AABB<FloatType, NDIMS>& aabb = aabbs[i];
 
       // get the center and normalize it
-      FloatType dx = aabb.m_x.center() - min_coord[0];
-      FloatType dy = aabb.m_y.center() - min_coord[1];
-      FloatType dz = aabb.m_z.center() - min_coord[2];
-      float32 centroid_x = static_cast<float32>(dx * inv_extent[0]);
-      float32 centroid_y = static_cast<float32>(dy * inv_extent[1]);
-      float32 centroid_z = static_cast<float32>(dz * inv_extent[2]);
-      mcodes[i] = morton32_encode(centroid_x, centroid_y, centroid_z);
+      primal::Vector<FloatType, NDIMS> centroid = aabb.getCentroid();
+      centroid = (centroid - min_coord).array() * inv_extent.array();
+      mcodes[i] = morton32_encode(centroid[0], centroid[1], centroid[2]);
     });
 }
 
@@ -604,20 +593,20 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
         AABB<FloatType, NDIMS> aabb;
         if(lchild >= inner_size)
         {
-          aabb.include(leaf_aabb_ptr[lchild - inner_size]);
+          aabb.addBox(leaf_aabb_ptr[lchild - inner_size]);
         }
         else
         {
-          aabb.include(inner_aabb_ptr[lchild]);
+          aabb.addBox(inner_aabb_ptr[lchild]);
         }
 
         if(rchild >= inner_size)
         {
-          aabb.include(leaf_aabb_ptr[rchild - inner_size]);
+          aabb.addBox(leaf_aabb_ptr[rchild - inner_size]);
         }
         else
         {
-          aabb.include(inner_aabb_ptr[rchild]);
+          aabb.addBox(inner_aabb_ptr[rchild]);
         }
 
         inner_aabb_ptr[current_node] = aabb;

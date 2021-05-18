@@ -420,8 +420,11 @@ void BVH<NDIMS, ExecSpace, FloatType>::getBounds(FloatType* min,
 {
   SLIC_ASSERT(min != nullptr);
   SLIC_ASSERT(max != nullptr);
-  m_bvh.m_bounds.min(min);
-  m_bvh.m_bounds.max(max);
+  for(int idim = 0; idim < NDIMS; idim++)
+  {
+    min[idim] = m_bvh.m_bounds.getMin()[idim];
+    max[idim] = m_bvh.m_bounds.getMax()[idim];
+  }
 }
 
 //------------------------------------------------------------------------------
