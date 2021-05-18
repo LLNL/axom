@@ -15,8 +15,9 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+
 #include "axom/spin/internal/linear_bvh/vec.hpp"
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 
@@ -65,8 +66,8 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
   const int32* lchildren_ptr = data.m_left_children;
   const int32* rchildren_ptr = data.m_right_children;
 
-  const AABB<FloatType, 3>* leaf_aabb_ptr = data.m_leaf_aabbs;
-  const AABB<FloatType, 3>* inner_aabb_ptr = data.m_inner_aabbs;
+  const primal::BoundingBox<FloatType, 3>* leaf_aabb_ptr = data.m_leaf_aabbs;
+  const primal::BoundingBox<FloatType, 3>* inner_aabb_ptr = data.m_inner_aabbs;
 
   Vec<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
 
@@ -79,7 +80,7 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
                              Vec<FloatType, 4> vec3;
                              Vec<FloatType, 4> vec4;
 
-                             AABB<FloatType, 3> l_aabb, r_aabb;
+                             primal::BoundingBox<FloatType, 3> l_aabb, r_aabb;
 
                              int32 lchild = lchildren_ptr[node];
                              if(lchild >= inner_size)
@@ -157,8 +158,8 @@ void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
   const int32* lchildren_ptr = data.m_left_children;
   const int32* rchildren_ptr = data.m_right_children;
 
-  const AABB<FloatType, 2>* leaf_aabb_ptr = data.m_leaf_aabbs;
-  const AABB<FloatType, 2>* inner_aabb_ptr = data.m_inner_aabbs;
+  const primal::BoundingBox<FloatType, 2>* leaf_aabb_ptr = data.m_leaf_aabbs;
+  const primal::BoundingBox<FloatType, 2>* inner_aabb_ptr = data.m_inner_aabbs;
 
   Vec<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
 
@@ -171,7 +172,7 @@ void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
                              Vec<FloatType, 4> vec3;
                              Vec<FloatType, 4> vec4;
 
-                             AABB<FloatType, 2> l_aabb, r_aabb;
+                             primal::BoundingBox<FloatType, 2> l_aabb, r_aabb;
 
                              int32 lchild = lchildren_ptr[node];
                              if(lchild >= inner_size)

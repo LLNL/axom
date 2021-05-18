@@ -12,9 +12,10 @@
 
 #include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+
 // spin includes
 #include "axom/spin/internal/linear_bvh/vec.hpp"
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
 
 namespace axom
 {
@@ -62,7 +63,7 @@ struct BVHData
 {
   vec4_t<FloatType>* m_inner_nodes;  // BVH bins including leafs
   int32* m_leaf_nodes;               // leaf data
-  AABB<FloatType, NDIMS> m_bounds;
+  primal::BoundingBox<FloatType, NDIMS> m_bounds;
 
   BVHData() : m_inner_nodes(nullptr), m_leaf_nodes(nullptr) { }
 

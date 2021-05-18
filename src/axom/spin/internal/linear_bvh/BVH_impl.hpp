@@ -12,11 +12,12 @@
 #include "axom/core/numerics/floating_point_limits.hpp"  // floating_point_limits
 #include "axom/core/utilities/AnnotationMacros.hpp"      // for annotations
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+
 // slic includes
 #include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 // linear bvh includes
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
 #include "axom/spin/internal/linear_bvh/build_radix_tree.hpp"
 #include "axom/spin/internal/linear_bvh/bvh_traverse.hpp"
 #include "axom/spin/internal/linear_bvh/bvh_vtkio.hpp"
@@ -386,7 +387,7 @@ int BVH<NDIMS, ExecSpace, FloatType>::build()
   // STEP 2: Build a RadixTree consisting of the bounding boxes, sorted
   // by their corresponding morton code.
   lbvh::RadixTree<FloatType, NDIMS> radix_tree;
-  lbvh::AABB<FloatType, NDIMS> global_bounds;
+  primal::BoundingBox<FloatType, NDIMS> global_bounds;
   lbvh::build_radix_tree<ExecSpace>(boxesptr,
                                     numBoxes,
                                     global_bounds,

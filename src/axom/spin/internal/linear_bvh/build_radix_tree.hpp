@@ -13,12 +13,13 @@
 
 #include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
 
+#include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
+#include "axom/spin/internal/linear_bvh/math.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 #include "axom/spin/internal/linear_bvh/vec.hpp"
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
 
 #include "axom/core/utilities/Utilities.hpp"  // for isNearlyEqual()
 #include "axom/slic/interface/slic.hpp"       // for slic
@@ -105,7 +106,7 @@ static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
 
 template <typename ExecSpace, typename FloatType>
 void transform_boxes(const FloatType* boxes,
-                     AABB<FloatType, 3>* aabbs,
+                     primal::BoundingBox<FloatType, 3>* aabbs,
                      int32 size,
                      FloatType scale_factor)
 {
@@ -117,7 +118,7 @@ void transform_boxes(const FloatType* boxes,
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      AABB<FloatType, NDIMS> aabb;
+      primal::BoundingBox<FloatType, NDIMS> aabb;
       primal::Point<FloatType, NDIMS> min_point, max_point;
 
       const int32 offset = i * STRIDE;
@@ -140,7 +141,7 @@ void transform_boxes(const FloatType* boxes,
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType>
 void transform_boxes(const FloatType* boxes,
-                     AABB<FloatType, 2>* aabbs,
+                     primal::BoundingBox<FloatType, 2>* aabbs,
                      int32 size,
                      FloatType scale_factor)
 {
@@ -152,7 +153,7 @@ void transform_boxes(const FloatType* boxes,
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      AABB<FloatType, NDIMS> aabb;
+      primal::BoundingBox<FloatType, NDIMS> aabb;
       primal::Point<FloatType, NDIMS> min_point, max_point;
 
       const int32 offset = i * STRIDE;
@@ -172,7 +173,8 @@ void transform_boxes(const FloatType* boxes,
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType>
-AABB<FloatType, 3> reduce(AABB<FloatType, 3>* aabbs, int32 size)
+primal::BoundingBox<FloatType, 3> reduce(primal::BoundingBox<FloatType, 3>* aabbs,
+                                         int32 size)
 {
   AXOM_PERF_MARK_FUNCTION("reduce_abbs3D");
 
@@ -190,7 +192,7 @@ AABB<FloatType, 3> reduce(AABB<FloatType, 3>* aabbs, int32 size)
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      const AABB<FloatType, NDIMS>& aabb = aabbs[i];
+      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
 
       xmin.min(aabb.getMin()[0]);
       ymin.min(aabb.getMin()[1]);
@@ -201,7 +203,7 @@ AABB<FloatType, 3> reduce(AABB<FloatType, 3>* aabbs, int32 size)
       zmax.max(aabb.getMax()[2]);
     });
 
-  AABB<FloatType, NDIMS> res;
+  primal::BoundingBox<FloatType, NDIMS> res;
 
   primal::Point<FloatType, NDIMS> mins {xmin.get(), ymin.get(), zmin.get()};
   primal::Point<FloatType, NDIMS> maxs {xmax.get(), ymax.get(), zmax.get()};
@@ -213,7 +215,8 @@ AABB<FloatType, 3> reduce(AABB<FloatType, 3>* aabbs, int32 size)
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType>
-AABB<FloatType, 2> reduce(AABB<FloatType, 2>* aabbs, int32 size)
+primal::BoundingBox<FloatType, 2> reduce(primal::BoundingBox<FloatType, 2>* aabbs,
+                                         int32 size)
 {
   AXOM_PERF_MARK_FUNCTION("reduce_abbs2D");
 
@@ -229,7 +232,7 @@ AABB<FloatType, 2> reduce(AABB<FloatType, 2>* aabbs, int32 size)
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      const AABB<FloatType, NDIMS>& aabb = aabbs[i];
+      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
       xmin.min(aabb.getMin()[0]);
       ymin.min(aabb.getMin()[1]);
 
@@ -237,7 +240,7 @@ AABB<FloatType, 2> reduce(AABB<FloatType, 2>* aabbs, int32 size)
       ymax.max(aabb.getMax()[1]);
     });
 
-  AABB<FloatType, NDIMS> res;
+  primal::BoundingBox<FloatType, NDIMS> res;
   primal::Point<FloatType, NDIMS> mins {xmin.get(), ymin.get()};
   primal::Point<FloatType, NDIMS> maxs {xmax.get(), ymax.get()};
 
@@ -248,9 +251,9 @@ AABB<FloatType, 2> reduce(AABB<FloatType, 2>* aabbs, int32 size)
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType>
-void get_mcodes(AABB<FloatType, 2>* aabbs,
+void get_mcodes(primal::BoundingBox<FloatType, 2>* aabbs,
                 int32 size,
-                const AABB<FloatType, 2>& bounds,
+                const primal::BoundingBox<FloatType, 2>& bounds,
                 uint32* mcodes)
 {
   AXOM_PERF_MARK_FUNCTION("get_mcodes2D");
@@ -273,7 +276,7 @@ void get_mcodes(AABB<FloatType, 2>* aabbs,
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      const AABB<FloatType, NDIMS>& aabb = aabbs[i];
+      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
 
       // get the center and normalize it
       primal::Vector<FloatType, NDIMS> centroid = aabb.getCentroid();
@@ -284,9 +287,9 @@ void get_mcodes(AABB<FloatType, 2>* aabbs,
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType>
-void get_mcodes(AABB<FloatType, 3>* aabbs,
+void get_mcodes(primal::BoundingBox<FloatType, 3>* aabbs,
                 int32 size,
-                const AABB<FloatType, 3>& bounds,
+                const primal::BoundingBox<FloatType, 3>& bounds,
                 uint32* mcodes)
 {
   AXOM_PERF_MARK_FUNCTION("get_mcodes3D");
@@ -309,7 +312,7 @@ void get_mcodes(AABB<FloatType, 3>* aabbs,
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      const AABB<FloatType, NDIMS>& aabb = aabbs[i];
+      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
 
       // get the center and normalize it
       primal::Vector<FloatType, NDIMS> centroid = aabb.getCentroid();
@@ -560,9 +563,9 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
   const int32* lchildren_ptr = data.m_left_children;
   const int32* rchildren_ptr = data.m_right_children;
   const int32* parent_ptr = data.m_parents;
-  const AABB<FloatType, NDIMS>* leaf_aabb_ptr = data.m_leaf_aabbs;
+  const primal::BoundingBox<FloatType, NDIMS>* leaf_aabb_ptr = data.m_leaf_aabbs;
 
-  AABB<FloatType, NDIMS>* inner_aabb_ptr = data.m_inner_aabbs;
+  primal::BoundingBox<FloatType, NDIMS>* inner_aabb_ptr = data.m_inner_aabbs;
 
   int32* counters_ptr = axom::allocate<int32>(inner_size, allocatorID);
 
@@ -590,7 +593,7 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
         int32 rchild = rchildren_ptr[current_node];
 
         // gather the aabbs
-        AABB<FloatType, NDIMS> aabb;
+        primal::BoundingBox<FloatType, NDIMS> aabb;
         if(lchild >= inner_size)
         {
           aabb.addBox(leaf_aabb_ptr[lchild - inner_size]);
@@ -634,7 +637,7 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 template <typename ExecSpace, typename FloatType, int NDIMS>
 void build_radix_tree(const FloatType* boxes,
                       int size,
-                      AABB<FloatType, NDIMS>& bounds,
+                      primal::BoundingBox<FloatType, NDIMS>& bounds,
                       RadixTree<FloatType, NDIMS>& radix_tree,
                       FloatType scale_factor,
                       int allocatorID)

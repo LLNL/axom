@@ -18,6 +18,7 @@
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
+#include "axom/spin/internal/linear_bvh/range.hpp"
 #include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
 #include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
 

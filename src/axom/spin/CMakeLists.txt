@@ -49,7 +49,6 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
        internal/linear_bvh/QueryAccessor.hpp
        internal/linear_bvh/RadixTree.hpp
        internal/linear_bvh/TraversalPredicates.hpp
-       internal/linear_bvh/aabb.hpp
        internal/linear_bvh/build_radix_tree.hpp
        internal/linear_bvh/bvh_traverse.hpp
        internal/linear_bvh/bvh_vtkio.hpp

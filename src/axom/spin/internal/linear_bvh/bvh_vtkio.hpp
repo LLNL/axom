@@ -6,8 +6,9 @@
 #ifndef AXOM_SPIN_LINEAR_BVH_VTKIO_HPP_
 #define AXOM_SPIN_LINEAR_BVH_VTKIO_HPP_
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+
 #include "axom/spin/internal/linear_bvh/vec.hpp"
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
 
 namespace axom
 {
@@ -140,7 +141,7 @@ void write_righbox(const vec4_t<FloatType>& second,
 
 //------------------------------------------------------------------------------
 template <typename FloatType>
-void write_root(const AABB<FloatType, 2>& root,
+void write_root(const primal::BoundingBox<FloatType, 2>& root,
                 int32& numPoints,
                 int32& numBins,
                 std::ostringstream& nodes,
@@ -160,7 +161,7 @@ void write_root(const AABB<FloatType, 2>& root,
 
 //------------------------------------------------------------------------------
 template <typename FloatType>
-void write_root(const AABB<FloatType, 3>& root,
+void write_root(const primal::BoundingBox<FloatType, 3>& root,
                 int32& numPoints,
                 int32& numBins,
                 std::ostringstream& nodes,
