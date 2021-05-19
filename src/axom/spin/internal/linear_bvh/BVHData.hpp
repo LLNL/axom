@@ -13,9 +13,7 @@
 #include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
 
 #include "axom/primal/geometry/BoundingBox.hpp"
-
-// spin includes
-#include "axom/spin/internal/linear_bvh/vec.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 namespace axom
 {
@@ -25,7 +23,7 @@ namespace internal
 {
 // Internal datatype used to store each of the 4 segments of a BVH node.
 template <typename FloatType>
-using vec4_t = linear_bvh::Vec<FloatType, 4>;
+using vec4_t = primal::Vector<FloatType, 4>;
 
 namespace linear_bvh
 {
@@ -70,7 +68,7 @@ struct BVHData
   void allocate(int32 size, int allocID)
   {
     AXOM_PERF_MARK_FUNCTION("BVHData::allocate");
-    m_inner_nodes = axom::allocate<Vec<FloatType, 4>>((size - 1) * 4, allocID);
+    m_inner_nodes = axom::allocate<vec4_t<FloatType>>((size - 1) * 4, allocID);
     m_leaf_nodes = axom::allocate<int32>(size, allocID);
   }
 

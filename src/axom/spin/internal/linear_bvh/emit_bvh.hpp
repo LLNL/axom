@@ -17,7 +17,6 @@
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 
-#include "axom/spin/internal/linear_bvh/vec.hpp"
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 
@@ -69,16 +68,16 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
   const primal::BoundingBox<FloatType, 3>* leaf_aabb_ptr = data.m_leaf_aabbs;
   const primal::BoundingBox<FloatType, 3>* inner_aabb_ptr = data.m_inner_aabbs;
 
-  Vec<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
+  primal::Vector<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
 
   AXOM_PERF_MARK_SECTION("emit_bvh_parents",
                          for_all<ExecSpace>(
                            inner_size,
                            AXOM_LAMBDA(int32 node) {
-                             Vec<FloatType, 4> vec1;
-                             Vec<FloatType, 4> vec2;
-                             Vec<FloatType, 4> vec3;
-                             Vec<FloatType, 4> vec4;
+                             primal::Vector<FloatType, 4> vec1;
+                             primal::Vector<FloatType, 4> vec2;
+                             primal::Vector<FloatType, 4> vec3;
+                             primal::Vector<FloatType, 4> vec4;
 
                              primal::BoundingBox<FloatType, 3> l_aabb, r_aabb;
 
@@ -161,16 +160,16 @@ void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
   const primal::BoundingBox<FloatType, 2>* leaf_aabb_ptr = data.m_leaf_aabbs;
   const primal::BoundingBox<FloatType, 2>* inner_aabb_ptr = data.m_inner_aabbs;
 
-  Vec<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
+  primal::Vector<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
 
   AXOM_PERF_MARK_SECTION("emit_bvh_parents",
                          for_all<ExecSpace>(
                            inner_size,
                            AXOM_LAMBDA(int32 node) {
-                             Vec<FloatType, 4> vec1;
-                             Vec<FloatType, 4> vec2;
-                             Vec<FloatType, 4> vec3;
-                             Vec<FloatType, 4> vec4;
+                             primal::Vector<FloatType, 4> vec1;
+                             primal::Vector<FloatType, 4> vec2;
+                             primal::Vector<FloatType, 4> vec3;
+                             primal::Vector<FloatType, 4> vec4;
 
                              primal::BoundingBox<FloatType, 2> l_aabb, r_aabb;
 

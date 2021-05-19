@@ -13,6 +13,7 @@
 #include "axom/core/utilities/AnnotationMacros.hpp"      // for annotations
 
 #include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 // slic includes
 #include "axom/slic/interface/slic.hpp"  // for SLIC macros
@@ -25,7 +26,6 @@
 #include "axom/spin/internal/linear_bvh/emit_bvh.hpp"
 #include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
 #include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
-#include "axom/spin/internal/linear_bvh/vec.hpp"
 
 // RAJA includes
 #include "RAJA/RAJA.hpp"
@@ -53,13 +53,13 @@ using floating_point_limits = axom::numerics::floating_point_limits<FloatType>;
 namespace lbvh = internal::linear_bvh;
 
 template <typename FloatType, int NDIMS>
-using point_t = internal::linear_bvh::Vec<FloatType, NDIMS>;
+using point_t = primal::Vector<FloatType, NDIMS>;
 
 template <typename FloatType, int NDIMS>
-using ray_t = internal::linear_bvh::Vec<FloatType, NDIMS * 2>;
+using ray_t = primal::Vector<FloatType, NDIMS * 2>;
 
 template <typename FloatType, int NDIMS>
-using bounding_box_t = internal::linear_bvh::Vec<FloatType, NDIMS * 2>;
+using bounding_box_t = primal::Vector<FloatType, NDIMS * 2>;
 
 /*!
  * \def BVH_PREDICATE

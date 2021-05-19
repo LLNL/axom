@@ -14,6 +14,7 @@
 // axom/primal includes
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 // axom/spin includes
 #include "axom/spin/BVH.hpp"
@@ -1389,8 +1390,8 @@ TEST(spin_bvh, query_point_accessor)
   namespace bvh = axom::spin::internal::linear_bvh;
   using QueryAccessor2D = bvh::QueryAccessor<2, double>;
   using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using Point2D = bvh::Vec<double, 2>;
-  using Point3D = bvh::Vec<double, 3>;
+  using Point2D = primal::Vector<double, 2>;
+  using Point3D = primal::Vector<double, 3>;
 
   Point2D test_point2d;
   QueryAccessor2D::getPoint(test_point2d, ID, x, y, nullptr);
@@ -1421,8 +1422,8 @@ TEST(spin_bvh, query_ray_accessor)
   namespace bvh = axom::spin::internal::linear_bvh;
   using QueryAccessor2D = bvh::QueryAccessor<2, double>;
   using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using Ray2D = bvh::Vec<double, 4>;
-  using Ray3D = bvh::Vec<double, 6>;
+  using Ray2D = primal::Vector<double, 4>;
+  using Ray3D = primal::Vector<double, 6>;
 
   Ray2D ray2d;
   QueryAccessor2D::getRay(ray2d, ID, x, nx, y, ny, nullptr, nullptr);
@@ -1459,8 +1460,8 @@ TEST(spin_bvh, query_bounding_box_accessor)
   namespace bvh = axom::spin::internal::linear_bvh;
   using QueryAccessor2D = bvh::QueryAccessor<2, double>;
   using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using BoundingBox2D = bvh::Vec<double, 4>;
-  using BoundingBox3D = bvh::Vec<double, 6>;
+  using BoundingBox2D = primal::Vector<double, 4>;
+  using BoundingBox3D = primal::Vector<double, 6>;
 
   BoundingBox2D box2D;
   QueryAccessor2D::getBoundingBox(box2D, ID, xmin, xmax, ymin, ymax, nullptr, nullptr);
@@ -1489,8 +1490,8 @@ TEST(spin_bvh, traversal_predicates_boundingBoxIntersectsLeftBin)
   namespace bvh = axom::spin::internal::linear_bvh;
   using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
   using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using BoundingBox2D = bvh::Vec<double, 4>;
-  using BoundingBox3D = bvh::Vec<double, 6>;
+  using BoundingBox2D = primal::Vector<double, 4>;
+  using BoundingBox3D = primal::Vector<double, 6>;
 
   BoundingBox2D s1, s2;
   s1[0] = 0.;  // LeftBin.xmin
@@ -1535,8 +1536,8 @@ TEST(spin_bvh, traversal_predicates_boundingBoxIntersectsRightBin)
   namespace bvh = axom::spin::internal::linear_bvh;
   using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
   using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using BoundingBox2D = bvh::Vec<double, 4>;
-  using BoundingBox3D = bvh::Vec<double, 6>;
+  using BoundingBox2D = primal::Vector<double, 4>;
+  using BoundingBox3D = primal::Vector<double, 6>;
 
   BoundingBox2D s2, s3;
   s2[2] = 0.;  // RightBin.xmin
@@ -1583,8 +1584,8 @@ TEST(spin_bvh, traversal_predicates_rayIntersectsLeftBin)
   namespace bvh = axom::spin::internal::linear_bvh;
   using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
   using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-  using RayType = bvh::Vec<double, 6>;
+  using VecType = primal::Vector<double, 4>;
+  using RayType = primal::Vector<double, 6>;
 
   VecType s1, s2;
   s1[0] = 0.;  // LeftBin.xmin
@@ -1629,8 +1630,8 @@ TEST(spin_bvh, traversal_predicates_rayIntersectsRightBin)
   namespace bvh = axom::spin::internal::linear_bvh;
   using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
   using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-  using RayType = bvh::Vec<double, 6>;
+  using VecType = primal::Vector<double, 4>;
+  using RayType = primal::Vector<double, 6>;
 
   VecType s2, s3;
   s2[2] = 0.;  // RightBin.xmin
@@ -1675,7 +1676,7 @@ TEST(spin_bvh, traversal_predicates_pointInLeftBin)
   namespace bvh = axom::spin::internal::linear_bvh;
   using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
   using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
+  using VecType = primal::Vector<double, 4>;
 
   VecType in_point, out_point, s1, s2;
 
@@ -1703,7 +1704,7 @@ TEST(spin_bvh, traversal_predicates_pointInRightBin)
   namespace bvh = axom::spin::internal::linear_bvh;
   using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
   using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
+  using VecType = primal::Vector<double, 4>;
 
   VecType in_point, out_point, s2, s3;
 

@@ -8,8 +8,6 @@
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 
-#include "axom/spin/internal/linear_bvh/vec.hpp"
-
 namespace axom
 {
 namespace spin

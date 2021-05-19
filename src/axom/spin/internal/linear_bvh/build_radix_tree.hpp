@@ -19,7 +19,6 @@
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/math.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
-#include "axom/spin/internal/linear_bvh/vec.hpp"
 
 #include "axom/core/utilities/Utilities.hpp"  // for isNearlyEqual()
 #include "axom/slic/interface/slic.hpp"       // for slic
