@@ -10,10 +10,6 @@
   tags:
     - shell
     - rzansel
-  rules:
-    - if: '$CI_COMMIT_BRANCH =~ /_lnone/ || $ON_RZANSEL == "OFF"' #run except if ...
-      when: never
-    - when: on_success
   before_script:
     - module load cmake/3.14.5
 

@@ -16,11 +16,11 @@ stages:
 
 .src_workflow:
   rules:
-    - if: '$FULL_BUILD != "ON"'
+    - if: '$FULL_BUILD != "ON" && $CI_PIPELINE_SOURCE == "merge_request_event"'
 
 .full_workflow:
   rules:
-    - if: '$FULL_BUILD == "ON"'
+    - if: '$FULL_BUILD == "ON" && $CI_PIPELINE_SOURCE == "merge_request_event"'
 
 ####
 # Template
