@@ -12,13 +12,13 @@
 #include "axom/core/numerics/Matrix.hpp"
 
 // axom/primal includes
+#include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
 // axom/spin includes
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
-#include "axom/spin/internal/linear_bvh/range.hpp"
 #include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
 #include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
 
@@ -121,22 +121,20 @@ void generate_aabbs2d(const mint::Mesh* mesh, FloatType*& aabbs)
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<double> xrange;
-      spin::internal::linear_bvh::Range<double> yrange;
+      primal::BoundingBox<double, 2> range;
 
       for(IndexType inode = 0; inode < 4; ++inode)
       {
-        const double* node = coords.getColumn(inode);
+        primal::Point<double, 2> node {coords.getColumn(inode)};
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
+        range.addPoint(node);
       }  // END for all cells nodes
 
       const IndexType offset = cellIdx * stride;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = xrange.max();
-      aabbs[offset + 3] = yrange.max();
+      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
+      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
+      aabbs[offset + 2] = range.getMax()[mint::X_COORDINATE];
+      aabbs[offset + 3] = range.getMax()[mint::Y_COORDINATE];
     });
 
   // post-condition sanity checks
@@ -188,26 +186,22 @@ void generate_aabbs3d(const mint::Mesh* mesh, FloatType*& aabbs)
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<double> xrange;
-      spin::internal::linear_bvh::Range<double> yrange;
-      spin::internal::linear_bvh::Range<double> zrange;
+      primal::BoundingBox<double, 3> range;
 
       for(IndexType inode = 0; inode < 8; ++inode)
       {
-        const double* node = coords.getColumn(inode);
+        primal::Point<double, 3> node {coords.getColumn(inode)};
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
-        zrange.include(node[mint::Z_COORDINATE]);
+        range.addPoint(node);
       }  // END for all cells nodes
 
       const IndexType offset = cellIdx * stride;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = zrange.min();
-      aabbs[offset + 3] = xrange.max();
-      aabbs[offset + 4] = yrange.max();
-      aabbs[offset + 5] = zrange.max();
+      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
+      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
+      aabbs[offset + 2] = range.getMin()[mint::Z_COORDINATE];
+      aabbs[offset + 3] = range.getMax()[mint::X_COORDINATE];
+      aabbs[offset + 4] = range.getMax()[mint::Y_COORDINATE];
+      aabbs[offset + 5] = range.getMax()[mint::Z_COORDINATE];
     });
 
   // post-condition sanity checks
@@ -266,8 +260,7 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
   constexpr int NUM_NODES_PER_CELL = 4;
   for(IndexType icell = 0; icell < ncells; ++icell)
   {
-    spin::internal::linear_bvh::Range<FloatType> xrange;
-    spin::internal::linear_bvh::Range<FloatType> yrange;
+    primal::BoundingBox<FloatType, 2> range;
 
     IndexType nodeIDs[NUM_NODES_PER_CELL];
     const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
@@ -285,18 +278,15 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
       xsum += coords[mint::X_COORDINATE];
       ysum += coords[mint::Y_COORDINATE];
 
-      xrange.include(coords[mint::X_COORDINATE]);
-      yrange.include(coords[mint::Y_COORDINATE]);
+      range.addPoint(coords);
     }  // END for all cell nodes
 
     xc[icell] = xsum * ONE_OVER_4;
     yc[icell] = ysum * ONE_OVER_4;
 
     const IndexType offset = icell * STRIDE;
-    aabbs[offset] = xrange.min();
-    aabbs[offset + 1] = yrange.min();
-    aabbs[offset + 2] = xrange.max();
-    aabbs[offset + 3] = yrange.max();
+    range.getMin().to_array(aabbs + offset);
+    range.getMax().to_array(aabbs + offset + 2);
   }  // END for all cells
 
 #else
@@ -307,8 +297,7 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<FloatType> xrange;
-      spin::internal::linear_bvh::Range<FloatType> yrange;
+      primal::BoundingBox<FloatType, 2> range;
 
       FloatType xsum = 0.0;
       FloatType ysum = 0.0;
@@ -319,18 +308,19 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
         xsum += node[mint::X_COORDINATE];
         ysum += node[mint::Y_COORDINATE];
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
+        range.addPoint(
+          primal::Point<FloatType, 2>::make_point(node[mint::X_COORDINATE],
+                                                  node[mint::Y_COORDINATE]));
       }  // END for all cells nodes
 
       xc[cellIdx] = xsum * ONE_OVER_4;
       yc[cellIdx] = ysum * ONE_OVER_4;
 
       const IndexType offset = cellIdx * STRIDE;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = xrange.max();
-      aabbs[offset + 3] = yrange.max();
+      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
+      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
+      aabbs[offset + 2] = range.getMax()[mint::X_COORDINATE];
+      aabbs[offset + 3] = range.getMax()[mint::Y_COORDINATE];
     });
 
 #endif  // __ibmxl__
@@ -395,9 +385,7 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
   constexpr int NUM_NODES_PER_CELL = 8;
   for(IndexType icell = 0; icell < ncells; ++icell)
   {
-    spin::internal::linear_bvh::Range<FloatType> xrange;
-    spin::internal::linear_bvh::Range<FloatType> yrange;
-    spin::internal::linear_bvh::Range<FloatType> zrange;
+    primal::BoundingBox<FloatType, 3> range;
 
     IndexType nodeIDs[NUM_NODES_PER_CELL];
     const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
@@ -417,9 +405,7 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
       ysum += coords[mint::Y_COORDINATE];
       zsum += coords[mint::Z_COORDINATE];
 
-      xrange.include(coords[mint::X_COORDINATE]);
-      yrange.include(coords[mint::Y_COORDINATE]);
-      zrange.include(coords[mint::Z_COORDINATE]);
+      range.addPoint(coords);
     }  // END for all cell nodes
 
     xc[icell] = xsum * ONE_OVER_8;
@@ -427,12 +413,8 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
     zc[icell] = zsum * ONE_OVER_8;
 
     const IndexType offset = icell * STRIDE;
-    aabbs[offset] = xrange.min();
-    aabbs[offset + 1] = yrange.min();
-    aabbs[offset + 2] = zrange.min();
-    aabbs[offset + 3] = xrange.max();
-    aabbs[offset + 4] = yrange.max();
-    aabbs[offset + 5] = zrange.max();
+    range.getMin().to_array(aabbs + offset);
+    range.getMax().to_array(aabbs + offset + 3);
   }  // END for all cells
 
 #else
@@ -443,9 +425,7 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<FloatType> xrange;
-      spin::internal::linear_bvh::Range<FloatType> yrange;
-      spin::internal::linear_bvh::Range<FloatType> zrange;
+      primal::BoundingBox<FloatType, 3> range;
 
       FloatType xsum = 0.0;
       FloatType ysum = 0.0;
@@ -458,9 +438,10 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
         ysum += node[mint::Y_COORDINATE];
         zsum += node[mint::Z_COORDINATE];
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
-        zrange.include(node[mint::Z_COORDINATE]);
+        range.addPoint(
+          primal::Point<FloatType, 3>::make_point(node[mint::X_COORDINATE],
+                                                  node[mint::Y_COORDINATE],
+                                                  node[mint::Z_COORDINATE]));
       }  // END for all cells nodes
 
       xc[cellIdx] = xsum * ONE_OVER_8;
@@ -468,12 +449,12 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
       zc[cellIdx] = zsum * ONE_OVER_8;
 
       const IndexType offset = cellIdx * STRIDE;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = zrange.min();
-      aabbs[offset + 3] = xrange.max();
-      aabbs[offset + 4] = yrange.max();
-      aabbs[offset + 5] = zrange.max();
+      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
+      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
+      aabbs[offset + 2] = range.getMin()[mint::Z_COORDINATE];
+      aabbs[offset + 3] = range.getMax()[mint::X_COORDINATE];
+      aabbs[offset + 4] = range.getMax()[mint::Y_COORDINATE];
+      aabbs[offset + 5] = range.getMax()[mint::Z_COORDINATE];
     });
 
 #endif  // __ibmxl__
