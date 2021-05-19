@@ -15,4 +15,5 @@ tpl_dirs_summary.json
 *.swp
 *.vscode*
 uberenv_libs
+*_build*
 .idea

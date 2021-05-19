@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -58,16 +58,27 @@ public:
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether documentation generation
    * is enabled. This also toggles the storing of documentation-specific information.
+   * \param [in] reconstruct Whether or not to attempt to reconstruct child Containers
+   * and Fields from the data in the sidre Group
    *****************************************************************************
    */
   Inlet(std::unique_ptr<Reader> reader,
         axom::sidre::Group* sidreRootGroup,
-        bool docEnabled = true)
+        bool docEnabled = true,
+        bool reconstruct = false)
     : m_reader(std::move(reader))
     , m_sidreRootGroup(sidreRootGroup)
-    , m_globalContainer("", "", *m_reader, m_sidreRootGroup, docEnabled)
+    , m_globalContainer("",
+                        "",
+                        *m_reader,
+                        m_sidreRootGroup,
+                        m_unexpectedNames,
+                        docEnabled,
+                        reconstruct)
     , m_docEnabled(docEnabled)
-  { }
+  {
+    m_unexpectedNames = m_reader->getAllNames();
+  }
 
   // Inlet objects must be move only - delete the implicit shallow copy constructor
   Inlet(const Inlet&) = delete;
@@ -468,6 +479,17 @@ public:
     return m_globalContainer.addStructDictionary(name, description);
   }
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the global list of unexpected names, i.e., entries
+   * in the input file that were not added via an add* call
+   *****************************************************************************
+   */
+  const std::vector<std::string>& unexpectedNames() const
+  {
+    return m_unexpectedNames;
+  }
+
   // TODO add update value functions
 private:
   std::unique_ptr<Reader> m_reader;
@@ -475,6 +497,7 @@ private:
   Container m_globalContainer;
   std::unique_ptr<Writer> m_writer;
   bool m_docEnabled;
+  std::vector<std::string> m_unexpectedNames;
 };
 
 }  // end namespace inlet

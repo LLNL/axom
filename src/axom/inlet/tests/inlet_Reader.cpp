@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -197,6 +197,44 @@ TYPED_TEST(inlet_Reader, emptyCollections)
   retValue = reader.getIndices("nonexistent_arr", indices);
   EXPECT_EQ(retValue, ReaderResult::NotFound);
   EXPECT_EQ(indices, expected_indices);
+}
+
+TYPED_TEST(inlet_Reader, simple_name_retrieval)
+{
+  TypeParam reader;
+  reader.parseString(fromLuaTo<TypeParam>(
+    "t = { innerT = { foo = 1 }, anotherInnerT = {baz = 3}}"));
+
+  auto found_names = reader.getAllNames();
+  std::vector<std::string> expected_names {"t",
+                                           "t/innerT",
+                                           "t/innerT/foo",
+                                           "t/anotherInnerT",
+                                           "t/anotherInnerT/baz"};
+  std::sort(found_names.begin(), found_names.end());
+  std::sort(expected_names.begin(), expected_names.end());
+  EXPECT_EQ(found_names, expected_names);
+}
+
+TYPED_TEST(inlet_Reader, simple_name_retrieval_arrays)
+{
+  TypeParam reader;
+  reader.parseString(fromLuaTo<TypeParam>(
+    "t = { [0] = { foo = 1, bar = 2}, [1] = { foo = 3, bar = 4} }"));
+
+  auto found_names = reader.getAllNames();
+  std::vector<std::string> expected_names {
+    "t",
+    "t/0",
+    "t/0/foo",
+    "t/0/bar",
+    "t/1",
+    "t/1/foo",
+    "t/1/bar",
+  };
+  std::sort(found_names.begin(), found_names.end());
+  std::sort(expected_names.begin(), expected_names.end());
+  EXPECT_EQ(found_names, expected_names);
 }
 
 TEST(inlet_Reader_YAML, getInsideBools)

@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -10,6 +10,7 @@
 #ifndef SLIC_HPP_
 #define SLIC_HPP_
 
+#include "axom/config.hpp"
 #include "axom/slic/core/Logger.hpp"
 #include "axom/slic/core/LogStream.hpp"
 #include "axom/slic/core/MessageLevel.hpp"
@@ -25,7 +26,7 @@ namespace slic
 {
 struct debug
 {
-  static bool checksAreErrors;
+  AXOM_EXPORT static bool checksAreErrors;
 };
 
 /*!

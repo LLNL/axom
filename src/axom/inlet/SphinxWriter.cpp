@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -22,15 +22,52 @@ namespace axom
 {
 namespace inlet
 {
+namespace detail
+{
+/**
+ * \brief Determines whether a container is trivial (contains no fields/functions in its subtree)
+ * 
+ * \param [in] container The container to evaluate
+ */
+bool isTrivial(const Container& container)
+{
+  if(!container.getChildFields().empty() ||
+     !container.getChildFunctions().empty())
+  {
+    return false;
+  }
+  using value_type =
+    std::decay<decltype(container.getChildContainers())>::type::value_type;
+  return std::all_of(
+    container.getChildContainers().begin(),
+    container.getChildContainers().end(),
+    [](const value_type& entry) { return isTrivial(*entry.second); });
+}
+
+/**
+ * \brief Converts an enumeration to its underlying type
+ * \param [in] e The enumeration value to convert
+ * This function should be removed once C++23 is available
+ * \see https://en.cppreference.com/w/cpp/utility/to_underlying
+ */
+template <typename E>
+constexpr typename std::underlying_type<E>::type to_underlying(const E e)
+{
+  return static_cast<typename std::underlying_type<E>::type>(e);
+}
+
+}  // namespace detail
+
 SphinxWriter::SphinxWriter(const std::string& fileName)
-  : m_colLabels({"Field Name",
-                 "Description",
-                 "Default Value",
-                 "Range/Valid Values",
-                 "Required"})
+  : m_fieldColLabels({"Field Name",
+                      "Description",
+                      "Default Value",
+                      "Range/Valid Values",
+                      "Required"})
+  , m_functionColLabels(
+      {"Function Name", "Description", "Signature", "Required"})
 {
   m_fileName = fileName;
-
   m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX\n";
   m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX\n\n";
   writeTitle("Input file Options");
@@ -39,20 +76,52 @@ SphinxWriter::SphinxWriter(const std::string& fileName)
 void SphinxWriter::documentContainer(const Container& container)
 {
   const auto sidreGroup = container.sidreGroup();
-  m_inletContainerPathNames.push_back(sidreGroup->getPathName());
+  const std::string pathName = sidreGroup->getPathName();
+  std::string containerName = sidreGroup->getName();
+  bool isSelectedElement = false;
+
+  // If the container is empty, ignore it
+  if(detail::isTrivial(container))
+  {
+    return;
+  }
+
+  // Replace the "implementation-defined" name with something a bit more readable
+  if(isCollectionGroup(containerName))
+  {
+    containerName = "Collection contents:";
+  }
+
+  // If we've gotten to this point and are an element of an array/dict,
+  // mark it as the selected element
+  if(sidreGroup->getParent()->getName() == detail::COLLECTION_GROUP_NAME)
+  {
+    // The collection that this Container is a part of
+    const std::string collectionName =
+      sidreGroup->getParent()->getParent()->getPathName();
+    isSelectedElement = true;
+  }
+
+  m_inletContainerPathNames.push_back(pathName);
   auto& currContainer =
-    m_rstTables.emplace(sidreGroup->getPathName(), ContainerData {m_colLabels})
+    m_rstTables
+      .emplace(pathName, ContainerData {m_fieldColLabels, m_functionColLabels})
       .first->second;
-  currContainer.containerName = sidreGroup->getName();
-  if(sidreGroup->getName() != "" && sidreGroup->hasView("description"))
+  currContainer.containerName = containerName;
+  currContainer.isSelectedElement = isSelectedElement;
+  if(containerName != "" && sidreGroup->hasView("description"))
   {
     currContainer.description = sidreGroup->getView("description")->getString();
   }
 
-  // FIXME: Handle container fields differently
   for(const auto& field_entry : container.getChildFields())
   {
-    extractFieldMetadata(field_entry.second->sidreGroup());
+    extractFieldMetadata(field_entry.second->sidreGroup(), currContainer);
+  }
+
+  for(const auto& function_entry : container.getChildFunctions())
+  {
+    extractFunctionMetadata(function_entry.second->sidreGroup(), currContainer);
   }
 }
 
@@ -92,7 +161,7 @@ void SphinxWriter::writeTable(const std::string& title,
   std::string widths = ":widths:";
   // This would be easier with an iterator adaptor like back_inserter but for
   // concatenation
-  for(std::size_t i = 0u; i < m_colLabels.size(); i++)
+  for(std::size_t i = 0u; i < rstTable.front().size(); i++)
   {
     widths += " 25";
   }
@@ -118,15 +187,28 @@ void SphinxWriter::writeAllTables()
   for(std::string& pathName : m_inletContainerPathNames)
   {
     auto& currContainer = m_rstTables.at(pathName);
-    writeSubtitle(currContainer.containerName);
-    if(currContainer.description != "")
+    // If we're displaying a selected element, the title and description
+    // will already have been printed
+    if(currContainer.isSelectedElement)
     {
-      m_oss << "Description: " << currContainer.description << std::endl
-            << std::endl;
+      m_oss << "The input schema defines a collection of this container.\n";
+      m_oss << "For brevity, only one instance is displayed here.\n\n";
     }
-    if(currContainer.rstTable.size() > 1)
+    else
     {
-      writeTable("Fields", currContainer.rstTable);
+      writeSubtitle(currContainer.containerName);
+      if(currContainer.description != "")
+      {
+        m_oss << "Description: " << currContainer.description << "\n\n";
+      }
+    }
+    if(currContainer.fieldTable.size() > 1)
+    {
+      writeTable("Fields", currContainer.fieldTable);
+    }
+    if(currContainer.functionTable.size() > 1)
+    {
+      writeTable("Functions", currContainer.functionTable);
     }
   }
 }
@@ -207,11 +289,10 @@ std::string SphinxWriter::getValidStringValues(const axom::sidre::Group* sidreGr
   return validValues;
 }
 
-void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup)
+void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup,
+                                        ContainerData& currentContainer)
 {
-  ContainerData& currentContainer =
-    m_rstTables.at(sidreGroup->getParent()->getPathName());
-  std::vector<std::string> fieldAttributes(m_colLabels.size());
+  std::vector<std::string> fieldAttributes(m_fieldColLabels.size());
 
   fieldAttributes[0] = sidreGroup->getName();
 
@@ -251,7 +332,64 @@ void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup)
     fieldAttributes[4] = "|uncheck|";
   }
 
-  currentContainer.rstTable.push_back(fieldAttributes);
+  currentContainer.fieldTable.push_back(fieldAttributes);
+}
+
+std::string SphinxWriter::getSignatureAsString(const axom::sidre::Group* sidreGroup)
+{
+  using underlying = std::underlying_type<FunctionTag>::type;
+  static const auto type_names = []() {
+    std::unordered_map<underlying, std::string> result;
+    result[detail::to_underlying(FunctionTag::Vector)] = "Vector";
+    result[detail::to_underlying(FunctionTag::Double)] = "Double";
+    result[detail::to_underlying(FunctionTag::Void)] = "Void";
+    result[detail::to_underlying(FunctionTag::String)] = "String";
+    return result;
+  }();
+
+  // View::getData<T> does not have a const version...
+  const auto ret_type =
+    static_cast<underlying>(sidreGroup->getView("return_type")->getData());
+
+  const auto args_view = sidreGroup->getView("function_arguments");
+  const underlying* arg_tags = args_view->getData();
+  const int num_args = args_view->getNumElements();
+  std::vector<std::string> arg_types(num_args);
+  for(int i = 0; i < num_args; i++)
+  {
+    arg_types[i] = type_names.at(arg_tags[i]);
+  }
+  return fmt::format("{0}({1})",
+                     type_names.at(ret_type),
+                     fmt::join(arg_types, ", "));
+}
+
+void SphinxWriter::extractFunctionMetadata(const axom::sidre::Group* sidreGroup,
+                                           ContainerData& currentContainer)
+{
+  std::vector<std::string> functionAttributes(m_functionColLabels.size());
+
+  functionAttributes[0] = sidreGroup->getName();
+
+  if(sidreGroup->hasView("description"))
+  {
+    functionAttributes[1] =
+      std::string(sidreGroup->getView("description")->getString());
+  }
+
+  functionAttributes[2] = getSignatureAsString(sidreGroup);
+
+  if(sidreGroup->hasView("required"))
+  {
+    int8 required = sidreGroup->getView("required")->getData();
+    functionAttributes[3] = required ? "|check|" : "|uncheck|";
+  }
+  else
+  {
+    functionAttributes[3] = "|uncheck|";
+  }
+
+  currentContainer.functionTable.push_back(functionAttributes);
 }
 
 }  // namespace inlet

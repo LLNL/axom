@@ -130,6 +130,8 @@ own style.  The link below shows the example output from the ``documentation_gen
    :maxdepth: 1
 
    example1_expected_documentation
+   mfem_coefficient_expected_documentation
+   nested_structs_expected_documentation
 
 Inlet also provides a utility for generating a `JSON schema <https://json-schema.org/>`_ from your input file schema.
 This allows for integration with text editors like Visual Studio Code, which allows you to associate a JSON schema

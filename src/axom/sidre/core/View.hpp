@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -643,6 +643,25 @@ public:
     }
     return this;
   }
+
+  /*
+ * \brief set the View to hold an array in a Buffer
+ *
+ * This takes a Node that holds an array of data and sets up the View to
+ * hold a copy of that data in an attached Buffer.
+ *
+ * The prerequisites are that the Node must have numerical conduit data type
+ * (it returns true for a call to conduit::DataType::is_number()), and the
+ * state of this View must be either EMPTY or BUFFER when entering.  If the
+ * prerequisites are not met, a warning will be issued and this View will be
+ * unchanged.
+ *
+ * If this View has the state BUFFER when this method is called, it will
+ * become detached from its previous Buffer.
+ *
+ * \return pointer to this View object
+ */
+  View* importArrayNode(const Node& array);
 
   //
   // RDH -- Add an overload of the following that takes a const char *.

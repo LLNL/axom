@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -59,6 +59,7 @@ mark_as_advanced(CLI11_FOUND)
 
 set(fmt_headers
     fmt/fmt.hpp
+    fmt/args.h
     fmt/compile.h
     fmt/core.h
     fmt/format.h

@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -235,6 +235,349 @@ TEST(sidre_datacollection, dc_reload_mesh)
   EXPECT_EQ(sdc_reader.GetMesh()->GetNBE(), n_bdr_ele);
 
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_reload_qf)
+{
+  //Set up a small mesh and a couple of grid function on that mesh
+  mfem::Mesh mesh(2, 3, mfem::Element::QUADRILATERAL, 0, 2.0, 3.0);
+  mfem::LinearFECollection fec;
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  const int intOrder = 3;
+  const int qs_vdim = 1;
+  const int qv_vdim = 2;
+
+  mfem::QuadratureSpace qspace(&mesh, intOrder);
+  // We want Sidre to allocate the data for us and to own the internal data.
+  // If we don't do the below then the data collection doesn't save off the data
+  // structure.
+  mfem::QuadratureFunction qs(&qspace, nullptr, qs_vdim);
+  mfem::QuadratureFunction qv(&qspace, nullptr, qv_vdim);
+
+  int Nq = qs.Size();
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh);
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_writer.SetComm(MPI_COMM_WORLD);
+#endif
+
+  // sdc_writer owns the quadrature function fields and the underlying data
+  sdc_writer.RegisterQField("qs", &qs);
+  sdc_writer.RegisterQField("qv", &qv);
+
+  // The data needs to be instantiated before we save it off
+  for(int i = 0; i < Nq; ++i)
+  {
+    qs(i) = double(i);
+    qv(2 * i + 0) = double(i);
+    qv(2 * i + 1) = double(Nq - i - 1);
+  }
+
+  sdc_writer.SetCycle(5);
+  sdc_writer.SetTime(8.0);
+  sdc_writer.Save();
+
+  MFEMSidreDataCollection sdc_reader(testName());
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+#endif
+  sdc_reader.Load(sdc_writer.GetCycle());
+
+  ASSERT_TRUE(sdc_reader.HasQField("qs"));
+  ASSERT_TRUE(sdc_reader.HasQField("qv"));
+  mfem::QuadratureFunction* reader_qs = sdc_reader.GetQField("qs");
+  mfem::QuadratureFunction* reader_qv = sdc_reader.GetQField("qv");
+
+  // order_qs should also equal order_qv in this trivial case
+  // FIXME: QF order can be retrieved directly as of MFEM 4.3
+  EXPECT_EQ(reader_qs->GetSpace()->GetElementIntRule(0).GetOrder(), intOrder);
+  EXPECT_EQ(reader_qv->GetSpace()->GetElementIntRule(0).GetOrder(), intOrder);
+
+  EXPECT_EQ(reader_qs->GetVDim(), qs_vdim);
+  EXPECT_EQ(reader_qv->GetVDim(), qv_vdim);
+
+  *(reader_qs) -= qs;
+  *(reader_qv) -= qv;
+
+  EXPECT_LT(reader_qs->Norml2(), 1e-15);
+  EXPECT_LT(reader_qv->Norml2(), 1e-15);
+}
+
+// Helper function to check for the existence of two sidre::Views and to check
+// that they each refer to the same block of data
+void checkReferentialEquality(axom::sidre::Group* grp,
+                              const std::string& first,
+                              const std::string& second)
+{
+  const bool has_first = grp->hasView(first);
+  const bool has_second = grp->hasView(second);
+  EXPECT_TRUE(has_first);
+  EXPECT_TRUE(has_second);
+  if(has_first && has_second)
+  {
+    // Conduct a pointer comparison to make sure that the two views actually
+    // refer to the same block of memory
+    const double* first_data = grp->getView(first)->getData();
+    const double* second_data = grp->getView(second)->getData();
+    EXPECT_EQ(first_data, second_data);
+  }
+}
+
+TEST(sidre_datacollection, create_matset)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 1.0;
+
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("matsets"));
+  EXPECT_TRUE(bp_grp->hasGroup("matsets/matset"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+}
+
+TEST(sidre_datacollection, create_matset_multi_fraction)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 0.7;
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+
+  mfem::GridFunction vol_frac_2(&fes);
+  vol_frac_2 = 0.3;
+  sdc.RegisterField("volume_fraction_002", &vol_frac_2);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("matsets"));
+  EXPECT_TRUE(bp_grp->hasGroup("matsets/matset"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/002",
+                           "fields/volume_fraction_002/values");
+}
+
+TEST(sidre_datacollection, create_specset)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // Add a material set so we can associate the specset with it
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 1.0;
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+
+  // Then add the species set
+  const bool volume_dependent = false;
+  sdc.AssociateSpeciesSet("partial_density", "specset", "matset", volume_dependent);
+
+  mfem::GridFunction partial_density_1_1(&fes);
+  partial_density_1_1 = 1.0;
+
+  sdc.RegisterField("partial_density_001_001", &partial_density_1_1);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("specsets"));
+  EXPECT_TRUE(bp_grp->hasGroup("specsets/specset"));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/volume_dependent"));
+  EXPECT_FALSE(static_cast<axom::int8>(
+    bp_grp->getView("specsets/specset/volume_dependent")->getScalar()));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset"));
+  EXPECT_EQ(std::string(bp_grp->getView("specsets/specset/matset")->getString()),
+            "matset");
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset_values/001/001"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/001/001",
+                           "fields/partial_density_001_001/values");
+}
+
+TEST(sidre_datacollection, create_specset_multi_fraction)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // Add a material set so we can associate the specset with it
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 0.7;
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+  mfem::GridFunction vol_frac_2(&fes);
+  vol_frac_2 = 0.3;
+  sdc.RegisterField("volume_fraction_002", &vol_frac_2);
+
+  // Then add the species set
+  const bool volume_dependent = false;
+  sdc.AssociateSpeciesSet("partial_density", "specset", "matset", volume_dependent);
+
+  mfem::GridFunction partial_density_1_1(&fes);
+  partial_density_1_1 = 0.4;
+  sdc.RegisterField("partial_density_001_001", &partial_density_1_1);
+  mfem::GridFunction partial_density_1_2(&fes);
+  partial_density_1_2 = 0.3;
+  sdc.RegisterField("partial_density_001_002", &partial_density_1_2);
+  mfem::GridFunction partial_density_2_1(&fes);
+  partial_density_2_1 = 0.2;
+  sdc.RegisterField("partial_density_002_001", &partial_density_2_1);
+  mfem::GridFunction partial_density_2_2(&fes);
+  partial_density_2_2 = 0.1;
+  sdc.RegisterField("partial_density_002_002", &partial_density_2_2);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("specsets"));
+  EXPECT_TRUE(bp_grp->hasGroup("specsets/specset"));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/volume_dependent"));
+  EXPECT_FALSE(static_cast<axom::int8>(
+    bp_grp->getView("specsets/specset/volume_dependent")->getScalar()));
+  EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset"));
+  EXPECT_EQ(std::string(bp_grp->getView("specsets/specset/matset")->getString()),
+            "matset");
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/002",
+                           "fields/volume_fraction_002/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/001/001",
+                           "fields/partial_density_001_001/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/001/002",
+                           "fields/partial_density_001_002/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/002/001",
+                           "fields/partial_density_002_001/values");
+  checkReferentialEquality(bp_grp,
+                           "specsets/specset/matset_values/002/002",
+                           "fields/partial_density_002_002/values");
+}
+
+TEST(sidre_datacollection, create_material_dependent_field)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // Add a material set so we can associate the field with it
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 1.0;
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+
+  // Then mark the field as material-dependent
+  sdc.AssociateMaterialDependentField("density", "matset");
+
+  mfem::GridFunction density_independent(&fes);
+  density_independent = 1.0;
+  sdc.RegisterField("density", &density_independent);
+
+  mfem::GridFunction density_dependent(&fes);
+  density_dependent = 0.2;
+  sdc.RegisterField("density_001", &density_dependent);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("fields/density"));
+  EXPECT_TRUE(bp_grp->hasGroup("fields/density/matset_values"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "fields/density/matset_values/001",
+                           "fields/density_001/values");
+}
+
+TEST(sidre_datacollection, create_material_dependent_field_multi_fraction)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::FiniteElementSpace fes(&mesh, &fec);
+
+  // Add a material set so we can associate the field with it
+  sdc.AssociateMaterialSet("volume_fraction", "matset");
+  mfem::GridFunction vol_frac_1(&fes);
+  vol_frac_1 = 0.65;
+  sdc.RegisterField("volume_fraction_001", &vol_frac_1);
+  mfem::GridFunction vol_frac_2(&fes);
+  vol_frac_2 = 0.35;
+  sdc.RegisterField("volume_fraction_002", &vol_frac_2);
+
+  // Then mark the field as material-dependent
+  sdc.AssociateMaterialDependentField("density", "matset");
+
+  mfem::GridFunction density_indenpendent(&fes);
+  density_indenpendent = 1.0;
+  sdc.RegisterField("density", &density_indenpendent);
+
+  mfem::GridFunction density_dependent_1(&fes);
+  density_dependent_1 = 0.2;
+  sdc.RegisterField("density_001", &density_dependent_1);
+
+  mfem::GridFunction density_dependent_2(&fes);
+  density_dependent_2 = 0.3;
+  sdc.RegisterField("density_002", &density_dependent_2);
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+
+  const auto bp_grp = sdc.GetBPGroup();
+  EXPECT_TRUE(bp_grp->hasGroup("fields/density"));
+  EXPECT_TRUE(bp_grp->hasGroup("fields/density/matset_values"));
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/001",
+                           "fields/volume_fraction_001/values");
+  checkReferentialEquality(bp_grp,
+                           "matsets/matset/volume_fractions/002",
+                           "fields/volume_fraction_002/values");
+  checkReferentialEquality(bp_grp,
+                           "fields/density/matset_values/001",
+                           "fields/density_001/values");
+  checkReferentialEquality(bp_grp,
+                           "fields/density/matset_values/002",
+                           "fields/density_002/values");
 }
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)

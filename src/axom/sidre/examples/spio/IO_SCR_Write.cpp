@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -52,6 +52,8 @@ int main(int argc, char* argv[])
   int my_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
+  SCR_Start_output(file_base.c_str(), SCR_FLAG_OUTPUT);
+
   DataStore* ds = new DataStore();
   SLIC_ASSERT(ds);
   Group* root = ds->getRoot();
@@ -78,6 +80,10 @@ int main(int argc, char* argv[])
   MPI_Barrier(MPI_COMM_WORLD);
 
   delete ds;
+
+  int valid = 1;
+  int complete_rc = SCR_Complete_output(valid);
+  SLIC_ERROR_IF(complete_rc != SCR_SUCCESS, "SCR output failed.\n");
 
   SCR_Finalize();
   MPI_Finalize();
