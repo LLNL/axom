@@ -1,5 +1,5 @@
 # Copyright 2013-2021 Lawrence Livermore National Security, LLC and other
-# Spack Project Developers. See the top-level LICENSE file for details.
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
@@ -39,6 +39,7 @@ class Axom(CachedCMakePackage, CudaPackage):
 
     version('main', branch='main', submodules=True)
     version('develop', branch='develop', submodules=True)
+    version('0.5.0', tag='v0.5.0', submodules=True)
     version('0.4.0', tag='v0.4.0', submodules=True)
     version('0.3.3', tag='v0.3.3', submodules=True)
     version('0.3.2', tag='v0.3.2', submodules=True)
@@ -126,7 +127,19 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("py-shroud", when="+devtools")
     depends_on("llvm+clang@10.0.0", when="+devtools", type='build')
 
-    conflict("conduit@:0.6.0", when="@0.5.0:")
+    # Conduit's cmake config files moved and < 0.4.0 can't find it
+    conflicts("conduit@0.7.2:", when="@:0.4.0")
+
+    # Sidre requires conduit_blueprint_mpi.hpp
+    conflicts("conduit@:0.6.0", when="@0.5.0:")
+
+    def flag_handler(self, name, flags):
+        if self.spec.satisfies('%cce') and name == 'fflags':
+            flags.append('-ef')
+
+        if name in ('cflags', 'cxxflags', 'cppflags', 'fflags'):
+            return (None, None, None)  # handled in the cmake cache
+        return (flags, None, None)
 
     def _get_sys_type(self, spec):
         sys_type = spec.architecture
@@ -181,7 +194,7 @@ class Axom(CachedCMakePackage, CudaPackage):
         entries = super(Axom, self).initconfig_hardware_entries()
 
         if spec.satisfies('target=ppc64le:'):
-            if spec.satisfies('^cuda'):
+            if "+cuda" in spec:
                 entries.append(cmake_cache_option("ENABLE_CUDA", True))
                 entries.append(cmake_cache_option("CUDA_SEPARABLE_COMPILATION",
                                                   True))
@@ -270,7 +283,7 @@ class Axom(CachedCMakePackage, CudaPackage):
         spec = self.spec
         entries = super(Axom, self).initconfig_mpi_entries()
 
-        if spec.satisfies('^mpi'):
+        if "+mpi" in spec:
             entries.append(cmake_cache_option("ENABLE_MPI", True))
             if spec['mpi'].name == 'spectrum-mpi':
                 entries.append(cmake_cache_string("BLT_MPI_COMMAND_APPEND",
@@ -397,3 +410,9 @@ class Axom(CachedCMakePackage, CudaPackage):
             'BUILD_SHARED_LIBS', 'shared'))
 
         return options
+
+    def patch(self):
+        if self.spec.satisfies('%cce'):
+            filter_file('PROPERTIES LINKER_LANGUAGE CXX',
+                        'PROPERTIES LINKER_LANGUAGE CXX \n LINK_FLAGS "-fopenmp"',
+                        'src/axom/quest/examples/CMakeLists.txt')
