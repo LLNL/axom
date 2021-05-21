@@ -43,14 +43,17 @@ Point3D project_to_shape(const Point3D &p, const SphereType &sphere)
   double drat = sphere.getRadius() * dist / (dist2 + PTINY);
   double dratc = drat - 1.0;
   return Point3D::make_point(drat * p[0] - dratc * ctr[0],
-                               drat * p[1] - dratc * ctr[1],
-                               drat * p[2] - dratc * ctr[2]);
+                             drat * p[1] - dratc * ctr[1],
+                             drat * p[2] - dratc * ctr[2]);
 }
 
 Point3D rescale_YZ(const Point3D &p, double new_dst)
 {
   double cur_dst = sqrt(p[1] * p[1] + p[2] * p[2]);
-  if (cur_dst < PTINY) { cur_dst = PTINY; }
+  if(cur_dst < PTINY)
+  {
+    cur_dst = PTINY;
+  }
   Point3D retval;
   retval[0] = p[0];
   retval[1] = p[1] * new_dst / cur_dst;
@@ -202,9 +205,15 @@ OctType new_inscribed_prism(OctType &old_oct,
 bool discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
 {
   // Check input.  Negative radius: return false.
-  if (sphere.getRadius() < 0) { return false; }
+  if(sphere.getRadius() < 0)
+  {
+    return false;
+  }
   // Zero radius: return true without generating octahedra.
-  if (sphere.getRadius() < PTINY) { return true; }
+  if(sphere.getRadius() < PTINY)
+  {
+    return true;
+  }
 
   int octcount = count_sphere_octahedra(levels);
   out.reserve(octcount);
@@ -294,11 +303,17 @@ int discrSeg(const Point2D &a,
   SLIC_ASSERT(b[1] >= 0);
 
   // Deal with degenerate segments
-  if (b[0] - a[0] < PTINY) { return 0; }
-  if (a[1] < PTINY && b[1] < PTINY) { return 0; }
+  if(b[0] - a[0] < PTINY)
+  {
+    return 0;
+  }
+  if(a[1] < PTINY && b[1] < PTINY)
+  {
+    return 0;
+  }
 
   int total_count = count_segment_prisms(levels);
-  
+
   SLIC_ASSERT((int)(out.size()) >= idx + total_count);
 
   // Establish a prism (in an octahedron record) with one triangular
@@ -383,15 +398,24 @@ bool discretize(std::vector<Point2D> &polyline,
   // Check for invalid input.  If any segment is invalid, exit returning false.
   bool stillValid = true;
   int segmentcount = polyline.size() - 1;
-  for (int seg = 0; seg < segmentcount && stillValid; ++seg)
+  for(int seg = 0; seg < segmentcount && stillValid; ++seg)
   {
-    Point2D & a = polyline[seg];
-    Point2D & b = polyline[seg + 1];
+    Point2D &a = polyline[seg];
+    Point2D &b = polyline[seg + 1];
     // invalid if a.x > b.x
-    if (a[0] > b[0]) { stillValid = false; }
-    if (a[1] < 0 || b[1] < 0) { stillValid = false; }
+    if(a[0] > b[0])
+    {
+      stillValid = false;
+    }
+    if(a[1] < 0 || b[1] < 0)
+    {
+      stillValid = false;
+    }
   }
-  if (!stillValid) { return false; }
+  if(!stillValid)
+  {
+    return false;
+  }
 
   int segoctcount = count_segment_prisms(levels);
 
@@ -403,7 +427,8 @@ bool discretize(std::vector<Point2D> &polyline,
 
   for(int seg = 0; seg < segmentcount; ++seg)
   {
-    int segment_prism_count = discrSeg(polyline[seg], polyline[seg + 1], levels, out, total_prism_count);
+    int segment_prism_count =
+      discrSeg(polyline[seg], polyline[seg + 1], levels, out, total_prism_count);
     total_prism_count += segment_prism_count;
   }
 
