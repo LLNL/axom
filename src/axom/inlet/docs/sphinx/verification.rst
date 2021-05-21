@@ -64,3 +64,14 @@ If a ``Function`` is marked as required (via the ``required()``) method, then a 
 
 If a verification function was provided via the ``registerVerifier()`` method, this function must 
 return ``true`` when passed the corresponding ``Function`` object.
+
+Unexpected Entries in Input Files
+---------------------------------
+
+In order to better detect user error, e.g., misspelled names, Inlet provides a method to retrieve the names of entries
+in the input file that were not requested in the schema definition phase.  Given a top-level ``Inlet`` object named ``inlet``,
+the names can be retrieved as follows:
+
+.. code-block:: C++
+
+  std::unordered_set<std::string> unexpected_names = inlet.unexpectedNames();

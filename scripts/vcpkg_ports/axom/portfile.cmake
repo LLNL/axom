@@ -11,7 +11,7 @@ message(STATUS "PORT -- ${PORT}")
 
 set(_copyright [=[
 Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-other Axom Project Developers. See the top-level COPYRIGHT file for details.
+other Axom Project Developers. See the top-level LICENSE file for details.
 
 SPDX-License-Identifier: (BSD-3-Clause)
 ]=])
@@ -22,7 +22,7 @@ set(_host-config_hdr [=[
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------

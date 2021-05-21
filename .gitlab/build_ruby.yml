@@ -1,0 +1,135 @@
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+
+####
+# This is the shared configuration of jobs for ruby
+.on_ruby:
+  tags:
+    - shell
+    - ruby
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_RUBY == "OFF"' #run except if ...
+      when: never
+    - if: '$CI_JOB_NAME =~ /ruby_release/'
+      when: always
+    - when: on_success
+
+####
+# In pre-build phase, allocate a node for builds
+ruby_allocate:
+  variables:
+    GIT_STRATEGY: none
+  extends: [.on_ruby, .src_workflow]
+  stage: allocate
+  script:
+    - salloc -p pdebug -N 1 -c 36 -t 60 --no-shell --job-name=${PROJECT_ALLOC_NAME}
+  needs: []
+
+####
+# In post-build phase, deallocate resources
+# Note : make sure this is run even on build phase failure
+ruby_release:
+  variables:
+    GIT_STRATEGY: none
+  extends: [.on_ruby, .src_workflow]
+  stage: release
+  script:
+    - export JOBID=$(squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A)
+    - if [[ -n "${JOBID}" ]]; then scancel ${JOBID}; fi
+
+####
+# Template
+.src_build_on_ruby:
+  stage: build
+  variables:
+    ALLOC_COMMAND: "srun -p pdebug -t 30 -N 1 ${ASSIGN_ID}"
+  extends: [.src_build_script, .on_ruby, .src_workflow]
+  needs: [ruby_allocate]
+
+.full_build_on_ruby:
+  stage: build
+  variables:
+    ALLOC_COMMAND: "srun -p pdebug -t 60 -N 1"
+  extends: [.full_build_script, .on_ruby, .full_workflow]
+  needs: []
+
+####
+# PR Build jobs
+ruby-clang_10_0_0-src:
+  variables:
+    COMPILER: "clang@10.0.0"
+    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
+  extends: .src_build_on_ruby
+
+ruby-clang_9_0_0-src:
+  variables:
+    COMPILER: "clang@9.0.0"
+    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
+  extends: .src_build_on_ruby
+
+ruby-gcc_8_1_0-src:
+  variables:
+    COMPILER: "gcc@8.1.0"
+    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
+  extends: .src_build_on_ruby
+
+ruby-gcc_8_1_no_fortran-src:
+  variables:
+    COMPILER: "gcc@8.1_no_fortran"
+    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
+  extends: .src_build_on_ruby
+
+# disabled due to time limit
+# ruby-intel_18_0_2-src:
+#   variables:
+#     COMPILER: "intel@18.0.2"
+#     HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
+#   extends: .src_build_on_ruby
+
+# disabled due to time limit
+# ruby-intel_19_0_4-src:
+#   variables:
+#     COMPILER: "intel@19.0.4"
+#     HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
+#   extends: .src_build_on_ruby
+
+
+####
+# Full Build jobs
+ruby-clang_10_0_0-full:
+  variables:
+    COMPILER: "clang@10.0.0"
+    SPEC: "%${COMPILER}+mfem"
+  extends: .full_build_on_ruby
+
+ruby-clang_9_0_0-full:
+  variables:
+    COMPILER: "clang@9.0.0"
+    SPEC: "%${COMPILER}+mfem"
+  extends: .full_build_on_ruby
+
+ruby-gcc_8_1_0-full:
+  variables:
+    COMPILER: "gcc@8.1.0"
+    SPEC: "%${COMPILER}+mfem"
+  extends: .full_build_on_ruby
+
+ruby-gcc_8_1_no_fortran-full:
+  variables:
+    COMPILER: "gcc@8.1_no_fortran"
+    SPEC: "%${COMPILER}~fortran+mfem"
+  extends: .full_build_on_ruby
+
+ruby-intel_18_0_2-full:
+  variables:
+    COMPILER: "intel@18.0.2"
+    SPEC: "%${COMPILER}+mfem~cpp14"
+  extends: .full_build_on_ruby
+
+ruby-intel_19_0_4-full:
+  variables:
+    COMPILER: "intel@19.0.4"
+    SPEC: "%${COMPILER}+mfem~cpp14"
+  extends: .full_build_on_ruby

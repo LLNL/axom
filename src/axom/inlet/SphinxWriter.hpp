@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -127,18 +127,22 @@ private:
     *
     *******************************************************************************
     */
-    ContainerData(const std::vector<std::string>& labels)
+    ContainerData(const std::vector<std::string>& fieldLabels,
+                  const std::vector<std::string>& functionLabels)
     {
-      rstTable.push_back(labels);
+      fieldTable.push_back(fieldLabels);
+      functionTable.push_back(functionLabels);
     }
 
-    ContainerData(ContainerData&&) = default;
-    // Shouldn't be needed, these will always be managed in a container
+    // Copying shouldn't be needed, these will always be managed in a container
     ContainerData(const ContainerData&) = delete;
+    ContainerData(ContainerData&&) = default;
 
     std::string containerName;
     std::string description;
-    std::vector<std::vector<std::string>> rstTable;
+    bool isSelectedElement;
+    std::vector<std::vector<std::string>> fieldTable;
+    std::vector<std::vector<std::string>> functionTable;
   };
 
   /*!
@@ -152,9 +156,28 @@ private:
   * 
   * \param [in] sidreGroup The Sidre Group from which Field metadata should be
   * extracted and then stored.
+  * \param [inout] currentTable The ContainerData object to write field information to
   *******************************************************************************
   */
-  void extractFieldMetadata(const axom::sidre::Group* sidreGroup);
+  void extractFieldMetadata(const axom::sidre::Group* sidreGroup,
+                            ContainerData& currentContainer);
+
+  /*!
+  *******************************************************************************
+  * \brief Extracts Function information from the given Sidre Group and stores it
+  * to be written later.
+  * 
+  * This extracts information about the Function stored in the given Sidre Group. 
+  * This information is stored internally by this class and then written to the
+  * document by writeAllTables.
+  * 
+  * \param [in] sidreGroup The Sidre Group from which Function metadata should be
+  * extracted and then stored.
+  * \param [inout] currentTable The TableData object to write function information to
+  *******************************************************************************
+  */
+  void extractFunctionMetadata(const axom::sidre::Group* sidreGroup,
+                               ContainerData& currentContainer);
 
   /*!
   *******************************************************************************
@@ -204,6 +227,18 @@ private:
   */
   std::string getValidStringValues(const axom::sidre::Group* sidreGroup);
 
+  /*!
+  *******************************************************************************
+  * \brief Gets function signature information from the given Sidre Group. 
+  * 
+  * \param [in] sidreGroup The Sidre Group containing function signature information,
+  * i.e., one that corresponds to an inlet::Function
+  *
+  * \return C-style function signature, i.e., Double(Vector, Double)
+  *******************************************************************************
+  */
+  std::string getSignatureAsString(const axom::sidre::Group* sidreGroup);
+
   std::ofstream m_outFile;
   std::ostringstream m_oss;
   // This is needed to preserve the traversal order of the Inlet::Containers
@@ -211,7 +246,9 @@ private:
   std::unordered_map<std::string, ContainerData> m_rstTables;
   std::string m_fileName;
   // Used for the RST tables for fields
-  std::vector<std::string> m_colLabels;
+  std::vector<std::string> m_fieldColLabels;
+  // Used for the RST tables for functions
+  std::vector<std::string> m_functionColLabels;
 };
 
 }  // namespace inlet

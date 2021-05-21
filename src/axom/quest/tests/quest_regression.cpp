@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -27,26 +27,7 @@
  *  'bvh_containment' and 'bvh_distance' and the '--distance' command line
  *  option.
  *
- * \note For usage run
- * \verbatim
- *
- *  [mpirun -np N] ./quest_regression <options>
- *  --help                        Output this message and quit
- *  --mesh <file>                 (required) Surface mesh file
- *                                (STL files are currently supported)
- *  --baseline <file>             root file of baseline, a sidre rootfile.
- *                                (Only supported when Axom configured w/ hdf5)
- *
- *  At least one of the following must be enabled:
- *  --[no-]distance               Indicates whether to test signed distance
- *                                (default: on)
- *  --[no-]containment            Indicates whether to test point containment
- *                                (default: on)
- *  The following are only used when baseline is not supplied (or is disabled)
- *  --resolution nx ny nz         The resolution of the sample grid
- *  --bounding-box x y z x y z    The bounding box to test (min then max)
- *
- * \endverbatim
+ * Usage: run with "-h" or "--help" to see command line options
  */
 
 // axom includes
@@ -61,6 +42,7 @@
 #include "axom/quest/interface/signed_distance.hpp"
 
 #include "fmt/fmt.hpp"
+#include "CLI11/CLI11.hpp"
 
 // MPI includes
 #include "mpi.h"
@@ -85,25 +67,17 @@ namespace sidre = axom::sidre;
 namespace slic = axom::slic;
 namespace utilities = axom::utilities;
 
-typedef primal::BoundingBox<double, DIM> SpaceBoundingBox;
-typedef primal::Point<double, DIM> SpacePt;
-typedef primal::Vector<double, DIM> SpaceVec;
-typedef primal::Point<int, DIM> GridPt;
+using SpaceBoundingBox = primal::BoundingBox<double, DIM>;
+using SpacePt = primal::Point<double, DIM>;
+using SpaceVec = primal::Vector<double, DIM>;
+using GridPt = primal::Point<int, DIM>;
 
 /** Simple structure to hold the command line arguments */
-struct CommandLineArguments
+struct Input
 {
-  CommandLineArguments()
-    : meshName("")
-    , baselineRoot("")
-    , meshBoundingBox()
-    , queryResolution(DEFAULT_RESOLUTION)
-    , queryMesh(nullptr)
-    , testDistance(true)
-    , testContainment(true)
-  { }
+  Input() = default;
 
-  ~CommandLineArguments()
+  ~Input()
   {
     if(queryMesh != nullptr)
     {
@@ -115,181 +89,128 @@ struct CommandLineArguments
   std::string meshName;
   std::string baselineRoot;
 
+  std::vector<int> m_resolution;
+  std::vector<double> m_queryBoxMins;
+  std::vector<double> m_queryBoxMaxs;
+
   SpaceBoundingBox meshBoundingBox;
-  GridPt queryResolution;
+  GridPt queryResolution {DEFAULT_RESOLUTION};
 
-  mint::UniformMesh* queryMesh;
+  mint::UniformMesh* queryMesh {nullptr};
 
-  bool testDistance;
-  bool testContainment;
+  bool testDistance {true};
+  bool testContainment {true};
 
   bool hasBaseline() const { return !baselineRoot.empty(); }
-  bool hasMeshName() const { return !meshName.empty(); }
   bool hasBoundingBox() const { return meshBoundingBox != SpaceBoundingBox(); }
   bool hasQueryMesh() const { return queryMesh != nullptr; }
 
-  void usage()
-  {
-    fmt::memory_buffer out;
-    fmt::format_to(out, "Usage ./quest_regression <options>");
-    fmt::format_to(out,
-                   "\n\t{:<30}{}",
-                   "--help",
-                   "Output this message and quit");
-    fmt::format_to(
-      out,
-      "\n\t{:<30}{}",
-      "--mesh <file>",
-      "(required) Surface mesh file (STL files are currently supported)");
-    fmt::format_to(out,
-                   "\n\t{:<30}{}",
-                   "--baseline <file>",
-                   "root file of baseline, a sidre rootfile. "
-                   "Note: Only supported when Axom configured with hdf5");
-
-    fmt::format_to(out, "\n  At least one of the following must be enabled:");
-    fmt::format_to(
-      out,
-      "\n\t{:<30}{}",
-      "--[no-]distance",
-      "Indicates whether to test the signed distance (default: on)");
-    fmt::format_to(
-      out,
-      "\n\t{:<30}{}",
-      "--[no-]containment",
-      "Indicates whether to test the point containment (default: on)");
-
-    fmt::format_to(out,
-                   "\n  The following options are only used "
-                   "when --baseline is not supplied (or is disabled)");
-    fmt::format_to(out,
-                   "\n\t{:<30}{}",
-                   "--resolution nx ny nz",
-                   "The resolution of the sample grid");
-    fmt::format_to(out,
-                   "\n\t{:<30}{}",
-                   "--bounding-box x y z x y z",
-                   "The bounding box to test (min then max)");
-
-    SLIC_INFO(out.data());
-  }
-};
-
-/**
- * \brief Utility to parse the command line options
- * \return An instance of the CommandLineArguments struct.
+  /**
+ * \brief Parses the command line options
  */
-CommandLineArguments parseArguments(int argc, char** argv)
-{
-  CommandLineArguments clargs;
-  bool hasBaseline = false;
-  bool hasResolution = false;
-  bool hasBoundingBox = false;
-
-  for(int i = 1; i < argc; ++i)
+  void parse(int argc, char** argv, CLI::App& app)
   {
-    std::string arg(argv[i]);
-    if(arg == "--baseline")
-    {
+    app
+      .add_option("-m,--mesh",
+                  meshName,
+                  "Surface mesh file (STL files are currently supported)")
+      ->required();
+
+    app
+      .add_flag("--distance,!--no-distance",
+                testDistance,
+                "Indicates whether to test the signed distance")
+      ->capture_default_str();
+    app
+      .add_flag("--containment,!--no-containment",
+                testContainment,
+                "Indicates whether to test the point containment")
+      ->capture_default_str();
+
+    // Note: Baselines comparisons only supported when Axom is configured with hdf5
+    // Users must supply either a baseline, or both the query resolution and bounding box
 #ifdef AXOM_USE_HDF5
-      clargs.baselineRoot = std::string(argv[++i]);
-      hasBaseline = true;
-#else
-      std::string bline = std::string(argv[++i]);
-      SLIC_INFO("Comparisons to baselines only supported"
-                << " when Axom is configured with hdf5."
-                << " Skipping comparison to baseline file " << bline);
+    app.add_option("-b,--baseline",
+                   baselineRoot,
+                   "root file of baseline, a sidre rootfile.\n"
+                   "Note: Only supported when Axom configured with hdf5");
 #endif
-    }
-    else if(arg == "--mesh")
-    {
-      clargs.meshName = std::string(argv[++i]);
-    }
-    //
-    else if(arg == "--distance")
-    {
-      clargs.testDistance = true;
-    }
-    else if(arg == "--no-distance")
-    {
-      clargs.testDistance = false;
-    }
-    else if(arg == "--containment")
-    {
-      clargs.testContainment = true;
-    }
-    else if(arg == "--no-containment")
-    {
-      clargs.testContainment = false;
-    }
-    else if(arg == "--resolution")
-    {
-      clargs.queryResolution[0] = std::atoi(argv[++i]);
-      clargs.queryResolution[1] = std::atoi(argv[++i]);
-      clargs.queryResolution[2] = std::atoi(argv[++i]);
-      hasResolution = true;
-    }
-    else if(arg == "--bounding-box")
-    {
-      SpacePt bbMin;
-      SpacePt bbMax;
 
-      bbMin[0] = std::atof(argv[++i]);
-      bbMin[1] = std::atof(argv[++i]);
-      bbMin[2] = std::atof(argv[++i]);
+    // user can supply 1 or 3 values for resolution
+    // the following is not quite right
+    auto* res = app
+                  .add_option("-r,--resolution",
+                              m_resolution,
+                              "Resolution of the sample grid.\n"
+                              "Note: Only used when baseline not supplied.")
+                  ->expected(-1);
 
-      bbMax[0] = std::atof(argv[++i]);
-      bbMax[1] = std::atof(argv[++i]);
-      bbMax[2] = std::atof(argv[++i]);
+    // Optional bounding box for query region
+    auto* minbb = app
+                    .add_option("--min",
+                                m_queryBoxMins,
+                                "Min bounds for query box (x,y,z).\n"
+                                "Note: Only used when baseline not supplied.")
+                    ->expected(3);
+    auto* maxbb = app
+                    .add_option("--max",
+                                m_queryBoxMaxs,
+                                "Max bounds for query box (x,y,z)\n"
+                                "Note: Only used when baseline not supplied.")
+                    ->expected(3);
 
-      clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
-      hasBoundingBox = true;
-    }
-    else if(arg == "--help")
+    // Add some requirements
+    minbb->needs(maxbb);
+    minbb->needs(res);
+    maxbb->needs(minbb);
+    maxbb->needs(res);
+    res->needs(minbb);
+    res->needs(maxbb);
+
+    app.get_formatter()->column_width(45);
+
+    // could throw an exception
+    app.parse(argc, argv);
+
+    // Check if resolution or bounding box values were provided in addition
+    // to baseline. If so, inform user that these will be overridden by baseline
+    bool hasRes = !m_resolution.empty();
+    bool hasBBox = !m_queryBoxMins.empty();
+    if(!baselineRoot.empty())
     {
-      clargs.usage();
-      axom::utilities::processAbort();
+      if(hasRes || hasBBox)
+      {
+        SLIC_INFO(
+          "Baseline mesh will override values for resolution and bounding box");
+      }
+    }
+    else if(!hasRes || !hasBBox)
+    {
+      throw CLI::Error(
+        "IncorrectConstruction",
+        "Resolution and bounding box required when baseline is not supplied");
     }
     else
     {
-      SLIC_WARNING(fmt::format("Unknown argument: '{}'", arg));
-      clargs.usage();
-      axom::utilities::processAbort();
+      const int dim = 3;
+      queryResolution = (m_resolution.size() == 1)
+        ? GridPt(m_resolution[0])
+        : GridPt(m_resolution.data(), dim);
+      meshBoundingBox.addPoint(SpacePt(m_queryBoxMins.data(), dim));
+      meshBoundingBox.addPoint(SpacePt(m_queryBoxMaxs.data(), dim));
+    }
+
+    if(!testContainment && !testDistance)
+    {
+      throw CLI::Error(
+        "IncorrectConstruction",
+        "At least one of {--distance; --containment} must be enabled.");
     }
   }
-
-  // Mesh is required
-  bool isValid = clargs.hasMeshName();
-  if(!isValid)
-  {
-    SLIC_INFO("Must supply a path to an input surface mesh");
-  }
-
-  // Check if resolution or bounding box values were provided in addition
-  // to baseline. If so, inform user that these will be overridden by baseline
-  if(hasBaseline && (hasResolution || hasBoundingBox))
-  {
-    SLIC_INFO(
-      "Baseline mesh will override values for resolution and bounding box");
-  }
-
-  if(!clargs.testContainment && !clargs.testDistance)
-  {
-    isValid = false;
-    SLIC_INFO("At least one of {--distance; --containment} must be enabled.");
-  }
-
-  if(!isValid)
-  {
-    clargs.usage();
-    axom::utilities::processAbort();
-  }
-
-  return clargs;
-}
+};
 
 /** Loads the baseline dataset into the given sidre group */
-void loadBaselineData(sidre::Group* grp, CommandLineArguments& args)
+void loadBaselineData(sidre::Group* grp, Input& args)
 {
   sidre::IOManager reader(MPI_COMM_WORLD);
   reader.read(grp, args.baselineRoot, "sidre_hdf5");
@@ -346,8 +267,7 @@ void loadBaselineData(sidre::Group* grp, CommandLineArguments& args)
     }
   }
 
-  // Optionally check for the Signed distance point containment and distance
-  // data
+  // Optionally check for the Signed distance point containment and distance data
   if(args.testDistance)
   {
     if(!grp->hasView("bvh_distance"))
@@ -377,8 +297,7 @@ void loadBaselineData(sidre::Group* grp, CommandLineArguments& args)
 }
 
 /**
- * \brief Generates a mint Uniform mesh with the given bounding box and
- * resolution
+ * \brief Generates a mint Uniform mesh with the given bounding box and resolution
  * \note Allocates a UniformMesh instance, which must be deleted by the user
  */
 mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res)
@@ -393,7 +312,7 @@ mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res
  * Runs the InOutOctree point containment queries and adds results as scalar
  * field on uniform mesh
  */
-void runContainmentQueries(CommandLineArguments& clargs)
+void runContainmentQueries(Input& clargs)
 {
   SLIC_INFO(
     fmt::format("Initializing InOutOctree over mesh '{}'...", clargs.meshName));
@@ -487,7 +406,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
  * Runs the SignedDistance point containment and distance queries and adds
  * results as scalar field on uniform mesh
  */
-void runDistanceQueries(CommandLineArguments& clargs)
+void runDistanceQueries(Input& clargs)
 {
   constexpr int maxDepth = 10;
   constexpr int maxEltsPerBucket = 25;
@@ -599,7 +518,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
  * \return True if all results agree, False otherwise.
  * \note When there are differences, the first few are logged
  */
-bool compareDistanceAndContainment(CommandLineArguments& clargs)
+bool compareDistanceAndContainment(Input& clargs)
 {
   SLIC_ASSERT(clargs.hasQueryMesh());
 
@@ -626,32 +545,40 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
     int diffCount = 0;
     fmt::memory_buffer out;
 
-    int* bvh_containment =
-      umesh->getFieldPtr<int>("bvh_containment", mint::NODE_CENTERED);
     int* oct_containment =
       umesh->getFieldPtr<int>("octree_containment", mint::NODE_CENTERED);
+    int* bvh_containment =
+      umesh->getFieldPtr<int>("bvh_containment", mint::NODE_CENTERED);
+    double* bvh_distance =
+      umesh->getFieldPtr<double>("bvh_distance", mint::NODE_CENTERED);
 
     for(int inode = 0; inode < nnodes; ++inode)
     {
-      const int bvh_c = bvh_containment[inode];
       const int oct_c = oct_containment[inode];
+      const int bvh_c = bvh_containment[inode];
 
       if(bvh_c != oct_c)
       {
-        if(diffCount < MAX_RESULTS)
+        // allow for differences between the two approaches really close to the boundary
+        const double bvh_d = bvh_distance[inode];
+        if(!axom::utilities::isNearlyEqual(bvh_d, 0.))
         {
-          primal::Point<double, 3> pt;
-          umesh->getNode(inode, pt.data());
+          if(diffCount < MAX_RESULTS)
+          {
+            primal::Point<double, 3> pt;
+            umesh->getNode(inode, pt.data());
 
-          fmt::format_to(out,
-                         "\n  Disagreement on sample {} @ {}.  Signed "
-                         "distance: {} -- InOutOctree: {} ",
-                         inode,
-                         pt,
-                         bvh_c ? "inside" : "outside",
-                         oct_c ? "inside" : "outside");
+            fmt::format_to(out,
+                           "\n  Disagreement on sample {} @ {}.  "
+                           "Signed distance: {} ({}) -- InOutOctree: {} ",
+                           inode,
+                           pt,
+                           bvh_d,
+                           bvh_c ? "inside" : "outside",
+                           oct_c ? "inside" : "outside");
+          }
+          ++diffCount;
         }
-        ++diffCount;
       }
     }
 
@@ -675,8 +602,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
  * \return True if all results agree, False otherwise.
  * \note When there are differences, the first few are logged
  */
-bool compareToBaselineResults(axom::sidre::Group* grp,
-                              CommandLineArguments& clargs)
+bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
 {
   SLIC_ASSERT(grp != nullptr);
   SLIC_ASSERT(clargs.hasQueryMesh());
@@ -787,7 +713,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
  *       and a corresponding folder ./<mesh>_<res>_baseline/
  *       (both in the same directory)
  */
-void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
+void saveBaseline(axom::sidre::Group* grp, Input& clargs)
 {
   SLIC_ASSERT(grp != nullptr);
   SLIC_ASSERT(clargs.hasQueryMesh());
@@ -865,77 +791,82 @@ int main(int argc, char** argv)
   // initialize the problem
   MPI_Init(&argc, &argv);
 
+  slic::SimpleLogger logger;
+  sidre::DataStore ds;
+
+  // parse the command arguments
+  Input args;
+  CLI::App app {
+    "Regression tester for point containment and signed distance tests"};
+
+  try
   {
-    // Note: this code is in a different context since SimpleLogger's
-    // destructor
-    //       might have MPI calls and would otherwise be invoked after
-    // MPI_Finalize()
-    slic::SimpleLogger logger;
-    sidre::DataStore ds;
-
-    // parse the command arguments
-    CommandLineArguments args = parseArguments(argc, argv);
-
-#ifdef AXOM_USE_HDF5
-    // load the baseline file for comparisons and additional test parameters
-    // This is currently only supported when hdf5 is enabled.
-    if(args.hasBaseline())
-    {
-      loadBaselineData(ds.getRoot(), args);
-    }
-#endif
-
-    // run the containment queries
-    if(args.testContainment)
-    {
-      SLIC_INFO("Running containment queries");
-      runContainmentQueries(args);
-      SLIC_INFO("--");
-    }
-
-    // run the distance queries
-    if(args.testDistance)
-    {
-      SLIC_INFO("Running distance queries");
-      runDistanceQueries(args);
-      SLIC_INFO("--");
-    }
-
-    // Compare signs of current results on SignedDistance and InOutOctree
-    bool methodsAgree = true;
-    if(args.testContainment && args.testDistance)
-    {
-      SLIC_INFO("Comparing results from containment and distance queries");
-
-      methodsAgree = compareDistanceAndContainment(args);
-
-      SLIC_INFO("** Methods " << (methodsAgree ? "agree" : "do not agree"));
-
-      allTestsPassed = allTestsPassed && methodsAgree;
-
-      SLIC_INFO("--");
-    }
-
-#ifdef AXOM_USE_HDF5
-    // compare current results to baselines or generate new baselines
-    // This is currently only supported when hdf5 is enabled.
-    bool baselinePassed = true;
-    if(args.hasBaseline())
-    {
-      SLIC_INFO("Comparing results to baselines");
-      baselinePassed = compareToBaselineResults(ds.getRoot(), args);
-
-      SLIC_INFO("** Baseline tests " << (baselinePassed ? "passed" : "failed"));
-      allTestsPassed = allTestsPassed && baselinePassed;
-    }
-    else
-    {
-      SLIC_INFO("Saving results as new baseline.");
-      saveBaseline(ds.getRoot(), args);
-    }
-    SLIC_INFO("--");
-#endif
+    args.parse(argc, argv, app);
   }
+  catch(const CLI::ParseError& e)
+  {
+    return app.exit(e);
+  }
+
+#ifdef AXOM_USE_HDF5
+  // load the baseline file for comparisons and additional test parameters
+  // This is currently only supported when hdf5 is enabled.
+  if(args.hasBaseline())
+  {
+    loadBaselineData(ds.getRoot(), args);
+  }
+#endif
+
+  // run the containment queries
+  if(args.testContainment)
+  {
+    SLIC_INFO("Running containment queries");
+    runContainmentQueries(args);
+    SLIC_INFO("--");
+  }
+
+  // run the distance queries
+  if(args.testDistance)
+  {
+    SLIC_INFO("Running distance queries");
+    runDistanceQueries(args);
+    SLIC_INFO("--");
+  }
+
+  // Compare signs of current results on SignedDistance and InOutOctree
+  bool methodsAgree = true;
+  if(args.testContainment && args.testDistance)
+  {
+    SLIC_INFO("Comparing results from containment and distance queries");
+
+    methodsAgree = compareDistanceAndContainment(args);
+
+    SLIC_INFO("** Methods " << (methodsAgree ? "agree" : "do not agree"));
+
+    allTestsPassed = allTestsPassed && methodsAgree;
+
+    SLIC_INFO("--");
+  }
+
+#ifdef AXOM_USE_HDF5
+  // compare current results to baselines or generate new baselines
+  // This is currently only supported when hdf5 is enabled.
+  bool baselinePassed = true;
+  if(args.hasBaseline())
+  {
+    SLIC_INFO("Comparing results to baselines");
+    baselinePassed = compareToBaselineResults(ds.getRoot(), args);
+
+    SLIC_INFO("** Baseline tests " << (baselinePassed ? "passed" : "failed"));
+    allTestsPassed = allTestsPassed && baselinePassed;
+  }
+  else
+  {
+    SLIC_INFO("Saving results as new baseline.");
+    saveBaseline(ds.getRoot(), args);
+  }
+  SLIC_INFO("--");
+#endif
 
   // finalize
   MPI_Finalize();

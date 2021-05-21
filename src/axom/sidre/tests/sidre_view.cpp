@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -1647,6 +1647,79 @@ TEST(sidre_view, value_from_uninited_view)
 
   // restore conduit default errors
   DataStore::setConduitDefaultMessageHandlers();
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_view, import_array_node)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  //Import Node holding int array
+  std::vector<int> int_vec;
+  for(int i = 0; i < 10; ++i)
+  {
+    int_vec.push_back(i * i + 3);
+  }
+
+  conduit::Node n_ints;
+  n_ints.set(int_vec);
+
+  View* v1 = root->createView("v1");
+  v1->importArrayNode(n_ints);
+
+  EXPECT_TRUE(v1->hasBuffer());
+  EXPECT_TRUE(v1->isAllocated());
+  EXPECT_TRUE(v1->isApplied());
+  EXPECT_EQ(v1->getNumElements(), 10);
+
+  int* v_ints = v1->getData();
+
+  for(int i = 0; i < 10; ++i)
+  {
+    EXPECT_EQ(v_ints[i], i * i + 3);
+  }
+
+  //Import Node holding double array
+  std::vector<double> dbl_vec;
+  for(int i = 0; i < 8; ++i)
+  {
+    dbl_vec.push_back(static_cast<double>(i) / 2.0 + 1.1);
+  }
+
+  conduit::Node n_dbls;
+  n_dbls.set(dbl_vec);
+
+  View* v2 = root->createView("v2");
+  v2->importArrayNode(n_dbls);
+
+  EXPECT_TRUE(v2->hasBuffer());
+  EXPECT_TRUE(v2->isAllocated());
+  EXPECT_TRUE(v2->isApplied());
+  EXPECT_EQ(v2->getNumElements(), 8);
+
+  double* v_dbls = v2->getData();
+
+  for(int i = 0; i < 8; ++i)
+  {
+    EXPECT_NEAR(v_dbls[i], static_cast<double>(i) / 2.0 + 1.1, 1.0e-12);
+  }
+
+  //Attempt to import a non-array node, will not work.
+  conduit::Node n_obj;
+  n_obj.set(conduit::DataType::object());
+
+  View* v3 = root->createView("v3");
+  v3->importArrayNode(n_obj);
+
+  EXPECT_TRUE(v3->isEmpty());
+
+  //Attempt to import into View that is already a string, will not work.
+  View* v4 = root->createView("v4");
+  v4->setString("string_view");
+
+  v4->importArrayNode(n_ints);
+  EXPECT_TRUE(v4->isString());
 }
 
 #ifdef AXOM_USE_UMPIRE

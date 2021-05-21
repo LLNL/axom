@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -9,7 +9,7 @@
 #       otherwise, the hard-coded values will go in to the config.
 #------------------------------------------------------------------------------
 set(AXOM_VERSION_MAJOR 0)
-set(AXOM_VERSION_MINOR 4)
+set(AXOM_VERSION_MINOR 5)
 set(AXOM_VERSION_PATCH 0)
 string(CONCAT AXOM_VERSION_FULL
     "v${AXOM_VERSION_MAJOR}"

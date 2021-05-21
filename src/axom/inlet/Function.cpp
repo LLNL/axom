@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -19,7 +19,7 @@ Function& Function::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Function specific Sidre Datastore Group not set");
-  setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
+  setFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG, isRequired);
   return *this;
 }
 
@@ -27,7 +27,7 @@ bool Function::isRequired() const
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Function specific Sidre Datastore Group not set");
-  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
+  return checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG);
 }
 
 Function& Function::registerVerifier(std::function<bool(const Function&)> lambda)

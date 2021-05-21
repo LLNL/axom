@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -40,6 +40,7 @@ set(core_headers
     ## core
     Array.hpp
     Macros.hpp
+    Path.hpp
     StackArray.hpp
     Types.hpp
     memory_management.hpp
@@ -65,6 +66,8 @@ set(core_sources
     utilities/nvtx/Range.cpp
 
     numerics/polynomial_solvers.cpp
+
+    Path.cpp
     Types.cpp
     )
 
@@ -72,7 +75,7 @@ set(core_sources
 # Set library dependencies
 #------------------------------------------------------------------------------
 
-set( core_depends )
+set( core_depends fmt )
 blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO core_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ${ENABLE_CUDA} )

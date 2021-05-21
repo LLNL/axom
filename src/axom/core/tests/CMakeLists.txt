@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -15,6 +15,7 @@ set(gtest_utils_tests
     core_execution_for_all.hpp
     core_execution_space.hpp
     core_memory_management.hpp
+    core_Path.hpp
     core_stack_array.hpp
 
     numerics_determinants.hpp
@@ -41,8 +42,6 @@ set(utils_tests_depends
     gtest
     )
 
-blt_list_append( TO utils_tests_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO utils_tests_depends ELEMENTS RAJA IF ${RAJA_FOUD} )
 blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------
@@ -95,8 +94,7 @@ endif()
 #------------------------------------------------------------------------------
 set(utils_config_test_depends core gtest )
 
-blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF ${MFEM_FOUND} )
-blt_list_append( TO utils_config_test_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
+blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF MFEM_FOUND )
 
 blt_add_executable( NAME       utils_config_test
                     SOURCES    utils_config.cpp
@@ -116,4 +114,3 @@ if(MFEM_FOUND)
     set_property(TARGET utils_config_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 endif()
-

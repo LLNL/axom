@@ -385,7 +385,6 @@ TEST(quest_discretize, degenerate_sphere_test)
     EXPECT_TRUE(axom::quest::discretize(sph, generations, generated));
     EXPECT_EQ(0, generated.size());
   }
-
 }
 
 //------------------------------------------------------------------------------
@@ -438,7 +437,7 @@ TEST(quest_discretize, degenerate_segment_test)
 
   {
     SCOPED_TRACE("b.y < 0");
-    Point2D a {1.,  1.};
+    Point2D a {1., 1.};
     Point2D b {1.5, -.1};
     polyline.clear();
     polyline.push_back(a);
@@ -461,7 +460,6 @@ TEST(quest_discretize, degenerate_segment_test)
     EXPECT_FALSE(axom::quest::discretize(polyline, generations, generated));
     EXPECT_EQ(0, generated.size());
   }
-
 }
 
 //------------------------------------------------------------------------------
@@ -643,7 +641,6 @@ TEST(quest_discretize, segment_test)
                                  THIRD_GEN_COUNT));
   }
 }
-
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------

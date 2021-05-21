@@ -1,17 +1,17 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 
 #include "fmt/fmt.hpp"
-#include "axom/slic/interface/slic.hpp"
 
 #include <cmath>
 
@@ -188,7 +188,6 @@ TEST_F(TetrahedronTest, barycentric)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
 using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
