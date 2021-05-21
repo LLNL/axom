@@ -138,7 +138,7 @@ TEST(IOTest, readShapeSet_file)
 
 TEST(IOTest, readShapeSet_shapeWithReplacesAndDoesNotReplaceLists)
 {
-  EXPECT_THROW(readShapeSetFromString(R"(
+  auto input = R"(
       dimensions: 2
       shapes:
         - name: wheel
@@ -148,8 +148,8 @@ TEST(IOTest, readShapeSet_shapeWithReplacesAndDoesNotReplaceLists)
           geometry:
             format: test_format
             path: path/to/file.format
-    )"),
-               KleeError);
+  )";
+  EXPECT_THROW(readShapeSetFromString(input), KleeError);
 }
 
 TEST(IOTest, readShapeSet_geometryOperators)

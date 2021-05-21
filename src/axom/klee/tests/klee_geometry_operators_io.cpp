@@ -546,42 +546,49 @@ TEST(GeometryOperatorsIO, readSlice_upAndNormalNotNormal)
 
 TEST(GeometryOperatorsIO, readSlice_badPlaneValues)
 {
-  EXPECT_THROW(
-    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
+  auto badOriginInput = R"(
       slice:
         x: 10
         origin: [20, 0, 0]
-    )"),
+  )";
+  EXPECT_THROW(
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm},
+                                      badOriginInput),
     KleeError)
     << "Bad origin";
 
-  EXPECT_THROW(
-    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
+  auto badNormalInput = R"(
       slice:
         x: 10
         normal: [1, 2, 3]
-    )"),
+  )";
+  EXPECT_THROW(
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm},
+                                      badNormalInput),
     KleeError)
     << "Bad normal";
 
-  EXPECT_THROW(
-    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm}, R"(
+  auto badUpInput = R"(
       slice:
         x: 10
         up: [1, 2, 3]
-    )"),
+  )";
+  EXPECT_THROW(
+    readSingleOperator<SliceOperator>({Dimensions::Three, LengthUnit::cm},
+                                      badUpInput),
     KleeError)
     << "Bad up";
 }
 
 TEST(GeometryOperatorsIO, readSlice_start2D)
 {
-  EXPECT_THROW(
-    readSingleOperator<SliceOperator>({Dimensions::Two, LengthUnit::cm}, R"(
+  auto input = R"(
       slice:
         x: 10
         origin: [20, 0, 0]
-    )"),
+  )";
+  EXPECT_THROW(
+    readSingleOperator<SliceOperator>({Dimensions::Two, LengthUnit::cm}, input),
     KleeError);
 }
 
@@ -598,10 +605,11 @@ TEST(GeometryOperatorsIO, readMultiple_matchingDimensions)
 
 TEST(GeometryOperatorsIO, readMultiple_nonMatchingDimensions)
 {
-  EXPECT_THROW(readOperators({Dimensions::Three, LengthUnit::cm}, R"(
+  auto input = R"(
       - translate: [10, 20, 30]
       - translate: [40, 50]
-    )"),
+  )";
+  EXPECT_THROW(readOperators({Dimensions::Three, LengthUnit::cm}, input),
                KleeError);
 }
 
@@ -781,13 +789,13 @@ TEST(GeometryOperatorsIO, readNamedOperators_basic)
 
 TEST(GeometryOperatorsIO, readNamedOperators_invalidDimensions)
 {
-  EXPECT_THROW(readNamedOperators(Dimensions::Two, R"(
+  auto input = R"(
       - name: op1
         units: cm
         value:
           - translate: [10, 20, 30]
-    )"),
-               KleeError);
+  )";
+  EXPECT_THROW(readNamedOperators(Dimensions::Two, input), KleeError);
 }
 
 TEST(GeometryOperatorsIO, readNamedOperators_differentInitialDimensions)
