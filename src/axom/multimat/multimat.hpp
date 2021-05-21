@@ -73,7 +73,7 @@ private:
 
   // SLAM Map type
   using MapStrideType = slam::policies::RuntimeStride<SetPosType>;
-  using MapBaseType = slam::MapBase;
+  using MapBaseType = slam::MapBase<SetPosType>;
 
   template <typename T>
   using MapType = slam::Map<T, SetType, IndPolicy<T>, MapStrideType>;
