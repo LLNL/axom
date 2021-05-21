@@ -147,6 +147,7 @@ def main():
                         return 1
 
             test_root = get_build_and_test_root(repo_dir, timestamp)
+            test_root = "{0}_{1}".format(test_root, hostconfig.replace(".cmake", "").replace("@","_"))
             os.mkdir(test_root)
             res = build_and_test_host_config(test_root, hostconfig_path, opts["verbose"], opts["extra_cmake_options"])
 
