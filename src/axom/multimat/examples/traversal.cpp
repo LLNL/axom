@@ -11,12 +11,11 @@
 
 #include "axom/multimat/multimat.hpp"
 
-#include "axom/slic/core/UnitTestLogger.hpp"
-#include "axom/core/utilities/Timer.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include <cstdlib>   // for std::rand(), RAND_MAX
 
-using namespace std;
 using namespace axom::multimat;
 
 
@@ -392,7 +391,7 @@ void usage()
 
 int main(int argc, char** argv)
 {
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   //default options
   int ncells = 10000;
@@ -409,10 +408,10 @@ int main(int argc, char** argv)
 
   if (argc == 6)
   {
-    ncells = stoi(argv[1]);
-    nmats = stoi(argv[2]);
-    ncomp = stoi(argv[3]);
-    int sparse = stoi(argv[4]);
+    ncells = std::stoi(argv[1]);
+    nmats = std::stoi(argv[2]);
+    ncomp = std::stoi(argv[3]);
+    int sparse = std::stoi(argv[4]);
     if (sparse == 0)
       use_sparse = false;
     else if (sparse == 1)
@@ -422,7 +421,7 @@ int main(int argc, char** argv)
       usage();
       return 1;
     }
-    fill_percentage = stod(argv[5]);
+    fill_percentage = std::stod(argv[5]);
   }
 
   SLIC_INFO("Using arguments:");

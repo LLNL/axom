@@ -2779,7 +2779,7 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm, Robey_data& 
 
 int main(int argc, char** argv)
 {
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   if (argc != 1 && argc != 2 && argc != 3)
   {
