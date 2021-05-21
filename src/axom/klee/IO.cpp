@@ -111,10 +111,10 @@ using inlet::Inlet;
  */
 void defineGeometry(Container &geometry)
 {
-  geometry.addString("format", "The format of the input file");  //.required();
+  geometry.addString("format", "The format of the input file").required();
   geometry.addString(
     "path",
-    "The path of the input file, relative to the yaml file");  //.required();
+    "The path of the input file, relative to the yaml file").required();
   internal::defineDimensionsField(
     geometry,
     "start_dimensions",
@@ -140,8 +140,8 @@ void defineGeometry(Container &geometry)
 void defineShapeList(Inlet &document)
 {
   Container &shapeList = document.addStructArray("shapes", "The list of shapes");
-  shapeList.addString("name", "The shape's name");          //.required();
-  shapeList.addString("material", "The shape's material");  //.required();
+  shapeList.addString("name", "The shape's name").required();
+  shapeList.addString("material", "The shape's material").required();
   shapeList.addStringArray("replaces",
                            "The list of materials this shape replaces");
   shapeList.addStringArray("does_not_replace",
@@ -286,7 +286,7 @@ ShapeSet readShapeSet(std::istream &stream)
   defineKleeSchema(doc);
   if(!doc.verify())
   {
-    throw KleeError("Got bad input");
+    throw KleeError("Invalid Klee file given. Check the log for details.");
   }
 
   auto shapeData = doc["shapes"].get<std::vector<ShapeData>>();

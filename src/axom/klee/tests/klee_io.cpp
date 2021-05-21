@@ -114,6 +114,66 @@ TEST(IOTest, readShapeSet_shapeWithDoesNotReplaceList)
   EXPECT_TRUE(shape.replaces("material_not_in_list"));
 }
 
+TEST(IOTest, readShapeSet_missingName)
+{
+  auto input = R"(
+    dimensions: 2
+
+    shapes:
+      - material: steel
+        geometry:
+          format: test_format
+          path: path/to/my.file
+  )";
+
+  EXPECT_THROW(readShapeSetFromString(input), KleeError);
+}
+
+TEST(IOTest, readShapeSet_missingMaterial)
+{
+  auto input = R"(
+    dimensions: 2
+
+    shapes:
+      - name: wheel
+        geometry:
+          format: test_format
+          path: path/to/my.file
+  )";
+
+  EXPECT_THROW(readShapeSetFromString(input), KleeError);
+}
+
+TEST(IOTest, readShapeSet_missingGeometryPath)
+{
+  auto input = R"(
+    dimensions: 2
+
+    shapes:
+      - name: wheel
+        material: steel
+        geometry:
+          format: test_format
+  )";
+
+  EXPECT_THROW(readShapeSetFromString(input), KleeError);
+}
+
+TEST(IOTest, readShapeSet_formatGeometryFormat)
+{
+  auto input = R"(
+    dimensions: 2
+
+    shapes:
+      - name: wheel
+        material: steel
+        geometry:
+          path: my/file.format
+  )";
+
+  EXPECT_THROW(readShapeSetFromString(input), KleeError);
+}
+
 TEST(IOTest, readShapeSet_file)
 {
   std::string fileName = "testFile.yaml";
