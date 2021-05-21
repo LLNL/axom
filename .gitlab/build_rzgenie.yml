@@ -31,6 +31,8 @@ rzgenie_release:
     GIT_STRATEGY: none
   extends: [.on_rzgenie, .src_workflow]
   stage: release
+  rules:
+    - when: always
   script:
     - export JOBID=$(squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A)
     - if [[ -n "${JOBID}" ]]; then scancel ${JOBID}; fi
