@@ -85,7 +85,7 @@ template<
     policies::STLVectorIndirection<typename BSet::PositionType, T>,
   typename StrPol = policies::StrideOne<typename BSet::PositionType>
   >
-class BivariateMap : public MapBase, public StrPol
+class BivariateMap : public MapBase<typename BSet::PositionType>, public StrPol
 {
 public:
   using DataType = T;

@@ -54,7 +54,7 @@ template<
   typename SuperMapType,
   typename SubsetType
   >
-class SubMap : public MapBase, public SuperMapType::StridePolicyType
+class SubMap : public MapBase<typename SubsetType::PositionType>, public SuperMapType::StridePolicyType
 {
 public:
 
