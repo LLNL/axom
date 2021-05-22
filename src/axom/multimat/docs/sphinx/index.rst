@@ -6,7 +6,7 @@
 Multimat User Guide
 ====================
 
-Axom's MultiMat component is a data management library for multimaterial data
+Axom's MultiMat component is a data management library for multimaterial field data
 within multiphysics simulation codes. 
 
 We are working on documentation for this component. 
