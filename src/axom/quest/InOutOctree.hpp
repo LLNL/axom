@@ -2307,7 +2307,7 @@ public:
   using SpaceTriangle = typename InOutOctreeType::SpaceTriangle;
 
   using LeafVertMap = slam::Map<VertexIndex>;
-  using LeafIntMap = slam::Map<int>;
+  using LeafIntMap = slam::Map<axom::IndexType>;
   using LeafGridPtMap = slam::Map<GridPt>;
 
   using DebugMesh = mint::UnstructuredMesh< mint::MIXED_SHAPE>;
