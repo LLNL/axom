@@ -61,12 +61,11 @@ namespace slam
  *
  */
 
-template<
-  typename T,
-  typename S = Set<>,
-  typename IndPol = policies::STLVectorIndirection<typename S::PositionType, T>,
-  typename StrPol = policies::StrideOne<typename S::PositionType>
-  >
+template <typename T,
+          typename S = Set<>,
+          typename IndPol =
+            policies::STLVectorIndirection<typename S::PositionType, T>,
+          typename StrPol = policies::StrideOne<typename S::PositionType>>
 class Map : public MapBase<typename S::PositionType>, public StrPol
 {
 public:
@@ -106,7 +105,7 @@ public:
 
   Map(const SetType* theSet = policies::EmptySetTraits<SetType>::emptySet(),
       DataType defaultValue = DataType(),
-      SetPosition stride = StridePolicyType::DEFAULT_VALUE )
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE)
     : StridePolicyType(stride)
     , m_set(theSet)
   {
@@ -192,8 +191,8 @@ public:
   SetPosition size() const
   {
     return !policies::EmptySetTraits<SetType>::isEmpty(m_set)
-           ? static_cast<SetPosition>(m_set->size())
-           : SetPosition(0);
+      ? static_cast<SetPosition>(m_set->size())
+      : SetPosition(0);
   }
 
   /*
@@ -253,7 +252,7 @@ public:
   public:
     friend class Map;
 
-    MapBuilder() : m_set(policies::EmptySetTraits<SetType>::emptySet()) {}
+    MapBuilder() : m_set(policies::EmptySetTraits<SetType>::emptySet()) { }
 
     /** \brief Provide the Set to be used by the Map */
     MapBuilder& set(const SetType* set)
@@ -334,10 +333,7 @@ public:
     }
 
     /** \brief Returns the first component value after n increments.  */
-    const DataType& operator[](PositionType n) const
-    {
-      return *(*this+n);
-    }
+    const DataType& operator[](PositionType n) const { return *(*this + n); }
 
     DataType& operator[](PositionType n) { return *(*this + n); }
 
@@ -365,27 +361,22 @@ public:
   const OrderedMap& data() const { return m_data; }
 
 private:
-  inline void verifyPosition(SetPosition idx)      const
-  {
-    verifyPositionImpl(idx);
-  }
+  inline void verifyPosition(SetPosition idx) const { verifyPositionImpl(idx); }
 
-  inline void verifyPosition(SetPosition setIdx,
-                             SetPosition compIdx)     const
+  inline void verifyPosition(SetPosition setIdx, SetPosition compIdx) const
   {
     verifyPositionImpl(setIdx, compIdx);
   }
 
-  inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx))      const
+  inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx)) const
   {
-    SLIC_ASSERT_MSG(
-      idx >= 0 && idx < SetPosition( m_data.size()),
-      "Attempted to access element "
-      << idx << " but map's data has size "  << m_data.size() );
+    SLIC_ASSERT_MSG(idx >= 0 && idx < SetPosition(m_data.size()),
+                    "Attempted to access element "
+                      << idx << " but map's data has size " << m_data.size());
   }
 
   inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(setIdx),
-                             SetPosition AXOM_DEBUG_PARAM(compIdx))     const
+                                 SetPosition AXOM_DEBUG_PARAM(compIdx)) const
   {
     SLIC_ASSERT_MSG(
       setIdx >= 0 && setIdx < size() && compIdx >= 0 && compIdx < numComp(),
@@ -407,8 +398,8 @@ private:
   OrderedMap m_data;
 };
 
-template<typename T, typename S, typename IndPol, typename StrPol>
-bool Map<T, S, IndPol, StrPol>::isValid( bool verboseOutput) const
+template <typename T, typename S, typename IndPol, typename StrPol>
+bool Map<T, S, IndPol, StrPol>::isValid(bool verboseOutput) const
 {
   bool bValid = true;
 
@@ -466,8 +457,7 @@ bool Map<T, S, IndPol, StrPol>::isValid( bool verboseOutput) const
   return bValid;
 }
 
-
-template<typename T, typename S, typename IndPol, typename StrPol>
+template <typename T, typename S, typename IndPol, typename StrPol>
 void Map<T, S, IndPol, StrPol>::print() const
 {
   bool valid = isValid(true);
@@ -488,7 +478,7 @@ void Map<T, S, IndPol, StrPol>::print() const
       sstr << "\n** Mapped data:";
       for(SetPosition idx = 0; idx < this->size(); ++idx)
       {
-        for (SetPosition idx2 = 0 ; idx2 < StridePolicyType::stride() ; ++idx2)
+        for(SetPosition idx2 = 0; idx2 < StridePolicyType::stride(); ++idx2)
         {
           sstr << "\n\telt[" << idx << "," << idx2 << "]:\t"
                << (*this)[idx * StridePolicyType::stride() + idx2];

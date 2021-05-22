@@ -95,8 +95,8 @@ public:
    * \brief Default constructor with empty set for toSet and fromSet
    */
   DynamicConstantRelation()
-    : m_fromSet(EmptySetTraits<FromSetType>::emptySet())
-    , m_toSet(EmptySetTraits<ToSetType>::emptySet())
+    : m_fromSet(policies::EmptySetTraits<FromSetType>::emptySet())
+    , m_toSet(policies::EmptySetTraits<ToSetType>::emptySet())
   { }
 
   /**
@@ -104,8 +104,9 @@ public:
    * to \a toSet
    */
   DynamicConstantRelation(FromSetType* fromSet, ToSetType* toSet)
-    : CardinalityPolicy(
-        EmptySetTraits<FromSetType>::isEmpty(fromSet) ? 0 : fromSet->size())
+    : CardinalityPolicy(policies::EmptySetTraits<FromSetType>::isEmpty(fromSet)
+                          ? 0
+                          : fromSet->size())
     , m_fromSet(fromSet)
     , m_toSet(toSet)
     , m_currentFromSize(fromSet == nullptr ? 0 : m_fromSet->size())
