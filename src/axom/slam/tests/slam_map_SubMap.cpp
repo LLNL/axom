@@ -30,65 +30,64 @@ using ElementType = SetBase::ElementType;
 
 using RangeSetType = slam::RangeSet<PositionType, ElementType>;
 
-template<typename T>
+template <typename T>
 using SuperMap = slam::Map<T, SetBase>;
 
 using OrderedSetType = axom::slam::OrderedSet<
-        PositionType,
-        ElementType,
-        slam::policies::RuntimeSize<PositionType>,
-        slam::policies::ZeroOffset<PositionType>,
-        slam::policies::StrideOne<PositionType>,
-        slam::policies::STLVectorIndirection<PositionType, ElementType>>;
+  PositionType,
+  ElementType,
+  slam::policies::RuntimeSize<PositionType>,
+  slam::policies::ZeroOffset<PositionType>,
+  slam::policies::StrideOne<PositionType>,
+  slam::policies::STLVectorIndirection<PositionType, ElementType>>;
 
 static const double multFac = 1.0001;
 
 static PositionType const MAX_SET_SIZE = 10;
 
-template<typename T>
+template <typename T>
 T getValue(int idx)
 {
-    return static_cast<T>(idx * multFac);
+  return static_cast<T>(idx * multFac);
 }
 
 //A struct to construct the Map for testing
-template<typename T>
+template <typename T>
 struct MapForTest
 {
-    MapForTest(int size)
-        : set_data(size)
-        , s(OrderedSetType::SetBuilder().size(size).data(&set_data))
-        , m(&s)
+  MapForTest(int size)
+    : set_data(size)
+    , s(OrderedSetType::SetBuilder().size(size).data(&set_data))
+    , m(&s)
+  {
+    SLIC_INFO("Initializing set of size "
+              << s.size() << " and '" << slam::util::TypeToString<T>::to_string()
+              << "' map on the set ");
+
+    for(auto i : s.positions())
     {
-        SLIC_INFO("Initializing set of size " << s.size()
-            << " and '" << slam::util::TypeToString<T>::to_string()
-            << "' map on the set ");
-
-        for (auto i : s.positions())
-        {
-            s[i] = 100 + i;
-            m[i] = getValue<T>(i);
-        }
-
-        EXPECT_TRUE(s.isValid());
-        EXPECT_TRUE(m.isValid());
+      s[i] = 100 + i;
+      m[i] = getValue<T>(i);
     }
 
-    std::vector<PositionType> set_data;
-    OrderedSetType s;
-    SuperMap<T> m;
+    EXPECT_TRUE(s.isValid());
+    EXPECT_TRUE(m.isValid());
+  }
+
+  std::vector<PositionType> set_data;
+  OrderedSetType s;
+  SuperMap<T> m;
 };
 
-} // end anonymous namepsace
+}  // namespace
 
-
-TEST(slam_map,construct_empty_subsetmap)
+TEST(slam_map, construct_empty_subsetmap)
 {
-  slam::SubMap<SuperMap<int>, RangeSetType > m;
+  slam::SubMap<SuperMap<int>, RangeSetType> m;
   EXPECT_TRUE(m.isValid(true));
 }
 
-template<typename T>
+template <typename T>
 bool constructAndTestSubMap()
 {
   using MapType = SuperMap<T>;
@@ -108,7 +107,7 @@ bool constructAndTestSubMap()
     EXPECT_TRUE(ssm.isValid(true));
 
     SLIC_INFO("Checking the elements.");
-    for (auto idx = 0 ; idx < ssm.size() ; ++idx)
+    for(auto idx = 0; idx < ssm.size(); ++idx)
     {
       auto expVal = getValue<T>(submapOffset + idx);
       EXPECT_EQ(expVal, ssm[idx]);
@@ -116,27 +115,27 @@ bool constructAndTestSubMap()
 
     SLIC_INFO("Checking the elements using SubMap iterator.");
     int cnt = 0;
-    for (auto it = ssm.begin(); it != ssm.end(); ++it, ++cnt)
+    for(auto it = ssm.begin(); it != ssm.end(); ++it, ++cnt)
     {
-        // Check iterator's .index() function
-        {
-           auto subMapElt = it.index();
+      // Check iterator's .index() function
+      {
+        auto subMapElt = it.index();
 
-           auto setIdx = ss[cnt];
-           auto expSetElt = s[setIdx];
-           EXPECT_EQ(expSetElt, subMapElt);
-        }
+        auto setIdx = ss[cnt];
+        auto expSetElt = s[setIdx];
+        EXPECT_EQ(expSetElt, subMapElt);
+      }
 
-        // Check iterator's value access functions
-        {
-           auto mapVal = it.value();
-           EXPECT_EQ(mapVal, *it);
-           EXPECT_EQ(mapVal, it());
-           EXPECT_EQ(mapVal, it[0]);
+      // Check iterator's value access functions
+      {
+        auto mapVal = it.value();
+        EXPECT_EQ(mapVal, *it);
+        EXPECT_EQ(mapVal, it());
+        EXPECT_EQ(mapVal, it[0]);
 
-           auto expVal = getValue<T>(submapOffset + cnt);
-           EXPECT_EQ(expVal, mapVal);
-        }
+        auto expVal = getValue<T>(submapOffset + cnt);
+        EXPECT_EQ(expVal, mapVal);
+      }
     }
   }
 
@@ -145,36 +144,34 @@ bool constructAndTestSubMap()
 
     SLIC_INFO("Creating Subset 2");
     std::vector<PositionType> subset_indices_data(submapSize);
-    for (int i = 0 ; i < submapSize ; i++)
-      subset_indices_data[i] = i * 2;
-    OrderedSetType subset_indices = OrderedSetType::SetBuilder()
-                                    .size(5)
-                                    .data(&subset_indices_data);
+    for(int i = 0; i < submapSize; i++) subset_indices_data[i] = i * 2;
+    OrderedSetType subset_indices =
+      OrderedSetType::SetBuilder().size(5).data(&subset_indices_data);
 
     SubMapType ssm(&m, subset_indices);
 
     SLIC_INFO("Checking the elements.");
-    for (PositionType idx = 0 ; idx < submapSize ; ++idx)
+    for(PositionType idx = 0; idx < submapSize; ++idx)
     {
-      EXPECT_EQ(ssm[idx], getValue<T>(subset_indices[idx] ));
-      EXPECT_EQ(ssm.value(idx), getValue<T>(subset_indices[idx] ));
+      EXPECT_EQ(ssm[idx], getValue<T>(subset_indices[idx]));
+      EXPECT_EQ(ssm.value(idx), getValue<T>(subset_indices[idx]));
       EXPECT_EQ(ssm.index(idx), s[subset_indices[idx]]);
     }
   }
   return true;
 }
 
-TEST(slam_map,construct_int_submap)
+TEST(slam_map, construct_int_submap)
 {
-  EXPECT_TRUE(constructAndTestSubMap<int>() );
+  EXPECT_TRUE(constructAndTestSubMap<int>());
 }
 
-TEST(slam_map,construct_double_submap)
+TEST(slam_map, construct_double_submap)
 {
   EXPECT_TRUE(constructAndTestSubMap<double>());
 }
 
-template<typename T>
+template <typename T>
 bool constructBySubMap()
 {
   //This tests modifying the values in the original map via a Submap
@@ -195,16 +192,16 @@ bool constructBySubMap()
   EXPECT_TRUE(m.isValid(true));
 
   SLIC_INFO("Negating elements");
-  for (PositionType idx = 0 ; idx < submapSize ; ++idx)
+  for(PositionType idx = 0; idx < submapSize; ++idx)
   {
     ssm[idx] = -getValue<T>(submapOffset + idx);
   }
 
   SLIC_INFO("Checking the elements.");
-  for (PositionType idx = 0 ; idx < m.size() ; ++idx)
+  for(PositionType idx = 0; idx < m.size(); ++idx)
   {
     T val = getValue<T>(idx);
-    if (idx >= submapOffset && idx < submapOffset + submapSize)
+    if(idx >= submapOffset && idx < submapOffset + submapSize)
       val = -getValue<T>(idx);
     EXPECT_EQ(m[idx], val);
   }
@@ -235,7 +232,7 @@ int main(int argc, char* argv[])
 #endif
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
+  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();
 
