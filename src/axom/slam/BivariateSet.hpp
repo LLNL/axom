@@ -74,26 +74,24 @@ namespace slam
  *
  */
 
-template<typename Set1 = slam::Set<>,
-         typename Set2 = slam::Set<> >
+template <typename Set1 = slam::Set<>, typename Set2 = slam::Set<>>
 class BivariateSet
 {
 public:
-  using FirstSetType  = Set1;
+  using FirstSetType = Set1;
   using SecondSetType = Set2;
 
   using PositionType = typename FirstSetType::PositionType;
-  using ElementType  = typename FirstSetType::ElementType;
-  using NullSetType  = NullSet<PositionType, ElementType>;
+  using ElementType = typename FirstSetType::ElementType;
+  using NullSetType = NullSet<PositionType, ElementType>;
 
-  using OrderedSetType = OrderedSet<
-          PositionType,
-          ElementType,
-          policies::RuntimeSize<PositionType>,
-          policies::RuntimeOffset<PositionType>,
-          policies::StrideOne<PositionType>,
-          policies::STLVectorIndirection<PositionType, ElementType> >;
-
+  using OrderedSetType =
+    OrderedSet<PositionType,
+               ElementType,
+               policies::RuntimeSize<PositionType>,
+               policies::RuntimeOffset<PositionType>,
+               policies::StrideOne<PositionType>,
+               policies::STLVectorIndirection<PositionType, ElementType>>;
 
   using RangeSetType = RangeSet<PositionType, ElementType>;
 
@@ -109,10 +107,10 @@ public:
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
    */
-  BivariateSet(
-    const Set1* set1 = policies::EmptySetTraits<Set1>::emptySet(),
-    const Set2* set2 = policies::EmptySetTraits<Set2>::emptySet() )
-    : m_set1(set1), m_set2(set2)
+  BivariateSet(const Set1* set1 = policies::EmptySetTraits<Set1>::emptySet(),
+               const Set2* set2 = policies::EmptySetTraits<Set2>::emptySet())
+    : m_set1(set1)
+    , m_set2(set2)
   { }
 
   /**
@@ -161,14 +159,13 @@ public:
    */
   virtual PositionType findElementFlatIndex(PositionType pos1) const = 0;
 
-
   /**
    * \brief Finds the range of indices o
    * \param Position of the element in the first set
    *
    * \return A range set of the positions in the second set
    */
-  virtual RangeSetType elementRangeSet(PositionType pos1) const =0;
+  virtual RangeSetType elementRangeSet(PositionType pos1) const = 0;
   /**
    * \brief Size of the BivariateSet, which is the number of non-zero entries
    *        in the BivariateSet.
@@ -180,7 +177,7 @@ public:
    *
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual PositionType size(PositionType pos1) const = 0; //size of a row
+  virtual PositionType size(PositionType pos1) const = 0;  //size of a row
 
   /** \brief Size of the first set.   */
   inline PositionType firstSetSize() const
@@ -215,7 +212,7 @@ public:
   virtual void verifyPosition(PositionType s1, PositionType s2) const = 0;
 
 private:
-  template<typename SetType>
+  template <typename SetType>
   typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
   getSize(const SetType* s) const
   {
@@ -223,7 +220,7 @@ private:
     return s->size();
   }
 
-  template<typename SetType>
+  template <typename SetType>
   typename std::enable_if<!std::is_abstract<SetType>::value, PositionType>::type
   getSize(const SetType* s) const
   {
@@ -236,19 +233,15 @@ protected:
   const SecondSetType* m_set2;
 };
 
+template <typename Set1, typename Set2>
+const typename BivariateSet<Set1, Set2>::NullSetType BivariateSet<Set1, Set2>::s_nullSet;
 
-template<typename Set1, typename Set2>
-const typename BivariateSet<Set1, Set2>::NullSetType
-BivariateSet<Set1, Set2>::s_nullSet;
-
-
-template<typename Set1, typename Set2>
+template <typename Set1, typename Set2>
 bool BivariateSet<Set1, Set2>::isValid(bool verboseOutput) const
 {
-
-  if (m_set1 == nullptr || m_set2 == nullptr)
+  if(m_set1 == nullptr || m_set2 == nullptr)
   {
-    if (verboseOutput)
+    if(verboseOutput)
     {
       SLIC_INFO("BivariateSet is not valid: "
                 << " Set pointers should not be null.");
@@ -258,20 +251,18 @@ bool BivariateSet<Set1, Set2>::isValid(bool verboseOutput) const
   return m_set1->isValid(verboseOutput) && m_set2->isValid(verboseOutput);
 }
 
-
 /**
  * \class NullBivariateSet
  *
  * \brief A Null BivariateSet class. Same as the NullSet for Set class.
  */
-template<typename SetType1 = slam::Set<>,
-         typename SetType2 = slam::Set<> >
-class NullBivariateSet : public BivariateSet<SetType1,SetType2>
+template <typename SetType1 = slam::Set<>, typename SetType2 = slam::Set<>>
+class NullBivariateSet : public BivariateSet<SetType1, SetType2>
 {
 public:
   using FirstSetType = SetType1;
   using SecondSetType = SetType2;
-  using BSet = BivariateSet<FirstSetType,SecondSetType>;
+  using BSet = BivariateSet<FirstSetType, SecondSetType>;
   using PositionType = typename BSet::PositionType;
   using ElementType = typename BSet::ElementType;
   using OrderedSetType = typename BSet::OrderedSetType;
@@ -320,14 +311,13 @@ private:
                       PositionType AXOM_DEBUG_PARAM(pos2)) const override
   {
     SLIC_ASSERT_MSG(false,
-      "Subscripting on NullSet is never valid."
+                    "Subscripting on NullSet is never valid."
                       << "\n\tAttempted to access item at index " << pos1 << ","
                       << pos2 << ".");
   }
 };
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_BIVARIATE_SET_H_
+#endif  //  SLAM_BIVARIATE_SET_H_

@@ -54,8 +54,8 @@ namespace slam
  * more convenient value, when necessary.
  */
 template <typename PosType,   //= slam::DefaultPositionType,
-  typename ElemType,   // = slam::DefaultElementType,
-  typename CardinalityPolicy>
+          typename ElemType,  // = slam::DefaultElementType,
+          typename CardinalityPolicy>
 class DynamicConstantRelation : public /*Relation,*/ CardinalityPolicy
 {
 public:
@@ -68,18 +68,18 @@ public:
   using SetElement = ElemType;
   using RelationVec = std::vector<SetPosition>;
 
-  using FromSetType = DynamicSet<PosType,ElemType>;
-  using ToSetType = DynamicSet<PosType,ElemType>;
+  using FromSetType = DynamicSet<PosType, ElemType>;
+  using ToSetType = DynamicSet<PosType, ElemType>;
 
   using BeginsSizePolicy = typename CardinalityPolicy::RelationalOperatorSizeType;
 
   using STLIndirection = policies::STLVectorIndirection<SetPosition, SetElement>;
   using RelationSubset = OrderedSet<SetPosition,
-            SetElement,
-            BeginsSizePolicy,
-            policies::RuntimeOffset<SetPosition>,
-            policies::StrideOne<SetPosition>,
-            STLIndirection >;
+                                    SetElement,
+                                    BeginsSizePolicy,
+                                    policies::RuntimeOffset<SetPosition>,
+                                    policies::StrideOne<SetPosition>,
+                                    STLIndirection>;
 
   // types for iterator
   using RelationIterator = typename RelationSubset::iterator;
@@ -92,29 +92,29 @@ public:
   /**
    * \brief Default constructor with empty set for toSet and fromSet
    */
-  DynamicConstantRelation ()
-    : m_fromSet( policies::EmptySetTraits<FromSetType>::emptySet()  )
-    , m_toSet(  policies::EmptySetTraits<ToSetType>::emptySet() )
+  DynamicConstantRelation()
+    : m_fromSet(policies::EmptySetTraits<FromSetType>::emptySet())
+    , m_toSet(policies::EmptySetTraits<ToSetType>::emptySet())
   {
-    m_relationCardinality = CardinalityPolicy::size( 0 );
+    m_relationCardinality = CardinalityPolicy::size(0);
   }
 
   /**
    * \brief Construct a DynamicConstantRelation from the given \a fromSet
    * to \a toSet
    */
-  DynamicConstantRelation (FromSetType* fromSet, ToSetType* toSet)
-    : CardinalityPolicy( policies::EmptySetTraits<FromSetType>::isEmpty(fromSet)
-                         ? 0
-                         : fromSet->size() )
-    , m_fromSet(fromSet )
-    , m_toSet( toSet )
+  DynamicConstantRelation(FromSetType* fromSet, ToSetType* toSet)
+    : CardinalityPolicy(policies::EmptySetTraits<FromSetType>::isEmpty(fromSet)
+                          ? 0
+                          : fromSet->size())
+    , m_fromSet(fromSet)
+    , m_toSet(toSet)
   {
-    m_relationCardinality = CardinalityPolicy::size( 0 );
-    m_relationsVec.resize(m_relationCardinality*fromSet->size(), INVALID_INDEX);
+    m_relationCardinality = CardinalityPolicy::size(0);
+    m_relationsVec.resize(m_relationCardinality * fromSet->size(), INVALID_INDEX);
   };
 
-  ~DynamicConstantRelation(){};
+  ~DynamicConstantRelation() {};
 
 public:
   /// \name DynamicConstantRelation iterator interface
@@ -140,7 +140,7 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return A const begin iterator to the set of related elements in ToSet
    */
-  RelationConstIterator begin(SetPosition fromSetInd ) const
+  RelationConstIterator begin(SetPosition fromSetInd) const
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].begin();
@@ -166,7 +166,7 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return A const end iterator to the set of related elements in ToSet
    */
-  RelationConstIterator end(SetPosition fromSetInd)    const
+  RelationConstIterator end(SetPosition fromSetInd) const
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].end();
@@ -193,7 +193,7 @@ public:
    * \return A const iterator range (begin/end pair) to the set of related
    * elements in ToSet
    */
-  RelationConstIteratorPair range(SetPosition fromSetInd)  const
+  RelationConstIteratorPair range(SetPosition fromSetInd) const
   {
     return (*this)[fromSetInd].range();
   }
@@ -237,11 +237,11 @@ public:
     verifyPosition(fromSetIndex);
     using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
-           //.size( CardinalityPolicy::size(fromSetIndex) )
-           .size( m_relationCardinality )
-           //.offset( CardinalityPolicy::offset( fromSetIndex) )
-           .offset( fromSetIndex * m_relationCardinality )
-           .data( const_cast<RelationVec*>(&m_relationsVec) );
+      //.size( CardinalityPolicy::size(fromSetIndex) )
+      .size(m_relationCardinality)
+      //.offset( CardinalityPolicy::offset( fromSetIndex) )
+      .offset(fromSetIndex * m_relationCardinality)
+      .data(const_cast<RelationVec*>(&m_relationsVec));
   }
 
   RelationSubset operator[](SetPosition fromSetIndex)
@@ -249,11 +249,11 @@ public:
     verifyPosition(fromSetIndex);
     using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
-           //.size( CardinalityPolicy::size(fromSetIndex) )
-           .size( m_relationCardinality )
-           //.offset( CardinalityPolicy::offset( fromSetIndex) )
-           .offset( fromSetIndex * m_relationCardinality )
-           .data( &m_relationsVec );
+      //.size( CardinalityPolicy::size(fromSetIndex) )
+      .size(m_relationCardinality)
+      //.offset( CardinalityPolicy::offset( fromSetIndex) )
+      .offset(fromSetIndex * m_relationCardinality)
+      .data(&m_relationsVec);
   }
 
   /**
@@ -261,7 +261,7 @@ public:
    * related to the element with index \a fromSetIndex in the FromSet
    * \param fromSetIndex The index of an element in the FromSet
    */
-  SetPosition size(SetPosition fromSetIndex ) const
+  SetPosition size(SetPosition fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return m_relationCardinality;
@@ -294,7 +294,7 @@ public:
   {
     SetPosition nvalid = 0;
     const int N = size();
-    for( int i=0 ; i< N ; ++i)
+    for(int i = 0; i < N; ++i)
     {
       nvalid += isValidEntry(i);
     }
@@ -307,11 +307,11 @@ public:
    */
   bool isValidEntry(SetPosition idx) const
   {
-    if( idx >= 0 && idx < (int)m_relationsVec.size()/m_relationCardinality )
+    if(idx >= 0 && idx < (int)m_relationsVec.size() / m_relationCardinality)
     {
-      for (int i = 0 ; i < m_relationCardinality ; ++i)
+      for(int i = 0; i < m_relationCardinality; ++i)
       {
-        if (m_relationsVec[idx * m_relationCardinality + i] != INVALID_INDEX)
+        if(m_relationsVec[idx * m_relationCardinality + i] != INVALID_INDEX)
           return true;
       }
     }
@@ -339,15 +339,15 @@ public:
    */
   void insert(SetPosition fromSetIndex, SetPosition toSetIndex)
   {
-    expandSizeIfNeeded(fromSetIndex+1);
+    expandSizeIfNeeded(fromSetIndex + 1);
 
-    verifyPosition( fromSetIndex );
+    verifyPosition(fromSetIndex);
 
     //find the first invalid place to put it
-    for(int i=0 ; i<m_relationCardinality ; ++i)
+    for(int i = 0; i < m_relationCardinality; ++i)
     {
-      SetPosition idx = m_relationCardinality*fromSetIndex + i;
-      if( m_relationsVec[idx] == INVALID_INDEX )
+      SetPosition idx = m_relationCardinality * fromSetIndex + i;
+      if(m_relationsVec[idx] == INVALID_INDEX)
       {
         m_relationsVec[idx] = toSetIndex;
         return;
@@ -356,8 +356,8 @@ public:
 
     //The entry was not inserted
     SLIC_WARNING("Relation from "
-      << fromSetIndex <<" to " << toSetIndex
-      << " was not inserted because the entry is full.");
+                 << fromSetIndex << " to " << toSetIndex
+                 << " was not inserted because the entry is full.");
   }
 
   /**
@@ -373,7 +373,7 @@ public:
    */
   void modify(SetPosition fromSetIndex, SetPosition offset, SetPosition toSetIndex)
   {
-    expandSizeIfNeeded( fromSetIndex + 1);
+    expandSizeIfNeeded(fromSetIndex + 1);
     m_relationsVec[m_relationCardinality * fromSetIndex + offset] = toSetIndex;
   }
 
@@ -384,9 +384,9 @@ public:
   {
     if(!isValidEntry(fromSetIndex)) return;
 
-    for(int i=0 ; i<m_relationCardinality ; ++i)
+    for(int i = 0; i < m_relationCardinality; ++i)
     {
-      m_relationsVec[m_relationCardinality*fromSetIndex + i] = INVALID_INDEX;
+      m_relationsVec[m_relationCardinality * fromSetIndex + i] = INVALID_INDEX;
     }
   }
 
@@ -394,10 +394,10 @@ public:
 
 public:
   /** \brief Direct access to the relation data  */
-  RelationVec &       data()       { return m_relationsVec; }
+  RelationVec& data() { return m_relationsVec; }
 
   /** \brief Direct const access to the relation data  */
-  const RelationVec & data() const { return m_relationsVec; }
+  const RelationVec& data() const { return m_relationsVec; }
 
 private:
   /**
@@ -406,9 +406,9 @@ private:
    */
   void expandSizeIfNeeded(SetPosition s)
   {
-    if(s > (int)m_relationsVec.size()/m_relationCardinality)
+    if(s > (int)m_relationsVec.size() / m_relationCardinality)
     {
-      m_relationsVec.resize(s*m_relationCardinality, INVALID_INDEX);
+      m_relationsVec.resize(s * m_relationCardinality, INVALID_INDEX);
     }
   }
 
@@ -419,7 +419,7 @@ private:
   inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex)) const
   {
     SLIC_ASSERT_MSG(fromSetIndex >= 0 &&
-      fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ),
+                      fromSetIndex < static_cast<SetPosition>(m_fromSet->size()),
                     "Index " << fromSetIndex << " out of range [0,"
                              << m_fromSet->size() << ")");
   }
@@ -433,7 +433,7 @@ private:
 };
 
 /* Checks whether the relation is valid.  */
-template<typename PosType, typename ElemType, typename CardinalityPolicy>
+template <typename PosType, typename ElemType, typename CardinalityPolicy>
 bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
   bool verboseOutput) const
 {
@@ -444,24 +444,24 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
 
   // Check if the sets are valid
   bool isFromSetNull = (m_fromSet == nullptr);
-  bool isToSetNull   = (m_toSet == nullptr);
+  bool isToSetNull = (m_toSet == nullptr);
 
   if(isFromSetNull || isToSetNull)
   {
     if(verboseOutput)
     {
       errSstr << "\n\t Static relations require both the fromSet "
-        << "and toSet to be non-null"
+              << "and toSet to be non-null"
               << "\n\t -- fromSet was " << (isFromSetNull ? "" : " not ")
               << "null"
-        << "\n\t -- toSet was " << (isToSetNull ? "" : " not ") << "null";
+              << "\n\t -- toSet was " << (isToSetNull ? "" : " not ") << "null";
     }
 
     setsAreValid = false;
   }
 
   // Check the sizes of fromSet matches relationVec
-  if( setsAreValid )
+  if(setsAreValid)
   {
     if(m_fromSet->size() * m_relationCardinality != (int)m_relationsVec.size())
     {
@@ -472,7 +472,7 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
                 << "\n\t -- m_relationsVec size is " << m_relationsVec.size()
                 << ".";
       }
-      setsAreValid =  false;
+      setsAreValid = false;
     }
   }
 
@@ -482,7 +482,7 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
     // Check that invalid set entry points to invalid relation.
     // Note: the reverse can be valid. ie. valid set entry may have invalid
     // relation entry.
-    for(SetPosition pos = 0 ; pos < (int) m_fromSet->size() ; ++pos)
+    for(SetPosition pos = 0; pos < (int)m_fromSet->size(); ++pos)
     {
       if(m_fromSet->at(pos) == FromSetType::INVALID_ENTRY && isValidEntry(pos))
       {
@@ -496,19 +496,19 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
     }
 
     // Check that all relation indices are in range for m_toSet
-    for(SetPosition pos = 0 ; pos < (int) m_relationsVec.size() ; ++pos)
+    for(SetPosition pos = 0; pos < (int)m_relationsVec.size(); ++pos)
     {
-      if ( m_relationsVec[pos] != INVALID_INDEX &&
-           !m_toSet->isValidEntry( m_relationsVec[pos]) )
+      if(m_relationsVec[pos] != INVALID_INDEX &&
+         !m_toSet->isValidEntry(m_relationsVec[pos]))
       {
         if(verboseOutput)
         {
           errSstr << "\n\t* Relation index out of range or invalid."
                   << "\n\t-- position " << pos / m_relationCardinality << "-"
                   << pos % m_relationCardinality
-            << " with value: " << m_relationsVec[pos]
-            << " needs to be in range [0," << m_toSet->size()
-            << ") and index a valid entry.";
+                  << " with value: " << m_relationsVec[pos]
+                  << " needs to be in range [0," << m_toSet->size()
+                  << ") and index a valid entry.";
         }
         relationdataIsValid = false;
       }
@@ -520,13 +520,13 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
 
   if(verboseOutput && !bValid)
   {
-    SLIC_DEBUG( errSstr.str() );
+    SLIC_DEBUG(errSstr.str());
   }
 
   return bValid;
 }
 
-} // end namespace slam
-} // end namespace axom
+}  // end namespace slam
+}  // end namespace axom
 
-#endif // SLAM_DYNAMIC_CONSTANT_RELATION_HPP_
+#endif  // SLAM_DYNAMIC_CONSTANT_RELATION_HPP_

@@ -28,7 +28,7 @@ namespace policies
 /**
  * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
  */
-template<typename StridePolicyType, typename IntType, int VAL = 1>
+template <typename StridePolicyType, typename IntType, int VAL = 1>
 struct StrideToSize
 {
   using SizeType = CompileTimeSize<IntType, VAL>;
@@ -37,8 +37,8 @@ struct StrideToSize
 /**
  * \brief Specialization of StrideToSize trait for a RuntimeStride
  */
-template<typename IntType>
-struct StrideToSize < RuntimeStride<IntType>, IntType >
+template <typename IntType>
+struct StrideToSize<RuntimeStride<IntType>, IntType>
 {
   using SizeType = RuntimeSize<IntType>;
 };
@@ -46,8 +46,8 @@ struct StrideToSize < RuntimeStride<IntType>, IntType >
 /**
  * \brief Specialization of StrideToSize trait for a CompileTimeStride
  */
-template<typename IntType, int VAL>
-struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
+template <typename IntType, int VAL>
+struct StrideToSize<CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL>
 {
   using SizeType = CompileTimeSize<IntType, IntType(VAL)>;
 };
@@ -55,21 +55,20 @@ struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
 /**
  * \brief Specialization of StrideToSize trait for a StrideOne type
  */
-template<typename IntType>
-struct StrideToSize< StrideOne<IntType>, IntType >
+template <typename IntType>
+struct StrideToSize<StrideOne<IntType>, IntType>
 {
-  using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE >;
+  using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE>;
 };
-
 
 /**
  * \brief Type traits for null sets.
  *
  * The null pointer for most sets is nullptr
  */
-template<typename SetType,
-         typename P = typename SetType::PositionType,
-         typename E = typename SetType::ElementType>
+template <typename SetType,
+          typename P = typename SetType::PositionType,
+          typename E = typename SetType::ElementType>
 struct EmptySetTraits
 {
   using EmptySetType = SetType;
@@ -78,7 +77,7 @@ struct EmptySetTraits
 
   static bool isEmpty(const EmptySetType* set)
   {
-    return (set==emptySet() || set->empty() );
+    return (set == emptySet() || set->empty());
   }
 };
 
@@ -87,14 +86,14 @@ struct EmptySetTraits
  *
  * The null pointer is of type NullSet
  */
-template<typename P, typename E>
-struct EmptySetTraits<slam::Set<P,E> >
+template <typename P, typename E>
+struct EmptySetTraits<slam::Set<P, E>>
 {
-  using EmptySetType = slam::Set<P,E>;
+  using EmptySetType = slam::Set<P, E>;
 
   static EmptySetType* emptySet()
   {
-    static slam::NullSet<P,E> s_nullSet;
+    static slam::NullSet<P, E> s_nullSet;
     return &s_nullSet;
   }
 
@@ -102,11 +101,9 @@ struct EmptySetTraits<slam::Set<P,E> >
   {
     return *set == *(emptySet()) || set->empty();
   }
-
 };
 
-
-} // end namespace policies
+}  // end namespace policies
 
 namespace traits
 {
@@ -114,46 +111,49 @@ namespace traits
 // earlier versions of gcc. Credit: https://stackoverflow.com/a/35754473
 namespace void_details
 {
-template <class ... >
-struct make_void { using type = void; };
-}
+template <class...>
+struct make_void
+{
+  using type = void;
+};
+}  // namespace void_details
 
-template <class ... T>
-using void_t = typename void_details::make_void<T ...>::type;
-
+template <class... T>
+using void_t = typename void_details::make_void<T...>::type;
 
 ///\name has_relation_ptr traits class
 ///@{
 
-template<class T, class=void>
-struct has_relation_ptr : std::false_type {};
+template <class T, class = void>
+struct has_relation_ptr : std::false_type
+{ };
 
-template<class T>
-struct has_relation_ptr<T, void_t<decltype(std::declval<T>().getRelation() )> >
-  : std::true_type {};
-
+template <class T>
+struct has_relation_ptr<T, void_t<decltype(std::declval<T>().getRelation())>>
+  : std::true_type
+{ };
 
 ///@}
 
 ///\name indices_use_indirection traits class for BivariateSetTypes
 ///@{
 
-template<class T, class=void>
-struct indices_use_indirection : std::true_type {};
+template <class T, class = void>
+struct indices_use_indirection : std::true_type
+{ };
 
-template<class T>
-struct indices_use_indirection<T, void_t<typename T::ProductSetType> >
+template <class T>
+struct indices_use_indirection<T, void_t<typename T::ProductSetType>>
   : std::false_type
 {
-  static_assert( std::is_base_of<typename T::BivariateSetType, T>::value, "" );
+  static_assert(std::is_base_of<typename T::BivariateSetType, T>::value, "");
 };
-
 
 ///@}
 
-} // end namespace traits
+}  // end namespace traits
 
-} // end namespace slam
-} // end namespace axom
+}  // end namespace slam
+}  // end namespace axom
 
-#endif // SLAM_POLICY_TRAITS_H_
+#endif  // SLAM_POLICY_TRAITS_H_
