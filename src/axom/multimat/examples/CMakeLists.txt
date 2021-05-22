@@ -14,7 +14,7 @@ set(multimat_example_headers
 
 set(multimat_example_sources
     calculate.cpp
-	traversal.cpp )
+    traversal.cpp )
 
 set(multimat_tests_depends_on slic slam multimat)
 

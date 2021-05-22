@@ -24,13 +24,13 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     # Add define we can use when debug builds are enabled
     #--------------------------------------------------------------------------
     if( CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)" )
-        #add_definitions(-DAXOM_DEBUG)
+        add_definitions(-DAXOM_DEBUG)
     endif()
 else ()
-    #set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
-    #  $<$<CONFIG:Debug>:AXOM_DEBUG>
-    #  $<$<CONFIG:RelWithDebInfo>:AXOM_DEBUG>
-    #)
+    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
+      $<$<CONFIG:Debug>:AXOM_DEBUG>
+      $<$<CONFIG:RelWithDebInfo>:AXOM_DEBUG>
+    )
 endif()
 
 #------------------------------------------------------------------------------
@@ -198,13 +198,3 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
 endif()
 
-# Set FOLDER property for some high-level code health and documentation targets
-foreach(_target astyle_check astyle_style 
-                check style 
-                uncrustify_check uncrustify_style
-                docs doxygen doxygen_docs sphinx sphinx_docs)
-    if(TARGET ${_target})
-        blt_set_target_folder(TARGET ${_target} 
-                              FOLDER code_health)
-    endif()
-endforeach()
