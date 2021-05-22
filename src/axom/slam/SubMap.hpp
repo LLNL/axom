@@ -50,16 +50,15 @@ namespace slam
  * \see Map, BivariateMap
  */
 
-template<
-  typename SuperMapType,
-  typename SubsetType //= slam::RangeSet<SetPosition, SetElement>
-  >
-class SubMap : public MapBase<typename SubsetType::PositionType>, public SuperMapType::StridePolicyType
+template <typename SuperMapType,
+          typename SubsetType  //= slam::RangeSet<SetPosition, SetElement>
+          >
+class SubMap : public MapBase<typename SubsetType::PositionType>,
+               public SuperMapType::StridePolicyType
 {
 public:
-
-  static_assert( !std::is_abstract< SubsetType>::value,
-                 "SetType for slam::SubMap cannot be abstract" );
+  static_assert(!std::is_abstract<SubsetType>::value,
+                "SetType for slam::SubMap cannot be abstract");
 
   using DataType = typename SuperMapType::DataType;
 
@@ -70,7 +69,7 @@ public:
   using IndirectionPolicyType = typename SuperMapType::IndirectionPolicy;
 
   using MapType =
-          Map<DataType, SubsetType, IndirectionPolicyType, StridePolicyType>;
+    Map<DataType, SubsetType, IndirectionPolicyType, StridePolicyType>;
 
   using SubsetBuilder = typename SubsetType::SetBuilder;
 
@@ -83,7 +82,7 @@ public:
 
 public:
   /** Default Constructor */
-  SubMap() : m_superMap(nullptr), m_indicesHaveIndirection(true) {}
+  SubMap() : m_superMap(nullptr), m_indicesHaveIndirection(true) { }
 
   /**
    * \brief Constructor for SubMap given the ElementFlatIndex into the SuperMap
@@ -131,7 +130,7 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= idx < size() * numComp()
    */
-  const DataType & operator[](IndexType idx) const
+  const DataType& operator[](IndexType idx) const
   {
     verifyPositionImpl(idx);
     IndexType flat_idx = getMapCompFlatIndex(idx);
@@ -139,7 +138,7 @@ public:
   }
 
   //non-const version
-  DataType & operator[](IndexType idx)
+  DataType& operator[](IndexType idx)
   {
     verifyPositionImpl(idx);
     IndexType flat_idx = getMapCompFlatIndex(idx);
@@ -153,20 +152,19 @@ public:
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType & operator()(IndexType idx, IndexType comp = 0) const
+  const DataType& operator()(IndexType idx, IndexType comp = 0) const
   {
     verifyPositionImpl(idx, comp);
-    return (*m_superMap)[getMapElemFlatIndex(idx)*numComp() + comp];
+    return (*m_superMap)[getMapElemFlatIndex(idx) * numComp() + comp];
   }
 
   //non-const version
-  DataType & operator()(IndexType idx, IndexType comp = 0)
+  DataType& operator()(IndexType idx, IndexType comp = 0)
   {
     verifyPositionImpl(idx, comp);
-    SLIC_ASSERT_MSG(m_superMap != nullptr,
-                    "Submap's super map was null.");
+    SLIC_ASSERT_MSG(m_superMap != nullptr, "Submap's super map was null.");
 
-    return (*m_superMap)[getMapElemFlatIndex(idx)*numComp() + comp];
+    return (*m_superMap)[getMapElemFlatIndex(idx) * numComp() + comp];
   }
 
   /**
@@ -176,12 +174,12 @@ public:
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType & value(IndexType idx, IndexType comp = 0) const
+  const DataType& value(IndexType idx, IndexType comp = 0) const
   {
     return operator()(idx, comp);
   }
 
-  DataType & value(IndexType idx, IndexType comp = 0)
+  DataType& value(IndexType idx, IndexType comp = 0)
   {
     return operator()(idx, comp);
   }
@@ -191,9 +189,8 @@ public:
    */
   IndexType index(IndexType idx) const
   {
-    return m_indicesHaveIndirection
-           ? m_superMap->set()->at( m_subsetIdx[idx] )
-           : idx;
+    return m_indicesHaveIndirection ? m_superMap->set()->at(m_subsetIdx[idx])
+                                    : idx;
   }
 
   /// @}
@@ -210,18 +207,17 @@ public:
 
   /// @}
 
-
   bool isValid(bool VerboseOutput = false) const override;
 
-private: //function inherit from StridePolicy that should not be accessible
+private:  //function inherit from StridePolicy that should not be accessible
   void setStride(IndexType)
   {
     SLIC_ASSERT_MSG(
       false,
-                    "Stride should not be changed after construction of SubMap.");
+      "Stride should not be changed after construction of SubMap.");
   }
 
-private: //helper functions
+private:  //helper functions
   /**
    * \brief Get the ElementFlatIndex into the SuperMap given the subset's index.
    */
@@ -242,34 +238,33 @@ private: //helper functions
   }
 
   /** Checks the ComponentFlatIndex is valid */
-  void verifyPosition(SetPosition idx ) const override
+  void verifyPosition(SetPosition idx) const override
   {
     verifyPositionImpl(idx);
   }
 
   /** Checks the ElementFlatIndex and the component index is valid */
-  void verifyPosition(SetPosition idx,
-                      SetPosition comp ) const
+  void verifyPosition(SetPosition idx, SetPosition comp) const
   {
     verifyPositionImpl(idx, comp);
   }
 
   /** Checks the ComponentFlatIndex is valid */
-  void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx) ) const
+  void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx)) const
   {
-    SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size()*numComp(),
+    SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size() * numComp(),
                     "Attempted to access element "
-                    << idx << " but Submap's data has size "
-                    << m_subsetIdx.size() * numComp() );
+                      << idx << " but Submap's data has size "
+                      << m_subsetIdx.size() * numComp());
   }
 
   /** Checks the ElementFlatIndex and the component index is valid */
   void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx),
-                          SetPosition AXOM_DEBUG_PARAM(comp) ) const
+                          SetPosition AXOM_DEBUG_PARAM(comp)) const
   {
     SLIC_ASSERT_MSG(
       idx >= 0 && idx < m_subsetIdx.size() && comp >= 0 && comp < numComp(),
-                    "Attempted to access element "
+      "Attempted to access element "
         << idx << " component " << comp << ", but Submap's data has size "
         << m_subsetIdx.size() << " with " << numComp() << " component");
   }
@@ -283,7 +278,7 @@ public:
    */
   class SubMapIterator : public IteratorBase<SubMapIterator, SetPosition>
   {
-public:
+  public:
     using iterator_category = std::random_access_iterator_tag;
     using value_type = DataType;
     using difference_type = SetPosition;
@@ -296,7 +291,7 @@ public:
     SubMapIterator(PositionType pos, SubMap* sMap)
       : IterBase(pos)
       , m_submap(*sMap)
-    {}
+    { }
 
     /**
      * \brief Returns the current iterator value. If the SubMap has multiple
@@ -324,37 +319,34 @@ public:
     /** \brief Returns the number of component per element in the SubMap. */
     PositionType numComp() const { return m_submap.numComp(); }
 
-protected:
+  protected:
     /* Implementation of advance() as required by IteratorBase */
     void advance(PositionType pos) { m_pos += pos; }
 
-private:
+  private:
     SubMap m_submap;
   };
 
-public:     // Functions related to iteration
+public:  // Functions related to iteration
   SubMapIterator begin() { return SubMapIterator(0, this); }
   SubMapIterator end() { return SubMapIterator(m_subsetIdx.size(), this); }
 
-protected:     //Member variables
+protected:  //Member variables
   SuperMapType* m_superMap;
   SubsetType m_subsetIdx;
   bool m_indicesHaveIndirection;
 
-}; //end SubMap
+};  //end SubMap
 
-
-
-
-template<typename SuperMapType,typename SetType>
-bool SubMap<SuperMapType,SetType>::isValid(bool verboseOutput) const
+template <typename SuperMapType, typename SetType>
+bool SubMap<SuperMapType, SetType>::isValid(bool verboseOutput) const
 {
   bool isValid = true;
   std::stringstream errStr;
 
-  if (m_superMap == nullptr)
+  if(m_superMap == nullptr)
   {
-    if (m_subsetIdx.size() > 0)
+    if(m_subsetIdx.size() > 0)
     {
       isValid = false;
       if(verboseOutput)
@@ -363,23 +355,21 @@ bool SubMap<SuperMapType,SetType>::isValid(bool verboseOutput) const
                << "but the subset index is non-empty";
       }
     }
-
   }
   else
   {
     int map_size = m_superMap->size();
     //Check all indices is inside the SuperMap range
-    for (int i = 0 ; i < m_subsetIdx.size() ; i++)
+    for(int i = 0; i < m_subsetIdx.size(); i++)
     {
       SetPosition pos = m_subsetIdx[i];
-      if (pos < 0 || pos >= map_size)
+      if(pos < 0 || pos >= map_size)
       {
         isValid = false;
         if(verboseOutput)
         {
           errStr << "\n\t* The given subset index " << pos
-                 << "is outside of the SuperMap range of 0 to "
-                 << map_size;
+                 << "is outside of the SuperMap range of 0 to " << map_size;
         }
       }
     }
@@ -389,13 +379,13 @@ bool SubMap<SuperMapType,SetType>::isValid(bool verboseOutput) const
   {
     SLIC_INFO("Detailed results of isValid on the SubMap.\n"
               << "SubMap was " << (isValid ? "valid" : "NOT valid") << "\n"
-              << errStr.str() );
+              << errStr.str());
   }
 
   return isValid;
 }
 
-} // end namespace slam
-} // end namespace axom
+}  // end namespace slam
+}  // end namespace axom
 
-#endif // SLAM_SUBMAP_HPP_
+#endif  // SLAM_SUBMAP_HPP_

@@ -26,48 +26,45 @@ namespace policies = axom::slam::policies;
 
 namespace
 {
-
 static const int SET_SIZE_1 = 5;
-static const int SET_SIZE_2= 16;
+static const int SET_SIZE_2 = 16;
 
 static const int SET_OFFSET_1 = 3;
 static const int SET_OFFSET_2 = 2;
 
 // Template aliases to simplify specifying some sets and relations
-template<typename P, typename E, typename FromSet, typename ToSet>
-using RelType = slam::StaticRelation<P,E,
+template <typename P, typename E, typename FromSet, typename ToSet>
+using RelType = slam::StaticRelation<P,
+                                     E,
                                      policies::VariableCardinality<E>,
-                                     policies::STLVectorIndirection<P,E>,
-                                     FromSet, ToSet>;
+                                     policies::STLVectorIndirection<P, E>,
+                                     FromSet,
+                                     ToSet>;
 
-template<typename SetType>
-using PositionSetType = slam::PositionSet<typename SetType::PositionType,
-                                          typename SetType::ElementType>;
+template <typename SetType>
+using PositionSetType =
+  slam::PositionSet<typename SetType::PositionType, typename SetType::ElementType>;
 
-template<typename SetType>
-using RangeSetType = slam::RangeSet<typename SetType::PositionType,
-                                    typename SetType::ElementType>;
+template <typename SetType>
+using RangeSetType =
+  slam::RangeSet<typename SetType::PositionType, typename SetType::ElementType>;
 
-template<typename SetType>
+template <typename SetType>
 using IndirSetType = slam::VectorIndirectionSet<typename SetType::PositionType,
                                                 typename SetType::ElementType>;
 
 // Predicate to check if b%a is zero
 // Note: Also returns true when a is zero to avoid division by zero
-bool modCheck(int a, int b)
-{
-  return (a == 0)  || (b%a == 0);
-}
+bool modCheck(int a, int b) { return (a == 0) || (b % a == 0); }
 
-} // end anonymous namespace
-
+}  // end anonymous namespace
 
 // Test fixture for testing slam's BivariateSet class
 //
 // Since we test BivariateSet parameterized by different possible underlying Set
 // types, we initialize all of the possibilities in this test fixture,
 // and initialize the concrete instances based on the actual input types.
-template<typename BSet>
+template <typename BSet>
 class BivariateSetTester : public ::testing::Test
 {
 public:
@@ -79,8 +76,8 @@ public:
   using ElementType = typename BSet::ElementType;
 
   using Vec = std::vector<PositionType>;
-  using RelationType = ::RelType<PositionType,ElementType,
-                                 FirstSetType,SecondSetType>;
+  using RelationType =
+    ::RelType<PositionType, ElementType, FirstSetType, SecondSetType>;
 
   using PSet1 = ::PositionSetType<FirstSetType>;
   using PSet2 = ::PositionSetType<SecondSetType>;
@@ -92,11 +89,15 @@ public:
   using ISet2 = ::IndirSetType<SecondSetType>;
 
   BivariateSetTester()
-    : m_set1(nullptr), m_set2(nullptr)
-    , m_pset1(nullptr), m_pset2(nullptr)
-    , m_rset1(nullptr), m_rset2(nullptr)
-    , m_iset1(nullptr), m_iset2(nullptr)
-  {}
+    : m_set1(nullptr)
+    , m_set2(nullptr)
+    , m_pset1(nullptr)
+    , m_pset2(nullptr)
+    , m_rset1(nullptr)
+    , m_rset2(nullptr)
+    , m_iset1(nullptr)
+    , m_iset2(nullptr)
+  { }
 
   virtual void SetUp()
   {
@@ -174,7 +175,7 @@ private:
     EXPECT_TRUE(m_iset2->isValid(true));
   }
 
-  template<typename SetType>
+  template <typename SetType>
   void deleteSet(SetType*& s)
   {
     delete s;
@@ -189,17 +190,17 @@ private:
     relationBegins.clear();
     relationIndices.clear();
 
-    for(int i = 0 ; i < m_set1->size() ; ++i)
+    for(int i = 0; i < m_set1->size(); ++i)
     {
       auto outer = m_set1->at(i);
-      relationBegins.push_back( relationIndices.size() );
+      relationBegins.push_back(relationIndices.size());
 
-      for(int j=0 ; j < m_set2->size() ; ++j)
+      for(int j = 0; j < m_set2->size(); ++j)
       {
         auto inner = m_set2->at(j);
-        if( modCheck(outer, inner) )
+        if(modCheck(outer, inner))
         {
-          relationIndices.push_back( j );
+          relationIndices.push_back(j);
         }
       }
     }
@@ -208,14 +209,14 @@ private:
     // Construct the relation using this data
     using RelationBuilder = typename RelationType::RelationBuilder;
     modRelation = RelationBuilder()
-                  .fromSet( m_set1 )
-                  .toSet( m_set2 )
-                  .begins( typename RelationBuilder::BeginsSetBuilder()
-                           .size( relationBegins.size() )
-                           .data( &relationBegins ) )
-                  .indices( typename RelationBuilder::IndicesSetBuilder()
-                            .size( relationIndices.size() )
-                            .data( &relationIndices ) );
+                    .fromSet(m_set1)
+                    .toSet(m_set2)
+                    .begins(typename RelationBuilder::BeginsSetBuilder()
+                              .size(relationBegins.size())
+                              .data(&relationBegins))
+                    .indices(typename RelationBuilder::IndicesSetBuilder()
+                               .size(relationIndices.size())
+                               .data(&relationIndices));
 
     EXPECT_TRUE(modRelation.isValid(true));
   }
@@ -225,43 +226,57 @@ private:
   // the FirstSetType. This is necessary since FirstSetType can
   // be either the abstract slam::Set<> or one of its derived types.
   // In the former case, we return PositionSet
-  template<typename S>
-  typename std::enable_if< std::is_abstract<S>::value, S*>::type
-  getFirstSet() { return m_pset1; }
+  template <typename S>
+  typename std::enable_if<std::is_abstract<S>::value, S*>::type getFirstSet()
+  {
+    return m_pset1;
+  }
 
-  template<typename S>
-  typename std::enable_if< std::is_same<S, RSet1>::value, S*>::type
-  getFirstSet() { return m_rset1; }
+  template <typename S>
+  typename std::enable_if<std::is_same<S, RSet1>::value, S*>::type getFirstSet()
+  {
+    return m_rset1;
+  }
 
-  template<typename S>
-  typename std::enable_if< std::is_same<S, ISet1>::value, S*>::type
-  getFirstSet() { return m_iset1; }
+  template <typename S>
+  typename std::enable_if<std::is_same<S, ISet1>::value, S*>::type getFirstSet()
+  {
+    return m_iset1;
+  }
 
-  template<typename S>
-  typename std::enable_if< std::is_same<S, PSet1>::value, S*>::type
-  getFirstSet() { return m_pset1; }
-
+  template <typename S>
+  typename std::enable_if<std::is_same<S, PSet1>::value, S*>::type getFirstSet()
+  {
+    return m_pset1;
+  }
 
   // Template magic to access the appropriate second set based on
   // the SecondSetType. When SecondSetType is slam::Set, we return PositionSet
-  template<typename S>
-  typename std::enable_if< std::is_abstract<S>::value, S*>::type
-  getSecondSet() { return m_pset2; }
+  template <typename S>
+  typename std::enable_if<std::is_abstract<S>::value, S*>::type getSecondSet()
+  {
+    return m_pset2;
+  }
 
-  template<typename S>
-  typename std::enable_if< std::is_same<S, RSet1>::value, S*>::type
-  getSecondSet() { return m_rset2; }
+  template <typename S>
+  typename std::enable_if<std::is_same<S, RSet1>::value, S*>::type getSecondSet()
+  {
+    return m_rset2;
+  }
 
-  template<typename S>
-  typename std::enable_if< std::is_same<S, ISet1>::value, S*>::type
-  getSecondSet() { return m_iset2; }
+  template <typename S>
+  typename std::enable_if<std::is_same<S, ISet1>::value, S*>::type getSecondSet()
+  {
+    return m_iset2;
+  }
 
-  template<typename S>
-  typename std::enable_if< std::is_same<S, PSet1>::value, S*>::type
-  getSecondSet() { return m_pset2; }
+  template <typename S>
+  typename std::enable_if<std::is_same<S, PSet1>::value, S*>::type getSecondSet()
+  {
+    return m_pset2;
+  }
 
 protected:
-
   FirstSetType* m_set1;
   SecondSetType* m_set2;
 
@@ -282,22 +297,19 @@ protected:
   RelationType modRelation;
 };
 
-
 // Tests several types of BivariateSet that differ in their underlying set types
-using MyTypes = ::testing::Types <
-        slam::BivariateSet< >
-        , slam::BivariateSet< slam::PositionSet<>, slam::PositionSet<> >
-        , slam::BivariateSet< slam::PositionSet<>, slam::RangeSet<> >
-        , slam::BivariateSet< slam::RangeSet<>, slam::PositionSet<> >
-        , slam::BivariateSet< slam::RangeSet<>, slam::RangeSet<> >
-        , slam::BivariateSet< slam::Set<>, slam::RangeSet<> >
-        , slam::BivariateSet< slam::PositionSet<>, slam::Set<> >
-        , slam::BivariateSet< slam::VectorIndirectionSet<>,
-                              slam::VectorIndirectionSet<> >
-        , slam::BivariateSet< slam::VectorIndirectionSet<> >
-        , slam::BivariateSet< slam::VectorIndirectionSet<>, slam::RangeSet<> >
-        , slam::BivariateSet< slam::RangeSet<>, slam::VectorIndirectionSet<> >
-        >;
+using MyTypes = ::testing::Types<
+  slam::BivariateSet<>,
+  slam::BivariateSet<slam::PositionSet<>, slam::PositionSet<>>,
+  slam::BivariateSet<slam::PositionSet<>, slam::RangeSet<>>,
+  slam::BivariateSet<slam::RangeSet<>, slam::PositionSet<>>,
+  slam::BivariateSet<slam::RangeSet<>, slam::RangeSet<>>,
+  slam::BivariateSet<slam::Set<>, slam::RangeSet<>>,
+  slam::BivariateSet<slam::PositionSet<>, slam::Set<>>,
+  slam::BivariateSet<slam::VectorIndirectionSet<>, slam::VectorIndirectionSet<>>,
+  slam::BivariateSet<slam::VectorIndirectionSet<>>,
+  slam::BivariateSet<slam::VectorIndirectionSet<>, slam::RangeSet<>>,
+  slam::BivariateSet<slam::RangeSet<>, slam::VectorIndirectionSet<>>>;
 TYPED_TEST_CASE(BivariateSetTester, MyTypes);
 
 //-----------------------------------------------------------------------------
@@ -310,7 +322,7 @@ TYPED_TEST(BivariateSetTester, smoke)
 
   // Test a default-constructed BivariateSet
   {
-    BSet* bset = new slam::ProductSet<S1,S2>();
+    BSet* bset = new slam::ProductSet<S1, S2>();
 
     // We expect this object to be valid when the types of both S1 and S2 are
     // abstract slam::Sets, but not if either is specialized.
@@ -323,7 +335,7 @@ TYPED_TEST(BivariateSetTester, smoke)
 
   // Test a non-default-constructed BivariateSet
   {
-    BSet* bset = new slam::ProductSet<S1,S2>(this->m_set1, this->m_set2);
+    BSet* bset = new slam::ProductSet<S1, S2>(this->m_set1, this->m_set2);
     EXPECT_TRUE(bset->isValid(true));
     delete bset;
   }
@@ -332,8 +344,8 @@ TYPED_TEST(BivariateSetTester, smoke)
 //-----------------------------------------------------------------------------
 
 // Tests BivariateSeet::firstSetSize(), secondSetSize()
-template<typename S1, typename S2>
-void bSetSizesTest(slam::BivariateSet<S1,S2>* bset)
+template <typename S1, typename S2>
+void bSetSizesTest(slam::BivariateSet<S1, S2>* bset)
 {
   const auto firstSetSize = bset->firstSetSize();
   const auto secondSetSize = bset->secondSetSize();
@@ -341,8 +353,8 @@ void bSetSizesTest(slam::BivariateSet<S1,S2>* bset)
   EXPECT_EQ(SET_SIZE_1, firstSetSize);
   EXPECT_EQ(SET_SIZE_2, secondSetSize);
 
-  EXPECT_EQ(firstSetSize, bset->getFirstSet()->size() );
-  EXPECT_EQ(secondSetSize, bset->getSecondSet()->size() );
+  EXPECT_EQ(firstSetSize, bset->getFirstSet()->size());
+  EXPECT_EQ(secondSetSize, bset->getSecondSet()->size());
 }
 
 TYPED_TEST(BivariateSetTester, sizes)
@@ -352,40 +364,39 @@ TYPED_TEST(BivariateSetTester, sizes)
 
   // Test the size functions for a ProductSet
   {
-    using PSet = slam::ProductSet<S1,S2>;
+    using PSet = slam::ProductSet<S1, S2>;
 
     PSet pset = PSet(this->m_set1, this->m_set2);
     EXPECT_TRUE(pset.isValid(true));
 
-    bSetSizesTest<S1,S2>(&pset);
+    bSetSizesTest<S1, S2>(&pset);
   }
 
   // Test the size functions for a RelationSet
   {
     using RType = typename TestFixture::RelationType;
-    using RSet = slam::RelationSet<RType,S1,S2>;
+    using RSet = slam::RelationSet<RType, S1, S2>;
 
     RSet rset = RSet(&this->modRelation);
     EXPECT_TRUE(rset.isValid(true));
 
-    bSetSizesTest<S1,S2>(&rset);
+    bSetSizesTest<S1, S2>(&rset);
   }
-
 }
 
 //-----------------------------------------------------------------------------
 
 // Tests BivariateSeet::getFirstSet(), getSecondSet(), getElements(idx)
 // and the ability to operate and iterate on the resulting sets
-template<typename S1, typename S2>
-void bSetTraverseTest(slam::BivariateSet<S1,S2>* bset, bool shouldCheckMod)
+template <typename S1, typename S2>
+void bSetTraverseTest(slam::BivariateSet<S1, S2>* bset, bool shouldCheckMod)
 {
   const auto firstSetSize = bset->firstSetSize();
 
   const auto* firstSet = bset->getFirstSet();
   const auto* secondSet = bset->getSecondSet();
 
-  for( int idx =0 ; idx < firstSetSize ; ++idx )
+  for(int idx = 0; idx < firstSetSize; ++idx)
   {
     auto outer = firstSet->at(idx);
 
@@ -393,16 +404,16 @@ void bSetTraverseTest(slam::BivariateSet<S1,S2>* bset, bool shouldCheckMod)
     sstr << idx << ": " << outer << " -> { ";
 
     auto elems = bset->getElements(idx);
-    for(auto innerIdx : elems )
+    for(auto innerIdx : elems)
     {
       auto inner = secondSet->at(innerIdx);
 
       if(shouldCheckMod)
       {
-        EXPECT_TRUE( modCheck(outer, inner));
+        EXPECT_TRUE(modCheck(outer, inner));
       }
 
-      sstr << "(" << outer <<"," << inner << ") ";
+      sstr << "(" << outer << "," << inner << ") ";
     }
     SLIC_INFO(sstr.str() << "}");
   }
@@ -417,30 +428,29 @@ TYPED_TEST(BivariateSetTester, traverse)
   SLIC_INFO("Traversing product set"
             << "\n       ----------------------");
   {
-    using PSet = slam::ProductSet<S1,S2>;
+    using PSet = slam::ProductSet<S1, S2>;
 
     PSet pset = PSet(this->m_set1, this->m_set2);
     EXPECT_TRUE(pset.isValid(true));
 
     bool checkMod = false;
-    bSetTraverseTest<S1,S2>(&pset, checkMod);
+    bSetTraverseTest<S1, S2>(&pset, checkMod);
   }
 
   // Test traversal functions for a RelationSet
-  std::cout<<std::endl;
+  std::cout << std::endl;
   SLIC_INFO("Traversing relation set"
             << "\n       -----------------------");
   {
     using RType = typename TestFixture::RelationType;
-    using RSet = slam::RelationSet<RType,S1,S2>;
+    using RSet = slam::RelationSet<RType, S1, S2>;
 
     RSet rset = RSet(&this->modRelation);
     EXPECT_TRUE(rset.isValid(true));
 
     bool checkMod = true;
-    bSetTraverseTest<S1,S2>(&rset, checkMod);
+    bSetTraverseTest<S1, S2>(&rset, checkMod);
   }
-
 }
 
 //-----------------------------------------------------------------------------
