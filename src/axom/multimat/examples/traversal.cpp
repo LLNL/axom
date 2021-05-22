@@ -47,8 +47,10 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
 
   axom::utilities::Timer timer;
 
-  MultiMat mm(DataLayout::CELL_DOM,
-              (use_sparse ? SparsityLayout::SPARSE : SparsityLayout::DENSE));
+  auto layout = DataLayout::CELL_DOM;
+  auto sparsity = (use_sparse ? SparsityLayout::SPARSE : SparsityLayout::DENSE);
+
+  MultiMat mm(layout, sparsity);
 
   int nfilled = 0;
   std::vector<bool> cellMatRel(nmats * ncells, false);
@@ -63,7 +65,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
 
   mm.setNumberOfMaterials(nmats);
   mm.setNumberOfCells(ncells);
-  mm.setCellMatRel(cellMatRel);
+  mm.setCellMatRel(cellMatRel, layout);
 
   //create the std::vector data for the field arrays
   std::vector<double> cell_arr(ncells*ncomp);
@@ -109,11 +111,11 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
     }
   }
 
-  mm.setVolfracField(volfrac_arr.data());
+  mm.setVolfracField(volfrac_arr.data(), layout, sparsity);
   mm.addField("Cell Array",
-              FieldMapping::PER_CELL, &cell_arr[0], ncomp);
+              FieldMapping::PER_CELL, layout, sparsity, &cell_arr[0], ncomp);
   mm.addField("CellMat Array",
-              FieldMapping::PER_CELL_MAT, &cellmat_arr[0], ncomp);
+              FieldMapping::PER_CELL_MAT, layout, sparsity, &cellmat_arr[0], ncomp);
 
   double sum = 0;
 
@@ -213,7 +215,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
   SLIC_ASSERT(x_sum == sum);
 
 
-  if (mm.getSparsityLayout() == SparsityLayout::SPARSE)
+  if (sparsity == SparsityLayout::SPARSE)
   {
     // ------------ return index set --------------
     SLIC_INFO("\n -- Access by Map with indexing set-- ");
@@ -232,7 +234,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
         //the materials (by id) in this cell
         MultiMat::IdSet setOfMaterialsInThisCell = mm.getMatInCell(i);
         //the indices into the maps
-        MultiMat::IndexSet indexSet = mm.getIndexingSetOfCell(i);
+        MultiMat::IndexSet indexSet = mm.getIndexingSetOfCell(i, sparsity);
 
         SLIC_ASSERT(setOfMaterialsInThisCell.size() == indexSet.size());
         for (int j = 0 ; j < indexSet.size() ; j++)
