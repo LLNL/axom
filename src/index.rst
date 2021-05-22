@@ -50,6 +50,7 @@ are identified.
    * Inlet: Input file parsing and information storage/retrieval
    * Lumberjack: Scalable parallel message logging and filtering
    * Mint: Mesh data model
+   * Multimat: Managing multimaterial field data
    * Primal: Computational geometry primitives
    * Quest: Querying on surface tool
    * Sidre: Simulation data repository
@@ -81,6 +82,9 @@ User guides and source code documentation are always linked on this site.
    * - Mint
      - :doc:`User Guide <axom/mint/docs/sphinx/index>`
      - `Source documentation <doxygen/html/minttop.html>`__
+   * - Multimat
+     - :doc:`User Guide <axom/multimat/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/multimattop.html>`__
    * - Primal
      - :doc:`User Guide <axom/primal/docs/sphinx/index>`
      - `Source documentation <doxygen/html/primaltop.html>`__
@@ -111,6 +115,7 @@ Axom has the following inter-component dependencies:
 - Slic optionally depends on Lumberjack
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
+- Multimat depends on Slic, and Slam
 - Quest depends on Slam, Spin, Primal, and Mint
 - Inlet depends on Sidre, Slic, and Primal
 
@@ -191,6 +196,7 @@ LLNL-CODE-741217
    Inlet (Input files) <axom/inlet/docs/sphinx/index>
    Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
+   Multimat (Multimaterial fields) <axom/multimat/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
    Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
    Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>

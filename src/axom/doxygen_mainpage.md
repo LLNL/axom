@@ -9,6 +9,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 * @subpage inlettop provides input file functionality.
 * @subpage lumberjacktop provides logging aggregation and filtering capability.
 * @subpage minttop provides a comprehensive mesh data model.
+* @subpage multimattop provides an API for managing multimaterial field data.
 * @subpage primaltop provides an API for geometric primitives and computational geometry tests.
 * @subpage questtop provides an API to query point distance and position relative to meshes.
 * @subpage sidretop provides a data store with hierarchical structure.
@@ -22,6 +23,7 @@ Dependencies between components are as follows:
 - Slam, Primal, Mint, Quest, Spin, and Sidre depend on Slic
 - Inlet depends on Sidre, and Slic
 - Mint optionally depends on Sidre
+- Multimat depends on Slic, and Slam
 - Spin depends on Primal, and Slam
 - Quest depends on Slam, Primal, Spin, and Mint
 
