@@ -29,33 +29,33 @@ macro(axom_add_code_checks)
     # Only do code checks if building Axom by itself and not included in
     # another project
     if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
-    set(_all_sources)
-    file(GLOB_RECURSE _all_sources
-         "*.cpp" "*.hpp" "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh"
-         "*.F" "*.f" "*.f90" "*.F90")
+        set(_all_sources)
+        file(GLOB_RECURSE _all_sources
+             "*.cpp" "*.hpp" "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh"
+             "*.F" "*.f" "*.f90" "*.F90")
 
-    # Check for excludes
-    if (NOT DEFINED arg_EXCLUDES)
-        set(_sources ${_all_sources})
-    else()
-        set(_sources)
-        foreach(_source ${_all_sources})
-            set(_to_be_excluded FALSE)
-            foreach(_exclude ${arg_EXCLUDES})
-                if (${_source} MATCHES ${_exclude})
-                    set(_to_be_excluded TRUE)
-                    break()
+        # Check for excludes
+        if (NOT DEFINED arg_EXCLUDES)
+            set(_sources ${_all_sources})
+        else()
+            set(_sources)
+            foreach(_source ${_all_sources})
+                set(_to_be_excluded FALSE)
+                foreach(_exclude ${arg_EXCLUDES})
+                    if (${_source} MATCHES ${_exclude})
+                        set(_to_be_excluded TRUE)
+                        break()
+                    endif()
+                endforeach()
+
+                if (NOT ${_to_be_excluded})
+                    list(APPEND _sources ${_source})
                 endif()
             endforeach()
+        endif()
 
-            if (NOT ${_to_be_excluded})
-                list(APPEND _sources ${_source})
-            endif()
-        endforeach()
-    endif()
-
-    blt_add_code_checks(PREFIX    ${arg_PREFIX}
-                        SOURCES   ${_sources}
+        blt_add_code_checks(PREFIX    ${arg_PREFIX}
+                            SOURCES   ${_sources}
                             CLANGFORMAT_CFG_FILE ${PROJECT_SOURCE_DIR}/.clang-format)
 
         # Set FOLDER property for code check targets
@@ -170,13 +170,13 @@ endmacro()
 
 ##------------------------------------------------------------------------------
 ## axom_check_code_compiles
-## 
+##
 ## This macro checks if a snippet of C++ code compiles.
 ##
-## SOURCE_STRING The source snippet to compile. 
+## SOURCE_STRING The source snippet to compile.
 ## Must be a valid C++ program with a main() function.
-## Note: This parameter should be passed in as a quoted string variable. Otherwise, 
-## cmake will convert the string into a list and lose the semicolons.  
+## Note: This parameter should be passed in as a quoted string variable. Otherwise,
+## cmake will convert the string into a list and lose the semicolons.
 ## E.g. axom_check_code_compiles(SOURCE_STRING "${str_var}" ...)
 ##
 ## CODE_COMPILES A boolean variable the contains the compilation result.
@@ -199,11 +199,11 @@ macro(axom_check_code_compiles)
     endif()
     if(NOT DEFINED arg_CODE_COMPILES)
         message(FATAL_ERROR "[axom_check_code_compiles] 'CODE_COMPILES' is a required parameter")
-    endif()    
+    endif()
 
     if(NOT DEFINED arg_VERBOSE_OUTPUT)
         set(arg_VERBOSE_OUTPUT FALSE)
-    endif()    
+    endif()
 
     if(${arg_VERBOSE_OUTPUT})
         message(STATUS "[axom_check_code_compiles] Attempting to compile source string: \n${arg_SOURCE_STRING}")
@@ -214,7 +214,7 @@ macro(axom_check_code_compiles)
     set(_fname ${CMAKE_CURRENT_BINARY_DIR}/_axomCheckCompiles${_rand}.cpp)
     file(WRITE ${_fname} "${arg_SOURCE_STRING}")
     try_compile(${arg_CODE_COMPILES}
-                ${CMAKE_CURRENT_BINARY_DIR}/CMakeTmp      
+                ${CMAKE_CURRENT_BINARY_DIR}/CMakeTmp
                 SOURCES ${_fname}
                 CXX_STANDARD ${CMAKE_CXX_STANDARD}
                 OUTPUT_VARIABLE _res)
@@ -223,11 +223,11 @@ macro(axom_check_code_compiles)
     if(${arg_VERBOSE_OUTPUT})
         message(STATUS "[axom_check_code_compiles] Compiler output: \n${_res}\n")
 
-        if(${arg_CODE_COMPILES})        
+        if(${arg_CODE_COMPILES})
             message(STATUS "[axom_check_code_compiles] The code snippet successfully compiled")
         else()
             message(STATUS "[axom_check_code_compiles] The code snippet failed to compile")
-        endif()        
+        endif()
     endif()
 
     # clear the variables set within the macro
@@ -239,7 +239,7 @@ endmacro(axom_check_code_compiles)
 
 ##------------------------------------------------------------------------------
 ## axom_component_requires
-## 
+##
 ## This macro checks for the required dependencies of the given component
 ##
 ## NAME - The name of the component that we are checking the dependencies of
@@ -276,7 +276,7 @@ endmacro(axom_component_requires)
 
 ##------------------------------------------------------------------------------
 ## axom_install_component
-## 
+##
 ## This macro installs libraries, fortran modules, headers, and exports the CMake
 ## target while preserving the directory stucture.  This macro assumes the following:
 ##
@@ -316,7 +316,7 @@ endmacro(axom_install_component)
 
 ##------------------------------------------------------------------------------
 ## axom_write_unified_header
-## 
+##
 ## This macro writes the unified header (axom/<lowered NAME>.hpp) to the build directory for the
 ## given component NAME with the given HEADERS included inside of it.
 ##
@@ -342,7 +342,7 @@ macro(axom_write_unified_header)
 
     file(WRITE ${_tmp_header} "\/\/ Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 \/\/ other Axom Project Developers. See the top-level LICENSE file for details.
-\/\/ 
+\/\/
 \/\/ SPDX-License-Identifier: (BSD-3-Clause)
 \n
 ")
@@ -354,7 +354,7 @@ macro(axom_write_unified_header)
 
     foreach(_file ${arg_HEADERS})
         set(_headerPath "axom\/${_lcname}\/${_file}")
-        
+
         if(${_file} IN_LIST arg_EXCLUDE)
             continue()
         elseif(${_headerPath} MATCHES "(\/detail\/)|(\/internal\/)")
