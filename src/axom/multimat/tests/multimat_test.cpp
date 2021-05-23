@@ -427,7 +427,7 @@ TEST(multimat, test_data_setval)
 {
   const int num_cells = 20;
   const int num_mats = 10;
-  const int stride_val = 4;
+  const int stride_val = 1;
   MM_test_data<double> data(num_cells, num_mats, stride_val);
 
   {  //remove everything, add everything back, and check
@@ -471,7 +471,7 @@ TEST(multimat, construct_multimat_1_array)
 {
   const int num_cells = 20;
   const int num_mats = 10;
-  const int stride_val = 4;
+  const int stride_val = 1;
   MM_test_data<double> data(num_cells, num_mats, stride_val);
 
   std::vector<DataLayout> data_layouts = {DataLayout::CELL_DOM,
@@ -539,7 +539,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
 {
   const int num_cells = 20;
   const int num_mats = 10;
-  const int stride_val = 4;
+  const int stride_val = 1;
 
   std::vector<DataLayout> data_layouts = {DataLayout::CELL_DOM,
                                           DataLayout::MAT_DOM};
