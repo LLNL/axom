@@ -102,6 +102,10 @@ OpPtr parseRotate(const inlet::Proxy &opProxy,
   if(startProperties.dimensions == Dimensions::Two)
   {
     verifyObjectFields(opProxy, "rotate", FieldSet {}, {"center"});
+    if (opProxy.contains("axis")) {
+        throw KleeError("The \"axis\" parameter of \"rotate\" can only be "
+                        "specified in 3D rotations.");
+    }
     Vector3D axis {0, 0, 1};
     return std::make_shared<Rotation>(
       opProxy["rotate"].get<double>(),
@@ -438,7 +442,7 @@ inlet::Container &GeometryOperatorData::defineSchema(inlet::Container &parent,
                                                      const std::string &fieldName,
                                                      const std::string &description)
 {
-  auto &opContainer = parent.addStructArray(fieldName, description);
+  auto &opContainer = parent.addStructArray(fieldName, description).strict();
 
   opContainer.addDoubleArray("translate");
 

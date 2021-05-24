@@ -230,22 +230,14 @@ TEST(GeometryOperatorsIO, readTranslation_3D)
   EXPECT_EQ(expectedProperties, translation.getEndProperties());
 }
 
-TEST(GeometryOperatorsIO, DISABLED_readTranslation_unknownKeys)
+TEST(GeometryOperatorsIO, readTranslation_unknownKeys)
 {
-  try
-  {
-    readSingleOperator<Translation>({Dimensions::Two, LengthUnit::cm},
+  EXPECT_THROW(
+          readSingleOperator<Translation>({Dimensions::Two, LengthUnit::cm},
                                     R"(
           translate: [10, 20]
           UNKNOWN_KEY: UNKNOWN_VALUE
-        )");
-    FAIL() << "Should have thrown an exception";
-  }
-  catch(const KleeError &ex)
-  {
-    EXPECT_THAT(ex.what(), HasSubstr("translate"));
-    EXPECT_THAT(ex.what(), HasSubstr("UNKNOWN_KEY"));
-  }
+        )"), KleeError);
 }
 
 TEST(GeometryOperatorsIO, readRotation_2D_requiredOnly)
@@ -279,7 +271,7 @@ TEST(GeometryOperatorsIO, readRotation_2D_optionalFields)
   EXPECT_EQ(expectedProperties, rotation.getEndProperties());
 }
 
-TEST(GeometryOperatorsIO, DISABLED_readRotation_2D_axisNotAllowed)
+TEST(GeometryOperatorsIO, readRotation_2D_axisNotAllowed)
 {
   try
   {
@@ -622,12 +614,11 @@ TEST(GeometryOperatorsIO, readMultiple_unknownOperator)
          )");
     FAIL() << "Should have thrown";
   }
-  catch(const KleeError &ex)
+  catch(const KleeError &)
   {
     // TODO We can't get the key of an unexpected value with Inlet.
     // Need https://github.com/LLNL/axom/issues/471 to be implemented
     // EXPECT_THAT(ex.what(), HasSubstr("UNKNOWN_OPERATOR"));
-    EXPECT_THAT(ex.what(), HasSubstr("Invalid transformation"));
   }
 }
 
