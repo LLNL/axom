@@ -2389,18 +2389,19 @@ void MFEMSidreDataCollection::reconstructFields()
       // FiniteElementCollection/QuadratureSpace construction
       const std::string basis_name = field_grp->getView("basis")->getString();
       // Check if it's a QuadratureFunction
-      if(basis_name.find("QF") == 0)
+      if(basis_name.find("QF") == 0 && (m_quadspaces.count(basis_name) == 0))
       {
         // The vdim is being overwritten here with the value in the basis string so we
         // can correctly construct the QuadratureFunction
-        m_quadspaces.emplace_back(
-          detail::NewQuadratureSpace(basis_name, mesh, vdim));
+        m_quadspaces.emplace(basis_name,
+                             detail::NewQuadratureSpace(basis_name, mesh, vdim));
         is_gridfunc = false;
       }
-      else
+      // Only need to create a new FEColl if one doesn't already exist
+      else if(m_fecolls.count(basis_name) == 0)
       {
-        m_fecolls.emplace_back(
-          mfem::FiniteElementCollection::New(basis_name.c_str()));
+        m_fecolls.emplace(basis_name,
+                          mfem::FiniteElementCollection::New(basis_name.c_str()));
       }
 
       View* value_view = nullptr;
@@ -2427,25 +2428,28 @@ void MFEMSidreDataCollection::reconstructFields()
         SLIC_ERROR("Cannot reconstruct grid function - field values not found");
       }
 
-      if(is_gridfunc)
+      // Only need to create a new FESpace if one doesn't already exist
+      if(is_gridfunc && (m_fespaces.count(basis_name) == 0))
       {
         // FiniteElementSpace - mesh ptr and FEColl ptr
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
         auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
         if(parmesh)
         {
-          m_fespaces.emplace_back(
+          m_fespaces.emplace(
+            basis_name,
             new mfem::ParFiniteElementSpace(parmesh,
-                                            m_fecolls.back().get(),
+                                            m_fecolls.at(basis_name).get(),
                                             vdim,
                                             ordering));
         }
         else
   #endif
         {
-          m_fespaces.emplace_back(
+          m_fespaces.emplace(
+            basis_name,
             new mfem::FiniteElementSpace(mesh,
-                                         m_fecolls.back().get(),
+                                         m_fecolls.at(basis_name).get(),
                                          vdim,
                                          ordering));
         }
@@ -2456,8 +2460,8 @@ void MFEMSidreDataCollection::reconstructFields()
       if(is_gridfunc)
       {
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-        auto parfes =
-          dynamic_cast<mfem::ParFiniteElementSpace*>(m_fespaces.back().get());
+        auto parfes = dynamic_cast<mfem::ParFiniteElementSpace*>(
+          m_fespaces.at(basis_name).get());
         if(parfes)
         {
           m_owned_gridfuncs.emplace_back(
@@ -2467,7 +2471,7 @@ void MFEMSidreDataCollection::reconstructFields()
   #endif
         {
           m_owned_gridfuncs.emplace_back(
-            new mfem::GridFunction(m_fespaces.back().get(), values));
+            new mfem::GridFunction(m_fespaces.at(basis_name).get(), values));
         }
 
         // Register a non-owning pointer with the base subobject
@@ -2477,7 +2481,9 @@ void MFEMSidreDataCollection::reconstructFields()
       else
       {
         m_owned_quadfuncs.emplace_back(
-          new mfem::QuadratureFunction(m_quadspaces.back().get(), values, vdim));
+          new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(),
+                                       values,
+                                       vdim));
         // Register a non-owning pointer with the base subobject
         DataCollection::RegisterQField(field_grp->getName(),
                                        m_owned_quadfuncs.back().get());
