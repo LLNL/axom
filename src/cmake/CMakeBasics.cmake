@@ -157,6 +157,12 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_TRUNCATING_CONSTANTS
                   )
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_TRUNCATING_CONSTANTS)
 
+# Fix for https://github.com/LLNL/axom/issues/559
+blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS
+                  DEFAULT     " "
+                  PGI         "-Wc,--pending_instantiations=900"
+                  )
+
 blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS_DEBUG
                   DEFAULT     " "
                   CLANG       "-fstandalone-debug"
@@ -185,4 +191,3 @@ endif()
 if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
 endif()
-

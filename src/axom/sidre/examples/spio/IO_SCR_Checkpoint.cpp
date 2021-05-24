@@ -11,6 +11,7 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
+#include "spio_scr.hpp"
 
 #include "CLI11/CLI11.hpp"
 
@@ -208,7 +209,14 @@ int main(int argc, char* argv[])
 {
   axom::slic::SimpleLogger logger;
 
+
+  ::testing::InitGoogleTest(&argc, argv);
+
   MPI_Init(&argc, &argv);
+
+  // run the test from spio_scr.hpp
+  int result = RUN_ALL_TESTS();
+  SLIC_ASSERT(result == 0); 
 
   int my_rank, num_ranks;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);

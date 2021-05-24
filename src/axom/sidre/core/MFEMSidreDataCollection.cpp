@@ -707,7 +707,7 @@ bool MFEMSidreDataCollection::verifyMeshBlueprint()
   bool result = conduit::blueprint::mesh::verify(mesh_node, verify_info);
   SLIC_WARNING_IF(!result,
                   "MFEMSidreDataCollection blueprint verification failed:\n"
-                    << verify_info.to_string());
+                    << verify_info.to_yaml());
   return result;
 }
 
@@ -1262,6 +1262,11 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
     RegisterFieldInBPIndex(field_name, gf->VectorDim());
   }
 
+  // Check if the field contains material metadata
+  checkForMaterialSet(field_name);
+  checkForSpeciesSet(field_name);
+  checkForMaterialDependentField(field_name);
+
   // Register field_name + gf in field_map.
   DataCollection::RegisterField(field_name, gf);
 }
@@ -1514,6 +1519,175 @@ void MFEMSidreDataCollection::DeregisterField(const std::string& field_name)
   // Deregister field_name from field_map.
   DataCollection::DeregisterField(field_name);
   removeField(field_name);
+}
+
+void MFEMSidreDataCollection::AssociateMaterialSet(
+  const std::string& volume_fraction_field_name,
+  const std::string& matset_name)
+{
+  auto iter = m_matset_associations.find(volume_fraction_field_name);
+  if(iter != m_matset_associations.end())
+  {
+    SLIC_WARNING("Volume fraction field "
+                 << volume_fraction_field_name
+                 << " has already been associated with a material set: "
+                 << iter->second);
+    return;
+  }
+  m_matset_associations[volume_fraction_field_name] = matset_name;
+  Group* matset_group = m_bp_grp->createGroup("matsets/" + matset_name);
+  // Since we're creating the matset, associate it with a topology
+  // These will always be associated with the mesh
+  matset_group->createViewString("topology", s_mesh_topology_name);
+}
+
+void MFEMSidreDataCollection::AssociateSpeciesSet(
+  const std::string& species_field_name,
+  const std::string& specset_name,
+  const std::string& matset_name,
+  const bool volume_dependent)
+{
+  SLIC_WARNING_IF(!m_bp_grp->hasGroup("matsets/" + matset_name),
+                  "The material set '"
+                    << matset_name << "' has not been associated with a field");
+  auto iter = m_specset_associations.find(species_field_name);
+  if(iter != m_specset_associations.end())
+  {
+    SLIC_WARNING("Species field "
+                 << species_field_name
+                 << " has already been associated with a species set: "
+                 << iter->second);
+    return;
+  }
+  m_specset_associations[species_field_name] = specset_name;
+  Group* specset_grp = m_bp_grp->createGroup("specsets/" + specset_name);
+  specset_grp->createViewScalar("volume_dependent",
+                                static_cast<int8>(volume_dependent));
+  // Since we're creating the species set, associate it with a material set
+  specset_grp->createViewString("matset", matset_name);
+}
+
+void MFEMSidreDataCollection::AssociateMaterialDependentField(
+  const std::string& material_dependent_field_name,
+  const std::string& matset_name)
+{
+  SLIC_WARNING_IF(!m_bp_grp->hasGroup("matsets/" + matset_name),
+                  "The material set '"
+                    << matset_name << "' has not been associated with a field");
+  auto iter = m_material_dependent_fields.find(material_dependent_field_name);
+  if(iter != m_material_dependent_fields.end())
+  {
+    SLIC_WARNING("Field " << material_dependent_field_name
+                          << " has already been labeled as material-dependent"
+                             " and associated with a material set: "
+                          << iter->second);
+    return;
+  }
+  m_material_dependent_fields[material_dependent_field_name] = matset_name;
+}
+
+View* MFEMSidreDataCollection::getFieldValuesView(const std::string& field_name)
+{
+  const std::string field_values_name = "fields/" + field_name + "/values";
+  View* values_view = nullptr;
+  if(m_bp_grp->hasView(field_values_name))
+  {
+    // Scalar-valued field
+    values_view = m_bp_grp->getView(field_values_name);
+  }
+  else if(m_bp_grp->hasGroup(field_values_name))
+  {
+    // Vector-valued field
+    values_view = m_bp_grp->getGroup(field_values_name)->getView("x0");
+  }
+  SLIC_WARNING_IF(values_view == nullptr,
+                  "Field " << field_name << " was not registered");
+  return values_view;
+}
+
+void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
+{
+  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
+  // Expecting [base_field_name, material_id]
+  if(tokens.size() != 2)
+  {
+    return;
+  }
+
+  auto iter = m_matset_associations.find(tokens[0]);
+  // If it hasn't been registered as a matset, it's not a volume fraction field
+  if(iter == m_matset_associations.end())
+  {
+    return;
+  }
+  const std::string matset_name = iter->second;
+
+  View* vol_fractions_view = getFieldValuesView(field_name);
+
+  Group* fractions_group =
+    alloc_group(m_bp_grp, "matsets/" + matset_name + "/volume_fractions");
+  View* matset_frac_view = fractions_group->copyView(vol_fractions_view);
+  matset_frac_view->rename(tokens[1]);
+  // FIXME: Do we need to add anything to the index group?
+}
+
+void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
+{
+  const auto tokens = utilities::string::splitLastNTokens(field_name, 3, '_');
+  // Expecting [base_field_name, material_id, component]
+  if(tokens.size() != 3)
+  {
+    return;
+  }
+
+  auto iter = m_specset_associations.find(tokens[0]);
+  // If it hasn't been registered as a matset, it's not a species field
+  if(iter == m_specset_associations.end())
+  {
+    return;
+  }
+  const std::string specset_name = iter->second;
+
+  View* species_values_view = getFieldValuesView(field_name);
+
+  Group* specset_material_group =
+    alloc_group(m_bp_grp,
+                "specsets/" + specset_name + "/matset_values/" + tokens[1]);
+  View* specset_values = specset_material_group->copyView(species_values_view);
+  specset_values->rename(tokens[2]);
+  // FIXME: Do we need to add anything to the index group?
+}
+
+void MFEMSidreDataCollection::checkForMaterialDependentField(
+  const std::string& field_name)
+{
+  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
+  // Expecting [base_field_name, material_id]
+  if(tokens.size() != 2)
+  {
+    return;
+  }
+
+  auto iter = m_material_dependent_fields.find(tokens[0]);
+  // If it hasn't been registered, it's not a material-dependent field
+  if(iter == m_material_dependent_fields.end())
+  {
+    return;
+  }
+  const std::string matset_name = iter->second;
+
+  View* material_values = getFieldValuesView(field_name);
+
+  Group* field_grp = m_bp_grp->getGroup("fields/" + tokens[0]);
+  if(!field_grp->hasView("matset"))
+  {
+    field_grp->createViewString("matset", matset_name);
+  }
+
+  Group* values_grp = alloc_group(field_grp, "matset_values");
+  View* added_values = values_grp->copyView(material_values);
+  added_values->rename(tokens[1]);
+  // FIXME: Do we need to add anything to the index group?
 }
 
 // private method

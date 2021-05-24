@@ -19,10 +19,6 @@ set(gtest_spio_parallel_tests
    spio_parallel.hpp
    )
 
-if(SCR_FOUND)
-# Turn off spio_scr until we solve run-time conflicts with other tests
-#    list(APPEND gtest_spio_parallel_tests spio_scr.hpp)
-endif()
 
 #------------------------------------------------------------------------------
 # Add gtest C++ tests
