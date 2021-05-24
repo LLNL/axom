@@ -48,7 +48,7 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     endif()
 
     # These are not used in Axom, turn them off
-    set(AXOM_NOT_USED_BLT_TOOLS
+    set(_unused_blt_tools
         CLANGQUERY
         CLANGTIDY
         VALGRIND
@@ -56,18 +56,18 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
         CMAKEFORMAT
         UNCRUSTIFY
         YAPF)
-    foreach(_tool ${AXOM_NOT_USED_BLT_TOOLS})
+    foreach(_tool ${_unused_blt_tools})
         set(ENABLE_${_tool} OFF CACHE BOOL "")
     endforeach()
 
     # These are only used by Axom developers, so turn them off
     # unless an explicit executable path is given
-    set(AXOM_USED_BLT_TOOLS
+    set(_used_blt_tools
         CLANGFORMAT
         CPPCHECK
         DOXYGEN
         SPHINX)
-    foreach(_tool ${AXOM_NOT_USED_BLT_TOOLS})
+    foreach(_tool ${_used_blt_tools})
         if(NOT ${_tool}_EXECUTABLE)
             set(ENABLE_${_tool} OFF CACHE BOOL "")
         else()
