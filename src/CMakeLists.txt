@@ -70,6 +70,8 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     foreach(_tool ${AXOM_NOT_USED_BLT_TOOLS})
         if(NOT ${_tool}_EXECUTABLE)
             set(ENABLE_${_tool} OFF CACHE BOOL "")
+        else()
+            set(ENABLE_${_tool} ON CACHE BOOL "")
         endif()
     endforeach()
 
