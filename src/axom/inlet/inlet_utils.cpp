@@ -77,7 +77,8 @@ bool checkFlag(const axom::sidre::Group& target,
 
 bool verifyRequired(const axom::sidre::Group& target,
                     const bool condition,
-                    const std::string& type)
+                    const std::string& type,
+                    std::vector<VerificationError>* errors)
 {
   // Assume that it wasn't found
   ReaderResult status = ReaderResult::NotFound;
@@ -104,6 +105,10 @@ bool verifyRequired(const axom::sidre::Group& target,
         type,
         target.getPathName());
       SLIC_WARNING(msg);
+      if(errors)
+      {
+        errors->push_back({Path {target.getPathName()}, msg});
+      }
       return false;
     }
   }
@@ -118,6 +123,10 @@ bool verifyRequired(const axom::sidre::Group& target,
     const std::string msg =
       fmt::format("[Inlet] {0} '{1}' was {2}", type, target.getPathName(), reason);
     SLIC_WARNING(msg);
+    if(errors)
+    {
+      errors->push_back({Path {target.getPathName()}, msg});
+    }
     return false;
   }
   return true;

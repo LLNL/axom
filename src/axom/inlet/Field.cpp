@@ -438,10 +438,10 @@ Field& Field::registerVerifier(std::function<bool(const Field&)> lambda)
   return *this;
 }
 
-bool Field::verify() const
+bool Field::verify(std::vector<VerificationError>* errors) const
 {
   // If this field was required, make sure something was defined in it
-  if(!verifyRequired(*m_sidreGroup, m_sidreGroup->hasView("value"), "Field"))
+  if(!verifyRequired(*m_sidreGroup, m_sidreGroup->hasView("value"), "Field", errors))
   {
     return false;
   }
@@ -454,6 +454,10 @@ bool Field::verify() const
       "value(s) constraints: {0}",
       m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
+    if(errors)
+    {
+      errors->push_back({Path {m_sidreGroup->getPathName()}, msg});
+    }
     return false;
   }
 
@@ -466,14 +470,24 @@ bool Field::verify() const
       "value(s) constraints: {0}",
       m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
+    if(errors)
+    {
+      errors->push_back({Path {m_sidreGroup->getPathName()}, msg});
+    }
     return false;
   }
 
   // Lambda verification step
   if(m_verifier && !m_verifier(*this))
   {
-    SLIC_WARNING(fmt::format("[Inlet] Field failed lambda verification: {0}",
-                             m_sidreGroup->getPathName()));
+    const std::string msg =
+      fmt::format("[Inlet] Field failed lambda verification: {0}",
+                  m_sidreGroup->getPathName());
+    SLIC_WARNING(msg);
+    if(errors)
+    {
+      errors->push_back({Path {m_sidreGroup->getPathName()}, msg});
+    }
     return false;
   }
   return true;
@@ -553,12 +567,12 @@ std::string Field::name() const
                       m_sidreGroup->getPathName());
 }
 
-bool AggregateField::verify() const
+bool AggregateField::verify(std::vector<VerificationError>* errors) const
 {
   return std::all_of(
     m_fields.begin(),
     m_fields.end(),
-    [](const VerifiableScalar& field) { return field.verify(); });
+    [&errors](const VerifiableScalar& field) { return field.verify(errors); });
 }
 
 AggregateField& AggregateField::required(bool isRequired)
