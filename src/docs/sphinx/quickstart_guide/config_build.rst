@@ -25,25 +25,17 @@ Requirements, Dependencies, and Supported Compilers
 Basic requirements:
 ~~~~~~~~~~~~~~~~~~~
 
-  * C++ Compiler
+  * C++ Compiler with C++11 support
   * CMake
   * Fortran Compiler (optional)
 
 Supported Compilers
 ~~~~~~~~~~~~~~~~~~~
 
-Here is a list of the minimum supported compiler versions:
-
-  * Clang 4.0.0
-  * GCC 4.9.3
-  * IBM XL 13
-  * Intel 18
-  * Microsoft Visual Studio 2015
-  * Microsoft Visual Studio 2015 with the Intel toolchain
-
-Some Axom features require more modern compiler standards than these supply.
+Axom supports a wide variety of compilers.
 Please see the ``<axom_src>/scripts/spack/configs/<platform>/compilers.yaml``
-for an up to date list of the supported compilers for each platform.
+for an up to date list of the currently supported and tested compilers for
+each platform.
 
 .. _dependencies-label:
 
