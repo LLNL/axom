@@ -18,6 +18,16 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased] - Release date yyyy-mm-dd
+
+### Added
+- Added new CMake option to allow users to turn off Axom created tools: `AXOM_ENABLE_TOOLS`
+
+### Changed
+- `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
+- Harden configuration options for BLT tools (style, code quality, etc.) against accidentally being enabled for users.  Developers will
+  always give a full path (e.g. `CLANGFORMAT_EXECUTABLE`)
+
 ## [Version 0.5.0] - Release date 2021-05-14
 
 ### Added
