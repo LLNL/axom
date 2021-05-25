@@ -9,6 +9,7 @@
 #include "axom/sidre.hpp"
 #include "fmt/fmt.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
+#include "axom/core/Path.hpp"
 
 #ifndef INLET_UTILS_HPP
   #define INLET_UTILS_HPP
@@ -23,6 +24,19 @@ enum class ReaderResult
   NotFound,        // Path does not exist in the input file
   NotHomogeneous,  // Found, but elements of other type exist
   WrongType  // Found, but item at specified path was not of requested type
+};
+
+/*!
+*****************************************************************************
+* \brief Information on an Inlet verification error
+*****************************************************************************
+*/
+struct VerificationError
+{
+  /// \brief The path to the container/field/function with the error
+  Path path;
+  /// \brief The error message
+  std::string message;
 };
 
 /*!
@@ -79,6 +93,8 @@ bool checkFlag(const axom::sidre::Group& target,
 * \param [in] target Reference to the Sidre group to verify the required-ness of
 * \param [in] condition The condition that must be true if the object is required
 * \param [in] type The type of the object as a string, for use in the warning message
+* \param [in] errors An optional vector of errors to append to in the case
+* of verification failure
 * 
 * \return False if the object was required but \p condition was false, True otherwise
 * \post If the function returns False, a warning message will be emitted
@@ -86,7 +102,8 @@ bool checkFlag(const axom::sidre::Group& target,
 */
 bool verifyRequired(const axom::sidre::Group& target,
                     const bool condition,
-                    const std::string& type);
+                    const std::string& type,
+                    std::vector<VerificationError>* errors = nullptr);
 
 /*!
 *****************************************************************************
