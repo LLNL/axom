@@ -12,7 +12,6 @@
 using axom::inlet::FunctionType;
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
-using axom::sidre::DataStore;
 
 namespace inlet = axom::inlet;
 // _inlet_userdef_simple_start
@@ -89,10 +88,9 @@ int main()
   // Inlet requires a SLIC logger to be initialized to output runtime information
   axom::slic::SimpleLogger logger;
 
-  DataStore ds;
   auto lr = std::make_unique<LuaReader>();
   lr->parseString(input);
-  Inlet inlet(std::move(lr), ds.getRoot());
+  Inlet inlet(std::move(lr));
 
   // _inlet_userdef_simple_usage_start
   // Create a container off the global container for the car object

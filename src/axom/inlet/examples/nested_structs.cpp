@@ -321,10 +321,9 @@ int main(int argc, char** argv)
                "Warns if any unexpected fields are provided");
   CLI11_PARSE(app, argc, argv);
 
-  axom::sidre::DataStore ds;
   auto reader = std::unique_ptr<inlet::YAMLReader>(new inlet::YAMLReader());
   reader->parseString(input);
-  inlet::Inlet inlet(std::move(reader), ds.getRoot());
+  inlet::Inlet inlet(std::move(reader));
 
   // _inlet_nested_struct_array_start
   auto& shapes_container = inlet.addStructArray("shapes");

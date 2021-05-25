@@ -28,6 +28,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Harden configuration options for BLT tools (style, code quality, etc.) against accidentally being enabled for users.  Developers will
   always give a full path (e.g. `CLANGFORMAT_EXECUTABLE`)
 - Inlet: `Writer`s are passed directly to `Inlet::write` instead of being registered
+- `Inlet` objects can now be constructed without a user-provided `sidre::DataStore`
 
 ## [Version 0.5.0] - Release date 2021-05-14
 
