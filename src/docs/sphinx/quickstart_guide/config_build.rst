@@ -29,8 +29,10 @@ Basic requirements:
   * CMake
   * Fortran Compiler (optional)
 
-Compilers we support (listed with minimum supported version):
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Supported Compilers
+~~~~~~~~~~~~~~~~~~~
+
+Here is a list of the minimum supported compiler versions:
 
   * Clang 4.0.0
   * GCC 4.9.3
@@ -39,21 +41,23 @@ Compilers we support (listed with minimum supported version):
   * Microsoft Visual Studio 2015
   * Microsoft Visual Studio 2015 with the Intel toolchain
 
-Please see the ``<axom_src>/scripts/uberenv/spack_configs/*/compilers.yaml``
+Some Axom features require more modern compiler standards than these supply.
+Please see the ``<axom_src>/scripts/spack/configs/<platform>/compilers.yaml``
 for an up to date list of the supported compilers for each platform.
 
 .. _dependencies-label:
 
-External Dependencies:
+External Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Axom's dependencies come in two flavors:
-*Library dependencies* contain code that axom must link against,
-while *tool dependencies* are executables that we use as part of our development
-process, e.g. to generate documentation and format our code.
+
+* Library: contain code that axom must link against
+* Tool:  executables that we use as part of our development process, e.g. to generate documentation and format our code.
+
 Unless otherwise marked, the dependencies are optional.
 
-Library dependencies
+Library Dependencies
 """"""""""""""""""""
 
 ================== ==================================== ======================
@@ -81,23 +85,21 @@ Each library dependency has a corresponding build system variable
 For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``.
 
 
-Tool dependencies
+Tool Dependencies
 """""""""""""""""
 
 ================== ==================================== ======================
-  Tool               Purpose                            Build system variable
+  Tool             Purpose                              Build System Variable
 ================== ==================================== ======================
-  `clang-format`_    Code Style Checks                  CLANGFORMAT_EXECUTABLE
-  `CppCheck`_        Static C/C++ code analysis         CPPCHECK_EXECUTABLE
-  `Doxygen`_         Source Code Docs                   DOXYGEN_EXECUTABLE
-  `Lcov`_            Code Coverage Reports              LCOV_EXECUTABLE
-  `Shroud`_          Multi-language binding generation  SHROUD_EXECUTABLE
-  `Sphinx`_          User Docs                          SPHINX_EXECUTABLE
+  `clangformat`_   Code Style Checks                    CLANGFORMAT_EXECUTABLE
+  `CppCheck`_      Static C/C++ code analysis           CPPCHECK_EXECUTABLE
+  `Doxygen`_       Source Code Docs                     DOXYGEN_EXECUTABLE
+  `Lcov`_          Code Coverage Reports                LCOV_EXECUTABLE
+  `Shroud`_        Multi-language binding generation    SHROUD_EXECUTABLE
+  `Sphinx`_        User Docs                            SPHINX_EXECUTABLE
 ================== ==================================== ======================
 
-.. TODO: add ``python`` if we return to using it as a tool
-
-.. _clang-format: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormat.html
+.. _clangformat: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormat.html
 .. _CppCheck: http://cppcheck.sourceforge.net/
 .. _Doxygen: http://www.doxygen.nl/
 .. _Lcov: http://ltp.sourceforge.net/coverage/lcov.php
@@ -105,15 +107,10 @@ Tool dependencies
 .. _Sphinx: http://www.sphinx-doc.org/en/master/
 
 
-Each tool has a corresponding build system variable (with the suffix ``_EXECUTABLE``)
-to supply the tool's executable path. For example, ``sphinx`` has a corresponding build
-system variable ``SPHINX_EXECUTABLE``.
-
-
 .. note::
   To get a full list of all dependencies of Axom's dependencies in an ``uberenv``
   build of our TPLs, please go to the TPL root directory and
-  run the following spack command ``./spack/bin/spack spec uberenv-axom``.
+  run the following spack command ``./spack/bin/spack spec axom``.
 
 .. _tplbuild-label:
 
@@ -155,7 +152,7 @@ see the `uberenv docs <https://uberenv.readthedocs.io/en/latest/>`_
 You can also see examples of how Spack spec names are passed to ``uberenv.py``
 in the python scripts we use to build TPLs for the Axom development team on
 LC platforms at LLNL. These scripts are located in the directory
-``scripts/uberenv/llnl_install_scripts``.
+``scripts/llnl_scripts``.
 
 
 .. _toolkitbuild-label:
@@ -181,14 +178,14 @@ using platform-specific *host-config* files.
 Host-config files
 ~~~~~~~~~~~~~~~~~
 
-*Host-config* files help make Axom's configuration process more automatic and
+Host-config files help make Axom's configuration process more automatic and
 reproducible. A host-config file captures all build configuration
 information used for the build such as compiler version and options,
 paths to all TPLs, etc. When passed to CMake, a host-config file initializes
 the CMake cache with the configuration specified in the file.
 
 We noted in the previous section that the uberenv script generates a
-'host-config' file for each item in the Spack spec list given to it.
+host-config file for each item in the Spack spec list given to it.
 These files are generated by spack in the directory where the
 TPLs were installed. The name of each file contains information about the
 platform and spec.
@@ -201,7 +198,7 @@ The easiest way to configure the code for compilation is to use the
 ``config-build.py`` python script located in Axom's base directory;
 e.g.,::
 
-   $ ./config-build.py -hc {host-config file name}
+   $ ./config-build.py -hc {host-config path}
 
 This script requires that you pass it a *host-config* file. The script runs
 CMake and passes it the host-config.
@@ -275,10 +272,10 @@ directly to CMake; for example::
    $ make install
 
 
-CMake configuration options
+CMake Configuration Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here are the key build system options in Axom.
+Here are the key build system options in Axom:
 
 +------------------------------+---------+--------------------------------+
 | OPTION                       | Default | Description                    |
@@ -297,6 +294,8 @@ Here are the key build system options in Axom.
 | AXOM_ENABLE_EXAMPLES         | ON      | Builds examples                |
 +------------------------------+---------+--------------------------------+
 | AXOM_ENABLE_TESTS            | ON      | Builds unit tests              |
++------------------------------+---------+--------------------------------+
+| AXOM_ENABLE_TOOLS            | ON      | Builds tools                   |
 +------------------------------+---------+--------------------------------+
 | BUILD_SHARED_LIBS            | OFF     | Build shared libraries.        |
 |                              |         | Default is Static libraries    |
@@ -320,7 +319,7 @@ Here are the key build system options in Axom.
 +------------------------------+---------+--------------------------------+
 
 If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable the desired
-components (other than 'common', which is always enabled).
+components (other than 'core', which is always enabled).
 
 See `Axom software documentation <../../../index.html>`_
 for a list of Axom's components and their dependencies.
@@ -350,41 +349,9 @@ Axom components are built properly, execute the following command::
    $ make test
 
 
-
 .. _appbuild-label:
-
 
 Compiling and Linking with an Application
 -----------------------------------------
 
 Please see :ref:`using_in_your_project` for examples of how to use Axom in your project.
-
-
-.. CYRUS NOTE:
-.. I commented out b/c I don't think we want to promote this as a
-.. supported way to include axom, happy to add it back if group feels
-.. otherwise.
-..
-.. Incorporating Axom as a Git-Submodule to a CMake-Based Application
-.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. If you are working on a project based on CMake_
-.. you may want to incorporate Axom as Git submodule as follows:
-..
-.. 1. Add Axom as a git submodule to your project, for example: ::
-..
-..    $ git submodule add git@github.com:LLNL/axom.git <path/to/axom>
-..
-.. .. note::
-..       If you are not using BLT_ in your project, you'll have to issue the
-..       following: ::
-..
-..          git submodule update --init --recursive
-..
-..       This will put BLT_ in `axom/src/cmake/blt`.
-..
-.. 2. Add the following line in the associated "CMakeLists.txt" for your project: ::
-..
-..       add_subdirectory( axom )
-..
-.. .. _CMake: https://cmake.org
-.. .. _BLT: https://github.com/LLNL/blt
