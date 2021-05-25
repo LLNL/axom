@@ -1061,7 +1061,7 @@ Container& Container::registerVerifier(std::function<bool(const Container&)> lam
   return *this;
 }
 
-bool Container::verify() const
+bool Container::verify(std::vector<VerificationError>* errors) const
 {
   // Whether the calling container has anything in it
   // If the name is empty then we're the global (root) container, which we always
@@ -1070,14 +1070,19 @@ bool Container::verify() const
 
   // If this container was required, make sure something was defined in it
   bool verified =
-    verifyRequired(*m_sidreGroup, this_container_defined, "Container");
+    verifyRequired(*m_sidreGroup, this_container_defined, "Container", errors);
 
   // Verify this Container if a lambda was configured
   if(this_container_defined && m_verifier && !m_verifier(*this))
   {
     verified = false;
-    SLIC_WARNING(
-      fmt::format("[Inlet] Container failed verification: {0}", m_name));
+    const std::string msg =
+      fmt::format("[Inlet] Container failed verification: {0}", m_name);
+    SLIC_WARNING(msg);
+    if(errors)
+    {
+      errors->push_back({Path {m_name}, msg});
+    }
   }
 
   // If the strict flag is set
@@ -1088,10 +1093,15 @@ bool Container::verify() const
     verified = verified && currUnexpectedNames.empty();
     for(const auto& name : currUnexpectedNames)
     {
-      SLIC_WARNING(
+      const std::string msg =
         fmt::format("[Inlet] Container '{0}' contained unexpected child: {1}",
                     m_name,
-                    name));
+                    name);
+      SLIC_WARNING(msg);
+      if(errors)
+      {
+        errors->push_back({Path {m_name}, msg});
+      }
     }
   }
 

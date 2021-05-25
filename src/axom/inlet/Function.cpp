@@ -40,17 +40,24 @@ Function& Function::registerVerifier(std::function<bool(const Function&)> lambda
   return *this;
 }
 
-bool Function::verify() const
+bool Function::verify(std::vector<VerificationError>* errors) const
 {
   const bool this_function_exists = static_cast<bool>(m_func);
   // If this function was required, make sure something was defined in it
   bool verified =
-    verifyRequired(*m_sidreGroup, this_function_exists, "Function");
+    verifyRequired(*m_sidreGroup, this_function_exists, "Function", errors);
   // Verify this Function if a lambda was configured
   if(this_function_exists && m_verifier && !m_verifier(*this))
   {
     verified = false;
-    SLIC_WARNING(fmt::format("[Inlet] Function failed verification: {0}", name()));
+    const std::string msg =
+      fmt::format("[Inlet] Function failed verification: {0}",
+                  m_sidreGroup->getPathName());
+    SLIC_WARNING(msg);
+    if(errors)
+    {
+      errors->push_back({Path {m_sidreGroup->getPathName()}, msg});
+    }
   }
 
   return verified;
