@@ -108,23 +108,17 @@ Generating Documentation
 We provide a slightly more complex but closer to a real world Inlet usage example of the usage of Inlet.
 You can find that example in our repository `here <https://github.com/LLNL/axom/blob/develop/src/axom/inlet/examples/document_generation.cpp>`_.
 
-After you create your ``Inlet`` class but before you start defining your schema, create a concrete
-instantiation of a ``Writer`` class and register it with your ``Inlet`` class.
+Once you have defined your schema, call ``write()`` on your ``Inlet`` class, passing it a concrete
+instantiation of a ``Writer`` class.
 
 .. literalinclude:: ../../examples/documentation_generation.cpp
    :start-after: _inlet_documentation_generation_start
    :end-before: _inlet_documentation_generation_end
    :language: C++
 
-Then after you are finishing defining your schema, call ``write()`` on your ``Inlet`` class
-to write out your documentation to the given file.
-
-.. code-block:: C++
-
-   inlet.write();
-
 We provided a basic Sphinx documentation writing class but you may want to customize it to your
-own style.  The link below shows the example output from the ``documentation_generation.cpp`` example:
+own style.  The links below show the example output from the ``documentation_generation.cpp``,
+``mfem_coefficient.cpp``, and ``nested_structs.cpp`` examples:
 
 .. toctree::
    :maxdepth: 1

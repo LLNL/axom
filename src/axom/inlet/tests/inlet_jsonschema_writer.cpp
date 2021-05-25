@@ -40,9 +40,7 @@ bool validateString(Inlet& inlet, const std::string& luaString)
     luaString);
   jsonInstance.close();
 
-  std::unique_ptr<JSONSchemaWriter> writer(new JSONSchemaWriter(schemaFile));
-  inlet.registerWriter(std::move(writer));
-  inlet.write();
+  inlet.write(JSONSchemaWriter(schemaFile));
 
   const std::string cmd =
     fmt::format(JSONSCHEMA_EXECUTABLE " -i {0} {1}", instanceFile, schemaFile);
