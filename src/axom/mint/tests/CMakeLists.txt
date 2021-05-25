@@ -40,7 +40,7 @@ set( mint_tests
      mint_util_write_vtk.cpp
    )
 
-set( mint_test_dependencies axom )
+set( mint_test_dependencies slic mint )
 
 blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
 
