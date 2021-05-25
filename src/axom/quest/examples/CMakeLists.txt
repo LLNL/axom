@@ -22,8 +22,6 @@ blt_add_executable(
     )
 
 if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION AND ENABLE_MPI)
-
-    blt_print_target_properties(TARGET mfem)
     blt_add_executable(
         NAME        quest_shaping_driver_ex
         SOURCES     shaping_driver.cpp
