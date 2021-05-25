@@ -6,12 +6,12 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 
 #include "fmt/fmt.hpp"
-#include "axom/slic/interface/slic.hpp"
 
 #include <cmath>
 
@@ -188,7 +188,6 @@ TEST_F(TetrahedronTest, barycentric)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
 using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])

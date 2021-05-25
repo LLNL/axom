@@ -48,6 +48,9 @@ endforeach()
 convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR)
 convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
 
+# Read axom_exports_symbols into a variable that will be inlined in the config file
+file(READ ${CMAKE_BINARY_DIR}/axom_export_symbols INLINED_AXOM_EXPORTS)
+
 #------------------------------------------------------------------------------
 # Compiler checks
 #------------------------------------------------------------------------------

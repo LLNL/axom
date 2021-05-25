@@ -105,7 +105,7 @@ approved. At this point, the release candidate branch can be deleted.
 
 .. note::
 
-   Github will add a corresponding tarbal and zip archives consisting of the
+   Github will add a corresponding tarball and zip archives consisting of the
    source files for each release. However, these files do not include any
    submodules. Consequently, a tarball that includes all of the submodules is
    generated manually in a seperate step.

@@ -67,6 +67,8 @@ public:
       delete m_fecoll;
       delete m_fespace;
       delete m_soln_field;
+      delete m_qspace;
+      delete m_qfunc;
     }
   }
 
@@ -131,6 +133,14 @@ private:
     // Intialize to zero as our "initial conditions"
     *m_soln_field = 0.0;
 
+    // Initialize a quadrature function (per-qpt data)
+    m_qspace = new mfem::QuadratureSpace(m_mesh, /*order=*/1);
+    // Set the data to nullptr so the datacollection will initialize it with
+    // its own managed data (needed for a restart)
+    m_qfunc = new mfem::QuadratureFunction(m_qspace, nullptr);
+    m_datacoll.RegisterQField("qpt_data", m_qfunc);
+    *m_qfunc = 0.0;
+
     // Set t = 0 state info
     m_datacoll.SetCycle(0);   // Iteration counter
     m_datacoll.SetTime(0.0);  // Simulation time
@@ -149,6 +159,8 @@ private:
     m_soln_field = m_datacoll.GetField("solution");
     m_fespace = m_soln_field->FESpace();
     m_fecoll = m_fespace->FEColl();
+    m_qfunc = m_datacoll.GetQField("qpt_data");
+    m_qspace = m_qfunc->GetSpace();
   }
 
   // FEM-related objects needed as part of a simulation
@@ -157,6 +169,8 @@ private:
   const mfem::FiniteElementCollection* m_fecoll;
   mfem::FiniteElementSpace* m_fespace;
   mfem::GridFunction* m_soln_field;
+  mfem::QuadratureSpace* m_qspace;
+  mfem::QuadratureFunction* m_qfunc;
   bool m_owns_data = false;
 
   // A reference to the datacollection so it can be updated with time/cycle

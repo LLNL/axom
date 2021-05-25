@@ -206,11 +206,13 @@ TYPED_TEST(inlet_Reader, simple_name_retrieval)
     "t = { innerT = { foo = 1 }, anotherInnerT = {baz = 3}}"));
 
   auto found_names = reader.getAllNames();
-  std::unordered_set<std::string> expected_names {"t",
-                                                  "t/innerT",
-                                                  "t/innerT/foo",
-                                                  "t/anotherInnerT",
-                                                  "t/anotherInnerT/baz"};
+  std::vector<std::string> expected_names {"t",
+                                           "t/innerT",
+                                           "t/innerT/foo",
+                                           "t/anotherInnerT",
+                                           "t/anotherInnerT/baz"};
+  std::sort(found_names.begin(), found_names.end());
+  std::sort(expected_names.begin(), expected_names.end());
   EXPECT_EQ(found_names, expected_names);
 }
 
@@ -221,7 +223,7 @@ TYPED_TEST(inlet_Reader, simple_name_retrieval_arrays)
     "t = { [0] = { foo = 1, bar = 2}, [1] = { foo = 3, bar = 4} }"));
 
   auto found_names = reader.getAllNames();
-  std::unordered_set<std::string> expected_names {
+  std::vector<std::string> expected_names {
     "t",
     "t/0",
     "t/0/foo",
@@ -230,6 +232,8 @@ TYPED_TEST(inlet_Reader, simple_name_retrieval_arrays)
     "t/1/foo",
     "t/1/bar",
   };
+  std::sort(found_names.begin(), found_names.end());
+  std::sort(expected_names.begin(), expected_names.end());
   EXPECT_EQ(found_names, expected_names);
 }
 

@@ -41,7 +41,7 @@ set(gtest_slam_tests
     )
 
 
-set(slam_tests_depends_on core slic slam gtest)
+set(slam_tests_depends_on slam gtest)
 
 #------------------------------------------------------------------------------
 # Add gtest based tests

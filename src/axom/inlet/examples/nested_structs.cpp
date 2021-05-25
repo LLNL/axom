@@ -315,6 +315,10 @@ int main(int argc, char** argv)
   CLI::App app {"Example of Axom's Inlet component for nested structures"};
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");
+  bool strictVerification {false};
+  app.add_flag("--strict",
+               strictVerification,
+               "Warns if any unexpected fields are provided");
   CLI11_PARSE(app, argc, argv);
 
   axom::sidre::DataStore ds;
@@ -327,6 +331,12 @@ int main(int argc, char** argv)
   Shape::defineSchema(shapes_container);
   // _inlet_nested_struct_array_end
 
+  if(strictVerification)
+  {
+    // Mark the entire input as "strict"
+    inlet.getGlobalContainer().strict();
+  }
+
   if(inlet.verify())
   {
     SLIC_INFO("Verification was successful");
@@ -334,12 +344,6 @@ int main(int argc, char** argv)
   else
   {
     SLIC_INFO("Verification was unsuccessful");
-  }
-
-  // TODO: Remove this when a strict() option is available, as it will behave identically
-  for(const auto& item : inlet.unexpectedNames())
-  {
-    SLIC_WARNING("Input contained unexpected item: " << item);
   }
 
   auto shapes = inlet["shapes"].get<std::unordered_map<int, Shape>>();

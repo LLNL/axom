@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
   }
 
   IOManager reader(MPI_COMM_WORLD, true);
-  reader.read(root, root_file, false, true);
+  reader.read(root, root_file, false);
 
   delete ds;
 

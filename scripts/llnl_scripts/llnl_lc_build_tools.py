@@ -590,8 +590,6 @@ def set_group_and_perms(directory):
 
 def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to_stdout = False, mirror_location = ''):
     if spec:
-        if not spec.startswith("%"):
-            spec = "%{0}".format(spec)
         specs = [spec]
     else:
         specs = get_specs_for_current_machine()

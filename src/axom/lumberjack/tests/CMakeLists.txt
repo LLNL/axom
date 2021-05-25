@@ -39,7 +39,7 @@ blt_add_executable(NAME       lumberjack_mpi_tests
                    SOURCES    lumberjack_mpi_main.cpp
                    HEADERS    ${lumberjack_mpi_tests}
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON lumberjack mpi gtest 
+                   DEPENDS_ON lumberjack gtest 
                    FOLDER     axom/lumberjack/tests )
 
 foreach(test_suite ${lumberjack_mpi_tests})
@@ -57,7 +57,7 @@ endforeach()
 blt_add_executable(NAME       lumberjack_speed_test
                    SOURCES    lumberjack_speedTest.cpp
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON lumberjack mpi
+                   DEPENDS_ON lumberjack
                    FOLDER     axom/lumberjack/tests )
 
 set(lumberjack_sample_input_dir ${PROJECT_SOURCE_DIR}/axom/lumberjack/tests/sampleInput)

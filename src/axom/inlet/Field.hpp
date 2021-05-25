@@ -437,7 +437,7 @@ template <>
 std::string Field::get<std::string>() const;
 
 template <>
-inline bool Field::searchValidValues<std::string>(const axom::sidre::View& view) const;
+bool Field::searchValidValues<std::string>(const axom::sidre::View& view) const;
 
 /*!
    *****************************************************************************

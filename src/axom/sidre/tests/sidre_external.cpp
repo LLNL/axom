@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "axom/config.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/sidre/core/sidre.hpp"
 

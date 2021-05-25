@@ -7,9 +7,6 @@
 #------------------------------------------------------------------------------
 
 set(spin_example_depends
-        core
-        slam
-        primal
         spin
         fmt
         )
@@ -23,4 +20,3 @@ blt_add_executable(
     DEPENDS_ON  ${spin_example_depends}
     FOLDER      axom/spin/examples
     )
-

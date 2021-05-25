@@ -115,34 +115,14 @@
 #cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
 /*
- * define proper lib exports for various platforms
+ * Inline axom's macros related to export symbols, e.g. AXOM_EXPORT
  */
+@INLINED_AXOM_EXPORTS@
 
-#cmakedefine AXOM_WINDOWS_DLL_EXPORTS @AXOM_WINDOWS_DLL_EXPORTS@
-#cmakedefine CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS @CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS@
 
-#if defined(AXOM_EXPORTS) || defined(axom_EXPORTS)
-/* define catch all def */
-#define AXOM_EXPORTS_DEFINED 1
-#endif
-
-#if defined(_WIN32)
-
-#if defined(AXOM_WINDOWS_DLL_EXPORTS)
-
-#if defined(AXOM_EXPORTS_DEFINED)
-#define AXOM_API __declspec(dllexport)
-#else
-#define AXOM_API __declspec(dllimport)
-#endif  /* defined(AXOM_EXPORTS_DEFINED) */
-
-#else   /* defined(AXOM_WINDOWS_DLL_EXPORTS) */
-
-/* empty for static builds */
-#define AXOM_API
-
-#endif  /* defined(AXOM_WINDOWS_DLL_EXPORTS) */
-
+/*
+ * Disables some MSVC warnings related to shared libraries
+ */
 #if defined(_MSC_VER)
 /* Turn off warning about lack of DLL interface */
 #pragma warning(disable:4251)
@@ -152,12 +132,5 @@
 #pragma warning(disable:4786)
 #endif  /* defined(_MSC_VER) */
 
-#else   /* defined(_WIN32) */
-
-/* hidden by default */
-#define AXOM_API
-
-#endif  /* defined(_WIN32) */
 
 #endif  /* AXOM_COMMON_CONFIG_HPP */
-

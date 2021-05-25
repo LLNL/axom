@@ -21,6 +21,7 @@
 #include <stack>
 
 // Other axom headers
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic/interface/slic.hpp"
