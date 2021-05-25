@@ -80,6 +80,25 @@ public:
     m_unexpectedNames = m_reader->getAllNames();
   }
 
+  /// \overload
+  Inlet(std::unique_ptr<Reader> reader,
+        bool docEnabled = true,
+        bool reconstruct = false)
+    : m_reader(std::move(reader))
+    , m_datastore(new sidre::DataStore)
+    , m_sidreRootGroup(m_datastore->getRoot())
+    , m_globalContainer("",
+                        "",
+                        *m_reader,
+                        m_sidreRootGroup,
+                        m_unexpectedNames,
+                        docEnabled,
+                        reconstruct)
+    , m_docEnabled(docEnabled)
+  {
+    m_unexpectedNames = m_reader->getAllNames();
+  }
+
   // Inlet objects must be move only - delete the implicit shallow copy constructor
   Inlet(const Inlet&) = delete;
   Inlet(Inlet&&) = default;
@@ -482,6 +501,8 @@ public:
   // TODO add update value functions
 private:
   std::unique_ptr<Reader> m_reader;
+  // Used only in the case where the user does not provide an initial root group
+  std::unique_ptr<sidre::DataStore> m_datastore;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   Container m_globalContainer;
   bool m_docEnabled;
