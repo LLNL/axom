@@ -280,6 +280,12 @@ public:
    *****************************************************************************
    * \brief Verifies the contents of the sidreGroup according to Inlet 
    * requirements.
+   * \param [in] errors An optional vector of errors to append to in the case
+   * of verification failure
+   * 
+   * Ownership is not taken of @a errors, the raw pointer is only used for its
+   * optional reference semantics, as opposed to something like
+   * std::optional<std::reference_wrapper<T>>
    *
    * This recursively checks the correctness of each Field and Container in the Sidre
    * Group: ensuring that required Fields are specified, each Field's value 
@@ -291,7 +297,7 @@ public:
    *
    *****************************************************************************
    */
-  bool verify() const;
+  bool verify(std::vector<VerificationError>* errors = nullptr) const;
 
   /*!
    *****************************************************************************
