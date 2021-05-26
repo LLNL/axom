@@ -67,16 +67,14 @@ enum VolFracSampling
 };
 
 /** Computes the bounding box of the surface mesh */
-GeometricBoundingBox compute_bounds(mint::Mesh* mesh)
+GeometricBoundingBox compute_bounds(const mint::Mesh& mesh)
 {
-  SLIC_ASSERT(mesh != nullptr);
-
   GeometricBoundingBox meshBB;
   SpacePt pt;
 
-  for(int i = 0; i < mesh->getNumberOfNodes(); ++i)
+  for(int i = 0; i < mesh.getNumberOfNodes(); ++i)
   {
-    mesh->getNode(i, pt.data());
+    mesh.getNode(i, pt.data());
     meshBB.addPoint(pt);
   }
 
@@ -153,6 +151,7 @@ void FCT_project(mfem::DenseMatrix& M,
   beta /= beta.Sum();
 
   DenseMatrix F(s);
+  // Note: indexing F(i,j) where  0 <= j < i < s
   for(int i = 1; i < s; i++)
   {
     for(int j = 0; j < i; j++)
@@ -430,7 +429,7 @@ void sampleInOutField(const std::string& shapeName,
 
 /**
  * Utility function to take the union of inouts on all shapes for a given material
- * 
+ *
  * Note: Registers the new QFunction with \a inoutQFuncs
  */
 void mergeQFuncs(const std::string& material,
@@ -764,7 +763,7 @@ public:
 
           // NOTE: We're not yet applying transformations!
 
-          GeometricBoundingBox bb = compute_bounds(&surface_mesh);
+          GeometricBoundingBox bb = compute_bounds(surface_mesh);
           m_problemBoundingBox.addBox(bb);
         }
       }
@@ -805,6 +804,9 @@ void initializeMesh(Input& params, axom::sidre::MFEMSidreDataCollection* dc)
                           range[1],
                           range[2]);
     break;
+  default:
+    SLIC_ERROR("Only 2D and 3D meshes are currently supported.");
+    break;
   }
 
   // Offset to the mesh to lie w/in the bounding box
@@ -820,9 +822,9 @@ void initializeMesh(Input& params, axom::sidre::MFEMSidreDataCollection* dc)
   mesh->EnsureNodes();
   dc->SetMeshNodesName("positions");
 
-  #ifdef MFEM_USE_MPI
+#ifdef MFEM_USE_MPI
   dc->SetMesh(MPI_COMM_WORLD, mesh);
-  #endif
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -886,7 +888,7 @@ int main(int argc, char** argv)
     reader.getMesh(static_cast<UMesh*>(surface_mesh));
 
     // Compute mesh bounding box and log some stats about the surface
-    GeometricBoundingBox meshBB = compute_bounds(surface_mesh);
+    GeometricBoundingBox meshBB = compute_bounds(*surface_mesh);
     SLIC_INFO("Mesh bounding box: " << meshBB);
 
     // Create octree over mesh's bounding box
@@ -1002,10 +1004,10 @@ int main(int argc, char** argv)
     }
   }
 
-  // Save meshes and fields
-  #ifdef MFEM_USE_MPI
+// Save meshes and fields
+#ifdef MFEM_USE_MPI
   dc.Save();
-  #endif
+#endif
 
   MPI_Finalize();
 
