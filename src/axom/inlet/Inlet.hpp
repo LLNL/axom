@@ -80,6 +80,25 @@ public:
     m_unexpectedNames = m_reader->getAllNames();
   }
 
+  /// \overload
+  Inlet(std::unique_ptr<Reader> reader,
+        bool docEnabled = true,
+        bool reconstruct = false)
+    : m_reader(std::move(reader))
+    , m_datastore(new sidre::DataStore)
+    , m_sidreRootGroup(m_datastore->getRoot())
+    , m_globalContainer("",
+                        "",
+                        *m_reader,
+                        m_sidreRootGroup,
+                        m_unexpectedNames,
+                        docEnabled,
+                        reconstruct)
+    , m_docEnabled(docEnabled)
+  {
+    m_unexpectedNames = m_reader->getAllNames();
+  }
+
   // Inlet objects must be move only - delete the implicit shallow copy constructor
   Inlet(const Inlet&) = delete;
   Inlet(Inlet&&) = default;
@@ -255,26 +274,15 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Sets the associated Writer for the Inlet instance.
-   *
-   * Sets the associated Writer. If the Writer is already set, it will be
-   * replaced by the one that was most recently set.
-   *
-   * \param [in] writer An owning pointer to a Writer object
-   *
-   *****************************************************************************
-   */
-  void registerWriter(std::unique_ptr<Writer> writer);
-
-  /*!
-   *****************************************************************************
    * \brief Writes input file documentation.
    *
-   * This runs the calling Inlet object through the registered Writer.
+   * This runs the calling Inlet object through the \a writer.
+   * 
+   * \param [in] writer The writer object to use
    *
    *****************************************************************************
    */
-  void write();
+  void write(Writer&& writer);
 
   /*!
    *****************************************************************************
@@ -499,9 +507,10 @@ public:
   // TODO add update value functions
 private:
   std::unique_ptr<Reader> m_reader;
+  // Used only in the case where the user does not provide an initial root group
+  std::unique_ptr<sidre::DataStore> m_datastore;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   Container m_globalContainer;
-  std::unique_ptr<Writer> m_writer;
   bool m_docEnabled;
   std::vector<std::string> m_unexpectedNames;
 };
