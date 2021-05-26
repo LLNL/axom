@@ -819,7 +819,10 @@ void initializeMesh(Input& params, axom::sidre::MFEMSidreDataCollection* dc)
 
   mesh->EnsureNodes();
   dc->SetMeshNodesName("positions");
+
+  #ifdef MFEM_USE_MPI
   dc->SetMesh(MPI_COMM_WORLD, mesh);
+  #endif
 }
 
 //------------------------------------------------------------------------------
@@ -1000,7 +1003,9 @@ int main(int argc, char** argv)
   }
 
   // Save meshes and fields
+  #ifdef MFEM_USE_MPI
   dc.Save();
+  #endif
 
   MPI_Finalize();
 
