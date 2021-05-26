@@ -20,6 +20,8 @@
 #include "axom/spin/internal/linear_bvh/math.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 
+#include "axom/spin/MortonIndex.hpp"
+
 #include "axom/core/utilities/Utilities.hpp"  // for isNearlyEqual()
 #include "axom/slic/interface/slic.hpp"       // for slic
 
@@ -39,29 +41,6 @@ namespace internal
 {
 namespace linear_bvh
 {
-//expands 10-bit unsigned int into 30 bits
-static inline AXOM_HOST_DEVICE axom::int32 expand_bits32(axom::int32 x32)
-{
-  x32 = (x32 | (x32 << 16)) & 0x030000FF;
-  x32 = (x32 | (x32 << 8)) & 0x0300F00F;
-  x32 = (x32 | (x32 << 4)) & 0x030C30C3;
-  x32 = (x32 | (x32 << 2)) & 0x09249249;
-  return x32;
-}
-
-//------------------------------------------------------------------------------
-static inline AXOM_HOST_DEVICE axom::int64 expand_bits64(axom::int32 x)
-{
-  axom::int64 x64 = x & 0x1FFFFF;
-  x64 = (x64 | x64 << 32) & 0x1F00000000FFFF;
-  x64 = (x64 | x64 << 16) & 0x1F0000FF0000FF;
-  x64 = (x64 | x64 << 8) & 0x100F00F00F00F00F;
-  x64 = (x64 | x64 << 4) & 0x10c30c30c30c30c3;
-  x64 = (x64 | x64 << 2) & 0x1249249249249249;
-
-  return x64;
-}
-
 //------------------------------------------------------------------------------
 //Returns 30 bit morton code for coordinates for
 // x, y, and z are expecting to be between [0,1]
@@ -74,12 +53,10 @@ static inline AXOM_HOST_DEVICE axom::int32 morton32_encode(axom::float32 x,
   y = fmin(fmax(y * 1024.0f, 0.0f), 1023.0f);
   z = fmin(fmax(z * 1024.0f, 0.0f), 1023.0f);
 
-  //expand 10 bits to 30
-  axom::int32 xx = expand_bits32((axom::int32)x);
-  axom::int32 yy = expand_bits32((axom::int32)y);
-  axom::int32 zz = expand_bits32((axom::int32)z);
-  //interleave coordinates
-  return (zz << 2 | yy << 1 | xx);
+  primal::Point<int32, 3> integer_pt =
+    primal::Point<int32, 3>::make_point((int32)x, (int32)y, (int32)z);
+
+  return convertPointToMorton<int32>(integer_pt);
 }
 
 //------------------------------------------------------------------------------
@@ -94,13 +71,10 @@ static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
   y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
   z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
 
-  //expand the 10 bits to 30
-  axom::int64 xx = expand_bits64((axom::int32)x);
-  axom::int64 yy = expand_bits64((axom::int32)y);
-  axom::int64 zz = expand_bits64((axom::int32)z);
+  primal::Point<int64, 3> integer_pt =
+    primal::Point<int64, 3>::make_point((int64)x, (int64)y, (int64)z);
 
-  //interleave coordinates
-  return (zz << 2 | yy << 1 | xx);
+  return convertPointToMorton<int64>(integer_pt);
 }
 
 template <typename ExecSpace, typename FloatType>
