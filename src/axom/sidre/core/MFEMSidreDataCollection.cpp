@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
+#include "axom/core.hpp"
 
 #ifdef AXOM_USE_MFEM
 
@@ -237,8 +238,8 @@ std::string MFEMSidreDataCollection::get_file_path(const std::string& filename) 
 {
   std::stringstream fNameSstr;
 
-  // Note: If non-empty, prefix_path has a separator ('/') at the end
-  fNameSstr << prefix_path << filename;
+  namespace fs = axom::utilities::filesystem;
+  fNameSstr << fs::joinPath(prefix_path, filename);
 
   if(GetCycle() >= 0)
   {
@@ -948,9 +949,8 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
 {
   PrepareToSave();
 
-  create_directory(prefix_path, mesh, myid);
-
   std::string file_path = get_file_path(filename);
+  create_directory(file_path, mesh, myid);
 
   sidre::Group* blueprint_indicies_grp = m_bp_index_grp->getParent();
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
