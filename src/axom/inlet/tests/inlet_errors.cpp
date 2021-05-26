@@ -13,12 +13,12 @@ using axom::inlet::VerificationError;
 using axom::sidre::DataStore;
 
 template <typename InletReader>
-Inlet createBasicInlet(DataStore* ds, const std::string& luaString)
+Inlet createBasicInlet(const std::string& luaString)
 {
   std::unique_ptr<InletReader> reader(new InletReader());
   reader->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
   const bool enableDocs = true;
-  return Inlet(std::move(reader), ds->getRoot(), enableDocs);
+  return Inlet(std::move(reader), enableDocs);
 }
 
 template <typename InletReader>
@@ -30,8 +30,7 @@ TYPED_TEST_SUITE(inlet_errors, axom::inlet::detail::ReaderTypes);
 TYPED_TEST(inlet_errors, required_field)
 {
   std::string testString = "";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addInt("foo", "foo's description").required();
 
@@ -48,8 +47,7 @@ TYPED_TEST(inlet_errors, required_field)
 TYPED_TEST(inlet_errors, invalid_range)
 {
   std::string testString = "foo = 7";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addInt("foo", "foo's description").range(0, 5);
 
@@ -66,8 +64,7 @@ TYPED_TEST(inlet_errors, invalid_range)
 TYPED_TEST(inlet_errors, invalid_range_nested)
 {
   std::string testString = "foo = { bar = { baz = 7 } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo = inlet.addStruct("foo", "foo's description");
   auto& bar = foo.addStruct("bar", "bar's description");
@@ -86,8 +83,7 @@ TYPED_TEST(inlet_errors, invalid_range_nested)
 TYPED_TEST(inlet_errors, invalid_value)
 {
   std::string testString = "foo = 7";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addInt("foo", "foo's description").validValues({2, 4, 6, 8});
 
@@ -104,8 +100,7 @@ TYPED_TEST(inlet_errors, invalid_value)
 TYPED_TEST(inlet_errors, invalid_value_nested)
 {
   std::string testString = "foo = { bar = { baz = 7 } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo = inlet.addStruct("foo", "foo's description");
   auto& bar = foo.addStruct("bar", "bar's description");
@@ -124,8 +119,7 @@ TYPED_TEST(inlet_errors, invalid_value_nested)
 TYPED_TEST(inlet_errors, field_verifier)
 {
   std::string testString = "foo = 7";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addInt("foo", "foo's description")
     .registerVerifier([](const axom::inlet::Field& field) {
@@ -145,8 +139,7 @@ TYPED_TEST(inlet_errors, field_verifier)
 TYPED_TEST(inlet_errors, field_verifier_nested)
 {
   std::string testString = "foo = { bar = { baz = 7 } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo = inlet.addStruct("foo", "foo's description");
   auto& bar = foo.addStruct("bar", "bar's description");
@@ -168,8 +161,7 @@ TYPED_TEST(inlet_errors, field_verifier_nested)
 TYPED_TEST(inlet_errors, container_required)
 {
   std::string testString = "foo = { }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo = inlet.addStruct("foo", "foo's description").required();
   foo.addInt("bar", "bar's description");
@@ -187,8 +179,7 @@ TYPED_TEST(inlet_errors, container_required)
 TYPED_TEST(inlet_errors, container_verifier)
 {
   std::string testString = "foo = { bar = 7 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo = inlet.addStruct("foo", "foo's description");
   foo.addInt("bar", "bar's description");
@@ -211,8 +202,7 @@ TYPED_TEST(inlet_errors, container_verifier)
 TYPED_TEST(inlet_errors, container_strict)
 {
   std::string testString = "foo = { bar = 7, baz = 12 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo = inlet.addStruct("foo", "foo's description").strict();
   foo.addInt("bar", "bar's description");
@@ -234,8 +224,7 @@ TEST(inlet_errors_lua, function_verifier)
 {
   std::string testString = "function foo (v) return 2*v end";
 
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   using axom::inlet::FunctionTag;
   using axom::inlet::FunctionType;
