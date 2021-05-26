@@ -11,7 +11,6 @@
 #include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
-#include <cstring>    // For memcpy()
 #include <algorithm>  // For std:: copy and fill
 #include <ostream>    // For print() and operator <<
 #include <initializer_list>
@@ -219,31 +218,11 @@ public:
   { }
 
   /*!
-   * \brief Copy constructor.
-   * \param [in] other The numeric array to copy
-   */
-  AXOM_HOST_DEVICE
-  NumericArray(const NumericArray& other) { *this = other; };
-
-  /*!
-   * \brief Destructor.
-   */
-  AXOM_HOST_DEVICE
-  ~NumericArray() { }
-
-  /*!
    * \brief Returns the dimension of this numeric array instance.
    * \return d the dimension (size) of the array
    * \post d >= 1.
    */
   static int size() { return SIZE; };
-
-  /*!
-   * \brief Assignment operator.
-   * \param [in] rhs a numeric array instance on the right hand side.
-   */
-  AXOM_HOST_DEVICE
-  NumericArray& operator=(const NumericArray& rhs);
 
   /*!
    * \brief Access operator for individual components.
@@ -462,21 +441,6 @@ NumericArray<T, SIZE>::NumericArray(const T* vals, int sz)
   {
     m_components[j] = T();
   }
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int SIZE>
-inline AXOM_HOST_DEVICE NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator=(
-  const NumericArray<T, SIZE>& rhs)
-{
-  if(this == &rhs)
-  {
-    return *this;
-  }
-
-  // copy all the data
-  memcpy(m_components, rhs.m_components, NBYTES);
-  return *this;
 }
 
 //------------------------------------------------------------------------------

@@ -109,13 +109,6 @@ public:
   }
 
   /*!
-   * \brief Copy Constructor.
-   * \param [in] other The bounding box to copy
-   */
-  AXOM_HOST_DEVICE
-  BoundingBox(const BoundingBox& other) { *this = other; };
-
-  /*!
    * \brief Destructor.
    */
   AXOM_HOST_DEVICE
@@ -223,13 +216,6 @@ public:
    * \return A reference to the bounding box after it has been shifted
    */
   BoundingBox& shift(const VectorType& displacement);
-
-  /*!
-   * \brief Overloaded assignment operator.
-   * \param [in] rhs bounding box instance on the right-hand side
-   * \return
-   */
-  AXOM_HOST_DEVICE BoundingBox& operator=(const BoundingBox& rhs);
 
   /*!
    * \brief Checks whether the box contains the point
@@ -376,19 +362,6 @@ namespace axom
 {
 namespace primal
 {
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::operator=(const BoundingBox& rhs)
-{
-  if(this != &rhs)
-  {
-    m_min = rhs.m_min;
-    m_max = rhs.m_max;
-  }
-
-  return *this;
-}
-
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 template <typename OtherT>
