@@ -453,10 +453,13 @@ bool Field::verify(std::vector<VerificationError>* errors) const
       "[Inlet] Value did not meet range/valid "
       "value(s) constraints: {0}",
       m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
     if(errors)
     {
       errors->push_back({Path {m_sidreGroup->getPathName()}, msg});
+    }
+    else
+    {
+      SLIC_WARNING(msg);
     }
     return false;
   }
@@ -469,10 +472,13 @@ bool Field::verify(std::vector<VerificationError>* errors) const
       "[Inlet] Default value did not meet range/valid "
       "value(s) constraints: {0}",
       m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
     if(errors)
     {
       errors->push_back({Path {m_sidreGroup->getPathName()}, msg});
+    }
+    else
+    {
+      SLIC_WARNING(msg);
     }
     return false;
   }
@@ -483,10 +489,13 @@ bool Field::verify(std::vector<VerificationError>* errors) const
     const std::string msg =
       fmt::format("[Inlet] Field failed lambda verification: {0}",
                   m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
     if(errors)
     {
       errors->push_back({Path {m_sidreGroup->getPathName()}, msg});
+    }
+    else
+    {
+      SLIC_WARNING(msg);
     }
     return false;
   }

@@ -53,10 +53,13 @@ bool Function::verify(std::vector<VerificationError>* errors) const
     const std::string msg =
       fmt::format("[Inlet] Function failed verification: {0}",
                   m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
     if(errors)
     {
       errors->push_back({Path {m_sidreGroup->getPathName()}, msg});
+    }
+    else
+    {
+      SLIC_WARNING(msg);
     }
   }
 
