@@ -34,13 +34,6 @@ elseif(UNIX)
     set(EXTRA_LIBS rt)
 endif()
 
-if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
-    list(APPEND example_sources
-         sidre_mfem_datacollection_vis.cpp
-         sidre_mfem_datacollection_restart.cpp
-         sidre_mfem_datacollection_materials.cpp)
-endif()
-
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples
 #------------------------------------------------------------------------------
@@ -70,7 +63,7 @@ if(ENABLE_MPI)
             NAME ${exe_name}_ex
             SOURCES ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  sidre ${EXTRA_LIBS}
+            DEPENDS_ON  sidre ${EXTRA_LIBS} mpi
             FOLDER axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)
@@ -91,6 +84,41 @@ if(ENABLE_MPI)
                   NUM_MPI_TASKS 4
                   )
 
+endif()
+
+#------------------------------------------------------------------------------
+# Add MFEM Sidre DataCollection tests
+#------------------------------------------------------------------------------
+if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    set(_mfem_dc_tests
+        sidre_mfem_datacollection_materials.cpp
+        sidre_mfem_datacollection_restart.cpp
+        sidre_mfem_datacollection_vis.cpp)
+
+    set(_mfem_dc_test_depends sidre mfem ${EXTRA_LIBS})
+    blt_list_append(TO _mfem_dc_test_depends ELEMENTS mpi IF ENABLE_MPI)
+                    
+    foreach(example_source ${_mfem_dc_tests})
+        get_filename_component(exe_name ${example_source} NAME_WE)
+        blt_add_executable(
+            NAME ${exe_name}_ex
+            SOURCES ${example_source}
+            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+            DEPENDS_ON  ${_mfem_dc_test_depends}
+            FOLDER axom/sidre/examples)
+
+        if(AXOM_ENABLE_TESTS)
+            if(ENABLE_MPI)
+                axom_add_test( NAME ${exe_name}
+                               COMMAND ${exe_name}_ex
+                               NUM_MPI_TASKS 2)
+            else()
+                axom_add_test( NAME ${exe_name}
+                               COMMAND ${exe_name}_ex)
+            endif()
+        endif()
+
+    endforeach()
 endif()
 
 #------------------------------------------------------------------------------

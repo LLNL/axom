@@ -11,24 +11,29 @@
  * provided in Sidre's Sphinx documentation.
  */
 
+#include "axom/config.hpp"
+
 // Datacollection header
 #include "axom/sidre/core/MFEMSidreDataCollection.hpp"
 
 // MFEM includes - needed to set up simulation
 #include "mfem.hpp"
 
-#ifdef AXOM_USE_MPI
+// Create a simple compiler define for whether we're using MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #define EXAMPLE_USES_MPI
   #include "mpi.h"
+#else
+  #undef EXAMPLE_USES_MPI
 #endif
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 int main(int argc, char* argv[])
-#else
-int main()
-#endif
 {
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
   MPI_Init(&argc, &argv);
+#else
+  static_cast<void>(argc);
+  static_cast<void>(argv);
 #endif
 
   mfem::Mesh* mesh = nullptr;
@@ -37,7 +42,7 @@ int main()
   mfem::Mesh serial_mesh(10, 10, mfem::Element::QUADRILATERAL);
   mesh = &serial_mesh;
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
   mfem::ParMesh parallel_mesh(MPI_COMM_WORLD, serial_mesh);
   mesh = &parallel_mesh;
 #endif
@@ -56,7 +61,7 @@ int main()
 // This is where the time-dependent operator would be set up...
 
 // Initialize the solution field
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
   mfem::ParFiniteElementSpace par_fes(fes, parallel_mesh);
   mfem::ParGridFunction soln(&par_fes);
 #else
@@ -76,9 +81,16 @@ int main()
   dc.SetTime(0.0);     // Simulation time
   dc.SetTimeStep(dt);  // Time step
   // _sidredc_vis_state_end
+
+#ifdef AXOM_USE_HDF5
+  std::string sidre_protocol = "sidre_hdf5";
+#else
+  std::string sidre_protocol = "sidre_conduit_json";
+#endif
+
   // _sidredc_vis_save_start
   // Filename and protocol, both of which are optional
-  dc.Save("sidre_mfem_datacoll_vis_ex", "sidre_hdf5");
+  dc.Save("sidre_mfem_datacoll_vis_ex", sidre_protocol);
   // _sidredc_vis_save_end
 
   // Sample time parameters
@@ -93,10 +105,10 @@ int main()
     // then save it after updating the time information...
     dc.SetCycle(i);
     dc.SetTime(dt * i);
-    dc.Save("sidre_mfem_datacoll_vis_ex", "sidre_hdf5");
+    dc.Save("sidre_mfem_datacoll_vis_ex", sidre_protocol);
   }
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
   MPI_Finalize();
 #endif
 }
