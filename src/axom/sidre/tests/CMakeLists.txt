@@ -114,10 +114,16 @@ if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
                         DEPENDS_ON ${_sidre_mfem_dc_depends}
                         FOLDER axom/sidre/tests
                         )
-    if (ENABLE_MPI AND MFEM_USE_MPI)
+    if (ENABLE_MPI)
+        if(MFEM_USE_MPI)
+            set(_nranks 2)
+        else()
+            set(_nranks 1)
+        endif()
+
         axom_add_test( NAME sidre_mfem_datacollection
                        COMMAND sidre_mfem_datacollection_test
-                       NUM_MPI_TASKS 2
+                       NUM_MPI_TASKS ${_nranks}
                        )
     else()
         axom_add_test( NAME    sidre_mfem_datacollection

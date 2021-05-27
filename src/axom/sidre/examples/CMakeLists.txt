@@ -97,7 +97,7 @@ if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
 
     set(_mfem_dc_test_depends sidre mfem ${EXTRA_LIBS})
     blt_list_append(TO _mfem_dc_test_depends ELEMENTS mpi IF ENABLE_MPI)
-                    
+
     foreach(example_source ${_mfem_dc_tests})
         get_filename_component(exe_name ${example_source} NAME_WE)
         blt_add_executable(
@@ -109,9 +109,15 @@ if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
 
         if(AXOM_ENABLE_TESTS)
             if(ENABLE_MPI)
+                if(MFEM_USE_MPI)
+                    set(_nranks 2)
+                else()
+                    set(_nranks 1)
+                endif()
+
                 axom_add_test( NAME ${exe_name}
                                COMMAND ${exe_name}_ex
-                               NUM_MPI_TASKS 2)
+                               NUM_MPI_TASKS ${_nranks})
             else()
                 axom_add_test( NAME ${exe_name}
                                COMMAND ${exe_name}_ex)

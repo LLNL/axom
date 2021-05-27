@@ -950,7 +950,11 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
   PrepareToSave();
 
   std::string file_path = get_file_path(filename);
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   create_directory(file_path, mesh, myid);
+  #else
+  create_directory(prefix_path, mesh, myid);
+  #endif
 
   sidre::Group* blueprint_indicies_grp = m_bp_index_grp->getParent();
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
@@ -1758,7 +1762,7 @@ namespace detail
 /**
  * @brief Wrapper class to enable the reconstruction of a ParMesh from a
  * Conduit blueprint
- * 
+ *
  * @note This is only needed because mfem::ParMesh doesn't provide a
  * constructor that allows us to set all the required information.
  */
@@ -1768,11 +1772,11 @@ public:
   /**
    * @brief Constructs a new parallel mesh, intended to be assigned
    * to an mfem::ParMesh*
-   * 
+   *
    * @param [in] bp_grp The root group of the Conduit Blueprint structure
    * @param [in] comm The MPI communicator to use with the new mesh
    * @param [in] mesh_topo_name The name of the mesh topology in the Blueprint structure
-   * 
+   *
    * The remaining parameters are used to construct the mfem::Mesh base subobject
    */
   SidreParMeshWrapper(Group* bp_grp,
@@ -1956,10 +1960,10 @@ private:
   /**
    * @brief Clone of mfem::Mesh constructor that allows data fields
    * to be set directly
-   * 
+   *
    * Needed because the mfem::Mesh base subobject cannot be constructed
    * directly, so we need to set the data fields "manually"
-   * 
+   *
    * @see mfem::Mesh::Mesh(double, int, int*, ...)
    */
   void ConstructMeshSubObject(double* _vertices,
@@ -2023,7 +2027,7 @@ private:
    * @brief A span over a list of vectors arranged contiguously (not interleaved)
    * Allows for convenient iteration over the list without having to manage
    * sizes and offsets in multiple places
-   * 
+   *
    * \note This is a convenience wrapper over Sidre's "stride" data attribute,
    * perhaps this would be useful as a user-facing utility??
    */
@@ -2160,10 +2164,10 @@ private:
   /**
    * @brief Retrieves the shared geometry information from the mesh topology
    * adjacency set group
-   * 
+   *
    * @param [in] mesh_adjset_groups The blueprint group corresponding to the
    * adjacency sets, i.e. <blueprint_root>/adjsets/<mesh_topology>/groups
-   * 
+   *
    * @return The set of SharedGeometries, one for each communication group
    */
   std::vector<SharedGeometries> GetSharedGeometries(const Group* mesh_adjset_groups)

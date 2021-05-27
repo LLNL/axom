@@ -98,6 +98,10 @@ TEST(sidre_datacollection, dc_save)
   mfem::Mesh mesh(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
 
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc.SetComm(MPI_COMM_WORLD);
+#endif
+
   sdc.Save();
 
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
