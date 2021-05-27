@@ -44,17 +44,23 @@ namespace linear_bvh
 //------------------------------------------------------------------------------
 //Returns 30 bit morton code for coordinates for
 // x, y, and z are expecting to be between [0,1]
-static inline AXOM_HOST_DEVICE axom::int32 morton32_encode(axom::float32 x,
-                                                           axom::float32 y,
-                                                           axom::float32 z = 0.0)
+template <typename FloatType, int Dims>
+static inline AXOM_HOST_DEVICE axom::int32 morton32_encode(
+  const primal::Vector<FloatType, Dims>& point)
 {
-  //take the first 10 bits. Note, 2^10 = 1024
-  x = fmin(fmax(x * 1024.0f, 0.0f), 1023.0f);
-  y = fmin(fmax(y * 1024.0f, 0.0f), 1023.0f);
-  z = fmin(fmax(z * 1024.0f, 0.0f), 1023.0f);
+  //for a float, take the first 10 bits. Note, 2^10 = 1024
+  constexpr int NUM_BITS_PER_DIM = 32 / Dims;
+  constexpr FloatType FLOAT_TO_INT = 1 << NUM_BITS_PER_DIM;
+  constexpr FloatType FLOAT_CEILING = FLOAT_TO_INT - 1;
 
-  primal::Point<int32, 3> integer_pt =
-    primal::Point<int32, 3>::make_point((int32)x, (int32)y, (int32)z);
+  int32 int_coords[Dims];
+  for(int i = 0; i < Dims; i++)
+  {
+    int_coords[i] =
+      fmin(fmax(point[i] * FLOAT_TO_INT, (FloatType)0), FLOAT_CEILING);
+  }
+
+  primal::Point<int32, Dims> integer_pt(int_coords);
 
   return convertPointToMorton<int32>(integer_pt);
 }
@@ -77,31 +83,25 @@ static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
   return convertPointToMorton<int64>(integer_pt);
 }
 
-template <typename ExecSpace, typename FloatType>
+template <typename ExecSpace, typename FloatType, int NDIMS>
 void transform_boxes(const FloatType* boxes,
-                     primal::BoundingBox<FloatType, 3>* aabbs,
+                     primal::BoundingBox<FloatType, NDIMS>* aabbs,
                      int32 size,
                      FloatType scale_factor)
 {
-  AXOM_PERF_MARK_FUNCTION("transform_boxes3D");
+  AXOM_PERF_MARK_FUNCTION("transform_boxes");
 
-  constexpr int NDIMS = 3;
   constexpr int STRIDE = 2 * NDIMS;
 
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
       primal::BoundingBox<FloatType, NDIMS> aabb;
-      primal::Point<FloatType, NDIMS> min_point, max_point;
 
       const int32 offset = i * STRIDE;
-      min_point[0] = boxes[offset + 0];
-      min_point[1] = boxes[offset + 1];
-      min_point[2] = boxes[offset + 2];
 
-      max_point[0] = boxes[offset + 3];
-      max_point[1] = boxes[offset + 4];
-      max_point[2] = boxes[offset + 5];
+      primal::Point<FloatType, NDIMS> min_point(boxes + offset);
+      primal::Point<FloatType, NDIMS> max_point(boxes + offset + NDIMS);
 
       aabb.addPoint(min_point);
       aabb.addPoint(max_point);
@@ -112,126 +112,45 @@ void transform_boxes(const FloatType* boxes,
 }
 
 //------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-void transform_boxes(const FloatType* boxes,
-                     primal::BoundingBox<FloatType, 2>* aabbs,
-                     int32 size,
-                     FloatType scale_factor)
+template <typename ExecSpace, typename FloatType, int NDIMS>
+primal::BoundingBox<FloatType, NDIMS> reduce(
+  primal::BoundingBox<FloatType, NDIMS>* aabbs,
+  int32 size)
 {
-  AXOM_PERF_MARK_FUNCTION("transform_boxes2D");
-
-  constexpr int NDIMS = 2;
-  constexpr int STRIDE = 2 * NDIMS;
-
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(int32 i) {
-      primal::BoundingBox<FloatType, NDIMS> aabb;
-      primal::Point<FloatType, NDIMS> min_point, max_point;
-
-      const int32 offset = i * STRIDE;
-      min_point[0] = boxes[offset + 0];
-      min_point[1] = boxes[offset + 1];
-
-      max_point[0] = boxes[offset + 2];
-      max_point[1] = boxes[offset + 3];
-
-      aabb.addPoint(min_point);
-      aabb.addPoint(max_point);
-      aabb.scale(scale_factor);
-
-      aabbs[i] = aabb;
-    });
-}
-
-//------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-primal::BoundingBox<FloatType, 3> reduce(primal::BoundingBox<FloatType, 3>* aabbs,
-                                         int32 size)
-{
-  AXOM_PERF_MARK_FUNCTION("reduce_abbs3D");
-
-  constexpr int NDIMS = 3;
+  AXOM_PERF_MARK_FUNCTION("reduce_abbs");
 
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
-  RAJA::ReduceMin<reduce_policy, FloatType> xmin(infinity32());
-  RAJA::ReduceMin<reduce_policy, FloatType> ymin(infinity32());
-  RAJA::ReduceMin<reduce_policy, FloatType> zmin(infinity32());
 
-  RAJA::ReduceMax<reduce_policy, FloatType> xmax(neg_infinity32());
-  RAJA::ReduceMax<reduce_policy, FloatType> ymax(neg_infinity32());
-  RAJA::ReduceMax<reduce_policy, FloatType> zmax(neg_infinity32());
+  primal::Point<FloatType, NDIMS> min_pt, max_pt;
 
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(int32 i) {
-      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    RAJA::ReduceMin<reduce_policy, FloatType> min_coord(infinity32());
+    RAJA::ReduceMax<reduce_policy, FloatType> max_coord(neg_infinity32());
 
-      xmin.min(aabb.getMin()[0]);
-      ymin.min(aabb.getMin()[1]);
-      zmin.min(aabb.getMin()[2]);
+    for_all<ExecSpace>(
+      size,
+      AXOM_LAMBDA(int32 i) {
+        const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
+        min_coord.min(aabb.getMin()[dim]);
+        max_coord.max(aabb.getMax()[dim]);
+      });
 
-      xmax.max(aabb.getMax()[0]);
-      ymax.max(aabb.getMax()[1]);
-      zmax.max(aabb.getMax()[2]);
-    });
+    min_pt[dim] = min_coord.get();
+    max_pt[dim] = max_coord.get();
+  }
 
-  primal::BoundingBox<FloatType, NDIMS> res;
-
-  primal::Point<FloatType, NDIMS> mins {xmin.get(), ymin.get(), zmin.get()};
-  primal::Point<FloatType, NDIMS> maxs {xmax.get(), ymax.get(), zmax.get()};
-
-  res.addPoint(mins);
-  res.addPoint(maxs);
-  return res;
+  return primal::BoundingBox<FloatType, NDIMS>(min_pt, max_pt);
 }
 
 //------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-primal::BoundingBox<FloatType, 2> reduce(primal::BoundingBox<FloatType, 2>* aabbs,
-                                         int32 size)
-{
-  AXOM_PERF_MARK_FUNCTION("reduce_abbs2D");
-
-  constexpr int NDIMS = 2;
-
-  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
-  RAJA::ReduceMin<reduce_policy, FloatType> xmin(infinity32());
-  RAJA::ReduceMin<reduce_policy, FloatType> ymin(infinity32());
-
-  RAJA::ReduceMax<reduce_policy, FloatType> xmax(neg_infinity32());
-  RAJA::ReduceMax<reduce_policy, FloatType> ymax(neg_infinity32());
-
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(int32 i) {
-      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
-      xmin.min(aabb.getMin()[0]);
-      ymin.min(aabb.getMin()[1]);
-
-      xmax.max(aabb.getMax()[0]);
-      ymax.max(aabb.getMax()[1]);
-    });
-
-  primal::BoundingBox<FloatType, NDIMS> res;
-  primal::Point<FloatType, NDIMS> mins {xmin.get(), ymin.get()};
-  primal::Point<FloatType, NDIMS> maxs {xmax.get(), ymax.get()};
-
-  res.addPoint(mins);
-  res.addPoint(maxs);
-  return res;
-}
-
-//------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-void get_mcodes(primal::BoundingBox<FloatType, 2>* aabbs,
+template <typename ExecSpace, typename FloatType, int NDIMS>
+void get_mcodes(primal::BoundingBox<FloatType, NDIMS>* aabbs,
                 int32 size,
-                const primal::BoundingBox<FloatType, 2>& bounds,
+                const primal::BoundingBox<FloatType, NDIMS>& bounds,
                 uint32* mcodes)
 {
-  AXOM_PERF_MARK_FUNCTION("get_mcodes2D");
-
-  constexpr int NDIMS = 2;
+  AXOM_PERF_MARK_FUNCTION("get_mcodes");
 
   primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
 
@@ -254,43 +173,7 @@ void get_mcodes(primal::BoundingBox<FloatType, 2>* aabbs,
       // get the center and normalize it
       primal::Vector<FloatType, NDIMS> centroid = aabb.getCentroid();
       centroid = (centroid - min_coord).array() * inv_extent.array();
-      mcodes[i] = morton32_encode(centroid[0], centroid[1]);
-    });
-}
-
-//------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-void get_mcodes(primal::BoundingBox<FloatType, 3>* aabbs,
-                int32 size,
-                const primal::BoundingBox<FloatType, 3>& bounds,
-                uint32* mcodes)
-{
-  AXOM_PERF_MARK_FUNCTION("get_mcodes3D");
-
-  constexpr int NDIMS = 3;
-
-  primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
-
-  extent = bounds.getMax();
-  extent -= bounds.getMin();
-  min_coord = bounds.getMin();
-
-  for(int i = 0; i < NDIMS; ++i)
-  {
-    inv_extent[i] = utilities::isNearlyEqual<FloatType>(extent[i], .0f)
-      ? 0.f
-      : 1.f / extent[i];
-  }
-
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(int32 i) {
-      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
-
-      // get the center and normalize it
-      primal::Vector<FloatType, NDIMS> centroid = aabb.getCentroid();
-      centroid = (centroid - min_coord).array() * inv_extent.array();
-      mcodes[i] = morton32_encode(centroid[0], centroid[1], centroid[2]);
+      mcodes[i] = morton32_encode(centroid);
     });
 }
 
