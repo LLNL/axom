@@ -112,9 +112,9 @@ using inlet::Inlet;
 void defineGeometry(Container &geometry)
 {
   geometry.addString("format", "The format of the input file").required();
-  geometry.addString(
-    "path",
-    "The path of the input file, relative to the yaml file").required();
+  geometry
+    .addString("path", "The path of the input file, relative to the yaml file")
+    .required();
   internal::defineDimensionsField(
     geometry,
     "start_dimensions",

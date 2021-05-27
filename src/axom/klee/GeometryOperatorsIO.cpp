@@ -10,8 +10,6 @@
 #include "axom/klee/IOUtil.hpp"
 #include "axom/klee/KleeError.hpp"
 
-#include "fmt/fmt.hpp"
-
 #include <functional>
 #include <string>
 #include <type_traits>
@@ -28,31 +26,75 @@ namespace
 {
 using OpPtr = CompositeOperator::OpPtr;
 using OperatorParser =
-  std::function<OpPtr(const inlet::Proxy &, const TransformableGeometryProperties &)>;
+  std::function<OpPtr(const inlet::Container &,
+                      const TransformableGeometryProperties &)>;
 using internal::toDoubleVector;
 using primal::Point3D;
 using primal::Vector3D;
 using FieldSet = std::unordered_set<std::string>;
 
 /**
- * Verify that a Proxy has the correct fields.
+ * Get the names of all the children in the given container.
  *
- * \param proxyToTest the Proxy to test
+ * @param container the Container whose children to get
+ * @return the names of all the children
+ */
+std::unordered_set<std::string> getChildNames(const inlet::Container &container)
+{
+  std::unordered_set<std::string> allChildren;
+
+  std::vector<std::string> unexpectedNames = container.unexpectedNames();
+  allChildren.insert(unexpectedNames.begin(), unexpectedNames.end());
+
+  // Add 1 for the "/" separator
+  auto prefixLength = container.name().size() + 1;
+
+  for(auto &child : container.getChildContainers())
+  {
+    if(child.second->exists())
+    {
+      allChildren.insert(child.first.substr(prefixLength));
+    }
+  }
+
+  for(auto &child : container.getChildFields())
+  {
+    if(child.second->exists())
+    {
+      allChildren.insert(child.first.substr(prefixLength));
+    }
+  }
+
+  for(auto &child : container.getChildFunctions())
+  {
+    if(*child.second)
+    {
+      allChildren.insert(child.first.substr(prefixLength));
+    }
+  }
+
+  return allChildren;
+}
+
+/**
+ * Verify that a Container has the correct fields.
+ *
+ * \param containerToTest the Container to test
  * \param name the name of the container. This must be one of its fields.
  * \param additionalRequiredFields any additional required fields
  * \param optionalFields any additional optional fields
  */
-void verifyObjectFields(const inlet::Proxy &proxyToTest,
+void verifyObjectFields(const inlet::Container &containerToTest,
                         const std::string &name,
                         const FieldSet &additionalRequiredFields,
-                        const FieldSet & /*optionalFields*/)
+                        const FieldSet &optionalFields)
 {
   std::unordered_set<std::string> requiredFields {additionalRequiredFields};
   requiredFields.insert(name);
 
   for(auto &requiredField : requiredFields)
   {
-    if(!proxyToTest.contains(requiredField))
+    if(!containerToTest.contains(requiredField))
     {
       std::string message = "Missing required parameter \"";
       message += requiredField;
@@ -63,63 +105,69 @@ void verifyObjectFields(const inlet::Proxy &proxyToTest,
     }
   }
 
-  // TODO There is currently no way to check for unexpected fields.
-  // Need https://github.com/LLNL/axom/issues/471 to be addressed before
-  // we can do something about it.
-  //
-  // pseudo-code:
-  // for each field in proxyToTest:
-  //    if field not in requiredFields or optionalFields:
-  //        throw KleeError("Unrecognized field {field}")
+  for(auto &child : getChildNames(containerToTest))
+  {
+    if(requiredFields.find(child) != requiredFields.end())
+    {
+      continue;
+    }
+    if(optionalFields.find(child) != optionalFields.end())
+    {
+      continue;
+    }
+
+    std::string message = "Unexpected parameter for operator \"";
+    message += name;
+    message += "\": \"";
+    message += child;
+    message += '"';
+    throw KleeError(message);
+  }
 }
 
 /**
  * Parse a "translate" operator.
  *
- * \param opProxy the Proxy from which to read the operator
+ * \param opContainer the Container from which to read the operator
  * \param startProperties the properties prior to this operator
  * \return the created operator
  */
-OpPtr parseTranslate(const inlet::Proxy &opProxy,
+OpPtr parseTranslate(const inlet::Container &opContainer,
                      const TransformableGeometryProperties &startProperties)
 {
-  verifyObjectFields(opProxy, "translate", FieldSet {}, FieldSet {});
+  verifyObjectFields(opContainer, "translate", FieldSet {}, FieldSet {});
   return std::make_shared<Translation>(
-    toVector(opProxy, "translate", startProperties.dimensions),
+    toVector(opContainer, "translate", startProperties.dimensions),
     startProperties);
 }
 
 /**
  * Parse a "rotate" operator.
  *
- * \param opProxy the Proxy from which to read the operator
+ * \param opContainer the Container from which to read the operator
  * \param startProperties the properties prior to this operator
  * \return the created operator
  */
-OpPtr parseRotate(const inlet::Proxy &opProxy,
+OpPtr parseRotate(const inlet::Container &opContainer,
                   const TransformableGeometryProperties &startProperties)
 {
   if(startProperties.dimensions == Dimensions::Two)
   {
-    verifyObjectFields(opProxy, "rotate", FieldSet {}, {"center"});
-    if (opProxy.contains("axis")) {
-        throw KleeError("The \"axis\" parameter of \"rotate\" can only be "
-                        "specified in 3D rotations.");
-    }
+    verifyObjectFields(opContainer, "rotate", FieldSet {}, {"center"});
     Vector3D axis {0, 0, 1};
     return std::make_shared<Rotation>(
-      opProxy["rotate"].get<double>(),
-      toPoint(opProxy, "center", Dimensions::Two, Point3D {0, 0, 0}),
+      opContainer["rotate"].get<double>(),
+      toPoint(opContainer, "center", Dimensions::Two, Point3D {0, 0, 0}),
       axis,
       startProperties);
   }
   else
   {
-    verifyObjectFields(opProxy, "rotate", {"axis"}, {"center"});
+    verifyObjectFields(opContainer, "rotate", {"axis"}, {"center"});
     return std::make_shared<Rotation>(
-      opProxy["rotate"].get<double>(),
-      toPoint(opProxy, "center", Dimensions::Three, Point3D {0, 0, 0}),
-      toVector(opProxy, "axis", Dimensions::Three),
+      opContainer["rotate"].get<double>(),
+      toPoint(opContainer, "center", Dimensions::Three, Point3D {0, 0, 0}),
+      toVector(opContainer, "axis", Dimensions::Three),
       startProperties);
   }
 }
@@ -217,7 +265,7 @@ primal::Vector3D getPerpendicularSliceNormal(const inlet::Proxy &sliceProxy,
 /**
  * Read a perpendicular slice.
  *
- * \param sliceProxy the Proxy describing the slice
+ * \param sliceContainer the Container describing the slice
  * \param planeName the name of the plane ("x", "y", or "z")
  * \param defaultNormal the default normal vector for the type of plane
  *  being parsed
@@ -225,22 +273,22 @@ primal::Vector3D getPerpendicularSliceNormal(const inlet::Proxy &sliceProxy,
  * \param startProperties the properties prior to this operator
  * \return the parsed plane
  */
-OpPtr readPerpendicularSlice(const inlet::Proxy &sliceProxy,
+OpPtr readPerpendicularSlice(const inlet::Container &sliceContainer,
                              char const *planeName,
                              Vector3D const &defaultNormal,
                              Vector3D const &defaultUp,
                              const TransformableGeometryProperties &startProperties)
 {
-  verifyObjectFields(sliceProxy,
+  verifyObjectFields(sliceContainer,
                      planeName,
                      FieldSet {},
                      {"origin", "normal", "up"});
   const primal::Vector3D defaultNormalVec {defaultNormal.data()};
 
   auto origin =
-    getPerpendicularSliceOrigin(sliceProxy, planeName, defaultNormalVec);
-  auto normal = getPerpendicularSliceNormal(sliceProxy, defaultNormalVec);
-  auto up = toVector(sliceProxy, "up", Dimensions::Three, defaultUp);
+    getPerpendicularSliceOrigin(sliceContainer, planeName, defaultNormalVec);
+  auto normal = getPerpendicularSliceNormal(sliceContainer, defaultNormalVec);
+  auto up = toVector(sliceContainer, "up", Dimensions::Three, defaultUp);
 
   return makeCheckedSlice(origin, normal, up, startProperties);
 }
@@ -248,63 +296,66 @@ OpPtr readPerpendicularSlice(const inlet::Proxy &sliceProxy,
 /**
  * Parse a "slice" operator.
  *
- * \param opProxy the Proxy from which to read the operator
+ * \param opContainer the Container from which to read the operator
  * \param startProperties the properties prior to this operator
  * \return the created operator
  */
-OpPtr parseSlice(const inlet::Proxy &opProxy,
+OpPtr parseSlice(const inlet::Container &opContainer,
                  const TransformableGeometryProperties &startProperties)
 {
   if(startProperties.dimensions != Dimensions::Three)
   {
     throw KleeError("Cannot do a slice from 2D");
   }
-  verifyObjectFields(opProxy, "slice", FieldSet {}, FieldSet {});
-  auto properties = opProxy["slice"];
-  if(properties.contains("x"))
+  verifyObjectFields(opContainer, "slice", FieldSet {}, FieldSet {});
+  auto &sliceContainer =
+    *opContainer.getChildContainers().at(opContainer.name() + "/slice").get();
+  inlet::Proxy sliceProxy {sliceContainer};
+  if(sliceProxy.contains("x"))
   {
-    return readPerpendicularSlice(properties,
+    return readPerpendicularSlice(sliceContainer,
                                   "x",
                                   {1, 0, 0},
                                   {0, 0, 1},
                                   startProperties);
   }
-  else if(properties.contains("y"))
+  else if(sliceProxy.contains("y"))
   {
-    return readPerpendicularSlice(properties,
+    return readPerpendicularSlice(sliceContainer,
                                   "y",
                                   {0, 1, 0},
                                   {1, 0, 0},
                                   startProperties);
   }
-  else if(properties.contains("z"))
+  else if(sliceProxy.contains("z"))
   {
-    return readPerpendicularSlice(properties,
+    return readPerpendicularSlice(sliceContainer,
                                   "z",
                                   {0, 0, 1},
                                   {0, 1, 0},
                                   startProperties);
   }
 
-  verifyObjectFields(properties, "origin", {"normal", "up"}, FieldSet {});
-  return makeCheckedSlice(toPoint(properties, "origin", Dimensions::Three),
-                          toVector(properties, "normal", Dimensions::Three),
-                          toVector(properties, "up", Dimensions::Three),
+  verifyObjectFields(sliceContainer, "origin", {"normal", "up"}, FieldSet {});
+
+  return makeCheckedSlice(toPoint(sliceProxy, "origin", Dimensions::Three),
+                          toVector(sliceProxy, "normal", Dimensions::Three),
+                          toVector(sliceProxy, "up", Dimensions::Three),
                           startProperties);
 }
 
 /**
  * Parse a "scale" operator.
  *
- * \param opProxy the Proxy from which to read the operator
+ * \param opContainer the Container from which to read the operator
  * \param startProperties the properties prior to this operator
  * \return the created operator
  */
-OpPtr parseScale(const inlet::Proxy &opProxy,
+OpPtr parseScale(const inlet::Container &opContainer,
                  const TransformableGeometryProperties &startProperties)
 {
-  verifyObjectFields(opProxy, "scale", FieldSet {}, FieldSet {});
-  auto factors = opProxy["scale"].get<std::vector<double>>();
+  verifyObjectFields(opContainer, "scale", FieldSet {}, FieldSet {});
+  auto factors = opContainer["scale"].get<std::vector<double>>();
   if(factors.size() == 1)
   {
     return std::make_shared<Scale>(factors[0],
@@ -313,7 +364,7 @@ OpPtr parseScale(const inlet::Proxy &opProxy,
                                    startProperties);
   }
   factors =
-    toDoubleVector(opProxy["scale"], startProperties.dimensions, "scale");
+    toDoubleVector(opContainer["scale"], startProperties.dimensions, "scale");
   if(startProperties.dimensions == Dimensions::Two)
   {
     factors.emplace_back(1.0);
@@ -327,34 +378,34 @@ OpPtr parseScale(const inlet::Proxy &opProxy,
 /**
  * Parse a "convert_units_to" operator.
  *
- * \param opProxy the taProxyble from which to read the operator
+ * \param opContainer the Container from which to read the operator
  * \param startProperties the properties prior to this operator
  * \return the created operator
  */
-OpPtr parseConvertUnits(const inlet::Proxy &opProxy,
+OpPtr parseConvertUnits(const inlet::Container &opContainer,
                         const TransformableGeometryProperties &startProperties)
 {
-  verifyObjectFields(opProxy, "convert_units_to", FieldSet {}, FieldSet {});
+  verifyObjectFields(opContainer, "convert_units_to", FieldSet {}, FieldSet {});
   auto endUnits =
-    parseLengthUnits(opProxy["convert_units_to"].get<std::string>());
+    parseLengthUnits(opContainer["convert_units_to"].get<std::string>());
   return std::make_shared<UnitConverter>(endUnits, startProperties);
 }
 
 /**
  * Parse an operator specified via the "ref" command.
  *
- * \param opProxy the Proxy from which to read the operator
+ * \param opContainer the Container from which to read the operator
  * \param startProperties the properties before the "ref" command
  * \param namedOperators a map of named operators from which to get
  * referenced operators
  * \return the created operator
  */
-OpPtr parseRef(const inlet::Proxy &opProxy,
+OpPtr parseRef(const inlet::Container &opContainer,
                const TransformableGeometryProperties &startProperties,
                const NamedOperatorMap &namedOperators)
 {
-  verifyObjectFields(opProxy, "ref", FieldSet {}, FieldSet {});
-  std::string const &operatorName = opProxy["ref"];
+  verifyObjectFields(opContainer, "ref", FieldSet {}, FieldSet {});
+  std::string const &operatorName = opContainer["ref"];
   auto opIter = namedOperators.find(operatorName);
   if(opIter == namedOperators.end())
   {
@@ -412,7 +463,7 @@ OpPtr convertOperator(SingleOperatorData const &data,
     {"scale", parseScale},
     {"convert_units_to", parseConvertUnits},
     {"ref",
-     [&namedOperators](const inlet::Proxy &opNode,
+     [&namedOperators](const inlet::Container &opNode,
                        const TransformableGeometryProperties &startProperties) {
        return parseRef(opNode, startProperties, namedOperators);
      }},
@@ -422,7 +473,7 @@ OpPtr convertOperator(SingleOperatorData const &data,
   {
     if(data.m_container->contains(entry.first))
     {
-      return entry.second(inlet::Proxy(*data.m_container), startProperties);
+      return entry.second(*data.m_container, startProperties);
     }
   }
 

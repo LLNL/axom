@@ -204,6 +204,23 @@ test::MatchesSliceMatcherP<SliceOperator> isSlice(
   return MatchesSlice(op);
 }
 
+TEST(GeometryOperatorsIO, readMultipleOperatorsIncluded)
+{
+  try
+  {
+    readOperators({Dimensions::Two, LengthUnit::cm}, R"(
+      - translate: [10, 20]
+        rotate: 90
+    )");
+    FAIL() << "Should have thrown";
+  }
+  catch(KleeError const &error)
+  {
+    EXPECT_THAT(error.what(), HasSubstr("translate"));
+    EXPECT_THAT(error.what(), HasSubstr("rotate"));
+  }
+}
+
 TEST(GeometryOperatorsIO, readTranslation_2D)
 {
   auto translation =
@@ -232,12 +249,12 @@ TEST(GeometryOperatorsIO, readTranslation_3D)
 
 TEST(GeometryOperatorsIO, readTranslation_unknownKeys)
 {
-  EXPECT_THROW(
-          readSingleOperator<Translation>({Dimensions::Two, LengthUnit::cm},
-                                    R"(
+  EXPECT_THROW(readSingleOperator<Translation>({Dimensions::Two, LengthUnit::cm},
+                                               R"(
           translate: [10, 20]
           UNKNOWN_KEY: UNKNOWN_VALUE
-        )"), KleeError);
+        )"),
+               KleeError);
 }
 
 TEST(GeometryOperatorsIO, readRotation_2D_requiredOnly)
@@ -616,8 +633,7 @@ TEST(GeometryOperatorsIO, readMultiple_unknownOperator)
   }
   catch(const KleeError &)
   {
-    // TODO We can't get the key of an unexpected value with Inlet.
-    // Need https://github.com/LLNL/axom/issues/471 to be implemented
+    // TODO Would like to do the below, but output is currently going through Slic.
     // EXPECT_THAT(ex.what(), HasSubstr("UNKNOWN_OPERATOR"));
   }
 }
