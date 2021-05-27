@@ -104,17 +104,26 @@ endif()
 #------------------------------------------------------------------------------
 # Add MFEMSidreDataCollection tests
 #------------------------------------------------------------------------------
-if (AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    set(_sidre_mfem_dc_depends sidre gtest)
+    blt_list_append(TO _sidre_mfem_dc_depends ELEMENTS mpi IF ENABLE_MPI)
+
     blt_add_executable( NAME sidre_mfem_datacollection_test
                         SOURCES sidre_mfem_datacollection.cpp
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON sidre gtest
+                        DEPENDS_ON ${_sidre_mfem_dc_depends}
                         FOLDER axom/sidre/tests
                         )
-    if (ENABLE_MPI AND MFEM_USE_MPI)
+    if (ENABLE_MPI)
+        if(MFEM_USE_MPI)
+            set(_nranks 2)
+        else()
+            set(_nranks 1)
+        endif()
+
         axom_add_test( NAME sidre_mfem_datacollection
                        COMMAND sidre_mfem_datacollection_test
-                       NUM_MPI_TASKS 2
+                       NUM_MPI_TASKS ${_nranks}
                        )
     else()
         axom_add_test( NAME    sidre_mfem_datacollection

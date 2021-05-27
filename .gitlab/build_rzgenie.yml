@@ -58,7 +58,7 @@ rzgenie_release:
 rzgenie-clang_10_0_0-src:
   variables:
     COMPILER: "clang@10.0.0"
-    HOST_CONFIG: "rzgenie-toss_3_x86_64_ib-${COMPILER}.cmake"
+    HOST_CONFIG: "rzgenie-klee-clang@10.cmake"
   extends: .src_build_on_rzgenie
 
 rzgenie-gcc_8_1_0-src:

@@ -21,6 +21,16 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
+if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION AND ENABLE_MPI)
+    blt_add_executable(
+        NAME        quest_shaping_driver_ex
+        SOURCES     shaping_driver.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} fmt cli11 sidre inlet klee mfem mpi
+        FOLDER      axom/quest/examples
+        )
+endif()
+
 ## Quest interface examples
 
 blt_add_executable(

@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #ifndef AXOM_USE_MFEM
   #error This file requires MFEM
@@ -15,6 +16,10 @@
 
 #include "axom/sidre/core/sidre.hpp"
 #include "axom/sidre/core/MFEMSidreDataCollection.hpp"
+
+#ifdef AXOM_USE_MPI
+  #include "mpi.h"
+#endif
 
 using axom::sidre::Group;
 using axom::sidre::MFEMSidreDataCollection;
@@ -92,6 +97,10 @@ TEST(sidre_datacollection, dc_save)
   // 1D mesh divided into 10 segments
   mfem::Mesh mesh(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
+
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc.SetComm(MPI_COMM_WORLD);
+#endif
 
   sdc.Save();
 
@@ -805,24 +814,26 @@ TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_hex)
   mfem::Mesh mesh(10, 10, 10, mfem::Element::HEXAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
 }
+#endif  // defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 
-  //----------------------------------------------------------------------
-  #include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
+//----------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
+#ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
+#endif
+
   result = RUN_ALL_TESTS();
+
+#ifdef AXOM_USE_MPI
   MPI_Finalize();
+#endif
 
   return result;
 }
-
-#endif  // defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
