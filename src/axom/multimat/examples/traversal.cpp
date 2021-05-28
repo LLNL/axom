@@ -396,7 +396,7 @@ int main(int argc, char** argv)
   //default options
   int ncells = 10000;
   int nmats = 50;
-  int ncomp = 3;
+  int ncomp = 1;
   bool use_sparse = true;
   double fill_percentage = .2;
 
