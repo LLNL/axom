@@ -592,7 +592,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
               idx1 = mi, idx2 = ci;
             }
 
-            EXPECT_TRUE(mm.removeEntry(idx1, idx2));
+            EXPECT_TRUE(mm.removeEntry(ci, mi));
             volfrac_field(idx1, idx2) = 0.0;
             for(int s = 0; s < stride_val; s++) arr(idx1, idx2, s) = 0.0;
           }
@@ -614,7 +614,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
           idx1 = 0, idx2 = ci;
         }
 
-        mm.addEntry(idx1, idx2);
+        EXPECT_TRUE(mm.addEntry(ci, 0));
         volfrac_field(idx1, idx2) = 1.0;
         for(int s = 0; s < stride_val; s++)
           arr(idx1, idx2, s) =
