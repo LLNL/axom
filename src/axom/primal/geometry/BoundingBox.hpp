@@ -511,7 +511,7 @@ template <typename T, int NDIMS>
 BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::scale(double scaleFactor)
 {
   const PointType midpoint = getCentroid();
-  const VectorType r = (T)(scaleFactor * 0.5) * range();
+  const VectorType r = static_cast<T>(scaleFactor * 0.5) * range();
 
   m_min = PointType(midpoint.array() - r.array());
   m_max = PointType(midpoint.array() + r.array());
