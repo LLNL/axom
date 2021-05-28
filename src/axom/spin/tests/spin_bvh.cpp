@@ -279,7 +279,9 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
       xsum += coords[mint::X_COORDINATE];
       ysum += coords[mint::Y_COORDINATE];
 
-      range.addPoint(coords);
+      range.addPoint(primal::Point<FloatType, 2> {
+        static_cast<FloatType>(coords[mint::X_COORDINATE]),
+        static_cast<FloatType>(coords[mint::Y_COORDINATE])});
     }  // END for all cell nodes
 
     xc[icell] = xsum * ONE_OVER_4;
@@ -309,9 +311,9 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
         xsum += node[mint::X_COORDINATE];
         ysum += node[mint::Y_COORDINATE];
 
-        range.addPoint(
-          primal::Point<FloatType, 2>::make_point(node[mint::X_COORDINATE],
-                                                  node[mint::Y_COORDINATE]));
+        range.addPoint(primal::Point<FloatType, 2> {
+          static_cast<FloatType>(node[mint::X_COORDINATE]),
+          static_cast<FloatType>(node[mint::Y_COORDINATE])});
       }  // END for all cells nodes
 
       xc[cellIdx] = xsum * ONE_OVER_4;
@@ -406,7 +408,10 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
       ysum += coords[mint::Y_COORDINATE];
       zsum += coords[mint::Z_COORDINATE];
 
-      range.addPoint(coords);
+      range.addPoint(primal::Point<FloatType, 3> {
+        static_cast<FloatType>(coords[mint::X_COORDINATE]),
+        static_cast<FloatType>(coords[mint::Y_COORDINATE]),
+        static_cast<FloatType>(coords[mint::Z_COORDINATE])});
     }  // END for all cell nodes
 
     xc[icell] = xsum * ONE_OVER_8;
@@ -439,10 +444,10 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
         ysum += node[mint::Y_COORDINATE];
         zsum += node[mint::Z_COORDINATE];
 
-        range.addPoint(
-          primal::Point<FloatType, 3>::make_point(node[mint::X_COORDINATE],
-                                                  node[mint::Y_COORDINATE],
-                                                  node[mint::Z_COORDINATE]));
+        range.addPoint(primal::Point<FloatType, 3> {
+          static_cast<FloatType>(node[mint::X_COORDINATE]),
+          static_cast<FloatType>(node[mint::Y_COORDINATE]),
+          static_cast<FloatType>(node[mint::Z_COORDINATE])});
       }  // END for all cells nodes
 
       xc[cellIdx] = xsum * ONE_OVER_8;
