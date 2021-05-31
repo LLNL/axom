@@ -40,15 +40,15 @@
 //                     BlockIndex(GridPt::make_point(32, 60, 20), 6)
 
 #ifndef DUMP_VTK_MESH
-  #define DUMP_VTK_MESH
+//  #define DUMP_VTK_MESH
 #endif
 
 #ifndef DUMP_OCTREE_INFO
-  #define DUMP_OCTREE_INFO 1
+//  #define DUMP_OCTREE_INFO 1
 #endif
 
 #ifndef DEBUG_OCTREE_ACTIVE
-  #define DEBUG_OCTREE_ACTIVE
+//  #define DEBUG_OCTREE_ACTIVE
 #endif
 
 #if defined(DEBUG_OCTREE_ACTIVE) && defined(AXOM_DEBUG)
@@ -265,8 +265,8 @@ private:
    * to the common vertex if one is found
    * \return True, if all cells indexed by this leaf share a common vertex, false otherwise.
    */
-  bool allTrianglesIncidentInCommonVertex(const BlockIndex& leafBlock,
-                                          DynamicGrayBlockData& leafData) const;
+  bool allCellsIncidentInCommonVertex(const BlockIndex& leafBlock,
+                                      DynamicGrayBlockData& leafData) const;
 
   /**
    * \brief Finds a color for the given block \a blk and propagates to neighbors
@@ -316,7 +316,7 @@ private:
   }
 
   /**
-   * \brief Determines whether the specified point is within the gray leaf
+   * \brief Determines whether the specified 3D point is within the gray leaf
    *
    * \param queryPt The point we are querying
    * \param leafBlk The block of the gray leaf
@@ -324,9 +324,26 @@ private:
    * \return True, if the point is inside the local surface associated with this
    * block, false otherwise
    */
-  bool withinGrayBlock(const SpacePt& queryPt,
-                       const BlockIndex& leafBlk,
-                       const InOutBlockData& data) const;
+  template <int TDIM>
+  typename std::enable_if<TDIM == 3, bool>::type withinGrayBlock(
+    const SpacePt& queryPt,
+    const BlockIndex& leafBlk,
+    const InOutBlockData& data) const;
+
+  /**
+   * \brief Determines whether the specified 2D point is within the gray leaf
+   *
+   * \param queryPt The point we are querying
+   * \param leafBlk The block of the gray leaf
+   * \param data The data associated with the leaf block
+   * \return True, if the point is inside the local surface associated with this
+   * block, false otherwise
+   */
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 2, bool>::type withinGrayBlock(
+    const SpacePt& queryPt,
+    const BlockIndex& leafBlk,
+    const InOutBlockData& data) const;
 
   /**
    * \brief Returns the index of the mesh vertex associated with the given leaf block
@@ -374,61 +391,61 @@ private:
   /// \brief Utility function to print some statistics about the InOutOctree instance
   void printOctreeStats() const;
 
-  /**
-   * \brief Utility function to compute the angle-weighted pseudonormal for a vertex in the mesh
-   *
-   * \note Not optimized
-   * \note The returned normal is not normalized.
-   */
-  SpaceVector vertexNormal(VertexIndex vIdx) const
-  {
-    SpaceVector vec;
+  // /**
+  //  * \brief Utility function to compute the angle-weighted pseudonormal for a vertex in the mesh
+  //  *
+  //  * \note Not optimized
+  //  * \note The returned normal is not normalized.
+  //  */
+  // SpaceVector vertexNormal(VertexIndex vIdx) const
+  // {
+  //   SpaceVector vec;
 
-    BlockIndex vertexBlock = m_vertexToBlockMap[vIdx];
-    CellIndexSet cells = leafCells(vertexBlock, (*this)[vertexBlock]);
-    for(int i = 0; i < cells.size(); ++i)
-    {
-      CellIndex tIdx = cells[i];
-      CellVertIndices tv = m_meshWrapper.cellVertexIndices(tIdx);
-      if(m_meshWrapper.incidentInVertex(tv, vIdx))
-      {
-        int idx = (vIdx == tv[0]) ? 0 : (vIdx == tv[1] ? 1 : 2);
+  //   BlockIndex vertexBlock = m_vertexToBlockMap[vIdx];
+  //   CellIndexSet cells = leafCells(vertexBlock, (*this)[vertexBlock]);
+  //   for(int i = 0; i < cells.size(); ++i)
+  //   {
+  //     CellIndex tIdx = cells[i];
+  //     CellVertIndices tv = m_meshWrapper.cellVertexIndices(tIdx);
+  //     if(m_meshWrapper.incidentInVertex(tv, vIdx))
+  //     {
+  //       int idx = (vIdx == tv[0]) ? 0 : (vIdx == tv[1] ? 1 : 2);
 
-        SpaceCell tr = m_meshWrapper.cellPositions(tIdx);
-        vec += tr.angle(idx) * tr.normal();
-      }
-    }
+  //       SpaceCell tr = m_meshWrapper.cellPositions(tIdx);
+  //       vec += tr.angle(idx) * tr.normal();
+  //     }
+  //   }
 
-    return vec;
-  }
+  //   return vec;
+  // }
 
-  /**
-   * \brief Utility function to compute the normal for an edge of the mesh.
-   *
-   * The computed edge normal is the average of its face normals.
-   * There should be two of these in a closed manifold surface mesh.
-   * \note Not optimized
-   * \note The returned normal is not normalized.
-   */
-  SpaceVector edgeNormal(VertexIndex vIdx1, VertexIndex vIdx2) const
-  {
-    SpaceVector vec;
+  // /**
+  //  * \brief Utility function to compute the normal for an edge of the mesh.
+  //  *
+  //  * The computed edge normal is the average of its face normals.
+  //  * There should be two of these in a closed manifold surface mesh.
+  //  * \note Not optimized
+  //  * \note The returned normal is not normalized.
+  //  */
+  // SpaceVector edgeNormal(VertexIndex vIdx1, VertexIndex vIdx2) const
+  // {
+  //   SpaceVector vec;
 
-    BlockIndex vertexBlock = m_vertexToBlockMap[vIdx1];
-    CellIndexSet cells = leafCells(vertexBlock, (*this)[vertexBlock]);
-    for(int i = 0; i < cells.size(); ++i)
-    {
-      CellIndex tIdx = cells[i];
-      CellVertIndices tv = m_meshWrapper.cellVertexIndices(tIdx);
-      if(m_meshWrapper.incidentInVertex(tv, vIdx1) &&
-         m_meshWrapper.incidentInVertex(tv, vIdx2))
-      {
-        vec += m_meshWrapper.cellPositions(tIdx).normal();
-      }
-    }
+  //   BlockIndex vertexBlock = m_vertexToBlockMap[vIdx1];
+  //   CellIndexSet cells = leafCells(vertexBlock, (*this)[vertexBlock]);
+  //   for(int i = 0; i < cells.size(); ++i)
+  //   {
+  //     CellIndex tIdx = cells[i];
+  //     CellVertIndices tv = m_meshWrapper.cellVertexIndices(tIdx);
+  //     if(m_meshWrapper.incidentInVertex(tv, vIdx1) &&
+  //        m_meshWrapper.incidentInVertex(tv, vIdx2))
+  //     {
+  //       vec += m_meshWrapper.cellPositions(tIdx).normal();
+  //     }
+  //   }
 
-    return vec;
-  }
+  //   return vec;
+  // }
 
 protected:
   MeshWrapper<DIM> m_meshWrapper;
@@ -667,12 +684,12 @@ void InOutOctree<DIM>::insertMeshCells()
         currentLevelData[blkData.dataIndex()];
 
       bool isInternal = !dynamicLeafData.isLeaf();
-      bool isLeafThatMustRefine = !isInternal &&
-        !allTrianglesIncidentInCommonVertex(blk, dynamicLeafData);
+      bool isLeafThatMustRefine =
+        !isInternal && !allCellsIncidentInCommonVertex(blk, dynamicLeafData);
 
       QUEST_OCTREE_DEBUG_LOG_IF(
         DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
-        fmt::format("Attempting to insert triangles from block {}."
+        fmt::format("Attempting to insert cells from block {}."
                     "\n\tDynamic data: {}"
                     "\n\tBlock data: {}"
                     "\n\tAbout to finalize? {}",
@@ -987,7 +1004,7 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
           SpacePt faceCenter =
             SpacePt::midpoint(this->blockBoundingBox(leafBlk).getCentroid(),
                               this->blockBoundingBox(neighborBlk).getCentroid());
-          if(withinGrayBlock(faceCenter, neighborBlk, neighborData))
+          if(withinGrayBlock<DIM>(faceCenter, neighborBlk, neighborData))
             leafData.setBlack();
           else
             leafData.setWhite();
@@ -1051,7 +1068,7 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
               this->blockBoundingBox(leafBlk).getCentroid(),
               this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid());
 
-            if(withinGrayBlock(faceCenter, leafBlk, leafData))
+            if(withinGrayBlock<DIM>(faceCenter, leafBlk, leafData))
               neighborData.setBlack();
             else
               neighborData.setWhite();
@@ -1104,9 +1121,11 @@ typename InOutOctree<DIM>::CellIndexSet InOutOctree<DIM>::leafCells(
 }
 
 template <int DIM>
-bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
-                                       const BlockIndex& leafBlk,
-                                       const InOutBlockData& leafData) const
+template <int TDIM>
+typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock(
+  const SpacePt& queryPt,
+  const BlockIndex& leafBlk,
+  const InOutBlockData& leafData) const
 {
   /// Finds a ray from queryPt to a point of a triangle within leafBlk.
   /// Then find the first triangle along this ray. The orientation of the ray
@@ -1225,6 +1244,115 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt& queryPt,
 }
 
 template <int DIM>
+template <int TDIM>
+typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock(
+  const SpacePt& queryPt,
+  const BlockIndex& leafBlk,
+  const InOutBlockData& leafData) const
+{
+  /// Finds a ray from queryPt to a point of a segment within leafBlk.
+  /// Then find the first segment along this ray. The orientation of the ray
+  /// against this segment's normal indicates queryPt's containment.
+  /// It is inside when the dot product is positive.
+
+  SLIC_ASSERT(leafData.color() == InOutBlockData::Gray);
+  SLIC_ASSERT(leafData.hasData());
+
+  GeometricBoundingBox blockBB = this->blockBoundingBox(leafBlk);
+  GeometricBoundingBox expandedBB = blockBB;
+  expandedBB.scale(m_boundingBoxScaleFactor);
+
+  SpacePt segmentPt;
+
+  CellIndexSet segmentSet = leafCells(leafBlk, leafData);
+  const int numSegments = segmentSet.size();
+  for(int i = 0; i < numSegments; ++i)
+  {
+    /// Get the segment
+    CellIndex idx = segmentSet[i];
+    SpaceCell seg = m_meshWrapper.cellPositions(idx);
+
+    /// Find a point from this segment within the expanded bounding box of the mesh
+    const bool intersects = primal::intersect(seg, expandedBB, segmentPt);
+    if(!intersects)
+    {
+      continue;
+    }
+
+    // Using a ray from query pt to point on this segment
+    // Find closest intersection to surface within cell inside this bounding box
+    CellIndex tIdx = MeshWrapper<DIM>::NO_CELL;
+    double minRayParam = std::numeric_limits<double>::infinity();
+    SpaceRay ray(queryPt, SpaceVector(queryPt, segmentPt));
+
+    QUEST_OCTREE_DEBUG_LOG_IF(
+      DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
+      fmt::format("Checking if pt {} is within block {} with data {}, "
+                  "ray is {}, segment point is {} on segment with index {}.",
+                  queryPt,
+                  leafBlk,
+                  leafData,
+                  ray,
+                  segmentPt,
+                  idx));
+
+    double rayParam = 0;
+    if(primal::intersect(ray, seg, rayParam))
+    {
+      minRayParam = rayParam;
+      tIdx = idx;
+
+      QUEST_OCTREE_DEBUG_LOG_IF(
+        DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
+        fmt::format("... intersection for segment w/ index {} at ray "
+                    "parameter {} at point {}",
+                    tIdx,
+                    minRayParam,
+                    ray.at(minRayParam)));
+    }
+
+    for(int j = 0; j < numSegments; ++j)
+    {
+      CellIndex localIdx = segmentSet[j];
+      if(localIdx == idx) continue;
+
+      if(primal::intersect(ray, m_meshWrapper.cellPositions(localIdx), rayParam))
+      {
+        if(rayParam < minRayParam)
+        {
+          minRayParam = rayParam;
+          tIdx = localIdx;
+
+          QUEST_OCTREE_DEBUG_LOG_IF(
+            DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
+            fmt::format("... intersection for setment w/ index {} at ray "
+                        "parameter {} at point {}",
+                        tIdx,
+                        minRayParam,
+                        ray.at(minRayParam)));
+        }
+      }
+    }
+    if(tIdx == MeshWrapper<DIM>::NO_CELL)
+    {
+      continue;
+    }
+
+    // Inside when the dot product of the normal with this segment is positive
+    SpaceVector normal = (tIdx == idx)
+      ? seg.template normal<2>()
+      : m_meshWrapper.cellPositions(tIdx).template normal<2>();
+
+    return normal.dot(ray.direction()) > 0.;
+  }
+
+  SLIC_DEBUG("Could not determine inside/outside for point "
+             << queryPt << " on block " << leafBlk);
+
+  return false;  // query points on boundary might get here -- revisit this.
+}
+
+template <int DIM>
 void InOutOctree<DIM>::updateSurfaceMeshVertices()
 {
   // Create a map from old vertex indices to new vertex indices
@@ -1267,7 +1395,7 @@ void InOutOctree<DIM>::updateSurfaceMeshVertices()
 }
 
 template <int DIM>
-bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
+bool InOutOctree<DIM>::allCellsIncidentInCommonVertex(
   const BlockIndex& leafBlock,
   DynamicGrayBlockData& leafData) const
 {
@@ -1299,7 +1427,7 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
     switch(numCells)
     {
     case 1:
-      /// Choose an arbitrary vertex from this triangle
+      /// Choose an arbitrary vertex from this cell
       commonVert = m_meshWrapper.cellVertexIndices(cells[0])[0];
       shareCommonVert = true;
       break;
@@ -1308,18 +1436,21 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
       shareCommonVert =
         m_meshWrapper.haveSharedVertex(cells[0], cells[1], commonVert);
       break;
-    default:  // numTris >= 3
-      /// Find a vertex that the first three triangles share
-      shareCommonVert =
-        m_meshWrapper.haveSharedVertex(cells[0], cells[1], cells[2], commonVert);
-
-      /// Check that all other triangles have this vertex
-      for(int i = 3; shareCommonVert && i < numCells; ++i)
+    default:  // numCells > 3
+      if(DIM == 3)
       {
-        if(!m_meshWrapper.incidentInVertex(
-             m_meshWrapper.cellVertexIndices(cells[i]),
-             commonVert))
-          shareCommonVert = false;
+        /// Find a vertex that the first three triangles share
+        shareCommonVert =
+          m_meshWrapper.haveSharedVertex(cells[0], cells[1], cells[2], commonVert);
+
+        /// Check that all other triangles have this vertex
+        for(int i = 3; shareCommonVert && i < numCells; ++i)
+        {
+          if(!m_meshWrapper.incidentInVertex(
+               m_meshWrapper.cellVertexIndices(cells[i]),
+               commonVert))
+            shareCommonVert = false;
+        }
       }
       break;
     }
@@ -1345,7 +1476,7 @@ bool InOutOctree<DIM>::within(const SpacePt& pt) const
     case InOutBlockData::White:
       return false;
     case InOutBlockData::Gray:
-      return withinGrayBlock(pt, block, data);
+      return withinGrayBlock<DIM>(pt, block, data);
     case InOutBlockData::Undetermined:
       SLIC_ASSERT_MSG(
         false,
