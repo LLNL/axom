@@ -24,68 +24,56 @@ namespace primal
 namespace detail
 {
 /*!
- * \brief Computes the intersection of the given ray, R, with the segment, S.
- *      ip returns the intersection point on S.
+ * \brief Computes the intersection of the given ray \a R with the segment \a S.
+ *
+ * When there is a valid intersection (within toleranace \a EPS), \a ray_param 
+ * returns the parametric coordinate of the intersection point along \a R
+ *
  * \return status true iff R intersects with S, otherwise, false.
  */
 template <typename T>
 inline bool intersect_ray(const primal::Ray<T, 2>& R,
                           const primal::Segment<T, 2>& S,
-                          primal::Point<T, 2>& ip)
+                          T& ray_param,
+                          const double EPS)
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
-  // STEP 0: Construct a ray from the segment, i.e., represent the
-  // segment in parametric form S(t1)=A+td, t \in [0,1]
-  Ray<T, 2> R2(S);
+  // STEP 0: Find the parameterized direction of the segment
+  const auto seg_dir = primal::Vector<T, 2>(S.source(), S.target());
+  const auto& ray_dir = R.direction();
 
-  // Step 1: Equating R(t0)=S(t1) yields a system of two equations and
-  // two unknowns, namely, t0 and t1. We can solve this system directly
-  // using Cramer's Rule.
-  const double denom = numerics::determinant(R.direction()[0],
-                                             (-1.0) * R2.direction()[0],
-                                             R.direction()[1],
-                                             (-1.0) * R2.direction()[1]);
+  // Step 1: Equating R(ray_param)=S(seg_param) yields a system of two equations and
+  // two unknowns, namely, t0 and t1. We can solve this system directly using Cramer's Rule.
+  const double denom =
+    numerics::determinant(ray_dir[0], -seg_dir[0], ray_dir[1], -seg_dir[1]);
 
-  // STEP 2: if denom is zero, the system is singular, which implies that the
-  // ray and the segment are parallel
-  const double parepsilon = 1.0e-9;
-  if(axom::utilities::isNearlyEqual(denom, 0.0, parepsilon))
+  // STEP 2: if denom is (nearly) zero (within tolerance EPS), the system is singular
+  if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
   {
     // ray and segment are parallel
     return false;
   }
 
-  // STEP 3: Solve for t0 and t1 directly using cramer's rule
-  const double alpha = S.source()[0] - R.origin()[0];
-  const double beta = S.source()[1] - R.origin()[1];
+  // STEP 3: Solve for the ray_param and seg_param directly using cramer's rule
+  const auto sol = S.source().array() - R.origin().array();
 
-  const double t0 = numerics::determinant(alpha,
-                                          (-1.0) * R2.direction()[0],
-                                          beta,
-                                          (-1.0) * R2.direction()[1]) /
-    denom;
+  // Note: ray_param is an OUT parameter of this function
+  ray_param =
+    numerics::determinant(sol[0], -seg_dir[0], sol[1], -seg_dir[1]) / denom;
 
-  const double t1 =
-    numerics::determinant(R.direction()[0], alpha, R.direction()[1], beta) /
-    denom;
+  const T seg_param =
+    numerics::determinant(ray_dir[0], sol[0], ray_dir[1], sol[1]) / denom;
 
   // STEP 4: Define lower/upper threshold
-  const double tlow = 0.0 - 1.0e-9;
-  const double thigh = 1.0 + 1.0e-9;
+  const double tlow = 0.0 - EPS;
+  const double thigh = 1.0 + EPS;
 
   // STEP 5: Necessary and sufficient criteria for an intersection between
   // ray, R(t0),  and a finite segment S(t1) are:
-  // 1. t0 >= tlow w.r.t. the ray R(t0).
-  // 2. tlow >= t1 >= thigh w.r.t. the segment S(t1).
-  if((t0 >= tlow) && (t1 >= tlow) && (t1 <= thigh))
-  {
-    ip = R2.at(t1);
-    return true;
-  }
-
-  // STEP 6: Ray does not intersect the segment
-  return false;
+  // 1. ray_param >= tlow w.r.t. the ray R(ray_param).
+  // 2. tlow >= seg_param >= thigh w.r.t. the segment S(seg_param).
+  return ((ray_param >= tlow) && (seg_param >= tlow) && (seg_param <= thigh));
 }
 
 /*!

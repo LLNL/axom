@@ -41,8 +41,8 @@ namespace primal
 template <typename T>
 Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
 {
-  typedef BoundingBox<T, 3> BoundingBoxType;
-  typedef Polygon<T, 3> PolygonType;
+  using BoundingBoxType = BoundingBox<T, 3>;
+  using PolygonType = Polygon<T, 3>;
 
   // Use two polygons with pointers for 'back-buffer'-like swapping
   const int MAX_VERTS = 6;

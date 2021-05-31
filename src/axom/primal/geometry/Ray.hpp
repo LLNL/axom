@@ -42,9 +42,9 @@ template <typename T, int NDIMS>
 class Ray
 {
 public:
-  typedef Point<T, NDIMS> PointType;
-  typedef Segment<T, NDIMS> SegmentType;
-  typedef Vector<T, NDIMS> VectorType;
+  using PointType = Point<T, NDIMS>;
+  using SegmentType = Segment<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
 
 public:
   /*!
@@ -102,7 +102,7 @@ private:
    * \brief Default Constructor. Does nothing.
    * \note Made private to prevent its use in application code.
    */
-  Ray() {};
+  Ray() = default;
 
   PointType m_origin;
   VectorType m_direction;
@@ -131,11 +131,10 @@ Ray<T, NDIMS>::Ray(const PointType& origin, const VectorType& direction)
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 Ray<T, NDIMS>::Ray(const SegmentType& S)
+  : m_origin(S.source())
+  , m_direction(VectorType(S.source(), S.target()).unitVector())
 {
-  m_origin = S.source();
-
-  VectorType dir(S.source(), S.target());
-  m_direction = dir.unitVector();
+  SLIC_ASSERT(m_direction.squared_norm() != 0.0);
 }
 
 //------------------------------------------------------------------------------

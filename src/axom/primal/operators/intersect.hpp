@@ -223,8 +223,30 @@ bool intersect(const Triangle<T, 3>& tri,
  *
  * \param [in] R the specified ray
  * \param [in] S the segment to check
+ * \param [out] param parametric coordinate of intersection along R, valid only if status=true.
+ * \param [in] EPS tolerance for intersection tests
  *
+ * \return status true iff R intersects with S, otherwise, false.
+ *
+ * \see primal::Ray
+ * \see primal::Segment
+ */
+template <typename T>
+bool intersect(const Ray<T, 2>& R,
+               const Segment<T, 2>& S,
+               T& param,
+               const T EPS = 1e-8)
+{
+  return detail::intersect_ray(R, S, param, EPS);
+}
+
+/*!
+ * \brief Computes the intersection of the given ray, R, with the segment, S.
+ *
+ * \param [in] R the specified ray
+ * \param [in] S the segment to check
  * \param [out] ip the intersection point on S, valid only if status=true.
+ * \param [in] EPS tolerance for intersection tests
  *
  * \return status true iff R intersects with S, otherwise, false.
  *
@@ -233,9 +255,18 @@ bool intersect(const Triangle<T, 3>& tri,
  * \see primal::Point
  */
 template <typename T>
-bool intersect(const Ray<T, 2>& R, const Segment<T, 2>& S, Point<T, 2>& ip)
+bool intersect(const Ray<T, 2>& R,
+               const Segment<T, 2>& S,
+               Point<T, 2>& ip,
+               const T EPS = 1e-8)
 {
-  return detail::intersect_ray(R, S, ip);
+  double t = 0.;
+  if(detail::intersect_ray(R, S, t, EPS))
+  {
+    ip = R.at(t);
+    return true;
+  }
+  return false;
 }
 
 /*!
@@ -285,6 +316,13 @@ bool intersect(const Segment<T, DIM>& S,
                const BoundingBox<T, DIM>& bb,
                Point<T, DIM>& ip)
 {
+  return detail::intersect_seg_bbox(S, bb, ip);
+}
+
+template <typename T, int DIM>
+bool intersect(const Segment<T, DIM>& S, const BoundingBox<T, DIM>& bb)
+{
+  Point<T, DIM> ip;
   return detail::intersect_seg_bbox(S, bb, ip);
 }
 
