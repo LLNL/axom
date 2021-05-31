@@ -27,6 +27,7 @@ set( quest_headers
     InOutOctree.hpp
     detail/inout/BlockData.hpp
     detail/inout/MeshWrapper.hpp
+    detail/inout/InOutOctreeMeshDumper.hpp
     detail/inout/InOutOctreeValidator.hpp
     detail/InOutOctree_detail.hpp
 

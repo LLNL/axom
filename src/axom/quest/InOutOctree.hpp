@@ -21,6 +21,7 @@
 
 #include "detail/inout/BlockData.hpp"
 #include "detail/inout/MeshWrapper.hpp"
+#include "detail/inout/InOutOctreeMeshDumper.hpp"
 #include "detail/inout/InOutOctreeValidator.hpp"
 #include "detail/InOutOctree_detail.hpp"
 
