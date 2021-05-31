@@ -39,7 +39,8 @@ template <typename T, int NDIMS>
 class Segment
 {
 public:
-  typedef Point<T, NDIMS> PointType;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
 
 public:
   /*!
@@ -47,12 +48,12 @@ public:
    * \param A user-supplied source point
    * \param B user-supplied target point
    */
-  Segment(const PointType& A, const PointType& B);
+  Segment(const PointType& A, const PointType& B) : m_source(A), m_target(B) {};
 
   /*!
    * \brief Destructor.
    */
-  ~Segment();
+  ~Segment() = default;
 
   /*!
    * \brief Returns the source point of the segment.
@@ -82,10 +83,20 @@ public:
   /*!
    * \brief Returns the length of the segment
    */
-  double length() const
+  double length() const { return VectorType(m_source, m_target).norm(); }
+
+  /*!
+   * \brief Returns a vector normal to the segment
+   *
+   * \note Only available in 2D
+   */
+  template <int TDIM>
+  typename std::enable_if<TDIM == 2, VectorType>::type normal() const
   {
-    typedef Vector<T, NDIMS> VectorType;
-    return VectorType(m_source, m_target).norm();
+    const auto& diff = m_target.array() - m_source.array();
+    return !axom::utilities::isNearlyEqual(T(0), diff[0])
+      ? VectorType(PointType {-diff[1], diff[0]})
+      : VectorType(PointType {diff[1], -diff[0]});
   }
 
   /*!
@@ -105,7 +116,7 @@ private:
    * \brief Default Constructor. Does nothing.
    * \note Made private to prevent its use in application code.
    */
-  Segment() {};
+  Segment() = default;
 
   PointType m_source;
   PointType m_target;
@@ -121,17 +132,6 @@ namespace axom
 {
 namespace primal
 {
-template <typename T, int NDIMS>
-Segment<T, NDIMS>::Segment(const PointType& A, const PointType& B)
-  : m_source(A)
-  , m_target(B)
-{ }
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-Segment<T, NDIMS>::~Segment()
-{ }
-
 //------------------------------------------------------------------------------
 /// Free functions implementing Segments's operators
 //------------------------------------------------------------------------------
