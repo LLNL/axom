@@ -397,7 +397,7 @@ public:
 
     using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
     UMesh* edgeMesh =
-      new UMesh(3, mint::SEGMENT, m_vertexSet.size(), m_elementSet.size());
+      new UMesh(DIM, mint::SEGMENT, m_vertexSet.size(), m_elementSet.size());
 
     // Add vertices to the mesh (i.e. vertex positions)
     for(int i = 0; i < m_vertexSet.size(); ++i)
@@ -548,7 +548,7 @@ public:
 
     using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
     UMesh* triMesh =
-      new UMesh(3, mint::TRIANGLE, m_vertexSet.size(), m_elementSet.size());
+      new UMesh(DIM, mint::TRIANGLE, m_vertexSet.size(), m_elementSet.size());
 
     // Add vertices to the mesh (i.e. vertex positions)
     for(int i = 0; i < m_vertexSet.size(); ++i)

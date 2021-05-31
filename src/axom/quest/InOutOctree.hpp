@@ -36,9 +36,9 @@
 #define DEBUG_TRI_IDX -2   // 1654
 
 #define DEBUG_BLOCK_2 BlockIndex::invalid_index()
-//                     BlockIndex(GridPt::make_point(32, 61, 20), 6)
+//                     BlockIndex(GridPt::make_point(0,0), 1)
 #define DEBUG_BLOCK_1 BlockIndex::invalid_index()
-//                     BlockIndex(GridPt::make_point(32, 60, 20), 6)
+//                     BlockIndex(GridPt::make_point(0,1), 1)
 
 #ifndef DUMP_VTK_MESH
 //  #define DUMP_VTK_MESH
@@ -770,7 +770,7 @@ void InOutOctree<DIM>::insertMeshCells()
           childBlk[j] = blk.child(j);
           childBB[j] = this->blockBoundingBox(childBlk[j]);
 
-          // expand bounding box slightly to deal with grazing triangles
+          // expand bounding box slightly to deal with grazing cells
           childBB[j].scale(m_boundingBoxScaleFactor);
 
           const InOutBlockData& childBlockData = broodData[j];
@@ -788,13 +788,13 @@ void InOutOctree<DIM>::insertMeshCells()
           childDataPtr[j] = &childData[j];
         }
 
-        // Check that the vector has enough capacity for all eight children
+        // Check that the vector has enough capacity for all children
         // This ensures that our child data pointers will not be invalidated
         if(nextLevelData.capacity() <
            (nextLevelData.size() + BlockIndex::NUM_CHILDREN))
           nextLevelData.reserve(nextLevelData.size() * 4);
 
-        // Add all triangles to intersecting children blocks
+        // Add all cells to intersecting children blocks
         DynamicGrayBlockData::CellList& parentCells = dynamicLeafData.cells();
         int numCells = static_cast<int>(parentCells.size());
         for(int i = 0; i < numCells; ++i)
