@@ -37,18 +37,30 @@ template <typename Key, typename T, typename Hash = std::hash<Key> >
 class Map
 {
 public:
-  Map(int len){
-    testlist = bucket(10); 
-    testlist.insert_noupdate(37, 1);
-    testlist.insert_update(38, 2);
-    testlist.remove(38);
-    testlist.insert_update(98, 70);
-    testlist.insert_update(2, 52);
-    testlist.insert_update(24, 12);
-    testlist.remove(37);
-    testlist.printall();
+  Map(int inlen){
+    len = inlen;
+    testlist = axom::allocate <bucket> (len); 
+    for(int i = 0; i < len; i++){
+      testlist[i].init(10); 
+    }
+    for(int i = 0; i < len; i++){
+      testlist[i].insert_noupdate(37, 1);
+      testlist[i].insert_update(38, 2);
+      testlist[i].remove(38);
+      testlist[i].insert_update(98, 70+i);
+      testlist[i].insert_update(2, 52);
+      testlist[i].insert_update(24, 12+i);
+      testlist[i].remove(37);
+    }
+   for(int i = 0; i < len; i++){
+     testlist[i].printall();
+   }
   }
 
+  std::size_t list_pick(Key input){
+    std::size_t hashed std::hash<Key>{}(input);
+    return hashed % inlen;
+  }
 
 private:
   
@@ -68,6 +80,17 @@ private:
       head = -1;
     }
    
+    void init(int len){
+      list = axom::allocate <node> (len);
+      for(int i = 0; i < len-1; i++){
+        list[i].next = i+1;
+      }
+      list[len-1].next = -1;
+      free = 0;
+      head = -1;
+
+    }
+
     bool insert_noupdate(Key key, T value){
       if(free != -1){
         if(head == -1){
@@ -194,7 +217,8 @@ private:
     IndexType free;
   
   }; 
-  bucket testlist;
+  bucket *testlist;
+  int len;
 };
 
 } /* namespace axom */
