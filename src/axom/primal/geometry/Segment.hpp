@@ -6,6 +6,7 @@
 #ifndef SEGMENT_HPP_
 #define SEGMENT_HPP_
 
+#include "axom/slic.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
@@ -19,11 +20,28 @@ namespace primal
 template <typename T, int DIM>
 class Segment;
 
+/// \name Forward Declared Overloaded Operators
+///@{
+
+/*!
+ * \brief Equality comparison operator for Segment
+ */
+template <typename T, int NDIMS>
+bool operator==(const Segment<T, NDIMS>& lhs, const Segment<T, NDIMS>& rhs);
+
+/*!
+ * \brief Inequality comparison operator for Segment
+ */
+template <typename T, int NDIMS>
+bool operator!=(const Segment<T, NDIMS>& lhs, const Segment<T, NDIMS>& rhs);
+
 /*!
  * \brief Overloaded output operator for Segment
  */
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const Segment<T, NDIMS>& seg);
+
+///@}
 
 /*!
  * \class
@@ -41,6 +59,11 @@ class Segment
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
+
+  enum
+  {
+    NUM_SEG_VERTS = 2
+  };
 
 public:
   /*!
@@ -68,6 +91,30 @@ public:
   const PointType& target() const { return m_target; };
 
   /*!
+   * \brief Index operator to get the i^th vertex
+   * \param idx The index of the desired vertex
+   * \pre idx is 0 or 1
+   */
+  AXOM_HOST_DEVICE
+  PointType& operator[](int idx)
+  {
+    SLIC_ASSERT(idx >= 0 && idx < NUM_SEG_VERTS);
+    return idx == 0 ? m_source : m_target;
+  }
+
+  /*!
+   * \brief Index operator to get the i^th vertex
+   * \param idx The index of the desired vertex
+   * \pre idx is 0 or 1
+   */
+  AXOM_HOST_DEVICE
+  const PointType& operator[](int idx) const
+  {
+    SLIC_ASSERT(idx >= 0 && idx < NUM_SEG_VERTS);
+    return idx == 0 ? m_source : m_target;
+  }
+
+  /*!
    * \brief Returns a point \f$ (1 - t)A + tB \f$
    * \param [in] t user-supplied parameter for blending A and B
    * \post Return point P will always be collinear with the segment's
@@ -93,10 +140,23 @@ public:
   template <int TDIM>
   typename std::enable_if<TDIM == 2, VectorType>::type normal() const
   {
-    const auto& diff = m_target.array() - m_source.array();
-    return !axom::utilities::isNearlyEqual(T(0), diff[0])
-      ? VectorType(PointType {-diff[1], diff[0]})
-      : VectorType(PointType {diff[1], -diff[0]});
+    return VectorType {m_target[1] - m_source[1], m_source[0] - m_target[0]};
+  }
+
+  /*!
+   * \brief Equality comparison operator for segments
+   */
+  friend inline bool operator==(const Segment& lhs, const Segment& rhs)
+  {
+    return lhs.m_source == rhs.m_source && lhs.m_target == rhs.m_target;
+  }
+
+  /*!
+   * \brief Inequality operator for segments
+   */
+  friend inline bool operator!=(const Segment& lhs, const Segment& rhs)
+  {
+    return !(lhs == rhs);
   }
 
   /*!
@@ -122,8 +182,8 @@ private:
   PointType m_target;
 };
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
 //------------------------------------------------------------------------------
 //  Segment Implementation
@@ -142,7 +202,7 @@ std::ostream& operator<<(std::ostream& os, const Segment<T, NDIMS>& seg)
   return os;
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* SEGMENT_HPP_ */
+#endif  // SEGMENT_HPP_

@@ -112,7 +112,7 @@ template <typename T, int NDIMS>
 class Vector
 {
 public:
-  typedef Point<T, NDIMS> PointType;
+  using PointType = Point<T, NDIMS>;
 
 public:
   /*!

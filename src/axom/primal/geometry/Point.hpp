@@ -64,8 +64,8 @@ public:
     NBYTES = NDIMS * sizeof(T)
   };
 
-  typedef Point<T, NDIMS> PointType;
-  typedef T CoordType;
+  using PointType = Point<T, NDIMS>;
+  using CoordType = T;
 
 public:
   /*!

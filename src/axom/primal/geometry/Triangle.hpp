@@ -43,8 +43,8 @@ template <typename T, int NDIMS>
 class Triangle
 {
 public:
-  typedef Point<T, NDIMS> PointType;
-  typedef Vector<T, NDIMS> VectorType;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
 
   enum
   {
