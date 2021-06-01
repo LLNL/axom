@@ -425,22 +425,6 @@ static void array_memset(T* array, const int32 size, const T val)
     AXOM_LAMBDA(int32 i) { array[i] = val; });
 }
 
-/*!
- * \def SPIN_BVH_THREAD_FENCE_SYSTEM
- *
- * \brief Macro for __threadfence_system() on NVIDIA GPUs expands
- *  to nothing on all other platforms.
- *
- * \note This is an internal macro use in the propagate_aabbs() method below.
- */
-#if defined(__CUDA_ARCH__)
-  // on NVIDIA GPUs call __threadfence_system()
-  #define SPIN_BVH_THREAD_FENCE_SYSTEM __threadfence_system()
-#else
-  // on CPUs do nothing
-  #define SPIN_BVH_THREAD_FENCE_SYSTEM
-#endif
-
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
 void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
@@ -464,13 +448,22 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 
   int32* counters_ptr = axom::allocate<int32>(inner_size, allocatorID);
 
+  using PointType = primal::Point<FloatType, NDIMS>;
+
+  PointType* min_range = axom::allocate<PointType>(inner_size, allocatorID);
+  PointType* max_range = axom::allocate<PointType>(inner_size, allocatorID);
+
   array_memset<ExecSpace>(counters_ptr, inner_size, 0);
+  array_memset<ExecSpace>(min_range, inner_size, PointType {FloatType {0}});
+  array_memset<ExecSpace>(max_range, inner_size, PointType {FloatType {0}});
 
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   for_all<ExecSpace>(
     leaf_size,
     AXOM_LAMBDA(int32 i) {
+      primal::BoundingBox<FloatType, NDIMS> aabb = leaf_aabb_ptr[i];
+      int32 last_node = inner_size + i;
       int32 current_node = parent_ptr[inner_size + i];
 
       while(current_node != -1)
@@ -487,46 +480,59 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
         int32 lchild = lchildren_ptr[current_node];
         int32 rchild = rchildren_ptr[current_node];
 
-        // gather the aabbs
-        primal::BoundingBox<FloatType, NDIMS> aabb;
-        if(lchild >= inner_size)
+        int other_child = (lchild == last_node) ? rchild : lchild;
+
+        if(other_child >= inner_size)
         {
-          aabb.addBox(leaf_aabb_ptr[lchild - inner_size]);
+          aabb.addBox(leaf_aabb_ptr[other_child - inner_size]);
         }
         else
         {
-          aabb.addBox(inner_aabb_ptr[lchild]);
+          PointType other_aabb_min, other_aabb_max;
+          for(int idim = 0; idim < NDIMS; idim++)
+          {
+            // NOTE: These atomicAdd(..., 0)  operations are to ensure that
+            // we get the latest value from L2$. Might not be necessary, since
+            // the atomic store below should bypass L1$ entirely, but just in
+            // case...
+            other_aabb_min[idim] =
+              RAJA::atomicAdd<atomic_policy>(&min_range[other_child][idim],
+                                             FloatType {0});
+            other_aabb_max[idim] =
+              RAJA::atomicAdd<atomic_policy>(&max_range[other_child][idim],
+                                             FloatType {0});
+          }
+          aabb.addPoint(other_aabb_min);
+          aabb.addPoint(other_aabb_max);
         }
 
-        if(rchild >= inner_size)
+        for(int idim = 0; idim < NDIMS; idim++)
         {
-          aabb.addBox(leaf_aabb_ptr[rchild - inner_size]);
+          // Store our final AABB value for the current node to global memory
+          // coherently. Atomics are resolved at the L2 cache, so this should
+          // be observable by all threads.
+          RAJA::atomicAdd<atomic_policy>(&min_range[current_node][idim],
+                                         aabb.getMin()[idim]);
+          RAJA::atomicAdd<atomic_policy>(&max_range[current_node][idim],
+                                         aabb.getMax()[idim]);
         }
-        else
-        {
-          aabb.addBox(inner_aabb_ptr[rchild]);
-        }
 
-        inner_aabb_ptr[current_node] = aabb;
-
-        // NOTE: this ensures that the write to global memory above
-        // is observed by all other threads. It provides a workaround
-        // where a thread would write to the L1 cache instead, which
-        // would not be observed by other threads.
-        //
-        // See Github issue: https://github.com/LLNL/axom/issues/307
-        //
-        // This is a workaround for NVIDIA GPUs.
-        SPIN_BVH_THREAD_FENCE_SYSTEM;
-
+        last_node = current_node;
         current_node = parent_ptr[current_node];
       }
     });
 
-  axom::deallocate(counters_ptr);
-}
+  for_all<ExecSpace>(
+    inner_size,
+    AXOM_LAMBDA(int32 i) {
+      inner_aabb_ptr[i] =
+        primal::BoundingBox<FloatType, NDIMS>(min_range[i], max_range[i]);
+    });
 
-#undef SPIN_BVH_THREAD_FENCE_SYSTEM
+  axom::deallocate(counters_ptr);
+  axom::deallocate(min_range);
+  axom::deallocate(max_range);
+}
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
