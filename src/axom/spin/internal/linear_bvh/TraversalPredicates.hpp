@@ -6,7 +6,6 @@
 #ifndef AXOM_SPIN_BVH_TRAVERSALPREDICATES_HPP_
 #define AXOM_SPIN_BVH_TRAVERSALPREDICATES_HPP_
 
-#include "axom/spin/internal/linear_bvh/vec.hpp"
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 
 #include "axom/core/numerics/floating_point_limits.hpp"
