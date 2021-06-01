@@ -109,12 +109,6 @@ public:
   }
 
   /*!
-   * \brief Destructor.
-   */
-  AXOM_HOST_DEVICE
-  ~BoundingBox() { }
-
-  /*!
    * \brief Resets the bounds to those of the default constructor
    * \note This invalidates the bounding box (i.e. isValid() will be false)
    */
