@@ -44,6 +44,86 @@ TYPED_TEST(inlet_errors, required_field)
     }));
 }
 
+TYPED_TEST(inlet_errors, wrong_type)
+{
+  std::string testString = "foo = 'hello'";
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
+
+  inlet.addInt("foo", "foo's description");
+
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  // Need something about "foo" and "wrong type"
+  EXPECT_TRUE(
+    std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
+      return (static_cast<std::string>(err.path) == "foo") &&
+        (err.message.find("wrong type") != std::string::npos);
+    }));
+}
+
+TYPED_TEST(inlet_errors, wrong_type_nested)
+{
+  std::string testString = "foo = { bar = { baz = 'hello' } }";
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
+
+  auto& foo = inlet.addStruct("foo", "foo's description");
+  auto& bar = foo.addStruct("bar", "bar's description");
+  bar.addInt("baz", "baz's description");
+
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  // Need something about "foo/bar/baz" and "wrong type"
+  EXPECT_TRUE(
+    std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
+      return (static_cast<std::string>(err.path) == "foo/bar/baz") &&
+        (err.message.find("wrong type") != std::string::npos);
+    }));
+}
+
+TYPED_TEST(inlet_errors, heterogeneous_array)
+{
+  std::string testString = "foo = { [0] = 1, [1] = 2, [2] = 'hello' }";
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
+
+  inlet.addIntArray("foo", "foo's description");
+
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  // Need something about "foo" and "not homogeneous"
+  EXPECT_TRUE(
+    std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
+      // FIXME: Do we want to strip out the _inlet_collection from the error messages?
+      return (static_cast<std::string>(err.path) ==
+              axom::inlet::appendPrefix(
+                "foo",
+                axom::inlet::detail::COLLECTION_GROUP_NAME)) &&
+        (err.message.find("not homogeneous") != std::string::npos);
+    }));
+}
+
+TYPED_TEST(inlet_errors, heterogeneous_array_nested)
+{
+  std::string testString =
+    "foo = { bar = { baz = { [0] = 1, [1] = 2, [2] = 'hello' } } }";
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
+
+  auto& foo = inlet.addStruct("foo", "foo's description");
+  auto& bar = foo.addStruct("bar", "bar's description");
+  bar.addIntArray("baz", "baz's description");
+
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  // Need something about "foo/bar/baz" and "not homogeneous"
+  EXPECT_TRUE(
+    std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
+      return (static_cast<std::string>(err.path) ==
+              axom::inlet::appendPrefix(
+                "foo/bar/baz",
+                axom::inlet::detail::COLLECTION_GROUP_NAME)) &&
+        (err.message.find("not homogeneous") != std::string::npos);
+    }));
+}
+
 TYPED_TEST(inlet_errors, invalid_range)
 {
   std::string testString = "foo = 7";

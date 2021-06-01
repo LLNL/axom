@@ -305,10 +305,8 @@ bool Field::isUserProvided() const
   {
     auto status = static_cast<ReaderResult>(
       static_cast<int>(m_sidreGroup->getView("retrieval_status")->getData()));
-    if(status != ReaderResult::Success)
-    {
-      return false;
-    }
+    // Even if it wasn't of the right type, we still say that it was user-provided
+    return (status != ReaderResult::NotFound);
   }
   return exists();
 }
