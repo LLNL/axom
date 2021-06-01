@@ -12,11 +12,13 @@
 #include "axom/core/numerics/floating_point_limits.hpp"  // floating_point_limits
 #include "axom/core/utilities/AnnotationMacros.hpp"      // for annotations
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+
 // slic includes
 #include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 // linear bvh includes
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
 #include "axom/spin/internal/linear_bvh/build_radix_tree.hpp"
 #include "axom/spin/internal/linear_bvh/bvh_traverse.hpp"
 #include "axom/spin/internal/linear_bvh/bvh_vtkio.hpp"
@@ -24,7 +26,6 @@
 #include "axom/spin/internal/linear_bvh/emit_bvh.hpp"
 #include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
 #include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
-#include "axom/spin/internal/linear_bvh/vec.hpp"
 
 // RAJA includes
 #include "RAJA/RAJA.hpp"
@@ -52,13 +53,13 @@ using floating_point_limits = axom::numerics::floating_point_limits<FloatType>;
 namespace lbvh = internal::linear_bvh;
 
 template <typename FloatType, int NDIMS>
-using point_t = internal::linear_bvh::Vec<FloatType, NDIMS>;
+using point_t = primal::Vector<FloatType, NDIMS>;
 
 template <typename FloatType, int NDIMS>
-using ray_t = internal::linear_bvh::Vec<FloatType, NDIMS * 2>;
+using ray_t = primal::Vector<FloatType, NDIMS * 2>;
 
 template <typename FloatType, int NDIMS>
-using bounding_box_t = internal::linear_bvh::Vec<FloatType, NDIMS * 2>;
+using bounding_box_t = primal::Vector<FloatType, NDIMS * 2>;
 
 /*!
  * \def BVH_PREDICATE
@@ -386,7 +387,7 @@ int BVH<NDIMS, ExecSpace, FloatType>::build()
   // STEP 2: Build a RadixTree consisting of the bounding boxes, sorted
   // by their corresponding morton code.
   lbvh::RadixTree<FloatType, NDIMS> radix_tree;
-  lbvh::AABB<FloatType, NDIMS> global_bounds;
+  primal::BoundingBox<FloatType, NDIMS> global_bounds;
   lbvh::build_radix_tree<ExecSpace>(boxesptr,
                                     numBoxes,
                                     global_bounds,
@@ -420,8 +421,11 @@ void BVH<NDIMS, ExecSpace, FloatType>::getBounds(FloatType* min,
 {
   SLIC_ASSERT(min != nullptr);
   SLIC_ASSERT(max != nullptr);
-  m_bvh.m_bounds.min(min);
-  m_bvh.m_bounds.max(max);
+  for(int idim = 0; idim < NDIMS; idim++)
+  {
+    min[idim] = m_bvh.m_bounds.getMin()[idim];
+    max[idim] = m_bvh.m_bounds.getMax()[idim];
+  }
 }
 
 //------------------------------------------------------------------------------
