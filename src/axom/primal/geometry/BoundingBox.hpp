@@ -359,6 +359,14 @@ namespace axom
 namespace primal
 {
 //------------------------------------------------------------------------------
+
+template <typename T, int NDIMS>
+constexpr T BoundingBox<T, NDIMS>::InvalidMin;
+
+template <typename T, int NDIMS>
+constexpr T BoundingBox<T, NDIMS>::InvalidMax;
+
+//------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 template <typename OtherT>
 bool BoundingBox<T, NDIMS>::contains(const Point<OtherT, NDIMS>& otherPt) const
