@@ -7,7 +7,17 @@ Verification
 Before input file data can be accessed, it must first be verified by calling the ``verify()``
 method of the top-level ``Inlet`` object. This will return a ``bool`` indicating whether the
 provided input conformed to the schema and specific violations of the schema are logged via
-SLIC.
+SLIC by default.  If you would like to suppress the SLIC warnings and process the list of
+verification errors instead, you can pass a ``std::vector<inlet::VerificationError>`` to the
+``verify()`` method as follows:
+
+.. code-block:: C++
+
+  std::vector<inlet::VerificationError> errors;
+  inlet.verify(&errors);
+
+You can then iterate over the list of errors, each of which contains the path within the input file
+of the offending ``Container``, ``Field``, or ``Function`` and the corresponding message.
 
 This section describes the verification rules that apply to each possible element of the Inlet
 hierarchy, namely, ``Container``, ``Field``, and ``Function``.
