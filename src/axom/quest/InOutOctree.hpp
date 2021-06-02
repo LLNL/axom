@@ -21,7 +21,6 @@
 
 #include "detail/inout/BlockData.hpp"
 #include "detail/inout/MeshWrapper.hpp"
-#include "detail/inout/InOutOctreeMeshDumper.hpp"
 #include "detail/inout/InOutOctreeValidator.hpp"
 #include "detail/InOutOctree_detail.hpp"
 
@@ -64,6 +63,16 @@ namespace axom
 {
 namespace quest
 {
+namespace detail
+{
+template <int DIM>
+class InOutOctreeMeshDumper;
+
+template <int DIM, typename Derived>
+class InOutOctreeMeshDumperBase;
+
+}  // namespace detail
+
 /**
  * \class
  * \brief Handles generation of a point containment spatial index over a surface
@@ -82,6 +91,7 @@ private:
   friend class detail::InOutOctreeStats<DIM>;
   friend class detail::InOutOctreeValidator<DIM>;
   friend class detail::InOutOctreeMeshDumper<DIM>;
+  friend class detail::InOutOctreeMeshDumperBase<DIM, detail::InOutOctreeMeshDumper<DIM>>;
 
 public:
   using OctreeBaseType = spin::OctreeBase<DIM, InOutBlockData>;
@@ -380,7 +390,7 @@ private:
   void checkAllLeavesColoredAtLevel(int AXOM_DEBUG_PARAM(level)) const;
 
   void dumpOctreeMeshVTK(const std::string& name) const;
-  void dumpTriMeshVTK(const std::string& name) const;
+  void dumpSurfaceMeshVTK(const std::string& name) const;
 
   /**
    * \brief Utility function to dump any Inside blocks whose neighbors are
@@ -537,7 +547,7 @@ void InOutOctree<DIM>::generateIndex()
 #ifdef DUMP_OCTREE_INFO
   // -- Print some stats about the octree
   SLIC_INFO("** Octree stats after inserting vertices");
-  dumpTriMeshVTK("surfaceMesh");
+  dumpSurfaceMeshVTK("surfaceMesh");
   dumpOctreeMeshVTK("prOctree");
   printOctreeStats();
 #endif
@@ -1508,11 +1518,11 @@ void InOutOctree<DIM>::printOctreeStats() const
 
     if(DEBUG_VERT_IDX >= 0 && DEBUG_VERT_IDX < m_meshWrapper.numMeshVertices())
     {
-      meshDumper.dumpLocalOctreeMeshesForVertex("debug_", DEBUG_VERT_IDX);
+      meshDumper.dumpLocalOctreeMeshesForCell("debug_", DEBUG_VERT_IDX);
     }
     if(DEBUG_TRI_IDX >= 0 && DEBUG_TRI_IDX < m_meshWrapper.numMeshCells())
     {
-      meshDumper.dumpLocalOctreeMeshesForTriangle("debug_", DEBUG_TRI_IDX);
+      meshDumper.dumpLocalOctreeMeshesForCell("debug_", DEBUG_TRI_IDX);
     }
 
     if(DEBUG_BLOCK_1 != BlockIndex::invalid_index() &&
@@ -1555,15 +1565,15 @@ void InOutOctree<DIM>::checkValid() const
 }
 
 template <int DIM>
-void InOutOctree<DIM>::dumpTriMeshVTK(const std::string& name) const
+void InOutOctree<DIM>::dumpSurfaceMeshVTK(const std::string& name) const
 {
 #ifdef DUMP_VTK_MESH
 
   detail::InOutOctreeMeshDumper<DIM> meshDumper(*this);
-  meshDumper.dumpTriMeshVTK(name);
+  meshDumper.dumpSurfaceMeshVTK(name);
 
 #else
-  AXOM_DEBUG_VAR(name);  // avoids warning about unsued param
+  AXOM_DEBUG_VAR(name);  // avoids warning about unused param
 #endif
 }
 
@@ -1576,7 +1586,7 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK(const std::string& name) const
   meshDumper.dumpOctreeMeshVTK(name);
 
 #else
-  AXOM_DEBUG_VAR(name);  // avoids warning about unsued param
+  AXOM_DEBUG_VAR(name);  // avoids warning about unused param
 #endif
 }
 
@@ -1590,11 +1600,14 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK(
   meshDumper.dumpDifferentColoredNeighborsMeshVTK(name);
 
 #else
-  AXOM_DEBUG_VAR(name);  // avoids warning about unsued param
+  AXOM_DEBUG_VAR(name);  // avoids warning about unused param
 #endif
 }
 
 }  // end namespace quest
 }  // end namespace axom
+
+// Note: The following needs to be included after InOutOctree is defined
+#include "detail/inout/InOutOctreeMeshDumper.hpp"
 
 #endif  // INOUT_OCTREE__HXX_
