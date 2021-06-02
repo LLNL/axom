@@ -28,8 +28,8 @@ set( quest_headers
     detail/inout/BlockData.hpp
     detail/inout/MeshWrapper.hpp
     detail/inout/InOutOctreeMeshDumper.hpp
+    detail/inout/InOutOctreeStats.hpp
     detail/inout/InOutOctreeValidator.hpp
-    detail/InOutOctree_detail.hpp
 
     # Mesh tester headers
     MeshTester.hpp

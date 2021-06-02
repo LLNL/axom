@@ -22,7 +22,7 @@
 #include "detail/inout/BlockData.hpp"
 #include "detail/inout/MeshWrapper.hpp"
 #include "detail/inout/InOutOctreeValidator.hpp"
-#include "detail/InOutOctree_detail.hpp"
+#include "detail/inout/InOutOctreeStats.hpp"
 
 #include "fmt/fmt.hpp"
 

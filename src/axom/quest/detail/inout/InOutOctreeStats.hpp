@@ -4,23 +4,21 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file InOutOctree_detail.hpp
+ * \file InOutOctreeStats.hpp
  *
- * \brief Defines helper classes for the InOutOctree.
+ * \brief Defines helper class to generate statistics about an InOutOctree.
  */
 
-#ifndef INOUT_OCTREE_DETAIL__HXX_
-#define INOUT_OCTREE_DETAIL__HXX_
+#ifndef INOUT_OCTREE_STATS__HXX_
+#define INOUT_OCTREE_STATS__HXX_
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 #include "axom/primal.hpp"
-#include "axom/mint.hpp"
-#include "axom/spin.hpp"
 
-#include "inout/BlockData.hpp"
-#include "inout/MeshWrapper.hpp"
+#include "BlockData.hpp"
+#include "MeshWrapper.hpp"
 
 #include "fmt/fmt.hpp"
 
@@ -163,8 +161,7 @@ public:
     }
   }
 
-  /** Generates a string summarizing information about the leaves and blocks of
-     the octree */
+  /// Generates a string summarizing information about the leaves and blocks of the octree
   std::string blockDataStats() const
   {
     std::stringstream sstr;
@@ -201,8 +198,7 @@ public:
     return sstr.str();
   }
 
-  /** Generates a string summarizing information about the mesh elements indexed
-     by the octree */
+  /// Generates a string summarizing information about the mesh elements indexed by the octree
   std::string meshDataStats() const
   {
     std::stringstream sstr;
@@ -357,4 +353,4 @@ private:
 }  // namespace quest
 }  // namespace axom
 
-#endif  // INOUT_OCTREE_DETAIL__HXX_
+#endif  // INOUT_OCTREE_STATS__HXX_
