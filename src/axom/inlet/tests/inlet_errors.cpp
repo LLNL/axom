@@ -39,8 +39,8 @@ TYPED_TEST(inlet_errors, required_field)
   // Need something about "foo" and "Required"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo") &&
-        (err.message.find("Required") != std::string::npos);
+      return (err.path == axom::Path {"foo"}) &&
+        err.messageContains("Required");
     }));
 }
 
@@ -56,8 +56,8 @@ TYPED_TEST(inlet_errors, wrong_type)
   // Need something about "foo" and "wrong type"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo") &&
-        (err.message.find("wrong type") != std::string::npos);
+      return (err.path == axom::Path {"foo"}) &&
+        err.messageContains("wrong type");
     }));
 }
 
@@ -75,8 +75,8 @@ TYPED_TEST(inlet_errors, wrong_type_nested)
   // Need something about "foo/bar/baz" and "wrong type"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo/bar/baz") &&
-        (err.message.find("wrong type") != std::string::npos);
+      return (err.path == axom::Path {"foo/bar/baz"}) &&
+        err.messageContains("wrong type");
     }));
 }
 
@@ -93,11 +93,11 @@ TYPED_TEST(inlet_errors, heterogeneous_array)
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
       // FIXME: Do we want to strip out the _inlet_collection from the error messages?
-      return (static_cast<std::string>(err.path) ==
+      return (err.path ==
               axom::inlet::appendPrefix(
                 "foo",
                 axom::inlet::detail::COLLECTION_GROUP_NAME)) &&
-        (err.message.find("not homogeneous") != std::string::npos);
+        err.messageContains("not homogeneous");
     }));
 }
 
@@ -116,11 +116,11 @@ TYPED_TEST(inlet_errors, heterogeneous_array_nested)
   // Need something about "foo/bar/baz" and "not homogeneous"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) ==
+      return (err.path ==
               axom::inlet::appendPrefix(
                 "foo/bar/baz",
                 axom::inlet::detail::COLLECTION_GROUP_NAME)) &&
-        (err.message.find("not homogeneous") != std::string::npos);
+        err.messageContains("not homogeneous");
     }));
 }
 
@@ -136,8 +136,7 @@ TYPED_TEST(inlet_errors, invalid_range)
   // Need something about "foo" and "range"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo") &&
-        (err.message.find("range") != std::string::npos);
+      return (err.path == axom::Path {"foo"}) && err.messageContains("range");
     }));
 }
 
@@ -155,8 +154,8 @@ TYPED_TEST(inlet_errors, invalid_range_nested)
   // Need something about "foo/bar/baz" and "range"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo/bar/baz") &&
-        (err.message.find("range") != std::string::npos);
+      return (err.path == axom::Path {"foo/bar/baz"}) &&
+        err.messageContains("range");
     }));
 }
 
@@ -172,8 +171,8 @@ TYPED_TEST(inlet_errors, invalid_value)
   // Need something about "foo" and "valid value"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo") &&
-        (err.message.find("valid value") != std::string::npos);
+      return (err.path == axom::Path {"foo"}) &&
+        err.messageContains("valid value");
     }));
 }
 
@@ -191,8 +190,8 @@ TYPED_TEST(inlet_errors, invalid_value_nested)
   // Need something about "foo/bar/baz" and "valid value"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo/bar/baz") &&
-        (err.message.find("valid value") != std::string::npos);
+      return (err.path == axom::Path {"foo/bar/baz"}) &&
+        err.messageContains("valid value");
     }));
 }
 
@@ -211,8 +210,7 @@ TYPED_TEST(inlet_errors, field_verifier)
   // Need something about "foo" and "lambda"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo") &&
-        (err.message.find("lambda") != std::string::npos);
+      return (err.path == axom::Path {"foo"}) && err.messageContains("lambda");
     }));
 }
 
@@ -233,8 +231,8 @@ TYPED_TEST(inlet_errors, field_verifier_nested)
   // Need something about "foo/bar/baz" and "lambda"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo/bar/baz") &&
-        (err.message.find("lambda") != std::string::npos);
+      return (err.path == axom::Path {"foo/bar/baz"}) &&
+        err.messageContains("lambda");
     }));
 }
 
@@ -251,8 +249,8 @@ TYPED_TEST(inlet_errors, container_required)
   // Need something about "foo" and "Required"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo") &&
-        (err.message.find("Required") != std::string::npos);
+      return (err.path == axom::Path {"foo"}) &&
+        err.messageContains("Required");
     }));
 }
 
@@ -274,8 +272,8 @@ TYPED_TEST(inlet_errors, container_verifier)
   // Need something about "foo" and "verification"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo") &&
-        (err.message.find("verification") != std::string::npos);
+      return (err.path == axom::Path {"foo"}) &&
+        err.messageContains("verification");
     }));
 }
 
@@ -292,9 +290,8 @@ TYPED_TEST(inlet_errors, container_strict)
   // Need something about "foo" and "unexpected" and "baz"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo") &&
-        (err.message.find("unexpected") != std::string::npos) &&
-        (err.message.find("baz") != std::string::npos);
+      return (err.path == axom::Path {"foo"}) &&
+        err.messageContains("unexpected") && err.messageContains("baz");
     }));
 }
 
@@ -323,8 +320,8 @@ TEST(inlet_errors_lua, function_verifier)
   // Need something about "foo" and "verification"
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
-      return (static_cast<std::string>(err.path) == "foo") &&
-        (err.message.find("verification") != std::string::npos);
+      return (err.path == axom::Path {"foo"}) &&
+        err.messageContains("verification");
     }));
 }
 

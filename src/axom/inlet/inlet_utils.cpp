@@ -104,14 +104,7 @@ bool verifyRequired(const axom::sidre::Group& target,
         "specified: {1}",
         type,
         target.getPathName());
-      if(errors)
-      {
-        errors->push_back({Path {target.getPathName()}, msg});
-      }
-      else
-      {
-        SLIC_WARNING(msg);
-      }
+      INLET_VERIFICATION_WARNING(target.getPathName(), msg, errors);
       return false;
     }
   }
@@ -125,14 +118,7 @@ bool verifyRequired(const axom::sidre::Group& target,
       : "not homogeneous";
     const std::string msg =
       fmt::format("[Inlet] {0} '{1}' was {2}", type, target.getPathName(), reason);
-    if(errors)
-    {
-      errors->push_back({Path {target.getPathName()}, msg});
-    }
-    else
-    {
-      SLIC_WARNING(msg);
-    }
+    INLET_VERIFICATION_WARNING(target.getPathName(), msg, errors);
     return false;
   }
   return true;
