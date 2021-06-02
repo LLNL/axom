@@ -100,24 +100,13 @@ public:
    * \brief Constructor. Creates a bounding box with a given min and max point
    *  The code ensures that the bounds are valid.
    */
+  AXOM_HOST_DEVICE
   BoundingBox(const PointType& lowerPt, const PointType& upperPt)
     : m_min(lowerPt)
     , m_max(upperPt)
   {
     this->checkAndFixBounds();
   }
-
-  /*!
-   * \brief Copy Constructor.
-   * \param [in] other The bounding box to copy
-   */
-  BoundingBox(const BoundingBox& other) { *this = other; };
-
-  /*!
-   * \brief Destructor.
-   */
-  AXOM_HOST_DEVICE
-  ~BoundingBox() { }
 
   /*!
    * \brief Resets the bounds to those of the default constructor
@@ -143,12 +132,14 @@ public:
    * \brief Returns the centroid (midpoint) of the bounding box.
    * \return Point at the bounding box centroid.
    */
+  AXOM_HOST_DEVICE
   PointType getCentroid() const { return PointType::midpoint(m_min, m_max); }
 
   /*!
    * \brief Returns a vector from the min to the max points of the bounding box
    * \return Vector from min point to max point of bounding box.
    */
+  AXOM_HOST_DEVICE
   VectorType range() const { return VectorType(m_min, m_max); };
 
   /*!
@@ -164,7 +155,7 @@ public:
    * \param [in] bbox to include.
    */
   template <typename OtherType>
-  void addBox(const BoundingBox<OtherType, NDIMS>& bbox);
+  AXOM_HOST_DEVICE void addBox(const BoundingBox<OtherType, NDIMS>& bbox);
 
   /*!
    * \brief Returns the dimension of the ambient space for this bounding box.
@@ -211,7 +202,7 @@ public:
    *  towards the center, and we fix the bounds after shrinking
    *  \return A reference to the bounding box after it has been scaled
    */
-  BoundingBox& scale(double scaleFactor);
+  AXOM_HOST_DEVICE BoundingBox& scale(double scaleFactor);
 
   /*!
    * \brief Shifts the bounding box by a fixed displacement.
@@ -219,13 +210,6 @@ public:
    * \return A reference to the bounding box after it has been shifted
    */
   BoundingBox& shift(const VectorType& displacement);
-
-  /*!
-   * \brief Overloaded assignment operator.
-   * \param [in] rhs bounding box instance on the right-hand side
-   * \return
-   */
-  BoundingBox& operator=(const BoundingBox& rhs);
 
   /*!
    * \brief Checks whether the box contains the point
@@ -354,7 +338,7 @@ private:
    * A bounding box is valid when its extent in each dimension
    * (max coordinate minus min coordinate) is greater than or equal to zero
    */
-  void checkAndFixBounds();
+  AXOM_HOST_DEVICE void checkAndFixBounds();
 
 private:
   PointType m_min;
@@ -372,19 +356,6 @@ namespace axom
 {
 namespace primal
 {
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::operator=(const BoundingBox& rhs)
-{
-  if(this != &rhs)
-  {
-    m_min = rhs.m_min;
-    m_max = rhs.m_max;
-  }
-
-  return *this;
-}
-
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 template <typename OtherT>
@@ -534,7 +505,7 @@ template <typename T, int NDIMS>
 BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::scale(double scaleFactor)
 {
   const PointType midpoint = getCentroid();
-  const VectorType r = scaleFactor * 0.5 * range();
+  const VectorType r = static_cast<T>(scaleFactor * 0.5) * range();
 
   m_min = PointType(midpoint.array() - r.array());
   m_max = PointType(midpoint.array() + r.array());
@@ -562,7 +533,7 @@ void BoundingBox<T, NDIMS>::checkAndFixBounds()
   {
     if(m_min[dim] > m_max[dim])
     {
-      std::swap(m_min[dim], m_max[dim]);
+      utilities::swap(m_min[dim], m_max[dim]);
     }
   }
 }

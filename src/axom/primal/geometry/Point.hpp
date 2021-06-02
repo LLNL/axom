@@ -105,35 +105,11 @@ public:
   { }
 
   /*!
-   * \brief Copy constructor.
-   * \param [in] other The point to copy
-   */
-  AXOM_HOST_DEVICE
-  Point(const Point& other) : m_components(other.m_components) { }
-
-  /*!
-   * \brief Destructor.
-   */
-  AXOM_HOST_DEVICE
-  ~Point() { }
-
-  /*!
    * \brief Returns the dimension of this point instance.
    * \return d the dimension of the point.
    * \post d >= 1.
    */
   static int dimension() { return NDIMS; };
-
-  /*!
-   * \brief Assignment operator.
-   * \param [in] rhs a point instance on the right hand side.
-   */
-  AXOM_HOST_DEVICE
-  Point& operator=(const Point& rhs)
-  {
-    m_components = rhs.m_components;
-    return *this;
-  }
 
   /// \name Overloaded [] operator methods
   ///@{
@@ -219,6 +195,7 @@ public:
    * \param [in] B user-supplied point
    * \return p point at the midpoint A and B.
    */
+  AXOM_HOST_DEVICE
   static Point midpoint(const Point& A, const Point& B);
 
   /*!
