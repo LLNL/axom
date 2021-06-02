@@ -68,17 +68,13 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
   const primal::BoundingBox<FloatType, 3>* leaf_aabb_ptr = data.m_leaf_aabbs;
   const primal::BoundingBox<FloatType, 3>* inner_aabb_ptr = data.m_inner_aabbs;
 
-  primal::Vector<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
+  primal::BoundingBox<FloatType, 3>* bvh_inner_nodes = bvh_data.m_inner_nodes;
+  int32* bvh_inner_node_children = bvh_data.m_inner_node_children;
 
   AXOM_PERF_MARK_SECTION("emit_bvh_parents",
                          for_all<ExecSpace>(
                            inner_size,
                            AXOM_LAMBDA(int32 node) {
-                             primal::Vector<FloatType, 4> vec1;
-                             primal::Vector<FloatType, 4> vec2;
-                             primal::Vector<FloatType, 4> vec3;
-                             primal::Vector<FloatType, 4> vec4;
-
                              primal::BoundingBox<FloatType, 3> l_aabb, r_aabb;
 
                              int32 lchild = lchildren_ptr[node];
@@ -91,7 +87,7 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
                              {
                                l_aabb = inner_aabb_ptr[lchild];
                                // do the offset now
-                               lchild *= 4;
+                               lchild *= 2;
                              }
 
                              int32 rchild = rchildren_ptr[node];
@@ -104,34 +100,15 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
                              {
                                r_aabb = inner_aabb_ptr[rchild];
                                // do the offset now
-                               rchild *= 4;
+                               rchild *= 2;
                              }
-                             vec1[0] = l_aabb.getMin()[0];
-                             vec1[1] = l_aabb.getMin()[1];
-                             vec1[2] = l_aabb.getMin()[2];
 
-                             vec1[3] = l_aabb.getMax()[0];
-                             vec2[0] = l_aabb.getMax()[1];
-                             vec2[1] = l_aabb.getMax()[2];
+                             const int32 out_offset = node * 2;
+                             bvh_inner_nodes[out_offset + 0] = l_aabb;
+                             bvh_inner_nodes[out_offset + 1] = r_aabb;
 
-                             vec2[2] = r_aabb.getMin()[0];
-                             vec2[3] = r_aabb.getMin()[1];
-                             vec3[0] = r_aabb.getMin()[2];
-
-                             vec3[1] = r_aabb.getMax()[0];
-                             vec3[2] = r_aabb.getMax()[1];
-                             vec3[3] = r_aabb.getMax()[2];
-
-                             const int32 out_offset = node * 4;
-                             flat_ptr[out_offset + 0] = vec1;
-                             flat_ptr[out_offset + 1] = vec2;
-                             flat_ptr[out_offset + 2] = vec3;
-
-                             constexpr int32 isize = sizeof(int32);
-                             // memcopy so we do not truncate the ints
-                             memcpy(&vec4[0], &lchild, isize);
-                             memcpy(&vec4[1], &rchild, isize);
-                             flat_ptr[out_offset + 3] = vec4;
+                             bvh_inner_node_children[out_offset + 0] = lchild;
+                             bvh_inner_node_children[out_offset + 1] = rchild;
                            }););
 
   int32* radix_tree_leafs = data.m_leafs;
@@ -160,17 +137,13 @@ void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
   const primal::BoundingBox<FloatType, 2>* leaf_aabb_ptr = data.m_leaf_aabbs;
   const primal::BoundingBox<FloatType, 2>* inner_aabb_ptr = data.m_inner_aabbs;
 
-  primal::Vector<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
+  primal::BoundingBox<FloatType, 2>* bvh_inner_nodes = bvh_data.m_inner_nodes;
+  int32* bvh_inner_node_children = bvh_data.m_inner_node_children;
 
   AXOM_PERF_MARK_SECTION("emit_bvh_parents",
                          for_all<ExecSpace>(
                            inner_size,
                            AXOM_LAMBDA(int32 node) {
-                             primal::Vector<FloatType, 4> vec1;
-                             primal::Vector<FloatType, 4> vec2;
-                             primal::Vector<FloatType, 4> vec3;
-                             primal::Vector<FloatType, 4> vec4;
-
                              primal::BoundingBox<FloatType, 2> l_aabb, r_aabb;
 
                              int32 lchild = lchildren_ptr[node];
@@ -183,7 +156,7 @@ void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
                              {
                                l_aabb = inner_aabb_ptr[lchild];
                                // do the offset now
-                               lchild *= 4;
+                               lchild *= 2;
                              }
 
                              int32 rchild = rchildren_ptr[node];
@@ -196,34 +169,15 @@ void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
                              {
                                r_aabb = inner_aabb_ptr[rchild];
                                // do the offset now
-                               rchild *= 4;
+                               rchild *= 2;
                              }
-                             vec1[0] = l_aabb.getMin()[0];
-                             vec1[1] = l_aabb.getMin()[1];
-                             vec1[2] = 0.0;
 
-                             vec1[3] = l_aabb.getMax()[0];
-                             vec2[0] = l_aabb.getMax()[1];
-                             vec2[1] = 0.0;
+                             const int32 out_offset = node * 2;
+                             bvh_inner_nodes[out_offset + 0] = l_aabb;
+                             bvh_inner_nodes[out_offset + 1] = r_aabb;
 
-                             vec2[2] = r_aabb.getMin()[0];
-                             vec2[3] = r_aabb.getMin()[1];
-                             vec3[0] = 0.0;
-
-                             vec3[1] = r_aabb.getMax()[0];
-                             vec3[2] = r_aabb.getMax()[1];
-                             vec3[3] = 0.0;
-
-                             const int32 out_offset = node * 4;
-                             flat_ptr[out_offset + 0] = vec1;
-                             flat_ptr[out_offset + 1] = vec2;
-                             flat_ptr[out_offset + 2] = vec3;
-
-                             constexpr int32 isize = sizeof(int32);
-                             // memcopy so we do not truncate the ints
-                             memcpy(&vec4[0], &lchild, isize);
-                             memcpy(&vec4[1], &rchild, isize);
-                             flat_ptr[out_offset + 3] = vec4;
+                             bvh_inner_node_children[out_offset + 0] = lchild;
+                             bvh_inner_node_children[out_offset + 1] = rchild;
                            }););
 
   int32* radix_tree_leafs = data.m_leafs;

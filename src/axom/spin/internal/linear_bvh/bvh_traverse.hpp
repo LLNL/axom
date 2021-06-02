@@ -33,6 +33,7 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  * \brief Generic BVH traversal routine.
  *
  * \param [in] inner_nodes pointer to the BVH bins.
+ * \param [in] inner_node_children pointer to pairs of child indices.
  * \param [in] leaf_nodes pointer to the leaf node IDs.
  * \param [in] p the primitive in query, e.g., a point, ray, etc.
  * \param [in] L functor that defines the check for the left bin
@@ -58,20 +59,19 @@ template <int NDIMS,
           typename InLeftCheck,
           typename InRightCheck,
           typename LeafAction>
-AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
-                                          const int32* leaf_nodes,
-                                          const PrimitiveType& p,
-                                          InLeftCheck&& L,
-                                          InRightCheck&& R,
-                                          LeafAction&& A)
+AXOM_HOST_DEVICE inline void bvh_traverse(
+  const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+  const int32* inner_node_children,
+  const int32* leaf_nodes,
+  const PrimitiveType& p,
+  InLeftCheck&& L,
+  InRightCheck&& R,
+  LeafAction&& A)
 {
-  using VecType = vec4_t<FloatType>;
-  using PackedType = primal::NumericArray<FloatType, 3>;
   using PointType = primal::Point<FloatType, NDIMS>;
   using BBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   // setup stack
-  constexpr int32 ISIZE = sizeof(int32);
   constexpr int32 STACK_SIZE = 64;
   constexpr int32 BARRIER = -2000000000;
   int32 todo[STACK_SIZE];
@@ -83,19 +83,10 @@ AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
   {
     if(!leaf_node(current_node))
     {
-      //const VecType first4 = inner_nodes[current_node + 0];
-      //const VecType second4 = inner_nodes[current_node + 1];
-      //const VecType third4 = inner_nodes[current_node + 2];
-      const PackedType* packed_pts =
-        reinterpret_cast<const PackedType*>(inner_nodes + current_node);
-
-      BBoxType l_aabb(PointType {packed_pts[0].data()},
-                      PointType {packed_pts[1].data()});
-      BBoxType r_aabb(PointType {packed_pts[2].data()},
-                      PointType {packed_pts[3].data()});
-
-      const bool in_left = L(p, l_aabb);
-      const bool in_right = R(p, r_aabb);
+      const bool in_left = L(p, inner_nodes[current_node + 0]);
+      const bool in_right = R(p, inner_nodes[current_node + 1]);
+      int32 l_child = inner_node_children[current_node + 0];
+      int32 r_child = inner_node_children[current_node + 1];
 
       if(!in_left && !in_right)
       {
@@ -105,14 +96,6 @@ AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
       }
       else
       {
-        VecType children = inner_nodes[current_node + 3];
-
-        // memcpy the int bits hidden in the floats
-        int32 l_child;
-        memcpy(&l_child, &children[0], ISIZE);
-        int32 r_child;
-        memcpy(&r_child, &children[1], ISIZE);
-
         current_node = (in_left) ? l_child : r_child;
 
         if(in_left && in_right)

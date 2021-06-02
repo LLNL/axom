@@ -59,7 +59,10 @@ namespace linear_bvh
 template <typename FloatType, int NDIMS>
 struct BVHData
 {
-  vec4_t<FloatType>* m_inner_nodes;  // BVH bins including leafs
+  using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
+
+  BoundingBoxType* m_inner_nodes;  // BVH bins including leafs
+  int32* m_inner_node_children;
   int32* m_leaf_nodes;               // leaf data
   primal::BoundingBox<FloatType, NDIMS> m_bounds;
 
@@ -68,7 +71,8 @@ struct BVHData
   void allocate(int32 size, int allocID)
   {
     AXOM_PERF_MARK_FUNCTION("BVHData::allocate");
-    m_inner_nodes = axom::allocate<vec4_t<FloatType>>((size - 1) * 4, allocID);
+    m_inner_nodes = axom::allocate<BoundingBoxType>((size - 1) * 2, allocID);
+    m_inner_node_children = axom::allocate<int32>((size - 1) * 2, allocID);
     m_leaf_nodes = axom::allocate<int32>(size, allocID);
   }
 
@@ -76,6 +80,7 @@ struct BVHData
   {
     AXOM_PERF_MARK_FUNCTION("BVHData::deallocate");
     axom::deallocate(m_inner_nodes);
+    axom::deallocate(m_inner_node_children);
     axom::deallocate(m_leaf_nodes);
   }
 

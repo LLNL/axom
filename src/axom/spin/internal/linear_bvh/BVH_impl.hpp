@@ -114,7 +114,8 @@ namespace
 template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
 IndexType bvh_get_counts(LeftPredicate&& leftCheck,
                          RightPredicate&& rightCheck,
-                         const internal::vec4_t<FloatType>* inner_nodes,
+                         const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+                         const int32* inner_node_children,
                          const int32* leaf_nodes,
                          IndexType N,
                          IndexType* counts,
@@ -126,6 +127,7 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
 
   // sanity checks
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
   SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
   SLIC_ERROR_IF(x == nullptr, "supplied null pointer for x-coordinates!");
@@ -152,12 +154,13 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
         count++;
       };
 
-      lbvh::bvh_traverse<NDIMS>(inner_nodes,
-                                leaf_nodes,
-                                point,
-                                leftCheck,
-                                rightCheck,
-                                leafAction);
+      lbvh::bvh_traverse(inner_nodes,
+                         inner_node_children,
+                         leaf_nodes,
+                         point,
+                         leftCheck,
+                         rightCheck,
+                         leafAction);
 
       counts[i] = count;
       total_count += count;
@@ -187,7 +190,8 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
 template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
 IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
                             RightPredicate&& rightCheck,
-                            const internal::vec4_t<FloatType>* inner_nodes,
+                            const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+                            const int32* inner_node_children,
                             const int32* leaf_nodes,
                             IndexType N,
                             IndexType* counts,
@@ -202,6 +206,7 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
 
   // sanity checks
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
   SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
   SLIC_ERROR_IF(x0 == nullptr, "ray source x-coordinates array is null!");
@@ -237,6 +242,7 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
       };
 
       lbvh::bvh_traverse<NDIMS>(inner_nodes,
+                                inner_node_children,
                                 leaf_nodes,
                                 ray,
                                 leftCheck,
@@ -273,7 +279,8 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
 template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
 IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
                             RightPredicate&& rightCheck,
-                            const internal::vec4_t<FloatType>* inner_nodes,
+                            const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+                            const int32* inner_node_children,
                             const int32* leaf_nodes,
                             IndexType N,
                             IndexType* counts,
@@ -288,6 +295,7 @@ IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
 
   // sanity checks
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
   SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
   SLIC_ERROR_IF(xmin == nullptr,
@@ -322,12 +330,13 @@ IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
         count++;
       };
 
-      lbvh::bvh_traverse<NDIMS>(inner_nodes,
-                                leaf_nodes,
-                                box,
-                                leftCheck,
-                                rightCheck,
-                                leafAction);
+      lbvh::bvh_traverse(inner_nodes,
+                         inner_node_children,
+                         leaf_nodes,
+                         box,
+                         leftCheck,
+                         rightCheck,
+                         leafAction);
 
       counts[i] = count;
       total_count += count;
@@ -455,9 +464,11 @@ void BVH<NDIMS, ExecSpace, FloatType>::findPoints(IndexType* offsets,
   using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
 
   // STEP 1: Grab BVH pointers
-  const internal::vec4_t<FloatType>* inner_nodes = m_bvh.m_inner_nodes;
+  const BoundingBoxType* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* inner_node_children = m_bvh.m_inner_node_children;
   const int32* leaf_nodes = m_bvh.m_leaf_nodes;
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
   // STEP 2: define traversal predicates
@@ -473,6 +484,7 @@ void BVH<NDIMS, ExecSpace, FloatType>::findPoints(IndexType* offsets,
     total_count = bvh_get_counts<NDIMS, ExecSpace>(predicate,
                                                    predicate,
                                                    inner_nodes,
+                                                   inner_node_children,
                                                    leaf_nodes,
                                                    numPts,
                                                    counts,
@@ -510,12 +522,13 @@ void BVH<NDIMS, ExecSpace, FloatType>::findPoints(IndexType* offsets,
           offset++;
         };
 
-        lbvh::bvh_traverse<NDIMS>(inner_nodes,
-                                  leaf_nodes,
-                                  point,
-                                  predicate,
-                                  predicate,
-                                  leafAction);
+        lbvh::bvh_traverse(inner_nodes,
+                           inner_node_children,
+                           leaf_nodes,
+                           point,
+                           predicate,
+                           predicate,
+                           leafAction);
       }););
 }
 
@@ -549,9 +562,11 @@ void BVH<NDIMS, ExecSpace, FloatType>::findRays(IndexType* offsets,
   using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
 
   // STEP 1: Grab BVH pointers
-  const internal::vec4_t<FloatType>* inner_nodes = m_bvh.m_inner_nodes;
+  const BoundingBoxType* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* inner_node_children = m_bvh.m_inner_node_children;
   const int32* leaf_nodes = m_bvh.m_leaf_nodes;
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
   // STEP 2: define traversal predicates
@@ -568,6 +583,7 @@ void BVH<NDIMS, ExecSpace, FloatType>::findRays(IndexType* offsets,
     total_count = bvh_get_raycounts<NDIMS, ExecSpace>(predicate,
                                                       predicate,
                                                       inner_nodes,
+                                                      inner_node_children,
                                                       leaf_nodes,
                                                       numRays,
                                                       counts,
@@ -611,12 +627,13 @@ void BVH<NDIMS, ExecSpace, FloatType>::findRays(IndexType* offsets,
           offset++;
         };
 
-        lbvh::bvh_traverse<NDIMS>(inner_nodes,
-                                  leaf_nodes,
-                                  ray,
-                                  predicate,
-                                  predicate,
-                                  leafAction);
+        lbvh::bvh_traverse(inner_nodes,
+                           inner_node_children,
+                           leaf_nodes,
+                           ray,
+                           predicate,
+                           predicate,
+                           leafAction);
       }););
 }
 
@@ -647,9 +664,11 @@ void BVH<NDIMS, ExecSpace, FloatType>::findBoundingBoxes(IndexType* offsets,
   using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
 
   // STEP 1: Grab BVH pointers
-  const internal::vec4_t<FloatType>* inner_nodes = m_bvh.m_inner_nodes;
+  const BoundingBoxType* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* inner_node_children = m_bvh.m_inner_node_children;
   const int32* leaf_nodes = m_bvh.m_leaf_nodes;
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
   // STEP 2: define traversal predicates
@@ -665,6 +684,7 @@ void BVH<NDIMS, ExecSpace, FloatType>::findBoundingBoxes(IndexType* offsets,
     total_count = bvh_get_boxcounts<NDIMS, ExecSpace>(predicate,
                                                       predicate,
                                                       inner_nodes,
+                                                      inner_node_children,
                                                       leaf_nodes,
                                                       numBoxes,
                                                       counts,
@@ -705,12 +725,13 @@ void BVH<NDIMS, ExecSpace, FloatType>::findBoundingBoxes(IndexType* offsets,
           offset++;
         };
 
-        lbvh::bvh_traverse<NDIMS>(inner_nodes,
-                                  leaf_nodes,
-                                  box,
-                                  predicate,
-                                  predicate,
-                                  leafAction);
+        lbvh::bvh_traverse(inner_nodes,
+                           inner_node_children,
+                           leaf_nodes,
+                           box,
+                           predicate,
+                           predicate,
+                           leafAction);
       }););
 }
 
