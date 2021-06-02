@@ -52,7 +52,8 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  *
  * \see TraversalPredicates for the collection of defined predicates.
  */
-template <typename FloatType,
+template <int NDIMS,
+          typename FloatType,
           typename PrimitiveType,
           typename InLeftCheck,
           typename InRightCheck,
@@ -65,6 +66,9 @@ AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
                                           LeafAction&& A)
 {
   using VecType = vec4_t<FloatType>;
+  using PackedType = primal::NumericArray<FloatType, 3>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using BBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   // setup stack
   constexpr int32 ISIZE = sizeof(int32);
@@ -79,12 +83,19 @@ AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
   {
     if(!leaf_node(current_node))
     {
-      const VecType first4 = inner_nodes[current_node + 0];
-      const VecType second4 = inner_nodes[current_node + 1];
-      const VecType third4 = inner_nodes[current_node + 2];
+      //const VecType first4 = inner_nodes[current_node + 0];
+      //const VecType second4 = inner_nodes[current_node + 1];
+      //const VecType third4 = inner_nodes[current_node + 2];
+      const PackedType* packed_pts =
+        reinterpret_cast<const PackedType*>(inner_nodes + current_node);
 
-      const bool in_left = L(p, first4, second4);
-      const bool in_right = R(p, second4, third4);
+      BBoxType l_aabb(PointType {packed_pts[0].data()},
+                      PointType {packed_pts[1].data()});
+      BBoxType r_aabb(PointType {packed_pts[2].data()},
+                      PointType {packed_pts[3].data()});
+
+      const bool in_left = L(p, l_aabb);
+      const bool in_right = R(p, r_aabb);
 
       if(!in_left && !in_right)
       {

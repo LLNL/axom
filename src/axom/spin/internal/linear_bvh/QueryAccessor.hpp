@@ -180,11 +180,17 @@ public:
     const FloatType* AXOM_NOT_USED(zmin),
     const FloatType* AXOM_NOT_USED(zmax))
   {
-    box[0] = xmin[idx];
-    box[1] = ymin[idx];
+    using PointType = typename BoundingBoxType::PointType;
 
-    box[2] = xmax[idx];
-    box[3] = ymax[idx];
+    PointType min_pt, max_pt;
+
+    min_pt[0] = xmin[idx];
+    min_pt[1] = ymin[idx];
+
+    max_pt[0] = xmax[idx];
+    max_pt[1] = ymax[idx];
+
+    box = BoundingBoxType(min_pt, max_pt);
   }
 };
 
@@ -236,13 +242,19 @@ public:
                                                      const FloatType* zmin,
                                                      const FloatType* zmax)
   {
-    box[0] = xmin[idx];
-    box[1] = ymin[idx];
-    box[2] = zmin[idx];
+    using PointType = typename BoundingBoxType::PointType;
 
-    box[3] = xmax[idx];
-    box[4] = ymax[idx];
-    box[5] = zmax[idx];
+    PointType min_pt, max_pt;
+
+    min_pt[0] = xmin[idx];
+    min_pt[1] = ymin[idx];
+    min_pt[2] = zmin[idx];
+
+    max_pt[0] = xmax[idx];
+    max_pt[1] = ymax[idx];
+    max_pt[2] = zmax[idx];
+
+    box = BoundingBoxType(min_pt, max_pt);
   }
 };
 

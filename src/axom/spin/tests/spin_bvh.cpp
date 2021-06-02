@@ -1465,28 +1465,28 @@ TEST(spin_bvh, query_bounding_box_accessor)
   namespace bvh = axom::spin::internal::linear_bvh;
   using QueryAccessor2D = bvh::QueryAccessor<2, double>;
   using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using BoundingBox2D = primal::Vector<double, 4>;
-  using BoundingBox3D = primal::Vector<double, 6>;
+  using BoundingBox2D = primal::BoundingBox<double, 2>;
+  using BoundingBox3D = primal::BoundingBox<double, 3>;
 
   BoundingBox2D box2D;
   QueryAccessor2D::getBoundingBox(box2D, ID, xmin, xmax, ymin, ymax, nullptr, nullptr);
 
-  EXPECT_DOUBLE_EQ(box2D[0], xmin[ID]);
-  EXPECT_DOUBLE_EQ(box2D[1], ymin[ID]);
+  EXPECT_DOUBLE_EQ(box2D.getMin()[0], xmin[ID]);
+  EXPECT_DOUBLE_EQ(box2D.getMin()[1], ymin[ID]);
 
-  EXPECT_DOUBLE_EQ(box2D[2], xmax[ID]);
-  EXPECT_DOUBLE_EQ(box2D[3], ymax[ID]);
+  EXPECT_DOUBLE_EQ(box2D.getMax()[0], xmax[ID]);
+  EXPECT_DOUBLE_EQ(box2D.getMax()[1], ymax[ID]);
 
   BoundingBox3D box3D;
   QueryAccessor3D::getBoundingBox(box3D, ID, xmin, xmax, ymin, ymax, zmin, zmax);
 
-  EXPECT_DOUBLE_EQ(box3D[0], xmin[ID]);
-  EXPECT_DOUBLE_EQ(box3D[1], ymin[ID]);
-  EXPECT_DOUBLE_EQ(box3D[2], zmin[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMin()[0], xmin[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMin()[1], ymin[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMin()[2], zmin[ID]);
 
-  EXPECT_DOUBLE_EQ(box3D[3], xmax[ID]);
-  EXPECT_DOUBLE_EQ(box3D[4], ymax[ID]);
-  EXPECT_DOUBLE_EQ(box3D[5], zmax[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMax()[0], xmax[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMax()[1], ymax[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMax()[2], zmax[ID]);
 }
 
 //------------------------------------------------------------------------------

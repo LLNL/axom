@@ -70,6 +70,9 @@ public:
   typedef Vector<T, NDIMS> VectorType;
   typedef BoundingBox<T, NDIMS> BoxType;
 
+  static constexpr T InvalidMin = std::numeric_limits<T>::max();
+  static constexpr T InvalidMax = std::numeric_limits<T>::lowest();
+
 public:
   /*!
    * \brief Constructor. Creates a bounding box with an invalid bound
@@ -77,10 +80,8 @@ public:
    * is set to the smallest possible point.  This way adding any point resets
    * the bounds to a valid range.
    */
-  BoundingBox()
-    : m_min(PointType(std::numeric_limits<T>::max()))
-    , m_max(PointType(std::numeric_limits<T>::lowest()))
-  { }
+  AXOM_HOST_DEVICE
+  BoundingBox() : m_min(PointType(InvalidMin)), m_max(PointType(InvalidMax)) { }
 
   /*!
    * \brief Constructor. Creates a bounding box containing a single point
@@ -221,7 +222,7 @@ public:
    * and half open boundaries in the future.
    */
   template <typename OtherType>
-  bool contains(const Point<OtherType, NDIMS>& otherPt) const;
+  AXOM_HOST_DEVICE bool contains(const Point<OtherType, NDIMS>& otherPt) const;
 
   /*!
    * \brief Checks whether the box fully contains another bounding box
@@ -242,7 +243,8 @@ public:
    *  operator<().
    */
   template <typename OtherType>
-  bool intersectsWith(const BoundingBox<OtherType, NDIMS>& otherBB) const;
+  AXOM_HOST_DEVICE bool intersectsWith(
+    const BoundingBox<OtherType, NDIMS>& otherBB) const;
 
   /*!
    * \brief Checks that we have a valid bounding box.
