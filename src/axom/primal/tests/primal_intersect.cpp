@@ -165,17 +165,29 @@ TEST(primal_intersect, ray_segment_intersection)
   // compute intersection
   {
     PointType ip;
-    double param;
     bool intersects1a = primal::intersect(R, S, ip);
     EXPECT_TRUE(intersects1a);
-    bool intersects1b = primal::intersect(R, S, param);
-    EXPECT_TRUE(intersects1b);
-    PointType interpolatedIP = R.at(param);
 
-    EXPECT_DOUBLE_EQ(0.5, ip[0]);
-    EXPECT_DOUBLE_EQ(0.5, ip[1]);
-    EXPECT_DOUBLE_EQ(ip[0], interpolatedIP[0]);
-    EXPECT_DOUBLE_EQ(ip[1], interpolatedIP[1]);
+    double ray_param_b;
+    bool intersects1b = primal::intersect(R, S, ray_param_b);
+    EXPECT_TRUE(intersects1b);
+    PointType interpolatedIP_b = R.at(ray_param_b);
+
+    double ray_param_c;
+    double seg_param_c;
+    bool intersects1c = primal::intersect(R, S, ray_param_c, seg_param_c);
+    EXPECT_TRUE(intersects1c);
+    EXPECT_EQ(ray_param_b, ray_param_c);
+    PointType interpolatedIP_c_ray = R.at(ray_param_c);
+    PointType interpolatedIP_c_seg = S.at(seg_param_c);
+
+    for(int i = 0; i < 2; ++i)
+    {
+      EXPECT_DOUBLE_EQ(0.5, ip[i]);
+      EXPECT_DOUBLE_EQ(ip[1], interpolatedIP_b[i]);
+      EXPECT_DOUBLE_EQ(ip[1], interpolatedIP_c_ray[i]);
+      EXPECT_DOUBLE_EQ(ip[1], interpolatedIP_c_seg[i]);
+    }
   }
 
   // construct a non-intersecting ray
@@ -224,7 +236,8 @@ TEST(primal_intersect, more_ray_segment_intersection)
     {
       for(int seg_height = 1; seg_height <= NVALS; ++seg_height)
       {
-        PointType origin {0, static_cast<double>(ray_height) / NVALS};
+        const double ray_y = static_cast<double>(ray_height) / NVALS;
+        PointType origin {0, ray_y};
         VectorType dir {1, 0};
         RayType ray(origin, dir);
 
@@ -232,14 +245,19 @@ TEST(primal_intersect, more_ray_segment_intersection)
         double y_val = static_cast<double>(seg_height) / NVALS;
         SegmentType seg(PointType {x_val, 0}, PointType {x_val, y_val});
 
-        double param {0};
+        double ray_param {0};
+        double seg_param {0};
         bool expect_intersect = seg_pos >= 0 && ray_height <= seg_height;
-        EXPECT_EQ(expect_intersect, primal::intersect(ray, seg, param))
-          << "Ray: " << ray << "; seg: " << seg << "; param: " << param
-          << "; expect_intersect? " << expect_intersect;
+        EXPECT_EQ(expect_intersect,
+                  primal::intersect(ray, seg, ray_param, seg_param, EPS))
+          << "Ray: " << ray << "; seg: " << seg << "; ray_param: " << ray_param
+          << "; seg_param: " << seg_param << "; expect_intersect? "
+          << expect_intersect;
+
         if(expect_intersect)
         {
-          EXPECT_NEAR(x_val, param, EPS);
+          EXPECT_NEAR(x_val, ray_param, EPS);
+          EXPECT_NEAR(ray_y, seg.at(seg_param)[1], EPS);
         }
       }
     }

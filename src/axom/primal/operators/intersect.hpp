@@ -223,7 +223,8 @@ bool intersect(const Triangle<T, 3>& tri,
  *
  * \param [in] R the specified ray
  * \param [in] S the segment to check
- * \param [out] param parametric coordinate of intersection along R, valid only if status=true.
+ * \param [out] ray_param parametric coordinate of intersection along R, valid only if status=true.
+ * \param [out] seg_param parametric coordinate of intersection along S, valid only if status=true.
  * \param [in] EPS tolerance for intersection tests
  *
  * \return status true iff R intersects with S, otherwise, false.
@@ -234,10 +235,33 @@ bool intersect(const Triangle<T, 3>& tri,
 template <typename T>
 bool intersect(const Ray<T, 2>& R,
                const Segment<T, 2>& S,
-               T& param,
+               T& ray_param,
+               T& seg_param,
                const T EPS = 1e-8)
 {
-  return detail::intersect_ray(R, S, param, EPS);
+  return detail::intersect_ray(R, S, ray_param, seg_param, EPS);
+}
+
+/*!
+ * \brief Computes the intersection of the given ray, R, with the segment, S.
+ *
+ * \param [in] R the specified ray
+ * \param [in] S the segment to check
+ * \param [out] ray_param parametric coordinate of intersection along R, valid only if status=true
+ *
+ * \note If you need to specify a tolerance for the intersection tests, please use the overload
+ * of this function with two [OUT] parameters (\a ray_param and \a seg_param)
+ *
+ * \return status true iff R intersects with S, otherwise, false.
+ *
+ * \see primal::Ray
+ * \see primal::Segment
+ */
+template <typename T>
+bool intersect(const Ray<T, 2>& R, const Segment<T, 2>& S, T& ray_param)
+{
+  T seg_param;
+  return intersect(R, S, ray_param, seg_param);
 }
 
 /*!
@@ -260,10 +284,11 @@ bool intersect(const Ray<T, 2>& R,
                Point<T, 2>& ip,
                const T EPS = 1e-8)
 {
-  double t = 0.;
-  if(detail::intersect_ray(R, S, t, EPS))
+  T ray_param;
+  T seg_param;
+  if(detail::intersect_ray(R, S, ray_param, seg_param, EPS))
   {
-    ip = R.at(t);
+    ip = R.at(ray_param);
     return true;
   }
   return false;
