@@ -82,6 +82,7 @@ protected:
     m_colorsMap[InOutBlockData::White] = -1;
     m_colorsMap[InOutBlockData::Gray] = 0;
     m_colorsMap[InOutBlockData::Black] = 1;
+    m_colorsMap[InOutBlockData::Undetermined] = -999;
   }
 
 private:
@@ -253,7 +254,14 @@ public:
 
       if(hasColors)
       {
-        leafColors[leafCount] = m_colorsMap.at(leafData.color());
+        if(leafData.isLeaf())
+        {
+          leafColors[leafCount] = m_colorsMap.at(leafData.color());
+        }
+        else
+        {
+          leafColors[leafCount] = m_colorsMap.at(InOutBlockData::Undetermined);
+        }
       }
 
       leafCount++;
