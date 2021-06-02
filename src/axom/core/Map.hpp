@@ -20,9 +20,9 @@ namespace axom
 {
 
 namespace axom_map
-{
-    template <typename Key, typename T>
-    struct node{
+{ 
+  template <typename Key, typename T>
+  struct node{
       IndexType next;
       Key key;
       T value;
@@ -31,74 +31,8 @@ namespace axom_map
       }
             
     }; 
-    
-
-}
-
-/*!
- * \class Map
- *
- * \brief Provides a hashmap implementation, relying upon chaining.
- *  Simple hashmap for now, future work will use RAJA and Umpire
- *  to allow use of map within kernels. Resembles unordered_map, 
- *  which we can't use due to a lack of host-device decoration.
- *
- * \tparam Key the type of keys.
- * \tparam T the type of values to hold.
- * \tparam Hash functor that takes an object of Key type and returns 
- *  a hashed value of size_t (for now)
- */ 
  
-template <typename Key, typename T, typename Hash = std::hash<Key> >
-class Map
-{
-public:
-  Map(int inlen){
-    len = inlen;
-    testlist = axom::allocate <bucket> (len); 
-    /*
-    for(int i = 0; i < len; i++){
-      testlist[i].init(10); 
-    }
-    for(int i = 0; i < len; i++){
-      testlist[i].insert_noupdate(37, 1);
-      testlist[i].insert_update(38, 2);
-      testlist[i].remove(38);
-      testlist[i].insert_update(98, 70+i);
-      testlist[i].insert_update(2, 52);
-      testlist[i].insert_update(24, 12+i);
-      testlist[i].remove(37);
-    }
-   for(int i = 0; i < len; i++){
-     testlist[i].printall();
-   }
-   for(int i = 0; i < 100; i++){
-     std::cout << "hash test " << get_bucket(i) - testlist << std::endl;
-   }*/
-   for(int i = 0; i < len; i++){
-     testlist[i].init(10);
-   }
-   
-   insert(27, 236);
-   insert(2, 259);
-   insert(3, 10);
-   insert(35, 2195);
-   std::cout << find(3).value;
-   remove(3);
-   if(find(3) == testlist[0].end){
-     std::cout << "removed" << std::endl;
-   }
-   if(find(4) == testlist[0].end){
-     std::cout << "never added" << std::endl;
-   }
-   std::cout << find(2).value;
-  }
-
-  
-
-public:
-  
-  
+  template <typename Key, typename T>   
   class bucket{
   public:
 
@@ -255,7 +189,74 @@ public:
     IndexType free;
   
   }; 
-  bucket *testlist;
+}
+
+/*!
+ * \class Map
+ *
+ * \brief Provides a hashmap implementation, relying upon chaining.
+ *  Simple hashmap for now, future work will use RAJA and Umpire
+ *  to allow use of map within kernels. Resembles unordered_map, 
+ *  which we can't use due to a lack of host-device decoration.
+ *
+ * \tparam Key the type of keys.
+ * \tparam T the type of values to hold.
+ * \tparam Hash functor that takes an object of Key type and returns 
+ *  a hashed value of size_t (for now)
+ */ 
+ 
+template <typename Key, typename T, typename Hash = std::hash<Key> >
+class Map
+{
+public:
+  Map(int inlen){
+    len = inlen;
+    testlist = axom::allocate <axom_map::bucket<Key,T> > (len); 
+    /*
+    for(int i = 0; i < len; i++){
+      testlist[i].init(10); 
+    }
+    for(int i = 0; i < len; i++){
+      testlist[i].insert_noupdate(37, 1);
+      testlist[i].insert_update(38, 2);
+      testlist[i].remove(38);
+      testlist[i].insert_update(98, 70+i);
+      testlist[i].insert_update(2, 52);
+      testlist[i].insert_update(24, 12+i);
+      testlist[i].remove(37);
+    }
+   for(int i = 0; i < len; i++){
+     testlist[i].printall();
+   }
+   for(int i = 0; i < 100; i++){
+     std::cout << "hash test " << get_bucket(i) - testlist << std::endl;
+   }*/
+   for(int i = 0; i < len; i++){
+     testlist[i].init(10);
+   }
+   
+   insert(27, 236);
+   insert(2, 259);
+   insert(3, 10);
+   insert(35, 2195);
+   std::cout << find(3).value;
+   remove(3);
+   if(find(3) == testlist[0].end){
+     std::cout << "removed" << std::endl;
+   }
+   if(find(4) == testlist[0].end){
+     std::cout << "never added" << std::endl;
+   }
+   std::cout << find(2).value;
+  }
+
+  
+
+public:
+  
+  
+  
+  axom_map::bucket<Key,T> *testlist;
   int len;
  
   std::size_t get_hash(Key input){
@@ -264,23 +265,23 @@ public:
     return hashed;
   }
 
-  bucket * get_bucket(std::size_t hash){
+  axom_map::bucket<Key,T> * get_bucket(std::size_t hash){
     return &(testlist[hash%len]);
   }
 
   bool insert(Key key, T val){
-    bucket * target = get_bucket(get_hash(key));  
+    axom_map::bucket<Key,T> * target = get_bucket(get_hash(key));  
     return target->insert_update(key, val);
   }
 
   bool remove(Key key){
-    bucket * target = get_bucket(get_hash(key));
+    axom_map::bucket<Key,T> * target = get_bucket(get_hash(key));
     return target->remove(key);
   } 
 
    
   axom_map::node<Key, T>& find(Key key){
-    bucket * target = get_bucket(get_hash(key));
+    axom_map::bucket<Key,T> * target = get_bucket(get_hash(key));
     return target->find(key);
   }
 };
