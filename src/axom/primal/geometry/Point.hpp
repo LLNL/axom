@@ -134,8 +134,9 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T* data() const { return m_components.data(); }
-  T* data() { return m_components.data(); }
+  AXOM_HOST_DEVICE const T* data() const { return m_components.data(); }
+
+  AXOM_HOST_DEVICE T* data() { return m_components.data(); }
 
   ///@}
 
