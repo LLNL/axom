@@ -15,8 +15,8 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 
-#include "axom/spin/internal/linear_bvh/vec.hpp"
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 
@@ -65,21 +65,21 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
   const int32* lchildren_ptr = data.m_left_children;
   const int32* rchildren_ptr = data.m_right_children;
 
-  const AABB<FloatType, 3>* leaf_aabb_ptr = data.m_leaf_aabbs;
-  const AABB<FloatType, 3>* inner_aabb_ptr = data.m_inner_aabbs;
+  const primal::BoundingBox<FloatType, 3>* leaf_aabb_ptr = data.m_leaf_aabbs;
+  const primal::BoundingBox<FloatType, 3>* inner_aabb_ptr = data.m_inner_aabbs;
 
-  Vec<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
+  primal::Vector<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
 
   AXOM_PERF_MARK_SECTION("emit_bvh_parents",
                          for_all<ExecSpace>(
                            inner_size,
                            AXOM_LAMBDA(int32 node) {
-                             Vec<FloatType, 4> vec1;
-                             Vec<FloatType, 4> vec2;
-                             Vec<FloatType, 4> vec3;
-                             Vec<FloatType, 4> vec4;
+                             primal::Vector<FloatType, 4> vec1;
+                             primal::Vector<FloatType, 4> vec2;
+                             primal::Vector<FloatType, 4> vec3;
+                             primal::Vector<FloatType, 4> vec4;
 
-                             AABB<FloatType, 3> l_aabb, r_aabb;
+                             primal::BoundingBox<FloatType, 3> l_aabb, r_aabb;
 
                              int32 lchild = lchildren_ptr[node];
                              if(lchild >= inner_size)
@@ -106,21 +106,21 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
                                // do the offset now
                                rchild *= 4;
                              }
-                             vec1[0] = l_aabb.m_x.min();
-                             vec1[1] = l_aabb.m_y.min();
-                             vec1[2] = l_aabb.m_z.min();
+                             vec1[0] = l_aabb.getMin()[0];
+                             vec1[1] = l_aabb.getMin()[1];
+                             vec1[2] = l_aabb.getMin()[2];
 
-                             vec1[3] = l_aabb.m_x.max();
-                             vec2[0] = l_aabb.m_y.max();
-                             vec2[1] = l_aabb.m_z.max();
+                             vec1[3] = l_aabb.getMax()[0];
+                             vec2[0] = l_aabb.getMax()[1];
+                             vec2[1] = l_aabb.getMax()[2];
 
-                             vec2[2] = r_aabb.m_x.min();
-                             vec2[3] = r_aabb.m_y.min();
-                             vec3[0] = r_aabb.m_z.min();
+                             vec2[2] = r_aabb.getMin()[0];
+                             vec2[3] = r_aabb.getMin()[1];
+                             vec3[0] = r_aabb.getMin()[2];
 
-                             vec3[1] = r_aabb.m_x.max();
-                             vec3[2] = r_aabb.m_y.max();
-                             vec3[3] = r_aabb.m_z.max();
+                             vec3[1] = r_aabb.getMax()[0];
+                             vec3[2] = r_aabb.getMax()[1];
+                             vec3[3] = r_aabb.getMax()[2];
 
                              const int32 out_offset = node * 4;
                              flat_ptr[out_offset + 0] = vec1;
@@ -157,21 +157,21 @@ void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
   const int32* lchildren_ptr = data.m_left_children;
   const int32* rchildren_ptr = data.m_right_children;
 
-  const AABB<FloatType, 2>* leaf_aabb_ptr = data.m_leaf_aabbs;
-  const AABB<FloatType, 2>* inner_aabb_ptr = data.m_inner_aabbs;
+  const primal::BoundingBox<FloatType, 2>* leaf_aabb_ptr = data.m_leaf_aabbs;
+  const primal::BoundingBox<FloatType, 2>* inner_aabb_ptr = data.m_inner_aabbs;
 
-  Vec<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
+  primal::Vector<FloatType, 4>* flat_ptr = bvh_data.m_inner_nodes;
 
   AXOM_PERF_MARK_SECTION("emit_bvh_parents",
                          for_all<ExecSpace>(
                            inner_size,
                            AXOM_LAMBDA(int32 node) {
-                             Vec<FloatType, 4> vec1;
-                             Vec<FloatType, 4> vec2;
-                             Vec<FloatType, 4> vec3;
-                             Vec<FloatType, 4> vec4;
+                             primal::Vector<FloatType, 4> vec1;
+                             primal::Vector<FloatType, 4> vec2;
+                             primal::Vector<FloatType, 4> vec3;
+                             primal::Vector<FloatType, 4> vec4;
 
-                             AABB<FloatType, 2> l_aabb, r_aabb;
+                             primal::BoundingBox<FloatType, 2> l_aabb, r_aabb;
 
                              int32 lchild = lchildren_ptr[node];
                              if(lchild >= inner_size)
@@ -198,20 +198,20 @@ void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
                                // do the offset now
                                rchild *= 4;
                              }
-                             vec1[0] = l_aabb.m_x.min();
-                             vec1[1] = l_aabb.m_y.min();
+                             vec1[0] = l_aabb.getMin()[0];
+                             vec1[1] = l_aabb.getMin()[1];
                              vec1[2] = 0.0;
 
-                             vec1[3] = l_aabb.m_x.max();
-                             vec2[0] = l_aabb.m_y.max();
+                             vec1[3] = l_aabb.getMax()[0];
+                             vec2[0] = l_aabb.getMax()[1];
                              vec2[1] = 0.0;
 
-                             vec2[2] = r_aabb.m_x.min();
-                             vec2[3] = r_aabb.m_y.min();
+                             vec2[2] = r_aabb.getMin()[0];
+                             vec2[3] = r_aabb.getMin()[1];
                              vec3[0] = 0.0;
 
-                             vec3[1] = r_aabb.m_x.max();
-                             vec3[2] = r_aabb.m_y.max();
+                             vec3[1] = r_aabb.getMax()[0];
+                             vec3[2] = r_aabb.getMax()[1];
                              vec3[3] = 0.0;
 
                              const int32 out_offset = node * 4;
