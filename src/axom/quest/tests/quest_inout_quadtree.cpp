@@ -49,7 +49,7 @@ GeometricBoundingBox computeBoundingBox(axom::mint::Mesh*& mesh)
   return bbox;
 }
 
-TEST(quest_inout_quadtree, triangle_mesh)
+TEST(quest_inout_quadtree, triangle_boundary_mesh)
 {
   SLIC_INFO("*** Exercises InOutOctree queries for several thresholds.\n");
 
@@ -93,6 +93,32 @@ TEST(quest_inout_quadtree, triangle_mesh)
 
     delete mesh;
   }
+}
+
+TEST(quest_inout_quadtree, circle_mesh)
+{
+  SLIC_INFO("*** Exercises InOutOctree over the boundary of a circle.\n");
+
+  namespace mint = axom::mint;
+  namespace quest = axom::quest;
+
+  double radius = 1.;
+  int num_segments = 100;
+  mint::Mesh* mesh = quest::utilities::make_circle_mesh_2d(radius, num_segments);
+  mint::write_vtk(mesh, "circle_mesh.vtk");
+
+  GeometricBoundingBox bbox = computeBoundingBox(mesh).scale(1.2);
+
+  Octree2D octree(bbox, mesh);
+  octree.generateIndex();
+
+  SpacePt queryInside = SpacePt {0, 0};
+  SpacePt queryOutside = SpacePt {2. * radius, 2. * radius};
+
+  EXPECT_TRUE(octree.within(queryInside));
+  EXPECT_FALSE(octree.within(queryOutside));
+
+  delete mesh;
 }
 
 //----------------------------------------------------------------------

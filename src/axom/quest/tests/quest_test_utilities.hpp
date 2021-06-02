@@ -6,16 +6,15 @@
 #ifndef QUEST_TEST_UTILITIES_HPP_
 #define QUEST_TEST_UTILITIES_HPP_
 
-#include "axom/core.hpp"  // for random_real
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint.hpp"
 
-using axom::primal::Point;
-using axom::primal::Triangle;
+#include <cmath>
 
 /*!
- * \file
+ * \file quest_test_utilities.hpp
  *
  * This file contains several utility functions to facilitate in the development
  * of unit tests in quest, e.g., generating a random points and simple
@@ -29,8 +28,10 @@ namespace quest
 {
 namespace utilities
 {
-// pi / 180
-constexpr double DEG_TO_RAD = 0.01745329251;
+namespace primal = axom::primal;
+namespace mint = axom::mint;
+
+constexpr double DEG_TO_RAD = M_PI / 180.;
 
 /*!
  * \brief Gets a surface mesh instance for the sphere.
@@ -155,9 +156,9 @@ void getSphereSurfaceMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
  * are random values in the range [beg, end]
  */
 template <int DIM>
-Point<double, DIM> randomSpacePt(double beg, double end)
+primal::Point<double, DIM> randomSpacePt(double beg, double end)
 {
-  Point<double, DIM> pt;
+  primal::Point<double, DIM> pt;
   for(int i = 0; i < DIM; ++i) pt[i] = axom::utilities::random_real(beg, end);
 
   return pt;
@@ -167,8 +168,8 @@ Point<double, DIM> randomSpacePt(double beg, double end)
  * \brief Simple utility to find the centroid of two points
  */
 template <int DIM>
-Point<double, DIM> getCentroid(const Point<double, DIM>& pt0,
-                               const Point<double, DIM>& pt1)
+primal::Point<double, DIM> getCentroid(const primal::Point<double, DIM>& pt0,
+                                       const primal::Point<double, DIM>& pt1)
 {
   return (pt0.array() + pt1.array()) / 2.;
 }
@@ -177,9 +178,9 @@ Point<double, DIM> getCentroid(const Point<double, DIM>& pt0,
  * \brief Simple utility to find the centroid of three points
  */
 template <int DIM>
-Point<double, DIM> getCentroid(const Point<double, DIM>& pt0,
-                               const Point<double, DIM>& pt1,
-                               const Point<double, DIM>& pt2)
+primal::Point<double, DIM> getCentroid(const primal::Point<double, DIM>& pt0,
+                                       const primal::Point<double, DIM>& pt1,
+                                       const primal::Point<double, DIM>& pt2)
 {
   return (pt0.array() + pt1.array() + pt2.array()) / 3.;
 }
@@ -188,10 +189,10 @@ Point<double, DIM> getCentroid(const Point<double, DIM>& pt0,
  * \brief Simple utility to find the centroid of four points
  */
 template <int DIM>
-Point<double, DIM> getCentroid(const Point<double, DIM>& pt0,
-                               const Point<double, DIM>& pt1,
-                               const Point<double, DIM>& pt2,
-                               const Point<double, DIM>& pt3)
+primal::Point<double, DIM> getCentroid(const primal::Point<double, DIM>& pt0,
+                                       const primal::Point<double, DIM>& pt1,
+                                       const primal::Point<double, DIM>& pt2,
+                                       const primal::Point<double, DIM>& pt3)
 {
   return (pt0.array() + pt1.array() + pt2.array() + pt3.array()) / 4.;
 }
@@ -203,9 +204,9 @@ Point<double, DIM> getCentroid(const Point<double, DIM>& pt0,
  */
 axom::mint::Mesh* make_octahedron_mesh()
 {
-  typedef axom::IndexType VertexIndex;
-  typedef Point<double, 3> SpacePt;
-  typedef Triangle<double, 3> SpaceTriangle;
+  using VertexIndex = axom::IndexType;
+  using SpacePt = primal::Point<double, 3>;
+  using SpaceTriangle = primal::Triangle<double, 3>;
 
   enum
   {
@@ -244,12 +245,11 @@ axom::mint::Mesh* make_octahedron_mesh()
                       verts[tvRelation[baseIndex + 1]],
                       verts[tvRelation[baseIndex + 2]]);
 
-    SLIC_ASSERT(axom::primal::ON_NEGATIVE_SIDE ==
-                axom::primal::orientation(SpacePt(), tri));
+    SLIC_ASSERT(primal::ON_NEGATIVE_SIDE == primal::orientation(SpacePt(), tri));
   }
 
   // Now create an unstructured triangle mesh from the two arrays
-  typedef axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE> UMesh;
+  using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
   UMesh* triMesh = new UMesh(3, mint::TRIANGLE);
 
   // insert verts
@@ -278,9 +278,9 @@ axom::mint::Mesh* make_octahedron_mesh()
  *
  * \note The caller must delete the mesh
  */
-axom::mint::Mesh* make_tetrahedron_mesh()
+mint::Mesh* make_tetrahedron_mesh()
 {
-  typedef axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE> UMesh;
+  using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   UMesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
   surface_mesh->appendNode(-0.000003, -0.000003, 19.999999);
@@ -318,9 +318,9 @@ axom::mint::Mesh* make_tetrahedron_mesh()
  *
  * \note The caller must delete the mesh
  */
-axom::mint::Mesh* make_crackedtet_mesh()
+mint::Mesh* make_crackedtet_mesh()
 {
-  typedef axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE> UMesh;
+  using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   UMesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
   surface_mesh->appendNode(-0.000003, -0.000003, 19.999999);
@@ -359,9 +359,9 @@ axom::mint::Mesh* make_crackedtet_mesh()
  *
  * \note The caller must delete the mesh
  */
-axom::mint::Mesh* make_cavedtet_mesh()
+mint::Mesh* make_cavedtet_mesh()
 {
-  typedef axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE> UMesh;
+  using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   UMesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
   surface_mesh->appendNode(2.00003, 1.00003, 18.999999);
@@ -401,9 +401,9 @@ axom::mint::Mesh* make_cavedtet_mesh()
  *
  * \note The caller must delete the mesh
  */
-axom::mint::Mesh* make_degen_cavedtet_mesh()
+mint::Mesh* make_degen_cavedtet_mesh()
 {
-  typedef axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE> UMesh;
+  using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   UMesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
   surface_mesh->appendNode(2.00003, 1.00003, 18.999999);
@@ -438,6 +438,32 @@ axom::mint::Mesh* make_degen_cavedtet_mesh()
   surface_mesh->appendCell(cell);
 
   return surface_mesh;
+}
+
+/*!
+ * \brief Utility function to generate a mesh consisting of the boundary segments of a circle
+ *
+ * \note The caller must delete the mesh
+ */
+mint::Mesh* make_circle_mesh_2d(double radius, int num_segments)
+{
+  constexpr int DIM = 2;
+  using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+
+  UMesh* circle_mesh = new UMesh(DIM, mint::SEGMENT);
+
+  // Generate vertices on the boundary of a circle in CCW order
+  for(int i = 0; i < num_segments; ++i)
+  {
+    double theta = 2. * M_PI * i / static_cast<double>(num_segments);
+    circle_mesh->appendNode(radius * cos(theta), radius * sin(theta));
+
+    int next_idx = (i + 1) == num_segments ? 0 : (i + 1);
+    axom::IndexType cell[2] = {i, next_idx};
+    circle_mesh->appendCell(cell);
+  }
+
+  return circle_mesh;
 }
 
 }  // end namespace utilities
