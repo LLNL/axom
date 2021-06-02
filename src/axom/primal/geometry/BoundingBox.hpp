@@ -412,11 +412,10 @@ bool BoundingBox<T, NDIMS>::intersectsWith(
   // AABBs cannot intersect if they are separated along any dimension
   for(int i = 0; i < NDIMS; ++i)
   {
-    status = status &&
-      detail::intersect_bbox_bbox(m_min[i],
-                                  m_max[i],
-                                  otherBB.m_min[i],
-                                  otherBB.m_max[i]);
+    status &= detail::intersect_bbox_bbox(m_min[i],
+                                          m_max[i],
+                                          otherBB.m_min[i],
+                                          otherBB.m_max[i]);
   }  // END for all dimensions
 
   return status;

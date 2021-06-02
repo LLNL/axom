@@ -83,8 +83,10 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
   {
     if(!leaf_node(current_node))
     {
-      const bool in_left = L(p, inner_nodes[current_node + 0]);
-      const bool in_right = R(p, inner_nodes[current_node + 1]);
+      BBoxType left_bin = inner_nodes[current_node + 0];
+      BBoxType right_bin = inner_nodes[current_node + 1];
+      const bool in_left = L(p, left_bin);
+      const bool in_right = R(p, right_bin);
       int32 l_child = inner_node_children[current_node + 0];
       int32 r_child = inner_node_children[current_node + 1];
 
