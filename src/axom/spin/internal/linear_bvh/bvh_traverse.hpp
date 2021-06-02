@@ -60,7 +60,6 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
   InBinCheck&& B,
   LeafAction&& A)
 {
-  using PointType = primal::Point<FloatType, NDIMS>;
   using BBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   // setup stack
