@@ -22,6 +22,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Added
 - Added new CMake option to allow users to turn off Axom created tools: `AXOM_ENABLE_TOOLS`
+- Inlet can now log verification errors to a user-processable list instead of using SLIC
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
