@@ -21,10 +21,6 @@ namespace spin
 {
 namespace internal
 {
-// Internal datatype used to store each of the 4 segments of a BVH node.
-template <typename FloatType>
-using vec4_t = primal::Vector<FloatType, 4>;
-
 namespace linear_bvh
 {
 /*!

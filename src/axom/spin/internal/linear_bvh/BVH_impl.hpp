@@ -53,15 +53,6 @@ using floating_point_limits = axom::numerics::floating_point_limits<FloatType>;
 //------------------------------------------------------------------------------
 namespace lbvh = internal::linear_bvh;
 
-template <typename FloatType, int NDIMS>
-using point_t = primal::Vector<FloatType, NDIMS>;
-
-template <typename FloatType, int NDIMS>
-using ray_t = primal::Vector<FloatType, NDIMS * 2>;
-
-template <typename FloatType, int NDIMS>
-using bounding_box_t = primal::Vector<FloatType, NDIMS * 2>;
-
 /*!
  * \def BVH_PREDICATE
  *
@@ -744,6 +735,7 @@ void BVH<NDIMS, ExecSpace, FloatType>::writeVtkFile(const std::string& fileName)
   // STEP 2: traverse the BVH and dump each bin
   constexpr int32 ROOT = 0;
   lbvh::write_recursive<FloatType, NDIMS>(m_bvh.m_inner_nodes,
+                                          m_bvh.m_inner_node_children,
                                           ROOT,
                                           1,
                                           numPoints,
