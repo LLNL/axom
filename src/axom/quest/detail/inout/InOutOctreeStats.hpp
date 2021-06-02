@@ -44,8 +44,8 @@ public:
   using BlockIndex = typename OctreeBaseType::BlockIndex;
 
   using LeafCountMap = slam::Map<slam::Set<>, int>;
-  using TriCountMap = slam::Map<slam::Set<>, int>;
-  using CardinalityVTMap = slam::Map<slam::Set<>, int>;
+  using CellCountMap = slam::Map<slam::Set<>, int>;
+  using CardinalityVCMap = slam::Map<slam::Set<>, int>;
 
   using LogHistogram = std::map<int, int>;
   using MinMaxRange = primal::BoundingBox<double, 1>;
@@ -55,24 +55,13 @@ public:
   /** A simple struct to track totals within the octree levels */
   struct Totals
   {
-    /** Default constructor to set everything to 0 */
-    Totals()
-      : blocks(0)
-      , leaves(0)
-      , leavesWithVert(0)
-      , triangleRefCount(0)
-      , whiteBlocks(0)
-      , blackBlocks(0)
-      , grayBlocks(0)
-    { }
-
-    int blocks;
-    int leaves;
-    int leavesWithVert;
-    int triangleRefCount;
-    int whiteBlocks;
-    int blackBlocks;
-    int grayBlocks;
+    int blocks {0};
+    int leaves {0};
+    int leavesWithVert {0};
+    int cellRefCount {0};
+    int whiteBlocks {0};
+    int blackBlocks {0};
+    int grayBlocks {0};
   };
 
 public:
@@ -82,14 +71,14 @@ public:
     , m_levelBlocks(&m_octree.m_levels)
     , m_levelLeaves(&m_octree.m_levels)
     , m_levelLeavesWithVert(&m_octree.m_levels)
-    , m_levelTriangleRefCount(&m_octree.m_levels)
+    , m_levelCellRefCount(&m_octree.m_levels)
     , m_levelWhiteBlockCount(&m_octree.m_levels)
     , m_levelBlackBlockCount(&m_octree.m_levels)
     , m_levelGrayBlockCount(&m_octree.m_levels)
   {
     if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
     {
-      m_triCount = TriCountMap(&m_octree.m_meshWrapper.elementSet());
+      m_cellCount = CellCountMap(&m_octree.m_meshWrapper.elementSet());
     }
 
     // Iterate through blocks -- count the numbers of internal and leaf blocks
@@ -100,7 +89,7 @@ public:
       m_levelBlocks[lev] = levelLeafMap.numBlocks();
       m_levelLeaves[lev] = levelLeafMap.numLeafBlocks();
       m_levelLeavesWithVert[lev] = 0;
-      m_levelTriangleRefCount[lev] = 0;
+      m_levelCellRefCount[lev] = 0;
       m_levelWhiteBlockCount[lev] = 0;
       m_levelBlackBlockCount[lev] = 0;
       m_levelGrayBlockCount[lev] = 0;
@@ -119,14 +108,14 @@ public:
 
             if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
             {
-              m_levelTriangleRefCount[lev] +=
+              m_levelCellRefCount[lev] +=
                 m_octree.leafCells(block, blockData).size();
 
               BlockIndex blk(it.pt(), lev);
-              CellIndexSet tris = m_octree.leafCells(blk, blockData);
-              for(int i = 0; i < tris.size(); ++i)
+              CellIndexSet cells = m_octree.leafCells(blk, blockData);
+              for(int i = 0; i < cells.size(); ++i)
               {
-                ++m_triCount[tris[i]];
+                ++m_cellCount[cells[i]];
               }
             }
           }
@@ -154,7 +143,7 @@ public:
       m_totals.blocks += m_levelBlocks[lev];
       m_totals.leaves += m_levelLeaves[lev];
       m_totals.leavesWithVert += m_levelLeavesWithVert[lev];
-      m_totals.triangleRefCount += m_levelTriangleRefCount[lev];
+      m_totals.cellRefCount += m_levelCellRefCount[lev];
       m_totals.whiteBlocks += m_levelWhiteBlockCount[lev];
       m_totals.blackBlocks += m_levelBlackBlockCount[lev];
       m_totals.grayBlocks += m_levelGrayBlockCount[lev];
@@ -181,11 +170,11 @@ public:
         if(m_generationState >= InOutOctreeType::INOUTOCTREE_LEAVES_COLORED)
         {
           sstr << fmt::format(
-            " Leaf counts: {} Black, {} White, {} Gray w/ {} triangle refs.",
+            " Leaf counts: {} Black, {} White, {} Gray w/ {} cell refs.",
             m_levelBlackBlockCount[lev],
             m_levelWhiteBlockCount[lev],
             m_levelGrayBlockCount[lev],
-            m_levelTriangleRefCount[lev]);
+            m_levelCellRefCount[lev]);
         }
         //sstr <<"Hash load factor: "
         //     << this->m_leavesLevelMap[ lev ].load_factor()
@@ -203,12 +192,12 @@ public:
   {
     std::stringstream sstr;
 
-    double meshNumTriangles = m_octree.m_meshWrapper.numMeshCells();
+    double meshNumCells = m_octree.m_meshWrapper.numMeshCells();
 
     sstr << fmt::format(
       "  Mesh has {} vertices."
       "\n  Octree has {} blocks; {} internal; {} leaves ({}% w/ vert); ",
-      meshNumTriangles,
+      meshNumCells,
       m_totals.blocks,
       m_totals.blocks - m_totals.leaves,
       m_totals.leaves,
@@ -217,46 +206,46 @@ public:
     if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
     {
       sstr << fmt::format(
-        " \n\t There were {} triangle references "
-        " (avg. {} refs per triangle).",
-        m_totals.triangleRefCount,
-        (m_totals.triangleRefCount / meshNumTriangles));
+        " \n\t There were {} cell references "
+        " (avg. {} refs per cell).",
+        m_totals.cellRefCount,
+        (m_totals.cellRefCount / meshNumCells));
     }
 
     return sstr.str();
   }
 
-  std::string triangleCountHistogram() const
+  std::string cellCountHistogram() const
   {
     std::stringstream sstr;
 
     // Generate and output a histogram of the bucket counts on a lg-scale
-    LogHistogram triCountHist;  // Create histogram of edge lengths (log scale)
-    LogRangeMap triCountRange;
+    LogHistogram cellCountHist;  // Create histogram of edge lengths (log scale)
+    LogRangeMap cellCountRange;
 
-    int numElems = m_octree.m_meshWrapper.numMeshCells();
+    int numCells = m_octree.m_meshWrapper.numMeshCells();
 
-    for(int i = 0; i < numElems; ++i)
+    for(int i = 0; i < numCells; ++i)
     {
-      LengthType count(m_triCount[i]);
+      LengthType count(m_cellCount[i]);
       int expBase2;
-      std::frexp(m_triCount[i], &expBase2);
-      triCountHist[expBase2]++;
-      triCountRange[expBase2].addPoint(count);
+      std::frexp(m_cellCount[i], &expBase2);
+      cellCountHist[expBase2]++;
+      cellCountRange[expBase2].addPoint(count);
     }
 
-    std::stringstream triCountStr;
-    triCountStr << "\tTriangle index count "
-                << "(lg-arithmic bins for number of references per triangle):";
-    for(auto it = triCountHist.begin(); it != triCountHist.end(); ++it)
+    std::stringstream cellCountStr;
+    cellCountStr << "\tCell index count "
+                 << "(lg-arithmic bins for number of references per cell):";
+    for(auto it = cellCountHist.begin(); it != cellCountHist.end(); ++it)
     {
-      triCountStr << fmt::format("\n\t exp: {}\t count: {}\tRange: {}",
-                                 it->first,
-                                 it->second,
-                                 triCountRange[it->first]);
+      cellCountStr << fmt::format("\n\t exp: {}\t count: {}\tRange: {}",
+                                  it->first,
+                                  it->second,
+                                  cellCountRange[it->first]);
     }
 
-    return triCountStr.str();
+    return cellCountStr.str();
   }
 
   std::string vertexCardinalityHistogram() const
@@ -266,15 +255,16 @@ public:
     using CellVertIndices = typename MeshWrapper<DIM>::CellVertIndices;
 
     // Generate and output histogram of VT relation
-    CardinalityVTMap cardVT(&m_octree.m_meshWrapper.vertexSet());
+    CardinalityVCMap cardVC(&m_octree.m_meshWrapper.vertexSet());
 
-    int numElems = m_octree.m_meshWrapper.numMeshCells();
-    for(int i = 0; i < numElems; ++i)
+    int numCells = m_octree.m_meshWrapper.numMeshCells();
+    for(int i = 0; i < numCells; ++i)
     {
-      CellVertIndices tvRel = m_octree.m_meshWrapper.cellVertexIndices(i);
-      cardVT[tvRel[0]]++;
-      cardVT[tvRel[1]]++;
-      cardVT[tvRel[2]]++;
+      CellVertIndices cvRel = m_octree.m_meshWrapper.cellVertexIndices(i);
+      for(int j = 0; j < cvRel.size(); ++j)
+      {
+        cardVC[cvRel[j]]++;
+      }
     }
 
     using LinHistogram = std::map<int, int>;
@@ -282,8 +272,8 @@ public:
     int numVerts = m_octree.m_meshWrapper.numMeshVertices();
     for(int i = 0; i < numVerts; ++i)
     {
-      LengthType count(cardVT[i]);
-      vtCardHist[cardVT[i]]++;
+      LengthType count(cardVC[i]);
+      vtCardHist[cardVC[i]]++;
     }
 
     sstr << "\tCardinality VT relation histogram (linear): ";
@@ -318,7 +308,7 @@ public:
     if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
     {
       octreeStatsStr << "\n"
-                     << triangleCountHistogram() << "\n"
+                     << cellCountHistogram() << "\n"
                      << vertexCardinalityHistogram();
     }
 
@@ -338,13 +328,13 @@ private:
   LeafCountMap m_levelBlocks;
   LeafCountMap m_levelLeaves;
   LeafCountMap m_levelLeavesWithVert;
-  LeafCountMap m_levelTriangleRefCount;
+  LeafCountMap m_levelCellRefCount;
 
   LeafCountMap m_levelWhiteBlockCount;
   LeafCountMap m_levelBlackBlockCount;
   LeafCountMap m_levelGrayBlockCount;
 
-  TriCountMap m_triCount;
+  CellCountMap m_cellCount;
 
   Totals m_totals;
 };
