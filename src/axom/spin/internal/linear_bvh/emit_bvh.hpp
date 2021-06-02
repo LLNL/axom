@@ -40,23 +40,11 @@ namespace linear_bvh
  *
  * \see BVH::build()
  */
-/// @{
-
-template <typename ExecSpace, typename FloatType>
-void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data);
-
-template <typename ExecSpace, typename FloatType>
-void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data);
-
-/// @}
-
-//------------------------------------------------------------------------------
-//                        IMPLEMENTATION
-//------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
+template <typename ExecSpace, typename FloatType, int NDIMS>
+void emit_bvh(RadixTree<FloatType, NDIMS>& data,
+              BVHData<FloatType, NDIMS>& bvh_data)
 {
-  AXOM_PERF_MARK_FUNCTION("emit_bvh3D");
+  AXOM_PERF_MARK_FUNCTION("emit_bvh");
 
   const int32 size = data.m_size;
   const int32 inner_size = data.m_inner_size;
@@ -65,86 +53,18 @@ void emit_bvh(RadixTree<FloatType, 3>& data, BVHData<FloatType, 3>& bvh_data)
   const int32* lchildren_ptr = data.m_left_children;
   const int32* rchildren_ptr = data.m_right_children;
 
-  const primal::BoundingBox<FloatType, 3>* leaf_aabb_ptr = data.m_leaf_aabbs;
-  const primal::BoundingBox<FloatType, 3>* inner_aabb_ptr = data.m_inner_aabbs;
+  const primal::BoundingBox<FloatType, NDIMS>* leaf_aabb_ptr = data.m_leaf_aabbs;
+  const primal::BoundingBox<FloatType, NDIMS>* inner_aabb_ptr =
+    data.m_inner_aabbs;
 
-  primal::BoundingBox<FloatType, 3>* bvh_inner_nodes = bvh_data.m_inner_nodes;
+  primal::BoundingBox<FloatType, NDIMS>* bvh_inner_nodes = bvh_data.m_inner_nodes;
   int32* bvh_inner_node_children = bvh_data.m_inner_node_children;
 
   AXOM_PERF_MARK_SECTION("emit_bvh_parents",
                          for_all<ExecSpace>(
                            inner_size,
                            AXOM_LAMBDA(int32 node) {
-                             primal::BoundingBox<FloatType, 3> l_aabb, r_aabb;
-
-                             int32 lchild = lchildren_ptr[node];
-                             if(lchild >= inner_size)
-                             {
-                               l_aabb = leaf_aabb_ptr[lchild - inner_size];
-                               lchild = -(lchild - inner_size + 1);
-                             }
-                             else
-                             {
-                               l_aabb = inner_aabb_ptr[lchild];
-                               // do the offset now
-                               lchild *= 2;
-                             }
-
-                             int32 rchild = rchildren_ptr[node];
-                             if(rchild >= inner_size)
-                             {
-                               r_aabb = leaf_aabb_ptr[rchild - inner_size];
-                               rchild = -(rchild - inner_size + 1);
-                             }
-                             else
-                             {
-                               r_aabb = inner_aabb_ptr[rchild];
-                               // do the offset now
-                               rchild *= 2;
-                             }
-
-                             const int32 out_offset = node * 2;
-                             bvh_inner_nodes[out_offset + 0] = l_aabb;
-                             bvh_inner_nodes[out_offset + 1] = r_aabb;
-
-                             bvh_inner_node_children[out_offset + 0] = lchild;
-                             bvh_inner_node_children[out_offset + 1] = rchild;
-                           }););
-
-  int32* radix_tree_leafs = data.m_leafs;
-  int32* bvh_leafs = bvh_data.m_leaf_nodes;
-
-  AXOM_PERF_MARK_SECTION(
-    "emit_bvh_leafs",
-    for_all<ExecSpace>(
-      size,
-      AXOM_LAMBDA(int32 i) { bvh_leafs[i] = radix_tree_leafs[i]; }););
-}
-
-//------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-void emit_bvh(RadixTree<FloatType, 2>& data, BVHData<FloatType, 2>& bvh_data)
-{
-  AXOM_PERF_MARK_FUNCTION("emit_bvh2D");
-
-  const int32 size = data.m_size;
-  const int32 inner_size = data.m_inner_size;
-  SLIC_ASSERT(inner_size == size - 1);
-
-  const int32* lchildren_ptr = data.m_left_children;
-  const int32* rchildren_ptr = data.m_right_children;
-
-  const primal::BoundingBox<FloatType, 2>* leaf_aabb_ptr = data.m_leaf_aabbs;
-  const primal::BoundingBox<FloatType, 2>* inner_aabb_ptr = data.m_inner_aabbs;
-
-  primal::BoundingBox<FloatType, 2>* bvh_inner_nodes = bvh_data.m_inner_nodes;
-  int32* bvh_inner_node_children = bvh_data.m_inner_node_children;
-
-  AXOM_PERF_MARK_SECTION("emit_bvh_parents",
-                         for_all<ExecSpace>(
-                           inner_size,
-                           AXOM_LAMBDA(int32 node) {
-                             primal::BoundingBox<FloatType, 2> l_aabb, r_aabb;
+                             primal::BoundingBox<FloatType, NDIMS> l_aabb, r_aabb;
 
                              int32 lchild = lchildren_ptr[node];
                              if(lchild >= inner_size)
