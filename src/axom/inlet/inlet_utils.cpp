@@ -77,7 +77,8 @@ bool checkFlag(const axom::sidre::Group& target,
 
 bool verifyRequired(const axom::sidre::Group& target,
                     const bool condition,
-                    const std::string& type)
+                    const std::string& type,
+                    std::vector<VerificationError>* errors)
 {
   // Assume that it wasn't found
   ReaderResult status = ReaderResult::NotFound;
@@ -103,7 +104,7 @@ bool verifyRequired(const axom::sidre::Group& target,
         "specified: {1}",
         type,
         target.getPathName());
-      SLIC_WARNING(msg);
+      INLET_VERIFICATION_WARNING(target.getPathName(), msg, errors);
       return false;
     }
   }
@@ -117,7 +118,7 @@ bool verifyRequired(const axom::sidre::Group& target,
       : "not homogeneous";
     const std::string msg =
       fmt::format("[Inlet] {0} '{1}' was {2}", type, target.getPathName(), reason);
-    SLIC_WARNING(msg);
+    INLET_VERIFICATION_WARNING(target.getPathName(), msg, errors);
     return false;
   }
   return true;

@@ -19,6 +19,8 @@
 #include <vector>
 #include <initializer_list>
 
+#include "axom/inlet/inlet_utils.hpp"
+
 namespace axom
 {
 namespace inlet
@@ -247,9 +249,15 @@ public:
   /*!
    *****************************************************************************
    * \brief Verifies the object to make sure it satisfies the imposed requirements
+   * \param [in] errors An optional vector of errors to append to in the case
+   * of verification failure
+   * 
+   * Ownership is not taken of @a errors, the raw pointer is only used for its
+   * optional reference semantics, as opposed to something like
+   * std::optional<std::reference_wrapper<T>>
    *****************************************************************************
   */
-  virtual bool verify() const = 0;
+  virtual bool verify(std::vector<VerificationError>* errors = nullptr) const = 0;
 };
 
 }  // namespace inlet
