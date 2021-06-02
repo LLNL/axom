@@ -19,6 +19,22 @@
 namespace axom
 {
 
+namespace axom_map
+{
+    template <typename Key, typename T>
+    struct node{
+      IndexType next;
+      Key key;
+      T value;
+      bool operator==(const node& rhs){
+        return (this->next == rhs.next) && (this->key == rhs.key) && (this->value == rhs.value);
+      }
+            
+    }; 
+    
+
+}
+
 /*!
  * \class Map
  *
@@ -40,6 +56,7 @@ public:
   Map(int inlen){
     len = inlen;
     testlist = axom::allocate <bucket> (len); 
+    /*
     for(int i = 0; i < len; i++){
       testlist[i].init(10); 
     }
@@ -55,14 +72,31 @@ public:
    for(int i = 0; i < len; i++){
      testlist[i].printall();
    }
+   for(int i = 0; i < 100; i++){
+     std::cout << "hash test " << get_bucket(i) - testlist << std::endl;
+   }*/
+   for(int i = 0; i < len; i++){
+     testlist[i].init(10);
+   }
+   
+   insert(27, 236);
+   insert(2, 259);
+   insert(3, 10);
+   insert(35, 2195);
+   std::cout << find(3).value;
+   remove(3);
+   if(find(3) == testlist[0].end){
+     std::cout << "removed" << std::endl;
+   }
+   if(find(4) == testlist[0].end){
+     std::cout << "never added" << std::endl;
+   }
+   std::cout << find(2).value;
   }
 
-  std::size_t list_pick(Key input){
-    std::size_t hashed std::hash<Key>{}(input);
-    return hashed % inlen;
-  }
+  
 
-private:
+public:
   
   
   class bucket{
@@ -71,24 +105,29 @@ private:
     bucket(){}    
 
     bucket(int len){
-      list = axom::allocate <node> (len);
+      list = axom::allocate <axom_map::node<Key, T> > (len);
       for(int i = 0; i < len-1; i++){
         list[i].next = i+1;
       }
       list[len-1].next = -1;
       free = 0;
       head = -1;
+      end.key = Key{0};
+      end.value = T{0};
+      end.next = -2;
     }
    
     void init(int len){
-      list = axom::allocate <node> (len);
+      list = axom::allocate <axom_map::node<Key, T> > (len);
       for(int i = 0; i < len-1; i++){
         list[i].next = i+1;
       }
       list[len-1].next = -1;
       free = 0;
       head = -1;
-
+      end.key = Key{0};
+      end.value = T{0};
+      end.next = -2;
     }
 
     bool insert_noupdate(Key key, T value){
@@ -176,21 +215,24 @@ private:
      return false;
    }
 
+        
+
+
    //Pair may be better than a status flag argument. 
    //This is very C.
-   T& find(Key key){
+   axom_map::node<Key, T>& find(Key key){
      if(head == -1){
-       return list[0].value;
+       return end;
      }
      IndexType ind = head;
      do{
        if(list[ind].key == key){
-         return list[ind].value;
+         return list[ind];
        }
 
        ind = list[ind].next;
     }while(ind != -1);
-
+    return end;
    }
    
    void printall(){
@@ -205,20 +247,42 @@ private:
      }while(ind != -1);
    }   
   
-    struct node{
-      IndexType next;
-      Key key;
-      T value;
-    };     
     
-    node * list;   
-    node end;
+    
+    axom_map::node<Key, T> * list;   
+    axom_map::node<Key, T> end;
     IndexType head;
     IndexType free;
   
   }; 
   bucket *testlist;
   int len;
+ 
+  std::size_t get_hash(Key input){
+    std::size_t hashed =  std::hash<Key>{}(input);
+     
+    return hashed;
+  }
+
+  bucket * get_bucket(std::size_t hash){
+    return &(testlist[hash%len]);
+  }
+
+  bool insert(Key key, T val){
+    bucket * target = get_bucket(get_hash(key));  
+    return target->insert_update(key, val);
+  }
+
+  bool remove(Key key){
+    bucket * target = get_bucket(get_hash(key));
+    return target->remove(key);
+  } 
+
+   
+  axom_map::node<Key, T>& find(Key key){
+    bucket * target = get_bucket(get_hash(key));
+    return target->find(key);
+  }
 };
 
 } /* namespace axom */
