@@ -36,11 +36,10 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  * \param [in] inner_node_children pointer to pairs of child indices.
  * \param [in] leaf_nodes pointer to the leaf node IDs.
  * \param [in] p the primitive in query, e.g., a point, ray, etc.
- * \param [in] L functor that defines the check for the left bin
- * \param [in] R functor that defines the check for right bin
+ * \param [in] B functor that defines the check for the bins
  * \param [in] A functor that defines the leaf action
  *
- * \note The supplied functors, `L`, `R`, are expected to take the following
+ * \note The supplied functor `B` is expected to take the following
  *  three arguments:
  *    (1) The supplied primitive, p
  *    (2) a vec4_t< FloatType > of the first segment that defines the BVH bin
@@ -48,24 +47,17 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  *
  * \see BVHData for the details on the internal data layout of the BVH.
  *
- * \note Moreover, the functors `L`, `R` return a boolean status that indicates
+ * \note Moreover, the functor `B` returns a boolean status that indicates
  *  if the specified traversal predicate is satisfied.
  *
- * \see TraversalPredicates for the collection of defined predicates.
  */
-template <int NDIMS,
-          typename FloatType,
-          typename PrimitiveType,
-          typename InLeftCheck,
-          typename InRightCheck,
-          typename LeafAction>
+template <int NDIMS, typename FloatType, typename PrimitiveType, typename InBinCheck, typename LeafAction>
 AXOM_HOST_DEVICE inline void bvh_traverse(
   const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
   const int32* inner_node_children,
   const int32* leaf_nodes,
   const PrimitiveType& p,
-  InLeftCheck&& L,
-  InRightCheck&& R,
+  InBinCheck&& B,
   LeafAction&& A)
 {
   using PointType = primal::Point<FloatType, NDIMS>;
@@ -85,8 +77,8 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
     {
       BBoxType left_bin = inner_nodes[current_node + 0];
       BBoxType right_bin = inner_nodes[current_node + 1];
-      const bool in_left = L(p, left_bin);
-      const bool in_right = R(p, right_bin);
+      const bool in_left = B(p, left_bin);
+      const bool in_right = B(p, right_bin);
       int32 l_child = inner_node_children[current_node + 0];
       int32 r_child = inner_node_children[current_node + 1];
 

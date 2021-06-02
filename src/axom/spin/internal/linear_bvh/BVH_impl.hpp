@@ -99,8 +99,7 @@ namespace
 /*!
  * \brief Performs a traversal to count the candidates for each query point.
  *
- * \param [in] leftCheck functor for left bin predicate check.
- * \param [in] rightCheck functor for right bin predicate check.
+ * \param [in] binCheck traversal predicate functor for bin check.
  * \param [in] inner_nodes array of vec4s for the BVH inner nodes.
  * \param [in] leaf_nodes array of BVH leaf node indices
  * \param [in] N the number of user-supplied query points
@@ -111,9 +110,8 @@ namespace
  *
  * \return total_count the total count of candidates for all query points.
  */
-template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
-IndexType bvh_get_counts(LeftPredicate&& leftCheck,
-                         RightPredicate&& rightCheck,
+template <int NDIMS, typename ExecSpace, typename Predicate, typename FloatType>
+IndexType bvh_get_counts(Predicate&& binCheck,
                          const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
                          const int32* inner_node_children,
                          const int32* leaf_nodes,
@@ -158,8 +156,7 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
                          inner_node_children,
                          leaf_nodes,
                          point,
-                         leftCheck,
-                         rightCheck,
+                         binCheck,
                          leafAction);
 
       counts[i] = count;
@@ -172,8 +169,7 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
 /*!
  * \brief Performs a traversal to count the number of candidates for each ray.
  *
- * \param [in] leftCheck traversal predicate functor for left bin check.
- * \param [in] rightCheck traversal predicate functor for right bin check.
+ * \param [in] binCheck traversal predicate functor for bin check.
  * \param [in] inner_nodes array of vec4s for the BVH inner nodes.
  * \param [in] leaf_nodes array of BVH leaf node indices
  * \param [in] N the number of user-supplied rays in query.
@@ -187,9 +183,8 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
  *
  * \return total_count the aggregate number of candidates for all rays.
  */
-template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
-IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
-                            RightPredicate&& rightCheck,
+template <int NDIMS, typename ExecSpace, typename Predicate, typename FloatType>
+IndexType bvh_get_raycounts(Predicate&& binCheck,
                             const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
                             const int32* inner_node_children,
                             const int32* leaf_nodes,
@@ -245,8 +240,7 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
                                 inner_node_children,
                                 leaf_nodes,
                                 ray,
-                                leftCheck,
-                                rightCheck,
+                                binCheck,
                                 leafAction);
 
       counts[i] = count;
@@ -260,8 +254,7 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
  * \brief Performs a traversal to count the number of candidates for each
  *  bounding box.
  *
- * \param [in] leftCheck traversal predicate functor for left bin check.
- * \param [in] rightCheck traversal predicate functor for right bin check.
+ * \param [in] binCheck traversal predicate functor for bin check.
  * \param [in] inner_nodes array of vec4s for the BVH inner nodes.
  * \param [in] leaf_nodes array of BVH leaf node indices
  * \param [in] N the number of user-supplied bounding boxes in query.
@@ -276,9 +269,8 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
  * \return total_count the aggregate number of candidates for all bounding
  *  boxes.
  */
-template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
-IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
-                            RightPredicate&& rightCheck,
+template <int NDIMS, typename ExecSpace, typename Predicate, typename FloatType>
+IndexType bvh_get_boxcounts(Predicate&& binCheck,
                             const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
                             const int32* inner_node_children,
                             const int32* leaf_nodes,
@@ -334,8 +326,7 @@ IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
                          inner_node_children,
                          leaf_nodes,
                          box,
-                         leftCheck,
-                         rightCheck,
+                         binCheck,
                          leafAction);
 
       counts[i] = count;
@@ -482,7 +473,6 @@ void BVH<NDIMS, ExecSpace, FloatType>::findPoints(IndexType* offsets,
   AXOM_PERF_MARK_SECTION(
     "PASS[1]:count_traversal",
     total_count = bvh_get_counts<NDIMS, ExecSpace>(predicate,
-                                                   predicate,
                                                    inner_nodes,
                                                    inner_node_children,
                                                    leaf_nodes,
@@ -526,7 +516,6 @@ void BVH<NDIMS, ExecSpace, FloatType>::findPoints(IndexType* offsets,
                            inner_node_children,
                            leaf_nodes,
                            point,
-                           predicate,
                            predicate,
                            leafAction);
       }););
@@ -581,7 +570,6 @@ void BVH<NDIMS, ExecSpace, FloatType>::findRays(IndexType* offsets,
   AXOM_PERF_MARK_SECTION(
     "PASS[1]:count_traversal",
     total_count = bvh_get_raycounts<NDIMS, ExecSpace>(predicate,
-                                                      predicate,
                                                       inner_nodes,
                                                       inner_node_children,
                                                       leaf_nodes,
@@ -632,7 +620,6 @@ void BVH<NDIMS, ExecSpace, FloatType>::findRays(IndexType* offsets,
                            leaf_nodes,
                            ray,
                            predicate,
-                           predicate,
                            leafAction);
       }););
 }
@@ -682,7 +669,6 @@ void BVH<NDIMS, ExecSpace, FloatType>::findBoundingBoxes(IndexType* offsets,
   AXOM_PERF_MARK_SECTION(
     "PASS[1]:count_traversal",
     total_count = bvh_get_boxcounts<NDIMS, ExecSpace>(predicate,
-                                                      predicate,
                                                       inner_nodes,
                                                       inner_node_children,
                                                       leaf_nodes,
@@ -729,7 +715,6 @@ void BVH<NDIMS, ExecSpace, FloatType>::findBoundingBoxes(IndexType* offsets,
                            inner_node_children,
                            leaf_nodes,
                            box,
-                           predicate,
                            predicate,
                            leafAction);
       }););
