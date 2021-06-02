@@ -52,7 +52,6 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
        internal/linear_bvh/bvh_traverse.hpp
        internal/linear_bvh/bvh_vtkio.hpp
        internal/linear_bvh/emit_bvh.hpp
-       internal/linear_bvh/math.hpp
 
       )
 
