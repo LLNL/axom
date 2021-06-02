@@ -1078,14 +1078,7 @@ bool Container::verify(std::vector<VerificationError>* errors) const
     verified = false;
     const std::string msg =
       fmt::format("[Inlet] Container failed verification: {0}", m_name);
-    if(errors)
-    {
-      errors->push_back({Path {m_name}, msg});
-    }
-    else
-    {
-      SLIC_WARNING(msg);
-    }
+    INLET_VERIFICATION_WARNING(m_name, msg, errors);
   }
 
   // If the strict flag is set
@@ -1100,14 +1093,7 @@ bool Container::verify(std::vector<VerificationError>* errors) const
         fmt::format("[Inlet] Container '{0}' contained unexpected child: {1}",
                     m_name,
                     name);
-      if(errors)
-      {
-        errors->push_back({Path {m_name}, msg});
-      }
-      else
-      {
-        SLIC_WARNING(msg);
-      }
+      INLET_VERIFICATION_WARNING(m_name, msg, errors);
     }
   }
 

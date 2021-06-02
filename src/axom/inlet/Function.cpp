@@ -53,14 +53,7 @@ bool Function::verify(std::vector<VerificationError>* errors) const
     const std::string msg =
       fmt::format("[Inlet] Function failed verification: {0}",
                   m_sidreGroup->getPathName());
-    if(errors)
-    {
-      errors->push_back({Path {m_sidreGroup->getPathName()}, msg});
-    }
-    else
-    {
-      SLIC_WARNING(msg);
-    }
+    INLET_VERIFICATION_WARNING(m_sidreGroup->getPathName(), msg, errors);
   }
 
   return verified;

@@ -27,17 +27,41 @@ enum class ReaderResult
 };
 
 /*!
-*****************************************************************************
-* \brief Information on an Inlet verification error
-*****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Information on an Inlet verification error
+ *****************************************************************************
+ */
 struct VerificationError
 {
   /// \brief The path to the container/field/function with the error
-  Path path;
+  const axom::Path path;
   /// \brief The error message
-  std::string message;
+  const std::string message;
+  /// \brief Returns whether a given substring is present in the error message
+  bool messageContains(const std::string substr) const
+  {
+    return message.find(substr) != std::string::npos;
+  }
 };
+
+/*!
+ *****************************************************************************
+ * \brief Utility macro for selecting between logging to SLIC and logging
+ * to a list of errors
+ * \param path The path within the input file to warn on
+ * \param msg The warning message
+ * \param errs The list of errors, must be of type \p std::vector<VerificationError>*
+ *****************************************************************************
+ */
+  #define INLET_VERIFICATION_WARNING(path, msg, errs) \
+    if(errs)                                          \
+    {                                                 \
+      errs->push_back({axom::Path {path}, msg});      \
+    }                                                 \
+    else                                              \
+    {                                                 \
+      SLIC_WARNING(msg);                              \
+    }
 
 /*!
 *****************************************************************************
