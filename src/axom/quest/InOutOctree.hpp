@@ -607,11 +607,13 @@ void InOutOctree<DIM>::insertMeshCells()
   rootData.setData(0);
 
   // Add all cell references to the root
-  int const numCells = m_meshWrapper.numMeshCells();
-  dynamicRootData.cells().reserve(numCells);
-  for(int idx = 0; idx < numCells; ++idx)
   {
-    dynamicRootData.addCell(idx);
+    int const numCells = m_meshWrapper.numMeshCells();
+    dynamicRootData.cells().reserve(numCells);
+    for(int idx = 0; idx < numCells; ++idx)
+    {
+      dynamicRootData.addCell(idx);
+    }
   }
 
   // Iterate through octree levels

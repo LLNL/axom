@@ -26,7 +26,6 @@
 #include "axom/quest/MeshTester.hpp"
 // _check_repair_include_end
 
-
 // RAJA
 #ifdef AXOM_USE_RAJA
   #include "RAJA/RAJA.hpp"
