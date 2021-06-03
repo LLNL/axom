@@ -27,7 +27,7 @@ blt_add_executable( NAME       spio_tests
                     SOURCES    spio_main.cpp
                     HEADERS    ${gtest_spio_parallel_tests} ${gtest_spio_serial_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON sidre gtest
+                    DEPENDS_ON axom gtest
                     FOLDER     axom/sidre/tests
                     )
 
