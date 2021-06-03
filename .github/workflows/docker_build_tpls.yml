@@ -19,7 +19,7 @@ jobs:
     steps:
     - name: Prune Dangling Docker Images
       shell: bash
-      run: docker image prune
+      run: docker image prune -f
       id: prune_docker
     - name: Extract branch name
       shell: bash
