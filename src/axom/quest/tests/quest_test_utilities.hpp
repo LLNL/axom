@@ -11,7 +11,7 @@
 #include "axom/primal.hpp"
 #include "axom/mint.hpp"
 
-#include <cmath>
+#include <math.h>
 
 /*!
  * \file quest_test_utilities.hpp
