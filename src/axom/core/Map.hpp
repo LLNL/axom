@@ -209,31 +209,10 @@ template <typename Key, typename T, typename Hash = std::hash<Key> >
 class Map
 {
 public:
-  Map(int inlen){
-    len = inlen;
-    testlist = axom::allocate <axom_map::bucket<Key,T> > (len); 
-    /*
-    for(int i = 0; i < len; i++){
-      testlist[i].init(10); 
-    }
-    for(int i = 0; i < len; i++){
-      testlist[i].insert_noupdate(37, 1);
-      testlist[i].insert_update(38, 2);
-      testlist[i].remove(38);
-      testlist[i].insert_update(98, 70+i);
-      testlist[i].insert_update(2, 52);
-      testlist[i].insert_update(24, 12+i);
-      testlist[i].remove(37);
-    }
-   for(int i = 0; i < len; i++){
-     testlist[i].printall();
-   }
-   for(int i = 0; i < 100; i++){
-     std::cout << "hash test " << get_bucket(i) - testlist << std::endl;
-   }*/
-   for(int i = 0; i < len; i++){
-     testlist[i].init(10);
-   }
+  Map(int buckets, int bucklen ){
+    len = buckets;
+    alloc_map(len, bucklen);    
+   
    
    insert(27, 236);
    insert(2, 259);
@@ -252,10 +231,18 @@ public:
 
   
 
-public:
+private:
   
-  
-  
+  bool alloc_map(int bucount, int buclen){
+    testlist = axom::allocate <axom_map::bucket<Key,T> > (len); 
+    for(int i = 0; i < len; i++){
+     testlist[i].init(bucklen);
+    }
+
+    //update when we're testing our returns
+    return true;
+  }
+   
   axom_map::bucket<Key,T> *testlist;
   int len;
  
@@ -269,9 +256,11 @@ public:
     return &(testlist[hash%len]);
   }
 
+public:
+
   bool insert(Key key, T val){
     axom_map::bucket<Key,T> * target = get_bucket(get_hash(key));  
-    return target->insert_update(key, val);
+    return target->insert_noupdate(key, val);
   }
 
   bool remove(Key key){
