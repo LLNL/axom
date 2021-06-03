@@ -29,7 +29,7 @@ foreach(example_source ${example_sources})
         NAME        "slam_${example_name}_ex"
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  slam ${slam_tests_extra_depends}
+        DEPENDS_ON  axom ${slam_tests_extra_depends}
         FOLDER      axom/slam/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -55,7 +55,7 @@ blt_add_executable(
     NAME        slam_unstructMesh_ex
     SOURCES     UnstructMeshField.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  slam ${slam_tests_extra_depends}
+    DEPENDS_ON  axom ${slam_tests_extra_depends}
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)

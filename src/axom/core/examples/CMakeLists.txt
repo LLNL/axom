@@ -22,7 +22,7 @@ foreach(example_source ${example_sources})
         NAME        ${exe_name}_ex
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  core
+        DEPENDS_ON  axom
         FOLDER      axom/core/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -36,7 +36,7 @@ blt_add_executable(
     NAME        core_utilities_ex
     SOURCES     core_utilities.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  core
+    DEPENDS_ON  axom
     FOLDER      axom/core/examples )
 
 if(AXOM_ENABLE_TESTS)
