@@ -49,8 +49,9 @@ public:
   using MeshElementSet = slam::PositionSet<>;
   using SurfaceMesh = mint::Mesh;
 
-  using SpacePt = axom::primal::Point<double, DIM>;
-  using GeometricBoundingBox = axom::primal::BoundingBox<double, DIM>;
+  using SpacePt = primal::Point<double, DIM>;
+  using SpaceVector = primal::Vector<double, DIM>;
+  using GeometricBoundingBox = primal::BoundingBox<double, DIM>;
 
   using VertexIndexMap = slam::Map<slam::Set<VertexIndex>, VertexIndex>;
   using VertexPositionMap = slam::Map<slam::Set<VertexIndex>, SpacePt>;
@@ -283,6 +284,7 @@ public:
   using Base::CellIndex;
   using Base::GeometricBoundingBox;
   using Base::SpacePt;
+  using Base::SpaceVector;
   using Base::SurfaceMesh;
   using Base::VertexIndex;
   using Base::VertexIndexMap;
@@ -320,10 +322,53 @@ public:
     return SpaceCell(vertexPosition(verts[0]), vertexPosition(verts[1]));
   }
 
-  /// \brief Checks whether the indexed triangle contains a reference to the given vertex
+  /// \brief Checks whether the indexed segment contains a reference to the given vertex
   bool incidentInVertex(const CellVertIndices& ids, VertexIndex vIdx) const
   {
     return (ids[0] == vIdx) || (ids[1] == vIdx);
+  }
+
+  /**
+   * \brief Returns the normal vector of the surface for the cell with index \a cidx
+   * 
+   * If we are at an endpoint of the segment (i.e. if the \a segmentParameter is close
+   * to 0 or 1), we compute the average normal of its incident segments
+   */
+  template <typename CellIndexSet>
+  SpaceVector surfaceNormal(CellIndex cidx,
+                            double segmentParameter,
+                            const CellIndexSet& otherCells) const
+  {
+    SpaceVector vec = this->cellPositions(cidx).template normal<2>();
+
+    // Check if the point is at the first vertex of the segment
+    if(axom::utilities::isNearlyEqual(segmentParameter, 0.))
+    {
+      vec = vec.unitVector();
+      for(auto idx : otherCells)
+      {
+        auto vidx = cellVertexIndices(cidx)[0];
+        if(idx != cidx && incidentInVertex(cellVertexIndices(idx), vidx))
+        {
+          vec += this->cellPositions(idx).template normal<2>().unitVector();
+        }
+      }
+    }
+    // Check if the point is at the second vertex of the segment
+    else if(axom::utilities::isNearlyEqual(segmentParameter, 1.))
+    {
+      vec = vec.unitVector();
+      for(auto idx : otherCells)
+      {
+        auto vidx = cellVertexIndices(cidx)[1];
+        if(idx != cidx && incidentInVertex(cellVertexIndices(idx), vidx))
+        {
+          vec += this->cellPositions(idx).template normal<2>().unitVector();
+        }
+      }
+    }
+
+    return vec.unitVector();
   }
 
   /**
