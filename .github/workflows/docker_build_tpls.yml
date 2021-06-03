@@ -17,15 +17,6 @@ jobs:
       HOSTCONFIG_LOC: /home/axom/export_hostconfig
       DOCKERFILE_PREFIX: ./scripts/docker/dockerfile_
     steps:
-    - name: Prune Dangling Docker Images
-      shell: bash
-      run: |
-        docker images
-        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~before prune"
-        docker image prune -af
-        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~after prune"
-        docker images
-      id: prune_docker
     - name: Extract branch name
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
