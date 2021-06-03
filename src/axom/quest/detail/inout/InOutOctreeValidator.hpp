@@ -16,7 +16,6 @@
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 #include "axom/primal.hpp"
-#include "axom/spin.hpp"
 
 #include "BlockData.hpp"
 #include "MeshWrapper.hpp"
@@ -99,7 +98,7 @@ public:
       const InOutBlockData& leafData = m_octree[vertBlock];
 
       VertexIndex vertInBlock = m_octree.leafVertex(vertBlock, leafData);
-      AXOM_DEBUG_VAR(vertInBlock);
+      AXOM_UNUSED_VAR(vertInBlock);
 
       // Check that we can find the leaf block indexing each vertex from its position
       SLIC_ASSERT_MSG(

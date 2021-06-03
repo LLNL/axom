@@ -879,7 +879,7 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     while(!uncoloredBlocks.empty())
     {
       int prevCount = static_cast<int>(uncoloredBlocks.size());
-      AXOM_DEBUG_VAR(prevCount);
+      AXOM_UNUSED_VAR(prevCount);
 
       GridPtVec prevVec;
       prevVec.swap(uncoloredBlocks);
@@ -1538,7 +1538,7 @@ void InOutOctree<DIM>::dumpSurfaceMeshVTK(const std::string& name) const
   meshDumper.dumpSurfaceMeshVTK(name);
 
 #else
-  AXOM_DEBUG_VAR(name);  // avoids warning about unused param
+  AXOM_UNUSED_VAR(name);
 #endif
 }
 
@@ -1551,7 +1551,7 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK(const std::string& name) const
   meshDumper.dumpOctreeMeshVTK(name);
 
 #else
-  AXOM_DEBUG_VAR(name);  // avoids warning about unused param
+  AXOM_UNUSED_VAR(name);
 #endif
 }
 
@@ -1565,7 +1565,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK(
   meshDumper.dumpDifferentColoredNeighborsMeshVTK(name);
 
 #else
-  AXOM_DEBUG_VAR(name);  // avoids warning about unused param
+  AXOM_UNUSED_VAR(name);
 #endif
 }
 

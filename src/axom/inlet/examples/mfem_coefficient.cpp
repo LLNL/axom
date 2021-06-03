@@ -8,6 +8,8 @@
 #include <iostream>
 #include <unordered_map>
 #include "CLI11/CLI11.hpp"
+
+#include "axom/core.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 #include "mfem.hpp"
 
@@ -240,9 +242,9 @@ int main(int argc, char** argv)
 
   return 0;
 #else   // MFEM_STDFUNCTION_COEF
-  // Quiet unused variable warnings
-  AXOM_DEBUG_VAR(argc);
-  AXOM_DEBUG_VAR(argv);
+
+  AXOM_UNUSED_VAR(argc);
+  AXOM_UNUSED_VAR(argv);
 
   return 0;
 #endif  // MFEM_STDFUNCTION_COEF

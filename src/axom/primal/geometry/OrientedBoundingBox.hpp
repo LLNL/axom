@@ -9,13 +9,9 @@
 #include <vector>
 
 #include "axom/config.hpp"
-#include "axom/core/Macros.hpp"  // for AXOM_DEBUG_VAR
+#include "axom/core.hpp"
 
-#include "axom/primal/geometry/NumericArray.hpp"  // for numeric arrays
-#include "axom/core/numerics/matvecops.hpp"       // for vector operations
-#include "axom/core/numerics/eigen_solve.hpp"
-#include "axom/core/utilities/Utilities.hpp"  // for nearly equal
-#include "axom/core/numerics/Matrix.hpp"      // for Matrix
+#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -429,7 +425,7 @@ OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const PointType* pts, int n)
   T lambdas[NDIMS];
 
   int eigen_res = numerics::eigen_solve<T>(covar, NDIMS, u, lambdas);
-  AXOM_DEBUG_VAR(eigen_res);
+  AXOM_UNUSED_VAR(eigen_res);
   SLIC_ASSERT(eigen_res);
 
   // save the axes

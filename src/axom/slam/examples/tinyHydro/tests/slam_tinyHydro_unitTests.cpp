@@ -8,6 +8,7 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
@@ -67,7 +68,7 @@ TEST(slam_tinyHydro,test_02_density_with_prescribed_velocity)
 
   s.addPart(&p);
   Part* pp = s.getPart(0);
-  AXOM_DEBUG_VAR(pp);
+  AXOM_UNUSED_VAR(pp);
 
   SLIC_INFO("**making hydro");
   Hydro h(&s);
@@ -93,7 +94,7 @@ TEST(slam_tinyHydro,test_02_density_with_prescribed_velocity)
   rhoTheory = rhoTheory * rhoTheory * rho0;
 
   double tol = 1.0e-10;
-  AXOM_DEBUG_VAR(tol);
+  AXOM_UNUSED_VAR(tol);
   SLIC_ASSERT_MSG(
     std::fabs(pp->rho(0) - rhoTheory) < tol
     && std::fabs(pp->rho(n - 1) - rhoTheory) < tol
@@ -178,7 +179,7 @@ TEST(slam_tinyHydro,test_03_gradAndForce)
 
 
   double tol = 1e-12;
-  AXOM_DEBUG_VAR(tol);
+  AXOM_UNUSED_VAR(tol);
   VectorXY f12 = h.getForce(12);
   VectorXY f13 = h.getForce(13);
   SLIC_ASSERT_MSG( std::fabs(f12.x - f13.x) < tol
@@ -217,11 +218,11 @@ TEST(slam_tinyHydro,test_03_gradAndForce)
   SLIC_INFO(" *** PASS ***");
 
   // Deal with unused variables
-  AXOM_DEBUG_VAR(f12);
-  AXOM_DEBUG_VAR(f13);
-  AXOM_DEBUG_VAR(u0);
-  AXOM_DEBUG_VAR(u11);
-  AXOM_DEBUG_VAR(u12);
+  AXOM_UNUSED_VAR(f12);
+  AXOM_UNUSED_VAR(f13);
+  AXOM_UNUSED_VAR(u0);
+  AXOM_UNUSED_VAR(u11);
+  AXOM_UNUSED_VAR(u12);
 }
 
 
@@ -299,7 +300,7 @@ TEST(slam_tinyHydro,test_04_BC)
 
 
   double tol = 1e-21;
-  AXOM_DEBUG_VAR(tol);
+  AXOM_UNUSED_VAR(tol);
 
   SLIC_ASSERT_MSG( std::fabs(u0.y) < tol
       && std::fabs(u11.x) > tol
@@ -401,10 +402,10 @@ TEST(slam_tinyHydro,test_05_newDT_Noh)
   SLIC_INFO("\tnewDT = " << dt );
 
   double tol = 1.0e-16;
-  AXOM_DEBUG_VAR( tol);
+  AXOM_UNUSED_VAR( tol);
 
   double expDT = 0.1 * h.cfl;
-  AXOM_DEBUG_VAR( expDT);
+  AXOM_UNUSED_VAR( expDT);
 
   SLIC_ASSERT_MSG( std::fabs(dt - expDT) < tol,
       " newDT calculation FAILS -- expected dt = " << expDT << " but got " << dt << " instead, leaving " << dt - expDT);
@@ -475,10 +476,10 @@ TEST(slam_tinyHydro,test_05_newDT_Sedov)
   double cfl = 0.7;
   double cs = sqrt(10 * E / (4 * zonemass * 9));
   double theoryDT = cfl * L / cs;
-  AXOM_DEBUG_VAR( theoryDT);
+  AXOM_UNUSED_VAR( theoryDT);
 
   double tol = 1.0e-16;
-  AXOM_DEBUG_VAR( tol);
+  AXOM_UNUSED_VAR( tol);
 
   SLIC_ASSERT_MSG( std::fabs(dt - theoryDT) < tol,
       " newDT calculation FAILS -- expected dt = " << theoryDT << " but code got " << dt << ". Diff:" <<  dt - theoryDT);
@@ -557,11 +558,11 @@ TEST(slam_tinyHydro,test_06_PdV_work)
   SLIC_INFO("**done stepping. ");
 
   double tol = 1.0e-6;
-  AXOM_DEBUG_VAR(tol);
+  AXOM_UNUSED_VAR(tol);
 
   double theoryRho = 1.0 / (1.0 + h.time * u0);
   double rhoCode = h.getState()->getPart(0)->rho(0);
-  AXOM_DEBUG_VAR(rhoCode);
+  AXOM_UNUSED_VAR(rhoCode);
 
   SLIC_ASSERT_MSG( std::fabs(theoryRho - rhoCode) < tol,
       "density calculation FAILS -- rhoCode = " << rhoCode << " but should be " << theoryRho );
