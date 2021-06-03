@@ -6,6 +6,7 @@
 #ifndef SPIN_RECTANGULAR_LATTICE_HPP_
 #define SPIN_RECTANGULAR_LATTICE_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"

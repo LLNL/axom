@@ -5,13 +5,14 @@
 
 #include "axom/inlet.hpp"
 
-#include <iostream>
-#include <unordered_map>
-#include "CLI11/CLI11.hpp"
-
 #include "axom/core.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 #include "mfem.hpp"
+
+#include "CLI11/CLI11.hpp"
+
+#include <unordered_map>
+#include <iostream>
 
 using axom::inlet::FunctionType;
 using axom::inlet::Inlet;

@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 
 // Axom includes
+#include "axom/config.hpp"
 #include "axom/core/Types.hpp"  // for nullptr
 
 #include "axom/core/numerics/Matrix.hpp"        // for Matrix class definition

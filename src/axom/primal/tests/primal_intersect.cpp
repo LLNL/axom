@@ -7,6 +7,7 @@
 
 #include "fmt/fmt.hpp"
 
+#include "axom/config.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"

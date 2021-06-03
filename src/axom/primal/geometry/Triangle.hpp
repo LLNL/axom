@@ -6,6 +6,7 @@
 #ifndef TRIANGLE_HPP_
 #define TRIANGLE_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/utilities/Utilities.hpp"

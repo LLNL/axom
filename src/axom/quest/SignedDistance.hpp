@@ -7,6 +7,7 @@
 #define QUEST_SIGNED_DISTANCE_HPP_
 
 // axom includes
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/core/utilities/Utilities.hpp"

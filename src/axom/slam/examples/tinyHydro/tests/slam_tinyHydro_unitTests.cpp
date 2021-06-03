@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include <vector>
-#include <cmath>
 
 #include "gtest/gtest.h"
 
@@ -14,6 +12,8 @@
 #include "../PolygonMeshXY.hpp"
 #include "../HydroC.hpp"
 
+#include <cmath>
+#include <vector>
 
 using namespace tinyHydro;
 
