@@ -321,7 +321,7 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
 
 /// @}
 
-/// \name Segment Intersection Routines
+/// \name Segment-BoundingBox Intersection Routines
 /// @{
 
 /*!
@@ -330,25 +330,62 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
  * \return status true iff \a bb intersects with \a S, otherwise, false.
  *
  * \note The intersection between segment \a S and box \a bb intersect, will, in general,
- * be a along a (1D) subset of segment \a S. This function returns a single point of 
- * the intersection of \a S and \a bb found while determining if there is a valid intersection.
+ * be a along a (1D) subset of segment \a S. One variant of this function returns the two
+ * parametric coordinates of the intersections along \a S found while determining 
+ * if there is a valid intersection. Another variant returns an intersection point along \a S
+ * Specifically, it is the point of smallest parametric coordinate that is contained in \a bb
+ * (i.e. with parameter \a tmin). These are only valid when the function returns true
  * 
  * Computes Segment-Box intersection using the slab method from pg 180 of
  * Real Time Collision Detection by Christer Ericson.
  */
+
+/// This variant returns the two parametric coordinates of the intersection segment as OUT parameters
 template <typename T, int DIM>
 bool intersect(const Segment<T, DIM>& S,
                const BoundingBox<T, DIM>& bb,
-               Point<T, DIM>& ip)
+               T& tmin,
+               T& tmax,
+               const double& EPS = 1e-8)
 {
-  return detail::intersect_seg_bbox(S, bb, ip);
+  const T segLength = S.length();
+  tmin = static_cast<T>(0);
+  tmax = static_cast<T>(segLength);
+
+  bool intersects = segLength > 0. &&
+    detail::intersect_ray(Ray<T, DIM>(S), bb, tmin, tmax, EPS);
+
+  // Scale parametric coordinates with respect to the segment
+  if(intersects)
+  {
+    tmin /= segLength;
+    tmax /= segLength;
+  }
+
+  return intersects;
+}
+
+/// This variant returns a point within the intersection as an OUT parameters
+template <typename T, int DIM>
+bool intersect(const Segment<T, DIM>& S,
+               const BoundingBox<T, DIM>& bb,
+               Point<T, DIM>& ip,
+               const double& EPS = 1e-8)
+{
+  T tmin, tmax;
+  if(intersect(S, bb, tmin, tmax, EPS))
+  {
+    ip = S.at(tmin);
+    return true;
+  }
+  return false;
 }
 
 template <typename T, int DIM>
 bool intersect(const Segment<T, DIM>& S, const BoundingBox<T, DIM>& bb)
 {
-  Point<T, DIM> ip;
-  return detail::intersect_seg_bbox(S, bb, ip);
+  T tmin, tmax;
+  return intersect(S, bb, tmin, tmax);
 }
 
 /// @}

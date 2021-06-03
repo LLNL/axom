@@ -1572,9 +1572,8 @@ TEST(primal_intersect, segment_aabb_2d_intersection)
 
   // Simple intersection
   {
-    BoxType box(PointType::make_point(3, 3), PointType::make_point(5, 5));
-    SegmentType seg(PointType::make_point(3.25, 0),
-                    PointType::make_point(4.75, 6));
+    BoxType box(PointType {3, 3}, PointType {5, 5});
+    SegmentType seg(PointType {3.25, 0}, PointType {4.75, 6});
     PointType ipt;
 
     EXPECT_TRUE(primal::intersect(seg, box, ipt));
@@ -1583,9 +1582,8 @@ TEST(primal_intersect, segment_aabb_2d_intersection)
 
   // Reverse of first case
   {
-    BoxType box(PointType::make_point(3, 3), PointType::make_point(5, 5));
-    SegmentType seg(PointType::make_point(4.75, 6),
-                    PointType::make_point(3.25, 0));
+    BoxType box(PointType {3, 3}, PointType {5, 5});
+    SegmentType seg(PointType {4.75, 6}, PointType {3.25, 0});
     PointType ipt;
 
     EXPECT_TRUE(primal::intersect(seg, box, ipt));
@@ -1594,9 +1592,8 @@ TEST(primal_intersect, segment_aabb_2d_intersection)
 
   // No intersection
   {
-    BoxType box(PointType::make_point(3, 3), PointType::make_point(5, 5));
-    SegmentType seg(PointType::make_point(-3.25, 0),
-                    PointType::make_point(-4.75, 6));
+    BoxType box(PointType {3, 3}, PointType {5, 5});
+    SegmentType seg(PointType {-3.25, 0}, PointType {-4.75, 6});
     PointType ipt;
 
     EXPECT_FALSE(primal::intersect(seg, box, ipt));
@@ -1605,11 +1602,75 @@ TEST(primal_intersect, segment_aabb_2d_intersection)
 
   // Grazing intersection
   {
-    BoxType box(PointType::make_point(3, 3), PointType::make_point(5, 5));
-    SegmentType seg(PointType::make_point(3, 4), PointType::make_point(3, 6));
+    BoxType box(PointType {3, 3}, PointType {5, 5});
+    SegmentType seg(PointType {3, 4}, PointType {3, 6});
     PointType ipt;
 
     EXPECT_TRUE(primal::intersect(seg, box, ipt));
+    print_details(true, box, seg, ipt);
+  }
+
+  // Find parametric coordinates of double intersection
+  {
+    const double EPS = 1e-10;
+
+    BoxType box(PointType {3, 3}, PointType {5, 5});
+    SegmentType seg(PointType {4, 2}, PointType {4, 10});
+    double tmin, tmax;
+
+    EXPECT_TRUE(primal::intersect(seg, box, tmin, tmax, EPS));
+    EXPECT_NEAR(1. / 8., tmin, EPS);
+    EXPECT_NEAR(3. / 8., tmax, EPS);
+
+    PointType ipt = seg.at(tmin);
+    print_details(true, box, seg, ipt);
+  }
+
+  // Find parametric coordinates of single intersection (left)
+  {
+    const double EPS = 1e-10;
+
+    BoxType box(PointType {3, 3}, PointType {5, 5});
+    SegmentType seg(PointType {4, 2}, PointType {4, 4});
+    double tmin, tmax;
+
+    EXPECT_TRUE(primal::intersect(seg, box, tmin, tmax, EPS));
+    EXPECT_NEAR(1. / 2., tmin, EPS);
+    EXPECT_NEAR(1., tmax, EPS);
+
+    PointType ipt = seg.at(tmin);
+    print_details(true, box, seg, ipt);
+  }
+
+  // Find parametric coordinates of single intersection (right)
+  {
+    const double EPS = 1e-10;
+
+    BoxType box(PointType {3, 3}, PointType {5, 5});
+    SegmentType seg(PointType {4, 4}, PointType {4, 10});
+    double tmin, tmax;
+
+    EXPECT_TRUE(primal::intersect(seg, box, tmin, tmax, EPS));
+    EXPECT_NEAR(0, tmin, EPS);
+    EXPECT_NEAR(1. / 6., tmax, EPS);
+
+    PointType ipt = seg.at(tmin);
+    print_details(true, box, seg, ipt);
+  }
+
+  // Find parametric coordinates of complete intersection
+  {
+    const double EPS = 1e-10;
+
+    BoxType box(PointType {3, 3}, PointType {5, 5});
+    SegmentType seg(PointType {3.5, 3.5}, PointType {4.5, 4.5});
+    double tmin, tmax;
+
+    EXPECT_TRUE(primal::intersect(seg, box, tmin, tmax, EPS));
+    EXPECT_NEAR(0, tmin, EPS);
+    EXPECT_NEAR(1., tmax, EPS);
+
+    PointType ipt = seg.at(tmin);
     print_details(true, box, seg, ipt);
   }
 }
@@ -1640,9 +1701,8 @@ TEST(primal_intersect, segment_aabb_3d_intersection)
 
   // Simple intersection
   {
-    BoxType box(PointType::make_point(3, 3, 3), PointType::make_point(5, 5, 5));
-    SegmentType seg(PointType::make_point(3.25, 0, 4),
-                    PointType::make_point(4.75, 6, 4));
+    BoxType box(PointType {3, 3, 3}, PointType {5, 5, 5});
+    SegmentType seg(PointType {3.25, 0, 4}, PointType {4.75, 6, 4});
     PointType ipt;
 
     EXPECT_TRUE(primal::intersect(seg, box, ipt));
@@ -1651,9 +1711,8 @@ TEST(primal_intersect, segment_aabb_3d_intersection)
 
   // Reverse of first case
   {
-    BoxType box(PointType::make_point(3, 3, 3), PointType::make_point(5, 5, 5));
-    SegmentType seg(PointType::make_point(4.75, 6, 4),
-                    PointType::make_point(3.25, 0, 4));
+    BoxType box(PointType {3, 3, 3}, PointType {5, 5, 5});
+    SegmentType seg(PointType {4.75, 6, 4}, PointType {3.25, 0, 4});
     PointType ipt;
 
     EXPECT_TRUE(primal::intersect(seg, box, ipt));
@@ -1662,9 +1721,8 @@ TEST(primal_intersect, segment_aabb_3d_intersection)
 
   // No intersection
   {
-    BoxType box(PointType::make_point(3, 3, 3), PointType::make_point(5, 5, 5));
-    SegmentType seg(PointType::make_point(-3.25, 0, 2),
-                    PointType::make_point(-4.75, 6, -2));
+    BoxType box(PointType {3, 3, 3}, PointType {5, 5, 5});
+    SegmentType seg(PointType {-3.25, 0, 2}, PointType {-4.75, 6, -2});
     PointType ipt;
 
     EXPECT_FALSE(primal::intersect(seg, box, ipt));
@@ -1673,12 +1731,27 @@ TEST(primal_intersect, segment_aabb_3d_intersection)
 
   // Grazing intersection
   {
-    BoxType box(PointType::make_point(3, 3, 3), PointType::make_point(5, 5, 5));
-    SegmentType seg(PointType::make_point(3, 4, 3),
-                    PointType::make_point(3, 6, 3));
+    BoxType box(PointType {3, 3, 3}, PointType {5, 5, 5});
+    SegmentType seg(PointType {3, 4, 3}, PointType {3, 6, 3});
     PointType ipt;
 
     EXPECT_TRUE(primal::intersect(seg, box, ipt));
+    print_details(true, box, seg, ipt);
+  }
+
+  // Find parametric coordinates of double intersection
+  {
+    const double EPS = 1e-10;
+
+    BoxType box(PointType {3, 3, 3}, PointType {5, 5, 5});
+    SegmentType seg(PointType {4, 2, 4}, PointType {4, 10, 4});
+    double tmin, tmax;
+
+    EXPECT_TRUE(primal::intersect(seg, box, tmin, tmax, EPS));
+    EXPECT_NEAR(1. / 8., tmin, EPS);
+    EXPECT_NEAR(3. / 8., tmax, EPS);
+
+    PointType ipt = seg.at(tmin);
     print_details(true, box, seg, ipt);
   }
 }

@@ -30,7 +30,7 @@ namespace primal
 {
 namespace detail
 {
-//---------------------------- FUNCTION DECLARATIONS ---------------------------
+//--------------------TYPE ALIASES AND FUNCTION DECLARATIONS ------------------
 
 using Vector3 = primal::Vector<double, 3>;
 using Point3 = primal::Point<double, 3>;
@@ -671,70 +671,6 @@ inline int countZeros(double x, double y, double z, double EPS)
 
 /*! @} */
 
-/*!
- * \brief Computes the intersection of the given segment, S, with the Box, bb.
- *     ip the point of intersection on S.
- * \return status true iff bb intersects with S, otherwise, false.
- *
- * Computes Segment Box intersection using the slab method from pg 180 of
- * Real Time Collision Detection by Christer Ericson.
- * WIP: More test cases for this
- */
-template <typename T, int DIM>
-bool intersect_seg_bbox(const primal::Segment<T, DIM>& S,
-                        const primal::BoundingBox<T, DIM>& bb,
-                        primal::Point<T, DIM>& ip)
-{
-  primal::Vector<T, DIM> direction(S.source(), S.target());
-  primal::Ray<T, DIM> R(S.source(), direction);
-
-  // These operations constrain the parameter specifying ray-slab intersection
-  // points to exclude points not within the segment.
-  T tmin = static_cast<T>(0);
-  T tmax = static_cast<T>(direction.norm());
-
-  for(int i = 0; i < DIM; i++)
-  {
-    if(axom::utilities::isNearlyEqual(R.direction()[i],
-                                      std::numeric_limits<T>::min(),
-                                      1.0e-9))
-    {
-      T pointDim = R.origin()[i];
-      if((pointDim < bb.getMin()[i]) || (pointDim > bb.getMax()[i]))
-      {
-        return false;
-      }
-    }
-    else
-    {
-      T ood = (static_cast<T>(1.0)) / (R.direction()[i]);
-      T t1 = ((bb.getMin()[i] - R.origin()[i]) * ood);
-      T t2 = ((bb.getMax()[i] - R.origin()[i]) * ood);
-
-      if(t1 > t2)
-      {
-        std::swap(t1, t2);
-      }
-
-      tmin = axom::utilities::max(tmin, t1);
-      tmax = axom::utilities::min(tmax, t2);
-
-      if(tmin > tmax)
-      {
-        return false;
-      }
-    }
-  }
-
-  for(int i = 0; i < DIM; i++)
-  {
-    ip.data()[i] = R.origin()[i] + R.direction()[i] * tmin;
-  }
-
-  return true;
-}
-
-typedef primal::Vector<double, 3> Vector3;
 /*!
  * \brief Helper function to find disjoint projections for the AABB-triangle
  * test
