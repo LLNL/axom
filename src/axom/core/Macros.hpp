@@ -146,7 +146,7 @@
  * \brief Macro used to silence compiler warnings about variables
  *        that are defined but not used.
  * \note The intent is to use this macro for variables that are only used
- *       within compiler defines, e.g. in debug assertions). For example:
+ *       within compiler defines (e.g. in debug assertions). For example:
  * \code
  *
  *  double myVar = ...

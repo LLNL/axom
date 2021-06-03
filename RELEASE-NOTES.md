@@ -38,6 +38,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   always give a full path (e.g. `CLANGFORMAT_EXECUTABLE`)
 - Inlet: `Writer`s are passed directly to `Inlet::write` instead of being registered
 - `Inlet` objects can now be constructed without a user-provided `sidre::DataStore`
+- Renames `AXOM_DEBUG_VAR` macro to `AXOM_UNUSED_VAR` since there were many cases where the latter
+  was not the appropriate name. This macro elides warnings about unused variables
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
