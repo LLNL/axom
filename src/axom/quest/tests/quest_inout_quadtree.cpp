@@ -28,7 +28,7 @@
 
 namespace
 {
-const int NUM_PT_TESTS = 50000;
+const int NUM_PT_TESTS = 10000;
 const int DIM = 2;
 using Octree2D = axom::quest::InOutOctree<DIM>;
 using GeometricBoundingBox = Octree2D::GeometricBoundingBox;
@@ -112,84 +112,89 @@ TEST(quest_inout_quadtree, circle_mesh)
   namespace mint = axom::mint;
   namespace quest = axom::quest;
 
-  double radius = 1.;
-  int num_segments = 100;
-  ASSERT_TRUE(num_segments >= 3);
-  mint::Mesh* mesh = quest::utilities::make_circle_mesh_2d(radius, num_segments);
-  mint::write_vtk(mesh, "circle_mesh.vtk");
-
-  GeometricBoundingBox bbox = computeBoundingBox(mesh).scale(1.2);
-
-  Octree2D octree(bbox, mesh);
-  octree.generateIndex();
-
-  SpacePt queryInside = SpacePt {0, 0};
-  SpacePt queryOutside = SpacePt {2. * radius, 2. * radius};
-
-  EXPECT_TRUE(octree.within(queryInside));
-  EXPECT_FALSE(octree.within(queryOutside));
-
-  // Regression: Test a point that was incorrectly categorized when num_segments was 3
-  if(radius <= 1.)
+  for(int num_segments : {3, 100, 1000, 10000})
   {
-    SpacePt additionalQuery {1.1494147076163739, 0.51644760397625789};
-    EXPECT_FALSE(octree.within(additionalQuery));
+    for(double radius : {1. / 3., 1., sqrt(2.), 1234.5678})
+    {
+      ASSERT_TRUE(num_segments >= 3);
+      mint::Mesh* mesh =
+        quest::utilities::make_circle_mesh_2d(radius, num_segments);
+      //mint::write_vtk(mesh,fmt::format("circle_mesh_r{:.3f}_s{:06}.vtk", radius, num_segments));
+
+      GeometricBoundingBox bbox = computeBoundingBox(mesh).scale(1.2);
+
+      Octree2D octree(bbox, mesh);
+      octree.generateIndex();
+
+      SpacePt queryInside = SpacePt {0, 0};
+      SpacePt queryOutside = SpacePt {2. * radius, 2. * radius};
+
+      EXPECT_TRUE(octree.within(queryInside));
+      EXPECT_FALSE(octree.within(queryOutside));
+
+      // Regression: Test a point that was incorrectly categorized when num_segments was 3
+      if(radius <= 1.)
+      {
+        SpacePt additionalQuery {1.1494147076163739, 0.51644760397625789};
+        EXPECT_FALSE(octree.within(additionalQuery));
+      }
+
+      // Determine a confidence interval for status of query point against discretized circle
+      // Uses the midpoint of a segment for the inner radius and a vertex for the outer one
+      SpacePt a, b;
+      mesh->getNode(0, a.data());
+      mesh->getNode(1, b.data());
+      auto segmentCentroid = quest::utilities::getCentroid(a, b);
+      double innerConfidence = 0.95 * SpaceVector(segmentCentroid).norm();
+      double outerConfidence = 1.05 * radius;
+
+      int insideCount = 0;
+      int outsideCount = 0;
+      int uncertainCount = 0;
+
+      for(int i = 0; i < NUM_PT_TESTS; ++i)
+      {
+        SpacePt queryPt = quest::utilities::randomSpacePt<2>(0, 1.25 * radius);
+        const double mag = SpaceVector(queryPt).norm();
+        const bool expectInside = mag < innerConfidence;
+        const bool expectOutside = mag > outerConfidence;
+
+        if(expectInside)
+        {
+          EXPECT_TRUE(octree.within(queryPt))
+            << "Query point: " << queryPt << "; norm: " << mag;
+          ++insideCount;
+        }
+        else if(expectOutside)
+        {
+          EXPECT_FALSE(octree.within(queryPt))
+            << "Query point: " << queryPt << "; norm: " << mag;
+          ++outsideCount;
+        }
+        else
+        {
+          // Not sure if point should be inside or outside
+          ++uncertainCount;
+        }
+      }
+
+      // Output some stats about the query
+      SLIC_INFO(fmt::format(
+        "Queried quadtree over circle mesh of radius {}"
+        " defined by {} segments using {} query points. \n "
+        "Of which: "
+        " {:.2f}% were known to be inside; {:.2f}% were known to be outside; "
+        " and {:.2f}% were too close to the boundary for our simple model.",
+        radius,
+        num_segments,
+        NUM_PT_TESTS,
+        100. * (static_cast<double>(insideCount) / NUM_PT_TESTS),
+        100. * (static_cast<double>(outsideCount) / NUM_PT_TESTS),
+        100. * (static_cast<double>(uncertainCount) / NUM_PT_TESTS)));
+
+      delete mesh;
+    }
   }
-
-  // Determine a confidence interval for radii at which we can be fairly certain
-  // about the status of a query point
-  // Uses the midpoint of a segment for the inner radius and a vertex for the outer one
-  SpacePt a, b;
-  mesh->getNode(0, a.data());
-  mesh->getNode(1, b.data());
-  auto segmentCentroid = quest::utilities::getCentroid(a, b);
-  double innerConfidence = 0.95 * SpaceVector(segmentCentroid).norm();
-  double outerConfidence = 1.05 * radius;
-
-  int insideCount = 0;
-  int outsideCount = 0;
-  int uncertainCount = 0;
-
-  for(int i = 0; i < NUM_PT_TESTS; ++i)
-  {
-    SpacePt queryPt = quest::utilities::randomSpacePt<2>(0, 1.25 * radius);
-    const double mag = SpaceVector(queryPt).norm();
-    const bool expectInside = mag < innerConfidence;
-    const bool expectOutside = mag > outerConfidence;
-
-    if(expectInside)
-    {
-      EXPECT_TRUE(octree.within(queryPt))
-        << "Query point: " << queryPt << "; norm: " << mag;
-      ++insideCount;
-    }
-    else if(expectOutside)
-    {
-      EXPECT_FALSE(octree.within(queryPt))
-        << "Query point: " << queryPt << "; norm: " << mag;
-      ++outsideCount;
-    }
-    else
-    {
-      // Not sure if point should be inside or outside
-      ++uncertainCount;
-    }
-  }
-
-  // Output some stats about the query
-  SLIC_INFO(fmt::format(
-    "Queried quadtree over circle mesh of radius {}"
-    " defined by {} segments using {} query points, of which "
-    " {:.2f}% were known to be inside; {:.2f}% were known to be outside; "
-    " and {:.2f}% were too close to the boundary to determine ahead of time.",
-    radius,
-    num_segments,
-    NUM_PT_TESTS,
-    100. * (static_cast<double>(insideCount) / NUM_PT_TESTS),
-    100. * (static_cast<double>(outsideCount) / NUM_PT_TESTS),
-    100. * (static_cast<double>(uncertainCount) / NUM_PT_TESTS)));
-
-  delete mesh;
 }
 
 //----------------------------------------------------------------------
