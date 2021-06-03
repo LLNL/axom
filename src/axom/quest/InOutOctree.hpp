@@ -1285,16 +1285,20 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
     SpaceCell seg = m_meshWrapper.cellPositions(idx);
 
     /// Find a point from this segment within the expanded bounding box of the mesh
-    const bool intersects = primal::intersect(seg, expandedBB, segmentPt);
+    // We'll use the midpoint of the segment after clipping it against the bounding box
+    double pMin, pMax;
+    const bool intersects = primal::intersect(seg, expandedBB, pMin, pMax);
     if(!intersects)
     {
       continue;
     }
+    segmentPt = seg.at(0.5 * (pMin + pMax));
 
     // Using a ray from query pt to point on this segment
     // Find closest intersection to surface within cell inside this bounding box
     CellIndex tIdx = MeshWrapper<DIM>::NO_CELL;
     double minRayParam = std::numeric_limits<double>::infinity();
+    double minSegParam = std::numeric_limits<double>::infinity();
     SpaceRay ray(queryPt, SpaceVector(queryPt, segmentPt));
 
     QUEST_OCTREE_DEBUG_LOG_IF(
@@ -1309,17 +1313,21 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
                   idx));
 
     double rayParam = 0;
-    if(primal::intersect(ray, seg, rayParam))
+    double segParam = 0;
+    if(primal::intersect(ray, seg, rayParam, segParam))
     {
       minRayParam = rayParam;
+      minSegParam = segParam;
       tIdx = idx;
 
       QUEST_OCTREE_DEBUG_LOG_IF(
         DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-        fmt::format("... intersection for segment w/ index {} at ray "
-                    "parameter {} at point {}",
+        fmt::format("... intersection for segment w/ index {} "
+                    "at ray parameter {} and segment parameter {} "
+                    "is at point {}",
                     tIdx,
                     minRayParam,
+                    minSegParam,
                     ray.at(minRayParam)));
     }
 
@@ -1328,19 +1336,25 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
       CellIndex localIdx = segmentSet[j];
       if(localIdx == idx) continue;
 
-      if(primal::intersect(ray, m_meshWrapper.cellPositions(localIdx), rayParam))
+      if(primal::intersect(ray,
+                           m_meshWrapper.cellPositions(localIdx),
+                           rayParam,
+                           segParam))
       {
         if(rayParam < minRayParam)
         {
           minRayParam = rayParam;
+          minSegParam = segParam;
           tIdx = localIdx;
 
           QUEST_OCTREE_DEBUG_LOG_IF(
             DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-            fmt::format("... intersection for setment w/ index {} at ray "
-                        "parameter {} at point {}",
+            fmt::format("... intersection for segment w/ index {} "
+                        "at ray parameter {} and segment parameter {} "
+                        "is at point {}",
                         tIdx,
                         minRayParam,
+                        minSegParam,
                         ray.at(minRayParam)));
         }
       }
@@ -1350,11 +1364,18 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
       continue;
     }
 
-    // Inside when the dot product of the normal with this segment is positive
-    SpaceVector normal = (tIdx == idx)
-      ? seg.template normal<2>()
-      : m_meshWrapper.cellPositions(tIdx).template normal<2>();
+    // Get the surface normal at the intersection point
+    // If the latter is a vertex, the normal is the average of its two incident segments
+    SpaceVector normal =
+      m_meshWrapper.surfaceNormal(tIdx, minSegParam, segmentSet);
 
+    QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
+                              fmt::format("... normal {}, ray {}, dot {}",
+                                          normal,
+                                          ray,
+                                          normal.dot(ray.direction())));
+
+    // Query point is inside when the dot product of the normal with ray is positive
     return normal.dot(ray.direction()) > 0.;
   }
 
