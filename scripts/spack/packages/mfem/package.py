@@ -414,6 +414,13 @@ class Mfem(Package):
             options += [
                 'SHARED=YES', 'PICFLAG=%s' % self.compiler.cxx_pic_flag
             ]
+        #### START AXOM PATCH
+        # always add pic flag so we can toggle shared/static builds of axom
+        else:
+            options += [
+                'PICFLAG=%s' % self.compiler.cxx_pic_flag
+            ]
+        #### END AXOM PATCH
 
         if '+mpi' in spec:
             options += ['MPICXX=%s' % spec['mpi'].mpicxx]
