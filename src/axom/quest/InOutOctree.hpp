@@ -403,62 +403,6 @@ private:
   /// \brief Utility function to print some statistics about the InOutOctree instance
   void printOctreeStats() const;
 
-  // /**
-  //  * \brief Utility function to compute the angle-weighted pseudonormal for a vertex in the mesh
-  //  *
-  //  * \note Not optimized
-  //  * \note The returned normal is not normalized.
-  //  */
-  // SpaceVector vertexNormal(VertexIndex vIdx) const
-  // {
-  //   SpaceVector vec;
-
-  //   BlockIndex vertexBlock = m_vertexToBlockMap[vIdx];
-  //   CellIndexSet cells = leafCells(vertexBlock, (*this)[vertexBlock]);
-  //   for(int i = 0; i < cells.size(); ++i)
-  //   {
-  //     CellIndex tIdx = cells[i];
-  //     CellVertIndices tv = m_meshWrapper.cellVertexIndices(tIdx);
-  //     if(m_meshWrapper.incidentInVertex(tv, vIdx))
-  //     {
-  //       int idx = (vIdx == tv[0]) ? 0 : (vIdx == tv[1] ? 1 : 2);
-
-  //       SpaceCell tr = m_meshWrapper.cellPositions(tIdx);
-  //       vec += tr.angle(idx) * tr.normal();
-  //     }
-  //   }
-
-  //   return vec;
-  // }
-
-  // /**
-  //  * \brief Utility function to compute the normal for an edge of the mesh.
-  //  *
-  //  * The computed edge normal is the average of its face normals.
-  //  * There should be two of these in a closed manifold surface mesh.
-  //  * \note Not optimized
-  //  * \note The returned normal is not normalized.
-  //  */
-  // SpaceVector edgeNormal(VertexIndex vIdx1, VertexIndex vIdx2) const
-  // {
-  //   SpaceVector vec;
-
-  //   BlockIndex vertexBlock = m_vertexToBlockMap[vIdx1];
-  //   CellIndexSet cells = leafCells(vertexBlock, (*this)[vertexBlock]);
-  //   for(int i = 0; i < cells.size(); ++i)
-  //   {
-  //     CellIndex tIdx = cells[i];
-  //     CellVertIndices tv = m_meshWrapper.cellVertexIndices(tIdx);
-  //     if(m_meshWrapper.incidentInVertex(tv, vIdx1) &&
-  //        m_meshWrapper.incidentInVertex(tv, vIdx2))
-  //     {
-  //       vec += m_meshWrapper.cellPositions(tIdx).normal();
-  //     }
-  //   }
-
-  //   return vec;
-  // }
-
 protected:
   MeshWrapper<DIM> m_meshWrapper;
 
@@ -1263,7 +1207,7 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
   const InOutBlockData& leafData) const
 {
   /// Finds a ray from queryPt to a point of a segment within leafBlk.
-  /// Then find the first segment along this ray. The orientation of the ray
+  /// Then finds the first segment along this ray. The orientation of the ray
   /// against this segment's normal indicates queryPt's containment.
   /// It is inside when the dot product is positive.
 

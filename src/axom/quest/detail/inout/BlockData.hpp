@@ -4,9 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file InOutOctree_detail.hpp
+ * \file BlockData.hpp
  *
- * \brief Defines helper classes for the InOutOctree.
+ * \brief Defines helper classes for data associated with InOutOctree blocks.
  */
 
 #ifndef INOUT_OCTREE_BLOCKDATA__HXX_
@@ -14,12 +14,9 @@
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
-#include "axom/slam.hpp"
-#include "axom/primal.hpp"
-#include "axom/mint.hpp"
-#include "axom/spin.hpp"
 
-#include "fmt/fmt.hpp"
+#include <iostream>
+#include <vector>
 
 namespace axom
 {
@@ -109,8 +106,7 @@ public:  // Other functions
   }
 
   /**
-   * Predicate to determine if the associated block has data (i.e. it is a gray
-   * block)
+   * Predicate to determine if the associated block has data (i.e. it is a gray block)
    * \return True, if the block has data, False otherwise
    * */
   bool hasData() const { return m_idx >= 0; }

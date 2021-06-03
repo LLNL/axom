@@ -26,9 +26,9 @@ namespace detail
 /*!
  * \brief Computes the intersection of the given ray \a R with the segment \a S.
  *
- * When there is a valid intersection (within toleranace \a EPS), 
+ * When there is a valid intersection (within tolerance \a EPS), 
  * \a ray_param returns the parametric coordinate of the intersection point along \a R
- * and \a seg_param returns the parametric coordinat of the intersection point along \a S.
+ * and \a seg_param returns the parametric coordinate of the intersection point along \a S.
  *
  * \return status true iff R intersects with S, otherwise, false.
  */

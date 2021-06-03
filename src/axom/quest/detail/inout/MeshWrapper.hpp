@@ -26,7 +26,7 @@ namespace axom
 namespace quest
 {
 /**
-   * \brief A utility class that wraps the access to the mesh data
+   * \brief A utility class that wraps access to the mesh data of and InOutOctree
    *
    * This class helps separate the specifics of accessing the underlying mesh
    * for an InOutOctree. It is customized for unstructured Segment meshes in 2D
@@ -34,6 +34,9 @@ namespace quest
    *
    * If we want to support other surface mesh types (e.g. quad meshes in 3D),
    * we'll have to customize it a bit more.
+   *
+   * \note Uses the CRTP pattern to allow the dimension-specific derived classes
+   * to share the dimension-independent implementation
    */
 template <int DIM>
 class MeshWrapper;

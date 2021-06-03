@@ -768,8 +768,6 @@ void OrientedBoundingBox<T, NDIMS>::checkAndFix()
   // do Gram-Schmidt
   for(int i = 0; i < NDIMS; i++)
   {
-    Vector<T, NDIMS> temp(this->m_u[i]);
-
     // make orthogonal
     for(int j = 0; j < i; j++)
     {
