@@ -20,7 +20,7 @@ blt_list_append(TO       quest_tests
                 ELEMENTS quest_meshtester.cpp)
 
 set(quest_tests_depends
-    quest
+    axom
     fmt
     gtest
    )
@@ -52,7 +52,7 @@ if(MFEM_FOUND)
         NAME ${test_name}
         SOURCES ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} mfem core
+        DEPENDS_ON ${quest_tests_depends} mfem
         FOLDER axom/quest/tests
         )
 
@@ -136,8 +136,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     set(quest_regression_depends
         ${quest_tests_depends}
-        conduit::conduit
-        sidre
         cli11
         )
 
