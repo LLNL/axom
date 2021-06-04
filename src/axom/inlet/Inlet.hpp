@@ -80,6 +80,25 @@ public:
     m_unexpectedNames = m_reader->getAllNames();
   }
 
+  /// \overload
+  Inlet(std::unique_ptr<Reader> reader,
+        bool docEnabled = true,
+        bool reconstruct = false)
+    : m_reader(std::move(reader))
+    , m_datastore(new sidre::DataStore)
+    , m_sidreRootGroup(m_datastore->getRoot())
+    , m_globalContainer("",
+                        "",
+                        *m_reader,
+                        m_sidreRootGroup,
+                        m_unexpectedNames,
+                        docEnabled,
+                        reconstruct)
+    , m_docEnabled(docEnabled)
+  {
+    m_unexpectedNames = m_reader->getAllNames();
+  }
+
   // Inlet objects must be move only - delete the implicit shallow copy constructor
   Inlet(const Inlet&) = delete;
   Inlet(Inlet&&) = default;
@@ -255,31 +274,26 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Sets the associated Writer for the Inlet instance.
-   *
-   * Sets the associated Writer. If the Writer is already set, it will be
-   * replaced by the one that was most recently set.
-   *
-   * \param [in] writer An owning pointer to a Writer object
-   *
-   *****************************************************************************
-   */
-  void registerWriter(std::unique_ptr<Writer> writer);
-
-  /*!
-   *****************************************************************************
    * \brief Writes input file documentation.
    *
-   * This runs the calling Inlet object through the registered Writer.
+   * This runs the calling Inlet object through the \a writer.
+   * 
+   * \param [in] writer The writer object to use
    *
    *****************************************************************************
    */
-  void write();
+  void write(Writer&& writer);
 
   /*!
    *****************************************************************************
    * \brief Verifies the contents of the sidreGroup according to Inlet 
    * requirements.
+   * \param [in] errors An optional vector of errors to append to in the case
+   * of verification failure
+   * 
+   * Ownership is not taken of @a errors, the raw pointer is only used for its
+   * optional reference semantics, as opposed to something like
+   * std::optional<std::reference_wrapper<T>>
    *
    * This recursively checks the correctness of each Field and Container in the Sidre
    * Group: ensuring that required Fields are specified, each Field's value 
@@ -291,7 +305,7 @@ public:
    *
    *****************************************************************************
    */
-  bool verify() const;
+  bool verify(std::vector<VerificationError>* errors = nullptr) const;
 
   /*!
    *****************************************************************************
@@ -493,9 +507,10 @@ public:
   // TODO add update value functions
 private:
   std::unique_ptr<Reader> m_reader;
+  // Used only in the case where the user does not provide an initial root group
+  std::unique_ptr<sidre::DataStore> m_datastore;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   Container m_globalContainer;
-  std::unique_ptr<Writer> m_writer;
   bool m_docEnabled;
   std::vector<std::string> m_unexpectedNames;
 };

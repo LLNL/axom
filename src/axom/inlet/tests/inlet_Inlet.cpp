@@ -22,17 +22,14 @@ using axom::inlet::Field;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
 using axom::inlet::Proxy;
-using axom::sidre::DataStore;
 
 template <typename InletReader>
-Inlet createBasicInlet(DataStore* ds,
-                       const std::string& luaString,
-                       bool enableDocs = true)
+Inlet createBasicInlet(const std::string& luaString, bool enableDocs = true)
 {
   std::unique_ptr<InletReader> reader(new InletReader());
   reader->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
 
-  return Inlet(std::move(reader), ds->getRoot(), enableDocs);
+  return Inlet(std::move(reader), enableDocs);
 }
 
 template <typename InletReader>
@@ -44,8 +41,7 @@ TYPED_TEST_SUITE(inlet_Inlet_basic, axom::inlet::detail::ReaderTypes);
 TYPED_TEST(inlet_Inlet_basic, getTopLevelBools)
 {
   std::string testString = "foo = true; bar = false";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -85,8 +81,7 @@ TYPED_TEST(inlet_Inlet_basic, getTopLevelBools)
 TYPED_TEST(inlet_Inlet_basic, getNestedBools)
 {
   std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -120,8 +115,7 @@ TYPED_TEST(inlet_Inlet_basic, getNestedBools)
 TYPED_TEST(inlet_Inlet_basic, getDoublyNestedBools)
 {
   std::string testString = "foo = { quux = { bar = true; baz = false } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -157,8 +151,7 @@ TYPED_TEST(inlet_Inlet_basic, getDeeplyNestedBools)
   std::string testString =
     "foo = { quux = { corge = { quuz = { grault = { bar = true; baz = false } "
     "} } } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -192,8 +185,7 @@ TYPED_TEST(inlet_Inlet_basic, getDeeplyNestedBools)
 TYPED_TEST(inlet_Inlet_basic, getNestedBoolsThroughContainer)
 {
   std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -232,8 +224,7 @@ TYPED_TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughContainer)
   std::string testString =
     "foo = { quux = { corge = { quuz = { grault = { bar = true; baz = false } "
     "} } } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -271,8 +262,7 @@ TYPED_TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughField)
   std::string testString =
     "foo = { quux = { corge = { quuz = { grault = { bar = true; baz = false } "
     "} } } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -308,8 +298,7 @@ TYPED_TEST(inlet_Inlet_basic, getDeeplyNestedBoolsThroughField)
 TYPED_TEST(inlet_Inlet_basic, getTopLevelDoubles)
 {
   std::string testString = "foo = 5.05; bar = 15.1";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -343,8 +332,7 @@ TYPED_TEST(inlet_Inlet_basic, getTopLevelDoubles)
 TYPED_TEST(inlet_Inlet_basic, getNestedDoubles)
 {
   std::string testString = "foo = { bar = 200.5; baz = 100.987654321 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -378,8 +366,7 @@ TYPED_TEST(inlet_Inlet_basic, getNestedDoubles)
 TYPED_TEST(inlet_Inlet_basic, getTopLevelInts)
 {
   std::string testString = "foo = 5; bar = 15";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -413,8 +400,7 @@ TYPED_TEST(inlet_Inlet_basic, getTopLevelInts)
 TYPED_TEST(inlet_Inlet_basic, getNestedInts)
 {
   std::string testString = "foo = { bar = 200; baz = 100 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -448,8 +434,7 @@ TYPED_TEST(inlet_Inlet_basic, getNestedInts)
 TYPED_TEST(inlet_Inlet_basic, getTopLevelStrings)
 {
   std::string testString = "foo = 'test string'; bar = 'other test string'";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -484,8 +469,7 @@ TYPED_TEST(inlet_Inlet_basic, getNestedStrings)
 {
   std::string testString =
     "foo = { bar = 'yet another string'; baz = 'string 2' }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   //
   // Define schema
@@ -525,8 +509,7 @@ TYPED_TEST(inlet_Inlet_basic, getNestedValuesAddedUsingContainer)
 
   std::string testString =
     "foo = { bar = 'yet another string'; so = 3.5; re = 9; mi = true }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Check for existing fields
   Container& container = inlet.addStruct("foo", "A container called foo");
@@ -566,8 +549,7 @@ TYPED_TEST(inlet_Inlet_views, NestedContainerViewCheck1)
   std::string testString =
     "field1 = true; field2 = 5632; NewContainer = { str = 'hello'; integer = "
     "32 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
   inlet.addBool("field1", "this is field #1, a boolean value").required(true);
   inlet.addInt("field2", "this is field #2, an integer").required(false);
   Container& t = inlet.addStruct("NewContainer", "It's blue").required(false);
@@ -598,8 +580,7 @@ TYPED_TEST(inlet_Inlet_views, NestedContainerViewCheck2)
     "foo = false; bar = true; Container1 = { float1 = 3.14; Container11 = { "
     "Container111 = "
     "{ x = 4 } } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
   inlet.addBool("foo", "foo's description").required(true);
   inlet.addBool("bar", "bar's description").required(false);
 
@@ -632,8 +613,7 @@ TYPED_TEST(inlet_Inlet_views, NestedContainerViewCheck3)
     "Container1 = { float1 = 5.6 }; Container2 = { int1 = 95 }; Container3 = { "
     "bool1 = "
     "true }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& t = inlet.addStruct("Container1", "The first container");
   t.addDouble("float1", " A floating point number in Container 1");
@@ -664,7 +644,6 @@ TYPED_TEST(inlet_Inlet_classes, mixLevelContainers)
   // regression test for the lua stack being at the wrong
   // level with nested containers with non-nested values
 
-  axom::sidre::DataStore dataStore;
   std::string input =
     "thermal_solver={"
     "   u0 = { type = 'function', func = 'BoundaryTemperature'},"
@@ -679,7 +658,7 @@ TYPED_TEST(inlet_Inlet_classes, mixLevelContainers)
     "   }"
     "}";
 
-  Inlet inlet = createBasicInlet<TypeParam>(&dataStore, input);
+  Inlet inlet = createBasicInlet<TypeParam>(input);
 
   //
   // Define input file schema
@@ -753,9 +732,8 @@ TYPED_TEST(inlet_Inlet_classes, defaultValuesDocsEnabled)
     "Container1 = { float1 = 5.6; Container2 = { int1 = 95; Container4 = { "
     "str1= 'hi' } } "
     "}; Container3 = { bool1 = true }";
-  DataStore ds;
   // Creating basic inlet with documentation enabled (indicated by the last param)
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString, true);
+  Inlet inlet = createBasicInlet<TypeParam>(testString, true);
 
   // new fields
   inlet.addDouble("field1").defaultValue(2);  // int argument will get casted to double
@@ -843,9 +821,8 @@ TYPED_TEST(inlet_Inlet_classes, defaultValuesDocsDisabled)
     "Container1 = { float1 = 5.6; Container2 = { int1 = 95; Container4 = { "
     "str1= 'hi' } } "
     "}; Container3 = { bool1 = true }";
-  DataStore ds;
   // Creating basic inlet with documentation disabled (indicated by the last param)
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString, false);
+  Inlet inlet = createBasicInlet<TypeParam>(testString, false);
 
   // new fields
   inlet.addDouble("field1").defaultValue(2.0);
@@ -907,8 +884,7 @@ TYPED_TEST(inlet_Inlet_classes, ranges)
     "Container1 = { float1 = 5.6; Container2 = { int1 = 95; Container4 = { "
     "str1= 'hi' } } "
     "}; Container3 = { bool1 = true }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   axom::sidre::Group* sidreGroup = inlet.sidreGroup();
 
@@ -961,8 +937,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyRequired)
   std::string testString =
     "field1 = true; field2 = 5632; NewContainer = { str = 'hello'; integer = "
     "32 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addString("NewContainer/str").required(true);
   inlet.addInt("NewContainer/int").required(false);
@@ -982,8 +957,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyDoubleRange)
     "field1 = true; field2 = 56.32; NewContainer = { str = 'hello'; field4 = "
     "22.19 "
     "}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addDouble("field2").range(1.0, 57.2);
   EXPECT_TRUE(inlet.verify());
@@ -999,8 +973,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyDoubleRange)
     "field1 = true; field2 = 56.32; NewContainer = { str = 'hello'; field4 = "
     "22.19 "
     "}";
-  DataStore ds1;
-  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(testString1);
 
   inlet1.addDouble("field2").defaultValue(5).range(
     0,
@@ -1016,8 +989,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyIntRange)
   // For checking values
   std::string testString =
     "field1 = true; field2 = 56; NewContainer = { field4 = 22; field5 = 48 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addInt("field2").range(0, 56);
   EXPECT_TRUE(inlet.verify());
@@ -1034,8 +1006,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyIntRange)
   // For checking default values
   std::string testString1 =
     "field1 = true; field2 = 56; NewContainer = { field4 = 22; field5 = 48 }";
-  DataStore ds1;
-  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(testString1);
   inlet1.addInt("field2").range(0, 56).defaultValue(32);
   EXPECT_TRUE(inlet1.verify());
 
@@ -1051,8 +1022,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyValidIntValues)
   // check values
   std::string testString =
     "field1 = true; field2 = 56; NewContainer = { field4 = 22; field5 = 48 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addInt("field2").validValues({1, 2, 3, 56, 57, 58});
   EXPECT_TRUE(inlet.verify());
@@ -1071,8 +1041,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyValidIntValues)
   // check default values
   std::string testString1 =
     "field1 = true; field2 = 56; NewContainer = { field4 = 22; field5 = 48 }";
-  DataStore ds1;
-  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(testString1);
 
   inlet1.addInt("field2").validValues({1, 2, 3, 56, 57, 58}).defaultValue(2);
   EXPECT_TRUE(inlet1.verify());
@@ -1094,8 +1063,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyValidDoubleValues)
     "field1 = true; field2 = 56.0; NewContainer = { field4 = 22.0; field5 = "
     "48.23 "
     "}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addDouble("field2").validValues({1, 2, 3, 56, 57, 58});
   EXPECT_TRUE(inlet.verify());
@@ -1116,8 +1084,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyValidDoubleValues)
     "field1 = true; field2 = 56.0; NewContainer = { field4 = 22.0; field5 = "
     "48.23 "
     "}";
-  DataStore ds1;
-  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(testString1);
 
   inlet1.addDouble("field2").validValues({1, 2, 3, 56, 57, 58}).defaultValue(2.);
   EXPECT_TRUE(inlet1.verify());
@@ -1140,8 +1107,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyValidStringValues)
   std::string testString =
     "field1 = true; field2 = 'abc'; NewContainer = { field3 = 'xyz'; field4 = "
     "'yes' }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addString("field2").validValues({"abc", "defg", "hijk", "lm"});
   EXPECT_TRUE(inlet.verify());
@@ -1159,8 +1125,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyValidStringValues)
 
   // check default values
   std::string testString1 = "field1 = true; NewContainer = { field5 = 'nop' }";
-  DataStore ds1;
-  Inlet inlet1 = createBasicInlet<TypeParam>(&ds1, testString1);
+  Inlet inlet1 = createBasicInlet<TypeParam>(testString1);
 
   inlet1.addString("field2")
     .validValues({"abc", "defg", "hijk", "lm"})
@@ -1182,8 +1147,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyFieldLambda)
   std::string testString =
     "field1 = true; field2 = 'abc'; NewContainer = { field3 = 'xyz'; field4 = "
     "'yes' }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addBool("field1");
   auto& field2 = inlet.addString("field2");
@@ -1207,8 +1171,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyContainerLambda1)
   std::string testString =
     "field1 = true; field2 = 'abc'; NewContainer = { field3 = 'xyz'; field4 = "
     "'yes' }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addBool("field1");
   auto& field2 = inlet.addString("field2");
@@ -1241,8 +1204,7 @@ TYPED_TEST(inlet_Inlet_verify, verifyContainerLambda1)
 TYPED_TEST(inlet_Inlet_verify, verifyContainerLambda3)
 {
   std::string testString = "dimensions = 2; vector = { x = 1; y = 2; z = 3; }";
-  DataStore ds;
-  auto myInlet = createBasicInlet<TypeParam>(&ds, testString);
+  auto myInlet = createBasicInlet<TypeParam>(testString);
   myInlet.addInt("dimensions").required(true);
   auto& v = myInlet.addStruct("vector").required(true);
   v.addInt("x");
@@ -1287,13 +1249,12 @@ TYPED_TEST_SUITE(inlet_Inlet_array, axom::inlet::detail::ReaderTypes);
 // Checks all of the Container::getArray functions
 TYPED_TEST(inlet_Inlet_array, getArray)
 {
-  DataStore ds;
   std::string testString =
     "luaArrays = { arr1 = { [0] = 4}, "
     "              arr2 = {[0] = true, [1] = false}, "
     "              arr3 = {[0] = 'hello', [1] = 'bye'}, "
     "              arr4 = { [0] = 2.4 } }";
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addIntArray("luaArrays/arr1");
   inlet.addBoolArray("luaArrays/arr2");
@@ -1322,13 +1283,12 @@ TYPED_TEST(inlet_Inlet_array, getArray)
 // Checks the underlying Sidre representation of the arrays added from Lua
 TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
 {
-  DataStore ds;
   std::string testString =
     "luaArrays = { arr1 = { [0] = 4, [1] = 5, [2] = 6 , [3] = 2.4}, "
     "              arr2 = { [0] = true, [1] = false}, "
     "              arr3 = { [0] = 'hello', [1] = 'bye'}, "
     "              arr4 = { [0] = 2.4 } }";
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addIntArray("luaArrays/arr1");
 
@@ -1394,8 +1354,7 @@ TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
 TEST(inlet_Inlet_basic_lua, getTopLevelStrings)
 {
   std::string testString = "foo = 'test string'; bar = '15'";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   //
   // Define schema
@@ -1430,8 +1389,7 @@ TEST(inlet_Inlet_basic_lua, getTopLevelStrings)
 TEST(inlet_Inlet_basic_lua, getNestedStrings)
 {
   std::string testString = "foo = { bar = 'yet another string'; baz = '' }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   //
   // Define schema
@@ -1475,8 +1433,7 @@ TEST(inlet_Inlet_verify_lua, verifyContainerLambda2)
     "material.attribute = 1\n"
     "material.thermalview = 'isotropic'\n"
     "material.solidview = 'hyperelastic'";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
   inlet.addInt("thermal_solver/order");
   inlet.addString("thermal_solver/timestepper");
   inlet.addInt("solid_solver/order");
@@ -1532,8 +1489,7 @@ TEST(inlet_Inlet_verify_lua, requiredContainer)
     "material.attribute = 1\n"
     "material.thermalview = 'isotropic'\n"
     "material.solidview = 'hyperelastic'";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
   auto& material = inlet.addStruct("material");
   material.required(true);
 
@@ -1551,13 +1507,12 @@ TEST(inlet_Inlet_verify_lua, requiredContainer)
 // Check discontiguous arrays specifically
 TEST(inlet_Inlet_array_lua, getArray)
 {
-  DataStore ds;
   std::string testString =
     "luaArrays = { arr1 = { [1] = 4}, "
     "              arr2 = {[4] = true, [8] = false}, "
     "              arr3 = {[33] = 'hello', [2] = 'bye'}, "
     "              arr4 = { [12] = 2.4 } }";
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   inlet.addIntArray("luaArrays/arr1");
   inlet.addBoolArray("luaArrays/arr2");
@@ -1586,13 +1541,12 @@ TEST(inlet_Inlet_array_lua, getArray)
 // Checks the underlying Sidre representation of the arrays added from Lua
 TEST(inlet_Inlet_array_lua, inletArraysInSidre)
 {
-  DataStore ds;
   std::string testString =
     "luaArrays = { arr1 = { [1] = 4, [2] = 5, [3] = 6 , [12] = 2.4}, "
     "              arr2 = { [4] = true, [8] = false}, "
     "              arr3 = { [33] = 'hello', [2] = 'bye'}, "
     "              arr4 = { [12] = 2.4 } }";
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   inlet.addIntArray("luaArrays/arr1");
 
