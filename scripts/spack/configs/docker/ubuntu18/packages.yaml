@@ -99,7 +99,7 @@ packages:
     version: [0.7.2]
     variants: ~shared
   mfem:
-    variants: ~mpi~metis~zlib
+    variants: +shared~static~mpi~metis~zlib
 
   # Globally lock in version of devtools
   cmake:
