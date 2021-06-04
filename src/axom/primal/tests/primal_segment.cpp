@@ -15,7 +15,7 @@
 
 #include "fmt/fmt.hpp"
 
-#include <cmath>
+#include <math.h>
 
 namespace primal = axom::primal;
 
