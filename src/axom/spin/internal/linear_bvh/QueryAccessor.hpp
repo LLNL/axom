@@ -182,15 +182,8 @@ public:
   {
     using PointType = typename BoundingBoxType::PointType;
 
-    PointType min_pt, max_pt;
-
-    min_pt[0] = xmin[idx];
-    min_pt[1] = ymin[idx];
-
-    max_pt[0] = xmax[idx];
-    max_pt[1] = ymax[idx];
-
-    box = BoundingBoxType(min_pt, max_pt);
+    box = BoundingBoxType(PointType {xmin[idx], ymin[idx]},
+                          PointType {xmax[idx], ymax[idx]});
   }
 };
 
@@ -244,17 +237,8 @@ public:
   {
     using PointType = typename BoundingBoxType::PointType;
 
-    PointType min_pt, max_pt;
-
-    min_pt[0] = xmin[idx];
-    min_pt[1] = ymin[idx];
-    min_pt[2] = zmin[idx];
-
-    max_pt[0] = xmax[idx];
-    max_pt[1] = ymax[idx];
-    max_pt[2] = zmax[idx];
-
-    box = BoundingBoxType(min_pt, max_pt);
+    box = BoundingBoxType(PointType {xmin[idx], ymin[idx], zmin[idx]},
+                          PointType {xmax[idx], ymax[idx], zmax[idx]});
   }
 };
 

@@ -101,7 +101,7 @@ void write_box(const primal::BoundingBox<FloatType, NDIMS>& box,
   }
   else
   {
-    const FloatType& zmin = box.getMax()[2];
+    const FloatType& zmin = box.getMin()[2];
     const FloatType& zmax = box.getMax()[2];
 
     write_box3d(xmin, ymin, zmin, xmax, ymax, zmax, numPoints, numBins, nodes, cells);

@@ -100,6 +100,7 @@ public:
    * point. If the size is not the same as the size of this point, this
    * behaves the same way as the constructor which takes a pointer and size.
    */
+  AXOM_HOST_DEVICE
   Point(std::initializer_list<T> values)
     : Point {values.begin(), static_cast<int>(values.size())}
   { }

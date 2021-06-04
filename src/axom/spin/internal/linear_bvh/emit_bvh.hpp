@@ -46,6 +46,8 @@ void emit_bvh(RadixTree<FloatType, NDIMS>& data,
 {
   AXOM_PERF_MARK_FUNCTION("emit_bvh");
 
+  using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
+
   const int32 size = data.m_size;
   const int32 inner_size = data.m_inner_size;
   SLIC_ASSERT(inner_size == size - 1);
@@ -53,9 +55,8 @@ void emit_bvh(RadixTree<FloatType, NDIMS>& data,
   const int32* lchildren_ptr = data.m_left_children;
   const int32* rchildren_ptr = data.m_right_children;
 
-  const primal::BoundingBox<FloatType, NDIMS>* leaf_aabb_ptr = data.m_leaf_aabbs;
-  const primal::BoundingBox<FloatType, NDIMS>* inner_aabb_ptr =
-    data.m_inner_aabbs;
+  const BoundingBoxType* leaf_aabb_ptr = data.m_leaf_aabbs;
+  const BoundingBoxType* inner_aabb_ptr = data.m_inner_aabbs;
 
   primal::BoundingBox<FloatType, NDIMS>* bvh_inner_nodes = bvh_data.m_inner_nodes;
   int32* bvh_inner_node_children = bvh_data.m_inner_node_children;
@@ -64,7 +65,7 @@ void emit_bvh(RadixTree<FloatType, NDIMS>& data,
                          for_all<ExecSpace>(
                            inner_size,
                            AXOM_LAMBDA(int32 node) {
-                             primal::BoundingBox<FloatType, NDIMS> l_aabb, r_aabb;
+                             BoundingBoxType l_aabb, r_aabb;
 
                              int32 lchild = lchildren_ptr[node];
                              if(lchild >= inner_size)

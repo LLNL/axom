@@ -39,11 +39,10 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  * \param [in] B functor that defines the check for the bins
  * \param [in] A functor that defines the leaf action
  *
- * \note The supplied functor `B` is expected to take the following
- *  three arguments:
+ * \note The supplied functor `B` is expected to take the following two
+ *  arguments:
  *    (1) The supplied primitive, p
- *    (2) a vec4_t< FloatType > of the first segment that defines the BVH bin
- *    (3) a vec4_t< FloatType > of the second segment that defines the BVH bin
+ *    (2) a primal::BoundingBox< FloatType, NDIMS > of the BVH bin
  *
  * \see BVHData for the details on the internal data layout of the BVH.
  *
