@@ -53,6 +53,7 @@ public:
    * \param [in] direction the direction of the ray.
    * \pre direction.squared_norm()!= 0.0
    */
+  AXOM_HOST_DEVICE
   Ray(const PointType& origin, const VectorType& direction);
 
   /*!
@@ -62,14 +63,10 @@ public:
   explicit Ray(const SegmentType& S);
 
   /*!
-   * \brief Ray Destructor.
-   */
-  ~Ray();
-
-  /*!
    * \brief Returns the point of origin of this Ray instance.
    * \return origin a point instance corresponding to the origin of the ray.
    */
+  AXOM_HOST_DEVICE
   const PointType& origin() const { return m_origin; };
 
   /*!
@@ -85,6 +82,7 @@ public:
    * \return direction the direction vector of the ray.
    * \post direction.norm()==1
    */
+  AXOM_HOST_DEVICE
   const VectorType& direction() const { return m_direction; };
 
   /*!
@@ -139,11 +137,6 @@ Ray<T, NDIMS>::Ray(const SegmentType& S)
   VectorType dir(S.source(), S.target());
   m_direction = dir.unitVector();
 }
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-Ray<T, NDIMS>::~Ray()
-{ }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>

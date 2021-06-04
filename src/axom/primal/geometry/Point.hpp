@@ -100,6 +100,7 @@ public:
    * point. If the size is not the same as the size of this point, this
    * behaves the same way as the constructor which takes a pointer and size.
    */
+  AXOM_HOST_DEVICE
   Point(std::initializer_list<T> values)
     : Point {values.begin(), static_cast<int>(values.size())}
   { }
@@ -134,8 +135,9 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T* data() const { return m_components.data(); }
-  T* data() { return m_components.data(); }
+  AXOM_HOST_DEVICE const T* data() const { return m_components.data(); }
+
+  AXOM_HOST_DEVICE T* data() { return m_components.data(); }
 
   ///@}
 
