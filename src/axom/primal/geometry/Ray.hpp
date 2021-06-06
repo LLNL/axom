@@ -75,6 +75,7 @@ public:
    * \return p a point along the ray.
    * \pre \f$ t \ge 0 \f$
    */
+  AXOM_HOST_DEVICE
   PointType at(const T& t) const;
 
   /*!

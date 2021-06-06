@@ -278,10 +278,22 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
-  T tmin = static_cast<T>(0);
+  T tmin = axom::numerics::floating_point_limits<T>::min();
   T tmax = axom::numerics::floating_point_limits<T>::max();
 
-  bool intersects = intersect_ray(R, bb, tmin, tmax, EPS);
+  bool intersects = true;
+  for(int d = 0; d < DIM; ++d)
+  {
+    intersects = intersects &&
+      intersect_ray_bbox_test(R.origin()[d],
+                              R.direction()[d],
+                              bb.getMin()[d],
+                              bb.getMax()[d],
+                              tmin,
+                              tmax,
+                              EPS);
+  }
+
   if(intersects)
   {
     ip = R.at(tmin);
