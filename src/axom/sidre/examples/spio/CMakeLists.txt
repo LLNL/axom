@@ -21,7 +21,7 @@ if (SCR_FOUND)
     list(APPEND example_sources IO_SCR_Output.cpp)
 endif() 
 
-set(spio_example_depends sidre conduit::conduit slic gtest ${EXTRA_LIBS})
+set(spio_example_depends axom gtest ${EXTRA_LIBS})
 blt_list_append(TO spio_example_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO spio_example_depends ELEMENTS scr  IF SCR_FOUND)
 

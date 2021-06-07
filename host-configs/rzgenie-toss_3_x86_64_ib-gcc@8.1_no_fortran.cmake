@@ -11,9 +11,9 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_05_10_21_44_53/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_05_26_14_17_12/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_05_10_21_44_53/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_05_26_14_17_12/spack/lib/spack/env/gcc/g++" CACHE PATH "")
 
   # No Fortran compiler defined in spec
 else()
@@ -61,9 +61,9 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_05_10_21_44_53/gcc-8.1_no_fortran" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_05_26_14_17_12/gcc-8.1_no_fortran" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.6.0" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2" CACHE PATH "")
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.2.0" CACHE PATH "")
 
