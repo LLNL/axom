@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include <array>
 #include <string>
@@ -12,14 +13,20 @@
 
 #include <iostream>
 
+#include "axom/core/Path.hpp"
 #include "axom/sidre.hpp"
 
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/tests/inlet_test_utils.hpp"
 
+using axom::Path;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
 using axom::inlet::VariantKey;
+using axom::inlet::VerificationError;
+
+using ::testing::Contains;
+using ::testing::Truly;
 
 template <typename InletReader>
 Inlet createBasicInlet(const std::string& luaString, bool enableDocs = true)
@@ -281,11 +288,17 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
   arr_container.addBool("baz", "baz's description");
 
   // Can specify either "bar" or "baz" but not both
-  arr_container.registerVerifier([](const axom::inlet::Container& foo) {
+  arr_container.registerVerifier([](const axom::inlet::Container& foo,
+                                    std::vector<VerificationError>* errors) {
+    INLET_VERIFICATION_WARNING("foo", "No bar or baz", errors);
     return !(foo.contains("bar") && foo.contains("baz"));
   });
 
-  EXPECT_FALSE(inlet.verify());
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  EXPECT_THAT(errors, Contains(Truly([](const VerificationError& err) {
+                return err.path == Path("foo") && err.message == "No bar or baz";
+              })));
 }
 
 struct FooWithArray

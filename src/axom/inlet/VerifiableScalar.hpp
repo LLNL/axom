@@ -45,8 +45,19 @@ class Field;
 class VerifiableScalar
 {
 public:
+  /**
+   * A function which can verify the contents of the item being verifier.
+   * It should report any errors via INLET_VERIFICATION_WARNING, passing
+   * in the given array of errors.
+   */
+  using Verifier = std::function<bool(const axom::inlet::Field&,
+                                      std::vector<VerificationError>* errors)>;
+
+  virtual ~VerifiableScalar() = default;
+
   // Should not be reassignable
   VerifiableScalar& operator=(const VerifiableScalar&) = delete;
+
   /*!
    *****************************************************************************
    * \brief Set the required status of this object.
@@ -78,11 +89,21 @@ public:
    * \brief Registers the function object that will verify this object's contents
    * during the verification stage.
    * 
-   * \param [in] The function object.
+   * \param [in] lambda The function object.
    *****************************************************************************
   */
-  virtual VerifiableScalar& registerVerifier(
-    std::function<bool(const axom::inlet::Field&)> lambda) = 0;
+  VerifiableScalar& registerVerifier(
+    std::function<bool(const axom::inlet::Field&)> lambda);
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this object's contents
+   * during the verification stage.
+   *
+   * \param [in] verifier The function object.
+   *****************************************************************************
+  */
+  virtual VerifiableScalar& registerVerifier(Verifier verifier) = 0;
 
   /*!
    *****************************************************************************

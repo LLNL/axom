@@ -41,6 +41,14 @@ template <typename BaseType>
 class Verifiable
 {
 public:
+  /**
+   * A function which can verify the contents of the item being verifier.
+   * It should report any errors via INLET_VERIFICATION_WARNING, passing
+   * in the given array of errors.
+   */
+  using Verifier =
+    std::function<bool(const BaseType&, std::vector<VerificationError>* errors)>;
+
   virtual ~Verifiable() = default;
 
   // Should not be reassignable
@@ -76,11 +84,27 @@ public:
    * \brief Registers the function object that will verify this object's contents
    * during the verification stage.
    * 
-   * \param [in] The function object.
+   * \param [in] verifier The function object.
    *****************************************************************************
   */
-  virtual Verifiable<BaseType>& registerVerifier(
-    std::function<bool(const BaseType&)> lambda) = 0;
+  Verifiable<BaseType>& registerVerifier(std::function<bool(const BaseType&)> verifier)
+  {
+    return registerVerifier(
+      [&verifier](const BaseType& item, std::vector<VerificationError>*) {
+        return verifier(item);
+      });
+  };
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this object's contents
+   * during the verification stage.
+   *
+   * \param [in] verifier The function which will verify the contents of
+   * the container.
+   *****************************************************************************
+  */
+  virtual Verifiable<BaseType>& registerVerifier(Verifier verifier) = 0;
 
   /*!
    *****************************************************************************
@@ -138,8 +162,10 @@ public:
       [](const BaseVerifiable& verifiable) { return verifiable.isRequired(); });
   }
 
+  using Verifiable<BaseType>::registerVerifier;
+
   AggregateVerifiable& registerVerifier(
-    std::function<bool(const BaseType&)> lambda) override
+    typename Verifiable<BaseType>::Verifier lambda) override
   {
     for(auto& verifiable : m_verifiables)
     {

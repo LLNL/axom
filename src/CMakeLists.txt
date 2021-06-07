@@ -18,6 +18,10 @@ if (ENABLE_FORTRAN)
    enable_language(Fortran)
 endif()
 
+if (AXOM_ENABLE_TESTS)
+    set(ENABLE_GMOCK ON CACHE STRING "")
+endif()
+
 #------------------------------------------------------------------------------
 # Initialize BLT build system
 #------------------------------------------------------------------------------
