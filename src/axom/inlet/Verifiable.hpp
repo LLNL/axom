@@ -90,7 +90,7 @@ public:
   Verifiable<BaseType>& registerVerifier(std::function<bool(const BaseType&)> verifier)
   {
     return registerVerifier(
-      [&verifier](const BaseType& item, std::vector<VerificationError>*) {
+      [verifier](const BaseType& item, std::vector<VerificationError>*) {
         return verifier(item);
       });
   };

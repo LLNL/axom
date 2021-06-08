@@ -13,7 +13,7 @@ VerifiableScalar& VerifiableScalar::registerVerifier(
   std::function<bool(const Field&)> verifier)
 {
   return registerVerifier(
-    [&verifier](const Field& field, std::vector<VerificationError>*) {
+    [verifier](const Field& field, std::vector<VerificationError>*) {
       return verifier(field);
     });
 }
