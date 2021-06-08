@@ -18,10 +18,6 @@ if (ENABLE_FORTRAN)
    enable_language(Fortran)
 endif()
 
-if (AXOM_ENABLE_TESTS)
-    set(ENABLE_GMOCK ON CACHE STRING "")
-endif()
-
 #------------------------------------------------------------------------------
 # Initialize BLT build system
 #------------------------------------------------------------------------------
@@ -43,6 +39,8 @@ else()
             "Or add -DBLT_SOURCE_DIR=/path/to/blt to your CMake command." )
     endif()
 endif()
+
+set(ENABLE_GMOCK ON CACHE STRING "")
 
 if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # Set some default BLT options before loading BLT only if not included in
