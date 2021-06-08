@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -202,15 +202,10 @@ int main(int argc, char** argv)
 
   // Generate the documentation
   // _inlet_documentation_generation_start
-  auto sphinxWriter = std::make_unique<SphinxWriter>("example_doc.rst");
-  inlet.registerWriter(std::move(sphinxWriter));
+  inlet.write(SphinxWriter("example_doc.rst"));
   // _inlet_documentation_generation_end
-  inlet.write();
 
-  auto schemaWriter =
-    std::make_unique<axom::inlet::JSONSchemaWriter>("example_doc.json");
-  inlet.registerWriter(std::move(schemaWriter));
-  inlet.write();
+  inlet.write(axom::inlet::JSONSchemaWriter("example_doc.json"));
 
   if(docsEnabled)
   {

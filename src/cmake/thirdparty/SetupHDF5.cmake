@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -114,22 +114,34 @@ message(STATUS "HDF5 is parallel:  ${HDF5_IS_PARALLEL}")
 if(WIN32 AND TARGET hdf5::hdf5-shared AND BUILD_SHARED_LIBS)
     # reg shared ver of imported lib target
     message(STATUS "HDF5 using hdf5::hdf5-shared target")
-    blt_register_library(NAME      hdf5
-                         LIBRARIES hdf5::hdf5-shared)
+    blt_import_library(NAME      hdf5
+                       LIBRARIES hdf5::hdf5-shared
+                       INCLUDES  ${HDF5_INCLUDE_DIRS}
+                       TREAT_INCLUDES_AS_SYSTEM ON
+                       EXPORTABLE ON)
 elseif(WIN32 AND TARGET hdf5::hdf5-static )
     # reg static ver of imported lib target
     message(STATUS "HDF5 using hdf5::hdf5-static target")
-    blt_register_library(NAME      hdf5
-                         LIBRARIES hdf5::hdf5-static)
+    blt_import_library(NAME      hdf5
+                       LIBRARIES hdf5::hdf5-static
+                       EXPORTABLE ON)
+elseif(TARGET hdf5)
+    # legacy hdf5 CMake build system support creates an hdf5 target we use directly
+    message(STATUS "HDF5 using hdf5 target")
+
+    set_property(TARGET hdf5 
+                 APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                 "${HDF5_INCLUDE_DIRS}")
 else()
     # reg includes and libs with blt
     message(STATUS "HDF5 using HDF5_DEFINITIONS + HDF5_INCLUDE_DIRS + HDF5_LIBRARIES")
     message(STATUS "HDF5_DEFINITIONS:  ${HDF5_DEFINITIONS}")
     message(STATUS "HDF5_INCLUDE_DIRS: ${HDF5_INCLUDE_DIRS}")
     message(STATUS "HDF5_LIBRARIES:    ${HDF5_LIBRARIES}")
-    blt_register_library(NAME hdf5
-                         DEFINES   ${HDF5_DEFINITIONS}
-                         INCLUDES  ${HDF5_INCLUDE_DIRS}
-                         LIBRARIES ${HDF5_LIBRARIES}
-                         TREAT_INCLUDES_AS_SYSTEM ON )
+    blt_import_library(NAME hdf5
+                       DEFINES   ${HDF5_DEFINITIONS}
+                       INCLUDES  ${HDF5_INCLUDE_DIRS}
+                       LIBRARIES ${HDF5_LIBRARIES}
+                       TREAT_INCLUDES_AS_SYSTEM ON
+                       EXPORTABLE ON )
 endif()

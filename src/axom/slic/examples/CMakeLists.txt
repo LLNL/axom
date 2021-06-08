@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ foreach( example_source ${example_sources} )
     get_filename_component( example_name ${example_source} NAME_WE )
     blt_add_executable( NAME       slic_${example_name}_ex
                         SOURCES    ${example_source} 
-                        DEPENDS_ON slic
+                        DEPENDS_ON axom
                         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
                         FOLDER     axom/slic/examples )
 
@@ -43,7 +43,7 @@ if ( ENABLE_MPI )
         blt_add_executable( NAME       slic_mpi_${example_name}_ex
                             SOURCES    ${example_source}
                             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                            DEPENDS_ON slic 
+                            DEPENDS_ON axom 
                             FOLDER     axom/slic/examples )
 
         if(AXOM_ENABLE_TESTS)

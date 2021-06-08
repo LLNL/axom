@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -16,8 +16,7 @@ int main()
   // Initialize Inlet
   auto lr = std::make_unique<axom::inlet::LuaReader>();
   lr->parseString("dimensions = 2; vector = { x = 1.0; y = 2.0; z = 3.0; }");
-  axom::sidre::DataStore ds;
-  axom::inlet::Inlet myInlet(std::move(lr), ds.getRoot());
+  axom::inlet::Inlet myInlet(std::move(lr));
 
   // _inlet_workflow_defining_schema_start
   // defines a required global field named "dimensions" with a default value of 2

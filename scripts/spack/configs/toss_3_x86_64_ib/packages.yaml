@@ -54,10 +54,10 @@ packages:
   # the following per spack docs
   netlib-lapack:
     buildable: false
-
     externals:
     - spec: netlib-lapack@3.6.1
       prefix: /usr
+
 # System level packages to not build
   autoconf:
     buildable: false
@@ -111,12 +111,38 @@ packages:
     - spec: tar
       prefix: /usr
 
+# External dependencies for SCR
+  lsf:
+    buildable: False
+    externals:
+    - spec: lsf@10.1
+      prefix: /opt/ibm/spectrumcomputing/lsf/10.1
+  slurm:
+    buildable: false
+    externals:
+    - spec: slurm@20
+      prefix: /usr
+  libyogrt:
+    externals:
+    - spec: libyogrt@1.24 scheduler=lsf
+      prefix: /usr
+    - spec: libyogrt@1.24 scheduler=slurm
+      prefix: /usr
+  pdsh:
+    buildable: false
+    externals:
+    - spec: pdsh@2.33
+      prefix: /usr 
+
 # Globally lock version of third party libraries
   conduit:
-    version: [0.6.0]
+    version: [0.7.2]
     variants: ~shared
   mfem:
     variants: ~mpi~metis~zlib
+  scr:
+    version: [develop]
+    variants: ~shared
   umpire:
     variants: ~shared
 

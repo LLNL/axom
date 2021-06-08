@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -256,9 +256,9 @@ bool intersect(const Ray<T, 2>& R, const Segment<T, 2>& S, Point<T, 2>& ip)
  *  Real Time Collision Detection by Christer Ericson.
  */
 template <typename T, int DIM>
-bool intersect(const Ray<T, DIM>& R,
-               const BoundingBox<T, DIM>& bb,
-               Point<T, DIM>& ip)
+AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
+                                const BoundingBox<T, DIM>& bb,
+                                Point<T, DIM>& ip)
 {
   return detail::intersect_ray(R, bb, ip);
 }

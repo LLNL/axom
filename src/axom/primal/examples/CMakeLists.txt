@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -7,8 +7,7 @@
 #------------------------------------------------------------------------------
 
 set(primal_example_depends
-        core
-        primal
+        axom
         fmt
         )
 
@@ -21,4 +20,3 @@ blt_add_executable(
     DEPENDS_ON  ${primal_example_depends}
     FOLDER      axom/primal/examples
     )
-

@@ -7,24 +7,29 @@ ARG branch=develop
 # Update base image so we don't have to install so many things via Spack
 SHELL ["/bin/bash", "-c"]
 RUN sudo apt-get update -y
-RUN sudo apt-get install curl ssh pkg-config build-essential libopenblas-dev mpich python3 cmake -fy
+RUN sudo apt-get install curl ssh pkg-config build-essential libopenblas-dev mpich lcov xsltproc python3 -fy
 RUN sudo apt-get -qq install -y --no-install-recommends gfortran-7 && sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-7 100
 RUN sudo ln -f -s python3 /usr/bin/python # Compatibility with legacy Python
 
 WORKDIR "/home/axom"
 USER axom
 
+# Avoid building CMake from scratch
+RUN wget https://cmake.org/files/v3.18/cmake-3.18.5-Linux-x86_64.sh
+RUN sudo sh cmake-3.18.5-Linux-x86_64.sh --prefix=/usr --exclude-subdir
+
 # Clone axom
-RUN git clone -b $branch --recursive https://github.com/LLNL/axom.git
+RUN git clone --recursive --branch $branch --single-branch --depth 1 https://github.com/LLNL/axom.git
 
 # Build TPLs
 WORKDIR "/home/axom/axom"
-RUN python3 ./scripts/uberenv/uberenv.py --spack-config-dir=./scripts/uberenv/spack_configs/docker/ubuntu18 \
-                                         --project-json=./scripts/uberenv/project.json \
+RUN python3 ./scripts/uberenv/uberenv.py --spack-config-dir=./scripts/spack/configs/docker/ubuntu18 \
                                          --spec=%clang@10.0.0+mfem --prefix=/home/axom/axom_tpls -k
 
 # Make sure the new hostconfig worked
-RUN python3 config-build.py -hc *.cmake -bp build -DBLT_CXX_STD=c++14 && cd build && make -j8 && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS="-T Test -VV -j8"
+RUN python3 config-build.py -hc *.cmake -bp build -DBLT_CXX_STD=c++14 -DBUILD_SHARED_LIBS=ON && \
+    cd build && make -j8 VERBOSE=1 && \
+    make CTEST_OUTPUT_ON_FAILURE=1 test ARGS="-T Test -VV -j8"
 
 # Copy host-config into easy location to copy out
 RUN mkdir -p /home/axom/export_hostconfig
@@ -33,3 +38,5 @@ RUN cp ./*.cmake /home/axom/export_hostconfig
 # Clean up repository that will be cloned each CI job
 WORKDIR "/home/axom"
 RUN rm -rf axom
+RUN rm -rf axom_tpls/builds
+

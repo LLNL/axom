@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -13,8 +13,11 @@
   #include <type_traits>  // for checking layout
 
   #include "conduit_blueprint.hpp"
+  #include "fmt/fmt.hpp"
 
   #include "MFEMSidreDataCollection.hpp"
+
+  #include "axom/core/utilities/StringUtilities.hpp"
 
 using mfem::Array;
 using mfem::GridFunction;
@@ -34,6 +37,44 @@ const std::string MFEMSidreDataCollection::s_boundary_topology_name =
 const std::string MFEMSidreDataCollection::s_attribute_suffix =
   "_material_attribute";
 const std::string MFEMSidreDataCollection::s_coordset_name = "coords";
+
+namespace detail
+{
+/**
+ * @brief Implements an analogue to mfem::FiniteElementCollection::New
+ * for mfem::QuadratureSpaces - basis currently must be of form QF_Default_[ORDER]_[VDIM]
+ * @param[in] name The name that encodes the QuadratureSpace data
+ * @param[in] mesh The mesh to construct the QuadratureSpace with
+ * @param[out] vdim The vector dimension parsed from the basis name - unlike FEColl/FESpace,
+ * QSpaces do not contain vdim information, but it may be useful for the caller when constructing
+ * the QFunc
+ */
+mfem::QuadratureSpace* NewQuadratureSpace(const std::string& name,
+                                          Mesh* mesh,
+                                          int& vdim)
+{
+  const auto tokens = utilities::string::splitLastNTokens(name, 4, '_');
+  // Uses raw pointers for consistency with MFEM
+  mfem::QuadratureSpace* qspace = nullptr;
+  if((tokens.size() == 4) && (tokens[0] == "QF"))
+  {
+    // Right now only the Default type is supported
+    if(tokens[1] == "Default")
+    {
+      if(conduit::utils::string_is_integer(tokens[2]) &&
+         conduit::utils::string_is_integer(tokens[3]))
+      {
+        int order = conduit::utils::string_to_value<int>(tokens[2]);
+        vdim = conduit::utils::string_to_value<int>(tokens[3]);
+        qspace = new mfem::QuadratureSpace(mesh, order);
+      }
+    }
+  }
+  SLIC_ERROR_IF(!qspace, "Unrecognized QuadratureSpace name: " << name);
+  return qspace;
+}
+
+}  // namespace detail
 
 // Constructor that will automatically create the sidre data store and necessary
 // data groups for domain and global data.
@@ -666,7 +707,7 @@ bool MFEMSidreDataCollection::verifyMeshBlueprint()
   bool result = conduit::blueprint::mesh::verify(mesh_node, verify_info);
   SLIC_WARNING_IF(!result,
                   "MFEMSidreDataCollection blueprint verification failed:\n"
-                    << verify_info.to_string());
+                    << verify_info.to_yaml());
   return result;
 }
 
@@ -942,21 +983,19 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
 }
 
 // private method
-void MFEMSidreDataCollection::addScalarBasedGridFunction(
-  const std::string& field_name,
-  GridFunction* gf,
-  const std::string& buffer_name,
-  IndexType offset)
+void MFEMSidreDataCollection::addScalarBasedField(const std::string& field_name,
+                                                  mfem::Vector* field,
+                                                  const std::string& buffer_name,
+                                                  IndexType offset,
+                                                  const int num_dofs)
 {
   sidre::Group* grp = m_bp_grp->getGroup("fields/" + field_name);
   SLIC_ASSERT_MSG(grp != nullptr, "field " << field_name << " does not exist");
 
-  const int numDofs = gf->FESpace()->GetVSize();
-
-  if(gf->GetData() == nullptr)
+  if(field->GetData() == nullptr)
   {
-    AllocNamedBuffer(buffer_name, offset + numDofs);
-    // gf->data is set below.
+    AllocNamedBuffer(buffer_name, offset + num_dofs);
+    // field->data is set below.
   }
 
   /*
@@ -964,7 +1003,7 @@ void MFEMSidreDataCollection::addScalarBasedGridFunction(
    *    /fields/field_name/basis
    *              -- string value is GridFunction's FEC::Name
    *    /fields/field_name/values
-   *              -- array of size numDofs
+   *              -- array of size num_dofs
    */
 
   // Make sure we have the View "values".
@@ -980,27 +1019,27 @@ void MFEMSidreDataCollection::addScalarBasedGridFunction(
 
     // named buffers always have offset 0
     SLIC_ASSERT_MSG(bv->getSchema().dtype().offset() == 0, "");
-    SLIC_ASSERT_MSG(bv->getNumElements() >= offset + numDofs, "");
+    SLIC_ASSERT_MSG(bv->getNumElements() >= offset + num_dofs, "");
 
     if(vv->isEmpty())
     {
-      vv->attachBuffer(bv->getBuffer())->apply(sidre::DOUBLE_ID, numDofs, offset);
+      vv->attachBuffer(bv->getBuffer())->apply(sidre::DOUBLE_ID, num_dofs, offset);
     }
 
-    gf->NewDataAndSize(vv->getData(), numDofs);
+    field->NewDataAndSize(vv->getData(), num_dofs);
   }
   else
   {
     // If we are not managing the grid function's data,
     // create a view with the external data
-    vv->setExternalDataPtr(sidre::DOUBLE_ID, numDofs, gf->GetData());
+    vv->setExternalDataPtr(sidre::DOUBLE_ID, num_dofs, field->GetData());
   }
-  SLIC_ASSERT_MSG((numDofs > 0 && vv->isApplied()) ||
-                    (numDofs == 0 && vv->isEmpty() && vv->isDescribed()),
+  SLIC_ASSERT_MSG((num_dofs > 0 && vv->isApplied()) ||
+                    (num_dofs == 0 && vv->isEmpty() && vv->isDescribed()),
                   "invalid View state");
-  SLIC_ASSERT_MSG(numDofs == 0 || vv->getData() == gf->GetData(),
+  SLIC_ASSERT_MSG(num_dofs == 0 || vv->getData() == field->GetData(),
                   "View data is different from GridFunction data");
-  SLIC_ASSERT_MSG(vv->getNumElements() == numDofs,
+  SLIC_ASSERT_MSG(vv->getNumElements() == num_dofs,
                   "View size is different from GridFunction size");
 }
 
@@ -1098,7 +1137,7 @@ void MFEMSidreDataCollection::addVectorBasedGridFunction(
 // private method
 // Should only be called on mpi rank 0 ( or if serial problem ).
 void MFEMSidreDataCollection::RegisterFieldInBPIndex(const std::string& field_name,
-                                                     GridFunction* gf)
+                                                     const int number_of_components)
 {
   sidre::Group* bp_field_grp = m_bp_grp->getGroup("fields/" + field_name);
   sidre::Group* bp_index_field_grp =
@@ -1108,10 +1147,6 @@ void MFEMSidreDataCollection::RegisterFieldInBPIndex(const std::string& field_na
   bp_index_field_grp->copyView(bp_field_grp->getView("topology"));
   bp_index_field_grp->copyView(bp_field_grp->getView("basis"));
 
-  // Note: The bp index requires GridFunction::VectorDim()
-  //       since the GF might be scalar valued and have a vector basis
-  //       (e.g. hdiv and hcurl spaces)
-  const int number_of_components = gf->VectorDim();
   bp_index_field_grp->createViewScalar("number_of_components",
                                        number_of_components);
 }
@@ -1122,7 +1157,7 @@ void MFEMSidreDataCollection::DeregisterFieldInBPIndex(const std::string& field_
 {
   sidre::Group* fields_grp = m_bp_index_grp->getGroup("fields");
   SLIC_WARNING_IF(!fields_grp->hasGroup(field_name),
-                  "No field exists in blueprint index with name " << name);
+                  "No field exists in blueprint index with name " << field_name);
 
   // Note: This will destroy all orphaned views or buffer classes under this
   // group also.  If sidre owns this field data, the memory will be deleted
@@ -1135,6 +1170,17 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
                                             const std::string& buffer_name,
                                             IndexType offset)
 {
+  #ifdef AXOM_DEBUG
+  SLIC_WARNING_IF(field_name.empty(), "Name for GridFunction was empty");
+  SLIC_WARNING_IF(buffer_name.empty(),
+                  "Name for GridFunction destination buffer was empty");
+
+  SLIC_WARNING_IF(
+    gf == nullptr || gf->FESpace() == nullptr,
+    "Field with the name '"
+      << field_name
+      << "' was provided a null GridFunction, so nothing was done.");
+  #endif
   if(field_name.empty() || buffer_name.empty() || gf == nullptr ||
      gf->FESpace() == nullptr)
   {
@@ -1195,7 +1241,11 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
   if(isScalarValued)
   {
     // Set the View "<m_bp_grp>/fields/<field_name>/values"
-    addScalarBasedGridFunction(field_name, gf, buffer_name, offset);
+    addScalarBasedField(field_name,
+                        gf,
+                        buffer_name,
+                        offset,
+                        gf->FESpace()->GetVSize());
   }
   else  // vector valued
   {
@@ -1206,11 +1256,115 @@ void MFEMSidreDataCollection::RegisterField(const std::string& field_name,
   // Register field_name in the blueprint_index group.
   if(myid == 0)
   {
-    RegisterFieldInBPIndex(field_name, gf);
+    // Note: The bp index requires GridFunction::VectorDim()
+    //       since the GF might be scalar valued and have a vector basis
+    //       (e.g. hdiv and hcurl spaces)
+    RegisterFieldInBPIndex(field_name, gf->VectorDim());
   }
+
+  // Check if the field contains material metadata
+  checkForMaterialSet(field_name);
+  checkForSpeciesSet(field_name);
+  checkForMaterialDependentField(field_name);
 
   // Register field_name + gf in field_map.
   DataCollection::RegisterField(field_name, gf);
+}
+
+void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
+                                             mfem::QuadratureFunction* qf,
+                                             const std::string& buffer_name,
+                                             axom::sidre::IndexType offset)
+{
+  #ifdef AXOM_DEBUG
+  SLIC_WARNING_IF(field_name.empty(), "Name for QuadratureFunction was empty");
+  SLIC_WARNING_IF(buffer_name.empty(),
+                  "Name for QuadratureFunction destination buffer was empty");
+
+  SLIC_WARNING_IF(
+    qf == nullptr || qf->GetSpace() == nullptr,
+    "QField with the name '"
+      << field_name
+      << "' was provided a null QuadratureFunction, so nothing was done.");
+  #endif
+
+  if(field_name.empty() || buffer_name.empty() || qf == nullptr ||
+     qf->GetSpace() == nullptr)
+  {
+    return;
+  }
+
+  // Register field_name in the blueprint group.
+  sidre::Group* f = m_bp_grp->getGroup("fields");
+
+  if(f->hasGroup(field_name))
+  {
+    // There are two possibilities:
+    // 1. If HasQField(field_name) is true - we are overwriting a field that
+    //    was previously registered.
+    // 2. Otherwise, the field was loaded from a file, or defined outside of
+    //    the data collection.
+    if(HasQField(field_name))
+    {
+  #ifdef AXOM_DEBUG
+      // Warn about overwriting field.
+      // Skip warning when re-registering the nodal grid function
+      if(field_name != m_meshNodesGFName)
+      {
+        SLIC_WARNING("QField with the name '"
+                     << field_name
+                     << "' is already "
+                        "registered, overwriting the old qfield");
+      }
+  #endif
+      DeregisterQField(field_name);
+    }
+  }
+
+  // This will return the existing field (if external), otherwise, a new group
+  sidre::Group* grp = alloc_group(f, field_name);
+
+  // A QField has the following schema:
+  // <m_bp_grp>/fields/<field_name>/
+  // <m_bp_grp>/fields/<field_name>/topology     = "mesh"
+  // <m_bp_grp>/fields/<field_name>/values       = array of size QuadratureFunction::Size()
+  // <m_bp_grp>/fields/<field_name>/basis        = string that encodes the QF
+  //                                               integration order and vector dimension
+  //                                               "QF_Default_[ORDER]_[VDIM]"
+
+  // Set the "basis" string using the qf's order and vdim, overwrite if
+  // necessary.
+  sidre::View* v = alloc_view(grp, "basis");
+  // In the future, we should be able to have mfem::QuadratureFunction provide us this name.
+  // FIXME: QF order can be retrieved directly as of MFEM 4.3
+  const std::string basis_name =
+    fmt::format("QF_Default_{0}_{1}",
+                qf->GetSpace()->GetElementIntRule(0).GetOrder(),
+                qf->GetVDim());
+  v->setString(basis_name);
+
+  // Set the topology of the QuadratureFunction.
+  // This is always 'mesh'
+  v = alloc_view(grp, "topology")->setString("mesh");
+
+  // Set the View "<m_bp_grp>/fields/<field_name>/values"
+  addScalarBasedField(field_name, qf, buffer_name, offset, qf->Size());
+
+  // Register field_name in the blueprint_index group.
+  if(myid == 0)
+  {
+    RegisterFieldInBPIndex(field_name, qf->GetVDim());
+  }
+
+  // Register field_name + qf in field_map.
+  mfem::DataCollection::RegisterQField(field_name, qf);
+}
+
+void MFEMSidreDataCollection::DeregisterQField(const std::string& field_name)
+{
+  // Deregister field_name from field_map.
+  mfem::DataCollection::DeregisterQField(field_name);
+  removeField(field_name);
 }
 
 void MFEMSidreDataCollection::RegisterAttributeField(const std::string& attr_name,
@@ -1337,11 +1491,8 @@ void MFEMSidreDataCollection::addIntegerAttributeField(const std::string& attr_n
   attr_grp->createViewString("topology", topo_name);
 }
 
-void MFEMSidreDataCollection::DeregisterField(const std::string& field_name)
+void MFEMSidreDataCollection::removeField(const std::string& field_name)
 {
-  // Deregister field_name from field_map.
-  DataCollection::DeregisterField(field_name);
-
   sidre::Group* fields_grp = m_bp_grp->getGroup("fields");
   SLIC_WARNING_IF(!fields_grp->hasGroup(field_name),
                   "No field exists in blueprint with name " << field_name);
@@ -1361,6 +1512,182 @@ void MFEMSidreDataCollection::DeregisterField(const std::string& field_name)
 
   // Delete field_name from the named_buffers group, if allocated.
   FreeNamedBuffer(field_name);
+}
+
+void MFEMSidreDataCollection::DeregisterField(const std::string& field_name)
+{
+  // Deregister field_name from field_map.
+  DataCollection::DeregisterField(field_name);
+  removeField(field_name);
+}
+
+void MFEMSidreDataCollection::AssociateMaterialSet(
+  const std::string& volume_fraction_field_name,
+  const std::string& matset_name)
+{
+  auto iter = m_matset_associations.find(volume_fraction_field_name);
+  if(iter != m_matset_associations.end())
+  {
+    SLIC_WARNING("Volume fraction field "
+                 << volume_fraction_field_name
+                 << " has already been associated with a material set: "
+                 << iter->second);
+    return;
+  }
+  m_matset_associations[volume_fraction_field_name] = matset_name;
+  Group* matset_group = m_bp_grp->createGroup("matsets/" + matset_name);
+  // Since we're creating the matset, associate it with a topology
+  // These will always be associated with the mesh
+  matset_group->createViewString("topology", s_mesh_topology_name);
+}
+
+void MFEMSidreDataCollection::AssociateSpeciesSet(
+  const std::string& species_field_name,
+  const std::string& specset_name,
+  const std::string& matset_name,
+  const bool volume_dependent)
+{
+  SLIC_WARNING_IF(!m_bp_grp->hasGroup("matsets/" + matset_name),
+                  "The material set '"
+                    << matset_name << "' has not been associated with a field");
+  auto iter = m_specset_associations.find(species_field_name);
+  if(iter != m_specset_associations.end())
+  {
+    SLIC_WARNING("Species field "
+                 << species_field_name
+                 << " has already been associated with a species set: "
+                 << iter->second);
+    return;
+  }
+  m_specset_associations[species_field_name] = specset_name;
+  Group* specset_grp = m_bp_grp->createGroup("specsets/" + specset_name);
+  specset_grp->createViewScalar("volume_dependent",
+                                static_cast<int8>(volume_dependent));
+  // Since we're creating the species set, associate it with a material set
+  specset_grp->createViewString("matset", matset_name);
+}
+
+void MFEMSidreDataCollection::AssociateMaterialDependentField(
+  const std::string& material_dependent_field_name,
+  const std::string& matset_name)
+{
+  SLIC_WARNING_IF(!m_bp_grp->hasGroup("matsets/" + matset_name),
+                  "The material set '"
+                    << matset_name << "' has not been associated with a field");
+  auto iter = m_material_dependent_fields.find(material_dependent_field_name);
+  if(iter != m_material_dependent_fields.end())
+  {
+    SLIC_WARNING("Field " << material_dependent_field_name
+                          << " has already been labeled as material-dependent"
+                             " and associated with a material set: "
+                          << iter->second);
+    return;
+  }
+  m_material_dependent_fields[material_dependent_field_name] = matset_name;
+}
+
+View* MFEMSidreDataCollection::getFieldValuesView(const std::string& field_name)
+{
+  const std::string field_values_name = "fields/" + field_name + "/values";
+  View* values_view = nullptr;
+  if(m_bp_grp->hasView(field_values_name))
+  {
+    // Scalar-valued field
+    values_view = m_bp_grp->getView(field_values_name);
+  }
+  else if(m_bp_grp->hasGroup(field_values_name))
+  {
+    // Vector-valued field
+    values_view = m_bp_grp->getGroup(field_values_name)->getView("x0");
+  }
+  SLIC_WARNING_IF(values_view == nullptr,
+                  "Field " << field_name << " was not registered");
+  return values_view;
+}
+
+void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
+{
+  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
+  // Expecting [base_field_name, material_id]
+  if(tokens.size() != 2)
+  {
+    return;
+  }
+
+  auto iter = m_matset_associations.find(tokens[0]);
+  // If it hasn't been registered as a matset, it's not a volume fraction field
+  if(iter == m_matset_associations.end())
+  {
+    return;
+  }
+  const std::string matset_name = iter->second;
+
+  View* vol_fractions_view = getFieldValuesView(field_name);
+
+  Group* fractions_group =
+    alloc_group(m_bp_grp, "matsets/" + matset_name + "/volume_fractions");
+  View* matset_frac_view = fractions_group->copyView(vol_fractions_view);
+  matset_frac_view->rename(tokens[1]);
+  // FIXME: Do we need to add anything to the index group?
+}
+
+void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
+{
+  const auto tokens = utilities::string::splitLastNTokens(field_name, 3, '_');
+  // Expecting [base_field_name, material_id, component]
+  if(tokens.size() != 3)
+  {
+    return;
+  }
+
+  auto iter = m_specset_associations.find(tokens[0]);
+  // If it hasn't been registered as a matset, it's not a species field
+  if(iter == m_specset_associations.end())
+  {
+    return;
+  }
+  const std::string specset_name = iter->second;
+
+  View* species_values_view = getFieldValuesView(field_name);
+
+  Group* specset_material_group =
+    alloc_group(m_bp_grp,
+                "specsets/" + specset_name + "/matset_values/" + tokens[1]);
+  View* specset_values = specset_material_group->copyView(species_values_view);
+  specset_values->rename(tokens[2]);
+  // FIXME: Do we need to add anything to the index group?
+}
+
+void MFEMSidreDataCollection::checkForMaterialDependentField(
+  const std::string& field_name)
+{
+  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
+  // Expecting [base_field_name, material_id]
+  if(tokens.size() != 2)
+  {
+    return;
+  }
+
+  auto iter = m_material_dependent_fields.find(tokens[0]);
+  // If it hasn't been registered, it's not a material-dependent field
+  if(iter == m_material_dependent_fields.end())
+  {
+    return;
+  }
+  const std::string matset_name = iter->second;
+
+  View* material_values = getFieldValuesView(field_name);
+
+  Group* field_grp = m_bp_grp->getGroup("fields/" + tokens[0]);
+  if(!field_grp->hasView("matset"))
+  {
+    field_grp->createViewString("matset", matset_name);
+  }
+
+  Group* values_grp = alloc_group(field_grp, "matset_values");
+  View* added_values = values_grp->copyView(material_values);
+  added_values->rename(tokens[1]);
+  // FIXME: Do we need to add anything to the index group?
 }
 
 // private method
@@ -2056,13 +2383,29 @@ void MFEMSidreDataCollection::reconstructFields()
     // Filter out the non-user-registered attribute fields
     if(!field_grp->hasView("association"))
     {
-      // FiniteElementCollection
-      auto basis_name = field_grp->getView("basis")->getString();
-      m_fecolls.emplace_back(mfem::FiniteElementCollection::New(basis_name));
+      int vdim = 1;  // The default
+      // GridFunction vs QuadratureFunction
+      bool is_gridfunc = true;
+      // FiniteElementCollection/QuadratureSpace construction
+      const std::string basis_name = field_grp->getView("basis")->getString();
+      // Check if it's a QuadratureFunction
+      if(basis_name.find("QF") == 0 && (m_quadspaces.count(basis_name) == 0))
+      {
+        // The vdim is being overwritten here with the value in the basis string so we
+        // can correctly construct the QuadratureFunction
+        m_quadspaces.emplace(basis_name,
+                             detail::NewQuadratureSpace(basis_name, mesh, vdim));
+        is_gridfunc = false;
+      }
+      // Only need to create a new FEColl if one doesn't already exist
+      else if(m_fecolls.count(basis_name) == 0)
+      {
+        m_fecolls.emplace(basis_name,
+                          mfem::FiniteElementCollection::New(basis_name.c_str()));
+      }
 
       View* value_view = nullptr;
       auto ordering = mfem::Ordering::byNODES;  // The default
-      int vdim = 1;                             // The default
       // Scalar grid function
       if(field_grp->hasView("values"))
       {
@@ -2085,48 +2428,71 @@ void MFEMSidreDataCollection::reconstructFields()
         SLIC_ERROR("Cannot reconstruct grid function - field values not found");
       }
 
-  // FiniteElementSpace - mesh ptr and FEColl ptr
+      // Only need to create a new FESpace if one doesn't already exist
+      if(is_gridfunc && (m_fespaces.count(basis_name) == 0))
+      {
+        // FiniteElementSpace - mesh ptr and FEColl ptr
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-      auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
-      if(parmesh)
-      {
-        m_fespaces.emplace_back(
-          new mfem::ParFiniteElementSpace(parmesh,
-                                          m_fecolls.back().get(),
-                                          vdim,
-                                          ordering));
-      }
-      else
+        auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+        if(parmesh)
+        {
+          m_fespaces.emplace(
+            basis_name,
+            new mfem::ParFiniteElementSpace(parmesh,
+                                            m_fecolls.at(basis_name).get(),
+                                            vdim,
+                                            ordering));
+        }
+        else
   #endif
-      {
-        m_fespaces.emplace_back(
-          new mfem::FiniteElementSpace(mesh, m_fecolls.back().get(), vdim, ordering));
+        {
+          m_fespaces.emplace(
+            basis_name,
+            new mfem::FiniteElementSpace(mesh,
+                                         m_fecolls.at(basis_name).get(),
+                                         vdim,
+                                         ordering));
+        }
       }
 
       double* values = value_view->getData();
 
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-      auto parfes =
-        dynamic_cast<mfem::ParFiniteElementSpace*>(m_fespaces.back().get());
-      if(parfes)
+      if(is_gridfunc)
       {
-        m_owned_gridfuncs.emplace_back(new mfem::ParGridFunction(parfes, values));
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+        auto parfes = dynamic_cast<mfem::ParFiniteElementSpace*>(
+          m_fespaces.at(basis_name).get());
+        if(parfes)
+        {
+          m_owned_gridfuncs.emplace_back(
+            new mfem::ParGridFunction(parfes, values));
+        }
+        else
+  #endif
+        {
+          m_owned_gridfuncs.emplace_back(
+            new mfem::GridFunction(m_fespaces.at(basis_name).get(), values));
+        }
+
+        // Register a non-owning pointer with the base subobject
+        DataCollection::RegisterField(field_grp->getName(),
+                                      m_owned_gridfuncs.back().get());
       }
       else
-  #endif
       {
-        m_owned_gridfuncs.emplace_back(
-          new mfem::GridFunction(m_fespaces.back().get(), values));
+        m_owned_quadfuncs.emplace_back(
+          new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(),
+                                       values,
+                                       vdim));
+        // Register a non-owning pointer with the base subobject
+        DataCollection::RegisterQField(field_grp->getName(),
+                                       m_owned_quadfuncs.back().get());
       }
-
-      // Register a non-owning pointer with the base subobject
-      DataCollection::RegisterField(field_grp->getName(),
-                                    m_owned_gridfuncs.back().get());
     }
   }
 }
 
-} /* namespace sidre */
-} /* namespace axom */
+}  // namespace sidre
+}  // namespace axom
 
 #endif  // AXOM_USE_MFEM

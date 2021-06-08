@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -53,11 +53,6 @@ VerifiableScalar& Inlet::addString(const std::string& name,
   return m_globalContainer.addString(name, description);
 }
 
-void Inlet::registerWriter(std::unique_ptr<Writer> writer)
-{
-  m_writer = std::move(writer);
-}
-
 namespace detail
 {
 /*!
@@ -98,16 +93,19 @@ void writerHelper(Writer& writer, const Container& container)
 
 }  // end namespace detail
 
-void Inlet::write()
+void Inlet::write(Writer&& writer)
 {
   if(m_docEnabled)
   {
-    detail::writerHelper(*m_writer, m_globalContainer);
-    m_writer->finalize();
+    detail::writerHelper(writer, m_globalContainer);
+    writer.finalize();
   }
 }
 
-bool Inlet::verify() const { return m_globalContainer.verify(); }
+bool Inlet::verify(std::vector<VerificationError>* errors) const
+{
+  return m_globalContainer.verify(errors);
+}
 
 }  // end namespace inlet
 }  // end namespace axom

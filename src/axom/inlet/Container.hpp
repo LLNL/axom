@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -235,10 +235,9 @@ inline Result toIndex(const From& idx)
 template <>
 inline int toIndex(const std::string& idx)
 {
-  int idx_as_int;
-  SLIC_ERROR_IF(!checkedConvertToInt(idx, idx_as_int),
+  SLIC_ERROR_IF(!conduit::utils::string_is_integer(idx),
                 fmt::format("[Inlet] Expected an integer, got: {0}", idx));
-  return idx_as_int;
+  return conduit::utils::string_to_value<int>(idx);
 }
 
 /*!
@@ -311,7 +310,7 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
  *******************************************************************************
  */
 void updateUnexpectedNames(const std::string& accessedName,
-                           std::unordered_set<std::string>& unexpectedNames);
+                           std::vector<std::string>& unexpectedNames);
 
 }  // namespace detail
 
@@ -342,52 +341,21 @@ public:
    * \param [in] description Description of the Container
    * \param [in] reader Reference to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
+   * \param [in] unexpectedNames Reference to the global (relative to the Inlet
+   * hierarchy) list of unexpected names
    * \param [in] docEnabled Boolean indicating whether or not documentation
    * generation is enabled for input feck this Container instance belongs to.
+   * \param [in] reconstruct Whether or not to attempt to reconstruct child Containers
+   * and Fields from the data in the sidre Group
    *****************************************************************************
    */
   Container(const std::string& name,
             const std::string& description,
             Reader& reader,
             axom::sidre::Group* sidreRootGroup,
-            std::unordered_set<std::string>& expected_names,
-            bool docEnabled = true)
-    : m_name(name)
-    , m_reader(reader)
-    , m_sidreRootGroup(sidreRootGroup)
-    , m_unexpectedNames(expected_names)
-    , m_docEnabled(docEnabled)
-  {
-    SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
-                    "Inlet's Sidre Datastore class not set");
-
-    if(m_name == "")
-    {
-      m_sidreGroup = m_sidreRootGroup;
-    }
-    else
-    {
-      if(!m_sidreRootGroup->hasGroup(name))
-      {
-        m_sidreGroup = m_sidreRootGroup->createGroup(name);
-        m_sidreGroup->createViewString("InletType", "Container");
-      }
-      else
-      {
-        m_sidreGroup = m_sidreRootGroup->getGroup(name);
-      }
-    }
-
-    if(description != "")
-    {
-      if(m_sidreGroup->hasView("description"))
-      {
-        //TODO: warn user?
-        m_sidreGroup->destroyViewAndData("description");
-      }
-      m_sidreGroup->createViewString("description", description);
-    }
-  }
+            std::vector<std::string>& unexpectedNames,
+            bool docEnabled = true,
+            bool reconstruct = false);
 
   // Containers must be move-only - delete the implicit shallow copy constructor
   Container(const Container&) = delete;
@@ -576,10 +544,7 @@ public:
    *****************************************************************************
    */
   VerifiableScalar& addBool(const std::string& name,
-                            const std::string& description = "")
-  {
-    return addPrimitive<bool>(name, description);
-  }
+                            const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -597,10 +562,7 @@ public:
    *****************************************************************************
    */
   VerifiableScalar& addDouble(const std::string& name,
-                              const std::string& description = "")
-  {
-    return addPrimitive<double>(name, description);
-  }
+                              const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -618,10 +580,8 @@ public:
    *****************************************************************************
    */
   VerifiableScalar& addInt(const std::string& name,
-                           const std::string& description = "")
-  {
-    return addPrimitive<int>(name, description);
-  }
+                           const std::string& description = "");
+
   /*!
    *****************************************************************************
    * \brief Add a String Field to the input file schema.
@@ -638,10 +598,7 @@ public:
    *****************************************************************************
    */
   VerifiableScalar& addString(const std::string& name,
-                              const std::string& description = "")
-  {
-    return addPrimitive<std::string>(name, description);
-  }
+                              const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -822,49 +779,28 @@ public:
    */
   Proxy operator[](const std::string& name) const;
 
+  Container& required(bool isRequired = true) override;
+
+  bool isRequired() const override;
+
+  Container& registerVerifier(std::function<bool(const Container&)> lambda) override;
+
+  bool verify(std::vector<VerificationError>* errors = nullptr) const override;
+
   /*!
    *****************************************************************************
-   * \brief Set the required status of this Container.
+   * \brief Set the strictness of this Container.
    *
-   * Set whether this Container is required, or not, to be in the input file.
-   * The default behavior is to not be required.
+   * Set whether this Container is strict, or not - i.e., whether entries other
+   * than those added to the schema should be allowed.
+   * The default behavior is to not be strict.
    *
-   * \param [in] isRequired Boolean value of whether Container is required
+   * \param [in] isStrict Boolean value of whether Container is strict
    *
    * \return Reference to this instance of Container
    *****************************************************************************
    */
-  Container& required(bool isRequired = true);
-
-  /*!
-   *****************************************************************************
-   * \brief Return the required status of this Container.
-   *
-   * Return that this Container is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \return Boolean value of whether this Container is required
-   *****************************************************************************
-   */
-  bool isRequired() const;
-
-  /*!
-   *****************************************************************************
-   * \brief Registers the function object that will verify this Container's contents
-   * during the verification stage.
-   * 
-   * \param [in] The function object that will be called by Container::verify().
-   *****************************************************************************
-  */
-  Container& registerVerifier(std::function<bool(const Container&)> lambda);
-
-  /*!
-   *****************************************************************************
-   * \brief This will be called by Inlet::verify to verify the contents of this
-   *  Container and all child Containers/Fields of this Container.
-   *****************************************************************************
-  */
-  bool verify() const;
+  Container& strict(bool isStrict = true);
 
   /*!
    *****************************************************************************
@@ -926,6 +862,16 @@ public:
    *****************************************************************************
    */
   std::string name() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the list of unexpected names "below" the calling container,
+   * i.e., entries in the input file structure (e.g., a Lua table or
+   * YAML dictionary) corresponding to the calling container that were not
+   * requested/retrieved via an add* call
+   *****************************************************************************
+   */
+  std::vector<std::string> unexpectedNames() const;
 
   /*!
    *****************************************************************************
@@ -1308,7 +1254,7 @@ private:
   axom::sidre::Group* m_sidreGroup;
   // Hold a reference to the global set of unexpected names so it can be updated when
   // things are added to this Container
-  std::unordered_set<std::string>& m_unexpectedNames;
+  std::vector<std::string>& m_unexpectedNames;
   bool m_docEnabled;
   std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;

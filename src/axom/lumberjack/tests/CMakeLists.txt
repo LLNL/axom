@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ blt_add_executable(NAME       lumberjack_serial_tests
                    SOURCES    lumberjack_serial_main.cpp
                    HEADERS    ${lumberjack_serial_tests}
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON lumberjack gtest 
+                   DEPENDS_ON axom gtest 
                    FOLDER     axom/lumberjack/tests )
 
 foreach(test_suite ${lumberjack_serial_tests})
@@ -39,7 +39,7 @@ blt_add_executable(NAME       lumberjack_mpi_tests
                    SOURCES    lumberjack_mpi_main.cpp
                    HEADERS    ${lumberjack_mpi_tests}
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON lumberjack mpi gtest 
+                   DEPENDS_ON axom gtest 
                    FOLDER     axom/lumberjack/tests )
 
 foreach(test_suite ${lumberjack_mpi_tests})
@@ -57,7 +57,7 @@ endforeach()
 blt_add_executable(NAME       lumberjack_speed_test
                    SOURCES    lumberjack_speedTest.cpp
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON lumberjack mpi
+                   DEPENDS_ON axom
                    FOLDER     axom/lumberjack/tests )
 
 set(lumberjack_sample_input_dir ${PROJECT_SOURCE_DIR}/axom/lumberjack/tests/sampleInput)

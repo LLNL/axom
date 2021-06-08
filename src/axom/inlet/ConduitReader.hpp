@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -102,7 +102,7 @@ public:
                               const FunctionTag ret_type,
                               const std::vector<FunctionTag>& arg_types) override;
 
-  std::unordered_set<std::string> getAllNames() override;
+  std::vector<std::string> getAllNames() override;
 
   /*!
    *****************************************************************************

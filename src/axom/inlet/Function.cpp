@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -19,7 +19,7 @@ Function& Function::required(bool isRequired)
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Function specific Sidre Datastore Group not set");
-  setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
+  setFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG, isRequired);
   return *this;
 }
 
@@ -27,7 +27,7 @@ bool Function::isRequired() const
 {
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Function specific Sidre Datastore Group not set");
-  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
+  return checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG);
 }
 
 Function& Function::registerVerifier(std::function<bool(const Function&)> lambda)
@@ -40,17 +40,20 @@ Function& Function::registerVerifier(std::function<bool(const Function&)> lambda
   return *this;
 }
 
-bool Function::verify() const
+bool Function::verify(std::vector<VerificationError>* errors) const
 {
   const bool this_function_exists = static_cast<bool>(m_func);
   // If this function was required, make sure something was defined in it
   bool verified =
-    verifyRequired(*m_sidreGroup, this_function_exists, "Function");
+    verifyRequired(*m_sidreGroup, this_function_exists, "Function", errors);
   // Verify this Function if a lambda was configured
   if(this_function_exists && m_verifier && !m_verifier(*this))
   {
     verified = false;
-    SLIC_WARNING(fmt::format("[Inlet] Function failed verification: {0}", name()));
+    const std::string msg =
+      fmt::format("[Inlet] Function failed verification: {0}",
+                  m_sidreGroup->getPathName());
+    INLET_VERIFICATION_WARNING(m_sidreGroup->getPathName(), msg, errors);
   }
 
   return verified;

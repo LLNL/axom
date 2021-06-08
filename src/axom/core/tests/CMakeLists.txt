@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -38,12 +38,10 @@ set(gtest_utils_tests
     )
 
 set(utils_tests_depends
-    core
+    axom
     gtest
     )
 
-blt_list_append( TO utils_tests_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO utils_tests_depends ELEMENTS RAJA IF ${RAJA_FOUD} )
 blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------
@@ -96,8 +94,7 @@ endif()
 #------------------------------------------------------------------------------
 set(utils_config_test_depends core gtest )
 
-blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF ${MFEM_FOUND} )
-blt_list_append( TO utils_config_test_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
+blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF MFEM_FOUND )
 
 blt_add_executable( NAME       utils_config_test
                     SOURCES    utils_config.cpp

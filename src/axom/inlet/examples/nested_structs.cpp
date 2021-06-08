@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -315,17 +315,26 @@ int main(int argc, char** argv)
   CLI::App app {"Example of Axom's Inlet component for nested structures"};
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");
+  bool strictVerification {false};
+  app.add_flag("--strict",
+               strictVerification,
+               "Warns if any unexpected fields are provided");
   CLI11_PARSE(app, argc, argv);
 
-  axom::sidre::DataStore ds;
   auto reader = std::unique_ptr<inlet::YAMLReader>(new inlet::YAMLReader());
   reader->parseString(input);
-  inlet::Inlet inlet(std::move(reader), ds.getRoot());
+  inlet::Inlet inlet(std::move(reader));
 
   // _inlet_nested_struct_array_start
   auto& shapes_container = inlet.addStructArray("shapes");
   Shape::defineSchema(shapes_container);
   // _inlet_nested_struct_array_end
+
+  if(strictVerification)
+  {
+    // Mark the entire input as "strict"
+    inlet.getGlobalContainer().strict();
+  }
 
   if(inlet.verify())
   {
@@ -334,12 +343,6 @@ int main(int argc, char** argv)
   else
   {
     SLIC_INFO("Verification was unsuccessful");
-  }
-
-  // TODO: Remove this when a strict() option is available, as it will behave identically
-  for(const auto& item : inlet.unexpectedNames())
-  {
-    SLIC_WARNING("Input contained unexpected item: " << item);
   }
 
   auto shapes = inlet["shapes"].get<std::unordered_map<int, Shape>>();
@@ -351,14 +354,8 @@ int main(int argc, char** argv)
   if(docsEnabled)
   {
     const std::string docFileName = "nested_structs";
-    std::unique_ptr<inlet::SphinxWriter> sphinxWriter(
-      new inlet::SphinxWriter(docFileName + ".rst"));
-    inlet.registerWriter(std::move(sphinxWriter));
-    inlet.write();
-    std::unique_ptr<inlet::JSONSchemaWriter> schemaWriter(
-      new inlet::JSONSchemaWriter(docFileName + ".json"));
-    inlet.registerWriter(std::move(schemaWriter));
-    inlet.write();
+    inlet.write(inlet::SphinxWriter(docFileName + ".rst"));
+    inlet.write(inlet::JSONSchemaWriter(docFileName + ".json"));
     SLIC_INFO("Documentation was written to " << docFileName
                                               << " (rst and json)");
   }

@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -55,9 +55,6 @@ else()
     message(STATUS "Building static libraries (BUILD_SHARED_LIBS == OFF)")
 endif()
 
-if(WIN32 AND BUILD_SHARED_LIBS)
-    set(AXOM_WINDOWS_DLL_EXPORTS TRUE)
-endif()
 
 #------------------------------------------------------------------------------
 # Setup some additional compiler options that can be useful in various targets
@@ -160,6 +157,12 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_TRUNCATING_CONSTANTS
                   )
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_TRUNCATING_CONSTANTS)
 
+# Fix for https://github.com/LLNL/axom/issues/559
+blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS
+                  DEFAULT     " "
+                  PGI         "-Wc,--pending_instantiations=900"
+                  )
+
 blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS_DEBUG
                   DEFAULT     " "
                   CLANG       "-fstandalone-debug"
@@ -188,4 +191,3 @@ endif()
 if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
 endif()
-

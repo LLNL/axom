@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -7,14 +7,9 @@
 #------------------------------------------------------------------------------
 
 set(quest_example_depends
-        core
-        slic
-        mint
-        slam
-        quest
+        axom
         )
 
-blt_list_append(TO quest_example_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 

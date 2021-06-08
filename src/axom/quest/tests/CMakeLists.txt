@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -20,17 +20,12 @@ blt_list_append(TO       quest_tests
                 ELEMENTS quest_meshtester.cpp)
 
 set(quest_tests_depends
-    quest
-    slic
+    axom
     fmt
     gtest
    )
 
-blt_list_append( TO quest_tests_depends ELEMENTS openmp IF ENABLE_OPENMP )
-
 blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
-
-set(quest_vertex_weld_extra_depends mint)
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
@@ -38,7 +33,7 @@ foreach(test ${quest_tests})
         NAME ${test_name}_test
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} ${${test_name}_extra_depends}
+        DEPENDS_ON ${quest_tests_depends}
         FOLDER axom/quest/tests
         )
 
@@ -55,7 +50,7 @@ if(MFEM_FOUND)
         NAME ${test_name}
         SOURCES ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} mfem core
+        DEPENDS_ON ${quest_tests_depends} mfem
         FOLDER axom/quest/tests
         )
 
@@ -88,18 +83,13 @@ blt_list_append(TO       quest_mpi_tests
                 IF       AXOM_DATA_DIR
                 ELEMENTS quest_inout_interface.cpp )
 
-set(quest_mpi_depends ${quest_tests_depends})
-if (ENABLE_MPI)
-    list(APPEND quest_mpi_depends mpi)
-endif()
-
 foreach(test ${quest_mpi_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable(
         NAME ${test_name}_test
         SOURCES ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_mpi_depends}
+        DEPENDS_ON ${quest_tests_depends}
         FOLDER axom/quest/tests
     )
 
@@ -144,8 +134,7 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     set(quest_regression_depends
         ${quest_tests_depends}
-        conduit::conduit
-        sidre
+        cli11
         )
 
     blt_list_append(TO quest_regression_depends ELEMENTS hdf5 IF HDF5_FOUND)
@@ -184,17 +173,20 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
             16
         )
 
-        if( ${AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS} )
-           list(APPEND quest_regression_datasets
-               naca0012
-               plane_simp
-               plane_binary
-               aatbase_3_binary
+        blt_list_append(
+            TO          quest_regression_datasets
+            ELEMENTS    aatbase_3_binary
+                        cap
+                        naca0012
+                        plane_binary
+                        plane_simp
+            IF          AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
            )
-           list(APPEND quest_regression_resolutions
-               32
+        blt_list_append(
+            TO          quest_regression_resolutions
+            ELEMENTS    32
+            IF          AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
            )
-        endif()
 
         foreach(dataset ${quest_regression_datasets})
             foreach(res ${quest_regression_resolutions})
@@ -203,7 +195,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
                     COMMAND ${test_name}
                             --mesh ${quest_data_dir}/${dataset}.stl
                             --baseline ${quest_data_dir}/regression/${dataset}_${res}_baseline.root
-                            --resolution ${res} ${res} ${res}
                     NUM_MPI_TASKS 1
                 )
             endforeach()

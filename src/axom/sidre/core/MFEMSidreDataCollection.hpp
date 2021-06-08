@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -20,6 +20,7 @@ namespace sidre
 {
 /** @brief Data collection with Sidre routines following the Conduit mesh
     blueprint specification. */
+// clang-format off
 /** MFEMSidreDataCollection provides an HDF5-based file format for visualization
    or
     restart capability.  This functionality is aimed primarily at customers of
@@ -43,56 +44,39 @@ namespace sidre
          │              ├── coordsets
          │              │    └── coords
          │              │         ├─• path = "<bp-path>/coordsets/coords"
-         │              │         ├─• type ─> <bp-grp>/coordsets/coords/type =
-            "explicit"
+         │              │         ├─• type ─> <bp-grp>/coordsets/coords/type = "explicit"
          │              │         └─• coord_system = "x"|"xy"|"xyz"
          │              ├── topologies
          │              │    ├── mesh
          │              │    │    ├─• path = "<bp-path>/topologies/mesh"
-         │              │    │    ├─• type              ─>
-            <bp-grp>/topologies/mesh/type = "unstructured"
-         │              │    │    ├─• coordset          ─>
-            <bp-grp>/topologies/mesh/coordset = "coords"
-         │              │    │    ├─• grid_function     ─>
-            <bp-grp>/topologies/mesh/grid_function = "<nodes-field-name>"
-         │              │    │    └─• boundary_topology ─>
-            <bp-grp>/topologies/mesh/boundary_topology = "boundary"
+         │              │    │    ├─• type              ─> <bp-grp>/topologies/mesh/type = "unstructured"
+         │              │    │    ├─• coordset          ─> <bp-grp>/topologies/mesh/coordset = "coords"
+         │              │    │    ├─• grid_function     ─> <bp-grp>/topologies/mesh/grid_function = "<nodes-field-name>"
+         │              │    │    └─• boundary_topology ─> <bp-grp>/topologies/mesh/boundary_topology = "boundary"
          │              │    └── boundary
          │              │         ├─• path = "<bp-path>/topologies/mesh"
-         │              │         ├─• type     ─>
-            <bp-grp>/topologies/boundary/type = "unstructured"
-         │              │         └─• coordset ─>
-            <bp-grp>/topologies/boundary/coordset = "coords"
+         │              │         ├─• type     ─> <bp-grp>/topologies/boundary/type = "unstructured"
+         │              │         └─• coordset ─> <bp-grp>/topologies/boundary/coordset = "coords"
          │              └── fields
          │                   ├── mesh_material_attribute
-         │                   │    ├─• path =
-            "<bp-path>/fields/mesh_material_attribute"
-         │                   │    ├─• association ─>
-            <bp-grp>/fields/mesh_material_attribute/association = "element"
-         │                   │    ├─• topology    ─>
-            <bp-grp>/fields/mesh_material_attribute/topology = "mesh"
+         │                   │    ├─• path = "<bp-path>/fields/mesh_material_attribute"
+         │                   │    ├─• association ─> <bp-grp>/fields/mesh_material_attribute/association = "element"
+         │                   │    ├─• topology    ─> <bp-grp>/fields/mesh_material_attribute/topology = "mesh"
          │                   │    └─• number_of_components = 1
          │                   ├── boundary_material_attribute
-         │                   │    ├─• path =
-            "<bp-path>/fields/boundary_material_attribute"
-         │                   │    ├─• association ─>
-            <bp-grp>/fields/boundary_material_attribute/association = "element"
-         │                   │    ├─• topology    ─>
-            <bp-grp>/fields/boundary_material_attribute/topology = "boundary"
+         │                   │    ├─• path = "<bp-path>/fields/boundary_material_attribute"
+         │                   │    ├─• association ─> <bp-grp>/fields/boundary_material_attribute/association = "element"
+         │                   │    ├─• topology    ─> <bp-grp>/fields/boundary_material_attribute/topology = "boundary"
          │                   │    └─• number_of_components = 1
          │                   ├── grid-function-1
          │                   │    ├─• path = "<bp-path>/fields/grid-function-1"
-         │                   │    ├─• basis    ─>
-            <bp-grp>/fields/grid-function-1/basis = "<fe-coll-name>"
-         │                   │    ├─• topology ─>
-            <bp-grp>/fields/grid-function-1/topology = "mesh"
+         │                   │    ├─• basis    ─> <bp-grp>/fields/grid-function-1/basis = "<fe-coll-name>"
+         │                   │    ├─• topology ─> <bp-grp>/fields/grid-function-1/topology = "mesh"
          │                   │    └─• number_of_components = gf1->VectorDim()
          │                   ├── grid-function-2
          │                   │    ├─• path = "<bp-path>/fields/grid-function-2"
-         │                   │    ├─• basis    ─>
-            <bp-grp>/fields/grid-function-2/basis = "<fe-coll-name>"
-         │                   │    ├─• topology ─>
-            <bp-grp>/fields/grid-function-2/topology = "mesh"
+         │                   │    ├─• basis    ─> <bp-grp>/fields/grid-function-2/basis = "<fe-coll-name>"
+         │                   │    ├─• topology ─> <bp-grp>/fields/grid-function-2/topology = "mesh"
          │                   │    └─• number_of_components = gf2->VectorDim()
          │                   ├── ...
          │                  ...
@@ -107,12 +91,9 @@ namespace sidre
               │    │    └── coords
               │    │         ├─• type = "explicit"
               │    │         └── values
-              │    │              ├─• x = view in
-                 <vertex-coords-buffer>/<ext-double-data>
-              │    │              ├─• y = view in
-                 <vertex-coords-buffer>/<ext-double-data>
-              │    │              └─• z = view in
-                 <vertex-coords-buffer>/<ext-double-data>
+              │    │              ├─• x = view in <vertex-coords-buffer>/<ext-double-data>
+              │    │              ├─• y = view in <vertex-coords-buffer>/<ext-double-data>
+              │    │              └─• z = view in <vertex-coords-buffer>/<ext-double-data>
               │    ├── topologies
               │    │    ├── mesh
               │    │    │    ├─• type = "unstructured"
@@ -128,6 +109,33 @@ namespace sidre
               │    │         │    ├─• shape = "points"|"lines"|...
               │    │         │    └─• connectivity = <vert-idx-array>
               │    │         └─• coordset = "coords"
+              │    ├── matsets
+              │    │    ├── matset
+              │    │    │    ├─• topology = "mesh"
+              │    │    │    └── volume_fractions
+              │    │    │         ├─• material-1: view in <ext-double-array>/<named-buffer>
+              │    │    │         ├─• material-2: view in <ext-double-array>/<named-buffer>
+              │    │    │         ...
+              │    │    │         └─• material-N: view in <ext-double-array>/<named-buffer>
+              │    │    ├── ...
+              │    │   ...
+              │    ├── specsets
+              │    │    ├── specset
+              │    │    │    ├─• volume_dependent
+              │    │    │    ├─• matset = "matset"
+              │    │    │    └── matset_values
+              │    │    │         ├── material-1
+              │    │    │         │    ├─• component-1: view in <ext-double-array>/<named-buffer>
+              │    │    │         │    ├─• component-2: view in <ext-double-array>/<named-buffer>
+              │    │    │         │    ...
+              │    │    │         │    └─• component-N: view in <ext-double-array>/<named-buffer>
+              │    │    │         ├── material-2
+              │    │    │              └─• ...
+              │    │    │        ...
+              │    │    │         └── material-N
+              │    │    │              └─• ...
+              │    │    ├── ...
+              │    │   ...
               │    └── fields
               │         ├── mesh_material_attribute
               │         │    ├─• association = "element"
@@ -140,18 +148,14 @@ namespace sidre
               │         ├── grid-function-1   (name can include path)
               │         │    ├─• basis = "<fe-coll-name>"
               │         │    ├─• topology = "mesh"
-              │         │    └─• values = <ext-double-array>/<named-buffer>
-                 (vdim == 1)
+              │         │    └─• values = <ext-double-array>/<named-buffer> (vdim == 1)
               │         ├── grid-function-2   (name can include path)
               │         │    ├─• basis = "<fe-coll-name>"
               │         │    ├─• topology = "mesh"
               │         │    └── values   (vdim > 1)
-              │         │         ├─• x0 = view into
-                 <ext-double-array>/<named-buffer>
-              │         │         ├─• x1 = view into
-                 <ext-double-array>/<named-buffer>
-              │         │         └─• x2 = view into
-                 <ext-double-array>/<named-buffer>
+              │         │         ├─• x0 = view into <ext-double-array>/<named-buffer>
+              │         │         ├─• x1 = view into <ext-double-array>/<named-buffer>
+              │         │         └─• x2 = view into <ext-double-array>/<named-buffer>
               │         ├── ...
               │        ...
               └── named_buffers                (named_buffers group)
@@ -163,17 +167,16 @@ namespace sidre
     @note blueprint_index is used both in serial and in parallel. In parallel,
     only rank 0 will add entries to the blueprint index.
 
-    @note QuadratureFunction%s (q-fields) are not supported.
-
-    @note MFEMSidreDataCollection will attempt to reconstruct meshes and fields
-    on a restart, and will automatically register them.  This functionality is
-    experimental and only applies to meshes and fields written to a file by an
-    instance of this class.
+    @note MFEMSidreDataCollection will attempt to reconstruct meshes, fields,
+    and qfields on a restart, and will automatically register them.  This
+    functionality is experimental and only applies to meshes, fields, and
+    qfields written to a file by an instance of this class.
 
     @warning This class is still _experimental_, meaning that in future
     releases, it may not be backward compatible, and the output files generated
     by the current version may become unreadable.
  */
+// clang-format on
 class MFEMSidreDataCollection : public mfem::DataCollection
 {
 public:
@@ -256,6 +259,37 @@ public:
                      const std::string& buffer_name,
                      IndexType offset);
 
+  /// Register a mfem::QuadratureFunction in the Sidre DataStore.
+  /** This method is a shortcut for the call
+       `RegisterQField(field_name, qf, field_name, 0)`.
+    */
+  virtual void RegisterQField(const std::string& field_name,
+                              mfem::QuadratureFunction* qf)
+  {
+    RegisterQField(field_name, qf, field_name, 0);
+  }
+
+  /// Register a mfem::QuadratureFunction in the Sidre DataStore.
+  /** The registration procedure is as follows:
+       - if (@a qf's data is NULL) or if @a qf does not have an associated
+         quadrature space, error out;
+       - else, if (DataStore has a named buffer @a buffer_name), replace @a qf's
+         data array with that named buffer plus the given @a offset care will be
+         taken to ensure the two have compatible sizes;
+       - else, use @a qf's data as external data associated with @a field_name
+         in the DataStore;
+       - register @a field_name in #qfield_map.
+       Both the @a field_name and @a buffer_name can contain a path prefix.
+       @note If @a field_name or @a buffer_name is empty, the method does
+       nothing.
+       @note If the QuadratureFunction pointer @a qf or it's QuadratureSpace
+       pointers are NULL, the method does nothing.
+    */
+  void RegisterQField(const std::string& field_name,
+                      mfem::QuadratureFunction* qf,
+                      const std::string& buffer_name,
+                      axom::sidre::IndexType offset);
+
   /// Registers an attribute field in the Sidre DataStore
   /** The registration process is similar to that of RegisterField()
       The attribute field is associated with the elements of the mesh
@@ -298,6 +332,66 @@ public:
   /** The field is removed from the #field_map and the DataStore, including
       deleting it from the named_buffers group, if allocated. */
   virtual void DeregisterField(const std::string& field_name);
+
+  /// De-register @a field_name from the MFEMSidreDataCollection.
+  /** The field is removed from the #qfield_map and the DataStore, including
+       deleting it from the named_buffers group, if allocated. */
+  virtual void DeregisterQField(const std::string& field_name);
+
+  /// Associates a field name with a multi-buffer material set
+  /** Subsequent calls to RegisterField with field_names of the form
+   * @p volume_fraction_field_name_<material_id> will result in the addition
+   * of a volume buffer to the matset @p matset_name corresponding to @p material_id.
+   * 
+   * Note that this does not inhibit the addition of the field - that is, the GridFunction
+   * data will be present as both a field and a volume fraction buffer
+   * 
+   * @param volume_fraction_field_name The field name to associate with volume fractions
+   * @param matset_name The material set to associate subsequently added volume fractions with
+   *
+   */
+  void AssociateMaterialSet(const std::string& volume_fraction_field_name,
+                            const std::string& matset_name);
+
+  /// Associates a field name with a species set
+  /** Subsequent calls to RegisterField with field_names of the form
+   * @p species_field_name_<material_id>_<component> will result in the addition
+   * of its values to the specset @p specset_name corresponding to @p material_id.
+   * and specified component
+   * 
+   * Note that this does not inhibit the addition of the field - that is, the GridFunction
+   * data will be present as both a field and within the species set
+   * 
+   * @param species_field_name The field name to associate with the species set matset values
+   * @param specset_name The name of the species set to associate added matset values with
+   * @param matset_name The material set to associate with the species set
+   * @param volume_dependent Whether the species set is volume-dependent
+   * 
+   * @pre A matset called @a matset_name should be associated via AssociateMaterialSet
+   *
+   */
+  void AssociateSpeciesSet(const std::string& species_field_name,
+                           const std::string& specset_name,
+                           const std::string& matset_name,
+                           const bool volume_dependent);
+
+  /// Associates a material-dependent field with its corresponding material set
+  /** Subsequent calls to RegisterField with field_names of the form
+   * @p dependent_field_name_<material_id> will result in the addition
+   * of its values to the to the matset_vals of the @p dependent_field_name corresponding to
+   * @p material_id
+   * 
+   * Note that this does not inhibit the addition of the field - that is, the GridFunction
+   * data will be present as both a field on its own and as part of the "top-level" field
+   * 
+   * @param material_dependent_field_name The name of the field to mark as material-dependent
+   * @param matset_name The material set to associate with the field
+   * 
+   * @pre A matset called @a matset_name should be associated via AssociateMaterialSet
+   *
+   */
+  void AssociateMaterialDependentField(const std::string& material_dependent_field_name,
+                                       const std::string& matset_name);
 
   /// Delete all owned data.
   virtual ~MFEMSidreDataCollection();
@@ -471,14 +565,25 @@ private:
   // retain a non-owning pointer and manage memory via unique_ptr in
   // this class for consistency
   std::unique_ptr<mfem::Mesh> m_owned_mesh;
-  std::vector<std::unique_ptr<mfem::FiniteElementCollection>> m_fecolls;
-  std::vector<std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
+  // To avoid wasting memory, mfem::FEColl and mfem::FESpace objects with the same
+  // basis are reused
+  // NOTE: The FESpace objects are tied to a mesh instance, but because these variables
+  // are only modified after m_owned_mesh is reconstructed, no explicit logic
+  // is required to maintain coherency
+  std::unordered_map<std::string, std::unique_ptr<mfem::FiniteElementCollection>> m_fecolls;
+  std::unordered_map<std::string, std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
   std::vector<std::unique_ptr<mfem::GridFunction>> m_owned_gridfuncs;
+
+  // Used for reconstructed QuadratureFunctions
+  // To avoid wasting memory, mfem::QSpace objects with the same
+  // basis are reused
+  std::unordered_map<std::string, std::unique_ptr<mfem::QuadratureSpace>> m_quadspaces;
+  std::vector<std::unique_ptr<mfem::QuadratureFunction>> m_owned_quadfuncs;
 
   // Private helper functions
 
   void RegisterFieldInBPIndex(const std::string& field_name,
-                              mfem::GridFunction* gf);
+                              const int number_of_components);
   void DeregisterFieldInBPIndex(const std::string& field_name);
 
   void RegisterAttributeFieldInBPIndex(const std::string& attr_name);
@@ -503,17 +608,18 @@ private:
 
   /**
    * \brief A private helper function to set up the views associated with the
-      data of a scalar valued grid function in the blueprint style.
-   * \pre gf is not null
+      data of a scalar valued grid *or* quadrature function in the blueprint style.
+   * \pre field is not null
    * \note This function is expected to be called by RegisterField()
    * \note Handles cases where hierarchy is already set up,
    *      where the data was allocated by this data collection
    *      and where the gridfunction data is external to Sidre
    */
-  void addScalarBasedGridFunction(const std::string& field_name,
-                                  mfem::GridFunction* gf,
-                                  const std::string& buffer_name,
-                                  IndexType offset);
+  void addScalarBasedField(const std::string& field_name,
+                           mfem::Vector* field,
+                           const std::string& buffer_name,
+                           IndexType offset,
+                           const int num_dofs);
 
   /**
    * \brief A private helper function to set up the views associated with the
@@ -532,6 +638,10 @@ private:
   /** @brief A private helper function to set up the Views associated with
       attribute field named @a field_name */
   void addIntegerAttributeField(const std::string& field_name, bool is_bdry);
+
+  /** @brief A private helper function to remove a GridFunction or QuadratureFunction
+   *  @a field_name from the blueprint and index groups */
+  void removeField(const std::string& field_name);
 
   /// Sets up the four main mesh blueprint groups.
   /**
@@ -570,6 +680,23 @@ private:
   void createMeshBlueprintAdjacencies(bool hasBP);
   #endif
 
+  /// Retrieves a pointer to the View onto the data for a Field
+  /// For vector-valued Fields, retrieves the view to the first component
+  /// as data is interleaved
+  View* getFieldValuesView(const std::string& field_name);
+
+  /// After a Field has been registered, check if it's part of a material
+  /// set - if it is, add it to the matset
+  void checkForMaterialSet(const std::string& field_name);
+
+  /// After a Field has been registered, check if it's part of a species
+  /// set - if it is, add it to the specset
+  void checkForSpeciesSet(const std::string& field_name);
+
+  /// After a Field has been registered, check if it's a material-dependent
+  /// field - if it is, add it to the matset_values
+  void checkForMaterialDependentField(const std::string& field_name);
+
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();
 
@@ -579,6 +706,14 @@ private:
   static const std::string s_boundary_topology_name;
   static const std::string s_attribute_suffix;
   static const std::string s_coordset_name;
+
+  // Associations between field names and material metadata
+  // Maps field names onto matset names
+  std::unordered_map<std::string, std::string> m_matset_associations;
+  // Maps field names onto specset names
+  std::unordered_map<std::string, std::string> m_specset_associations;
+  // Maps material-dependent field names onto the material set they're associated with
+  std::unordered_map<std::string, std::string> m_material_dependent_fields;
 };
 
 } /* namespace sidre */

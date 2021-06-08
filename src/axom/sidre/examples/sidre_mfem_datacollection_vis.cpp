@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -21,7 +21,11 @@
   #include "mpi.h"
 #endif
 
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 int main(int argc, char* argv[])
+#else
+int main()
+#endif
 {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   MPI_Init(&argc, &argv);
@@ -43,9 +47,11 @@ int main(int argc, char* argv[])
   mfem::H1_FECollection fec(/*order=*/1, /*dimension=*/2);
   mfem::FiniteElementSpace fes(mesh, &fec);
 
+  // _sidredc_vis_construct_start
   // Initialize the datacollection with the mesh
   // Note: all fields (added with RegisterField) must be on this mesh
   axom::sidre::MFEMSidreDataCollection dc("sidre_mfem_datacoll_vis_ex", mesh);
+  // _sidredc_vis_construct_end
 
 // This is where the time-dependent operator would be set up...
 
@@ -58,18 +64,25 @@ int main(int argc, char* argv[])
 #endif
   soln = 0.0;
 
+  // _sidredc_vis_field_start
   // Note: Any number of fields can be registered
   dc.RegisterField("solution", &soln);
+  // _sidredc_vis_field_end
 
+  double dt = 0.05;
+  // _sidredc_vis_state_start
   // Save the initial state
-  dc.SetCycle(0);   // Iteration counter
-  dc.SetTime(0.0);  // Simulation time
+  dc.SetCycle(0);      // Iteration counter
+  dc.SetTime(0.0);     // Simulation time
+  dc.SetTimeStep(dt);  // Time step
+  // _sidredc_vis_state_end
+  // _sidredc_vis_save_start
   // Filename and protocol, both of which are optional
   dc.Save("sidre_mfem_datacoll_vis_ex", "sidre_hdf5");
+  // _sidredc_vis_save_end
 
   // Sample time parameters
   int n_iter = 10;
-  double dt = 0.05;
 
   for(int i = 0; i < n_iter; i++)
   {

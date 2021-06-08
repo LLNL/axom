@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -23,6 +23,7 @@ endif()
 cmake_dependent_option(AXOM_ENABLE_TESTS "Enables Axom Tests" ON "ENABLE_TESTS" OFF)
 cmake_dependent_option(AXOM_ENABLE_DOCS "Enables Axom Docs" ON "ENABLE_DOCS" OFF)
 cmake_dependent_option(AXOM_ENABLE_EXAMPLES "Enables Axom Examples" ON "ENABLE_EXAMPLES" OFF)
+option(AXOM_ENABLE_TOOLS "Enables Axom Tools" ON)
 
 cmake_dependent_option(AXOM_ENABLE_MPI3 "Enables use of MPI-3 features" OFF "ENABLE_MPI" OFF)
 mark_as_advanced(AXOM_ENABLE_MPI3)

@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -180,11 +180,10 @@ public:
     const FloatType* AXOM_NOT_USED(zmin),
     const FloatType* AXOM_NOT_USED(zmax))
   {
-    box[0] = xmin[idx];
-    box[1] = ymin[idx];
+    using PointType = typename BoundingBoxType::PointType;
 
-    box[2] = xmax[idx];
-    box[3] = ymax[idx];
+    box = BoundingBoxType(PointType {xmin[idx], ymin[idx]},
+                          PointType {xmax[idx], ymax[idx]});
   }
 };
 
@@ -236,13 +235,10 @@ public:
                                                      const FloatType* zmin,
                                                      const FloatType* zmax)
   {
-    box[0] = xmin[idx];
-    box[1] = ymin[idx];
-    box[2] = zmin[idx];
+    using PointType = typename BoundingBoxType::PointType;
 
-    box[3] = xmax[idx];
-    box[4] = ymax[idx];
-    box[5] = zmax[idx];
+    box = BoundingBoxType(PointType {xmin[idx], ymin[idx], zmin[idx]},
+                          PointType {xmax[idx], ymax[idx], zmax[idx]});
   }
 };
 

@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -29,8 +29,8 @@ foreach(test ${gtest_slic_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON slic gtest
-                        FOLDER      axom/slic/tests )
+                        DEPENDS_ON axom gtest
+                        FOLDER     axom/slic/tests )
     axom_add_test( NAME ${test_name}
                    COMMAND ${test_name}_test )
 endforeach()
@@ -38,8 +38,8 @@ endforeach()
 blt_add_executable( NAME slic_fmt_test
                     SOURCES slic_fmt.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON slic gtest fmt
-                    FOLDER      axom/slic/tests )
+                    DEPENDS_ON axom gtest fmt
+                    FOLDER     axom/slic/tests )
 axom_add_test( NAME slic_fmt
                COMMAND slic_fmt_test )
 
@@ -53,8 +53,8 @@ if (ENABLE_BENCHMARKS)
             NAME ${test_name}
             SOURCES ${test}
             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-            DEPENDS_ON slic gbenchmark
-            FOLDER      axom/slic/benchmarks )
+            DEPENDS_ON axom gbenchmark
+            FOLDER     axom/slic/benchmarks )
 
         blt_add_benchmark(
             NAME ${test_name}

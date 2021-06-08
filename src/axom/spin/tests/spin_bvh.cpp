@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -12,14 +12,15 @@
 #include "axom/core/numerics/Matrix.hpp"
 
 // axom/primal includes
+#include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 // axom/spin includes
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
 #include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
-#include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
 
 // axom/mint includes
 #include "axom/mint/mesh/Mesh.hpp"
@@ -120,22 +121,20 @@ void generate_aabbs2d(const mint::Mesh* mesh, FloatType*& aabbs)
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<double> xrange;
-      spin::internal::linear_bvh::Range<double> yrange;
+      primal::BoundingBox<double, 2> range;
 
       for(IndexType inode = 0; inode < 4; ++inode)
       {
-        const double* node = coords.getColumn(inode);
+        primal::Point<double, 2> node {coords.getColumn(inode)};
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
+        range.addPoint(node);
       }  // END for all cells nodes
 
       const IndexType offset = cellIdx * stride;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = xrange.max();
-      aabbs[offset + 3] = yrange.max();
+      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
+      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
+      aabbs[offset + 2] = range.getMax()[mint::X_COORDINATE];
+      aabbs[offset + 3] = range.getMax()[mint::Y_COORDINATE];
     });
 
   // post-condition sanity checks
@@ -187,26 +186,22 @@ void generate_aabbs3d(const mint::Mesh* mesh, FloatType*& aabbs)
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<double> xrange;
-      spin::internal::linear_bvh::Range<double> yrange;
-      spin::internal::linear_bvh::Range<double> zrange;
+      primal::BoundingBox<double, 3> range;
 
       for(IndexType inode = 0; inode < 8; ++inode)
       {
-        const double* node = coords.getColumn(inode);
+        primal::Point<double, 3> node {coords.getColumn(inode)};
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
-        zrange.include(node[mint::Z_COORDINATE]);
+        range.addPoint(node);
       }  // END for all cells nodes
 
       const IndexType offset = cellIdx * stride;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = zrange.min();
-      aabbs[offset + 3] = xrange.max();
-      aabbs[offset + 4] = yrange.max();
-      aabbs[offset + 5] = zrange.max();
+      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
+      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
+      aabbs[offset + 2] = range.getMin()[mint::Z_COORDINATE];
+      aabbs[offset + 3] = range.getMax()[mint::X_COORDINATE];
+      aabbs[offset + 4] = range.getMax()[mint::Y_COORDINATE];
+      aabbs[offset + 5] = range.getMax()[mint::Z_COORDINATE];
     });
 
   // post-condition sanity checks
@@ -265,8 +260,7 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
   constexpr int NUM_NODES_PER_CELL = 4;
   for(IndexType icell = 0; icell < ncells; ++icell)
   {
-    spin::internal::linear_bvh::Range<FloatType> xrange;
-    spin::internal::linear_bvh::Range<FloatType> yrange;
+    primal::BoundingBox<FloatType, 2> range;
 
     IndexType nodeIDs[NUM_NODES_PER_CELL];
     const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
@@ -284,18 +278,17 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
       xsum += coords[mint::X_COORDINATE];
       ysum += coords[mint::Y_COORDINATE];
 
-      xrange.include(coords[mint::X_COORDINATE]);
-      yrange.include(coords[mint::Y_COORDINATE]);
+      range.addPoint(primal::Point<FloatType, 2> {
+        static_cast<FloatType>(coords[mint::X_COORDINATE]),
+        static_cast<FloatType>(coords[mint::Y_COORDINATE])});
     }  // END for all cell nodes
 
     xc[icell] = xsum * ONE_OVER_4;
     yc[icell] = ysum * ONE_OVER_4;
 
     const IndexType offset = icell * STRIDE;
-    aabbs[offset] = xrange.min();
-    aabbs[offset + 1] = yrange.min();
-    aabbs[offset + 2] = xrange.max();
-    aabbs[offset + 3] = yrange.max();
+    range.getMin().to_array(aabbs + offset);
+    range.getMax().to_array(aabbs + offset + 2);
   }  // END for all cells
 
 #else
@@ -306,8 +299,7 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<FloatType> xrange;
-      spin::internal::linear_bvh::Range<FloatType> yrange;
+      primal::BoundingBox<FloatType, 2> range;
 
       FloatType xsum = 0.0;
       FloatType ysum = 0.0;
@@ -318,18 +310,19 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
         xsum += node[mint::X_COORDINATE];
         ysum += node[mint::Y_COORDINATE];
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
+        range.addPoint(primal::Point<FloatType, 2> {
+          static_cast<FloatType>(node[mint::X_COORDINATE]),
+          static_cast<FloatType>(node[mint::Y_COORDINATE])});
       }  // END for all cells nodes
 
       xc[cellIdx] = xsum * ONE_OVER_4;
       yc[cellIdx] = ysum * ONE_OVER_4;
 
       const IndexType offset = cellIdx * STRIDE;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = xrange.max();
-      aabbs[offset + 3] = yrange.max();
+      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
+      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
+      aabbs[offset + 2] = range.getMax()[mint::X_COORDINATE];
+      aabbs[offset + 3] = range.getMax()[mint::Y_COORDINATE];
     });
 
 #endif  // __ibmxl__
@@ -394,9 +387,7 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
   constexpr int NUM_NODES_PER_CELL = 8;
   for(IndexType icell = 0; icell < ncells; ++icell)
   {
-    spin::internal::linear_bvh::Range<FloatType> xrange;
-    spin::internal::linear_bvh::Range<FloatType> yrange;
-    spin::internal::linear_bvh::Range<FloatType> zrange;
+    primal::BoundingBox<FloatType, 3> range;
 
     IndexType nodeIDs[NUM_NODES_PER_CELL];
     const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
@@ -416,9 +407,10 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
       ysum += coords[mint::Y_COORDINATE];
       zsum += coords[mint::Z_COORDINATE];
 
-      xrange.include(coords[mint::X_COORDINATE]);
-      yrange.include(coords[mint::Y_COORDINATE]);
-      zrange.include(coords[mint::Z_COORDINATE]);
+      range.addPoint(primal::Point<FloatType, 3> {
+        static_cast<FloatType>(coords[mint::X_COORDINATE]),
+        static_cast<FloatType>(coords[mint::Y_COORDINATE]),
+        static_cast<FloatType>(coords[mint::Z_COORDINATE])});
     }  // END for all cell nodes
 
     xc[icell] = xsum * ONE_OVER_8;
@@ -426,12 +418,8 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
     zc[icell] = zsum * ONE_OVER_8;
 
     const IndexType offset = icell * STRIDE;
-    aabbs[offset] = xrange.min();
-    aabbs[offset + 1] = yrange.min();
-    aabbs[offset + 2] = zrange.min();
-    aabbs[offset + 3] = xrange.max();
-    aabbs[offset + 4] = yrange.max();
-    aabbs[offset + 5] = zrange.max();
+    range.getMin().to_array(aabbs + offset);
+    range.getMax().to_array(aabbs + offset + 3);
   }  // END for all cells
 
 #else
@@ -442,9 +430,7 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<FloatType> xrange;
-      spin::internal::linear_bvh::Range<FloatType> yrange;
-      spin::internal::linear_bvh::Range<FloatType> zrange;
+      primal::BoundingBox<FloatType, 3> range;
 
       FloatType xsum = 0.0;
       FloatType ysum = 0.0;
@@ -457,9 +443,10 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
         ysum += node[mint::Y_COORDINATE];
         zsum += node[mint::Z_COORDINATE];
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
-        zrange.include(node[mint::Z_COORDINATE]);
+        range.addPoint(primal::Point<FloatType, 3> {
+          static_cast<FloatType>(node[mint::X_COORDINATE]),
+          static_cast<FloatType>(node[mint::Y_COORDINATE]),
+          static_cast<FloatType>(node[mint::Z_COORDINATE])});
       }  // END for all cells nodes
 
       xc[cellIdx] = xsum * ONE_OVER_8;
@@ -467,12 +454,12 @@ void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
       zc[cellIdx] = zsum * ONE_OVER_8;
 
       const IndexType offset = cellIdx * STRIDE;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = zrange.min();
-      aabbs[offset + 3] = xrange.max();
-      aabbs[offset + 4] = yrange.max();
-      aabbs[offset + 5] = zrange.max();
+      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
+      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
+      aabbs[offset + 2] = range.getMin()[mint::Z_COORDINATE];
+      aabbs[offset + 3] = range.getMax()[mint::X_COORDINATE];
+      aabbs[offset + 4] = range.getMax()[mint::Y_COORDINATE];
+      aabbs[offset + 5] = range.getMax()[mint::Z_COORDINATE];
     });
 
 #endif  // __ibmxl__
@@ -1407,8 +1394,8 @@ TEST(spin_bvh, query_point_accessor)
   namespace bvh = axom::spin::internal::linear_bvh;
   using QueryAccessor2D = bvh::QueryAccessor<2, double>;
   using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using Point2D = bvh::Vec<double, 2>;
-  using Point3D = bvh::Vec<double, 3>;
+  using Point2D = primal::Vector<double, 2>;
+  using Point3D = primal::Vector<double, 3>;
 
   Point2D test_point2d;
   QueryAccessor2D::getPoint(test_point2d, ID, x, y, nullptr);
@@ -1439,8 +1426,8 @@ TEST(spin_bvh, query_ray_accessor)
   namespace bvh = axom::spin::internal::linear_bvh;
   using QueryAccessor2D = bvh::QueryAccessor<2, double>;
   using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using Ray2D = bvh::Vec<double, 4>;
-  using Ray3D = bvh::Vec<double, 6>;
+  using Ray2D = primal::Vector<double, 4>;
+  using Ray3D = primal::Vector<double, 6>;
 
   Ray2D ray2d;
   QueryAccessor2D::getRay(ray2d, ID, x, nx, y, ny, nullptr, nullptr);
@@ -1477,270 +1464,28 @@ TEST(spin_bvh, query_bounding_box_accessor)
   namespace bvh = axom::spin::internal::linear_bvh;
   using QueryAccessor2D = bvh::QueryAccessor<2, double>;
   using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using BoundingBox2D = bvh::Vec<double, 4>;
-  using BoundingBox3D = bvh::Vec<double, 6>;
+  using BoundingBox2D = primal::BoundingBox<double, 2>;
+  using BoundingBox3D = primal::BoundingBox<double, 3>;
 
   BoundingBox2D box2D;
   QueryAccessor2D::getBoundingBox(box2D, ID, xmin, xmax, ymin, ymax, nullptr, nullptr);
 
-  EXPECT_DOUBLE_EQ(box2D[0], xmin[ID]);
-  EXPECT_DOUBLE_EQ(box2D[1], ymin[ID]);
+  EXPECT_DOUBLE_EQ(box2D.getMin()[0], xmin[ID]);
+  EXPECT_DOUBLE_EQ(box2D.getMin()[1], ymin[ID]);
 
-  EXPECT_DOUBLE_EQ(box2D[2], xmax[ID]);
-  EXPECT_DOUBLE_EQ(box2D[3], ymax[ID]);
+  EXPECT_DOUBLE_EQ(box2D.getMax()[0], xmax[ID]);
+  EXPECT_DOUBLE_EQ(box2D.getMax()[1], ymax[ID]);
 
   BoundingBox3D box3D;
   QueryAccessor3D::getBoundingBox(box3D, ID, xmin, xmax, ymin, ymax, zmin, zmax);
 
-  EXPECT_DOUBLE_EQ(box3D[0], xmin[ID]);
-  EXPECT_DOUBLE_EQ(box3D[1], ymin[ID]);
-  EXPECT_DOUBLE_EQ(box3D[2], zmin[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMin()[0], xmin[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMin()[1], ymin[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMin()[2], zmin[ID]);
 
-  EXPECT_DOUBLE_EQ(box3D[3], xmax[ID]);
-  EXPECT_DOUBLE_EQ(box3D[4], ymax[ID]);
-  EXPECT_DOUBLE_EQ(box3D[5], zmax[ID]);
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_boundingBoxIntersectsLeftBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using BoundingBox2D = bvh::Vec<double, 4>;
-  using BoundingBox3D = bvh::Vec<double, 6>;
-
-  BoundingBox2D s1, s2;
-  s1[0] = 0.;  // LeftBin.xmin
-  s1[1] = 0.;  // LeftBin.ymin
-  s1[2] = 0.;  // LeftBin.zmin
-
-  s1[3] = 1.;  // LeftBin.xmax
-  s2[0] = 1.;  // LeftBin.ymax
-  s2[1] = 1.;  // LeftBin.zmax
-
-  BoundingBox2D box2d;
-  box2d[0] = -1.0;
-  box2d[1] = -1.0;
-  box2d[2] = 1.0;
-  box2d[3] = 1.0;
-  EXPECT_TRUE(TraversalPredicates2D::boundingBoxIntersectsLeftBin(box2d, s1, s2));
-
-  // non-intersecting
-  box2d[2] = -0.5;
-  box2d[3] = -0.5;
-  EXPECT_FALSE(TraversalPredicates2D::boundingBoxIntersectsLeftBin(box2d, s1, s2));
-
-  BoundingBox3D box3d;
-  box3d[0] = -1.0;
-  box3d[1] = -1.0;
-  box3d[2] = -1.0;
-  box3d[3] = 1.0;
-  box3d[4] = 1.0;
-  box3d[5] = 1.0;
-  EXPECT_TRUE(TraversalPredicates3D::boundingBoxIntersectsLeftBin(box3d, s1, s2));
-
-  // non-intersecting
-  box3d[3] = -0.5;
-  box3d[4] = -0.5;
-  box3d[5] = -0.5;
-  EXPECT_FALSE(TraversalPredicates3D::boundingBoxIntersectsLeftBin(box3d, s1, s2));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_boundingBoxIntersectsRightBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using BoundingBox2D = bvh::Vec<double, 4>;
-  using BoundingBox3D = bvh::Vec<double, 6>;
-
-  BoundingBox2D s2, s3;
-  s2[2] = 0.;  // RightBin.xmin
-  s2[3] = 0.;  // RightBin.ymin
-  s3[0] = 0.;  // RightBin.zmin
-
-  s3[1] = 1.;  // RightBin.xmax
-  s3[2] = 1.;  // RightBin.ymax
-  s3[3] = 1.;  // RightBin.zmax
-
-  BoundingBox2D box2d;
-  box2d[0] = -1.0;
-  box2d[1] = -1.0;
-  box2d[2] = 1.0;
-  box2d[3] = 1.0;
-  EXPECT_TRUE(TraversalPredicates2D::boundingBoxIntersectsRightBin(box2d, s2, s3));
-
-  // non-intersecting
-  box2d[2] = -0.5;
-  box2d[3] = -0.5;
-  EXPECT_FALSE(
-    TraversalPredicates2D::boundingBoxIntersectsRightBin(box2d, s2, s3));
-
-  BoundingBox3D box3d;
-  box3d[0] = -1.0;
-  box3d[1] = -1.0;
-  box3d[2] = -1.0;
-  box3d[3] = 1.0;
-  box3d[4] = 1.0;
-  box3d[5] = 1.0;
-  EXPECT_TRUE(TraversalPredicates3D::boundingBoxIntersectsRightBin(box3d, s2, s3));
-
-  // non-intersecting
-  box3d[3] = -0.5;
-  box3d[4] = -0.5;
-  box3d[5] = -0.5;
-  EXPECT_FALSE(
-    TraversalPredicates3D::boundingBoxIntersectsRightBin(box3d, s2, s3));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_rayIntersectsLeftBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-  using RayType = bvh::Vec<double, 6>;
-
-  VecType s1, s2;
-  s1[0] = 0.;  // LeftBin.xmin
-  s1[1] = 0.;  // LeftBin.ymin
-  s1[2] = 0.;  // LeftBin.zmin
-
-  s1[3] = 1.;  // LeftBin.xmax
-  s2[0] = 1.;  // LeftBin.ymax
-  s2[1] = 1.;  // LeftBin.zmax
-
-  RayType ray2d;
-  ray2d[0] = -1.0;
-  ray2d[1] = -1.0;
-  ray2d[2] = 1.0;
-  ray2d[3] = 1.0;
-  EXPECT_TRUE(TraversalPredicates2D::rayIntersectsLeftBin(ray2d, s1, s2));
-
-  // flip normal
-  ray2d[2] = -1.0;
-  ray2d[3] = -1.0;
-  EXPECT_FALSE(TraversalPredicates2D::rayIntersectsLeftBin(ray2d, s1, s2));
-
-  RayType ray3d;
-  ray3d[0] = -1.0;
-  ray3d[1] = -1.0;
-  ray3d[2] = -1.0;
-  ray3d[3] = 1.0;
-  ray3d[4] = 1.0;
-  ray3d[5] = 1.0;
-  EXPECT_TRUE(TraversalPredicates3D::rayIntersectsLeftBin(ray3d, s1, s2));
-
-  // flip normal
-  ray3d[3] = -1.0;
-  ray3d[4] = -1.0;
-  ray3d[5] = -1.0;
-  EXPECT_FALSE(TraversalPredicates3D::rayIntersectsLeftBin(ray3d, s1, s2));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_rayIntersectsRightBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-  using RayType = bvh::Vec<double, 6>;
-
-  VecType s2, s3;
-  s2[2] = 0.;  // RightBin.xmin
-  s2[3] = 0.;  // RightBin.ymin
-  s3[0] = 0.;  // RightBin.zmin
-
-  s3[1] = 1.;  // RightBin.xmax
-  s3[2] = 1.;  // RightBin.ymax
-  s3[3] = 1.;  // RightBin.zmax
-
-  RayType ray2d;
-  ray2d[0] = -1.0;
-  ray2d[1] = -1.0;
-  ray2d[2] = 1.0;
-  ray2d[3] = 1.0;
-  EXPECT_TRUE(TraversalPredicates2D::rayIntersectsRightBin(ray2d, s2, s3));
-
-  // flip normal
-  ray2d[2] = -1.0;
-  ray2d[3] = -1.0;
-  EXPECT_FALSE(TraversalPredicates2D::rayIntersectsRightBin(ray2d, s2, s3));
-
-  RayType ray3d;
-  ray3d[0] = -1.0;
-  ray3d[1] = -1.0;
-  ray3d[2] = -1.0;
-  ray3d[3] = 1.0;
-  ray3d[4] = 1.0;
-  ray3d[5] = 1.0;
-  EXPECT_TRUE(TraversalPredicates3D::rayIntersectsRightBin(ray3d, s2, s3));
-
-  // flip normal
-  ray3d[3] = -1.0;
-  ray3d[4] = -1.0;
-  ray3d[5] = -1.0;
-  EXPECT_FALSE(TraversalPredicates3D::rayIntersectsRightBin(ray3d, s2, s3));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_pointInLeftBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-
-  VecType in_point, out_point, s1, s2;
-
-  in_point[0] = in_point[1] = in_point[2] = 0.5;
-  out_point[0] = out_point[1] = out_point[2] = 1.5;
-
-  s1[0] = 0.;  // LeftBin.xmin
-  s1[1] = 0.;  // LeftBin.ymin
-  s1[2] = 0.;  // LeftBin.zmin
-
-  s1[3] = 1.;  // LeftBin.xmax
-  s2[0] = 1.;  // LeftBin.ymax
-  s2[1] = 1.;  // LeftBin.zmax
-
-  EXPECT_TRUE(TraversalPredicates2D::pointInLeftBin(in_point, s1, s2));
-  EXPECT_TRUE(TraversalPredicates3D::pointInLeftBin(in_point, s1, s2));
-
-  EXPECT_FALSE(TraversalPredicates2D::pointInLeftBin(out_point, s1, s2));
-  EXPECT_FALSE(TraversalPredicates3D::pointInLeftBin(out_point, s1, s2));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_pointInRightBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-
-  VecType in_point, out_point, s2, s3;
-
-  in_point[0] = in_point[1] = in_point[2] = 0.5;
-  out_point[0] = out_point[1] = out_point[2] = 1.5;
-
-  s2[2] = 0.;  // RightBin.xmin
-  s2[3] = 0.;  // RightBin.ymin
-  s3[0] = 0.;  // RightBin.zmin
-
-  s3[1] = 1.;  // RightBin.xmax
-  s3[2] = 1.;  // RightBin.ymax
-  s3[3] = 1.;  // RightBin.zmax
-
-  EXPECT_TRUE(TraversalPredicates2D::pointInRightBin(in_point, s2, s3));
-  EXPECT_TRUE(TraversalPredicates3D::pointInRightBin(in_point, s2, s3));
-
-  EXPECT_FALSE(TraversalPredicates2D::pointInRightBin(out_point, s2, s3));
-  EXPECT_FALSE(TraversalPredicates3D::pointInRightBin(out_point, s2, s3));
+  EXPECT_DOUBLE_EQ(box3D.getMax()[0], xmax[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMax()[1], ymax[ID]);
+  EXPECT_DOUBLE_EQ(box3D.getMax()[2], zmax[ID]);
 }
 
 //------------------------------------------------------------------------------

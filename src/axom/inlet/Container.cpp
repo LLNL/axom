@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -14,6 +14,88 @@ namespace axom
 {
 namespace inlet
 {
+Container::Container(const std::string& name,
+                     const std::string& description,
+                     Reader& reader,
+                     axom::sidre::Group* sidreRootGroup,
+                     std::vector<std::string>& unexpectedNames,
+                     bool docEnabled,
+                     bool reconstruct)
+  : m_name(name)
+  , m_reader(reader)
+  , m_sidreRootGroup(sidreRootGroup)
+  , m_unexpectedNames(unexpectedNames)
+  , m_docEnabled(docEnabled)
+{
+  SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
+                  "Inlet's Sidre Datastore class not set");
+
+  if(m_name == "")
+  {
+    m_sidreGroup = m_sidreRootGroup;
+  }
+  else
+  {
+    if(!m_sidreRootGroup->hasGroup(name))
+    {
+      m_sidreGroup = m_sidreRootGroup->createGroup(name);
+      m_sidreGroup->createViewString("InletType", "Container");
+    }
+    else
+    {
+      m_sidreGroup = m_sidreRootGroup->getGroup(name);
+    }
+  }
+
+  if(reconstruct)
+  {
+    for(auto idx = m_sidreGroup->getFirstValidGroupIndex();
+        sidre::indexIsValid(idx);
+        idx = m_sidreGroup->getNextValidGroupIndex(idx))
+    {
+      auto group = m_sidreGroup->getGroup(idx);
+      if(group->isUsingMap() && group->hasView("InletType"))
+      {
+        const std::string inletType = group->getView("InletType")->getString();
+        const std::string childName = appendPrefix(m_name, group->getName());
+
+        if(inletType == "Container")
+        {
+          m_containerChildren.emplace(
+            childName,
+            cpp11_compat::make_unique<Container>(childName,
+                                                 "",
+                                                 m_reader,
+                                                 m_sidreRootGroup,
+                                                 m_unexpectedNames,
+                                                 m_docEnabled,
+                                                 true));
+        }
+        else if(inletType == "Field")
+        {
+          // FIXME: We probably need to write the type to the datastore
+          m_fieldChildren.emplace(
+            childName,
+            cpp11_compat::make_unique<Field>(group,
+                                             m_sidreRootGroup,
+                                             sidre::DataTypeId::NO_TYPE_ID,
+                                             m_docEnabled));
+        }
+      }
+    }
+  }
+
+  if(!description.empty())
+  {
+    if(m_sidreGroup->hasView("description"))
+    {
+      //TODO: warn user?
+      m_sidreGroup->destroyViewAndData("description");
+    }
+    m_sidreGroup->createViewString("description", description);
+  }
+}
+
 template <typename Func>
 void Container::forEachCollectionElement(Func&& func) const
 {
@@ -289,6 +371,12 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
   {
     // Otherwise actually add a Field
     std::string fullName = appendPrefix(m_name, name);
+    // First check if the field already exists
+    auto iter = m_fieldChildren.find(fullName);
+    if(iter != m_fieldChildren.end())
+    {
+      return *iter->second;
+    }
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
@@ -587,10 +675,9 @@ std::vector<VariantKey> collectionIndices(const Container& container,
           // If the index is full/absolute, we only care about the last segment of it
           string_idx = removeBeforeDelimiter(string_idx);
           // The basename might be an integer, so check and convert accordingly
-          int idx_as_int;
-          if(checkedConvertToInt(string_idx, idx_as_int))
+          if(conduit::utils::string_is_integer(string_idx))
           {
-            key = idx_as_int;
+            key = conduit::utils::string_to_value<int>(string_idx);
           }
           else
           {
@@ -627,7 +714,7 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
 }
 
 void updateUnexpectedNames(const std::string& accessedName,
-                           std::unordered_set<std::string>& unexpectedNames)
+                           std::vector<std::string>& unexpectedNames)
 {
   std::vector<std::string> accessed_tokens;
   axom::utilities::string::split(accessed_tokens, accessedName, '/');
@@ -656,6 +743,51 @@ void updateUnexpectedNames(const std::string& accessedName,
       ++iter;
     }
   }
+}
+
+/*!
+ *****************************************************************************
+ * \brief Filters through the global list of unexpected names to retrieve the
+ * ones that are within the Container that corresponds to \a group
+ * 
+ * \param [in] group The Sidre group for a Container object
+ * \param [in] unexpectedNames The global (within the Inlet hierarchy) list
+ * of unexpected names
+ *****************************************************************************
+ */
+std::vector<std::string> filterUnexpectedNames(
+  const sidre::Group* group,
+  const std::vector<std::string>& unexpectedNames)
+{
+  const std::string callerName = group->getPathName();
+  std::vector<std::string> callerTokens;
+  axom::utilities::string::split(callerTokens, callerName, '/');
+  callerTokens.erase(std::remove(callerTokens.begin(),
+                                 callerTokens.end(),
+                                 detail::COLLECTION_GROUP_NAME),
+                     callerTokens.end());
+  std::vector<std::string> unexpectedTokens;
+  // The items of unexpected items below/within the Container corresponding
+  // to the "group" argument
+  std::vector<std::string> unexpectedNamesWithinGroup;
+  for(const auto& name : unexpectedNames)
+  {
+    unexpectedTokens.clear();
+    axom::utilities::string::split(unexpectedTokens, name, '/');
+    // If it's smaller it can't be a descendant
+    if(unexpectedTokens.size() >= callerTokens.size())
+    {
+      // If the beginning of the unexpected tokens sequence is equal to the tokens
+      // of the calling Container's name
+      if(std::equal(callerTokens.begin(),
+                    callerTokens.end(),
+                    unexpectedTokens.begin()))
+      {
+        unexpectedNamesWithinGroup.push_back(name);
+      }
+    }
+  }
+  return unexpectedNamesWithinGroup;
 }
 
 }  // end namespace detail
@@ -740,13 +872,37 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
   }
 }
 
+VerifiableScalar& Container::addBool(const std::string& name,
+                                     const std::string& description)
+{
+  return addPrimitive<bool>(name, description);
+}
+
+VerifiableScalar& Container::addDouble(const std::string& name,
+                                       const std::string& description)
+{
+  return addPrimitive<double>(name, description);
+}
+
+VerifiableScalar& Container::addInt(const std::string& name,
+                                    const std::string& description)
+{
+  return addPrimitive<int>(name, description);
+}
+
+VerifiableScalar& Container::addString(const std::string& name,
+                                       const std::string& description)
+{
+  return addPrimitive<std::string>(name, description);
+}
+
 Verifiable<Function>& Container::addFunction(const std::string& name,
                                              const FunctionTag ret_type,
                                              const std::vector<FunctionTag>& arg_types,
                                              const std::string& description,
                                              const std::string& pathOverride)
 {
-  // If it has indices, we're adding a primitive field to an array
+  // If it has indices, we're adding a function to an array
   // of structs, so we need to iterate over the subcontainers
   // corresponding to elements of the array
   std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
@@ -761,7 +917,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     });
   if(is_nested)
   {
-    // Create an aggregate field so requirements can be collectively imposed
+    // Create an aggregate function so requirements can be collectively imposed
     // on all elements of the array
     m_aggregate_funcs.emplace_back(std::move(funcs));
 
@@ -770,8 +926,14 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
   }
   else
   {
-    // Otherwise actually add a Field
+    // Otherwise actually add a Function
     std::string fullName = appendPrefix(m_name, name);
+    // First check if the function already exists
+    auto iter = m_functionChildren.find(fullName);
+    if(iter != m_functionChildren.end())
+    {
+      return *iter->second;
+    }
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(
       sidreGroup == nullptr,
@@ -845,7 +1007,7 @@ Container& Container::required(bool isRequired)
 
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Container specific Sidre Datastore Group not set");
-  setRequired(*m_sidreGroup, *m_sidreRootGroup, isRequired);
+  setFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG, isRequired);
   return *this;
 }
 
@@ -865,7 +1027,20 @@ bool Container::isRequired() const
 
   SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
                   "[Inlet] Container specific Sidre Datastore Group not set");
-  return checkIfRequired(*m_sidreGroup, *m_sidreRootGroup);
+  return checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG);
+}
+
+Container& Container::strict(bool isStrict)
+{
+  if(isStructCollection())
+  {
+    forEachCollectionElement(
+      [isStrict](Container& container) { container.strict(isStrict); });
+  }
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                  "[Inlet] Container specific Sidre Datastore Group not set");
+  setFlag(*m_sidreGroup, *m_sidreRootGroup, detail::STRICT_FLAG, isStrict);
+  return *this;
 }
 
 Container& Container::registerVerifier(std::function<bool(const Container&)> lambda)
@@ -886,7 +1061,7 @@ Container& Container::registerVerifier(std::function<bool(const Container&)> lam
   return *this;
 }
 
-bool Container::verify() const
+bool Container::verify(std::vector<VerificationError>* errors) const
 {
   // Whether the calling container has anything in it
   // If the name is empty then we're the global (root) container, which we always
@@ -895,14 +1070,31 @@ bool Container::verify() const
 
   // If this container was required, make sure something was defined in it
   bool verified =
-    verifyRequired(*m_sidreGroup, this_container_defined, "Container");
+    verifyRequired(*m_sidreGroup, this_container_defined, "Container", errors);
 
   // Verify this Container if a lambda was configured
   if(this_container_defined && m_verifier && !m_verifier(*this))
   {
     verified = false;
-    SLIC_WARNING(
-      fmt::format("[Inlet] Container failed verification: {0}", m_name));
+    const std::string msg =
+      fmt::format("[Inlet] Container failed verification: {0}", m_name);
+    INLET_VERIFICATION_WARNING(m_name, msg, errors);
+  }
+
+  // If the strict flag is set
+  if(checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::STRICT_FLAG))
+  {
+    // Unexpected names below/within the calling object
+    const auto currUnexpectedNames = unexpectedNames();
+    verified = verified && currUnexpectedNames.empty();
+    for(const auto& name : currUnexpectedNames)
+    {
+      const std::string msg =
+        fmt::format("[Inlet] Container '{0}' contained unexpected child: {1}",
+                    m_name,
+                    name);
+      INLET_VERIFICATION_WARNING(m_name, msg, errors);
+    }
   }
 
   // Checking the child objects is not needed if the container wasn't defined in the input file
@@ -911,25 +1103,26 @@ bool Container::verify() const
     // Verify the child Fields of this Container
     for(const auto& field : m_fieldChildren)
     {
-      verified = verified && field.second->verify();
+      verified = verified && field.second->verify(errors);
     }
     // Verify the child Containers of this Container
     for(const auto& container : m_containerChildren)
     {
-      verified = verified && container.second->verify();
+      verified = verified && container.second->verify(errors);
     }
 
     // Verify the child Functions of this Container
     for(const auto& function : m_functionChildren)
     {
-      verified = verified && function.second->verify();
+      verified = verified && function.second->verify(errors);
     }
   }
   // If this has a collection group, it always needs to be verified, as annotations
   // may have been applied to the collection group and not the calling group
   else if(hasContainer(detail::COLLECTION_GROUP_NAME))
   {
-    verified = verified && getContainer(detail::COLLECTION_GROUP_NAME).verify();
+    verified =
+      verified && getContainer(detail::COLLECTION_GROUP_NAME).verify(errors);
   }
 
   return verified;
@@ -1040,6 +1233,11 @@ Function& Container::getFunction(const std::string& funcName) const
 }
 
 std::string Container::name() const { return m_name; }
+
+std::vector<std::string> Container::unexpectedNames() const
+{
+  return detail::filterUnexpectedNames(m_sidreGroup, m_unexpectedNames);
+}
 
 bool Container::contains(const std::string& name) const
 {

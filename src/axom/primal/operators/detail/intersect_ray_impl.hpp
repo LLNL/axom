@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -254,15 +254,16 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
  *  Real Time Collision Detection by Christer Ericson.
  */
 template <typename T, int DIM>
-inline bool intersect_ray(const primal::Ray<T, DIM>& R,
-                          const primal::BoundingBox<T, DIM>& bb,
-                          primal::Point<T, DIM>& ip,
-                          T TOL = numerics::floating_point_limits<T>::epsilon())
+AXOM_HOST_DEVICE inline bool intersect_ray(
+  const primal::Ray<T, DIM>& R,
+  const primal::BoundingBox<T, DIM>& bb,
+  primal::Point<T, DIM>& ip,
+  T TOL = numerics::floating_point_limits<T>::epsilon())
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
-  T tmin = std::numeric_limits<T>::min();
-  T tmax = std::numeric_limits<T>::max();
+  T tmin = axom::numerics::floating_point_limits<T>::min();
+  T tmax = axom::numerics::floating_point_limits<T>::max();
 
   bool intersects = true;
   for(int i = 0; (intersects && (i < DIM)); i++)

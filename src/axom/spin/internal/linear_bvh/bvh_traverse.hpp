@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -33,41 +33,35 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  * \brief Generic BVH traversal routine.
  *
  * \param [in] inner_nodes pointer to the BVH bins.
+ * \param [in] inner_node_children pointer to pairs of child indices.
  * \param [in] leaf_nodes pointer to the leaf node IDs.
  * \param [in] p the primitive in query, e.g., a point, ray, etc.
- * \param [in] L functor that defines the check for the left bin
- * \param [in] R functor that defines the check for right bin
+ * \param [in] B functor that defines the check for the bins
  * \param [in] A functor that defines the leaf action
  *
- * \note The supplied functors, `L`, `R`, are expected to take the following
- *  three arguments:
+ * \note The supplied functor `B` is expected to take the following two
+ *  arguments:
  *    (1) The supplied primitive, p
- *    (2) a vec4_t< FloatType > of the first segment that defines the BVH bin
- *    (3) a vec4_t< FloatType > of the second segment that defines the BVH bin
+ *    (2) a primal::BoundingBox< FloatType, NDIMS > of the BVH bin
  *
  * \see BVHData for the details on the internal data layout of the BVH.
  *
- * \note Moreover, the functors `L`, `R` return a boolean status that indicates
+ * \note Moreover, the functor `B` returns a boolean status that indicates
  *  if the specified traversal predicate is satisfied.
  *
- * \see TraversalPredicates for the collection of defined predicates.
  */
-template <typename FloatType,
-          typename PrimitiveType,
-          typename InLeftCheck,
-          typename InRightCheck,
-          typename LeafAction>
-AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
-                                          const int32* leaf_nodes,
-                                          const PrimitiveType& p,
-                                          InLeftCheck&& L,
-                                          InRightCheck&& R,
-                                          LeafAction&& A)
+template <int NDIMS, typename FloatType, typename PrimitiveType, typename InBinCheck, typename LeafAction>
+AXOM_HOST_DEVICE inline void bvh_traverse(
+  const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+  const int32* inner_node_children,
+  const int32* leaf_nodes,
+  const PrimitiveType& p,
+  InBinCheck&& B,
+  LeafAction&& A)
 {
-  using VecType = vec4_t<FloatType>;
+  using BBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   // setup stack
-  constexpr int32 ISIZE = sizeof(int32);
   constexpr int32 STACK_SIZE = 64;
   constexpr int32 BARRIER = -2000000000;
   int32 todo[STACK_SIZE];
@@ -79,12 +73,12 @@ AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
   {
     if(!leaf_node(current_node))
     {
-      const VecType first4 = inner_nodes[current_node + 0];
-      const VecType second4 = inner_nodes[current_node + 1];
-      const VecType third4 = inner_nodes[current_node + 2];
-
-      const bool in_left = L(p, first4, second4);
-      const bool in_right = R(p, second4, third4);
+      BBoxType left_bin = inner_nodes[current_node + 0];
+      BBoxType right_bin = inner_nodes[current_node + 1];
+      const bool in_left = B(p, left_bin);
+      const bool in_right = B(p, right_bin);
+      int32 l_child = inner_node_children[current_node + 0];
+      int32 r_child = inner_node_children[current_node + 1];
 
       if(!in_left && !in_right)
       {
@@ -94,14 +88,6 @@ AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
       }
       else
       {
-        VecType children = inner_nodes[current_node + 3];
-
-        // memcpy the int bits hidden in the floats
-        int32 l_child;
-        memcpy(&l_child, &children[0], ISIZE);
-        int32 r_child;
-        memcpy(&r_child, &children[1], ISIZE);
-
         current_node = (in_left) ? l_child : r_child;
 
         if(in_left && in_right)

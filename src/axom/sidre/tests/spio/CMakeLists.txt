@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -19,18 +19,6 @@ set(gtest_spio_parallel_tests
    spio_parallel.hpp
    )
 
-set(spio_test_depends
-    sidre
-    conduit::conduit
-    mpi
-    )
-
-blt_list_append(TO spio_test_depends ELEMENTS hdf5 IF HDF5_FOUND)
-
-if(SCR_FOUND)
-    list(APPEND spio_test_depends scr)
-    list(APPEND gtest_spio_parallel_tests spio_scr.hpp)
-endif()
 
 #------------------------------------------------------------------------------
 # Add gtest C++ tests
@@ -39,7 +27,7 @@ blt_add_executable( NAME       spio_tests
                     SOURCES    spio_main.cpp
                     HEADERS    ${gtest_spio_parallel_tests} ${gtest_spio_serial_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON ${spio_test_depends} gtest
+                    DEPENDS_ON axom gtest
                     FOLDER     axom/sidre/tests
                     )
 
@@ -75,7 +63,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME       ${test_name}_F_test
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON ${spio_test_depends}
+                            DEPENDS_ON sidre
                             FOLDER     axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}_F
@@ -97,7 +85,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME       ${test_name}_F_test
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON ${spio_test_depends}
+                            DEPENDS_ON sidre
                             FOLDER     axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}_F
@@ -117,7 +105,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME       ${test_name}_F_test
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON ${spio_test_depends} fruit
+                            DEPENDS_ON sidre fruit
                             FOLDER     axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}_F

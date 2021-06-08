@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -100,22 +100,10 @@ public:
    * point. If the size is not the same as the size of this point, this
    * behaves the same way as the constructor which takes a pointer and size.
    */
+  AXOM_HOST_DEVICE
   Point(std::initializer_list<T> values)
     : Point {values.begin(), static_cast<int>(values.size())}
   { }
-
-  /*!
-   * \brief Copy constructor.
-   * \param [in] other The point to copy
-   */
-  AXOM_HOST_DEVICE
-  Point(const Point& other) : m_components(other.m_components) { }
-
-  /*!
-   * \brief Destructor.
-   */
-  AXOM_HOST_DEVICE
-  ~Point() { }
 
   /*!
    * \brief Returns the dimension of this point instance.
@@ -123,17 +111,6 @@ public:
    * \post d >= 1.
    */
   static int dimension() { return NDIMS; };
-
-  /*!
-   * \brief Assignment operator.
-   * \param [in] rhs a point instance on the right hand side.
-   */
-  AXOM_HOST_DEVICE
-  Point& operator=(const Point& rhs)
-  {
-    m_components = rhs.m_components;
-    return *this;
-  }
 
   /// \name Overloaded [] operator methods
   ///@{
@@ -158,8 +135,9 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T* data() const { return m_components.data(); }
-  T* data() { return m_components.data(); }
+  AXOM_HOST_DEVICE const T* data() const { return m_components.data(); }
+
+  AXOM_HOST_DEVICE T* data() { return m_components.data(); }
 
   ///@}
 
@@ -219,6 +197,7 @@ public:
    * \param [in] B user-supplied point
    * \return p point at the midpoint A and B.
    */
+  AXOM_HOST_DEVICE
   static Point midpoint(const Point& A, const Point& B);
 
   /*!

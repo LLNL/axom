@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -15,10 +15,8 @@ int main()
   // Parse example input file
   lr->parseString("values = { [1] = 'start', [2] = 'stop', [3] = 'pause' }");
 
-  axom::sidre::DataStore ds;
-
   // Initialize Inlet
-  axom::inlet::Inlet inlet(std::move(lr), ds.getRoot());
+  axom::inlet::Inlet inlet(std::move(lr));
 
   // Register the verifier, which will verify the array values
   auto& vals = inlet.getGlobalContainer().addStringArray("values");

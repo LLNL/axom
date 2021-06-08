@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -13,10 +13,13 @@
 
 #include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
-#include "axom/spin/internal/linear_bvh/vec.hpp"
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
+
+#include "axom/spin/MortonIndex.hpp"
 
 #include "axom/core/utilities/Utilities.hpp"  // for isNearlyEqual()
 #include "axom/slic/interface/slic.hpp"       // for slic
@@ -37,47 +40,28 @@ namespace internal
 {
 namespace linear_bvh
 {
-//expands 10-bit unsigned int into 30 bits
-static inline AXOM_HOST_DEVICE axom::int32 expand_bits32(axom::int32 x32)
-{
-  x32 = (x32 | (x32 << 16)) & 0x030000FF;
-  x32 = (x32 | (x32 << 8)) & 0x0300F00F;
-  x32 = (x32 | (x32 << 4)) & 0x030C30C3;
-  x32 = (x32 | (x32 << 2)) & 0x09249249;
-  return x32;
-}
-
-//------------------------------------------------------------------------------
-static inline AXOM_HOST_DEVICE axom::int64 expand_bits64(axom::int32 x)
-{
-  axom::int64 x64 = x & 0x1FFFFF;
-  x64 = (x64 | x64 << 32) & 0x1F00000000FFFF;
-  x64 = (x64 | x64 << 16) & 0x1F0000FF0000FF;
-  x64 = (x64 | x64 << 8) & 0x100F00F00F00F00F;
-  x64 = (x64 | x64 << 4) & 0x10c30c30c30c30c3;
-  x64 = (x64 | x64 << 2) & 0x1249249249249249;
-
-  return x64;
-}
-
 //------------------------------------------------------------------------------
 //Returns 30 bit morton code for coordinates for
 // x, y, and z are expecting to be between [0,1]
-static inline AXOM_HOST_DEVICE axom::int32 morton32_encode(axom::float32 x,
-                                                           axom::float32 y,
-                                                           axom::float32 z = 0.0)
+template <typename FloatType, int Dims>
+static inline AXOM_HOST_DEVICE axom::int32 morton32_encode(
+  const primal::Vector<FloatType, Dims>& point)
 {
-  //take the first 10 bits. Note, 2^10 = 1024
-  x = fmin(fmax(x * 1024.0f, 0.0f), 1023.0f);
-  y = fmin(fmax(y * 1024.0f, 0.0f), 1023.0f);
-  z = fmin(fmax(z * 1024.0f, 0.0f), 1023.0f);
+  //for a float, take the first 10 bits. Note, 2^10 = 1024
+  constexpr int NUM_BITS_PER_DIM = 32 / Dims;
+  constexpr FloatType FLOAT_TO_INT = 1 << NUM_BITS_PER_DIM;
+  constexpr FloatType FLOAT_CEILING = FLOAT_TO_INT - 1;
 
-  //expand 10 bits to 30
-  axom::int32 xx = expand_bits32((axom::int32)x);
-  axom::int32 yy = expand_bits32((axom::int32)y);
-  axom::int32 zz = expand_bits32((axom::int32)z);
-  //interleave coordinates
-  return (zz << 2 | yy << 1 | xx);
+  int32 int_coords[Dims];
+  for(int i = 0; i < Dims; i++)
+  {
+    int_coords[i] =
+      fmin(fmax(point[i] * FLOAT_TO_INT, (FloatType)0), FLOAT_CEILING);
+  }
+
+  primal::Point<int32, Dims> integer_pt(int_coords);
+
+  return convertPointToMorton<int32>(integer_pt);
 }
 
 //------------------------------------------------------------------------------
@@ -92,43 +76,34 @@ static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
   y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
   z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
 
-  //expand the 10 bits to 30
-  axom::int64 xx = expand_bits64((axom::int32)x);
-  axom::int64 yy = expand_bits64((axom::int32)y);
-  axom::int64 zz = expand_bits64((axom::int32)z);
+  primal::Point<int64, 3> integer_pt =
+    primal::Point<int64, 3>::make_point((int64)x, (int64)y, (int64)z);
 
-  //interleave coordinates
-  return (zz << 2 | yy << 1 | xx);
+  return convertPointToMorton<int64>(integer_pt);
 }
 
-template <typename ExecSpace, typename FloatType>
+template <typename ExecSpace, typename FloatType, int NDIMS>
 void transform_boxes(const FloatType* boxes,
-                     AABB<FloatType, 3>* aabbs,
+                     primal::BoundingBox<FloatType, NDIMS>* aabbs,
                      int32 size,
                      FloatType scale_factor)
 {
-  AXOM_PERF_MARK_FUNCTION("transform_boxes3D");
+  AXOM_PERF_MARK_FUNCTION("transform_boxes");
 
-  constexpr int NDIMS = 3;
   constexpr int STRIDE = 2 * NDIMS;
 
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      AABB<FloatType, NDIMS> aabb;
-      Vec<FloatType, NDIMS> min_point, max_point;
+      primal::BoundingBox<FloatType, NDIMS> aabb;
 
       const int32 offset = i * STRIDE;
-      min_point[0] = boxes[offset + 0];
-      min_point[1] = boxes[offset + 1];
-      min_point[2] = boxes[offset + 2];
 
-      max_point[0] = boxes[offset + 3];
-      max_point[1] = boxes[offset + 4];
-      max_point[2] = boxes[offset + 5];
+      primal::Point<FloatType, NDIMS> min_point(boxes + offset);
+      primal::Point<FloatType, NDIMS> max_point(boxes + offset + NDIMS);
 
-      aabb.include(min_point);
-      aabb.include(max_point);
+      aabb.addPoint(min_point);
+      aabb.addPoint(max_point);
       aabb.scale(scale_factor);
 
       aabbs[i] = aabb;
@@ -136,134 +111,54 @@ void transform_boxes(const FloatType* boxes,
 }
 
 //------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-void transform_boxes(const FloatType* boxes,
-                     AABB<FloatType, 2>* aabbs,
-                     int32 size,
-                     FloatType scale_factor)
+template <typename ExecSpace, typename FloatType, int NDIMS>
+primal::BoundingBox<FloatType, NDIMS> reduce(
+  primal::BoundingBox<FloatType, NDIMS>* aabbs,
+  int32 size)
 {
-  AXOM_PERF_MARK_FUNCTION("transform_boxes2D");
-
-  constexpr int NDIMS = 2;
-  constexpr int STRIDE = 2 * NDIMS;
-
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(int32 i) {
-      AABB<FloatType, NDIMS> aabb;
-      Vec<FloatType, NDIMS> min_point, max_point;
-
-      const int32 offset = i * STRIDE;
-      min_point[0] = boxes[offset + 0];
-      min_point[1] = boxes[offset + 1];
-
-      max_point[0] = boxes[offset + 2];
-      max_point[1] = boxes[offset + 3];
-
-      aabb.include(min_point);
-      aabb.include(max_point);
-      aabb.scale(scale_factor);
-
-      aabbs[i] = aabb;
-    });
-}
-
-//------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-AABB<FloatType, 3> reduce(AABB<FloatType, 3>* aabbs, int32 size)
-{
-  AXOM_PERF_MARK_FUNCTION("reduce_abbs3D");
-
-  constexpr int NDIMS = 3;
+  AXOM_PERF_MARK_FUNCTION("reduce_abbs");
 
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
-  RAJA::ReduceMin<reduce_policy, FloatType> xmin(infinity32());
-  RAJA::ReduceMin<reduce_policy, FloatType> ymin(infinity32());
-  RAJA::ReduceMin<reduce_policy, FloatType> zmin(infinity32());
 
-  RAJA::ReduceMax<reduce_policy, FloatType> xmax(neg_infinity32());
-  RAJA::ReduceMax<reduce_policy, FloatType> ymax(neg_infinity32());
-  RAJA::ReduceMax<reduce_policy, FloatType> zmax(neg_infinity32());
+  primal::Point<FloatType, NDIMS> min_pt, max_pt;
 
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(int32 i) {
-      const AABB<FloatType, NDIMS>& aabb = aabbs[i];
+  FloatType infinity = std::numeric_limits<FloatType>::max();
+  FloatType neg_infinity = std::numeric_limits<FloatType>::lowest();
 
-      xmin.min(aabb.m_x.min());
-      ymin.min(aabb.m_y.min());
-      zmin.min(aabb.m_z.min());
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    RAJA::ReduceMin<reduce_policy, FloatType> min_coord(infinity);
+    RAJA::ReduceMax<reduce_policy, FloatType> max_coord(neg_infinity);
 
-      xmax.max(aabb.m_x.max());
-      ymax.max(aabb.m_y.max());
-      zmax.max(aabb.m_z.max());
-    });
+    for_all<ExecSpace>(
+      size,
+      AXOM_LAMBDA(int32 i) {
+        const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
+        min_coord.min(aabb.getMin()[dim]);
+        max_coord.max(aabb.getMax()[dim]);
+      });
 
-  AABB<FloatType, NDIMS> res;
+    min_pt[dim] = min_coord.get();
+    max_pt[dim] = max_coord.get();
+  }
 
-  Vec<FloatType, NDIMS> mins =
-    make_vec<FloatType>(xmin.get(), ymin.get(), zmin.get());
-
-  Vec<FloatType, NDIMS> maxs =
-    make_vec<FloatType>(xmax.get(), ymax.get(), zmax.get());
-
-  res.include(mins);
-  res.include(maxs);
-  return res;
+  return primal::BoundingBox<FloatType, NDIMS>(min_pt, max_pt);
 }
 
 //------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-AABB<FloatType, 2> reduce(AABB<FloatType, 2>* aabbs, int32 size)
-{
-  AXOM_PERF_MARK_FUNCTION("reduce_abbs2D");
-
-  constexpr int NDIMS = 2;
-
-  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
-  RAJA::ReduceMin<reduce_policy, FloatType> xmin(infinity32());
-  RAJA::ReduceMin<reduce_policy, FloatType> ymin(infinity32());
-
-  RAJA::ReduceMax<reduce_policy, FloatType> xmax(neg_infinity32());
-  RAJA::ReduceMax<reduce_policy, FloatType> ymax(neg_infinity32());
-
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(int32 i) {
-      const AABB<FloatType, NDIMS>& aabb = aabbs[i];
-      xmin.min(aabb.m_x.min());
-      ymin.min(aabb.m_y.min());
-
-      xmax.max(aabb.m_x.max());
-      ymax.max(aabb.m_y.max());
-    });
-
-  AABB<FloatType, NDIMS> res;
-  Vec<FloatType, NDIMS> mins = make_vec<FloatType>(xmin.get(), ymin.get());
-  Vec<FloatType, NDIMS> maxs = make_vec<FloatType>(xmax.get(), ymax.get());
-
-  res.include(mins);
-  res.include(maxs);
-  return res;
-}
-
-//------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-void get_mcodes(AABB<FloatType, 2>* aabbs,
+template <typename ExecSpace, typename FloatType, int NDIMS>
+void get_mcodes(primal::BoundingBox<FloatType, NDIMS>* aabbs,
                 int32 size,
-                const AABB<FloatType, 2>& bounds,
+                const primal::BoundingBox<FloatType, NDIMS>& bounds,
                 uint32* mcodes)
 {
-  AXOM_PERF_MARK_FUNCTION("get_mcodes2D");
+  AXOM_PERF_MARK_FUNCTION("get_mcodes");
 
-  constexpr int NDIMS = 2;
+  primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
 
-  Vec<FloatType, NDIMS> extent, inv_extent, min_coord;
-  extent[0] = bounds.m_x.max() - bounds.m_x.min();
-  extent[1] = bounds.m_y.max() - bounds.m_y.min();
-
-  min_coord[0] = bounds.m_x.min();
-  min_coord[1] = bounds.m_y.min();
+  extent = bounds.getMax();
+  extent -= bounds.getMin();
+  min_coord = bounds.getMin();
 
   for(int i = 0; i < NDIMS; ++i)
   {
@@ -275,57 +170,12 @@ void get_mcodes(AABB<FloatType, 2>* aabbs,
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      const AABB<FloatType, NDIMS>& aabb = aabbs[i];
+      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
 
       // get the center and normalize it
-      FloatType dx = aabb.m_x.center() - min_coord[0];
-      FloatType dy = aabb.m_y.center() - min_coord[1];
-      float32 centroid_x = static_cast<float32>(dx * inv_extent[0]);
-      float32 centroid_y = static_cast<float32>(dy * inv_extent[1]);
-      mcodes[i] = morton32_encode(centroid_x, centroid_y);
-    });
-}
-
-//------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType>
-void get_mcodes(AABB<FloatType, 3>* aabbs,
-                int32 size,
-                const AABB<FloatType, 3>& bounds,
-                uint32* mcodes)
-{
-  AXOM_PERF_MARK_FUNCTION("get_mcodes3D");
-
-  constexpr int NDIMS = 3;
-
-  Vec<FloatType, NDIMS> extent, inv_extent, min_coord;
-  extent[0] = bounds.m_x.max() - bounds.m_x.min();
-  extent[1] = bounds.m_y.max() - bounds.m_y.min();
-  extent[2] = bounds.m_z.max() - bounds.m_z.min();
-
-  min_coord[0] = bounds.m_x.min();
-  min_coord[1] = bounds.m_y.min();
-  min_coord[2] = bounds.m_z.min();
-
-  for(int i = 0; i < NDIMS; ++i)
-  {
-    inv_extent[i] = utilities::isNearlyEqual<FloatType>(extent[i], .0f)
-      ? 0.f
-      : 1.f / extent[i];
-  }
-
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(int32 i) {
-      const AABB<FloatType, NDIMS>& aabb = aabbs[i];
-
-      // get the center and normalize it
-      FloatType dx = aabb.m_x.center() - min_coord[0];
-      FloatType dy = aabb.m_y.center() - min_coord[1];
-      FloatType dz = aabb.m_z.center() - min_coord[2];
-      float32 centroid_x = static_cast<float32>(dx * inv_extent[0]);
-      float32 centroid_y = static_cast<float32>(dy * inv_extent[1]);
-      float32 centroid_z = static_cast<float32>(dz * inv_extent[2]);
-      mcodes[i] = morton32_encode(centroid_x, centroid_y, centroid_z);
+      primal::Vector<FloatType, NDIMS> centroid = aabb.getCentroid();
+      centroid = (centroid - min_coord).array() * inv_extent.array();
+      mcodes[i] = morton32_encode(centroid);
     });
 }
 
@@ -411,6 +261,43 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 #endif /* RAJA version 0.12.0 and above */
 
 //------------------------------------------------------------------------------
+//
+// count leading zeros
+//
+inline AXOM_HOST_DEVICE axom::int32 clz(axom::int32 x)
+{
+  axom::int32 y;
+  axom::int32 n = 32;
+  y = x >> 16;
+  if(y != 0)
+  {
+    n = n - 16;
+    x = y;
+  }
+  y = x >> 8;
+  if(y != 0)
+  {
+    n = n - 8;
+    x = y;
+  }
+  y = x >> 4;
+  if(y != 0)
+  {
+    n = n - 4;
+    x = y;
+  }
+  y = x >> 2;
+  if(y != 0)
+  {
+    n = n - 2;
+    x = y;
+  }
+  y = x >> 1;
+  if(y != 0) return axom::int32(n - 2);
+  return axom::int32(n - x);
+}
+
+//------------------------------------------------------------------------------
 template <typename IntType, typename MCType>
 AXOM_HOST_DEVICE IntType delta(const IntType& a,
                                const IntType& b,
@@ -492,9 +379,9 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
         if(t == 1) break;
       }
 
-      int32 split = i + s * d + min(d, 0);
+      int32 split = i + s * d + utilities::min(d, 0);
       // assign parent/child pointers
-      if(min(i, j) == split)
+      if(utilities::min(i, j) == split)
       {
         //leaf
         parent_ptr[split + inner_size] = i;
@@ -507,7 +394,7 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
         lchildren_ptr[i] = split;
       }
 
-      if(max(i, j) == split + 1)
+      if(utilities::max(i, j) == split + 1)
       {
         //leaf
         parent_ptr[split + inner_size + 1] = i;
@@ -571,9 +458,9 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
   const int32* lchildren_ptr = data.m_left_children;
   const int32* rchildren_ptr = data.m_right_children;
   const int32* parent_ptr = data.m_parents;
-  const AABB<FloatType, NDIMS>* leaf_aabb_ptr = data.m_leaf_aabbs;
+  const primal::BoundingBox<FloatType, NDIMS>* leaf_aabb_ptr = data.m_leaf_aabbs;
 
-  AABB<FloatType, NDIMS>* inner_aabb_ptr = data.m_inner_aabbs;
+  primal::BoundingBox<FloatType, NDIMS>* inner_aabb_ptr = data.m_inner_aabbs;
 
   int32* counters_ptr = axom::allocate<int32>(inner_size, allocatorID);
 
@@ -601,23 +488,23 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
         int32 rchild = rchildren_ptr[current_node];
 
         // gather the aabbs
-        AABB<FloatType, NDIMS> aabb;
+        primal::BoundingBox<FloatType, NDIMS> aabb;
         if(lchild >= inner_size)
         {
-          aabb.include(leaf_aabb_ptr[lchild - inner_size]);
+          aabb.addBox(leaf_aabb_ptr[lchild - inner_size]);
         }
         else
         {
-          aabb.include(inner_aabb_ptr[lchild]);
+          aabb.addBox(inner_aabb_ptr[lchild]);
         }
 
         if(rchild >= inner_size)
         {
-          aabb.include(leaf_aabb_ptr[rchild - inner_size]);
+          aabb.addBox(leaf_aabb_ptr[rchild - inner_size]);
         }
         else
         {
-          aabb.include(inner_aabb_ptr[rchild]);
+          aabb.addBox(inner_aabb_ptr[rchild]);
         }
 
         inner_aabb_ptr[current_node] = aabb;
@@ -645,7 +532,7 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 template <typename ExecSpace, typename FloatType, int NDIMS>
 void build_radix_tree(const FloatType* boxes,
                       int size,
-                      AABB<FloatType, NDIMS>& bounds,
+                      primal::BoundingBox<FloatType, NDIMS>& bounds,
                       RadixTree<FloatType, NDIMS>& radix_tree,
                       FloatType scale_factor,
                       int allocatorID)

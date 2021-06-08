@@ -1,6 +1,6 @@
 [comment]: # (#################################################################)
 [comment]: # (Copyright 2017-2021, Lawrence Livermore National Security, LLC)
-[comment]: # (and Axom Project Developers. See the top-level COPYRIGHT file)
+[comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)

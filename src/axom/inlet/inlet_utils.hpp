@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -9,6 +9,7 @@
 #include "axom/sidre.hpp"
 #include "fmt/fmt.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
+#include "axom/core/Path.hpp"
 
 #ifndef INLET_UTILS_HPP
   #define INLET_UTILS_HPP
@@ -26,6 +27,43 @@ enum class ReaderResult
 };
 
 /*!
+ *****************************************************************************
+ * \brief Information on an Inlet verification error
+ *****************************************************************************
+ */
+struct VerificationError
+{
+  /// \brief The path to the container/field/function with the error
+  const axom::Path path;
+  /// \brief The error message
+  const std::string message;
+  /// \brief Returns whether a given substring is present in the error message
+  bool messageContains(const std::string substr) const
+  {
+    return message.find(substr) != std::string::npos;
+  }
+};
+
+/*!
+ *****************************************************************************
+ * \brief Utility macro for selecting between logging to SLIC and logging
+ * to a list of errors
+ * \param path The path within the input file to warn on
+ * \param msg The warning message
+ * \param errs The list of errors, must be of type \p std::vector<VerificationError>*
+ *****************************************************************************
+ */
+  #define INLET_VERIFICATION_WARNING(path, msg, errs) \
+    if(errs)                                          \
+    {                                                 \
+      errs->push_back({axom::Path {path}, msg});      \
+    }                                                 \
+    else                                              \
+    {                                                 \
+      SLIC_WARNING(msg);                              \
+    }
+
+/*!
 *****************************************************************************
 * \brief This function is used to mark if anything went wrong during the 
 * defining phase of inlet so verify() will properly fail.
@@ -38,33 +76,38 @@ void setWarningFlag(axom::sidre::Group* root);
 
 /*!
 *****************************************************************************
-* \brief This function is used to configure the Inlet object corresponding
-* to the provided Sidre group as required
+* \brief This function is used to add a flag to the Inlet object
+* corresponding to the provided Sidre group
 *
 * \param [in] target Reference to the Sidre group to set the required 
 * status of
 * \param [in] root Reference to the Sidre Root Group where the warning flag 
 * will be set on failure
-* \param [in] required Whether the Inlet object is required
+* \param [in] flag The name of the flag to set
+* \param [in] value The value of the flag
 *****************************************************************************
 */
-void setRequired(axom::sidre::Group& target,
-                 axom::sidre::Group& root,
-                 bool required);
+void setFlag(axom::sidre::Group& target,
+             axom::sidre::Group& root,
+             const std::string& flag,
+             bool value);
 
 /*!
 *****************************************************************************
-* \brief This function is used to determine if the Inlet object corresponding
-* to the provided Sidre group is required
+* \brief This function is used to determine the value of a flag for the
+* Inlet object corresponding to the provided Sidre group
 *
 * \param [in] target Reference to the Sidre group to check the required 
 * status of
 * \param [in] root Reference to the Sidre Root Group where the warning flag 
 * will be set on failure
-* \return Whether the Inlet object is required
+* \param [in] flag The name of the flag to check
+* \return The value of the flag
 *****************************************************************************
 */
-bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root);
+bool checkFlag(const axom::sidre::Group& target,
+               axom::sidre::Group& root,
+               const std::string& flag);
 
 /*!
 *****************************************************************************
@@ -74,6 +117,8 @@ bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root)
 * \param [in] target Reference to the Sidre group to verify the required-ness of
 * \param [in] condition The condition that must be true if the object is required
 * \param [in] type The type of the object as a string, for use in the warning message
+* \param [in] errors An optional vector of errors to append to in the case
+* of verification failure
 * 
 * \return False if the object was required but \p condition was false, True otherwise
 * \post If the function returns False, a warning message will be emitted
@@ -81,7 +126,8 @@ bool checkIfRequired(const axom::sidre::Group& target, axom::sidre::Group& root)
 */
 bool verifyRequired(const axom::sidre::Group& target,
                     const bool condition,
-                    const std::string& type);
+                    const std::string& type,
+                    std::vector<VerificationError>* errors = nullptr);
 
 /*!
 *****************************************************************************
@@ -135,18 +181,6 @@ std::string removeBeforeDelimiter(const std::string& path,
 std::string removeAllInstances(const std::string& target,
                                const std::string& substr);
 
-/*!
-*****************************************************************************
-* \brief This function performs a checked conversion of a string to an integer
-*
-* \param [in] number The string to be converted
-* \param [out] result The integer to store the result in, if successful
-*
-* \return Whether the conversion was successful
-*****************************************************************************
-*/
-bool checkedConvertToInt(const std::string& number, int& result);
-
 namespace detail
 {
 /*!
@@ -158,6 +192,8 @@ namespace detail
 const std::string COLLECTION_GROUP_NAME = "_inlet_collection";
 const std::string COLLECTION_INDICES_NAME = "_inlet_collection_indices";
 const std::string STRUCT_COLLECTION_FLAG = "_inlet_struct_collection";
+const std::string REQUIRED_FLAG = "required";
+const std::string STRICT_FLAG = "strict";
 }  // namespace detail
 
 /*!

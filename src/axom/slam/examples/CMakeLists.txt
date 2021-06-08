@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -21,8 +21,6 @@ set(example_sources
     UserDocs.cpp
     )
 
-set(slam_tests_depends_on slic slam)
-
 set(slam_tests_extra_depends)
 
 foreach(example_source ${example_sources})
@@ -31,7 +29,7 @@ foreach(example_source ${example_sources})
         NAME        "slam_${example_name}_ex"
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
+        DEPENDS_ON  axom ${slam_tests_extra_depends}
         FOLDER      axom/slam/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -57,7 +55,7 @@ blt_add_executable(
     NAME        slam_unstructMesh_ex
     SOURCES     UnstructMeshField.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
+    DEPENDS_ON  axom ${slam_tests_extra_depends}
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
@@ -81,4 +79,3 @@ if(NOT WIN32)
     endif()
     unset(_buildOrigLulesh)
 endif()
-

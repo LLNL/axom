@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -83,7 +83,7 @@ public:
                               const FunctionTag ret_type,
                               const std::vector<FunctionTag>& arg_types) override;
 
-  std::unordered_set<std::string> getAllNames() override;
+  std::vector<std::string> getAllNames() override;
 
   /*!
    *****************************************************************************
@@ -152,7 +152,7 @@ private:
   sol::state m_lua;
   // The elements in the global table preloaded by Sol/Lua, these are ignored
   // to ensure that name retrieval only includes user-provided paths
-  std::unordered_set<std::string> m_preloaded_globals;
+  std::vector<std::string> m_preloaded_globals;
 };
 
 }  // end namespace inlet

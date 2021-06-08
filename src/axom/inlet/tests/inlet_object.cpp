@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -20,17 +20,13 @@
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
 using axom::inlet::VariantKey;
-using axom::sidre::DataStore;
 
 template <typename InletReader>
-Inlet createBasicInlet(DataStore* ds,
-                       const std::string& luaString,
-                       bool enableDocs = true)
+Inlet createBasicInlet(const std::string& luaString, bool enableDocs = true)
 {
   std::unique_ptr<InletReader> reader(new InletReader());
   reader->parseString(axom::inlet::detail::fromLuaTo<InletReader>(luaString));
-
-  return Inlet(std::move(reader), ds->getRoot(), enableDocs);
+  return Inlet(std::move(reader), enableDocs);
 }
 
 struct Foo
@@ -63,8 +59,7 @@ TYPED_TEST_SUITE(inlet_object, axom::inlet::detail::ReaderTypes);
 TYPED_TEST(inlet_object, simple_struct_by_value)
 {
   std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   inlet.addBool("foo/bar", "bar's description");
@@ -80,8 +75,7 @@ TYPED_TEST(inlet_object, simple_struct_by_value)
 TYPED_TEST(inlet_object, simple_struct_verify_pass)
 {
   std::string testString = "";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo_table = inlet.addStruct("foo");
   foo_table.addBool("bar", "bar's description").required(true);
@@ -94,8 +88,7 @@ TYPED_TEST(inlet_object, simple_struct_verify_pass)
 TYPED_TEST(inlet_object, simple_struct_verify_fail)
 {
   std::string testString = "foo = { baz = true }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo_table = inlet.addStruct("foo");
   foo_table.addBool("bar", "bar's description").required(true);
@@ -114,8 +107,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_by_value)
   std::string testString =
     "foo = { [0] = { bar = true; baz = false}, "
     "        [1] = { bar = false; baz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -132,8 +124,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_implicit_idx)
   std::string testString =
     "foo = { { bar = true; baz = false}, "
     "        { bar = false; baz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -152,8 +143,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_optional)
   std::string testString =
     "foo = { [4] = { bar = true;}, "
     "        [7] = { bar = false;} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -168,8 +158,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
   std::string testString =
     "foo = { [4] = { bar = true;}, "
     "        [7] = { bar = false;} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -182,8 +171,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_reqd)
 TYPED_TEST(inlet_object, simple_array_of_struct_optional_empty_pass)
 {
   std::string testString = "foo = { }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
   // Even though these are required, the input file should still
@@ -197,8 +185,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_optional_empty_pass)
 TYPED_TEST(inlet_object, simple_array_of_struct_required_empty_pass)
 {
   std::string testString = "foo = { }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Verification should pass because the array exists but is empty
   auto& arr_container = inlet.addStructArray("foo").required(true);
@@ -211,8 +198,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_required_empty_pass)
 TYPED_TEST(inlet_object, simple_array_of_primitive_required_empty_pass)
 {
   std::string testString = "foo = { }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Verification should pass because the array exists but is empty
   inlet.addIntArray("foo").required(true);
@@ -223,8 +209,7 @@ TYPED_TEST(inlet_object, simple_array_of_primitive_required_empty_pass)
 TYPED_TEST(inlet_object, simple_array_of_struct_nonexistent_fail)
 {
   std::string testString = "";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Verification should fail because the array does not exist
   auto& arr_container = inlet.addStructArray("foo").required(true);
@@ -237,8 +222,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_nonexistent_fail)
 TYPED_TEST(inlet_object, simple_array_of_primitive_nonexistent_fail)
 {
   std::string testString = "";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Verification should fail because the array does not exist
   inlet.addIntArray("foo").required(true);
@@ -251,8 +235,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda)
   std::string testString =
     "foo = { [4] = { bar = true;}, "
     "        [7] = { bar = false;} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -270,8 +253,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_pass)
   std::string testString =
     "foo = { [4] = { bar = true;}, "
     "        [7] = { baz = false;} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -291,8 +273,7 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
   std::string testString =
     "foo = { [4] = { bar = true;}, "
     "        [7] = { bar = false; baz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -328,8 +309,7 @@ TYPED_TEST(inlet_object, array_of_struct_containing_array)
   std::string testString =
     "foo = { [0] = { arr = { [0] = 3 }; }, "
     "        [1] = { arr = { [0] = 2 }; } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -365,8 +345,7 @@ struct FromInlet<MoveOnlyFoo>
 TYPED_TEST(inlet_object, simple_moveonly_struct_by_value)
 {
   std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   // Check for existing fields
@@ -382,8 +361,7 @@ TYPED_TEST(inlet_object, simple_moveonly_struct_by_value)
 TYPED_TEST(inlet_object, simple_value_from_bracket)
 {
   std::string testString = "foo = true";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   // Check for existing fields
@@ -396,8 +374,7 @@ TYPED_TEST(inlet_object, simple_value_from_bracket)
 TYPED_TEST(inlet_object, simple_struct_from_bracket)
 {
   std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   // Check for existing fields
@@ -413,8 +390,7 @@ TYPED_TEST(inlet_object, simple_struct_from_bracket)
 TYPED_TEST(inlet_object, contains_from_bracket)
 {
   std::string testString = "foo = { bar = true; baz = false }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   // Check for existing fields
@@ -428,13 +404,12 @@ TYPED_TEST(inlet_object, contains_from_bracket)
 
 TYPED_TEST(inlet_object, array_from_bracket)
 {
-  DataStore ds;
   std::string testString =
     "luaArrays = { arr1 = { [0] = 4}, "
     "              arr2 = {[0] = true, [1] = false}, "
     "              arr3 = {[0] = 'hello', [1] = 'bye'}, "
     "              arr4 = { [0] = 2.4 } }";
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   std::unordered_map<int, int> intMap;
   std::unordered_map<int, bool> boolMap;
@@ -467,8 +442,7 @@ TYPED_TEST(inlet_object, primitive_type_checks)
 {
   std::string testString =
     " bar = true; baz = 12; quux = 2.5; corge = 'hello' ";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   // Check for existing fields
@@ -503,8 +477,7 @@ TYPED_TEST(inlet_object, composite_type_checks)
     "luaArrays = { arr1 = { [1] = 4}, "
     "              arr2 = {[4] = true, [8] = false} }; "
     "foo = { bar = true; baz = false }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   // Check for existing fields
@@ -537,8 +510,7 @@ TYPED_TEST(inlet_object, implicit_conversion_primitives)
   std::string testString =
     " bar = true; baz = 12; quux = 2.5; corge = 'hello'; arr = { [0] = 4, [1] "
     "= 6, [2] = 10}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   inlet.addBool("bar", "bar's description");
@@ -601,8 +573,7 @@ TYPED_TEST(inlet_object, nested_array_of_struct_containing_array)
   std::string testString =
     "bars = { [0] = { foo = { arr = { [0] = 3 }; } }, "
     "         [1] = { foo = { arr = { [0] = 2 }; } } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& bar_container = inlet.addStructArray("bars");
   auto& foo_container = bar_container.addStruct("foo");
@@ -645,8 +616,7 @@ TYPED_TEST(inlet_object, nested_array_of_struct)
     "                         [1] = { bar = false; baz = true} } }, "
     "         [1] = { arr = { [0] = { bar = false; baz = false}, "
     "                         [1] = { bar = true; baz = true} } } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& quux_container = inlet.addStructArray("quux");
   auto& foo_container = quux_container.addStructArray("arr");
@@ -670,8 +640,7 @@ TYPED_TEST(inlet_object, nested_dict_of_array_of_struct)
     "                                [1] = { bar = false; baz = true} } }, "
     "         ['second'] = { arr = { [0] = { bar = false; baz = false}, "
     "                                [1] = { bar = true; baz = true} } } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& quux_container = inlet.addStructDictionary("quux");
   auto& foo_container = quux_container.addStructArray("arr");
@@ -723,8 +692,7 @@ TYPED_TEST(inlet_object, nested_array_of_dict_of_array_of_struct)
     "                          ['fourth'] = { arr = { [0] = { bar = false; baz = false}, "
     "                                                 [1] = { bar = true; baz = true} } } } } }";
   // clang-format on
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& corge_container = inlet.addStructArray("corge");
   auto& quux_container = corge_container.addStructDictionary("dict");
@@ -774,8 +742,7 @@ TYPED_TEST(inlet_object, nested_dict_of_array_of_struct_with_array)
     "                                      [1] = { arr = { [0] = 2 } } } }, "
     "         ['second'] = { outer_arr = { [0] = { arr = { [0] = 3 } }, "
     "                                      [1] = { arr = { [0] = 4 } } } } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& quux_container = inlet.addStructDictionary("quux");
   auto& foo_container = quux_container.addStructArray("outer_arr");
@@ -817,8 +784,7 @@ TYPED_TEST(inlet_object, nested_array_of_nested_structs)
   std::string testString =
     "quux = { [0] = { foo = { bar = true; baz = false } }, "
     "         [1] = { foo = { bar = false; baz = true } } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& quux_schema = inlet.addStructArray("quux");
   auto& foo_schema = quux_schema.addStruct("foo");
@@ -839,8 +805,7 @@ TYPED_TEST(inlet_object, nested_array_of_nested_structs)
 TYPED_TEST(inlet_object, nested_array_of_struct_verify_pass)
 {
   std::string testString = "quux = { }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& quux_schema = inlet.addStructArray("quux");
 
@@ -862,8 +827,7 @@ TYPED_TEST(inlet_object, nested_array_of_struct_verify_pass)
 TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)
 {
   std::string testString = " arr = { [0] = 4, [1] = 6, [2] = 10}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   inlet.addIntArray("arr");
@@ -884,8 +848,7 @@ TYPED_TEST(inlet_object, primitive_arrays_as_std_vector)
 TYPED_TEST(inlet_object, primitive_arrays_as_std_vector_wrong_type)
 {
   std::string testString = " arr = { [0] = 'a', [1] = 'b', [2] = 'c'}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   inlet.addIntArray("arr");
@@ -898,8 +861,7 @@ TYPED_TEST(inlet_object, primitive_arrays_as_std_vector_wrong_type)
 TYPED_TEST(inlet_object, primitive_arrays_as_std_vector_wrong_type_reqd_fail)
 {
   std::string testString = " arr = { [0] = 'a', [1] = 'b', [2] = 'c'}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   inlet.addIntArray("arr").required();
@@ -911,8 +873,7 @@ TYPED_TEST(inlet_object, primitive_arrays_as_std_vector_wrong_type_reqd_fail)
 TYPED_TEST(inlet_object, primitive_arrays_as_std_vector_mixed_type)
 {
   std::string testString = " arr = { [0] = 4, [1] = 6, [2] = 'a', [3] = 'b'}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   // Define schema
   inlet.addIntArray("arr");
@@ -927,8 +888,7 @@ TYPED_TEST(inlet_object, struct_arrays_as_std_vector)
   std::string testString =
     "foo = { [0] = { bar = true; baz = false}, "
     "        [1] = { bar = false; baz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -942,8 +902,7 @@ TYPED_TEST(inlet_object, struct_arrays_as_std_vector)
 TYPED_TEST(inlet_object, default_scalar_user_provided)
 {
   std::string testString = " ";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& scalar = inlet.addInt("foo").defaultValue(2);
   // The field itself exists but was not provided by the user
@@ -962,8 +921,7 @@ TYPED_TEST(inlet_object, default_scalar_user_provided)
 TYPED_TEST(inlet_object, default_struct_field_user_provided)
 {
   std::string testString = " ";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo_container = inlet.addStruct("foo");
   foo_container.addBool("bar", "bar's description").defaultValue(true);
@@ -985,8 +943,7 @@ TYPED_TEST(inlet_object, default_struct_field_user_provided)
 TYPED_TEST(inlet_object, default_struct_field_user_provided_reqd)
 {
   std::string testString = " ";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo_container = inlet.addStruct("foo").required();
   foo_container.addBool("bar", "bar's description").defaultValue(true);
@@ -1011,8 +968,7 @@ TYPED_TEST(inlet_object, default_struct_field_user_provided_reqd)
 TYPED_TEST(inlet_object, default_struct_field_marked_true)
 {
   std::string testString = "foo = { bar = true }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& foo_container = inlet.addStruct("foo");
   foo_container.addBool("bar", "bar's description").defaultValue(true);
@@ -1036,8 +992,7 @@ TYPED_TEST(inlet_object, basic_unused_names)
   std::string testString =
     "foo = { [0] = { bar = true; baz = false}, "
     "        [1] = { bar = false; baz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -1047,8 +1002,24 @@ TYPED_TEST(inlet_object, basic_unused_names)
   // Should still verify - unexpected fields do not mean invalid
   EXPECT_TRUE(inlet.verify());
 
-  std::unordered_set<std::string> expected_unused {"foo/0/baz", "foo/1/baz"};
+  std::vector<std::string> expected_unused {"foo/0/baz", "foo/1/baz"};
   EXPECT_EQ(expected_unused, inlet.unexpectedNames());
+}
+
+TYPED_TEST(inlet_object, basic_unused_names_strict)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; baz = false}, "
+    "        [1] = { bar = false; baz = true} }";
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
+
+  auto& arr_container = inlet.addStructArray("foo").strict();
+
+  arr_container.addBool("bar", "bar's description");
+  // Baz is left unused
+
+  // Should fail verification, marked as strict
+  EXPECT_FALSE(inlet.verify());
 }
 
 TYPED_TEST(inlet_object, basic_unused_names_substring)
@@ -1056,8 +1027,7 @@ TYPED_TEST(inlet_object, basic_unused_names_substring)
   std::string testString =
     "foo = { [0] = { bar = true; barz = false}, "
     "        [1] = { bar = false; barz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -1068,8 +1038,24 @@ TYPED_TEST(inlet_object, basic_unused_names_substring)
   EXPECT_TRUE(inlet.verify());
 
   // Check to make sure that a naive substring is not used and that checks are path-aware
-  std::unordered_set<std::string> expected_unused {"foo/0/bar", "foo/1/bar"};
+  std::vector<std::string> expected_unused {"foo/0/bar", "foo/1/bar"};
   EXPECT_EQ(expected_unused, inlet.unexpectedNames());
+}
+
+TYPED_TEST(inlet_object, basic_unused_names_substring_strict)
+{
+  std::string testString =
+    "foo = { [0] = { bar = true; barz = false}, "
+    "        [1] = { bar = false; barz = true} }";
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
+
+  auto& arr_container = inlet.addStructArray("foo").strict();
+
+  arr_container.addBool("barz", "barz's description");
+  // Baz is left unused
+
+  // Should fail verification, marked as strict
+  EXPECT_FALSE(inlet.verify());
 }
 
 template <typename InletReader>
@@ -1081,8 +1067,7 @@ TYPED_TEST_SUITE(inlet_object_dict, axom::inlet::detail::ReaderTypes);
 TYPED_TEST(inlet_object_dict, basic_dicts)
 {
   std::string testString = "foo = { ['key1'] = 4, ['key3'] = 6, ['key2'] = 10}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   inlet.addIntDictionary("foo", "foo's description");
   std::unordered_map<std::string, int> dict = inlet["foo"];
@@ -1097,8 +1082,7 @@ TYPED_TEST(inlet_object_dict, simple_dict_of_struct_by_value)
   std::string testString =
     "foo = { ['key1'] = { bar = true; baz = false}, "
     "        ['key2'] = { bar = false; baz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& dict_container = inlet.addStructDictionary("foo");
 
@@ -1132,8 +1116,7 @@ TYPED_TEST(inlet_object_dict, dict_of_struct_containing_dict)
   std::string testString =
     "foo = { ['key3'] = { arr = { ['key1'] = 3 }; }, "
     "        ['key4'] = { arr = { ['key2'] = 2 }; } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& dict_container = inlet.addStructDictionary("foo");
 
@@ -1152,8 +1135,7 @@ TYPED_TEST(inlet_object_dict, dict_of_struct_containing_array)
   std::string testString =
     "foo = { ['key3'] = { arr = { [0] = 3 }; }, "
     "        ['key4'] = { arr = { [0] = 2 }; } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& dict_container = inlet.addStructDictionary("foo");
 
@@ -1172,8 +1154,7 @@ TYPED_TEST(inlet_object_dict, array_of_struct_containing_dict)
   std::string testString =
     "foo = { [0] = { arr = { ['key1'] = 3 }; }, "
     "        [1] = { arr = { ['key2'] = 2 }; } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<TypeParam>(&ds, testString);
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -1192,7 +1173,6 @@ or handled differently these tests can be re-enabled.
 TEST(inlet_dict, mixed_keys_primitive_duplicated)
 {
   std::string testString = "foo = { ['1'] = 4, [1] = 6 }";
-  DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
   inlet.addIntDictionary("foo", "foo's description");
@@ -1205,7 +1185,6 @@ TEST(inlet_dict, key_with_slash)
 {
   std::string testString =
     "foo = { ['key1/subkey1'] = 4, ['key3'] = 6, ['key2'] = 10}";
-  DataStore ds;
   Inlet inlet = createBasicInlet(&ds, testString);
 
   inlet.addIntDictionary("foo", "foo's description");
@@ -1225,8 +1204,7 @@ TEST(inlet_object_lua, array_of_struct_containing_array)
   std::string testString =
     "foo = { [4] = { arr = { [1] = 3 }; }, "
     "        [7] = { arr = { [6] = 2 }; } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -1240,13 +1218,12 @@ TEST(inlet_object_lua, array_of_struct_containing_array)
 
 TEST(inlet_object_lua, array_from_bracket)
 {
-  DataStore ds;
   std::string testString =
     "luaArrays = { arr1 = { [1] = 4}, "
     "              arr2 = {[4] = true, [8] = false}, "
     "              arr3 = {[33] = 'hello', [2] = 'bye'}, "
     "              arr4 = { [12] = 2.4 } }";
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   std::unordered_map<int, int> intMap;
   std::unordered_map<int, bool> boolMap;
@@ -1278,8 +1255,7 @@ TEST(inlet_object_lua, array_from_bracket)
 TEST(inlet_object_lua, primitive_arrays_as_std_vector_discontiguous)
 {
   std::string testString = " arr = { [0] = 4, [8] = 6, [12] = 10}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   // Define schema
   inlet.addIntArray("arr");
@@ -1297,8 +1273,7 @@ TEST(inlet_object_lua, struct_arrays_as_std_vector_discontiguous)
   std::string testString =
     "foo = { [6] = { bar = true; baz = false}, "
     "        [11] = { bar = false; baz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -1312,8 +1287,7 @@ TEST(inlet_object_lua, struct_arrays_as_std_vector_discontiguous)
 TEST(inlet_object_lua, primitive_arrays_as_std_vector_implicit_idx)
 {
   std::string testString = " arr = { 4, 6, 10}";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   // Define schema
   inlet.addIntArray("arr");
@@ -1331,8 +1305,7 @@ TEST(inlet_object_lua, struct_arrays_as_std_vector_implicit_idx)
   std::string testString =
     "foo = { { bar = true; baz = false}, "
     "        { bar = false; baz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -1348,8 +1321,7 @@ TEST(inlet_object_lua_dict, dict_of_struct_containing_array)
   std::string testString =
     "foo = { ['key3'] = { arr = { [1] = 3 }; }, "
     "        ['key4'] = { arr = { [6] = 2 }; } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   auto& dict_container = inlet.addStructDictionary("foo");
 
@@ -1368,8 +1340,7 @@ TEST(inlet_object_lua_dict, array_of_struct_containing_dict)
   std::string testString =
     "foo = { [7] = { arr = { ['key1'] = 3 }; }, "
     "        [4] = { arr = { ['key2'] = 2 }; } }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   auto& arr_container = inlet.addStructArray("foo");
 
@@ -1384,8 +1355,7 @@ TEST(inlet_object_lua_dict, array_of_struct_containing_dict)
 TEST(inlet_object_lua_dict, mixed_keys_primitive)
 {
   std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   inlet.addIntDictionary("foo", "foo's description");
   std::unordered_map<VariantKey, int> dict = inlet["foo"];
@@ -1396,8 +1366,7 @@ TEST(inlet_object_lua_dict, mixed_keys_primitive)
 TEST(inlet_object_lua_dict, mixed_keys_primitive_ignore_string_only)
 {
   std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   inlet.addIntDictionary("foo", "foo's description");
   std::unordered_map<std::string, int> dict = inlet["foo"];
@@ -1408,8 +1377,7 @@ TEST(inlet_object_lua_dict, mixed_keys_primitive_ignore_string_only)
 TEST(inlet_object_lua_dict, mixed_keys_primitive_ignore_int_only)
 {
   std::string testString = "foo = { ['key1'] = 4, [1] = 6 }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   inlet.addIntArray("foo", "foo's description");
   std::unordered_map<int, int> array = inlet["foo"];
@@ -1422,8 +1390,7 @@ TEST(inlet_object_lua_dict, mixed_keys_object)
   std::string testString =
     "foo = { ['key1'] = { bar = true; baz = false}, "
     "        [1] = { bar = false; baz = true} }";
-  DataStore ds;
-  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(&ds, testString);
+  Inlet inlet = createBasicInlet<axom::inlet::LuaReader>(testString);
 
   auto& dict_container = inlet.addStructDictionary("foo");
 

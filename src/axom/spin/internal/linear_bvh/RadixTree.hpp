@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -7,9 +7,10 @@
 #define AXOM_SPIN_RADIXTREE_HPP_
 
 #include "axom/core/memory_management.hpp"
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
 
 #include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
+
+#include "axom/primal/geometry/BoundingBox.hpp"
 
 namespace axom
 {
@@ -29,17 +30,19 @@ namespace linear_bvh
 template <typename FloatType, int NDIMS>
 struct RadixTree
 {
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+
   int32 m_size;
   int32 m_inner_size;
 
   int32* m_left_children;
   int32* m_right_children;
   int32* m_parents;
-  AABB<FloatType, NDIMS>* m_inner_aabbs;
+  BoxType* m_inner_aabbs;
 
   int32* m_leafs;
   uint32* m_mcodes;
-  AABB<FloatType, NDIMS>* m_leaf_aabbs;
+  BoxType* m_leaf_aabbs;
 
   void allocate(int32 size, int allocID)
   {
@@ -51,11 +54,11 @@ struct RadixTree
     m_left_children = axom::allocate<int32>(m_inner_size, allocID);
     m_right_children = axom::allocate<int32>(m_inner_size, allocID);
     m_parents = axom::allocate<int32>((m_size + m_inner_size), allocID);
-    m_inner_aabbs = axom::allocate<AABB<FloatType, NDIMS>>(m_inner_size, allocID);
+    m_inner_aabbs = axom::allocate<BoxType>(m_inner_size, allocID);
 
     m_leafs = axom::allocate<int32>(m_size, allocID);
     m_mcodes = axom::allocate<uint32>(m_size, allocID);
-    m_leaf_aabbs = axom::allocate<AABB<FloatType, NDIMS>>(m_size, allocID);
+    m_leaf_aabbs = axom::allocate<BoxType>(m_size, allocID);
   }
 
   void deallocate()

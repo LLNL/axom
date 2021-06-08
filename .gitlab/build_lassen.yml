@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -23,81 +23,83 @@
 
 ####
 # Template
-.pr_build_on_lassen:
-  stage: l_build
-  extends: [.build_blueos_3_ppc64le_ib_p9_script, .on_lassen, .pr_workflow]
+.src_build_on_lassen:
+  stage: build
+  variables:
+    ALLOC_COMMAND: "lalloc 1 -W 25 -q pdebug"
+  extends: [.src_build_script, .on_lassen, .src_workflow]
   needs: []
 
-.main_build_with_deps_on_lassen:
-  stage: l_build_with_deps
-  extends: [.build_with_deps_blueos_3_ppc64le_ib_p9_script, .on_lassen, .main_workflow]
+.full_build_on_lassen:
+  stage: build
+  variables:
+    ALLOC_COMMAND: "lalloc 1 -W 45 -q pdebug"
+  extends: [.full_build_script, .on_lassen, .full_workflow]
   needs: []
 
 ####
 # PR Build jobs
-clang_8_0_1_nvcc_xlf (PR build_on_lassen):
+lassen-clang_8_0_1_nvcc_xlf-src:
   variables:
     COMPILER: "clang@8.0.1_nvcc_xlf"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.pr_build_on_lassen, .with_cuda]
+  extends: [.src_build_on_lassen, .with_cuda]
 
-clang_9_0_0_upstream_xlf (PR build_on_lassen):
+lassen-clang_9_0_0_upstream_xlf-src:
   variables:
     COMPILER: "clang@9.0.0_upstream_xlf"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.pr_build_on_lassen]
+  extends: [.src_build_on_lassen]
 
-gcc_7_3_1 (PR build_on_lassen):
+lassen-gcc_7_3_1-src:
   variables:
     COMPILER: "gcc@7.3.1"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.pr_build_on_lassen]
+  extends: [.src_build_on_lassen]
 
-xl_16_1_1 (PR build_on_lassen):
+lassen-xl_16_1_1-src:
   variables:
     COMPILER: "xl@16.1.1_coral"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.pr_build_on_lassen]
+  extends: [.src_build_on_lassen]
 
-# TODO: commented out until fmt failure is solved
-# xl_16_1_1_nvcc (PR build_on_lassen):
-#   variables:
-#     COMPILER: "xl@16.1.1_nvcc"
-#     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-#   extends: [.pr_build_on_lassen, .with_cuda]
+lassen-xl_16_1_1_nvcc-src:
+  variables:
+    COMPILER: "xl@16.1.1_nvcc"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_lassen, .with_cuda]
 
 
 ####
-# Main Build jobs
-clang_8_0_1_nvcc_xlf (Main build_with_deps_on_lassen):
+# Full Build jobs
+lassen-clang_8_0_1_nvcc_xlf-full:
   variables:
     COMPILER: "clang@8.0.1_nvcc_xlf"
-    SPEC: "@develop+mfem+cuda%${COMPILER}"
+    SPEC: "%${COMPILER}+mfem+cuda~openmp"
     EXTRA_SPEC: "cuda_arch=70"
-  extends: [.main_build_with_deps_on_lassen, .with_cuda]
+  extends: [.full_build_on_lassen, .with_cuda]
 
-clang_9_0_0_upstream_xlf (Main build_with_deps_on_lassen):
+lassen-clang_9_0_0_upstream_xlf-full:
   variables:
     COMPILER: "clang@9.0.0_upstream_xlf"
-    SPEC: "@develop+mfem%${COMPILER}"
-  extends: [.main_build_with_deps_on_lassen]
+    SPEC: "%${COMPILER}+mfem~openmp"
+  extends: [.full_build_on_lassen]
 
-gcc_7_3_1 (Main build_with_deps_on_lassen):
+lassen-gcc_7_3_1-full:
   variables:
     COMPILER: "gcc@7.3.1"
-    SPEC: "@develop+mfem%${COMPILER}"
-  extends: [.main_build_with_deps_on_lassen]
+    SPEC: "%${COMPILER}+mfem"
+  extends: [.full_build_on_lassen]
 
-xl_16_1_1_coral (Main build_with_deps_on_lassen):
+lassen-xl_16_1_1_coral-full:
   variables:
     COMPILER: "xl@16.1.1_coral"
-    SPEC: "@develop+mfem%${COMPILER}"
-  extends: [.main_build_with_deps_on_lassen]
+    SPEC: "%${COMPILER}+mfem~openmp~cpp14"
+  extends: [.full_build_on_lassen]
 
-# TODO: commented out until fmt failure is solved
-# xl_16_1_1_nvcc (Main build_with_deps_on_lassen):
-#   variables:
-#     COMPILER: "xl@16.1.1_nvcc"
-#     SPEC: "@develop+mfem+cuda%${COMPILER}"
-#     EXTRA_SPEC: "cuda_arch=70"
-#   extends: [.main_build_with_deps_on_lassen, .with_cuda]
+lassen-xl_16_1_1_nvcc-full:
+  variables:
+    COMPILER: "xl@16.1.1_nvcc"
+    SPEC: "%${COMPILER}+mfem+cuda~openmp~cpp14"
+    EXTRA_SPEC: "cuda_arch=70"
+  extends: [.full_build_on_lassen, .with_cuda]

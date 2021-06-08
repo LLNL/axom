@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -17,18 +17,11 @@ set(spin_tests
    )
 
 set(spin_depends
-    core
-    slic
-    slam
-    primal
-    spin
+    axom
     gtest
     fmt
     )
 
-blt_list_append( TO spin_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
-blt_list_append( TO spin_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO spin_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO spin_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach ( test ${spin_tests} )
@@ -56,7 +49,7 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
       NAME       spin_bvh_test
       SOURCES    spin_bvh.cpp
       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-      DEPENDS_ON mint ${spin_depends}
+      DEPENDS_ON ${spin_depends}
       FOLDER     axom/spin/tests
       )
 
@@ -75,4 +68,3 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
                  PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=0") # Zero based indexed, so only first GPU is visible
 
 endif()
-

@@ -1,5 +1,5 @@
 # Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -48,15 +48,10 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
        internal/linear_bvh/BVH_impl.hpp
        internal/linear_bvh/QueryAccessor.hpp
        internal/linear_bvh/RadixTree.hpp
-       internal/linear_bvh/TraversalPredicates.hpp
-       internal/linear_bvh/aabb.hpp
        internal/linear_bvh/build_radix_tree.hpp
        internal/linear_bvh/bvh_traverse.hpp
        internal/linear_bvh/bvh_vtkio.hpp
        internal/linear_bvh/emit_bvh.hpp
-       internal/linear_bvh/math.hpp
-       internal/linear_bvh/range.hpp
-       internal/linear_bvh/vec.hpp
 
       )
 

@@ -1,13 +1,12 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef AXOM_SPIN_LINEAR_BVH_VTKIO_HPP_
 #define AXOM_SPIN_LINEAR_BVH_VTKIO_HPP_
 
-#include "axom/spin/internal/linear_bvh/vec.hpp"
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 
 namespace axom
 {
@@ -84,18 +83,17 @@ void write_box3d(const FloatType& xmin,
 
 //------------------------------------------------------------------------------
 template <typename FloatType, int NDIMS>
-void write_leftbox(const vec4_t<FloatType>& first,
-                   const vec4_t<FloatType>& second,
-                   int32& numPoints,
-                   int32& numBins,
-                   std::ostringstream& nodes,
-                   std::ostringstream& cells)
+void write_box(const primal::BoundingBox<FloatType, NDIMS>& box,
+               int32& numPoints,
+               int32& numBins,
+               std::ostringstream& nodes,
+               std::ostringstream& cells)
 {
-  const FloatType& xmin = first[0];
-  const FloatType& ymin = first[1];
+  const FloatType& xmin = box.getMin()[0];
+  const FloatType& ymin = box.getMin()[1];
 
-  const FloatType& xmax = first[3];
-  const FloatType& ymax = second[0];
+  const FloatType& xmax = box.getMax()[0];
+  const FloatType& ymax = box.getMax()[1];
 
   if(NDIMS == 2)
   {
@@ -103,36 +101,8 @@ void write_leftbox(const vec4_t<FloatType>& first,
   }
   else
   {
-    const FloatType& zmin = first[2];
-    const FloatType& zmax = second[2];
-
-    write_box3d(xmin, ymin, zmin, xmax, ymax, zmax, numPoints, numBins, nodes, cells);
-  }
-}
-
-//------------------------------------------------------------------------------
-template <typename FloatType, int NDIMS>
-void write_righbox(const vec4_t<FloatType>& second,
-                   const vec4_t<FloatType>& third,
-                   int32& numPoints,
-                   int32& numBins,
-                   std::ostringstream& nodes,
-                   std::ostringstream& cells)
-{
-  const FloatType& xmin = second[2];
-  const FloatType& ymin = second[3];
-
-  const FloatType& xmax = third[1];
-  const FloatType& ymax = third[2];
-
-  if(NDIMS == 2)
-  {
-    write_box2d(xmin, ymin, xmax, ymax, numPoints, numBins, nodes, cells);
-  }
-  else
-  {
-    const FloatType& zmin = third[0];
-    const FloatType& zmax = third[3];
+    const FloatType& zmin = box.getMin()[2];
+    const FloatType& zmax = box.getMax()[2];
 
     write_box3d(xmin, ymin, zmin, xmax, ymax, zmax, numPoints, numBins, nodes, cells);
   }
@@ -140,7 +110,7 @@ void write_righbox(const vec4_t<FloatType>& second,
 
 //------------------------------------------------------------------------------
 template <typename FloatType>
-void write_root(const AABB<FloatType, 2>& root,
+void write_root(const primal::BoundingBox<FloatType, 2>& root,
                 int32& numPoints,
                 int32& numBins,
                 std::ostringstream& nodes,
@@ -160,7 +130,7 @@ void write_root(const AABB<FloatType, 2>& root,
 
 //------------------------------------------------------------------------------
 template <typename FloatType>
-void write_root(const AABB<FloatType, 3>& root,
+void write_root(const primal::BoundingBox<FloatType, 3>& root,
                 int32& numPoints,
                 int32& numBins,
                 std::ostringstream& nodes,
@@ -182,7 +152,8 @@ void write_root(const AABB<FloatType, 3>& root,
 
 //------------------------------------------------------------------------------
 template <typename FloatType, int NDIMS>
-void write_recursive(vec4_t<FloatType>* inner_nodes,
+void write_recursive(primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+                     int32* inner_node_children,
                      int32 current_node,
                      int32 level,
                      int32& numPoints,
@@ -191,22 +162,17 @@ void write_recursive(vec4_t<FloatType>* inner_nodes,
                      std::ostringstream& cells,
                      std::ostringstream& levels)
 {
-  // STEP 0: get the flat BVH layout
-  const vec4_t<FloatType> first4 = inner_nodes[current_node + 0];
-  const vec4_t<FloatType> second4 = inner_nodes[current_node + 1];
-  const vec4_t<FloatType> third4 = inner_nodes[current_node + 2];
+  // STEP 0: get the flat BVH bounding boxes
+  primal::BoundingBox<FloatType, NDIMS> l_box = inner_nodes[current_node + 0];
+  primal::BoundingBox<FloatType, NDIMS> r_box = inner_nodes[current_node + 1];
 
   // STEP 1: extract children information
-  int32 l_child;
-  int32 r_child;
-  constexpr int32 isize = sizeof(int32);
-  vec4_t<FloatType> children = inner_nodes[current_node + 3];
-  memcpy(&l_child, &children[0], isize);
-  memcpy(&r_child, &children[1], isize);
+  int32 l_child = inner_node_children[current_node + 0];
+  int32 r_child = inner_node_children[current_node + 1];
 
-  write_leftbox<FloatType, NDIMS>(first4, second4, numPoints, numBins, nodes, cells);
+  write_box<FloatType, NDIMS>(l_box, numPoints, numBins, nodes, cells);
   levels << level << std::endl;
-  write_righbox<FloatType, NDIMS>(second4, third4, numPoints, numBins, nodes, cells);
+  write_box<FloatType, NDIMS>(r_box, numPoints, numBins, nodes, cells);
   levels << level << std::endl;
 
   // STEP 2: check left
