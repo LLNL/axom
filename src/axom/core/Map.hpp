@@ -39,68 +39,68 @@ namespace axom_map
     bucket(){}    
 
     bucket(int len){
-      list = axom::allocate <axom_map::node<Key, T> > (len);
+      m_list = axom::allocate <axom_map::node<Key, T> > (len);
       for(int i = 0; i < len-1; i++){
-        list[i].next = i+1;
+        m_list[i].next = i+1;
       }
-      list[len-1].next = -1;
-      free = 0;
-      head = -1;
-      size = 0;
-      capacity = len;
-      end.key = Key{0};
-      end.value = T{0};
-      end.next = -2;
+      m_list[len-1].next = -1;
+      m_free = 0;
+      m_head = -1;
+      m_size = 0;
+      m_capacity = len;
+      m_end.key = Key{0};
+      m_end.value = T{0};
+      m_end.next = -2;
     }
    
     void init(int len){
-      list = axom::allocate <axom_map::node<Key, T> > (len);
+      m_list = axom::allocate <axom_map::node<Key, T> > (len);
       for(int i = 0; i < len-1; i++){
-        list[i].next = i+1;
+        m_list[i].next = i+1;
       }
-      list[len-1].next = -1;
-      free = 0;
-      head = -1; 
-      capacity = len;
-      size = 0;
-      end.key = Key{0};
-      end.value = T{0};
-      end.next = -2;
+      m_list[len-1].next = -1;
+      m_free = 0;
+      m_head = -1; 
+      m_capacity = len;
+      m_size = 0;
+      m_end.key = Key{0};
+      m_end.value = T{0};
+      m_end.next = -2;
     }
 
-    bool insert_noupdate(Key key, T value){
-      if(free != -1){
-        if(head == -1){
-          head = free;
-          free = list[free].next;
-          list[head].next = -1;
-          list[head].key = key;
-          list[head].value = value;
-          size += 1;
+    bool insert_no_update(Key key, T value){
+      if(m_free != -1){
+        if(m_head == -1){
+          m_head = m_free;
+          m_free = m_list[m_free].next;
+          m_list[m_head].next = -1;
+          m_list[m_head].key = key;
+          m_list[m_head].value = value;
+          m_size++;
         }
         else{
-          IndexType ind = head;
-          while(list[ind].next != -1){
-            if(list[ind].key == key){
+          IndexType ind = m_head;
+          while(m_list[ind].next != -1){
+            if(m_list[ind].key == key){
               //change to third value in final version
               return false;
             }
-            ind = list[ind].next;
+            ind = m_list[ind].next;
           }
-          list[ind].next = free;
-          ind = free;
-          free = list[free].next;
-          list[ind].next = -1;
-          list[ind].key = key;
-          list[ind].value = value;
-          size++;
+          m_list[ind].next = m_free;
+          ind = m_free;
+          m_free = m_list[m_free].next;
+          m_list[ind].next = -1;
+          m_list[ind].key = key;
+          m_list[ind].value = value;
+          m_size++;
         }
         return true;
       }
       return false;
     }
   
-   bool insert_update(Key key, T value){
+   /*bool insert_update(Key key, T value){
      if(free != -1){
         if(head == -1){
           head = free;
@@ -132,27 +132,27 @@ namespace axom_map
       }
       return false;
 
-   }
+   }*/
   
    bool remove(Key key){
-     if(head == -1){
+     if(m_head == -1){
        //add third state for final impl
        return false;
      }   
-     IndexType ind = head;
+     IndexType ind = m_head;
      IndexType prev = -1;
      do{
-       if(list[ind].key == key){
+       if(m_list[ind].key == key){
          if(prev != -1){
-           list[prev].next = list[ind].next;
+           m_list[prev].next = m_list[ind].next;
          }
-         if(ind == head){head = list[ind].next;}
-         list[ind].next = free;
-         free = ind;
+         if(ind == m_head){m_head = m_list[ind].next;}
+         m_list[ind].next = m_free;
+         m_free = ind;
          return true;
        }
        prev = ind;
-       ind = list[ind].next;
+       ind = m_list[ind].next;
      } while(ind != -1);
      return false;
    }
@@ -163,40 +163,40 @@ namespace axom_map
    //Pair may be better than a status flag argument. 
    //This is very C.
    axom_map::node<Key, T>& find(Key key){
-     if(head == -1){
-       return end;
+     if(m_head == -1){
+       return m_end;
      }
-     IndexType ind = head;
+     IndexType ind = m_head;
      do{
-       if(list[ind].key == key){
-         return list[ind];
+       if(m_list[ind].key == key){
+         return m_list[ind];
        }
 
-       ind = list[ind].next;
+       ind = m_list[ind].next;
     }while(ind != -1);
-    return end;
+    return m_end;
    }
    
-   void printall(){
-     if(head == -1){
+   void print_all(){
+     if(m_head == -1){
        return;
      }
-     IndexType ind = head;
+     IndexType ind = m_head;
      do{
-       std::cout << list[ind].value << std::endl;
-       ind = list[ind].next;
+       std::cout << m_list[ind].value << std::endl;
+       ind = m_list[ind].next;
        std::cout << "next step is " << ind << std::endl;
      }while(ind != -1);
    }   
   
-  int get_capacity(){ return capacity; }
-  int get_size(){ return size; }   
+  int get_capacity(){ return m_capacity; }
+  int get_size(){ return m_size; }   
        
-    axom_map::node<Key, T> * list;   
-    axom_map::node<Key, T> end;
-    IndexType head;
-    IndexType free;
-    int capacity, size;
+    axom_map::node<Key, T> * m_list;   
+    axom_map::node<Key, T> m_end;
+    IndexType m_head;
+    IndexType m_free;
+    int m_capacity, m_size;
   
   }; 
 }
@@ -220,9 +220,9 @@ class Map
 {
 public:
   Map(int buckets, int bucklen=10 ){
-    bucket_count = buckets;
-    bucket_len = bucklen;
-    testlist = alloc_map(bucket_count, bucklen);    
+    m_bucket_count = buckets;
+    m_bucket_len = bucklen;
+    m_buckets = alloc_map(m_bucket_count, m_bucket_len);    
     
    
    insert(27, 236);
@@ -231,10 +231,10 @@ public:
    insert(35, 2195);
    std::cout << find(3).value << std::endl;
    remove(3);
-   if(find(3) == testlist[0].end){
+   if(find(3) == m_buckets[0].m_end){
      std::cout << "removed" << std::endl;
    }
-   if(find(4) == testlist[0].end){
+   if(find(4) == m_buckets[0].m_end){
      std::cout << "never added" << std::endl;
    }
    std::cout << find(2).value << std::endl;
@@ -242,10 +242,10 @@ public:
    insert(3,10);
    std::cout << find(3).value << std::endl;
    remove(3);
-   if(find(3) == testlist[0].end){
+   if(find(3) == m_buckets[0].m_end){
      std::cout << "removed" << std::endl;
    }
-   if(find(4) == testlist[0].end){
+   if(find(4) == m_buckets[0].m_end){
      std::cout << "never added" << std::endl;
    }
    std::cout << find(2).value << std::endl;
@@ -262,32 +262,32 @@ public:
       newlen = buckets;
     }
     else if(factor != -1){
-      newlen = factor*bucket_count;
+      newlen = factor*m_bucket_count;
     }
     else{
-      newlen = 2*bucket_count;
+      newlen = 2*m_bucket_count;
     }
 
-    axom_map::bucket<Key,T> * new_list = alloc_map(newlen, bucket_len);
+    axom_map::bucket<Key,T> * new_list = alloc_map(newlen, m_bucket_len);
 
-    for(int i = 0; i < bucket_count; i++){
-      ind = testlist[i].head;
+    for(int i = 0; i < m_bucket_count; i++){
+      ind = m_buckets[i].m_head;
       while(ind != -1){
-        hashed = (get_hash(testlist[i].list[ind].key) % newlen);
-        new_list[hashed].insert_noupdate(testlist[i].list[ind].key, testlist[i].list[ind].value);     
-        ind = testlist[i].list[ind].next;
+        hashed = (get_hash(m_buckets[i].m_list[ind].key) % newlen);
+        new_list[hashed].insert_no_update(m_buckets[i].m_list[ind].key, m_buckets[i].m_list[ind].value);     
+        ind = m_buckets[i].m_list[ind].next;
       }
-      axom::deallocate(testlist[i].list);
+      axom::deallocate(m_buckets[i].m_list);
     }
-    axom::deallocate(testlist);
-    testlist = new_list;
-    bucket_count = newlen;
+    axom::deallocate(m_buckets);
+    m_buckets = new_list;
+    m_bucket_count = newlen;
     return; 
   } 
 
   bool insert(Key key, T val){
     axom_map::bucket<Key,T> * target = get_bucket(get_hash(key));  
-    return target->insert_noupdate(key, val);
+    return target->insert_no_update(key, val);
   }
 
   bool remove(Key key){
@@ -301,10 +301,10 @@ public:
     return target->find(key);
   }
 
-  int get_bucket_size(){ return bucket_len; }
-  int get_bucket_count(){ return bucket_count; }
-  int get_size() { return size; }
-  int get_capacity() { return bucket_len*bucket_count; }
+  int get_bucket_size(){ return m_bucket_len; }
+  int get_bucket_count(){ return m_bucket_count; }
+  int get_size() { return m_size; }
+  int get_capacity() { return m_bucket_len*m_bucket_count; }
 
 private:
   
@@ -326,11 +326,11 @@ private:
   }
 
   axom_map::bucket<Key,T> * get_bucket(std::size_t hash){
-    return &(testlist[hash%bucket_count]);
+    return &(m_buckets[hash%m_bucket_count]);
   }
 
-  axom_map::bucket<Key,T> *testlist;
-  int bucket_count, bucket_len, size, load_factor;
+  axom_map::bucket<Key,T> *m_buckets;
+  int m_bucket_count, m_bucket_len, m_size, m_load_factor;
  
 
 };
