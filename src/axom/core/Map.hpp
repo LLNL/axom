@@ -32,8 +32,13 @@ namespace axom_map
             
     }; 
 
-  //template <typename Key, typename T>
-  //struct Pair 
+  template <typename Key, typename T>
+  struct Pair{
+    axom_map::Node<Key, T> * first;
+    bool second;
+
+    Pair(axom_map::Node<Key, T> * node, bool status) : first(node), second(status) {}
+  };
  
   template <typename Key, typename T>   
   class Bucket{
@@ -71,7 +76,7 @@ namespace axom_map
       m_end.next = -2;
     }
 
-    axom_map::Node<Key, T>& insert_no_update(Key key, T value){
+    axom_map::Pair<Key, T> insert_no_update(Key key, T value){
       if(m_free != -1){
         IndexType ind = m_head;
         if(m_head == -1){
@@ -87,7 +92,8 @@ namespace axom_map
           while(m_list[ind].next != -1){
             if(m_list[ind].key == key){
               //change to third value in final version
-              return m_list[ind];
+              axom_map::Pair<Key, T> ret(&(m_list[ind]), false);
+              return ret;
             }
             ind = m_list[ind].next;
           }
@@ -99,9 +105,11 @@ namespace axom_map
           m_list[ind].value = value;
           m_size++;
         }
-        return m_list[ind];
+        axom_map::Pair<Key, T> ret(&(m_list[ind]), true);
+        return ret;
       }
-      return m_end;
+      axom_map::Pair<Key, T> ret(&(m_end), false);
+      return ret;
     }
   
    /*bool insert_update(Key key, T value){
@@ -229,7 +237,7 @@ public:
     m_buckets = alloc_map(m_bucket_count, m_bucket_len);    
  
    
-   insert(27, 236);
+   /*insert(27, 236);
    insert(2, 259);
    insert(3, 10);
    insert(35, 2195);
@@ -252,7 +260,7 @@ public:
    if(find(4) == m_buckets[0].m_end){
      std::cout << "never added" << std::endl;
    }
-   std::cout << find(2).value << std::endl;
+   std::cout << find(2).value << std::endl;*/
 
 
   }
@@ -289,7 +297,7 @@ public:
     return; 
   } 
 
-  axom_map::Node<Key, T>& insert(Key key, T val){
+  axom_map::Pair<Key, T> insert(Key key, T val){
     axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key));  
     return target->insert_no_update(key, val);
   }
