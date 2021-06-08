@@ -328,7 +328,7 @@ private:
   }
 
   /**
-   * \brief Determines whether the specified point is within the gray leaf
+   * \brief Determines whether the specified 3D point is within the gray leaf
    *
    * \param queryPt The point we are querying
    * \param leafBlk The block of the gray leaf
@@ -336,9 +336,26 @@ private:
    * \return True, if the point is inside the local surface associated with this
    * block, false otherwise
    */
-  bool withinGrayBlock(const SpacePt& queryPt,
-                       const BlockIndex& leafBlk,
-                       const InOutBlockData& data) const;
+  template <int TDIM>
+  typename std::enable_if<TDIM == 3, bool>::type withinGrayBlock(
+    const SpacePt& queryPt,
+    const BlockIndex& leafBlk,
+    const InOutBlockData& data) const;
+
+  /**
+   * \brief Determines whether the specified 2D point is within the gray leaf
+   *
+   * \param queryPt The point we are querying
+   * \param leafBlk The block of the gray leaf
+   * \param data The data associated with the leaf block
+   * \return True, if the point is inside the local surface associated with this
+   * block, false otherwise
+   */
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 2, bool>::type withinGrayBlock(
+    const SpacePt& queryPt,
+    const BlockIndex& leafBlk,
+    const InOutBlockData& data) const;
 
   /**
    * \brief Returns the index of the mesh vertex associated with the given leaf block
@@ -945,7 +962,7 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
           SpacePt faceCenter =
             SpacePt::midpoint(this->blockBoundingBox(leafBlk).getCentroid(),
                               this->blockBoundingBox(neighborBlk).getCentroid());
-          if(withinGrayBlock(faceCenter, neighborBlk, neighborData))
+          if(withinGrayBlock<DIM>(faceCenter, neighborBlk, neighborData))
             leafData.setBlack();
           else
             leafData.setWhite();
@@ -1009,7 +1026,7 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
               this->blockBoundingBox(leafBlk).getCentroid(),
               this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid());
 
-            if(withinGrayBlock(faceCenter, leafBlk, leafData))
+            if(withinGrayBlock<DIM>(faceCenter, leafBlk, leafData))
               neighborData.setBlack();
             else
               neighborData.setWhite();
@@ -1061,18 +1078,18 @@ typename InOutOctree<DIM>::CellIndexSet InOutOctree<DIM>::leafCells(
   return m_grayLeafToElementRelationLevelMap[leafBlk.level()][leafData.dataIndex()];
 }
 
-// Specialization of InOutOctree<3>::withinGrayBlock() in 3D
-template <>
-bool InOutOctree<3>::withinGrayBlock(const SpacePt& queryPt,
-                                     const BlockIndex& leafBlk,
-                                     const InOutBlockData& leafData) const
+template <int DIM>
+template <int TDIM>
+typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock(
+  const SpacePt& queryPt,
+  const BlockIndex& leafBlk,
+  const InOutBlockData& leafData) const
 {
   /// Finds a ray from queryPt to a point of a triangle within leafBlk.
   /// Then find the first triangle along this ray. The orientation of the ray
   /// against this triangle's normal indicates queryPt's containment.
   /// It is inside when the dot product is positive.
 
-  const int DIM = 3;
   SLIC_ASSERT(leafData.color() == InOutBlockData::Gray);
   SLIC_ASSERT(leafData.hasData());
 
@@ -1184,18 +1201,18 @@ bool InOutOctree<3>::withinGrayBlock(const SpacePt& queryPt,
   return false;  // query points on boundary might get here -- revisit this.
 }
 
-// Specialization of InOutOctree<2>::withinGrayBlock() in 2D
-template <>
-bool InOutOctree<2>::withinGrayBlock(const SpacePt& queryPt,
-                                     const BlockIndex& leafBlk,
-                                     const InOutBlockData& leafData) const
+template <int DIM>
+template <int TDIM>
+typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock(
+  const SpacePt& queryPt,
+  const BlockIndex& leafBlk,
+  const InOutBlockData& leafData) const
 {
   /// Finds a ray from queryPt to a point of a segment within leafBlk.
   /// Then finds the first segment along this ray. The orientation of the ray
   /// against this segment's normal indicates queryPt's containment.
   /// It is inside when the dot product is positive.
 
-  const int DIM = 2;
   SLIC_ASSERT(leafData.color() == InOutBlockData::Gray);
   SLIC_ASSERT(leafData.hasData());
 
@@ -1438,7 +1455,7 @@ bool InOutOctree<DIM>::within(const SpacePt& pt) const
     case InOutBlockData::White:
       return false;
     case InOutBlockData::Gray:
-      return withinGrayBlock(pt, block, data);
+      return withinGrayBlock<DIM>(pt, block, data);
     case InOutBlockData::Undetermined:
       SLIC_ASSERT_MSG(
         false,
