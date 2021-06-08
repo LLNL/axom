@@ -468,7 +468,6 @@ void IOManager::createRootFile(const std::string& file_base,
                                const std::string& tree_pattern)
 {
   conduit::Node n;
-  getRankToFileMap(n["rank_to_file_map"], num_files);
 
   if (m_my_rank == 0)
   {
@@ -801,11 +800,13 @@ std::string IOManager::getFileNameForRank(const std::string& file_pattern,
   return file_name;
 }
 
-void IOManager::getRankToFileMap(conduit::Node& rank_to_file_map,
+void IOManager::getRankToFileMap(View* rank_to_file_map,
                                  int num_files)
 {
+  SLIC_ASSERT(rank_to_file_map != nullptr);
+
   if(m_baton)
-  { 
+  {
     if(m_baton->getNumFiles() != num_files)
     { 
       delete m_baton;
@@ -827,15 +828,9 @@ void IOManager::getRankToFileMap(conduit::Node& rank_to_file_map,
   conduit::Node map_local;
   map_local.set_external(&map_vec[0], map_vec.size());
 
-  conduit::relay::mpi::max_all_reduce(map_local, rank_to_file_map, m_mpi_comm);
-}
-
-void IOManager::getRankToFileMap(View* rank_to_file_map,
-int num_files)
-{
-  conduit::Node map_node;
-  getRankToFileMap(map_node, num_files);
-  rank_to_file_map->importArrayNode(map_node);
+  conduit::Node map_global; 
+  conduit::relay::mpi::max_all_reduce(map_local, map_global, m_mpi_comm);
+  rank_to_file_map->importArrayNode(map_global);
 }
 
 /*
