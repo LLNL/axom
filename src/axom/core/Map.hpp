@@ -22,24 +22,27 @@ namespace axom
 namespace axom_map
 { 
   template <typename Key, typename T>
-  struct node{
+  struct Node{
       IndexType next;
       Key key;
       T value;
-      bool operator==(const node& rhs){
+      bool operator==(const Node& rhs){
         return (this->next == rhs.next) && (this->key == rhs.key) && (this->value == rhs.value);
       }
             
     }; 
+
+  //template <typename Key, typename T>
+  //struct Pair 
  
   template <typename Key, typename T>   
-  class bucket{
+  class Bucket{
   public:
 
-    bucket(){}    
+    Bucket(){}    
 
-    bucket(int len){
-      m_list = axom::allocate <axom_map::node<Key, T> > (len);
+    Bucket(int len){
+      m_list = axom::allocate <axom_map::Node<Key, T> > (len);
       for(int i = 0; i < len-1; i++){
         m_list[i].next = i+1;
       }
@@ -54,7 +57,7 @@ namespace axom_map
     }
    
     void init(int len){
-      m_list = axom::allocate <axom_map::node<Key, T> > (len);
+      m_list = axom::allocate <axom_map::Node<Key, T> > (len);
       for(int i = 0; i < len-1; i++){
         m_list[i].next = i+1;
       }
@@ -68,10 +71,12 @@ namespace axom_map
       m_end.next = -2;
     }
 
-    bool insert_no_update(Key key, T value){
+    axom_map::Node<Key, T>& insert_no_update(Key key, T value){
       if(m_free != -1){
+        IndexType ind = m_head;
         if(m_head == -1){
           m_head = m_free;
+          ind = m_free;
           m_free = m_list[m_free].next;
           m_list[m_head].next = -1;
           m_list[m_head].key = key;
@@ -79,11 +84,10 @@ namespace axom_map
           m_size++;
         }
         else{
-          IndexType ind = m_head;
           while(m_list[ind].next != -1){
             if(m_list[ind].key == key){
               //change to third value in final version
-              return false;
+              return m_list[ind];
             }
             ind = m_list[ind].next;
           }
@@ -95,9 +99,9 @@ namespace axom_map
           m_list[ind].value = value;
           m_size++;
         }
-        return true;
+        return m_list[ind];
       }
-      return false;
+      return m_end;
     }
   
    /*bool insert_update(Key key, T value){
@@ -134,7 +138,7 @@ namespace axom_map
 
    }*/
   
-   bool remove(Key key){
+    bool remove(Key key){
      if(m_head == -1){
        //add third state for final impl
        return false;
@@ -162,7 +166,7 @@ namespace axom_map
 
    //Pair may be better than a status flag argument. 
    //This is very C.
-   axom_map::node<Key, T>& find(Key key){
+   axom_map::Node<Key, T>& find(Key key){
      if(m_head == -1){
        return m_end;
      }
@@ -192,8 +196,8 @@ namespace axom_map
   int get_capacity(){ return m_capacity; }
   int get_size(){ return m_size; }   
        
-    axom_map::node<Key, T> * m_list;   
-    axom_map::node<Key, T> m_end;
+    axom_map::Node<Key, T> * m_list;   
+    axom_map::Node<Key, T> m_end;
     IndexType m_head;
     IndexType m_free;
     int m_capacity, m_size;
@@ -223,7 +227,7 @@ public:
     m_bucket_count = buckets;
     m_bucket_len = bucklen;
     m_buckets = alloc_map(m_bucket_count, m_bucket_len);    
-    
+ 
    
    insert(27, 236);
    insert(2, 259);
@@ -268,7 +272,7 @@ public:
       newlen = 2*m_bucket_count;
     }
 
-    axom_map::bucket<Key,T> * new_list = alloc_map(newlen, m_bucket_len);
+    axom_map::Bucket<Key,T> * new_list = alloc_map(newlen, m_bucket_len);
 
     for(int i = 0; i < m_bucket_count; i++){
       ind = m_buckets[i].m_head;
@@ -285,19 +289,19 @@ public:
     return; 
   } 
 
-  bool insert(Key key, T val){
-    axom_map::bucket<Key,T> * target = get_bucket(get_hash(key));  
+  axom_map::Node<Key, T>& insert(Key key, T val){
+    axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key));  
     return target->insert_no_update(key, val);
   }
 
   bool remove(Key key){
-    axom_map::bucket<Key,T> * target = get_bucket(get_hash(key));
+    axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key));
     return target->remove(key);
   } 
 
    
-  axom_map::node<Key, T>& find(Key key){
-    axom_map::bucket<Key,T> * target = get_bucket(get_hash(key));
+  axom_map::Node<Key, T>& find(Key key){
+    axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key));
     return target->find(key);
   }
 
@@ -308,8 +312,8 @@ public:
 
 private:
   
-  axom_map::bucket<Key,T> * alloc_map(int bucount, int bucklen){
-    axom_map::bucket<Key,T> *tmp = axom::allocate <axom_map::bucket<Key,T> > (bucount); 
+  axom_map::Bucket<Key,T> * alloc_map(int bucount, int bucklen){
+    axom_map::Bucket<Key,T> *tmp = axom::allocate <axom_map::Bucket<Key,T> > (bucount); 
     for(int i = 0; i < bucount; i++){
      tmp[i].init(bucklen);
     }
@@ -325,11 +329,11 @@ private:
     return hashed;
   }
 
-  axom_map::bucket<Key,T> * get_bucket(std::size_t hash){
+  axom_map::Bucket<Key,T> * get_bucket(std::size_t hash){
     return &(m_buckets[hash%m_bucket_count]);
   }
 
-  axom_map::bucket<Key,T> *m_buckets;
+  axom_map::Bucket<Key,T> *m_buckets;
   int m_bucket_count, m_bucket_len, m_size, m_load_factor;
  
 
