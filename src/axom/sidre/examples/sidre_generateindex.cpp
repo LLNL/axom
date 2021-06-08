@@ -260,7 +260,9 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
   }
 }
 
-void generate_multidomain_blueprint(DataStore* ds, const std::string& filename, int num_files)
+void generate_multidomain_blueprint(DataStore* ds,
+                                    const std::string& filename,
+                                    int num_files)
 {
   int my_rank;
   int comm_size;
@@ -268,8 +270,8 @@ void generate_multidomain_blueprint(DataStore* ds, const std::string& filename, 
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
   // 3 domains on even ranks, 2 domains on odd ranks
-  int64_t domain_begin = (5 * (my_rank/2) ) + (3 * (my_rank%2));
-  int64_t domain_end = domain_begin + (3 - (my_rank%2));
+  int64_t domain_begin = (5 * (my_rank / 2)) + (3 * (my_rank % 2));
+  int64_t domain_end = domain_begin + (3 - (my_rank % 2));
 
   std::string holder_name = "domain_data";
   std::string mesh_name = "mesh";
@@ -278,7 +280,7 @@ void generate_multidomain_blueprint(DataStore* ds, const std::string& filename, 
   std::string domain_pattern = "domain_{domain:06d}";
   ds->getRoot()->createViewString("domain_pattern", domain_pattern);
 
-  for (int64_t i = domain_begin; i < domain_end; ++i)
+  for(int64_t i = domain_begin; i < domain_end; ++i)
   {
     std::string domain_name = fmt::format("domain_{:06d}", i);
 
@@ -322,12 +324,12 @@ void generate_multidomain_blueprint(DataStore* ds, const std::string& filename, 
 
     std::string bp_rootfile = output_name + ".root";
 
-    writer.write(ds->getRoot()->getGroup("domain_data"), std::min(num_files,comm_size), output_name, protocol);
+    writer.write(ds->getRoot()->getGroup("domain_data"),
+                 std::min(num_files, comm_size),
+                 output_name,
+                 protocol);
 
-    writer.writeBlueprintIndexToRootFile(ds,
-                                         holder_name,
-                                         bp_rootfile,
-                                         mesh_name);
+    writer.writeBlueprintIndexToRootFile(ds, holder_name, bp_rootfile, mesh_name);
   }
 }
 #endif
@@ -353,7 +355,7 @@ int main(int argc, char** argv)
   spds->getRoot()->destroyViews();
   spds = create_tiny_datastore();
   generate_multidomain_blueprint(spds, "multi1", 1);
-  if (num_ranks > 1)
+  if(num_ranks > 1)
   {
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();

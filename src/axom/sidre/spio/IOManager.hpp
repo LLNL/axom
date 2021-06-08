@@ -284,7 +284,6 @@ public:
   int getNumFilesFromRoot(const std::string& root_file);
 
 private:
-
   DISABLE_COPY_AND_ASSIGNMENT(IOManager);
 
   void createRootFile(const std::string& file_base,
@@ -331,8 +330,7 @@ private:
    * The data in the map is an array indexed by rank with the values being
    * the file IDs
    */
-  void getRankToFileMap(View* rank_to_file_map,
-                        int num_files);
+  void getRankToFileMap(View* rank_to_file_map, int num_files);
 
   /*!
    * \brief If needed, get a file path created by SCR.

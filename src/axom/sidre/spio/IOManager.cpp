@@ -469,7 +469,7 @@ void IOManager::createRootFile(const std::string& file_base,
 {
   conduit::Node n;
 
-  if (m_my_rank == 0)
+  if(m_my_rank == 0)
   {
     std::string root_file_name;
     std::string local_file_base;
@@ -486,7 +486,7 @@ void IOManager::createRootFile(const std::string& file_base,
         std::string slash = "/";
         conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
         n["file_pattern"] =
-        local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
+          local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
       }
       else
       {
@@ -800,15 +800,14 @@ std::string IOManager::getFileNameForRank(const std::string& file_pattern,
   return file_name;
 }
 
-void IOManager::getRankToFileMap(View* rank_to_file_map,
-                                 int num_files)
+void IOManager::getRankToFileMap(View* rank_to_file_map, int num_files)
 {
   SLIC_ASSERT(rank_to_file_map != nullptr);
 
   if(m_baton)
   {
     if(m_baton->getNumFiles() != num_files)
-    { 
+    {
       delete m_baton;
       m_baton = nullptr;
     }
@@ -819,7 +818,7 @@ void IOManager::getRankToFileMap(View* rank_to_file_map,
     m_baton = new IOBaton(m_mpi_comm, num_files, m_comm_size);
   }
 
-  std::vector<int64_t> map_vec(m_comm_size, 0); 
+  std::vector<int64_t> map_vec(m_comm_size, 0);
 
   int set_id = m_baton->wait();
   map_vec[m_my_rank] = static_cast<int64_t>(set_id);
@@ -828,7 +827,7 @@ void IOManager::getRankToFileMap(View* rank_to_file_map,
   conduit::Node map_local;
   map_local.set_external(&map_vec[0], map_vec.size());
 
-  conduit::Node map_global; 
+  conduit::Node map_global;
   conduit::relay::mpi::max_all_reduce(map_local, map_global, m_mpi_comm);
   rank_to_file_map->importArrayNode(map_global);
 }
@@ -1077,7 +1076,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
   std::string bp_index("blueprint_index/" + blueprint_name);
 
   bool multi_domain = false;
-  if (m_comm_size > 1)
+  if(m_comm_size > 1)
   {
     multi_domain = true;
   }
@@ -1097,7 +1096,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
       domain = nullptr;
     }
 
-    if (domain && !domain->hasChildGroup("coordsets"))
+    if(domain && !domain->hasChildGroup("coordsets"))
     {
       multi_domain = true;
     }
@@ -1122,31 +1121,32 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   if(success)
   {
-    Group* state_group = datastore->getRoot()->getGroup(bp_index)->getGroup("state");
+    Group* state_group =
+      datastore->getRoot()->getGroup(bp_index)->getGroup("state");
 
     View* rank_to_file = state_group->createView("rank_to_file_map");
     getRankToFileMap(rank_to_file, m_baton->getNumFiles());
 
-    if (state_group->hasGroup("partition_map"))
-    { 
+    if(state_group->hasGroup("partition_map"))
+    {
       View* domain_to_rank = state_group->getView("partition_map/datagroup");
 
-      View* domain_to_file = state_group->createViewAndAllocate(
-        "partition_map/file",
-        domain_to_rank->getTypeID(),
-        domain_to_rank->getNumElements());
+      View* domain_to_file =
+        state_group->createViewAndAllocate("partition_map/file",
+                                           domain_to_rank->getTypeID(),
+                                           domain_to_rank->getNumElements());
 
-      View* domain_ids = state_group->createViewAndAllocate(
-        "partition_map/domain",
-        domain_to_rank->getTypeID(),
-        domain_to_rank->getNumElements());
+      View* domain_ids =
+        state_group->createViewAndAllocate("partition_map/domain",
+                                           domain_to_rank->getTypeID(),
+                                           domain_to_rank->getNumElements());
 
       int64_t* rank_file_map = rank_to_file->getArray();
       int64_t* domain_rank_map = domain_to_rank->getArray();
       int64_t* domain_file_map = domain_to_file->getArray();
       int64_t* domain_ids_array = domain_ids->getArray();
 
-      for (IndexType i = 0; i < domain_to_file->getNumElements(); ++i)
+      for(IndexType i = 0; i < domain_to_file->getNumElements(); ++i)
       {
         domain_ids_array[i] = i;
         domain_file_map[i] = rank_file_map[domain_rank_map[i]];
@@ -1155,21 +1155,21 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
       std::string file_pattern = getFilePatternFromRoot(file_name, "sidre_hdf5");
 
       std::string domain_pattern;
-      if (datastore->getRoot()->hasView("domain_pattern") &&
-          datastore->getRoot()->getView("domain_pattern")->isString())
+      if(datastore->getRoot()->hasView("domain_pattern") &&
+         datastore->getRoot()->getView("domain_pattern")->isString())
       {
-        domain_pattern =
-          std::string(datastore->getRoot()->getView("domain_pattern")->getString());
+        domain_pattern = std::string(
+          datastore->getRoot()->getView("domain_pattern")->getString());
       }
 
-      std::string partition_pattern = file_pattern +
-        "/datagroup_{datagroup:07d}";
+      std::string partition_pattern =
+        file_pattern + "/datagroup_{datagroup:07d}";
 
-      if (!domain_pattern.empty())
+      if(!domain_pattern.empty())
       {
         partition_pattern = partition_pattern + "/" + domain_pattern;
       }
- 
+
       state_group->createViewString("partition_pattern", partition_pattern);
     }
 
