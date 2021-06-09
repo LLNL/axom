@@ -8,7 +8,7 @@ class C2c(CMakePackage):
     """Contour Parser Library"""
 
     homepage = 'https://rzlc.llnl.gov/c2c'
-    url = 'file:///usr/gapps/c2c/dist/c2c-0.11.0.tgz'
+    url = 'file:///collab/usr/gapps/c2c/dist/c2c-0.11.0.tgz'
 
     version('develop', git='ssh://git@rz-bitbucket.llnl.gov:7999/wp/copa.git',
             submodules=True, branch='develop')
