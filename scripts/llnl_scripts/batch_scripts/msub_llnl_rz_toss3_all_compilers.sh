@@ -7,7 +7,7 @@
 
 #MSUB -l nodes=1:ppn=36
 #MSUB -q pdebug
-#MSUB -l walltime=8:00:00
+#MSUB -l walltime=4:00:00
 #MSUB -j oe
 #MSUB -o m.out.rz.uberenv.toss3.all.compilers.%j.%N.txt
 #

@@ -23,6 +23,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Added
 - Added new CMake option to allow users to turn off Axom created tools: `AXOM_ENABLE_TOOLS`
 - Inlet can now log verification errors to a user-processable list instead of using SLIC
+- Added support for optional third-party `c2c` ("contours to codes") library for parsing 2D spline data.
+  `c2c` is currently only available for Axom configurations on LLNL platforms.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis

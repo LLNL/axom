@@ -11,8 +11,8 @@ Continuous Integration
 
 The Axom project uses two CI tools,
 `Azure Pipelines <https://azure.microsoft.com/en-us/services/devops/pipelines/>`_
-via Github and `Bamboo <https://www.atlassian.com/software/bamboo>`_ 
-on the LC Restricted Zone (RZ).
+via Github and `GitLab CI <https://docs.gitlab.com/ee/ci/>`_ 
+on the LLNL LC Collaboration Zone (CZ).
 
 .. _azure_pipelines-label:
 
@@ -25,23 +25,25 @@ CI jobs to ensure that the Axom source builds and passes our unit tests.
 These configurations mimic the LC compilers and systems as closely as possible
 via Docker containers that have our third-party libraries pre-built on them.
 
+Axom's Github project is also configured to require pull requests to pass checks 
+from our LC GitLab CI (as described below).
+
 
 .. _bamboo-label:
 
 ==========
-RZ Bamboo 
+LC GitLab 
 ==========
 
-We use the `Axom RZ Bamboo project <https://rzlc.llnl.gov/bamboo/browse/ASC>`_ 
-primarily for testing the develop branch against the various LC System Types.
-There are two types of Bamboo Plans which are automatically triggered to build
-and run tests against the develop branch.  The first is triggered nightly and
-on any repository change on Github that builds and tests the current Axom source
-against previously built third-party libraries.  The second is triggered nightly
-and builds and tests the complete third-party library build and then the Axom source
-against those libraries.
+We also maintain a mirror of the `Axom project on LLNL's LC GitLab instance <https://lc.llnl.gov/gitlab/axom/axom>`_
+primarily for testing Axom pull requests against the various LC System Types and compilers.
 
-This plan may be run manually at any time by selecting the plan and clicking
-on 'Run plan' as described above. Each member of the team receives an email 
-notification every morning about the current state of all jobs.
+There are two types of GitLab plans.
+The first is triggered automatically by pull requests on GitHub,
+while the second runs nightly and tests
+Axom's ``develop`` branch against a new build of our third-party library stack.
+
+Our GitLab CI configuration also allows manual runs. To initiate a new run, 
+navigate to the `CI/CD page, <https://lc.llnl.gov/gitlab/axom/axom/-/pipelines>`_
+click on the "Run pipeline" button and select the branch to test.
 
