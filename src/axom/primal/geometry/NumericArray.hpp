@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef NUMERIC_ARRAY_HPP_
-#define NUMERIC_ARRAY_HPP_
+#ifndef AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
+#define AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
@@ -806,8 +806,7 @@ inline NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& arr)
   return result;
 }
 
-} /* namespace primal*/
+}  // namespace primal
+}  // namespace axom
 
-} /* namespace axom */
-
-#endif /* NUMERIC_ARRAY_HXX_ */
+#endif  // AXOM_PRIMAL_NUMERIC_ARRAY_HPP_

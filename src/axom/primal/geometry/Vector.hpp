@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef VECTOR_HPP_
-#define VECTOR_HPP_
+#ifndef AXOM_PRIMAL_VECTOR_HPP_
+#define AXOM_PRIMAL_VECTOR_HPP_
 
 // axom_utils includes
 #include "axom/core/Macros.hpp"
@@ -566,8 +566,7 @@ inline Vector<T, NDIMS> Vector<T, NDIMS>::make_vector(const T& x,
   return Vector(tmp_array, NDIMS);
 }
 
-} /* namespace primal */
+}  // namespace primal
+}  // namespace axom
 
-} /* namespace axom */
-
-#endif /* VECTOR_HXX_ */
+#endif  // AXOM_PRIMAL_VECTOR_HPP_

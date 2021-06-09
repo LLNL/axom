@@ -9,8 +9,8 @@
  * \brief Consists of functions to test intersection among geometric primitives.
  */
 
-#ifndef PRIMAL_INTERSECT_HPP_
-#define PRIMAL_INTERSECT_HPP_
+#ifndef AXOM_PRIMAL_INTERSECT_HPP_
+#define AXOM_PRIMAL_INTERSECT_HPP_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
@@ -531,7 +531,7 @@ bool intersect(const BezierCurve<T, NDIMS>& c1,
 
 /// @}
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif  // PRIMAL_INTERSECT_HPP_
+#endif  // AXOM_PRIMAL_INTERSECT_HPP_

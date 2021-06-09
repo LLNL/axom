@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
-#define QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
+#ifndef AXOM_QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
+#define AXOM_QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
 
 #include "axom/spin/ImplicitGrid.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -159,4 +159,4 @@ private:
 }  // end namespace quest
 }  // end namespace axom
 
-#endif  // QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
+#endif  // AXOM_QUEST_POINT_IN_CELL_POINT_FINDER_HPP_

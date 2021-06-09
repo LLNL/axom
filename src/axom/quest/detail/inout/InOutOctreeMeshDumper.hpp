@@ -9,8 +9,8 @@
  * \brief Defines helper class to write meshes for InOutOctree instances
  */
 
-#ifndef INOUT_OCTREE_MESHDUMPER__HXX_
-#define INOUT_OCTREE_MESHDUMPER__HXX_
+#ifndef AXOM_QUEST_INOUT_OCTREE_MESHDUMPER__HPP_
+#define AXOM_QUEST_INOUT_OCTREE_MESHDUMPER__HPP_
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
@@ -848,4 +848,4 @@ public:
 }  // namespace quest
 }  // namespace axom
 
-#endif  // INOUT_OCTREE_MESHDUMPER__HXX_
+#endif  // AXOM_QUEST_INOUT_OCTREE_MESHDUMPER__HPP_

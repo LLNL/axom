@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SEGMENT_HPP_
-#define SEGMENT_HPP_
+#ifndef AXOM_PRIMAL_SEGMENT_HPP_
+#define AXOM_PRIMAL_SEGMENT_HPP_
 
 #include "axom/slic.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -205,4 +205,4 @@ std::ostream& operator<<(std::ostream& os, const Segment<T, NDIMS>& seg)
 }  // namespace primal
 }  // namespace axom
 
-#endif  // SEGMENT_HPP_
+#endif  // AXOM_PRIMAL_SEGMENT_HPP_

@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef QUEST_SIGNED_DISTANCE_HPP_
-#define QUEST_SIGNED_DISTANCE_HPP_
+#ifndef AXOM_QUEST_SIGNED_DISTANCE_HPP_
+#define AXOM_QUEST_SIGNED_DISTANCE_HPP_
 
 // axom includes
 #include "axom/config.hpp"
@@ -677,4 +677,4 @@ SignedDistance<NDIMS>::getCellBoundingBox(axom::IndexType icell)
 }  // end namespace quest
 }  // end namespace axom
 
-#endif /* SIGNEDDISTANCE_HPP_ */
+#endif  // AXOM_QUEST_SIGNED_DISTANCE_HPP_

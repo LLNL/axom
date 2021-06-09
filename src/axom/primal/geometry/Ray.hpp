@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef RAY_HPP_
-#define RAY_HPP_
+#ifndef AXOM_PRIMAL_RAY_HPP_
+#define AXOM_PRIMAL_RAY_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Segment.hpp"
@@ -160,7 +160,7 @@ std::ostream& operator<<(std::ostream& os, const Ray<T, NDIMS>& ray)
   return os;
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* RAY_HPP_ */
+#endif  // AXOM_PRIMAL_RAY_HPP_

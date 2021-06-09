@@ -9,8 +9,8 @@
  * \brief Defines an InOutOctree for containment queries on a surface.
  */
 
-#ifndef INOUT_OCTREE__HXX_
-#define INOUT_OCTREE__HXX_
+#ifndef AXOM_QUEST_INOUT_OCTREE__HPP_
+#define AXOM_QUEST_INOUT_OCTREE__HPP_
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
@@ -1577,4 +1577,4 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK(
 // Note: The following needs to be included after InOutOctree is defined
 #include "detail/inout/InOutOctreeMeshDumper.hpp"
 
-#endif  // INOUT_OCTREE__HXX_
+#endif  // AXOM_QUEST_INOUT_OCTREE__HPP_

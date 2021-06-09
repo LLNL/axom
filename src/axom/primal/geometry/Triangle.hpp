@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef TRIANGLE_HPP_
-#define TRIANGLE_HPP_
+#ifndef AXOM_PRIMAL_TRIANGLE_HPP_
+#define AXOM_PRIMAL_TRIANGLE_HPP_
 
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
@@ -353,8 +353,7 @@ std::ostream& operator<<(std::ostream& os, const Triangle<T, NDIMS>& tri)
   return os;
 }
 
-} /* namespace primal */
+}  // namespace primal
+}  // namespace axom
 
-} /* namespace axom */
-
-#endif /* TRIANGLE_HPP_ */
+#endif  // AXOM_PRIMAL_TRIANGLE_HPP_

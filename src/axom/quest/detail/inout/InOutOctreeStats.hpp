@@ -9,8 +9,8 @@
  * \brief Defines helper class to generate statistics about an InOutOctree.
  */
 
-#ifndef INOUT_OCTREE_STATS__HXX_
-#define INOUT_OCTREE_STATS__HXX_
+#ifndef AXOM_QUEST_INOUT_OCTREE_STATS__HPP_
+#define AXOM_QUEST_INOUT_OCTREE_STATS__HPP_
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
@@ -343,4 +343,4 @@ private:
 }  // namespace quest
 }  // namespace axom
 
-#endif  // INOUT_OCTREE_STATS__HXX_
+#endif  // AXOM_QUEST_INOUT_OCTREE_STATS__HPP_

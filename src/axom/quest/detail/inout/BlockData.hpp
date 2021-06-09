@@ -9,8 +9,8 @@
  * \brief Defines helper classes for data associated with InOutOctree blocks.
  */
 
-#ifndef INOUT_OCTREE_BLOCKDATA__HXX_
-#define INOUT_OCTREE_BLOCKDATA__HXX_
+#ifndef AXOM_QUEST_INOUT_OCTREE_BLOCKDATA__HPP_
+#define AXOM_QUEST_INOUT_OCTREE_BLOCKDATA__HPP_
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
@@ -423,4 +423,4 @@ inline std::ostream& operator<<(std::ostream& os,
 
 }  // namespace quest
 }  // namespace axom
-#endif  // INOUT_OCTREE_BLOCKDATA__HXX_
+#endif  // AXOM_QUEST_INOUT_OCTREE_BLOCKDATA__HPP_

@@ -10,8 +10,8 @@
  * geometric primitives intersect
  */
 
-#ifndef PRIMAL_INTERSECT_IMPL_HPP_
-#define PRIMAL_INTERSECT_IMPL_HPP_
+#ifndef AXOM_PRIMAL_INTERSECT_IMPL_HPP_
+#define AXOM_PRIMAL_INTERSECT_IMPL_HPP_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"
@@ -1121,8 +1121,8 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox<T, 3>& b1,
   return true;
 }
 
-} /* end namespace detail */
-} /* end namespace primal */
-} /* end namespace axom */
+}  // end namespace detail
+}  // end namespace primal
+}  // end namespace axom
 
-#endif  // PRIMAL_INTERSECT_IMPL_HPP_
+#endif  // AXOM_PRIMAL_INTERSECT_IMPL_HPP_

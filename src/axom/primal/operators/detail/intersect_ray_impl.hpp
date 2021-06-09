@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef PRIMAL_INTERSECT_RAY_HPP_
-#define PRIMAL_INTERSECT_RAY_HPP_
+#ifndef AXOM_PRIMAL_INTERSECT_RAY_IMPL_HPP_
+#define AXOM_PRIMAL_INTERSECT_RAY_IMPL_HPP_
 
 // numerics includes
 #include "axom/core/numerics/floating_point_limits.hpp"
@@ -82,10 +82,10 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
 /*!
  * \brief Helper routine for ray / AABB intersection test.
  *
- * \param [in] x0 coordinate component of the ray origin.
- * \param [in] n normal component of the ray direction.
- * \param [in] bbmin the AABB min coordinate along a direction.
- * \param [in] bbmax the AABB max coordinate along a drection.
+ * \param [in] x0 coordinate component of the ray origin
+ * \param [in] n normal component of the ray direction
+ * \param [in] bbmin the AABB min coordinate along a direction
+ * \param [in] bbmax the AABB max coordinate along a direction
  *
  * \param [in,out] tmin coordinate of closest intersection point along ray
  * \param [in,out] tmax coordinate of farthest intersection point along ray
@@ -227,15 +227,15 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
 }
 
 /*!
- * \brief Computes the intersection of the given ray, R, with the Box, bb.
+ * \brief Computes the intersection of the given ray, R, with the Box, bb
  *
  * \param [in] R the specified ray
  * \param [in] bb the user-supplied axis-aligned bounding box
  * \param [in,out] tmin coordinate of closest intersection point along ray
  * \param [in,out] tmax coordinate of farthest intersection point along ray
- * \param [out] ip the intersection point where R intersects bb.
+ * \param [out] ip the intersection point where R intersects bb
  *
- * \return status true iff bb intersects with R, otherwise, false.
+ * \return status true iff bb intersects with R, otherwise, false
  *
  * \see primal::Ray
  * \see primal::Segment
@@ -302,8 +302,8 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
   return intersects;
 }
 
-} /* namespace detail */
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace detail
+}  // namespace primal
+}  // namespace axom
 
-#endif
+#endif  // AXOM_PRIMAL_INTERSECT_RAY_IMPL_HPP_
