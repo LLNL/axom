@@ -1,9 +1,9 @@
 .. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX
 .. |check|      unicode:: U+2611 .. CHECKED BOX
 
-==================
-Input file Options
-==================
+==================================
+Example Output: Input file Options
+==================================
 
 --------------
 thermal_solver
