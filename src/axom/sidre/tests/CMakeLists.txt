@@ -55,7 +55,7 @@ foreach(test ${gtest_sidre_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON sidre gtest
+                        DEPENDS_ON axom gtest
                         FOLDER axom/sidre/tests
                         )
 
@@ -108,7 +108,7 @@ if (AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     blt_add_executable( NAME sidre_mfem_datacollection_test
                         SOURCES sidre_mfem_datacollection.cpp
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON sidre gtest
+                        DEPENDS_ON axom gtest
                         FOLDER axom/sidre/tests
                         )
     if (ENABLE_MPI AND MFEM_USE_MPI)

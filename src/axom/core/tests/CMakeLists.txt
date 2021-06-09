@@ -38,7 +38,7 @@ set(gtest_utils_tests
     )
 
 set(utils_tests_depends
-    core
+    axom
     gtest
     )
 

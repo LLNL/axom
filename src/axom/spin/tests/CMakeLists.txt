@@ -17,7 +17,7 @@ set(spin_tests
    )
 
 set(spin_depends
-    spin
+    axom
     gtest
     fmt
     )
@@ -49,7 +49,7 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
       NAME       spin_bvh_test
       SOURCES    spin_bvh.cpp
       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-      DEPENDS_ON mint ${spin_depends}
+      DEPENDS_ON ${spin_depends}
       FOLDER     axom/spin/tests
       )
 
