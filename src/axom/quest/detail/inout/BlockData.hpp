@@ -328,12 +328,8 @@ public:
                          const DynamicGrayBlockData& rhs)
   {
     // Note: We are not checking the contents of the cells array, only the size
-    return
-      //(static_cast<const BlockData&>(lhs) == static_cast<const BlockData&>(rhs)) &&
-      (lhs.m_vertIndex == rhs.m_vertIndex) &&
-      (lhs.m_cells.size() == rhs.m_cells.size())
-      // && (lhs.m_cells == rhs.m_cells)
-      && lhs.m_isLeaf == rhs.m_isLeaf;
+    return (lhs.m_vertIndex == rhs.m_vertIndex) &&
+      (lhs.m_cells.size() == rhs.m_cells.size()) && lhs.m_isLeaf == rhs.m_isLeaf;
   }
 
 public:  // Functions related to whether this is a leaf
