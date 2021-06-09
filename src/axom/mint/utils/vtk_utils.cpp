@@ -28,8 +28,6 @@
 
 // C/C++ includes
 #include <fstream>  // for std::ofstream
-#include <iomanip>  // for std::setfill, std::setw
-#include <limits>   // for std::numeric_limits
 #include <string>   // for std::string
 
 namespace axom
