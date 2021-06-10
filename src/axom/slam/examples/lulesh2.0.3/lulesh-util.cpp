@@ -13,6 +13,8 @@
 
 #include "lulesh.hpp"
 
+#include "axom/core/Macros.hpp"
+
 #ifdef AXOM_USE_MPI
 #include <mpi.h>
 #endif
@@ -300,10 +302,10 @@ namespace slamLulesh {
       double relMaxFabs = 1.0e-6 * maxFabs;
       double relMaxFabsWithAbsolute = relMaxFabs + 1.0e-8;
 
-      AXOM_DEBUG_VAR( diff);
-      AXOM_DEBUG_VAR( maxFabs);
-      AXOM_DEBUG_VAR( relMaxFabs);
-      AXOM_DEBUG_VAR( relMaxFabsWithAbsolute);
+      AXOM_UNUSED_VAR( diff);
+      AXOM_UNUSED_VAR( maxFabs);
+      AXOM_UNUSED_VAR( relMaxFabs);
+      AXOM_UNUSED_VAR( relMaxFabsWithAbsolute);
       SLIC_DEBUG("**  comparing "
           << resultCheckMap[gEdge].second << " with " << locDom.e(ElemId)
           << "\n\tfabs difference: " << diff

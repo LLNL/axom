@@ -21,6 +21,7 @@
  */
 
 // Axom headers
+#include "axom/core.hpp"
 #include "axom/sidre.hpp"
 
 // Conduit headers
@@ -154,7 +155,7 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
   c[15] = 11;
 
   // Deal with unused variable
-  AXOM_DEBUG_VAR(ds);
+  AXOM_UNUSED_VAR(ds);
 }
 
 void setup_blueprint_fields(DataStore* ds, Group* fields)
@@ -336,9 +337,8 @@ void generate_multidomain_blueprint(DataStore* ds,
 
 int main(int argc, char** argv)
 {
-  // Deal with unused variables
-  AXOM_DEBUG_VAR(argc);
-  AXOM_DEBUG_VAR(argv);
+  AXOM_UNUSED_VAR(argc);
+  AXOM_UNUSED_VAR(argv);
 #ifdef AXOM_USE_MPI
   int num_ranks = 1;
 

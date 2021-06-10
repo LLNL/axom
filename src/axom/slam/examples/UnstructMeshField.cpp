@@ -16,11 +16,6 @@
  * \author K. Weiss (modified to use axom's Slam component)
  */
 
-#include <fstream>
-#include <sstream>
-#include <cmath>
-#include <cstdlib>
-
 #include "axom/config.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/Utilities.hpp"
@@ -28,6 +23,11 @@
 #include "axom/slam.hpp"
 
 #include "fmt/fmt.hpp"
+
+#include <fstream>
+#include <sstream>
+#include <cmath>
+#include <cstdlib>
 
 namespace slam = axom::slam;
 

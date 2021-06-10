@@ -3,9 +3,10 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef TRIANGLE_HPP_
-#define TRIANGLE_HPP_
+#ifndef AXOM_PRIMAL_TRIANGLE_HPP_
+#define AXOM_PRIMAL_TRIANGLE_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/utilities/Utilities.hpp"
@@ -43,8 +44,8 @@ template <typename T, int NDIMS>
 class Triangle
 {
 public:
-  typedef Point<T, NDIMS> PointType;
-  typedef Vector<T, NDIMS> VectorType;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
 
   enum
   {
@@ -352,8 +353,7 @@ std::ostream& operator<<(std::ostream& os, const Triangle<T, NDIMS>& tri)
   return os;
 }
 
-} /* namespace primal */
+}  // namespace primal
+}  // namespace axom
 
-} /* namespace axom */
-
-#endif /* TRIANGLE_HPP_ */
+#endif  // AXOM_PRIMAL_TRIANGLE_HPP_

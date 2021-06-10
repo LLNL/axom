@@ -50,6 +50,7 @@ if(NOT AXOM_FOUND)
   set(AXOM_USE_SPARSEHASH     "@AXOM_USE_SPARSEHASH@")
 
   # Axom external TPLs
+  set(AXOM_USE_C2C            "@AXOM_USE_C2C@")
   set(AXOM_USE_CONDUIT        "@AXOM_USE_CONDUIT@")
   set(AXOM_USE_HDF5           "@AXOM_USE_HDF5@")
   set(AXOM_USE_LUA            "@AXOM_USE_LUA@")
@@ -62,6 +63,12 @@ if(NOT AXOM_FOUND)
   # Bring in required  dependencies for this axom configuration
   #----------------------------------------------------------------------------
   include(CMakeFindDependencyMacro)
+
+  # c2c
+  if(AXOM_USE_C2C)
+    set(AXOM_C2C_DIR     "@C2C_DIR@")
+    # Note: Targets not currently imported
+  endif()
 
   # conduit
   if(AXOM_USE_CONDUIT)

@@ -95,7 +95,7 @@ struct VirtualParentSubset
     if(verboseOutput)
     {
       bool bValid = (m_parentSet->size() > 0);
-      AXOM_DEBUG_VAR(bValid);
+      AXOM_UNUSED_VAR(bValid);
       SLIC_CHECK_MSG(
         bValid,
         "VirtualParentSubset -- if we are a subset and input set is "
@@ -158,7 +158,7 @@ struct ConcreteParentSubset
     if(verboseOutput)
     {
       bool bValid = (m_parentSet->size() > 0);
-      AXOM_DEBUG_VAR(bValid);
+      AXOM_UNUSED_VAR(bValid);
       SLIC_CHECK_MSG(bValid,
                      "VirtualParentSubset -- if input set is non-empty "
                        << " parent set must be non-empty");

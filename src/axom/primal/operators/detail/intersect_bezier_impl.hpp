@@ -10,8 +10,8 @@
  * of Bezier curves
  */
 
-#ifndef PRIMAL_INTERSECT_BEZIER_IMPL_HPP_
-#define PRIMAL_INTERSECT_BEZIER_IMPL_HPP_
+#ifndef AXOM_PRIMAL_INTERSECT_BEZIER_IMPL_HPP_
+#define AXOM_PRIMAL_INTERSECT_BEZIER_IMPL_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -227,4 +227,4 @@ bool intersect_2d_linear(const Point<T, NDIMS> &a,
 }  // end namespace primal
 }  // end namespace axom
 
-#endif  // PRIMAL_INTERSECT_BEZIER_IMPL_HPP_
+#endif  // AXOM_PRIMAL_INTERSECT_BEZIER_IMPL_HPP_

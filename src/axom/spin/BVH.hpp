@@ -384,4 +384,4 @@ private:
 
 #include "axom/spin/internal/linear_bvh/BVH_impl.hpp"
 
-#endif /* AXOM_SPIN_BVH_H_ */
+#endif  // AXOM_SPIN_BVH_H_

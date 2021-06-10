@@ -181,6 +181,22 @@ if (SOL_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
+# Smoke test for c2c third party library
+#------------------------------------------------------------------------------
+
+if (C2C_FOUND)
+    blt_add_executable(
+        NAME       c2c_smoke_test
+        SOURCES    c2c_smoke.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON c2c gtest
+        FOLDER     axom/thirdparty/tests )
+
+    axom_add_test(NAME    c2c_smoke
+                  COMMAND c2c_smoke_test)
+endif()
+
+#------------------------------------------------------------------------------
 # Add compiler flag tests.
 #
 # Test whether custom compiler flags actually work as expected on all compilers.
