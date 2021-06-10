@@ -35,6 +35,32 @@ Map <Key, T>  test_storage()
   for(int i = 0; i < N; i++){
     EXPECT_EQ(i*27-N/2, test.find(i).value);
   }
+  auto ret = test.insert(N, 900);
+  EXPECT_EQ(false, ret.second);
+  return test;
+}
+
+template <typename Key, typename T, int N>
+Map <Key, T>  test_remove()
+{
+  Map<Key,T> test(N/2, 2);
+  
+  for(int i = 0; i < N; i++)
+    {
+      test.insert(i, i*27-N/2);
+    }
+  
+  for(int i = 0; i < N; i++){
+    EXPECT_EQ(i*27-N/2, test.find(i).value);
+  }
+  
+  test.remove(13);
+  auto ret = test.find(13);
+  EXPECT_EQ(-2, ret.next);
+  test.insert(13, 900);
+  ret = test.find(13);
+  EXPECT_EQ(900, ret.value);
+
   return test;
 }
 
@@ -54,4 +80,10 @@ TEST(core_map, insertion)
 
 }
 
+TEST(core_map, removal)
+{
+  constexpr int N = 20; /* Number of values to store */
+  Map <int, int> test = internal::test_remove<int, int, N>();
+
+}
 } /* namespace axom */
