@@ -3,9 +3,10 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SEGMENT_HPP_
-#define SEGMENT_HPP_
+#ifndef AXOM_PRIMAL_SEGMENT_HPP_
+#define AXOM_PRIMAL_SEGMENT_HPP_
 
+#include "axom/slic.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
@@ -19,11 +20,28 @@ namespace primal
 template <typename T, int DIM>
 class Segment;
 
+/// \name Forward Declared Overloaded Operators
+///@{
+
+/*!
+ * \brief Equality comparison operator for Segment
+ */
+template <typename T, int NDIMS>
+bool operator==(const Segment<T, NDIMS>& lhs, const Segment<T, NDIMS>& rhs);
+
+/*!
+ * \brief Inequality comparison operator for Segment
+ */
+template <typename T, int NDIMS>
+bool operator!=(const Segment<T, NDIMS>& lhs, const Segment<T, NDIMS>& rhs);
+
 /*!
  * \brief Overloaded output operator for Segment
  */
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const Segment<T, NDIMS>& seg);
+
+///@}
 
 /*!
  * \class
@@ -39,20 +57,24 @@ template <typename T, int NDIMS>
 class Segment
 {
 public:
-  typedef Point<T, NDIMS> PointType;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+
+  enum
+  {
+    NUM_SEG_VERTS = 2
+  };
 
 public:
+  /// Disable the default constructor
+  Segment() = delete;
+
   /*!
    * \brief Creates a segment instance from point A to point B.
    * \param A user-supplied source point
    * \param B user-supplied target point
    */
-  Segment(const PointType& A, const PointType& B);
-
-  /*!
-   * \brief Destructor.
-   */
-  ~Segment();
+  Segment(const PointType& A, const PointType& B) : m_source(A), m_target(B) {};
 
   /*!
    * \brief Returns the source point of the segment.
@@ -65,6 +87,30 @@ public:
    * \return t the target point of the segment.
    */
   const PointType& target() const { return m_target; };
+
+  /*!
+   * \brief Index operator to get the i^th vertex
+   * \param idx The index of the desired vertex
+   * \pre idx is 0 or 1
+   */
+  AXOM_HOST_DEVICE
+  PointType& operator[](int idx)
+  {
+    SLIC_ASSERT(idx >= 0 && idx < NUM_SEG_VERTS);
+    return idx == 0 ? m_source : m_target;
+  }
+
+  /*!
+   * \brief Index operator to get the i^th vertex
+   * \param idx The index of the desired vertex
+   * \pre idx is 0 or 1
+   */
+  AXOM_HOST_DEVICE
+  const PointType& operator[](int idx) const
+  {
+    SLIC_ASSERT(idx >= 0 && idx < NUM_SEG_VERTS);
+    return idx == 0 ? m_source : m_target;
+  }
 
   /*!
    * \brief Returns a point \f$ (1 - t)A + tB \f$
@@ -82,10 +128,33 @@ public:
   /*!
    * \brief Returns the length of the segment
    */
-  double length() const
+  double length() const { return VectorType(m_source, m_target).norm(); }
+
+  /*!
+   * \brief Returns a vector normal to the segment
+   *
+   * \note Only available in 2D
+   */
+  template <int TDIM>
+  typename std::enable_if<TDIM == 2, VectorType>::type normal() const
   {
-    typedef Vector<T, NDIMS> VectorType;
-    return VectorType(m_source, m_target).norm();
+    return VectorType {m_target[1] - m_source[1], m_source[0] - m_target[0]};
+  }
+
+  /*!
+   * \brief Equality comparison operator for segments
+   */
+  friend inline bool operator==(const Segment& lhs, const Segment& rhs)
+  {
+    return lhs.m_source == rhs.m_source && lhs.m_target == rhs.m_target;
+  }
+
+  /*!
+   * \brief Inequality operator for segments
+   */
+  friend inline bool operator!=(const Segment& lhs, const Segment& rhs)
+  {
+    return !(lhs == rhs);
   }
 
   /*!
@@ -101,18 +170,12 @@ public:
   }
 
 private:
-  /*!
-   * \brief Default Constructor. Does nothing.
-   * \note Made private to prevent its use in application code.
-   */
-  Segment() {};
-
   PointType m_source;
   PointType m_target;
 };
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
 //------------------------------------------------------------------------------
 //  Segment Implementation
@@ -121,17 +184,6 @@ namespace axom
 {
 namespace primal
 {
-template <typename T, int NDIMS>
-Segment<T, NDIMS>::Segment(const PointType& A, const PointType& B)
-  : m_source(A)
-  , m_target(B)
-{ }
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-Segment<T, NDIMS>::~Segment()
-{ }
-
 //------------------------------------------------------------------------------
 /// Free functions implementing Segments's operators
 //------------------------------------------------------------------------------
@@ -142,7 +194,7 @@ std::ostream& operator<<(std::ostream& os, const Segment<T, NDIMS>& seg)
   return os;
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* SEGMENT_HPP_ */
+#endif  // AXOM_PRIMAL_SEGMENT_HPP_

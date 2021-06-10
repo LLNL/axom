@@ -482,9 +482,8 @@ void working_with_fields(mint::Mesh* mesh)
 
     // sphinx_tutorial_add_fields_end
 
-    // silence warnings...
-    static_cast<void>(den);
-    static_cast<void>(vel);
+    AXOM_UNUSED_VAR(den);
+    AXOM_UNUSED_VAR(vel);
 
   }  // END unnamed namespace
 
@@ -547,12 +546,11 @@ void working_with_fields(mint::Mesh* mesh)
 
   // sphinx_tutorial_query_fields_end
 
-  // silence compiler warnings
-  static_cast<void>(hasDen);
-  static_cast<void>(hasVel);
-  static_cast<void>(den);
-  static_cast<void>(vel);
-  static_cast<void>(isRemoved);
+  AXOM_UNUSED_VAR(hasDen);
+  AXOM_UNUSED_VAR(hasVel);
+  AXOM_UNUSED_VAR(den);
+  AXOM_UNUSED_VAR(vel);
+  AXOM_UNUSED_VAR(isRemoved);
 }
 
 //------------------------------------------------------------------------------

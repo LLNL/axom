@@ -4,15 +4,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file
+ * \file orientation.hpp
  *
  * \brief Consists of a set of templated (overloaded) routines used to calculate
  *  the orientation of a given point to another geometric entity.
  *
  */
 
-#ifndef ORIENTATION_HPP_
-#define ORIENTATION_HPP_
+#ifndef AXOM_PRIMAL_ORIENTATION_HPP_
+#define AXOM_PRIMAL_ORIENTATION_HPP_
 
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/utilities/Utilities.hpp"
@@ -123,7 +123,7 @@ inline int orientation(const Point<T, 2>& p, const Segment<T, 2>& seg)
   return orient;
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* ORIENTATION_HPP_ */
+#endif  // AXOM_PRIMAL_ORIENTATION_HPP_

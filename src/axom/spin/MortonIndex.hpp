@@ -14,8 +14,8 @@
  * unordered_maps
  */
 
-#ifndef MORTON_INDEX_HXX_
-#define MORTON_INDEX_HXX_
+#ifndef AXOM_SPIN_MORTON_INDEX_HPP_
+#define AXOM_SPIN_MORTON_INDEX_HPP_
 
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
@@ -624,4 +624,4 @@ struct PointHash
 }  // end namespace spin
 }  // end namespace axom
 
-#endif  // MORTON_INDEX_HXX_
+#endif  // AXOM_SPIN_MORTON_INDEX_HPP_

@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef BVHTREE_HPP_
-#define BVHTREE_HPP_
+#ifndef AXOM_SPIN_BVHTREE_HPP_
+#define AXOM_SPIN_BVHTREE_HPP_
 
 // axom includes
 #include "axom/core/Macros.hpp"  // for DISABLE_COPY_AND_ASSIGNMENT macro
@@ -1135,7 +1135,7 @@ void BVHTree<T, NDIMS>::writeVtkFile(const std::string& fileName,
   ofs.close();
 }
 
-} /* namespace spin */
-} /* namespace axom */
+}  // namespace spin
+}  // namespace axom
 
-#endif /* BVHTREE_HPP_ */
+#endif  // AXOM_SPIN_BVHTREE_HPP_

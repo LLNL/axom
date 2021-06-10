@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SPIN_BROOD__HPP_
-#define SPIN_BROOD__HPP_
+#ifndef AXOM_SPIN_BROOD__HPP_
+#define AXOM_SPIN_BROOD__HPP_
 
 #include "axom/config.hpp"
 #include "axom/spin/MortonIndex.hpp"
@@ -130,4 +130,4 @@ private:
 }  // end namespace spin
 }  // end namespace axom
 
-#endif  // SPIN_BROOD__HPP_
+#endif  // AXOM_SPIN_BROOD__HPP_

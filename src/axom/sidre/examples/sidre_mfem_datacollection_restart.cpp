@@ -19,6 +19,8 @@
  * @endcode
  */
 
+#include "axom/config.hpp"
+
 // Datacollection header
 #include "axom/sidre/core/MFEMSidreDataCollection.hpp"
 

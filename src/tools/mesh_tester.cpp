@@ -4,10 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
-#include "axom/core/Macros.hpp"
-#include "axom/core/utilities/About.hpp"
-#include "axom/core/utilities/FileUtilities.hpp"
-#include "axom/core/utilities/Timer.hpp"
+#include "axom/config.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/mint/mesh/FieldVariable.hpp"
 // _read_stl_include2_start
@@ -17,10 +16,7 @@
 #include "axom/mint/mesh/UniformMesh.hpp"
 #include "axom/mint/utils/vtk_utils.hpp"  // for write_vtk
 
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/operators/intersect.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
 // _read_stl_include1_start
@@ -29,9 +25,6 @@
 // _check_repair_include_start
 #include "axom/quest/MeshTester.hpp"
 // _check_repair_include_end
-
-#include "axom/slic/streams/GenericOutputStream.hpp"
-#include "axom/slic/interface/slic.hpp"
 
 // RAJA
 #ifdef AXOM_USE_RAJA

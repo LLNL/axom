@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/Macros.hpp"  // for AXOM_DEBUG_VAR
+#include "axom/core/Macros.hpp"
 
 #include "axom/mint/utils/vtk_utils.hpp"  // file header
 

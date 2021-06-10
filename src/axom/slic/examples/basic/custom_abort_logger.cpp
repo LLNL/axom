@@ -25,8 +25,8 @@ void customAbortFunction()
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-  static_cast<void>(argc);
-  static_cast<void>(argv);
+  AXOM_UNUSED_VAR(argc);
+  AXOM_UNUSED_VAR(argv);
 
   //----------------------------------------------------------------------------
   // STEP 0: Initialize logger

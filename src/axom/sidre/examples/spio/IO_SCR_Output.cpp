@@ -6,12 +6,11 @@
 /**************************************************************************
  *************************************************************************/
 
-#include "mpi.h"
-
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 
+#include "mpi.h"
 #include "CLI11/CLI11.hpp"
 
 #ifdef AXOM_USE_SCR

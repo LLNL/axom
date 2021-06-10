@@ -229,7 +229,7 @@ TEST(slic_macros, test_assert_macros)
   slic::internal::clear();
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
-  static_cast<void>(val); /* silence compiler warnings in release */
+  AXOM_UNUSED_VAR(val);
   EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 
@@ -247,7 +247,7 @@ TEST(slic_macros, test_assert_macros)
   slic::internal::clear();
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
-  static_cast<void>(val); /* silence compiler warnings in release */
+  AXOM_UNUSED_VAR(val);
   EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 }
@@ -268,7 +268,7 @@ TEST(slic_macros, test_check_macros)
   slic::internal::clear();
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
-  static_cast<void>(val); /* silence compiler warnings in release */
+  AXOM_UNUSED_VAR(val);
   EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 
@@ -286,7 +286,7 @@ TEST(slic_macros, test_check_macros)
   slic::internal::clear();
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
-  static_cast<void>(val); /* silence compiler warnings in release */
+  AXOM_UNUSED_VAR(val);
   EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 }
