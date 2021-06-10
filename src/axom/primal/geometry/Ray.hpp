@@ -47,6 +47,9 @@ public:
   using VectorType = Vector<T, NDIMS>;
 
 public:
+  /// Disable the default constructor
+  Ray() = delete;
+
   /*!
    * \brief Constructs a ray object with the given origin and direction.
    * \param [in] origin the origin of the ray.
@@ -99,12 +102,6 @@ public:
   }
 
 private:
-  /*!
-   * \brief Default Constructor. Does nothing.
-   * \note Made private to prevent its use in application code.
-   */
-  Ray() = default;
-
   PointType m_origin;
   VectorType m_direction;
 };

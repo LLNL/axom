@@ -66,17 +66,15 @@ public:
   };
 
 public:
+  /// Disable the default constructor
+  Segment() = delete;
+
   /*!
    * \brief Creates a segment instance from point A to point B.
    * \param A user-supplied source point
    * \param B user-supplied target point
    */
   Segment(const PointType& A, const PointType& B) : m_source(A), m_target(B) {};
-
-  /*!
-   * \brief Destructor.
-   */
-  ~Segment() = default;
 
   /*!
    * \brief Returns the source point of the segment.
@@ -172,12 +170,6 @@ public:
   }
 
 private:
-  /*!
-   * \brief Default Constructor. Does nothing.
-   * \note Made private to prevent its use in application code.
-   */
-  Segment() = default;
-
   PointType m_source;
   PointType m_target;
 };
