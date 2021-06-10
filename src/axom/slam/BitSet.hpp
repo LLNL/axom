@@ -12,6 +12,7 @@
 #ifndef SLAM_BITSET_H_
 #define SLAM_BITSET_H_
 
+#include "axom/config.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic.hpp"
 
@@ -114,7 +115,7 @@ public:
   // Use vector for initial implementation -- TODO: update using a policy
   using ArrayType = std::vector<Word>;
 
-  static const Index npos;
+  AXOM_EXPORT static const Index npos;
 
 private:
   enum
