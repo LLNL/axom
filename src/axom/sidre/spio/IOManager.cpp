@@ -11,6 +11,7 @@
 #include "axom/core/utilities/FileUtilities.hpp"
 
 // SiDRe project headers
+#include "axom/sidre/core/Buffer.hpp"
 #include "axom/sidre/core/Group.hpp"
 #include "axom/sidre/core/DataStore.hpp"
 #include "axom/sidre/core/SidreTypes.hpp"
@@ -18,6 +19,7 @@
 
 // Conduit headers
 #include "conduit_relay.hpp"
+#include "conduit_relay_mpi.hpp"
 
 #ifdef AXOM_USE_HDF5
   #include "conduit_relay_io_hdf5.hpp"
@@ -172,10 +174,7 @@ void IOManager::write(sidre::Group* datagroup,
                 "SCR requires a file per process");
 
   std::string root_string = file_string;
-  if(m_my_rank == 0)
-  {
-    createRootFile(root_string, num_files, protocol, tree_pattern);
-  }
+  createRootFile(root_string, num_files, protocol, tree_pattern);
   MPI_Barrier(m_mpi_comm);
 
   std::string root_name = root_string + ".root";
@@ -469,59 +468,61 @@ void IOManager::createRootFile(const std::string& file_base,
                                const std::string& protocol,
                                const std::string& tree_pattern)
 {
-  SLIC_ASSERT(m_my_rank == 0);
-
   conduit::Node n;
-  std::string root_file_name;
-  std::string local_file_base;
 
-  std::string relay_protocol = correspondingRelayProtocol(protocol);
-
-  if(protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
+  if(m_my_rank == 0)
   {
-#ifdef AXOM_USE_HDF5
-    n["number_of_files"] = num_files;
-    if(protocol == "sidre_hdf5")
+    std::string root_file_name;
+    std::string local_file_base;
+
+    std::string relay_protocol = correspondingRelayProtocol(protocol);
+
+    if(protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
     {
-      std::string next;
-      std::string slash = "/";
-      conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
-      n["file_pattern"] =
-        local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
+#ifdef AXOM_USE_HDF5
+      n["number_of_files"] = num_files;
+      if(protocol == "sidre_hdf5")
+      {
+        std::string next;
+        std::string slash = "/";
+        conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
+        n["file_pattern"] =
+          local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
+      }
+      else
+      {
+        n["file_pattern"] = file_base + "_" + "%07d.conduit_hdf5";
+      }
+      n["number_of_trees"] = m_comm_size;
+
+      n["tree_pattern"] = tree_pattern;
+      n["protocol/name"] = protocol;
+      n["protocol/version"] = "0.0";
+
+      root_file_name = file_base + ".root";
+#else
+      SLIC_WARNING("IOManager::createRootFile() -- '"
+                   << protocol << "' protocol only available "
+                   << "when Axom is configured with hdf5");
+#endif /* AXOM_USE_HDF5 */
     }
     else
     {
-      n["file_pattern"] = file_base + "_" + "%07d.conduit_hdf5";
+      n["number_of_files"] = num_files;
+      n["file_pattern"] = file_base + "_" + "%07d." + protocol;
+      n["number_of_trees"] = m_comm_size;
+
+      n["tree_pattern"] = tree_pattern;
+      n["protocol/name"] = protocol;
+      n["protocol/version"] = "0.0";
+
+      root_file_name = file_base + ".root";
     }
-    n["number_of_trees"] = m_comm_size;
 
-    n["tree_pattern"] = tree_pattern;
-    n["protocol/name"] = protocol;
-    n["protocol/version"] = "0.0";
+    root_file_name = getSCRPath(root_file_name);
 
-    root_file_name = file_base + ".root";
-#else
-    SLIC_WARNING("IOManager::createRootFile() -- '"
-                 << protocol << "' protocol only available "
-                 << "when Axom is configured with hdf5");
-#endif /* AXOM_USE_HDF5 */
+    conduit::relay::io::save(n, root_file_name, relay_protocol);
   }
-  else
-  {
-    n["number_of_files"] = num_files;
-    n["file_pattern"] = file_base + "_" + "%07d." + protocol;
-    n["number_of_trees"] = m_comm_size;
-
-    n["tree_pattern"] = tree_pattern;
-    n["protocol/name"] = protocol;
-    n["protocol/version"] = "0.0";
-
-    root_file_name = file_base + ".root";
-  }
-
-  root_file_name = getSCRPath(root_file_name);
-
-  conduit::relay::io::save(n, root_file_name, relay_protocol);
 }
 
 /*
@@ -800,6 +801,38 @@ std::string IOManager::getFileNameForRank(const std::string& file_pattern,
   return file_name;
 }
 
+void IOManager::getRankToFileMap(View* rank_to_file_map, int num_files)
+{
+  SLIC_ASSERT(rank_to_file_map != nullptr);
+
+  if(m_baton)
+  {
+    if(m_baton->getNumFiles() != num_files)
+    {
+      delete m_baton;
+      m_baton = nullptr;
+    }
+  }
+
+  if(!m_baton)
+  {
+    m_baton = new IOBaton(m_mpi_comm, num_files, m_comm_size);
+  }
+
+  std::vector<int64_t> map_vec(m_comm_size, 0);
+
+  int set_id = m_baton->wait();
+  map_vec[m_my_rank] = static_cast<int64_t>(set_id);
+  (void)m_baton->pass();
+
+  conduit::Node map_local;
+  map_local.set_external(&map_vec[0], map_vec.size());
+
+  conduit::Node map_global;
+  conduit::relay::mpi::max_all_reduce(map_local, map_global, m_mpi_comm);
+  rank_to_file_map->importArrayNode(map_global);
+}
+
 /*
  *************************************************************************
  *
@@ -1043,9 +1076,36 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   std::string bp_index("blueprint_index/" + blueprint_name);
 
+  bool multi_domain = false;
+  if(m_comm_size > 1)
+  {
+    multi_domain = true;
+  }
+  else
+  {
+    Group* domain;
+    if(domain_path == "/")
+    {
+      domain = datastore->getRoot();
+    }
+    else if(datastore->getRoot()->hasGroup(domain_path))
+    {
+      domain = datastore->getRoot()->getGroup(domain_path);
+    }
+    else
+    {
+      domain = nullptr;
+    }
+
+    if(domain && !domain->hasChildGroup("coordsets"))
+    {
+      multi_domain = true;
+    }
+  }
+
   bool success = false;
 
-  if(m_comm_size > 1)
+  if(multi_domain)
   {
     success = datastore->generateBlueprintIndex(MPI_COMM_WORLD,
                                                 domain_path,
@@ -1062,6 +1122,58 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   if(success)
   {
+    Group* state_group =
+      datastore->getRoot()->getGroup(bp_index)->getGroup("state");
+
+    View* rank_to_file = state_group->createView("rank_to_file_map");
+    getRankToFileMap(rank_to_file, m_baton->getNumFiles());
+
+    if(state_group->hasGroup("partition_map"))
+    {
+      View* domain_to_rank = state_group->getView("partition_map/datagroup");
+
+      View* domain_to_file =
+        state_group->createViewAndAllocate("partition_map/file",
+                                           domain_to_rank->getTypeID(),
+                                           domain_to_rank->getNumElements());
+
+      View* domain_ids =
+        state_group->createViewAndAllocate("partition_map/domain",
+                                           domain_to_rank->getTypeID(),
+                                           domain_to_rank->getNumElements());
+
+      int64_t* rank_file_map = rank_to_file->getArray();
+      int64_t* domain_rank_map = domain_to_rank->getArray();
+      int64_t* domain_file_map = domain_to_file->getArray();
+      int64_t* domain_ids_array = domain_ids->getArray();
+
+      for(IndexType i = 0; i < domain_to_file->getNumElements(); ++i)
+      {
+        domain_ids_array[i] = i;
+        domain_file_map[i] = rank_file_map[domain_rank_map[i]];
+      }
+
+      std::string file_pattern = getFilePatternFromRoot(file_name, "sidre_hdf5");
+
+      std::string domain_pattern;
+      if(datastore->getRoot()->hasView("domain_pattern") &&
+         datastore->getRoot()->getView("domain_pattern")->isString())
+      {
+        domain_pattern = std::string(
+          datastore->getRoot()->getView("domain_pattern")->getString());
+      }
+
+      std::string partition_pattern =
+        file_pattern + "/datagroup_{datagroup:07d}";
+
+      if(!domain_pattern.empty())
+      {
+        partition_pattern = partition_pattern + "/" + domain_pattern;
+      }
+
+      state_group->createViewString("partition_pattern", partition_pattern);
+    }
+
     if(m_my_rank == 0)
     {
       Group* ind_group = datastore->getRoot()->getGroup("blueprint_index");
