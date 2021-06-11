@@ -270,10 +270,10 @@ public:
     int newlen = 0;
     IndexType ind;
     std::size_t hashed;
-    if(buckets != -1){
+    if(buckets != -1 && buckets > m_bucket_count){
       newlen = buckets;
     }
-    else if(factor != -1){
+    else if(factor != -1 && factor > 1){
       newlen = factor*m_bucket_count;
     }
     else{
@@ -298,7 +298,7 @@ public:
   } 
 
   axom_map::Pair<Key, T> insert(Key key, T val){
-    axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key));  
+    axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key)); 
     return target->insert_no_update(key, val);
   }
 
