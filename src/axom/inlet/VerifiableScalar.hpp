@@ -46,9 +46,9 @@ class VerifiableScalar
 {
 public:
   /**
-   * A function which can verify the contents of the item being verifier.
-   * It should report any errors via INLET_VERIFICATION_WARNING, passing
-   * in the given array of errors.
+   * A function which can verify the contents of the item being verified.
+   * It should report any errors via the INLET_VERIFICATION_WARNING macro,
+   * passing in the given array of errors.
    */
   using Verifier = std::function<bool(const axom::inlet::Field&,
                                       std::vector<VerificationError>* errors)>;

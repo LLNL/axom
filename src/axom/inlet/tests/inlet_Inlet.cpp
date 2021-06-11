@@ -1170,6 +1170,8 @@ TYPED_TEST(inlet_Inlet_verify, verifyFieldLambda)
   });
   EXPECT_FALSE(inlet.verify());
 
+  // Check that verifiers that take a list of errors are given a proper list
+  // they can modify and that the errors are returned to the caller.
   field2.registerVerifier([](const Field&, std::vector<VerificationError>* errors) {
     INLET_VERIFICATION_WARNING("<base>", "bad thing", errors);
     return false;
