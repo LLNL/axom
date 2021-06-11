@@ -32,6 +32,79 @@ namespace axom
 {
 namespace primal
 {
+namespace internal
+{
+/// Utility class that caches precomputed coefficient matrices for sectorArea computation
+template <typename T>
+class MemoizedSectorAreaWeights
+{
+public:
+  using SectorWeights = numerics::Matrix<T>;
+
+  MemoizedSectorAreaWeights() = default;
+
+  ~MemoizedSectorAreaWeights()
+  {
+    for(auto& p : m_sectorWeightsMap)
+    {
+      delete[] p.second->data();  // delete the matrix's data
+      delete p.second;            // delete the matrix
+      p.second = nullptr;
+    }
+    m_sectorWeightsMap.clear();
+  }
+
+  /// Returns a memoized matrix of coeficients for sector area computation
+  const SectorWeights& getWeights(int order) const
+  {
+    // Compute and cache the weights if they are not already available
+    if(m_sectorWeightsMap.find(order) == m_sectorWeightsMap.end())
+    {
+      SectorWeights* weights = generateBezierCurveSectorWeights(order);
+      m_sectorWeightsMap[order] = weights;
+    }
+
+    return *(m_sectorWeightsMap[order]);
+  }
+
+private:
+  /// Generate a matrix of sector weights; our destructor will manage the associated memory
+  SectorWeights* generateBezierCurveSectorWeights(int ord) const
+  {
+    const bool memoryIsExternal = true;
+    const int sz = ord + 1;
+    SectorWeights* weights =
+      new SectorWeights(sz, sz, new T[sz * sz], memoryIsExternal);
+
+    T binom_2n_n = static_cast<T>(utilities::binomialCoefficient(2 * ord, ord));
+    for(int i = 0; i <= ord; ++i)
+    {
+      (*weights)(i, i) = 0.;  // zero on the diagonal
+      for(int j = i + 1; j <= ord; ++j)
+      {
+        double val = 0.;
+        if(i != j)
+        {
+          T binom_ij_i = static_cast<T>(utilities::binomialCoefficient(i + j, i));
+          T binom_2nij_nj = static_cast<T>(
+            utilities::binomialCoefficient(2 * ord - i - j, ord - j));
+
+          val = ((j - i) * ord) / binom_2n_n *
+            (binom_ij_i / static_cast<T>(i + j)) *
+            (binom_2nij_nj / (2. * ord - j - i));
+        }
+        (*weights)(i, j) = val;  // antisymmetric
+        (*weights)(j, i) = -val;
+      }
+    }
+    return weights;
+  }
+
+private:
+  mutable std::map<int, SectorWeights*> m_sectorWeightsMap;
+};
+}  // namespace internal
+
 // Forward declare the templated classes and operator functions
 template <typename T, int NDIMS>
 class BezierCurve;
@@ -77,13 +150,6 @@ public:
   using CoordsVec = std::vector<PointType>;
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
-
-private:
-  // Caches of precomputed coefficients for sector area calculations
-  // on a given polynomial order
-  using SectorWeights = numerics::Matrix<T>;
-  using WeightsMap = std::map<int, SectorWeights>;
-  static WeightsMap s_sectorWeightsMap;
 
 public:
   /*!
@@ -348,17 +414,12 @@ public:
    */
   T sectorArea() const
   {
+    // Weights for each polynomial order are precomputed and memoized
+    static internal::MemoizedSectorAreaWeights<T> s_weights;
+
     T A = 0;
     const int ord = getOrder();
-
-    // Compute and cache the weights if they are not already available
-    if(s_sectorWeightsMap.find(ord) == s_sectorWeightsMap.end())
-    {
-      auto wts = generateBezierCurveSectorWeights<T>(ord);
-      s_sectorWeightsMap.emplace(std::make_pair(ord, wts));
-    }
-
-    const auto& weights = s_sectorWeightsMap[ord];
+    const auto& weights = s_weights.getWeights(ord);
 
     for(int p = 0; p <= ord; ++p)
     {
@@ -422,10 +483,6 @@ private:
   CoordsVec m_controlPoints;
 };
 
-// Declaration of sectorArea weights map
-template <typename T, int NDIMS>
-typename BezierCurve<T, NDIMS>::WeightsMap BezierCurve<T, NDIMS>::s_sectorWeightsMap;
-
 //------------------------------------------------------------------------------
 /// Free functions related to BezierCurve
 //------------------------------------------------------------------------------
@@ -434,34 +491,6 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve)
 {
   bCurve.print(os);
   return os;
-}
-
-template <typename T>
-numerics::Matrix<T> generateBezierCurveSectorWeights(int ord)
-{
-  numerics::Matrix<T> weights(ord + 1, ord + 1);
-  T binom_2n_n = static_cast<T>(utilities::binomialCoefficient(2 * ord, ord));
-  for(int i = 0; i <= ord; ++i)
-  {
-    weights(i, i) = 0.;  // zero on the diagonal
-    for(int j = i + 1; j <= ord; ++j)
-    {
-      double val = 0.;
-      if(i != j)
-      {
-        T binom_ij_i = static_cast<T>(utilities::binomialCoefficient(i + j, i));
-        T binom_2nij_nj = static_cast<T>(
-          utilities::binomialCoefficient(2 * ord - i - j, ord - j));
-
-        val = ((j - i) * ord) / binom_2n_n *
-          (binom_ij_i / static_cast<T>(i + j)) *
-          (binom_2nij_nj / (2. * ord - j - i));
-      }
-      weights(i, j) = val;  // antisymmetric
-      weights(j, i) = -val;
-    }
-  }
-  return weights;
 }
 
 }  // namespace primal
