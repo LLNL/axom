@@ -25,6 +25,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet can now log verification errors to a user-processable list instead of using SLIC
 - SPIO: Added new mapping arrays to the automatically-generated Blueprint
   index to support new schema for multi-domain parallel meshes.
+- Added support for optional third-party `c2c` ("contours to codes") library for parsing 2D spline data.
+  `c2c` is currently only available for Axom configurations on LLNL platforms.
+- Primal's `intersect(Ray, Segment)` can now return the parametric coordinates of the intersection
+  along both the ray and the segment (when the intersection exists)
+- Primal's `intersect(Segment, BoundingBox)` can now return the parametric coordinates bounding the
+  portion of the segment contained within the BoundingBox (when the intersection exists)
+- Generalizes Quest's `InOutOctree` class to work with 2D line segment meshes. Previously,
+  it only worked with 3D triangle meshes
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -32,7 +40,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   always give a full path (e.g. `CLANGFORMAT_EXECUTABLE`)
 - Inlet: `Writer`s are passed directly to `Inlet::write` instead of being registered
 - `Inlet` objects can now be constructed without a user-provided `sidre::DataStore`
-- Conduit TPL version changed to v. 0.7.2
+- Conduit version changed to v. 0.7.2
+- Renames `AXOM_DEBUG_VAR` macro to `AXOM_UNUSED_VAR` since there were many cases where the latter
+  was not the appropriate name. This macro elides warnings about unused variables
+
+### Fixed
+- Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
+
 
 ## [Version 0.5.0] - Release date 2021-05-14
 

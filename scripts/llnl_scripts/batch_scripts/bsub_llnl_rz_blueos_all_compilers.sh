@@ -6,9 +6,8 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 
 #BSUB -W 240
-#BSUB -G wbronze
 #BSUB -o b.out.rz.blueos.all.compilers.%J.txt
-#BSUB -q pbatch
+#BSUB -q pdebug
 #
 # usage: 
 #  cd {to directory with this script}

@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef BOUNDINGBOX_HPP_
-#define BOUNDINGBOX_HPP_
+#ifndef AXOM_PRIMAL_BOUNDINGBOX_HPP_
+#define AXOM_PRIMAL_BOUNDINGBOX_HPP_
 
 #include <limits>
 
@@ -672,7 +672,7 @@ std::ostream& operator<<(std::ostream& os, const BoundingBox<T, NDIMS>& bb)
   return bb.print(os);
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* BOUNDINGBOX_HPP_ */
+#endif  // AXOM_PRIMAL_BOUNDINGBOX_HPP_

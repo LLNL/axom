@@ -14,6 +14,7 @@
 #ifndef AXOM_NUMERICS_MATVECOPS_HPP_
 #define AXOM_NUMERICS_MATVECOPS_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/numerics/Determinants.hpp"  // numerics::determinant()
 #include "axom/core/numerics/Matrix.hpp"        // for numerics::Matrix
 #include "axom/core/utilities/Utilities.hpp"    // for isNearlyEqual()

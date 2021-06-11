@@ -7,6 +7,7 @@
 #include "IOManager.hpp"
 
 // Other axom headers
+#include "axom/core/Macros.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
 
 // SiDRe project headers
@@ -224,7 +225,7 @@ void IOManager::write(sidre::Group* datagroup,
 
     datagroup->save(h5_group_id);
     herr_t status;
-    AXOM_DEBUG_VAR(status);
+    AXOM_UNUSED_VAR(status);
 
     status = H5Gclose(h5_group_id);
     SLIC_ASSERT(status >= 0);
@@ -381,7 +382,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
     if(m_my_rank < num_groups)
     {
       herr_t errv;
-      AXOM_DEBUG_VAR(errv);
+      AXOM_UNUSED_VAR(errv);
 
       std::string hdf5_name = getFileNameForRank(file_pattern, root_file, set_id);
 
@@ -414,7 +415,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
         input_rank += m_comm_size)
     {
       herr_t errv;
-      AXOM_DEBUG_VAR(errv);
+      AXOM_UNUSED_VAR(errv);
 
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, input_rank);
@@ -447,7 +448,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
   }
 
 #else
-  AXOM_DEBUG_VAR(datagroup);
+  AXOM_UNUSED_VAR(datagroup);
   SLIC_WARNING("Loading external data only only available "
                << "when Axom is configured with hdf5");
 #endif /* AXOM_USE_HDF5 */
@@ -568,7 +569,7 @@ std::string IOManager::getProtocol(const std::string& root_orig)
     {
       relay_protocol = "hdf5";
       herr_t errv = H5Fclose(file_id);
-      AXOM_DEBUG_VAR(errv);
+      AXOM_UNUSED_VAR(errv);
       SLIC_ASSERT(errv >= 0);
     }
 
@@ -704,7 +705,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
     if(m_my_rank < num_groups)
     {
       herr_t errv;
-      AXOM_DEBUG_VAR(errv);
+      AXOM_UNUSED_VAR(errv);
 
       std::string hdf5_name = getFileNameForRank(file_pattern, root_file, set_id);
 
@@ -738,7 +739,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
         input_rank += m_comm_size)
     {
       herr_t errv;
-      AXOM_DEBUG_VAR(errv);
+      AXOM_UNUSED_VAR(errv);
 
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, input_rank);
@@ -923,7 +924,7 @@ void IOManager::writeGroupToRootFile(sidre::Group* group,
   conduit::relay::io::hdf5_write(data_holder, group_id);
 
   herr_t errv;
-  AXOM_DEBUG_VAR(errv);
+  AXOM_UNUSED_VAR(errv);
 
   errv = H5Gclose(group_id);
   SLIC_ASSERT(errv >= 0);
@@ -934,8 +935,8 @@ void IOManager::writeGroupToRootFile(sidre::Group* group,
   errv = H5Fclose(root_file_id);
   SLIC_ASSERT(errv >= 0);
 #else
-  AXOM_DEBUG_VAR(group);
-  AXOM_DEBUG_VAR(file_name);
+  AXOM_UNUSED_VAR(group);
+  AXOM_UNUSED_VAR(file_name);
 
   SLIC_WARNING(
     "Axom configured without hdf5. "
@@ -982,7 +983,7 @@ void IOManager::writeGroupToRootFileAtPath(sidre::Group* group,
   conduit::relay::io::hdf5_write(data_holder, group_id);
 
   herr_t errv;
-  AXOM_DEBUG_VAR(errv);
+  AXOM_UNUSED_VAR(errv);
 
   errv = H5Gclose(group_id);
   SLIC_ASSERT(errv >= 0);
@@ -993,9 +994,9 @@ void IOManager::writeGroupToRootFileAtPath(sidre::Group* group,
   errv = H5Fclose(root_file_id);
   SLIC_ASSERT(errv >= 0);
 #else
-  AXOM_DEBUG_VAR(group);
-  AXOM_DEBUG_VAR(file_name);
-  AXOM_DEBUG_VAR(group_path);
+  AXOM_UNUSED_VAR(group);
+  AXOM_UNUSED_VAR(file_name);
+  AXOM_UNUSED_VAR(group_path);
 
   SLIC_WARNING("Axom configured without hdf5. "
                << "IOManager::writeGroupToRootFileAtPath() only currently "
@@ -1033,7 +1034,7 @@ void IOManager::writeViewToRootFileAtPath(sidre::View* view,
   conduit::relay::io::hdf5_write(data_holder, path_id);
 
   herr_t errv;
-  AXOM_DEBUG_VAR(errv);
+  AXOM_UNUSED_VAR(errv);
 
   errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
   SLIC_ASSERT(errv >= 0);
@@ -1041,9 +1042,9 @@ void IOManager::writeViewToRootFileAtPath(sidre::View* view,
   errv = H5Fclose(root_file_id);
   SLIC_ASSERT(errv >= 0);
 #else
-  AXOM_DEBUG_VAR(view);
-  AXOM_DEBUG_VAR(file_name);
-  AXOM_DEBUG_VAR(group_path);
+  AXOM_UNUSED_VAR(view);
+  AXOM_UNUSED_VAR(file_name);
+  AXOM_UNUSED_VAR(group_path);
 
   SLIC_WARNING("Axom configured without hdf5. "
                << "writeViewToRootFileAtPath() only currently implemented "
@@ -1062,7 +1063,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
   hid_t root_file_id =
     conduit::relay::io::hdf5_open_file_for_read_write(tmp_name);
 
-  AXOM_DEBUG_VAR(root_file_id);
+  AXOM_UNUSED_VAR(root_file_id);
   SLIC_ASSERT(root_file_id >= 0);
 
   std::string blueprint_name;
@@ -1185,10 +1186,10 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
                  << "based on group at path " << domain_path);
   }
 #else
-  AXOM_DEBUG_VAR(datastore);
-  AXOM_DEBUG_VAR(domain_path);
-  AXOM_DEBUG_VAR(file_name);
-  AXOM_DEBUG_VAR(mesh_path);
+  AXOM_UNUSED_VAR(datastore);
+  AXOM_UNUSED_VAR(domain_path);
+  AXOM_UNUSED_VAR(file_name);
+  AXOM_UNUSED_VAR(mesh_path);
 
   SLIC_WARNING("Axom configured without hdf5. "
                << "writeBlueprintIndexToRootFile() only currently implemented "

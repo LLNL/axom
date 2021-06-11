@@ -53,18 +53,20 @@ Library Dependencies
 """"""""""""""""""""
 
 ================== ==================================== ======================
-  Library            Dependent Components                Build system variable
+  Library          Dependent Components                 Build system variable
 ================== ==================================== ======================
-  `Conduit`_       Required: Sidre                       CONDUIT_DIR
-  `HDF5`_          Optional: Sidre                       HDF5_DIR
-  `Lua`_           Optional: Inlet                       LUA_DIR
-  `MFEM`_          Optional: Quest                       MFEM_DIR
-  `RAJA`_          Optional: Mint, Spin, Quest           RAJA_DIR
-  `SCR`_           Optional: Sidre                       SCR_DIR
-  `Umpire`_        Optional: Core, Spin, Quest           UMPIRE_DIR
+  `Conduit`_       Required: Sidre                      CONDUIT_DIR
+  `c2c`_           Optional                             C2C_DIR
+  `HDF5`_          Optional: Sidre                      HDF5_DIR
+  `Lua`_           Optional: Inlet                      LUA_DIR
+  `MFEM`_          Optional: Quest                      MFEM_DIR
+  `RAJA`_          Optional: Mint, Spin, Quest          RAJA_DIR
+  `SCR`_           Optional: Sidre                      SCR_DIR
+  `Umpire`_        Optional: Core, Spin, Quest          UMPIRE_DIR
 ================== ==================================== ======================
 
 .. _Conduit: https://llnl-conduit.readthedocs.io/en/latest
+.. _c2c: https://rzlc.llnl.gov/c2c
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
 .. _Lua: https://www.lua.org/
 .. _MFEM: https://mfem.org/
@@ -75,6 +77,9 @@ Library Dependencies
 Each library dependency has a corresponding build system variable
 (with the suffix ``_DIR``) to supply the path to the library's installation directory.
 For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``.
+
+.. note::
+  Optional `c2c` library is currently only available for configurations on LLNL clusters.
 
 
 Tool Dependencies

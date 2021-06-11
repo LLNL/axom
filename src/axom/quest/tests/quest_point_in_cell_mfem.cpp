@@ -12,6 +12,7 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
 #include "axom/core/utilities/Timer.hpp"
 
 #include "axom/mint/mesh/CurvilinearMesh.hpp"

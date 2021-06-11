@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
 #include "axom/primal/geometry/Plane.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 

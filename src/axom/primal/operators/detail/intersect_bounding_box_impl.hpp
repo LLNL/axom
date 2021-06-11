@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef PRIMAL_INTERSECT_BOUNDING_BOX_HPP_
-#define PRIMAL_INTERSECT_BOUNDING_BOX_HPP_
+#ifndef AXOM_PRIMAL_INTERSECT_BOUNDING_BOX_IMPL_HPP_
+#define AXOM_PRIMAL_INTERSECT_BOUNDING_BOX_IMPL_HPP_
 
 #include "axom/core/Macros.hpp"
 
@@ -112,8 +112,8 @@ AXOM_HOST_DEVICE inline bool intersect_bounding_box(const T& xmin1,
   return status;
 }
 
-} /* namespace detail */
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace detail
+}  // namespace primal
+}  // namespace axom
 
-#endif
+#endif  // AXOM_PRIMAL_INTERSECT_BOUNDING_BOX_IMPL_HPP_

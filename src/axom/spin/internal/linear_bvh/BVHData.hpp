@@ -40,7 +40,7 @@ struct BVHData
 
   BoundingBoxType* m_inner_nodes;  // BVH bins including leafs
   int32* m_inner_node_children;
-  int32* m_leaf_nodes;               // leaf data
+  int32* m_leaf_nodes;  // leaf data
   primal::BoundingBox<FloatType, NDIMS> m_bounds;
 
   BVHData() : m_inner_nodes(nullptr), m_leaf_nodes(nullptr) { }

@@ -9,8 +9,8 @@
  * \brief Consists of functions to create bounding boxes.
  */
 
-#ifndef COMPUTE_BOUNDING_BOX_HPP_
-#define COMPUTE_BOUNDING_BOX_HPP_
+#ifndef AXOM_PRIMAL_COMPUTE_BOUNDING_BOX_HPP_
+#define AXOM_PRIMAL_COMPUTE_BOUNDING_BOX_HPP_
 
 #include "axom/primal/geometry/NumericArray.hpp"  // for numeric arrays
 #include "axom/core/numerics/Matrix.hpp"          // for Matrix
@@ -121,4 +121,4 @@ AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
 }  // namespace primal
 }  // namespace axom
 
-#endif /* COMPUTE_BOUNDING_BOX_HPP_ */
+#endif  // AXOM_PRIMAL_COMPUTE_BOUNDING_BOX_HPP_

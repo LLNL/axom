@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 
   if(argc == 1)
   {
-    std::cerr << "Error: not path given on command line" << std::endl;
+    std::cerr << "Error: no path given on command line" << std::endl;
     return 1;
   }
   else
