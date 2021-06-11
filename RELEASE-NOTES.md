@@ -23,6 +23,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Added
 - Added new CMake option to allow users to turn off Axom created tools: `AXOM_ENABLE_TOOLS`
 - Inlet can now log verification errors to a user-processable list instead of using SLIC
+- SPIO: Added new mapping arrays to the automatically-generated Blueprint
+  index to support new schema for multi-domain parallel meshes.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -30,6 +32,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   always give a full path (e.g. `CLANGFORMAT_EXECUTABLE`)
 - Inlet: `Writer`s are passed directly to `Inlet::write` instead of being registered
 - `Inlet` objects can now be constructed without a user-provided `sidre::DataStore`
+- Conduit TPL version changed to v. 0.7.2
 
 ## [Version 0.5.0] - Release date 2021-05-14
 
