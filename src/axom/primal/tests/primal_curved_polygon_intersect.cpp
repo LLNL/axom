@@ -3,8 +3,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/* /file primal_curved_polygon_intersect.cpp
- * /brief This file tests intersections of CurvedPolygon instances
+/**
+ * \file primal_curved_polygon_intersect.cpp
+ * \brief This file tests intersections of CurvedPolygon instances
  */
 
 #include "gtest/gtest.h"
@@ -18,8 +19,10 @@
 
 namespace primal = axom::primal;
 
-/**
- * Helper function to compute the set of intersection polygons given two input polygons and to check that they match expectations, stored in \a expbPolygon. Intersection polygon is computed to within tolerance \a eps and checks use \a test_eps.
+/*!
+ * Helper function to compute the set of intersection polygons given two input polygons 
+ * and to check that they match expectations, stored in \a expbPolygon. 
+ * Intersection polygon is computed to within tolerance \a eps and checks use \a test_eps.
  */
 template <typename CoordType, int DIM>
 void checkIntersection(
@@ -59,7 +62,12 @@ void checkIntersection(
   }
 }
 
-/* Helper function to create a CurvedPolygon from a list of control points and a list of orders of component curves. Control points should be given as a list of Points in order of orientation with no duplicates except that the first control point should also be the last control point (if the polygon is closed). Orders should be given as a list of ints in order of orientation, representing the orders of the component curves.
+/*!
+ * Helper function to create a CurvedPolygon from a list of control points and a list
+ * of orders of component curves. Control points should be given as a list of Points
+ * in order of orientation with no duplicates except that the first control point 
+ * should also be the last control point (if the polygon is closed).  Orders should
+ * be given as a list of ints in order of orientation, representing the orders of the component curves.
  */
 template <typename CoordType, int DIM>
 primal::CurvedPolygon<CoordType, DIM> createPolygon(
@@ -94,6 +102,8 @@ primal::CurvedPolygon<CoordType, DIM> createPolygon(
   return bPolygon;
 }
 
+//----------------------------------------------------------------------------------
+
 TEST(primal_curvedpolygon, intersection_triangle_linear)
 {
   const int DIM = 2;
@@ -101,8 +111,7 @@ TEST(primal_curvedpolygon, intersection_triangle_linear)
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
   using PointType = primal::Point<CoordType, DIM>;
 
-  SLIC_INFO(
-    "Test intersecting two linear triangular CurvedPolygons (single region).");
+  SLIC_INFO("Test intersection of two linear triangles (single region)");
 
   std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
                                PointType::make_point(0.3, 2.0),
@@ -139,9 +148,7 @@ TEST(primal_curvedpolygon, intersection_triangle_quadratic)
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
   using PointType = primal::Point<CoordType, DIM>;
 
-  SLIC_INFO(
-    "Test intersecting two quadratic triangular CurvedPolygons (single "
-    "region).");
+  SLIC_INFO("Test intersecting two quadratic triangles (single region)");
 
   CurvedPolygonType bPolygon;
   EXPECT_EQ(0, bPolygon.numEdges());
@@ -190,8 +197,7 @@ TEST(primal_curvedpolygon, intersection_triangle_quadratic_two_regions)
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
   using PointType = primal::Point<CoordType, DIM>;
 
-  SLIC_INFO(
-    "Test intersecting two quadratic triangular CurvedPolygons (two regions).");
+  SLIC_INFO("Test intersection of two quadratic triangles (two regions)");
 
   std::vector<PointType> CP1 = {PointType::make_point(0.6, 1.2),
                                 PointType::make_point(0.4, 1.3),
@@ -249,8 +255,7 @@ TEST(primal_curvedpolygon, area_intersection_triangle_inclusion)
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
   using PointType = primal::Point<CoordType, DIM>;
 
-  SLIC_INFO(
-    "Test intersecting two quadratic triangular CurvedPolygons (inclusion).");
+  SLIC_INFO("Test intersection of two quadratic triangles (inclusion)");
 
   std::vector<PointType> CP1 = {PointType::make_point(0.0, 0.0),
                                 PointType::make_point(0.5, 0.0),
@@ -275,6 +280,7 @@ TEST(primal_curvedpolygon, area_intersection_triangle_inclusion)
   checkIntersection(bPolygon1, bPolygon2, expIntersections);
   checkIntersection(bPolygon2, bPolygon1, expIntersections);
 }
+
 //----------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
