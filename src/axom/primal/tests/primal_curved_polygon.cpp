@@ -116,8 +116,7 @@ TEST(primal_curvedpolygon, add_edges)
   CurvedPolygonType bPolygon;
   EXPECT_EQ(0, bPolygon.numEdges());
 
-  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.0, 1.6)};
+  PointType controlPoints[2] = {PointType {0.6, 1.2}, PointType {0.0, 1.6}};
 
   BezierCurveType bCurve(controlPoints, 1);
 
@@ -153,14 +152,13 @@ TEST(primal_curvedpolygon, isClosed)
   EXPECT_EQ(0, bPolygon.numEdges());
   EXPECT_EQ(false, bPolygon.isClosed());
 
-  std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
-                               PointType::make_point(0.3, 2.0),
-                               PointType::make_point(0.0, 1.6),
-                               PointType::make_point(0.6, 1.2)};
+  std::vector<PointType> CP = {PointType {0.6, 1.2},
+                               PointType {0.3, 2.0},
+                               PointType {0.0, 1.6},
+                               PointType {0.6, 1.2}};
   std::vector<int> orders = {1, 1, 1};
 
-  std::vector<PointType> subCP = {PointType::make_point(0.6, 1.2),
-                                  PointType::make_point(0.3, 2.0)};
+  std::vector<PointType> subCP = {PointType {0.6, 1.2}, PointType {0.3, 2.0}};
   std::vector<int> suborders = {1};
   CurvedPolygonType subPolygon = createPolygon(subCP, suborders);
   EXPECT_EQ(false, subPolygon.isClosed());
@@ -185,10 +183,10 @@ TEST(primal_curvedpolygon, split_edge)
 
   SLIC_INFO("Test checking CurvedPolygon edge split.");
 
-  std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
-                               PointType::make_point(0.3, 2.0),
-                               PointType::make_point(0.0, 1.6),
-                               PointType::make_point(0.6, 1.2)};
+  std::vector<PointType> CP = {PointType {0.6, 1.2},
+                               PointType {0.3, 2.0},
+                               PointType {0.0, 1.6},
+                               PointType {0.6, 1.2}};
 
   std::vector<int> orders32 = {1, 1, 1};
   CurvedPolygonType bPolygon32 = createPolygon(CP, orders32);
@@ -230,13 +228,10 @@ TEST(primal_curvedpolygon, moments_triangle_degenerate)
   EXPECT_EQ(0.0, bPolygon.area());
   PointType origin = PointType::make_point(0.0, 0.0);
 
-  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.3, 2.0)};
+  PointType controlPoints[2] = {PointType {0.6, 1.2}, PointType {0.3, 2.0}};
 
-  PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
-                                 PointType::make_point(0.0, 1.6)};
-  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
-                                 PointType::make_point(0.6, 1.2)};
+  PointType controlPoints2[2] = {PointType {0.3, 2.0}, PointType {0.0, 1.6}};
+  PointType controlPoints3[2] = {PointType {0.0, 1.6}, PointType {0.6, 1.2}};
 
   BezierCurveType bCurve(controlPoints, 1);
   bPolygon.addEdge(bCurve);
@@ -262,10 +257,10 @@ TEST(primal_curvedpolygon, moments_triangle_linear)
   using PointType = primal::Point<CoordType, DIM>;
 
   SLIC_INFO("Test moment computation of a linear triangle");
-  std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
-                               PointType::make_point(0.3, 2.0),
-                               PointType::make_point(0.0, 1.6),
-                               PointType::make_point(0.6, 1.2)};
+  std::vector<PointType> CP = {PointType {0.6, 1.2},
+                               PointType {0.3, 2.0},
+                               PointType {0.0, 1.6},
+                               PointType {0.6, 1.2}};
 
   std::vector<int> orders = {1, 1, 1};
   CurvedPolygonType bPolygon = createPolygon(CP, orders);
@@ -286,19 +281,19 @@ TEST(primal_curvedpolygon, moments_triangle_quadratic)
 
   SLIC_INFO("Test moment computation of quadratic triangle");
 
-  std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
-                               PointType::make_point(0.4, 1.3),
-                               PointType::make_point(0.3, 2.0),
-                               PointType::make_point(0.27, 1.5),
-                               PointType::make_point(0.0, 1.6),
-                               PointType::make_point(0.1, 1.5),
-                               PointType::make_point(0.6, 1.2)};
+  std::vector<PointType> CP = {PointType {0.6, 1.2},
+                               PointType {0.4, 1.3},
+                               PointType {0.3, 2.0},
+                               PointType {0.27, 1.5},
+                               PointType {0.0, 1.6},
+                               PointType {0.1, 1.5},
+                               PointType {0.6, 1.2}};
 
   std::vector<int> orders = {2, 2, 2};
   CurvedPolygonType bPolygon = createPolygon(CP, orders);
 
   CoordType trueA = -0.097333333333333;
-  PointType trueC = PointType::make_point(.294479452054794, 1.548219178082190);
+  PointType trueC {.294479452054794, 1.548219178082190};
 
   checkMoments(bPolygon, trueA, trueC, 1e-15, 1e-14);
 }
@@ -314,18 +309,18 @@ TEST(primal_curvedpolygon, moments_triangle_mixed_order)
   SLIC_INFO(
     "Test moment computation for curved triangle with mixed order edges");
 
-  std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
-                               PointType::make_point(0.4, 1.3),
-                               PointType::make_point(0.3, 2.0),
-                               PointType::make_point(0.27, 1.5),
-                               PointType::make_point(0.0, 1.6),
-                               PointType::make_point(0.6, 1.2)};
+  std::vector<PointType> CP = {PointType {0.6, 1.2},
+                               PointType {0.4, 1.3},
+                               PointType {0.3, 2.0},
+                               PointType {0.27, 1.5},
+                               PointType {0.0, 1.6},
+                               PointType {0.6, 1.2}};
 
   std::vector<int> orders = {2, 2, 1};
   CurvedPolygonType bPolygon = createPolygon(CP, orders);
 
   CoordType trueA = -.0906666666666666666666;
-  PointType trueC = PointType::make_point(.2970147058823527, 1.55764705882353);
+  PointType trueC {.2970147058823527, 1.55764705882353};
 
   checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-15);
 }
@@ -339,11 +334,11 @@ TEST(primal_curvedpolygon, moments_quad_all_orders)
   using PointType = primal::Point<CoordType, DIM>;
 
   SLIC_INFO("Test moment computation for quads of different orders");
-  std::vector<PointType> CPorig = {PointType::make_point(0.0, 0.0),
-                                   PointType::make_point(0.0, 1.0),
-                                   PointType::make_point(1.0, 1.0),
-                                   PointType::make_point(1.0, 0.0),
-                                   PointType::make_point(0.0, 0.0)};
+  std::vector<PointType> CPorig = {PointType {0.0, 0.0},
+                                   PointType {0.0, 1.0},
+                                   PointType {1.0, 1.0},
+                                   PointType {1.0, 0.0},
+                                   PointType {0.0, 0.0}};
 
   std::vector<int> orders = {1, 1, 1, 1};
   CurvedPolygonType bPolygon = createPolygon(CPorig, orders);
@@ -359,23 +354,21 @@ TEST(primal_curvedpolygon, moments_quad_all_orders)
     {
       for(int i = 1; i < p; ++i)
       {
+        const int offset = i + (side * p);
+        const double t = static_cast<double>(i) / p;
         switch(side)
         {
         case 0:
-          CP.insert(CP.begin() + i + (side * p),
-                    (PointType::make_point(0.0, 1.0 * i / p)));
+          CP.insert(CP.begin() + offset, PointType {0., t});
           break;
         case 1:
-          CP.insert(CP.begin() + i + (side * p),
-                    (PointType::make_point(1.0 * i / p, 1.0)));
+          CP.insert(CP.begin() + offset, PointType {t, 1.});
           break;
         case 2:
-          CP.insert(CP.begin() + i + (side * p),
-                    (PointType::make_point(1.0, 1.0 - (1.0 * i / p))));
+          CP.insert(CP.begin() + offset, PointType {1., 1. - t});
           break;
         case 3:
-          CP.insert(CP.begin() + i + (side * p),
-                    (PointType::make_point(1.0 - (1.0 * i / p), 0.0)));
+          CP.insert(CP.begin() + offset, PointType {1. - t, 0.});
           break;
         }
       }

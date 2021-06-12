@@ -535,8 +535,7 @@ public:
         }
       }
     }
-    PointType M = PointType::make_point(Mx, My);
-    return M;
+    return PointType {Mx, My};
   }
 
   /*!

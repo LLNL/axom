@@ -59,8 +59,8 @@ TEST(primal_beziercurve, set_order)
   EXPECT_EQ(-1, bCurve.getOrder());
 
   const int order = 1;
-  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2, 1.0),
-                                PointType::make_point(0.0, 1.6, 1.8)};
+  PointType controlPoints[2] = {PointType {0.6, 1.2, 1.0},
+                                PointType {0.0, 1.6, 1.8}};
 
   bCurve.setOrder(order);
   EXPECT_EQ(order, bCurve.getOrder());
@@ -88,8 +88,8 @@ TEST(primal_beziercurve, point_array_constructor)
   using PointType = primal::Point<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
-  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2, 1.0),
-                                PointType::make_point(0.0, 1.6, 1.8)};
+  PointType controlPoints[2] = {PointType {0.6, 1.2, 1.0},
+                                PointType {0.0, 1.6, 1.8}};
 
   BezierCurveType bCurve(controlPoints, 1);
 
@@ -143,14 +143,14 @@ TEST(primal_beziercurve, evaluate)
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
   const int order = 3;
-  PointType data[order + 1] = {PointType::make_point(0.6, 1.2, 1.0),
-                               PointType::make_point(1.3, 1.6, 1.8),
-                               PointType::make_point(2.9, 2.4, 2.3),
-                               PointType::make_point(3.2, 3.5, 3.0)};
+  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
+                               PointType {1.3, 1.6, 1.8},
+                               PointType {2.9, 2.4, 2.3},
+                               PointType {3.2, 3.5, 3.0}};
 
   BezierCurveType b2Curve(data, order);
 
-  PointType midtval = PointType::make_point(2.05, 2.0875, 2.0375);
+  PointType midtval {2.05, 2.0875, 2.0375};
 
   // Evaluate the curve at several parameter values
   // Curve should interpolate endpoints
@@ -178,16 +178,16 @@ TEST(primal_beziercurve_, tangent)
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
   const int order = 3;
-  PointType data[order + 1] = {PointType::make_point(0.6, 1.2, 1.0),
-                               PointType::make_point(1.3, 1.6, 1.8),
-                               PointType::make_point(2.9, 2.4, 2.3),
-                               PointType::make_point(3.2, 3.5, 3.0)};
+  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
+                               PointType {1.3, 1.6, 1.8},
+                               PointType {2.9, 2.4, 2.3},
+                               PointType {3.2, 3.5, 3.0}};
 
   BezierCurveType b2Curve(data, order);
 
-  VectorType midtval = VectorType::make_vector(3.15, 2.325, 1.875);
-  VectorType starttval = VectorType::make_vector(2.1, 1.2, 2.4);
-  VectorType endtval = VectorType::make_vector(.9, 3.3, 2.1);
+  VectorType midtval = VectorType {3.15, 2.325, 1.875};
+  VectorType starttval = VectorType {2.1, 1.2, 2.4};
+  VectorType endtval = VectorType {.9, 3.3, 2.1};
 
   // Evaluate the curve at several parameter values
   // Curve should be tangent to control net at endpoints
@@ -214,10 +214,10 @@ TEST(primal_beziercurve, sector_area_cubic)
   {
     SLIC_INFO("Testing Bezier sector area calculation for a cubic");
     const int order = 3;
-    PointType data[order + 1] = {PointType::make_point(0.6, 1.2),
-                                 PointType::make_point(1.3, 1.6),
-                                 PointType::make_point(2.9, 2.4),
-                                 PointType::make_point(3.2, 3.5)};
+    PointType data[order + 1] = {PointType {0.6, 1.2},
+                                 PointType {1.3, 1.6},
+                                 PointType {2.9, 2.4},
+                                 PointType {3.2, 3.5}};
 
     BezierCurveType bCurve(data, order);
     EXPECT_TRUE(axom::utilities::isNearlyEqual(bCurve.sectorArea(), .1455));
@@ -235,10 +235,10 @@ TEST(primal_beziercurve, sector_moment_cubic)
   {
     SLIC_INFO("Testing Bezier sector moment calculation for a cubic");
     const int order = 3;
-    PointType data[order + 1] = {PointType::make_point(0.6, 1.2),
-                                 PointType::make_point(1.3, 1.6),
-                                 PointType::make_point(2.9, 2.4),
-                                 PointType::make_point(3.2, 3.5)};
+    PointType data[order + 1] = {PointType {0.6, 1.2},
+                                 PointType {1.3, 1.6},
+                                 PointType {2.9, 2.4},
+                                 PointType {3.2, 3.5}};
 
     BezierCurveType bCurve(data, order);
     PointType M = bCurve.sectorCentroid();
@@ -296,10 +296,10 @@ TEST(primal_beziercurve, split_cubic)
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
   const int order = 3;
-  PointType data[order + 1] = {PointType::make_point(0.6, 1.2, 1.0),
-                               PointType::make_point(1.3, 1.6, 1.8),
-                               PointType::make_point(2.9, 2.4, 2.3),
-                               PointType::make_point(3.2, 3.5, 3.0)};
+  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
+                               PointType {1.3, 1.6, 1.8},
+                               PointType {2.9, 2.4, 2.3},
+                               PointType {3.2, 3.5, 3.0}};
   BezierCurveType b2Curve(data, order);
 
   BezierCurveType b3Curve(order);  // Checks split with order constructor
@@ -364,8 +364,7 @@ TEST(primal_beziercurve, split_linear)
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
   const int order = 1;
-  PointType data[order + 1] = {PointType::make_point(-1, -5),
-                               PointType::make_point(1, 5)};
+  PointType data[order + 1] = {PointType {-1, -5}, PointType {1, 5}};
   BezierCurveType b(data, order);
 
   {
@@ -414,9 +413,9 @@ TEST(primal_beziercurve, split_quadratic)
   const int order = 2;
 
   // Control points for the three levels of the quadratic de Casteljau algorithm
-  PointType lev0[3] = {PointType::make_point(1.1, 1.1),
-                       PointType::make_point(5.5, 5.5),
-                       PointType::make_point(9.9, 2.2)};
+  PointType lev0[3] = {PointType {1.1, 1.1},
+                       PointType {5.5, 5.5},
+                       PointType {9.9, 2.2}};
 
   PointType lev1[2] = {PointType::lerp(lev0[0], lev0[1], t),
                        PointType::lerp(lev0[1], lev0[2], t)};
@@ -484,8 +483,8 @@ TEST(primal_beziercurve, isLinear)
     auto curve = BezierCurveType(order);
     EXPECT_TRUE(curve.isLinear());
 
-    curve[0] = PointType::make_point(1., 1.8);
-    curve[1] = PointType::make_point(-12., 3.5);
+    curve[0] = PointType {1., 1.8};
+    curve[1] = PointType {-12., 3.5};
     EXPECT_TRUE(curve.isLinear());
   }
 
@@ -496,14 +495,14 @@ TEST(primal_beziercurve, isLinear)
     EXPECT_TRUE(curve.isLinear());
 
     // straight line
-    curve[0] = PointType::make_point(1, 1);
-    curve[1] = PointType::make_point(2, 2);
-    curve[2] = PointType::make_point(3, 3);
+    curve[0] = PointType {1, 1};
+    curve[1] = PointType {2, 2};
+    curve[2] = PointType {3, 3};
     EXPECT_TRUE(curve.isLinear());
 
     // move middle point and check linearity with different tolerances
     VectorType v(curve[2], curve[0]);
-    auto normal = VectorType::make_vector(-v[1], v[0]);
+    auto normal = VectorType {-v[1], v[0]};
     curve[1].array() += 0.005 * normal.array();
     SLIC_INFO("Updated curve: " << curve);
 
