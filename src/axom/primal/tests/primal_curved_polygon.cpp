@@ -12,13 +12,7 @@
 
 #include "axom/config.hpp"
 #include "axom/slic.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Segment.hpp"
-#include "axom/primal/geometry/CurvedPolygon.hpp"
-#include "axom/primal/geometry/OrientationResult.hpp"
-#include "axom/primal/operators/intersect.hpp"
-#include "axom/primal/operators/compute_moments.hpp"
-#include "axom/primal/operators/orientation.hpp"
+#include "axom/primal.hpp"
 
 #include <numeric>
 #include <math.h>
