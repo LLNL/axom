@@ -112,7 +112,7 @@ public:
   /*! Splits an edge "in place" */
   void splitEdge(int idx, T t)
   {
-    SLIC_ASSERT(idx < m_edges.size());
+    SLIC_ASSERT(idx < static_cast<int>(m_edges.size()));
     m_edges.insert(m_edges.begin() + idx + 1, 1, m_edges[idx]);
     auto& csplit = m_edges[idx];
     csplit.split(t, m_edges[idx], m_edges[idx + 1]);
