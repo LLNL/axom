@@ -3,8 +3,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/* /file primal_curved_polygon.cpp
- * /brief This file tests the CurvedPolygon class
+/*!
+ * \file primal_curved_polygon.cpp
+ * \brief This file tests the CurvedPolygon class
  */
 
 #include "gtest/gtest.h"
@@ -16,8 +17,9 @@
 
 namespace primal = axom::primal;
 
-/**
- * Helper function to compute the area and centroid of a curved polygon and to check that they match expectations, stored in \a expArea and \a expCentroid. Areas and Moments are computed within tolerance \a eps and checks use \a test_eps.
+/*!
+ * Helper function to compute the area and centroid of a curved polygon and to check that they match expectations, 
+ * stored in \a expArea and \a expCentroid. Areas and Moments are computed within tolerance \a eps and checks use \a test_eps.
  */
 template <typename CoordType, int DIM>
 void checkMoments(const primal::CurvedPolygon<CoordType, DIM>& bPolygon,
@@ -33,7 +35,11 @@ void checkMoments(const primal::CurvedPolygon<CoordType, DIM>& bPolygon,
   }
 }
 
-/* Helper function to create a CurvedPolygon from a list of control points and a list of orders of component curves. Control points should be given as a list of Points in order of orientation with no duplicates except that the first control point should also be the last control point (if the polygon is closed). Orders should be given as a list of ints in order of orientation, representing the orders of the component curves.
+/*!
+ * Helper function to create a CurvedPolygon from a list of control points and a list of orders of component curves. 
+ * Control points should be given as a list of Points in order of orientation with no duplicates except that 
+ * the first control point should also be the last control point (if the polygon is closed). 
+ * Orders should be given as a list of ints in order of orientation, representing the orders of the component curves.
  */
 template <typename CoordType, int DIM>
 primal::CurvedPolygon<CoordType, DIM> createPolygon(
@@ -217,8 +223,7 @@ TEST(primal_curvedpolygon, moments_triangle_degenerate)
   using PointType = primal::Point<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
-  SLIC_INFO(
-    "Test checking CurvedPolygon degenerate triangle area computation.");
+  SLIC_INFO("Testing area computation of degenerate triangles");
 
   CurvedPolygonType bPolygon;
   EXPECT_EQ(0, bPolygon.numEdges());
@@ -230,7 +235,6 @@ TEST(primal_curvedpolygon, moments_triangle_degenerate)
 
   PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
                                  PointType::make_point(0.0, 1.6)};
-
   PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
                                  PointType::make_point(0.6, 1.2)};
 
@@ -257,7 +261,7 @@ TEST(primal_curvedpolygon, moments_triangle_linear)
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
   using PointType = primal::Point<CoordType, DIM>;
 
-  SLIC_INFO("Test checking CurvedPolygon linear triangle moment computation.");
+  SLIC_INFO("Test moment computation of a linear triangle");
   std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
                                PointType::make_point(0.3, 2.0),
                                PointType::make_point(0.0, 1.6),
@@ -280,8 +284,7 @@ TEST(primal_curvedpolygon, moments_triangle_quadratic)
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
   using PointType = primal::Point<CoordType, DIM>;
 
-  SLIC_INFO(
-    "Test checking CurvedPolygon quadratic triangle moment computation.");
+  SLIC_INFO("Test moment computation of quadratic triangle");
 
   std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
                                PointType::make_point(0.4, 1.3),
@@ -309,7 +312,7 @@ TEST(primal_curvedpolygon, moments_triangle_mixed_order)
   using PointType = primal::Point<CoordType, DIM>;
 
   SLIC_INFO(
-    "Test checking CurvedPolygon mixed order triangle moment computation.");
+    "Test moment computation for curved triangle with mixed order edges");
 
   std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
                                PointType::make_point(0.4, 1.3),
@@ -335,7 +338,7 @@ TEST(primal_curvedpolygon, moments_quad_all_orders)
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
   using PointType = primal::Point<CoordType, DIM>;
 
-  SLIC_INFO("Test checking CurvedPolygon linear triangle moment computation.");
+  SLIC_INFO("Test moment computation for quads of different orders");
   std::vector<PointType> CPorig = {PointType::make_point(0.0, 0.0),
                                    PointType::make_point(0.0, 1.0),
                                    PointType::make_point(1.0, 1.0),
@@ -378,10 +381,11 @@ TEST(primal_curvedpolygon, moments_quad_all_orders)
       }
       orders[side] += 1;
     }
-    /*for (int i=0; i<CP.size(); ++i)
-  {
-        std::cout << CP[i] << std::endl;
-      }*/
+    // for (int i=0; i<CP.size(); ++i)
+    // {
+    //   std::cout << CP[i] << std::endl;
+    // }
+
     bPolygon = createPolygon(CP, orders);
     checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-15);
   }

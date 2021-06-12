@@ -6,7 +6,7 @@
 /*!
  * \file CurvedPolygon.hpp
  *
- * \brief A CurvedPolygon primitive whose edges are Bezier Curves
+ * \brief A polygon primitive whose edges are Bezier curves
  */
 
 #ifndef AXOM_PRIMAL_CURVEDPOLYGON_HPP_
@@ -53,7 +53,7 @@ public:
   using BezierCurveType = BezierCurve<T, NDIMS>;
 
 public:
-  /*! Default constructor for an empty polygon   */
+  /// Default constructor for an empty polygon
   CurvedPolygon() = default;
 
   /*!
@@ -71,6 +71,7 @@ public:
     m_edges.resize(nEdges);
   }
 
+  /// Constructor from an array of \a nEdges curves
   CurvedPolygon(BezierCurveType* curves, int nEdges)
   {
     SLIC_ASSERT(curves != nullptr);
@@ -84,7 +85,13 @@ public:
     }
   }
 
-  /*! Return the number of edges in the polygon */
+  /// Clears the list of edges
+  void clear() { m_edges.clear(); }
+
+  /// \name Operations on edges
+  /// @{
+
+  /// Return the number of edges in the polygon
   int numEdges() const { return m_edges.size(); }
 
   void setNumEdges(int ngon)
@@ -93,40 +100,41 @@ public:
     m_edges.resize(ngon);
   }
 
-  /* Checks equality of two Bezier Curve */
+  /// Appends a BezierCurve to the list of edges
+  void addEdge(const BezierCurveType& c1) { m_edges.push_back(c1); }
+
+  /// Splits an edge "in place"
+  void splitEdge(int idx, T t)
+  {
+    SLIC_ASSERT(idx < static_cast<int>(m_edges.size()));
+
+    m_edges.insert(m_edges.begin() + idx + 1, 1, m_edges[idx]);
+    auto& csplit = m_edges[idx];
+    csplit.split(t, m_edges[idx], m_edges[idx + 1]);
+  }
+
+  std::vector<BezierCurve<T, NDIMS>> getEdges() const { return m_edges; }
+
+  /// @}
+
+  /*! Retrieves the Bezier Curve at index idx */
+  BezierCurveType& operator[](int idx) { return m_edges[idx]; }
+  /*! Retrieves the vertex at index idx */
+  const BezierCurveType& operator[](int idx) const { return m_edges[idx]; }
+
+  /// Tests equality of two CurvedPolygons
   friend inline bool operator==(const CurvedPolygon<T, NDIMS>& lhs,
                                 const CurvedPolygon<T, NDIMS>& rhs)
   {
     return lhs.m_edges == rhs.m_edges;
   }
 
+  /// Tests inequality of two CurvedPolygons
   friend inline bool operator!=(const CurvedPolygon<T, NDIMS>& lhs,
                                 const CurvedPolygon<T, NDIMS>& rhs)
   {
     return !(lhs == rhs);
   }
-
-  /*! Appends a BezierCurve to the list of edges */
-  void addEdge(const BezierCurveType& c1) { m_edges.push_back(c1); }
-
-  /*! Splits an edge "in place" */
-  void splitEdge(int idx, T t)
-  {
-    SLIC_ASSERT(idx < static_cast<int>(m_edges.size()));
-    m_edges.insert(m_edges.begin() + idx + 1, 1, m_edges[idx]);
-    auto& csplit = m_edges[idx];
-    csplit.split(t, m_edges[idx], m_edges[idx + 1]);
-  }
-
-  /*! Clears the list of edges */
-  void clear() { m_edges.clear(); }
-
-  std::vector<BezierCurve<T, NDIMS>> getEdges() const { return m_edges; }
-
-  /*! Retrieves the Bezier Curve at index idx */
-  BezierCurveType& operator[](int idx) { return m_edges[idx]; }
-  /*! Retrieves the vertex at index idx */
-  const BezierCurveType& operator[](int idx) const { return m_edges[idx]; }
 
   /*!
    * \brief Simple formatted print of a CurvedPolygon instance
@@ -190,12 +198,7 @@ public:
     return true;
   }
 
-  /*!
-   * \brief Check closedness of a CurvedPolygon
-   *
-   * Check is that the endpoint of each edge coincides with startpoint of next edge
-   * \return True, if the polygon is closed, False otherwise
-   */
+  /// \brief Returns the area enclosed by the CurvedPolygon
   T area(double tol = 1e-8) const
   {
     const int ngon = numEdges();
@@ -215,6 +218,7 @@ public:
     }
   }
 
+  /// \brief Returns the centroid of the CurvedPolygon
   PointType centroid(double tol = 1e-8) const
   {
     const int ngon = numEdges();
@@ -242,9 +246,7 @@ public:
     }
   }
 
-  /*!
-   * \brief Reverses orientation of a CurvedPolygon
-   */
+  /// \brief Reverses orientation of a CurvedPolygon
   void reverseOrientation()
   {
     const int ngon = numEdges();

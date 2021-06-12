@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/* 
- * /file primal_bezier_curve.cpp
- * /brief This file tests primal's Bezier curve functionality
+/*! 
+ * \file primal_bezier_curve.cpp
+ * \brief This file tests primal's Bezier curve functionality
  */
 
 #include "gtest/gtest.h"
