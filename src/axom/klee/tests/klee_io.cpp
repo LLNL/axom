@@ -23,7 +23,9 @@ namespace
 {
 using primal::Vector3D;
 using test::AlmostEqVector;
+using ::testing::Contains;
 using ::testing::HasSubstr;
+using ::testing::Truly;
 
 ShapeSet readShapeSetFromString(const std::string &input)
 {
@@ -41,10 +43,17 @@ TEST(IOTest, readShapeSet_noShapes)
 
 TEST(IOTest, readShapeSet_invalidDimensions)
 {
-  EXPECT_THROW(readShapeSetFromString(R"(
-        dimensions: 5
-        shapes: [])"),
-               KleeError);
+  try
+  {
+    readShapeSetFromString(R"(
+      dimensions: 5
+      shapes: [])");
+    FAIL() << "Should have thrown";
+  }
+  catch(const KleeError &err)
+  {
+    EXPECT_THAT(err.what(), HasSubstr("dimensions"));
+  }
 }
 
 TEST(IOTest, readShapeSet_shapeWithNoReplacementLists)
@@ -126,7 +135,15 @@ TEST(IOTest, readShapeSet_missingName)
           path: path/to/my.file
   )";
 
-  EXPECT_THROW(readShapeSetFromString(input), KleeError);
+  try
+  {
+    readShapeSetFromString(input);
+    FAIL() << "Should have thrown";
+  }
+  catch(const KleeError &err)
+  {
+    EXPECT_THAT(err.what(), HasSubstr("name"));
+  }
 }
 
 TEST(IOTest, readShapeSet_missingMaterial)
@@ -141,7 +158,15 @@ TEST(IOTest, readShapeSet_missingMaterial)
           path: path/to/my.file
   )";
 
-  EXPECT_THROW(readShapeSetFromString(input), KleeError);
+  try
+  {
+    readShapeSetFromString(input);
+    FAIL() << "Should have thrown";
+  }
+  catch(const KleeError &err)
+  {
+    EXPECT_THAT(err.what(), HasSubstr("material"));
+  }
 }
 
 TEST(IOTest, readShapeSet_missingGeometryPath)
@@ -156,7 +181,15 @@ TEST(IOTest, readShapeSet_missingGeometryPath)
           format: test_format
   )";
 
-  EXPECT_THROW(readShapeSetFromString(input), KleeError);
+  try
+  {
+    readShapeSetFromString(input);
+    FAIL() << "Should have thrown";
+  }
+  catch(const KleeError &err)
+  {
+    EXPECT_THAT(err.what(), HasSubstr("path"));
+  }
 }
 
 TEST(IOTest, readShapeSet_formatGeometryFormat)
@@ -171,7 +204,15 @@ TEST(IOTest, readShapeSet_formatGeometryFormat)
           path: my/file.format
   )";
 
-  EXPECT_THROW(readShapeSetFromString(input), KleeError);
+  try
+  {
+    readShapeSetFromString(input);
+    FAIL() << "Should have thrown";
+  }
+  catch(const KleeError &err)
+  {
+    EXPECT_THAT(err.what(), HasSubstr("format"));
+  }
 }
 
 TEST(IOTest, readShapeSet_file)
@@ -209,7 +250,20 @@ TEST(IOTest, readShapeSet_shapeWithReplacesAndDoesNotReplaceLists)
             format: test_format
             path: path/to/file.format
   )";
-  EXPECT_THROW(readShapeSetFromString(input), KleeError);
+  try
+  {
+    readShapeSetFromString(input);
+  }
+  catch(const KleeError &error)
+  {
+    EXPECT_THAT(error.getErrors(),
+                Contains(Truly([](const inlet::VerificationError &err) {
+                  return err.path ==
+                    axom::Path {"shapes/_inlet_collection/0"} &&
+                    err.messageContains("replaces") &&
+                    err.messageContains("does_not_replace");
+                })));
+  }
 }
 
 TEST(IOTest, readShapeSet_geometryOperators)

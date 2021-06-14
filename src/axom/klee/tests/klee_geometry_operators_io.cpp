@@ -60,9 +60,11 @@ OperatorPointer readOperators(
   GeometryOperatorData::defineSchema(doc.getGlobalContainer(),
                                      "test_list",
                                      "The test list");
-  if(!doc.verify())
+
+  std::vector<inlet::VerificationError> errors;
+  if(!doc.verify(&errors))
   {
-    throw KleeError("Got bad input");
+    throw KleeError(errors);
   }
   auto opData = doc["test_list"].get<GeometryOperatorData>();
   return opData.makeOperator(startProperties, namedOperators);
@@ -86,9 +88,10 @@ NamedOperatorMap readNamedOperators(Dimensions startingDimensions,
   sidre::DataStore dataStore;
   inlet::Inlet doc(std::move(reader), dataStore.getRoot());
   NamedOperatorMapData::defineSchema(doc.getGlobalContainer(), "op_list");
-  if(!doc.verify())
+  std::vector<inlet::VerificationError> errors;
+  if(!doc.verify(&errors))
   {
-    throw KleeError("Got bad input");
+    throw KleeError(errors);
   }
   auto operators = doc["op_list"].get<NamedOperatorMapData>();
   return operators.makeNamedOperatorMap(startingDimensions);
@@ -109,7 +112,8 @@ T copyOperator(const OperatorPointer &ptr)
   auto desired = dynamic_cast<const T *>(ptr.get());
   if(desired == nullptr)
   {
-    throw KleeError("Did not get expected type");
+    throw KleeError {inlet::VerificationError {Path {"<no path>"},
+                                               "Did not get expected type"}};
   }
   return *desired;
 }
@@ -129,11 +133,15 @@ T getSingleOperatorFromComposite(const OperatorPointer &ptr)
   auto composite = dynamic_cast<const CompositeOperator *>(ptr.get());
   if(composite == nullptr)
   {
-    throw KleeError("Did not get CompositeOperator");
+    throw KleeError {
+      inlet::VerificationError {Path {"<no path>"},
+                                "Did not get CompositeOperator"}};
   }
   if(composite->getOperators().size() != 1u)
   {
-    throw KleeError("Did not have exactly one operator");
+    throw KleeError {
+      inlet::VerificationError {Path {"<no path>"},
+                                "Did not have exactly one operator"}};
   }
   return copyOperator<T>(composite->getOperators()[0]);
 }
@@ -181,7 +189,8 @@ T getSingleNamedOperator(const NamedOperatorMap &operators,
   if(iter == operators.end())
   {
     std::string message = "No operator named ";
-    throw KleeError(message + name);
+    throw KleeError {
+      inlet::VerificationError {Path {"<no path>"}, message + name}};
   }
   return getSingleOperatorFromComposite<T>(iter->second);
 }
@@ -249,12 +258,19 @@ TEST(GeometryOperatorsIO, readTranslation_3D)
 
 TEST(GeometryOperatorsIO, readTranslation_unknownKeys)
 {
-  EXPECT_THROW(readSingleOperator<Translation>({Dimensions::Two, LengthUnit::cm},
-                                               R"(
-          translate: [10, 20]
-          UNKNOWN_KEY: UNKNOWN_VALUE
-        )"),
-               KleeError);
+  try
+  {
+    readSingleOperator<Translation>({Dimensions::Two, LengthUnit::cm},
+                                    R"(
+        translate: [10, 20]
+        UNKNOWN_KEY: UNKNOWN_VALUE
+      )");
+    FAIL() << "Should have thrown";
+  }
+  catch(const KleeError &err)
+  {
+    EXPECT_THAT(err.what(), HasSubstr("UNKNOWN_KEY"));
+  }
 }
 
 TEST(GeometryOperatorsIO, readRotation_2D_requiredOnly)
@@ -631,10 +647,9 @@ TEST(GeometryOperatorsIO, readMultiple_unknownOperator)
          )");
     FAIL() << "Should have thrown";
   }
-  catch(const KleeError &)
+  catch(const KleeError &error)
   {
-    // TODO Would like to do the below, but output is currently going through Slic.
-    // EXPECT_THAT(ex.what(), HasSubstr("UNKNOWN_OPERATOR"));
+    EXPECT_THAT(error.what(), HasSubstr("UNKNOWN_OPERATOR"));
   }
 }
 

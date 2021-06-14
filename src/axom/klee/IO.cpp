@@ -37,6 +37,7 @@ struct GeometryData
   Dimensions startDimensions;
   bool dimensionsSet;
   internal::GeometryOperatorData operatorData;
+  Path pathInFile;
 };
 
 struct ShapeData
@@ -90,6 +91,9 @@ struct FromInlet<axom::klee::GeometryData>
 
     std::tie(data.startUnits, data.endUnits) =
       axom::klee::internal::getOptionalStartAndEndUnits(base);
+
+    data.pathInFile = base.name();
+
     return data;
   }
 };
@@ -147,14 +151,19 @@ void defineShapeList(Inlet &document)
   shapeList.addStringArray("does_not_replace",
                            "The list of materials this shape does not replace");
   // Verify syntax here, semantics later!!!
-  shapeList.registerVerifier([](const Container &shape) -> bool {
-    if(shape.contains("replaces") && shape.contains("does_not_replace"))
-    {
-      SLIC_WARNING("Can't specify both 'replaces' and 'does_not_replace'");
-      return false;
-    }
-    return true;
-  });
+  shapeList.registerVerifier(
+    [](const Container &shape,
+       std::vector<inlet::VerificationError> *errors) -> bool {
+      if(shape.contains("replaces") && shape.contains("does_not_replace"))
+      {
+        INLET_VERIFICATION_WARNING(
+          shape.name(),
+          "Can't specify both 'replaces' and 'does_not_replace'",
+          errors);
+        return false;
+      }
+      return true;
+    });
   auto &geometry =
     shapeList.addStruct("geometry",
                         "Contains information about the shape's geometry");
@@ -208,7 +217,8 @@ Geometry convert(GeometryData const &data,
   if(geometry.getEndProperties().dimensions != fileDimensions)
   {
     throw KleeError(
-      "Did not end up in the number of dimensions specified by the file");
+      {data.pathInFile,
+       "Did not end up in the number of dimensions specified by the file"});
   }
   return geometry;
 }
@@ -284,9 +294,15 @@ ShapeSet readShapeSet(std::istream &stream)
   sidre::DataStore dataStore;
   Inlet doc(std::move(reader), dataStore.getRoot());
   defineKleeSchema(doc);
-  if(!doc.verify())
+  std::vector<inlet::VerificationError> errors;
+  if(!doc.verify(&errors))
   {
-    throw KleeError("Invalid Klee file given. Check the log for details.");
+    if(errors.empty())
+    {
+      throw KleeError({Path {"<unknown path>"},
+                       "Invalid Klee file given. Check the log for details."});
+    }
+    throw KleeError(errors);
   }
 
   auto shapeData = doc["shapes"].get<std::vector<ShapeData>>();

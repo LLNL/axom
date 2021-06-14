@@ -7,8 +7,9 @@
 #define AXOM_KLEEERROR_HPP
 
 #include <exception>
-#include <string>
-#include <utility>
+#include <vector>
+
+#include "axom/inlet/inlet_utils.hpp"
 
 namespace axom
 {
@@ -17,12 +18,19 @@ namespace klee
 class KleeError : public std::exception
 {
 public:
-  explicit KleeError(std::string message) : m_message {std::move(message)} { }
+  explicit KleeError(const inlet::VerificationError &error);
 
-  const char *what() const noexcept override { return m_message.data(); }
+  explicit KleeError(const std::vector<inlet::VerificationError> &errors);
+
+  const char *what() const noexcept override;
+
+  const std::vector<inlet::VerificationError> &getErrors() const
+  {
+    return m_errors;
+  }
 
 private:
-  std::string m_message;
+  std::vector<inlet::VerificationError> m_errors;
 };
 
 }  // namespace klee

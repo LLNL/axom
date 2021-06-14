@@ -16,6 +16,7 @@ namespace klee
 {
 using ::testing::DoubleEq;
 using ::testing::ElementsAre;
+using ::testing::HasSubstr;
 using ::testing::Matches;
 
 struct Length
@@ -38,22 +39,33 @@ bool areEquivalent(Length length1, Length length2)
 
 TEST(Units, parseLengthUnits)
 {
-  EXPECT_EQ(LengthUnit::km, parseLengthUnits("km"));
-  EXPECT_EQ(LengthUnit::m, parseLengthUnits("m"));
-  EXPECT_EQ(LengthUnit::dm, parseLengthUnits("dm"));
-  EXPECT_EQ(LengthUnit::cm, parseLengthUnits("cm"));
-  EXPECT_EQ(LengthUnit::mm, parseLengthUnits("mm"));
-  EXPECT_EQ(LengthUnit::um, parseLengthUnits("um"));
-  EXPECT_EQ(LengthUnit::nm, parseLengthUnits("nm"));
-  EXPECT_EQ(LengthUnit::angstrom, parseLengthUnits("A"));
-  EXPECT_EQ(LengthUnit::miles, parseLengthUnits("miles"));
-  EXPECT_EQ(LengthUnit::feet, parseLengthUnits("ft"));
-  EXPECT_EQ(LengthUnit::feet, parseLengthUnits("feet"));
-  EXPECT_EQ(LengthUnit::inches, parseLengthUnits("in"));
-  EXPECT_EQ(LengthUnit::inches, parseLengthUnits("inches"));
-  EXPECT_EQ(LengthUnit::mils, parseLengthUnits("mils"));
+  EXPECT_EQ(LengthUnit::km, parseLengthUnits("km", Path {}));
+  EXPECT_EQ(LengthUnit::m, parseLengthUnits("m", Path {}));
+  EXPECT_EQ(LengthUnit::dm, parseLengthUnits("dm", Path {}));
+  EXPECT_EQ(LengthUnit::cm, parseLengthUnits("cm", Path {}));
+  EXPECT_EQ(LengthUnit::mm, parseLengthUnits("mm", Path {}));
+  EXPECT_EQ(LengthUnit::um, parseLengthUnits("um", Path {}));
+  EXPECT_EQ(LengthUnit::nm, parseLengthUnits("nm", Path {}));
+  EXPECT_EQ(LengthUnit::angstrom, parseLengthUnits("A", Path {}));
+  EXPECT_EQ(LengthUnit::miles, parseLengthUnits("miles", Path {}));
+  EXPECT_EQ(LengthUnit::feet, parseLengthUnits("ft", Path {}));
+  EXPECT_EQ(LengthUnit::feet, parseLengthUnits("feet", Path {}));
+  EXPECT_EQ(LengthUnit::inches, parseLengthUnits("in", Path {}));
+  EXPECT_EQ(LengthUnit::inches, parseLengthUnits("inches", Path {}));
+  EXPECT_EQ(LengthUnit::mils, parseLengthUnits("mils", Path {}));
 
-  EXPECT_THROW(parseLengthUnits("no such units"), KleeError);
+  Path errorPath {"some/path"};
+  try
+  {
+    parseLengthUnits("bad_units", errorPath);
+    FAIL() << "Should have thrown";
+  }
+  catch(const KleeError &error)
+  {
+    ASSERT_EQ(1u, error.getErrors().size());
+    EXPECT_THAT(error.getErrors()[0].message, HasSubstr("bad_units"));
+    EXPECT_EQ(errorPath, error.getErrors()[0].path);
+  }
 }
 
 TEST(Units, getConversionFactor)

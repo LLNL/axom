@@ -101,7 +101,7 @@ void verifyObjectFields(const inlet::Container &containerToTest,
       message += "\" for operator \"";
       message += name;
       message += '"';
-      throw KleeError(message);
+      throw KleeError({containerToTest.name(), message});
     }
   }
 
@@ -121,7 +121,7 @@ void verifyObjectFields(const inlet::Container &containerToTest,
     message += "\": \"";
     message += child;
     message += '"';
-    throw KleeError(message);
+    throw KleeError({containerToTest.name(), message});
   }
 }
 
@@ -179,21 +179,24 @@ OpPtr parseRotate(const inlet::Container &opContainer,
  * \param normal a vector normal to the plane
  * \param up a vector which defines the positive Y direction
  * \param startProperties the properties before the slice
+ * \param path the path where the slice is specified, for error reporting
  * \return the created operator
  * \throws KleeError if any value is invalid
  */
 OpPtr makeCheckedSlice(Point3D origin,
                        Vector3D normal,
                        Vector3D up,
-                       const TransformableGeometryProperties &startProperties)
+                       const TransformableGeometryProperties &startProperties,
+                       const Path &path)
 {
   if(normal.is_zero())
   {
-    throw KleeError("The 'normal' vector must not be a zero vector");
+    throw KleeError({path, "The 'normal' vector must not be a zero vector"});
   }
   if(!utilities::isNearlyEqual(normal.dot(up), 0.0))
   {
-    throw KleeError("The 'normal' and 'up' vectors must be perpendicular");
+    throw KleeError(
+      {path, "The 'normal' and 'up' vectors must be perpendicular"});
   }
   return std::make_shared<SliceOperator>(origin, normal, up, startProperties);
 }
@@ -231,7 +234,8 @@ primal::Point3D getPerpendicularSliceOrigin(const inlet::Proxy &sliceProxy,
   primal::Point3D givenOrigin = toPoint(sliceProxy, "origin", Dimensions::Three);
   if(givenOrigin[nonZeroIndex] != axisIntercept)
   {
-    throw KleeError("The origin must be on the slice plane");
+    throw KleeError(
+      {sliceProxy["origin"].name(), "The origin must be on the slice plane"});
   }
   return givenOrigin;
 }
@@ -257,7 +261,7 @@ primal::Vector3D getPerpendicularSliceNormal(const inlet::Proxy &sliceProxy,
   bool parallel = cross.is_zero();
   if(!parallel)
   {
-    throw KleeError("Invalid normal");
+    throw KleeError({sliceProxy["normal"].name(), "Invalid normal"});
   }
   return givenNormal;
 }
@@ -290,7 +294,11 @@ OpPtr readPerpendicularSlice(const inlet::Container &sliceContainer,
   auto normal = getPerpendicularSliceNormal(sliceContainer, defaultNormalVec);
   auto up = toVector(sliceContainer, "up", Dimensions::Three, defaultUp);
 
-  return makeCheckedSlice(origin, normal, up, startProperties);
+  return makeCheckedSlice(origin,
+                          normal,
+                          up,
+                          startProperties,
+                          sliceContainer.name());
 }
 
 /**
@@ -305,7 +313,7 @@ OpPtr parseSlice(const inlet::Container &opContainer,
 {
   if(startProperties.dimensions != Dimensions::Three)
   {
-    throw KleeError("Cannot do a slice from 2D");
+    throw KleeError({opContainer.name(), "Cannot do a slice from 2D"});
   }
   verifyObjectFields(opContainer, "slice", FieldSet {}, FieldSet {});
   auto &sliceContainer =
@@ -341,7 +349,8 @@ OpPtr parseSlice(const inlet::Container &opContainer,
   return makeCheckedSlice(toPoint(sliceProxy, "origin", Dimensions::Three),
                           toVector(sliceProxy, "normal", Dimensions::Three),
                           toVector(sliceProxy, "up", Dimensions::Three),
-                          startProperties);
+                          startProperties,
+                          sliceProxy.name());
 }
 
 /**
@@ -386,8 +395,7 @@ OpPtr parseConvertUnits(const inlet::Container &opContainer,
                         const TransformableGeometryProperties &startProperties)
 {
   verifyObjectFields(opContainer, "convert_units_to", FieldSet {}, FieldSet {});
-  auto endUnits =
-    parseLengthUnits(opContainer["convert_units_to"].get<std::string>());
+  auto endUnits = parseLengthUnits(opContainer["convert_units_to"]);
   return std::make_shared<UnitConverter>(endUnits, startProperties);
 }
 
@@ -412,7 +420,7 @@ OpPtr parseRef(const inlet::Container &opContainer,
     std::string message = "No operator named '";
     message += operatorName;
     message += '\'';
-    throw KleeError(message);
+    throw KleeError({opContainer["ref"].name(), message});
   }
   auto referencedOperator = opIter->second;
   bool startUnitsMatch =
@@ -477,16 +485,21 @@ OpPtr convertOperator(SingleOperatorData const &data,
     }
   }
 
-  std::string message = "Invalid transformation: \n";
-  message += data.m_container->name();
-  throw KleeError(message);
+  throw KleeError({data.m_container->name(), "Invalid transformation"});
 }
 
 }  // namespace
 
+GeometryOperatorData::GeometryOperatorData(const Path &path)
+  : m_path {path}
+  , m_singleOperatorData {}
+{ }
+
 GeometryOperatorData::GeometryOperatorData(
+  const Path &path,
   std::vector<SingleOperatorData> &&singleOperatorData)
-  : m_singleOperatorData {singleOperatorData}
+  : m_path {path}
+  , m_singleOperatorData {singleOperatorData}
 { }
 
 inlet::Container &GeometryOperatorData::defineSchema(inlet::Container &parent,
@@ -527,7 +540,8 @@ std::shared_ptr<GeometryOperator> GeometryOperatorData::makeOperator(
   }
   if(startProperties.units == LengthUnit::unspecified)
   {
-    throw KleeError("Cannot specify operators without specifying units");
+    throw KleeError({m_singleOperatorData[0].m_container->name(),
+                     "Cannot specify operators without specifying units"});
   }
   auto composite = std::make_shared<CompositeOperator>(startProperties);
   for(auto &data : m_singleOperatorData)
@@ -586,7 +600,8 @@ NamedOperatorMap NamedOperatorMapData::makeNamedOperatorMap(
 
     if(op->getEndProperties().units != opData.endUnits)
     {
-      throw KleeError("Specified end units did not match actual units");
+      throw KleeError({opData.value.getPath(),
+                       "Specified end units did not match actual units"});
     }
     namedOperators.insert({opData.name, op});
   }
@@ -613,7 +628,7 @@ FromInlet<axom::klee::internal::GeometryOperatorData>::operator()(
 {
   std::vector<axom::klee::internal::SingleOperatorData> v =
     base.get<std::vector<axom::klee::internal::SingleOperatorData>>();
-  return axom::klee::internal::GeometryOperatorData {std::move(v)};
+  return axom::klee::internal::GeometryOperatorData {base.name(), std::move(v)};
 }
 
 axom::klee::internal::NamedOperatorData

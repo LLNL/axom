@@ -5,6 +5,7 @@
 
 #include "axom/klee/Units.hpp"
 
+#include "axom/inlet/Proxy.hpp"
 #include "axom/klee/KleeError.hpp"
 
 #include <stdexcept>
@@ -30,7 +31,8 @@ struct LengthUnitHash
 };
 }  // namespace
 
-LengthUnit parseLengthUnits(const std::string &unitsAsString)
+LengthUnit parseLengthUnits(const std::string &unitsAsString,
+                            const std::string &path)
 {
   static const std::unordered_map<std::string, LengthUnit> UNITS_BY_NAME {
     {"km", LengthUnit::km},
@@ -54,10 +56,15 @@ LengthUnit parseLengthUnits(const std::string &unitsAsString)
   {
     std::string message = "Unrecognized units: ";
     message += unitsAsString;
-    throw KleeError(message.c_str());
+    throw KleeError({path, message});
   }
 
   return iter->second;
+}
+
+LengthUnit parseLengthUnits(const inlet::Proxy &unitsAsProxy)
+{
+  return parseLengthUnits(unitsAsProxy.get<std::string>(), unitsAsProxy.name());
 }
 
 double getConversionFactor(LengthUnit sourceUnits, LengthUnit targetUnits)

@@ -28,6 +28,7 @@ set(klee_sources
         Geometry.cpp
         GeometryOperators.cpp
         GeometryOperatorsIO.cpp
+        KleeError.cpp
         IO.cpp
         IOUtil.cpp
         Shape.cpp
