@@ -21,6 +21,14 @@ namespace axom
 
 namespace axom_map
 { 
+
+  /// \name Map Supporting Data Structures
+  /// @{
+  /*!
+   * \brief Node is the foundational data type of the Map, being the lowest-level data storage unit,
+   *  with the key and value data for a given item, along with a next value for the linked list.
+   *
+   */  
   template <typename Key, typename T>
   struct Node{
       IndexType next;
@@ -32,6 +40,7 @@ namespace axom_map
             
     }; 
 
+  
   template <typename Key, typename T>
   struct Pair{
     axom_map::Node<Key, T> * first;
@@ -161,6 +170,7 @@ namespace axom_map
          if(ind == m_head){m_head = m_list[ind].next;}
          m_list[ind].next = m_free;
          m_free = ind;
+         m_size--;
          return true;
        }
        prev = ind;
@@ -211,6 +221,8 @@ namespace axom_map
     int m_capacity, m_size;
   
   }; 
+
+  /// @}
 }
 
 /*!
@@ -231,40 +243,35 @@ template <typename Key, typename T, typename Hash = std::hash<Key> >
 class Map
 {
 public:
-  Map(int buckets, int bucklen=10 ){
-    m_bucket_count = buckets;
-    m_bucket_len = bucklen;
-    m_buckets = alloc_map(m_bucket_count, m_bucket_len);    
  
-   
-   /*insert(27, 236);
-   insert(2, 259);
-   insert(3, 10);
-   insert(35, 2195);
-   std::cout << find(3).value << std::endl;
-   remove(3);
-   if(find(3) == m_buckets[0].m_end){
-     std::cout << "removed" << std::endl;
-   }
-   if(find(4) == m_buckets[0].m_end){
-     std::cout << "never added" << std::endl;
-   }
-   std::cout << find(2).value << std::endl;
-   rehash();
-   insert(3,10);
-   std::cout << find(3).value << std::endl;
-   remove(3);
-   if(find(3) == m_buckets[0].m_end){
-     std::cout << "removed" << std::endl;
-   }
-   if(find(4) == m_buckets[0].m_end){
-     std::cout << "never added" << std::endl;
-   }
-   std::cout << find(2).value << std::endl;*/
-
-
+  /// \name Map Constructors
+  /// @{
+  
+  /*!
+   *\brief Constructs a Map instance with the given number of buckets.
+   *
+   * \param [in] num_buckets the number of buckets used in the Map.
+   * \param [in] bucket_len the maximum number of items that can co-exist in a bucket.
+   *
+   * \pre num_buckets > 0
+   * \pre bucket_len > 0
+   */
+  Map(int num_buckets, int bucket_len=10 ){
+    m_bucket_count = buckets;
+    m_bucket_len = bucket_len;
+    m_buckets = alloc_map(m_bucket_count, m_bucket_len);    
   }
 
+  /*!
+   * \brief Resizes Map by creating new Map instance and inserting all values
+   * from original Map.
+   *
+   * \param [in] buckets user-specified number of buckets in new Map. -1 to fall back to multiplicative factor.
+   * \param [in] factor user-specified multiplicative factor to determine size of new Map based upon existing. 
+   *
+   * \note if neither input is specified, the new Map will be of size 2*old Map size. 
+   * \note both map instances exist in memory until rehash returns. Risks running out of memory.
+   */  
   void rehash(int buckets = -1, int factor = -1){
    
     int newlen = 0;
@@ -297,29 +304,92 @@ public:
     return; 
   } 
 
+  /*!
+   * \brief Inserts given key-value pair into the Map instance.
+   *
+   * \param [in] key the key used to index into the Map to store this item
+   * \param [in] val the data value of the pair to insert into the map
+   *
+   * \note Deviation from STL unordered_map is that insertion fails when map full, rather than automatically rehashing. 
+   *  Manual call of rehash() required.
+   *
+   * \return A pair whose first element is a pointer to the inserted item and bool set to true
+   *  if successful. Otherwise, the second element is set to false, and the first to one of two values: a sentinel node 
+   *  if the map is overfilled, and the actual node with the given key if an item with given key already exists.
+   *
+   */
   axom_map::Pair<Key, T> insert(Key key, T val){
     axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key)); 
-    return target->insert_no_update(key, val);
+    //Candidate to get cut out if branching becomes too much of an issue.
+    axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
+    if(ret->second == true){ m_size++; }
+    return ret;
   }
 
+  /*!
+   * \brief Removes key-value pair with given key from the Map instance.
+   *
+   * \param [in] key the key of the item to be removed from the Map instance.
+   *
+   * \note Deviation from STL unordered_map in returning a boolean instead of an iterator to next item in map.
+   *  Mostly useful on sparing logic when this moves to paralellism, since the bucket boundaries would become inconvenient.
+   *
+   * \return A bool value of true if the item was successfully removed, false otherwise. 
+   */  
   bool remove(Key key){
     axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key));
-    return target->remove(key);
+    //Candidate to get cut out if branching becomes too much of an issue.
+    bool ret = target->remove(key);
+    if(ret == true){ m_size--;}
+    return ret;
   } 
 
-   
+  /*!
+   * \brief Returns key-value pair with given key from the Map instance.
+   *
+   * \param [in] key the key of the item to be searched for in the Map instance.
+   *
+   * \return A reference to the requested item if found, sentinel node end otherwise.
+   */  
   axom_map::Node<Key, T>& find(Key key){
     axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key));
     return target->find(key);
   }
 
+  /*!
+   * \brief Returns the maximum number of items per bucket.
+   * \return bucket_len the maximum number of items per bucket.
+   */ 
   int get_bucket_size(){ return m_bucket_len; }
+  /*!
+   * \brief Returns the number of buckets in the Map.
+   * \return bucket_count 
+   */  
   int get_bucket_count(){ return m_bucket_count; }
+  /*!
+   * \brief Returns the amount of items in the Map instance.
+   * \return size the amount of items in the Map instance.
+   */   
   int get_size() { return m_size; }
+  /*!
+   * \brief Returns the overall capacity of the Map instance.
+   * \return capacity the overall capacity of the Map instance.
+   */  
   int get_capacity() { return m_bucket_len*m_bucket_count; }
 
 private:
-  
+ 
+  /*!
+   * \brief Memory allocation handler, for Map construction, both at initialization and rehash. Allocates and
+   *  initializes linked lists used for data storage, and returns pointer to said array, to be used elsewhere.
+   *  Kept separate from constructor and rehasher for sake of modularity in case this needs to be swapped
+   *  with a different method in the future.
+   *
+   * \param [in] bucount the number of buckets to be in side the allocated Map instance. 
+   * \param [in] bucklen the amount of items that can fit in a bucket in the allocated Map instance.
+   * 
+   * \return A pointer to the now-allocated array of linked lists.
+   */  
   axom_map::Bucket<Key,T> * alloc_map(int bucount, int bucklen){
     axom_map::Bucket<Key,T> *tmp = axom::allocate <axom_map::Bucket<Key,T> > (bucount); 
     for(int i = 0; i < bucount; i++){
@@ -330,19 +400,45 @@ private:
     return tmp;
   }
    
-   
+  /*!
+   * \brief Returns hash value for a given input. 
+   *
+   * \note Currently uses std::hash, will switch to a custom hasher in future.
+   *
+   * \return A 64-bit integer containing the hashed value of the key.
+   */  
   std::size_t get_hash(Key input){
     std::size_t hashed =  std::hash<Key>{}(input);
      
     return hashed;
   }
 
+  /*!
+   * \brief Returns pointer to bucket associated with a 64-bit integer, intended to be the hash 
+   *  of a key.
+   *
+   * \param [in] hash the id of the bucket to be queried.
+   *
+   * \note Likely better off inlined, included here in case of later changes to hash collision resolution method.
+   *
+   * \return A pointer to the queried bucket.
+   */  
   axom_map::Bucket<Key,T> * get_bucket(std::size_t hash){
     return &(m_buckets[hash%m_bucket_count]);
   }
 
-  axom_map::Bucket<Key,T> *m_buckets;
-  int m_bucket_count, m_bucket_len, m_size, m_load_factor;
+  /// @}
+  
+  /// \name Private Data Members
+  /// @{
+  
+  axom_map::Bucket<Key,T> *m_buckets; /*!< array of pointers to linked lists containing data */
+  int m_bucket_count; /*!< the number of buckets in the Map instance */
+  int m_bucket_len; /*!< the number of items that can be contained in a bucket in this Map instance */
+  int m_size; /*!< the number of items currenty stored in this Map instance */
+  int m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
+
+  /// @}
  
 
 };
