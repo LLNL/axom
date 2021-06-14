@@ -10,6 +10,7 @@
 #include "axom/mint/config.hpp"     // for compile-time definitions
 #include "axom/mint/mesh/Mesh.hpp"  // for Mesh
 
+#include "axom/core/Macros.hpp"
 #include "axom/core/StackArray.hpp"       // for axom::StackArray
 #include "axom/core/numerics/Matrix.hpp"  // for Matrix
 
@@ -68,7 +69,7 @@ inline void for_all_coords(const FOR_ALL_FUNCTOR& for_all_nodes,
     ExecPolicy(),
     m,
     AXOM_LAMBDA(IndexType objectID, const IndexType* nodeIDs, IndexType numNodes) {
-      AXOM_DEBUG_VAR(numNodes);
+      AXOM_UNUSED_VAR(numNodes);
       assert(numNodes == NNODES);
 
       double localCoords[NDIM * NNODES];

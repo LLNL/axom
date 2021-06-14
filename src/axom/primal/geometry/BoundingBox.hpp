@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef BOUNDINGBOX_HPP_
-#define BOUNDINGBOX_HPP_
+#ifndef AXOM_PRIMAL_BOUNDINGBOX_HPP_
+#define AXOM_PRIMAL_BOUNDINGBOX_HPP_
 
 #include <limits>
 
@@ -70,6 +70,9 @@ public:
   typedef Vector<T, NDIMS> VectorType;
   typedef BoundingBox<T, NDIMS> BoxType;
 
+  static constexpr T InvalidMin = std::numeric_limits<T>::max();
+  static constexpr T InvalidMax = std::numeric_limits<T>::lowest();
+
 public:
   /*!
    * \brief Constructor. Creates a bounding box with an invalid bound
@@ -77,10 +80,8 @@ public:
    * is set to the smallest possible point.  This way adding any point resets
    * the bounds to a valid range.
    */
-  BoundingBox()
-    : m_min(PointType(std::numeric_limits<T>::max()))
-    , m_max(PointType(std::numeric_limits<T>::lowest()))
-  { }
+  AXOM_HOST_DEVICE
+  BoundingBox() : m_min(PointType(InvalidMin)), m_max(PointType(InvalidMax)) { }
 
   /*!
    * \brief Constructor. Creates a bounding box containing a single point
@@ -221,7 +222,7 @@ public:
    * and half open boundaries in the future.
    */
   template <typename OtherType>
-  bool contains(const Point<OtherType, NDIMS>& otherPt) const;
+  AXOM_HOST_DEVICE bool contains(const Point<OtherType, NDIMS>& otherPt) const;
 
   /*!
    * \brief Checks whether the box fully contains another bounding box
@@ -242,7 +243,8 @@ public:
    *  operator<().
    */
   template <typename OtherType>
-  bool intersectsWith(const BoundingBox<OtherType, NDIMS>& otherBB) const;
+  AXOM_HOST_DEVICE bool intersectsWith(
+    const BoundingBox<OtherType, NDIMS>& otherBB) const;
 
   /*!
    * \brief Checks that we have a valid bounding box.
@@ -357,6 +359,14 @@ namespace axom
 namespace primal
 {
 //------------------------------------------------------------------------------
+
+template <typename T, int NDIMS>
+constexpr T BoundingBox<T, NDIMS>::InvalidMin;
+
+template <typename T, int NDIMS>
+constexpr T BoundingBox<T, NDIMS>::InvalidMax;
+
+//------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 template <typename OtherT>
 bool BoundingBox<T, NDIMS>::contains(const Point<OtherT, NDIMS>& otherPt) const
@@ -410,11 +420,10 @@ bool BoundingBox<T, NDIMS>::intersectsWith(
   // AABBs cannot intersect if they are separated along any dimension
   for(int i = 0; i < NDIMS; ++i)
   {
-    status = status &&
-      detail::intersect_bbox_bbox(m_min[i],
-                                  m_max[i],
-                                  otherBB.m_min[i],
-                                  otherBB.m_max[i]);
+    status &= detail::intersect_bbox_bbox(m_min[i],
+                                          m_max[i],
+                                          otherBB.m_min[i],
+                                          otherBB.m_max[i]);
   }  // END for all dimensions
 
   return status;
@@ -663,7 +672,7 @@ std::ostream& operator<<(std::ostream& os, const BoundingBox<T, NDIMS>& bb)
   return bb.print(os);
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* BOUNDINGBOX_HPP_ */
+#endif  // AXOM_PRIMAL_BOUNDINGBOX_HPP_

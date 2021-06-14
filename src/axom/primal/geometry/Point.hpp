@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef POINT_HXX_
-#define POINT_HXX_
+#ifndef AXOM_PRIMAL_POINT_HPP_
+#define AXOM_PRIMAL_POINT_HPP_
 
 #include "axom/core/Macros.hpp"
 #include "axom/slic/interface/slic.hpp"
@@ -64,8 +64,8 @@ public:
     NBYTES = NDIMS * sizeof(T)
   };
 
-  typedef Point<T, NDIMS> PointType;
-  typedef T CoordType;
+  using PointType = Point<T, NDIMS>;
+  using CoordType = T;
 
 public:
   /*!
@@ -100,6 +100,7 @@ public:
    * point. If the size is not the same as the size of this point, this
    * behaves the same way as the constructor which takes a pointer and size.
    */
+  AXOM_HOST_DEVICE
   Point(std::initializer_list<T> values)
     : Point {values.begin(), static_cast<int>(values.size())}
   { }
@@ -134,8 +135,9 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T* data() const { return m_components.data(); }
-  T* data() { return m_components.data(); }
+  AXOM_HOST_DEVICE const T* data() const { return m_components.data(); }
+
+  AXOM_HOST_DEVICE T* data() { return m_components.data(); }
 
   ///@}
 
@@ -321,7 +323,7 @@ std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt)
   return os;
 }
 
-} /* namespace primal*/
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* POINT_HXX_ */
+#endif  // AXOM_PRIMAL_POINT_HPP_

@@ -323,6 +323,16 @@ private:
                                  int rankgroup_id);
 
   /*!
+   * /brief Get a map of ranks to file ID numbers.
+   *
+   * This fills the given output View with a map identifying an integer ID
+   * for the file that each rank will interact with during I/O.
+   * The data in the map is an array indexed by rank with the values being
+   * the file IDs
+   */
+  void getRankToFileMap(View* rank_to_file_map, int num_files);
+
+  /*!
    * \brief If needed, get a file path created by SCR.
    *
    * When using this class with the SCR library, SCR must create a file path

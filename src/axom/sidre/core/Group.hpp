@@ -1588,7 +1588,7 @@ private:
   bool m_is_list;
 
   /// Character used to denote a path string passed to get/create calls.
-  static const char s_path_delimiter;
+  AXOM_EXPORT static const char s_path_delimiter;
 
   ///////////////////////////////////////////////////////////////////
   //

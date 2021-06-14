@@ -783,7 +783,9 @@ public:
 
   bool isRequired() const override;
 
-  Container& registerVerifier(std::function<bool(const Container&)> lambda) override;
+  using Verifiable<Container>::registerVerifier;
+
+  Container& registerVerifier(Verifier lambda) override;
 
   bool verify(std::vector<VerificationError>* errors = nullptr) const override;
 
@@ -1259,7 +1261,7 @@ private:
   std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
   std::unordered_map<std::string, std::unique_ptr<Function>> m_functionChildren;
-  std::function<bool(const Container&)> m_verifier;
+  Verifier m_verifier;
 
   // Used for ownership only - need to take ownership of these so children
   // and their aggregates have identical lifetime

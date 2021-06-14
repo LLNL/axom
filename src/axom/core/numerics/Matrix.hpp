@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
 #include "axom/core/utilities/Utilities.hpp"  // for utilities::swap()
 #include "axom/core/memory_management.hpp"    // for alloc(), free()
 

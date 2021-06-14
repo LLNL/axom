@@ -9,8 +9,8 @@
  * \brief Consists of functions to test intersection among geometric primitives.
  */
 
-#ifndef PRIMAL_INTERSECT_HPP_
-#define PRIMAL_INTERSECT_HPP_
+#ifndef AXOM_PRIMAL_INTERSECT_HPP_
+#define AXOM_PRIMAL_INTERSECT_HPP_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
@@ -223,8 +223,54 @@ bool intersect(const Triangle<T, 3>& tri,
  *
  * \param [in] R the specified ray
  * \param [in] S the segment to check
+ * \param [out] ray_param parametric coordinate of intersection along R, valid only if status=true.
+ * \param [out] seg_param parametric coordinate of intersection along S, valid only if status=true.
+ * \param [in] EPS tolerance for intersection tests
  *
+ * \return status true iff R intersects with S, otherwise, false.
+ *
+ * \see primal::Ray
+ * \see primal::Segment
+ */
+template <typename T>
+bool intersect(const Ray<T, 2>& R,
+               const Segment<T, 2>& S,
+               T& ray_param,
+               T& seg_param,
+               const T EPS = 1e-8)
+{
+  return detail::intersect_ray(R, S, ray_param, seg_param, EPS);
+}
+
+/*!
+ * \brief Computes the intersection of the given ray, R, with the segment, S.
+ *
+ * \param [in] R the specified ray
+ * \param [in] S the segment to check
+ * \param [out] ray_param parametric coordinate of intersection along R, valid only if status=true
+ *
+ * \note If you need to specify a tolerance for the intersection tests, please use the overload
+ * of this function with two [OUT] parameters (\a ray_param and \a seg_param)
+ *
+ * \return status true iff R intersects with S, otherwise, false.
+ *
+ * \see primal::Ray
+ * \see primal::Segment
+ */
+template <typename T>
+bool intersect(const Ray<T, 2>& R, const Segment<T, 2>& S, T& ray_param)
+{
+  T seg_param;
+  return intersect(R, S, ray_param, seg_param);
+}
+
+/*!
+ * \brief Computes the intersection of the given ray, R, with the segment, S.
+ *
+ * \param [in] R the specified ray
+ * \param [in] S the segment to check
  * \param [out] ip the intersection point on S, valid only if status=true.
+ * \param [in] EPS tolerance for intersection tests
  *
  * \return status true iff R intersects with S, otherwise, false.
  *
@@ -233,9 +279,19 @@ bool intersect(const Triangle<T, 3>& tri,
  * \see primal::Point
  */
 template <typename T>
-bool intersect(const Ray<T, 2>& R, const Segment<T, 2>& S, Point<T, 2>& ip)
+bool intersect(const Ray<T, 2>& R,
+               const Segment<T, 2>& S,
+               Point<T, 2>& ip,
+               const T EPS = 1e-8)
 {
-  return detail::intersect_ray(R, S, ip);
+  T ray_param;
+  T seg_param;
+  if(detail::intersect_ray(R, S, ray_param, seg_param, EPS))
+  {
+    ip = R.at(ray_param);
+    return true;
+  }
+  return false;
 }
 
 /*!
@@ -256,16 +312,16 @@ bool intersect(const Ray<T, 2>& R, const Segment<T, 2>& S, Point<T, 2>& ip)
  *  Real Time Collision Detection by Christer Ericson.
  */
 template <typename T, int DIM>
-bool intersect(const Ray<T, DIM>& R,
-               const BoundingBox<T, DIM>& bb,
-               Point<T, DIM>& ip)
+AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
+                                const BoundingBox<T, DIM>& bb,
+                                Point<T, DIM>& ip)
 {
   return detail::intersect_ray(R, bb, ip);
 }
 
 /// @}
 
-/// \name Segment Intersection Routines
+/// \name Segment-BoundingBox Intersection Routines
 /// @{
 
 /*!
@@ -274,18 +330,62 @@ bool intersect(const Ray<T, DIM>& R,
  * \return status true iff \a bb intersects with \a S, otherwise, false.
  *
  * \note The intersection between segment \a S and box \a bb intersect, will, in general,
- * be a along a (1D) subset of segment \a S. This function returns a single point of 
- * the intersection of \a S and \a bb found while determining if there is a valid intersection.
+ * be a along a (1D) subset of segment \a S. One variant of this function returns the two
+ * parametric coordinates of the intersections along \a S found while determining 
+ * if there is a valid intersection. Another variant returns an intersection point along \a S
+ * Specifically, it is the point of smallest parametric coordinate that is contained in \a bb
+ * (i.e. with parameter \a tmin). These are only valid when the function returns true
  * 
  * Computes Segment-Box intersection using the slab method from pg 180 of
  * Real Time Collision Detection by Christer Ericson.
  */
+
+/// This variant returns the two parametric coordinates of the intersection segment as OUT parameters
 template <typename T, int DIM>
 bool intersect(const Segment<T, DIM>& S,
                const BoundingBox<T, DIM>& bb,
-               Point<T, DIM>& ip)
+               T& tmin,
+               T& tmax,
+               const double& EPS = 1e-8)
 {
-  return detail::intersect_seg_bbox(S, bb, ip);
+  const T segLength = S.length();
+  tmin = static_cast<T>(0);
+  tmax = static_cast<T>(segLength);
+
+  bool intersects = segLength > 0. &&
+    detail::intersect_ray(Ray<T, DIM>(S), bb, tmin, tmax, EPS);
+
+  // Scale parametric coordinates with respect to the segment
+  if(intersects)
+  {
+    tmin /= segLength;
+    tmax /= segLength;
+  }
+
+  return intersects;
+}
+
+/// This variant returns a point within the intersection as an OUT parameters
+template <typename T, int DIM>
+bool intersect(const Segment<T, DIM>& S,
+               const BoundingBox<T, DIM>& bb,
+               Point<T, DIM>& ip,
+               const double& EPS = 1e-8)
+{
+  T tmin, tmax;
+  if(intersect(S, bb, tmin, tmax, EPS))
+  {
+    ip = S.at(tmin);
+    return true;
+  }
+  return false;
+}
+
+template <typename T, int DIM>
+bool intersect(const Segment<T, DIM>& S, const BoundingBox<T, DIM>& bb)
+{
+  T tmin, tmax;
+  return intersect(S, bb, tmin, tmax);
 }
 
 /// @}
@@ -431,7 +531,7 @@ bool intersect(const BezierCurve<T, NDIMS>& c1,
 
 /// @}
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif  // PRIMAL_INTERSECT_HPP_
+#endif  // AXOM_PRIMAL_INTERSECT_HPP_

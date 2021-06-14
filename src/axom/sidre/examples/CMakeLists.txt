@@ -43,7 +43,7 @@ foreach(example_source ${example_sources})
         NAME ${exe_name}_ex
         SOURCES ${example_source}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  sidre ${EXTRA_LIBS}
+        DEPENDS_ON  axom ${EXTRA_LIBS}
         FOLDER axom/sidre/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -63,7 +63,7 @@ if(ENABLE_MPI)
             NAME ${exe_name}_ex
             SOURCES ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  sidre ${EXTRA_LIBS} mpi
+            DEPENDS_ON  axom ${EXTRA_LIBS} mpi
             FOLDER axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)

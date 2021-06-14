@@ -206,6 +206,24 @@ else()
     set(LUA_FOUND OFF CACHE BOOL "")
 endif()
 
+
+#------------------------------------------------------------------------------
+# C2C
+#------------------------------------------------------------------------------
+if (C2C_DIR)
+    include(cmake/thirdparty/FindC2C.cmake)
+    blt_import_library(
+        NAME          c2c
+        INCLUDES      ${C2C_INCLUDE_DIR}
+        LIBRARIES     ${C2C_LIBRARY}
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE    ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS c2c)
+else()
+    message(STATUS "c2c support is OFF")
+    set(C2C_FOUND OFF CACHE BOOL "")
+endif()
+
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------

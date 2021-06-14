@@ -17,7 +17,6 @@
 #include "axom/primal/geometry/Point.hpp"
 
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
-#include "axom/spin/internal/linear_bvh/math.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 
 #include "axom/spin/MortonIndex.hpp"
@@ -123,10 +122,13 @@ primal::BoundingBox<FloatType, NDIMS> reduce(
 
   primal::Point<FloatType, NDIMS> min_pt, max_pt;
 
+  FloatType infinity = std::numeric_limits<FloatType>::max();
+  FloatType neg_infinity = std::numeric_limits<FloatType>::lowest();
+
   for(int dim = 0; dim < NDIMS; dim++)
   {
-    RAJA::ReduceMin<reduce_policy, FloatType> min_coord(infinity32());
-    RAJA::ReduceMax<reduce_policy, FloatType> max_coord(neg_infinity32());
+    RAJA::ReduceMin<reduce_policy, FloatType> min_coord(infinity);
+    RAJA::ReduceMax<reduce_policy, FloatType> max_coord(neg_infinity);
 
     for_all<ExecSpace>(
       size,
@@ -259,6 +261,43 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 #endif /* RAJA version 0.12.0 and above */
 
 //------------------------------------------------------------------------------
+//
+// count leading zeros
+//
+inline AXOM_HOST_DEVICE axom::int32 clz(axom::int32 x)
+{
+  axom::int32 y;
+  axom::int32 n = 32;
+  y = x >> 16;
+  if(y != 0)
+  {
+    n = n - 16;
+    x = y;
+  }
+  y = x >> 8;
+  if(y != 0)
+  {
+    n = n - 8;
+    x = y;
+  }
+  y = x >> 4;
+  if(y != 0)
+  {
+    n = n - 4;
+    x = y;
+  }
+  y = x >> 2;
+  if(y != 0)
+  {
+    n = n - 2;
+    x = y;
+  }
+  y = x >> 1;
+  if(y != 0) return axom::int32(n - 2);
+  return axom::int32(n - x);
+}
+
+//------------------------------------------------------------------------------
 template <typename IntType, typename MCType>
 AXOM_HOST_DEVICE IntType delta(const IntType& a,
                                const IntType& b,
@@ -340,9 +379,9 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
         if(t == 1) break;
       }
 
-      int32 split = i + s * d + min(d, 0);
+      int32 split = i + s * d + utilities::min(d, 0);
       // assign parent/child pointers
-      if(min(i, j) == split)
+      if(utilities::min(i, j) == split)
       {
         //leaf
         parent_ptr[split + inner_size] = i;
@@ -355,7 +394,7 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
         lchildren_ptr[i] = split;
       }
 
-      if(max(i, j) == split + 1)
+      if(utilities::max(i, j) == split + 1)
       {
         //leaf
         parent_ptr[split + inner_size + 1] = i;

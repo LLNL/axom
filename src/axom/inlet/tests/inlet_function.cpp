@@ -22,6 +22,7 @@ using axom::inlet::FunctionType;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
 using axom::inlet::LuaReader;
+using axom::inlet::VerificationError;
 
 Inlet createBasicInlet(const std::string& luaString, bool enableDocs = true)
 {
@@ -306,6 +307,31 @@ TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_fail)
   });
 
   EXPECT_FALSE(inlet.verify());
+}
+
+TEST(inlet_function, simple_vec3_to_vec3_verify_lambda_with_errors_fail)
+{
+  std::string testString = "function foo (v) return 2*v end";
+  auto inlet = createBasicInlet(testString);
+
+  auto& func = inlet
+                 .addFunction("foo",
+                              FunctionTag::Vector,
+                              {FunctionTag::Vector},
+                              "foo's description")
+                 .required();
+  func.registerVerifier([](const axom::inlet::Function& func,
+                           std::vector<VerificationError>* errors) {
+    INLET_VERIFICATION_WARNING("foo", "Something bad happened", errors);
+    auto result = func.call<FunctionType::Vector>(FunctionType::Vector {2, 0, 0});
+    return std::abs(result[0] - 2) < 1e-5;
+  });
+
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  ASSERT_FALSE(errors.empty());
+  ASSERT_EQ(axom::Path("foo"), errors[0].path);
+  ASSERT_EQ("Something bad happened", errors[0].message);
 }
 
 struct Foo

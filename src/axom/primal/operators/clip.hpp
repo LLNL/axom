@@ -10,8 +10,8 @@
  *        another primal primitive
  */
 
-#ifndef PRIMAL_CLIPPING_HPP_
-#define PRIMAL_CLIPPING_HPP_
+#ifndef AXOM_PRIMAL_CLIP_HPP_
+#define AXOM_PRIMAL_CLIP_HPP_
 
 #include "axom/core/utilities/Utilities.hpp"
 
@@ -41,8 +41,8 @@ namespace primal
 template <typename T>
 Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
 {
-  typedef BoundingBox<T, 3> BoundingBoxType;
-  typedef Polygon<T, 3> PolygonType;
+  using BoundingBoxType = BoundingBox<T, 3>;
+  using PolygonType = Polygon<T, 3>;
 
   // Use two polygons with pointers for 'back-buffer'-like swapping
   const int MAX_VERTS = 6;
@@ -97,4 +97,4 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
 }  // namespace primal
 }  // namespace axom
 
-#endif  // PRIMAL_CLIPPING_HPP_
+#endif  // AXOM_PRIMAL_CLIP_HPP_

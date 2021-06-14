@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/Types.hpp"
+#include "axom/core.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 
 // Slic includes
@@ -331,7 +331,7 @@ int read_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
 #ifdef AXOM_USE_MPI
   reader = new quest::PSTLReader(comm);
 #else
-  static_cast<void>(comm);  // to silence compiler warnings
+  AXOM_UNUSED_VAR(comm);
   reader = new quest::STLReader();
 #endif
 
@@ -428,7 +428,7 @@ void logger_init(bool& isInitialized, bool& mustFinalize, bool verbose, MPI_Comm
   msgfmt.insert(0, "[<RANK>]", 8);
   ls = new slic::SynchronizedStream(&std::cout, comm, msgfmt);
 #else
-  static_cast<void>(comm);  // to silence compiler warnings
+  AXOM_UNUSED_VAR(comm);
   ls = new slic::GenericOutputStream(&std::cout, msgfmt);
 #endif
 

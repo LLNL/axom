@@ -9,6 +9,7 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/BezierCurve.hpp"

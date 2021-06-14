@@ -13,8 +13,8 @@
  * see Section 3.1.6.4 in "Real-time collision detection" by C. Ericson.
  */
 
-#ifndef IN_SPHERE_H_
-#define IN_SPHERE_H_
+#ifndef AXOM_PRIMAL_IN_SPHERE_H_
+#define AXOM_PRIMAL_IN_SPHERE_H_
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/core/numerics/Determinants.hpp"
@@ -88,7 +88,7 @@ inline bool in_sphere(const Point<T, 3>& q,
   return det < 0;
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* IN_SPHERE_H_ */
+#endif  // AXOM_PRIMAL_IN_SPHERE_H_

@@ -21,46 +21,26 @@ namespace spin
 {
 namespace internal
 {
-// Internal datatype used to store each of the 4 segments of a BVH node.
-template <typename FloatType>
-using vec4_t = primal::Vector<FloatType, 4>;
-
 namespace linear_bvh
 {
 /*!
  * \brief BVHData provides a data-structure that represent the internal data
  *  layout of the BVH.
  *
- * \note <b> Internal Data Layout </b>
- * \verbatim
- *                      |               |               |               |
- *             S0       |      S1       |       S2      |       S3      |
- *      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
- * .... | 0 | 1 | 2 | 3 | 0 | 1 | 2 | 3 | 0 | 1 | 2 | 3 | 0 | 1 | X | X | .....
- *      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
- *                      |               |               |
- *                      |               |               |
- *        S0.0 = L.xmin | S1.0 = L.ymax | S2.0 = R.zmin | S3.0 = left_child
- *        S0.1 = L.ymin | S1.1 = L.zmax | S2.1 = R.xmax | S3.1 = right_child
- *        S0.2 = L.zmin | S1.2 = R.xmin | S2.2 = R.ymax | S3.2 = padded
- *        S0.3 = L.xmax | S1.3 = R.ymin | S2.3 = R.zmax | S3.3 = padded
- *
- * \endverbatim
- *
- * \note The internal data layout is organized in a flat buffer of 4 segments,
- *  where each segment is a vec4_t< FloatType > type, that stores the left
- *  and right boxes of a given node, as well as, the IDs of the right and
- *  left children, as illustrated above.
- *
- * \note A Vec< FloatType,4 > is chosen b/c it fits into GPU texture memory and
- *  allows for additional performance optimizations down the road
+ * \note The internal node data is organized into two arrays, one containing
+ *  bounding boxes of the internal nodes' two child nodes, and the other
+ *  containing indices of the two child nodes (scaled by two if inner node,
+ *  ones-complement if leaf node).
  *
  */
 template <typename FloatType, int NDIMS>
 struct BVHData
 {
-  vec4_t<FloatType>* m_inner_nodes;  // BVH bins including leafs
-  int32* m_leaf_nodes;               // leaf data
+  using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
+
+  BoundingBoxType* m_inner_nodes;  // BVH bins including leafs
+  int32* m_inner_node_children;
+  int32* m_leaf_nodes;  // leaf data
   primal::BoundingBox<FloatType, NDIMS> m_bounds;
 
   BVHData() : m_inner_nodes(nullptr), m_leaf_nodes(nullptr) { }
@@ -68,7 +48,8 @@ struct BVHData
   void allocate(int32 size, int allocID)
   {
     AXOM_PERF_MARK_FUNCTION("BVHData::allocate");
-    m_inner_nodes = axom::allocate<vec4_t<FloatType>>((size - 1) * 4, allocID);
+    m_inner_nodes = axom::allocate<BoundingBoxType>((size - 1) * 2, allocID);
+    m_inner_node_children = axom::allocate<int32>((size - 1) * 2, allocID);
     m_leaf_nodes = axom::allocate<int32>(size, allocID);
   }
 
@@ -76,6 +57,7 @@ struct BVHData
   {
     AXOM_PERF_MARK_FUNCTION("BVHData::deallocate");
     axom::deallocate(m_inner_nodes);
+    axom::deallocate(m_inner_node_children);
     axom::deallocate(m_leaf_nodes);
   }
 

@@ -9,6 +9,7 @@
 set(quest_tests
     quest_all_nearest_neighbors.cpp
     quest_inout_octree.cpp
+    quest_inout_quadtree.cpp
     quest_signed_distance.cpp
     quest_discretize.cpp
     quest_stl_reader.cpp
@@ -21,14 +22,12 @@ blt_list_append(TO       quest_tests
                 ELEMENTS quest_meshtester.cpp)
 
 set(quest_tests_depends
-    quest
+    axom
     fmt
     gtest
    )
 
 blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
-
-set(quest_vertex_weld_extra_depends mint)
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
@@ -36,7 +35,7 @@ foreach(test ${quest_tests})
         NAME ${test_name}_test
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} ${${test_name}_extra_depends}
+        DEPENDS_ON ${quest_tests_depends}
         FOLDER axom/quest/tests
         )
 
@@ -53,7 +52,7 @@ if(MFEM_FOUND)
         NAME ${test_name}
         SOURCES ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} mfem core
+        DEPENDS_ON ${quest_tests_depends} mfem
         FOLDER axom/quest/tests
         )
 
@@ -137,8 +136,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     set(quest_regression_depends
         ${quest_tests_depends}
-        conduit::conduit
-        sidre
         cli11
         )
 

@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 
 set(quest_example_depends
-        quest
+        axom
         )
 
 blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)

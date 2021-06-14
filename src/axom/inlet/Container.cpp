@@ -1043,7 +1043,7 @@ Container& Container::strict(bool isStrict)
   return *this;
 }
 
-Container& Container::registerVerifier(std::function<bool(const Container&)> lambda)
+Container& Container::registerVerifier(Verifier lambda)
 {
   if(isStructCollection())
   {
@@ -1073,7 +1073,7 @@ bool Container::verify(std::vector<VerificationError>* errors) const
     verifyRequired(*m_sidreGroup, this_container_defined, "Container", errors);
 
   // Verify this Container if a lambda was configured
-  if(this_container_defined && m_verifier && !m_verifier(*this))
+  if(this_container_defined && m_verifier && !m_verifier(*this, errors))
   {
     verified = false;
     const std::string msg =

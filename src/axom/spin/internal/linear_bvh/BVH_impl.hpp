@@ -15,6 +15,8 @@
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
+#include "axom/primal/operators/intersect.hpp"
+
 // slic includes
 #include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
@@ -25,7 +27,6 @@
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/emit_bvh.hpp"
 #include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
-#include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
 
 // RAJA includes
 #include "RAJA/RAJA.hpp"
@@ -52,15 +53,6 @@ using floating_point_limits = axom::numerics::floating_point_limits<FloatType>;
 //------------------------------------------------------------------------------
 namespace lbvh = internal::linear_bvh;
 
-template <typename FloatType, int NDIMS>
-using point_t = primal::Vector<FloatType, NDIMS>;
-
-template <typename FloatType, int NDIMS>
-using ray_t = primal::Vector<FloatType, NDIMS * 2>;
-
-template <typename FloatType, int NDIMS>
-using bounding_box_t = primal::Vector<FloatType, NDIMS * 2>;
-
 /*!
  * \def BVH_PREDICATE
  *
@@ -68,15 +60,14 @@ using bounding_box_t = primal::Vector<FloatType, NDIMS * 2>;
  *
  * \param _predicateName the name of the predicate, e.g., `leftPredicate`
  * \param _p the primitive type
- * \param _s1 the 1st BVH segment consisting of the BVH bin information
- * \param _s2 the 2nd BVH segment consisting of the BVH bin information
+ * \param _bb the AABB for the current BVH bin
  *
  * \note The BVH_PREDICATE may be instantiated within or outside a kernel.
  *
  * \note This macro is intended to be used internally by the BVH implementation.
  */
-#define BVH_PREDICATE(_predicateName, _p, _s1, _s2) \
-  auto _predicateName = [=] AXOM_HOST_DEVICE(_p, _s1, _s2) -> bool
+#define BVH_PREDICATE(_predicateName, _p, _bb) \
+  auto _predicateName = [=] AXOM_HOST_DEVICE(_p, _bb) -> bool
 
 /*!
  * \def BVH_LEAF_ACTION
@@ -99,8 +90,7 @@ namespace
 /*!
  * \brief Performs a traversal to count the candidates for each query point.
  *
- * \param [in] leftCheck functor for left bin predicate check.
- * \param [in] rightCheck functor for right bin predicate check.
+ * \param [in] binCheck traversal predicate functor for bin check.
  * \param [in] inner_nodes array of vec4s for the BVH inner nodes.
  * \param [in] leaf_nodes array of BVH leaf node indices
  * \param [in] N the number of user-supplied query points
@@ -111,10 +101,10 @@ namespace
  *
  * \return total_count the total count of candidates for all query points.
  */
-template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
-IndexType bvh_get_counts(LeftPredicate&& leftCheck,
-                         RightPredicate&& rightCheck,
-                         const internal::vec4_t<FloatType>* inner_nodes,
+template <int NDIMS, typename ExecSpace, typename Predicate, typename FloatType>
+IndexType bvh_get_counts(Predicate&& binCheck,
+                         const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+                         const int32* inner_node_children,
                          const int32* leaf_nodes,
                          IndexType N,
                          IndexType* counts,
@@ -126,6 +116,7 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
 
   // sanity checks
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
   SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
   SLIC_ERROR_IF(x == nullptr, "supplied null pointer for x-coordinates!");
@@ -142,7 +133,7 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
     N,
     AXOM_LAMBDA(IndexType i) {
       int32 count = 0;
-      point_t<FloatType, NDIMS> point;
+      primal::Point<FloatType, NDIMS> point;
       QueryAccessor::getPoint(point, i, x, y, z);
 
       BVH_LEAF_ACTION(leafAction,
@@ -153,10 +144,10 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
       };
 
       lbvh::bvh_traverse(inner_nodes,
+                         inner_node_children,
                          leaf_nodes,
                          point,
-                         leftCheck,
-                         rightCheck,
+                         binCheck,
                          leafAction);
 
       counts[i] = count;
@@ -169,8 +160,7 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
 /*!
  * \brief Performs a traversal to count the number of candidates for each ray.
  *
- * \param [in] leftCheck traversal predicate functor for left bin check.
- * \param [in] rightCheck traversal predicate functor for right bin check.
+ * \param [in] binCheck traversal predicate functor for bin check.
  * \param [in] inner_nodes array of vec4s for the BVH inner nodes.
  * \param [in] leaf_nodes array of BVH leaf node indices
  * \param [in] N the number of user-supplied rays in query.
@@ -184,10 +174,10 @@ IndexType bvh_get_counts(LeftPredicate&& leftCheck,
  *
  * \return total_count the aggregate number of candidates for all rays.
  */
-template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
-IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
-                            RightPredicate&& rightCheck,
-                            const internal::vec4_t<FloatType>* inner_nodes,
+template <int NDIMS, typename ExecSpace, typename Predicate, typename FloatType>
+IndexType bvh_get_raycounts(Predicate&& binCheck,
+                            const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+                            const int32* inner_node_children,
                             const int32* leaf_nodes,
                             IndexType N,
                             IndexType* counts,
@@ -202,6 +192,7 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
 
   // sanity checks
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
   SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
   SLIC_ERROR_IF(x0 == nullptr, "ray source x-coordinates array is null!");
@@ -222,8 +213,12 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
     N,
     AXOM_LAMBDA(IndexType i) {
       int32 count = 0;
-      ray_t<FloatType, NDIMS> ray;
-      QueryAccessor::getRay(ray, i, x0, nx, y0, ny, z0, nz);
+
+      primal::Point<FloatType, NDIMS> origin;
+      primal::Vector<FloatType, NDIMS> direction;
+      QueryAccessor::getPoint(origin, i, x0, y0, z0);
+      QueryAccessor::getPoint(direction, i, nx, ny, nz);
+      primal::Ray<FloatType, NDIMS> ray {origin, direction};
 
       BVH_LEAF_ACTION(leafAction,
                       int32 AXOM_NOT_USED(current_node),
@@ -232,12 +227,12 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
         count++;
       };
 
-      lbvh::bvh_traverse(inner_nodes,
-                         leaf_nodes,
-                         ray,
-                         leftCheck,
-                         rightCheck,
-                         leafAction);
+      lbvh::bvh_traverse<NDIMS>(inner_nodes,
+                                inner_node_children,
+                                leaf_nodes,
+                                ray,
+                                binCheck,
+                                leafAction);
 
       counts[i] = count;
       total_count += count;
@@ -250,8 +245,7 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
  * \brief Performs a traversal to count the number of candidates for each
  *  bounding box.
  *
- * \param [in] leftCheck traversal predicate functor for left bin check.
- * \param [in] rightCheck traversal predicate functor for right bin check.
+ * \param [in] binCheck traversal predicate functor for bin check.
  * \param [in] inner_nodes array of vec4s for the BVH inner nodes.
  * \param [in] leaf_nodes array of BVH leaf node indices
  * \param [in] N the number of user-supplied bounding boxes in query.
@@ -266,10 +260,10 @@ IndexType bvh_get_raycounts(LeftPredicate&& leftCheck,
  * \return total_count the aggregate number of candidates for all bounding
  *  boxes.
  */
-template <int NDIMS, typename ExecSpace, typename LeftPredicate, typename RightPredicate, typename FloatType>
-IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
-                            RightPredicate&& rightCheck,
-                            const internal::vec4_t<FloatType>* inner_nodes,
+template <int NDIMS, typename ExecSpace, typename Predicate, typename FloatType>
+IndexType bvh_get_boxcounts(Predicate&& binCheck,
+                            const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+                            const int32* inner_node_children,
                             const int32* leaf_nodes,
                             IndexType N,
                             IndexType* counts,
@@ -284,6 +278,7 @@ IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
 
   // sanity checks
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
   SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
   SLIC_ERROR_IF(xmin == nullptr,
@@ -308,7 +303,7 @@ IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
     N,
     AXOM_LAMBDA(IndexType i) {
       int32 count = 0;
-      bounding_box_t<FloatType, NDIMS> box;
+      primal::BoundingBox<FloatType, NDIMS> box;
       QueryAccessor::getBoundingBox(box, i, xmin, xmax, ymin, ymax, zmin, zmax);
 
       BVH_LEAF_ACTION(leafAction,
@@ -319,10 +314,10 @@ IndexType bvh_get_boxcounts(LeftPredicate&& leftCheck,
       };
 
       lbvh::bvh_traverse(inner_nodes,
+                         inner_node_children,
                          leaf_nodes,
                          box,
-                         leftCheck,
-                         rightCheck,
+                         binCheck,
                          leafAction);
 
       counts[i] = count;
@@ -446,40 +441,31 @@ void BVH<NDIMS, ExecSpace, FloatType>::findPoints(IndexType* offsets,
   SLIC_ASSERT(x != nullptr);
   SLIC_ASSERT(y != nullptr);
 
-  using PointType = point_t<FloatType, NDIMS>;
-  using TraversalPredicates = lbvh::TraversalPredicates<NDIMS, FloatType>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
   using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
 
   // STEP 1: Grab BVH pointers
-  const internal::vec4_t<FloatType>* inner_nodes = m_bvh.m_inner_nodes;
+  const BoundingBoxType* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* inner_node_children = m_bvh.m_inner_node_children;
   const int32* leaf_nodes = m_bvh.m_leaf_nodes;
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
   // STEP 2: define traversal predicates
-  BVH_PREDICATE(leftPredicate,
-                const PointType& p,
-                const internal::vec4_t<FloatType>& s1,
-                const internal::vec4_t<FloatType>& s2)
+  BVH_PREDICATE(predicate, const PointType& p, const BoundingBoxType& bb)
   {
-    return TraversalPredicates::pointInLeftBin(p, s1, s2);
-  };
-
-  BVH_PREDICATE(rightPredicate,
-                const PointType& p,
-                const internal::vec4_t<FloatType>& s2,
-                const internal::vec4_t<FloatType>& s3)
-  {
-    return TraversalPredicates::pointInRightBin(p, s2, s3);
+    return bb.contains(p);
   };
 
   // STEP 3: get counts
   int total_count = 0;
   AXOM_PERF_MARK_SECTION(
     "PASS[1]:count_traversal",
-    total_count = bvh_get_counts<NDIMS, ExecSpace>(leftPredicate,
-                                                   rightPredicate,
+    total_count = bvh_get_counts<NDIMS, ExecSpace>(predicate,
                                                    inner_nodes,
+                                                   inner_node_children,
                                                    leaf_nodes,
                                                    numPts,
                                                    counts,
@@ -518,10 +504,10 @@ void BVH<NDIMS, ExecSpace, FloatType>::findPoints(IndexType* offsets,
         };
 
         lbvh::bvh_traverse(inner_nodes,
+                           inner_node_children,
                            leaf_nodes,
                            point,
-                           leftPredicate,
-                           rightPredicate,
+                           predicate,
                            leafAction);
       }););
 }
@@ -551,40 +537,32 @@ void BVH<NDIMS, ExecSpace, FloatType>::findRays(IndexType* offsets,
 
   const FloatType TOL = m_Tolernace;
 
-  using RayType = ray_t<FloatType, NDIMS>;
-  using TraversalPredicates = lbvh::TraversalPredicates<NDIMS, FloatType>;
+  using RayType = primal::Ray<FloatType, NDIMS>;
+  using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
   using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
 
   // STEP 1: Grab BVH pointers
-  const internal::vec4_t<FloatType>* inner_nodes = m_bvh.m_inner_nodes;
+  const BoundingBoxType* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* inner_node_children = m_bvh.m_inner_node_children;
   const int32* leaf_nodes = m_bvh.m_leaf_nodes;
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
   // STEP 2: define traversal predicates
-  BVH_PREDICATE(leftPredicate,
-                const RayType& r,
-                const internal::vec4_t<FloatType>& s1,
-                const internal::vec4_t<FloatType>& s2)
+  BVH_PREDICATE(predicate, const RayType& r, const BoundingBoxType& bb)
   {
-    return TraversalPredicates::rayIntersectsLeftBin(r, s1, s2, TOL);
-  };
-
-  BVH_PREDICATE(rightPredicate,
-                const RayType& r,
-                const internal::vec4_t<FloatType>& s2,
-                const internal::vec4_t<FloatType>& s3)
-  {
-    return TraversalPredicates::rayIntersectsRightBin(r, s2, s3, TOL);
+    primal::Point<FloatType, NDIMS> tmp;
+    return primal::detail::intersect_ray(r, bb, tmp, TOL);
   };
 
   // STEP 3: get counts
   int total_count = 0;
   AXOM_PERF_MARK_SECTION(
     "PASS[1]:count_traversal",
-    total_count = bvh_get_raycounts<NDIMS, ExecSpace>(leftPredicate,
-                                                      rightPredicate,
+    total_count = bvh_get_raycounts<NDIMS, ExecSpace>(predicate,
                                                       inner_nodes,
+                                                      inner_node_children,
                                                       leaf_nodes,
                                                       numRays,
                                                       counts,
@@ -616,8 +594,11 @@ void BVH<NDIMS, ExecSpace, FloatType>::findRays(IndexType* offsets,
       AXOM_LAMBDA(IndexType i) {
         int32 offset = offsets[i];
 
-        RayType ray;
-        QueryAccessor::getRay(ray, i, x0, nx, y0, ny, z0, nz);
+        typename RayType::PointType origin;
+        typename RayType::VectorType direction;
+        QueryAccessor::getPoint(origin, i, x0, y0, z0);
+        QueryAccessor::getPoint(direction, i, nx, ny, nz);
+        RayType ray {origin, direction};
 
         BVH_LEAF_ACTION(leafAction, int32 current_node, const int32* leaf_nodes)
         {
@@ -626,10 +607,10 @@ void BVH<NDIMS, ExecSpace, FloatType>::findRays(IndexType* offsets,
         };
 
         lbvh::bvh_traverse(inner_nodes,
+                           inner_node_children,
                            leaf_nodes,
                            ray,
-                           leftPredicate,
-                           rightPredicate,
+                           predicate,
                            leafAction);
       }););
 }
@@ -657,40 +638,30 @@ void BVH<NDIMS, ExecSpace, FloatType>::findBoundingBoxes(IndexType* offsets,
   SLIC_ASSERT(ymin != nullptr);
   SLIC_ASSERT(ymax != nullptr);
 
-  using BoundingBoxType = bounding_box_t<FloatType, NDIMS>;
-  using TraversalPredicates = lbvh::TraversalPredicates<NDIMS, FloatType>;
+  using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
   using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
 
   // STEP 1: Grab BVH pointers
-  const internal::vec4_t<FloatType>* inner_nodes = m_bvh.m_inner_nodes;
+  const BoundingBoxType* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* inner_node_children = m_bvh.m_inner_node_children;
   const int32* leaf_nodes = m_bvh.m_leaf_nodes;
   SLIC_ASSERT(inner_nodes != nullptr);
+  SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
   // STEP 2: define traversal predicates
-  BVH_PREDICATE(leftPredicate,
-                const BoundingBoxType& b,
-                const internal::vec4_t<FloatType>& s1,
-                const internal::vec4_t<FloatType>& s2)
+  BVH_PREDICATE(predicate, const BoundingBoxType& bb1, const BoundingBoxType& bb2)
   {
-    return TraversalPredicates::boundingBoxIntersectsLeftBin(b, s1, s2);
-  };
-
-  BVH_PREDICATE(rightPredicate,
-                const BoundingBoxType& b,
-                const internal::vec4_t<FloatType>& s2,
-                const internal::vec4_t<FloatType>& s3)
-  {
-    return TraversalPredicates::boundingBoxIntersectsRightBin(b, s2, s3);
+    return bb1.intersectsWith(bb2);
   };
 
   // STEP 3: get counts
   int total_count = 0;
   AXOM_PERF_MARK_SECTION(
     "PASS[1]:count_traversal",
-    total_count = bvh_get_boxcounts<NDIMS, ExecSpace>(leftPredicate,
-                                                      rightPredicate,
+    total_count = bvh_get_boxcounts<NDIMS, ExecSpace>(predicate,
                                                       inner_nodes,
+                                                      inner_node_children,
                                                       leaf_nodes,
                                                       numBoxes,
                                                       counts,
@@ -732,10 +703,10 @@ void BVH<NDIMS, ExecSpace, FloatType>::findBoundingBoxes(IndexType* offsets,
         };
 
         lbvh::bvh_traverse(inner_nodes,
+                           inner_node_children,
                            leaf_nodes,
                            box,
-                           leftPredicate,
-                           rightPredicate,
+                           predicate,
                            leafAction);
       }););
 }
@@ -764,6 +735,7 @@ void BVH<NDIMS, ExecSpace, FloatType>::writeVtkFile(const std::string& fileName)
   // STEP 2: traverse the BVH and dump each bin
   constexpr int32 ROOT = 0;
   lbvh::write_recursive<FloatType, NDIMS>(m_bvh.m_inner_nodes,
+                                          m_bvh.m_inner_node_children,
                                           ROOT,
                                           1,
                                           numPoints,

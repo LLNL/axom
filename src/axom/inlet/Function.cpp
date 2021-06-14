@@ -30,7 +30,7 @@ bool Function::isRequired() const
   return checkFlag(*m_sidreGroup, *m_sidreRootGroup, detail::REQUIRED_FLAG);
 }
 
-Function& Function::registerVerifier(std::function<bool(const Function&)> lambda)
+Function& Function::registerVerifier(Verifier lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Function "
@@ -47,7 +47,7 @@ bool Function::verify(std::vector<VerificationError>* errors) const
   bool verified =
     verifyRequired(*m_sidreGroup, this_function_exists, "Function", errors);
   // Verify this Function if a lambda was configured
-  if(this_function_exists && m_verifier && !m_verifier(*this))
+  if(this_function_exists && m_verifier && !m_verifier(*this, errors))
   {
     verified = false;
     const std::string msg =

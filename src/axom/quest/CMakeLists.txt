@@ -28,6 +28,11 @@ set( quest_headers
 
     ## In/out query
     InOutOctree.hpp
+    detail/inout/BlockData.hpp
+    detail/inout/MeshWrapper.hpp
+    detail/inout/InOutOctreeMeshDumper.hpp
+    detail/inout/InOutOctreeStats.hpp
+    detail/inout/InOutOctreeValidator.hpp
 
     # Mesh tester headers
     MeshTester.hpp
@@ -36,7 +41,7 @@ set( quest_headers
     PointInCell.hpp
     detail/PointFinder.hpp
     detail/PointInCellMeshWrapper_mfem.hpp
-    
+
     ## STL library headers
     stl/STLReader.hpp
 
@@ -46,7 +51,7 @@ set( quest_headers
 
     interface/inout.hpp
     interface/signed_distance.hpp
-    
+
     )
 
 set( quest_sources
@@ -68,7 +73,7 @@ set( quest_sources
 
     ## quest interface sources
     interface/internal/QuestHelpers.cpp
-    
+
     interface/inout.cpp
     interface/signed_distance.cpp
 

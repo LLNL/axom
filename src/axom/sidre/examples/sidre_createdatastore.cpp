@@ -66,6 +66,7 @@
  */
 
 // Axom headers
+#include "axom/core.hpp"
 #include "axom/sidre.hpp"
 
 // Conduit headers
@@ -192,12 +193,12 @@ void access_datastore(DataStore* ds)
   // _first_example_access_end
 
   // Deal with unused variables
-  AXOM_DEBUG_VAR(cycle);
-  AXOM_DEBUG_VAR(time);
-  AXOM_DEBUG_VAR(name);
-  AXOM_DEBUG_VAR(y);
-  AXOM_DEBUG_VAR(temp);
-  AXOM_DEBUG_VAR(region);
+  AXOM_UNUSED_VAR(cycle);
+  AXOM_UNUSED_VAR(time);
+  AXOM_UNUSED_VAR(name);
+  AXOM_UNUSED_VAR(y);
+  AXOM_UNUSED_VAR(temp);
+  AXOM_UNUSED_VAR(region);
 }
 
 DataStore* create_tiny_datastore()
@@ -343,7 +344,7 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
   // _blueprint_restructure_topo_end
 
   // Deal with unused variable
-  AXOM_DEBUG_VAR(ds);
+  AXOM_UNUSED_VAR(ds);
 }
 
 void setup_blueprint_fields(DataStore* ds, Group* fields)
@@ -718,8 +719,8 @@ void serial_save_datastore_and_load_copy_lower(DataStore* ds)
 int main(int argc, char** argv)
 {
   // Deal with unused variables
-  AXOM_DEBUG_VAR(argc);
-  AXOM_DEBUG_VAR(argv);
+  AXOM_UNUSED_VAR(argc);
+  AXOM_UNUSED_VAR(argv);
 
   int region[3375];
 

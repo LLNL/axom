@@ -32,6 +32,7 @@
 #ifndef SLAM_POLICIES_INDIRECTION_H_
 #define SLAM_POLICIES_INDIRECTION_H_
 
+#include "axom/core/Macros.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 namespace axom
@@ -202,7 +203,7 @@ bool ArrayIndirection<PosType, ElemType>::isValid(PosType size,
                                                   PosType stride,
                                                   bool verboseOutput) const
 {
-  AXOM_DEBUG_VAR(verboseOutput);
+  AXOM_UNUSED_VAR(verboseOutput);
 
   // set of zero size is always valid
   if(size == 0) return true;
@@ -253,7 +254,7 @@ bool STLVectorIndirection<PosType, ElemType>::isValid(PosType size,
                                                       PosType stride,
                                                       bool verboseOutput) const
 {
-  AXOM_DEBUG_VAR(verboseOutput);
+  AXOM_UNUSED_VAR(verboseOutput);
 
   // always valid if set has zero size, even if indirection buffer is null
   if(size == 0) return true;

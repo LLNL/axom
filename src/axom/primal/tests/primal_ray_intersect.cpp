@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
 #include "axom/core/numerics/Matrix.hpp"     // for numerics::Matrix
