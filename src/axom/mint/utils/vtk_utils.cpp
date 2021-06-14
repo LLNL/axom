@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/Macros.hpp"  // for AXOM_DEBUG_VAR
+#include "axom/core/Macros.hpp"
 
 #include "axom/mint/utils/vtk_utils.hpp"  // file header
 
@@ -24,10 +24,10 @@
 
 #include "axom/slic/interface/slic.hpp"  // for slic macros
 
+#include "fmt/fmt.hpp"
+
 // C/C++ includes
 #include <fstream>  // for std::ofstream
-#include <iomanip>  // for std::setfill, std::setw
-#include <limits>   // for std::numeric_limits
 #include <string>   // for std::string
 
 namespace axom
@@ -98,13 +98,13 @@ void write_points(const Mesh* mesh, std::ofstream& file)
   const double* z =
     (mesh_dim > 2) ? mesh->getCoordinateArray(Z_COORDINATE) : nullptr;
 
-  file << "POINTS " << num_nodes << " double\n";
+  fmt::print(file, "POINTS {} double\n", num_nodes);
   for(IndexType nodeIdx = 0; nodeIdx < num_nodes; ++nodeIdx)
   {
     double xx = x[nodeIdx];
     double yy = (y != nullptr) ? y[nodeIdx] : 0.0;
     double zz = (z != nullptr) ? z[nodeIdx] : 0.0;
-    file << xx << " " << yy << " " << zz << std::endl;
+    fmt::print(file, "{} {} {}\n", xx, yy, zz);
   }
 }
 
@@ -125,7 +125,7 @@ void write_cells(const Mesh* mesh, std::ofstream& file)
   int max_cell_nodes = get_max_cell_nodes(mesh, total_size);
   total_size += num_cells;
 
-  file << "CELLS " << num_cells << " " << total_size << std::endl;
+  fmt::print(file, "CELLS {} {}\n", num_cells, total_size);
 
   /* Write out the mesh cell connectivity. */
   IndexType* cell_nodes = new IndexType[max_cell_nodes];
@@ -134,22 +134,20 @@ void write_cells(const Mesh* mesh, std::ofstream& file)
     const int num_cell_nodes = mesh->getNumberOfCellNodes(cellIdx);
     mesh->getCellNodeIDs(cellIdx, cell_nodes);
 
-    file << num_cell_nodes;
-    for(int i = 0; i < num_cell_nodes; ++i)
-    {
-      file << " " << cell_nodes[i];
-    }
-    file << std::endl;
+    fmt::print(file,
+               "{} {}\n",
+               num_cell_nodes,
+               fmt::join(cell_nodes, cell_nodes + num_cell_nodes, " "));
   }
 
   delete[] cell_nodes;
 
   /* Write out the mesh cell types. */
-  file << "CELL_TYPES " << num_cells << std::endl;
+  fmt::print(file, "CELL_TYPES {}\n", num_cells);
   for(IndexType cellIdx = 0; cellIdx < num_cells; ++cellIdx)
   {
     CellType cell_type = mesh->getCellType(cellIdx);
-    file << getCellInfo(cell_type).vtk_type << std::endl;
+    fmt::print(file, "{}\n", getCellInfo(cell_type).vtk_type);
   }
 }
 
@@ -167,20 +165,25 @@ void write_dimensions(const StructuredMesh* mesh, std::ofstream& file)
   const int ndims = mesh->getDimension();
   SLIC_ASSERT(1 <= ndims && ndims <= 3);
 
-  file << "DIMENSIONS ";
+  fmt::print(file, "DIMENSIONS ");
   if(ndims == 1)
   {
-    file << mesh->getNodeResolution(0) << " 1 1" << std::endl;
+    fmt::print(file, "{} 1 1\n", mesh->getNodeResolution(0));
   }
   else if(ndims == 2)
   {
-    file << mesh->getNodeResolution(0) << " " << mesh->getNodeResolution(1)
-         << " 1" << std::endl;
+    fmt::print(file,
+               "{} {} 1\n",
+               mesh->getNodeResolution(0),
+               mesh->getNodeResolution(1));
   }
   else
   {
-    file << mesh->getNodeResolution(0) << " " << mesh->getNodeResolution(1)
-         << " " << mesh->getNodeResolution(2) << std::endl;
+    fmt::print(file,
+               "{} {} {}\n",
+               mesh->getNodeResolution(0),
+               mesh->getNodeResolution(1),
+               mesh->getNodeResolution(2));
   }
 }
 
@@ -197,25 +200,24 @@ void write_rectilinear_mesh(const RectilinearMesh* mesh, std::ofstream& file)
 
   write_dimensions(mesh, file);
 
-  std::string coord_names[3] = {"X_COORDINATES ",
-                                "Y_COORDINATES ",
-                                "Z_COORDINATES "};
+  std::string coord_names[3] = {"X_COORDINATES",
+                                "Y_COORDINATES",
+                                "Z_COORDINATES"};
 
   for(int dim = 0; dim < mesh->getDimension(); ++dim)
   {
-    file << coord_names[dim] << mesh->getNodeResolution(dim) << " double\n";
+    fmt::print(file,
+               "{} {} double\n",
+               coord_names[dim],
+               mesh->getNodeResolution(dim));
     const double* coords = mesh->getCoordinateArray(dim);
-    file << coords[0];
-    for(int64 i = 1; i < mesh->getNodeResolution(dim); ++i)
-    {
-      file << " " << coords[i];
-    }
-    file << std::endl;
+    fmt::print(file,
+               "{}\n",
+               fmt::join(coords, coords + mesh->getNodeResolution(dim), " "));
   }
   for(int dim = mesh->getDimension(); dim < 3; ++dim)
   {
-    file << coord_names[dim] << "1 double\n";
-    file << 0.0 << std::endl;
+    fmt::print(file, "{} 1 double\n0.0\n", coord_names[dim]);
   }
 }
 
@@ -233,12 +235,10 @@ void write_uniform_mesh(const UniformMesh* mesh, std::ofstream& file)
   write_dimensions(mesh, file);
 
   const double* temp = mesh->getOrigin();
-  file << "ORIGIN ";
-  file << temp[0] << " " << temp[1] << " " << temp[2] << std::endl;
+  fmt::print(file, "ORIGIN {} {} {}\n", temp[0], temp[1], temp[2]);
 
   temp = mesh->getSpacing();
-  file << "SPACING ";
-  file << temp[0] << " " << temp[1] << " " << temp[2] << std::endl;
+  fmt::print(file, "SPACING {} {} {}\n", temp[0], temp[1], temp[2]);
 }
 
 /*!
@@ -255,32 +255,26 @@ void write_scalar_data(const Field* field, std::ofstream& file)
   SLIC_ASSERT(field->getNumComponents() == 1);
   const IndexType num_values = field->getNumTuples();
 
-  file << "SCALARS " << field->getName() << " ";
+  fmt::print(file, "SCALARS {} ", field->getName());
   if(field->getType() == DOUBLE_FIELD_TYPE)
   {
-    file << "double\n";
-    file << "LOOKUP_TABLE default\n";
+    fmt::print(file, "double\n");
+    fmt::print(file, "LOOKUP_TABLE default\n");
 
     const double* data_ptr = Field::getDataPtr<double>(field);
     SLIC_ASSERT(data_ptr != nullptr);
 
-    for(IndexType i = 0; i < num_values; ++i)
-    {
-      file << data_ptr[i] << std::endl;
-    }
+    fmt::print(file, "{}\n", fmt::join(data_ptr, data_ptr + num_values, "\n"));
   }
   else if(field->getType() == INT32_FIELD_TYPE)
   {
-    file << "int\n";
-    file << "LOOKUP_TABLE default\n";
+    fmt::print(file, "int\n");
+    fmt::print(file, "LOOKUP_TABLE default\n");
 
     const int* data_ptr = Field::getDataPtr<int>(field);
     SLIC_ASSERT(data_ptr != nullptr);
 
-    for(IndexType i = 0; i < num_values; ++i)
-    {
-      file << data_ptr[i] << std::endl;
-    }
+    fmt::print(file, "{}\n", fmt::join(data_ptr, data_ptr + num_values, "\n"));
   }
 }
 
@@ -299,46 +293,56 @@ void write_vector_data(const Field* field, std::ofstream& file)
   const IndexType num_values = field->getNumTuples();
   SLIC_ASSERT(num_components == 2 || num_components == 3);
 
-  file << "VECTORS " << field->getName() << " ";
+  fmt::print(file, "VECTORS {} ", field->getName());
   if(field->getType() == DOUBLE_FIELD_TYPE)
   {
-    file << "double\n";
+    fmt::print(file, "double\n");
 
     const double* data_ptr = Field::getDataPtr<double>(field);
     SLIC_ASSERT(data_ptr != nullptr);
 
     for(IndexType i = 0; i < num_values; ++i)
     {
-      file << data_ptr[num_components * i + 0] << " ";
-      file << data_ptr[num_components * i + 1] << " ";
       if(num_components == 2)
       {
-        file << 0.0 << std::endl;
+        fmt::print(file,
+                   "{} {} 0.0\n",
+                   data_ptr[num_components * i + 0],
+                   data_ptr[num_components * i + 1]);
       }
       else
       {
-        file << data_ptr[num_components * i + 2] << std::endl;
+        fmt::print(file,
+                   "{} {} {}\n",
+                   data_ptr[num_components * i + 0],
+                   data_ptr[num_components * i + 1],
+                   data_ptr[num_components * i + 2]);
       }
     }
   }
   else if(field->getType() == INT32_FIELD_TYPE)
   {
-    file << "int\n";
+    fmt::print(file, "int\n");
 
     const int* data_ptr = Field::getDataPtr<int>(field);
     SLIC_ASSERT(data_ptr != nullptr);
 
     for(IndexType i = 0; i < num_values; ++i)
     {
-      file << data_ptr[num_components * i + 0] << " ";
-      file << data_ptr[num_components * i + 1] << " ";
       if(num_components == 2)
       {
-        file << 0 << std::endl;
+        fmt::print(file,
+                   "{} {} 0\n",
+                   data_ptr[num_components * i + 0],
+                   data_ptr[num_components * i + 1]);
       }
       else
       {
-        file << data_ptr[num_components * i + 2] << std::endl;
+        fmt::print(file,
+                   "{} {} {}\n",
+                   data_ptr[num_components * i + 0],
+                   data_ptr[num_components * i + 1],
+                   data_ptr[num_components * i + 2]);
       }
     }
   }
@@ -364,17 +368,15 @@ void write_multidim_data(const Field* field, std::ofstream& file)
   {
     for(int cur_comp = 0; cur_comp < num_components; ++cur_comp)
     {
-      file << "SCALARS " << field->getName() << "_";
-      file << std::setfill('0') << std::setw(3) << cur_comp;
-      file << " double\n";
-      file << "LOOKUP_TABLE default\n";
+      fmt::print(file, "SCALARS {}_{:0>3} double\n", field->getName(), cur_comp);
+      fmt::print(file, "LOOKUP_TABLE default\n");
 
       const double* data_ptr = Field::getDataPtr<double>(field);
       SLIC_ASSERT(data_ptr != nullptr);
 
       for(IndexType i = 0; i < num_values; ++i)
       {
-        file << data_ptr[num_components * i + cur_comp] << std::endl;
+        fmt::print(file, "{}\n", data_ptr[num_components * i + cur_comp]);
       }
     }
   }
@@ -382,17 +384,15 @@ void write_multidim_data(const Field* field, std::ofstream& file)
   {
     for(int cur_comp = 0; cur_comp < num_components; ++cur_comp)
     {
-      file << "SCALARS " << field->getName() << "_";
-      file << std::setfill('0') << std::setw(3) << cur_comp;
-      file << " int\n";
-      file << "LOOKUP_TABLE default\n";
+      fmt::print(file, "SCALARS {}_{:0>3} int\n", field->getName(), cur_comp);
+      fmt::print(file, "LOOKUP_TABLE default\n");
 
       const int* data_ptr = Field::getDataPtr<int>(field);
       SLIC_ASSERT(data_ptr != nullptr);
 
       for(IndexType i = 0; i < num_values; ++i)
       {
-        file << data_ptr[num_components * i + cur_comp] << std::endl;
+        fmt::print(file, "{}\n", data_ptr[num_components * i + cur_comp]);
       }
     }
   }
@@ -455,13 +455,6 @@ int write_vtk(const Mesh* mesh, const std::string& file_path)
     return -1;
   }
 
-  file.setf(file.scientific);
-#if __cplusplus >= 201103L
-  file.precision(std::numeric_limits<double>::max_digits10);
-#else
-  file.precision(std::numeric_limits<double>::digits10 + 2);
-#endif
-
   /* Write the VTK header */
   file << "# vtk DataFile Version 3.0\n";
   file << "Mesh generated by axom::mint::write_vtk\n";
@@ -507,7 +500,7 @@ int write_vtk(const Mesh* mesh, const std::string& file_path)
   const FieldData* node_data = mesh->getFieldData(mint::NODE_CENTERED);
   if(node_data->getNumFields() > 0)
   {
-    file << "POINT_DATA " << num_nodes << std::endl;
+    fmt::print(file, "POINT_DATA {}\n", num_nodes);
     internal::write_data(node_data, num_nodes, file);
   }
 
@@ -518,7 +511,7 @@ int write_vtk(const Mesh* mesh, const std::string& file_path)
     const FieldData* cell_data = mesh->getFieldData(mint::CELL_CENTERED);
     if(cell_data->getNumFields() > 0)
     {
-      file << "CELL_DATA " << num_cells << std::endl;
+      fmt::print(file, "CELL_DATA {}\n", num_cells);
       internal::write_data(cell_data, num_cells, file);
     }
   }
@@ -542,13 +535,6 @@ int write_vtk(mint::FiniteElement& fe, const std::string& file_path)
     return -1;
   }
 
-  ofs.setf(ofs.scientific);
-#if __cplusplus >= 201103L
-  ofs.precision(std::numeric_limits<double>::max_digits10);
-#else
-  ofs.precision(std::numeric_limits<double>::digits10 + 2);
-#endif
-
   const bool zero_copy = true;
   const CellType cell_type = fe.getCellType();
   const int ndims = fe.getPhysicalDimension();
@@ -570,7 +556,7 @@ int write_vtk(mint::FiniteElement& fe, const std::string& file_path)
     const double y = (ndims > 1) ? pt[1] : 0.0;
     const double z = (ndims > 2) ? pt[2] : 0.0;
 
-    ofs << x << " " << y << " " << z << std::endl;
+    fmt::print(ofs, "{} {} {}\n", x, y, z);
 
   }  // END for all nodes
 

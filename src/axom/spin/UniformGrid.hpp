@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef UNIFORMGRID_HPP_
-#define UNIFORMGRID_HPP_
+#ifndef AXOM_SPIN_UNIFORMGRID_HPP_
+#define AXOM_SPIN_UNIFORMGRID_HPP_
 
 #include "axom/core/utilities/Utilities.hpp"
 
@@ -468,7 +468,7 @@ typename UniformGrid<T, NDIMS>::GridCell UniformGrid<T, NDIMS>::getClampedGridCe
   return cell;
 }
 
-} /* end namespace spin */
-} /* end namespace axom */
+}  // end namespace spin
+}  // end namespace axom
 
-#endif /* UNIFORMGRID_HPP_ */
+#endif  // AXOM_SPIN_UNIFORMGRID_HPP_

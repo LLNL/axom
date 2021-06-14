@@ -9,8 +9,8 @@
  * \brief Helper functions for the primal clipping operators
  */
 
-#ifndef PRIMAL_CLIPPING_IMPL_HPP_
-#define PRIMAL_CLIPPING_IMPL_HPP_
+#ifndef AXOM_PRIMAL_CLIP_IMPL_HPP_
+#define AXOM_PRIMAL_CLIP_IMPL_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
@@ -190,4 +190,4 @@ void clipAxisPlane(const Polygon<T, NDIMS>* prevPoly,
 }  // namespace primal
 }  // namespace axom
 
-#endif  // PRIMAL_CLIPPING_IMPL_HPP_
+#endif  // AXOM_PRIMAL_CLIP_IMPL_HPP_

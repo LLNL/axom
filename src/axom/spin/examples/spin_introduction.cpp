@@ -706,13 +706,15 @@ void driveOctree()
     leafBlock = octree.findLeafBlock(queryPt);
   }
   // _octree_end
+
+  AXOM_UNUSED_VAR(leafBB);
 }
 
 int main(int argc, char** argv)
 {
   // Deal with unused variables
-  AXOM_DEBUG_VAR(argc);
-  AXOM_DEBUG_VAR(argv);
+  AXOM_UNUSED_VAR(argc);
+  AXOM_UNUSED_VAR(argv);
 
   demoRectangularLattice();
   demoMorton();

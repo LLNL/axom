@@ -12,6 +12,7 @@
   #include "conduit_relay_io_hdf5.hpp"
 #endif
 
+#include "axom/core/Macros.hpp"
 #include "axom/core/Path.hpp"
 
 // Sidre headers
@@ -1572,7 +1573,7 @@ void Group::loadExternalData(const std::string& path)
   // output file
   conduit::relay::io::hdf5_read(path + ":sidre/external", n);
 #else
-  AXOM_DEBUG_VAR(path);  // Gets rid of warning about unused variable
+  AXOM_UNUSED_VAR(path);
   SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
                << "External data not loaded. "
                << "This function requires hdf5 support. "
@@ -2701,7 +2702,7 @@ bool Group::rename(const std::string& new_name)
           m_name = new_name;
 
           Group* attached_group = parent->attachGroup(detached_group);
-          AXOM_DEBUG_VAR(attached_group);
+          AXOM_UNUSED_VAR(attached_group);
           SLIC_CHECK_MSG(attached_group == this,
                          SIDRE_GROUP_LOG_PREPEND
                            << "Group attached to parent '"

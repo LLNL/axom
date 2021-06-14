@@ -27,15 +27,15 @@ tasks to be done when adding a new software component to Axom. These include:
 Component Directory Structure
 ====================================
 
-In the `axom/src/components` directory, you will find a subdirectory for
+In the `axom/src/axom` directory, you will find a subdirectory for
 each Axom component. For example::
 
-  $ cd axom/src/components
+  $ cd axom/src/axom
   $ ls -1
   CMakeLists.txt
-  axom_utils
+  core
+  inlet
   lumberjack
-  mint
   ...
 
 All files for each component are contained in subdirectories in the
@@ -43,12 +43,12 @@ component directory.
 
 To illustrate, consider the *sidre* component directory::
 
-  $ cd axom/src/components/sidre
+  $ cd axom/src/axom/sidre
   $ ls -1 -F
   CMakeLists.txt
+  core/
   docs/
   examples/
-  src/
   tests/
 
 Note that, besides directories, the top-level component directory contains
@@ -56,6 +56,11 @@ a few files:
 
 * **CMakeLists.txt** contains CMake information for the component in the Axom build system.
     
+Components are free to organize their header and source files in whatever 
+manner makes sense. For example, in *sidre*, these core header and source files
+are in a subdirectory called `core`. As is common practice for C++ libraries, 
+associated  header and source files are co-located in the same directories. 
+
 The **docs** directory contains the component documentation. Subdirectories in 
 the docs directory are named for each type of documentation. The directories 
 `doxygen` and `sphinx` are required. Each Axom component uses *Doxygen* for 
@@ -63,13 +68,6 @@ source code documentation and *Sphinx* for user documentation. Other
 documentation directories can be used as needed. For example, *sidre* also 
 contains documentation directories `dot` for dot-generated figures, and 
 `design` for design documents.
-
-The **src** directory contains all header and source files for the component.
-These files, which are typically C++, can be organized in subdirectories
-within the `src` directory in whatever manner makes sense. For example, in 
-*sidre*, these core header and source files are in a subdirectory called 
-`core`. As is common practice for C++ libraries, associated  header and 
-source files are co-located in the same directories. 
 
 The **interface** directory contains interface files for use by languages 
 other than C++. To make it easy for applications written in C and
@@ -85,7 +83,7 @@ An **examples** directory is optional, but recommended. It contains simple
 code examples illustrating component usage.
 
 .. important:: For consistency, these subdirectory names within the top-level 
-               component directory should be the same for each Axom components. 
+               component directory should be the same for each Axom component. 
 
 ====================================
 CMake Files and Variables
@@ -382,6 +380,5 @@ We have a useful discussion of our Doxygen usage conventions in the
 The `Doxygen Manual <http://www.doxygen.nl/manual/>`_ contains
 a lot more details.
 
-**Fill in more details when we have a better handle on how we want to organize 
-our doxygen stuff...**
-
+`Axom's code documentation <https://axom.readthedocs.io/en/develop/doxygen/html>`_ 
+is published along with our `user documentation. <https://axom.readthedocs.io>`_

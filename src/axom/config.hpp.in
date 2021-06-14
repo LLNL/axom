@@ -59,6 +59,7 @@
 /*
  * Compiler defines for libraries (built-in and third party)
  */
+#cmakedefine AXOM_USE_C2C
 #cmakedefine AXOM_USE_CLI11
 #cmakedefine AXOM_USE_CONDUIT
 #cmakedefine AXOM_USE_CUDA

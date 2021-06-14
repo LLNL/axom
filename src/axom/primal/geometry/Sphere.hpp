@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef PRIMAL_SPHERE_HPP_
-#define PRIMAL_SPHERE_HPP_
+#ifndef AXOM_PRIMAL_SPHERE_HPP_
+#define AXOM_PRIMAL_SPHERE_HPP_
 
 #include "axom/core/Macros.hpp"  // for AXOM macros
 
@@ -282,7 +282,7 @@ std::ostream& operator<<(std::ostream& os, const Sphere<T, NDIMS>& s)
   return (s.print(os));
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* PRIMAL_SPHERE_HPP_ */
+#endif  // AXOM_PRIMAL_SPHERE_HPP_

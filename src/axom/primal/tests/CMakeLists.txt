@@ -23,6 +23,7 @@ set( primal_tests
     primal_point.cpp
     primal_ray_intersect.cpp
     primal_bounding_box_intersect.cpp
+    primal_segment.cpp
     primal_sphere.cpp
     primal_squared_distance.cpp
     primal_tetrahedron.cpp
