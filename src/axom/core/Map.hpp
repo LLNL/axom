@@ -25,9 +25,13 @@ namespace axom_map
   /// \name Map Supporting Data Structures
   /// @{
   /*!
+   * \class Node
+   * 
    * \brief Node is the foundational data type of the Map, being the lowest-level data storage unit,
    *  with the key and value data for a given item, along with a next value for the linked list.
    *
+   * \tparam Key the type of key for the key-value pair stored within the Node instance.
+   * \tparam T the type of value for the key-value pair stored within the Node instance.
    */  
   template <typename Key, typename T>
   struct Node{
@@ -40,7 +44,15 @@ namespace axom_map
             
     }; 
 
-  
+  /*!
+   * \class Pair
+   * 
+   * \brief Pair is strictly for returning from insert, to match the pair-returning setup of STL 
+   *  unordered_map.
+   * 
+   * \tparam Key the type of key stored in the associated Node.
+   * \tparam T the type of value stored in the associated Node.
+   */   
   template <typename Key, typename T>
   struct Pair{
     axom_map::Node<Key, T> * first;
@@ -49,12 +61,34 @@ namespace axom_map
     Pair(axom_map::Node<Key, T> * node, bool status) : first(node), second(status) {}
   };
  
+  /*!
+   * \class Bucket
+   *
+   * \brief Bucket is the implementation of a bucket for this Map with chaining. It's a singly-linked
+   * list, and supports search, insertion, and removal.
+   *
+   * \tparam Key the type of the keys stored in each Node in the list.
+   * \tparapm T the type of the values stored in each Node in the list.
+   */ 
   template <typename Key, typename T>   
   class Bucket{
   public:
-
+  
+    /// \name Bucket Construction
+    ///@{
+    /*!
+     * \brief Default constructor so new Buckets just construct into nothing. 
+     *  Can likely just be removed. 
+     */  
     Bucket(){}    
 
+    /*!
+     * \brief Basic constructor, creates singly-linked list with provided size. 
+     *
+     * \param [in] len the number of items this Bucket instance needs to be able to store.
+     *
+     * \pre len > 0
+     */  
     Bucket(int len){
       m_list = axom::allocate <axom_map::Node<Key, T> > (len);
       for(int i = 0; i < len-1; i++){
@@ -70,6 +104,14 @@ namespace axom_map
       m_end.next = -2;
     }
    
+    /*!
+     * \brief If a Bucket instance is created with the default contructor, this
+     *  is used to initialize and allocate all the member variables. 
+     *
+     * \param [in] len the number of items this Bucket instance needs to be able to store.
+     *
+     * \pre len > 0
+     */  
     void init(int len){
       m_list = axom::allocate <axom_map::Node<Key, T> > (len);
       for(int i = 0; i < len-1; i++){
@@ -84,7 +126,22 @@ namespace axom_map
       m_end.value = T{0};
       m_end.next = -2;
     }
-
+    /// @}
+    /// \name Bucket Methods
+    /// @{
+    /*!
+     * \brief Inserts a given key-value pair into the linked list if an item with 
+     *  given key does not already exist. Fails if list is full or item with given key
+     *  already exists.
+     *
+     * \param [in] key the key of the key-value pair to be inserted.
+     * \param [in] value the value of the key-valure pair to be inserted.
+     *
+     * \return Returns a Pair object, with the first element being a pointer to the inserted node
+     *  and the second element being boolean value true if successful. If insertion fails,
+     *  the bool is set to False, and the node pointed to is the end node if the list was full,
+     *  or the item occupying the queried slot if an item with the given key already existed.
+     */
     axom_map::Pair<Key, T> insert_no_update(Key key, T value){
       if(m_free != -1){
         IndexType ind = m_head;
@@ -99,8 +156,7 @@ namespace axom_map
         }
         else{
           while(m_list[ind].next != -1){
-            if(m_list[ind].key == key){
-              //change to third value in final version
+            if(m_list[ind].key == key){           
               axom_map::Pair<Key, T> ret(&(m_list[ind]), false);
               return ret;
             }
@@ -119,45 +175,18 @@ namespace axom_map
       }
       axom_map::Pair<Key, T> ret(&(m_end), false);
       return ret;
-    }
+    } 
   
-   /*bool insert_update(Key key, T value){
-     if(free != -1){
-        if(head == -1){
-          head = free;
-          free = list[free].next;
-          list[head].next = -1;
-          list[head].key = key;
-          list[head].value = value;
-        }
-        else{
-          IndexType ind = head;
-          while(list[ind].next != -1){
-            if(list[ind].key == key){
-              //change to third value in final version
-              list[ind].value = value;
-              return true;
-            }
-            ind = list[ind].next;
-          }
-      
-          list[ind].next = free;
-          ind = free;
-          free = list[free].next;
-          list[ind].next = -1;
-          list[ind].key = key;
-          list[ind].value = value;
-          size++;
-        }
-        return true;
-      }
-      return false;
-
-   }*/
-  
+    /*!
+     * \brief Removes item with the given key from the linked list, if item exists. Relinks accordingly.
+     *
+     * \param [in] key the key of the item to be found and removed.
+     *
+     * \return Returns true if item was found and removed, false otherwise. 
+     *  
+     */ 
     bool remove(Key key){
      if(m_head == -1){
-       //add third state for final impl
        return false;
      }   
      IndexType ind = m_head;
@@ -179,11 +208,15 @@ namespace axom_map
      return false;
    }
 
-        
-
-
-   //Pair may be better than a status flag argument. 
-   //This is very C.
+   
+   /*!
+    * \brief Returns pointer to node containing key-value pair matching provided key, if possible.
+    *
+    * \param [in] key the key of the item to be searched for.
+    *
+    * \return Returns pointer to the requested node if possible, and to special end node otherwise.
+    *
+    */    
    axom_map::Node<Key, T>& find(Key key){
      if(m_head == -1){
        return m_end;
@@ -198,22 +231,24 @@ namespace axom_map
     }while(ind != -1);
     return m_end;
    }
-   
-   void print_all(){
-     if(m_head == -1){
-       return;
-     }
-     IndexType ind = m_head;
-     do{
-       std::cout << m_list[ind].value << std::endl;
-       ind = m_list[ind].next;
-       std::cout << "next step is " << ind << std::endl;
-     }while(ind != -1);
-   }   
-  
+    
+  /*!
+   * \brief Returns maximum number of items that can be stored in this Bucket instance.
+   *
+   * \return Returns maximum number of items that can be stored in this Bucket instance.
+   *
+   */   
   int get_capacity(){ return m_capacity; }
+
+  /*!
+   * \brief Returns current number of items in this Bucket instance.
+   *
+   * \return Returns current number of items in this Bucket instance.
+   */ 
   int get_size(){ return m_size; }   
-       
+  ///@}
+  
+
     axom_map::Node<Key, T> * m_list;   
     axom_map::Node<Key, T> m_end;
     IndexType m_head;
@@ -257,11 +292,14 @@ public:
    * \pre bucket_len > 0
    */
   Map(int num_buckets, int bucket_len=10 ){
-    m_bucket_count = buckets;
+    m_bucket_count = num_buckets;
     m_bucket_len = bucket_len;
     m_buckets = alloc_map(m_bucket_count, m_bucket_len);    
   }
-
+ 
+  ///@}
+  /// \name Map Methods
+  ///@{
   /*!
    * \brief Resizes Map by creating new Map instance and inserting all values
    * from original Map.
@@ -322,7 +360,7 @@ public:
     axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key)); 
     //Candidate to get cut out if branching becomes too much of an issue.
     axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
-    if(ret->second == true){ m_size++; }
+    if(ret.second == true){ m_size++; }
     return ret;
   }
 
@@ -376,9 +414,10 @@ public:
    * \return capacity the overall capacity of the Map instance.
    */  
   int get_capacity() { return m_bucket_len*m_bucket_count; }
-
+  ///@}
 private:
- 
+  /// \name Private Map Methods
+  ///@{
   /*!
    * \brief Memory allocation handler, for Map construction, both at initialization and rehash. Allocates and
    *  initializes linked lists used for data storage, and returns pointer to said array, to be used elsewhere.
