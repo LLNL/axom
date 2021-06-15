@@ -45,10 +45,18 @@ public:
   GeometryOperatorData() = default;
 
   /**
+     * Construct a GeometryOperatorData with no operators.
+     * @param path the path where the operators were defined
+     */
+  explicit GeometryOperatorData(const Path &path);
+
+  /**
      * Construct a GeometryOperatorData for the given list of operators
+     * @param path the path where the operators were defined
      * @param singleOperatorData the data for the individual operators
      */
-  explicit GeometryOperatorData(std::vector<SingleOperatorData> &&singleOperatorData);
+  explicit GeometryOperatorData(const Path &path,
+                                std::vector<SingleOperatorData> &&singleOperatorData);
 
   /**
      * Define the schema for geometry operators
@@ -74,7 +82,14 @@ public:
     const TransformableGeometryProperties &startProperties,
     const NamedOperatorMap &namedOperators) const;
 
+  /**
+   * Get the path of this operator in the source document
+   * @return the operator's path
+   */
+  const Path &getPath() const { return m_path; }
+
 private:
+  Path m_path;
   std::vector<SingleOperatorData> m_singleOperatorData;
 };
 

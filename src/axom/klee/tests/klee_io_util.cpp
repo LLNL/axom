@@ -60,9 +60,10 @@ InletTestData::InletTestData(const std::string &input, DefOp defOp)
   // Typically this would be done by the main parsing functions. Since
   // we're testing small pieces out of context, we need to check here
   // if everything is fine.
-  if(!doc.verify())
+  std::vector<inlet::VerificationError> errors;
+  if(!doc.verify(&errors))
   {
-    throw KleeError("Got bad input");
+    throw KleeError(errors);
   }
 }
 
@@ -84,10 +85,8 @@ TEST(io_util, toDoubleVector)
               ElementsAre(1.0, 2.0));
   EXPECT_THROW(parseDoubleVector("[1, 2]", Dimensions::Three), KleeError)
     << "Wrong length";
-  // TODO Would like to test this, but it results in a crash.
-  // See https://github.com/LLNL/axom/issues/476.
-  // EXPECT_THROW(parseDoubleVector("[a, b]", Dimensions::Three),
-  //          KleeError) << "Wrong type";
+  EXPECT_THROW(parseDoubleVector("[a, b]", Dimensions::Three), KleeError)
+    << "Wrong type";
 }
 
 Dimensions defineAndParseDimension(const char *input)

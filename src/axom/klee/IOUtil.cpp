@@ -23,10 +23,11 @@ std::vector<double> toDoubleVector(inlet::Proxy const &field,
   auto actualSize = values.size();
   if(actualSize != expectedSize)
   {
-    throw KleeError(fmt::format("Wrong size for {}. Expected {}. Got {}.",
-                                fieldName,
-                                expectedSize,
-                                actualSize));
+    throw KleeError({field.name(),
+                     fmt::format("Wrong size for {}. Expected {}. Got {}.",
+                                 fieldName,
+                                 expectedSize,
+                                 actualSize)});
   }
   return values;
 }
@@ -93,7 +94,8 @@ std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
     if(hasStartUnits || hasEndUnits)
     {
       throw KleeError(
-        "Can't specify 'units' with 'start_units' or 'end_units'");
+        {proxy.name(),
+         "Can't specify 'units' with 'start_units' or 'end_units'"});
     }
     auto units = parseLengthUnits(proxy["units"]);
     return std::make_tuple(units, units);
@@ -102,7 +104,8 @@ std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
   {
     if(!(hasStartUnits && hasEndUnits))
     {
-      throw KleeError("Must specify both 'start_units' and 'end_units'");
+      throw KleeError(
+        {proxy.name(), "Must specify both 'start_units' and 'end_units'"});
     }
     auto startUnits = parseLengthUnits(proxy["start_units"]);
     auto endUnits = parseLengthUnits(proxy["end_units"]);
@@ -116,7 +119,7 @@ std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy
   auto units = getOptionalStartAndEndUnits(proxy);
   if(std::get<0>(units) == LengthUnit::unspecified)
   {
-    throw KleeError("Did not specify units");
+    throw KleeError({proxy.name(), "Did not specify units"});
   }
   return units;
 }

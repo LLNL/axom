@@ -7,7 +7,6 @@
 
 #include "axom/core/numerics/matvecops.hpp"
 #include "axom/klee/Units.hpp"
-#include "axom/slic/interface/slic_macros.hpp"
 
 #include <stdexcept>
 
