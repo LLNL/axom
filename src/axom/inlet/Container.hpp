@@ -834,6 +834,16 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief  Return whether a Container or Field with the given name were
+   * provided in the input file
+   *
+   * \param [in] name The path relative to the calling Container to search
+   *****************************************************************************
+   */
+  bool isUserProvided(const std::string& name) const;
+
+  /*!
+   *****************************************************************************
    * \return An unordered map from Field names to the child Field pointers for 
    * this Container.
    *****************************************************************************

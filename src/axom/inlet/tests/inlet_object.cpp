@@ -922,6 +922,7 @@ TYPED_TEST(inlet_object, default_scalar_user_provided)
   auto& field = static_cast<axom::inlet::Field&>(scalar);
   EXPECT_TRUE(field.exists());
   EXPECT_FALSE(field.isUserProvided());
+  EXPECT_FALSE(inlet.isUserProvided("foo"));
 
   // ...but it should still be possible to retrieve the default
   const int foo = inlet["foo"];
@@ -943,6 +944,7 @@ TYPED_TEST(inlet_object, default_struct_field_user_provided)
   // The container itself exists but was not provided by the user
   EXPECT_TRUE(foo_container.exists());
   EXPECT_FALSE(foo_container.isUserProvided());
+  EXPECT_FALSE(inlet.isUserProvided("foo"));
 
   // ...but it should still be possible to retrieve the default
   const Foo expected_foo {true, false};
@@ -965,6 +967,7 @@ TYPED_TEST(inlet_object, default_struct_field_user_provided_reqd)
   // The container itself exists but was not provided by the user
   EXPECT_TRUE(foo_container.exists());
   EXPECT_FALSE(foo_container.isUserProvided());
+  EXPECT_FALSE(inlet.isUserProvided("foo"));
 
   // ...but it should still be possible to retrieve the default
   const Foo expected_foo {true, false};
@@ -990,6 +993,7 @@ TYPED_TEST(inlet_object, default_struct_field_marked_true)
   // The container itself exists and was provided by the user
   EXPECT_TRUE(foo_container.exists());
   EXPECT_TRUE(foo_container.isUserProvided());
+  EXPECT_TRUE(inlet.isUserProvided("foo"));
 
   // ...and it should still be possible to retrieve the full struct
   const Foo expected_foo {true, false};

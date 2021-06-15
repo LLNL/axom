@@ -261,6 +261,18 @@ public:
   }
 
   /*!
+   *****************************************************************************
+   * \brief Return whether a subobject with the given name was provided by the user
+   *
+   * \see Container::isUserProvided
+   *****************************************************************************
+   */
+  bool isUserProvided(const std::string& name) const
+  {
+    return m_globalContainer.isUserProvided(name);
+  }
+
+  /*!
    *******************************************************************************
    * \brief Obtains a proxy view into the datastore.
    * 
