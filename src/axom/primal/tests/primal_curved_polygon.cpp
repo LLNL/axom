@@ -174,6 +174,36 @@ TEST(primal_curvedpolygon, isClosed)
 }
 
 //----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, isClosed_BiGon)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+
+  SLIC_INFO("Test checking if CurvedPolygon is closed for a Bi-Gon");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+  EXPECT_EQ(false, bPolygon.isClosed());
+
+  // Bi-gon defined by a quadratic edge and a straight line
+  std::vector<PointType> CP = {PointType {0.8, .25},
+                               PointType {2.0, .50},
+                               PointType {0.8, .75},
+                               PointType {0.8, .25}};
+  std::vector<int> orders = {2, 1};
+
+  CurvedPolygonType poly = createPolygon(CP, orders);
+  EXPECT_TRUE(poly.isClosed());
+
+  // modify a vertex of the quadratic and check again
+  CurvedPolygonType poly2 = poly;
+  poly2[0][2] = PointType {0.8, 1.0};
+  EXPECT_FALSE(poly2.isClosed());
+}
+
+//----------------------------------------------------------------------------------
 TEST(primal_curvedpolygon, split_edge)
 {
   const int DIM = 2;

@@ -163,39 +163,38 @@ public:
   /*!
    * \brief Check closedness of a CurvedPolygon
    *
-   * Check is that the endpoint of each edge coincides with startpoint of next edge
-   * \return True, if the polygon is closed, False otherwise
+   * A CurvedPolygon is closed when the endpoint of each edge coincides with startpoint of next edge
+   * \return \a true, if the polygon is closed, \a false otherwise
    */
   bool isClosed(double tol = 1e-5) const
   {
-    const int ngon = numEdges();
-    if(ngon <= 2)
+    using axom::utilities::isNearlyEqual;
+
+    const double sq_tol = tol * tol;
+    const int nEdges = numEdges();
+
+    // initial basic check: no edges, or one edge or linear or quadratic order cannot be closed
+    if(nEdges < 1 || (nEdges == 1 && m_edges[0].getOrder() <= 2))
     {
       return false;
     }
-    else
+
+    // foreach edge: check last vertex of current edge against first vertex of next edge
+    for(int i = 1; i < nEdges; ++i)
     {
-      for(int p = 0; p < NDIMS; ++p)
+      const auto ord = m_edges[i - 1].getOrder();
+      const auto& lastPrev = m_edges[i - 1][ord];
+      const auto& firstCur = m_edges[i][0];
+      if(!isNearlyEqual(squared_distance(lastPrev, firstCur), 0., sq_tol))
       {
-        for(int i = 0; i < (ngon - 1); ++i)
-        {
-          if(!axom::utilities::isNearlyEqual(m_edges[i][m_edges[i].getOrder()][p],
-                                             m_edges[i + 1][0][p],
-                                             tol))
-          {
-            return false;
-          }
-        }
-        if(!axom::utilities::isNearlyEqual(
-             m_edges[ngon - 1][m_edges[ngon - 1].getOrder()][p],
-             m_edges[0][0][p],
-             tol))
-        {
-          return false;
-        }
+        return false;
       }
     }
-    return true;
+    // check last edge against first
+    const auto ord = m_edges[nEdges - 1].getOrder();
+    const auto& lastPrev = m_edges[nEdges - 1][ord];
+    const auto& firstCur = m_edges[0][0];
+    return isNearlyEqual(squared_distance(lastPrev, firstCur), 0., sq_tol);
   }
 
   /// \brief Returns the area enclosed by the CurvedPolygon
