@@ -263,10 +263,10 @@ namespace axom_map
 /*!
  * \class Map
  *
- * \brief Provides a hashmap implementation, relying upon chaining.
- *  Simple hashmap for now, future work will use RAJA and Umpire
- *  to allow use of map within kernels. Resembles unordered_map, 
- *  which we can't use due to a lack of host-device decoration.
+ * \brief Provides a hashmap implementation, relying upon chaining to 
+ *  resolve hash collisions. Simple hashmap for now, future work will use 
+ *  RAJA and Umpire to allow use of map within kernels. Resembles 
+ *  unordered_map, which we can't use due to a lack of host-device decoration.
  *
  * \tparam Key the type of keys.
  * \tparam T the type of values to hold.
