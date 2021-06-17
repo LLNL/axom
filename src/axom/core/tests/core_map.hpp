@@ -5,43 +5,40 @@
 
 #include "axom/core/StackArray.hpp" /* for axom::StackArray */
 #include "axom/core/Map.hpp"
-#include "gtest/gtest.h"            /* for TEST and EXPECT_* macros */
+#include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
 #include <string>
 
 namespace axom
 {
-
 namespace internal
 {
-
-template <typename Key, typename T, int N>
-Map <Key, T>  init()
+template <typename Key, typename T>
+experimental::Map<Key, T> init(int N)
 {
-  Map<Key, T> test(N/2, 2);
+  experimental::Map<Key, T> test(N / 2, 2);
   return test;
-
 }
 
-template <typename Key, typename T, int N>
-void  test_storage(Map <Key, T> &test)
+template <typename Key, typename T>
+void test_storage(experimental::Map<Key, T> &test, int N)
 {
-  
   for(int i = 0; i < N; i++)
-    {
-      test.insert(i, i*27-N/2);
-    }
-  
-  for(int i = 0; i < N; i++){
-    EXPECT_EQ(i*27-N/2, test.find(i).value);
+  {
+    test.insert(i, i * 27 - N / 2);
+  }
+
+  for(int i = 0; i < N; i++)
+  {
+    EXPECT_EQ(i * 27 - N / 2, test.find(i).value);
   }
   auto ret = test.insert(N, 900);
   EXPECT_EQ(false, ret.second);
 }
 
-template <typename Key, typename T, int N>
-void  test_remove(Map <Key,T> &test)
-{ 
-  test.remove(13);
+template <typename Key, typename T>
+void test_remove(experimental::Map<Key, T> &test, int N)
+{
+  test.erase(13);
   auto ret = test.find(13);
   EXPECT_EQ(-2, ret.next);
   test.insert(13, 900);
@@ -49,61 +46,58 @@ void  test_remove(Map <Key,T> &test)
   EXPECT_EQ(900, ret.value);
 }
 
-template <typename Key, typename T, int N>
-void test_rehash(Map <Key, T> &test)
+template <typename Key, typename T>
+void test_rehash(experimental::Map<Key, T> &test, int N)
 {
   test.rehash();
-    
-  for(int i = 0; i < N; i++){
-    EXPECT_EQ(i*27-N/2, test.find(i).value);
+
+  for(int i = 0; i < N; i++)
+  {
+    EXPECT_EQ(i * 27 - N / 2, test.find(i).value);
   }
 
-  for(int i = N; i < 2*N; i++)
-    {
-      test.insert(i, i*27-N/2);
-    }
+  for(int i = N; i < 2 * N; i++)
+  {
+    test.insert(i, i * 27 - N / 2);
+  }
 
-  for(int i = 0; i < 2*N; i++){
-    EXPECT_EQ(i*27-N/2, test.find(i).value);
+  for(int i = 0; i < 2 * N; i++)
+  {
+    EXPECT_EQ(i * 27 - N / 2, test.find(i).value);
   }
   auto ret = test.insert(N, 900);
   EXPECT_EQ(false, ret.second);
 }
 
-
-}
+}  // namespace internal
 
 TEST(core_map, initialization)
 {
   constexpr int N = 20; /* Number of values to store */
-  Map <int, int> test = internal::init<int, int, N>();
-
+  experimental::Map<int, int> test = internal::init<int, int>(N);
 }
 
 TEST(core_map, insertion)
 {
   constexpr int N = 20; /* Number of values to store */
-  Map <int, int> test = internal::init<int, int, N>();
-  internal::test_storage<int,int,N>(test);
-
+  experimental::Map<int, int> test = internal::init<int, int>(N);
+  internal::test_storage<int, int>(test, N);
 }
 
 TEST(core_map, removal)
 {
   constexpr int N = 20; /* Number of values to store */
-  Map <int, int> test = internal::init<int, int, N>();
-  internal::test_storage<int, int, N>(test);
-  internal::test_remove<int,int,N>(test);
-
+  experimental::Map<int, int> test = internal::init<int, int>(N);
+  internal::test_storage<int, int>(test, N);
+  internal::test_remove<int, int>(test, N);
 }
 
 TEST(core_map, rehash)
 {
   constexpr int N = 20; /* Number of values to store */
-  Map <int, int> test = internal::init<int, int, N>();
-  internal::test_storage<int, int, N>(test);
-  internal::test_rehash<int, int, N>(test);
-  internal::test_remove<int,int,N>(test);
-
+  experimental::Map<int, int> test = internal::init<int, int>(N);
+  internal::test_storage<int, int>(test, N);
+  internal::test_rehash<int, int>(test, N);
+  internal::test_remove<int, int>(test, N);
 }
 } /* namespace axom */
