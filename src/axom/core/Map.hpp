@@ -19,6 +19,9 @@
 namespace axom
 {
 
+namespace experimental
+{
+
 namespace axom_map
 { 
 
@@ -481,7 +484,7 @@ private:
  
 
 };
-
+} /* namespace experimental */
 } /* namespace axom */
 
 #endif /* AXOM_MAP_HPP_ */
