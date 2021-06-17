@@ -198,9 +198,9 @@ public:
                   IndexType Nk = -1);
 
   AXOM_EXPORT CurvilinearMesh(sidre::Group* group,
-                  IndexType Ni,
-                  IndexType Nj = -1,
-                  IndexType Nk = -1)
+                              IndexType Ni,
+                              IndexType Nj = -1,
+                              IndexType Nk = -1)
     : CurvilinearMesh(group, "", "", Ni, Nj, Nk)
   { }
 
