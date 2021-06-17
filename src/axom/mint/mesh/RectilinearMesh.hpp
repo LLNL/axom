@@ -198,9 +198,9 @@ public:
                   IndexType Nk = -1);
 
   AXOM_EXPORT RectilinearMesh(sidre::Group* group,
-                  IndexType Ni,
-                  IndexType Nj = -1,
-                  IndexType Nk = -1)
+                              IndexType Ni,
+                              IndexType Nj = -1,
+                              IndexType Nk = -1)
     : RectilinearMesh(group, "", "", Ni, Nj, Nk)
   { }
 
