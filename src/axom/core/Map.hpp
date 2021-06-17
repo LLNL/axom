@@ -360,7 +360,7 @@ public:
    *
    */
   axom_map::Pair<Key, T> insert(Key key, T val){
-    axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key)); 
+    axom_map::Bucket<Key,T> * target = &(m_buckets[bucket(get_hash(key))]); 
     //Candidate to get cut out if branching becomes too much of an issue.
     axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
     if(ret.second == true){ m_size++; }
@@ -377,8 +377,8 @@ public:
    *
    * \return A bool value of true if the item was successfully removed, false otherwise. 
    */  
-  bool remove(Key key){
-    axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key));
+  bool erase(Key key){
+    axom_map::Bucket<Key,T> * target = &(m_buckets[bucket(get_hash(key))]);
     //Candidate to get cut out if branching becomes too much of an issue.
     bool ret = target->remove(key);
     if(ret == true){ m_size--;}
@@ -393,30 +393,44 @@ public:
    * \return A reference to the requested item if found, sentinel node end otherwise.
    */  
   axom_map::Node<Key, T>& find(Key key){
-    axom_map::Bucket<Key,T> * target = get_bucket(get_hash(key));
+    axom_map::Bucket<Key,T> * target = &(m_buckets[bucket(get_hash(key))]);
     return target->find(key);
+  }
+
+  /*!
+   * \brief Returns pointer to bucket associated with a 64-bit integer, intended to be the hash 
+   *  of a key.
+   *
+   * \param [in] hash the id of the bucket to be queried.
+   *
+   * \note Likely better off inlined, included here in case of later changes to hash collision resolution method.
+   *
+   * \return A pointer to the queried bucket.
+   */  
+  std::size_t bucket(std::size_t hash){
+    return hash%m_bucket_count;
   }
 
   /*!
    * \brief Returns the maximum number of items per bucket.
    * \return bucket_len the maximum number of items per bucket.
    */ 
-  int get_bucket_size(){ return m_bucket_len; }
+  int bucket_size(){ return m_bucket_len; }
   /*!
    * \brief Returns the number of buckets in the Map.
    * \return bucket_count 
    */  
-  int get_bucket_count(){ return m_bucket_count; }
+  int bucket_count(){ return m_bucket_count; }
   /*!
    * \brief Returns the amount of items in the Map instance.
    * \return size the amount of items in the Map instance.
    */   
-  int get_size() { return m_size; }
+  int size() { return m_size; }
   /*!
    * \brief Returns the overall capacity of the Map instance.
    * \return capacity the overall capacity of the Map instance.
    */  
-  int get_capacity() { return m_bucket_len*m_bucket_count; }
+  int max_size() { return m_bucket_len*m_bucket_count; }
   ///@}
 private:
   /// \name Private Map Methods
@@ -455,19 +469,7 @@ private:
     return hashed;
   }
 
-  /*!
-   * \brief Returns pointer to bucket associated with a 64-bit integer, intended to be the hash 
-   *  of a key.
-   *
-   * \param [in] hash the id of the bucket to be queried.
-   *
-   * \note Likely better off inlined, included here in case of later changes to hash collision resolution method.
-   *
-   * \return A pointer to the queried bucket.
-   */  
-  axom_map::Bucket<Key,T> * get_bucket(std::size_t hash){
-    return &(m_buckets[hash%m_bucket_count]);
-  }
+  
 
   /// @}
   
@@ -475,7 +477,7 @@ private:
   /// @{
   
   axom_map::Bucket<Key,T> *m_buckets; /*!< array of pointers to linked lists containing data */
-  int m_bucket_count; /*!< the number of buckets in the Map instance */
+  std::size_t m_bucket_count; /*!< the number of buckets in the Map instance */
   int m_bucket_len; /*!< the number of items that can be contained in a bucket in this Map instance */
   int m_size; /*!< the number of items currenty stored in this Map instance */
   int m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
