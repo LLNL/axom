@@ -16,7 +16,6 @@
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
-#include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 
 #include "axom/spin/MortonIndex.hpp"
@@ -85,27 +84,18 @@ static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
 }
 
 template <typename ExecSpace, typename FloatType, int NDIMS>
-void transform_boxes(const FloatType* boxes,
+void transform_boxes(const primal::BoundingBox<FloatType, NDIMS>* boxes,
                      primal::BoundingBox<FloatType, NDIMS>* aabbs,
                      int32 size,
                      FloatType scale_factor)
 {
   AXOM_PERF_MARK_FUNCTION("transform_boxes");
 
-  constexpr int STRIDE = 2 * NDIMS;
-
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      primal::BoundingBox<FloatType, NDIMS> aabb;
+      primal::BoundingBox<FloatType, NDIMS> aabb = boxes[i];
 
-      const int32 offset = i * STRIDE;
-
-      primal::Point<FloatType, NDIMS> min_point(boxes + offset);
-      primal::Point<FloatType, NDIMS> max_point(boxes + offset + NDIMS);
-
-      aabb.addPoint(min_point);
-      aabb.addPoint(max_point);
       aabb.scale(scale_factor);
 
       aabbs[i] = aabb;
@@ -609,7 +599,7 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
-void build_radix_tree(const FloatType* boxes,
+void build_radix_tree(const primal::BoundingBox<FloatType, NDIMS>* boxes,
                       int size,
                       primal::BoundingBox<FloatType, NDIMS>& bounds,
                       RadixTree<FloatType, NDIMS>& radix_tree,

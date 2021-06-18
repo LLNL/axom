@@ -13,6 +13,8 @@
 
 #include "axom/core/execution/execution_space.hpp"  // for execution spaces
 
+#include "axom/spin/policy/LinearBVH.hpp"
+
 // C/C++ includes
 #include <type_traits>  // for std::is_floating_point(), std::is_same()
 
@@ -24,16 +26,6 @@ namespace axom
 {
 namespace spin
 {
-// forward declarations
-namespace internal
-{
-namespace linear_bvh
-{
-template <typename FloatType, int NDIMS>
-struct BVHData;
-}
-}  // namespace internal
-
 /*!
  * \brief Enumerates the list of return codes for various BVH operations.
  */
@@ -41,6 +33,20 @@ enum BVHReturnCodes
 {
   BVH_BUILD_FAILED = -1,  //!< indicates that generation of the BVH failed
   BVH_BUILD_OK,           //!< indicates that the BVH was generated successfully
+};
+
+enum class BVHType
+{
+  LinearBVH
+};
+
+template <typename FloatType, int NDIMS, typename ExecType, BVHType Policy>
+struct BVHPolicy;
+
+template <typename FloatType, int NDIMS, typename ExecType>
+struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
+{
+  using ImplType = policy::LinearBVH<FloatType, NDIMS, ExecType>;
 };
 
 /*!
@@ -112,7 +118,10 @@ enum BVHReturnCodes
  *  \endcode
  *
  */
-template <int NDIMS, typename ExecSpace = axom::SEQ_EXEC, typename FloatType = double>
+template <int NDIMS,
+          typename ExecSpace = axom::SEQ_EXEC,
+          typename FloatType = double,
+          BVHType BVHImpl = BVHType::LinearBVH>
 class BVH
 {
 private:
@@ -124,6 +133,9 @@ private:
   AXOM_STATIC_ASSERT_MSG(
     axom::execution_space<ExecSpace>::valid(),
     "A valid execution space must be supplied to the BVH.");
+
+  using ImplType =
+    typename BVHPolicy<FloatType, NDIMS, ExecSpace, BVHImpl>::ImplType;
 
 public:
   /*!
@@ -171,11 +183,6 @@ public:
   BVH(const FloatType* boxes,
       IndexType numItems,
       int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
-
-  /*!
-   * \brief Destructor.
-   */
-  ~BVH();
 
   /*!
    * \brief Get the ID of the allocator used by the BVH.
@@ -370,7 +377,7 @@ private:
   FloatType m_scaleFactor;
   IndexType m_numItems;
   const FloatType* m_boxes;
-  internal::linear_bvh::BVHData<FloatType, NDIMS> m_bvh;
+  ImplType m_bvh;
 
   static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.001;
   /// @}
