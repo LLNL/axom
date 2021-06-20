@@ -18,6 +18,7 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 
 #include <vector>
 #include <ostream>
@@ -51,6 +52,7 @@ public:
   using VectorType = Vector<T, NDIMS>;
   using NumArrayType = NumericArray<T, NDIMS>;
   using BezierCurveType = BezierCurve<T, NDIMS>;
+  using BoundingBoxType = typename BezierCurveType::BoundingBoxType;
 
 public:
   /// Default constructor for an empty polygon
@@ -87,6 +89,9 @@ public:
 
   /// Clears the list of edges
   void clear() { m_edges.clear(); }
+
+  /// Returns true if the polygon has no edges
+  bool empty() const { return m_edges.empty(); }
 
   /// \name Operations on edges
   /// @{
@@ -255,6 +260,17 @@ public:
       old_edges[ngon - 1 - i].reverseOrientation();
       m_edges[i] = old_edges[ngon - 1 - i];
     }
+  }
+
+  /// Returns an axis-aligned bounding box containing the CurvedPolygon
+  BoundingBoxType boundingBox() const
+  {
+    BoundingBoxType bbox;
+    for(const auto& cp : m_edges)
+    {
+      bbox.addBox(cp.boundingBox());
+    }
+    return bbox;
   }
 
 private:
