@@ -12,6 +12,7 @@
 #ifndef AXOM_PRIMAL_INTERSECT_HPP_
 #define AXOM_PRIMAL_INTERSECT_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
