@@ -12,7 +12,7 @@
 #ifndef AXOM_PRIMAL_BEZIERCURVE_HPP_
 #define AXOM_PRIMAL_BEZIERCURVE_HPP_
 
-#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -25,12 +25,186 @@
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include <vector>
+#include <map>
 #include <ostream>
 
 namespace axom
 {
 namespace primal
 {
+namespace internal
+{
+/// Utility class that caches precomputed coefficient matrices for sectorArea computation
+template <typename T>
+class MemoizedSectorAreaWeights
+{
+public:
+  using SectorWeights = numerics::Matrix<T>;
+
+  MemoizedSectorAreaWeights() = default;
+
+  ~MemoizedSectorAreaWeights()
+  {
+    for(auto& p : m_sectorWeightsMap)
+    {
+      delete[] p.second->data();  // delete the matrix's data
+      delete p.second;            // delete the matrix
+      p.second = nullptr;
+    }
+    m_sectorWeightsMap.clear();
+  }
+
+  /// Returns a memoized matrix of coeficients for sector area computation
+  const SectorWeights& getWeights(int order) const
+  {
+    // Compute and cache the weights if they are not already available
+    if(m_sectorWeightsMap.find(order) == m_sectorWeightsMap.end())
+    {
+      SectorWeights* weights = generateBezierCurveSectorWeights(order);
+      m_sectorWeightsMap[order] = weights;
+    }
+
+    return *(m_sectorWeightsMap[order]);
+  }
+
+private:
+  /*!
+   * \brief Computes the weights for BezierCurve's sectorArea() function
+   *
+   * \param order The polynomial order of the curve
+   * \return An anti-symmetric matrix with (order+1)*{order+1) entries
+   * containing the integration weights for entry (i,j)
+   *
+   * The derivation is provided in:
+   *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+   *  IEEE International Conference on Information Visualization, 1999.
+   */
+  SectorWeights* generateBezierCurveSectorWeights(int ord) const
+  {
+    const bool memoryIsExternal = true;
+    const int SZ = ord + 1;
+    SectorWeights* weights =
+      new SectorWeights(SZ, SZ, new T[SZ * SZ], memoryIsExternal);
+
+    T binom_2n_n = static_cast<T>(utilities::binomialCoefficient(2 * ord, ord));
+    for(int i = 0; i <= ord; ++i)
+    {
+      (*weights)(i, i) = 0.;  // zero on the diagonal
+      for(int j = i + 1; j <= ord; ++j)
+      {
+        double val = 0.;
+        if(i != j)
+        {
+          T binom_ij_i = static_cast<T>(utilities::binomialCoefficient(i + j, i));
+          T binom_2nij_nj = static_cast<T>(
+            utilities::binomialCoefficient(2 * ord - i - j, ord - j));
+
+          val = ((j - i) * ord) / binom_2n_n *
+            (binom_ij_i / static_cast<T>(i + j)) *
+            (binom_2nij_nj / (2. * ord - j - i));
+        }
+        (*weights)(i, j) = val;  // antisymmetric
+        (*weights)(j, i) = -val;
+      }
+    }
+    return weights;
+  }
+
+private:
+  mutable std::map<int, SectorWeights*> m_sectorWeightsMap;
+};
+
+/// Utility class that caches precomputed coefficient matrices for sectorCentroid() computation
+template <typename T>
+class MemoizedSectorCentroidWeights
+{
+public:
+  using SectorWeights = numerics::Matrix<T>;
+
+  MemoizedSectorCentroidWeights() = default;
+
+  ~MemoizedSectorCentroidWeights()
+  {
+    for(auto& p : m_sectorWeightsMap)  // for each matrix of weights
+    {
+      delete[] p.second->data();  // delete the matrix's data
+      delete p.second;            // delete the matrix
+      p.second = nullptr;
+    }
+    m_sectorWeightsMap.clear();
+  }
+
+  /// Returns a memoized matrix of sector moment coeficients for component \a dim or order \a order
+  const SectorWeights& getWeights(int order, int dim) const
+  {
+    // Compute and cache the weights if they are not already available
+    if(m_sectorWeightsMap.find(std::make_pair(order, dim)) ==
+       m_sectorWeightsMap.end())
+    {
+      auto vec = generateBezierCurveSectorCentroidWeights(order);
+      for(int d = 0; d <= order; ++d)
+      {
+        m_sectorWeightsMap[std::make_pair(order, d)] = vec[d];
+      }
+    }
+
+    return *(m_sectorWeightsMap[std::make_pair(order, dim)]);
+  }
+
+  /*!
+   * \brief Computes the weights for BezierCurve's sectorCentroid() function
+   *
+   * \param order The polynomial order of the curve
+   * \return An anti-symmetric matrix with (order+1)*{order+1) entries
+   * containing the integration weights for entry (i,j)
+   *
+   * The derivation is provided in:
+   *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+   *  IEEE International Conference on Information Visualization, 1999.
+   */
+  std::vector<SectorWeights*> generateBezierCurveSectorCentroidWeights(int ord) const
+  {
+    const bool memoryIsExternal = true;
+    const int SZ = ord + 1;
+
+    std::vector<SectorWeights*> weights;
+    weights.resize(SZ);
+    for(int k = 0; k <= ord; ++k)
+    {
+      SectorWeights* weights_k =
+        new SectorWeights(SZ, SZ, new T[SZ * SZ], memoryIsExternal);
+      for(int i = 0; i <= ord; ++i)
+      {
+        (*weights_k)(i, i) = 0.;  // zero on the diagonal
+        for(int j = i + 1; j <= ord; ++j)
+        {
+          double val = 0.;
+          if(i != j)
+          {
+            T binom_n_i = static_cast<T>(utilities::binomialCoefficient(ord, i));
+            T binom_n_j = static_cast<T>(utilities::binomialCoefficient(ord, j));
+            T binom_n_k = static_cast<T>(utilities::binomialCoefficient(ord, k));
+            T binom_3n2_ijk1 = static_cast<T>(
+              utilities::binomialCoefficient(3 * ord - 2, i + j + k - 1));
+
+            val = (1. * (j - i)) / (3. * (3 * ord - 1)) *
+              (1. * binom_n_i * binom_n_j * binom_n_k / (1. * binom_3n2_ijk1));
+          }
+          (*weights_k)(i, j) = val;  // antisymmetric
+          (*weights_k)(j, i) = -val;
+        }
+      }
+      weights[k] = weights_k;
+    }
+    return weights;
+  }
+
+private:
+  mutable std::map<std::pair<int, int>, SectorWeights*> m_sectorWeightsMap;
+};
+
+}  // namespace internal
+
 // Forward declare the templated classes and operator functions
 template <typename T, int NDIMS>
 class BezierCurve;
@@ -50,7 +224,6 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
  * The curve is approximated by the control points,
  * parametrized from t=0 to t=1.
  */
-
 template <typename T, int NDIMS>
 class BezierCurve
 {
@@ -63,6 +236,12 @@ public:
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
 
+  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
+                         "A Bezier Curve object may be defined in 2-D or 3-D");
+  AXOM_STATIC_ASSERT_MSG(
+    std::is_arithmetic<T>::value,
+    "A Bezier Curve must be defined using an arithmetic type");
+
 public:
   /*!
    * \brief Constructor for a Bezier Curve that reserves space for
@@ -73,12 +252,6 @@ public:
    */
   explicit BezierCurve(int ord = -1)
   {
-    AXOM_STATIC_ASSERT_MSG(
-      (NDIMS == 2) || (NDIMS == 3),
-      "A Bezier Curve object may be defined in 2-D or 3-D");
-    AXOM_STATIC_ASSERT_MSG(
-      std::is_arithmetic<T>::value,
-      "A Bezier Curve must be defined using an arithmetic type");
     SLIC_ASSERT(ord >= -1);
     const int sz = utilities::max(-1, ord + 1);
     m_controlPoints.resize(sz);
@@ -98,12 +271,6 @@ public:
    */
   BezierCurve(T* pts, int ord)
   {
-    AXOM_STATIC_ASSERT_MSG(
-      (NDIMS == 2) || (NDIMS == 3),
-      "A Bezier Curve object may be defined in 2-D or 3-D");
-    AXOM_STATIC_ASSERT_MSG(
-      std::is_arithmetic<T>::value,
-      "A Bezier Curve must be defined using an arithmetic type");
     SLIC_ASSERT(pts != nullptr);
     SLIC_ASSERT(ord >= 0);
 
@@ -128,15 +295,8 @@ public:
    * \pre order is greater than or equal to zero
    *
    */
-
   BezierCurve(PointType* pts, int ord)
   {
-    AXOM_STATIC_ASSERT_MSG(
-      (NDIMS == 2) || (NDIMS == 3),
-      "A Bezier Curve object may be defined in 2-D or 3-D");
-    AXOM_STATIC_ASSERT_MSG(
-      std::is_arithmetic<T>::value,
-      "A Bezier Curve must be defined using an arithmetic type");
     SLIC_ASSERT(pts != nullptr);
     SLIC_ASSERT(ord >= 0);
 
@@ -149,13 +309,30 @@ public:
     }
   }
 
-  /*! Sets the order of the Bezier Curve*/
+  /*!
+   * \brief Constructor for a Bezier Curve from an vector of coordinates
+   *
+   * \param [in] pts a vector with ord+1 control points
+   * \param [in] ord The Curve's polynomial order
+   * \pre order is greater than or equal to zero
+   *
+   */
+  BezierCurve(const std::vector<PointType>& pts, int ord)
+  {
+    SLIC_ASSERT(ord >= 0);
+
+    const int sz = utilities::max(0, ord + 1);
+    m_controlPoints.resize(sz);
+    m_controlPoints = pts;
+  }
+
+  /// Sets the order of the Bezier Curve
   void setOrder(int ord) { m_controlPoints.resize(ord + 1); }
 
-  /*! Returns the order of the Bezier Curve*/
+  /// Returns the order of the Bezier Curve
   int getOrder() const { return static_cast<int>(m_controlPoints.size()) - 1; }
 
-  /*! Clears the list of control points*/
+  /// Clears the list of control points
   void clear()
   {
     const int ord = getOrder();
@@ -165,13 +342,13 @@ public:
     }
   }
 
-  /*! Retrieves the control point at index \a idx */
+  /// Retrieves the control point at index \a idx
   PointType& operator[](int idx) { return m_controlPoints[idx]; }
 
-  /*! Retrieves the control point at index \a idx */
+  /// Retrieves the control point at index \a idx
   const PointType& operator[](int idx) const { return m_controlPoints[idx]; }
 
-  /* Checks equality of two Bezier Curve */
+  /// Checks equality of two Bezier Curve
   friend inline bool operator==(const BezierCurve<T, NDIMS>& lhs,
                                 const BezierCurve<T, NDIMS>& rhs)
   {
@@ -184,17 +361,28 @@ public:
     return !(lhs == rhs);
   }
 
-  /*! Returns a copy of the Bezier curve's control points */
+  /// Returns a copy of the Bezier curve's control points
   CoordsVec getControlPoints() const { return m_controlPoints; }
 
-  /*! Returns an axis-aligned bounding box containing the Bezier curve */
+  /// Reverses the order of the Bezier curve's control points
+  void reverseOrientation()
+  {
+    const int ord = getOrder();
+    CoordsVec old_controlPoints = m_controlPoints;
+    for(int i = 0; i <= ord; ++i)
+    {
+      m_controlPoints[i] = old_controlPoints[ord - i];
+    }
+  }
+
+  /// Returns an axis-aligned bounding box containing the Bezier curve
   BoundingBoxType boundingBox() const
   {
     return BoundingBoxType(m_controlPoints.data(),
                            static_cast<int>(m_controlPoints.size()));
   }
 
-  /*! Returns an oriented bounding box containing the Bezier curve */
+  /// Returns an oriented bounding box containing the Bezier curve
   OrientedBoundingBoxType orientedBoundingBox() const
   {
     return OrientedBoundingBoxType(m_controlPoints.data(),
@@ -209,7 +397,6 @@ public:
    *
    * \note We typically evaluate the curve at \a t between 0 and 1
    */
-
   PointType evaluate(T t) const
   {
     PointType ptval;
@@ -240,11 +427,51 @@ public:
   }
 
   /*!
-   * \brief Splits a Bezier curve into two Bezier curves at particular parameter
-   * value between 0 and 1
+   * \brief Computes the tangent of  a Bezier curve at a particular parameter value \a t
+   *
+   * \param [in] t parameter value at which to compute tangent 
+   * \return p the tangent vector of the Bezier curve at t
+   *
+   * \note We typically find the tangent of the curve at \a t between 0 and 1
+   */
+  VectorType dt(T t) const
+  {
+    VectorType val;
+
+    const int ord = getOrder();
+    std::vector<T> dCarray(ord + 1);
+
+    // Run de Casteljau algorithm on each dimension
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      for(int p = 0; p <= ord; ++p)
+      {
+        dCarray[p] = m_controlPoints[p][i];
+      }
+
+      // stop one step early and take difference of last two values
+      for(int p = 1; p <= ord - 1; ++p)
+      {
+        const int end = ord - p;
+        for(int k = 0; k <= end; ++k)
+        {
+          dCarray[k] = (1 - t) * dCarray[k] + t * dCarray[k + 1];
+        }
+      }
+      val[i] = ord * (dCarray[1] - dCarray[0]);
+    }
+
+    return val;
+  }
+
+  /*!
+   * \brief Splits a Bezier curve into two Bezier curves at a given parameter value
    *
    * \param [in] t parameter value between 0 and 1 at which to evaluate
-   * \param [out] c1, c2 Bezier curves that split the original
+   * \param [out] c1 First output Bezier curve
+   * \param [out] c2 Second output Bezier curve
+   *
+   * \pre Parameter \a t must be between 0 and 1
    */
   void split(T t, BezierCurve& c1, BezierCurve& c2) const
   {
@@ -276,6 +503,66 @@ public:
     }
 
     return;
+  }
+
+  /*!
+   * \brief Calculates the sector centroid of a Bezier Curve
+   *
+   * This is the centroid of the region between the curve and the origin.
+   * The equation and derivation are generalizations of:
+   *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+   *  IEEE International Conference on Information Visualization, 1999.
+   */
+  PointType sectorCentroid() const
+  {
+    // Weights for each polynomial order's centroid are precomputed and memoized
+    static internal::MemoizedSectorCentroidWeights<T> s_weights;
+
+    T Mx = 0;
+    T My = 0;
+    const int ord = getOrder();
+    for(int r = 0; r <= ord; ++r)
+    {
+      const auto& weights_r = s_weights.getWeights(ord, r);
+      for(int p = 0; p <= ord; ++p)
+      {
+        for(int q = 0; q <= ord; ++q)
+        {
+          Mx += weights_r(p, q) * m_controlPoints[p][1] *
+            m_controlPoints[q][0] * m_controlPoints[r][0];
+          My += weights_r(p, q) * m_controlPoints[p][1] *
+            m_controlPoints[q][0] * m_controlPoints[r][1];
+        }
+      }
+    }
+    return PointType {Mx, My};
+  }
+
+  /*!
+   * \brief Calculates the sector area of a Bezier Curve
+   *
+   * The sector area is the area between the curve and the origin.
+   * The equation and derivation is described in:
+   *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+   *  IEEE International Conference on Information Visualization, 1999.
+   */
+  T sectorArea() const
+  {
+    // Weights for each polynomial order are precomputed and memoized
+    static internal::MemoizedSectorAreaWeights<T> s_weights;
+
+    T A = 0;
+    const int ord = getOrder();
+    const auto& weights = s_weights.getWeights(ord);
+
+    for(int p = 0; p <= ord; ++p)
+    {
+      for(int q = 0; q <= ord; ++q)
+      {
+        A += weights(p, q) * m_controlPoints[p][1] * m_controlPoints[q][0];
+      }
+    }
+    return A;
   }
 
   /*!
@@ -331,7 +618,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-/// Free functions implementing BezierCurve's operators
+/// Free functions related to BezierCurve
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve)

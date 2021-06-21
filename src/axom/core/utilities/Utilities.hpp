@@ -135,6 +135,14 @@ inline AXOM_HOST_DEVICE T clampLower(T val, T lower)
 }
 
 /*!
+ * \brief Computes the binomial coefficient `n choose k`
+ *
+ * \return \f$ {n\choose k}  = n! / (k! * (n-k)!)\f$
+ * when \f$ n \ge k \ge 0 \f$, 0 otherwise.
+ */
+int binomialCoefficient(int n, int k);
+
+/*!
  * \brief Returns a random real number within the specified interval
  *
  * \param [in] a the interval's lower bound

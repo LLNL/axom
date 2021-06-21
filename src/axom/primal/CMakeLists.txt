@@ -20,6 +20,7 @@ set( primal_headers
      ## geometry
      geometry/BezierCurve.hpp
      geometry/BoundingBox.hpp
+     geometry/CurvedPolygon.hpp
      geometry/OrientedBoundingBox.hpp
      geometry/OrientationResult.hpp
      geometry/NumericArray.hpp
@@ -44,9 +45,10 @@ set( primal_headers
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_bezier_impl.hpp
-     operators/detail/intersect_ray_impl.hpp
      operators/detail/intersect_bounding_box_impl.hpp
+     operators/detail/intersect_curved_poly_impl.hpp
      operators/detail/intersect_impl.hpp
+     operators/detail/intersect_ray_impl.hpp
    )
 
 set( primal_sources
@@ -62,7 +64,7 @@ set( primal_dependencies
      core
      slic
      )
-     
+
 blt_list_append( TO primal_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 
 blt_add_library(
