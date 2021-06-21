@@ -383,7 +383,31 @@ public:
     }
     return ret;
   }
+  
+  /*!
+   * \brief Finds reference to value of key-value pair mapped to supplied pair, and performs insertion if
+   *  item does not already exist in Map instance. For reading, modification, and insertion into Map instance.
+   *
+   * \param [in] key the key used to index into the Map to find/store item
+   *
+   * \note Major deviation from STL unordered_map in that this function is unsafe, due to inability to internally
+   *  call rehash function. User must be careful to ensure integrity of Map with repeated use of this function.
+   *
+   * \return A reference to the value of key-value pair in the Map instance that is associated with supplied Key.
+   *
+   */  
+  T& operator[](Key key)
+  {
+    axom_map::pair<Key, T> ins_result = insert(Key, T{0});
+    
+    //Add a way to make this more efficient than an access like this -- maybe keep an m_end in the Map.
+    if(ins_result == m_buckets[0].m_end){
+      return NULL;
+    }
 
+    return &(ins_result.first->value);
+  }
+  
   /*!
    * \brief Removes key-value pair with given key from the Map instance.
    *
