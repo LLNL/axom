@@ -285,8 +285,6 @@ public:
    */
   void findIntersectionRegions(std::vector<CurvedPolygonType>& pnew)
   {
-    using EdgeIndex = Junction::EdgeIndex;
-
     PolygonEdge currentEdge[2] = {PolygonEdge(0, edgelabels[0]),
                                   PolygonEdge(1, edgelabels[1])};
 
