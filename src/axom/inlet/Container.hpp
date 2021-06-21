@@ -779,31 +779,15 @@ public:
    */
   Proxy operator[](const std::string& name) const;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the required status of this Container.
-   *
-   * Set whether this Container is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \param [in] isRequired Boolean value of whether Container is required
-   *
-   * \return Reference to this instance of Container
-   *****************************************************************************
-   */
-  Container& required(bool isRequired = true);
+  Container& required(bool isRequired = true) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Return the required status of this Container.
-   *
-   * Return that this Container is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \return Boolean value of whether this Container is required
-   *****************************************************************************
-   */
-  bool isRequired() const;
+  bool isRequired() const override;
+
+  using Verifiable<Container>::registerVerifier;
+
+  Container& registerVerifier(Verifier lambda) override;
+
+  bool verify(std::vector<VerificationError>* errors = nullptr) const override;
 
   /*!
    *****************************************************************************
@@ -819,24 +803,6 @@ public:
    *****************************************************************************
    */
   Container& strict(bool isStrict = true);
-
-  /*!
-   *****************************************************************************
-   * \brief Registers the function object that will verify this Container's contents
-   * during the verification stage.
-   * 
-   * \param [in] The function object that will be called by Container::verify().
-   *****************************************************************************
-  */
-  Container& registerVerifier(std::function<bool(const Container&)> lambda);
-
-  /*!
-   *****************************************************************************
-   * \brief This will be called by Inlet::verify to verify the contents of this
-   *  Container and all child Containers/Fields of this Container.
-   *****************************************************************************
-  */
-  bool verify() const;
 
   /*!
    *****************************************************************************
@@ -865,6 +831,16 @@ public:
    *****************************************************************************
    */
   bool isUserProvided() const;
+
+  /*!
+   *****************************************************************************
+   * \brief  Return whether a Container or Field with the given name were
+   * provided in the input file
+   *
+   * \param [in] name The path relative to the calling Container to search
+   *****************************************************************************
+   */
+  bool isUserProvided(const std::string& name) const;
 
   /*!
    *****************************************************************************
@@ -1295,7 +1271,7 @@ private:
   std::unordered_map<std::string, std::unique_ptr<Container>> m_containerChildren;
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
   std::unordered_map<std::string, std::unique_ptr<Function>> m_functionChildren;
-  std::function<bool(const Container&)> m_verifier;
+  Verifier m_verifier;
 
   // Used for ownership only - need to take ownership of these so children
   // and their aggregates have identical lifetime

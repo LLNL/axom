@@ -23,6 +23,7 @@
 #ifndef SLAM_POLICIES_SIZE_H_
 #define SLAM_POLICIES_SIZE_H_
 
+#include "axom/core/Macros.hpp"
 #include "axom/slic.hpp"
 
 namespace axom
@@ -116,7 +117,7 @@ struct CompileTimeSize
 
   CompileTimeSize(IntType val = INT_VAL)
   {
-    AXOM_DEBUG_VAR(val);
+    AXOM_UNUSED_VAR(val);
     SLIC_ASSERT_MSG(
       val == INT_VAL,
       "slam::CompileTimeSize -- tried to initialize a compile time size "
@@ -146,7 +147,7 @@ struct ZeroSize
 
   ZeroSize(IntType val = DEFAULT_VALUE)
   {
-    AXOM_DEBUG_VAR(val);
+    AXOM_UNUSED_VAR(val);
     SLIC_ASSERT_MSG(
       val == DEFAULT_VALUE,
       "slam::ZeroSize policy-- tried to initialize a NoSize set with "

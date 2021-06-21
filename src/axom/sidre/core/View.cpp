@@ -12,6 +12,8 @@
 #include "DataStore.hpp"
 #include "Attribute.hpp"
 
+#include "axom/core/Macros.hpp"
+
 namespace axom
 {
 namespace sidre
@@ -1473,7 +1475,7 @@ bool View::rename(const std::string& new_name)
       m_name = new_name;
 
       View* attached_view = parent->attachView(detached_view);
-      AXOM_DEBUG_VAR(attached_view);
+      AXOM_UNUSED_VAR(attached_view);
       SLIC_CHECK(attached_view == this);
     }
   }

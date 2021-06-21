@@ -102,7 +102,10 @@ void Inlet::write(Writer&& writer)
   }
 }
 
-bool Inlet::verify() const { return m_globalContainer.verify(); }
+bool Inlet::verify(std::vector<VerificationError>* errors) const
+{
+  return m_globalContainer.verify(errors);
+}
 
 }  // end namespace inlet
 }  // end namespace axom

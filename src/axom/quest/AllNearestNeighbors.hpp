@@ -4,12 +4,12 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file AllNearestNeighbors.hpp
  * \brief Defines all-nearest-neighbor queries
  */
 
-#ifndef ALL_NEAREST_NEIGHBORS_HPP_
-#define ALL_NEAREST_NEIGHBORS_HPP_
+#ifndef AXOM_QUEST_ALL_NEAREST_NEIGHBORS_HPP_
+#define AXOM_QUEST_ALL_NEAREST_NEIGHBORS_HPP_
 
 namespace axom
 {
@@ -62,4 +62,4 @@ void all_nearest_neighbors(const double* x,
 }  // end namespace quest
 }  // end namespace axom
 
-#endif  // ALL_NEAREST_NEIGHBORS_HPP_
+#endif  // AXOM_QUEST_ALL_NEAREST_NEIGHBORS_HPP_

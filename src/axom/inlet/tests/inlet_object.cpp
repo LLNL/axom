@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include <array>
 #include <string>
@@ -12,14 +13,20 @@
 
 #include <iostream>
 
+#include "axom/core/Path.hpp"
 #include "axom/sidre.hpp"
 
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/tests/inlet_test_utils.hpp"
 
+using axom::Path;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
 using axom::inlet::VariantKey;
+using axom::inlet::VerificationError;
+
+using ::testing::Contains;
+using ::testing::Truly;
 
 template <typename InletReader>
 Inlet createBasicInlet(const std::string& luaString, bool enableDocs = true)
@@ -281,11 +288,17 @@ TYPED_TEST(inlet_object, simple_array_of_struct_verify_lambda_fail)
   arr_container.addBool("baz", "baz's description");
 
   // Can specify either "bar" or "baz" but not both
-  arr_container.registerVerifier([](const axom::inlet::Container& foo) {
+  arr_container.registerVerifier([](const axom::inlet::Container& foo,
+                                    std::vector<VerificationError>* errors) {
+    INLET_VERIFICATION_WARNING("foo", "No bar or baz", errors);
     return !(foo.contains("bar") && foo.contains("baz"));
   });
 
-  EXPECT_FALSE(inlet.verify());
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  EXPECT_THAT(errors, Contains(Truly([](const VerificationError& err) {
+                return err.path == Path("foo") && err.message == "No bar or baz";
+              })));
 }
 
 struct FooWithArray
@@ -907,8 +920,13 @@ TYPED_TEST(inlet_object, default_scalar_user_provided)
   auto& scalar = inlet.addInt("foo").defaultValue(2);
   // The field itself exists but was not provided by the user
   auto& field = static_cast<axom::inlet::Field&>(scalar);
+  // "foo" exists because it has the default value of 2
   EXPECT_TRUE(field.exists());
+  // It can also be said that the hierarchy "contains" foo - again because it has a default
+  EXPECT_TRUE(inlet.contains("foo"));
+  // But because the input string was empty "foo" was not provided by the user
   EXPECT_FALSE(field.isUserProvided());
+  EXPECT_FALSE(inlet.isUserProvided("foo"));
 
   // ...but it should still be possible to retrieve the default
   const int foo = inlet["foo"];
@@ -927,9 +945,12 @@ TYPED_TEST(inlet_object, default_struct_field_user_provided)
   foo_container.addBool("bar", "bar's description").defaultValue(true);
   foo_container.addBool("baz", "baz's description").defaultValue(false);
 
-  // The container itself exists but was not provided by the user
+  // The container itself exists (has defaults) but was not provided by the user
   EXPECT_TRUE(foo_container.exists());
+  EXPECT_TRUE(inlet.contains("foo"));
+  // But no struct elements were provided by the user b/c empty input string
   EXPECT_FALSE(foo_container.isUserProvided());
+  EXPECT_FALSE(inlet.isUserProvided("foo"));
 
   // ...but it should still be possible to retrieve the default
   const Foo expected_foo {true, false};
@@ -949,9 +970,12 @@ TYPED_TEST(inlet_object, default_struct_field_user_provided_reqd)
   foo_container.addBool("bar", "bar's description").defaultValue(true);
   foo_container.addBool("baz", "baz's description").defaultValue(false);
 
-  // The container itself exists but was not provided by the user
+  // The container itself exists (has defaults) but was not provided by the user
   EXPECT_TRUE(foo_container.exists());
+  EXPECT_TRUE(inlet.contains("foo"));
+  // But no struct elements were provided by the user b/c empty input string
   EXPECT_FALSE(foo_container.isUserProvided());
+  EXPECT_FALSE(inlet.isUserProvided("foo"));
 
   // ...but it should still be possible to retrieve the default
   const Foo expected_foo {true, false};
@@ -976,7 +1000,25 @@ TYPED_TEST(inlet_object, default_struct_field_marked_true)
 
   // The container itself exists and was provided by the user
   EXPECT_TRUE(foo_container.exists());
+  EXPECT_TRUE(inlet.contains("foo"));
   EXPECT_TRUE(foo_container.isUserProvided());
+  EXPECT_TRUE(inlet.isUserProvided("foo"));
+
+  // If we examine the individual struct fields, "bar" will exist and be user-provided
+  EXPECT_TRUE(inlet.contains("foo/bar"));
+  EXPECT_TRUE(foo_container.contains("bar"));
+  EXPECT_TRUE(foo_container.isUserProvided("bar"));
+  EXPECT_TRUE(inlet.isUserProvided("foo/bar"));
+  // ...but "baz" will exist and not be user-provided
+  EXPECT_TRUE(inlet.contains("foo/baz"));
+  EXPECT_TRUE(foo_container.contains("baz"));
+  EXPECT_FALSE(foo_container.isUserProvided("baz"));
+  EXPECT_FALSE(inlet.isUserProvided("foo/baz"));
+  // ... while a nonexistent "quux" will be neither
+  EXPECT_FALSE(inlet.contains("foo/quux"));
+  EXPECT_FALSE(foo_container.contains("quux"));
+  EXPECT_FALSE(foo_container.isUserProvided("quux"));
+  EXPECT_FALSE(inlet.isUserProvided("foo/quux"));
 
   // ...and it should still be possible to retrieve the full struct
   const Foo expected_foo {true, false};

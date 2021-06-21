@@ -14,8 +14,7 @@
  *   * isSubset(): bool -- returns whether the set is a subset of another set
  *   * parentSet() : ParentSetType -- returns a pointer to the parent set.
  *                                     nullptr when isSubset() is false
- *   * isValid() : bool -- indicates whether the Subsetting policy of the set
- *     is valid
+ *   * isValid() : bool -- indicates whether the Subsetting policy of the set is valid
  *   * [optional]
  *   * operator(): IntType -- alternate accessor for indirection
  */
@@ -23,6 +22,7 @@
 #ifndef SLAM_POLICIES_SUBSET_H_
 #define SLAM_POLICIES_SUBSET_H_
 
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 
 #include "axom/slam/NullSet.hpp"
@@ -44,7 +44,7 @@ namespace policies
 
 struct NoSubset
 {
-  static const NullSet<> s_nullSet;
+  AXOM_EXPORT static const NullSet<> s_nullSet;
   using ParentSetType = const Set<>;
 
   NoSubset() { }
@@ -67,7 +67,7 @@ struct NoSubset
 
 struct VirtualParentSubset
 {
-  static NullSet<> s_nullSet;
+  AXOM_EXPORT static NullSet<> s_nullSet;
 
   using ParentSetType = Set<>;
 
@@ -95,7 +95,7 @@ struct VirtualParentSubset
     if(verboseOutput)
     {
       bool bValid = (m_parentSet->size() > 0);
-      AXOM_DEBUG_VAR(bValid);
+      AXOM_UNUSED_VAR(bValid);
       SLIC_CHECK_MSG(
         bValid,
         "VirtualParentSubset -- if we are a subset and input set is "
@@ -158,7 +158,7 @@ struct ConcreteParentSubset
     if(verboseOutput)
     {
       bool bValid = (m_parentSet->size() > 0);
-      AXOM_DEBUG_VAR(bValid);
+      AXOM_UNUSED_VAR(bValid);
       SLIC_CHECK_MSG(bValid,
                      "VirtualParentSubset -- if input set is non-empty "
                        << " parent set must be non-empty");

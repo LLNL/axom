@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef PRIMAL_INTERSECT_RAY_HPP_
-#define PRIMAL_INTERSECT_RAY_HPP_
+#ifndef AXOM_PRIMAL_INTERSECT_RAY_IMPL_HPP_
+#define AXOM_PRIMAL_INTERSECT_RAY_IMPL_HPP_
 
 // numerics includes
 #include "axom/core/numerics/floating_point_limits.hpp"
@@ -24,112 +24,102 @@ namespace primal
 namespace detail
 {
 /*!
- * \brief Computes the intersection of the given ray, R, with the segment, S.
- *      ip returns the intersection point on S.
+ * \brief Computes the intersection of the given ray \a R with the segment \a S.
+ *
+ * When there is a valid intersection (within tolerance \a EPS), 
+ * \a ray_param returns the parametric coordinate of the intersection point along \a R
+ * and \a seg_param returns the parametric coordinate of the intersection point along \a S.
+ *
  * \return status true iff R intersects with S, otherwise, false.
  */
 template <typename T>
 inline bool intersect_ray(const primal::Ray<T, 2>& R,
                           const primal::Segment<T, 2>& S,
-                          primal::Point<T, 2>& ip)
+                          T& ray_param,
+                          T& seg_param,
+                          const double EPS)
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
-  // STEP 0: Construct a ray from the segment, i.e., represent the
-  // segment in parametric form S(t1)=A+td, t \in [0,1]
-  Ray<T, 2> R2(S);
+  // STEP 0: Find the parameterized direction of the segment
+  const auto seg_dir = primal::Vector<T, 2>(S.source(), S.target());
+  const auto& ray_dir = R.direction();
 
-  // Step 1: Equating R(t0)=S(t1) yields a system of two equations and
-  // two unknowns, namely, t0 and t1. We can solve this system directly
-  // using Cramer's Rule.
-  const double denom = numerics::determinant(R.direction()[0],
-                                             (-1.0) * R2.direction()[0],
-                                             R.direction()[1],
-                                             (-1.0) * R2.direction()[1]);
+  // Step 1: Equating R(ray_param)=S(seg_param) yields a system of two equations and
+  // two unknowns, namely, t0 and t1. We can solve this system directly using Cramer's Rule.
+  const double denom =
+    numerics::determinant(ray_dir[0], -seg_dir[0], ray_dir[1], -seg_dir[1]);
 
-  // STEP 2: if denom is zero, the system is singular, which implies that the
-  // ray and the segment are parallel
-  const double parepsilon = 1.0e-9;
-  if(axom::utilities::isNearlyEqual(denom, 0.0, parepsilon))
+  // STEP 2: if denom is (nearly) zero (within tolerance EPS), the system is singular
+  if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
   {
     // ray and segment are parallel
     return false;
   }
 
-  // STEP 3: Solve for t0 and t1 directly using cramer's rule
-  const double alpha = S.source()[0] - R.origin()[0];
-  const double beta = S.source()[1] - R.origin()[1];
+  // STEP 3: Solve for the ray_param and seg_param directly using cramer's rule
+  const auto sol = S.source().array() - R.origin().array();
 
-  const double t0 = numerics::determinant(alpha,
-                                          (-1.0) * R2.direction()[0],
-                                          beta,
-                                          (-1.0) * R2.direction()[1]) /
-    denom;
+  // Note: ray_param is an OUT parameter of this function
+  ray_param =
+    numerics::determinant(sol[0], -seg_dir[0], sol[1], -seg_dir[1]) / denom;
 
-  const double t1 =
-    numerics::determinant(R.direction()[0], alpha, R.direction()[1], beta) /
-    denom;
+  // Note: seg_param is an OUT parameter of this function
+  seg_param =
+    numerics::determinant(ray_dir[0], sol[0], ray_dir[1], sol[1]) / denom;
 
   // STEP 4: Define lower/upper threshold
-  const double tlow = 0.0 - 1.0e-9;
-  const double thigh = 1.0 + 1.0e-9;
+  const double tlow = 0.0 - EPS;
+  const double thigh = 1.0 + EPS;
 
   // STEP 5: Necessary and sufficient criteria for an intersection between
   // ray, R(t0),  and a finite segment S(t1) are:
-  // 1. t0 >= tlow w.r.t. the ray R(t0).
-  // 2. tlow >= t1 >= thigh w.r.t. the segment S(t1).
-  if((t0 >= tlow) && (t1 >= tlow) && (t1 <= thigh))
-  {
-    ip = R2.at(t1);
-    return true;
-  }
-
-  // STEP 6: Ray does not intersect the segment
-  return false;
+  // 1. ray_param >= tlow w.r.t. the ray R(ray_param).
+  // 2. tlow >= seg_param >= thigh w.r.t. the segment S(seg_param).
+  return ((ray_param >= tlow) && (seg_param >= tlow) && (seg_param <= thigh));
 }
 
 /*!
  * \brief Helper routine for ray / AABB intersection test.
  *
- * \param [in] x0 coordinate component of the ray origin.
- * \param [in] n normal component of the ray direction.
- * \param [in] min the AABB min coordinate along a direction.
- * \param [in] max the AABB max coordinate along a drection.
+ * \param [in] x0 coordinate component of the ray origin
+ * \param [in] n normal component of the ray direction
+ * \param [in] bbmin the AABB min coordinate along a direction
+ * \param [in] bbmax the AABB max coordinate along a direction
  *
- * \param [in,out] tmin length of closest intersection point (computed)
- * \param [in,out] tmax length of farthest intersection point (computed)
+ * \param [in,out] tmin coordinate of closest intersection point along ray
+ * \param [in,out] tmax coordinate of farthest intersection point along ray
  *
- * \param [in] TOL user-supplied tolerance.
+ * \param [in] EPS user-supplied tolerance.
  *
  * \return status true if the ray intersects, otherwise false.
  *
- * \note This routine is called by the intersect ray/AABB methods for each
- *  spatial dimension.
+ * \note This routine is called by the intersect ray/AABB methods for each spatial dimension.
  */
 template <typename T>
 AXOM_HOST_DEVICE inline bool intersect_ray_bbox_test(const T& x0,
                                                      const T& n,
-                                                     const T& min,
-                                                     const T& max,
+                                                     const T& bbmin,
+                                                     const T& bbmax,
                                                      T& tmin,
                                                      T& tmax,
-                                                     T TOL)
+                                                     T EPS)
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
-  constexpr T ZERO = 0.0f;
+  constexpr T ZERO = static_cast<T>(0);
 
   bool status = true;
 
-  if(axom::utilities::isNearlyEqual(n, ZERO, TOL))
+  if(axom::utilities::isNearlyEqual(n, ZERO, EPS))
   {
-    status = (((x0 < min) || (x0 > max)) ? false : true);
+    status = (((x0 < bbmin) || (x0 > bbmax)) ? false : true);
   }
   else
   {
     const T invn = static_cast<T>(1.0) / n;
-    T t1 = (min - x0) * invn;
-    T t2 = (max - x0) * invn;
+    T t1 = (bbmin - x0) * invn;
+    T t2 = (bbmax - x0) * invn;
 
     if(t1 > t2)
     {
@@ -157,7 +147,7 @@ AXOM_HOST_DEVICE inline bool intersect_ray_bbox_test(const T& x0,
  * \param [in] ymin y-coordinate of the lower bounding box corner
  * \param [in] ymax y-coordinate of the upper bounding box corner
  * \param [out] t length of intersection point from the ray source point.
- * \param [in] TOL optional tolerance. Defaults to 1.e-9 if not specified.
+ * \param [in] EPS optional tolerance
  *
  * \return status true if the ray intersects the bounding box, otherwise, false.
  */
@@ -172,7 +162,7 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
   const T& ymin,
   const T& ymax,
   T& t,
-  T TOL = numerics::floating_point_limits<T>::epsilon())
+  T EPS = numerics::floating_point_limits<T>::epsilon())
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
@@ -180,8 +170,8 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
   T tmax = axom::numerics::floating_point_limits<T>::max();
 
   bool status = true;
-  status = status && intersect_ray_bbox_test(x0, nx, xmin, xmax, t, tmax, TOL);
-  status = status && intersect_ray_bbox_test(y0, ny, ymin, ymax, t, tmax, TOL);
+  status = status && intersect_ray_bbox_test(x0, nx, xmin, xmax, t, tmax, EPS);
+  status = status && intersect_ray_bbox_test(y0, ny, ymin, ymax, t, tmax, EPS);
 
   return status;
 }
@@ -202,7 +192,7 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
  * \param [in] zmin z-coordinate of the lower bounding box corner
  * \param [in] zmax z-coordinate of the upper bounding box corner
  * \param [out] t length of intersection point from the ray source point.
- * \param [in] TOL optional tolerance. Defaults to 1.e-9 if not specified.
+ * \param [in] EPS optional tolerance
  *
  * \return status true if the ray intersects the bounding box, otherwise, false.
  */
@@ -221,7 +211,7 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
   const T& zmin,
   const T& zmax,
   T& t,
-  T TOL = numerics::floating_point_limits<T>::epsilon())
+  T EPS = numerics::floating_point_limits<T>::epsilon())
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
@@ -229,22 +219,23 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
   T tmax = axom::numerics::floating_point_limits<T>::max();
 
   bool status = true;
-  status = status && intersect_ray_bbox_test(x0, nx, xmin, xmax, t, tmax, TOL);
-  status = status && intersect_ray_bbox_test(y0, ny, ymin, ymax, t, tmax, TOL);
-  status = status && intersect_ray_bbox_test(z0, nz, zmin, zmax, t, tmax, TOL);
+  status = status && intersect_ray_bbox_test(x0, nx, xmin, xmax, t, tmax, EPS);
+  status = status && intersect_ray_bbox_test(y0, ny, ymin, ymax, t, tmax, EPS);
+  status = status && intersect_ray_bbox_test(z0, nz, zmin, zmax, t, tmax, EPS);
 
   return status;
 }
 
 /*!
- * \brief Computes the intersection of the given ray, R, with the Box, bb.
+ * \brief Computes the intersection of the given ray, R, with the Box, bb
  *
  * \param [in] R the specified ray
  * \param [in] bb the user-supplied axis-aligned bounding box
+ * \param [in,out] tmin coordinate of closest intersection point along ray
+ * \param [in,out] tmax coordinate of farthest intersection point along ray
+ * \param [out] ip the intersection point where R intersects bb
  *
- * \param [out] ip the intersection point where R intersects bb.
- *
- * \return status true iff bb intersects with R, otherwise, false.
+ * \return status true iff bb intersects with R, otherwise, false
  *
  * \see primal::Ray
  * \see primal::Segment
@@ -254,41 +245,65 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
  *  Real Time Collision Detection by Christer Ericson.
  */
 template <typename T, int DIM>
-inline bool intersect_ray(const primal::Ray<T, DIM>& R,
-                          const primal::BoundingBox<T, DIM>& bb,
-                          primal::Point<T, DIM>& ip,
-                          T TOL = numerics::floating_point_limits<T>::epsilon())
+AXOM_HOST_DEVICE inline bool intersect_ray(const primal::Ray<T, DIM>& R,
+                                           const primal::BoundingBox<T, DIM>& bb,
+                                           T& tmin,
+                                           T& tmax,
+                                           T EPS)
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
-  T tmin = std::numeric_limits<T>::min();
-  T tmax = std::numeric_limits<T>::max();
-
   bool intersects = true;
-  for(int i = 0; (intersects && (i < DIM)); i++)
+  for(int d = 0; d < DIM; ++d)
   {
-    intersects = intersect_ray_bbox_test(R.origin()[i],
-                                         R.direction()[i],
-                                         bb.getMin()[i],
-                                         bb.getMax()[i],
-                                         tmin,
-                                         tmax,
-                                         TOL);
-  }
-
-  if(intersects)
-  {
-    for(int i = 0; i < DIM; i++)
-    {
-      ip.data()[i] = R.origin()[i] + R.direction()[i] * tmin;
-    }
+    intersects = intersects &&
+      intersect_ray_bbox_test(R.origin()[d],
+                              R.direction()[d],
+                              bb.getMin()[d],
+                              bb.getMax()[d],
+                              tmin,
+                              tmax,
+                              EPS);
   }
 
   return intersects;
 }
 
-} /* namespace detail */
-} /* namespace primal */
-} /* namespace axom */
+template <typename T, int DIM>
+AXOM_HOST_DEVICE inline bool intersect_ray(
+  const primal::Ray<T, DIM>& R,
+  const primal::BoundingBox<T, DIM>& bb,
+  primal::Point<T, DIM>& ip,
+  T EPS = numerics::floating_point_limits<T>::epsilon())
+{
+  AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
-#endif
+  T tmin = axom::numerics::floating_point_limits<T>::min();
+  T tmax = axom::numerics::floating_point_limits<T>::max();
+
+  bool intersects = true;
+  for(int d = 0; d < DIM; ++d)
+  {
+    intersects = intersects &&
+      intersect_ray_bbox_test(R.origin()[d],
+                              R.direction()[d],
+                              bb.getMin()[d],
+                              bb.getMax()[d],
+                              tmin,
+                              tmax,
+                              EPS);
+  }
+
+  if(intersects)
+  {
+    ip = R.at(tmin);
+  }
+
+  return intersects;
+}
+
+}  // namespace detail
+}  // namespace primal
+}  // namespace axom
+
+#endif  // AXOM_PRIMAL_INTERSECT_RAY_IMPL_HPP_

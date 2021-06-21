@@ -75,21 +75,21 @@ of the Group "root" in parallel.
 
 First include needed headers.
 
-.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+.. literalinclude:: ../../tests/spio/spio_parallel.hpp
    :start-after: _parallel_io_headers_start
    :end-before: _parallel_io_headers_end
    :language: C++
 
 Then use IOManager to save in parallel.
 
-.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+.. literalinclude:: ../../tests/spio/spio_parallel.hpp
    :start-after: _parallel_io_save_start
    :end-before: _parallel_io_save_end
    :language: C++
 
 Loading data in parallel is easy:
 
-.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+.. literalinclude:: ../../tests/spio/spio_parallel.hpp
    :start-after: _parallel_io_load_start
    :end-before: _parallel_io_load_end
    :language: C++

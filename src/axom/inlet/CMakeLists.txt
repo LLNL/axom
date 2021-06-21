@@ -41,6 +41,7 @@ set(inlet_sources
     Container.cpp
     Proxy.cpp
     VariantKey.cpp
+    VerifiableScalar.cpp
     SphinxWriter.cpp
     JSONSchemaWriter.cpp
     ConduitReader.cpp

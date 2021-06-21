@@ -6,6 +6,7 @@
 #ifndef MINT_ConnectivityArrayHelpers_HPP_
 #define MINT_ConnectivityArrayHelpers_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/Array.hpp"
 
 #include "axom/mint/config.hpp"
