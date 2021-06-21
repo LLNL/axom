@@ -398,12 +398,9 @@ public:
    */  
   T& operator[](Key key)
   {
-    axom_map::pair<Key, T> ins_result = insert(Key, T{0});
-    
-    //Add a way to make this more efficient than an access like this -- maybe keep an m_end in the Map.
-    if(ins_result == m_buckets[0].m_end){
-      return NULL;
-    }
+    //Since we can't throw an exception, and this needs to return a reference to a variable of type T, 
+    //the case where there's no room in the Map is woefully unhandled. 
+    axom_map::Pair<Key, T> ins_result = insert(key, T{0});
 
     return &(ins_result.first->value);
   }
