@@ -40,6 +40,14 @@ void test_storage(experimental::Map<Key, T> &test)
 }
 
 template <typename Key, typename T>
+void test_brackets(experimental::Map<Key, T> &test)
+{
+  for(int i = 0; i < test.size(); i++){
+    EXPECT_EQ(i*27-test.max_size()/2, test[i]);
+  }
+}
+
+template <typename Key, typename T>
 void test_remove(experimental::Map<Key, T> &test)
 {
   test.erase(0);
@@ -51,7 +59,7 @@ void test_remove(experimental::Map<Key, T> &test)
 }
 
 template <typename Key, typename T>
-void test_rehash(experimental::Map<Key, T> &test)
+void test_rehash(experimental::Map<Key, T> &test, int num, int fact)
 {
   
   test.rehash();
@@ -95,6 +103,17 @@ TEST(core_map, insertion)
   }
 }
 
+TEST(core_map, brackets)
+{
+ for(int i: {1, 2, 5, 10, 20, 100}){
+    for(int j: {1, 2, 5, 10}){
+      experimental::Map<int, int> test = internal::init<int, int>(i, j);
+      internal::test_storage<int, int>(test);
+      internal::test_brackets<int, int>(test);
+    }
+  }
+}
+
 TEST(core_map, removal)
 {
 
@@ -113,7 +132,7 @@ TEST(core_map, rehash)
     for(int j: {1, 2, 5, 10}){
       experimental::Map<int, int> test = internal::init<int, int>(i, j);
       internal::test_storage<int, int>(test);
-      internal::test_rehash<int, int>(test);
+      internal::test_rehash<int, int>(test, -1, -1);
       internal::test_remove<int, int>(test);
     }
   }
