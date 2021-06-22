@@ -519,7 +519,7 @@ public:
     //the case where there's no room in the Map is woefully unhandled. 
     axom_map::Node<Key, T> &ins_result = find(key);
 
-    return &(ins_result.first->value);
+    return ins_result.value;
   }
   
   /*!
