@@ -24,52 +24,53 @@ experimental::Map<Key, T> init(int N, int len)
 }
 
 template <typename Key, typename T>
-void test_storage(experimental::Map<Key, T> &test, int N)
+void test_storage(experimental::Map<Key, T> &test)
 {
-  for(int i = 0; i < N; i++)
+  for(int i = 0; i < test.max_size(); i++)
   {
-    test.insert(i, i * 27 - N / 2);
+    test.insert(i, i * 27 - test.max_size() / 2);
   }
 
-  for(int i = 0; i < N; i++)
+  for(int i = 0; i < test.max_size(); i++)
   {
-    EXPECT_EQ(i * 27 - N / 2, test.find(i).value);
+    EXPECT_EQ(i * 27 - test.max_size() / 2, test.find(i).value);
   }
-  auto ret = test.insert(N, 900);
+  auto ret = test.insert(test.max_size(), 900);
   EXPECT_EQ(false, ret.second);
 }
 
 template <typename Key, typename T>
-void test_remove(experimental::Map<Key, T> &test, int N)
+void test_remove(experimental::Map<Key, T> &test)
 {
-  test.erase(13);
-  auto ret = test.find(13);
+  test.erase(0);
+  auto ret = test.find(0);
   EXPECT_EQ(-2, ret.next);
-  test.insert(13, 900);
-  ret = test.find(13);
+  test.insert(0, 900);
+  ret = test.find(0);
   EXPECT_EQ(900, ret.value);
 }
 
 template <typename Key, typename T>
-void test_rehash(experimental::Map<Key, T> &test, int N)
+void test_rehash(experimental::Map<Key, T> &test)
 {
+  
   test.rehash();
 
-  for(int i = 0; i < N; i++)
+  for(int i = 0; i < test.size(); i++)
   {
-    EXPECT_EQ(i * 27 - N / 2, test.find(i).value);
+    EXPECT_EQ(i * 27 - test.size() / 2, test.find(i).value);
   }
 
-  for(int i = N; i < 2 * N; i++)
+  for(int i = test.max_size()/2; i < test.max_size(); i++)
   {
-    test.insert(i, i * 27 - N / 2);
+    test.insert(i, i * 27 - test.max_size()/4);
   }
 
-  for(int i = 0; i < 2 * N; i++)
+  for(int i = test.max_size()/2; i < test.max_size(); i++)
   {
-    EXPECT_EQ(i * 27 - N / 2, test.find(i).value);
+    EXPECT_EQ(i * 27 - test.max_size()/4, test.find(i).value);
   }
-  auto ret = test.insert(N, 900);
+  auto ret = test.insert(test.max_size(), 900);
   EXPECT_EQ(false, ret.second);
 }
 
@@ -77,39 +78,44 @@ void test_rehash(experimental::Map<Key, T> &test, int N)
 
 TEST(core_map, initialization)
 {
-  constexpr int N = 20; /* Number of values to store */
-  constexpr int bucket_length = 2;
   for(int i : {1, 2, 5, 10, 20, 100}){
     for(int j : {1, 2, 5, 10}){
-      experimental::Map<int, int> test = internal::init<int, int>(i, bucket_length);
+      experimental::Map<int, int> test = internal::init<int, int>(i, j);
     }
   }
 }
 
 TEST(core_map, insertion)
 {
-  constexpr int N = 20; /* Number of values to store */
-  constexpr int bucket_length = 2;
-  experimental::Map<int, int> test = internal::init<int, int>(N, bucket_length);
-  internal::test_storage<int, int>(test, N);
+  for(int i: {1, 2, 5, 10, 20, 100}){
+    for(int j: {1, 2, 5, 10}){
+      experimental::Map<int, int> test = internal::init<int, int>(i, j);
+      internal::test_storage<int, int>(test);
+    }
+  }
 }
 
 TEST(core_map, removal)
 {
-  constexpr int N = 20; /* Number of values to store */
-  constexpr int bucket_length = 2;
-  experimental::Map<int, int> test = internal::init<int, int>(N, bucket_length);
-  internal::test_storage<int, int>(test, N);
-  internal::test_remove<int, int>(test, N);
+
+  for(int i: {1, 2, 5, 10, 20, 100}){
+    for(int j: {1, 2, 5, 10}){
+      experimental::Map<int, int> test = internal::init<int, int>(i, j);
+      internal::test_storage<int, int>(test);
+      internal::test_remove<int, int>(test);
+    }
+  }
 }
 
 TEST(core_map, rehash)
 {
-  constexpr int N = 20; /* Number of values to store */ 
-  constexpr int bucket_length = 2;
-  experimental::Map<int, int> test = internal::init<int, int>(N, bucket_length);
-  internal::test_storage<int, int>(test, N);
-  internal::test_rehash<int, int>(test, N);
-  internal::test_remove<int, int>(test, N);
+  for(int i: {1, 2, 5, 10, 20, 100}){
+    for(int j: {1, 2, 5, 10}){
+      experimental::Map<int, int> test = internal::init<int, int>(i, j);
+      internal::test_storage<int, int>(test);
+      internal::test_rehash<int, int>(test);
+      internal::test_remove<int, int>(test);
+    }
+  }
 }
 } /* namespace axom */
