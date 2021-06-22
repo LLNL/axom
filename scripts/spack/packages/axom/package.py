@@ -95,7 +95,9 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("conduit~hdf5", when="~hdf5")
 
     # HDF5 needs to be the same as Conduit's
-    depends_on("hdf5@1.8.19:1.8.999~cxx~fortran", when="+hdf5")
+    # FIXME: remove these hardcoded variants when we move to the new concretizer
+    # DO NOT PUSH UP TO SPACK PROPER
+    depends_on("hdf5@1.8.19:1.8.999~shared~cxx~fortran", when="+hdf5")
 
     depends_on("lua", when="+lua")
 
@@ -246,45 +248,46 @@ class Axom(CachedCMakePackage, CudaPackage):
             not spec.satisfies('+cuda target=ppc64le:')
         ))
 
-        # Grab lib directory for the current fortran compiler
-        libdir = pjoin(os.path.dirname(
-                       os.path.dirname(self.compiler.fc)),
-                       "lib")
-        description = ("Adds a missing rpath for libraries "
-                       "associated with the fortran compiler")
+        if (self.compiler.fc is not None) and ("xlf" in self.compiler.fc):
+            # Grab lib directory for the current fortran compiler
+            libdir = pjoin(os.path.dirname(
+                           os.path.dirname(self.compiler.fc)),
+                           "lib")
+            description = ("Adds a missing rpath for libraries "
+                           "associated with the fortran compiler")
 
-        linker_flags = "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," + libdir
+            linker_flags = "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," + libdir
 
-        entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS",
-                                          linker_flags, description))
+            entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS",
+                                              linker_flags, description))
 
-        if "+shared" in spec:
-            linker_flags = "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath," \
-                           + libdir
+            if "+shared" in spec:
+                linker_flags = "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath," \
+                               + libdir
+                entries.append(cmake_cache_string(
+                    "CMAKE_SHARED_LINKER_FLAGS",
+                    linker_flags, description))
+
+            description = ("Converts C-style comments to Fortran style "
+                           "in preprocessed files")
             entries.append(cmake_cache_string(
-                "CMAKE_SHARED_LINKER_FLAGS",
-                linker_flags, description))
+                "BLT_FORTRAN_FLAGS",
+                "-WF,-C!  -qxlf2003=polymorphic",
+                description))
 
-        if spec.satisfies('target=ppc64le:'):
-            if (self.compiler.fc is not None) and ("xlf" in self.compiler.fc):
-                description = ("Converts C-style comments to Fortran style "
-                               "in preprocessed files")
-                entries.append(cmake_cache_string(
-                    "BLT_FORTRAN_FLAGS",
-                    "-WF,-C!  -qxlf2003=polymorphic",
-                    description))
-
-            # Fix for working around CMake adding implicit link directories
-            # returned by the BlueOS compilers to link executables with
-            # non-system default stdlib
-            _gcc_prefix = "/usr/tce/packages/gcc/gcc-4.9.3/lib64"
-            if os.path.exists(_gcc_prefix):
-                _gcc_prefix2 = pjoin(
-                    _gcc_prefix,
-                    "gcc/powerpc64le-unknown-linux-gnu/4.9.3")
-                _link_dirs = "{0};{1}".format(_gcc_prefix, _gcc_prefix2)
-                entries.append(cmake_cache_string(
-                    "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE", _link_dirs))
+            if spec.satisfies('target=ppc64le:'):
+                # Fix for working around CMake adding implicit link directories
+                # returned by the BlueOS compilers to link executables with
+                # non-system default stdlib
+                _gcc_prefix = "/usr/tce/packages/gcc/gcc-4.9.3/lib64"
+                if os.path.exists(_gcc_prefix):
+                    _gcc_prefix2 = pjoin(
+                        _gcc_prefix,
+                        "gcc/powerpc64le-unknown-linux-gnu/4.9.3")
+                    _link_dirs = "{0};{1}".format(_gcc_prefix, _gcc_prefix2)
+                    entries.append(cmake_cache_string(
+                        "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
+                        _link_dirs))
 
         return entries
 
