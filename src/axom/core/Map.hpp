@@ -178,6 +178,63 @@ public:
     return ret;
   }
 
+    /*!
+     * \brief Inserts a given key-value pair into the linked list if an item with 
+     *  given key does not already exist, and updates the item's current value with the supplied 
+     *  one if item already exists. Fails if list is full.
+     *
+     * \param [in] key the key of the key-value pair to be inserted.
+     * \param [in] value the value of the key-value pair to be inserted.
+     *
+     * \return Returns a Pair object, with the first element being a pointer to the inserted node
+     *  and the second element being boolean value true if successful. If insertion fails, or assignment
+     *  was performed, the bool is set to False. If assignment occured, the node pointed to is the item 
+     *  corresponding to the supplied key. Otherwise, if insertion and assignment failed, the node pointed to is the end node.
+     */
+  axom_map::Pair<Key, T> insert_update(Key key, T value)
+  {
+    if(m_free != -1)
+    {
+      IndexType ind = m_head;
+      if(m_head == -1)
+      {
+        m_head = m_free;
+        ind = m_free;
+        m_free = m_list[m_free].next;
+        m_list[m_head].next = -1;
+        m_list[m_head].key = key;
+        m_list[m_head].value = value;
+        m_size++;
+      }
+      else
+      {
+        while(m_list[ind].next != -1)
+        {
+          if(m_list[ind].key == key)
+          {
+            m_list[ind].value = value;
+            axom_map::Pair<Key, T> ret(&(m_list[ind]), false);
+            return ret;
+          }
+          ind = m_list[ind].next;
+        }
+        m_list[ind].next = m_free;
+        ind = m_free;
+        m_free = m_list[m_free].next;
+        m_list[ind].next = -1;
+        m_list[ind].key = key;
+        m_list[ind].value = value;
+        m_size++;
+      }
+      axom_map::Pair<Key, T> ret(&(m_list[ind]), true);
+      return ret;
+    }
+    axom_map::Pair<Key, T> ret(&(m_end), false);
+    return ret;
+  }
+
+  
+
   /*!
      * \brief Removes item with the given key from the linked list, if item exists. Relinks accordingly.
      *
@@ -407,8 +464,8 @@ public:
   axom_map::Pair<Key, T> insert(Key key, T val)
   {
     axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
-    //Candidate to get cut out if branching becomes too much of an issue.
     axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
+    //Candidate to get cut out if branching becomes too much of an issue.
     if(ret.second == true)
     {
       m_size++;
@@ -417,15 +474,43 @@ public:
   }
   
   /*!
-   * \brief Finds reference to value of key-value pair mapped to supplied pair, and performs insertion if
-   *  item does not already exist in Map instance. For reading, modification, and insertion into Map instance.
+   * \brief Inserts given key-value pair into the Map instance, or updates value of existing key-value pair if item
+   *  with supplied key already exists.
    *
-   * \param [in] key the key used to index into the Map to find/store item
+   * \param [in] key the key used to index into the Map to store this item
+   * \param [in] val the data value of the pair to insert into the map
    *
-   * \note Major deviation from STL unordered_map in that this function is unsafe, due to inability to internally
-   *  call rehash function. User must be careful to ensure integrity of Map with repeated use of this function.
+   * \note Deviation from STL unordered_map is that insertion fails when map full, rather than automatically rehashing. 
+   *  Manual call of rehash() required.
    *
-   * \return A reference to the value of key-value pair in the Map instance that is associated with supplied Key.
+   * \return A pair whose first element is a pointer to the inserted item and bool set to true
+   *  if insertion was performed. Otherwise, the second element is set to false, and the first to one of two values: a sentinel node 
+   *  if the map is overfilled, and the actual node with the given key if an assignment occured.
+   *
+   */
+  axom_map::Pair<Key, T> insert_or_assign(Key key, T val)
+  {
+    axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
+    axom_map::Pair<Key, T> ret = target->insert_update(key, val);
+    //Candidate to get cut out if branching becomes too much of an issue.
+    if(ret.second == true)
+    {
+      m_size++;
+    }
+    return ret;
+  }  
+
+  /*!
+   * \brief Finds reference to value of key-value pair mapped to supplied pair, returns value from sentinel node
+   *  if fails, meaning value at reference will be data type T initialized with 0. 
+   *
+   * \param [in] key the key used to index into the Map to find item
+   *
+   * \note Major deviation from STL unordered_map in that this function will not perform insertions, and cannot
+   *  stand in for insert(), nor can accesses be guaranteed to point to valid data. Also returns a const reference,
+   *  thus meaning it cannot update existing values. Use insert_or_assign() for such functionality.
+   *
+   * \return A const reference to the value of key-value pair in the Map instance that is associated with supplied Key.
    *
    */  
   const T& operator[](Key key)
