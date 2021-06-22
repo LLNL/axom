@@ -428,11 +428,11 @@ public:
    * \return A reference to the value of key-value pair in the Map instance that is associated with supplied Key.
    *
    */  
-  T& operator[](Key key)
+  const T& operator[](Key key)
   {
     //Since we can't throw an exception, and this needs to return a reference to a variable of type T, 
     //the case where there's no room in the Map is woefully unhandled. 
-    axom_map::Pair<Key, T> ins_result = insert(key, T{0});
+    axom_map::Node<Key, T> &ins_result = find(key);
 
     return &(ins_result.first->value);
   }
@@ -504,6 +504,11 @@ public:
    * \return capacity the overall capacity of the Map instance.
    */
   int max_size() { return m_bucket_len * m_bucket_count; }
+  /*!
+   * \brief Checks if the container has no elements.
+   * \return true if the container is empty, false otherwise
+   */ 
+  bool empty() const { return (m_size == 0); }
   ///@}
 private:
   /// \name Private Map Methods
