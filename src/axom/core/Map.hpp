@@ -302,12 +302,18 @@ public:
    */
   Map(int num_buckets, int bucket_len = 10)
   {
-    m_bucket_count = num_buckets;
-    m_bucket_len = bucket_len;
-    m_buckets = alloc_map(m_bucket_count, m_bucket_len);
+    init(num_buckets, bucket_len);
+  }
+  /// @}
+  
+  /*!
+   * Destructor. Frees associated buffers.
+   */ 
+  ~Map()
+  {
+    deallocate();
   }
 
-  ///@}
   /// \name Map Methods
   ///@{
   /*!
@@ -357,7 +363,33 @@ public:
     m_bucket_count = newlen;
     return;
   }
+  /*!
+   * \brief Deallocates memory resources for this Map instance, resets state as if constructed with 0 elements.
+   *  Also used in destructor.
+   *
+   */ 
+  void deallocate(){
+    for(int i = 0; i < m_bucket_count; i++){
+      axom::deallocate(m_buckets[i].m_list);
+    }
+    axom::deallocate(m_buckets);
+    m_bucket_count = 0;
+    m_bucket_len = 0;
+    m_size = 0;
+    m_load_factor = 0;
+  }
 
+  /*!
+   * \brief Initializes this Map instance, mostly in case deallocate was used and there's a desire to continue use.
+   *
+   */ 
+  void init(int num_buckets, int bucket_len = 10){
+    m_bucket_count = num_buckets;
+    m_bucket_len = bucket_len;
+    m_size = 0;
+    m_load_factor = 0;
+    m_buckets = alloc_map(m_bucket_count, m_bucket_len);
+  }
   /*!
    * \brief Inserts given key-value pair into the Map instance.
    *
