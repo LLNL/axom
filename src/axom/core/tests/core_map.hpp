@@ -13,9 +13,13 @@ namespace axom
 namespace internal
 {
 template <typename Key, typename T>
-experimental::Map<Key, T> init(int N)
+experimental::Map<Key, T> init(int N, int len)
 {
-  experimental::Map<Key, T> test(N / 2, 2);
+  experimental::Map<Key, T> test(N, len);
+  EXPECT_EQ(N*len, test.max_size());
+  EXPECT_EQ(0, test.size());
+  EXPECT_EQ(len, test.bucket_size());
+  EXPECT_EQ(N, test.bucket_count());
   return test;
 }
 
@@ -74,28 +78,36 @@ void test_rehash(experimental::Map<Key, T> &test, int N)
 TEST(core_map, initialization)
 {
   constexpr int N = 20; /* Number of values to store */
-  experimental::Map<int, int> test = internal::init<int, int>(N);
+  constexpr int bucket_length = 2;
+  for(int i : {1, 2, 5, 10, 20, 100}){
+    for(int j : {1, 2, 5, 10}){
+      experimental::Map<int, int> test = internal::init<int, int>(i, bucket_length);
+    }
+  }
 }
 
 TEST(core_map, insertion)
 {
   constexpr int N = 20; /* Number of values to store */
-  experimental::Map<int, int> test = internal::init<int, int>(N);
+  constexpr int bucket_length = 2;
+  experimental::Map<int, int> test = internal::init<int, int>(N, bucket_length);
   internal::test_storage<int, int>(test, N);
 }
 
 TEST(core_map, removal)
 {
   constexpr int N = 20; /* Number of values to store */
-  experimental::Map<int, int> test = internal::init<int, int>(N);
+  constexpr int bucket_length = 2;
+  experimental::Map<int, int> test = internal::init<int, int>(N, bucket_length);
   internal::test_storage<int, int>(test, N);
   internal::test_remove<int, int>(test, N);
 }
 
 TEST(core_map, rehash)
 {
-  constexpr int N = 20; /* Number of values to store */
-  experimental::Map<int, int> test = internal::init<int, int>(N);
+  constexpr int N = 20; /* Number of values to store */ 
+  constexpr int bucket_length = 2;
+  experimental::Map<int, int> test = internal::init<int, int>(N, bucket_length);
   internal::test_storage<int, int>(test, N);
   internal::test_rehash<int, int>(test, N);
   internal::test_remove<int, int>(test, N);
