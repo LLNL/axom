@@ -193,8 +193,6 @@ public:
      */
   axom_map::Pair<Key, T> insert_update(Key key, T value)
   {
-    if(m_free != -1)
-    {
       IndexType ind = m_head;
       if(m_head == -1)
       {
@@ -205,6 +203,8 @@ public:
         m_list[m_head].key = key;
         m_list[m_head].value = value;
         m_size++;
+        axom_map::Pair<Key, T> ret(&(m_list[m_head]), true);
+        return ret;
       }
       else
       {
@@ -218,16 +218,26 @@ public:
           }
           ind = m_list[ind].next;
         }
-        m_list[ind].next = m_free;
-        ind = m_free;
-        m_free = m_list[m_free].next;
-        m_list[ind].next = -1;
-        m_list[ind].key = key;
-        m_list[ind].value = value;
-        m_size++;
-      }
-      axom_map::Pair<Key, T> ret(&(m_list[ind]), true);
-      return ret;
+
+        if(m_list[ind].key == key)
+        { 
+          m_list[ind].value = value;
+          axom_map::Pair<Key, T> ret(&(m_list[ind]), false);
+          return ret;
+        }
+        else if(m_free != -1){
+          m_list[ind].next = m_free;
+          ind = m_free;
+          m_free = m_list[m_free].next;
+          m_list[ind].next = -1;
+          m_list[ind].key = key;
+          m_list[ind].value = value;
+          m_size++;
+      
+          axom_map::Pair<Key, T> ret(&(m_list[ind]), true);
+          return ret;
+        }
+        
     }
     axom_map::Pair<Key, T> ret(&(m_end), false);
     return ret;
@@ -515,8 +525,8 @@ public:
    */  
   const T& operator[](Key key)
   {
-    //Since we can't throw an exception, and this needs to return a reference to a variable of type T, 
-    //the case where there's no room in the Map is woefully unhandled. 
+    //Since we can't throw an exception, the safest solution is to be read-only, and for the user to be careful with their
+    //accesses. 
     axom_map::Node<Key, T> &ins_result = find(key);
 
     return ins_result.value;
