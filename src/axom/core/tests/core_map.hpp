@@ -18,6 +18,7 @@ experimental::Map<Key, T> init(int N, int len)
   experimental::Map<Key, T> test(N, len);
   EXPECT_EQ(N*len, test.max_size());
   EXPECT_EQ(0, test.size());
+  EXPECT_EQ(true, test.empty());
   EXPECT_EQ(len, test.bucket_size());
   EXPECT_EQ(N, test.bucket_count());
   return test;
@@ -28,13 +29,15 @@ void test_storage(experimental::Map<Key, T> &test)
 {
   for(int i = 0; i < test.max_size(); i++)
   {
-    test.insert(i, i * 27 - test.max_size() / 2);
+    auto ret_test = test.insert(i, i * 27);
+    EXPECT_EQ(true, ret_test.second);
   }
-
+  EXPECT_EQ(false, test.empty());
   for(int i = 0; i < test.max_size(); i++)
   {
-    EXPECT_EQ(i * 27 - test.max_size() / 2, test.find(i).value);
+    EXPECT_EQ(i * 27, test.find(i).value);
   }
+  //This should fail, since we're at capacity.
   auto ret = test.insert(test.max_size(), 900);
   EXPECT_EQ(false, ret.second);
 }
@@ -43,7 +46,7 @@ template <typename Key, typename T>
 void test_brackets(experimental::Map<Key, T> &test)
 {
   for(int i = 0; i < test.size(); i++){
-    EXPECT_EQ(i*27-test.max_size()/2, test[i]);
+    EXPECT_EQ(i*27, test[i]);
   }
 }
 
@@ -61,22 +64,22 @@ void test_remove(experimental::Map<Key, T> &test)
 template <typename Key, typename T>
 void test_rehash(experimental::Map<Key, T> &test, int num, int fact)
 {
-  
-  test.rehash();
+  auto original_size = test.size();
+  test.rehash(num, fact);
 
-  for(int i = 0; i < test.size(); i++)
+  for(int i = 0; i < original_size; i++)
   {
-    EXPECT_EQ(i * 27 - test.size() / 2, test.find(i).value);
+    EXPECT_EQ(i * 27, test.find(i).value);
   }
 
-  for(int i = test.max_size()/2; i < test.max_size(); i++)
+  for(int i = original_size; i < test.max_size(); i++)
   {
-    test.insert(i, i * 27 - test.max_size()/4);
+    test.insert(i, i * 27);
   }
 
-  for(int i = test.max_size()/2; i < test.max_size(); i++)
+  for(int i = original_size; i < test.max_size(); i++)
   {
-    EXPECT_EQ(i * 27 - test.max_size()/4, test.find(i).value);
+    EXPECT_EQ(i * 27, test.find(i).value);
   }
   auto ret = test.insert(test.max_size(), 900);
   EXPECT_EQ(false, ret.second);
@@ -130,10 +133,22 @@ TEST(core_map, rehash)
 {
   for(int i: {1, 2, 5, 10, 20, 100}){
     for(int j: {1, 2, 5, 10}){
-      experimental::Map<int, int> test = internal::init<int, int>(i, j);
-      internal::test_storage<int, int>(test);
-      internal::test_rehash<int, int>(test, -1, -1);
-      internal::test_remove<int, int>(test);
+      for(int k: {2, 4, 8}){
+        experimental::Map<int, int> test = internal::init<int, int>(i, j);
+        internal::test_storage<int, int>(test);
+        internal::test_rehash<int, int>(test, -1, k);
+        internal::test_remove<int, int>(test);
+      }
+    }
+  }
+  for(int i: {1, 2, 5, 10, 20, 100}){
+    for(int j: {1, 2, 5, 10}){
+      for(int k = 0; k < 3; k++){
+        experimental::Map<int, int> test = internal::init<int, int>(i, j);
+        internal::test_storage<int, int>(test);
+        internal::test_rehash<int, int>(test, test.size()+20*k, -1);
+        internal::test_remove<int, int>(test);
+      }
     }
   }
 }
