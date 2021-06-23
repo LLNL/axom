@@ -111,6 +111,43 @@ void setup_blueprint_coords(DataStore* ds, Group* coords)
                          origv->getBuffer());
 }
 
+void setup_structured_coords(Group* coords, int domain_id)
+{
+  int nx = 5;
+  int ny = 5;
+  int nodecount = nx*ny;
+ 
+  // Set up the coordinates as Mesh Blueprint requires
+  coords->createViewString("type", "explicit");
+  Group* conduitval = coords->createGroup("values");
+  View* x = conduitval->createViewAndAllocate("x",
+                                    sidre::DOUBLE_ID,
+                                    nodecount);
+  View* y = conduitval->createViewAndAllocate("y",
+                                    sidre::DOUBLE_ID,
+                                    nodecount);
+
+  double* xarray = x->getArray();
+  double* yarray = y->getArray();
+
+  double x_lo = static_cast<double>(domain_id);
+  double x_hi = x_lo + 1.0;
+  double dx = (x_hi-x_lo)/static_cast<double>(nx-1);
+  double y_lo = 0.0;
+  double y_hi = 1.5;
+  double dy = (y_hi-y_lo)/static_cast<double>(ny-1);
+
+  for (int j = 0; j < ny; ++j)
+  {
+    for (int i = 0; i < nx; ++i)
+    {
+      int node_offset = j*nx + i;
+      xarray[node_offset] = x_lo + i*dx;      
+      yarray[node_offset] = y_lo + j*dy;      
+    }
+  }
+}
+
 void setup_blueprint_topos(DataStore* ds, Group* topos)
 {
   // Sew the nodes together into the two hexahedra, using prior knowledge.
@@ -158,6 +195,15 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
   AXOM_UNUSED_VAR(ds);
 }
 
+void setup_structured_topos(Group* topos)
+{
+  Group* structmesh = topos->createGroup("mesh");
+  structmesh->createViewString("type", "structured");
+  structmesh->createViewString("coordset", "coords");
+  structmesh->createViewScalar("elements/dims/i", 4); // must match nx-1
+  structmesh->createViewScalar("elements/dims/j", 4); // must match ny-1
+}
+
 void setup_blueprint_fields(DataStore* ds, Group* fields)
 {
   // Set up the node-centered field
@@ -183,6 +229,52 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
                        sidre::DOUBLE_ID,
                        origv->getNumElements(),
                        origv->getBuffer());
+}
+
+void setup_structured_fields(Group* fields)
+{
+  int nx = 5;
+  int ny = 5;
+  int ex = nx-1;
+  int ey = ny-1;
+  int eltcount = ex*ey;
+  int nodecount = nx*ny;
+
+  Group* nodefield = fields->createGroup("nodefield");
+  nodefield->createViewString("association", "vertex");
+  nodefield->createViewString("type", "scalar");
+  nodefield->createViewString("topology", "mesh");
+  View* nodes = nodefield->createViewAndAllocate("values",
+                        sidre::DOUBLE_ID,
+                        nodecount);
+
+  double* nptr = nodes->getArray();
+
+  for (int j = 0; j < ny; ++j)
+  {
+    for (int i = 0; i < nx; ++i)
+    {
+      nptr[j*nx+i] = static_cast<double>(i*j);
+    }
+  }
+
+  Group* eltfield = fields->createGroup("eltfield");
+  eltfield->createViewString("association", "element");
+  eltfield->createViewString("type", "scalar");
+  eltfield->createViewString("topology", "mesh");
+  View* elts = eltfield->createViewAndAllocate("values",
+                           sidre::DOUBLE_ID,
+                           eltcount);
+
+  double* eptr = elts->getArray();
+
+  for (int j = 0; j < ey; ++j)
+  {
+    for (int i = 0; i < ex; ++i)
+    {
+      eptr[j*ex+i] = static_cast<double>(i*j);
+    }
+  }
 }
 
 #ifdef AXOM_USE_MPI
@@ -333,6 +425,81 @@ void generate_multidomain_blueprint(DataStore* ds,
     writer.writeBlueprintIndexToRootFile(ds, holder_name, bp_rootfile, mesh_name);
   }
 }
+
+void generate_structured_blueprint(DataStore* ds,
+                                const std::string& filename,
+                                int num_files)
+{
+  int my_rank;
+  int comm_size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
+  num_files = 1;
+
+  // 3 domains on even ranks, 2 domains on odd ranks
+  int64_t domain_begin = (5 * (my_rank / 2)) + (3 * (my_rank % 2));
+  int64_t domain_end = domain_begin + (3 - (my_rank % 2));
+
+  std::string holder_name = "domain_data";
+  std::string mesh_name = "mesh";
+  Group* holder = ds->getRoot()->createGroup(holder_name);
+
+  std::string domain_pattern = "domain_{domain:06d}";
+  ds->getRoot()->createViewString("domain_pattern", domain_pattern);
+
+  for(int64_t i = domain_begin; i < domain_end; ++i)
+  {
+    std::string domain_name = fmt::format("domain_{:06d}", i);
+
+    Group* mroot = holder->createGroup(domain_name);
+    Group* coords = mroot->createGroup("coordsets/coords");
+    Group* topos = mroot->createGroup("topologies");
+    // no material sets in this example
+    Group* fields = mroot->createGroup("fields");
+    // no adjacency sets in this example
+    mroot->createViewScalar("state/domain_id", i);
+
+    setup_structured_coords(coords, i);
+
+    setup_structured_topos(topos);
+
+    setup_structured_fields(fields);
+  }
+
+  IOManager writer(MPI_COMM_WORLD);
+
+  conduit::Node info, mesh_node, root_node;
+  ds->getRoot()->createNativeLayout(mesh_node);
+  std::string bp_protocol = "mesh";
+  if(conduit::blueprint::mpi::verify(bp_protocol,
+                                     mesh_node[holder_name],
+                                     info,
+                                     MPI_COMM_WORLD))
+  {
+  #if defined(AXOM_USE_HDF5)
+    std::string protocol = "sidre_hdf5";
+  #else
+    std::string protocol = "sidre_json";
+  #endif
+
+    std::string output_name = filename;
+
+    if(comm_size > 1)
+    {
+      output_name = output_name + "_par";
+    }
+
+    std::string bp_rootfile = output_name + ".root";
+
+    writer.write(ds->getRoot()->getGroup("domain_data"),
+                 std::min(num_files, comm_size),
+                 output_name,
+                 protocol);
+
+    writer.writeBlueprintIndexToRootFile(ds, holder_name, bp_rootfile, mesh_name);
+  }
+}
 #endif
 
 int main(int argc, char** argv)
@@ -366,6 +533,21 @@ int main(int argc, char** argv)
     spds = create_tiny_datastore();
     generate_multidomain_blueprint(spds, "multi_all", num_ranks);
   }
+  spds->getRoot()->destroyGroups();
+  spds->getRoot()->destroyViews();
+  generate_structured_blueprint(spds, "struct1", 1);
+  if(num_ranks > 1)
+  {
+    spds->getRoot()->destroyGroups();
+    spds->getRoot()->destroyViews();
+    spds = create_tiny_datastore();
+    generate_structured_blueprint(spds, "struct2", 2);
+    spds->getRoot()->destroyGroups();
+    spds->getRoot()->destroyViews();
+    spds = create_tiny_datastore();
+    generate_structured_blueprint(spds, "struct_all", num_ranks);
+  }
+
   MPI_Finalize();
 #endif
 
