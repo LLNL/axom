@@ -1,9 +1,6 @@
 vcpkg_fail_port_install(ON_TARGET "UWP")
 
-include(vcpkg_common_functions)
-
 message(STATUS "Building dependencies for Axom")
-
 message(STATUS "CURRENT_INSTALLED_DIR -- ${CURRENT_INSTALLED_DIR}")
 message(STATUS "PORT -- ${PORT}")
 

@@ -28,10 +28,14 @@ vcpkg_configure_cmake(
         -DENABLE_UTILS=OFF
         -DBUILD_SHARED_LIBS=${_is_shared}
         -DHDF5_DIR=${CURRENT_INSTALLED_DIR}
+        -DCONDUIT_INSTALL_CONFIG_DIR="share/conduit"
+        -DCONDUIT_INSTALL_CMAKE_MODULE_DIR="share"
 )
 
 vcpkg_install_cmake()
-vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake)
+vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake
+                          TARGET_PATH share
+                          TOOLS_PATH tools/conduit)
 vcpkg_copy_pdbs()
 
 
