@@ -137,16 +137,18 @@ TEST(core_map, rehash)
         experimental::Map<int, int> test = internal::init<int, int>(i, j);
         internal::test_storage<int, int>(test);
         internal::test_rehash<int, int>(test, -1, k);
+        EXPECT_EQ(test.max_size(), k*i*j);
         internal::test_remove<int, int>(test);
       }
     }
   }
   for(int i: {1, 2, 5, 10, 20, 100}){
     for(int j: {1, 2, 5, 10}){
-      for(int k = 0; k < 3; k++){
+      for(int k = 1; k < 4; k++){
         experimental::Map<int, int> test = internal::init<int, int>(i, j);
         internal::test_storage<int, int>(test);
-        internal::test_rehash<int, int>(test, test.size()+20*k, -1);
+        internal::test_rehash<int, int>(test, test.max_size()+20*k, -1);
+        EXPECT_EQ((i*j+20*k)*j, test.max_size());
         internal::test_remove<int, int>(test);
       }
     }
