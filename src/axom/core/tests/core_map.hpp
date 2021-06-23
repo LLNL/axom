@@ -51,14 +51,55 @@ void test_brackets(experimental::Map<Key, T> &test)
 }
 
 template <typename Key, typename T>
+void test_insert_assign(experimental::Map<Key, T> &test)
+{
+  for(int i = 0; i < test.max_size(); i++)
+  {
+    Key key = i;
+    T value = key*27;
+    auto ret_test = test.insert_or_assign(key, value);
+    EXPECT_EQ(true, ret_test.second);
+  }
+
+  EXPECT_EQ(false, test.empty());
+  for(int i = 0; i < test.max_size(); i++)
+  {
+    Key key = i; 
+    EXPECT_EQ(key * 27, test.find(key).value);
+  }
+
+  for(int i = 0; i < test.max_size(); i++)
+  {
+    Key key = i;
+    T value = key*28;
+    auto ret_test = test.insert_or_assign(key, value);
+    EXPECT_EQ(false, ret_test.second);
+    EXPECT_EQ(ret_test.first->key, key);
+  }
+  EXPECT_EQ(test.size(), test.max_size());
+  for(int i = 0; i < test.max_size(); i++)
+  {
+    Key key = i; 
+    EXPECT_EQ(key * 28, test.find(key).value);
+  }
+}
+
+template <typename Key, typename T>
 void test_remove(experimental::Map<Key, T> &test)
 {
-  test.erase(0);
-  auto ret = test.find(0);
-  EXPECT_EQ(-2, ret.next);
+  std::size_t to_erase = test.size();
+  for(std::size_t i = 0; i < to_erase; i++){
+    Key key = (Key) i;
+    bool erased = test.erase(i);
+    EXPECT_EQ(erased, true);
+    //Change to compare to some kind of end accessor.
+    EXPECT_EQ(test.find(key).next, -2); 
+  }
+  EXPECT_EQ(test.size(), 0); 
   test.insert(0, 900);
-  ret = test.find(0);
+  auto ret = test.find(0);
   EXPECT_EQ(900, ret.value);
+  EXPECT_EQ(test.size(), 1);
 }
 
 template <typename Key, typename T>
@@ -69,17 +110,21 @@ void test_rehash(experimental::Map<Key, T> &test, int num, int fact)
 
   for(int i = 0; i < original_size; i++)
   {
-    EXPECT_EQ(i * 27, test.find(i).value);
+    Key key = i;
+    EXPECT_EQ(key * 27, test.find(key).value);
   }
 
   for(int i = original_size; i < test.max_size(); i++)
   {
-    test.insert(i, i * 27);
+    Key key = i;
+    T value = key*27;
+    test.insert(key, value);
   }
 
   for(int i = original_size; i < test.max_size(); i++)
   {
-    EXPECT_EQ(i * 27, test.find(i).value);
+    Key key = i;
+    EXPECT_EQ(key * 27, test.find(key).value);
   }
   auto ret = test.insert(test.max_size(), 900);
   EXPECT_EQ(false, ret.second);
@@ -102,6 +147,16 @@ TEST(core_map, insertion)
     for(int j: {1, 2, 5, 10}){
       experimental::Map<int, int> test = internal::init<int, int>(i, j);
       internal::test_storage<int, int>(test);
+    }
+  }
+}
+
+TEST(core_map, insert_or_assign)
+{
+  for(int i: {5}){
+    for(int j: {5}){
+      experimental::Map<int, int> test = internal::init<int, int>(i, j);
+      internal::test_insert_assign<int, int>(test);
     }
   }
 }
