@@ -393,10 +393,15 @@ public:
    * \param [in] buckets user-specified number of buckets in new Map. -1 to fall back to multiplicative factor.
    * \param [in] factor user-specified multiplicative factor to determine size of new Map based upon existing. 
    *
+   * \return true if the hash table is now in a safe state, false otherwise
+   *
    * \note if neither input is specified, the new Map will be of size 2*old Map size. 
    * \note both map instances exist in memory until rehash returns. Risks running out of memory.
+   * \note Rehash should generally ensure a previously filled bucket is no longer filled, and the load_factor is correct,
+   *  if used properly. However, since this highly manual process has room for error this implementation does
+   *  perform a check for if any bucket is now full. 
    */
-  void rehash(int buckets = -1, int factor = -1)
+  bool rehash(int buckets = -1, int factor = -1)
   {
     int newlen = 0;
     IndexType ind;
@@ -413,7 +418,7 @@ public:
     {
       newlen = 2 * m_bucket_count;
     }
-
+    m_bucket_fill = false;
     axom_map::Bucket<Key, T>* new_list = alloc_map(newlen, m_bucket_len);
 
     for(int i = 0; i < m_bucket_count; i++)
@@ -431,7 +436,12 @@ public:
     axom::deallocate(m_buckets);
     m_buckets = new_list;
     m_bucket_count = newlen;
-    return;
+    for(int i = 0; i  < m_bucket_count; i++){
+      if(m_buckets[i].get_size() == m_buckets[i].get_capacity()){
+        m_bucket_fill = true;
+      }
+    }
+    return check_rehash();
   }
   /*!
    * \brief Deallocates memory resources for this Map instance, resets state as if constructed with 0 elements.
@@ -458,6 +468,7 @@ public:
     m_bucket_len = bucket_len;
     m_size = 0;
     m_load_factor = 0;
+    m_bucket_fill = false;
     m_buckets = alloc_map(m_bucket_count, m_bucket_len);
   }
   /*!
@@ -468,6 +479,8 @@ public:
    *
    * \note Deviation from STL unordered_map is that insertion fails when map full, rather than automatically rehashing. 
    *  Manual call of rehash() required.
+   *
+   * \note Can set "full bucket" flag for Map, which is only unset by rehashing.
    *
    * \return A pair whose first element is a pointer to the inserted item and bool set to true
    *  if successful. Otherwise, the second element is set to false, and the first to one of two values: a sentinel node 
@@ -482,6 +495,9 @@ public:
     if(ret.second == true)
     {
       m_size++;
+      if(target->get_size() == target->get_capacity()){
+        m_bucket_fill = true;
+      }
     }
     return ret;
   }
@@ -496,6 +512,8 @@ public:
    * \note Deviation from STL unordered_map is that insertion fails when map full, rather than automatically rehashing. 
    *  Manual call of rehash() required.
    *
+   * \note Can set "full bucket" flag for Map, which is only unset by rehashing.
+   *
    * \return A pair whose first element is a pointer to the inserted item and bool set to true
    *  if insertion was performed. Otherwise, the second element is set to false, and the first to one of two values: a sentinel node 
    *  if the map is overfilled, and the actual node with the given key if an assignment occured.
@@ -509,6 +527,9 @@ public:
     if(ret.second == true)
     {
       m_size++;
+      if(target->get_size() == target->get_capacity()){
+        m_bucket_fill = true;    
+      }
     }
     return ret;
   }  
@@ -613,6 +634,46 @@ public:
    * \return m_end the values of the sentinel node for failure checks
    */ 
    const axom_map::Node<Key,T> &end() { return m_end; }
+  /*!
+   * \brief Returns maximum load factor (ratio between size and bucket count)
+   * hash table will reach before check_rehash() returns true.
+   *
+   * \return max_load_factor maximum load factor desired for this hash table. Default 1.0
+   */ 
+   float max_load_factor() { return m_load_factor; }
+   /*!
+   * \brief Sets maximum load factor (ratio between size and bucket count)
+   * hash table will reach before check_rehash returns true. Default value is 
+   *  1.0.
+   *
+   * \param [in] load_factor desired maximum load factor
+   */
+   void max_load_factor(float load_factor) { m_load_factor = load_factor; }
+  /*!
+   * \brief Returns current load factor (ratio between size and bucket count).
+   *
+   * \return load_factor the ratio between the amount of items in the Map and the amount of buckets.
+   */ 
+   float load_factor() { return m_size/m_bucket_count; }
+
+  /*!
+   * \brief Returns whether a rehash is necessary for this Map instance. Does so based on two metrics. The 
+   *  first is whether the load factor of the map (ratio between size and bucket count) has exceeded its 
+   *  maximum load factor (default 1.0). The second is whether any of the buckets are currently full. 
+   *
+   * \note This function does not exist in the STL unordered_map, because it performs automatic rehashes as 
+   *  necessary. To support the portability constraints put on this data structure, the user must regularly
+   *  call this function to verify whether they need to rehash to maintain performance. Another metric is
+   *  when an insertion fails and returns end(), but this will yield an answer before such an event.
+   *
+   * \return true if Map should be rehashed now, false otherwise
+   */ 
+   bool check_rehash(){
+     if(m_size/m_bucket_count >= m_load_factor || m_bucket_fill == true){
+       return true;
+     }
+     return false;
+   }
   ///@}
 private:
   /// \name Private Map Methods
@@ -664,8 +725,9 @@ private:
   std::size_t m_bucket_count; /*!< the number of buckets in the Map instance */
   int m_bucket_len; /*!< the number of items that can be contained in a bucket in this Map instance */
   int m_size; /*!< the number of items currenty stored in this Map instance */
-  int m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
+  float m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
   axom_map::Node<Key, T> m_end; /*!< the node with meaningless values allowing for user to verify success or failure of operations */
+  bool m_bucket_fill; /*!<  status of buckets in general -- if at least one is full, this is set to true, false otherwise*/
 
   /// @}
 };
