@@ -157,8 +157,8 @@ TEST(core_map, insertion)
 
 TEST(core_map, insert_or_assign)
 {
-  for(int i: {5}){
-    for(int j: {5}){
+  for(int i: {1,2,5,10,20,100}){
+    for(int j: {1,2,5,10}){
       experimental::Map<int, int> test = internal::init<int, int>(i, j);
       internal::test_insert_assign<int, int>(test);
     }
