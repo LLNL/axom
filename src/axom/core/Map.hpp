@@ -38,10 +38,10 @@ struct Node
   IndexType next;
   Key key;
   T value;
-  bool operator==(const Node& rhs)
-  {
-    return (this->next == rhs.next) && (this->key == rhs.key) &&
-      (this->value == rhs.value);
+  
+  friend bool operator== (const Node &lhs, const Node &rhs){ 
+    return (lhs.next == rhs.next) && (lhs.key == rhs.key) &&
+      (lhs.value == rhs.value);
   }
 };
 
@@ -370,6 +370,9 @@ public:
   Map(int num_buckets, int bucket_len = 10)
   {
     init(num_buckets, bucket_len);
+    m_end.key = Key{0};
+    m_end.value = T{0};
+    m_end.next = -2;
   }
   /// @}
   
@@ -604,6 +607,12 @@ public:
    * \return true if the container is empty, false otherwise
    */ 
   bool empty() const { return (m_size == 0); }
+  /*!
+   * \brief Returns const reference to "end" node, for comparison to check
+   *  return results of other Map functions.
+   * \return m_end the values of the sentinel node for failure checks
+   */ 
+   const axom_map::Node<Key,T> &end() { return m_end; }
   ///@}
 private:
   /// \name Private Map Methods
@@ -656,6 +665,7 @@ private:
   int m_bucket_len; /*!< the number of items that can be contained in a bucket in this Map instance */
   int m_size; /*!< the number of items currenty stored in this Map instance */
   int m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
+  axom_map::Node<Key, T> m_end; /*!< the node with meaningless values allowing for user to verify success or failure of operations */
 
   /// @}
 };
