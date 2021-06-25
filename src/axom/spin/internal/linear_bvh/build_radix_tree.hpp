@@ -480,7 +480,7 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
         int32 lchild = lchildren_ptr[current_node];
         int32 rchild = rchildren_ptr[current_node];
 
-        int other_child = (lchild == last_node) ? rchild : lchild;
+        int32 other_child = (lchild == last_node) ? rchild : lchild;
 
         if(other_child >= inner_size)
         {
