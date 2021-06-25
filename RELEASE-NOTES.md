@@ -47,6 +47,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
+- Fixed problem with Cray Fortran compiler not recognizing MSVC pragmas in `axom/config.hpp`. 
+  The latter are now only added in MSVC configurations.
 
 
 ## [Version 0.5.0] - Release date 2021-05-14
