@@ -38,8 +38,9 @@ struct Node
   IndexType next;
   Key key;
   T value;
-  
-  friend bool operator== (const Node &lhs, const Node &rhs){ 
+
+  friend bool operator==(const Node& lhs, const Node& rhs)
+  {
     return (lhs.next == rhs.next) && (lhs.key == rhs.key) &&
       (lhs.value == rhs.value);
   }
@@ -92,10 +93,7 @@ public:
      *
      * \pre len > 0
      */
-  Bucket(int len)
-  {
-    init(len);
-  }
+  Bucket(int len) { init(len); }
 
   /*!
      * \brief If a Bucket instance is created with the default contructor, this
@@ -178,7 +176,7 @@ public:
     return ret;
   }
 
-    /*!
+  /*!
      * \brief Inserts a given key-value pair into the linked list if an item with 
      *  given key does not already exist, and updates the item's current value with the supplied 
      *  one if item already exists. Fails if list is full.
@@ -193,57 +191,55 @@ public:
      */
   axom_map::Pair<Key, T> insert_update(Key key, T value)
   {
-      IndexType ind = m_head;
-      if(m_head == -1)
+    IndexType ind = m_head;
+    if(m_head == -1)
+    {
+      m_head = m_free;
+      ind = m_free;
+      m_free = m_list[m_free].next;
+      m_list[m_head].next = -1;
+      m_list[m_head].key = key;
+      m_list[m_head].value = value;
+      m_size++;
+      axom_map::Pair<Key, T> ret(&(m_list[m_head]), true);
+      return ret;
+    }
+    else
+    {
+      while(m_list[ind].next != -1)
       {
-        m_head = m_free;
-        ind = m_free;
-        m_free = m_list[m_free].next;
-        m_list[m_head].next = -1;
-        m_list[m_head].key = key;
-        m_list[m_head].value = value;
-        m_size++;
-        axom_map::Pair<Key, T> ret(&(m_list[m_head]), true);
-        return ret;
-      }
-      else
-      {
-        while(m_list[ind].next != -1)
-        {
-          if(m_list[ind].key == key)
-          {
-            m_list[ind].value = value;
-            axom_map::Pair<Key, T> ret(&(m_list[ind]), false);
-            return ret;
-          }
-          ind = m_list[ind].next;
-        }
-
         if(m_list[ind].key == key)
-        { 
+        {
           m_list[ind].value = value;
           axom_map::Pair<Key, T> ret(&(m_list[ind]), false);
           return ret;
         }
-        else if(m_free != -1){
-          m_list[ind].next = m_free;
-          ind = m_free;
-          m_free = m_list[m_free].next;
-          m_list[ind].next = -1;
-          m_list[ind].key = key;
-          m_list[ind].value = value;
-          m_size++;
-      
-          axom_map::Pair<Key, T> ret(&(m_list[ind]), true);
-          return ret;
-        }
-        
+        ind = m_list[ind].next;
+      }
+
+      if(m_list[ind].key == key)
+      {
+        m_list[ind].value = value;
+        axom_map::Pair<Key, T> ret(&(m_list[ind]), false);
+        return ret;
+      }
+      else if(m_free != -1)
+      {
+        m_list[ind].next = m_free;
+        ind = m_free;
+        m_free = m_list[m_free].next;
+        m_list[ind].next = -1;
+        m_list[ind].key = key;
+        m_list[ind].value = value;
+        m_size++;
+
+        axom_map::Pair<Key, T> ret(&(m_list[ind]), true);
+        return ret;
+      }
     }
     axom_map::Pair<Key, T> ret(&(m_end), false);
     return ret;
   }
-
-  
 
   /*!
      * \brief Removes item with the given key from the linked list, if item exists. Relinks accordingly.
@@ -370,19 +366,16 @@ public:
   Map(int num_buckets, int bucket_len = 10)
   {
     init(num_buckets, bucket_len);
-    m_end.key = Key{0};
-    m_end.value = T{0};
+    m_end.key = Key {0};
+    m_end.value = T {0};
     m_end.next = -2;
   }
   /// @}
-  
+
   /*!
    * Destructor. Frees associated buffers.
-   */ 
-  ~Map()
-  {
-    deallocate();
-  }
+   */
+  ~Map() { deallocate(); }
 
   /// \name Map Methods
   ///@{
@@ -436,8 +429,10 @@ public:
     axom::deallocate(m_buckets);
     m_buckets = new_list;
     m_bucket_count = newlen;
-    for(int i = 0; i  < m_bucket_count; i++){
-      if(m_buckets[i].get_size() == m_buckets[i].get_capacity()){
+    for(int i = 0; i < m_bucket_count; i++)
+    {
+      if(m_buckets[i].get_size() == m_buckets[i].get_capacity())
+      {
         m_bucket_fill = true;
       }
     }
@@ -447,9 +442,11 @@ public:
    * \brief Deallocates memory resources for this Map instance, resets state as if constructed with 0 elements.
    *  Also used in destructor.
    *
-   */ 
-  void deallocate(){
-    for(int i = 0; i < m_bucket_count; i++){
+   */
+  void deallocate()
+  {
+    for(int i = 0; i < m_bucket_count; i++)
+    {
       axom::deallocate(m_buckets[i].m_list);
     }
     axom::deallocate(m_buckets);
@@ -462,8 +459,9 @@ public:
   /*!
    * \brief Initializes this Map instance, mostly in case deallocate was used and there's a desire to continue use.
    *
-   */ 
-  void init(int num_buckets, int bucket_len = 10){
+   */
+  void init(int num_buckets, int bucket_len = 10)
+  {
     m_bucket_count = num_buckets;
     m_bucket_len = bucket_len;
     m_size = 0;
@@ -495,13 +493,14 @@ public:
     if(ret.second == true)
     {
       m_size++;
-      if(target->get_size() == target->get_capacity()){
+      if(target->get_size() == target->get_capacity())
+      {
         m_bucket_fill = true;
       }
     }
     return ret;
   }
-  
+
   /*!
    * \brief Inserts given key-value pair into the Map instance, or updates value of existing key-value pair if item
    *  with supplied key already exists.
@@ -527,12 +526,13 @@ public:
     if(ret.second == true)
     {
       m_size++;
-      if(target->get_size() == target->get_capacity()){
-        m_bucket_fill = true;    
+      if(target->get_size() == target->get_capacity())
+      {
+        m_bucket_fill = true;
       }
     }
     return ret;
-  }  
+  }
 
   /*!
    * \brief Finds reference to value of key-value pair mapped to supplied pair, returns value from sentinel node
@@ -546,16 +546,16 @@ public:
    *
    * \return A const reference to the value of key-value pair in the Map instance that is associated with supplied Key.
    *
-   */  
+   */
   const T& operator[](Key key)
   {
     //Since we can't throw an exception, the safest solution is to be read-only, and for the user to be careful with their
-    //accesses. 
-    axom_map::Node<Key, T> &ins_result = find(key);
+    //accesses.
+    axom_map::Node<Key, T>& ins_result = find(key);
 
     return ins_result.value;
   }
-  
+
   /*!
    * \brief Removes key-value pair with given key from the Map instance.
    *
@@ -626,35 +626,35 @@ public:
   /*!
    * \brief Checks if the container has no elements.
    * \return true if the container is empty, false otherwise
-   */ 
+   */
   bool empty() const { return (m_size == 0); }
   /*!
    * \brief Returns const reference to "end" node, for comparison to check
    *  return results of other Map functions.
    * \return m_end the values of the sentinel node for failure checks
-   */ 
-   const axom_map::Node<Key,T> &end() const { return m_end; }
+   */
+  const axom_map::Node<Key, T>& end() const { return m_end; }
   /*!
    * \brief Returns maximum load factor (ratio between size and bucket count)
    * hash table will reach before check_rehash() returns true.
    *
    * \return max_load_factor maximum load factor desired for this hash table. Default 1.0
-   */ 
-   float max_load_factor() const { return m_load_factor; }
-   /*!
+   */
+  float max_load_factor() const { return m_load_factor; }
+  /*!
    * \brief Sets maximum load factor (ratio between size and bucket count)
    * hash table will reach before check_rehash returns true. Default value is 
    *  1.0.
    *
    * \param [in] load_factor desired maximum load factor
    */
-   void max_load_factor(float load_factor) { m_load_factor = load_factor; }
+  void max_load_factor(float load_factor) { m_load_factor = load_factor; }
   /*!
    * \brief Returns current load factor (ratio between size and bucket count).
    *
    * \return load_factor the ratio between the amount of items in the Map and the amount of buckets.
-   */ 
-   float load_factor() const { return m_size/m_bucket_count; }
+   */
+  float load_factor() const { return m_size / m_bucket_count; }
 
   /*!
    * \brief Returns whether a rehash is necessary for this Map instance. Does so based on two metrics. The 
@@ -667,13 +667,15 @@ public:
    *  when an insertion fails and returns end(), but this will yield an answer before such an event.
    *
    * \return true if Map should be rehashed now, false otherwise
-   */ 
-   bool check_rehash(){
-     if(m_size/m_bucket_count >= m_load_factor || m_bucket_fill == true){
-       return true;
-     }
-     return false;
-   }
+   */
+  bool check_rehash()
+  {
+    if(m_size / m_bucket_count >= m_load_factor || m_bucket_fill == true)
+    {
+      return true;
+    }
+    return false;
+  }
   ///@}
 private:
   /// \name Private Map Methods
