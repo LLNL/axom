@@ -317,14 +317,14 @@ public:
    * \return Returns maximum number of items that can be stored in this Bucket instance.
    *
    */
-  int get_capacity() { return m_capacity; }
+  int get_capacity() const { return m_capacity; }
 
   /*!
    * \brief Returns current number of items in this Bucket instance.
    *
    * \return Returns current number of items in this Bucket instance.
    */
-  int get_size() { return m_size; }
+  int get_size() const { return m_size; }
   ///@}
 
   axom_map::Node<Key, T>* m_list;
@@ -601,23 +601,23 @@ public:
    *
    * \return A pointer to the queried bucket.
    */
-  std::size_t bucket(std::size_t hash) { return hash % m_bucket_count; }
+  std::size_t bucket(std::size_t hash) const { return hash % m_bucket_count; }
 
   /*!
    * \brief Returns the maximum number of items per bucket.
    * \return bucket_len the maximum number of items per bucket.
    */
-  int bucket_size() { return m_bucket_len; }
+  int bucket_size() const { return m_bucket_len; }
   /*!
    * \brief Returns the number of buckets in the Map.
    * \return bucket_count 
    */
-  int bucket_count() { return m_bucket_count; }
+  int bucket_count() const { return m_bucket_count; }
   /*!
    * \brief Returns the amount of items in the Map instance.
    * \return size the amount of items in the Map instance.
    */
-  int size() { return m_size; }
+  int size() const { return m_size; }
   /*!
    * \brief Returns the overall capacity of the Map instance.
    * \return capacity the overall capacity of the Map instance.
@@ -633,14 +633,14 @@ public:
    *  return results of other Map functions.
    * \return m_end the values of the sentinel node for failure checks
    */ 
-   const axom_map::Node<Key,T> &end() { return m_end; }
+   const axom_map::Node<Key,T> &end() const { return m_end; }
   /*!
    * \brief Returns maximum load factor (ratio between size and bucket count)
    * hash table will reach before check_rehash() returns true.
    *
    * \return max_load_factor maximum load factor desired for this hash table. Default 1.0
    */ 
-   float max_load_factor() { return m_load_factor; }
+   float max_load_factor() const { return m_load_factor; }
    /*!
    * \brief Sets maximum load factor (ratio between size and bucket count)
    * hash table will reach before check_rehash returns true. Default value is 
@@ -654,7 +654,7 @@ public:
    *
    * \return load_factor the ratio between the amount of items in the Map and the amount of buckets.
    */ 
-   float load_factor() { return m_size/m_bucket_count; }
+   float load_factor() const { return m_size/m_bucket_count; }
 
   /*!
    * \brief Returns whether a rehash is necessary for this Map instance. Does so based on two metrics. The 
