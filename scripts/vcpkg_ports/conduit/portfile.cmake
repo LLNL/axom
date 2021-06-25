@@ -6,7 +6,9 @@ vcpkg_from_github(
     REF v0.7.2
     SHA512 85ee7c2a5483952c0f8b093a0fef95f393cd5c34884caefb03734cfd4095b8f64440b8c599a0547a25adea6da5b0126445885a681d706d4b5b68c22d897aea18
     HEAD_REF develop
-    PATCHES "./hdf5-1-12.patch"
+    PATCHES 
+        "./hdf5-1-12.patch"
+        "./setup_deps_vcpkg_triplet.patch"
 )
 
 set(_is_shared TRUE)
