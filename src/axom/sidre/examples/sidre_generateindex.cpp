@@ -111,24 +111,16 @@ void setup_blueprint_coords(DataStore* ds, Group* coords)
                          origv->getBuffer());
 }
 
-void setup_structured_coords(Group* coords, int domain_id)
+void setup_cartesian_coords(Group* coords, int domain_id)
 {
+  // 5x5 vertices, 4x4 elements
   int nx = 5;
   int ny = 5;
-  int nodecount = nx*ny;
  
-  // Set up the coordinates as Mesh Blueprint requires
-  coords->createViewString("type", "explicit");
-  Group* conduitval = coords->createGroup("values");
-  View* x = conduitval->createViewAndAllocate("x",
-                                    sidre::DOUBLE_ID,
-                                    nodecount);
-  View* y = conduitval->createViewAndAllocate("y",
-                                    sidre::DOUBLE_ID,
-                                    nodecount);
-
-  double* xarray = x->getArray();
-  double* yarray = y->getArray();
+  // Set up uniform cartesian coordinates
+  coords->createViewString("type", "uniform");
+  coords->createViewScalar("dims/i", nx);
+  coords->createViewScalar("dims/j", ny);
 
   double x_lo = static_cast<double>(domain_id);
   double x_hi = x_lo + 1.0;
@@ -136,16 +128,10 @@ void setup_structured_coords(Group* coords, int domain_id)
   double y_lo = 0.0;
   double y_hi = 1.5;
   double dy = (y_hi-y_lo)/static_cast<double>(ny-1);
-
-  for (int j = 0; j < ny; ++j)
-  {
-    for (int i = 0; i < nx; ++i)
-    {
-      int node_offset = j*nx + i;
-      xarray[node_offset] = x_lo + i*dx;      
-      yarray[node_offset] = y_lo + j*dy;      
-    }
-  }
+  coords->createViewScalar("origin/x", x_lo);
+  coords->createViewScalar("origin/y", y_lo);
+  coords->createViewScalar("spacing/dx", dx);
+  coords->createViewScalar("spacing/dy", dy);
 }
 
 void setup_blueprint_topos(DataStore* ds, Group* topos)
@@ -195,9 +181,10 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
   AXOM_UNUSED_VAR(ds);
 }
 
-void setup_structured_topos(Group* topos)
+void setup_cartesian_topos(Group* topos)
 {
-  Group* structmesh = topos->createGroup("mesh");
+  //Set up topology using prior knowledge of nx and ny values from coords
+  Group* structmesh = topos->createGroup("cartesian");
   structmesh->createViewString("type", "structured");
   structmesh->createViewString("coordset", "coords");
   structmesh->createViewScalar("elements/dims/i", 4); // must match nx-1
@@ -212,7 +199,7 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
   Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
-  nodefield->createViewString("topology", "mesh");
+  nodefield->createViewString("topology", "cartesianesh");
   nodefield->createView("values",
                         sidre::INT_ID,
                         origv->getNumElements(),
@@ -231,8 +218,9 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
                        origv->getBuffer());
 }
 
-void setup_structured_fields(Group* fields)
+void setup_cartesian_fields(Group* fields)
 {
+  // Match known values from setup_cartesian_coords 
   int nx = 5;
   int ny = 5;
   int ex = nx-1;
@@ -240,6 +228,7 @@ void setup_structured_fields(Group* fields)
   int eltcount = ex*ey;
   int nodecount = nx*ny;
 
+  // Create a node-centered field and an element-centered field
   Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
@@ -426,7 +415,7 @@ void generate_multidomain_blueprint(DataStore* ds,
   }
 }
 
-void generate_structured_blueprint(DataStore* ds,
+void generate_cartesian_blueprint(DataStore* ds,
                                 const std::string& filename,
                                 int num_files)
 {
@@ -435,14 +424,20 @@ void generate_structured_blueprint(DataStore* ds,
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
-  num_files = 1;
-
-  // 3 domains on even ranks, 2 domains on odd ranks
-  int64_t domain_begin = (5 * (my_rank / 2)) + (3 * (my_rank % 2));
-  int64_t domain_end = domain_begin + (3 - (my_rank % 2));
+  // 1 domain on even ranks, 2 domains on odd ranks
+  int64_t domain_begin = (3 * (my_rank / 2)) + (1 * (my_rank % 2));
+  int64_t domain_end = domain_begin;
+  if (my_rank%2)
+  {
+    domain_end += 2;
+  }
+  else
+  {
+    domain_end++;
+  }
 
   std::string holder_name = "domain_data";
-  std::string mesh_name = "mesh";
+  std::string mesh_name = "";
   Group* holder = ds->getRoot()->createGroup(holder_name);
 
   std::string domain_pattern = "domain_{domain:06d}";
@@ -460,11 +455,11 @@ void generate_structured_blueprint(DataStore* ds,
     // no adjacency sets in this example
     mroot->createViewScalar("state/domain_id", i);
 
-    setup_structured_coords(coords, i);
+    setup_cartesian_coords(coords, i);
 
-    setup_structured_topos(topos);
+    setup_cartesian_topos(topos);
 
-    setup_structured_fields(fields);
+    setup_cartesian_fields(fields);
   }
 
   IOManager writer(MPI_COMM_WORLD);
@@ -535,17 +530,17 @@ int main(int argc, char** argv)
   }
   spds->getRoot()->destroyGroups();
   spds->getRoot()->destroyViews();
-  generate_structured_blueprint(spds, "struct1", 1);
+  generate_cartesian_blueprint(spds, "cart1", 1);
   if(num_ranks > 1)
   {
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
     spds = create_tiny_datastore();
-    generate_structured_blueprint(spds, "struct2", 2);
+    generate_cartesian_blueprint(spds, "cart2", 2);
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
     spds = create_tiny_datastore();
-    generate_structured_blueprint(spds, "struct_all", num_ranks);
+    generate_cartesian_blueprint(spds, "cart_all", num_ranks);
   }
 
   MPI_Finalize();
