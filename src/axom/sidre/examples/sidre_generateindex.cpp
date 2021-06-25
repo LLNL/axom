@@ -116,7 +116,7 @@ void setup_cartesian_coords(Group* coords, int domain_id)
   // 5x5 vertices, 4x4 elements
   int nx = 5;
   int ny = 5;
- 
+
   // Set up uniform cartesian coordinates
   coords->createViewString("type", "uniform");
   coords->createViewScalar("dims/i", nx);
@@ -124,10 +124,10 @@ void setup_cartesian_coords(Group* coords, int domain_id)
 
   double x_lo = static_cast<double>(domain_id);
   double x_hi = x_lo + 1.0;
-  double dx = (x_hi-x_lo)/static_cast<double>(nx-1);
+  double dx = (x_hi - x_lo) / static_cast<double>(nx - 1);
   double y_lo = 0.0;
   double y_hi = 1.5;
-  double dy = (y_hi-y_lo)/static_cast<double>(ny-1);
+  double dy = (y_hi - y_lo) / static_cast<double>(ny - 1);
   coords->createViewScalar("origin/x", x_lo);
   coords->createViewScalar("origin/y", y_lo);
   coords->createViewScalar("spacing/dx", dx);
@@ -187,8 +187,8 @@ void setup_cartesian_topos(Group* topos)
   Group* structmesh = topos->createGroup("cartesian");
   structmesh->createViewString("type", "structured");
   structmesh->createViewString("coordset", "coords");
-  structmesh->createViewScalar("elements/dims/i", 4); // must match nx-1
-  structmesh->createViewScalar("elements/dims/j", 4); // must match ny-1
+  structmesh->createViewScalar("elements/dims/i", 4);  // must match nx-1
+  structmesh->createViewScalar("elements/dims/j", 4);  // must match ny-1
 }
 
 void setup_blueprint_fields(DataStore* ds, Group* fields)
@@ -220,30 +220,29 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
 
 void setup_cartesian_fields(Group* fields)
 {
-  // Match known values from setup_cartesian_coords 
+  // Match known values from setup_cartesian_coords
   int nx = 5;
   int ny = 5;
-  int ex = nx-1;
-  int ey = ny-1;
-  int eltcount = ex*ey;
-  int nodecount = nx*ny;
+  int ex = nx - 1;
+  int ey = ny - 1;
+  int eltcount = ex * ey;
+  int nodecount = nx * ny;
 
   // Create a node-centered field and an element-centered field
   Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
   nodefield->createViewString("topology", "mesh");
-  View* nodes = nodefield->createViewAndAllocate("values",
-                        sidre::DOUBLE_ID,
-                        nodecount);
+  View* nodes =
+    nodefield->createViewAndAllocate("values", sidre::DOUBLE_ID, nodecount);
 
   double* nptr = nodes->getArray();
 
-  for (int j = 0; j < ny; ++j)
+  for(int j = 0; j < ny; ++j)
   {
-    for (int i = 0; i < nx; ++i)
+    for(int i = 0; i < nx; ++i)
     {
-      nptr[j*nx+i] = static_cast<double>(i*j);
+      nptr[j * nx + i] = static_cast<double>(i * j);
     }
   }
 
@@ -251,17 +250,16 @@ void setup_cartesian_fields(Group* fields)
   eltfield->createViewString("association", "element");
   eltfield->createViewString("type", "scalar");
   eltfield->createViewString("topology", "mesh");
-  View* elts = eltfield->createViewAndAllocate("values",
-                           sidre::DOUBLE_ID,
-                           eltcount);
+  View* elts =
+    eltfield->createViewAndAllocate("values", sidre::DOUBLE_ID, eltcount);
 
   double* eptr = elts->getArray();
 
-  for (int j = 0; j < ey; ++j)
+  for(int j = 0; j < ey; ++j)
   {
-    for (int i = 0; i < ex; ++i)
+    for(int i = 0; i < ex; ++i)
     {
-      eptr[j*ex+i] = static_cast<double>(i*j);
+      eptr[j * ex + i] = static_cast<double>(i * j);
     }
   }
 }
@@ -416,8 +414,8 @@ void generate_multidomain_blueprint(DataStore* ds,
 }
 
 void generate_cartesian_blueprint(DataStore* ds,
-                                const std::string& filename,
-                                int num_files)
+                                  const std::string& filename,
+                                  int num_files)
 {
   int my_rank;
   int comm_size;
@@ -427,7 +425,7 @@ void generate_cartesian_blueprint(DataStore* ds,
   // 1 domain on even ranks, 2 domains on odd ranks
   int64_t domain_begin = (3 * (my_rank / 2)) + (1 * (my_rank % 2));
   int64_t domain_end = domain_begin;
-  if (my_rank%2)
+  if(my_rank % 2)
   {
     domain_end += 2;
   }
