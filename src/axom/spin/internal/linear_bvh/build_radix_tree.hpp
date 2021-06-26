@@ -525,8 +525,8 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
             // the latest value from L2$. Might not be necessary, since the
             // atomic store below should bypass L1$ entirely, but just in
             // case...
-            other_aabb_min[idim] = uncached_load(&min_bb_other[idim]);
-            other_aabb_max[idim] = uncached_load(&max_bb_other[idim]);
+            other_aabb_min[idim] = uncached_load<ExecSpace>(&min_bb_other[idim]);
+            other_aabb_max[idim] = uncached_load<ExecSpace>(&max_bb_other[idim]);
           }
           aabb.addPoint(other_aabb_min);
           aabb.addPoint(other_aabb_max);
@@ -542,8 +542,8 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
           // Store our final AABB value for the current node to global memory
           // coherently. Atomics are resolved at the L2 cache, so this should
           // be observable by all threads.
-          uncached_store(&min_bb_mut[idim], aabb.getMin()[idim]);
-          uncached_store(&max_bb_mut[idim], aabb.getMax()[idim]);
+          uncached_store<ExecSpace>(&min_bb_mut[idim], aabb.getMin()[idim]);
+          uncached_store<ExecSpace>(&max_bb_mut[idim], aabb.getMax()[idim]);
         }
 
         last_node = current_node;
