@@ -426,6 +426,36 @@ static void array_memset(T* array, const int32 size, const T val)
 }
 
 //------------------------------------------------------------------------------
+// On the GPU, this function uses atomicAdd to fetch the most-recent written
+// value directly from the L2 cache.
+template <typename ExecSpace, typename FloatType>
+static inline FloatType uncached_load(const FloatType* addr)
+{
+#ifdef __CUDA_ARCH__
+  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+  return RAJA::atomicAdd<atomic_policy>(addr, FloatType {0});
+#else
+  return *addr;
+#endif
+}
+
+//------------------------------------------------------------------------------
+// On the GPU, this function uses atomicAdd to write a value directly to the
+// L2 cache, thus avoiding potential cache coherency issues.
+template <typename ExecSpace, typename FloatType>
+static inline void uncached_store(FloatType* addr, FloatType value)
+{
+#ifdef __CUDA_ARCH__
+  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+  RAJA::atomicAdd<atomic_policy>(addr, value);
+#else
+  *addr = value;
+#endif
+}
+
+//------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
 void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 {
@@ -450,12 +480,10 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 
   using PointType = primal::Point<FloatType, NDIMS>;
 
-  PointType* min_range = axom::allocate<PointType>(inner_size, allocatorID);
-  PointType* max_range = axom::allocate<PointType>(inner_size, allocatorID);
+  PointType* aabb_pts = reinterpret_cast<PointType*>(inner_aabb_ptr);
 
   array_memset<ExecSpace>(counters_ptr, inner_size, 0);
-  array_memset<ExecSpace>(min_range, inner_size, PointType {FloatType {0}});
-  array_memset<ExecSpace>(max_range, inner_size, PointType {FloatType {0}});
+  array_memset<ExecSpace>(aabb_pts, inner_size * 2, PointType {FloatType {0}});
 
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
@@ -489,32 +517,33 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
         else
         {
           PointType other_aabb_min, other_aabb_max;
+          const PointType& min_bb_other = inner_aabb_ptr[other_child].getMin();
+          const PointType& max_bb_other = inner_aabb_ptr[other_child].getMax();
           for(int idim = 0; idim < NDIMS; idim++)
           {
-            // NOTE: These atomicAdd(..., 0)  operations are to ensure that
-            // we get the latest value from L2$. Might not be necessary, since
-            // the atomic store below should bypass L1$ entirely, but just in
+            // NOTE: These uncached load operations are to ensure that we get
+            // the latest value from L2$. Might not be necessary, since the
+            // atomic store below should bypass L1$ entirely, but just in
             // case...
-            other_aabb_min[idim] =
-              RAJA::atomicAdd<atomic_policy>(&min_range[other_child][idim],
-                                             FloatType {0});
-            other_aabb_max[idim] =
-              RAJA::atomicAdd<atomic_policy>(&max_range[other_child][idim],
-                                             FloatType {0});
+            other_aabb_min[idim] = uncached_load(&min_bb_other[idim]);
+            other_aabb_max[idim] = uncached_load(&max_bb_other[idim]);
           }
           aabb.addPoint(other_aabb_min);
           aabb.addPoint(other_aabb_max);
         }
 
+        // Get modifiable references to the BoundingBox point data.
+        PointType& min_bb_mut =
+          const_cast<PointType&>(inner_aabb_ptr[current_node].getMin());
+        PointType& max_bb_mut =
+          const_cast<PointType&>(inner_aabb_ptr[current_node].getMax());
         for(int idim = 0; idim < NDIMS; idim++)
         {
           // Store our final AABB value for the current node to global memory
           // coherently. Atomics are resolved at the L2 cache, so this should
           // be observable by all threads.
-          RAJA::atomicAdd<atomic_policy>(&min_range[current_node][idim],
-                                         aabb.getMin()[idim]);
-          RAJA::atomicAdd<atomic_policy>(&max_range[current_node][idim],
-                                         aabb.getMax()[idim]);
+          uncached_store(&min_bb_mut[idim], aabb.getMin()[idim]);
+          uncached_store(&max_bb_mut[idim], aabb.getMax()[idim]);
         }
 
         last_node = current_node;
@@ -522,16 +551,7 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
       }
     });
 
-  for_all<ExecSpace>(
-    inner_size,
-    AXOM_LAMBDA(int32 i) {
-      inner_aabb_ptr[i] =
-        primal::BoundingBox<FloatType, NDIMS>(min_range[i], max_range[i]);
-    });
-
   axom::deallocate(counters_ptr);
-  axom::deallocate(min_range);
-  axom::deallocate(max_range);
 }
 
 //------------------------------------------------------------------------------
