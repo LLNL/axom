@@ -429,12 +429,14 @@ static void array_memset(T* array, const int32 size, const T val)
 // On the GPU, this function uses atomicAdd to fetch the most-recent written
 // value directly from the L2 cache.
 template <typename ExecSpace, typename FloatType>
-static inline FloatType uncached_load(const FloatType* addr)
+AXOM_HOST_DEVICE static inline FloatType uncached_load(const FloatType* addr)
 {
 #ifdef __CUDA_ARCH__
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
-  return RAJA::atomicAdd<atomic_policy>(addr, FloatType {0});
+  FloatType* addr_mut = const_cast<FloatType*>(addr);
+
+  return RAJA::atomicAdd<atomic_policy>(addr_mut, FloatType {0});
 #else
   return *addr;
 #endif
@@ -444,7 +446,8 @@ static inline FloatType uncached_load(const FloatType* addr)
 // On the GPU, this function uses atomicAdd to write a value directly to the
 // L2 cache, thus avoiding potential cache coherency issues.
 template <typename ExecSpace, typename FloatType>
-static inline void uncached_store(FloatType* addr, FloatType value)
+AXOM_HOST_DEVICE static inline void uncached_store(FloatType* addr,
+                                                   FloatType value)
 {
 #ifdef __CUDA_ARCH__
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
