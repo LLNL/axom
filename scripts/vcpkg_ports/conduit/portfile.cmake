@@ -1,14 +1,14 @@
-if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-    message(FATAL_ERROR "${PORT} does not currently support UWP")
-endif()
+vcpkg_fail_port_install(ON_TARGET "UWP")
 
-include(vcpkg_common_functions)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/conduit
-    REF v0.6.0
-    SHA512 b65ce01a5aabee660b62bf80daf629af200e6c489bdb2e5c359154bc212c740cca663d421c12181b2d8fe40a694430f246f3fc052c6945b430892e01e58b59f0
-    HEAD_REF master
+    REF v0.7.2
+    SHA512 85ee7c2a5483952c0f8b093a0fef95f393cd5c34884caefb03734cfd4095b8f64440b8c599a0547a25adea6da5b0126445885a681d706d4b5b68c22d897aea18
+    HEAD_REF develop
+    PATCHES 
+        "./hdf5-1-12.patch"
+        "./setup_deps_vcpkg_triplet.patch"
 )
 
 set(_is_shared TRUE)
@@ -30,10 +30,14 @@ vcpkg_configure_cmake(
         -DENABLE_UTILS=OFF
         -DBUILD_SHARED_LIBS=${_is_shared}
         -DHDF5_DIR=${CURRENT_INSTALLED_DIR}
+        -DCONDUIT_INSTALL_CONFIG_DIR="share/conduit"
+        -DCONDUIT_INSTALL_CMAKE_MODULE_DIR="share"
 )
 
 vcpkg_install_cmake()
-vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake)
+vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake
+                          TARGET_PATH share
+                          TOOLS_PATH tools/conduit)
 vcpkg_copy_pdbs()
 
 
