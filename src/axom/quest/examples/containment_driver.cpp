@@ -358,7 +358,7 @@ void refineAndPrint(Octree3D& octree,
 struct Input
 {
 public:
-  std::string stlFile;
+  std::string inputFile;
   int maxQueryLevel {7};
   std::vector<double> queryBoxMins;
   std::vector<double> queryBoxMaxs;
@@ -376,7 +376,7 @@ public:
     {
       namespace fs = axom::utilities::filesystem;
       const auto dir = fs::joinPath(AXOM_DATA_DIR, "quest");
-      stlFile = fs::joinPath(dir, "plane_simp.stl");
+      inputFile = fs::joinPath(dir, "plane_simp.stl");
     }
 #endif
 
@@ -394,7 +394,8 @@ public:
 
   void parse(int argc, char** argv, CLI::App& app)
   {
-    app.add_option("stlFile", stlFile, "Path to input mesh")->check(CLI::ExistingFile);
+    app.add_option("-i,--input", inputFile, "Path to input file")
+      ->check(CLI::ExistingFile);
 
     app
       .add_flag("-v,--verbose",
@@ -444,7 +445,7 @@ public:
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-  axom::slic::SimpleLogger logger;  // create & initialize logger
+  axom::slic::SimpleLogger logger;
   // slic::debug::checksAreErrors = true;
 
   // Set up and parse command line arguments
@@ -464,10 +465,10 @@ int main(int argc, char** argv)
   mint::Mesh* surface_mesh = nullptr;
   {
     SLIC_INFO(fmt::format("{:*^80}", " Loading the mesh "));
-    SLIC_INFO("Reading file: " << params.stlFile << "...");
+    SLIC_INFO("Reading file: " << params.inputFile << "...");
 
     quest::STLReader* reader = new quest::STLReader();
-    reader->setFileName(params.stlFile);
+    reader->setFileName(params.inputFile);
     reader->read();
 
     // Create surface mesh
