@@ -27,6 +27,8 @@
 // RAJA includes
 #include "RAJA/RAJA.hpp"
 
+#include <atomic>  // For std::atomic_thread_fence
+
 #if defined(AXOM_USE_CUDA)
   // NOTE: uses the cub installation that is  bundled with RAJA
   #include "cub/device/device_radix_sort.cuh"
@@ -426,35 +428,103 @@ static void array_memset(T* array, const int32 size, const T val)
 }
 
 //------------------------------------------------------------------------------
-// On the GPU, this function uses atomicAdd to fetch the most-recent written
-// value directly from the L2 cache.
-template <typename ExecSpace, typename FloatType>
-AXOM_HOST_DEVICE static inline FloatType uncached_load(const FloatType* addr)
+// Fetches a bounding box value synchronized with another thread's store.
+// On the CPU, this is achieved with an acquire fence. This is only really
+//   needed for non-x86 architectures with a weaker memory model (Power, ARM)
+// On the GPU, we poll the bounding box values for a non-sentinel value.
+template <typename ExecSpace, typename BBoxType>
+AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
 {
 #ifdef __CUDA_ARCH__
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
-  FloatType* addr_mut = const_cast<FloatType*>(addr);
+  using FloatType = typename BBoxType::CoordType;
+  using PointType = typename BBoxType::PointType;
 
-  return RAJA::atomicAdd<atomic_policy>(addr_mut, FloatType {0});
-#else
-  return *addr;
+  constexpr int NDIMS = PointType::DIMENSION;
+
+  PointType min_pt {BBoxType::InvalidMin};
+  PointType max_pt {BBoxType::InvalidMax};
+
+  int nreads = 0;  // number of extra reads needed for a non-sentinel value
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    // Cast to volatile so reads always hit L2$ or memory.
+    volatile const FloatType& min_dim =
+      reinterpret_cast<volatile const FloatType&>(box.getMin()[dim]);
+    volatile const FloatType& max_dim =
+      reinterpret_cast<volatile const FloatType&>(box.getMax()[dim]);
+
+      // NOTE: There is a possibility for a read-after-write hazard, where the
+      // uncached store of an AABB on one thread isn't visible when another
+      // thread calls this method to read the value. However, this doesn't seem to
+      // be an issue on Volta; the atomicAdd used to terminate the first thread
+      // seems to correctly synchronize the prior atomic store operations for the
+      // bounding box data.
+      //
+      // Just in case this changes, we poll for a non-sentinel value to be read
+      // out. Naturally, this assumes that reads of sizeof(FloatType) don't tear.
+  #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
+    while((min_pt[dim] = min_dim) == BBoxType::InvalidMin)
+    {
+      nreads++;
+    }
+    while((max_pt[dim] = max_dim) == BBoxType::InvalidMax)
+    {
+      nreads++;
+    }
+  #else
+    while((min_pt[dim] = min_dim) == BBoxType::InvalidMin)
+      ;
+    while((max_pt[dim] = max_dim) == BBoxType::InvalidMax)
+      ;
+  #endif
+  }
+
+  #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
+  if(nreads > 0)
+  {
+    printf("Warning: needed %d extra reads for address %p\n", nreads, &box);
+  }
+  #endif
+
+  return BBoxType {min_pt, max_pt};
+
+#else  // __CUDA_ARCH__
+  std::atomic_thread_fence(std::memory_order_acquire);
+  return box;
 #endif
 }
 
 //------------------------------------------------------------------------------
-// On the GPU, this function uses atomicAdd to write a value directly to the
-// L2 cache, thus avoiding potential cache coherency issues.
-template <typename ExecSpace, typename FloatType>
-AXOM_HOST_DEVICE static inline void uncached_store(FloatType* addr,
-                                                   FloatType value)
+// Writes a bounding box to memory, synchronized with another thread's read.
+// On the CPU, this is achieved with a release fence.
+// On the GPU, this function uses atomicExch to write a value directly to the
+// L2 cache, thus avoiding potential cache coherency issues between threads.
+template <typename ExecSpace, typename BBoxType>
+AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
+                                               const BBoxType& value)
 {
 #ifdef __CUDA_ARCH__
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
-  RAJA::atomicAdd<atomic_policy>(addr, value);
-#else
-  *addr = value;
+  using FloatType = typename BBoxType::CoordType;
+  using PointType = typename BBoxType::PointType;
+
+  constexpr int NDIMS = PointType::DIMENSION;
+
+  // Cast away the underlying const so we can directly modify the box data.
+  PointType& min_pt = const_cast<PointType&>(box.getMin());
+  PointType& max_pt = const_cast<PointType&>(box.getMax());
+
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    RAJA::atomicExchange<atomic_policy>(&(min_pt[dim]), value.getMin()[dim]);
+    RAJA::atomicExchange<atomic_policy>(&(max_pt[dim]), value.getMax()[dim]);
+  }
+#else  // __CUDA_ARCH__
+  box = value;
+  std::atomic_thread_fence(std::memory_order_release);
 #endif
 }
 
@@ -482,11 +552,10 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
   int32* counters_ptr = axom::allocate<int32>(inner_size, allocatorID);
 
   using PointType = primal::Point<FloatType, NDIMS>;
-
-  PointType* aabb_pts = reinterpret_cast<PointType*>(inner_aabb_ptr);
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   array_memset<ExecSpace>(counters_ptr, inner_size, 0);
-  array_memset<ExecSpace>(aabb_pts, inner_size * 2, PointType {FloatType {0}});
+  array_memset<ExecSpace>(inner_aabb_ptr, inner_size, BoxType {});
 
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
@@ -513,41 +582,19 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 
         int32 other_child = (lchild == last_node) ? rchild : lchild;
 
+        primal::BoundingBox<FloatType, NDIMS> other_aabb;
         if(other_child >= inner_size)
         {
-          aabb.addBox(leaf_aabb_ptr[other_child - inner_size]);
+          other_aabb = leaf_aabb_ptr[other_child - inner_size];
         }
         else
         {
-          PointType other_aabb_min, other_aabb_max;
-          const PointType& min_bb_other = inner_aabb_ptr[other_child].getMin();
-          const PointType& max_bb_other = inner_aabb_ptr[other_child].getMax();
-          for(int idim = 0; idim < NDIMS; idim++)
-          {
-            // NOTE: These uncached load operations are to ensure that we get
-            // the latest value from L2$. Might not be necessary, since the
-            // atomic store below should bypass L1$ entirely, but just in
-            // case...
-            other_aabb_min[idim] = uncached_load<ExecSpace>(&min_bb_other[idim]);
-            other_aabb_max[idim] = uncached_load<ExecSpace>(&max_bb_other[idim]);
-          }
-          aabb.addPoint(other_aabb_min);
-          aabb.addPoint(other_aabb_max);
+          other_aabb = sync_load<ExecSpace>(inner_aabb_ptr[other_child]);
         }
+        aabb.addBox(other_aabb);
 
-        // Get modifiable references to the BoundingBox point data.
-        PointType& min_bb_mut =
-          const_cast<PointType&>(inner_aabb_ptr[current_node].getMin());
-        PointType& max_bb_mut =
-          const_cast<PointType&>(inner_aabb_ptr[current_node].getMax());
-        for(int idim = 0; idim < NDIMS; idim++)
-        {
-          // Store our final AABB value for the current node to global memory
-          // coherently. Atomics are resolved at the L2 cache, so this should
-          // be observable by all threads.
-          uncached_store<ExecSpace>(&min_bb_mut[idim], aabb.getMin()[idim]);
-          uncached_store<ExecSpace>(&max_bb_mut[idim], aabb.getMax()[idim]);
-        }
+        // Store the final AABB for this internal node coherently.
+        sync_store<ExecSpace>(inner_aabb_ptr[current_node], aabb);
 
         last_node = current_node;
         current_node = parent_ptr[current_node];
