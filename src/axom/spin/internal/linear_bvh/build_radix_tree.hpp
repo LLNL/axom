@@ -568,6 +568,9 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 
       while(current_node != -1)
       {
+        // TODO: If RAJA atomics get memory ordering policies in the future,
+        // we should look at replacing the sync_load/sync_stores by changing
+        // the below atomic to an acquire/release atomic.
         int32 old =
           RAJA::atomicAdd<atomic_policy>(&(counters_ptr[current_node]), 1);
 
