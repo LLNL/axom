@@ -240,9 +240,10 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
         int32 count = 0;
         PrimitiveType primitive = objs[i];
 
-        auto leafAction = [&count] AXOM_HOST_DEVICE(
-                            int32 AXOM_NOT_USED(current_node),
-                            const int32* AXOM_NOT_USED(leaf_nodes)) { count++; };
+        auto leafAction = [&count](int32 AXOM_NOT_USED(current_node),
+                                   const int32* AXOM_NOT_USED(leaf_nodes)) {
+          count++;
+        };
 
         lbvh::bvh_traverse(inner_nodes,
                            inner_node_children,
@@ -273,28 +274,27 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
     candidates = axom::allocate<IndexType>(total_candidates, allocatorID););
 
   // STEP 4: fill in candidates for each point
-  AXOM_PERF_MARK_SECTION(
-    "PASS[2]:fill_traversal",
-    for_all<ExecSpace>(
-      numObjs,
-      AXOM_LAMBDA(IndexType i) {
-        int32 offset = offsets[i];
+  AXOM_PERF_MARK_SECTION("PASS[2]:fill_traversal",
+                         for_all<ExecSpace>(
+                           numObjs,
+                           AXOM_LAMBDA(IndexType i) {
+                             int32 offset = offsets[i];
 
-        PrimitiveType obj = objs[i];
-        auto leafAction = [&offset, candidates] AXOM_HOST_DEVICE(
-                            int32 current_node,
-                            const int32* leafs) {
-          candidates[offset] = leafs[current_node];
-          offset++;
-        };
+                             PrimitiveType obj = objs[i];
+                             auto leafAction = [&offset, candidates](
+                                                 int32 current_node,
+                                                 const int32* leafs) {
+                               candidates[offset] = leafs[current_node];
+                               offset++;
+                             };
 
-        lbvh::bvh_traverse(inner_nodes,
-                           inner_node_children,
-                           leaf_nodes,
-                           obj,
-                           predicate,
-                           leafAction);
-      }););
+                             lbvh::bvh_traverse(inner_nodes,
+                                                inner_node_children,
+                                                leaf_nodes,
+                                                obj,
+                                                predicate,
+                                                leafAction);
+                           }););
 }
 
 template <typename FloatType, int NDIMS, typename ExecSpace>
