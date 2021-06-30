@@ -199,7 +199,7 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
   Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
-  nodefield->createViewString("topology", "cartesianesh");
+  nodefield->createViewString("topology", "cartesian");
   nodefield->createView("values",
                         sidre::INT_ID,
                         origv->getNumElements(),
