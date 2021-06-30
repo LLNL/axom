@@ -197,7 +197,7 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
   Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
-  nodefield->createViewString("topology", "cartesian");
+  nodefield->createViewString("topology", "mesh");
   nodefield->createView("values",
                         sidre::INT_ID,
                         origv->getNumElements(),
@@ -228,7 +228,7 @@ void setup_cartesian_fields(Group* fields)
   Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
-  nodefield->createViewString("topology", "mesh");
+  nodefield->createViewString("topology", "cartesian");
   View* nodes =
     nodefield->createViewAndAllocate("values", sidre::DOUBLE_ID, nodecount);
 
@@ -245,7 +245,7 @@ void setup_cartesian_fields(Group* fields)
   Group* eltfield = fields->createGroup("eltfield");
   eltfield->createViewString("association", "element");
   eltfield->createViewString("type", "scalar");
-  eltfield->createViewString("topology", "mesh");
+  eltfield->createViewString("topology", "cartesian");
   View* elts =
     eltfield->createViewAndAllocate("values", sidre::DOUBLE_ID, eltcount);
 
