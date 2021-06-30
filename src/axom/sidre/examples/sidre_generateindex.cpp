@@ -185,8 +185,8 @@ void setup_cartesian_topos(Group* topos)
   Group* structmesh = topos->createGroup("cartesian");
   structmesh->createViewString("type", "structured");
   structmesh->createViewString("coordset", "coords");
-  structmesh->createViewScalar("elements/dims/i", cart_nx-1);
-  structmesh->createViewScalar("elements/dims/j", cart_ny-1);
+  structmesh->createViewScalar("elements/dims/i", cart_nx - 1);
+  structmesh->createViewScalar("elements/dims/j", cart_ny - 1);
 }
 
 void setup_blueprint_fields(DataStore* ds, Group* fields)
