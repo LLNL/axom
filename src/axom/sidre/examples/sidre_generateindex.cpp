@@ -43,6 +43,9 @@
 using namespace axom;
 using namespace sidre;
 
+static int cart_nx = 5;  // nodal domain x size for cartesian mesh example
+static int cart_ny = 5;  // nodal domain y size for cartesian mesh example
+
 DataStore* create_tiny_datastore()
 {
   DataStore* ds = new DataStore();
@@ -113,21 +116,17 @@ void setup_blueprint_coords(DataStore* ds, Group* coords)
 
 void setup_cartesian_coords(Group* coords, int domain_id)
 {
-  // 5x5 vertices, 4x4 elements
-  int nx = 5;
-  int ny = 5;
-
   // Set up uniform cartesian coordinates
   coords->createViewString("type", "uniform");
-  coords->createViewScalar("dims/i", nx);
-  coords->createViewScalar("dims/j", ny);
+  coords->createViewScalar("dims/i", cart_nx);
+  coords->createViewScalar("dims/j", cart_ny);
 
   double x_lo = static_cast<double>(domain_id);
   double x_hi = x_lo + 1.0;
-  double dx = (x_hi - x_lo) / static_cast<double>(nx - 1);
+  double dx = (x_hi - x_lo) / static_cast<double>(cart_nx - 1);
   double y_lo = 0.0;
   double y_hi = 1.5;
-  double dy = (y_hi - y_lo) / static_cast<double>(ny - 1);
+  double dy = (y_hi - y_lo) / static_cast<double>(cart_ny - 1);
   coords->createViewScalar("origin/x", x_lo);
   coords->createViewScalar("origin/y", y_lo);
   coords->createViewScalar("spacing/dx", dx);
@@ -183,12 +182,11 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
 
 void setup_cartesian_topos(Group* topos)
 {
-  //Set up topology using prior knowledge of nx and ny values from coords
   Group* structmesh = topos->createGroup("cartesian");
   structmesh->createViewString("type", "structured");
   structmesh->createViewString("coordset", "coords");
-  structmesh->createViewScalar("elements/dims/i", 4);  // must match nx-1
-  structmesh->createViewScalar("elements/dims/j", 4);  // must match ny-1
+  structmesh->createViewScalar("elements/dims/i", cart_nx-1);
+  structmesh->createViewScalar("elements/dims/j", cart_ny-1);
 }
 
 void setup_blueprint_fields(DataStore* ds, Group* fields)
@@ -221,12 +219,10 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
 void setup_cartesian_fields(Group* fields)
 {
   // Match known values from setup_cartesian_coords
-  int nx = 5;
-  int ny = 5;
-  int ex = nx - 1;
-  int ey = ny - 1;
+  int ex = cart_nx - 1;
+  int ey = cart_ny - 1;
   int eltcount = ex * ey;
-  int nodecount = nx * ny;
+  int nodecount = cart_nx * cart_ny;
 
   // Create a node-centered field and an element-centered field
   Group* nodefield = fields->createGroup("nodefield");
@@ -238,11 +234,11 @@ void setup_cartesian_fields(Group* fields)
 
   double* nptr = nodes->getArray();
 
-  for(int j = 0; j < ny; ++j)
+  for(int j = 0; j < cart_ny; ++j)
   {
-    for(int i = 0; i < nx; ++i)
+    for(int i = 0; i < cart_nx; ++i)
     {
-      nptr[j * nx + i] = static_cast<double>(i * j);
+      nptr[j * cart_nx + i] = static_cast<double>(i * j);
     }
   }
 
