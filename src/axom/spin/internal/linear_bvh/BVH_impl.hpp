@@ -20,9 +20,6 @@
 // slic includes
 #include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
-// linear bvh includes
-#include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
-
 // RAJA includes
 #include "RAJA/RAJA.hpp"
 

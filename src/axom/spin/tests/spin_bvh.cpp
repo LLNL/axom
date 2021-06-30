@@ -20,8 +20,6 @@
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
-#include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
-
 // axom/mint includes
 #include "axom/mint/mesh/Mesh.hpp"
 #include "axom/mint/mesh/UniformMesh.hpp"
@@ -1390,113 +1388,6 @@ void check_single_box3d()
 
 //------------------------------------------------------------------------------
 // UNIT TESTS
-//------------------------------------------------------------------------------
-TEST(spin_bvh, query_point_accessor)
-{
-  constexpr double VAL = 42.0;
-  constexpr IndexType ID = 0;
-
-  double x[] = {VAL};
-  double y[] = {VAL + 1.5};
-  double z[] = {VAL + 2.5};
-
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using QueryAccessor2D = bvh::QueryAccessor<2, double>;
-  using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using Point2D = primal::Vector<double, 2>;
-  using Point3D = primal::Vector<double, 3>;
-
-  Point2D test_point2d;
-  QueryAccessor2D::getPoint(test_point2d, ID, x, y, nullptr);
-  EXPECT_DOUBLE_EQ(test_point2d[0], x[ID]);
-  EXPECT_DOUBLE_EQ(test_point2d[1], y[ID]);
-
-  Point3D test_point3d;
-  QueryAccessor3D::getPoint(test_point3d, 0, x, y, z);
-  EXPECT_DOUBLE_EQ(test_point3d[0], x[ID]);
-  EXPECT_DOUBLE_EQ(test_point3d[1], y[ID]);
-  EXPECT_DOUBLE_EQ(test_point3d[2], z[ID]);
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, query_ray_accessor)
-{
-  constexpr double VAL = 42.0;
-  constexpr IndexType ID = 0;
-
-  double x[] = {VAL};
-  double y[] = {VAL + 1.5};
-  double z[] = {VAL + 2.5};
-
-  double nx[] = {VAL};
-  double ny[] = {VAL + 1.5};
-  double nz[] = {VAL + 2.5};
-
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using QueryAccessor2D = bvh::QueryAccessor<2, double>;
-  using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using Ray2D = primal::Vector<double, 4>;
-  using Ray3D = primal::Vector<double, 6>;
-
-  Ray2D ray2d;
-  QueryAccessor2D::getRay(ray2d, ID, x, nx, y, ny, nullptr, nullptr);
-  EXPECT_DOUBLE_EQ(ray2d[0], x[ID]);
-  EXPECT_DOUBLE_EQ(ray2d[1], y[ID]);
-
-  EXPECT_DOUBLE_EQ(ray2d[2], nx[ID]);
-  EXPECT_DOUBLE_EQ(ray2d[3], ny[ID]);
-
-  Ray3D ray3d;
-  QueryAccessor3D::getRay(ray3d, ID, x, nx, y, ny, z, nz);
-  EXPECT_DOUBLE_EQ(ray3d[0], x[ID]);
-  EXPECT_DOUBLE_EQ(ray3d[1], y[ID]);
-  EXPECT_DOUBLE_EQ(ray3d[2], z[ID]);
-
-  EXPECT_DOUBLE_EQ(ray3d[3], nx[ID]);
-  EXPECT_DOUBLE_EQ(ray3d[4], ny[ID]);
-  EXPECT_DOUBLE_EQ(ray3d[5], nz[ID]);
-}
-
-TEST(spin_bvh, query_bounding_box_accessor)
-{
-  constexpr double VAL = 42.0;
-  constexpr IndexType ID = 0;
-
-  double xmin[] = {VAL};
-  double ymin[] = {VAL + 1.5};
-  double zmin[] = {VAL + 2.5};
-
-  double xmax[] = {VAL};
-  double ymax[] = {VAL + 1.5};
-  double zmax[] = {VAL + 2.5};
-
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using QueryAccessor2D = bvh::QueryAccessor<2, double>;
-  using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using BoundingBox2D = primal::BoundingBox<double, 2>;
-  using BoundingBox3D = primal::BoundingBox<double, 3>;
-
-  BoundingBox2D box2D;
-  QueryAccessor2D::getBoundingBox(box2D, ID, xmin, xmax, ymin, ymax, nullptr, nullptr);
-
-  EXPECT_DOUBLE_EQ(box2D.getMin()[0], xmin[ID]);
-  EXPECT_DOUBLE_EQ(box2D.getMin()[1], ymin[ID]);
-
-  EXPECT_DOUBLE_EQ(box2D.getMax()[0], xmax[ID]);
-  EXPECT_DOUBLE_EQ(box2D.getMax()[1], ymax[ID]);
-
-  BoundingBox3D box3D;
-  QueryAccessor3D::getBoundingBox(box3D, ID, xmin, xmax, ymin, ymax, zmin, zmax);
-
-  EXPECT_DOUBLE_EQ(box3D.getMin()[0], xmin[ID]);
-  EXPECT_DOUBLE_EQ(box3D.getMin()[1], ymin[ID]);
-  EXPECT_DOUBLE_EQ(box3D.getMin()[2], zmin[ID]);
-
-  EXPECT_DOUBLE_EQ(box3D.getMax()[0], xmax[ID]);
-  EXPECT_DOUBLE_EQ(box3D.getMax()[1], ymax[ID]);
-  EXPECT_DOUBLE_EQ(box3D.getMax()[2], zmax[ID]);
-}
-
 //------------------------------------------------------------------------------
 TEST(spin_bvh, construct2D_sequential)
 {
