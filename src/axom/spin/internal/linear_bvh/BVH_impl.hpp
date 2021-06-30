@@ -72,7 +72,7 @@ BVH<NDIMS, ExecSpace, FloatType, Impl>::BVH(const FloatType* boxes,
   , m_Tolernace(floating_point_limits<FloatType>::epsilon())
   , m_scaleFactor(DEFAULT_SCALE_FACTOR)
   , m_numItems(numItems)
-  , m_boxes(boxes)
+  , m_boxes(reinterpret_cast<const BoxType*>(boxes))
 { }
 
 //------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::build()
     numBoxes = 2;
     boxesptr = axom::allocate<BoxType>(numBoxes, m_AllocatorID);
 
-    const BoxType* myboxes = reinterpret_cast<const BoxType*>(m_boxes);
+    const BoxType* myboxes = m_boxes;
 
     // copy first box and add a fake 2nd box
     for_all<ExecSpace>(
@@ -119,7 +119,7 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::build()
   }
   else
   {
-    boxes_const = reinterpret_cast<const BoxType*>(m_boxes);
+    boxes_const = m_boxes;
   }
 
   m_bvh.buildImpl(boxes_const, numBoxes, m_scaleFactor, m_AllocatorID);
@@ -155,32 +155,17 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
                                                         IndexType* counts,
                                                         IndexType*& candidates,
                                                         IndexType numPts,
-                                                        const FloatType* x,
-                                                        const FloatType* y,
-                                                        const FloatType* z) const
+                                                        const PointType* pts) const
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findPoints");
 
   SLIC_ASSERT(offsets != nullptr);
   SLIC_ASSERT(counts != nullptr);
   SLIC_ASSERT(candidates == nullptr);
-  SLIC_ASSERT(x != nullptr);
-  SLIC_ASSERT(y != nullptr);
+  SLIC_ASSERT(pts != nullptr);
 
-  using PointType = primal::Point<FloatType, NDIMS>;
-  using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
-  using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
-
-  // STEP 1: pack query points
-  PointType* packed_points = axom::allocate<PointType>(numPts, m_AllocatorID);
-  for_all<ExecSpace>(
-    numPts,
-    AXOM_LAMBDA(IndexType i) {
-      QueryAccessor::getPoint(packed_points[i], i, x, y, z);
-    });
-
-  // STEP 2: define traversal predicates
-  BVH_PREDICATE(predicate, const PointType& p, const BoundingBoxType& bb)
+  // Define traversal predicates
+  BVH_PREDICATE(predicate, const PointType& p, const BoxType& bb)
   {
     return bb.contains(p);
   };
@@ -190,10 +175,8 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
                            counts,
                            candidates,
                            numPts,
-                           packed_points,
+                           pts,
                            m_AllocatorID);
-
-  axom::deallocate(packed_points);
 }
 
 //------------------------------------------------------------------------------
@@ -202,45 +185,19 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
                                                       IndexType* counts,
                                                       IndexType*& candidates,
                                                       IndexType numRays,
-                                                      const FloatType* x0,
-                                                      const FloatType* nx,
-                                                      const FloatType* y0,
-                                                      const FloatType* ny,
-                                                      const FloatType* z0,
-                                                      const FloatType* nz) const
+                                                      const RayType* rays) const
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findRays");
 
   SLIC_ASSERT(offsets != nullptr);
   SLIC_ASSERT(counts != nullptr);
   SLIC_ASSERT(candidates == nullptr);
-  SLIC_ASSERT(x0 != nullptr);
-  SLIC_ASSERT(nx != nullptr);
-  SLIC_ASSERT(y0 != nullptr);
-  SLIC_ASSERT(ny != nullptr);
+  SLIC_ASSERT(rays != nullptr);
 
   const FloatType TOL = m_Tolernace;
 
-  using RayType = primal::Ray<FloatType, NDIMS>;
-  using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
-  using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
-
-  // STEP 1: pack query rays
-  RayType* packed_rays = axom::allocate<RayType>(numRays, m_AllocatorID);
-  for_all<ExecSpace>(
-    numRays,
-    AXOM_LAMBDA(IndexType i) {
-      typename RayType::PointType origin;
-      typename RayType::VectorType direction;
-      QueryAccessor::getPoint(origin, i, x0, y0, z0);
-      QueryAccessor::getPoint(direction, i, nx, ny, nz);
-
-      RayType ray {origin, direction};
-      packed_rays[i] = ray;
-    });
-
-  // STEP 2: define traversal predicates
-  BVH_PREDICATE(predicate, const RayType& r, const BoundingBoxType& bb)
+  // Define traversal predicates
+  BVH_PREDICATE(predicate, const RayType& r, const BoxType& bb)
   {
     primal::Point<FloatType, NDIMS> tmp;
     return primal::detail::intersect_ray(r, bb, tmp, TOL);
@@ -251,10 +208,8 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
                            counts,
                            candidates,
                            numRays,
-                           packed_rays,
+                           rays,
                            m_AllocatorID);
-
-  axom::deallocate(packed_rays);
 }
 
 //------------------------------------------------------------------------------
@@ -264,44 +219,17 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
   IndexType* counts,
   IndexType*& candidates,
   IndexType numBoxes,
-  const FloatType* xmin,
-  const FloatType* xmax,
-  const FloatType* ymin,
-  const FloatType* ymax,
-  const FloatType* zmin,
-  const FloatType* zmax) const
+  const BoxType* boxes) const
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findBoundingBoxes");
 
   SLIC_ASSERT(offsets != nullptr);
   SLIC_ASSERT(counts != nullptr);
   SLIC_ASSERT(candidates == nullptr);
-  SLIC_ASSERT(xmin != nullptr);
-  SLIC_ASSERT(xmax != nullptr);
-  SLIC_ASSERT(ymin != nullptr);
-  SLIC_ASSERT(ymax != nullptr);
-
-  using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
-  using QueryAccessor = lbvh::QueryAccessor<NDIMS, FloatType>;
-
-  // STEP 1: pack query boxes
-  BoundingBoxType* packed_boxes =
-    axom::allocate<BoundingBoxType>(numBoxes, m_AllocatorID);
-  for_all<ExecSpace>(
-    numBoxes,
-    AXOM_LAMBDA(IndexType i) {
-      QueryAccessor::getBoundingBox(packed_boxes[i],
-                                    i,
-                                    xmin,
-                                    xmax,
-                                    ymin,
-                                    ymax,
-                                    zmin,
-                                    zmax);
-    });
+  SLIC_ASSERT(boxes != nullptr);
 
   // STEP 2: define traversal predicates
-  BVH_PREDICATE(predicate, const BoundingBoxType& bb1, const BoundingBoxType& bb2)
+  BVH_PREDICATE(predicate, const BoxType& bb1, const BoxType& bb2)
   {
     return bb1.intersectsWith(bb2);
   };
@@ -311,10 +239,8 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
                            counts,
                            candidates,
                            numBoxes,
-                           packed_boxes,
+                           boxes,
                            m_AllocatorID);
-
-  axom::deallocate(packed_boxes);
 }
 
 //------------------------------------------------------------------------------

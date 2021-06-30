@@ -140,19 +140,13 @@ void findTriMeshIntersectionsBVH(
   constexpr int stride = 2 * NDIMS;
   const int ncells = surface_mesh->getNumberOfCells();
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+
   int* ZERO =
     axom::allocate<int>(1, getUmpireResourceAllocatorID(umpire::resource::Host));
   ZERO[0] = 0;
 
   detail::Triangle3* tris = axom::allocate<detail::Triangle3>(ncells);
-
-  FloatType* xmin = axom::allocate<FloatType>(ncells);
-  FloatType* ymin = axom::allocate<FloatType>(ncells);
-  FloatType* zmin = axom::allocate<FloatType>(ncells);
-
-  FloatType* xmax = axom::allocate<FloatType>(ncells);
-  FloatType* ymax = axom::allocate<FloatType>(ncells);
-  FloatType* zmax = axom::allocate<FloatType>(ncells);
 
   // Marks each cell/triangle as degenerate (1) or not (0)
   int* degenerate = axom::allocate<int>(ncells);
@@ -162,39 +156,39 @@ void findTriMeshIntersectionsBVH(
 
   // Initialize the bounding box for each Triangle and marks
   // if the Triangle is degenerate.
-  AXOM_PERF_MARK_SECTION(
-    "init_tri_bb",
-    mint::for_all_cells<ExecSpace, mint::xargs::coords>(
-      surface_mesh,
-      AXOM_LAMBDA(IndexType cellIdx,
-                  numerics::Matrix<double> & coords,
-                  const IndexType* AXOM_NOT_USED(nodeIds)) {
-        detail::Triangle3 tri;
+  AXOM_PERF_MARK_SECTION("init_tri_bb",
+                         mint::for_all_cells<ExecSpace, mint::xargs::coords>(
+                           surface_mesh,
+                           AXOM_LAMBDA(IndexType cellIdx,
+                                       numerics::Matrix<double> & coords,
+                                       const IndexType* AXOM_NOT_USED(nodeIds)) {
+                             detail::Triangle3 tri;
 
-        for(IndexType inode = 0; inode < 3; ++inode)
-        {
-          const double* node = coords.getColumn(inode);
-          tri[inode][0] = node[mint::X_COORDINATE];
-          tri[inode][1] = node[mint::Y_COORDINATE];
-          tri[inode][2] = node[mint::Z_COORDINATE];
-        }  // END for all cells nodes
+                             for(IndexType inode = 0; inode < 3; ++inode)
+                             {
+                               const double* node = coords.getColumn(inode);
+                               tri[inode][0] = node[mint::X_COORDINATE];
+                               tri[inode][1] = node[mint::Y_COORDINATE];
+                               tri[inode][2] = node[mint::Z_COORDINATE];
+                             }  // END for all cells nodes
 
-        degenerate[cellIdx] = (tri.degenerate() ? 1 : 0);
+                             degenerate[cellIdx] = (tri.degenerate() ? 1 : 0);
 
-        tris[cellIdx] = tri;
+                             tris[cellIdx] = tri;
 
-        detail::SpatialBoundingBox triBB = compute_bounding_box(tri);
+                             detail::SpatialBoundingBox triBB =
+                               compute_bounding_box(tri);
 
-        const IndexType offset = cellIdx * stride;
+                             const IndexType offset = cellIdx * stride;
 
-        xmin[cellIdx] = aabbs[offset] = triBB.getMin()[0];
-        ymin[cellIdx] = aabbs[offset + 1] = triBB.getMin()[1];
-        zmin[cellIdx] = aabbs[offset + 2] = triBB.getMin()[2];
+                             aabbs[offset] = triBB.getMin()[0];
+                             aabbs[offset + 1] = triBB.getMin()[1];
+                             aabbs[offset + 2] = triBB.getMin()[2];
 
-        xmax[cellIdx] = aabbs[offset + 3] = triBB.getMax()[0];
-        ymax[cellIdx] = aabbs[offset + 4] = triBB.getMax()[1];
-        zmax[cellIdx] = aabbs[offset + 5] = triBB.getMax()[2];
-      }););
+                             aabbs[offset + 3] = triBB.getMax()[0];
+                             aabbs[offset + 4] = triBB.getMax()[1];
+                             aabbs[offset + 5] = triBB.getMax()[2];
+                           }););
 
   // Copy degenerate data back to host
   int* host_degenerate =
@@ -223,12 +217,7 @@ void findTriMeshIntersectionsBVH(
                         counts,
                         candidates,
                         ncells,
-                        xmin,
-                        xmax,
-                        ymin,
-                        ymax,
-                        zmin,
-                        zmax);
+                        reinterpret_cast<BoxType*>(aabbs));
 
   // Get the total number of candidates
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -243,14 +232,6 @@ void findTriMeshIntersectionsBVH(
 
   axom::deallocate(degenerate);
   axom::deallocate(host_degenerate);
-
-  axom::deallocate(xmin);
-  axom::deallocate(ymin);
-  axom::deallocate(zmin);
-
-  axom::deallocate(xmax);
-  axom::deallocate(ymax);
-  axom::deallocate(zmax);
 
   int* intersection_pairs = axom::allocate<int>(totalCandidates.get() * 2);
 

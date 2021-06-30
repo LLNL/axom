@@ -13,6 +13,10 @@
 
 #include "axom/core/execution/execution_space.hpp"  // for execution spaces
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Ray.hpp"
+
 #include "axom/spin/policy/LinearBVH.hpp"
 
 // C/C++ includes
@@ -137,6 +141,10 @@ private:
   using ImplType =
     typename BVHPolicy<FloatType, NDIMS, ExecSpace, BVHImpl>::ImplType;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+  using RayType = typename primal::Ray<FloatType, NDIMS>;
+
 public:
   /*!
    * \brief Default constructor. Disabled.
@@ -244,9 +252,7 @@ public:
    * \param [out] counts stores the number of candidates per query point
    * \param [out] candidates array of the candidate IDs for each query point
    * \param [in]  numPts the total number of query points supplied
-   * \param [in]  x array of x-coordinates
-   * \param [in]  y array of y-coordinates
-   * \param [in]  z array of z-coordinates, may be nullptr if 2D
+   * \param [in]  points array of points to query against the BVH
    *
    * \note offsets and counts are pointers to arrays of size numPts that are
    *  pre-allocated by the caller before calling findPoints().
@@ -263,17 +269,13 @@ public:
    * \pre offsets != nullptr
    * \pre counts  != nullptr
    * \pre candidates == nullptr
-   * \pre x != nullptr
-   * \pre y != nullptr if dimension==2 || dimension==3
-   * \pre z != nullptr if dimension==3
+   * \pre points != nullptr
    */
   void findPoints(IndexType* offsets,
                   IndexType* counts,
                   IndexType*& candidates,
                   IndexType numPts,
-                  const FloatType* x,
-                  const FloatType* y,
-                  const FloatType* z = nullptr) const;
+                  const PointType* points) const;
 
   /*!
    * \brief Finds the candidate bins that intersect the given rays.
@@ -282,12 +284,7 @@ public:
    * \param [out] counts stores the number of candidates for each ray
    * \param [out] candidates array of candidate IDs for each ray
    * \param [in] numRays the total number of rays
-   * \param [in] x0 array consisting the ray source point x-coordinates.
-   * \param [in] nx array consisting the ray normal x-components.
-   * \param [in] y0 array consisting the ray source point y-coordinates
-   * \param [in] ny array consisting the ray normal y-components
-   * \param [in] z0 array consisting the ray source point z-coorindates (in 3D)
-   * \param [in] nz array consisting the ray normal z-components (in 3D)
+   * \param [in] rays array of the rays to query against the BVH
    *
    * \note offsets and counts are arrays of size numRays that are pre-allocated
    *  by the caller, prior to the calling findRays().
@@ -299,23 +296,13 @@ public:
    * \pre offsets    != nullptr
    * \pre counts     != nullptr
    * \pre candidates == nullptr
-   * \pre x0 != nullptr
-   * \pre nx != nullptr
-   * \pre y0 != nullptr
-   * \pre ny != nullptr
-   * \pre z0 != nullptr if dimension==3
-   * \pre nz != nullptr if dimension==3
+   * \pre rays != nullptr
    */
   void findRays(IndexType* offsets,
                 IndexType* counts,
                 IndexType*& candidates,
                 IndexType numRays,
-                const FloatType* x0,
-                const FloatType* nx,
-                const FloatType* y0,
-                const FloatType* ny,
-                const FloatType* z0 = nullptr,
-                const FloatType* nz = nullptr) const;
+                const RayType* rays) const;
 
   /*!
    * \brief Finds the candidate bins that intersect the given bounding boxes.
@@ -324,14 +311,7 @@ public:
    * \param [out] counts stores the number of candidates for each bounding box
    * \param [out] candidates array of candidate IDs for each bounding box
    * \param [in]  numBoxes the total number of bounding boxes
-   * \param [in]  xmin array of x-coordinates of lower bounding box corner
-   * \param [in]  xmax array of x-coordinates of upper bounding box corner
-   * \param [in]  ymin array of y-coordinates of lower bounding box corner
-   * \param [in]  ymax array of y-coordinates of upper bounding box corner
-   * \param [in]  zmin array of z-coordinates of lower bounding box corner,
-   *              may be nullptr if 2D
-   * \param [in]  zmax array of z-coordinates of upper bounding box corner,
-   *              may be nullptr if 2D
+   * \param [in]  boxes array of boxes to query against the BVH
    *
    * \note offsets and counts are pointers to arrays of size numBoxes that are
    *  pre-allocated by the caller before calling findBoundingBoxes().
@@ -343,23 +323,13 @@ public:
    * \pre offsets    != nullptr
    * \pre counts     != nullptr
    * \pre candidates == nullptr
-   * \pre xmin != nullptr
-   * \pre xmax != nullptr
-   * \pre ymin != nullptr
-   * \pre ymax != nullptr
-   * \pre zmin != nullptr if dimension==3
-   * \pre zmax != nullptr if dimension==3
+   * \pre boxes != nullptr
    */
   void findBoundingBoxes(IndexType* offsets,
                          IndexType* counts,
                          IndexType*& candidates,
                          IndexType numBoxes,
-                         const FloatType* xmin,
-                         const FloatType* xmax,
-                         const FloatType* ymin,
-                         const FloatType* ymax,
-                         const FloatType* zmin = nullptr,
-                         const FloatType* zmax = nullptr) const;
+                         const BoxType* boxes) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
@@ -376,7 +346,7 @@ private:
   FloatType m_Tolernace;
   FloatType m_scaleFactor;
   IndexType m_numItems;
-  const FloatType* m_boxes;
+  const BoxType* m_boxes;
   ImplType m_bvh;
 
   static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.001;

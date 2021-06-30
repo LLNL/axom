@@ -561,6 +561,9 @@ void check_find_bounding_boxes3d()
   constexpr int NDIMS = 3;
   constexpr IndexType N = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
@@ -568,18 +571,15 @@ void check_find_bounding_boxes3d()
   // (-1.0,-1.0,-1.0) but different upper right max.
   // The first bounding box is setup such that it intersects
   // 18 bounding boxes of the mesh.
-  FloatType* xmin = axom::allocate<FloatType>(N);
-  FloatType* ymin = axom::allocate<FloatType>(N);
-  FloatType* zmin = axom::allocate<FloatType>(N);
-  xmin[0] = xmin[1] = ymin[0] = ymin[1] = zmin[0] = zmin[1] = -1.0;
+  BoxType* query_boxes = axom::allocate<BoxType>(N);
+  query_boxes[0].clear();
+  query_boxes[1].clear();
 
-  FloatType* xmax = axom::allocate<FloatType>(N);
-  FloatType* ymax = axom::allocate<FloatType>(N);
-  FloatType* zmax = axom::allocate<FloatType>(N);
-  xmax[0] = 2.5;
-  ymax[0] = 2.5;
-  zmax[0] = 1.5;
-  xmax[1] = ymax[1] = zmax[1] = -0.5;
+  query_boxes[0].addPoint(PointType {-1., -1., -1.});
+  query_boxes[1].addPoint(PointType {-1., -1., -1.});
+
+  query_boxes[0].addPoint(PointType {2.5, 2.5, 1.5});
+  query_boxes[1].addPoint(PointType {-0.5, -0.5, -0.5});
 
   // setup a test mesh (3 x 3 x 3)
   double lo[NDIMS] = {0.0, 0.0, 0.0};
@@ -609,16 +609,7 @@ void check_find_bounding_boxes3d()
   IndexType* offsets = axom::allocate<IndexType>(N);
   IndexType* counts = axom::allocate<IndexType>(N);
   IndexType* candidates = nullptr;
-  bvh.findBoundingBoxes(offsets,
-                        counts,
-                        candidates,
-                        N,
-                        xmin,
-                        xmax,
-                        ymin,
-                        ymax,
-                        zmin,
-                        zmax);
+  bvh.findBoundingBoxes(offsets, counts, candidates, N, query_boxes);
   EXPECT_TRUE(candidates != nullptr);
 
   // flag cells that are found by the bounding box ID
@@ -680,12 +671,7 @@ void check_find_bounding_boxes3d()
   axom::deallocate(counts);
   axom::deallocate(aabbs);
 
-  axom::deallocate(xmin);
-  axom::deallocate(xmax);
-  axom::deallocate(ymin);
-  axom::deallocate(ymax);
-  axom::deallocate(zmin);
-  axom::deallocate(zmax);
+  axom::deallocate(query_boxes);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -698,21 +684,24 @@ void check_find_bounding_boxes2d()
   constexpr int NDIMS = 2;
   constexpr IndexType N = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // setup query bounding boxes: both boxes are source at (-1.0,-1.0) but have
   // different max (upper right). The first box is setup to intersect six
   // bounding boxes of the mesh.
-  FloatType* xmin = axom::allocate<FloatType>(N);
-  FloatType* ymin = axom::allocate<FloatType>(N);
-  xmin[0] = xmin[1] = ymin[0] = ymin[1] = -1.0;
+  BoxType* query_boxes = axom::allocate<BoxType>(N);
+  query_boxes[0].clear();
+  query_boxes[1].clear();
 
-  FloatType* xmax = axom::allocate<FloatType>(N);
-  FloatType* ymax = axom::allocate<FloatType>(N);
-  xmax[0] = 2.5;
-  ymax[0] = 1.5;
-  xmax[1] = ymax[1] = -0.1;
+  query_boxes[0].addPoint(PointType {-1., -1.});
+  query_boxes[1].addPoint(PointType {-1., -1.});
+
+  query_boxes[0].addPoint(PointType {2.5, 1.5});
+  query_boxes[1].addPoint(PointType {-0.1, -0.1});
 
   // setup a test mesh (3 x 3)
   double lo[NDIMS] = {0.0, 0.0};
@@ -742,7 +731,7 @@ void check_find_bounding_boxes2d()
   IndexType* offsets = axom::allocate<IndexType>(N);
   IndexType* counts = axom::allocate<IndexType>(N);
   IndexType* candidates = nullptr;
-  bvh.findBoundingBoxes(offsets, counts, candidates, N, xmin, xmax, ymin, ymax);
+  bvh.findBoundingBoxes(offsets, counts, candidates, N, query_boxes);
   EXPECT_TRUE(candidates != nullptr);
 
   // flag cells that are found by the bounding box ID
@@ -788,10 +777,7 @@ void check_find_bounding_boxes2d()
   axom::deallocate(counts);
   axom::deallocate(aabbs);
 
-  axom::deallocate(xmin);
-  axom::deallocate(xmax);
-  axom::deallocate(ymin);
-  axom::deallocate(ymax);
+  axom::deallocate(query_boxes);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -803,27 +789,40 @@ void check_find_rays3d()
   constexpr int NDIMS = 3;
   constexpr IndexType N = 2;
 
+  using RayType = typename primal::Ray<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+  using VectorType = typename primal::Vector<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // setup query rays: both rays are source at (-1.0,-1.0) but point in
   // opposite directions. The first ray is setup such that it intersects
   // three bounding boxes of the mesh.
-  FloatType* x0 = axom::allocate<FloatType>(N);
-  FloatType* y0 = axom::allocate<FloatType>(N);
-  FloatType* z0 = axom::allocate<FloatType>(N);
-  x0[0] = x0[1] = y0[0] = y0[1] = z0[0] = z0[1] = -1.0;
-
-  FloatType* nx = axom::allocate<FloatType>(N);
-  FloatType* ny = axom::allocate<FloatType>(N);
-  FloatType* nz = axom::allocate<FloatType>(N);
-  nx[0] = ny[0] = nz[0] = 1.0;
-  nx[1] = ny[1] = nz[1] = -1.0;
+  RayType* query_rays = axom::allocate<RayType>(N);
+  query_rays[0] =
+    RayType {PointType {-1.0, -1.0, -1.0}, VectorType {1.0, 1.0, 1.0}};
+  query_rays[1] =
+    RayType {PointType {-1.0, -1.0, -1.0}, VectorType {-1.0, -1.0, -1.0}};
 
 #ifdef VTK_DEBUG
   FloatType t = 5.0;
-  dump_ray("ray0.vtk", t, x0[0], nx[0], y0[0], ny[0], z0[0], nz[0]);
-  dump_ray("ray1.vtk", t, x0[1], nx[1], y0[1], ny[1], z0[1], nz[1]);
+  dump_ray("ray0.vtk",
+           t,
+           query_rays[0].origin()[0],
+           query_rays[0].direction()[0],
+           query_rays[0].origin()[1],
+           query_rays[0].direction()[1],
+           query_rays[0].origin()[2],
+           query_rays[0].direction()[2]);
+  dump_ray("ray1.vtk",
+           t,
+           query_rays[1].origin()[0],
+           query_rays[1].direction()[0],
+           query_rays[1].origin()[1],
+           query_rays[1].direction()[1],
+           query_rays[1].origin()[2],
+           query_rays[1].direction()[2]);
 #endif
 
   // setup a test mesh
@@ -854,7 +853,7 @@ void check_find_rays3d()
   IndexType* offsets = axom::allocate<IndexType>(N);
   IndexType* counts = axom::allocate<IndexType>(N);
   IndexType* candidates = nullptr;
-  bvh.findRays(offsets, counts, candidates, N, x0, nx, y0, ny, z0, nz);
+  bvh.findRays(offsets, counts, candidates, N, query_rays);
   EXPECT_TRUE(candidates != nullptr);
 
   // flag cells that are found by the ray ID
@@ -917,12 +916,7 @@ void check_find_rays3d()
   axom::deallocate(counts);
   axom::deallocate(aabbs);
 
-  axom::deallocate(x0);
-  axom::deallocate(nx);
-  axom::deallocate(y0);
-  axom::deallocate(ny);
-  axom::deallocate(z0);
-  axom::deallocate(nz);
+  axom::deallocate(query_rays);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -935,25 +929,34 @@ void check_find_rays2d()
   constexpr int NDIMS = 2;
   constexpr IndexType N = 2;
 
+  using RayType = typename primal::Ray<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+  using VectorType = typename primal::Vector<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // setup query rays: both rays are source at (-1.0,-1.0) but point in
   // opposite directions. The first ray is setup such that it intersects
   // seven bounding boxes of the mesh.
-  FloatType* x0 = axom::allocate<FloatType>(N);
-  FloatType* y0 = axom::allocate<FloatType>(N);
-  x0[0] = x0[1] = y0[0] = y0[1] = -1.0;
-
-  FloatType* nx = axom::allocate<FloatType>(N);
-  FloatType* ny = axom::allocate<FloatType>(N);
-  nx[0] = ny[0] = 1.0;
-  nx[1] = ny[1] = -1.0;
+  RayType* query_rays = axom::allocate<RayType>(N);
+  query_rays[0] = RayType {PointType {-1.0, -1.0}, VectorType {1.0, 1.0}};
+  query_rays[1] = RayType {PointType {-1.0, -1.0}, VectorType {-1.0, -1.0}};
 
 #ifdef VTK_DEBUG
   FloatType t = 5.0;
-  dump_ray("ray0.vtk", t, x0[0], nx[0], y0[0], ny[0]);
-  dump_ray("ray1.vtk", t, x0[1], nx[1], y0[1], ny[1]);
+  dump_ray("ray0.vtk",
+           t,
+           query_rays[0].origin()[0],
+           query_rays[0].direction()[0],
+           query_rays[0].origin()[1],
+           query_rays[0].direction()[1]);
+  dump_ray("ray1.vtk",
+           t,
+           query_rays[1].origin()[0],
+           query_rays[1].direction()[0],
+           query_rays[1].origin()[1],
+           query_rays[1].direction()[1]);
 #endif
 
   // setup a test mesh
@@ -984,7 +987,7 @@ void check_find_rays2d()
   IndexType* offsets = axom::allocate<IndexType>(N);
   IndexType* counts = axom::allocate<IndexType>(N);
   IndexType* candidates = nullptr;
-  bvh.findRays(offsets, counts, candidates, N, x0, nx, y0, ny);
+  bvh.findRays(offsets, counts, candidates, N, query_rays);
   EXPECT_TRUE(candidates != nullptr);
 
   // flag cells that are found by the ray ID
@@ -1034,10 +1037,7 @@ void check_find_rays2d()
   axom::deallocate(counts);
   axom::deallocate(aabbs);
 
-  axom::deallocate(x0);
-  axom::deallocate(nx);
-  axom::deallocate(y0);
-  axom::deallocate(ny);
+  axom::deallocate(query_rays);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -1067,7 +1067,8 @@ void check_find_points3d()
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
-  using PointType = primal::Point<double, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using PointDbl = primal::Point<double, NDIMS>;
 
   double lo[NDIMS] = {0.0, 0.0, 0.0};
   double hi[NDIMS] = {3.0, 3.0, 3.0};
@@ -1081,6 +1082,12 @@ void check_find_points3d()
 
   FloatType* aabbs = nullptr;
   generate_aabbs_and_centroids3d(&mesh, aabbs, xc, yc, zc);
+
+  PointType* centroids = axom::allocate<PointType>(ncells);
+  for(int i = 0; i < ncells; i++)
+  {
+    centroids[i] = PointType {xc[i], yc[i], zc[i]};
+  }
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
@@ -1100,7 +1107,7 @@ void check_find_points3d()
   IndexType* offsets = axom::allocate<IndexType>(ncells);
   IndexType* counts = axom::allocate<IndexType>(ncells);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, ncells, xc, yc, zc);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   EXPECT_TRUE(candidates != nullptr);
 
@@ -1108,7 +1115,7 @@ void check_find_points3d()
 
   for(IndexType i = 0; i < ncells; ++i)
   {
-    PointType q = PointType::make_point(xc[i], yc[i], zc[i]);
+    PointDbl q = PointDbl {centroids[i][0], centroids[i][1], centroids[i][2]};
     const int donorCellIdx = ug.getBinIndex(q);
     EXPECT_EQ(counts[i], 1);
     EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
@@ -1120,12 +1127,12 @@ void check_find_points3d()
   constexpr double OFFSET = 10.0;
   for(IndexType i = 0; i < ncells; ++i)
   {
-    xc[i] += OFFSET;
-    yc[i] += OFFSET;
-    zc[i] += OFFSET;
+    centroids[i][0] += OFFSET;
+    centroids[i][1] += OFFSET;
+    centroids[i][2] += OFFSET;
   }
 
-  bvh.findPoints(offsets, counts, candidates, ncells, xc, yc, zc);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   for(IndexType i = 0; i < ncells; ++i)
   {
@@ -1136,6 +1143,7 @@ void check_find_points3d()
   axom::deallocate(candidates);
   axom::deallocate(counts);
   axom::deallocate(aabbs);
+  axom::deallocate(centroids);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -1165,7 +1173,8 @@ void check_find_points2d()
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
-  using PointType = primal::Point<double, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using PointDbl = primal::Point<double, NDIMS>;
 
   double lo[NDIMS] = {0.0, 0.0};
   double hi[NDIMS] = {3.0, 3.0};
@@ -1178,6 +1187,12 @@ void check_find_points2d()
 
   FloatType* aabbs = nullptr;
   generate_aabbs_and_centroids2d(&mesh, aabbs, xc, yc);
+
+  PointType* centroids = axom::allocate<PointType>(ncells);
+  for(int i = 0; i < ncells; i++)
+  {
+    centroids[i] = PointType {xc[i], yc[i]};
+  }
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
@@ -1197,7 +1212,7 @@ void check_find_points2d()
   IndexType* offsets = axom::allocate<IndexType>(ncells);
   IndexType* counts = axom::allocate<IndexType>(ncells);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, ncells, xc, yc);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   EXPECT_TRUE(candidates != nullptr);
 
@@ -1205,7 +1220,7 @@ void check_find_points2d()
 
   for(IndexType i = 0; i < ncells; ++i)
   {
-    PointType q = PointType::make_point(xc[i], yc[i]);
+    PointDbl q = PointDbl {centroids[i][0], centroids[i][1]};
     const int donorCellIdx = ug.getBinIndex(q);
     EXPECT_EQ(counts[i], 1);
     EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
@@ -1217,11 +1232,11 @@ void check_find_points2d()
   constexpr double OFFSET = 10.0;
   for(IndexType i = 0; i < ncells; ++i)
   {
-    xc[i] += OFFSET;
-    yc[i] += OFFSET;
+    centroids[i][0] += OFFSET;
+    centroids[i][1] += OFFSET;
   }
 
-  bvh.findPoints(offsets, counts, candidates, ncells, xc, yc);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   for(IndexType i = 0; i < ncells; ++i)
   {
@@ -1251,6 +1266,8 @@ void check_single_box2d()
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS = 2;
 
+  using PointType = primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
@@ -1278,27 +1295,23 @@ void check_single_box2d()
   // run the find algorithm w/ the centroid of the bounding box as input.
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
-  FloatType* xc = axom::allocate<FloatType>(NUM_BOXES);
-  FloatType* yc = axom::allocate<FloatType>(NUM_BOXES);
-  xc[0] = yc[0] = 0.5;
+  PointType centroid {0.5, 0.5};
 
   IndexType* offsets = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* counts = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_TRUE(candidates != nullptr);
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
   axom::deallocate(candidates);
 
   // shift centroid outside of the BVH, should return no candidates.
-  xc[0] += 10.0;
-  yc[0] += 10.0;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc);
+  centroid[0] += 10.0;
+  centroid[1] += 10.0;
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_EQ(counts[0], 0);
 
-  axom::deallocate(xc);
-  axom::deallocate(yc);
   axom::deallocate(boxes);
   axom::deallocate(offsets);
   axom::deallocate(counts);
@@ -1319,6 +1332,8 @@ void check_single_box3d()
 {
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS = 3;
+
+  using PointType = primal::Point<FloatType, NDIMS>;
 
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
@@ -1347,29 +1362,23 @@ void check_single_box3d()
   // run the find algorithm w/ the centroid of the bounding box as input.
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
-  FloatType* xc = axom::allocate<FloatType>(NUM_BOXES);
-  FloatType* yc = axom::allocate<FloatType>(NUM_BOXES);
-  FloatType* zc = axom::allocate<FloatType>(NUM_BOXES);
-  xc[0] = yc[0] = zc[0] = 0.5;
+  PointType centroid {0.5, 0.5, 0.5};
 
   IndexType* offsets = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* counts = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc, zc);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_TRUE(candidates != nullptr);
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
   axom::deallocate(candidates);
 
   // shift centroid outside of the BVH, should return no candidates.
-  xc[0] += 10.0;
-  yc[0] += 10.0;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc, zc);
+  centroid[0] += 10.0;
+  centroid[1] += 10.0;
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_EQ(counts[0], 0);
 
-  axom::deallocate(xc);
-  axom::deallocate(yc);
-  axom::deallocate(zc);
   axom::deallocate(boxes);
   axom::deallocate(offsets);
   axom::deallocate(counts);
@@ -1757,6 +1766,7 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
   constexpr int NUM_BOXES = 1;
 
   using FloatType = double;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
 
   // single bounding box in [0,1] x [0,1] x [0,1]
   FloatType* boxes = axom::allocate<FloatType>(6, allocID);
@@ -1775,26 +1785,24 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
   // run the find algorithm w/ the centroid of the bounding box as input.
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
-  FloatType* xc = axom::allocate<FloatType>(NUM_BOXES, allocID);
-  FloatType* yc = axom::allocate<FloatType>(NUM_BOXES, allocID);
-  FloatType* zc = axom::allocate<FloatType>(NUM_BOXES, allocID);
+  PointType* centroid = axom::allocate<PointType>(NUM_BOXES, allocID);
   axom::for_all<exec>(
     0,
     1,
-    AXOM_LAMBDA(axom::IndexType idx) { xc[idx] = yc[idx] = zc[idx] = 0.5; });
+    AXOM_LAMBDA(axom::IndexType idx) {
+      centroid[idx] = PointType {0.5, 0.5, 0.5};
+    });
 
   IndexType* offsets = axom::allocate<IndexType>(NUM_BOXES, allocID);
   IndexType* counts = axom::allocate<IndexType>(NUM_BOXES, allocID);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc, zc);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid);
   EXPECT_TRUE(candidates != nullptr);
 
   // Ensure the BVH uses interally the supplied pool allocator
   EXPECT_EQ(rm.getAllocator(candidates).getId(), allocID);
 
-  axom::deallocate(xc);
-  axom::deallocate(yc);
-  axom::deallocate(zc);
+  axom::deallocate(centroid);
   axom::deallocate(boxes);
   axom::deallocate(offsets);
   axom::deallocate(counts);
