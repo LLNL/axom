@@ -68,10 +68,13 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
   int32 stackptr = 0;
   todo[stackptr] = BARRIER;
 
+  int32 found_leaf = 0;
   int32 current_node = 0;
+
   while(current_node != BARRIER)
   {
-    if(!leaf_node(current_node))
+    // Traverse until we hit a leaf node or the barrier.
+    while(!leaf_node(current_node))
     {
       BBoxType left_bin = inner_nodes[current_node + 0];
       BBoxType right_bin = inner_nodes[current_node + 1];
@@ -98,22 +101,37 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
           // go down the "closer" first by perhaps the distance
           // from the point to the center of the aabb
         }
-
       }  // END else
 
-    }  // END if
-    else
+      if(leaf_node(current_node) && !leaf_node(found_leaf))
+      {
+        // Save this leaf and continue traversing
+        found_leaf = current_node;
+        if(current_node != BARRIER)
+        {
+          current_node = todo[stackptr];
+          stackptr--;
+        }
+      }
+    }  // END while
+
+    // After the traversal, each thread may have found:
+    // - two leaf nodes (found_leaf=l1, current_node=l2)
+    // - one leaf node (found_leaf=l1, current_node=BARRIER)
+    // - no leaf nodes (found_leaf=0, current_node=BARRIER)
+    while(leaf_node(found_leaf) && found_leaf != BARRIER)
     {
-      // compute leaf index
-      current_node = -current_node - 1;  // swap the neg address
-
-      // execute leaf action
-      A(current_node, leaf_nodes);
-
-      current_node = todo[stackptr];
-      stackptr--;
-    }  // END else
-
+      int leaf_idx = -found_leaf - 1;
+      A(leaf_idx, leaf_nodes);
+      found_leaf = current_node;
+      if(leaf_node(current_node) && current_node != BARRIER)
+      {
+        // pop the stack and continue
+        current_node = todo[stackptr];
+        stackptr--;
+      }
+    }
+    found_leaf = 0;
   }  // END while
 }
 
