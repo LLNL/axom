@@ -384,6 +384,7 @@ public:
    *
    * \param [in] buckets user-specified number of buckets in new Map. -1 to fall back to multiplicative factor.
    * \param [in] factor user-specified multiplicative factor to determine size of new Map based upon current size. 
+   *  -1 to fall back to default -- would be more efficient to specify neither input.
    *
    * \return true if the hash table is now in a safe state, false otherwise
    *
@@ -408,6 +409,8 @@ public:
     }
     else
     {
+      assert(factor == -1);
+      assert(buckets == -1);
       newlen = 2 * m_bucket_count;
     }
     m_bucket_fill = false;
