@@ -22,10 +22,6 @@
 // C/C++ includes
 #include <type_traits>  // for std::is_floating_point(), std::is_same()
 
-#if !defined(AXOM_USE_RAJA) || !defined(AXOM_USE_UMPIRE)
-  #error*** The spin::BVH class requires RAJA and Umpire ***
-#endif
-
 namespace axom
 {
 namespace spin
@@ -74,8 +70,7 @@ struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
  * \note The last template parameter is optional. Defaults to double precision
  *  if not specified.
  *
- * \pre The spin::BVH class requires RAJA and Umpire. For a CPU-only, sequential
- *  implementation, see the spin::BVHTree class.
+ * \pre The spin::BVH class requires RAJA and Umpire with CUDA_EXEC.
  *
  * \note The Execution Space, supplied as the 2nd template argument, specifies
  *

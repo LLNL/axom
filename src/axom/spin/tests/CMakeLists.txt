@@ -43,15 +43,16 @@ foreach ( test ${spin_tests} )
 
 endforeach()
 
-if ( RAJA_FOUND AND UMPIRE_FOUND )
 
-    blt_add_executable(
-      NAME       spin_bvh_test
-      SOURCES    spin_bvh.cpp
-      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-      DEPENDS_ON ${spin_depends}
-      FOLDER     axom/spin/tests
-      )
+blt_add_executable(
+  NAME       spin_bvh_test
+  SOURCES    spin_bvh.cpp
+  OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+  DEPENDS_ON ${spin_depends}
+  FOLDER     axom/spin/tests
+  )
+
+if ( RAJA_FOUND AND UMPIRE_FOUND )
 
     axom_add_test(
       NAME            spin_bvh
@@ -66,5 +67,14 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
     set_property(TEST spin_bvh
                  APPEND
                  PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=0") # Zero based indexed, so only first GPU is visible
+
+else()
+
+    axom_add_test(
+      NAME            spin_bvh
+      COMMAND         spin_bvh_test
+      NUM_OMP_THREADS 4
+      )
+
 
 endif()

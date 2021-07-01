@@ -1459,7 +1459,7 @@ TEST(spin_bvh, single_box3d_sequential)
 }
 
 //------------------------------------------------------------------------------
-#ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 
 TEST(spin_bvh, construct2D_omp)
 {

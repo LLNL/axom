@@ -26,6 +26,7 @@
 #include <fstream>  // for std::ofstream
 #include <sstream>  // for std::ostringstream
 #include <string>   // for std::string
+#include <vector>   // for std::vector
 
 namespace axom
 {
@@ -228,6 +229,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
   // STEP 1: count number of candidates for each query point
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<reduce_pol, IndexType> total_count_reduce(0);
@@ -295,6 +297,43 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                                                 predicate,
                                                 leafAction);
                            }););
+#else  // CPU-only and no RAJA: do single traversal
+
+  std::vector<int> search_candidates;
+  int current_offset = 0;
+
+  // STEP 1: do single-pass traversal with std::vector for candidates
+  AXOM_PERF_MARK_SECTION(
+    "PASS[1]:fill_traversal", for_all<ExecSpace>(numObjs, [&](IndexType i) {
+      int matching_leaves = 0;
+      PrimitiveType obj = objs[i];
+      offsets[i] = current_offset;
+
+      auto leafAction = [&](int32 current_node, const int32* leafs) {
+        search_candidates.emplace_back(leafs[current_node]);
+        matching_leaves++;
+        current_offset++;
+      };
+
+      lbvh::bvh_traverse(inner_nodes,
+                         inner_node_children,
+                         leaf_nodes,
+                         obj,
+                         predicate,
+                         leafAction);
+      counts[i] = matching_leaves;
+    }););
+
+  SLIC_ASSERT(current_offset == static_cast<IndexType>(search_candidates.size()));
+
+  // STEP 2: allocate memory for all candidates
+  AXOM_PERF_MARK_SECTION(
+    "allocate_candidates", IndexType total_candidates = search_candidates.size();
+    candidates = axom::allocate<IndexType>(total_candidates, allocatorID););
+
+  // STEP 3: copy candiates to destination array
+  std::copy(search_candidates.begin(), search_candidates.end(), candidates);
+#endif
 }
 
 template <typename FloatType, int NDIMS, typename ExecSpace>

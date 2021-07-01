@@ -20,8 +20,10 @@
 // slic includes
 #include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
-// RAJA includes
-#include "RAJA/RAJA.hpp"
+#if defined(AXOM_USE_RAJA)
+  // RAJA includes
+  #include "RAJA/RAJA.hpp"
+#endif
 
 // C/C++ includes
 #include <string>  // for std::string
