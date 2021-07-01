@@ -134,7 +134,7 @@ public:
      *  the bool is set to False, and the node pointed to is the end node if the list was full,
      *  or the item occupying the queried slot if an item with the given key already existed.
      */
-  axom_map::Pair<Key, T> insert_no_update(Key key, T value)
+  axom_map::Pair<Key, T> insert_no_update(const Key& key, const T& value)
   {
     if(m_free != -1)
     {
@@ -188,7 +188,7 @@ public:
      *  was performed, the bool is set to False. If assignment occured, the node pointed to is the item 
      *  corresponding to the supplied key. Otherwise, if insertion and assignment failed, the node pointed to is the end node.
      */
-  axom_map::Pair<Key, T> insert_update(Key key, T value)
+  axom_map::Pair<Key, T> insert_update(const Key& key, const T& value)
   {
     IndexType ind = m_head;
     if(m_head == -1)
@@ -248,7 +248,7 @@ public:
      * \return Returns true if item was found and removed, false otherwise. 
      *  
      */
-  bool remove(Key key)
+  bool remove(const Key& key)
   {
     if(m_head == -1)
     {
@@ -287,7 +287,7 @@ public:
     * \return Returns pointer to the requested node if possible, and to special end node otherwise.
     *
     */
-  axom_map::Node<Key, T>& find(Key key)
+  axom_map::Node<Key, T>& find(const Key& key)
   {
     if(m_head == -1)
     {
@@ -484,7 +484,7 @@ public:
    *  if the map is overfilled, and the actual node with the given key if an item with given key already exists.
    *
    */
-  axom_map::Pair<Key, T> insert(Key key, T val)
+  axom_map::Pair<Key, T> insert(const Key& key, const T& val)
   {
     axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
     axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
@@ -517,7 +517,7 @@ public:
    *  if the map is overfilled, and the actual node with the given key if an assignment occured.
    *
    */
-  axom_map::Pair<Key, T> insert_or_assign(Key key, T val)
+  axom_map::Pair<Key, T> insert_or_assign(const Key& key, const T& val)
   {
     axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
     axom_map::Pair<Key, T> ret = target->insert_update(key, val);
@@ -546,7 +546,7 @@ public:
    * \return A const reference to the value of key-value pair in the Map instance that is associated with supplied Key.
    *
    */
-  const T& operator[](Key key)
+  const T& operator[](const Key& key) const
   {
     //Since we can't throw an exception, the safest solution is to be read-only, and for the user to be careful with their
     //accesses.
@@ -565,7 +565,7 @@ public:
    *
    * \return A bool value of true if the item was successfully removed, false otherwise. 
    */
-  bool erase(Key key)
+  bool erase(const Key& key)
   {
     axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
     //Candidate to get cut out if branching becomes too much of an issue.
@@ -584,7 +584,7 @@ public:
    *
    * \return A reference to the requested item if found, sentinel node end otherwise.
    */
-  axom_map::Node<Key, T>& find(Key key)
+  axom_map::Node<Key, T>& find(const Key& key) const
   {
     axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
     return target->find(key);
@@ -667,7 +667,7 @@ public:
    *
    * \return true if Map should be rehashed now, false otherwise
    */
-  bool check_rehash()
+  bool check_rehash() const
   {
     if(m_size / m_bucket_count >= m_load_factor || m_bucket_fill == true)
     {
@@ -710,7 +710,7 @@ private:
    *
    * \return A 64-bit integer containing the hashed value of the key.
    */
-  std::size_t get_hash(Key input)
+  std::size_t get_hash(const Key& input) const
   {
     std::size_t hashed = std::hash<Key> {}(input);
 
