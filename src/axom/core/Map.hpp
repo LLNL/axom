@@ -439,7 +439,8 @@ public:
   }
   /*!
    * \brief Deallocates memory resources for this Map instance, resets state as if constructed with 0 elements.
-   *  Also used in destructor.
+   *  Also used in destructor. Once this is used, insert will not function properly until init() is used, because there
+   *  is no memory available for elements to be inserted.
    *
    */
   void clear()
@@ -456,7 +457,8 @@ public:
   }
 
   /*!
-   * \brief Initializes this Map instance, mostly in case deallocate was used and there's a desire to continue use.
+   * \brief Initializes this Map instance, mostly in case clear() was used and there's a desire to continue use.
+   *  Required if use is to continue after a clear().
    *
    */
   void init(int num_buckets, int bucket_len = 10)
@@ -486,6 +488,12 @@ public:
    */
   axom_map::Pair<Key, T> insert(const Key& key, const T& val)
   {
+    //If branching becomes an isssue, this protective statement will be 
+    //removed in lieu of expecting the user to not try to insert after 
+    //clear().
+    if(m_bucket_count*m_bucket_len == 0){
+      return axom_map::Pair<Key, T>(&m_end, false);   
+    }
     axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
     axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
     //Candidate to get cut out if branching becomes too much of an issue.
@@ -519,6 +527,12 @@ public:
    */
   axom_map::Pair<Key, T> insert_or_assign(const Key& key, const T& val)
   {
+    //If branching becomes an isssue, this protective statement will be 
+    //removed in lieu of expecting the user to not try to insert after 
+    //clear().
+    if(m_bucket_count*m_bucket_len == 0){
+      return axom_map::Pair<Key, T>(&m_end, false);   
+    }
     axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
     axom_map::Pair<Key, T> ret = target->insert_update(key, val);
     //Candidate to get cut out if branching becomes too much of an issue.
