@@ -41,8 +41,7 @@ struct Node
 
   friend bool operator==(const Node& lhs, const Node& rhs)
   {
-    return (lhs.next == rhs.next) && (lhs.key == rhs.key) &&
-      (lhs.value == rhs.value);
+    return (lhs.next == rhs.next) && (lhs.key == rhs.key);
   }
 };
 
@@ -341,8 +340,8 @@ public:
  *  RAJA and Umpire to allow use of map within kernels. Resembles 
  *  unordered_map, which we can't use due to a lack of host-device decoration.
  *
- * \tparam Key the type of keys.
- * \tparam T the type of values to hold.
+ * \tparam Key the type of keys. Must allow equality comparison, must be copyable. 
+ * \tparam T the type of values to hold, must be copyable.
  * \tparam Hash functor that takes an object of Key type and returns 
  *  a hashed value of size_t (for now)
  */
@@ -375,7 +374,7 @@ public:
   /*!
    * Destructor. Frees associated buffers.
    */
-  ~Map() { deallocate(); }
+  ~Map() { clear(); }
 
   /// \name Map Methods
   ///@{
@@ -384,7 +383,7 @@ public:
    * from original Map.
    *
    * \param [in] buckets user-specified number of buckets in new Map. -1 to fall back to multiplicative factor.
-   * \param [in] factor user-specified multiplicative factor to determine size of new Map based upon existing. 
+   * \param [in] factor user-specified multiplicative factor to determine size of new Map based upon current size. 
    *
    * \return true if the hash table is now in a safe state, false otherwise
    *
@@ -443,7 +442,7 @@ public:
    *  Also used in destructor.
    *
    */
-  void deallocate()
+  void clear()
   {
     for(int i = 0; i < m_bucket_count; i++)
     {
