@@ -10,6 +10,7 @@
 #include "axom/config.hpp"       // for Axom compile-time definitions
 #include "axom/core/Macros.hpp"  // for Axom macros
 #include "axom/core/Types.hpp"   // for axom::IndexType
+#include "axom/core/numerics/floating_point_limits.hpp"  // floating_point_limits
 
 #include "axom/core/execution/execution_space.hpp"  // for execution spaces
 
@@ -21,6 +22,7 @@
 
 // C/C++ includes
 #include <type_traits>  // for std::is_floating_point(), std::is_same()
+#include <memory>
 
 namespace axom
 {
@@ -137,19 +139,18 @@ private:
     typename BVHPolicy<FloatType, NDIMS, ExecSpace, BVHImpl>::ImplType;
 
 public:
-
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
   using RayType = typename primal::Ray<FloatType, NDIMS>;
 
 public:
   /*!
-   * \brief Default constructor. Disabled.
+   * \brief Default constructor.
    */
-  BVH() = delete;
+  BVH() : m_AllocatorID(axom::execution_space<ExecSpace>::allocatorID()) { }
 
   /*!
-   * \brief Creates a BVH instance, of specified dimension, over a given set
+   * \brief Initializes a BVH instance, of specified dimension, over a given set
    *  of geometric entities, each represented by its corresponding axis-aligned
    *  bounding box.
    *
@@ -157,21 +158,7 @@ public:
    * \param [in] numItems the total number of items to store in the BVH.
    * \param [in] allocatorID Umpire allocator ID to use (optional)
    *
-   * \note boxes is an array of length 2*dimension*numItems, that stores the
-   *  two corners of the axis-aligned bounding box corresponding to a given
-   *  geometric entity. For example, in 3D, the two corners of the ith bounding
-   *  box are given by:
-   *  \code
-   *    const int offset = i*6;
-   *
-   *    double xmin = boxes[ offset   ];
-   *    double ymin = boxes[ offset+1 ];
-   *    double zmin = boxes[ offset+2 ];
-   *
-   *    double xmax = boxes[ offset+3 ];
-   *    double ymax = boxes[ offset+4 ];
-   *    double zmax = boxes[ offset+5 ];
-   *  \endcode
+   * \return status set to BVH_BUILD_OK on success.
    *
    * \note If an allocatorID is not specified, the code will use the default
    *  allocator ID for the execution space specified via the template argument
@@ -185,9 +172,11 @@ public:
    * \pre boxes != nullptr
    * \pre numItems > 0
    */
-  BVH(const FloatType* boxes,
-      IndexType numItems,
-      int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
+  int initialize(const BoxType* boxes,
+                 IndexType numItems,
+                 int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
+
+  bool isInitialized() const { return m_bvh != nullptr; }
 
   /*!
    * \brief Get the ID of the allocator used by the BVH.
@@ -222,12 +211,6 @@ public:
    * \return TOL the tolerance
    */
   FloatType getTolerance() const { return m_tolerance; };
-
-  /*!
-   * \brief Generates the BVH
-   * \return status set to BVH_BUILD_OK on success.
-   */
-  int build();
 
   /*!
    * \brief Returns the bounds of the BVH, given by the the root bounding box.
@@ -338,19 +321,15 @@ public:
 private:
   /// \name Private Members
   /// @{
+  static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.001;
+  static constexpr FloatType DEFAULT_TOLERANCE =
+    axom::numerics::floating_point_limits<FloatType>::epsilon();
 
   int m_AllocatorID;
-  FloatType m_tolerance;
-  FloatType m_scaleFactor;
-  IndexType m_numItems;
-  const BoxType* m_boxes;
-  ImplType m_bvh;
-
-  static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.001;
+  FloatType m_tolerance {DEFAULT_TOLERANCE};
+  FloatType m_scaleFactor {DEFAULT_SCALE_FACTOR};
+  std::unique_ptr<ImplType> m_bvh {};
   /// @}
-
-  DISABLE_COPY_AND_ASSIGNMENT(BVH);
-  DISABLE_MOVE_AND_ASSIGNMENT(BVH);
 };
 
 }  // namespace spin

@@ -81,12 +81,12 @@ void dump_ray(const std::string& file,
 //------------------------------------------------------------------------------
 
 /*!
- * \brief Give a 2D mesh object, this method generates an array of axis-aligned
+ * \brief Given a mesh object, this method generates an array of axis-aligned
  *  bounding boxes corresponding to each constituent cell of the mesh and
  *  a corresponding centroid.
  *
  * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs flat array of bounding boxes [xmin,ymin,xmax,ymax....]
+ * \param [out] aabbs array of bounding boxes
  *
  * \note The intent of this method is to generate synthetic input test data
  *  to test the functionality of the BVH.
@@ -97,21 +97,22 @@ void dump_ray(const std::string& file,
  * \pre aabbs == nullptr
  * \post aabbs != nullptr
  */
-template <typename FloatType>
-void generate_aabbs2d(const mint::Mesh* mesh, FloatType*& aabbs)
+template <typename FloatType, int NDIMS>
+void generate_aabbs(const mint::Mesh* mesh,
+                    primal::BoundingBox<FloatType, NDIMS>*& aabbs)
 {
   // sanity checks
   EXPECT_TRUE(aabbs == nullptr);
+  EXPECT_EQ(NDIMS, mesh->getDimension());
+
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
 
   // calculate some constants
-  constexpr int ndims = 2;
-  constexpr int stride = 2 * ndims;
-
-  EXPECT_EQ(ndims, mesh->getDimension());
+  constexpr int nodes_per_dim = 1 << NDIMS;
 
   // allocate output arrays
   const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * stride);
+  aabbs = axom::allocate<BoxType>(ncells);
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells<exec_policy, xargs::coords>(
@@ -119,20 +120,17 @@ void generate_aabbs2d(const mint::Mesh* mesh, FloatType*& aabbs)
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      primal::BoundingBox<double, 2> range;
+      primal::BoundingBox<double, NDIMS> range;
 
-      for(IndexType inode = 0; inode < 4; ++inode)
+      for(IndexType inode = 0; inode < nodes_per_dim; ++inode)
       {
-        primal::Point<double, 2> node {coords.getColumn(inode)};
+        primal::Point<double, NDIMS> node {coords.getColumn(inode)};
 
         range.addPoint(node);
       }  // END for all cells nodes
 
-      const IndexType offset = cellIdx * stride;
-      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
-      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
-      aabbs[offset + 2] = range.getMax()[mint::X_COORDINATE];
-      aabbs[offset + 3] = range.getMax()[mint::Y_COORDINATE];
+      aabbs[cellIdx].clear();
+      aabbs[cellIdx].addBox(range);
     });
 
   // post-condition sanity checks
@@ -142,81 +140,13 @@ void generate_aabbs2d(const mint::Mesh* mesh, FloatType*& aabbs)
 //------------------------------------------------------------------------------
 
 /*!
- * \brief Give a 3D mesh object, this method generates an array of axis-aligned
- *  bounding boxes (AABBS) corresponding to each constituent cell of the mesh
- *  and a corresponding centroid.
- *
- * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs flat array of AABBS [xmin,ymin,zmin,xmax,ymax,zmax....]
- *
- * \note The intent of this method is to generate synthetic input test data
- *  to test the functionality of the BVH.
- *
- * \warning This method allocates aabbs internally. The caller is responsible
- *  for properly deallocating aabbs.
- *
- * \pre aabbs == nullptr
- * \pre xc != nullptr
- * \pre yc != nullptr
- * \pre zc != nullptr
- *
- * \post aabbs != nullptr
- */
-template <typename FloatType>
-void generate_aabbs3d(const mint::Mesh* mesh, FloatType*& aabbs)
-{
-  // sanity checks
-  EXPECT_TRUE(aabbs == nullptr);
-
-  // calculate some constants
-  constexpr int ndims = 3;
-  constexpr int stride = 2 * ndims;
-
-  EXPECT_EQ(ndims, mesh->getDimension());
-
-  // allocate output arrays
-  const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * stride);
-
-  using exec_policy = axom::SEQ_EXEC;
-  mint::for_all_cells<exec_policy, xargs::coords>(
-    mesh,
-    AXOM_LAMBDA(IndexType cellIdx,
-                numerics::Matrix<double> & coords,
-                const IndexType* AXOM_NOT_USED(nodeIds)) {
-      primal::BoundingBox<double, 3> range;
-
-      for(IndexType inode = 0; inode < 8; ++inode)
-      {
-        primal::Point<double, 3> node {coords.getColumn(inode)};
-
-        range.addPoint(node);
-      }  // END for all cells nodes
-
-      const IndexType offset = cellIdx * stride;
-      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
-      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
-      aabbs[offset + 2] = range.getMin()[mint::Z_COORDINATE];
-      aabbs[offset + 3] = range.getMax()[mint::X_COORDINATE];
-      aabbs[offset + 4] = range.getMax()[mint::Y_COORDINATE];
-      aabbs[offset + 5] = range.getMax()[mint::Z_COORDINATE];
-    });
-
-  // post-condition sanity checks
-  EXPECT_TRUE(aabbs != nullptr);
-}
-
-//------------------------------------------------------------------------------
-
-/*!
- * \brief Give a 2D mesh object, this method generates an array of axis-aligned
+ * \brief Given a mesh object, this method generates an array of axis-aligned
  *  bounding boxes corresponding to each constituent cell of the mesh and
  *  a corresponding centroid.
  *
  * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs flat array of bounding boxes [xmin,ymin,xmax,ymax....]
- * \param [out] xc buffer to store the x-component of the cell centroids
- * \param [out] yc buffer to store the y-component of the cell centroids
+ * \param [out] aabbs array of bounding boxes
+ * \param [out] c buffer to store the cell centroids
  *
  * \note The intent of this method is to generate synthetic input test data
  *  to test the functionality of the BVH.
@@ -225,68 +155,70 @@ void generate_aabbs3d(const mint::Mesh* mesh, FloatType*& aabbs)
  *  for properly deallocating aabbs.
  *
  * \pre aabbs == nullptr
- * \pre xc != nullptr
- * \pre yc != nullptr
+ * \pre c != nullptr
  *
  * \post aabbs != nullptr
  */
-template <typename FloatType>
-void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
-                                    FloatType*& aabbs,
-                                    FloatType* xc,
-                                    FloatType* yc)
+template <typename FloatType, int NDIMS>
+void generate_aabbs_and_centroids(const mint::Mesh* mesh,
+                                  primal::BoundingBox<FloatType, NDIMS>*& aabbs,
+                                  primal::Point<FloatType, NDIMS>* c)
 {
   // sanity checks
   EXPECT_TRUE(aabbs == nullptr);
-  EXPECT_TRUE(xc != nullptr);
-  EXPECT_TRUE(yc != nullptr);
+  EXPECT_TRUE(c != nullptr);
 
   // calculate some constants
-  constexpr double ONE_OVER_4 = 1.f / 4.f;
-  constexpr int NDIMS = 2;
-  constexpr int STRIDE = 2 * NDIMS;
+  constexpr int NUM_NODES_PER_CELL = 1 << NDIMS;
+  constexpr double ONE_OVER_2N = 1. / double(NUM_NODES_PER_CELL);
+
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
 
   EXPECT_EQ(NDIMS, mesh->getDimension());
 
   // allocate output arrays
   const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * STRIDE);
+  aabbs = axom::allocate<BoxType>(ncells);
 
 #ifdef __ibmxl__
 
   /* workaround for IBM XL compiler */
-  constexpr int NUM_NODES_PER_CELL = 4;
   for(IndexType icell = 0; icell < ncells; ++icell)
   {
-    primal::BoundingBox<FloatType, 2> range;
+    BoxType range;
 
     IndexType nodeIDs[NUM_NODES_PER_CELL];
     const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
     EXPECT_EQ(numNodesPerCell, NUM_NODES_PER_CELL);
 
-    FloatType xsum = 0.0;
-    FloatType ysum = 0.0;
+    PointType sum(0.0);
     for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
     {
       const IndexType& nodeIdx = nodeIDs[inode];
 
-      double coords[NDIMS];
-      mesh->getNode(nodeIdx, coords);
+      double coord_data[NDIMS];
+      mesh->getNode(nodeIdx, coord_data);
 
-      xsum += coords[mint::X_COORDINATE];
-      ysum += coords[mint::Y_COORDINATE];
+      PointType coords;
+      for(int dim = 0; dim < NDIMS; dim++)
+      {
+        coords[dim] = coord_data[dim];
+        sum[dim] += coord_data[dim];
+      }
 
-      range.addPoint(primal::Point<FloatType, 2> {
-        static_cast<FloatType>(coords[mint::X_COORDINATE]),
-        static_cast<FloatType>(coords[mint::Y_COORDINATE])});
+      range.addPoint(coords);
     }  // END for all cell nodes
 
-    xc[icell] = xsum * ONE_OVER_4;
-    yc[icell] = ysum * ONE_OVER_4;
+    for(int dim = 0; dim < NDIMS; dim++)
+    {
+      sum[dim] *= ONE_OVER_2N;
+    }
 
-    const IndexType offset = icell * STRIDE;
-    range.getMin().to_array(aabbs + offset);
-    range.getMax().to_array(aabbs + offset + 2);
+    c[icell] = range.getCentroid();
+    EXPECT_EQ(c[icell], sum);
+
+    aabbs[icell] = range;
   }  // END for all cells
 
 #else
@@ -297,167 +229,35 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      primal::BoundingBox<FloatType, 2> range;
+      BoxType range;
 
-      FloatType xsum = 0.0;
-      FloatType ysum = 0.0;
+      PointType sum(0.0);
 
-      for(IndexType inode = 0; inode < 4; ++inode)
+      for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
       {
         const double* node = coords.getColumn(inode);
-        xsum += node[mint::X_COORDINATE];
-        ysum += node[mint::Y_COORDINATE];
 
-        range.addPoint(primal::Point<FloatType, 2> {
-          static_cast<FloatType>(node[mint::X_COORDINATE]),
-          static_cast<FloatType>(node[mint::Y_COORDINATE])});
+        PointType coords;
+        for(int dim = 0; dim < NDIMS; dim++)
+        {
+          coords[dim] = node[dim];
+          sum[dim] += node[dim];
+        }
+
+        range.addPoint(coords);
       }  // END for all cells nodes
 
-      xc[cellIdx] = xsum * ONE_OVER_4;
-      yc[cellIdx] = ysum * ONE_OVER_4;
-
-      const IndexType offset = cellIdx * STRIDE;
-      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
-      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
-      aabbs[offset + 2] = range.getMax()[mint::X_COORDINATE];
-      aabbs[offset + 3] = range.getMax()[mint::Y_COORDINATE];
-    });
-
-#endif  // __ibmxl__
-
-  // post-condition sanity checks
-  EXPECT_TRUE(aabbs != nullptr);
-}
-
-//------------------------------------------------------------------------------
-
-/*!
- * \brief Give a 3D mesh object, this method generates an array of axis-aligned
- *  bounding boxes (AABBS) corresponding to each constituent cell of the mesh
- *  and a corresponding centroid.
- *
- * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs flat array of AABBS [xmin,ymin,zmin,xmax,ymax,zmax....]
- * \param [out] xc buffer to store the x-component of the cell centroids
- * \param [out] yc buffer to store the y-component of the cell centroids
- * \param [out] zc buffer to store the z-component of the cell centroids
- *
- * \note The intent of this method is to generate synthetic input test data
- *  to test the functionality of the BVH.
- *
- * \warning This method allocates aabbs internally. The caller is responsible
- *  for properly deallocating aabbs.
- *
- * \pre aabbs == nullptr
- * \pre xc != nullptr
- * \pre yc != nullptr
- * \pre zc != nullptr
- *
- * \post aabbs != nullptr
- */
-template <typename FloatType>
-void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
-                                    FloatType*& aabbs,
-                                    FloatType* xc,
-                                    FloatType* yc,
-                                    FloatType* zc)
-{
-  // sanity checks
-  EXPECT_TRUE(aabbs == nullptr);
-  EXPECT_TRUE(xc != nullptr);
-  EXPECT_TRUE(yc != nullptr);
-  EXPECT_TRUE(zc != nullptr);
-
-  // calculate some constants
-  constexpr double ONE_OVER_8 = 1.f / 8.f;
-  constexpr int NDIMS = 3;
-  constexpr int STRIDE = 2 * NDIMS;
-
-  EXPECT_EQ(NDIMS, mesh->getDimension());
-
-  // allocate output arrays
-  const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * STRIDE);
-
-#ifdef __ibmxl__
-
-  /* workaround for IBM XL compiler */
-  constexpr int NUM_NODES_PER_CELL = 8;
-  for(IndexType icell = 0; icell < ncells; ++icell)
-  {
-    primal::BoundingBox<FloatType, 3> range;
-
-    IndexType nodeIDs[NUM_NODES_PER_CELL];
-    const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
-    EXPECT_EQ(numNodesPerCell, NUM_NODES_PER_CELL);
-
-    FloatType xsum = 0.0;
-    FloatType ysum = 0.0;
-    FloatType zsum = 0.0;
-    for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
-    {
-      const IndexType& nodeIdx = nodeIDs[inode];
-
-      double coords[NDIMS];
-      mesh->getNode(nodeIdx, coords);
-
-      xsum += coords[mint::X_COORDINATE];
-      ysum += coords[mint::Y_COORDINATE];
-      zsum += coords[mint::Z_COORDINATE];
-
-      range.addPoint(primal::Point<FloatType, 3> {
-        static_cast<FloatType>(coords[mint::X_COORDINATE]),
-        static_cast<FloatType>(coords[mint::Y_COORDINATE]),
-        static_cast<FloatType>(coords[mint::Z_COORDINATE])});
-    }  // END for all cell nodes
-
-    xc[icell] = xsum * ONE_OVER_8;
-    yc[icell] = ysum * ONE_OVER_8;
-    zc[icell] = zsum * ONE_OVER_8;
-
-    const IndexType offset = icell * STRIDE;
-    range.getMin().to_array(aabbs + offset);
-    range.getMax().to_array(aabbs + offset + 3);
-  }  // END for all cells
-
-#else
-
-  using exec_policy = axom::SEQ_EXEC;
-  mint::for_all_cells<exec_policy, xargs::coords>(
-    mesh,
-    AXOM_LAMBDA(IndexType cellIdx,
-                numerics::Matrix<double> & coords,
-                const IndexType* AXOM_NOT_USED(nodeIds)) {
-      primal::BoundingBox<FloatType, 3> range;
-
-      FloatType xsum = 0.0;
-      FloatType ysum = 0.0;
-      FloatType zsum = 0.0;
-
-      for(IndexType inode = 0; inode < 8; ++inode)
+      for(int dim = 0; dim < NDIMS; dim++)
       {
-        const double* node = coords.getColumn(inode);
-        xsum += node[mint::X_COORDINATE];
-        ysum += node[mint::Y_COORDINATE];
-        zsum += node[mint::Z_COORDINATE];
+        sum[dim] *= ONE_OVER_2N;
+      }
 
-        range.addPoint(primal::Point<FloatType, 3> {
-          static_cast<FloatType>(node[mint::X_COORDINATE]),
-          static_cast<FloatType>(node[mint::Y_COORDINATE]),
-          static_cast<FloatType>(node[mint::Z_COORDINATE])});
-      }  // END for all cells nodes
+      c[cellIdx] = range.getCentroid();
+  #ifndef __CUDA_ARCH__
+      EXPECT_EQ(c[cellIdx], sum);
+  #endif
 
-      xc[cellIdx] = xsum * ONE_OVER_8;
-      yc[cellIdx] = ysum * ONE_OVER_8;
-      zc[cellIdx] = zsum * ONE_OVER_8;
-
-      const IndexType offset = cellIdx * STRIDE;
-      aabbs[offset] = range.getMin()[mint::X_COORDINATE];
-      aabbs[offset + 1] = range.getMin()[mint::Y_COORDINATE];
-      aabbs[offset + 2] = range.getMin()[mint::Z_COORDINATE];
-      aabbs[offset + 3] = range.getMax()[mint::X_COORDINATE];
-      aabbs[offset + 4] = range.getMax()[mint::Y_COORDINATE];
-      aabbs[offset + 5] = range.getMax()[mint::Z_COORDINATE];
+      aabbs[cellIdx] = range;
     });
 
 #endif  // __ibmxl__
@@ -478,22 +278,23 @@ void check_build_bvh2d()
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
-  FloatType* boxes = axom::allocate<FloatType>(8);
-  boxes[0] = boxes[1] = 0.;
-  boxes[2] = boxes[3] = 1.;
-  boxes[4] = boxes[5] = 1.;
-  boxes[6] = boxes[7] = 2.;
+  BoxType* boxes = axom::allocate<BoxType>(2);
+  boxes[0] = BoxType {PointType(0.), PointType(1.)};
+  boxes[1] = BoxType {PointType(1.), PointType(2.)};
 
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(boxes, NUM_BOXES);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+
+  bvh.setScaleFactor(1.0);  // i.e., no scaling
+  bvh.initialize(boxes, NUM_BOXES);
 
   int allocatorID = bvh.getAllocatorID();
   EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
-
-  bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
 
   FloatType lo[NDIMS];
   FloatType hi[NDIMS];
@@ -521,22 +322,23 @@ void check_build_bvh3d()
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS = 3;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
-  FloatType* boxes = axom::allocate<FloatType>(12);
-  boxes[0] = boxes[1] = boxes[2] = 0.;
-  boxes[3] = boxes[4] = boxes[5] = 1.;
-  boxes[6] = boxes[7] = boxes[8] = 1.;
-  boxes[9] = boxes[10] = boxes[11] = 2.;
+  BoxType* boxes = axom::allocate<BoxType>(2);
+  boxes[0] = BoxType {PointType(0.), PointType(1.)};
+  boxes[1] = BoxType {PointType(1.), PointType(2.)};
 
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(boxes, NUM_BOXES);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+
+  bvh.setScaleFactor(1.0);  // i.e., no scaling
+  bvh.initialize(boxes, NUM_BOXES);
 
   int allocatorID = bvh.getAllocatorID();
   EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
-
-  bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
 
   FloatType lo[NDIMS];
   FloatType hi[NDIMS];
@@ -584,14 +386,14 @@ void check_find_bounding_boxes3d()
   double hi[NDIMS] = {3.0, 3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  FloatType* aabbs = nullptr;
-  generate_aabbs3d(&mesh, aabbs);
+  BoxType* aabbs = nullptr;
+  generate_aabbs(&mesh, aabbs);
   EXPECT_TRUE(aabbs != nullptr);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
   FloatType min[NDIMS];
@@ -706,14 +508,14 @@ void check_find_bounding_boxes2d()
   double hi[NDIMS] = {3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  FloatType* aabbs = nullptr;
-  generate_aabbs2d(&mesh, aabbs);
+  BoxType* aabbs = nullptr;
+  generate_aabbs(&mesh, aabbs);
   EXPECT_TRUE(aabbs != nullptr);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
   FloatType min[NDIMS];
@@ -787,6 +589,7 @@ void check_find_rays3d()
   constexpr int NDIMS = 3;
   constexpr IndexType N = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using RayType = typename primal::Ray<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
   using VectorType = typename primal::Vector<FloatType, NDIMS>;
@@ -828,14 +631,14 @@ void check_find_rays3d()
   double hi[NDIMS] = {3.0, 3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  FloatType* aabbs = nullptr;
-  generate_aabbs3d(&mesh, aabbs);
+  BoxType* aabbs = nullptr;
+  generate_aabbs(&mesh, aabbs);
   EXPECT_TRUE(aabbs != nullptr);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
   FloatType min[NDIMS];
@@ -927,6 +730,7 @@ void check_find_rays2d()
   constexpr int NDIMS = 2;
   constexpr IndexType N = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using RayType = typename primal::Ray<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
   using VectorType = typename primal::Vector<FloatType, NDIMS>;
@@ -962,14 +766,14 @@ void check_find_rays2d()
   double hi[NDIMS] = {3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  FloatType* aabbs = nullptr;
-  generate_aabbs2d(&mesh, aabbs);
+  BoxType* aabbs = nullptr;
+  generate_aabbs(&mesh, aabbs);
   EXPECT_TRUE(aabbs != nullptr);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
   FloatType min[NDIMS];
@@ -1065,6 +869,7 @@ void check_find_points3d()
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
   using PointDbl = primal::Point<double, NDIMS>;
 
@@ -1073,24 +878,18 @@ void check_find_points3d()
   int res[NDIMS] = {N - 1, N - 1, N - 1};
 
   mint::UniformMesh mesh(lo, hi, N, N, N);
-  FloatType* xc = mesh.createField<FloatType>("xc", mint::CELL_CENTERED);
-  FloatType* yc = mesh.createField<FloatType>("yc", mint::CELL_CENTERED);
-  FloatType* zc = mesh.createField<FloatType>("zc", mint::CELL_CENTERED);
+  FloatType* centroids_raw =
+    mesh.createField<FloatType>("centroid", mint::CELL_CENTERED, NDIMS);
+  PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
   const IndexType ncells = mesh.getNumberOfCells();
 
-  FloatType* aabbs = nullptr;
-  generate_aabbs_and_centroids3d(&mesh, aabbs, xc, yc, zc);
-
-  PointType* centroids = axom::allocate<PointType>(ncells);
-  for(int i = 0; i < ncells; i++)
-  {
-    centroids[i] = PointType {xc[i], yc[i], zc[i]};
-  }
+  BoxType* aabbs = nullptr;
+  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   FloatType min[NDIMS];
   FloatType max[NDIMS];
@@ -1141,7 +940,6 @@ void check_find_points3d()
   axom::deallocate(candidates);
   axom::deallocate(counts);
   axom::deallocate(aabbs);
-  axom::deallocate(centroids);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -1171,6 +969,7 @@ void check_find_points2d()
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
   using PointDbl = primal::Point<double, NDIMS>;
 
@@ -1179,23 +978,18 @@ void check_find_points2d()
   int res[NDIMS] = {N - 1, N - 1};
 
   mint::UniformMesh mesh(lo, hi, N, N);
-  FloatType* xc = mesh.createField<FloatType>("xc", mint::CELL_CENTERED);
-  FloatType* yc = mesh.createField<FloatType>("yc", mint::CELL_CENTERED);
+  FloatType* centroids_raw =
+    mesh.createField<FloatType>("centroid", mint::CELL_CENTERED, NDIMS);
+  PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
   const IndexType ncells = mesh.getNumberOfCells();
 
-  FloatType* aabbs = nullptr;
-  generate_aabbs_and_centroids2d(&mesh, aabbs, xc, yc);
-
-  PointType* centroids = axom::allocate<PointType>(ncells);
-  for(int i = 0; i < ncells; i++)
-  {
-    centroids[i] = PointType {xc[i], yc[i]};
-  }
+  BoxType* aabbs = nullptr;
+  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   FloatType min[NDIMS];
   FloatType max[NDIMS];
@@ -1264,20 +1058,20 @@ void check_single_box2d()
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
 
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // single bounding box in [0,1] x [0,1]
-  FloatType* boxes = axom::allocate<FloatType>(4);
-  boxes[0] = boxes[1] = 0.;
-  boxes[2] = boxes[3] = 1.;
+  BoxType* boxes = axom::allocate<BoxType>(2);
+  boxes[0] = BoxType {PointType(0.), PointType(1.)};
 
   // construct a BVH with a single box
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(boxes, NUM_BOXES);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(boxes, NUM_BOXES);
 
   // check the bounds -- should match the bounds of the input bounding box
   FloatType lo[NDIMS];
@@ -1331,20 +1125,20 @@ void check_single_box3d()
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS = 3;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
 
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // single bounding box in [0,1] x [0,1] x [0,1]
-  FloatType* boxes = axom::allocate<FloatType>(6);
-  boxes[0] = boxes[1] = boxes[2] = 0.;
-  boxes[3] = boxes[4] = boxes[5] = 1.;
+  BoxType* boxes = axom::allocate<BoxType>(2);
+  boxes[0] = BoxType {PointType(0.), PointType(1.)};
 
   // construct a BVH with a single box
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(boxes, NUM_BOXES);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(boxes, NUM_BOXES);
 
   // check the bounds -- should match the bounds of the input bounding box
   FloatType lo[NDIMS];
@@ -1657,21 +1451,24 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
   constexpr int NUM_BOXES = 1;
 
   using FloatType = double;
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
 
   // single bounding box in [0,1] x [0,1] x [0,1]
-  FloatType* boxes = axom::allocate<FloatType>(6, allocID);
+  BoxType* boxes = axom::allocate<BoxType>(1, allocID);
   axom::for_all<exec>(
     0,
-    6,
-    AXOM_LAMBDA(axom::IndexType idx) { boxes[idx] = (idx < 3) ? 0.0 : 1.0; });
+    1,
+    AXOM_LAMBDA(axom::IndexType idx) {
+      boxes[idx] = {PointType(0.), PointType(1.)};
+    });
 
   // construct a BVH with a single box
-  spin::BVH<NDIMS, exec, FloatType> bvh(boxes, NUM_BOXES, allocID);
-  EXPECT_EQ(bvh.getAllocatorID(), allocID);
+  spin::BVH<NDIMS, exec, FloatType> bvh;
 
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(boxes, NUM_BOXES, allocID);
+  EXPECT_EQ(bvh.getAllocatorID(), allocID);
 
   // run the find algorithm w/ the centroid of the bounding box as input.
   // Should return one and only one candidate that corresponds to the

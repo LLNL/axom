@@ -137,7 +137,6 @@ void findTriMeshIntersectionsBVH(
   axom::setDefaultAllocator(poolID);
 
   constexpr int NDIMS = 3;
-  constexpr int stride = 2 * NDIMS;
   const int ncells = surface_mesh->getNumberOfCells();
 
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
@@ -152,7 +151,7 @@ void findTriMeshIntersectionsBVH(
   int* degenerate = axom::allocate<int>(ncells);
 
   // Each access-aligned bounding box represented by 2 (x,y,z) points
-  FloatType* aabbs = axom::allocate<FloatType>(ncells * stride);
+  BoxType* aabbs = axom::allocate<BoxType>(ncells);
 
   // Initialize the bounding box for each Triangle and marks
   // if the Triangle is degenerate.
@@ -176,18 +175,7 @@ void findTriMeshIntersectionsBVH(
 
                              tris[cellIdx] = tri;
 
-                             detail::SpatialBoundingBox triBB =
-                               compute_bounding_box(tri);
-
-                             const IndexType offset = cellIdx * stride;
-
-                             aabbs[offset] = triBB.getMin()[0];
-                             aabbs[offset + 1] = triBB.getMin()[1];
-                             aabbs[offset + 2] = triBB.getMin()[2];
-
-                             aabbs[offset + 3] = triBB.getMax()[0];
-                             aabbs[offset + 4] = triBB.getMax()[1];
-                             aabbs[offset + 5] = triBB.getMax()[2];
+                             aabbs[cellIdx] = compute_bounding_box(tri);
                            }););
 
   // Copy degenerate data back to host
@@ -206,8 +194,8 @@ void findTriMeshIntersectionsBVH(
   }
 
   // Construct BVH
-  axom::spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells, poolID);
-  bvh.build();
+  axom::spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+  bvh.initialize(aabbs, ncells, poolID);
 
   // Run find algorithm
   IndexType* offsets = axom::allocate<IndexType>(ncells);

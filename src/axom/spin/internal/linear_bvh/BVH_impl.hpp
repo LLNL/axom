@@ -6,11 +6,10 @@
 #ifndef AXOM_SPIN_BVH_IMPL_HPP_
 #define AXOM_SPIN_BVH_IMPL_HPP_
 
-#include "axom/core/Types.hpp"              // fixed bitwidth types
-#include "axom/core/execution/for_all.hpp"  // for generic for_all()
-#include "axom/core/memory_management.hpp"  // for memory functions
-#include "axom/core/numerics/floating_point_limits.hpp"  // floating_point_limits
-#include "axom/core/utilities/AnnotationMacros.hpp"      // for annotations
+#include "axom/core/Types.hpp"                       // fixed bitwidth types
+#include "axom/core/execution/for_all.hpp"           // for generic for_all()
+#include "axom/core/memory_management.hpp"           // for memory functions
+#include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -64,34 +63,32 @@ namespace lbvh = internal::linear_bvh;
 //  PUBLIC API IMPLEMENTATION
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
-BVH<NDIMS, ExecSpace, FloatType, Impl>::BVH(const FloatType* boxes,
-                                            IndexType numItems,
-                                            int allocatorID)
-  : m_AllocatorID(allocatorID)
-  , m_Tolernace(floating_point_limits<FloatType>::epsilon())
-  , m_scaleFactor(DEFAULT_SCALE_FACTOR)
-  , m_numItems(numItems)
-  , m_boxes(reinterpret_cast<const BoxType*>(boxes))
-{ }
-
-//------------------------------------------------------------------------------
-template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
-int BVH<NDIMS, ExecSpace, FloatType, Impl>::build()
+int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxType* boxes,
+                                                       IndexType numBoxes,
+                                                       int allocatorID)
 {
-  AXOM_PERF_MARK_FUNCTION("BVH::build");
+  AXOM_PERF_MARK_FUNCTION("BVH::initialize");
 
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
 
+  if(numBoxes == 0)
+  {
+    m_bvh.reset();
+    return BVH_BUILD_FAILED;
+  }
+
+  m_AllocatorID = allocatorID;
+
+  // STEP 1: Allocate a BVH, potentially deleting the existing BVH if it exists
+  m_bvh.reset(new ImplType);
+
   // STEP 1: Handle case when user supplied a single bounding box
-  int numBoxes = m_numItems;
   BoxType* boxesptr = nullptr;
-  if(m_numItems == 1)
+  if(numBoxes == 1)
   {
     numBoxes = 2;
     boxesptr = axom::allocate<BoxType>(numBoxes, m_AllocatorID);
-
-    const BoxType* myboxes = m_boxes;
 
     // copy first box and add a fake 2nd box
     for_all<ExecSpace>(
@@ -99,7 +96,7 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::build()
       AXOM_LAMBDA(IndexType i) {
         if(i == 0)
         {
-          boxesptr[i] = myboxes[i];
+          boxesptr[i] = boxes[i];
         }
         else
         {
@@ -118,29 +115,29 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::build()
   }
   else
   {
-    boxes_const = m_boxes;
+    boxes_const = boxes;
   }
 
-  m_bvh.buildImpl(boxes_const, numBoxes, m_scaleFactor, m_AllocatorID);
+  m_bvh->buildImpl(boxes_const, numBoxes, m_scaleFactor, m_AllocatorID);
 
   // STEP 5: deallocate boxesptr if user supplied a single box
-  if(m_numItems == 1)
+  if(boxesptr)
   {
     SLIC_ASSERT(boxesptr != nullptr);
     axom::deallocate(boxesptr);
   }
-
   return BVH_BUILD_OK;
-}
+}  // namespace spin
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 void BVH<NDIMS, ExecSpace, FloatType, Impl>::getBounds(FloatType* min,
                                                        FloatType* max) const
 {
+  SLIC_ASSERT(m_bvh != nullptr);
   SLIC_ASSERT(min != nullptr);
   SLIC_ASSERT(max != nullptr);
-  primal::BoundingBox<FloatType, NDIMS> bounds = m_bvh.getBoundsImpl();
+  primal::BoundingBox<FloatType, NDIMS> bounds = m_bvh->getBoundsImpl();
   for(int idim = 0; idim < NDIMS; idim++)
   {
     min[idim] = bounds.getMin()[idim];
@@ -158,6 +155,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findPoints");
 
+  SLIC_ASSERT(m_bvh != nullptr);
   SLIC_ASSERT(offsets != nullptr);
   SLIC_ASSERT(counts != nullptr);
   SLIC_ASSERT(candidates == nullptr);
@@ -169,13 +167,13 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
     return bb.contains(p);
   };
 
-  m_bvh.findCandidatesImpl(predicate,
-                           offsets,
-                           counts,
-                           candidates,
-                           numPts,
-                           pts,
-                           m_AllocatorID);
+  m_bvh->findCandidatesImpl(predicate,
+                            offsets,
+                            counts,
+                            candidates,
+                            numPts,
+                            pts,
+                            m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
@@ -188,6 +186,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findRays");
 
+  SLIC_ASSERT(m_bvh != nullptr);
   SLIC_ASSERT(offsets != nullptr);
   SLIC_ASSERT(counts != nullptr);
   SLIC_ASSERT(candidates == nullptr);
@@ -202,13 +201,13 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
     return primal::detail::intersect_ray(r, bb, tmp, TOL);
   };
 
-  m_bvh.findCandidatesImpl(predicate,
-                           offsets,
-                           counts,
-                           candidates,
-                           numRays,
-                           rays,
-                           m_AllocatorID);
+  m_bvh->findCandidatesImpl(predicate,
+                            offsets,
+                            counts,
+                            candidates,
+                            numRays,
+                            rays,
+                            m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
@@ -222,6 +221,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findBoundingBoxes");
 
+  SLIC_ASSERT(m_bvh != nullptr);
   SLIC_ASSERT(offsets != nullptr);
   SLIC_ASSERT(counts != nullptr);
   SLIC_ASSERT(candidates == nullptr);
@@ -233,13 +233,13 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
     return bb1.intersectsWith(bb2);
   };
 
-  m_bvh.findCandidatesImpl(predicate,
-                           offsets,
-                           counts,
-                           candidates,
-                           numBoxes,
-                           boxes,
-                           m_AllocatorID);
+  m_bvh->findCandidatesImpl(predicate,
+                            offsets,
+                            counts,
+                            candidates,
+                            numBoxes,
+                            boxes,
+                            m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
@@ -247,12 +247,14 @@ template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 void BVH<NDIMS, ExecSpace, FloatType, Impl>::writeVtkFile(
   const std::string& fileName) const
 {
-  m_bvh.writeVtkFileImpl(fileName);
+  SLIC_ASSERT(m_bvh != nullptr);
+
+  m_bvh->writeVtkFileImpl(fileName);
 }
 
 #undef BVH_PREDICATE
 
-} /* namespace spin */
+}  // namespace spin
 } /* namespace axom */
 
 #endif /* AXOM_SPIN_BVH_IMPL_HPP_ */
