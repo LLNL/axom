@@ -296,14 +296,12 @@ void check_build_bvh2d()
   int allocatorID = bvh.getAllocatorID();
   EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
 
-  FloatType lo[NDIMS];
-  FloatType hi[NDIMS];
-  bvh.getBounds(lo, hi);
+  BoxType bounds = bvh.getBounds();
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(lo[idim], 0.0);
-    EXPECT_DOUBLE_EQ(hi[idim], 2.0);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 2.0);
   }
 
   axom::deallocate(boxes);
@@ -340,14 +338,12 @@ void check_build_bvh3d()
   int allocatorID = bvh.getAllocatorID();
   EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
 
-  FloatType lo[NDIMS];
-  FloatType hi[NDIMS];
-  bvh.getBounds(lo, hi);
+  BoxType bounds = bvh.getBounds();
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(lo[idim], 0.0);
-    EXPECT_DOUBLE_EQ(hi[idim], 2.0);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 2.0);
   }
 
   axom::deallocate(boxes);
@@ -396,13 +392,12 @@ void check_find_bounding_boxes3d()
   bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the bounding boxes
@@ -518,13 +513,12 @@ void check_find_bounding_boxes2d()
   bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the bounding boxes
@@ -641,13 +635,12 @@ void check_find_rays3d()
   bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -776,13 +769,12 @@ void check_find_rays2d()
   bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -891,13 +883,12 @@ void check_find_points3d()
   bvh.setScaleFactor(1.0);  // i.e., no scaling
   bvh.initialize(aabbs, ncells);
 
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -991,13 +982,12 @@ void check_find_points2d()
   bvh.setScaleFactor(1.0);  // i.e., no scaling
   bvh.initialize(aabbs, ncells);
 
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -1074,14 +1064,12 @@ void check_single_box2d()
   bvh.initialize(boxes, NUM_BOXES);
 
   // check the bounds -- should match the bounds of the input bounding box
-  FloatType lo[NDIMS];
-  FloatType hi[NDIMS];
-  bvh.getBounds(lo, hi);
+  BoxType bounds = bvh.getBounds();
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(lo[idim], 0.0);
-    EXPECT_DOUBLE_EQ(hi[idim], 1.0);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 1.0);
   }
 
   // run the find algorithm w/ the centroid of the bounding box as input.
@@ -1141,14 +1129,12 @@ void check_single_box3d()
   bvh.initialize(boxes, NUM_BOXES);
 
   // check the bounds -- should match the bounds of the input bounding box
-  FloatType lo[NDIMS];
-  FloatType hi[NDIMS];
-  bvh.getBounds(lo, hi);
+  BoxType bounds = bvh.getBounds();
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(lo[idim], 0.0);
-    EXPECT_DOUBLE_EQ(hi[idim], 1.0);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 1.0);
   }
 
   // run the find algorithm w/ the centroid of the bounding box as input.

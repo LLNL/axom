@@ -220,15 +220,21 @@ public:
   /*!
    * \brief Returns the bounds of the BVH, given by the the root bounding box.
    *
-   * \param [out] min buffer to store the lower corner of the root bounding box.
-   * \param [out] max buffer to store the upper corner of the root bounding box.
-   *
-   * \note min/max point to arrays that are at least NDIMS long.
-   *
-   * \pre min != nullptr
-   * \pre max != nullptr
+   * \return box the bounding box of the constructed BVH, or an invalid
+   *  bounding box if the BVH has not been initialized.
    */
-  void getBounds(FloatType* min, FloatType* max) const;
+  BoxType getBounds() const
+  {
+    if(m_bvh)
+    {
+      return m_bvh->getBoundsImpl();
+    }
+    else
+    {
+      // return invalid box
+      return BoxType {};
+    }
+  }
 
   /*!
    * \brief Finds the candidate bins that contain each of the query points.
@@ -405,22 +411,6 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxType* boxes,
     axom::deallocate(boxesptr);
   }
   return BVH_BUILD_OK;
-}
-
-//------------------------------------------------------------------------------
-template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
-void BVH<NDIMS, ExecSpace, FloatType, Impl>::getBounds(FloatType* min,
-                                                       FloatType* max) const
-{
-  SLIC_ASSERT(m_bvh != nullptr);
-  SLIC_ASSERT(min != nullptr);
-  SLIC_ASSERT(max != nullptr);
-  primal::BoundingBox<FloatType, NDIMS> bounds = m_bvh->getBoundsImpl();
-  for(int idim = 0; idim < NDIMS; idim++)
-  {
-    min[idim] = bounds.getMin()[idim];
-    max[idim] = bounds.getMax()[idim];
-  }
 }
 
 //------------------------------------------------------------------------------
