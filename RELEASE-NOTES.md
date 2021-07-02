@@ -44,9 +44,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Renames `AXOM_DEBUG_VAR` macro to `AXOM_UNUSED_VAR` since there were many cases where the latter
   was not the appropriate name. This macro elides warnings about unused variables
 - Inlet's `isUserProvided` can now be used to query the status of subobjects of a `Container` via a name parameter
+- Upgrades our `vcpkg` usage for automated Windows builds of our TPLs to its [2021.05.12 release](https://github.com/microsoft/vcpkg/releases/tag/2021.05.12)
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
+- Fixed problem with Cray Fortran compiler not recognizing MSVC pragmas in `axom/config.hpp`. 
+  The latter are now only added in MSVC configurations.
 
 
 ## [Version 0.5.0] - Release date 2021-05-14
