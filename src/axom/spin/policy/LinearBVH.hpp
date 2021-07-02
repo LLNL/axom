@@ -229,7 +229,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_RAJA)
   // STEP 1: count number of candidates for each query point
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<reduce_pol, IndexType> total_count_reduce(0);
