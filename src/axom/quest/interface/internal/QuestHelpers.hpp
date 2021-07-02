@@ -7,20 +7,16 @@
 #define QUEST_HELPERS_HPP_
 
 // Axom includes
-#include "axom/config.hpp"  // for compile-time definitions
-
-// Mint includes
-#include "axom/mint/mesh/Mesh.hpp"  // for mint::Mesh
-
-// Quest includes
+#include "axom/config.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
-#include "axom/quest/stl/STLReader.hpp"
+#include "axom/quest/readers/STLReader.hpp"
 
 // C/C++ includes
-#include <string>  // for C++ string
+#include <string>
 
 /*!
- * \file
+ * \file QuestHelpers.hpp
  *
  * \brief Helper methods that can be used across the different Quest queries.
  */

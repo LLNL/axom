@@ -3,24 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 
-// Slic includes
-#include "axom/slic/interface/slic.hpp"  // for SLIC macros
-#include "axom/slic/streams/GenericOutputStream.hpp"
-#if defined(AXOM_USE_MPI) && defined(AXOM_USE_LUMBERJACK)
-  #include "axom/slic/streams/LumberjackStream.hpp"
-#elif defined(AXOM_USE_MPI) && !defined(AXOM_USE_LUMBERJACK)
-  #include "axom/slic/streams/SynchronizedStream.hpp"
-#endif
-
-// Mint includes
-#include "axom/mint/mesh/UnstructuredMesh.hpp"  // for mint::UnstructuredMesh
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // Quest includes
 #ifdef AXOM_USE_MPI
-  #include "axom/quest/stl/PSTLReader.hpp"
+  #include "axom/quest/readers/PSTLReader.hpp"
 #endif
 
 #include <limits>
@@ -448,6 +439,6 @@ void logger_finalize(bool mustFinalize)
   }
 }
 
-} /* end namespace internal */
-} /* end namespace quest    */
-} /* end namespace axom     */
+}  // end namespace internal
+}  // end namespace quest
+}  // end namespace axom

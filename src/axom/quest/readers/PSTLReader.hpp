@@ -6,8 +6,9 @@
 #ifndef QUEST_PSTLREADER_HPP_
 #define QUEST_PSTLREADER_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
-#include "axom/quest/stl/STLReader.hpp"  // base class
+#include "axom/quest/readers/STLReader.hpp"  // base class
 
 #include "mpi.h"
 

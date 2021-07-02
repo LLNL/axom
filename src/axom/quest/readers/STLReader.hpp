@@ -7,9 +7,8 @@
 #define QUEST_STLREADER_HPP_
 
 // Axom includes
-#include "axom/core/Macros.hpp"  // for axom macros
-
-// Mint includes
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // C/C++ includes
@@ -121,4 +120,4 @@ private:
 }  // end namespace quest
 }  // end namespace axom
 
-#endif /* QUEST_STLREADER_HPP_ */
+#endif  // QUEST_STLREADER_HPP_

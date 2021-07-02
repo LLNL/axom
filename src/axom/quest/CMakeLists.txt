@@ -40,7 +40,7 @@ set( quest_headers
     detail/PointInCellMeshWrapper_mfem.hpp
 
     ## STL library headers
-    stl/STLReader.hpp
+    readers/STLReader.hpp
 
     ## quest interface headers
     interface/internal/mpicomm_wrapper.hpp
@@ -63,7 +63,7 @@ set( quest_sources
     MeshTester.cpp
 
     ## STL library sources
-    stl/STLReader.cpp
+    readers/STLReader.cpp
 
     ## quest interface sources
     interface/internal/QuestHelpers.cpp
@@ -88,8 +88,8 @@ blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
 
 if (ENABLE_MPI)
-    list(APPEND quest_headers stl/PSTLReader.hpp)
-    list(APPEND quest_sources stl/PSTLReader.cpp)
+    list(APPEND quest_headers readers/PSTLReader.hpp)
+    list(APPEND quest_sources readers/PSTLReader.cpp)
 
     blt_list_append(TO quest_depends_on
                     IF AXOM_ENABLE_LUMBERJACK
