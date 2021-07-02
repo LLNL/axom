@@ -18,7 +18,12 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 
+#include "axom/primal/operators/intersect.hpp"  // for detail::intersect_ray()
+
 #include "axom/spin/policy/LinearBVH.hpp"
+
+// slic includes
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 // C/C++ includes
 #include <type_traits>  // for std::is_floating_point(), std::is_same()
@@ -332,9 +337,200 @@ private:
   /// @}
 };
 
+//------------------------------------------------------------------------------
+//  BVH implementation
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxType* boxes,
+                                                       IndexType numBoxes,
+                                                       int allocatorID)
+{
+  AXOM_PERF_MARK_FUNCTION("BVH::initialize");
+
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+
+  if(numBoxes == 0)
+  {
+    m_bvh.reset();
+    return BVH_BUILD_FAILED;
+  }
+
+  m_AllocatorID = allocatorID;
+
+  // STEP 1: Allocate a BVH, potentially deleting the existing BVH if it exists
+  m_bvh.reset(new ImplType);
+
+  // STEP 1: Handle case when user supplied a single bounding box
+  BoxType* boxesptr = nullptr;
+  if(numBoxes == 1)
+  {
+    numBoxes = 2;
+    boxesptr = axom::allocate<BoxType>(numBoxes, m_AllocatorID);
+
+    // copy first box and add a fake 2nd box
+    for_all<ExecSpace>(
+      2,
+      AXOM_LAMBDA(IndexType i) {
+        if(i == 0)
+        {
+          boxesptr[i] = boxes[i];
+        }
+        else
+        {
+          BoxType empty_box;
+          empty_box.addPoint(PointType(0.));
+          boxesptr[i] = empty_box;
+        }
+      });
+
+  }  // END if single item
+
+  const BoxType* boxes_const;
+  if(boxesptr)
+  {
+    boxes_const = boxesptr;
+  }
+  else
+  {
+    boxes_const = boxes;
+  }
+
+  m_bvh->buildImpl(boxes_const, numBoxes, m_scaleFactor, m_AllocatorID);
+
+  // STEP 5: deallocate boxesptr if user supplied a single box
+  if(boxesptr)
+  {
+    SLIC_ASSERT(boxesptr != nullptr);
+    axom::deallocate(boxesptr);
+  }
+  return BVH_BUILD_OK;
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::getBounds(FloatType* min,
+                                                       FloatType* max) const
+{
+  SLIC_ASSERT(m_bvh != nullptr);
+  SLIC_ASSERT(min != nullptr);
+  SLIC_ASSERT(max != nullptr);
+  primal::BoundingBox<FloatType, NDIMS> bounds = m_bvh->getBoundsImpl();
+  for(int idim = 0; idim < NDIMS; idim++)
+  {
+    min[idim] = bounds.getMin()[idim];
+    max[idim] = bounds.getMax()[idim];
+  }
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
+                                                        IndexType* counts,
+                                                        IndexType*& candidates,
+                                                        IndexType numPts,
+                                                        const PointType* pts) const
+{
+  AXOM_PERF_MARK_FUNCTION("BVH::findPoints");
+
+  SLIC_ASSERT(m_bvh != nullptr);
+  SLIC_ASSERT(offsets != nullptr);
+  SLIC_ASSERT(counts != nullptr);
+  SLIC_ASSERT(candidates == nullptr);
+  SLIC_ASSERT(pts != nullptr);
+
+  // Define traversal predicates
+  auto predicate = [=] AXOM_HOST_DEVICE(const PointType& p,
+                                        const BoxType& bb) -> bool {
+    return bb.contains(p);
+  };
+
+  m_bvh->findCandidatesImpl(predicate,
+                            offsets,
+                            counts,
+                            candidates,
+                            numPts,
+                            pts,
+                            m_AllocatorID);
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
+                                                      IndexType* counts,
+                                                      IndexType*& candidates,
+                                                      IndexType numRays,
+                                                      const RayType* rays) const
+{
+  AXOM_PERF_MARK_FUNCTION("BVH::findRays");
+
+  SLIC_ASSERT(m_bvh != nullptr);
+  SLIC_ASSERT(offsets != nullptr);
+  SLIC_ASSERT(counts != nullptr);
+  SLIC_ASSERT(candidates == nullptr);
+  SLIC_ASSERT(rays != nullptr);
+
+  const FloatType TOL = m_tolerance;
+
+  // Define traversal predicates
+  auto predicate = [=] AXOM_HOST_DEVICE(const RayType& r,
+                                        const BoxType& bb) -> bool {
+    primal::Point<FloatType, NDIMS> tmp;
+    return primal::detail::intersect_ray(r, bb, tmp, TOL);
+  };
+
+  m_bvh->findCandidatesImpl(predicate,
+                            offsets,
+                            counts,
+                            candidates,
+                            numRays,
+                            rays,
+                            m_AllocatorID);
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
+  IndexType* offsets,
+  IndexType* counts,
+  IndexType*& candidates,
+  IndexType numBoxes,
+  const BoxType* boxes) const
+{
+  AXOM_PERF_MARK_FUNCTION("BVH::findBoundingBoxes");
+
+  SLIC_ASSERT(m_bvh != nullptr);
+  SLIC_ASSERT(offsets != nullptr);
+  SLIC_ASSERT(counts != nullptr);
+  SLIC_ASSERT(candidates == nullptr);
+  SLIC_ASSERT(boxes != nullptr);
+
+  // STEP 2: define traversal predicates
+  auto predicate = [=] AXOM_HOST_DEVICE(const BoxType& bb1,
+                                        const BoxType& bb2) -> bool {
+    return bb1.intersectsWith(bb2);
+  };
+
+  m_bvh->findCandidatesImpl(predicate,
+                            offsets,
+                            counts,
+                            candidates,
+                            numBoxes,
+                            boxes,
+                            m_AllocatorID);
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::writeVtkFile(
+  const std::string& fileName) const
+{
+  SLIC_ASSERT(m_bvh != nullptr);
+
+  m_bvh->writeVtkFileImpl(fileName);
+}
+
 }  // namespace spin
 }  // namespace axom
-
-#include "axom/spin/internal/linear_bvh/BVH_impl.hpp"
 
 #endif  // AXOM_SPIN_BVH_H_
