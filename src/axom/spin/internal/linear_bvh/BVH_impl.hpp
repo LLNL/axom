@@ -193,7 +193,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
   SLIC_ASSERT(candidates == nullptr);
   SLIC_ASSERT(rays != nullptr);
 
-  const FloatType TOL = m_Tolernace;
+  const FloatType TOL = m_tolerance;
 
   // Define traversal predicates
   BVH_PREDICATE(predicate, const RayType& r, const BoxType& bb)

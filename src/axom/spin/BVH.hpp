@@ -136,6 +136,8 @@ private:
   using ImplType =
     typename BVHPolicy<FloatType, NDIMS, ExecSpace, BVHImpl>::ImplType;
 
+public:
+
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
   using RayType = typename primal::Ray<FloatType, NDIMS>;
@@ -205,7 +207,7 @@ public:
    * \brief Returns the scale factor used when constructing the BVH.
    * \return scale_factor the scale factor
    */
-  FloatType getScaleFacor() const { return m_scaleFactor; };
+  FloatType getScaleFactor() const { return m_scaleFactor; };
 
   /*!
    * \brief Sets the tolerance used for querying the BVH.
@@ -213,13 +215,13 @@ public:
    *
    * \note Default tolerance set to floating_point_limits<FloatType>::epsilon()
    */
-  void setTolerance(FloatType TOL) { m_Tolernace = TOL; };
+  void setTolerance(FloatType TOL) { m_tolerance = TOL; };
 
   /*!
    * \brief Returns the tolerance value used for BVH queries.
    * \return TOL the tolerance
    */
-  FloatType getTolerance() const { return m_Tolernace; };
+  FloatType getTolerance() const { return m_tolerance; };
 
   /*!
    * \brief Generates the BVH
@@ -338,7 +340,7 @@ private:
   /// @{
 
   int m_AllocatorID;
-  FloatType m_Tolernace;
+  FloatType m_tolerance;
   FloatType m_scaleFactor;
   IndexType m_numItems;
   const BoxType* m_boxes;
