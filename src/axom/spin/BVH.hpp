@@ -209,7 +209,7 @@ public:
    *
    * \note Default tolerance set to floating_point_limits<FloatType>::epsilon()
    */
-  void setTolerance(FloatType TOL) { m_tolerance = TOL; };
+  void setTolerance(FloatType EPS) { m_tolerance = EPS; };
 
   /*!
    * \brief Returns the tolerance value used for BVH queries.
