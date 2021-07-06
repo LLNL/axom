@@ -15,6 +15,11 @@
 #include <functional>  //for hashing until a custom method is defined
 #include <iostream>
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
+#include "RAJA/RAJA.hpp"
+#endif
+
+
 namespace axom
 {
 namespace experimental
@@ -719,7 +724,6 @@ private:
     //update when we're testing our returns
     return tmp;
   }
-
   /*!
    * \brief Returns hash value for a given input. 
    *
@@ -734,6 +738,34 @@ private:
     return hashed;
   }
 
+  void bucket_lock(std::size_t index){
+    #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+    omp_set_lock(locks+index);
+    #endif
+  }
+
+  void bucket_unlock(std::size_t index){
+    #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+    omp_unset_lock(locks+index);
+    #endif
+  }
+
+  void init_locks(){
+    #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+    for(std::size_t i = 0; i < m_bucket_count; i++){
+      omp_init_lock(locks + i);
+    }
+    #endif
+  }
+
+  void destroy_locks(){
+    #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+      for(std::size_t i = 0; i < m_bucket_count; i++){
+        omp_destroy_lock(locks+i);
+      }
+    #endif
+  }
+
   /// @}
 
   /// \name Private Data Members
@@ -746,7 +778,9 @@ private:
   float m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
   axom_map::Node<Key, T> m_end; /*!< the node with meaningless values allowing for user to verify success or failure of operations */
   bool m_bucket_fill; /*!<  status of buckets in general -- if at least one is full, this is set to true, false otherwise*/
-
+  #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+  omp_lock_t* locks;
+  #endif
   /// @}
 };
 } /* namespace experimental */
