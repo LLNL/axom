@@ -434,6 +434,7 @@ public:
       axom::deallocate(m_buckets[i].m_list);
     }
     axom::deallocate(m_buckets);
+    destroy_locks();
     m_buckets = new_list;
     m_bucket_count = newlen;
     for(int i = 0; i < m_bucket_count; i++)
@@ -443,6 +444,7 @@ public:
         m_bucket_fill = true;
       }
     }
+    init_locks();
     return check_rehash();
   }
   /*!
@@ -462,6 +464,7 @@ public:
     m_bucket_len = 0;
     m_size = 0;
     m_load_factor = 0;
+    destroy_locks();
   }
 
   /*!
@@ -477,6 +480,7 @@ public:
     m_load_factor = 0;
     m_bucket_fill = false;
     m_buckets = alloc_map(m_bucket_count, m_bucket_len);
+    init_locks();
   }
   /*!
    * \brief Inserts given key-value pair into the Map instance.
@@ -502,7 +506,9 @@ public:
     if(m_bucket_count*m_bucket_len == 0){
       return axom_map::Pair<Key, T>(&m_end, false);   
     }
-    axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
+    std::size_t index = bucket(get_hash(key));
+    bucket_lock(index);
+    axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
     //Candidate to get cut out if branching becomes too much of an issue.
     if(ret.second == true)
@@ -513,6 +519,7 @@ public:
         m_bucket_fill = true;
       }
     }
+    bucket_unlock(index);
     return ret;
   }
 
@@ -541,7 +548,10 @@ public:
     if(m_bucket_count*m_bucket_len == 0){
       return axom_map::Pair<Key, T>(&m_end, false);   
     }
-    axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
+
+    std::size_t index = bucket(get_hash(key));
+    bucket_lock(index);
+    axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     axom_map::Pair<Key, T> ret = target->insert_update(key, val);
     //Candidate to get cut out if branching becomes too much of an issue.
     if(ret.second == true)
@@ -552,6 +562,7 @@ public:
         m_bucket_fill = true;
       }
     }
+    bucket_unlock(index);
     return ret;
   }
 
@@ -568,7 +579,7 @@ public:
    * \return A const reference to the value of key-value pair in the Map instance that is associated with supplied Key.
    *
    */
-  const T& operator[](const Key& key) const
+  const T& operator[](const Key& key)
   {
     //Since we can't throw an exception, the safest solution is to be read-only, and for the user to be careful with their
     //accesses.
@@ -589,13 +600,17 @@ public:
    */
   bool erase(const Key& key)
   {
-    axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
+
+    std::size_t index = bucket(get_hash(key));
+    bucket_lock(index);
+    axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     //Candidate to get cut out if branching becomes too much of an issue.
     bool ret = target->remove(key);
     if(ret == true)
     {
       m_size--;
     }
+    bucket_unlock(index);
     return ret;
   }
 
@@ -606,10 +621,14 @@ public:
    *
    * \return A reference to the requested item if found, sentinel node end otherwise.
    */
-  axom_map::Node<Key, T>& find(const Key& key) const
+  axom_map::Node<Key, T>& find(const Key& key)
   {
-    axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
-    return target->find(key);
+    std::size_t index = bucket(get_hash(key));
+    bucket_lock(index);
+    axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
+    axom_map::Node<Key, T>& out = target->find(key);
+    bucket_unlock(index);
+    return out;
   }
 
   /*!
@@ -720,7 +739,6 @@ private:
     {
       tmp[i].init(bucklen);
     }
-
     //update when we're testing our returns
     return tmp;
   }
@@ -752,6 +770,7 @@ private:
 
   void init_locks(){
     #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+    locks = axom::allocate<omp_lock_t>(m_bucket_count);
     for(std::size_t i = 0; i < m_bucket_count; i++){
       omp_init_lock(locks + i);
     }
@@ -763,6 +782,7 @@ private:
       for(std::size_t i = 0; i < m_bucket_count; i++){
         omp_destroy_lock(locks+i);
       }
+      axom::deallocate<omp_lock_t>(locks);
     #endif
   }
 
