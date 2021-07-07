@@ -111,10 +111,12 @@ void demoAxomExecution()
     C[i] = 0;
   }
   std::cout << std::endl;
-
+  // _exebasic_end
+ 
   //Now, let's say we want to try out use of CUDA. We just change that execution space.
   #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) \
   && defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  // _cudaexebasic_start
   std::cout << "running" << std::endl;
   axom::for_all< axom::CUDA_EXEC<256> >(0, 1000, AXOM_LAMBDA( axom::IndexType i ) {
     C[i] = A[i] + B[i];
@@ -125,8 +127,8 @@ void demoAxomExecution()
     std::cout << C[i] << " ";
   }
   std::cout << std::endl; 
+  // _cudaexebasic_end 
   #endif
-  // _exebasic_end 
 }
 
 int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))

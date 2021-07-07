@@ -31,11 +31,20 @@ Here is an example of using Axom’s memory management tools:
 
 Throughout Axom, acceleration is increasingly supported. Both internally, and to support users, Axom Core offers an 
 interface that, using RAJA and Umpire internally, provides easy access to for-loop level acceleration via the for-all model, 
-which applies a given lambda function for every index in range. Axom also provides access to coarse-grain synchronization across threads. 
+which applies a given lambda function for every index in range.  
+
+Here is an example of Axom in motion with basic sequential execution:
 
 .. literalinclude:: ../../examples/core_acceleration.cpp
    :start-after: _exebasic_start
    :end-before: _exebasic_end
+   :language: C++
+
+Here's the same loop from the above snippet, this time with CUDA:
+
+.. literalinclude:: ../../examples/core_acceleration.cpp
+   :start-after: _cudaexebasic_start
+   :end-before: _cudaexebasic_end
    :language: C++
 
 For more advanced functionality, see the RAJA documentation(link here), and the Umpire documentation(link here). Axom 
