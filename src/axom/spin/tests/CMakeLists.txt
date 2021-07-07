@@ -52,13 +52,14 @@ blt_add_executable(
   FOLDER     axom/spin/tests
   )
 
-if ( RAJA_FOUND AND UMPIRE_FOUND )
 
-    axom_add_test(
-      NAME            spin_bvh
-      COMMAND         spin_bvh_test
-      NUM_OMP_THREADS 4
-      )
+axom_add_test(
+  NAME            spin_bvh
+  COMMAND         spin_bvh_test
+  NUM_OMP_THREADS 4
+  )
+
+if ( RAJA_FOUND AND UMPIRE_FOUND )
 
     # fix for rzmanta of following runtime error:
     #   CUDAassert: peer access is not supported between these two devices /unimportant/path/raja-0.12.1/include/RAJA/policy/cuda/sort.hpp 341
@@ -67,14 +68,5 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
     set_property(TEST spin_bvh
                  APPEND
                  PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=0") # Zero based indexed, so only first GPU is visible
-
-else()
-
-    axom_add_test(
-      NAME            spin_bvh
-      COMMAND         spin_bvh_test
-      NUM_OMP_THREADS 4
-      )
-
 
 endif()
