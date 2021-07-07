@@ -450,7 +450,9 @@ AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
   PointType min_pt {BBoxType::InvalidMin};
   PointType max_pt {BBoxType::InvalidMax};
 
+  #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
   int nreads = 0;  // number of extra reads needed for a non-sentinel value
+  #endif
   for(int dim = 0; dim < NDIMS; dim++)
   {
     // Cast to volatile so reads always hit L2$ or memory.
