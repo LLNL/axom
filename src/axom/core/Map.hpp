@@ -16,9 +16,8 @@
 #include <iostream>
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
-#include "RAJA/RAJA.hpp"
+  #include "RAJA/RAJA.hpp"
 #endif
-
 
 namespace axom
 {
@@ -500,11 +499,12 @@ public:
    */
   axom_map::Pair<Key, T> insert(const Key& key, const T& val)
   {
-    //If branching becomes an isssue, this protective statement will be 
-    //removed in lieu of expecting the user to not try to insert after 
+    //If branching becomes an isssue, this protective statement will be
+    //removed in lieu of expecting the user to not try to insert after
     //clear().
-    if(m_bucket_count*m_bucket_len == 0){
-      return axom_map::Pair<Key, T>(&m_end, false);   
+    if(m_bucket_count * m_bucket_len == 0)
+    {
+      return axom_map::Pair<Key, T>(&m_end, false);
     }
     std::size_t index = bucket(get_hash(key));
     bucket_lock(index);
@@ -513,7 +513,7 @@ public:
     //Candidate to get cut out if branching becomes too much of an issue.
     if(ret.second == true)
     {
-      RAJA::atomicAdd< RAJA::auto_atomic >(&m_size, 1);
+      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
       if(target->get_size() == target->get_capacity())
       {
         m_bucket_fill = true;
@@ -542,11 +542,12 @@ public:
    */
   axom_map::Pair<Key, T> insert_or_assign(const Key& key, const T& val)
   {
-    //If branching becomes an isssue, this protective statement will be 
-    //removed in lieu of expecting the user to not try to insert after 
+    //If branching becomes an isssue, this protective statement will be
+    //removed in lieu of expecting the user to not try to insert after
     //clear().
-    if(m_bucket_count*m_bucket_len == 0){
-      return axom_map::Pair<Key, T>(&m_end, false);   
+    if(m_bucket_count * m_bucket_len == 0)
+    {
+      return axom_map::Pair<Key, T>(&m_end, false);
     }
 
     std::size_t index = bucket(get_hash(key));
@@ -556,7 +557,7 @@ public:
     //Candidate to get cut out if branching becomes too much of an issue.
     if(ret.second == true)
     {
-      RAJA::atomicAdd< RAJA::auto_atomic >(&m_size, 1);
+      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
       if(target->get_size() == target->get_capacity())
       {
         m_bucket_fill = true;
@@ -600,7 +601,6 @@ public:
    */
   bool erase(const Key& key)
   {
-
     std::size_t index = bucket(get_hash(key));
     bucket_lock(index);
     axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
@@ -608,7 +608,7 @@ public:
     bool ret = target->remove(key);
     if(ret == true)
     {
-      RAJA::atomicSub< RAJA::auto_atomic >(&m_size, 1);
+      RAJA::atomicSub<RAJA::auto_atomic>(&m_size, 1);
     }
     bucket_unlock(index);
     return ret;
@@ -756,34 +756,59 @@ private:
     return hashed;
   }
 
-  void bucket_lock(std::size_t index){
-    #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-    omp_set_lock(locks+index);
-    #endif
+  //NOTE: Every single locking function will use the OpenMP locks if Axom was compiled with OpenMP support,
+  //regardless of whether the user code is actually using it.
+
+  /*!
+   * \brief Acquires lock for a bucket.
+   *
+   * \param [in] index the index of the bucket which the thread wants the lock for.
+   */
+  void bucket_lock(std::size_t index)
+  {
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+    omp_set_lock(locks + index);
+#endif
   }
 
-  void bucket_unlock(std::size_t index){
-    #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-    omp_unset_lock(locks+index);
-    #endif
+  /*!
+   * \brief Releases lock for a bucket.
+   *
+   * \param [in] index the index of the bucket which the thread wants to release the lock for.
+   */
+  void bucket_unlock(std::size_t index)
+  {
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+    omp_unset_lock(locks + index);
+#endif
   }
 
-  void init_locks(){
-    #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+  /*!
+   * \brief Allocates and initializes a lock for every bucket making up the Map instance.
+   */
+  void init_locks()
+  {
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     locks = axom::allocate<omp_lock_t>(m_bucket_count);
-    for(std::size_t i = 0; i < m_bucket_count; i++){
+    for(std::size_t i = 0; i < m_bucket_count; i++)
+    {
       omp_init_lock(locks + i);
     }
-    #endif
+#endif
   }
 
-  void destroy_locks(){
-    #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-      for(std::size_t i = 0; i < m_bucket_count; i++){
-        omp_destroy_lock(locks+i);
-      }
-      axom::deallocate<omp_lock_t>(locks);
-    #endif
+  /*!
+   * \brief Deallocates and destroys every lock used for this Map instance. 
+   */
+  void destroy_locks()
+  {
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+    for(std::size_t i = 0; i < m_bucket_count; i++)
+    {
+      omp_destroy_lock(locks + i);
+    }
+    axom::deallocate<omp_lock_t>(locks);
+#endif
   }
 
   /// @}
@@ -798,9 +823,9 @@ private:
   float m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
   axom_map::Node<Key, T> m_end; /*!< the node with meaningless values allowing for user to verify success or failure of operations */
   bool m_bucket_fill; /*!<  status of buckets in general -- if at least one is full, this is set to true, false otherwise*/
-  #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
   omp_lock_t* locks;
-  #endif
+#endif
   /// @}
 };
 } /* namespace experimental */
