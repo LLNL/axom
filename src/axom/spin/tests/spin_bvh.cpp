@@ -170,7 +170,6 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
 
   // calculate some constants
   constexpr int NUM_NODES_PER_CELL = 1 << NDIMS;
-  constexpr double ONE_OVER_2N = 1. / double(NUM_NODES_PER_CELL);
 
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
@@ -180,48 +179,6 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
   // allocate output arrays
   const IndexType ncells = mesh->getNumberOfCells();
   aabbs = axom::allocate<BoxType>(ncells);
-
-#ifdef __ibmxl__
-
-  /* workaround for IBM XL compiler */
-  for(IndexType icell = 0; icell < ncells; ++icell)
-  {
-    BoxType range;
-
-    IndexType nodeIDs[NUM_NODES_PER_CELL];
-    const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
-    EXPECT_EQ(numNodesPerCell, NUM_NODES_PER_CELL);
-
-    PointType sum(0.0);
-    for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
-    {
-      const IndexType& nodeIdx = nodeIDs[inode];
-
-      double coord_data[NDIMS];
-      mesh->getNode(nodeIdx, coord_data);
-
-      PointType coords;
-      for(int dim = 0; dim < NDIMS; dim++)
-      {
-        coords[dim] = coord_data[dim];
-        sum[dim] += coord_data[dim];
-      }
-
-      range.addPoint(coords);
-    }  // END for all cell nodes
-
-    for(int dim = 0; dim < NDIMS; dim++)
-    {
-      sum[dim] *= ONE_OVER_2N;
-    }
-
-    c[icell] = range.getCentroid();
-    EXPECT_EQ(c[icell], sum);
-
-    aabbs[icell] = range;
-  }  // END for all cells
-
-#else
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells<exec_policy, xargs::coords>(
@@ -246,21 +203,18 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
 
         range.addPoint(coords);
       }  // END for all cells nodes
-
       for(int dim = 0; dim < NDIMS; dim++)
       {
-        sum[dim] *= ONE_OVER_2N;
+        sum[dim] /= double {NUM_NODES_PER_CELL};
       }
 
       c[cellIdx] = range.getCentroid();
-  #ifndef __CUDA_ARCH__
+#ifndef __CUDA_ARCH__
       EXPECT_EQ(c[cellIdx], sum);
-  #endif
+#endif
 
       aabbs[cellIdx] = range;
     });
-
-#endif  // __ibmxl__
 
   // post-condition sanity checks
   EXPECT_TRUE(aabbs != nullptr);
