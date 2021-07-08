@@ -47,5 +47,5 @@ Here's the same loop from the above snippet, this time with CUDA:
    :end-before: _cudaexebasic_end
    :language: C++
 
-For more advanced functionality, see the RAJA documentation(link here), and the Umpire documentation(link here). Axom 
+For more advanced functionality, see the `RAJA documentation <https://raja.readthedocs.io>`_, and the `Umpire documentation <https://umpire.readthedocs.io>`_. Axom 
 allows for these to be used in lieu of Axom’s API.  
