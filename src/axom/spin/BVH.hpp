@@ -97,8 +97,8 @@ struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
  *     const double* aabbs = ...
  *
  *     // create a 3D BVH instance in parallel on the CPU using OpenMP
- *     spin::BVH< DIMENSION, axom::OMP_EXEC > bvh( aabbs, numItems );
- *     bvh.build();
+ *     spin::BVH< DIMENSION, axom::OMP_EXEC > bvh;
+ *     bvh.initialize( aabbs, numItems );
  *
  *     // query points supplied in arrays, qx, qy, qz,
  *     const axom::IndexType numPoints = ...
@@ -196,13 +196,13 @@ public:
    *
    * \param [in] boxes buffer consisting of bounding boxes for each entity.
    * \param [in] numItems the total number of items to store in the BVH.
-   * \param [in] allocatorID Umpire allocator ID to use (optional)
    *
    * \return status set to BVH_BUILD_OK on success.
    *
-   * \note If an allocatorID is not specified, the code will use the default
-   *  allocator ID for the execution space specified via the template argument
-   *  when the BVH object is instantiated.
+   * \note If an allocatorID has not been set in a call to setAllocatorID(),
+   *  the code will use the default allocator ID for the execution space
+   *  specified via axom::execution_space<ExecSpace>::allocatorID() when the
+   *  BVH object is instantiated.
    * 
    * \warning The supplied boxes array must point to a buffer in a memory space
    *  that is compatible with the execution space. For example, when using
@@ -212,11 +212,15 @@ public:
    * \pre boxes != nullptr
    * \pre numItems > 0
    */
-  int initialize(const BoxType* boxes,
-                 IndexType numItems,
-                 int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
+  int initialize(const BoxType* boxes, IndexType numItems);
 
   bool isInitialized() const { return m_bvh != nullptr; }
+
+  /*!
+   * \brief Sets the ID of the allocator used by the BVH.
+   * \param [in] allocatorID the ID of the allocator to use in BVH construction
+   */
+  void setAllocatorID(int allocatorID) { m_AllocatorID = allocatorID; };
 
   /*!
    * \brief Get the ID of the allocator used by the BVH.
@@ -386,8 +390,7 @@ private:
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxType* boxes,
-                                                       IndexType numBoxes,
-                                                       int allocatorID)
+                                                       IndexType numBoxes)
 {
   AXOM_PERF_MARK_FUNCTION("BVH::initialize");
 
@@ -399,8 +402,6 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxType* boxes,
     m_bvh.reset();
     return BVH_BUILD_FAILED;
   }
-
-  m_AllocatorID = allocatorID;
 
   // STEP 1: Allocate a BVH, potentially deleting the existing BVH if it exists
   m_bvh.reset(new ImplType);

@@ -195,7 +195,8 @@ void findTriMeshIntersectionsBVH(
 
   // Construct BVH
   axom::spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
-  bvh.initialize(aabbs, ncells, poolID);
+  bvh.setAllocatorID(poolID);
+  bvh.initialize(aabbs, ncells);
 
   // Run find algorithm
   IndexType* offsets = axom::allocate<IndexType>(ncells);

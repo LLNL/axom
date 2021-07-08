@@ -1407,7 +1407,8 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
   spin::BVH<NDIMS, exec, FloatType> bvh;
 
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(boxes, NUM_BOXES, allocID);
+  bvh.setAllocatorID(allocID);
+  bvh.initialize(boxes, NUM_BOXES);
   EXPECT_EQ(bvh.getAllocatorID(), allocID);
 
   // run the find algorithm w/ the centroid of the bounding box as input.
