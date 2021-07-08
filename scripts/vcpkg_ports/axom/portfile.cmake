@@ -1,11 +1,6 @@
-if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-    message(FATAL_ERROR "${PORT} does not currently support UWP")
-endif()
-
-include(vcpkg_common_functions)
+vcpkg_fail_port_install(ON_TARGET "UWP")
 
 message(STATUS "Building dependencies for Axom")
-
 message(STATUS "CURRENT_INSTALLED_DIR -- ${CURRENT_INSTALLED_DIR}")
 message(STATUS "PORT -- ${PORT}")
 
@@ -32,7 +27,7 @@ set(_host-config_hdr [=[
 # Architecture: @VCPKG_TARGET_ARCHITECTURE@
 # Platform toolset: @VCPKG_PLATFORM_TOOLSET@
 #
-# vcpkg root path: @VCPKG_ROOT_PATH@
+# vcpkg root path: @VCPKG_ROOT_DIR@
 # vcpkg target triplet: @TARGET_TRIPLET@
 # vcpkg target triplet file: @TARGET_TRIPLET_FILE@
 #
@@ -67,7 +62,7 @@ set(_host-config_hdr [=[
 #------------------------------------------------------------------------------
 
 # Toolchain file
-set(CMAKE_TOOLCHAIN_FILE "@VCPKG_ROOT_PATH@/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "")
+set(CMAKE_TOOLCHAIN_FILE "@VCPKG_ROOT_DIR@/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "")
 set(VCPKG_TARGET_TRIPLET "@TARGET_TRIPLET@" CACHE STRING "")
 
 # CMake options

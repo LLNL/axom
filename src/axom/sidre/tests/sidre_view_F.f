@@ -87,7 +87,7 @@ contains
     call assert_true(v2%get_path_name() == "test/v2")
 
     call assert_true(v3%get_name() == "v3")
-    call assert_true(v3%get_path() == "")
+    call assert_true(v3%get_path() == " ")
     call assert_true(v3%get_path_name() == "v3")
 
     call ds%delete()

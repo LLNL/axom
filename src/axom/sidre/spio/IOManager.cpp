@@ -1163,9 +1163,11 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
           datastore->getRoot()->getView("domain_pattern")->getString());
       }
 
-      std::string partition_pattern =
-        file_pattern + "/datagroup_{datagroup:07d}";
-
+      std::string partition_pattern = file_pattern + "/datagroup";
+      if(m_comm_size != m_baton->getNumFiles())
+      {
+        partition_pattern = partition_pattern + "_{datagroup:07d}";
+      }
       if(!domain_pattern.empty())
       {
         partition_pattern = partition_pattern + "/" + domain_pattern;

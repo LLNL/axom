@@ -27,6 +27,8 @@
 // RAJA includes
 #include "RAJA/RAJA.hpp"
 
+#include <atomic>  // For std::atomic_thread_fence
+
 #if defined(AXOM_USE_CUDA)
   // NOTE: uses the cub installation that is  bundled with RAJA
   #include "cub/device/device_radix_sort.cuh"
@@ -425,21 +427,106 @@ static void array_memset(T* array, const int32 size, const T val)
     AXOM_LAMBDA(int32 i) { array[i] = val; });
 }
 
-/*!
- * \def SPIN_BVH_THREAD_FENCE_SYSTEM
- *
- * \brief Macro for __threadfence_system() on NVIDIA GPUs expands
- *  to nothing on all other platforms.
- *
- * \note This is an internal macro use in the propagate_aabbs() method below.
- */
-#if defined(__CUDA_ARCH__)
-  // on NVIDIA GPUs call __threadfence_system()
-  #define SPIN_BVH_THREAD_FENCE_SYSTEM __threadfence_system()
-#else
-  // on CPUs do nothing
-  #define SPIN_BVH_THREAD_FENCE_SYSTEM
+//------------------------------------------------------------------------------
+// Fetches a bounding box value synchronized with another thread's store.
+// On the CPU, this is achieved with an acquire fence. This is only really
+//   needed for non-x86 architectures with a weaker memory model (Power, ARM)
+// On the GPU, we poll the bounding box values for a non-sentinel value.
+template <typename ExecSpace, typename BBoxType>
+AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
+{
+#ifdef __CUDA_ARCH__
+  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+  using FloatType = typename BBoxType::CoordType;
+  using PointType = typename BBoxType::PointType;
+
+  constexpr int NDIMS = PointType::DIMENSION;
+
+  PointType min_pt {BBoxType::InvalidMin};
+  PointType max_pt {BBoxType::InvalidMax};
+
+  int nreads = 0;  // number of extra reads needed for a non-sentinel value
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    // Cast to volatile so reads always hit L2$ or memory.
+    volatile const FloatType& min_dim =
+      reinterpret_cast<volatile const FloatType&>(box.getMin()[dim]);
+    volatile const FloatType& max_dim =
+      reinterpret_cast<volatile const FloatType&>(box.getMax()[dim]);
+
+      // NOTE: There is a possibility for a read-after-write hazard, where the
+      // uncached store of an AABB on one thread isn't visible when another
+      // thread calls this method to read the value. However, this doesn't seem to
+      // be an issue on Volta; the atomicAdd used to terminate the first thread
+      // seems to correctly synchronize the prior atomic store operations for the
+      // bounding box data.
+      //
+      // Just in case this changes, we poll for a non-sentinel value to be read
+      // out. Naturally, this assumes that reads of sizeof(FloatType) don't tear.
+  #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
+    while((min_pt[dim] = min_dim) == BBoxType::InvalidMin)
+    {
+      nreads++;
+    }
+    while((max_pt[dim] = max_dim) == BBoxType::InvalidMax)
+    {
+      nreads++;
+    }
+  #else
+    while((min_pt[dim] = min_dim) == BBoxType::InvalidMin)
+      ;
+    while((max_pt[dim] = max_dim) == BBoxType::InvalidMax)
+      ;
+  #endif
+  }
+
+  #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
+  if(nreads > 0)
+  {
+    printf("Warning: needed %d extra reads for address %p\n", nreads, &box);
+  }
+  #endif
+
+  return BBoxType {min_pt, max_pt};
+
+#else  // __CUDA_ARCH__
+  std::atomic_thread_fence(std::memory_order_acquire);
+  return box;
 #endif
+}
+
+//------------------------------------------------------------------------------
+// Writes a bounding box to memory, synchronized with another thread's read.
+// On the CPU, this is achieved with a release fence.
+// On the GPU, this function uses atomicExch to write a value directly to the
+// L2 cache, thus avoiding potential cache coherency issues between threads.
+template <typename ExecSpace, typename BBoxType>
+AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
+                                               const BBoxType& value)
+{
+#ifdef __CUDA_ARCH__
+  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+  using FloatType = typename BBoxType::CoordType;
+  using PointType = typename BBoxType::PointType;
+
+  constexpr int NDIMS = PointType::DIMENSION;
+
+  // Cast away the underlying const so we can directly modify the box data.
+  PointType& min_pt = const_cast<PointType&>(box.getMin());
+  PointType& max_pt = const_cast<PointType&>(box.getMax());
+
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    RAJA::atomicExchange<atomic_policy>(&(min_pt[dim]), value.getMin()[dim]);
+    RAJA::atomicExchange<atomic_policy>(&(max_pt[dim]), value.getMax()[dim]);
+  }
+#else  // __CUDA_ARCH__
+  box = value;
+  std::atomic_thread_fence(std::memory_order_release);
+#endif
+}
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
@@ -464,17 +551,26 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 
   int32* counters_ptr = axom::allocate<int32>(inner_size, allocatorID);
 
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+
   array_memset<ExecSpace>(counters_ptr, inner_size, 0);
+  array_memset<ExecSpace>(inner_aabb_ptr, inner_size, BoxType {});
 
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   for_all<ExecSpace>(
     leaf_size,
     AXOM_LAMBDA(int32 i) {
+      primal::BoundingBox<FloatType, NDIMS> aabb = leaf_aabb_ptr[i];
+      int32 last_node = inner_size + i;
       int32 current_node = parent_ptr[inner_size + i];
 
       while(current_node != -1)
       {
+        // TODO: If RAJA atomics get memory ordering policies in the future,
+        // we should look at replacing the sync_load/sync_stores by changing
+        // the below atomic to an acquire/release atomic.
         int32 old =
           RAJA::atomicAdd<atomic_policy>(&(counters_ptr[current_node]), 1);
 
@@ -487,46 +583,29 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
         int32 lchild = lchildren_ptr[current_node];
         int32 rchild = rchildren_ptr[current_node];
 
-        // gather the aabbs
-        primal::BoundingBox<FloatType, NDIMS> aabb;
-        if(lchild >= inner_size)
+        int32 other_child = (lchild == last_node) ? rchild : lchild;
+
+        primal::BoundingBox<FloatType, NDIMS> other_aabb;
+        if(other_child >= inner_size)
         {
-          aabb.addBox(leaf_aabb_ptr[lchild - inner_size]);
+          other_aabb = leaf_aabb_ptr[other_child - inner_size];
         }
         else
         {
-          aabb.addBox(inner_aabb_ptr[lchild]);
+          other_aabb = sync_load<ExecSpace>(inner_aabb_ptr[other_child]);
         }
+        aabb.addBox(other_aabb);
 
-        if(rchild >= inner_size)
-        {
-          aabb.addBox(leaf_aabb_ptr[rchild - inner_size]);
-        }
-        else
-        {
-          aabb.addBox(inner_aabb_ptr[rchild]);
-        }
+        // Store the final AABB for this internal node coherently.
+        sync_store<ExecSpace>(inner_aabb_ptr[current_node], aabb);
 
-        inner_aabb_ptr[current_node] = aabb;
-
-        // NOTE: this ensures that the write to global memory above
-        // is observed by all other threads. It provides a workaround
-        // where a thread would write to the L1 cache instead, which
-        // would not be observed by other threads.
-        //
-        // See Github issue: https://github.com/LLNL/axom/issues/307
-        //
-        // This is a workaround for NVIDIA GPUs.
-        SPIN_BVH_THREAD_FENCE_SYSTEM;
-
+        last_node = current_node;
         current_node = parent_ptr[current_node];
       }
     });
 
   axom::deallocate(counters_ptr);
 }
-
-#undef SPIN_BVH_THREAD_FENCE_SYSTEM
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>

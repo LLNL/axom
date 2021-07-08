@@ -581,14 +581,16 @@ public:
 
   bool isRequired() const override;
 
-  Function& registerVerifier(std::function<bool(const Function&)> lambda) override;
+  using Verifiable<Function>::registerVerifier;
+
+  Function& registerVerifier(Verifier lambda) override;
 
 private:
   // This function's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   bool m_docEnabled;
-  std::function<bool(const Function&)> m_verifier;
+  Verifier m_verifier;
   FunctionVariant m_func;
 };
 

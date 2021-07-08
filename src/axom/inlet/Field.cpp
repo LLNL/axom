@@ -426,7 +426,7 @@ Field& Field::validValues(const std::initializer_list<double>& set)
   return validValues(std::vector<double>(set));
 }
 
-Field& Field::registerVerifier(std::function<bool(const Field&)> lambda)
+Field& Field::registerVerifier(Verifier lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Field "
@@ -468,7 +468,7 @@ bool Field::verify(std::vector<VerificationError>* errors) const
   }
 
   // Lambda verification step
-  if(m_verifier && !m_verifier(*this))
+  if(m_verifier && !m_verifier(*this, errors))
   {
     const std::string msg =
       fmt::format("[Inlet] Field failed lambda verification: {0}",
@@ -696,8 +696,7 @@ AggregateField& AggregateField::validValues(const std::initializer_list<double>&
   return *this;
 }
 
-AggregateField& AggregateField::registerVerifier(
-  std::function<bool(const Field&)> lambda)
+AggregateField& AggregateField::registerVerifier(Verifier lambda)
 {
   for(auto& field : m_fields)
   {

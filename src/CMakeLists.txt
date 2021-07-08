@@ -40,6 +40,8 @@ else()
     endif()
 endif()
 
+set(ENABLE_GMOCK ON CACHE STRING "")
+
 if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # Set some default BLT options before loading BLT only if not included in
     # another project

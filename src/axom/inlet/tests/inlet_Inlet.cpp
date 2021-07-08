@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include <string>
 #include <vector>
@@ -22,6 +23,10 @@ using axom::inlet::Field;
 using axom::inlet::Inlet;
 using axom::inlet::InletType;
 using axom::inlet::Proxy;
+using axom::inlet::VerificationError;
+
+using ::testing::Contains;
+using ::testing::Truly;
 
 template <typename InletReader>
 Inlet createBasicInlet(const std::string& luaString, bool enableDocs = true)
@@ -1164,6 +1169,18 @@ TYPED_TEST(inlet_Inlet_verify, verifyFieldLambda)
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_FALSE(inlet.verify());
+
+  // Check that verifiers that take a list of errors are given a proper list
+  // they can modify and that the errors are returned to the caller.
+  field2.registerVerifier([](const Field&, std::vector<VerificationError>* errors) {
+    INLET_VERIFICATION_WARNING("<base>", "bad thing", errors);
+    return false;
+  });
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  EXPECT_THAT(errors, Contains(Truly([](const VerificationError& error) {
+                return error.message == "bad thing";
+              })));
 }
 
 TYPED_TEST(inlet_Inlet_verify, verifyContainerLambda1)

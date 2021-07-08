@@ -1043,7 +1043,7 @@ Container& Container::strict(bool isStrict)
   return *this;
 }
 
-Container& Container::registerVerifier(std::function<bool(const Container&)> lambda)
+Container& Container::registerVerifier(Verifier lambda)
 {
   if(isStructCollection())
   {
@@ -1073,7 +1073,7 @@ bool Container::verify(std::vector<VerificationError>* errors) const
     verifyRequired(*m_sidreGroup, this_container_defined, "Container", errors);
 
   // Verify this Container if a lambda was configured
-  if(this_container_defined && m_verifier && !m_verifier(*this))
+  if(this_container_defined && m_verifier && !m_verifier(*this, errors))
   {
     verified = false;
     const std::string msg =
@@ -1313,6 +1313,26 @@ bool Container::isUserProvided() const
                 });
 
   return has_containers || has_fields || has_functions;
+}
+
+bool Container::isUserProvided(const std::string& name) const
+{
+  if(auto container = getChildInternal<Container>(name))
+  {
+    // Check if the container itself was provided by the user
+    return container->isUserProvided();
+  }
+  else if(auto field = getChildInternal<Field>(name))
+  {
+    // Check if the field itself was provided by the user
+    return field->isUserProvided();
+  }
+  else if(auto function = getChildInternal<Function>(name))
+  {
+    // call operator bool on the function itself
+    return static_cast<bool>(*function);
+  }
+  return false;
 }
 
 const std::unordered_map<std::string, std::unique_ptr<Container>>&

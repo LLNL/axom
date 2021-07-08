@@ -54,8 +54,15 @@ can lead to compile time ambiquity depending on how it is used.  The example bel
 an example of this.
 
 Prior to accessing optional fields, you should verify they were provided by the user via
-the ``contains`` function.  Accessing a value that was not provided by the user, or 
-a default value, will result in a runtime error. 
+the ``contains`` function.
+
+The ``contains`` function returns ``true`` if the field was *either*
+provided by the user or via a default.  To check if the field was provided by the user (and not
+via a default), you can use the ``isUserProvided`` method, which returns ``true`` if the value
+was provided by the user in the input file.
+
+Accessing a value that was not provided by the user, or 
+a default value, will result in a runtime error.
 
 .. literalinclude:: ../../examples/fields.cpp
    :start-after: _inlet_simple_types_fields_access_start

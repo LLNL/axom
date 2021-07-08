@@ -109,7 +109,9 @@ public:
 
   Field& validValues(const std::initializer_list<double>& set) override;
 
-  Field& registerVerifier(std::function<bool(const Field&)> lambda) override;
+  using VerifiableScalar::registerVerifier;
+
+  Field& registerVerifier(Verifier lambda) override;
 
   bool verify(std::vector<VerificationError>* errors = nullptr) const override;
 
@@ -249,7 +251,7 @@ private:
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled;
-  std::function<bool(const Field&)> m_verifier;
+  Verifier m_verifier;
 };
 
 // Prototypes for template specializations
@@ -314,7 +316,9 @@ public:
 
   AggregateField& validValues(const std::initializer_list<double>& set) override;
 
-  AggregateField& registerVerifier(std::function<bool(const Field&)> lambda) override;
+  using VerifiableScalar::registerVerifier;
+
+  AggregateField& registerVerifier(Verifier lambda) override;
 
 private:
   std::vector<std::reference_wrapper<VerifiableScalar>> m_fields;

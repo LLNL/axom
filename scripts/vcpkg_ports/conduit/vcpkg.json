@@ -1,0 +1,13 @@
+{
+  "name": "conduit",
+  "version": "0.7.2",
+  "homepage": "https://github.com/llnl/conduit",
+  "description": "Simplified Data Exchange for HPC Simulations",
+  "dependencies": [
+    {
+      "name": "hdf5",
+      "features": ["tools"]
+    }, 
+    "blt"
+  ]
+}
