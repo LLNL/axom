@@ -28,13 +28,6 @@ experimental::Map<Key, T> init(int N, int len)
 template <typename Key, typename T>
 void test_storage(experimental::Map<Key, T> &test)
 {
-  // for(int i = 0; i < test.max_size(); i++)
-  // {
-  //   Key key = i;
-  //   T value = key * 27;
-  //   auto ret_test = test.insert(key, value);
-  //   EXPECT_EQ(true, ret_test.second);
-  // }
   experimental::Map<Key, T> *test2 = &test;
   axom::for_all<axom::OMP_EXEC>(
     0,
@@ -46,11 +39,6 @@ void test_storage(experimental::Map<Key, T> &test)
       EXPECT_EQ(true, ret_test.second);
     });
   EXPECT_EQ(false, test.empty());
-  //  for(int i = 0; i < test.max_size(); i++)
-  //  {
-  //    Key key = i;
-  //    EXPECT_EQ(key * 27, test.find(key).value);
-  //  }
   axom::for_all<axom::OMP_EXEC>(
     0,
     test.max_size(),
@@ -66,11 +54,6 @@ void test_storage(experimental::Map<Key, T> &test)
 template <typename Key, typename T>
 void test_brackets(experimental::Map<Key, T> &test)
 {
-  // for(int i = 0; i < test.size(); i++)
-  // {
-  //   Key key = i;
-  //   EXPECT_EQ(key * 27, test[key]);
-  // }
   experimental::Map<Key, T> *test2 = &test;
   axom::for_all<axom::OMP_EXEC>(
     0,
@@ -84,13 +67,6 @@ void test_brackets(experimental::Map<Key, T> &test)
 template <typename Key, typename T>
 void test_insert_assign(experimental::Map<Key, T> &test)
 {
-  //for(int i = 0; i < test.max_size(); i++)
-  //{
-  //  Key key = i;
-  //  T value = key * 27;
-  //  auto ret_test = test.insert_or_assign(key, value);
-  //  EXPECT_EQ(true, ret_test.second);
-  //}
   experimental::Map<Key, T> *test2 = &test;
   axom::for_all<axom::OMP_EXEC>(
     0,
@@ -103,11 +79,6 @@ void test_insert_assign(experimental::Map<Key, T> &test)
     });
 
   EXPECT_EQ(false, test.empty());
-  //for(int i = 0; i < test.max_size(); i++)
-  //{
-  //  Key key = i;
-  //  EXPECT_EQ(key * 27, test.find(key).value);
-  //}
   axom::for_all<axom::OMP_EXEC>(
     0,
     test.max_size(),
@@ -116,14 +87,6 @@ void test_insert_assign(experimental::Map<Key, T> &test)
       EXPECT_EQ(key * 27, test2->find(key).value);
     });
 
-  //for(int i = 0; i < test.max_size(); i++)
-  //{
-  //  Key key = i;
-  //  T value = key * 28;
-  //  auto ret_test = test.insert_or_assign(key, value);
-  //  EXPECT_EQ(false, ret_test.second);
-  //  EXPECT_EQ(ret_test.first->key, key);
-  //}
   axom::for_all<axom::OMP_EXEC>(
     0,
     test.max_size(),
@@ -136,11 +99,6 @@ void test_insert_assign(experimental::Map<Key, T> &test)
     });
 
   EXPECT_EQ(test.size(), test.max_size());
-  //for(int i = 0; i < test.max_size(); i++)
-  //{
-  //  Key key = i;
-  //  EXPECT_EQ(key * 28, test.find(key).value);
-  //}
   axom::for_all<axom::OMP_EXEC>(
     0,
     test.max_size(),
@@ -155,13 +113,7 @@ void test_remove(experimental::Map<Key, T> &test)
 {
   std::size_t to_erase = test.size();
   experimental::Map<Key, T> *test2 = &test;
-  //for(std::size_t i = 0; i < to_erase; i++)
-  //{
-  //  Key key = (Key)i;
-  //  bool erased = test.erase(key);
-  //  EXPECT_EQ(erased, true);
-  //  EXPECT_EQ(test.find(key), test.end());
-  //}
+
   axom::for_all<axom::OMP_EXEC>(
     0,
     to_erase,
@@ -185,12 +137,6 @@ void test_rehash(experimental::Map<Key, T> &test, int num, int fact)
   experimental::Map<Key, T> *test2 = &test;
   test.rehash(num, fact);
 
-  //for(int i = 0; i < original_size; i++)
-  //{
-  //  Key key = i;
-  //  EXPECT_EQ(key * 27, test.find(key).value);
-  //}
-
   axom::for_all<axom::OMP_EXEC>(
     0,
     original_size,
@@ -198,14 +144,6 @@ void test_rehash(experimental::Map<Key, T> &test, int num, int fact)
       Key key = idx;
       EXPECT_EQ(key * 27, test2->find(key).value);
     });
-
-  //for(int i = original_size; i < test.max_size(); i++)
-  //{
-  //  Key key = i;
-  //  T value = key * 27;
-  //  auto ret_test = test.insert(key, value);
-  //  EXPECT_EQ(true, ret_test.second);
-  //}
 
   axom::for_all<axom::OMP_EXEC>(
     original_size,
@@ -216,12 +154,6 @@ void test_rehash(experimental::Map<Key, T> &test, int num, int fact)
       auto ret_test = test2->insert(key, value);
       EXPECT_EQ(true, ret_test.second);
     });
-
-  //for(int i = original_size; i < test.max_size(); i++)
-  //{
-  //  Key key = i;
-  //  EXPECT_EQ(key * 27, test.find(key).value);
-  //}
 
   axom::for_all<axom::OMP_EXEC>(
     original_size,
