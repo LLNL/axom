@@ -228,7 +228,7 @@ public:
    * \brief Sets the scale factor for scaling the supplied bounding boxes.
    * \param [in] scale_factor the scale factor
    *
-   * \note The default scale factor is set to 1.001
+   * \note The default scale factor is set to 1.000123
    */
   void setScaleFactor(FloatType scale_factor) { m_scaleFactor = scale_factor; };
 
@@ -370,7 +370,7 @@ public:
 private:
   /// \name Private Members
   /// @{
-  static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.001;
+  static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.000123;
   static constexpr FloatType DEFAULT_TOLERANCE =
     axom::numerics::floating_point_limits<FloatType>::epsilon();
 
