@@ -43,6 +43,9 @@
 using namespace axom;
 using namespace sidre;
 
+static int cart_nx = 5;  // nodal domain x size for cartesian mesh example
+static int cart_ny = 5;  // nodal domain y size for cartesian mesh example
+
 DataStore* create_tiny_datastore()
 {
   DataStore* ds = new DataStore();
@@ -111,6 +114,25 @@ void setup_blueprint_coords(DataStore* ds, Group* coords)
                          origv->getBuffer());
 }
 
+void setup_cartesian_coords(Group* coords, int domain_id)
+{
+  // Set up uniform cartesian coordinates
+  coords->createViewString("type", "uniform");
+  coords->createViewScalar("dims/i", cart_nx);
+  coords->createViewScalar("dims/j", cart_ny);
+
+  double x_lo = static_cast<double>(domain_id);
+  double x_hi = x_lo + 1.0;
+  double dx = (x_hi - x_lo) / static_cast<double>(cart_nx - 1);
+  double y_lo = 0.0;
+  double y_hi = 1.5;
+  double dy = (y_hi - y_lo) / static_cast<double>(cart_ny - 1);
+  coords->createViewScalar("origin/x", x_lo);
+  coords->createViewScalar("origin/y", y_lo);
+  coords->createViewScalar("spacing/dx", dx);
+  coords->createViewScalar("spacing/dy", dy);
+}
+
 void setup_blueprint_topos(DataStore* ds, Group* topos)
 {
   // Sew the nodes together into the two hexahedra, using prior knowledge.
@@ -158,6 +180,15 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
   AXOM_UNUSED_VAR(ds);
 }
 
+void setup_cartesian_topos(Group* topos)
+{
+  Group* structmesh = topos->createGroup("cartesian");
+  structmesh->createViewString("type", "structured");
+  structmesh->createViewString("coordset", "coords");
+  structmesh->createViewScalar("elements/dims/i", cart_nx - 1);
+  structmesh->createViewScalar("elements/dims/j", cart_ny - 1);
+}
+
 void setup_blueprint_fields(DataStore* ds, Group* fields)
 {
   // Set up the node-centered field
@@ -183,6 +214,50 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
                        sidre::DOUBLE_ID,
                        origv->getNumElements(),
                        origv->getBuffer());
+}
+
+void setup_cartesian_fields(Group* fields)
+{
+  // Match known values from setup_cartesian_coords
+  int ex = cart_nx - 1;
+  int ey = cart_ny - 1;
+  int eltcount = ex * ey;
+  int nodecount = cart_nx * cart_ny;
+
+  // Create a node-centered field and an element-centered field
+  Group* nodefield = fields->createGroup("nodefield");
+  nodefield->createViewString("association", "vertex");
+  nodefield->createViewString("type", "scalar");
+  nodefield->createViewString("topology", "cartesian");
+  View* nodes =
+    nodefield->createViewAndAllocate("values", sidre::DOUBLE_ID, nodecount);
+
+  double* nptr = nodes->getArray();
+
+  for(int j = 0; j < cart_ny; ++j)
+  {
+    for(int i = 0; i < cart_nx; ++i)
+    {
+      nptr[j * cart_nx + i] = static_cast<double>(i * j);
+    }
+  }
+
+  Group* eltfield = fields->createGroup("eltfield");
+  eltfield->createViewString("association", "element");
+  eltfield->createViewString("type", "scalar");
+  eltfield->createViewString("topology", "cartesian");
+  View* elts =
+    eltfield->createViewAndAllocate("values", sidre::DOUBLE_ID, eltcount);
+
+  double* eptr = elts->getArray();
+
+  for(int j = 0; j < ey; ++j)
+  {
+    for(int i = 0; i < ex; ++i)
+    {
+      eptr[j * ex + i] = static_cast<double>(i * j);
+    }
+  }
 }
 
 #ifdef AXOM_USE_MPI
@@ -333,6 +408,87 @@ void generate_multidomain_blueprint(DataStore* ds,
     writer.writeBlueprintIndexToRootFile(ds, holder_name, bp_rootfile, mesh_name);
   }
 }
+
+void generate_cartesian_blueprint(DataStore* ds,
+                                  const std::string& filename,
+                                  int num_files)
+{
+  int my_rank;
+  int comm_size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
+  // 1 domain on even ranks, 2 domains on odd ranks
+  int64_t domain_begin = (3 * (my_rank / 2)) + (1 * (my_rank % 2));
+  int64_t domain_end = domain_begin;
+  if(my_rank % 2)
+  {
+    domain_end += 2;
+  }
+  else
+  {
+    domain_end++;
+  }
+
+  std::string holder_name = "domain_data";
+  std::string mesh_name = "";
+  Group* holder = ds->getRoot()->createGroup(holder_name);
+
+  std::string domain_pattern = "domain_{domain:06d}";
+  ds->getRoot()->createViewString("domain_pattern", domain_pattern);
+
+  for(int64_t i = domain_begin; i < domain_end; ++i)
+  {
+    std::string domain_name = fmt::format("domain_{:06d}", i);
+
+    Group* mroot = holder->createGroup(domain_name);
+    Group* coords = mroot->createGroup("coordsets/coords");
+    Group* topos = mroot->createGroup("topologies");
+    // no material sets in this example
+    Group* fields = mroot->createGroup("fields");
+    // no adjacency sets in this example
+    mroot->createViewScalar("state/domain_id", i);
+
+    setup_cartesian_coords(coords, i);
+
+    setup_cartesian_topos(topos);
+
+    setup_cartesian_fields(fields);
+  }
+
+  IOManager writer(MPI_COMM_WORLD);
+
+  conduit::Node info, mesh_node, root_node;
+  ds->getRoot()->createNativeLayout(mesh_node);
+  std::string bp_protocol = "mesh";
+  if(conduit::blueprint::mpi::verify(bp_protocol,
+                                     mesh_node[holder_name],
+                                     info,
+                                     MPI_COMM_WORLD))
+  {
+  #if defined(AXOM_USE_HDF5)
+    std::string protocol = "sidre_hdf5";
+  #else
+    std::string protocol = "sidre_json";
+  #endif
+
+    std::string output_name = filename;
+
+    if(comm_size > 1)
+    {
+      output_name = output_name + "_par";
+    }
+
+    std::string bp_rootfile = output_name + ".root";
+
+    writer.write(ds->getRoot()->getGroup("domain_data"),
+                 std::min(num_files, comm_size),
+                 output_name,
+                 protocol);
+
+    writer.writeBlueprintIndexToRootFile(ds, holder_name, bp_rootfile, mesh_name);
+  }
+}
 #endif
 
 int main(int argc, char** argv)
@@ -366,6 +522,21 @@ int main(int argc, char** argv)
     spds = create_tiny_datastore();
     generate_multidomain_blueprint(spds, "multi_all", num_ranks);
   }
+  spds->getRoot()->destroyGroups();
+  spds->getRoot()->destroyViews();
+  generate_cartesian_blueprint(spds, "cart1", 1);
+  if(num_ranks > 1)
+  {
+    spds->getRoot()->destroyGroups();
+    spds->getRoot()->destroyViews();
+    spds = create_tiny_datastore();
+    generate_cartesian_blueprint(spds, "cart2", 2);
+    spds->getRoot()->destroyGroups();
+    spds->getRoot()->destroyViews();
+    spds = create_tiny_datastore();
+    generate_cartesian_blueprint(spds, "cart_all", num_ranks);
+  }
+
   MPI_Finalize();
 #endif
 
