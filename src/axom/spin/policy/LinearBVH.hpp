@@ -79,13 +79,13 @@ public:
    *
    * \return total_count the total count of candidates for all query primitives.
    */
-  template <typename Predicate, typename PrimitiveType>
+  template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
   void findCandidatesImpl(Predicate&& predicate,
                           IndexType* offsets,
                           IndexType* counts,
                           IndexType*& candidates,
                           IndexType numObjs,
-                          const PrimitiveType* objs,
+                          PrimitiveIndexable objs,
                           int allocatorID) const;
 
   void writeVtkFileImpl(const std::string& fileName) const;
@@ -205,14 +205,14 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoundingBoxType* bo
 }
 
 template <typename FloatType, int NDIMS, typename ExecSpace>
-template <typename Predicate, typename PrimitiveType>
+template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
 void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   Predicate&& predicate,
   IndexType* offsets,
   IndexType* counts,
   IndexType*& candidates,
   IndexType numObjs,
-  const PrimitiveType* objs,
+  PrimitiveIndexable objs,
   int allocatorID) const
 
 {
@@ -240,7 +240,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
       numObjs,
       AXOM_LAMBDA(IndexType i) {
         int32 count = 0;
-        PrimitiveType primitive = objs[i];
+        PrimitiveType primitive {objs[i]};
 
         auto leafAction = [&count](int32 AXOM_NOT_USED(current_node),
                                    const int32* AXOM_NOT_USED(leaf_nodes)) {
@@ -282,7 +282,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                            AXOM_LAMBDA(IndexType i) {
                              int32 offset = offsets[i];
 
-                             PrimitiveType obj = objs[i];
+                             PrimitiveType obj {objs[i]};
                              auto leafAction = [&offset, candidates](
                                                  int32 current_node,
                                                  const int32* leafs) {
@@ -306,7 +306,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   AXOM_PERF_MARK_SECTION(
     "PASS[1]:fill_traversal", for_all<ExecSpace>(numObjs, [&](IndexType i) {
       int matching_leaves = 0;
-      PrimitiveType obj = objs[i];
+      PrimitiveType obj {objs[i]};
       offsets[i] = current_offset;
 
       auto leafAction = [&](int32 current_node, const int32* leafs) {

@@ -143,6 +143,41 @@ private:
   using ImplType =
     typename BVHPolicy<FloatType, NDIMS, ExecSpace, BVHImpl>::ImplType;
 
+  template <typename It>
+  class IteratorTraits
+  {
+  private:
+    template <typename U, typename Ret = decltype(std::declval<U&>()[0])>
+    static Ret array_operator_type(U obj)
+    { }
+
+    static std::false_type array_operator_type(...)
+    {
+      return std::false_type {};
+    }
+
+  public:
+    // The base object of the return type of a call to iter[], or std::false_type
+    // if operator[] does not exist.
+    using BaseType =
+      typename std::decay<decltype(array_operator_type(It {}))>::type;
+
+    // The iterator must be an array-like type.
+    static_assert(
+      !std::is_same<BaseType, std::false_type>::value,
+      "Iterator type must be accessible with the array operator[].");
+
+    // The iterator object is copy-captured in a lambda and thus needs to be
+    // copy-constructible.
+    AXOM_STATIC_ASSERT_MSG(std::is_copy_constructible<It>::value,
+                           "Iterator type must be copy constructible.");
+
+    // We need to be able to copy-construct a primitve BaseType within the
+    // traversal kernel.
+    AXOM_STATIC_ASSERT_MSG(std::is_copy_constructible<BaseType>::value,
+                           "Iterator's value type must be copy constructible.");
+  };
+
 public:
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
@@ -262,11 +297,12 @@ public:
    * \pre candidates == nullptr
    * \pre points != nullptr
    */
+  template <typename PointIndexable>
   void findPoints(IndexType* offsets,
                   IndexType* counts,
                   IndexType*& candidates,
                   IndexType numPts,
-                  const PointType* points) const;
+                  PointIndexable points) const;
 
   /*!
    * \brief Finds the candidate bins that intersect the given rays.
@@ -289,11 +325,12 @@ public:
    * \pre candidates == nullptr
    * \pre rays != nullptr
    */
+  template <typename RayIndexable>
   void findRays(IndexType* offsets,
                 IndexType* counts,
                 IndexType*& candidates,
                 IndexType numRays,
-                const RayType* rays) const;
+                RayIndexable rays) const;
 
   /*!
    * \brief Finds the candidate bins that intersect the given bounding boxes.
@@ -316,11 +353,12 @@ public:
    * \pre candidates == nullptr
    * \pre boxes != nullptr
    */
+  template <typename BoxIndexable>
   void findBoundingBoxes(IndexType* offsets,
                          IndexType* counts,
                          IndexType*& candidates,
                          IndexType numBoxes,
-                         const BoxType* boxes) const;
+                         BoxIndexable boxes) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
@@ -415,13 +453,20 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxType* boxes,
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+template <typename PointIndexable>
 void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
                                                         IndexType* counts,
                                                         IndexType*& candidates,
                                                         IndexType numPts,
-                                                        const PointType* pts) const
+                                                        PointIndexable pts) const
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findPoints");
+
+  using IterBase = typename IteratorTraits<PointIndexable>::BaseType;
+
+  // Ensure that the iterator returns objects convertible to primal::Point.
+  static_assert(std::is_convertible<IterBase, PointType>::value,
+                "Iterator must return objects convertible to primal::Point.");
 
   SLIC_ASSERT(m_bvh != nullptr);
   SLIC_ASSERT(offsets != nullptr);
@@ -435,24 +480,31 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
     return bb.contains(p);
   };
 
-  m_bvh->findCandidatesImpl(predicate,
-                            offsets,
-                            counts,
-                            candidates,
-                            numPts,
-                            pts,
-                            m_AllocatorID);
+  m_bvh->template findCandidatesImpl<PointType>(predicate,
+                                                offsets,
+                                                counts,
+                                                candidates,
+                                                numPts,
+                                                pts,
+                                                m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+template <typename RayIndexable>
 void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
                                                       IndexType* counts,
                                                       IndexType*& candidates,
                                                       IndexType numRays,
-                                                      const RayType* rays) const
+                                                      RayIndexable rays) const
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findRays");
+
+  using IterBase = typename IteratorTraits<RayIndexable>::BaseType;
+
+  // Ensure that the iterator returns objects convertible to primal::Ray.
+  static_assert(std::is_convertible<IterBase, RayType>::value,
+                "Iterator must return objects convertible to primal::Ray.");
 
   SLIC_ASSERT(m_bvh != nullptr);
   SLIC_ASSERT(offsets != nullptr);
@@ -469,25 +521,33 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
     return primal::detail::intersect_ray(r, bb, tmp, TOL);
   };
 
-  m_bvh->findCandidatesImpl(predicate,
-                            offsets,
-                            counts,
-                            candidates,
-                            numRays,
-                            rays,
-                            m_AllocatorID);
+  m_bvh->template findCandidatesImpl<RayType>(predicate,
+                                              offsets,
+                                              counts,
+                                              candidates,
+                                              numRays,
+                                              rays,
+                                              m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+template <typename BoxIndexable>
 void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
   IndexType* offsets,
   IndexType* counts,
   IndexType*& candidates,
   IndexType numBoxes,
-  const BoxType* boxes) const
+  BoxIndexable boxes) const
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findBoundingBoxes");
+
+  using IterBase = typename IteratorTraits<BoxIndexable>::BaseType;
+
+  // Ensure that the iterator returns objects convertible to primal::BoundingBox.
+  static_assert(
+    std::is_convertible<IterBase, BoxType>::value,
+    "Iterator must return objects convertible to primal::BoundingBox.");
 
   SLIC_ASSERT(m_bvh != nullptr);
   SLIC_ASSERT(offsets != nullptr);
@@ -501,13 +561,13 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
     return bb1.intersectsWith(bb2);
   };
 
-  m_bvh->findCandidatesImpl(predicate,
-                            offsets,
-                            counts,
-                            candidates,
-                            numBoxes,
-                            boxes,
-                            m_AllocatorID);
+  m_bvh->template findCandidatesImpl<BoxType>(predicate,
+                                              offsets,
+                                              counts,
+                                              candidates,
+                                              numBoxes,
+                                              boxes,
+                                              m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
