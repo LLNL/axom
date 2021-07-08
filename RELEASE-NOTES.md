@@ -45,6 +45,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   was not the appropriate name. This macro elides warnings about unused variables
 - Inlet's `isUserProvided` can now be used to query the status of subobjects of a `Container` via a name parameter
 - Upgrades our `vcpkg` usage for automated Windows builds of our TPLs to its [2021.05.12 release](https://github.com/microsoft/vcpkg/releases/tag/2021.05.12)
+- Spin: Refactored `BVH` public API based on user suggestions
+  `BVH` constructor only handles setting up default values, while the actual building of the BVH is
+  now done in a `BVH::initialize(primal::BoundingBox*, int)` method.
+  Alternate Umpire allocator IDs are supplied via `BVH::setAllocatorID(int)`.
+  Other `BVH` methods have been modified to accept or return Primal primitives.
+- Spin: Removed hard dependency on RAJA and Umpire from `BVH`.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
