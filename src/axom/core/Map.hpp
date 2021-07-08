@@ -729,7 +729,7 @@ private:
    */
   std::size_t get_hash(const Key& input) const
   {
-    std::size_t hashed = std::hash<Key> {}(input);
+    std::size_t hashed = Hash {}(input);
 
     return hashed;
   }
