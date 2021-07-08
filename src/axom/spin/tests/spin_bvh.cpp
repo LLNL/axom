@@ -205,7 +205,7 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
       }  // END for all cells nodes
       for(int dim = 0; dim < NDIMS; dim++)
       {
-        sum[dim] /= double {NUM_NODES_PER_CELL};
+        sum[dim] /= NUM_NODES_PER_CELL;
       }
 
       c[cellIdx] = range.getCentroid();
