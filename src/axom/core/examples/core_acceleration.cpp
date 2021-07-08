@@ -117,7 +117,7 @@ void demoAxomExecution()
   #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) \
   && defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   // _cudaexebasic_start
-  std::cout << "running" << std::endl;
+  
   axom::for_all< axom::CUDA_EXEC<256> >(0, 1000, AXOM_LAMBDA( axom::IndexType i ) {
     C[i] = A[i] + B[i];
   });
