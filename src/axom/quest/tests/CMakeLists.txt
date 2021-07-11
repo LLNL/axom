@@ -15,6 +15,10 @@ set(quest_tests
     quest_vertex_weld.cpp
    )
 
+blt_list_append(TO       quest_tests 
+                IF       C2C_FOUND
+                ELEMENTS quest_c2c_reader.cpp)
+
 # Optionally, add tests that require AXOM_DATA_DIR
 blt_list_append(TO       quest_tests
                 IF       AXOM_DATA_DIR
@@ -44,6 +48,10 @@ foreach(test ${quest_tests})
         )
 endforeach()
 
+
+#------------------------------------------------------------------------------
+# Tests that use MFEM when available
+#------------------------------------------------------------------------------
 
 if(MFEM_FOUND)
     set(test_name quest_point_in_cell_mfem)
