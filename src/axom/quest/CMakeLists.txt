@@ -31,21 +31,21 @@ set( quest_headers
     detail/inout/InOutOctreeStats.hpp
     detail/inout/InOutOctreeValidator.hpp
 
-    # Mesh tester headers
+    # Mesh tester
     MeshTester.hpp
 
-    # PointInCell headers
+    # PointInCell
     PointInCell.hpp
     detail/PointFinder.hpp
     detail/PointInCellMeshWrapper_mfem.hpp
 
-    ## STL library headers
+    ## File readers
+    readers/C2CReader.hpp
     readers/STLReader.hpp
 
-    ## quest interface headers
+    ## quest interface
     interface/internal/mpicomm_wrapper.hpp
     interface/internal/QuestHelpers.hpp
-
     interface/inout.hpp
     interface/signed_distance.hpp
 
@@ -56,18 +56,15 @@ set( quest_sources
     ## All-nearest-neighbors query
     AllNearestNeighbors.cpp
 
-    ## Geometry Sources
-    # <nothing yet>
-
-    ## Mesh tester sources
+    ## Mesh tester
     MeshTester.cpp
 
-    ## STL library sources
+    ## File readers
+    readers/C2CReader.cpp
     readers/STLReader.cpp
 
-    ## quest interface sources
+    ## quest interface
     interface/internal/QuestHelpers.cpp
-
     interface/inout.cpp
     interface/signed_distance.cpp
 
@@ -83,9 +80,10 @@ set( quest_depends_on
      fmt
      )
 
-blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
-blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
+blt_list_append(TO quest_depends_on IF C2C_FOUND ELEMENTS c2c)
 blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
+blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
+blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
 
 if (ENABLE_MPI)
     list(APPEND quest_headers readers/PSTLReader.hpp)
