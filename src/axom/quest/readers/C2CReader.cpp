@@ -296,7 +296,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   }
 }
 
-#endif  // AXOM_USE_C2C
-
 }  // end namespace quest
 }  // end namespace axom
+
+#endif  // AXOM_USE_C2C
