@@ -103,7 +103,7 @@ The list of unexpected names can also be retrieved relative to an individual ``C
 
 
 These lists of unexpected names can be useful if you'd like to implement custom/targeted error messages - in the example above, one might
-wish to provide a message indicating that "dimension" should be used instead of just "dim".  In other cases, it may be sufficient to just
+wish to provide a message indicating that ``dimension`` should be used instead of just ``dim``.  In other cases, it may be sufficient to just
 require that all or part of the input file have no unexpected entries.  This is supported via the ``strict()`` method, which will cause a
 ``Container`` to fail verification if it contains any unexpected entries:
 
