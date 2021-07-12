@@ -9,6 +9,7 @@
  */
 
 // Axom includes
+#include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/primal.hpp"
 #include "axom/quest.hpp"
@@ -35,87 +36,227 @@ namespace slic = axom::slic;
 
 using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
-using TriVertIndices = primal::Point<axom::IndexType, 3>;
-using SpaceTriangle = primal::Triangle<double, 3>;
-
-using Octree3D = quest::InOutOctree<3>;
-
-using GeometricBoundingBox = Octree3D::GeometricBoundingBox;
-using SpacePt = Octree3D::SpacePt;
-using SpaceVector = Octree3D::SpaceVector;
-using GridPt = Octree3D::GridPt;
-using BlockIndex = Octree3D::BlockIndex;
-
 //------------------------------------------------------------------------------
 
-/** Computes the bounding box of the surface mesh */
-GeometricBoundingBox compute_bounds(mint::Mesh* mesh)
+template <int DIM>
+class ContainmentDriver
 {
-  SLIC_ASSERT(mesh != nullptr);
+public:
+  using CellVertIndices = primal::Point<axom::IndexType, DIM>;
 
-  GeometricBoundingBox meshBB;
-  SpacePt pt;
+  using InOutOctreeType = quest::InOutOctree<DIM>;
 
-  for(int i = 0; i < mesh->getNumberOfNodes(); ++i)
-  {
-    mesh->getNode(i, pt.data());
-    meshBB.addPoint(pt);
-  }
-
-  SLIC_ASSERT(meshBB.isValid());
-
-  return meshBB;
-}
-
-/**
- * Query the inOutOctree using uniform grid of resolution \a gridRes
- * in region defined by bounding box \a queryBounds
- */
-void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
-                                  const GeometricBoundingBox& queryBounds,
-                                  const GridPt& gridRes,
-                                  bool isBatched,
-                                  bool shouldOutputMeshes)
-{
-  const double* low = queryBounds.getMin().data();
-  const double* high = queryBounds.getMax().data();
-  mint::UniformMesh* umesh =
-    new mint::UniformMesh(low, high, gridRes[0], gridRes[1], gridRes[2]);
-
-  const int nnodes = umesh->getNumberOfNodes();
-  int* containment = umesh->createField<int>("containment", mint::NODE_CENTERED);
-
-  SLIC_ASSERT(containment != nullptr);
-
-  axom::utilities::Timer timer;
-  if(!isBatched)
-  {
-    timer.start();
-    for(int inode = 0; inode < nnodes; ++inode)
-    {
-      primal::Point<double, 3> pt;
-      umesh->getNode(inode, pt.data());
-
-      containment[inode] = inOutOctree.within(pt) ? 1 : 0;
-    }
-    timer.stop();
-  }
-  else
-  {
-    timer.start();
-
-    // Allocate space for the coordinate arrays
-    double* x = axom::allocate<double>(nnodes);
-    double* y = axom::allocate<double>(nnodes);
-    double* z = axom::allocate<double>(nnodes);
+  using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
+  using SpacePt = typename InOutOctreeType::SpacePt;
+  using SpaceVector = typename InOutOctreeType::SpaceVector;
+  using GridPt = typename InOutOctreeType::GridPt;
+  using BlockIndex = typename InOutOctreeType::BlockIndex;
+  using SpaceCell = typename InOutOctreeType::SpaceCell;
 
 // Determine an appropriate execution policy
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
-    using ExecPolicy = axom::OMP_EXEC;
+  using ExecPolicy = axom::OMP_EXEC;
 #else
-    using ExecPolicy = axom::SEQ_EXEC;
+  using ExecPolicy = axom::SEQ_EXEC;
 #endif
+
+  ContainmentDriver() = default;
+
+  ~ContainmentDriver()
+  {
+    delete m_surfaceMesh;
+    delete m_octree;
+  }
+
+#ifdef AXOM_USE_C2C
+  void loadContourMesh(const std::string& inputFile, int segmentsPerPiece = 100)
+  {
+    quest::C2CReader* reader = new quest::C2CReader();
+    reader->setFileName(inputFile);
+    reader->read();
+
+    // Create surface mesh
+    m_surfaceMesh = new UMesh(2, mint::SEGMENT);
+    reader->getLinearMesh(static_cast<UMesh*>(m_surfaceMesh), segmentsPerPiece);
+
+    delete reader;
+  }
+#else
+  void loadContourMesh(const std::string& inputFile, int segmentsPerPiece = 100)
+  {
+    SLIC_ERROR(
+      "Configuration error: Loading contour files is only supported when Axom "
+      "is configured with C2C support.");
+  }
+#endif  // AXOM_USE_C2C
+
+  void loadSTLMesh(const std::string& inputFile)
+  {
+    quest::STLReader* reader = new quest::STLReader();
+    reader->setFileName(inputFile);
+    reader->read();
+
+    // Create surface mesh
+    m_surfaceMesh = new UMesh(3, mint::TRIANGLE);
+    reader->getMesh(static_cast<UMesh*>(m_surfaceMesh));
+
+    delete reader;
+  }
+
+  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
+
+  int dimension() const { return DIM; }
+
+  /// Computes the bounding box of the surface mesh
+  void computeBounds()
+  {
+    SLIC_ASSERT(m_surfaceMesh != nullptr);
+
+    GeometricBoundingBox meshBB;
+    SpacePt pt;
+
+    for(int i = 0; i < m_surfaceMesh->getNumberOfNodes(); ++i)
+    {
+      m_surfaceMesh->getNode(i, pt.data());
+      m_meshBB.addPoint(pt);
+    }
+
+    SLIC_ASSERT(m_meshBB.isValid());
+  }
+
+  void initializeQueryBox(const std::vector<double>& mins,
+                          const std::vector<double>& maxs)
+  {
+    SLIC_ERROR_IF(
+      m_octree == nullptr,
+      "Need to initialize InOutOctree before setting the bounding box");
+
+    m_queryBB.clear();
+    if(mins.size() == DIM && maxs.size() == DIM)
+    {
+      m_queryBB.addPoint(SpacePt(mins.data(), DIM));
+      m_queryBB.addPoint(SpacePt(maxs.data(), DIM));
+    }
+    else
+    {
+      m_queryBB = m_octree->boundingBox();
+    }
+
+    SLIC_INFO("Bounding box for query points: " << m_queryBB);
+  }
+
+  void initializeInOutOctree()
+  {
+    m_octree = new InOutOctreeType(m_meshBB, m_surfaceMesh);
+    m_octree->generateIndex();
+  }
+
+  /**
+  * Query the inOutOctree using uniform grid of resolution \a gridRes
+  * in region defined by the query bounding box (initialized in \a initializeQueryBox() )
+  */
+  void testContainmentOnRegularGrid(int gridRes,
+                                    bool isBatched,
+                                    bool shouldOutputMeshes)
+  {
+    const double* low = m_queryBB.getMin().data();
+    const double* high = m_queryBB.getMax().data();
+    mint::UniformMesh* umesh = (this->dimension() == 2)
+      ? new mint::UniformMesh(low, high, gridRes, gridRes)
+      : new mint::UniformMesh(low, high, gridRes, gridRes, gridRes);
+
+    const int nnodes = umesh->getNumberOfNodes();
+    int* containment =
+      umesh->createField<int>("containment", mint::NODE_CENTERED);
+    SLIC_ASSERT(containment != nullptr);
+
+    axom::utilities::Timer timer;
+    if(!isBatched)
+    {
+      timer.start();
+      for(int inode = 0; inode < nnodes; ++inode)
+      {
+        SpacePt pt;
+        umesh->getNode(inode, pt.data());
+
+        containment[inode] = m_octree->within(pt) ? 1 : 0;
+      }
+      timer.stop();
+    }
+    else
+    {
+      (dimension() == 2) ? batchedPointContainment2D(umesh, timer)
+                         : batchedPointContainment3D(umesh, timer);
+    }
+
+    SLIC_INFO(
+      fmt::format("\tQuerying {}^{} containment field took {} seconds (@ {} "
+                  "queries per second)",
+                  gridRes,
+                  DIM,
+                  timer.elapsed(),
+                  nnodes / timer.elapsed()));
+
+    if(shouldOutputMeshes)
+    {
+      std::string fname = fmt::format("gridContainment_{}.vtk", gridRes);
+      mint::write_vtk(umesh, fname);
+    }
+
+    delete umesh;
+  }
+
+private:
+  void batchedPointContainment2D(mint::UniformMesh* umesh,
+                                 axom::utilities::Timer& timer)
+  {
+    SLIC_ASSERT(umesh->getDimension() == 2);
+
+    timer.start();
+
+    // Allocate space for the coordinate arrays
+    const int nnodes = umesh->getNumberOfNodes();
+    double* x = axom::allocate<double>(nnodes);
+    double* y = axom::allocate<double>(nnodes);
+
+    // Fill the coordinate arrays
+    mint::for_all_nodes<ExecPolicy, mint::xargs::xy>(
+      umesh,
+      AXOM_LAMBDA(axom::IndexType idx, double xx, double yy) {
+        x[idx] = xx;
+        y[idx] = yy;
+      });
+
+    // Loop through the points using ExecPolicy
+    int* containment =
+      umesh->getFieldPtr<int>("containment", mint::NODE_CENTERED);
+    SLIC_ASSERT(containment != nullptr);
+
+    axom::for_all<ExecPolicy>(0, nnodes, [&](axom::IndexType idx) {
+      const bool inside = m_octree->within(SpacePt {x[idx], y[idx]});
+      containment[idx] = inside ? 1 : 0;
+    });
+
+    // Deallocate the coordinate arrays
+    axom::deallocate(x);
+    axom::deallocate(y);
+
+    timer.stop();
+  }
+
+  void batchedPointContainment3D(mint::UniformMesh* umesh,
+                                 axom::utilities::Timer& timer)
+  {
+    SLIC_ASSERT(umesh->getDimension() == 3);
+
+    timer.start();
+
+    // Allocate space for the coordinate arrays
+    const int nnodes = umesh->getNumberOfNodes();
+    double* x = axom::allocate<double>(nnodes);
+    double* y = axom::allocate<double>(nnodes);
+    double* z = axom::allocate<double>(nnodes);
 
     // Fill the coordinate arrays
     mint::for_all_nodes<ExecPolicy, mint::xargs::xyz>(
@@ -127,8 +268,12 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
       });
 
     // Loop through the points using ExecPolicy
+    int* containment =
+      umesh->getFieldPtr<int>("containment", mint::NODE_CENTERED);
+    SLIC_ASSERT(containment != nullptr);
+
     axom::for_all<ExecPolicy>(0, nnodes, [&](axom::IndexType idx) {
-      const bool inside = inOutOctree.within(SpacePt {x[idx], y[idx], z[idx]});
+      const bool inside = m_octree->within(SpacePt {x[idx], y[idx], z[idx]});
       containment[idx] = inside ? 1 : 0;
     });
 
@@ -140,219 +285,193 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree,
     timer.stop();
   }
 
-  SLIC_INFO(
-    fmt::format("\tQuerying {}^3 containment field "
-                "took {} seconds (@ {} queries per second)",
-                gridRes,
-                timer.elapsed(),
-                nnodes / timer.elapsed()));
-
-  if(shouldOutputMeshes)
+  /**
+  * \brief Extracts the vertex indices of cell \a cellIndex from the mesh
+  */
+  CellVertIndices getCellVertIndices(axom::IndexType cellIndex) const
   {
-    std::stringstream sstr;
-    const auto& res = gridRes;
+    SLIC_ASSERT(m_surfaceMesh != nullptr);
+    SLIC_ASSERT(cellIndex >= 0 && cellIndex < m_surfaceMesh->getNumberOfCells());
 
-    const bool resAllSame = (res[0] == res[1] && res[1] == res[2]);
-    std::string resStr = resAllSame
-      ? fmt::format("{}", res[0])
-      : fmt::format("{}_{}_{}", res[0], res[1], res[2]);
-
-    sstr << "gridContainment_" << resStr << ".vtk";
-    mint::write_vtk(umesh, sstr.str());
+    CellVertIndices tvInd;
+    m_surfaceMesh->getCellNodeIDs(cellIndex, tvInd.data());
+    return tvInd;
   }
 
-  delete umesh;
-}
-
-/**
- * \brief Extracts the vertex indices of cell cellIndex from the mesh
- */
-TriVertIndices getTriangleVertIndices(mint::Mesh* mesh, axom::IndexType cellIndex)
-{
-  SLIC_ASSERT(mesh != nullptr);
-  SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getNumberOfCells());
-
-  TriVertIndices tvInd;
-  mesh->getCellNodeIDs(cellIndex, tvInd.data());
-  return tvInd;
-}
-
-/**
- * \brief Extracts the positions of a traingle's vertices from the mesh
- * \return The triangle vertex positions in a SpaceTriangle instance
- */
-SpaceTriangle getMeshTriangle(mint::Mesh* mesh, const TriVertIndices& vertIndices)
-{
-  SLIC_ASSERT(mesh != nullptr);
-
-  SpaceTriangle tri;
-  for(int i = 0; i < 3; ++i) mesh->getNode(vertIndices[i], tri[i].data());
-
-  return tri;
-}
-
-/**
- * \brief Computes some statistics about the surface mesh.
- *
- * Specifically, computes histograms (and ranges) of the edge lengths and
- * triangle areas on a logarithmic scale and logs the results
- */
-void print_surface_stats(mint::Mesh* mesh)
-{
-  SLIC_ASSERT(mesh != nullptr);
-
-  SpacePt pt;
-
-  using MinMaxRange = primal::BoundingBox<double, 1>;
-  using LengthType = MinMaxRange::PointType;
-
-  MinMaxRange meshEdgeLenRange;
-  MinMaxRange meshTriAreaRange;
-  const int nCells = mesh->getNumberOfCells();
-  using TriIdxSet = std::set<axom::IndexType>;
-  TriIdxSet badTriangles;
-
-  // simple binning based on the exponent
-  using LogHistogram = std::map<int, int>;
-  LogHistogram edgeLenHist;  // Create histogram of edge lengths (log scale)
-  LogHistogram areaHist;     // Create histogram of triangle areas (log scale)
-
-  using LogRangeMap = std::map<int, MinMaxRange>;
-  LogRangeMap edgeLenRangeMap;  // Tracks range of edge lengths at each scale
-  LogRangeMap areaRangeMap;     // Tracks range of triangle areas at each scale
-
-  using TriVertIndices = primal::Point<axom::IndexType, 3>;
-  int expBase2;
-
-  // Traverse mesh triangles and bin the edge lengths and areas
-  for(int i = 0; i < nCells; ++i)
+  /**
+  * \brief Extracts the positions of a cell's vertices from the mesh
+  * \return The cell vertex positions in a SpaceCell instance
+  */
+  SpaceCell getMeshCell(const CellVertIndices& vertIndices) const
   {
-    // Get the indices and positions of the triangle's three vertices
-    TriVertIndices vertIndices = getTriangleVertIndices(mesh, i);
-    SpaceTriangle tri = getMeshTriangle(mesh, vertIndices);
+    SLIC_ASSERT(m_surfaceMesh != nullptr);
 
-    // Compute edge stats -- note edges are double counted
-    for(int j = 0; j < 3; ++j)
+    SpaceCell cell;
+    for(int i = 0; i < DIM; ++i)
     {
-      double len = SpaceVector(tri[j], tri[(j + 1) % 3]).norm();
-      if(axom::utilities::isNearlyEqual(len, 0.))
+      m_surfaceMesh->getNode(vertIndices[i], cell[i].data());
+    }
+    return cell;
+  }
+
+  double cellMeasure(const primal::Segment<double, 2>& cell) const
+  {
+    return cell.length();
+  }
+  double cellMeasure(const primal::Triangle<double, 3>& cell) const
+  {
+    return cell.area();
+  }
+
+public:
+  /**
+  * \brief Computes some statistics about the surface mesh.
+  *
+  * Specifically, computes histograms (and ranges) of the edge lengths and
+  * cell areas on a logarithmic scale and logs the results
+  */
+  void printSurfaceStats() const
+  {
+    SLIC_ASSERT(m_surfaceMesh != nullptr);
+
+    SLIC_INFO("Mesh has " << m_surfaceMesh->getNumberOfNodes() << " nodes and "
+                          << m_surfaceMesh->getNumberOfCells() << " cells.");
+    SLIC_INFO("Mesh bounding box: " << m_meshBB);
+
+    SpacePt pt;
+
+    using MinMaxRange = primal::BoundingBox<double, 1>;
+    using LengthType = MinMaxRange::PointType;
+
+    MinMaxRange meshEdgeLenRange;
+    MinMaxRange meshCellAreaRange;
+    const int nCells = m_surfaceMesh->getNumberOfCells();
+    using CellIdxSet = std::set<axom::IndexType>;
+    CellIdxSet badCells;
+
+    // simple binning based on the exponent
+    using LogHistogram = std::map<int, int>;
+    LogHistogram edgeLenHist;  // Create histogram of edge lengths (log scale)
+    LogHistogram areaHist;     // Create histogram of triangle areas (log scale)
+
+    using LogRangeMap = std::map<int, MinMaxRange>;
+    LogRangeMap edgeLenRangeMap;  // Tracks range of edge lengths at each scale
+    LogRangeMap areaRangeMap;  // Tracks range of triangle areas at each scale
+
+    int expBase2;
+
+    // Traverse mesh cells and bin the edge lengths and areas
+    for(int i = 0; i < nCells; ++i)
+    {
+      // Get the indices and positions of the cell's vertices
+      CellVertIndices vertIndices = getCellVertIndices(i);
+      SpaceCell cell = getMeshCell(vertIndices);
+
+      if(dimension() == 3)
       {
-        badTriangles.insert(i);
+        // Compute edge stats -- note edges are double counted
+        for(int j = 0; j < DIM; ++j)
+        {
+          double len = SpaceVector(cell[j], cell[(j + 1) % DIM]).norm();
+          if(axom::utilities::isNearlyEqual(len, 0.))
+          {
+            badCells.insert(i);
+          }
+          else
+          {
+            LengthType edgeLen(len);
+            meshEdgeLenRange.addPoint(edgeLen);
+            std::frexp(len, &expBase2);
+            edgeLenHist[expBase2]++;
+            edgeLenRangeMap[expBase2].addPoint(edgeLen);
+          }
+        }
+      }
+
+      // Compute cell area stats
+      double area = cellMeasure(cell);
+      if(axom::utilities::isNearlyEqual(area, 0.))
+      {
+        badCells.insert(i);
       }
       else
       {
-        LengthType edgeLen(len);
-        meshEdgeLenRange.addPoint(edgeLen);
-        std::frexp(len, &expBase2);
-        edgeLenHist[expBase2]++;
-        edgeLenRangeMap[expBase2].addPoint(edgeLen);
+        LengthType cellArea(area);
+        meshCellAreaRange.addPoint(cellArea);
+        std::frexp(area, &expBase2);
+        areaHist[expBase2]++;
+        areaRangeMap[expBase2].addPoint(cellArea);
       }
     }
 
-    // Compute triangle area stats
-    double area = tri.area();
-    if(axom::utilities::isNearlyEqual(area, 0.))
+    // Log the results
+    const int nVerts = m_surfaceMesh->getNumberOfNodes();
+    SLIC_INFO(fmt::format("Mesh has {} vertices  and {} cells.", nVerts, nCells));
+
+    if(dimension() == 3)
     {
-      badTriangles.insert(i);
+      SLIC_INFO("Edge length range: " << meshEdgeLenRange);
     }
-    else
+    SLIC_INFO("Cell area range is: " << meshCellAreaRange);
+
+    if(dimension() == 3)
     {
-      LengthType triArea(area);
-      meshTriAreaRange.addPoint(triArea);
-      std::frexp(area, &expBase2);
-      areaHist[expBase2]++;
-      areaRangeMap[expBase2].addPoint(triArea);
-    }
-  }
-
-  // Log the results
-  const int nVerts = mesh->getNumberOfNodes();
-  SLIC_INFO(
-    fmt::format("Mesh has {} vertices  and {} triangles.", nVerts, nCells));
-
-  SLIC_INFO("Edge length range: " << meshEdgeLenRange);
-  SLIC_INFO("Triangle area range is: " << meshTriAreaRange);
-
-  fmt::memory_buffer edgeHistStr;
-  fmt::format_to(edgeHistStr, "Edge length histogram (lg-arithmic): ");
-  for(LogHistogram::const_iterator it = edgeLenHist.begin();
-      it != edgeLenHist.end();
-      ++it)
-  {
-    fmt::format_to(edgeHistStr,
-                   "\n\texp: {}\tcount: {}\tRange: {}",
-                   it->first,
-                   it->second / 2,
-                   edgeLenRangeMap[it->first]);
-  }
-  SLIC_DEBUG(fmt::to_string(edgeHistStr));
-
-  fmt::memory_buffer triHistStr;
-  fmt::format_to(triHistStr, "Triangle areas histogram (lg-arithmic): ");
-  for(LogHistogram::const_iterator it = areaHist.begin(); it != areaHist.end();
-      ++it)
-  {
-    fmt::format_to(triHistStr,
-                   "\n\texp: {}\tcount: {}\tRange: {}",
-                   it->first,
-                   it->second,
-                   areaRangeMap[it->first]);
-  }
-  SLIC_DEBUG(fmt::to_string(triHistStr));
-
-  if(!badTriangles.empty())
-  {
-    fmt::memory_buffer badTriStr;
-    fmt::format_to(badTriStr,
-                   "The following triangle(s) have zero area/edge lengths:");
-    for(TriIdxSet::const_iterator it = badTriangles.begin();
-        it != badTriangles.end();
-        ++it)
-    {
-      fmt::format_to(badTriStr, "\n\tTriangle {}", *it);
-      TriVertIndices vertIndices;
-      mesh->getCellNodeIDs(*it, vertIndices.data());
-
-      SpacePt vertPos;
-      for(int j = 0; j < 3; ++j)
+      fmt::memory_buffer edgeHistStr;
+      fmt::format_to(edgeHistStr, "Edge length histogram (lg-arithmic): ");
+      for(auto it = edgeLenHist.begin(); it != edgeLenHist.end(); ++it)
       {
-        mesh->getNode(vertIndices[j], vertPos.data());
-        fmt::format_to(badTriStr,
-                       "\n\t\t vId: {} @ position: {}",
-                       vertIndices[j],
-                       vertPos);
+        fmt::format_to(edgeHistStr,
+                       "\n\texp: {}\tcount: {}\tRange: {}",
+                       it->first,
+                       it->second / 2,
+                       edgeLenRangeMap[it->first]);
       }
+      SLIC_DEBUG(fmt::to_string(edgeHistStr));
     }
-    SLIC_DEBUG(fmt::to_string(badTriStr));
+
+    fmt::memory_buffer cellHistStr;
+    fmt::format_to(cellHistStr, "Cell areas histogram (lg-arithmic): ");
+    for(auto it = areaHist.begin(); it != areaHist.end(); ++it)
+    {
+      fmt::format_to(cellHistStr,
+                     "\n\texp: {}\tcount: {}\tRange: {}",
+                     it->first,
+                     it->second,
+                     areaRangeMap[it->first]);
+    }
+    SLIC_DEBUG(fmt::to_string(cellHistStr));
+
+    if(!badCells.empty())
+    {
+      fmt::memory_buffer badCellStr;
+      fmt::format_to(badCellStr,
+                     "The following cell(s) have zero area/edge lengths:");
+      for(auto it = badCells.begin(); it != badCells.end(); ++it)
+      {
+        fmt::format_to(badCellStr, "\n\tCell {}", *it);
+        CellVertIndices vertIndices;
+        m_surfaceMesh->getCellNodeIDs(*it, vertIndices.data());
+
+        SpacePt vertPos;
+        for(int j = 0; j < DIM; ++j)
+        {
+          m_surfaceMesh->getNode(vertIndices[j], vertPos.data());
+          fmt::format_to(badCellStr,
+                         "\n\t\t vId: {} @ position: {}",
+                         vertIndices[j],
+                         vertPos);
+        }
+      }
+      SLIC_DEBUG(fmt::to_string(badCellStr));
+    }
   }
-}
 
-/**
- * \brief Finds the octree leaf containing the given query point,
- * and optionally refines the leaf
- */
-void refineAndPrint(Octree3D& octree,
-                    const SpacePt& queryPt,
-                    bool shouldRefine = true)
-{
-  BlockIndex leafBlock = octree.findLeafBlock(queryPt);
-
-  if(shouldRefine)
-  {
-    octree.refineLeaf(leafBlock);
-    leafBlock = octree.findLeafBlock(queryPt);
-  }
-
-  GeometricBoundingBox blockBB = octree.blockBoundingBox(leafBlock);
-  bool containsPt = blockBB.contains(queryPt);
-
-  SLIC_INFO(
-    fmt::format("\t(gridPt: {}; lev: {}) with bounds {} {} query point.",
-                leafBlock.pt(),
-                leafBlock.level(),
-                blockBB,
-                (containsPt ? " contains " : "does not contain ")));
-}
+private:
+  mint::Mesh* m_surfaceMesh {nullptr};
+  InOutOctreeType* m_octree {nullptr};
+  GeometricBoundingBox m_meshBB;
+  GeometricBoundingBox m_queryBB;
+};
 
 /** Struct to parse and store the input parameters */
 struct Input
@@ -365,7 +484,6 @@ public:
 
 private:
   bool m_verboseOutput {false};
-  bool m_hasUserQueryBox {false};
   bool m_use_batched_query {false};
 
 public:
@@ -386,11 +504,20 @@ public:
 #endif
   }
 
+  bool isInput2D() const
+  {
+    using axom::utilities::string::endsWith;
+    if(endsWith(inputFile, ".contour"))
+    {
+      return true;
+    }
+
+    return false;
+  }
+
   bool isVerbose() const { return m_verboseOutput; }
 
   bool useBatchedQuery() const { return m_use_batched_query; }
-
-  bool hasUserQueryBox() const { return m_hasUserQueryBox; }
 
   void parse(int argc, char** argv, CLI::App& app)
   {
@@ -415,11 +542,13 @@ public:
 
     // Optional bounding box for query region
     auto* minbb =
-      app.add_option("--min", queryBoxMins, "Min bounds for query box (x,y,z)")
-        ->expected(3);
+      app
+        .add_option("--min", queryBoxMins, "Min bounds for query box (x,y[,z])")
+        ->expected(2, 3);
     auto* maxbb =
-      app.add_option("--max", queryBoxMaxs, "Max bounds for query box (x,y,z)")
-        ->expected(3);
+      app
+        .add_option("--max", queryBoxMaxs, "Max bounds for query box (x,y[,z])")
+        ->expected(2, 3);
     minbb->needs(maxbb);
     maxbb->needs(minbb);
 
@@ -437,8 +566,6 @@ public:
 
     slic::setLoggingMsgLevel(m_verboseOutput ? slic::message::Debug
                                              : slic::message::Info);
-
-    m_hasUserQueryBox = app.count("--min") == 3 && app.count("--max") == 3;
   }
 };
 
@@ -461,102 +588,80 @@ int main(int argc, char** argv)
     return app.exit(e);
   }
 
-  // Load mesh file
-  mint::Mesh* surface_mesh = nullptr;
+  const bool is2D = params.isInput2D();
+
+  ContainmentDriver<2> driver2D;
+  ContainmentDriver<3> driver3D;
+
+  /// Load mesh file
+  SLIC_INFO(fmt::format("{:*^80}", " Loading the mesh "));
+  SLIC_INFO("Reading file: " << params.inputFile << "...");
+
+  if(is2D)
   {
-    SLIC_INFO(fmt::format("{:*^80}", " Loading the mesh "));
-    SLIC_INFO("Reading file: " << params.inputFile << "...");
-
-    quest::STLReader* reader = new quest::STLReader();
-    reader->setFileName(params.inputFile);
-    reader->read();
-
-    // Create surface mesh
-    surface_mesh = new UMesh(3, mint::TRIANGLE);
-    reader->getMesh(static_cast<UMesh*>(surface_mesh));
-
-    SLIC_INFO("Mesh has " << surface_mesh->getNumberOfNodes() << " nodes and "
-                          << surface_mesh->getNumberOfCells() << " cells.");
-
-    delete reader;
-    reader = nullptr;
-  }
-  SLIC_ASSERT(surface_mesh != nullptr);
-
-  // Compute mesh bounding box and log some stats about the surface
-  GeometricBoundingBox meshBB = compute_bounds(surface_mesh);
-  SLIC_INFO("Mesh bounding box: " << meshBB);
-  print_surface_stats(surface_mesh);
-
-  // Create octree over mesh's bounding box
-  SLIC_INFO(fmt::format("{:*^80}", " Generating the octree "));
-  Octree3D octree(meshBB, surface_mesh);
-  octree.generateIndex();
-
-  print_surface_stats(surface_mesh);
-  mint::write_vtk(surface_mesh, "meldedTriMesh.vtk");
-
-  SLIC_INFO(fmt::format("{:*^80}", " Querying the octree "));
-
-  // Define the query bounding box
-  GeometricBoundingBox queryBB;
-  if(params.hasUserQueryBox())
-  {
-    queryBB.addPoint(SpacePt(params.queryBoxMins.data(), 3));
-    queryBB.addPoint(SpacePt(params.queryBoxMaxs.data(), 3));
+    driver2D.loadContourMesh(params.inputFile);
   }
   else
   {
-    queryBB = octree.boundingBox();
-  }
-  SLIC_INFO("Bounding box for query points: " << queryBB);
-
-  // Query the mesh
-  for(int i = 1; i < params.maxQueryLevel; ++i)
-  {
-    int res = 1 << i;
-    testContainmentOnRegularGrid(octree,
-                                 queryBB,
-                                 GridPt::make_point(res, res, res),
-                                 params.useBatchedQuery(),
-                                 params.isVerbose());
+    driver3D.loadSTLMesh(params.inputFile);
   }
 
-  if(!params.isVerbose())
+  /// Compute mesh bounding box and log some stats about the surface
+  if(is2D)
   {
-    slic::setLoggingMsgLevel(slic::message::Warning);
+    driver2D.computeBounds();
+    driver2D.printSurfaceStats();
+  }
+  else
+  {
+    driver3D.computeBounds();
+    driver3D.printSurfaceStats();
   }
 
-  // Other octree operations
-  //-- find leaf block of a given query point at various levels of resolution
-  SLIC_INFO(fmt::format("{:*^80}", " Other octree operations "));
-  double alpha = 2. / 3.;
-  SpacePt queryPt = SpacePt::lerp(meshBB.getMin(), meshBB.getMax(), alpha);
-
-  SLIC_INFO("Finding associated grid point for query point: " << queryPt);
-  for(int lev = 0; lev < octree.maxLeafLevel(); ++lev)
+  /// Create octree over mesh's bounding box
+  SLIC_INFO(fmt::format("{:*^80}", " Generating the octree "));
+  if(is2D)
   {
-    GridPt gridPt = octree.findGridCellAtLevel(queryPt, lev);
-    SLIC_INFO(
-      fmt::format("  {1} @ level {0}\n\t[max gridPt: {2}; spacing: {3};\n\t "
-                  "bounding box {4}]",
-                  lev,
-                  gridPt,
-                  octree.maxGridCellAtLevel(lev),
-                  octree.spacingAtLevel(lev),
-                  octree.blockBoundingBox(gridPt, lev)));
+    driver2D.initializeInOutOctree();
+    driver2D.printSurfaceStats();
+
+    mint::write_vtk(driver2D.getSurfaceMesh(), "meldedSegmentMesh.vtk");
+  }
+  else
+  {
+    driver3D.initializeInOutOctree();
+    driver3D.printSurfaceStats();
+
+    mint::write_vtk(driver3D.getSurfaceMesh(), "meldedTriMesh.vtk");
   }
 
-  SLIC_INFO("Recursively refining around query point: " << queryPt);
-  refineAndPrint(octree, queryPt, false);
-  //for(int i=0; i< octree.maxInternalLevel(); ++i)
-  //  refineAndPrint(octree, queryPt);
-
-  // Reclaim memory
-  if(surface_mesh != nullptr)
+  /// Query the octree over mesh's bounding box
+  SLIC_INFO(fmt::format("{:*^80}", " Querying the octree "));
+  if(is2D)
   {
-    delete surface_mesh;
-    surface_mesh = nullptr;
+    driver2D.initializeQueryBox(params.queryBoxMins, params.queryBoxMaxs);
+
+    // Query the mesh
+    for(int i = 1; i < params.maxQueryLevel; ++i)
+    {
+      const int res = 1 << i;
+      driver2D.testContainmentOnRegularGrid(res,
+                                            params.useBatchedQuery(),
+                                            params.isVerbose());
+    }
+  }
+  else
+  {
+    driver3D.initializeQueryBox(params.queryBoxMins, params.queryBoxMaxs);
+
+    // Query the mesh
+    for(int i = 1; i < params.maxQueryLevel; ++i)
+    {
+      const int res = 1 << i;
+      driver3D.testContainmentOnRegularGrid(res,
+                                            params.useBatchedQuery(),
+                                            params.isVerbose());
+    }
   }
 
   return 0;
