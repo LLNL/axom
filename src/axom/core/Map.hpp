@@ -9,6 +9,7 @@
 #include "axom/config.hpp"                  // for compile-time defines
 #include "axom/core/Macros.hpp"             // for axom macros
 #include "axom/core/memory_management.hpp"  // for memory allocation functions
+#include "axom/core/execution/execution_space.hpp"   // for execution spaces
 #include "axom/core/Types.hpp"              // for axom types
 
 // C/C++ includes
@@ -350,7 +351,7 @@ public:
  *  a hashed value of size_t (for now)
  */
 
-template <typename Key, typename T, typename Hash = std::hash<Key>>
+template <typename Key, typename T, typename Hash = std::hash<Key>, typename Policy = axom::SEQ_EXEC>
 class Map
 {
 public:
@@ -443,7 +444,7 @@ public:
         m_bucket_fill = true;
       }
     }
-    init_locks();
+    init_locks(pol);
     return check_rehash();
   }
   /*!
@@ -479,7 +480,7 @@ public:
     m_load_factor = 0;
     m_bucket_fill = false;
     m_buckets = alloc_map(m_bucket_count, m_bucket_len);
-    init_locks();
+    init_locks(pol);
   }
   /*!
    * \brief Inserts given key-value pair into the Map instance.
@@ -507,7 +508,7 @@ public:
       return axom_map::Pair<Key, T>(&m_end, false);
     }
     std::size_t index = bucket(get_hash(key));
-    bucket_lock(index);
+    bucket_lock(index, pol);
     axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
     //Candidate to get cut out if branching becomes too much of an issue.
@@ -519,7 +520,7 @@ public:
         m_bucket_fill = true;
       }
     }
-    bucket_unlock(index);
+    bucket_unlock(index, pol);
     return ret;
   }
 
@@ -551,7 +552,7 @@ public:
     }
 
     std::size_t index = bucket(get_hash(key));
-    bucket_lock(index);
+    bucket_lock(index, pol);
     axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     axom_map::Pair<Key, T> ret = target->insert_update(key, val);
     //Candidate to get cut out if branching becomes too much of an issue.
@@ -563,7 +564,7 @@ public:
         m_bucket_fill = true;
       }
     }
-    bucket_unlock(index);
+    bucket_unlock(index, pol);
     return ret;
   }
 
@@ -602,7 +603,7 @@ public:
   bool erase(const Key& key)
   {
     std::size_t index = bucket(get_hash(key));
-    bucket_lock(index);
+    bucket_lock(index, pol);
     axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     //Candidate to get cut out if branching becomes too much of an issue.
     bool ret = target->remove(key);
@@ -610,7 +611,7 @@ public:
     {
       RAJA::atomicSub<RAJA::auto_atomic>(&m_size, 1);
     }
-    bucket_unlock(index);
+    bucket_unlock(index, pol);
     return ret;
   }
 
@@ -624,10 +625,10 @@ public:
   axom_map::Node<Key, T>& find(const Key& key)
   {
     std::size_t index = bucket(get_hash(key));
-    bucket_lock(index);
+    bucket_lock(index, pol);
     axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     axom_map::Node<Key, T>& out = target->find(key);
-    bucket_unlock(index);
+    bucket_unlock(index, pol);
     return out;
   }
 
@@ -758,13 +759,36 @@ private:
 
   //NOTE: Every single locking function will use the OpenMP locks if Axom was compiled with OpenMP support,
   //regardless of whether the user code is actually using it.
+  
+  /*!
+   * \brief Empty function for sequential execution environment.
+   *
+   * \param [in] index the index needed for locking, if this weren't sequential.
+   * \param [in] overload execution space object for the sake of function overloading.
+   */
+  void bucket_lock(std::size_t index, axom::SEQ_EXEC overload) {  }
+
+  /*!
+   * \brief Empty function for sequential execution environment.
+   *
+   * \param [in] index the index needed for locking, if this weren't sequential.
+   * \param [in] overload execution space object for the sake of function overloading.
+   */
+  void bucket_unlock(std::size_t index, axom::SEQ_EXEC overload) {  }
+
+  /*!
+   * \brief Empty function for sequential execution environment.
+   *
+   * \param [in] overload execution space object for the sake of function overloading.
+   */
+  void init_locks(axom::SEQ_EXEC overload){  }
 
   /*!
    * \brief Acquires lock for a bucket.
    *
    * \param [in] index the index of the bucket which the thread wants the lock for.
    */
-  void bucket_lock(std::size_t index)
+  void bucket_lock(std::size_t index, axom::OMP_EXEC overload)
   {
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     omp_set_lock(locks + index);
@@ -776,7 +800,7 @@ private:
    *
    * \param [in] index the index of the bucket which the thread wants to release the lock for.
    */
-  void bucket_unlock(std::size_t index)
+  void bucket_unlock(std::size_t index, axom::OMP_EXEC overload)
   {
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     omp_unset_lock(locks + index);
@@ -786,7 +810,7 @@ private:
   /*!
    * \brief Allocates and initializes a lock for every bucket making up the Map instance.
    */
-  void init_locks()
+  void init_locks(axom::OMP_EXEC overload)
   {
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     locks = axom::allocate<omp_lock_t>(m_bucket_count);
@@ -826,6 +850,7 @@ private:
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
   omp_lock_t* locks;
 #endif
+  Policy pol;
   /// @}
 };
 } /* namespace experimental */
