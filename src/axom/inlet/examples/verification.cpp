@@ -34,8 +34,10 @@ int main()
   // defines a required global field named "dimensions" with a default value of 2
   myInlet.addInt("dimensions").required(true).defaultValue(2);
 
+  // _inlet_verification_container_start
   // defines a required container named vector with an internal field named 'x'
   auto& v = myInlet.addStruct("vector").required(true);
+  // _inlet_verification_container_end
   v.addDouble("x");
   // _inlet_workflow_defining_schema_end
 

@@ -97,6 +97,11 @@ The full set of unexpected names across the entire input file can be retrieved f
 The list of unexpected names can also be retrieved relative to an individual ``Container`` - that is, anywhere within/below that container:
 
 .. literalinclude:: ../../examples/verification.cpp
+   :start-after: _inlet_verification_container_start
+   :end-before: _inlet_verification_container_end
+   :language: C++
+
+.. literalinclude:: ../../examples/verification.cpp
    :start-after: _inlet_verification_container_unexpected_start
    :end-before: _inlet_verification_container_unexpected_end
    :language: C++
