@@ -79,9 +79,35 @@ Unexpected Entries in Input Files
 ---------------------------------
 
 In order to better detect user error, e.g., misspelled names, Inlet provides a method to retrieve the names of entries
-in the input file that were not requested in the schema definition phase.  Given a top-level ``Inlet`` object named ``inlet``,
-the names can be retrieved as follows:
+in the input file that were not requested in the schema definition phase.  Consider the following input:
 
-.. code-block:: C++
+.. literalinclude:: ../../examples/verification.cpp
+   :start-after: _inlet_verification_input_start
+   :end-before: _inlet_verification_input_end
+   :language: C++
 
-  std::unordered_set<std::string> unexpected_names = inlet.unexpectedNames();
+
+The full set of unexpected names across the entire input file can be retrieved from the top-level ``Inlet`` object as follows:
+
+.. literalinclude:: ../../examples/verification.cpp
+   :start-after: _inlet_verification_toplevel_unexpected_start
+   :end-before: _inlet_verification_toplevel_unexpected_end
+   :language: C++
+
+The list of unexpected names can also be retrieved relative to an individual ``Container`` - that is, anywhere within/below that container:
+
+.. literalinclude:: ../../examples/verification.cpp
+   :start-after: _inlet_verification_container_unexpected_start
+   :end-before: _inlet_verification_container_unexpected_end
+   :language: C++
+
+
+These lists of unexpected names can be useful if you'd like to implement custom/targeted error messages - in the example above, one might
+wish to provide a message indicating that "dimension" should be used instead of just "dim".  In other cases, it may be sufficient to just
+require that all or part of the input file have no unexpected entries.  This is supported via the ``strict()`` method, which will cause a
+``Container`` to fail verification if it contains any unexpected entries:
+
+.. literalinclude:: ../../examples/verification.cpp
+   :start-after: _inlet_verification_strict_start
+   :end-before: _inlet_verification_strict_end
+   :language: C++

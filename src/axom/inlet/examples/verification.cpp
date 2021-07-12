@@ -7,6 +7,18 @@
 #include "axom/inlet.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 
+// _inlet_verification_input_start
+const std::string input = R"(
+  dimensions = 2
+  dim = 2 -- An example typo, should be "dimensions" and not "dim"
+  vector = {
+    x = 1.0,
+    y = 2.0,
+    z = 3.0 -- Only 2 component vectors are supported
+  }
+)";
+// _inlet_verification_input_end
+
 int main()
 {
   // Inlet requires a SLIC logger to be initialized to output runtime information
@@ -15,7 +27,7 @@ int main()
 
   // Initialize Inlet
   auto lr = std::make_unique<axom::inlet::LuaReader>();
-  lr->parseString("dimensions = 2; vector = { x = 1.0; y = 2.0; z = 3.0; }");
+  lr->parseString(input);
   axom::inlet::Inlet myInlet(std::move(lr));
 
   // _inlet_workflow_defining_schema_start
@@ -26,6 +38,10 @@ int main()
   auto& v = myInlet.addStruct("vector").required(true);
   v.addDouble("x");
   // _inlet_workflow_defining_schema_end
+
+  // _inlet_verification_strict_start
+  v.strict();
+  // _inlet_verification_strict_end
 
   // _inlet_workflow_verification_start
   v.registerVerifier([&myInlet](const axom::inlet::Container& container) -> bool {
@@ -90,6 +106,26 @@ int main()
     SLIC_INFO(msg);
   }
   // _inlet_workflow_accessing_data_end
+
+  // _inlet_verification_toplevel_unexpected_start
+  const std::vector<std::string> all_unexpected_names =
+    myInlet.unexpectedNames();  // {"dim", "vector/z"}
+  // _inlet_verification_toplevel_unexpected_end
+
+  for(const auto& name : all_unexpected_names)
+  {
+    SLIC_INFO("Entry '" << name << "' was not expected");
+  }
+
+  // _inlet_verification_container_unexpected_start
+  const std::vector<std::string> vector_unexpected_names =
+    v.unexpectedNames();  // {"vector/z"}
+  // _inlet_verification_container_unexpected_end
+
+  for(const auto& name : vector_unexpected_names)
+  {
+    SLIC_INFO("Within the vector, entry '" << name << "' was not expected");
+  }
 
   return 0;
 }
