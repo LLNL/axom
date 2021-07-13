@@ -207,7 +207,6 @@ public:
     delete umesh;
   }
 
-private:
   void batchedPointContainment2D(mint::UniformMesh* umesh,
                                  axom::utilities::Timer& timer)
   {
@@ -285,6 +284,7 @@ private:
     timer.stop();
   }
 
+private:
   /**
   * \brief Extracts the vertex indices of cell \a cellIndex from the mesh
   */
