@@ -9,8 +9,8 @@
 #include "axom/config.hpp"                  // for compile-time defines
 #include "axom/core/Macros.hpp"             // for axom macros
 #include "axom/core/memory_management.hpp"  // for memory allocation functions
-#include "axom/core/execution/execution_space.hpp"   // for execution spaces
-#include "axom/core/Types.hpp"              // for axom types
+#include "axom/core/execution/execution_space.hpp"  // for execution spaces
+#include "axom/core/Types.hpp"                      // for axom types
 
 // C/C++ includes
 #include <functional>  //for hashing until a custom method is defined
@@ -759,14 +759,6 @@ private:
 
   //NOTE: Every single locking function will use the OpenMP locks if Axom was compiled with OpenMP support,
   //regardless of whether the user code is actually using it.
-  
-  /*!
-   * \brief Empty function for sequential execution environment.
-   *
-   * \param [in] index the index needed for locking, if this weren't sequential.
-   * \param [in] overload execution space object for the sake of function overloading.
-   */
-  void bucket_lock(std::size_t index, axom::SEQ_EXEC overload) {  }
 
   /*!
    * \brief Empty function for sequential execution environment.
@@ -774,21 +766,29 @@ private:
    * \param [in] index the index needed for locking, if this weren't sequential.
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void bucket_unlock(std::size_t index, axom::SEQ_EXEC overload) {  }
+  void bucket_lock(std::size_t index, axom::SEQ_EXEC overload) { }
+
+  /*!
+   * \brief Empty function for sequential execution environment.
+   *
+   * \param [in] index the index needed for locking, if this weren't sequential.
+   * \param [in] overload execution space object for the sake of function overloading.
+   */
+  void bucket_unlock(std::size_t index, axom::SEQ_EXEC overload) { }
 
   /*!
    * \brief Empty function for sequential execution environment.
    *
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void init_locks(axom::SEQ_EXEC overload){  }
+  void init_locks(axom::SEQ_EXEC overload) { }
 
-/*!
+  /*!
    * \brief Empty function for sequential execution environment.
    *
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void destroy_locks(axom::SEQ_EXEC overload)  { }
+  void destroy_locks(axom::SEQ_EXEC overload) { }
 
   /*!
    * \brief Acquires lock for a bucket.

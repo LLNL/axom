@@ -13,10 +13,10 @@ namespace axom
 {
 namespace internal
 {
-template <typename Key, typename T>
-experimental::Map<Key, T, std::hash<Key>, axom::OMP_EXEC> init(int N, int len)
+template <typename Key, typename T, typename Hash, typename Policy>
+experimental::Map<Key, T, Hash, Policy> init(int N, int len)
 {
-  experimental::Map<Key, T, std::hash<Key>, axom::OMP_EXEC> test(N, len);
+  experimental::Map<Key, T, Hash, Policy> test(N, len);
   EXPECT_EQ(N * len, test.max_size());
   EXPECT_EQ(0, test.size());
   EXPECT_EQ(true, test.empty());
@@ -174,7 +174,8 @@ TEST(core_map, initialization)
   {
     for(int j : {1, 2, 5, 10})
     {
-      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test = internal::init<int, int>(i, j);
+      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test =
+        internal::init<int, int, std::hash<int>, axom::OMP_EXEC>(i, j);
     }
   }
 }
@@ -185,7 +186,8 @@ TEST(core_map, insertion)
   {
     for(int j : {1, 2, 5, 10})
     {
-      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test = internal::init<int, int>(i, j);
+      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test =
+        internal::init<int, int, std::hash<int>, axom::OMP_EXEC>(i, j);
       internal::test_storage<int, int, std::hash<int>, axom::OMP_EXEC>(test);
     }
   }
@@ -197,7 +199,8 @@ TEST(core_map, insert_or_assign)
   {
     for(int j : {1, 2, 5, 10})
     {
-      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test = internal::init<int, int>(i, j);
+      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test =
+        internal::init<int, int, std::hash<int>, axom::OMP_EXEC>(i, j);
       internal::test_insert_assign<int, int, std::hash<int>, axom::OMP_EXEC>(test);
     }
   }
@@ -209,7 +212,8 @@ TEST(core_map, brackets)
   {
     for(int j : {1, 2, 5, 10})
     {
-      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test = internal::init<int, int>(i, j);
+      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test =
+        internal::init<int, int, std::hash<int>, axom::OMP_EXEC>(i, j);
       internal::test_storage<int, int, std::hash<int>, axom::OMP_EXEC>(test);
       internal::test_brackets<int, int, std::hash<int>, axom::OMP_EXEC>(test);
     }
@@ -222,7 +226,8 @@ TEST(core_map, removal)
   {
     for(int j : {1, 2, 5, 10})
     {
-      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test = internal::init<int, int>(i, j);
+      experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test =
+        internal::init<int, int, std::hash<int>, axom::OMP_EXEC>(i, j);
       internal::test_storage<int, int, std::hash<int>, axom::OMP_EXEC>(test);
       internal::test_remove<int, int, std::hash<int>, axom::OMP_EXEC>(test);
     }
@@ -237,9 +242,12 @@ TEST(core_map, rehash)
     {
       for(int k : {2, 4, 8})
       {
-        experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test = internal::init<int, int>(i, j);
+        experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test =
+          internal::init<int, int, std::hash<int>, axom::OMP_EXEC>(i, j);
         internal::test_storage<int, int, std::hash<int>, axom::OMP_EXEC>(test);
-        internal::test_rehash<int, int, std::hash<int>, axom::OMP_EXEC>(test, -1, k);
+        internal::test_rehash<int, int, std::hash<int>, axom::OMP_EXEC>(test,
+                                                                        -1,
+                                                                        k);
         EXPECT_EQ(test.max_size(), k * i * j);
         internal::test_remove<int, int, std::hash<int>, axom::OMP_EXEC>(test);
       }
@@ -251,9 +259,13 @@ TEST(core_map, rehash)
     {
       for(int k = 1; k < 4; k++)
       {
-        experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test = internal::init<int, int>(i, j);
+        experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test =
+          internal::init<int, int, std::hash<int>, axom::OMP_EXEC>(i, j);
         internal::test_storage<int, int, std::hash<int>, axom::OMP_EXEC>(test);
-        internal::test_rehash<int, int, std::hash<int>, axom::OMP_EXEC>(test, test.max_size() + 20 * k, -1);
+        internal::test_rehash<int, int, std::hash<int>, axom::OMP_EXEC>(
+          test,
+          test.max_size() + 20 * k,
+          -1);
         EXPECT_EQ((i * j + 20 * k) * j, test.max_size());
         internal::test_remove<int, int, std::hash<int>, axom::OMP_EXEC>(test);
       }
