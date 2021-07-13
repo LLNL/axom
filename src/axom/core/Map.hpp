@@ -434,7 +434,7 @@ public:
       axom::deallocate(m_buckets[i].m_list);
     }
     axom::deallocate(m_buckets);
-    destroy_locks();
+    destroy_locks(pol);
     m_buckets = new_list;
     m_bucket_count = newlen;
     for(int i = 0; i < m_bucket_count; i++)
@@ -464,7 +464,7 @@ public:
     m_bucket_len = 0;
     m_size = 0;
     m_load_factor = 0;
-    destroy_locks();
+    destroy_locks(pol);
   }
 
   /*!
@@ -783,6 +783,13 @@ private:
    */
   void init_locks(axom::SEQ_EXEC overload){  }
 
+/*!
+   * \brief Empty function for sequential execution environment.
+   *
+   * \param [in] overload execution space object for the sake of function overloading.
+   */
+  void destroy_locks(axom::SEQ_EXEC overload)  { }
+
   /*!
    * \brief Acquires lock for a bucket.
    *
@@ -824,7 +831,7 @@ private:
   /*!
    * \brief Deallocates and destroys every lock used for this Map instance. 
    */
-  void destroy_locks()
+  void destroy_locks(axom::OMP_EXEC overload)
   {
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     for(std::size_t i = 0; i < m_bucket_count; i++)
