@@ -514,7 +514,11 @@ public:
     //Candidate to get cut out if branching becomes too much of an issue.
     if(ret.second == true)
     {
+      #ifdef AXOM_USE_RAJA
       RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
+      #else
+      m_size++;
+      #endif
       if(target->get_size() == target->get_capacity())
       {
         m_bucket_fill = true;
@@ -558,7 +562,11 @@ public:
     //Candidate to get cut out if branching becomes too much of an issue.
     if(ret.second == true)
     {
+      #ifdef AXOM_USE_RAJA
       RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
+      #else
+      m_size++;
+      #endif
       if(target->get_size() == target->get_capacity())
       {
         m_bucket_fill = true;
@@ -609,7 +617,11 @@ public:
     bool ret = target->remove(key);
     if(ret == true)
     {
+      #ifdef AXOM_USE_RAJA
       RAJA::atomicSub<RAJA::auto_atomic>(&m_size, 1);
+      #else
+      m_size--;
+      #endif
     }
     bucket_unlock(index, pol);
     return ret;
