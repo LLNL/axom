@@ -790,6 +790,8 @@ private:
    */
   void destroy_locks(axom::SEQ_EXEC overload) { }
 
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+
   /*!
    * \brief Acquires lock for a bucket.
    *
@@ -797,9 +799,7 @@ private:
    */
   void bucket_lock(std::size_t index, axom::OMP_EXEC overload)
   {
-#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     omp_set_lock(locks + index);
-#endif
   }
 
   /*!
@@ -809,9 +809,7 @@ private:
    */
   void bucket_unlock(std::size_t index, axom::OMP_EXEC overload)
   {
-#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     omp_unset_lock(locks + index);
-#endif
   }
 
   /*!
@@ -819,13 +817,11 @@ private:
    */
   void init_locks(axom::OMP_EXEC overload)
   {
-#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     locks = axom::allocate<omp_lock_t>(m_bucket_count);
     for(std::size_t i = 0; i < m_bucket_count; i++)
     {
       omp_init_lock(locks + i);
     }
-#endif
   }
 
   /*!
@@ -833,15 +829,13 @@ private:
    */
   void destroy_locks(axom::OMP_EXEC overload)
   {
-#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     for(std::size_t i = 0; i < m_bucket_count; i++)
     {
       omp_destroy_lock(locks + i);
     }
     axom::deallocate<omp_lock_t>(locks);
-#endif
   }
-
+#endif
   /// @}
 
   /// \name Private Data Members
