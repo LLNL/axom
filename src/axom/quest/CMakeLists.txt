@@ -89,11 +89,11 @@ if (ENABLE_MPI)
     list(APPEND quest_headers readers/PSTLReader.hpp)
     list(APPEND quest_sources readers/PSTLReader.cpp)
 
-    blt_list_append(TO quest_depends_on
-                    IF AXOM_ENABLE_LUMBERJACK
-                    ELEMENTS lumberjack )
-
+    list(APPEND quest_headers readers/PC2CReader.hpp)
+    list(APPEND quest_sources readers/PC2CReader.cpp)
+    
     list(APPEND quest_depends_on mpi)
+    blt_list_append(TO quest_depends_on IF AXOM_ENABLE_LUMBERJACK ELEMENTS lumberjack )
 endif()
 
 if (SHROUD_FOUND)

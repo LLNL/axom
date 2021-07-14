@@ -177,6 +177,8 @@ private:
   const c2c::NURBSData& m_curve;
 };
 
+void C2CReader::clear() { m_nurbsData.clear(); }
+
 int C2CReader::read()
 {
   SLIC_WARNING_IF(m_fileName.empty(), "Missing a filename in C2CReader::read()");

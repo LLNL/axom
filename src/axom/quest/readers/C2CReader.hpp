@@ -39,6 +39,9 @@ public:
 
   void setLengthUnit(c2c::LengthUnit lengthUnit) { m_lengthUnit = lengthUnit; }
 
+  /// Clears data associated with this reader
+  void clear();
+
   /*!
    * \brief Read the contour file provided by \a setFileName()
    * 
@@ -59,14 +62,14 @@ public:
 protected:
   int readContour();
 
-private:
+protected:
   std::string m_fileName;
   c2c::LengthUnit m_lengthUnit {c2c::LengthUnit::cm};
 
   std::vector<c2c::NURBSData> m_nurbsData;
 };
 
-}  // end namespace quest
+}  // namespace quest
 }  // namespace axom
 
 #endif  // AXOM_USE_C2C

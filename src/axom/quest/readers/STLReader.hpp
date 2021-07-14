@@ -117,7 +117,7 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(STLReader);
 };
 
-}  // end namespace quest
-}  // end namespace axom
+}  // namespace quest
+}  // namespace axom
 
 #endif  // QUEST_STLREADER_HPP_
