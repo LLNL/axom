@@ -5,10 +5,11 @@
 
 #include "axom/quest/readers/PC2CReader.hpp"
 
-// This file is only applicable if axom was configured with the C2C library
-#ifdef AXOM_USE_C2C
+#ifndef AXOM_USE_C2C
+  #error PC2CReader should only be included when Axom is configured with C2C
+#endif
 
-  #include "axom/slic.hpp"
+#include "axom/slic.hpp"
 
 namespace axom
 {
@@ -149,5 +150,3 @@ void PC2CReader::bcastVector(std::vector<T>& vec)
 
 }  // namespace quest
 }  // namespace axom
-
-#endif  // AXOM_USE_C2C

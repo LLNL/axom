@@ -8,14 +8,15 @@
 
 #include "axom/config.hpp"
 
-// This file is only applicable if axom was configured with the C2C library
-#ifdef AXOM_USE_C2C
+#ifndef AXOM_USE_C2C
+  #error C2CReader should only be included when Axom is configured with C2C
+#endif
 
-  #include "axom/mint.hpp"
-  #include "c2c/C2C.hpp"
+#include "axom/mint.hpp"
+#include "c2c/C2C.hpp"
 
-  #include <string>
-  #include <vector>
+#include <string>
+#include <vector>
 
 namespace axom
 {
@@ -71,7 +72,5 @@ protected:
 
 }  // namespace quest
 }  // namespace axom
-
-#endif  // AXOM_USE_C2C
 
 #endif  // QUEST_C2CREADER_HPP_

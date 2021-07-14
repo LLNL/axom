@@ -5,13 +5,14 @@
 
 #include "axom/quest/readers/C2CReader.hpp"
 
-// This file is only applicable if axom was configured with the C2C library
-#ifdef AXOM_USE_C2C
+#ifndef AXOM_USE_C2C
+  #error C2CReader should only be included when Axom is configured with C2C
+#endif
 
-  #include "axom/core.hpp"
-  #include "axom/slic.hpp"
-  #include "axom/primal.hpp"
-  #include "fmt/fmt.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/primal.hpp"
+#include "fmt/fmt.hpp"
 
 namespace axom
 {
@@ -300,5 +301,3 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 
 }  // end namespace quest
 }  // end namespace axom
-
-#endif  // AXOM_USE_C2C

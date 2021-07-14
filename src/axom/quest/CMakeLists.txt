@@ -40,7 +40,6 @@ set( quest_headers
     detail/PointInCellMeshWrapper_mfem.hpp
 
     ## File readers
-    readers/C2CReader.hpp
     readers/STLReader.hpp
 
     ## quest interface
@@ -60,7 +59,6 @@ set( quest_sources
     MeshTester.cpp
 
     ## File readers
-    readers/C2CReader.cpp
     readers/STLReader.cpp
 
     ## quest interface
@@ -69,6 +67,8 @@ set( quest_sources
     interface/signed_distance.cpp
 
    )
+
+
 
 set( quest_depends_on
      core
@@ -80,17 +80,22 @@ set( quest_depends_on
      fmt
      )
 
-blt_list_append(TO quest_depends_on IF C2C_FOUND ELEMENTS c2c)
 blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
 blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
+     
+if(C2C_FOUND)
+     list(APPEND quest_headers readers/C2CReader.hpp)
+     list(APPEND quest_sources readers/C2CReader.cpp)
+     list(APPEND quest_depends_on c2c)
+endif()
 
 if (ENABLE_MPI)
     list(APPEND quest_headers readers/PSTLReader.hpp)
-    list(APPEND quest_sources readers/PSTLReader.cpp)
+    blt_list_append(TO quest_headers IF C2C_FOUND ELEMENTS readers/PC2CReader.hpp)
 
-    list(APPEND quest_headers readers/PC2CReader.hpp)
-    list(APPEND quest_sources readers/PC2CReader.cpp)
+    list(APPEND quest_sources readers/PSTLReader.cpp)
+    blt_list_append(TO quest_sources IF C2C_FOUND ELEMENTS readers/PC2CReader.cpp)
     
     list(APPEND quest_depends_on mpi)
     blt_list_append(TO quest_depends_on IF AXOM_ENABLE_LUMBERJACK ELEMENTS lumberjack )

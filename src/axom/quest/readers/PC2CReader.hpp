@@ -8,13 +8,14 @@
 
 #include "axom/config.hpp"
 
-// This file is only applicable if axom was configured with the C2C library
-#ifdef AXOM_USE_C2C
+#ifndef AXOM_USE_C2C
+  #error PC2CReader should only be included when Axom is configured with C2C
+#endif
 
-  #include "axom/core/Macros.hpp"
-  #include "axom/quest/readers/C2CReader.hpp"  // base class
+#include "axom/core/Macros.hpp"
+#include "axom/quest/readers/C2CReader.hpp"  // base class
 
-  #include "mpi.h"
+#include "mpi.h"
 
 namespace axom
 {
@@ -52,5 +53,4 @@ private:
 }  // namespace quest
 }  // namespace axom
 
-#endif  // AXOM_USE_C2C
 #endif  // QUEST_PC2CREADER_HPP_
