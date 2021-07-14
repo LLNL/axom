@@ -191,12 +191,12 @@ MPI_Aint allocate_shared_buffer(int local_rank_id,
  * \post intra_node_comm != MPI_COMM_NULL
  * \post shared_window != MPI_WIN_NULL
  */
-int read_mesh_shared(const std::string& file,
-                     MPI_Comm global_comm,
-                     unsigned char*& mesh_buffer,
-                     mint::Mesh*& m,
-                     MPI_Comm& intra_node_comm,
-                     MPI_Win& shared_window);
+int read_stl_mesh_shared(const std::string& file,
+                         MPI_Comm global_comm,
+                         unsigned char*& mesh_buffer,
+                         mint::Mesh*& m,
+                         MPI_Comm& intra_node_comm,
+                         MPI_Win& shared_window);
 #endif
 
 /*!
@@ -225,9 +225,9 @@ int read_mesh_shared(const std::string& file,
  * \see STLReader
  * \see PSTLReader
  */
-int read_mesh(const std::string& file,
-              mint::Mesh*& m,
-              MPI_Comm comm = MPI_COMM_SELF);
+int read_stl_mesh(const std::string& file,
+                  mint::Mesh*& m,
+                  MPI_Comm comm = MPI_COMM_SELF);
 
 /// @}
 

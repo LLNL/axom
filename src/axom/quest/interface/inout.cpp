@@ -129,7 +129,7 @@ struct InOutHelper
 
     // load the mesh
     int rc = QUEST_INOUT_FAILED;
-    rc = internal::read_mesh(file, mesh, comm);
+    rc = internal::read_stl_mesh(file, mesh, comm);
 
     if(rc != QUEST_INOUT_SUCCESS)
     {

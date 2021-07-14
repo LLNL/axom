@@ -195,12 +195,12 @@ MPI_Aint allocate_shared_buffer(int local_rank_id,
  * Reads in the surface mesh from the specified file into a shared
  * memory buffer that is attached to the given MPI shared window.
  */
-int read_mesh_shared(const std::string& file,
-                     MPI_Comm global_comm,
-                     unsigned char*& mesh_buffer,
-                     mint::Mesh*& m,
-                     MPI_Comm& intra_node_comm,
-                     MPI_Win& shared_window)
+int read_stl_mesh_shared(const std::string& file,
+                         MPI_Comm global_comm,
+                         unsigned char*& mesh_buffer,
+                         mint::Mesh*& m,
+                         MPI_Comm& intra_node_comm,
+                         MPI_Win& shared_window)
 {
   SLIC_ASSERT(global_comm != MPI_COMM_NULL);
   SLIC_ASSERT(intra_node_comm == MPI_COMM_NULL);
@@ -301,7 +301,7 @@ int read_mesh_shared(const std::string& file,
 /*
  * Reads in the surface mesh from the specified file.
  */
-int read_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
+int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
 {
   // NOTE: STL meshes are always 3D
   constexpr int DIMENSION = 3;

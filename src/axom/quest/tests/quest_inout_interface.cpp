@@ -91,7 +91,7 @@ TEST_F(InOutInterfaceTest, initialize_from_mesh)
   EXPECT_TRUE(axom::utilities::filesystem::pathExists(this->meshfile));
 
   axom::mint::Mesh* mesh = nullptr;
-  int rc = axom::quest::internal::read_mesh(this->meshfile, mesh);
+  int rc = axom::quest::internal::read_stl_mesh(this->meshfile, mesh);
   EXPECT_EQ(0, rc);
 
   // Initialize the InOut query
