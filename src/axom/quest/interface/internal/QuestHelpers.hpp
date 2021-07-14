@@ -206,8 +206,7 @@ int read_stl_mesh_shared(const std::string& file,
  * \param [out] m user-supplied pointer to point to the mesh object.
  * \param [in] comm the MPI communicator, only applicable when MPI is available.
  *
- * \note This method currently expects the surface mesh to be given in STL
- *  format.
+ * \note This method currently expects the surface mesh to be given in STL format.
  *
  * \note The caller is responsible for properly de-allocating the mesh object
  *  that is returned by this function.
@@ -228,6 +227,39 @@ int read_stl_mesh_shared(const std::string& file,
 int read_stl_mesh(const std::string& file,
                   mint::Mesh*& m,
                   MPI_Comm comm = MPI_COMM_SELF);
+
+#ifdef AXOM_USE_C2C
+/*!
+ * \brief Reads in the contour mesh from the specified file.
+ *
+ * \param [in] file the file consisting of the surface
+ * \param [in] segmentsPerPiece number of segments to sample per contour Piece
+ * \param [out] m user-supplied pointer to point to the mesh object.
+ * \param [in] comm the MPI communicator, only applicable when MPI is available.
+ *
+ * \note This method currently expects the contours to be given in the C2C format.
+ *
+ * \note The caller is responsible for properly de-allocating the mesh object
+ *  that is returned by this function.
+ *
+ * \return status set to zero on success, or to a non-zero value otherwise.
+ *
+ * \pre m == nullptr
+ * \pre !file.empty()
+ *
+ * \post m != nullptr
+ * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
+ * \post m->hasMixedCellTypes() == false
+ * \post m->getCellType() == mint::SEGMENT
+ *
+ * \see C2CReader
+ * \see PC2CReader
+ */
+int read_c2c_mesh(const std::string& file,
+                  int segmentsPerPiece,
+                  mint::Mesh*& m,
+                  MPI_Comm comm = MPI_COMM_SELF);
+#endif  // AXOM_USE_C2C
 
 /// @}
 

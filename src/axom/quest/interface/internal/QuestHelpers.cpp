@@ -14,6 +14,10 @@
   #include "axom/quest/readers/PSTLReader.hpp"
 #endif
 
+#if defined(AXOM_USE_MPI) && defined(AXOM_USE_C2C)
+  #include "axom/quest/readers/PC2CReader.hpp"
+#endif
+
 #include <limits>
 
 namespace axom
@@ -346,6 +350,60 @@ int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
 
   return rc;
 }
+
+#ifdef AXOM_USE_C2C
+/*
+ * Reads in the contour mesh from the specified file.
+ */
+int read_c2c_mesh(const std::string& file,
+                  int segmentsPerPiece,
+                  mint::Mesh*& m,
+                  MPI_Comm comm)
+{
+  // NOTE: C2C meshes are always 2D
+  constexpr int DIMENSION = 2;
+  using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+
+  // STEP 0: check input mesh pointer
+  if(m != nullptr)
+  {
+    SLIC_WARNING("supplied mesh pointer is not null!");
+    return READ_FAILED;
+  }
+
+  // STEP 1: allocate output mesh object
+  m = new SegmentMesh(DIMENSION, mint::SEGMENT);
+
+  // STEP 2: allocate reader
+  quest::C2CReader* reader = nullptr;
+  #ifdef AXOM_USE_MPI
+  reader = new quest::PC2CReader(comm);
+  #else
+  AXOM_UNUSED_VAR(comm);
+  reader = new quest::C2CReader();
+  #endif
+
+  // STEP 3: read the mesh from the STL file
+  reader->setFileName(file);
+  int rc = reader->read();
+  if(rc == READ_SUCCESS)
+  {
+    reader->getLinearMesh(static_cast<SegmentMesh*>(m), segmentsPerPiece);
+  }
+  else
+  {
+    SLIC_WARNING("reading C2C file failed, setting mesh to NULL");
+    delete m;
+    m = nullptr;
+  }
+
+  // STEP 4: delete the reader
+  delete reader;
+  reader = nullptr;
+
+  return rc;
+}
+#endif  // AXOM_USE_C2C
 
 /// Mesh Helper Methods
 
