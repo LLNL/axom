@@ -128,7 +128,6 @@ TEST_F(InOutInterfaceTest, query_properties)
     EXPECT_EQ(failCode, axom::quest::inout_mesh_min_bounds(lo.data()));
     EXPECT_EQ(failCode, axom::quest::inout_mesh_max_bounds(hi.data()));
     EXPECT_EQ(failCode, axom::quest::inout_mesh_center_of_mass(cm.data()));
-    EXPECT_EQ(failCode, axom::quest::inout_get_dimension());
     SLIC_INFO("--]==]");
   }
 

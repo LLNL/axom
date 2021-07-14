@@ -180,12 +180,10 @@ int inout_mesh_center_of_mass(double* coords);
 /*!
  * \brief Gets the spatial dimension of the query
  *
- * \return Returns the spatial dimension for query points when the query has
- * been successfully initialized and QUEST_INOUT_FAILED otherwise.
- * \note This determines the number of coordinates for query points in
- * \a inout_evaluate() and the number of returned coordinates in functions like
- * \a inout_mesh_min_bounds()
- * \pre inout_initialized() == true
+ * \return Returns the spatial dimension for the inout query
+ * \note This determines the number of coordinates for the input mesh
+ * \note The default dimension is 3
+ * \sa inout_set_dimension
  */
 int inout_get_dimension();
 
@@ -194,6 +192,16 @@ int inout_get_dimension();
 /// \name InOut query -- setup options and parameters
 /// \note These must be called before \a inout_init()
 /// @{
+
+/*!
+ * \brief Sets the spatial dimension of the query
+ *
+ * \param dim The dimension for the inout query
+ * \return Return code is QUEST_INOUT_SUCCESS if successful, QUEST_INOUT_FAILED otherwise
+ * \pre dim == 2 || dim == 3
+ * \pre inout_initialized() == false
+ */
+int inout_set_dimension(int dim);
 
 /*!
  * \brief Enables/disables verbose logging output
@@ -231,4 +239,4 @@ int inout_set_vertex_weld_threshold(double thresh);
 }  // end namespace quest
 }  // end namespace axom
 
-#endif /* QUEST_INOUT_INTERFACE_HPP_ */
+#endif  // QUEST_INOUT_INTERFACE_HPP_

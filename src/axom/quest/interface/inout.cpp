@@ -19,6 +19,23 @@ namespace quest
 {
 namespace internal
 {
+/// Parameter variables for the InOutQuery
+struct InOutParameters
+{
+  bool m_verbose {false};
+  int m_dimension {3};
+  int m_segmentsPerPiece {100};  /// Used when linearizing curves
+  double m_vertexWeldThreshold {1E-9};
+
+  void setDefault()
+  {
+    m_verbose = false;
+    m_dimension = 3;
+    m_segmentsPerPiece = 100;
+    m_vertexWeldThreshold = 1E-9;
+  }
+};
+
 /*!
  * \struct InOutHelper
  * \brief A simple struct to hold the state of an InOut query
@@ -34,26 +51,9 @@ struct InOutHelper
   using SpacePt = primal::Point<double, DIM>;
   using SpaceVec = primal::Vector<double, DIM>;
 
-  /*!
-   * Parameter variables for the InOutQuery
-   */
-  struct Parameters
-  {
-    bool m_verbose;
-    int m_dimension;
-    double m_vertexWeldThreshold;
+  static_assert(DIM == 2 || DIM == 3, "InOutHelper only supports 2D and 3D");
 
-    void setDefault()
-    {
-      m_verbose = false;
-      m_dimension = 3;
-      m_vertexWeldThreshold = 1E-9;
-    }
-  };
-
-  /*!
-   * State variables for the InOutQuery
-   */
+  /// State variables for the InOutQuery
   struct State
   {
     bool m_initialized;
@@ -80,14 +80,13 @@ struct InOutHelper
 
   ~InOutHelper() { finalize(); }
 
-  /*!
-   * Predicate to check if InOut query has been initialized
-   */
+  /// Predicate to check if InOut query has been initialized
   bool isInitialized() const { return m_state.m_initialized; }
 
-  /*!
-   * Sets the verbosity parameter
-   */
+  /// Returns the spatial dimension of the mesh
+  int getDimension() const { return DIM; }
+
+  /// Sets the verbosity parameter
   void setVerbose(bool verbose) { m_params.m_verbose = verbose; }
 
   void setVertexWeldThreshold(double thresh)
@@ -95,9 +94,12 @@ struct InOutHelper
     m_params.m_vertexWeldThreshold = thresh;
   }
 
-  /*!
-   * Saves the current slic logging level
-   */
+  void setSegmentsPerPiece(int numSegments)
+  {
+    m_params.m_segmentsPerPiece = numSegments;
+  }
+
+  /// Saves the current slic logging level
   void saveLoggingLevel()
   {
     if(slic::isInitialized())
@@ -106,9 +108,7 @@ struct InOutHelper
     }
   }
 
-  /*!
-   * Restores the saved slic logging level
-   */
+  /// Restores the saved slic logging level
   void restoreLoggingLevel()
   {
     if(slic::isInitialized())
@@ -129,7 +129,18 @@ struct InOutHelper
 
     // load the mesh
     int rc = QUEST_INOUT_FAILED;
-    rc = internal::read_stl_mesh(file, mesh, comm);
+
+    switch(DIM)
+    {
+    case 2:
+      rc = internal::read_c2c_mesh(file, m_params.m_segmentsPerPiece, mesh, comm);
+      break;
+    case 3:
+      rc = internal::read_stl_mesh(file, mesh, comm);
+      break;
+    default:  // no-op
+      break;
+    }
 
     if(rc != QUEST_INOUT_SUCCESS)
     {
@@ -262,14 +273,10 @@ struct InOutHelper
    */
   const SpacePt& getCenterOfMass() const { return m_meshCenterOfMass; }
 
-  /*!
-   * Predicate to determine if a point is inside the surface
-   *
-   * \sa inout_evaluate
-   */
-  bool within(double x, double y, double z) const
+  /// Predicate to determine if a point is inside the surface
+  bool within(double x, double y, double z = 0.) const
   {
-    return m_inoutTree->within(SpacePt::make_point(x, y, z));
+    return m_inoutTree->within(SpacePt {x, y, z});
   }
 
   /*!
@@ -283,21 +290,31 @@ struct InOutHelper
              int npoints,
              int* res) const
   {
+    if(z == nullptr)
+    {
 #ifdef AXOM_USE_OPENMP
   #pragma omp parallel for schedule(static)
 #endif
-    for(int i = 0; i < npoints; ++i)
-    {
-      bool ins = m_inoutTree->within(SpacePt::make_point(x[i], y[i], z[i]));
-      res[i] = ins ? 1 : 0;
+      for(int i = 0; i < npoints; ++i)
+      {
+        const bool ins = m_inoutTree->within(SpacePt {x[i], y[i]});
+        res[i] = ins ? 1 : 0;
+      }
     }
+    else
+    {
+#ifdef AXOM_USE_OPENMP
+  #pragma omp parallel for schedule(static)
+#endif
+      for(int i = 0; i < npoints; ++i)
+      {
+        const bool ins = m_inoutTree->within(SpacePt {x[i], y[i], z[i]});
+        res[i] = ins ? 1 : 0;
+      }
+    }
+
     return QUEST_INOUT_SUCCESS;
   }
-
-  /*!
-   * Returns the spatial dimension of the mesh
-   */
-  int getDimension() const { return m_params.m_dimension; }
 
 private:
   mint::Mesh* m_surfaceMesh;
@@ -305,80 +322,131 @@ private:
   GeometricBoundingBox m_meshBoundingBox;
   SpacePt m_meshCenterOfMass;
 
-  Parameters m_params;
+  InOutParameters m_params;
   State m_state;
 };
 }  // end namespace internal
 
 /// Static instance of the InOutHelper in 3D.
 /// Used by the quest::inout API functions
-static internal::InOutHelper<3> s_inoutHelper;
+static internal::InOutHelper<3> s_inoutHelper3D;
 
-bool inout_initialized() { return s_inoutHelper.isInitialized(); }
+/// Static instance of the InOutHelper in 2D
+/// Used by the quest::inout API functions
+static internal::InOutHelper<2> s_inoutHelper2D;
+
+static internal::InOutParameters s_inoutParams;
+
+//------------------------------------------------------------------------------
+
+bool inout_initialized()
+{
+  const int dim = inout_get_dimension();
+  return (dim == 2) ? s_inoutHelper2D.isInitialized()
+                    : s_inoutHelper3D.isInitialized();
+}
 
 int inout_init(const std::string& file, MPI_Comm comm)
 {
+  const int dim = inout_get_dimension();
+  int rc = QUEST_INOUT_FAILED;
+
   if(inout_initialized())
   {
     SLIC_WARNING("quest inout query already initialized ");
-    return QUEST_INOUT_FAILED;
+    return rc;
   }
 
-  int rc = s_inoutHelper.initialize(file, comm);
-  if(rc == QUEST_INOUT_FAILED)
+  switch(dim)
   {
-    s_inoutHelper.restoreLoggingLevel();
+  case 2:
+    s_inoutHelper2D.setVerbose(s_inoutParams.m_verbose);
+    s_inoutHelper2D.setSegmentsPerPiece(s_inoutParams.m_segmentsPerPiece);
+    s_inoutHelper2D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
+
+    rc = s_inoutHelper2D.initialize(file, comm);
+    if(rc == QUEST_INOUT_FAILED)
+    {
+      s_inoutHelper2D.restoreLoggingLevel();
+    }
+    break;
+
+  case 3:
+    s_inoutHelper3D.setVerbose(s_inoutParams.m_verbose);
+    s_inoutHelper3D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
+
+    rc = s_inoutHelper3D.initialize(file, comm);
+    if(rc == QUEST_INOUT_FAILED)
+    {
+      s_inoutHelper3D.restoreLoggingLevel();
+    }
+    break;
+
+  default:
+    rc = QUEST_INOUT_FAILED;
+    break;
   }
+
   return rc;
 }
 
 int inout_init(mint::Mesh*& mesh, MPI_Comm comm)
 {
+  const int dim = inout_get_dimension();
+  int rc = QUEST_INOUT_FAILED;
+
   if(inout_initialized())
   {
     SLIC_WARNING("quest inout query already initialized ");
     return QUEST_INOUT_FAILED;
   }
 
-  int rc = s_inoutHelper.initialize(mesh, comm);
-  if(rc == QUEST_INOUT_FAILED)
+  switch(dim)
   {
-    s_inoutHelper.restoreLoggingLevel();
+  case 2:
+    s_inoutHelper2D.setVerbose(s_inoutParams.m_verbose);
+    s_inoutHelper2D.setSegmentsPerPiece(s_inoutParams.m_segmentsPerPiece);
+    s_inoutHelper2D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
+
+    rc = s_inoutHelper2D.initialize(mesh, comm);
+    if(rc == QUEST_INOUT_FAILED)
+    {
+      s_inoutHelper2D.restoreLoggingLevel();
+    }
+
+  case 3:
+    s_inoutHelper3D.setVerbose(s_inoutParams.m_verbose);
+    s_inoutHelper3D.setSegmentsPerPiece(s_inoutParams.m_segmentsPerPiece);
+    s_inoutHelper3D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
+
+    rc = s_inoutHelper3D.initialize(mesh, comm);
+    if(rc == QUEST_INOUT_FAILED)
+    {
+      s_inoutHelper3D.restoreLoggingLevel();
+    }
+    break;
+
+  default:
+    rc = QUEST_INOUT_FAILED;
+    break;
   }
+
   return rc;
 }
 
-int inout_finalize() { return s_inoutHelper.finalize(); }
-
-int inout_set_verbose(bool verbosity)
+int inout_finalize()
 {
-  if(inout_initialized())
-  {
-    SLIC_WARNING("quest inout query must NOT be initialized "
-                 << "prior to calling 'inout_set_verbose'");
+  const int dim = inout_get_dimension();
 
-    return QUEST_INOUT_FAILED;
-  }
+  // Finalize the 2D and 3D structures and reset the params
+  int rc2 = s_inoutHelper2D.finalize();
+  int rc3 = s_inoutHelper3D.finalize();
+  s_inoutParams.setDefault();
 
-  s_inoutHelper.setVerbose(verbosity);
-
-  return QUEST_INOUT_SUCCESS;
+  return (dim == 2) ? rc2 : rc3;
 }
 
-int inout_set_vertex_weld_threshold(double thresh)
-{
-  if(inout_initialized())
-  {
-    SLIC_WARNING("quest inout query must NOT be initialized "
-                 << "prior to calling 'inout_set_vertex_weld_threshold'");
-
-    return QUEST_INOUT_FAILED;
-  }
-
-  s_inoutHelper.setVertexWeldThreshold(thresh);
-
-  return QUEST_INOUT_SUCCESS;
-}
+//------------------------------------------------------------------------------
 
 int inout_mesh_min_bounds(double* coords)
 {
@@ -392,10 +460,22 @@ int inout_mesh_min_bounds(double* coords)
 
   SLIC_ERROR_IF(coords == nullptr, "supplied buffer 'coords' is null");
 
-  auto& bbox = s_inoutHelper.getBoundingBox();
-  bbox.getMin().array().to_array(coords);
+  const int dim = inout_get_dimension();
+  int rc = QUEST_INOUT_SUCCESS;
+  switch(dim)
+  {
+  case 2:
+    s_inoutHelper2D.getBoundingBox().getMin().array().to_array(coords);
+    break;
+  case 3:
+    s_inoutHelper3D.getBoundingBox().getMin().array().to_array(coords);
+    break;
+  default:
+    rc = QUEST_INOUT_FAILED;
+    break;
+  }
 
-  return QUEST_INOUT_SUCCESS;
+  return rc;
 }
 
 int inout_mesh_max_bounds(double* coords)
@@ -410,10 +490,22 @@ int inout_mesh_max_bounds(double* coords)
 
   SLIC_ERROR_IF(coords == nullptr, "supplied buffer 'coords' is null");
 
-  auto& bbox = s_inoutHelper.getBoundingBox();
-  bbox.getMax().array().to_array(coords);
+  const int dim = inout_get_dimension();
+  int rc = QUEST_INOUT_SUCCESS;
+  switch(dim)
+  {
+  case 2:
+    s_inoutHelper2D.getBoundingBox().getMax().array().to_array(coords);
+    break;
+  case 3:
+    s_inoutHelper3D.getBoundingBox().getMax().array().to_array(coords);
+    break;
+  default:
+    rc = QUEST_INOUT_FAILED;
+    break;
+  }
 
-  return QUEST_INOUT_SUCCESS;
+  return rc;
 }
 
 int inout_mesh_center_of_mass(double* coords)
@@ -428,10 +520,38 @@ int inout_mesh_center_of_mass(double* coords)
 
   SLIC_ERROR_IF(coords == nullptr, "supplied buffer 'coords' is null");
 
-  auto& cmass = s_inoutHelper.getCenterOfMass();
-  cmass.array().to_array(coords);
+  const int dim = inout_get_dimension();
+  int rc = QUEST_INOUT_SUCCESS;
+  switch(dim)
+  {
+  case 2:
+    s_inoutHelper2D.getCenterOfMass().array().to_array(coords);
+    break;
+  case 3:
+    s_inoutHelper3D.getCenterOfMass().array().to_array(coords);
+    break;
+  default:
+    rc = QUEST_INOUT_FAILED;
+    break;
+  }
 
-  return QUEST_INOUT_SUCCESS;
+  return rc;
+}
+
+//------------------------------------------------------------------------------
+
+bool inout_evaluate(double x, double y)
+{
+  if(!inout_initialized())
+  {
+    SLIC_WARNING("quest inout query must be initialized "
+                 << "prior to calling quest inout interface functions");
+
+    return false;
+  }
+
+  const int dim = inout_get_dimension();
+  return (dim == 2) ? s_inoutHelper2D.within(x, y) : s_inoutHelper3D.within(x, y);
 }
 
 bool inout_evaluate(double x, double y, double z)
@@ -444,7 +564,30 @@ bool inout_evaluate(double x, double y, double z)
     return false;
   }
 
-  return s_inoutHelper.within(x, y, z);
+  const int dim = inout_get_dimension();
+  return (dim == 2) ? s_inoutHelper2D.within(x, y, z)
+                    : s_inoutHelper3D.within(x, y, z);
+}
+
+int inout_evaluate(const double* x, const double* y, int npoints, int* res)
+{
+  if(!inout_initialized())
+  {
+    SLIC_WARNING("quest inout query must be initialized "
+                 << "prior to calling quest inout interface functions");
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  const int dim = inout_get_dimension();
+  if(x == nullptr || y == nullptr || res == nullptr)
+  {
+    SLIC_WARNING("supplied buffers must NOT be null");
+    return QUEST_INOUT_FAILED;
+  }
+
+  return (dim == 2) ? s_inoutHelper2D.within(x, y, nullptr, npoints, res)
+                    : s_inoutHelper3D.within(x, y, nullptr, npoints, res);
 }
 
 int inout_evaluate(const double* x,
@@ -461,26 +604,105 @@ int inout_evaluate(const double* x,
     return QUEST_INOUT_FAILED;
   }
 
-  if(x == nullptr || y == nullptr || z == nullptr || res == nullptr)
+  const int dim = inout_get_dimension();
+  if(x == nullptr || y == nullptr || (dim == 3 && z == nullptr) || res == nullptr)
   {
     SLIC_WARNING("supplied buffers must NOT be null");
     return QUEST_INOUT_FAILED;
   }
 
-  return s_inoutHelper.within(x, y, z, npoints, res);
+  return (dim == 2) ? s_inoutHelper2D.within(x, y, z, npoints, res)
+                    : s_inoutHelper3D.within(x, y, z, npoints, res);
 }
 
-int inout_get_dimension()
+//------------------------------------------------------------------------------
+
+int inout_get_dimension() { return s_inoutParams.m_dimension; }
+
+//------------------------------------------------------------------------------
+
+int inout_set_verbose(bool verbosity)
 {
-  if(!inout_initialized())
+  if(inout_initialized())
   {
-    SLIC_WARNING("quest inout query must be initialized "
-                 << "prior to calling quest inout interface functions");
+    SLIC_WARNING("quest inout query must NOT be initialized "
+                 << "prior to calling 'inout_set_verbose'");
 
     return QUEST_INOUT_FAILED;
   }
 
-  return s_inoutHelper.getDimension();
+  s_inoutParams.m_verbose = verbosity;
+
+  return QUEST_INOUT_SUCCESS;
+}
+
+int inout_set_dimension(int dim)
+{
+  if(inout_initialized())
+  {
+    SLIC_WARNING("quest inout query must NOT be initialized "
+                 << "prior to calling 'inout_set_dimension'");
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  if(!(dim == 2 || dim == 3))
+  {
+    SLIC_WARNING("quest inout query only supports 2D or 3D queries."
+                 << " Supplied dimension was " << dim);
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  s_inoutParams.m_dimension = dim;
+
+  return QUEST_INOUT_SUCCESS;
+}
+
+int inout_set_segments_per_piece(int num_segments)
+{
+  if(inout_initialized())
+  {
+    SLIC_WARNING("quest inout query must NOT be initialized "
+                 << "prior to calling 'inout_set_segments_per_piece'");
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  if(num_segments < 1)
+  {
+    SLIC_WARNING("quest inout query: segments per piece must be at least 1."
+                 << " Supplied value was " << num_segments);
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  s_inoutParams.m_segmentsPerPiece = num_segments;
+
+  return QUEST_INOUT_SUCCESS;
+}
+
+int inout_set_vertex_weld_threshold(double thresh)
+{
+  if(inout_initialized())
+  {
+    SLIC_WARNING("quest inout query must NOT be initialized "
+                 << "prior to calling 'inout_set_vertex_weld_threshold'");
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  if(thresh < 0.)
+  {
+    SLIC_WARNING("quest inout query: vertex weld threshold must be postive."
+                 << " Supplied value was " << thresh);
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  s_inoutParams.m_vertexWeldThreshold = thresh;
+
+  return QUEST_INOUT_SUCCESS;
 }
 
 }  // end namespace quest
