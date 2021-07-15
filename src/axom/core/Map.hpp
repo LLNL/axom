@@ -108,8 +108,14 @@ public:
      * \pre len > 0
      */
   void init(int len)
-  {
-    m_list = axom::allocate<axom_map::Node<Key, T>>(len);
+  { 
+    #if defined(UMPIRE_ENABLE_CUDA) && defined(UMPIRE_ENABLE_UM) \
+    && defined(AXOM_USE_CUDA)
+    m_list = axom::allocate<axom_map::Node<Key, T> >(len, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
+    #else
+    m_list = axom::allocate<axom_map::Node<Key, T> >(len);
+    #endif
+
     for(int i = 0; i < len - 1; i++)
     {
       m_list[i].next = i + 1;
@@ -139,6 +145,7 @@ public:
      *  the bool is set to False, and the node pointed to is the end node if the list was full,
      *  or the item occupying the queried slot if an item with the given key already existed.
      */
+  AXOM_HOST_DEVICE
   axom_map::Pair<Key, T> insert_no_update(const Key& key, const T& value)
   {
     if(m_free != -1)
@@ -193,6 +200,7 @@ public:
      *  was performed, the bool is set to False. If assignment occured, the node pointed to is the item 
      *  corresponding to the supplied key. Otherwise, if insertion and assignment failed, the node pointed to is the end node.
      */
+  AXOM_HOST_DEVICE
   axom_map::Pair<Key, T> insert_update(const Key& key, const T& value)
   {
     IndexType ind = m_head;
@@ -253,6 +261,7 @@ public:
      * \return Returns true if item was found and removed, false otherwise. 
      *  
      */
+  AXOM_HOST_DEVICE
   bool remove(const Key& key)
   {
     if(m_head == -1)
@@ -292,6 +301,7 @@ public:
     * \return Returns pointer to the requested node if possible, and to special end node otherwise.
     *
     */
+  AXOM_HOST_DEVICE
   axom_map::Node<Key, T>& find(const Key& key)
   {
     if(m_head == -1)
@@ -545,6 +555,7 @@ public:
    *  if the map is overfilled, and the actual node with the given key if an assignment occured.
    *
    */
+  AXOM_HOST_DEVICE
   axom_map::Pair<Key, T> insert_or_assign(const Key& key, const T& val)
   {
     //If branching becomes an isssue, this protective statement will be
@@ -589,6 +600,7 @@ public:
    * \return A const reference to the value of key-value pair in the Map instance that is associated with supplied Key.
    *
    */
+  AXOM_HOST_DEVICE
   const T& operator[](const Key& key)
   {
     //Since we can't throw an exception, the safest solution is to be read-only, and for the user to be careful with their
@@ -608,6 +620,7 @@ public:
    *
    * \return A bool value of true if the item was successfully removed, false otherwise. 
    */
+  AXOM_HOST_DEVICE
   bool erase(const Key& key)
   {
     std::size_t index = bucket(get_hash(key));
@@ -634,6 +647,7 @@ public:
    *
    * \return A reference to the requested item if found, sentinel node end otherwise.
    */
+  AXOM_HOST_DEVICE
   axom_map::Node<Key, T>& find(const Key& key)
   {
     std::size_t index = bucket(get_hash(key));
@@ -654,6 +668,7 @@ public:
    *
    * \return A pointer to the queried bucket.
    */
+  AXOM_HOST_DEVICE
   std::size_t bucket(std::size_t hash) const { return hash % m_bucket_count; }
 
   /*!
@@ -746,8 +761,14 @@ private:
    */
   axom_map::Bucket<Key, T>* alloc_map(int bucount, int bucklen)
   {
+    #if defined(UMPIRE_ENABLE_CUDA) && defined(UMPIRE_ENABLE_UM) \
+    && defined(AXOM_USE_CUDA)
+    axom_map::Bucket<Key, T>* tmp = axom::allocate<axom_map::Bucket<Key, T>>(bucount, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
+    #else
     axom_map::Bucket<Key, T>* tmp =
-      axom::allocate<axom_map::Bucket<Key, T>>(bucount);
+        axom::allocate<axom_map::Bucket<Key, T>>(bucount);
+    #endif
+
     for(int i = 0; i < bucount; i++)
     {
       tmp[i].init(bucklen);
@@ -762,6 +783,7 @@ private:
    *
    * \return A 64-bit integer containing the hashed value of the key.
    */
+  AXOM_HOST_DEVICE
   std::size_t get_hash(const Key& input) const
   {
     std::size_t hashed = Hash {}(input);
@@ -769,16 +791,13 @@ private:
     return hashed;
   }
 
-  //NOTE: Every single locking function will use the OpenMP locks if Axom was compiled with OpenMP support,
-  //regardless of whether the user code is actually using it.
-
   /*!
    * \brief Empty function for sequential execution environment.
    *
    * \param [in] index the index needed for locking, if this weren't sequential.
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void bucket_lock(std::size_t index, axom::SEQ_EXEC overload) { }
+  bool bucket_lock(std::size_t index, axom::SEQ_EXEC overload) { return true; }
 
   /*!
    * \brief Empty function for sequential execution environment.
@@ -809,9 +828,10 @@ private:
    *
    * \param [in] index the index of the bucket which the thread wants the lock for.
    */
-  void bucket_lock(std::size_t index, axom::OMP_EXEC overload)
+  bool bucket_lock(std::size_t index, axom::OMP_EXEC overload)
   {
     omp_set_lock(locks + index);
+    return true;
   }
 
   /*!
@@ -848,6 +868,47 @@ private:
     axom::deallocate<omp_lock_t>(locks);
   }
 #endif
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+  /*!
+   * \brief Acquires lock for a bucket.
+   *
+   * \param [in] index the index of the bucket which the thread wants the lock for.
+   */
+  bool bucket_lock(std::size_t index, axom::CUDA_EXEC overload)
+  {
+    return (RAJA::atomicCAS<auto_atomic>(&(cuda_locks[index]), 0, 1) == 0);
+  }
+
+  /*!
+   * \brief Releases lock for a bucket.
+   *
+   * \param [in] index the index of the bucket which the thread wants to release the lock for.
+   */
+  void bucket_unlock(std::size_t index, axom::CUDA_EXEC overload)
+  {
+    omp_unset_lock(locks + index);
+  }
+
+  /*!
+   * \brief Allocates and initializes a lock for every bucket making up the Map instance.
+   */
+  void init_locks(axom::CUDA_EXEC overload)
+  {
+    cuda_locks = axom::allocate<int>(m_bucket_count);
+    for(std::size_t i = 0; i < m_bucket_count; i++)
+    {
+      cuda_locks[i] = 0;
+    }
+  }
+
+  /*!
+   * \brief Deallocates and destroys every lock used for this Map instance. 
+   */
+  void destroy_locks(axom::CUDA_EXEC overload)
+  {
+    axom::deallocate<int>(cuda_locks);
+  }
+#endif
   /// @}
 
   /// \name Private Data Members
@@ -862,6 +923,9 @@ private:
   bool m_bucket_fill; /*!<  status of buckets in general -- if at least one is full, this is set to true, false otherwise*/
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
   omp_lock_t* locks;
+#endif
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+  int * cuda_locks;
 #endif
   Policy pol;
   /// @}
