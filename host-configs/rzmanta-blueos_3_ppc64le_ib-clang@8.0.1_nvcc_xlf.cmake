@@ -115,7 +115,7 @@ set(RAJA_DIR "${TPL_ROOT}/raja-0.12.1" CACHE PATH "")
 
 set(UMPIRE_DIR "${TPL_ROOT}/umpire-4.0.1" CACHE PATH "")
 
-# scr not build
+# scr not built
 
 #------------------------------------------------------------------------------
 # Devtools

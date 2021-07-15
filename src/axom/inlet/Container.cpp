@@ -1315,6 +1315,26 @@ bool Container::isUserProvided() const
   return has_containers || has_fields || has_functions;
 }
 
+bool Container::isUserProvided(const std::string& name) const
+{
+  if(auto container = getChildInternal<Container>(name))
+  {
+    // Check if the container itself was provided by the user
+    return container->isUserProvided();
+  }
+  else if(auto field = getChildInternal<Field>(name))
+  {
+    // Check if the field itself was provided by the user
+    return field->isUserProvided();
+  }
+  else if(auto function = getChildInternal<Function>(name))
+  {
+    // call operator bool on the function itself
+    return static_cast<bool>(*function);
+  }
+  return false;
+}
+
 const std::unordered_map<std::string, std::unique_ptr<Container>>&
 Container::getChildContainers() const
 {

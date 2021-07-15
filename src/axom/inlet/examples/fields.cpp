@@ -101,6 +101,9 @@ int main()
   // without checking contains
   int a_defaulted_int = inlet["a_defaulted_int"];
   std::cout << "a_defaulted_int = " << a_defaulted_int << std::endl;
+  // We can also verify that the user did not provided a value
+  std::cout << "a_defaulted_int provided by user: "
+            << inlet.isUserProvided("a_defaulted_int") << std::endl;
 
   // _inlet_simple_types_fields_access_end
 
