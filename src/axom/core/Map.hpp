@@ -500,7 +500,7 @@ public:
    */
   axom_map::Pair<Key, T> insert(const Key& key, const T& val)
   {
-    //If branching becomes an isssue, this protective statement will be
+    //If branching becomes an issue, this protective statement will be
     //removed in lieu of expecting the user to not try to insert after
     //clear().
     if(m_bucket_count * m_bucket_len == 0)
@@ -856,9 +856,9 @@ private:
   axom_map::Bucket<Key, T>* m_buckets; /*!< array of pointers to linked lists containing data */
   std::size_t m_bucket_count; /*!< the number of buckets in the Map instance */
   int m_bucket_len; /*!< the number of items that can be contained in a bucket in this Map instance */
-  int m_size; /*!< the number of items currenty stored in this Map instance */
+  int m_size; /*!< the number of items currently stored in this Map instance */
   float m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
-  axom_map::Node<Key, T> m_end; /*!< the node with meaningless values allowing for user to verify success or failure of operations */
+  axom_map::Node<Key, T> m_end; /*!< the sentinel node enabling verification of operation success or failure */
   bool m_bucket_fill; /*!<  status of buckets in general -- if at least one is full, this is set to true, false otherwise*/
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
   omp_lock_t* locks;
