@@ -125,14 +125,18 @@ TEST(quest_c2c_reader, interpolate_circle)
   using MeshType = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
   MeshType* mesh = new MeshType(DIM, mint::SEGMENT);
 
-  int segmentsPerPiece = 100;
-  reader.getLinearMesh(mesh, segmentsPerPiece);
+  const int segmentsPerKnotSpan = 25;
+  reader.getLinearMesh(mesh, segmentsPerKnotSpan);
 
+  // The circle is defined by a single NURBS curve with four spans
   SLIC_INFO(fmt::format("Mesh has {} nodes and {} cells",
                         mesh->getNumberOfNodes(),
                         mesh->getNumberOfCells()));
-  EXPECT_EQ(segmentsPerPiece + 1, mesh->getNumberOfNodes());
-  EXPECT_EQ(segmentsPerPiece, mesh->getNumberOfCells());
+  const int numSpans = 4;
+  const int expVerts = numSpans * (segmentsPerKnotSpan + 1);
+  EXPECT_EQ(expVerts, mesh->getNumberOfNodes());
+  const int expSegments = numSpans * segmentsPerKnotSpan;
+  EXPECT_EQ(expSegments, mesh->getNumberOfCells());
 
   // This is a unit circle; check that its vertices have unit magnitude
   {
@@ -166,17 +170,20 @@ TEST(quest_c2c_reader, interpolate_square)
   using MeshType = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
   MeshType* mesh = new MeshType(DIM, mint::SEGMENT);
 
-  int segmentsPerPiece = 10;
-  reader.getLinearMesh(mesh, segmentsPerPiece);
+  int segmentsPerKnotSpan = 10;
+  reader.getLinearMesh(mesh, segmentsPerKnotSpan);
 
   SLIC_INFO(fmt::format("Mesh has {} nodes and {} cells",
                         mesh->getNumberOfNodes(),
                         mesh->getNumberOfCells()));
 
-  const int expVerts = 4 * (segmentsPerPiece + 1);
+  const int numPieces = 4;
+  const int spansPerPiece = 1;
+  const int totalSpans = numPieces * spansPerPiece;
+  const int expVerts = totalSpans * (segmentsPerKnotSpan + 1);
   EXPECT_EQ(expVerts, mesh->getNumberOfNodes());
 
-  const int expSegs = 4 * segmentsPerPiece;
+  const int expSegs = totalSpans * segmentsPerKnotSpan;
   EXPECT_EQ(expSegs, mesh->getNumberOfCells());
 
   mint::write_vtk(mesh, "test_square.vtk");
@@ -197,12 +204,19 @@ TEST(quest_c2c_reader, interpolate_spline)
   using MeshType = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
   MeshType* mesh = new MeshType(DIM, mint::SEGMENT);
 
-  int segmentsPerPiece = 200;
-  reader.getLinearMesh(mesh, segmentsPerPiece);
+  int segmentsPerKnotSpan = 20;
+  reader.getLinearMesh(mesh, segmentsPerKnotSpan);
 
   SLIC_INFO(fmt::format("Mesh has {} nodes and {} cells",
                         mesh->getNumberOfNodes(),
                         mesh->getNumberOfCells()));
+
+  const int numSpans = 6 + 1 + 1 + 1;
+  const int expVerts = numSpans * (segmentsPerKnotSpan + 1);
+  EXPECT_EQ(expVerts, mesh->getNumberOfNodes());
+
+  const int expSegs = numSpans * segmentsPerKnotSpan;
+  EXPECT_EQ(expSegs, mesh->getNumberOfCells());
 
   mint::write_vtk(mesh, "test_spline.vtk");
 }

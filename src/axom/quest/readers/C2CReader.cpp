@@ -32,12 +32,37 @@ struct NURBSInterpolator
   using BasisVector = std::vector<double>;
   using PointType = primal::Point<double, 2>;
 
-  NURBSInterpolator(const c2c::NURBSData& curve) : m_curve(curve)
+  // EPS is used for computing span intervals
+  NURBSInterpolator(const c2c::NURBSData& curve, double EPS = 1E-9)
+    : m_curve(curve)
   {
     int p = m_curve.order - 1;
     int knotSize = m_curve.knots.size();
     SLIC_ASSERT(p >= 1);
     SLIC_ASSERT(knotSize >= 2 * p);
+    computeSpanIntervals(EPS);
+  }
+
+  void computeSpanIntervals(double EPS)
+  {
+    using axom::utilities::isNearlyEqual;
+    const auto& U = m_curve.knots;
+    const int knotSize = U.size();
+    const int p = m_curve.order - 1;
+    const int n = knotSize - 1 - p - 1;
+
+    for(int i = p; i < n + 1; ++i)
+    {
+      const double left = U[i];
+      const double right = U[i + 1];
+      SLIC_INFO(fmt::format("At index {}: left {}, right {}", i, left, right));
+
+      if(!isNearlyEqual(left, right, EPS))
+      {
+        SLIC_INFO(fmt::format("\t Added interval [{},{}]", left, right));
+        m_spanIntervals.push_back(std::make_pair(left, right));
+      }
+    }
   }
 
   /*!
@@ -76,10 +101,18 @@ struct NURBSInterpolator
     return true;
   }
 
-  double startParameter() const { return m_curve.knots[0]; }
-  double endParameter() const
+  int numSpans() const { return m_spanIntervals.size(); }
+
+  double startParameter(int span = -1) const
   {
-    return m_curve.knots[m_curve.knots.size() - 1];
+    const bool inRange = span >= 0 && span < numSpans();
+    return inRange ? m_spanIntervals[span].first : m_curve.knots[0];
+  }
+  double endParameter(int span = -1) const
+  {
+    const bool inRange = span >= 0 && span < numSpans();
+    return inRange ? m_spanIntervals[span].second
+                   : m_curve.knots[m_curve.knots.size() - 1];
   }
 
   /*!
@@ -176,6 +209,7 @@ struct NURBSInterpolator
 
 private:
   const c2c::NURBSData& m_curve;
+  std::vector<std::pair<double, double>> m_spanIntervals;
 };
 
 void C2CReader::clear() { m_nurbsData.clear(); }
@@ -231,6 +265,8 @@ void C2CReader::log()
     sstr << fmt::format("Piece {}\n{{", index);
     sstr << fmt::format("\torder: {}\n", nurbs.order);
     sstr << fmt::format("\tknots: {}\n", fmt::join(nurbs.knots, " "));
+    sstr << fmt::format("\tknot spans: {}\n",
+                        NURBSInterpolator(nurbs).numSpans());
     sstr << fmt::format("\tweights: {}\n", fmt::join(nurbs.weights, " "));
     sstr << fmt::format("\tcontrol points: {}\n",
                         fmt::join(nurbs.controlPoints, " "));
@@ -242,15 +278,15 @@ void C2CReader::log()
 }
 
 void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                              int segmentsPerPiece)
+                              int segmentsPerKnotSpan)
 {
   // Sanity checks
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
   SLIC_ERROR_IF(mesh->getDimension() != 2, "C2C reader expects a 2D mesh!");
   SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT,
                 "C2C reader expects a segment mesh!");
-  SLIC_ERROR_IF(segmentsPerPiece < 1,
-                "C2C reader: Need at least one sample per NURBs span");
+  SLIC_ERROR_IF(segmentsPerKnotSpan < 1,
+                "C2C reader: Need at least one segment per NURBs span");
 
   using PointType = primal::Point<double, 2>;
   using PointsArray = std::vector<PointType>;
@@ -259,77 +295,79 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 
   for(const auto& nurbs : m_nurbsData)
   {
-    NURBSInterpolator interpolator(nurbs);
+    NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
 
-    PointsArray pts;
-
-    // Generate points on the curve
+    // For each knot span
+    for(int span = 0; span < interpolator.numSpans(); ++span)
     {
-      pts.reserve(segmentsPerPiece + 1);
+      // Generate points on the curve
+      PointsArray pts;
+      pts.reserve(segmentsPerKnotSpan + 1);
 
-      const double startParameter = interpolator.startParameter();
-      const double endParameter = interpolator.endParameter();
+      const double startParameter = interpolator.startParameter(span);
+      const double endParameter = interpolator.endParameter(span);
 
-      double denom = static_cast<double>(segmentsPerPiece);
-      for(int i = 0; i <= segmentsPerPiece; ++i)
+      double denom = static_cast<double>(segmentsPerKnotSpan);
+      for(int i = 0; i <= segmentsPerKnotSpan; ++i)
       {
         double u = lerp(startParameter, endParameter, i / denom);
         pts.emplace_back(interpolator.at(u));
       }
-    }
 
-    // Check for simple vertex welding opportunities at endpoints of newly interpolated points
-    {
-      int numNodes = mesh->getNumberOfNodes();
-      if(numNodes > 0)  // this is not the first Piece
+      // Check for simple vertex welding opportunities at endpoints of newly interpolated points
       {
-        PointType meshPt;
-        // Fix start point if necessary; check against most recently added vertex in mesh
-        mesh->getNode(numNodes - 1, meshPt.data());
-        if(primal::squared_distance(pts[0], meshPt) < EPS_SQ)
+        int numNodes = mesh->getNumberOfNodes();
+        if(numNodes > 0)  // this is not the first Piece
         {
-          pts[0] = meshPt;
+          PointType meshPt;
+          // Fix start point if necessary; check against most recently added vertex in mesh
+          mesh->getNode(numNodes - 1, meshPt.data());
+          if(primal::squared_distance(pts[0], meshPt) < EPS_SQ)
+          {
+            pts[0] = meshPt;
+          }
+
+          // Fix end point if necessary; check against 0th vertex in mesh
+          const int endIdx = pts.size() - 1;
+          mesh->getNode(0, meshPt.data());
+          if(primal::squared_distance(pts[endIdx], meshPt) < EPS_SQ)
+          {
+            pts[endIdx] = meshPt;
+          }
+        }
+        else  // This is the first, and possibly only span, check its endpoint, fix if necessary
+        {
+          int endIdx = pts.size() - 1;
+          if(primal::squared_distance(pts[0], pts[endIdx]) < EPS_SQ)
+          {
+            pts[endIdx] = pts[0];
+          }
+        }
+      }
+
+      // Add the new points and segments to the mesh, respecting welding checks from previous block
+      {
+        const int startNode = mesh->getNumberOfNodes();
+        const int numNewNodes = pts.size();
+        mesh->reserveNodes(startNode + numNewNodes);
+
+        for(int i = 0; i < numNewNodes; ++i)
+        {
+          mesh->appendNode(pts[i][0], pts[i][1]);
         }
 
-        // Fix end point if necessary; check against 0th vertex in mesh
-        const int endIdx = pts.size() - 1;
-        mesh->getNode(0, meshPt.data());
-        if(primal::squared_distance(pts[endIdx], meshPt) < EPS_SQ)
+        const int startCell = mesh->getNumberOfCells();
+        const int numNewSegments = pts.size() - 1;
+        mesh->reserveCells(startCell + numNewSegments);
+        for(int i = 0; i < numNewSegments; ++i)
         {
-          pts[endIdx] = meshPt;
+          IndexType seg[2] = {startNode + i, startNode + i + 1};
+          mesh->appendCell(seg, mint::SEGMENT);
         }
       }
-      else  // This is the first, and possibly only Piece, check its endpoint, fix if necessary
-      {
-        int endIdx = pts.size() - 1;
-        if(primal::squared_distance(pts[0], pts[endIdx]) < EPS_SQ)
-        {
-          pts[endIdx] = pts[0];
-        }
-      }
-    }
 
-    // Add the new points and segments to the mesh, respecting welding checks from previous block
-    {
-      const int startNode = mesh->getNumberOfNodes();
-      const int numNewNodes = pts.size();
-      mesh->reserveNodes(startNode + numNewNodes);
-
-      for(int i = 0; i < numNewNodes; ++i)
-      {
-        mesh->appendNode(pts[i][0], pts[i][1]);
-      }
-
-      const int startCell = mesh->getNumberOfCells();
-      const int numNewSegments = pts.size() - 1;
-      mesh->reserveCells(startCell + numNewSegments);
-      for(int i = 0; i < numNewSegments; ++i)
-      {
-        IndexType seg[2] = {startNode + i, startNode + i + 1};
-        mesh->appendCell(seg, mint::SEGMENT);
-      }
-    }
-  }
+    }  // end for each knot span
+  }    // end for each NURBS curve
 }
 
 }  // end namespace quest

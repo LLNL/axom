@@ -70,7 +70,7 @@ public:
   }
 
 #ifdef AXOM_USE_C2C
-  void loadContourMesh(const std::string& inputFile, int segmentsPerPiece = 100)
+  void loadContourMesh(const std::string& inputFile, int segmentsPerKnotSpan)
   {
     quest::C2CReader* reader = new quest::C2CReader();
     reader->setFileName(inputFile);
@@ -78,15 +78,16 @@ public:
 
     // Create surface mesh
     m_surfaceMesh = new UMesh(2, mint::SEGMENT);
-    reader->getLinearMesh(static_cast<UMesh*>(m_surfaceMesh), segmentsPerPiece);
+    reader->getLinearMesh(static_cast<UMesh*>(m_surfaceMesh),
+                          segmentsPerKnotSpan);
 
     delete reader;
   }
 #else
-  void loadContourMesh(const std::string& inputFile, int segmentsPerPiece = 100)
+  void loadContourMesh(const std::string& inputFile, int segmentsPerKnotSpan)
   {
     AXOM_UNUSED_VAR(inputFile);
-    AXOM_UNUSED_VAR(segmentsPerPiece);
+    AXOM_UNUSED_VAR(segmentsPerKnotSpan);
     SLIC_ERROR(
       "Configuration error: Loading contour files is only supported when Axom "
       "is configured with C2C support.");
@@ -481,6 +482,7 @@ struct Input
 public:
   std::string inputFile;
   int maxQueryLevel {7};
+  int samplesPerKnotSpan {25};
   std::vector<double> queryBoxMins;
   std::vector<double> queryBoxMaxs;
 
@@ -561,7 +563,15 @@ public:
                 "individual queries")
       ->capture_default_str();
 
-    app.get_formatter()->column_width(35);
+    app
+      .add_option(
+        "-n,--segments-per-knot-span",
+        samplesPerKnotSpan,
+        "(2D only) Number of linear segments to generate per NURBS knot span")
+      ->capture_default_str()
+      ->check(CLI::PositiveNumber);
+
+    app.get_formatter()->column_width(45);
 
     // could throw an exception
     app.parse(argc, argv);
@@ -601,7 +611,7 @@ int main(int argc, char** argv)
 
   if(is2D)
   {
-    driver2D.loadContourMesh(params.inputFile);
+    driver2D.loadContourMesh(params.inputFile, params.samplesPerKnotSpan);
   }
   else
   {

@@ -63,10 +63,12 @@ public:
 
   /*!
    * \brief Projects high-order NURBS contours onto a linear mesh using \a segmentsPerPiece 
-   * linear segments per \a Piece of the contour
+   * linear segments per knot span of the contour
+   * 
+   * Knot spans are the sub-intervals within a spline
    */
   void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                     int segmentsPerPiece);
+                     int segmentsPerKnotSpan);
 
 protected:
   int readContour();
