@@ -3,16 +3,16 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"  // for gtest macros
+#include "gtest/gtest.h"
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 
 #include "axom/quest/interface/inout.hpp"
-#include "axom/quest/interface/internal/QuestHelpers.hpp"  // for test that reads
-                                                           // in a mesh without
-                                                           // the interface
+// for test that reads in a mesh without the interface
+#include "axom/quest/interface/internal/QuestHelpers.hpp"
+
 #include <string>
 
 /// Test fixture for quest::inout_query interface
@@ -163,6 +163,9 @@ TEST_F(InOutInterfaceTest, set_params)
 
     EXPECT_EQ(successCode, axom::quest::inout_set_verbose(true));
     EXPECT_EQ(successCode, axom::quest::inout_set_vertex_weld_threshold(EPS));
+    EXPECT_EQ(successCode, axom::quest::inout_set_dimension(3));
+    // The following is not used in 3D, but we can still invoke it
+    EXPECT_EQ(successCode, axom::quest::inout_set_segments_per_knot_span(10));
   }
 
   // Initialize the query
@@ -179,6 +182,9 @@ TEST_F(InOutInterfaceTest, set_params)
 
     EXPECT_EQ(failCode, axom::quest::inout_set_verbose(true));
     EXPECT_EQ(failCode, axom::quest::inout_set_vertex_weld_threshold(EPS));
+    EXPECT_EQ(failCode, axom::quest::inout_set_dimension(3));
+    // The following is not used in 3D, but we can still invoke it, and get a warning
+    EXPECT_EQ(failCode, axom::quest::inout_set_segments_per_knot_span(10));
 
     SLIC_INFO("--]==]");
   }

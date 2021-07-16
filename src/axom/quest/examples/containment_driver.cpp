@@ -72,16 +72,13 @@ public:
 #ifdef AXOM_USE_C2C
   void loadContourMesh(const std::string& inputFile, int segmentsPerKnotSpan)
   {
-    quest::C2CReader* reader = new quest::C2CReader();
-    reader->setFileName(inputFile);
-    reader->read();
+    quest::C2CReader reader;
+    reader.setFileName(inputFile);
+    reader.read();
 
     // Create surface mesh
     m_surfaceMesh = new UMesh(2, mint::SEGMENT);
-    reader->getLinearMesh(static_cast<UMesh*>(m_surfaceMesh),
-                          segmentsPerKnotSpan);
-
-    delete reader;
+    reader.getLinearMesh(static_cast<UMesh*>(m_surfaceMesh), segmentsPerKnotSpan);
   }
 #else
   void loadContourMesh(const std::string& inputFile, int segmentsPerKnotSpan)
@@ -96,15 +93,13 @@ public:
 
   void loadSTLMesh(const std::string& inputFile)
   {
-    quest::STLReader* reader = new quest::STLReader();
-    reader->setFileName(inputFile);
-    reader->read();
+    quest::STLReader reader;
+    reader.setFileName(inputFile);
+    reader.read();
 
     // Create surface mesh
     m_surfaceMesh = new UMesh(3, mint::TRIANGLE);
-    reader->getMesh(static_cast<UMesh*>(m_surfaceMesh));
-
-    delete reader;
+    reader.getMesh(static_cast<UMesh*>(m_surfaceMesh));
   }
 
   mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
@@ -511,12 +506,7 @@ public:
   bool isInput2D() const
   {
     using axom::utilities::string::endsWith;
-    if(endsWith(inputFile, ".contour"))
-    {
-      return true;
-    }
-
-    return false;
+    return endsWith(inputFile, ".contour");
   }
 
   bool isVerbose() const { return m_verboseOutput; }

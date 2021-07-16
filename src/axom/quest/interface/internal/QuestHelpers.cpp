@@ -321,21 +321,20 @@ int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
   // STEP 1: allocate output mesh object
   m = new TriangleMesh(DIMENSION, mint::TRIANGLE);
 
-  // STEP 2: allocate reader
-  quest::STLReader* reader = nullptr;
+  // STEP 2: construct STL reader
 #ifdef AXOM_USE_MPI
-  reader = new quest::PSTLReader(comm);
+  quest::PSTLReader reader(comm);
 #else
   AXOM_UNUSED_VAR(comm);
-  reader = new quest::STLReader();
+  quest::STLReader reader;
 #endif
 
   // STEP 3: read the mesh from the STL file
-  reader->setFileName(file);
-  int rc = reader->read();
+  reader.setFileName(file);
+  int rc = reader.read();
   if(rc == READ_SUCCESS)
   {
-    reader->getMesh(static_cast<TriangleMesh*>(m));
+    reader.getMesh(static_cast<TriangleMesh*>(m));
   }
   else
   {
@@ -343,10 +342,6 @@ int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
     delete m;
     m = nullptr;
   }
-
-  // STEP 4: delete the reader
-  delete reader;
-  reader = nullptr;
 
   return rc;
 }
@@ -375,22 +370,21 @@ int read_c2c_mesh(const std::string& file,
   // STEP 1: allocate output mesh object
   m = new SegmentMesh(DIMENSION, mint::SEGMENT);
 
-  // STEP 2: allocate reader
-  quest::C2CReader* reader = nullptr;
+  // STEP 2: construct C2C reader
   #ifdef AXOM_USE_MPI
-  reader = new quest::PC2CReader(comm);
+  quest::PC2CReader reader(comm);
   #else
   AXOM_UNUSED_VAR(comm);
-  reader = new quest::C2CReader();
+  quest::C2CReader reader;
   #endif
 
-  // STEP 3: read the mesh from the STL file
-  reader->setFileName(file);
-  reader->setVertexWeldingThreshold(vertexWeldThreshold);
-  int rc = reader->read();
+  // STEP 3: read the mesh from the input file
+  reader.setFileName(file);
+  reader.setVertexWeldingThreshold(vertexWeldThreshold);
+  int rc = reader.read();
   if(rc == READ_SUCCESS)
   {
-    reader->getLinearMesh(static_cast<SegmentMesh*>(m), segmentsPerPiece);
+    reader.getLinearMesh(static_cast<SegmentMesh*>(m), segmentsPerPiece);
   }
   else
   {
@@ -398,10 +392,6 @@ int read_c2c_mesh(const std::string& file,
     delete m;
     m = nullptr;
   }
-
-  // STEP 4: delete the reader
-  delete reader;
-  reader = nullptr;
 
   return rc;
 }

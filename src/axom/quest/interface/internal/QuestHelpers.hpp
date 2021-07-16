@@ -232,13 +232,11 @@ int read_stl_mesh(const std::string& file,
 /*!
  * \brief Reads in the contour mesh from the specified file
  *
- * \param [in] file the file consisting of the surface
+ * \param [in] file the file consisting of a C2C contour defined by one or more c2c::Piece
  * \param [in] segmentsPerPiece number of segments to sample per contour Piece
  * \param [in] vertexWeldThreshold threshold for welding vertices of adjacent curves
  * \param [out] m user-supplied pointer to point to the mesh object
  * \param [in] comm the MPI communicator, only applicable when MPI is available
- *
- * \note This method currently expects the contours to be given in the C2C format
  *
  * \note The caller is responsible for properly de-allocating the mesh object
  *  that is returned by this function

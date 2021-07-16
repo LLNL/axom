@@ -43,7 +43,7 @@ struct NURBSInterpolator
     computeSpanIntervals(EPS);
   }
 
-  // Helper function to compute the start and end index of each knot span
+  /// Helper function to compute the start and end parametric coordinates of each knot span
   void computeSpanIntervals(double EPS)
   {
     using axom::utilities::isNearlyEqual;
@@ -106,6 +106,7 @@ struct NURBSInterpolator
     const bool inRange = span >= 0 && span < numSpans();
     return inRange ? m_spanIntervals[span].first : m_curve.knots[0];
   }
+
   double endParameter(int span = -1) const
   {
     const bool inRange = span >= 0 && span < numSpans();

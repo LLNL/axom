@@ -27,13 +27,7 @@ struct InOutParameters
   int m_segmentsPerKnotSpan {25};  /// Used when linearizing curves
   double m_vertexWeldThreshold {1E-9};
 
-  void setDefault()
-  {
-    m_verbose = false;
-    m_dimension = 3;
-    m_segmentsPerKnotSpan = 25;
-    m_vertexWeldThreshold = 1E-9;
-  }
+  void setDefault() { *this = InOutParameters {}; }
 };
 
 /*!
@@ -56,20 +50,13 @@ struct InOutHelper
   /// State variables for the InOutQuery
   struct State
   {
-    bool m_initialized;
-    bool m_logger_is_initialized;
-    bool m_should_delete_logger;
-    bool m_should_delete_mesh;
-    slic::message::Level m_previousLevel;
+    bool m_initialized {false};
+    bool m_logger_is_initialized {false};
+    bool m_should_delete_logger {false};
+    bool m_should_delete_mesh {false};
+    slic::message::Level m_previousLevel {slic::message::Num_Levels};
 
-    void setDefault()
-    {
-      m_initialized = false;
-      m_logger_is_initialized = false;
-      m_should_delete_logger = false;
-      m_should_delete_mesh = false;
-      m_previousLevel = slic::message::Num_Levels;
-    }
+    void setDefault() { *this = State {}; }
   };
 
   InOutHelper() : m_surfaceMesh(nullptr), m_inoutTree(nullptr)

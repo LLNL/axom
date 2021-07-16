@@ -35,7 +35,7 @@ public:
    * \note Rank 0 reads in the C2C mesh file and broadcasts to the other ranks
    * \return status set to zero on success; non-zero otherwise
    */
-  virtual int read() final override;
+  int read() final override;
 
 private:
   /// Utility function to broadcast a vector of primitive types

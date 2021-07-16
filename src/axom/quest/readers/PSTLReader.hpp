@@ -30,7 +30,7 @@ public:
    * \note Rank 0 reads in the STL mesh file and broadcasts to the other ranks.
    * \return status set to zero on success; set to a non-zero value otherwise.
    */
-  virtual int read() final override;
+  int read() final override;
 
 private:
   MPI_Comm m_comm {MPI_COMM_NULL};
