@@ -126,6 +126,7 @@ struct InOutHelper
   int initialize(const std::string& file, MPI_Comm comm)
   {
     mint::Mesh* mesh = nullptr;
+    m_params.m_dimension = getDimension();
 
     // load the mesh
     int rc = QUEST_INOUT_FAILED;
@@ -185,10 +186,10 @@ struct InOutHelper
     }
     m_surfaceMesh = mesh;
 
-    if(m_surfaceMesh->getDimension() != m_params.m_dimension)
+    if(m_surfaceMesh->getDimension() != getDimension())
     {
       SLIC_WARNING("Incorrect dimensionality for mesh."
-                   << "Expected " << m_params.m_dimension << ", "
+                   << "Expected " << getDimension() << ", "
                    << "but got " << m_surfaceMesh->getDimension());
       return QUEST_INOUT_FAILED;
     }
