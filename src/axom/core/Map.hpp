@@ -514,11 +514,11 @@ public:
     //Candidate to get cut out if branching becomes too much of an issue.
     if(ret.second == true)
     {
-      #ifdef AXOM_USE_RAJA
+#ifdef AXOM_USE_RAJA
       RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
-      #else
+#else
       m_size++;
-      #endif
+#endif
       if(target->get_size() == target->get_capacity())
       {
         m_bucket_fill = true;
@@ -562,11 +562,11 @@ public:
     //Candidate to get cut out if branching becomes too much of an issue.
     if(ret.second == true)
     {
-      #ifdef AXOM_USE_RAJA
+#ifdef AXOM_USE_RAJA
       RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
-      #else
+#else
       m_size++;
-      #endif
+#endif
       if(target->get_size() == target->get_capacity())
       {
         m_bucket_fill = true;
@@ -617,11 +617,11 @@ public:
     bool ret = target->remove(key);
     if(ret == true)
     {
-      #ifdef AXOM_USE_RAJA
+#ifdef AXOM_USE_RAJA
       RAJA::atomicSub<RAJA::auto_atomic>(&m_size, 1);
-      #else
+#else
       m_size--;
-      #endif
+#endif
     }
     bucket_unlock(index, pol);
     return ret;
@@ -778,7 +778,11 @@ private:
    * \param [in] index the index needed for locking, if this weren't sequential.
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void bucket_lock(std::size_t index, axom::SEQ_EXEC overload) const { (void)index; (void) overload; } 
+  void bucket_lock(std::size_t index, axom::SEQ_EXEC overload) const
+  {
+    (void)index;
+    (void)overload;
+  }
 
   /*!
    * \brief Empty function for sequential execution environment.
@@ -786,7 +790,11 @@ private:
    * \param [in] index the index needed for locking, if this weren't sequential.
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void bucket_unlock(std::size_t index, axom::SEQ_EXEC overload) const { (void)index; (void)overload; } 
+  void bucket_unlock(std::size_t index, axom::SEQ_EXEC overload) const
+  {
+    (void)index;
+    (void)overload;
+  }
 
   /*!
    * \brief Empty function for sequential execution environment.
@@ -800,7 +808,7 @@ private:
    *
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void destroy_locks(axom::SEQ_EXEC overload) const { (void)overload; } 
+  void destroy_locks(axom::SEQ_EXEC overload) const { (void)overload; }
 
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 
@@ -811,7 +819,7 @@ private:
    */
   void bucket_lock(std::size_t index, axom::OMP_EXEC overload) const
   {
-    (void) overload;
+    (void)overload;
     omp_set_lock(locks + index);
   }
 
@@ -822,7 +830,7 @@ private:
    */
   void bucket_unlock(std::size_t index, axom::OMP_EXEC overload) const
   {
-    (void) overload;
+    (void)overload;
     omp_unset_lock(locks + index);
   }
 
@@ -831,7 +839,7 @@ private:
    */
   void init_locks(axom::OMP_EXEC overload) const
   {
-    (void) overload;
+    (void)overload;
     locks = axom::allocate<omp_lock_t>(m_bucket_count);
     for(std::size_t i = 0; i < m_bucket_count; i++)
     {
@@ -844,7 +852,7 @@ private:
    */
   void destroy_locks(axom::OMP_EXEC overload) const
   {
-    (void) overload;
+    (void)overload;
     for(std::size_t i = 0; i < m_bucket_count; i++)
     {
       omp_destroy_lock(locks + i);
