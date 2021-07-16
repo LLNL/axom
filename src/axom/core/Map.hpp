@@ -589,7 +589,7 @@ public:
    * \return A const reference to the value of key-value pair in the Map instance that is associated with supplied Key.
    *
    */
-  const T& operator[](const Key& key)
+  const T& operator[](const Key& key) const
   {
     //Since we can't throw an exception, the safest solution is to be read-only, and for the user to be careful with their
     //accesses.
@@ -634,7 +634,7 @@ public:
    *
    * \return A reference to the requested item if found, sentinel node end otherwise.
    */
-  axom_map::Node<Key, T>& find(const Key& key)
+  axom_map::Node<Key, T>& find(const Key& key) const
   {
     std::size_t index = bucket(get_hash(key));
     bucket_lock(index, pol);
@@ -778,7 +778,7 @@ private:
    * \param [in] index the index needed for locking, if this weren't sequential.
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void bucket_lock(std::size_t index, axom::SEQ_EXEC overload) { }
+  void bucket_lock(std::size_t index, axom::SEQ_EXEC overload) const { (void)index; (void) overload; } 
 
   /*!
    * \brief Empty function for sequential execution environment.
@@ -786,21 +786,21 @@ private:
    * \param [in] index the index needed for locking, if this weren't sequential.
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void bucket_unlock(std::size_t index, axom::SEQ_EXEC overload) { }
+  void bucket_unlock(std::size_t index, axom::SEQ_EXEC overload) const { (void)index; (void)overload; } 
 
   /*!
    * \brief Empty function for sequential execution environment.
    *
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void init_locks(axom::SEQ_EXEC overload) { }
+  void init_locks(axom::SEQ_EXEC overload) const { (void)overload; }
 
   /*!
    * \brief Empty function for sequential execution environment.
    *
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void destroy_locks(axom::SEQ_EXEC overload) { }
+  void destroy_locks(axom::SEQ_EXEC overload) const { (void)overload; } 
 
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 
@@ -809,8 +809,9 @@ private:
    *
    * \param [in] index the index of the bucket which the thread wants the lock for.
    */
-  void bucket_lock(std::size_t index, axom::OMP_EXEC overload)
+  void bucket_lock(std::size_t index, axom::OMP_EXEC overload) const
   {
+    (void) overload;
     omp_set_lock(locks + index);
   }
 
@@ -819,16 +820,18 @@ private:
    *
    * \param [in] index the index of the bucket which the thread wants to release the lock for.
    */
-  void bucket_unlock(std::size_t index, axom::OMP_EXEC overload)
+  void bucket_unlock(std::size_t index, axom::OMP_EXEC overload) const
   {
+    (void) overload;
     omp_unset_lock(locks + index);
   }
 
   /*!
    * \brief Allocates and initializes a lock for every bucket making up the Map instance.
    */
-  void init_locks(axom::OMP_EXEC overload)
+  void init_locks(axom::OMP_EXEC overload) const
   {
+    (void) overload;
     locks = axom::allocate<omp_lock_t>(m_bucket_count);
     for(std::size_t i = 0; i < m_bucket_count; i++)
     {
@@ -839,8 +842,9 @@ private:
   /*!
    * \brief Deallocates and destroys every lock used for this Map instance. 
    */
-  void destroy_locks(axom::OMP_EXEC overload)
+  void destroy_locks(axom::OMP_EXEC overload) const
   {
+    (void) overload;
     for(std::size_t i = 0; i < m_bucket_count; i++)
     {
       omp_destroy_lock(locks + i);
@@ -861,7 +865,7 @@ private:
   axom_map::Node<Key, T> m_end; /*!< the sentinel node enabling verification of operation success or failure */
   bool m_bucket_fill; /*!<  status of buckets in general -- if at least one is full, this is set to true, false otherwise*/
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-  omp_lock_t* locks;
+  mutable omp_lock_t* locks;
 #endif
   Policy pol;
   /// @}
