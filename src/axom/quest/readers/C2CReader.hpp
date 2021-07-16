@@ -36,9 +36,17 @@ public:
 
   virtual ~C2CReader() = default;
 
+  /// Sets the name of the contour file to load. Must be called before \a read()
   void setFileName(const std::string& fileName) { m_fileName = fileName; }
 
+  /// Sets the length unit. All lengths will be converted to this unit when reading the mesh
   void setLengthUnit(c2c::LengthUnit lengthUnit) { m_lengthUnit = lengthUnit; }
+
+  /// Sets the threshold for welding vertices of adjacent Pieces of curves
+  void setVertexWeldingThreshold(double thresh)
+  {
+    m_vertexWeldThreshold = thresh;
+  }
 
   /// Clears data associated with this reader
   void clear();
@@ -54,8 +62,8 @@ public:
   virtual void log();
 
   /*!
-   * \brief Projects high-order NURBS contours onto a linear mesh using \a segmentsPerPiece linear segments
-   * per \a Piece of the contour
+   * \brief Projects high-order NURBS contours onto a linear mesh using \a segmentsPerPiece 
+   * linear segments per \a Piece of the contour
    */
   void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                      int segmentsPerPiece);
@@ -66,6 +74,7 @@ protected:
 protected:
   std::string m_fileName;
   c2c::LengthUnit m_lengthUnit {c2c::LengthUnit::cm};
+  double m_vertexWeldThreshold {1E-9};
 
   std::vector<c2c::NURBSData> m_nurbsData;
 };

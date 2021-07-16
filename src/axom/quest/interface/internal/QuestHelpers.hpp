@@ -230,19 +230,20 @@ int read_stl_mesh(const std::string& file,
 
 #ifdef AXOM_USE_C2C
 /*!
- * \brief Reads in the contour mesh from the specified file.
+ * \brief Reads in the contour mesh from the specified file
  *
  * \param [in] file the file consisting of the surface
  * \param [in] segmentsPerPiece number of segments to sample per contour Piece
- * \param [out] m user-supplied pointer to point to the mesh object.
- * \param [in] comm the MPI communicator, only applicable when MPI is available.
+ * \param [in] vertexWeldThreshold threshold for welding vertices of adjacent curves
+ * \param [out] m user-supplied pointer to point to the mesh object
+ * \param [in] comm the MPI communicator, only applicable when MPI is available
  *
- * \note This method currently expects the contours to be given in the C2C format.
+ * \note This method currently expects the contours to be given in the C2C format
  *
  * \note The caller is responsible for properly de-allocating the mesh object
- *  that is returned by this function.
+ *  that is returned by this function
  *
- * \return status set to zero on success, or to a non-zero value otherwise.
+ * \return status set to zero on success, or to a non-zero value otherwise
  *
  * \pre m == nullptr
  * \pre !file.empty()
@@ -257,6 +258,7 @@ int read_stl_mesh(const std::string& file,
  */
 int read_c2c_mesh(const std::string& file,
                   int segmentsPerPiece,
+                  double vertexWeldThreshold,
                   mint::Mesh*& m,
                   MPI_Comm comm = MPI_COMM_SELF);
 #endif  // AXOM_USE_C2C

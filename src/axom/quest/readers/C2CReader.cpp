@@ -46,7 +46,7 @@ struct NURBSInterpolator
    * The knots vector is closed when it begins with \a m_curve.order equal knot values
    * and ends with the same number of equal knot values
    */
-  bool isClosed(double EPS = 1E-8) const
+  bool areKnotsClosed(double EPS = 1E-9) const
   {
     using axom::utilities::isNearlyEqual;
     const auto& U = m_curve.knots;
@@ -209,7 +209,7 @@ int C2CReader::readContour()
   c2c::Contour contour = c2c::parseContour(m_fileName);
 
   SLIC_INFO(
-    fmt::format("Loading contour with {} pieces", contour.getNumEntries()));
+    fmt::format("Loading contour with {} pieces", contour.getPieces().size()));
 
   for(auto* piece : contour.getPieces())
   {
@@ -255,7 +255,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   using PointType = primal::Point<double, 2>;
   using PointsArray = std::vector<PointType>;
 
-  const double EPS = 1E-9 * 1E-9;
+  const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
 
   for(const auto& nurbs : m_nurbsData)
   {
@@ -286,7 +286,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
         PointType meshPt;
         // Fix start point if necessary; check against most recently added vertex in mesh
         mesh->getNode(numNodes - 1, meshPt.data());
-        if(primal::squared_distance(pts[0], meshPt) < EPS)
+        if(primal::squared_distance(pts[0], meshPt) < EPS_SQ)
         {
           pts[0] = meshPt;
         }
@@ -294,7 +294,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
         // Fix end point if necessary; check against 0th vertex in mesh
         const int endIdx = pts.size() - 1;
         mesh->getNode(0, meshPt.data());
-        if(primal::squared_distance(pts[endIdx], meshPt) < EPS)
+        if(primal::squared_distance(pts[endIdx], meshPt) < EPS_SQ)
         {
           pts[endIdx] = meshPt;
         }
@@ -302,7 +302,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
       else  // This is the first, and possibly only Piece, check its endpoint, fix if necessary
       {
         int endIdx = pts.size() - 1;
-        if(primal::squared_distance(pts[0], pts[endIdx]) < EPS)
+        if(primal::squared_distance(pts[0], pts[endIdx]) < EPS_SQ)
         {
           pts[endIdx] = pts[0];
         }

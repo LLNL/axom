@@ -357,6 +357,7 @@ int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
  */
 int read_c2c_mesh(const std::string& file,
                   int segmentsPerPiece,
+                  double vertexWeldThreshold,
                   mint::Mesh*& m,
                   MPI_Comm comm)
 {
@@ -385,6 +386,7 @@ int read_c2c_mesh(const std::string& file,
 
   // STEP 3: read the mesh from the STL file
   reader->setFileName(file);
+  reader->setVertexWeldingThreshold(vertexWeldThreshold);
   int rc = reader->read();
   if(rc == READ_SUCCESS)
   {
