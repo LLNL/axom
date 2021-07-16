@@ -255,6 +255,8 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   using PointType = primal::Point<double, 2>;
   using PointsArray = std::vector<PointType>;
 
+  const double EPS = 1E-9 * 1E-9;
+
   for(const auto& nurbs : m_nurbsData)
   {
     NURBSInterpolator interpolator(nurbs);
@@ -276,7 +278,38 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
       }
     }
 
-    // Add the new points and segments to the mesh
+    // Check for simple vertex welding opportunities at endpoints of newly interpolated points
+    {
+      int numNodes = mesh->getNumberOfNodes();
+      if(numNodes > 0)  // this is not the first Piece
+      {
+        PointType meshPt;
+        // Fix start point if necessary; check against most recently added vertex in mesh
+        mesh->getNode(numNodes - 1, meshPt.data());
+        if(primal::squared_distance(pts[0], meshPt) < EPS)
+        {
+          pts[0] = meshPt;
+        }
+
+        // Fix end point if necessary; check against 0th vertex in mesh
+        const int endIdx = pts.size() - 1;
+        mesh->getNode(0, meshPt.data());
+        if(primal::squared_distance(pts[endIdx], meshPt) < EPS)
+        {
+          pts[endIdx] = meshPt;
+        }
+      }
+      else  // This is the first, and possibly only Piece, check its endpoint, fix if necessary
+      {
+        int endIdx = pts.size() - 1;
+        if(primal::squared_distance(pts[0], pts[endIdx]) < EPS)
+        {
+          pts[endIdx] = pts[0];
+        }
+      }
+    }
+
+    // Add the new points and segments to the mesh, respecting welding checks from previous block
     {
       const int startNode = mesh->getNumberOfNodes();
       const int numNewNodes = pts.size();
