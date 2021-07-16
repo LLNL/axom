@@ -43,6 +43,7 @@ struct NURBSInterpolator
     computeSpanIntervals(EPS);
   }
 
+  // Helper function to compute the start and end index of each knot span
   void computeSpanIntervals(double EPS)
   {
     using axom::utilities::isNearlyEqual;
@@ -55,11 +56,8 @@ struct NURBSInterpolator
     {
       const double left = U[i];
       const double right = U[i + 1];
-      SLIC_INFO(fmt::format("At index {}: left {}, right {}", i, left, right));
-
       if(!isNearlyEqual(left, right, EPS))
       {
-        SLIC_INFO(fmt::format("\t Added interval [{},{}]", left, right));
         m_spanIntervals.push_back(std::make_pair(left, right));
       }
     }

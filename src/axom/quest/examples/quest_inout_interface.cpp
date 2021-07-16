@@ -146,7 +146,8 @@ int main(int argc, char** argv)
   // -- Set up and parse command line options
   std::string fileName;
   bool isVerbose = false;
-  int npoints = 100000;
+  int nQueryPoints = 100000;
+  int segmentsPerKnotSpan = 25;
   double weldThresh = 1E-9;
 
   CLI::App app {"Driver for containment query using inout API"};
@@ -161,10 +162,16 @@ int main(int argc, char** argv)
     ->description("Threshold for welding")
     ->check(CLI::NonNegativeNumber)
     ->capture_default_str();
-  app.add_option("-n,--num-samples", npoints)
+  app.add_option("-q,--num-query-points", nQueryPoints)
     ->description("Number of query points")
     ->check(CLI::NonNegativeNumber)
     ->capture_default_str();
+  app.add_option("-n,--segments-per-knot-span", segmentsPerKnotSpan)
+    ->description(
+      "(2D only) Number of linear segments to generate per NURBS knot span")
+    ->capture_default_str()
+    ->check(CLI::PositiveNumber);
+
   app.get_formatter()->column_width(50);
 
   try
@@ -207,6 +214,12 @@ int main(int argc, char** argv)
   }
 
   rc = quest::inout_set_vertex_weld_threshold(weldThresh);
+  if(rc != quest::QUEST_INOUT_SUCCESS)
+  {
+    cleanAbort();
+  }
+
+  rc = quest::inout_set_segments_per_knot_span(segmentsPerKnotSpan);
   if(rc != quest::QUEST_INOUT_SUCCESS)
   {
     cleanAbort();
@@ -273,11 +286,11 @@ int main(int argc, char** argv)
   // -- Generate query points
   Box3D bbox {Point3D(bbMin), Point3D(bbMax)};
   CoordsVec queryPoints;
-  generateQueryPoints(queryPoints, bbox, npoints, dim);
+  generateQueryPoints(queryPoints, bbox, nQueryPoints, dim);
 
   // -- Run the queries (the z-coordinate is ignored for 2D queries)
   int numInside = 0;
-  SLIC_INFO(fmt::format("Querying mesh with {} query points...", npoints));
+  SLIC_INFO(fmt::format("Querying mesh with {} query points...", nQueryPoints));
   timer.start();
   for(auto& pt : queryPoints)
   {

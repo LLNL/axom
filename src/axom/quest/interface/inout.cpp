@@ -24,14 +24,14 @@ struct InOutParameters
 {
   bool m_verbose {false};
   int m_dimension {3};
-  int m_segmentsPerPiece {100};  /// Used when linearizing curves
+  int m_segmentsPerKnotSpan {25};  /// Used when linearizing curves
   double m_vertexWeldThreshold {1E-9};
 
   void setDefault()
   {
     m_verbose = false;
     m_dimension = 3;
-    m_segmentsPerPiece = 100;
+    m_segmentsPerKnotSpan = 25;
     m_vertexWeldThreshold = 1E-9;
   }
 };
@@ -94,9 +94,9 @@ struct InOutHelper
     m_params.m_vertexWeldThreshold = thresh;
   }
 
-  void setSegmentsPerPiece(int numSegments)
+  void setSegmentsPerKnotSpan(int numSegments)
   {
-    m_params.m_segmentsPerPiece = numSegments;
+    m_params.m_segmentsPerKnotSpan = numSegments;
   }
 
   /// Saves the current slic logging level
@@ -136,7 +136,7 @@ struct InOutHelper
     case 2:
 #ifdef AXOM_USE_C2C
       rc = internal::read_c2c_mesh(file,
-                                   m_params.m_segmentsPerPiece,
+                                   m_params.m_segmentsPerKnotSpan,
                                    m_params.m_vertexWeldThreshold,
                                    mesh,
                                    comm);
@@ -372,7 +372,7 @@ int inout_init(const std::string& file, MPI_Comm comm)
   {
   case 2:
     s_inoutHelper2D.setVerbose(s_inoutParams.m_verbose);
-    s_inoutHelper2D.setSegmentsPerPiece(s_inoutParams.m_segmentsPerPiece);
+    s_inoutHelper2D.setSegmentsPerKnotSpan(s_inoutParams.m_segmentsPerKnotSpan);
     s_inoutHelper2D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
 
     rc = s_inoutHelper2D.initialize(file, comm);
@@ -416,7 +416,7 @@ int inout_init(mint::Mesh*& mesh, MPI_Comm comm)
   {
   case 2:
     s_inoutHelper2D.setVerbose(s_inoutParams.m_verbose);
-    s_inoutHelper2D.setSegmentsPerPiece(s_inoutParams.m_segmentsPerPiece);
+    s_inoutHelper2D.setSegmentsPerKnotSpan(s_inoutParams.m_segmentsPerKnotSpan);
     s_inoutHelper2D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
 
     rc = s_inoutHelper2D.initialize(mesh, comm);
@@ -427,7 +427,7 @@ int inout_init(mint::Mesh*& mesh, MPI_Comm comm)
 
   case 3:
     s_inoutHelper3D.setVerbose(s_inoutParams.m_verbose);
-    s_inoutHelper3D.setSegmentsPerPiece(s_inoutParams.m_segmentsPerPiece);
+    s_inoutHelper3D.setSegmentsPerKnotSpan(s_inoutParams.m_segmentsPerKnotSpan);
     s_inoutHelper3D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
 
     rc = s_inoutHelper3D.initialize(mesh, comm);
@@ -670,29 +670,6 @@ int inout_set_dimension(int dim)
   return QUEST_INOUT_SUCCESS;
 }
 
-int inout_set_segments_per_piece(int num_segments)
-{
-  if(inout_initialized())
-  {
-    SLIC_WARNING("quest inout query must NOT be initialized "
-                 << "prior to calling 'inout_set_segments_per_piece'");
-
-    return QUEST_INOUT_FAILED;
-  }
-
-  if(num_segments < 1)
-  {
-    SLIC_WARNING("quest inout query: segments per piece must be at least 1."
-                 << " Supplied value was " << num_segments);
-
-    return QUEST_INOUT_FAILED;
-  }
-
-  s_inoutParams.m_segmentsPerPiece = num_segments;
-
-  return QUEST_INOUT_SUCCESS;
-}
-
 int inout_set_vertex_weld_threshold(double thresh)
 {
   if(inout_initialized())
@@ -712,6 +689,29 @@ int inout_set_vertex_weld_threshold(double thresh)
   }
 
   s_inoutParams.m_vertexWeldThreshold = thresh;
+
+  return QUEST_INOUT_SUCCESS;
+}
+
+int inout_set_segments_per_knot_span(int segmentsPerKnotSpan)
+{
+  if(inout_initialized())
+  {
+    SLIC_WARNING("quest inout query must NOT be initialized "
+                 << "prior to calling 'inout_set_segments_per_knot_span'");
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  if(segmentsPerKnotSpan < 1)
+  {
+    SLIC_WARNING("quest inout query: segmentsPerKnotSpan must be at least 1."
+                 << " Supplied value was " << segmentsPerKnotSpan);
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  s_inoutParams.m_segmentsPerKnotSpan = segmentsPerKnotSpan;
 
   return QUEST_INOUT_SUCCESS;
 }

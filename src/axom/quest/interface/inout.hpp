@@ -230,9 +230,26 @@ int inout_set_verbose(bool verbosity);
  * \return Return code is QUEST_INOUT_SUCCESS if successful
  *  and QUEST_INOUT_FAILED otherwise.
  * \pre inout_initialized() == false
- * \pre thresh >= 0
+ * \pre thresh > 0
  */
 int inout_set_vertex_weld_threshold(double thresh);
+
+/*!
+ * \brief Sets the number of samples for each knot span (2D only)
+ *
+ * By default, the welding threshold is 25
+ *
+ * Span intervals are the segments of each curve. This parameter controls
+ * the number of samples to use when linearizing each knot span
+ * of the contour splines 
+ *
+ * \param segmentsPerKnotSpan The number of segments for each knot span
+ * \return Return code is QUEST_INOUT_SUCCESS if successful
+ *  and QUEST_INOUT_FAILED otherwise.
+ * \pre inout_initialized() == false
+ * \pre segmentsPerKnotSpan >= 1
+ */
+int inout_set_segments_per_knot_span(int segmentsPerKnotSpan);
 
 /// @}
 
