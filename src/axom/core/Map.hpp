@@ -507,7 +507,7 @@ public:
     {
       return axom_map::Pair<Key, T>(&m_end, false);
     }
-    std::size_t index = bucket(get_hash(key));
+    std::size_t index = bucket(key);
     bucket_lock(index, pol);
     axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
@@ -555,7 +555,7 @@ public:
       return axom_map::Pair<Key, T>(&m_end, false);
     }
 
-    std::size_t index = bucket(get_hash(key));
+    std::size_t index = bucket(key);
     bucket_lock(index, pol);
     axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     axom_map::Pair<Key, T> ret = target->insert_update(key, val);
@@ -610,7 +610,7 @@ public:
    */
   bool erase(const Key& key)
   {
-    std::size_t index = bucket(get_hash(key));
+    std::size_t index = bucket(key);
     bucket_lock(index, pol);
     axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     //Candidate to get cut out if branching becomes too much of an issue.
@@ -636,7 +636,7 @@ public:
    */
   axom_map::Node<Key, T>& find(const Key& key) const
   {
-    std::size_t index = bucket(get_hash(key));
+    std::size_t index = bucket(key);
     bucket_lock(index, pol);
     axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
     axom_map::Node<Key, T>& out = target->find(key);
@@ -654,7 +654,7 @@ public:
    *
    * \return A pointer to the queried bucket.
    */
-  std::size_t bucket(std::size_t hash) const { return hash % m_bucket_count; }
+  std::size_t bucket(Key key) const { return get_hash(key) % m_bucket_count; }
 
   /*!
    * \brief Returns the maximum number of items per bucket.
