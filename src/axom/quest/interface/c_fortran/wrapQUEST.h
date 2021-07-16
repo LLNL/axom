@@ -52,9 +52,13 @@ int QUEST_inout_init_serial_bufferify(const char* fileName, int LfileName);
 
 bool QUEST_inout_initialized(void);
 
+int QUEST_inout_set_dimension(int dim);
+
 int QUEST_inout_set_verbose(bool verbosity);
 
 int QUEST_inout_set_vertex_weld_threshold(double thresh);
+
+int QUEST_inout_set_segments_per_knot_span(int segmentsPerKnotSpan);
 
 bool QUEST_inout_evaluate_0(double x, double y);
 
