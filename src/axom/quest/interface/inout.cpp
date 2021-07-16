@@ -133,7 +133,13 @@ struct InOutHelper
     switch(DIM)
     {
     case 2:
+#ifdef AXOM_USE_C2C
       rc = internal::read_c2c_mesh(file, m_params.m_segmentsPerPiece, mesh, comm);
+#else
+      SLIC_WARNING(fmt::format(
+        "Cannot read contour file: C2C not enabled in this configuration.",
+        file));
+#endif
       break;
     case 3:
       rc = internal::read_stl_mesh(file, mesh, comm);

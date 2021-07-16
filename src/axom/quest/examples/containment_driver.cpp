@@ -85,6 +85,8 @@ public:
 #else
   void loadContourMesh(const std::string& inputFile, int segmentsPerPiece = 100)
   {
+    AXOM_UNUSED_VAR(inputFile);
+    AXOM_UNUSED_VAR(segmentsPerPiece);
     SLIC_ERROR(
       "Configuration error: Loading contour files is only supported when Axom "
       "is configured with C2C support.");
