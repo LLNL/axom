@@ -11,17 +11,17 @@
 #------------------------------------------------------------------------------
 # Note:
 #  Contains a parallel build of MFEM generated using: 
-#    >./scripts/llnl_scripts/build_tpls.py  --spec "%clang@10.0.0+devtools+mfem ^mfem+mpi+metis+zlib"
+#    >./scripts/llnl_scripts/build_tpls.py  --spec "%clang@10.0.0+devtools+mfem+c2c ^mfem+mpi+metis+zlib"
 #  and adds a flag to use the axom version of mfem sidre data collection (see bottom of file)
 #------------------------------------------------------------------------------
 
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_07_16_12_05_49/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_07_16_12_28_08/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_07_16_12_05_49/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_07_16_12_28_08/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_07_16_12_05_49/spack/lib/spack/env/clang/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_07_16_12_28_08/spack/lib/spack/env/clang/gfortran" CACHE PATH "")
 
 else()
 
@@ -77,11 +77,11 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_07_16_12_05_49/clang-10.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_07_16_12_28_08/clang-10.0.0" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2" CACHE PATH "")
 
-# C2C not built
+set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0" CACHE PATH "")
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.2.0" CACHE PATH "")
 
