@@ -71,23 +71,23 @@ set( quest_sources
 
 
 set( quest_depends_on
-     core
-     slic
-     mint
-     slam
-     spin
-     primal
-     fmt
-     )
+    core
+    slic
+    mint
+    slam
+    spin
+    primal
+    fmt
+    )
 
 blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
 blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
      
 if(C2C_FOUND)
-     list(APPEND quest_headers readers/C2CReader.hpp)
-     list(APPEND quest_sources readers/C2CReader.cpp)
-     list(APPEND quest_depends_on c2c)
+    list(APPEND quest_headers readers/C2CReader.hpp)
+    list(APPEND quest_sources readers/C2CReader.cpp)
+    list(APPEND quest_depends_on c2c)
 endif()
 
 if (ENABLE_MPI)
@@ -98,7 +98,6 @@ if (ENABLE_MPI)
     blt_list_append(TO quest_sources IF C2C_FOUND ELEMENTS readers/PC2CReader.cpp)
     
     list(APPEND quest_depends_on mpi)
-    blt_list_append(TO quest_depends_on IF AXOM_ENABLE_LUMBERJACK ELEMENTS lumberjack )
 endif()
 
 if (SHROUD_FOUND)
@@ -145,11 +144,11 @@ axom_install_component(NAME    quest
 # Add tests and examples
 #------------------------------------------------------------------------------
 if (AXOM_ENABLE_EXAMPLES)
-  add_subdirectory(examples)
+    add_subdirectory(examples)
 endif()
 
 if (AXOM_ENABLE_TESTS)
-  add_subdirectory(tests)
+    add_subdirectory(tests)
 endif()
 
 axom_add_code_checks(PREFIX quest)

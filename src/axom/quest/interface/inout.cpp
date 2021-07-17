@@ -411,6 +411,7 @@ int inout_init(mint::Mesh*& mesh, MPI_Comm comm)
     {
       s_inoutHelper2D.restoreLoggingLevel();
     }
+    break;
 
   case 3:
     s_inoutHelper3D.setVerbose(s_inoutParams.m_verbose);
