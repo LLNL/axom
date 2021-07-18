@@ -427,7 +427,7 @@ TEST(multimat, test_data_setval)
 {
   const int num_cells = 20;
   const int num_mats = 10;
-  const int stride_val = 4;
+  const int stride_val = 1;
   MM_test_data<double> data(num_cells, num_mats, stride_val);
 
   {  //remove everything, add everything back, and check
@@ -471,7 +471,7 @@ TEST(multimat, construct_multimat_1_array)
 {
   const int num_cells = 20;
   const int num_mats = 10;
-  const int stride_val = 4;
+  const int stride_val = 1;
   MM_test_data<double> data(num_cells, num_mats, stride_val);
 
   std::vector<DataLayout> data_layouts = {DataLayout::CELL_DOM,
@@ -539,7 +539,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
 {
   const int num_cells = 20;
   const int num_mats = 10;
-  const int stride_val = 4;
+  const int stride_val = 1;
 
   std::vector<DataLayout> data_layouts = {DataLayout::CELL_DOM,
                                           DataLayout::MAT_DOM};
@@ -592,7 +592,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
               idx1 = mi, idx2 = ci;
             }
 
-            EXPECT_TRUE(mm.removeEntry(idx1, idx2));
+            EXPECT_TRUE(mm.removeEntry(ci, mi));
             volfrac_field(idx1, idx2) = 0.0;
             for(int s = 0; s < stride_val; s++) arr(idx1, idx2, s) = 0.0;
           }
@@ -614,7 +614,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
           idx1 = 0, idx2 = ci;
         }
 
-        mm.addEntry(idx1, idx2);
+        EXPECT_TRUE(mm.addEntry(ci, 0));
         volfrac_field(idx1, idx2) = 1.0;
         for(int s = 0; s < stride_val; s++)
           arr(idx1, idx2, s) =

@@ -61,10 +61,11 @@ MultiMat::MapBaseType* MultiMat::helper_copyField(const MultiMat& mm, int map_i)
     //BivariateSetType* biSetPtr = get_mapped_biSet(map_i);
     Field2D<T>* typed_ptr = dynamic_cast<Field2D<T>*>(other_map_ptr);
 
-    //old field2d
+    //old field2d with variable stride
     //Field2D<T>* new_ptr = new Field2D<T>(biSetPtr, T(), typed_ptr->stride());
     //new_ptr->copy(typed_ptr->getMap()->data().data());
 
+    //fixed strideOne (in the definition of Field2D)
     Field2D<T>* new_ptr = new Field2D<T>(*typed_ptr);
 
     return new_ptr;
@@ -384,130 +385,176 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfMat(int m, SparsityLayout sparsity)
 
 void MultiMat::convertToDynamic()
 {
-  SLIC_ASSERT(false);  //need to fix
-                       /*
   if (m_dynamic_mode)
     return;
   SLIC_ASSERT(m_cellMatRelDyn == nullptr);
+  SLIC_ASSERT(m_matCellRelDyn == nullptr);
 
   // Save what the current layout is for later
-  m_static_layout = Layout { m_dataLayout, m_sparsityLayout };
+  //m_static_layout = Layout { m_dataLayout, m_sparsityLayout };  //old version with single layout for all MM
+  m_layout_when_static.resize(m_fieldDataLayoutVec.size());
+  for (auto i = 0; i < m_fieldDataLayoutVec.size(); i++) {
+    m_layout_when_static[i].data_layout = m_fieldDataLayoutVec[i];
+    m_layout_when_static[i].sparsity_layout = m_fieldSparsityLayoutVec[i];
 
-  // For now, handle dynamic by changing maps to dense,
-  // and relation to DynamicRelation
-  if (isSparse())
-    convertLayoutToDense();
-
-  //create the dynamic relation
-  SetType* set1 = m_cellMatRel->fromSet();
-  SetType* set2 = m_cellMatRel->toSet();
-
-  m_cellMatRelDyn = new DynamicVariableRelationType(set1, set2);
-  for (int i = 0 ; i < m_cellMatRel->fromSetSize() ; i++)
-  {
-    auto&& rel_vec = (*m_cellMatRel)[i];
-    for (int j = 0 ; j < rel_vec.size() ; j++)
-    {
-      m_cellMatRelDyn->insert(i, rel_vec[j]);
+    
+    // For now, handle dynamic by changing maps to dense,
+    // and relation to DynamicRelation
+    // if(isSparse()) convertLayoutToDense(); //old version with single layout for all MM
+    if (m_fieldSparsityLayoutVec[i] == SparsityLayout::SPARSE) {
+      convertFieldToDense(i);
     }
   }
+  
+  //create the dynamic relation
+  for (int f = 0; f < 2; f++)
+  {
+    StaticVariableRelationType* rel;
+    if(f == 0) {
+      rel = m_cellMatRel;
+    }
+    else {
+      rel = m_matCellRel;
+    }
+
+    SetType* set1 = rel->fromSet();
+    SetType* set2 = rel->toSet();
+    
+    auto relDyn = new DynamicVariableRelationType(set1, set2);
+    for(int i = 0; i < rel->fromSetSize(); i++)
+    {
+      auto&& rel_vec = (*rel)[i];
+      for(int j = 0; j < rel_vec.size(); j++)
+      {
+        relDyn->insert(i, rel_vec[j]);
+      }
+    }
+
+    if (f == 0)
+      m_cellMatRelDyn = relDyn;
+    else
+      m_matCellRelDyn = relDyn;
+  }
+
+  SLIC_ASSERT(m_cellMatRelDyn->isValid());
 
   SLIC_ASSERT(m_cellMatRelDyn->totalSize() == m_cellMatRel->totalSize());
+  SLIC_ASSERT(m_matCellRelDyn->totalSize() == m_matCellRel->totalSize());
 
-  delete m_cellMatRel;
-  m_cellMatRel = nullptr;
-  delete m_cellMatNZSet;
-  m_cellMatNZSet = nullptr;
+
+  delete m_cellMatRel; m_cellMatRel = nullptr;
+  delete m_cellMatNZSet; m_cellMatNZSet = nullptr;
+  delete m_matCellRel; m_matCellRel = nullptr;
+  delete m_matCellNZSet; m_matCellNZSet = nullptr;
 
   m_dynamic_mode = true;
-  */
+  
 }
 
 void MultiMat::convertToStatic()
 {
-  SLIC_ASSERT(false);  //need to fix
-  /*
   if (!m_dynamic_mode)
     return;
 
   // Change dynamicRelation back to staticRelation
   // change the layout to previously stored static layout
 
-  RangeSetType* set1 = isCellDom() ? &m_cellSet : &m_matSet;
-  RangeSetType* set2 = isCellDom() ? &m_matSet : &m_cellSet;
-
   SLIC_ASSERT(m_cellMatRel == nullptr);
-  SLIC_ASSERT(SetPosType( m_cellMatRel_beginsVec.size()) == set1->size() + 1);
-  int rel_data_size = 0;
-  for (int i = 0 ; i < m_cellMatRelDyn->fromSetSize() ; i++)
+  SLIC_ASSERT(m_matCellRel == nullptr);
+
+  //Create the static relations
+  for(int f = 0; f < 2; f++)
   {
-    auto& rel_vec = (*m_cellMatRelDyn)[i];
-    m_cellMatRel_beginsVec[i] = rel_data_size;
-    rel_data_size += rel_vec.size();
-  }
-  m_cellMatRel_beginsVec.back() = rel_data_size;
-  m_cellMatRel_indicesVec.resize(rel_data_size);
-  int idx = 0;
-  for (int i = 0 ; i < m_cellMatRelDyn->fromSetSize() ; i++)
-  {
-    auto& rel_vec = (*m_cellMatRelDyn)[i];
-    for (unsigned int j = 0 ; j < rel_vec.size() ; j++)
+    DynamicVariableRelationType* relDyn = f == 0 ? m_cellMatRelDyn: m_matCellRelDyn; 
+    
+    RangeSetType* set1 = f == 0 ? &m_cellSet : &m_matSet;
+    RangeSetType* set2 = f == 0 ? &m_matSet : &m_cellSet;
+
+    std::vector<SetPosType>& rel_beginvec =
+      f == 0 ? m_cellMatRel_beginsVec : m_matCellRel_beginsVec;
+    std::vector<SetPosType>& rel_indicesVec =
+      f == 0 ? m_cellMatRel_indicesVec : m_matCellRel_indicesVec;
+
+    SLIC_ASSERT(SetPosType(rel_beginvec.size()) == set1->size() + 1);
+    int rel_data_size = 0;
+    for(int i = 0; i < relDyn->fromSetSize(); i++)
     {
-      m_cellMatRel_indicesVec[idx++] = rel_vec[j];
+      auto& rel_vec = (*relDyn)[i];
+      rel_beginvec[i] = rel_data_size;
+      rel_data_size += rel_vec.size();
     }
+    rel_beginvec.back() = rel_data_size;
+    rel_indicesVec.resize(rel_data_size);
+    int idx = 0;
+    for(int i = 0; i < relDyn->fromSetSize(); i++)
+    {
+      auto& rel_vec = (*relDyn)[i];
+      for(unsigned int j = 0; j < rel_vec.size(); j++)
+      {
+        rel_indicesVec[idx++] = rel_vec[j];
+      }
+    }
+    SLIC_ASSERT(idx == relDyn->totalSize());
+
+    StaticVariableRelationType*& rel = f == 0 ? m_cellMatRel : m_matCellRel;
+
+    rel = new StaticVariableRelationType(set1, set2);
+    rel->bindBeginOffsets(set1->size(), &rel_beginvec);
+    rel->bindIndices(rel_indicesVec.size(), &rel_indicesVec);
+
+    SLIC_ASSERT(rel->isValid());
+
+    RelationSetType*& nzSet = f == 0 ? m_cellMatNZSet : m_matCellNZSet;
+    SLIC_ASSERT(nzSet == nullptr);
+    nzSet = new RelationSetType(rel);
+    SLIC_ASSERT(nzSet->isValid());
   }
-  SLIC_ASSERT(idx == m_cellMatRelDyn->totalSize());
-
-  m_cellMatRel = new StaticVariableRelationType(set1, set2);
-  m_cellMatRel->bindBeginOffsets(set1->size(), &m_cellMatRel_beginsVec);
-  m_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(),
-                            &m_cellMatRel_indicesVec);
-
-  SLIC_ASSERT(m_cellMatRel->isValid());
-
-  SLIC_ASSERT(m_cellMatNZSet == nullptr);
-  m_cellMatNZSet = new RelationSetType(m_cellMatRel);
 
   m_dynamic_mode = false;
 
-  if (m_static_layout.sparsity_layout == SparsityLayout::SPARSE)
-    convertLayoutToSparse();
+  //Change each field to their corresponding sparsity
+  //if (m_static_layout.sparsity_layout == SparsityLayout::SPARSE) convertLayoutToSparse();
+  for(auto i = 0; i < m_layout_when_static.size(); i++)
+  {
+    if(m_layout_when_static[i].sparsity_layout == SparsityLayout::SPARSE)
+    {
+      convertFieldToSparse(i);
+    }
+  }
+  m_layout_when_static.resize(0);
 
   delete m_cellMatRelDyn;
-  m_cellMatRelDyn = nullptr;
-  */
+  delete m_matCellRelDyn;
+  m_cellMatRelDyn = m_matCellRelDyn = nullptr;
 }
 
-bool MultiMat::addEntry(int idx1, int idx2)
+bool MultiMat::addEntry(int cell_id, int mat_id)
 {
-  SLIC_ASSERT(false);  //need to fix
-                       /*
   SLIC_ASSERT(m_dynamic_mode);
 
   //right now this is implemented by converting the data layout to dense so that
   // adding an entry only involve changing the relation data.
 
-  auto& rel_vec = m_cellMatRelDyn->data(idx1);
-  auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx2);
+  auto& rel_vec = m_cellMatRelDyn->data(cell_id);
+  auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), mat_id);
   if (found_iter != rel_vec.end())
   {
     SLIC_ASSERT_MSG(false, "MultiMat::addEntry() -- entry already exists.");
     return false;
   }
 
-  m_cellMatRelDyn->insert(idx1, idx2);
-  */
+  m_cellMatRelDyn->insert(cell_id, mat_id);
+  m_matCellRelDyn->insert(mat_id, cell_id);
+  
   return true;
 }
 
-bool MultiMat::removeEntry(int idx1, int idx2)
+bool MultiMat::removeEntry(int cell_id, int mat_id)
 {
-  SLIC_ASSERT(false);  //need to fix
-                       /*
   SLIC_ASSERT(m_dynamic_mode);
 
-  auto& rel_vec = m_cellMatRelDyn->data(idx1);
-  auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx2);
+  auto& rel_vec = m_cellMatRelDyn->data(cell_id);
+  auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), mat_id);
   if (found_iter == rel_vec.end())
   {
     SLIC_ASSERT_MSG(false, "MultiMat::removeEntry() -- entry not found");
@@ -516,8 +563,12 @@ bool MultiMat::removeEntry(int idx1, int idx2)
 
   rel_vec.erase(found_iter);
 
+  auto& rel_vec_2 = m_matCellRelDyn->data(mat_id);
+  auto&& found_iter_2 = std::find(rel_vec_2.begin(), rel_vec_2.end(), cell_id);
+  rel_vec_2.erase(found_iter_2);
+
   //TODO make all map value zero?
-  */
+  
   return true;
 }
 

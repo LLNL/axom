@@ -27,11 +27,11 @@ namespace tinyHydro {
 
   using IndexField = slam::Map<int>;
 
-  using ScalarField = slam::Map<double>;
+  using ScalarField = slam::Map<double,SetBase>;
   using NodalScalarField = ScalarField;
   using ZonalScalarField = ScalarField;
 
-  using VectorField = slam::Map<VectorXY>;
+  using VectorField = slam::Map<VectorXY,SetBase>;
   using NodalVectorField = VectorField;
   using ZonalVectorField = VectorField;
   using FaceVectorField = VectorField;

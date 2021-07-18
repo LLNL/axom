@@ -525,7 +525,7 @@ private:
   };
 
   //Layout used during the static mode
-  std::vector<Layout> m_layout_when_static;
+  std::vector<Layout> m_layout_when_static; //per field
   Layout m_static_layout;
 
   bool m_dynamic_mode;  //true if in dynamic mode
