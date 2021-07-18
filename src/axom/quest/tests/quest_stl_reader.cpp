@@ -3,17 +3,17 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/quest/stl/STLReader.hpp"
+#include "axom/quest/readers/STLReader.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
 
 // C/C++ includes
-#include <cstdio>   // for std::remove()
-#include <string>   // for std::string
-#include <fstream>  // for std::ofstream
-#include <limits>   // for std::numeric_limits
+#include <cstdio>
+#include <string>
+#include <fstream>
+#include <limits>
 
 // namespace aliases
 namespace mint = axom::mint;
