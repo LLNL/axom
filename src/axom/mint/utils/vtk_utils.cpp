@@ -222,8 +222,8 @@ void write_rectilinear_mesh(const RectilinearMesh* mesh, std::ofstream& file)
 }
 
 /*!
- * \brief Writes a uniform mesh to a VTK file using the legacy
- *  ASCII format.
+ * \brief Writes a uniform mesh to a VTK file using the legacy ASCII format.
+ *
  * \param [in] mesh the uniform mesh to write out.
  * \param [in] file the stream to write to.
  * \pre mesh != nullptr
@@ -242,8 +242,27 @@ void write_uniform_mesh(const UniformMesh* mesh, std::ofstream& file)
 }
 
 /*!
- * \brief Writes a scalar field to a VTK file using the legacy
- *  ASCII format.
+ * Templated helper function to write out scalar field of type \a T
+ * See write_scalar_data for information about parameters
+ */
+template <typename T>
+void write_scalar_helper(const std::string& type,
+                         const Field* field,
+                         std::ofstream& file)
+{
+  const T* data_ptr = Field::getDataPtr<T>(field);
+  SLIC_ASSERT(data_ptr != nullptr);
+
+  fmt::print(file, "SCALARS {} ", field->getName());
+  fmt::print(file, fmt::format("{}\n", type));
+  fmt::print(file, "LOOKUP_TABLE default\n");
+  const IndexType num_values = field->getNumTuples();
+  fmt::print(file, "{}\n", fmt::join(data_ptr, data_ptr + num_values, "\n"));
+}
+
+/*!
+ * \brief Writes a scalar field to a VTK file using the legacy ASCII format
+ *
  * \param [in] field the scalar field to write out.
  * \param [in] file the stream to write to.
  * \pre field != nullptr
@@ -253,34 +272,60 @@ void write_scalar_data(const Field* field, std::ofstream& file)
 {
   SLIC_ASSERT(field != nullptr);
   SLIC_ASSERT(field->getNumComponents() == 1);
-  const IndexType num_values = field->getNumTuples();
 
-  fmt::print(file, "SCALARS {} ", field->getName());
-  if(field->getType() == DOUBLE_FIELD_TYPE)
+  switch(field->getType())
   {
-    fmt::print(file, "double\n");
-    fmt::print(file, "LOOKUP_TABLE default\n");
-
-    const double* data_ptr = Field::getDataPtr<double>(field);
-    SLIC_ASSERT(data_ptr != nullptr);
-
-    fmt::print(file, "{}\n", fmt::join(data_ptr, data_ptr + num_values, "\n"));
-  }
-  else if(field->getType() == INT32_FIELD_TYPE)
-  {
-    fmt::print(file, "int\n");
-    fmt::print(file, "LOOKUP_TABLE default\n");
-
-    const int* data_ptr = Field::getDataPtr<int>(field);
-    SLIC_ASSERT(data_ptr != nullptr);
-
-    fmt::print(file, "{}\n", fmt::join(data_ptr, data_ptr + num_values, "\n"));
+  case FLOAT_FIELD_TYPE:
+    write_scalar_helper<float>("float", field, file);
+    break;
+  case DOUBLE_FIELD_TYPE:
+    write_scalar_helper<double>("double", field, file);
+    break;
+  case INT32_FIELD_TYPE:
+    write_scalar_helper<axom::int32>("int", field, file);
+    break;
+  case INT64_FIELD_TYPE:
+    write_scalar_helper<axom::int64>("long", field, file);
+    break;
+  default:
+    SLIC_WARNING(
+      fmt::format("Unsupported scalar field type ({}) for field '{}'",
+                  field->getType(),
+                  field->getName()));
+    break;
   }
 }
 
 /*!
- * \brief Writes a vector field to a VTK file using the legacy
- *  ASCII format.
+ * Templated helper function to write out vector field of type \a T
+ * See write_vector_data for information about parameters
+ */
+template <typename T>
+void write_vector_helper(const std::string& type,
+                         const Field* field,
+                         std::ofstream& file)
+{
+  const T* data_ptr = Field::getDataPtr<T>(field);
+  SLIC_ASSERT(data_ptr != nullptr);
+
+  fmt::print(file, "VECTORS {} ", field->getName());
+  fmt::print(file, fmt::format("{}\n", type));
+
+  const int num_components = field->getNumComponents();
+  const IndexType num_values = field->getNumTuples();
+  for(IndexType i = 0; i < num_values; ++i)
+  {
+    fmt::print(file,
+               "{} {} {}\n",
+               data_ptr[num_components * i + 0],
+               data_ptr[num_components * i + 1],
+               num_components == 2 ? 0. : data_ptr[num_components * i + 2]);
+  }
+}
+
+/*!
+ * \brief Writes a vector field to a VTK file using the legacy ASCII format
+ *
  * \param [in] field the vector field to write out.
  * \param [in] file the stream to write to.
  * \pre field != nullptr
@@ -290,60 +335,55 @@ void write_vector_data(const Field* field, std::ofstream& file)
 {
   SLIC_ASSERT(field != nullptr);
   const int num_components = field->getNumComponents();
-  const IndexType num_values = field->getNumTuples();
   SLIC_ASSERT(num_components == 2 || num_components == 3);
 
-  fmt::print(file, "VECTORS {} ", field->getName());
-  if(field->getType() == DOUBLE_FIELD_TYPE)
+  switch(field->getType())
   {
-    fmt::print(file, "double\n");
-
-    const double* data_ptr = Field::getDataPtr<double>(field);
-    SLIC_ASSERT(data_ptr != nullptr);
-
-    for(IndexType i = 0; i < num_values; ++i)
-    {
-      if(num_components == 2)
-      {
-        fmt::print(file,
-                   "{} {} 0.0\n",
-                   data_ptr[num_components * i + 0],
-                   data_ptr[num_components * i + 1]);
-      }
-      else
-      {
-        fmt::print(file,
-                   "{} {} {}\n",
-                   data_ptr[num_components * i + 0],
-                   data_ptr[num_components * i + 1],
-                   data_ptr[num_components * i + 2]);
-      }
-    }
+  case FLOAT_FIELD_TYPE:
+    write_vector_helper<float>("float", field, file);
+    break;
+  case DOUBLE_FIELD_TYPE:
+    write_vector_helper<double>("double", field, file);
+    break;
+  case INT32_FIELD_TYPE:
+    write_vector_helper<axom::int32>("int", field, file);
+    break;
+  case INT64_FIELD_TYPE:
+    write_vector_helper<axom::int64>("long", field, file);
+    break;
+  default:
+    SLIC_WARNING(
+      fmt::format("Unsupported vector field type ({}) for field '{}'",
+                  field->getType(),
+                  field->getName()));
+    break;
   }
-  else if(field->getType() == INT32_FIELD_TYPE)
-  {
-    fmt::print(file, "int\n");
+}
 
-    const int* data_ptr = Field::getDataPtr<int>(field);
-    SLIC_ASSERT(data_ptr != nullptr);
+/*!
+ * Templated helper function to write out multidim field of type \a T
+ * See write_multidim_data for information about parameters
+ */
+template <typename T>
+void write_multidim_helper(const std::string& type,
+                           const Field* field,
+                           std::ofstream& file)
+{
+  const T* data_ptr = Field::getDataPtr<T>(field);
+  SLIC_ASSERT(data_ptr != nullptr);
+
+  const int num_components = field->getNumComponents();
+  const IndexType num_values = field->getNumTuples();
+  SLIC_ASSERT(num_components > 3);
+
+  for(int cur_comp = 0; cur_comp < num_components; ++cur_comp)
+  {
+    fmt::print(file, "SCALARS {}_{:0>3} {}\n", field->getName(), cur_comp, type);
+    fmt::print(file, "LOOKUP_TABLE default\n");
 
     for(IndexType i = 0; i < num_values; ++i)
     {
-      if(num_components == 2)
-      {
-        fmt::print(file,
-                   "{} {} 0\n",
-                   data_ptr[num_components * i + 0],
-                   data_ptr[num_components * i + 1]);
-      }
-      else
-      {
-        fmt::print(file,
-                   "{} {} {}\n",
-                   data_ptr[num_components * i + 0],
-                   data_ptr[num_components * i + 1],
-                   data_ptr[num_components * i + 2]);
-      }
+      fmt::print(file, "{}\n", data_ptr[num_components * i + cur_comp]);
     }
   }
 }
@@ -359,42 +399,27 @@ void write_vector_data(const Field* field, std::ofstream& file)
 void write_multidim_data(const Field* field, std::ofstream& file)
 {
   SLIC_ASSERT(field != nullptr);
-  const int field_type = field->getType();
-  const int num_components = field->getNumComponents();
-  const IndexType num_values = field->getNumTuples();
-  SLIC_ASSERT(num_components > 3);
 
-  if(field_type == DOUBLE_FIELD_TYPE)
+  switch(field->getType())
   {
-    for(int cur_comp = 0; cur_comp < num_components; ++cur_comp)
-    {
-      fmt::print(file, "SCALARS {}_{:0>3} double\n", field->getName(), cur_comp);
-      fmt::print(file, "LOOKUP_TABLE default\n");
-
-      const double* data_ptr = Field::getDataPtr<double>(field);
-      SLIC_ASSERT(data_ptr != nullptr);
-
-      for(IndexType i = 0; i < num_values; ++i)
-      {
-        fmt::print(file, "{}\n", data_ptr[num_components * i + cur_comp]);
-      }
-    }
-  }
-  else if(field_type == INT32_FIELD_TYPE)
-  {
-    for(int cur_comp = 0; cur_comp < num_components; ++cur_comp)
-    {
-      fmt::print(file, "SCALARS {}_{:0>3} int\n", field->getName(), cur_comp);
-      fmt::print(file, "LOOKUP_TABLE default\n");
-
-      const int* data_ptr = Field::getDataPtr<int>(field);
-      SLIC_ASSERT(data_ptr != nullptr);
-
-      for(IndexType i = 0; i < num_values; ++i)
-      {
-        fmt::print(file, "{}\n", data_ptr[num_components * i + cur_comp]);
-      }
-    }
+  case FLOAT_FIELD_TYPE:
+    write_multidim_helper<float>("float", field, file);
+    break;
+  case DOUBLE_FIELD_TYPE:
+    write_multidim_helper<double>("double", field, file);
+    break;
+  case INT32_FIELD_TYPE:
+    write_multidim_helper<axom::int32>("int", field, file);
+    break;
+  case INT64_FIELD_TYPE:
+    write_multidim_helper<axom::int64>("long", field, file);
+    break;
+  default:
+    SLIC_WARNING(
+      fmt::format("Unsupported multidim field type ({}) for field '{}'",
+                  field->getType(),
+                  field->getName()));
+    break;
   }
 }
 
