@@ -7,9 +7,8 @@
 #define QUEST_STLREADER_HPP_
 
 // Axom includes
-#include "axom/core/Macros.hpp"  // for axom macros
-
-// Mint includes
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // C/C++ includes
@@ -118,7 +117,7 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(STLReader);
 };
 
-}  // end namespace quest
-}  // end namespace axom
+}  // namespace quest
+}  // namespace axom
 
-#endif /* QUEST_STLREADER_HPP_ */
+#endif  // QUEST_STLREADER_HPP_

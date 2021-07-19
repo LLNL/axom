@@ -66,8 +66,7 @@ public:
   };
 
 public:
-  /// Disable the default constructor
-  Segment() = delete;
+  Segment() = default;
 
   /*!
    * \brief Creates a segment instance from point A to point B.

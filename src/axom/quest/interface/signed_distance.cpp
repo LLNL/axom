@@ -104,16 +104,16 @@ int signed_distance_init(const std::string& file, MPI_Comm comm)
 
   if(Parameters.use_shared_memory)
   {
-    rc = internal::read_mesh_shared(file,
-                                    comm,
-                                    s_shared_mesh_buffer,
-                                    s_surface_mesh,
-                                    s_intra_node_comm,
-                                    s_window);
+    rc = internal::read_stl_mesh_shared(file,
+                                        comm,
+                                        s_shared_mesh_buffer,
+                                        s_surface_mesh,
+                                        s_intra_node_comm,
+                                        s_window);
   }
   else
   {
-    rc = internal::read_mesh(file, s_surface_mesh, comm);
+    rc = internal::read_stl_mesh(file, s_surface_mesh, comm);
   }
 
 #else
@@ -122,7 +122,7 @@ int signed_distance_init(const std::string& file, MPI_Comm comm)
                   "Shared memory requires MPI3 and building Axom with "
                   "AXOM_USE_MPI3 set to ON");
 
-  rc = internal::read_mesh(file, s_surface_mesh, comm);
+  rc = internal::read_stl_mesh(file, s_surface_mesh, comm);
 #endif
 
   if(rc != 0)

@@ -3,18 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/quest/stl/STLReader.hpp"
+#include "axom/quest/readers/STLReader.hpp"
 
-#include "axom/core/utilities/Utilities.hpp"  // isLittleEndian()/swapEndian()
-
-// Mint includes
-#include "axom/mint/mesh/CellTypes.hpp"  // for mint::Triangle
-
-// Slic includes
-#include "axom/slic/interface/slic.hpp"  // for SLIC macros
+// Axom includes
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/mint/mesh/CellTypes.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
-#include <fstream>  // for ifstream
+#include <fstream>
 
 namespace
 {
