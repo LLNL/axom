@@ -19,6 +19,7 @@
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
+#include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 #include "axom/primal/geometry/Segment.hpp"
@@ -1119,6 +1120,56 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox<T, 3>& b1,
 
   // didn't find a separating anything
   return true;
+}
+
+/*!
+ * \brief Determines if a 3D plane intersects a 3D bounding box.
+ * \param [in] b1 A 3D plane
+ * \param [in] b2 A 3D bounding box
+ * \return true iff plane intersects with bounding box, otherwise, false.
+ */
+template <typename T>
+bool intersect_plane_bbox(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
+{
+  typedef Vector<T, 3> VectorType;
+
+  VectorType c(bb.getCentroid());
+  VectorType e(bb.getCentroid(), bb.getMax());
+
+  T r = e[0] * utilities::abs<T>(p.getNormal()[0]) +
+    e[1] * utilities::abs<T>(p.getNormal()[1]) +
+    e[2] * utilities::abs<T>(p.getNormal()[2]);
+
+  T s = (VectorType(p.getNormal(), 3)).dot(c) - p.getOffset();
+
+  return utilities::abs<T>(s) <= r;
+}
+
+/*!
+ * \brief Determines if a 3D plane intersects a 3D segment.
+ * \param [in] b1 A 3D plane
+ * \param [in] b2 A 3D segment
+ * \param [out] t Intersection point of plane and seg, w.r.t. 
+ *   parametrization of seg
+ * \return true iff plane intersects with segment, otherwise, false.
+ */
+template <typename T>
+bool intersect_plane_seg(const Plane<T, 3>& plane, const Segment<T, 3>& seg, T& t)
+{
+  typedef Vector<T, 3> VectorType;
+
+  VectorType ab(seg.source(), seg.target());
+  VectorType normal(plane.getNormal(), 3);
+
+  t = (plane.getOffset() - normal.dot(VectorType(seg.source()))) /
+    (normal.dot(ab));
+
+  if(t >= 0.0 && t <= 1.0)
+  {
+    return true;
+  }
+
+  return false;
 }
 
 }  // end namespace detail

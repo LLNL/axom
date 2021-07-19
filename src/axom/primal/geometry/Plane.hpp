@@ -12,8 +12,6 @@
 
 #include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
-namespace numerics = axom::numerics;
-
 namespace axom
 {
 namespace primal
@@ -158,7 +156,7 @@ public:
    */
   inline T computeSignedDistance(const T* x) const
   {
-    return (numerics::dot_product(m_normal, x, NDIMS) - m_offset);
+    return (axom::numerics::dot_product(m_normal, x, NDIMS) - m_offset);
   }
 
   /*!
@@ -248,8 +246,8 @@ Plane<T, NDIMS>::Plane(const T* normal, const T* x)
   SLIC_ASSERT(x != nullptr);
 
   this->setNormal(normal);
-  numerics::normalize(m_normal, NDIMS);
-  m_offset = numerics::dot_product(m_normal, x, NDIMS);
+  axom::numerics::normalize(m_normal, NDIMS);
+  m_offset = axom::numerics::dot_product(m_normal, x, NDIMS);
 }
 
 //------------------------------------------------------------------------------
@@ -262,7 +260,7 @@ Plane<T, NDIMS>::Plane(const T* normal, T offset) : m_offset(offset)
   SLIC_ASSERT(normal != nullptr);
 
   this->setNormal(normal);
-  numerics::normalize(m_normal, NDIMS);
+  axom::numerics::normalize(m_normal, NDIMS);
 }
 
 //------------------------------------------------------------------------------
@@ -295,7 +293,7 @@ Plane<T, NDIMS>::Plane(const T* x1, const T* x2, const T* x3)
       r2[i] = x3[i] - x1[i];
     }
 
-    numerics::cross_product(r1, r2, m_normal);
+    axom::numerics::cross_product(r1, r2, m_normal);
 
   }  // END else
 
@@ -310,8 +308,8 @@ Plane<T, NDIMS>::Plane(const T* x1, const T* x2, const T* x3)
                 "Supplied points form a degenerate "
                   << ((NDIMS == 2) ? "line" : "triangle"));
 
-  numerics::normalize(m_normal, NDIMS);
-  m_offset = numerics::dot_product(m_normal, x1, NDIMS);
+  axom::numerics::normalize(m_normal, NDIMS);
+  m_offset = axom::numerics::dot_product(m_normal, x1, NDIMS);
 }
 
 //------------------------------------------------------------------------------
