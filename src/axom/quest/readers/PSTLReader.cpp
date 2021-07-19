@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/quest/stl/PSTLReader.hpp"
+#include "axom/quest/readers/PSTLReader.hpp"
 
 namespace axom
 {

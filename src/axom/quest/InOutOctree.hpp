@@ -167,15 +167,14 @@ public:
 
 public:
   /**
-   * \brief Construct an InOutOctree to handle containment queries on a surface
-   * mesh
+   * \brief Construct an InOutOctree to handle containment queries on a surface mesh
    *
    * \param [in] bb The spatial extent covered by the octree
    * \note We slightly scale the bounding box so all mesh elements are
    * guaranteed to be enclosed by the octree and to remedy problems we've
    * encountered related to meshes that are aligned with the octree grid
    * \note The InOutOctree modifies its mesh in an effort to repair common
-   * problems.  Please make sure to discard all old copies of the meshPtr.
+   * problems. Please make sure to discard all old copies of the meshPtr.
    */
   InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
     : SpatialOctreeType(
