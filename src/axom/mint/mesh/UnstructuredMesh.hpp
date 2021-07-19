@@ -1838,7 +1838,7 @@ private:
   /*! \brief Construct and fill the cell-to-face connectivity. */
   void buildCellFaceConnectivity(IndexType* c2fdata, IndexType* c2foffsets);
 
-  /*! \brief Return a new empty CellToFaceConnectivty instance. */
+  /*! \brief Return a new empty CellToFaceConnectivity instance. */
   CellToFaceConnectivity* initializeCellToFace(
     CellType cell_type = UNDEFINED_CELL) const;
 

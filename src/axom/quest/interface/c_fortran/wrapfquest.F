@@ -78,6 +78,15 @@ module axom_quest
             logical(C_BOOL) :: SHT_rv
         end function c_inout_initialized
 
+        function quest_inout_set_dimension(dim) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_set_dimension")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: dim
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_set_dimension
+
         function c_inout_set_verbose(verbosity) &
                 result(SHT_rv) &
                 bind(C, name="QUEST_inout_set_verbose")
@@ -95,6 +104,16 @@ module axom_quest
             real(C_DOUBLE), value, intent(IN) :: thresh
             integer(C_INT) :: SHT_rv
         end function quest_inout_set_vertex_weld_threshold
+
+        function quest_inout_set_segments_per_knot_span( &
+                segmentsPerKnotSpan) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_set_segments_per_knot_span")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: segmentsPerKnotSpan
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_set_segments_per_knot_span
 
         function c_inout_evaluate_0(x, y) &
                 result(SHT_rv) &

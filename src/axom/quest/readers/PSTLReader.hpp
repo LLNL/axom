@@ -6,8 +6,9 @@
 #ifndef QUEST_PSTLREADER_HPP_
 #define QUEST_PSTLREADER_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
-#include "axom/quest/stl/STLReader.hpp"  // base class
+#include "axom/quest/readers/STLReader.hpp"  // base class
 
 #include "mpi.h"
 
@@ -18,40 +19,28 @@ namespace quest
 class PSTLReader : public STLReader
 {
 public:
-  /*!
-   * \brief Constructor.
-   * \param [in] comm user-supplied MPI communicator.
-   */
+  PSTLReader() = delete;
   PSTLReader(MPI_Comm comm);
 
-  /*!
-   * \brief Destructor.
-   */
   virtual ~PSTLReader();
 
   /*!
    * \brief Reads in an STL file to all ranks in the associated communicator.
-   * \note Rank 0 reads in the STL mesh file and broadcasts the data the rest
-   *  of the ranks.
+   * 
+   * \note Rank 0 reads in the STL mesh file and broadcasts to the other ranks.
    * \return status set to zero on success; set to a non-zero value otherwise.
    */
-  virtual int read() final override;
+  int read() final override;
 
 private:
-  /*!
-   * \brief Default constructor. Does nothing.
-   * \note Made private to prevent its use in application code.
-   */
-  PSTLReader() : m_comm(MPI_COMM_NULL), m_my_rank(0) {};
-
-  MPI_Comm m_comm; /*!< MPI communicator */
-  int m_my_rank;   /*!< MPI rank ID      */
+  MPI_Comm m_comm {MPI_COMM_NULL};
+  int m_my_rank {0};
 
   DISABLE_COPY_AND_ASSIGNMENT(PSTLReader);
   DISABLE_MOVE_AND_ASSIGNMENT(PSTLReader);
 };
 
-}  // end namespace quest
-}  // end namespace axom
+}  // namespace quest
+}  // namespace axom
 
 #endif /* QUEST_PSTLREADER_HPP_ */
