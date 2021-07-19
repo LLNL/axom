@@ -50,11 +50,13 @@ void dump_ray(const std::string& file,
 
   // Expand 2D points into 3D
   primal::Point<FloatType, 3> orig_3d(0.0), at_3d(0.0);
+  primal::Vector<FloatType, 3> norm_3d(0.0);
 
   primal::Point<FloatType, NDIMS> ray_at_t = ray.at(t);
   for(int dim = 0; dim < NDIMS; dim++)
   {
     orig_3d[dim] = ray.origin()[dim];
+    norm_3d[dim] = ray.direction()[dim];
     at_3d[dim] = ray_at_t[dim];
   }
 
@@ -75,7 +77,7 @@ void dump_ray(const std::string& file,
 
   ofs << "CELL_DATA 1\n";
   ofs << "VECTORS normal double\n";
-  ofs << nx << " " << ny << " " << nz << std::endl;
+  ofs << norm_3d[0] << " " << norm_3d[1] << " " << norm_3d[2] << std::endl;
 
   ofs.close();
 }
