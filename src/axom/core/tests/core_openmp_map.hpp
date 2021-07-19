@@ -52,7 +52,7 @@ void test_storage(experimental::Map<Key, T, Hash, Policy> &test)
 }
 
 template <typename Key, typename T, typename Hash, typename Policy>
-void test_brackets(experimental::Map<Key, T, Hash, Policy> &test)
+void test_subscript(experimental::Map<Key, T, Hash, Policy> &test)
 {
   experimental::Map<Key, T, Hash, Policy> *test2 = &test;
   axom::for_all<Policy>(
@@ -206,7 +206,7 @@ TEST(core_map, insert_or_assign)
   }
 }
 
-TEST(core_map, brackets)
+TEST(core_map, subscript)
 {
   for(int i : {1, 2, 5, 10, 20, 100})
   {
@@ -215,7 +215,7 @@ TEST(core_map, brackets)
       experimental::Map<int, int, std::hash<int>, axom::OMP_EXEC> test =
         internal::init<int, int, std::hash<int>, axom::OMP_EXEC>(i, j);
       internal::test_storage<int, int, std::hash<int>, axom::OMP_EXEC>(test);
-      internal::test_brackets<int, int, std::hash<int>, axom::OMP_EXEC>(test);
+      internal::test_subscript<int, int, std::hash<int>, axom::OMP_EXEC>(test);
     }
   }
 }

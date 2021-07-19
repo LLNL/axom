@@ -16,11 +16,6 @@ int main(int argc, char** argv)
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
-#ifdef EIGEN_SOLVE_TESTER_SHOULD_SEED
-  std::srand(std::time(0));
-#else
-  std::srand(42);
-#endif
 
   return RUN_ALL_TESTS();
 }
