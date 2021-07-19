@@ -99,7 +99,7 @@ if (ENABLE_OPENMP)
 
   blt_add_executable( NAME       core_openmp_tests
                       SOURCES    core_openmp_main.cpp
-                      HEADERS    ${core_mpi_tests}
+                      HEADERS    ${core_openmp_tests}
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                       DEPENDS_ON ${utils_tests_depends} openmp
                       FOLDER     axom/core/tests )
@@ -109,6 +109,29 @@ if (ENABLE_OPENMP)
     axom_add_test( NAME          ${test_suite}_openmp
                    COMMAND       core_openmp_tests --gtest_filter=${test_suite}*
                    NUM_OMP_THREADS 24 )
+  endforeach()
+endif()
+
+#------------------------------------------------------------------------------
+# Map Performance GTests
+#------------------------------------------------------------------------------
+if (ENABLE_OPENMP)
+  set( map_perf_tests
+       map_performance.hpp
+       )
+
+  blt_add_executable( NAME       map_perf_tests
+                      SOURCES    map_perf_main.cpp
+                      HEADERS    ${map_perf_tests}
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${utils_tests_depends} openmp
+                      FOLDER     axom/core/tests )
+
+  foreach( test_suite ${map_perf_tests} )
+    get_filename_component( test_suite ${test_suite} NAME_WE )
+    axom_add_test( NAME          ${test_suite}
+                   COMMAND       map_perf_tests --gtest_filter=${test_suite}*
+                   NUM_OMP_THREADS 44 )
   endforeach()
 endif()
 
