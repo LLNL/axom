@@ -108,7 +108,7 @@ if (ENABLE_OPENMP)
     get_filename_component( test_suite ${test_suite} NAME_WE )
     axom_add_test( NAME          ${test_suite}_openmp
                    COMMAND       core_openmp_tests --gtest_filter=${test_suite}*
-                   NUM_MPI_TASKS 1 )
+                   NUM_OMP_THREADS 24 )
   endforeach()
 endif()
 

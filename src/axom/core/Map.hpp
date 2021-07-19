@@ -780,8 +780,8 @@ private:
    */
   void bucket_lock(std::size_t index, axom::SEQ_EXEC overload) const
   {
-    (void)index;
-    (void)overload;
+    AXOM_UNUSED_VAR(index);
+    AXOM_UNUSED_VAR(overload);
   }
 
   /*!
@@ -792,8 +792,8 @@ private:
    */
   void bucket_unlock(std::size_t index, axom::SEQ_EXEC overload) const
   {
-    (void)index;
-    (void)overload;
+    AXOM_UNUSED_VAR(index);
+    AXOM_UNUSED_VAR(overload);
   }
 
   /*!
@@ -801,14 +801,14 @@ private:
    *
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void init_locks(axom::SEQ_EXEC overload) const { (void)overload; }
+  void init_locks(axom::SEQ_EXEC overload) const { AXOM_UNUSED_VAR(overload); }
 
   /*!
    * \brief Empty function for sequential execution environment.
    *
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void destroy_locks(axom::SEQ_EXEC overload) const { (void)overload; }
+  void destroy_locks(axom::SEQ_EXEC overload) const { AXOM_UNUSED_VAR(overload); }
 
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 
@@ -819,7 +819,7 @@ private:
    */
   void bucket_lock(std::size_t index, axom::OMP_EXEC overload) const
   {
-    (void)overload;
+    AXOM_UNUSED_VAR(overload);
     omp_set_lock(locks + index);
   }
 
@@ -830,7 +830,7 @@ private:
    */
   void bucket_unlock(std::size_t index, axom::OMP_EXEC overload) const
   {
-    (void)overload;
+    AXOM_UNUSED_VAR(overload);
     omp_unset_lock(locks + index);
   }
 
@@ -839,7 +839,7 @@ private:
    */
   void init_locks(axom::OMP_EXEC overload) const
   {
-    (void)overload;
+    AXOM_UNUSED_VAR(overload);
     locks = axom::allocate<omp_lock_t>(m_bucket_count);
     for(std::size_t i = 0; i < m_bucket_count; i++)
     {
@@ -852,7 +852,7 @@ private:
    */
   void destroy_locks(axom::OMP_EXEC overload) const
   {
-    (void)overload;
+    AXOM_UNUSED_VAR(overload);
     for(std::size_t i = 0; i < m_bucket_count; i++)
     {
       omp_destroy_lock(locks + i);
