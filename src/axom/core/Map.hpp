@@ -808,7 +808,10 @@ private:
    *
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void destroy_locks(axom::SEQ_EXEC overload) const { AXOM_UNUSED_VAR(overload); }
+  void destroy_locks(axom::SEQ_EXEC overload) const
+  {
+    AXOM_UNUSED_VAR(overload);
+  }
 
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 

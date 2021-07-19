@@ -16,6 +16,5 @@ int main(int argc, char** argv)
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
-
   return RUN_ALL_TESTS();
 }
