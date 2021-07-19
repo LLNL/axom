@@ -41,17 +41,22 @@ namespace xargs = mint::xargs;
 namespace
 {
 //------------------------------------------------------------------------------
-template <typename FloatType>
+template <typename FloatType, int NDIMS>
 void dump_ray(const std::string& file,
               FloatType t,
-              FloatType x0,
-              FloatType nx,
-              FloatType y0,
-              FloatType ny,
-              FloatType z0 = 0.0,
-              FloatType nz = 0.0)
+              const primal::Ray<FloatType, NDIMS>& ray)
 {
   std::ofstream ofs(file.c_str());
+
+  // Expand 2D points into 3D
+  primal::Point<FloatType, 3> orig_3d(0.0), at_3d(0.0);
+
+  primal::Point<FloatType, NDIMS> ray_at_t = ray.at(t);
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    orig_3d[dim] = ray.origin()[dim];
+    at_3d[dim] = ray_at_t[dim];
+  }
 
   ofs << "# vtk DataFile Version 3.0\n";
   ofs << "Ray Data\n";
@@ -59,11 +64,8 @@ void dump_ray(const std::string& file,
   ofs << "DATASET UNSTRUCTURED_GRID\n";
 
   ofs << "POINTS 2 double\n";
-  ofs << x0 << " " << y0 << " " << z0 << std::endl;
-
-  ofs << (x0 + t * nx) << " ";
-  ofs << (y0 + t * ny) << " ";
-  ofs << (z0 + t * nz) << std::endl;
+  ofs << orig_3d[0] << " " << orig_3d[1] << " " << orig_3d[2] << std::endl;
+  ofs << at_3d[0] << " " << at_3d[1] << " " << at_3d[2] << std::endl;
 
   ofs << "CELLS 1 3\n";
   ofs << "2 0 1\n";
@@ -556,22 +558,8 @@ void check_find_rays3d()
 
 #ifdef VTK_DEBUG
   FloatType t = 5.0;
-  dump_ray("ray0.vtk",
-           t,
-           query_rays[0].origin()[0],
-           query_rays[0].direction()[0],
-           query_rays[0].origin()[1],
-           query_rays[0].direction()[1],
-           query_rays[0].origin()[2],
-           query_rays[0].direction()[2]);
-  dump_ray("ray1.vtk",
-           t,
-           query_rays[1].origin()[0],
-           query_rays[1].direction()[0],
-           query_rays[1].origin()[1],
-           query_rays[1].direction()[1],
-           query_rays[1].origin()[2],
-           query_rays[1].direction()[2]);
+  dump_ray("ray0.vtk", t, query_rays[0]);
+  dump_ray("ray1.vtk", t, query_rays[1]);
 #endif
 
   // setup a test mesh
