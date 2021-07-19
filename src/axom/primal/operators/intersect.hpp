@@ -17,6 +17,7 @@
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
+#include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 #include "axom/primal/geometry/Segment.hpp"
@@ -527,6 +528,46 @@ bool intersect(const BezierCurve<T, NDIMS>& c1,
                                          scale,
                                          offset,
                                          scale);
+}
+
+/// @}
+
+/// \name Plane Intersection Routines
+/// @{
+
+/*!
+ * \brief Determines if a 3D plane intersects a 3D bounding box.
+ * \param [in] p A 3D plane
+ * \param [in] bb A 3D bounding box
+ * \return true iff plane intersects with bounding box, otherwise, false.
+ *
+ * \note Uses method from pg 164 of 
+ *       Real Time Collision Detection by Christer Ericson.
+ */
+template <typename T>
+bool intersect(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
+{
+  return detail::intersect_plane_bbox(p, bb);
+}
+
+/*!
+ * \brief Determines if a 3D plane intersects a 3D segment.
+ * \param [in] plane A 3D plane
+ * \param [in] seg A 3D line segment
+ * \param [out] t Intersection point of plane and seg, w.r.t. seg's
+ *  parametrization
+ * \note If there is an intersection, the intersection point pt is:
+ *                     pt = seg.at(t)
+ * \return true iff plane intersects with seg, otherwise, false.
+ * \note \a t is only valid when function returns true
+ *
+ * \note Uses method from pg 176 of 
+ *       Real Time Collision Detection by Christer Ericson.
+ */
+template <typename T>
+bool intersect(const Plane<T, 3>& plane, const Segment<T, 3>& seg, T& t)
+{
+  return detail::intersect_plane_seg(plane, seg, t);
 }
 
 /// @}

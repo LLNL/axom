@@ -2186,6 +2186,100 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_intersect, plane_bb_test_intersection)
+{
+  const int DIM = 3;
+  typedef primal::Point<double, DIM> PointType;
+  typedef primal::Plane<double, DIM> PlaneType;
+  typedef primal::BoundingBox<double, DIM> BoundingBoxType;
+
+  // Bounding Box containing (0,0,0) and (1,1,1)
+  BoundingBoxType unitBB(PointType::zero(), PointType::ones());
+
+  // bottom face
+  double normal1[3] = {0.0, 1.0, 0.0};
+  double offset1 = 0.0;
+  PlaneType p1(normal1, offset1);
+
+  // top face
+  double normal2[3] = {0.0, -1.0, 0.0};
+  double offset2 = -1.0;
+  PlaneType p2(normal2, offset2);
+
+  // center
+  double normal3[3] = {1.0, 1.0, 1.0};
+  double offset3 = 0.5;
+  PlaneType p3(normal3, offset3);
+
+  // non-intersect
+  double normal4[3] = {1.0, 1.0, 1.0};
+  double offset4 = -0.5;
+  PlaneType p4(normal4, offset4);
+
+  EXPECT_TRUE(axom::primal::intersect(p1, unitBB));
+  p1.flip();
+  EXPECT_TRUE(axom::primal::intersect(p1, unitBB));
+
+  EXPECT_TRUE(axom::primal::intersect(p2, unitBB));
+  p2.flip();
+  EXPECT_TRUE(axom::primal::intersect(p2, unitBB));
+
+  EXPECT_TRUE(axom::primal::intersect(p3, unitBB));
+  p3.flip();
+  EXPECT_TRUE(axom::primal::intersect(p3, unitBB));
+
+  EXPECT_FALSE(axom::primal::intersect(p4, unitBB));
+  p4.flip();
+  EXPECT_FALSE(axom::primal::intersect(p4, unitBB));
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_intersect, plane_seg_test_intersection)
+{
+  double t1, t2, t3;
+  const int DIM = 3;
+  typedef primal::Point<double, DIM> PointType;
+  typedef primal::Plane<double, DIM> PlaneType;
+  typedef primal::Segment<double, DIM> SegmentType;
+
+  // Line segment goes from (0,0,0) to (1,1,1)
+  PointType A(0.0, 3);
+  PointType B(1.0, 3);
+  SegmentType s(A, B);
+
+  // Line segment parallel to plane (non-intersect)
+  PointType A_p({-1, -1, 0});
+  PointType B_p({1, -1, 0});
+  SegmentType s_p(A_p, B_p);
+
+  // intersect A
+  double normal1[3] = {0.0, 1.0, 0.0};
+  double offset1 = 0.0;
+  PlaneType p1(normal1, offset1);
+
+  // intersect midpoint
+  double normal2[3] = {0.0, 1.0, 0.0};
+  double offset2 = 0.5;
+  PlaneType p2(normal2, offset2);
+
+  // intersect B
+  double normal3[3] = {0.0, 1.0, 0.0};
+  double offset3 = 1.0;
+  PlaneType p3(normal3, offset3);
+
+  EXPECT_TRUE(axom::primal::intersect(p1, s, t1));
+  EXPECT_EQ(s.at(t1), PointType({0.0, 0.0, 0.0}));
+
+  EXPECT_TRUE(axom::primal::intersect(p2, s, t2));
+  EXPECT_EQ(s.at(t2), PointType({0.5, 0.5, 0.5}));
+
+  EXPECT_TRUE(axom::primal::intersect(p3, s, t3));
+  EXPECT_EQ(s.at(t3), PointType({1.0, 1.0, 1.0}));
+
+  EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
+}
+
+//------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 #include "axom/slic/core/SimpleLogger.hpp"
 using axom::slic::SimpleLogger;
