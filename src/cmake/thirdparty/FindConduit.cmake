@@ -18,22 +18,22 @@ if(NOT CONDUIT_DIR)
 endif()
 
 # This is used in axom-config.cmake.in
-set(AXOM_CONDUIT_CONFIG_DIR "${CONDUIT_DIR}/lib/cmake/conduit" CACHE PATH "")
+set(AXOM_CONDUIT_CONFIG_DIR "lib/cmake/conduit" CACHE PATH "")
 
 if(NOT WIN32)
-    set(_conduit_config "${AXOM_CONDUIT_CONFIG_DIR}/ConduitConfig.cmake")
+    set(_conduit_config "${CONDUIT_DIR}/${AXOM_CONDUIT_CONFIG_DIR}/ConduitConfig.cmake")
     if(NOT EXISTS ${_conduit_config})
         MESSAGE(FATAL_ERROR "Could not find Conduit cmake include file ${_conduit_config}")
     endif()
 
     find_package(Conduit REQUIRED
                  NO_DEFAULT_PATH
-                 PATHS ${AXOM_CONDUIT_CONFIG_DIR})
+                 PATHS ${CONDUIT_DIR}/${AXOM_CONDUIT_CONFIG_DIR})
 else()
     # Allow for several different configurations of Conduit
     find_package(Conduit CONFIG 
         REQUIRED
-        HINTS ${AXOM_CONDUIT_CONFIG_DIR}
+        HINTS ${CONDUIT_DIR}/${AXOM_CONDUIT_CONFIG_DIR}
               ${CONDUIT_DIR}/cmake/conduit
               ${CONDUIT_DIR}/share/cmake/conduit
               ${CONDUIT_DIR}/share/conduit
