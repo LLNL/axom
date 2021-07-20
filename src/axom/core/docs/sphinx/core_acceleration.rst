@@ -18,9 +18,9 @@ and Umpire to access accelerators.
 
 The memory management submodule offers a singular interface which allows the user to leverage either C++ memory functions or Umpire, 
 depending on the availability of Umpire at compilation. It supports a simple operation set: allocate, deallocate, reallocate, and copy. 
-If Umpire is in use, an allocator can be specified -- see Umpire documentation(make this a link) for more details. Note that if an 
-Umpire-reliant function is used when Umpire is not present, such as for allocator setting, the function fails without a fault, so one 
-piece of code can handle standard C++ or C++ with Umpire. 
+If Umpire is in use, an allocator can be specified -- see Umpire documentation(make this a link) for more details. Note that the fall-back to
+C++ memory functions is automatic, so one piece of code can handle standard C++ or C++ with Umpire. However, to use advanced features, such as 
+accessing unified memory, Umpire must be enabled, otherwise errors will occur at compilation.
 
 Here is an example of using Axom’s memory management tools:
 

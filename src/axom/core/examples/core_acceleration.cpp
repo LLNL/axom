@@ -87,12 +87,12 @@ void demoMemoryManageBasic()
 void demoAxomExecution()
 {
   // _exebasic_start
-  //Assuming Umpire is in use, this goes to unified memory, so it can be accessed for CUDA
-  //code, included here. If it isn't, then the CUDA just won't run for this example. 
-  int *A = axom::allocate<int>(1000, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
-  int *B = axom::allocate<int>(1000, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
-  int *C = axom::allocate<int>(1000, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
-  int out = 0;
+  //This part of the code works regardless of Umpire's presence, allowing for generic use of axom::allocate across C and C++
+  //codes. 
+  int *A = axom::allocate<int>(1000);
+  int *B = axom::allocate<int>(1000);
+  int *C = axom::allocate<int>(1000);
+
   for(int i = 0; i < 1000; i++){
     A[i] = i*5;
     B[i] = i*2;
@@ -110,14 +110,24 @@ void demoAxomExecution()
     std::cout << C[i] << " ";
     C[i] = 0;
   }
-  std::cout << std::endl;
+  
   // _exebasic_end
  
   //Now, let's say we want to try out use of CUDA. We just change that execution space.
   #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) \
   && defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   // _cudaexebasic_start
-  
+  //This example requires Umpire to be in use, and Unified memory available. 
+  A = axom::allocate<int>(1000, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
+  B = axom::allocate<int>(1000, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
+  C = axom::allocate<int>(1000, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
+
+  for(int i = 0; i < 1000; i++){
+    A[i] = i*5;
+    B[i] = i*2;
+    C[i] = 0;
+  }
+
   axom::for_all< axom::CUDA_EXEC<256> >(0, 1000, AXOM_LAMBDA( axom::IndexType i ) {
     C[i] = A[i] + B[i];
   });
