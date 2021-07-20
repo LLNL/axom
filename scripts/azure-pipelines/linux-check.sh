@@ -25,6 +25,7 @@ echo "~~~~ helpful info ~~~~"
 echo "USER="`id -u -n`
 echo "PWD="`pwd`
 echo "HOST_CONFIG=$HOST_CONFIG"
+echo "CMAKE_EXTRA_FLAGS=$CMAKE_EXTRA_FLAGS"
 echo "~~~~~~~~~~~~~~~~~~~~~~"
 
 echo "~~~~~~~~~ls -al /~~~~~~~~~~"
@@ -42,7 +43,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~"
 
 
 echo "~~~~~~ RUNNING CMAKE ~~~~~~~~"
-or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake
+or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake ${CMAKE_EXTRA_FLAGS}
 or_die cd build-$HOST_CONFIG-debug
 echo "~~~~~~ RUNNING make check ~~~~~~~~"
 or_die make VERBOSE=1 check
