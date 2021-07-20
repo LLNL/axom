@@ -491,11 +491,12 @@ public:
    */
   axom_map::Pair<Key, T> insert(const Key& key, const T& val)
   {
-    //If branching becomes an isssue, this protective statement will be 
-    //removed in lieu of expecting the user to not try to insert after 
+    //If branching becomes an isssue, this protective statement will be
+    //removed in lieu of expecting the user to not try to insert after
     //clear().
-    if(m_bucket_count*m_bucket_len == 0){
-      return axom_map::Pair<Key, T>(&m_end, false);   
+    if(m_bucket_count * m_bucket_len == 0)
+    {
+      return axom_map::Pair<Key, T>(&m_end, false);
     }
     axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
     axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
@@ -530,11 +531,12 @@ public:
    */
   axom_map::Pair<Key, T> insert_or_assign(const Key& key, const T& val)
   {
-    //If branching becomes an isssue, this protective statement will be 
-    //removed in lieu of expecting the user to not try to insert after 
+    //If branching becomes an isssue, this protective statement will be
+    //removed in lieu of expecting the user to not try to insert after
     //clear().
-    if(m_bucket_count*m_bucket_len == 0){
-      return axom_map::Pair<Key, T>(&m_end, false);   
+    if(m_bucket_count * m_bucket_len == 0)
+    {
+      return axom_map::Pair<Key, T>(&m_end, false);
     }
     axom_map::Bucket<Key, T>* target = &(m_buckets[bucket(get_hash(key))]);
     axom_map::Pair<Key, T> ret = target->insert_update(key, val);
