@@ -46,7 +46,7 @@ void test_storage(experimental::Map<Key, T> &test)
 }
 
 template <typename Key, typename T>
-void test_brackets(experimental::Map<Key, T> &test)
+void test_subscript(experimental::Map<Key, T> &test)
 {
   for(int i = 0; i < test.size(); i++)
   {
@@ -173,7 +173,7 @@ TEST(core_map, insert_or_assign)
   }
 }
 
-TEST(core_map, brackets)
+TEST(core_map, subscript)
 {
   for(int i : {1, 2, 5, 10, 20, 100})
   {
@@ -181,7 +181,7 @@ TEST(core_map, brackets)
     {
       experimental::Map<int, int> test = internal::init<int, int>(i, j);
       internal::test_storage<int, int>(test);
-      internal::test_brackets<int, int>(test);
+      internal::test_subscript<int, int>(test);
     }
   }
 }
