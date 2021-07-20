@@ -108,13 +108,16 @@ public:
      * \pre len > 0
      */
   void init(int len)
-  { 
-    #if defined(UMPIRE_ENABLE_CUDA) && defined(UMPIRE_ENABLE_UM) \
-    && defined(AXOM_USE_CUDA)
-    m_list = axom::allocate<axom_map::Node<Key, T> >(len, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
-    #else
-    m_list = axom::allocate<axom_map::Node<Key, T> >(len);
-    #endif
+  {
+#if defined(UMPIRE_ENABLE_CUDA) && defined(UMPIRE_ENABLE_UM) && \
+  defined(AXOM_USE_CUDA)
+    m_list = axom::allocate<axom_map::Node<Key, T>>(
+      len,
+      axom::getUmpireResourceAllocatorID(
+        umpire::resource::MemoryResourceType::Unified));
+#else
+    m_list = axom::allocate<axom_map::Node<Key, T>>(len);
+#endif
 
     for(int i = 0; i < len - 1; i++)
     {
@@ -519,22 +522,36 @@ public:
     }
     std::size_t index = bucket(key);
     bucket_lock(index, pol);
-    axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
-    axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
-    //Candidate to get cut out if branching becomes too much of an issue.
-    if(ret.second == true)
+#ifdef __CUDACC__
+    bool lock_helper = true;
+    while(lock_helper)
     {
-#ifdef AXOM_USE_RAJA
-      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
-#else
-      m_size++;
 #endif
-      if(target->get_size() == target->get_capacity())
+      if(bucket_lock(index, pol))
       {
-        m_bucket_fill = true;
+        axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
+        axom_map::Pair<Key, T> ret = target->insert_no_update(key, val);
+        //Candidate to get cut out if branching becomes too much of an issue.
+        if(ret.second == true)
+        {
+#ifdef AXOM_USE_RAJA
+          RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
+#else
+        m_size++;
+#endif
+          if(target->get_size() == target->get_capacity())
+          {
+            m_bucket_fill = true;
+          }
+        }
+        bucket_unlock(index, pol);
+#ifdef __CUDACC__
+        lock_helper = false;
       }
     }
-    bucket_unlock(index, pol);
+#else
+    }
+#endif
     return ret;
   }
 
@@ -567,23 +584,36 @@ public:
     }
 
     std::size_t index = bucket(key);
-    bucket_lock(index, pol);
-    axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
-    axom_map::Pair<Key, T> ret = target->insert_update(key, val);
-    //Candidate to get cut out if branching becomes too much of an issue.
-    if(ret.second == true)
+#ifdef __CUDACC__
+    bool lock_helper = true;
+    while(lock_helper)
     {
-#ifdef AXOM_USE_RAJA
-      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
-#else
-      m_size++;
 #endif
-      if(target->get_size() == target->get_capacity())
+      if(bucket_lock(index, pol))
       {
-        m_bucket_fill = true;
+        axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
+        axom_map::Pair<Key, T> ret = target->insert_update(key, val);
+        //Candidate to get cut out if branching becomes too much of an issue.
+        if(ret.second == true)
+        {
+#ifdef AXOM_USE_RAJA
+          RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
+#else
+        m_size++;
+#endif
+          if(target->get_size() == target->get_capacity())
+          {
+            m_bucket_fill = true;
+          }
+        }
+        bucket_unlock(index, pol);
+#ifdef __CUDACC__
+        lock_helper = false;
       }
     }
-    bucket_unlock(index, pol);
+#else
+    }
+#endif
     return ret;
   }
 
@@ -624,19 +654,32 @@ public:
   bool erase(const Key& key)
   {
     std::size_t index = bucket(key);
-    bucket_lock(index, pol);
-    axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
-    //Candidate to get cut out if branching becomes too much of an issue.
-    bool ret = target->remove(key);
-    if(ret == true)
+#ifdef __CUDACC__
+    bool lock_helper = true;
+    while(lock_helper)
     {
-#ifdef AXOM_USE_RAJA
-      RAJA::atomicSub<RAJA::auto_atomic>(&m_size, 1);
-#else
-      m_size--;
 #endif
+      if(bucket_lock(index, pol))
+      {
+        axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
+        //Candidate to get cut out if branching becomes too much of an issue.
+        bool ret = target->remove(key);
+        if(ret == true)
+        {
+#ifdef AXOM_USE_RAJA
+          RAJA::atomicSub<RAJA::auto_atomic>(&m_size, 1);
+#else
+        m_size--;
+#endif
+        }
+        bucket_unlock(index, pol);
+#ifdef __CUDACC__
+        lock_helper = false;
+      }
     }
-    bucket_unlock(index, pol);
+#else
+    }
+#endif
     return ret;
   }
 
@@ -651,10 +694,23 @@ public:
   axom_map::Node<Key, T>& find(const Key& key) const
   {
     std::size_t index = bucket(key);
-    bucket_lock(index, pol);
-    axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
-    axom_map::Node<Key, T>& out = target->find(key);
-    bucket_unlock(index, pol);
+#ifdef __CUDACC__
+    bool lock_helper = true;
+    while(lock_helper)
+    {
+#endif
+      if(bucket_lock(index, pol))
+      {
+        axom_map::Bucket<Key, T>* target = &(m_buckets[index]);
+        axom_map::Node<Key, T>& out = target->find(key);
+        bucket_unlock(index, pol);
+#ifdef __CUDACC__
+        lock_helper = false;
+      }
+    }
+#else
+    }
+#endif
     return out;
   }
 
@@ -761,13 +817,16 @@ private:
    */
   axom_map::Bucket<Key, T>* alloc_map(int bucount, int bucklen)
   {
-    #if defined(UMPIRE_ENABLE_CUDA) && defined(UMPIRE_ENABLE_UM) \
-    && defined(AXOM_USE_CUDA)
-    axom_map::Bucket<Key, T>* tmp = axom::allocate<axom_map::Bucket<Key, T>>(bucount, axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
-    #else
+#if defined(UMPIRE_ENABLE_CUDA) && defined(UMPIRE_ENABLE_UM) && \
+  defined(AXOM_USE_CUDA)
+    axom_map::Bucket<Key, T>* tmp = axom::allocate<axom_map::Bucket<Key, T>>(
+      bucount,
+      axom::getUmpireResourceAllocatorID(
+        umpire::resource::MemoryResourceType::Unified));
+#else
     axom_map::Bucket<Key, T>* tmp =
-        axom::allocate<axom_map::Bucket<Key, T>>(bucount);
-    #endif
+      axom::allocate<axom_map::Bucket<Key, T>>(bucount);
+#endif
 
     for(int i = 0; i < bucount; i++)
     {
@@ -828,7 +887,10 @@ private:
    *
    * \param [in] overload execution space object for the sake of function overloading.
    */
-  void destroy_locks(axom::SEQ_EXEC overload) const { AXOM_UNUSED_VAR(overload); }
+  void destroy_locks(axom::SEQ_EXEC overload) const
+  {
+    AXOM_UNUSED_VAR(overload);
+  }
 
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 
@@ -899,7 +961,7 @@ private:
    */
   void bucket_unlock(std::size_t index, axom::CUDA_EXEC overload)
   {
-    omp_unset_lock(locks + index);
+    RAJA::atomicExchange<auto_atomic>(&(cuda_locks[index]), 0);
   }
 
   /*!
@@ -938,7 +1000,7 @@ private:
   mutable omp_lock_t* locks;
 #endif
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
-  int * cuda_locks;
+  int* cuda_locks;
 #endif
   Policy pol;
   /// @}
