@@ -110,7 +110,7 @@ enum BVHReturnCodes
  *     axom::deallocate( candidates );
  *
  *  \endcode
- *
+ *  \accel
  */
 template <int NDIMS, typename ExecSpace = axom::SEQ_EXEC, typename FloatType = double>
 class BVH
