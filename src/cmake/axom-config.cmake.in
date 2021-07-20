@@ -77,7 +77,7 @@ if(NOT AXOM_FOUND)
       set(CONDUIT_DIR ${AXOM_CONDUIT_DIR}) 
     endif()
     find_dependency(Conduit REQUIRED NO_DEFAULT_PATH
-                    PATHS "${CONDUIT_DIR}/@AXOM_CONDUIT_CONFIG_DIR@")
+                    PATHS "${CONDUIT_DIR}/@AXOM_CONDUIT_CONFIG_SUBDIR@")
   endif()
 
   # hdf5
