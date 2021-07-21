@@ -220,7 +220,6 @@ public:
    * \post \f$ P==B\f$ when \f$ \alpha=1.0\f$
    * \post The return point, P, and the user-supplied points A, B are collinear.
    */
-  AXOM_HOST_DEVICE
   static Point lerp(const Point& A, const Point& B, T alpha);
 
   /*!
