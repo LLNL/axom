@@ -9,11 +9,15 @@
 /**
  * \file PolicyTraits.hpp
  *
- * A collection of utility traits classes for Slam policies.
+ * A collection of utility policy and traits classes for Slam.
  */
 
+#include "axom/slam/Set.hpp"
+#include "axom/slam/NullSet.hpp"
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/policies/StridePolicies.hpp"
+
+#include <utility>
 
 namespace axom
 {
@@ -57,7 +61,98 @@ struct StrideToSize<StrideOne<IntType>, IntType>
   using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE>;
 };
 
+/**
+ * \brief Type traits for null sets.
+ *
+ * The null pointer for most sets is nullptr
+ */
+template <typename SetType,
+          typename P = typename SetType::PositionType,
+          typename E = typename SetType::ElementType>
+struct EmptySetTraits
+{
+  using EmptySetType = SetType;
+
+  static EmptySetType* emptySet() { return nullptr; }
+
+  static bool isEmpty(const EmptySetType* set)
+  {
+    return (set == emptySet() || set->empty());
+  }
+};
+
+/**
+ * \brief Specialization of NullSetTraits for the base class Set
+ *
+ * The null pointer is of type NullSet
+ */
+template <typename P, typename E>
+struct EmptySetTraits<slam::Set<P, E>>
+{
+  using EmptySetType = slam::Set<P, E>;
+
+  static EmptySetType* emptySet()
+  {
+    static slam::NullSet<P, E> s_nullSet;
+    return &s_nullSet;
+  }
+
+  static bool isEmpty(const EmptySetType* set)
+  {
+    return *set == *(emptySet()) || set->empty();
+  }
+};
+
 }  // end namespace policies
+
+namespace traits
+{
+// Implementation of void_t (from C++17) with bug fix for
+// earlier versions of gcc. Credit: https://stackoverflow.com/a/35754473
+namespace void_details
+{
+template <class...>
+struct make_void
+{
+  using type = void;
+};
+}  // namespace void_details
+
+template <class... T>
+using void_t = typename void_details::make_void<T...>::type;
+
+///\name has_relation_ptr traits class
+///@{
+
+template <class T, class = void>
+struct has_relation_ptr : std::false_type
+{ };
+
+template <class T>
+struct has_relation_ptr<T, void_t<decltype(std::declval<T>().getRelation())>>
+  : std::true_type
+{ };
+
+///@}
+
+///\name indices_use_indirection traits class for BivariateSetTypes
+///@{
+
+template <class T, class = void>
+struct indices_use_indirection : std::true_type
+{ };
+
+template <class T>
+struct indices_use_indirection<T, void_t<typename T::ProductSetType>>
+  : std::false_type
+{
+  static_assert(std::is_base_of<typename T::BivariateSetType, T>::value, "");
+};
+
+///@}
+
+}  // end namespace traits
+
 }  // end namespace slam
 }  // end namespace axom
 

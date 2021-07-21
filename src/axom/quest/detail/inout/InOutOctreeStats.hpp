@@ -43,9 +43,9 @@ public:
   using OctreeLevels = typename OctreeBaseType::OctreeLevels;
   using BlockIndex = typename OctreeBaseType::BlockIndex;
 
-  using LeafCountMap = slam::Map<slam::Set<>, int>;
-  using CellCountMap = slam::Map<slam::Set<>, int>;
-  using CardinalityVCMap = slam::Map<slam::Set<>, int>;
+  using LeafCountMap = slam::Map<int>;
+  using CellCountMap = slam::Map<int>;
+  using CardinalityVCMap = slam::Map<int>;
 
   using LogHistogram = std::map<int, int>;
   using MinMaxRange = primal::BoundingBox<double, 1>;

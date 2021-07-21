@@ -56,8 +56,8 @@ public:
   using SpaceVector = primal::Vector<double, DIM>;
   using GeometricBoundingBox = primal::BoundingBox<double, DIM>;
 
-  using VertexIndexMap = slam::Map<slam::Set<VertexIndex>, VertexIndex>;
-  using VertexPositionMap = slam::Map<slam::Set<VertexIndex>, SpacePt>;
+  using VertexIndexMap = slam::Map<VertexIndex>;
+  using VertexPositionMap = slam::Map<SpacePt>;
 
   /// Always DIM verts since we're representing a d-dimensional simplicial mesh in dimension d
   static constexpr int NUM_CELL_VERTS = DIM;

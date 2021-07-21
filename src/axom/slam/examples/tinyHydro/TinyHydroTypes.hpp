@@ -25,13 +25,13 @@ namespace tinyHydro {
 
   using SetBase = slam::Set<PositionType, ElementType>;
 
-  using IndexField = slam::Map<SetBase, int>;
+  using IndexField = slam::Map<int>;
 
-  using ScalarField = slam::Map<SetBase, double>;
+  using ScalarField = slam::Map<double>;
   using NodalScalarField = ScalarField;
   using ZonalScalarField = ScalarField;
 
-  using VectorField = slam::Map<SetBase, VectorXY>;
+  using VectorField = slam::Map<VectorXY>;
   using NodalVectorField = VectorField;
   using ZonalVectorField = VectorField;
   using FaceVectorField = VectorField;
@@ -74,7 +74,7 @@ namespace tinyHydro {
   using NUM_BD_SZ = slam::policies::CompileTimeSize<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES>;
   using BoundaryEdgeSet = slam::OrderedSet< PositionType, ElementType, NUM_BD_SZ>;
 
-  using IndexMap = slam::Map<SetBase, IndexType>;
+  using IndexMap = slam::Map<IndexType>;
 
   using IndexRegistry = slam::FieldRegistry<SetBase, ZoneSet::PositionType>;
   using IndexBuffer = IndexRegistry::BufferType;

@@ -20,6 +20,7 @@ set(gtest_slam_tests
     slam_set_BitSet.cpp
     slam_set_DynamicSet.cpp
     slam_set_Iterator.cpp
+    slam_set_BivariateSet.cpp    
 
     # test relations
     slam_relation_StaticVariable.cpp
@@ -28,7 +29,7 @@ set(gtest_slam_tests
     slam_relation_DynamicConstant.cpp
 
     # test maps
-    slam_Map.cpp
+    slam_map_Map.cpp
     slam_map_SubMap.cpp
     slam_map_BivariateMap.cpp
     slam_map_DynamicMap.cpp
