@@ -44,6 +44,7 @@ bool discretize(const SphereType& s, int levels, std::vector<OctType>& out);
  * \brief Given a 2D polyline revolved around the positive X-axis, return a list
  *   of Octahedra approximating the shape.
  * \param [in] polyline The polyline to revolve around the X-axis
+ * \param [in] len The number of points in \a polyline
  * \param [in] levels The number of refinements to perform
  * \param [out] out The collection of octahedra representing the revolved
  *   polyline
@@ -53,9 +54,10 @@ bool discretize(const SphereType& s, int levels, std::vector<OctType>& out);
  * segments in \a polyline (one less than the length).
  * That's exponential growth.  Use appropriate caution.
  */
-bool discretize(std::vector<Point2D>& polyline,
+bool discretize(Point2D *& polyline,
+                int len,
                 int levels,
-                std::vector<OctType>& out);
+                OctType *& out);
 
 /// @}
 

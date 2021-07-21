@@ -47,6 +47,7 @@ Point3D project_to_shape(const Point3D &p, const SphereType &sphere)
                              drat * p[2] - dratc * ctr[2]);
 }
 
+AXOM_HOST_DEVICE
 Point3D rescale_YZ(const Point3D &p, double new_dst)
 {
   double cur_dst = sqrt(p[1] * p[1] + p[2] * p[2]);
@@ -87,14 +88,18 @@ OctType from_sphere(const SphereType &sphere)
   return OctType(P, Q, R, S, T, U);
 }
 
-/* How many octahedra will we generate in each segment of the polyline?
- * This is done in discretizeSegment() (which see for further details).
+/* How many octahedra will we generate in each segment of the polyline,
+ * summed over all levels of refinement?  We generate the octahedra in
+ * discretizeSegment() (which see for further details).
  *  - One oct for the central octahedron (level 0),
  *  - three more for its side faces (level 1),
  *  - and for level i > 1, two times the octahedron count in level i-1,
  *    to refine each exposed face.
  *
  * Total = 1 + 3*sum[i=0 to levels-1](2^i)
+ *
+ * For levels < 0, we return 0.  This lets us call the routine to find
+ * the offset in an array to store prisms for level (levels + 1).
  */
 int count_segment_prisms(int levels)
 {
@@ -111,6 +116,7 @@ int count_segment_prisms(int levels)
     }
     octcount += 1;
   }
+  if (levels < 0) { octcount = 0; }
 
   return octcount;
 }
@@ -174,6 +180,7 @@ OctType new_inscribed_oct(const SphereType &sphere, OctType &o, int s, int t, in
   return OctType(P, Q, R, o[s], o[t], o[u]);
 }
 
+AXOM_HOST_DEVICE
 OctType new_inscribed_prism(OctType &old_oct,
                             int p_off,
                             int s_off,
@@ -329,7 +336,7 @@ int discrSeg(const Point2D &a,
   Point2D pa, pb;
 
   // Refine: add an octahedron to each exposed face.
-  for(int level = 0; level < levels; ++level)
+  for (int level = 0; level < levels; ++level)
   {
     // Each level of refinement generates a prism for each exposed
     // face, so twice the prisms in the preceding level.  Refining the
@@ -340,6 +347,7 @@ int discrSeg(const Point2D &a,
     {
       lvl_factor = 3;
     }
+    int index = count_segment_prisms(level - 1);
 
     // The ends of the prisms switch each level.
     if(level & 1)
@@ -360,18 +368,20 @@ int discrSeg(const Point2D &a,
     // Of note, the child-level end-cap QSU is coplanar with parent-
     // level cap RTP, and vice versa.  Hence the preceding if-statement
     // with comment "the ends switch each level."
-    for(int i = 0; i < curr_lvl_count; ++i)
-    {
-      out[next_lvl + i * lvl_factor + 0] =
-        new_inscribed_prism(out[curr_lvl + i], Q, T, S, R, pa, pb);
-      out[next_lvl + i * lvl_factor + 1] =
-        new_inscribed_prism(out[curr_lvl + i], U, R, Q, P, pa, pb);
-      if(curr_lvl == 0)
+    axom::for_all<ExecSpace>(
+      curr_lvl_count,
+      AXOM_LAMBDA(axom::IndexType i)
       {
-        out[next_lvl + i * lvl_factor + 2] =
-          new_inscribed_prism(out[curr_lvl + i], S, P, U, T, pa, pb);
-      }
-    }
+        out[next_lvl + i * lvl_factor + 0] =
+          new_inscribed_prism(out[curr_lvl + i], Q, T, S, R, pa, pb);
+        out[next_lvl + i * lvl_factor + 1] =
+          new_inscribed_prism(out[curr_lvl + i], U, R, Q, P, pa, pb);
+        if(curr_lvl == 0)
+        {
+          out[next_lvl + i * lvl_factor + 2] =
+            new_inscribed_prism(out[curr_lvl + i], S, P, U, T, pa, pb);
+        }
+      });
 
     curr_lvl = next_lvl;
     curr_lvl_count *= lvl_factor;
@@ -391,13 +401,14 @@ int discrSeg(const Point2D &a,
  * less than the polyline's length).  That is exponential growth.  Use
  * appropriate caution.
  */
-bool discretize(std::vector<Point2D> &polyline,
+bool discretize(Point2D *& polyline,
+                int len,
                 int levels,
-                std::vector<OctType> &out)
+                OctType *& out)
 {
   // Check for invalid input.  If any segment is invalid, exit returning false.
   bool stillValid = true;
-  int segmentcount = polyline.size() - 1;
+  int segmentcount = n - 1;
   for(int seg = 0; seg < segmentcount && stillValid; ++seg)
   {
     Point2D &a = polyline[seg];
@@ -422,7 +433,7 @@ bool discretize(std::vector<Point2D> &polyline,
   // That was the octahedron count for one segment.  Multiply by the number
   // of segments we will compute.
   int totaloctcount = segoctcount * segmentcount;
-  out.resize(totaloctcount);
+  axom::reallocate(out, totaloctcount);
   int total_prism_count = 0;
 
   for(int seg = 0; seg < segmentcount; ++seg)
@@ -432,7 +443,7 @@ bool discretize(std::vector<Point2D> &polyline,
     total_prism_count += segment_prism_count;
   }
 
-  out.resize(total_prism_count);
+  axom::reallocate(out, total_prism_count);
 
   // TODO check for errors in each segment's computation
   return true;
