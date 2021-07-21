@@ -4,8 +4,6 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/quest/Discretize.hpp"
-
-#include "axom/core.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
@@ -211,7 +209,7 @@ OctType new_inscribed_prism(OctType &old_oct,
  * As noted in the doxygen, this function chops a sphere into O(4^levels)
  * octahedra.  That is exponential growth.  Use appropriate caution.
  */
-bool discretize(const SphereType &sphere, int levels, OctType *& out, int & octcount)
+bool discretize(const SphereType &sphere, int levels, std::vector<OctType> &out)
 {
   // Check input.  Negative radius: return false.
   if(sphere.getRadius() < 0)
@@ -221,22 +219,17 @@ bool discretize(const SphereType &sphere, int levels, OctType *& out, int & octc
   // Zero radius: return true without generating octahedra.
   if(sphere.getRadius() < PTINY)
   {
-    octcount = 0;
     return true;
   }
 
-  octcount = count_sphere_octahedra(levels);
-  axom::reallocate(out, octcount);
-
-  // index points to an octahedron of the last generation.  We'll generate
-  // new octahedra based on out[index].
-  int index = 0;
-
-  // outindex points to where the next new octahedron should be stored.
-  int outindex = 0;
+  int octcount = count_sphere_octahedra(levels);
+  out.reserve(octcount);
 
   // Establish an octahedron with all of its points lying on the sphere (level 0)
-  out[outindex++] = from_sphere(sphere);
+  out.emplace_back(from_sphere(sphere));
+
+  // last_gen indexes to an octahedron of the last generation.
+  int last_gen = 0;
 
   // max_last_gen indexes to the last oct of the last generation.
   int max_last_gen = 0;
@@ -244,8 +237,8 @@ bool discretize(const SphereType &sphere, int levels, OctType *& out, int & octc
   // Refine: add an octahedron to each exposed face.
   for(int level = 0; level < levels; ++level)
   {
-    max_last_gen = outindex;
-    while(index <= max_last_gen)
+    max_last_gen = out.size();
+    while(last_gen <= max_last_gen)
     {
       // Octahedra are defined by points P, Q, R, S, T, U (indexes 0--5; see
       // enum at file beginning).  Point oct[i] is opposite point oct[(i+3)%6].
@@ -255,19 +248,19 @@ bool discretize(const SphereType &sphere, int levels, OctType *& out, int & octc
       /* newoct[1] uses (T,P,R)-old. */
       /* newoct[2] uses (P,U,Q)-old. */
       /* newoct[3] uses (R,Q,S)-old. */
-      out[outindex++] = new_inscribed_oct(sphere, out[index], P, Q, R);
-      out[outindex++] = new_inscribed_oct(sphere, out[index], T, P, R);
-      out[outindex++] = new_inscribed_oct(sphere, out[index], P, U, Q);
-      out[outindex++] = new_inscribed_oct(sphere, out[index], R, Q, S);
-      if(index == 0)
+      out.push_back(new_inscribed_oct(sphere, out[last_gen], P, Q, R));
+      out.push_back(new_inscribed_oct(sphere, out[last_gen], T, P, R));
+      out.push_back(new_inscribed_oct(sphere, out[last_gen], P, U, Q));
+      out.push_back(new_inscribed_oct(sphere, out[last_gen], R, Q, S));
+      if(last_gen == 0)
       {
-        out[outindex++] = new_inscribed_oct(sphere, out[index], P, T, U);
-        out[outindex++] = new_inscribed_oct(sphere, out[index], Q, U, S);
-        out[outindex++] = new_inscribed_oct(sphere, out[index], T, R, S);
-        out[outindex++] = new_inscribed_oct(sphere, out[index], U, T, S);
+        out.push_back(new_inscribed_oct(sphere, out[last_gen], P, T, U));
+        out.push_back(new_inscribed_oct(sphere, out[last_gen], Q, U, S));
+        out.push_back(new_inscribed_oct(sphere, out[last_gen], T, R, S));
+        out.push_back(new_inscribed_oct(sphere, out[last_gen], U, T, S));
       }
 
-      index += 1;
+      last_gen += 1;
     }
   }
 
@@ -280,11 +273,11 @@ bool discretize(const SphereType &sphere, int levels, OctType *& out, int & octc
  * Each level of refinement places a new prism/tet on all exposed faces.
  *
  * Input:  2D points a and b, number of levels of refinement, index into
- * the output array.  The routine assumes a.x <= b.x, a.y >= 0, b.y >= 0.
- * The routine also assumes that the output array is resized to hold
+ * the output vector.  The routine assumes a.x <= b.x, a.y >= 0, b.y >= 0.
+ * The routine also assumes that the output std::vector is resized to hold
  * the generated prisms at the specified index.
  *
- * Output: the output array of prisms (placed in the output array
+ * Output: the output vector of prisms (placed in the output std::vector
  * starting at the index).
  *
  * Return value: the number of prisms generated: zero for degenerate segments,
@@ -305,11 +298,10 @@ bool discretize(const SphereType &sphere, int levels, OctType *& out, int & octc
  * Each subsequent level of refinement adds a prism to each exposed
  * quadrilateral side-wall.
  */
-template<typename ExecSpace>
 int discrSeg(const Point2D &a,
              const Point2D &b,
              int levels,
-             OctType *& out,
+             std::vector<OctType> &out,
              int idx)
 {
   // Assert input assumptions
@@ -328,6 +320,8 @@ int discrSeg(const Point2D &a,
   }
 
   int total_count = count_segment_prisms(levels);
+
+  SLIC_ASSERT((int)(out.size()) >= idx + total_count);
 
   // Establish a prism (in an octahedron record) with one triangular
   // end lying on the circle described by rotating point a around the
@@ -353,7 +347,7 @@ int discrSeg(const Point2D &a,
     {
       lvl_factor = 3;
     }
-    //int index = count_segment_prisms(level - 1);
+    int index = count_segment_prisms(level - 1);
 
     // The ends of the prisms switch each level.
     if(level & 1)
@@ -407,16 +401,14 @@ int discrSeg(const Point2D &a,
  * less than the polyline's length).  That is exponential growth.  Use
  * appropriate caution.
  */
-template<typename ExecSpace>
 bool discretize(Point2D *& polyline,
-                int pointcount,
+                int len,
                 int levels,
-                OctType *& out,
-                int & octcount)
+                OctType *& out)
 {
   // Check for invalid input.  If any segment is invalid, exit returning false.
   bool stillValid = true;
-  int segmentcount = pointcount - 1;
+  int segmentcount = n - 1;
   for(int seg = 0; seg < segmentcount && stillValid; ++seg)
   {
     Point2D &a = polyline[seg];
@@ -442,16 +434,16 @@ bool discretize(Point2D *& polyline,
   // of segments we will compute.
   int totaloctcount = segoctcount * segmentcount;
   axom::reallocate(out, totaloctcount);
-  octcount = 0;
+  int total_prism_count = 0;
 
   for(int seg = 0; seg < segmentcount; ++seg)
   {
     int segment_prism_count =
-      discrSeg<ExecSpace>(polyline[seg], polyline[seg + 1], levels, out, octcount);
-    octcount += segment_prism_count;
+      discrSeg(polyline[seg], polyline[seg + 1], levels, out, total_prism_count);
+    total_prism_count += segment_prism_count;
   }
 
-  axom::reallocate(out, octcount);
+  axom::reallocate(out, total_prism_count);
 
   // TODO check for errors in each segment's computation
   return true;
