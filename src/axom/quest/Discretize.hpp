@@ -13,9 +13,6 @@
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 
-// C/C++ includes
-#include <vector>  // for std::vector
-
 namespace axom
 {
 namespace quest
@@ -38,7 +35,7 @@ using Point2D = primal::Point<double, 2>;
  * This routine generates O(4^level) octahedra.  That's exponential growth.
  * Use appropriate caution.
  */
-bool discretize(const SphereType& s, int levels, std::vector<OctType>& out);
+bool discretize(const SphereType& s, int levels, OctType *& out);
 
 /*!
  * \brief Given a 2D polyline revolved around the positive X-axis, return a list
