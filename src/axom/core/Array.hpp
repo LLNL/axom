@@ -93,7 +93,7 @@ bool operator!=(const Array<T>& lhs, const Array<T>& rhs);
  *     `shrink()`.
  *
  *     \warning Reallocations tend to be costly operations in terms of performance.
- *      Use `reserve()` when the number of elements is known a priori, or
+ *      Use `reserve()` when the number of nodes is known a priori, or
  *      use a constructor that takes an actual size and capacity when possible.
  *
  *     \note The Array destructor deallocates and returns all memory associated
@@ -151,7 +151,7 @@ public:
    *
    * \post capacity() >= size()
    * \post size() == num_elements
-   * \post resizeRatio() == DEFAULT_RESIZE_RATIO
+   * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
   Array(IndexType num_elements,
         IndexType capacity = 0,
@@ -193,7 +193,7 @@ public:
    * \pre data != nullptr
    * \pre num_elements > 0
    *
-   * \post resizeRatio == 0.0
+   * \post getResizeRatio == 0.0
    *
    * \note a capacity is specified for the number of elements to store in the
    *  array and does not correspond to the actual bytesize.
@@ -540,13 +540,21 @@ public:
   /*!
    * \brief Returns an ArrayIterator to the first element of the Array
    */
-  ArrayIterator begin() { return ArrayIterator(0, this); }
+  ArrayIterator begin()
+  {
+    assert(m_data != nullptr);
+    return ArrayIterator(0, this);
+  }
 
   /*!
    * \brief Returns an ArrayIterator to the element following the last
    *  element of the Array.
    */
-  ArrayIterator end() { return ArrayIterator(size(), this); }
+  ArrayIterator end()
+  {
+    assert(m_data != nullptr);
+    return ArrayIterator(size(), this);
+  }
 
   /*!
    * \brief Shrink the capacity to be equal to the size.
@@ -582,7 +590,7 @@ public:
   /*!
    * \brief Get the ratio by which the capacity increases upon dynamic resize.
    */
-  double resizeRatio() const { return m_resize_ratio; }
+  double getResizeRatio() const { return m_resize_ratio; }
 
   /*!
    * \brief Set the ratio by which the capacity increases upon dynamic resize.
@@ -594,7 +602,7 @@ public:
   /*!
    * \brief Get the ID for the umpire allocator
    */
-  int allocatorID() const { return m_allocator_id; }
+  int getAllocatorID() const { return m_allocator_id; }
 
   /*!
    * \brief Return true iff the external buffer constructor was called.
@@ -666,7 +674,7 @@ protected:
    *
    * \post capacity() >= size()
    * \post size() == num_elements
-   * \post resizeRatio() == DEFAULT_RESIZE_RATIO
+   * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
   void initialize(IndexType num_elements, IndexType capacity);
 
@@ -1215,7 +1223,7 @@ std::ostream& operator<<(std::ostream& os, const Array<T>& arr)
 template <typename T>
 bool operator==(const Array<T>& lhs, const Array<T>& rhs)
 {
-  if(lhs.allocatorID() != rhs.allocatorID())
+  if(lhs.getAllocatorID() != rhs.getAllocatorID())
   {
     return false;
   }
