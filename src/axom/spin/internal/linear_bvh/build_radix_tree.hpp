@@ -536,7 +536,7 @@ AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
-static inline int atomic_increment(int* addr)
+AXOM_HOST_DEVICE static inline int atomic_increment(int* addr)
 {
 #ifdef AXOM_USE_RAJA
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
