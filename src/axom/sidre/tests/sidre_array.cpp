@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/Array.hpp"               /* for axom::Array */
 #include "axom/core/utilities/Utilities.hpp" /* for utilities::max */
 
 #include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */

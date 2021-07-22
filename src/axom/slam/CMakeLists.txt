@@ -27,7 +27,6 @@ set(slam_headers
     Utilities.hpp
     FieldRegistry.hpp
     ModularInt.hpp
-    IteratorBase.hpp
 
     #SRM policies
     policies/CardinalityPolicies.hpp
