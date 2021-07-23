@@ -385,41 +385,46 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfMat(int m, SparsityLayout sparsity)
 
 void MultiMat::convertToDynamic()
 {
-  if (m_dynamic_mode)
+  if(m_dynamic_mode)
+  {
     return;
+  }
   SLIC_ASSERT(m_cellMatRelDyn == nullptr);
   SLIC_ASSERT(m_matCellRelDyn == nullptr);
 
   // Save what the current layout is for later
   //m_static_layout = Layout { m_dataLayout, m_sparsityLayout };  //old version with single layout for all MM
   m_layout_when_static.resize(m_fieldDataLayoutVec.size());
-  for (auto i = 0; i < m_fieldDataLayoutVec.size(); i++) {
+  for(auto i = 0; i < m_fieldDataLayoutVec.size(); i++)
+  {
     m_layout_when_static[i].data_layout = m_fieldDataLayoutVec[i];
     m_layout_when_static[i].sparsity_layout = m_fieldSparsityLayoutVec[i];
 
-    
     // For now, handle dynamic by changing maps to dense,
     // and relation to DynamicRelation
     // if(isSparse()) convertLayoutToDense(); //old version with single layout for all MM
-    if (m_fieldSparsityLayoutVec[i] == SparsityLayout::SPARSE) {
+    if(m_fieldSparsityLayoutVec[i] == SparsityLayout::SPARSE)
+    {
       convertFieldToDense(i);
     }
   }
-  
+
   //create the dynamic relation
-  for (int f = 0; f < 2; f++)
+  for(int f = 0; f < 2; f++)
   {
     StaticVariableRelationType* rel;
-    if(f == 0) {
+    if(f == 0)
+    {
       rel = m_cellMatRel;
     }
-    else {
+    else
+    {
       rel = m_matCellRel;
     }
 
     SetType* set1 = rel->fromSet();
     SetType* set2 = rel->toSet();
-    
+
     auto relDyn = new DynamicVariableRelationType(set1, set2);
     for(int i = 0; i < rel->fromSetSize(); i++)
     {
@@ -430,7 +435,7 @@ void MultiMat::convertToDynamic()
       }
     }
 
-    if (f == 0)
+    if(f == 0)
       m_cellMatRelDyn = relDyn;
     else
       m_matCellRelDyn = relDyn;
@@ -441,20 +446,21 @@ void MultiMat::convertToDynamic()
   SLIC_ASSERT(m_cellMatRelDyn->totalSize() == m_cellMatRel->totalSize());
   SLIC_ASSERT(m_matCellRelDyn->totalSize() == m_matCellRel->totalSize());
 
-
-  delete m_cellMatRel; m_cellMatRel = nullptr;
-  delete m_cellMatNZSet; m_cellMatNZSet = nullptr;
-  delete m_matCellRel; m_matCellRel = nullptr;
-  delete m_matCellNZSet; m_matCellNZSet = nullptr;
+  delete m_cellMatRel;
+  m_cellMatRel = nullptr;
+  delete m_cellMatNZSet;
+  m_cellMatNZSet = nullptr;
+  delete m_matCellRel;
+  m_matCellRel = nullptr;
+  delete m_matCellNZSet;
+  m_matCellNZSet = nullptr;
 
   m_dynamic_mode = true;
-  
 }
 
 void MultiMat::convertToStatic()
 {
-  if (!m_dynamic_mode)
-    return;
+  if(!m_dynamic_mode) return;
 
   // Change dynamicRelation back to staticRelation
   // change the layout to previously stored static layout
@@ -465,8 +471,9 @@ void MultiMat::convertToStatic()
   //Create the static relations
   for(int f = 0; f < 2; f++)
   {
-    DynamicVariableRelationType* relDyn = f == 0 ? m_cellMatRelDyn: m_matCellRelDyn; 
-    
+    DynamicVariableRelationType* relDyn =
+      f == 0 ? m_cellMatRelDyn : m_matCellRelDyn;
+
     RangeSetType* set1 = f == 0 ? &m_cellSet : &m_matSet;
     RangeSetType* set2 = f == 0 ? &m_matSet : &m_cellSet;
 
@@ -537,7 +544,7 @@ bool MultiMat::addEntry(int cell_id, int mat_id)
 
   auto& rel_vec = m_cellMatRelDyn->data(cell_id);
   auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), mat_id);
-  if (found_iter != rel_vec.end())
+  if(found_iter != rel_vec.end())
   {
     SLIC_ASSERT_MSG(false, "MultiMat::addEntry() -- entry already exists.");
     return false;
@@ -545,7 +552,7 @@ bool MultiMat::addEntry(int cell_id, int mat_id)
 
   m_cellMatRelDyn->insert(cell_id, mat_id);
   m_matCellRelDyn->insert(mat_id, cell_id);
-  
+
   return true;
 }
 
@@ -555,7 +562,7 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
 
   auto& rel_vec = m_cellMatRelDyn->data(cell_id);
   auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), mat_id);
-  if (found_iter == rel_vec.end())
+  if(found_iter == rel_vec.end())
   {
     SLIC_ASSERT_MSG(false, "MultiMat::removeEntry() -- entry not found");
     return false;
@@ -568,7 +575,7 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
   rel_vec_2.erase(found_iter_2);
 
   //TODO make all map value zero?
-  
+
   return true;
 }
 
