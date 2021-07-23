@@ -310,7 +310,7 @@ using MyTypes = ::testing::Types<
   slam::BivariateSet<slam::VectorIndirectionSet<>>,
   slam::BivariateSet<slam::VectorIndirectionSet<>, slam::RangeSet<>>,
   slam::BivariateSet<slam::RangeSet<>, slam::VectorIndirectionSet<>>>;
-TYPED_TEST_CASE(BivariateSetTester, MyTypes);
+TYPED_TEST_SUITE(BivariateSetTester, MyTypes);
 
 //-----------------------------------------------------------------------------
 
