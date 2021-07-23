@@ -38,6 +38,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated the Quest `inout` C API to support 2D queries using the `c2c` library, when Axom is configured with `c2c`
 - Updated the C++ Quest "containment" example to support 2D in/out queries 
   (in addition to the already supported 3D queries)
+- Added `axom::Array` modeled after `std::vector`. Previous `axom::Array` renamed to `axom::MCArray`. Future changes to both arrays are expected.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -59,6 +60,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   Alternate Umpire allocator IDs are supplied via `BVH::setAllocatorID(int)`.
   Other `BVH` methods have been modified to accept or return Primal primitives.
 - Spin: Removed hard dependency on RAJA and Umpire from `BVH`.
+- Moved `slam::IteratorBase` to `axom::IteratorBase`.
+- `sidre::Array` now derives from `axom::MCArray`.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
