@@ -26,7 +26,7 @@ class Array;
 /// @{
 
 /*! 
- * \brief Overloaded output stream operator. Outputs the Array in to the
+ * \brief Overloaded output stream operator. Outputs the Array to the
  *  given output stream.
  *
  * \param [in,out] os output stream object.

@@ -3,13 +3,12 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/Array.hpp"             /* for axom::Array */
-#include "axom/core/memory_management.hpp" /* for alloc() and free() */
+#include "axom/core/Array.hpp"
+#include "axom/core/memory_management.hpp"
 
-#include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
+#include "gtest/gtest.h"
 
-// C/C++ includes
-#include <algorithm> /* for std::fill_n */
+#include <algorithm>
 
 namespace axom
 {
@@ -669,8 +668,8 @@ void check_swap(Array<T>& v)
   /* Swap */
   v.swap(v_two);
 
-  EXPECT_EQ(v_two, v_copy);
-  EXPECT_EQ(v, v_two_copy);
+  EXPECT_NE(v, v_two);
+  EXPECT_NE(v, v_copy);
 
   /* Swap back */
   v.swap(v_two);

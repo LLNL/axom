@@ -38,12 +38,12 @@ set(core_headers
     numerics/polynomial_solvers.hpp
 
     ## core
+    Array.hpp
+    IteratorBase.hpp
     Macros.hpp
     Map.hpp
-    Path.hpp
-    Array.hpp
     MCArray.hpp
-    IteratorBase.hpp
+    Path.hpp
     StackArray.hpp
     Types.hpp
     memory_management.hpp
