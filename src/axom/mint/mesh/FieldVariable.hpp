@@ -11,9 +11,9 @@
 // axom includes
 #include "axom/core/Macros.hpp"  // for axom Macros
 #include "axom/core/Types.hpp"   // for axom types
-#include "axom/core/Array.hpp"   // for Array
 
 #include "axom/mint/config.hpp"
+#include "axom/mint/core/Array.hpp"  // for mint::Array
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
