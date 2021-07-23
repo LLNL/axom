@@ -24,6 +24,8 @@
 
 #include "helper.hpp"
 
+#include <type_traits>
+
 namespace slam = axom::slam;
 using namespace axom::multimat;
 
@@ -42,30 +44,41 @@ template <typename FieldTypeT>
 using GetFieldFunType = FieldTypeT (MultiMat::*)(const std::string&);
 
 template <typename FieldTypeT, typename BSet>
-GetFieldFunType<FieldTypeT> getfieldfun()
+typename std::enable_if<std::is_same<FieldTypeT, Field2DT<BSet>>::value,
+                        GetFieldFunType<FieldTypeT>>::type
+getfieldfun()
 {
-  if constexpr(std::is_same<FieldTypeT, Field2DT<BSet>>::value)
-  {
-    SLIC_INFO("Using templated field2D");
-    return &MultiMat::get2dField<double, BSet>;
-  }
-  else if constexpr(std::is_same<FieldTypeT,
-                                 Field2DTempT<DataLayout::CELL_DOM, BSet>>::value)
-  {
-    SLIC_INFO("Using specialized templated-field2D");
-    return &MultiMat::getTemplated2DField<double, DataLayout::CELL_DOM, BSet>;
-  }
-  else if constexpr(std::is_same<FieldTypeT,
-                                 Field2DTempT<DataLayout::MAT_DOM, BSet>>::value)
-  {
-    SLIC_INFO("Using specialized templated-field2D");
-    return &MultiMat::getTemplated2DField<double, DataLayout::MAT_DOM, BSet>;
-  }
-  else if constexpr(std::is_same<FieldTypeT, BiVarMapT<BSet>>::value)
-  {
-    SLIC_INFO("Using slam BivariateMap");
-    return &MultiMat::get2dFieldAsSlamBivarMap<double, BSet>;
-  }
+  SLIC_INFO("Using templated field2D");
+  return &MultiMat::get2dField<double, BSet>;
+}
+
+template <typename FieldTypeT, typename BSet>
+typename std::enable_if<
+  std::is_same<FieldTypeT, Field2DTempT<DataLayout::CELL_DOM, BSet>>::value,
+  GetFieldFunType<FieldTypeT>>::type
+getfieldfun()
+{
+  SLIC_INFO("Using specialized templated-field2D");
+  return &MultiMat::getTemplated2DField<double, DataLayout::CELL_DOM, BSet>;
+}
+
+template <typename FieldTypeT, typename BSet>
+typename std::enable_if<
+  std::is_same<FieldTypeT, Field2DTempT<DataLayout::MAT_DOM, BSet>>::value,
+  GetFieldFunType<FieldTypeT>>::type
+getfieldfun()
+{
+  SLIC_INFO("Using specialized templated-field2D");
+  return &MultiMat::getTemplated2DField<double, DataLayout::MAT_DOM, BSet>;
+}
+
+template <typename FieldTypeT, typename BSet>
+typename std::enable_if<std::is_same<FieldTypeT, BiVarMapT<BSet>>::value,
+                        GetFieldFunType<FieldTypeT>>::type
+getfieldfun()
+{
+  SLIC_INFO("Using slam BivariateMap");
+  return &MultiMat::get2dFieldAsSlamBivarMap<double, BSet>;
 }
 
 multirun_timer timer;
@@ -4352,11 +4365,11 @@ int main(int argc, char** argv)
   //printself and check
   mm.isValid(true);
 
-  using SetType = slam::RangeSet<>;
+  //using SetType = slam::RangeSet<>;
   //using ProductSetType = slam::ProductSet<SetType, SetType>;
   using ProductSetType = MultiMat::ProductSetType;
 
-  using RelType = MultiMat::SparseRelationType;
+  //using RelType = MultiMat::SparseRelationType;
   //using RelationSetType = slam::RelationSet<RelType, SetType, SetType>;
   using RelationSetType = MultiMat::RelationSetType;
 
