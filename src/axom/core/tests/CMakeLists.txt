@@ -11,6 +11,7 @@
 #------------------------------------------------------------------------------
 
 set(gtest_utils_tests
+    core_array.hpp
     core_execution_for_all.hpp
     core_execution_space.hpp
     core_mcarray.hpp
@@ -59,16 +60,6 @@ blt_add_executable( NAME       core_serial_tests
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON ${utils_tests_depends}
                     FOLDER     axom/core/tests )
-
-# Separate Array tests due to invalid device error with axom::for_all tests
-blt_add_executable( NAME       core_array_test
-                    SOURCES    core_array.cpp
-                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON ${utils_tests_depends}
-                    FOLDER     axom/core/tests )
-
-axom_add_test( NAME    core_array
-               COMMAND core_array_test )
 
 foreach(test_suite ${gtest_utils_tests})
     get_filename_component( test_suite ${test_suite} NAME_WE )

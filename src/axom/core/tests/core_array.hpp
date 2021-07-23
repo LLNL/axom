@@ -13,8 +13,6 @@
 
 namespace axom
 {
-const char IGNORE_OUTPUT[] = ".*";
-
 namespace internal
 {
 /*!
@@ -703,6 +701,7 @@ void check_alloc(Array<T>& v, const int& id)
 template <typename T>
 void check_external(Array<T>& v)
 {
+  const char IGNORE_OUTPUT[] = ".*";
   ASSERT_TRUE(v.isExternal());
 
   /* Check that the array is full. */
@@ -819,6 +818,7 @@ TEST(core_array, checkResize)
 //------------------------------------------------------------------------------
 TEST(core_array_DeathTest, checkResize)
 {
+  const char IGNORE_OUTPUT[] = ".*";
   constexpr IndexType ZERO = 0;
   IndexType size = 100;
 
@@ -901,32 +901,32 @@ TEST(core_array, checkSwap)
   }
 }
 
-std::vector<int> memory_locations
-{
-#if defined(AXOM_USE_UMPIRE)
-  axom::getUmpireResourceAllocatorID(umpire::resource::Host)
-  #if defined(UMPIRE_ENABLE_DEVICE)
-    ,
-    axom::getUmpireResourceAllocatorID(umpire::resource::Device)
-  #endif
-  #if defined(UMPIRE_ENABLE_UM)
-      ,
-    axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-  #endif
-  #if defined(UMPIRE_ENABLE_CONST)
-      ,
-    axom::getUmpireResourceAllocatorID(umpire::resource::Constant)
-  #endif
-  #if defined(UMPIRE_ENABLE_PINNED)
-      ,
-    axom::getUmpireResourceAllocatorID(umpire::resource::Pinned)
-  #endif
-#endif
-};
-
 //------------------------------------------------------------------------------
 TEST(core_array, checkAlloc)
 {
+  std::vector<int> memory_locations
+  {
+#if defined(AXOM_USE_UMPIRE)
+    axom::getUmpireResourceAllocatorID(umpire::resource::Host)
+  #if defined(UMPIRE_ENABLE_DEVICE)
+      ,
+      axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+  #endif
+  #if defined(UMPIRE_ENABLE_UM)
+        ,
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+  #endif
+  #if defined(UMPIRE_ENABLE_CONST)
+        ,
+      axom::getUmpireResourceAllocatorID(umpire::resource::Constant)
+  #endif
+  #if defined(UMPIRE_ENABLE_PINNED)
+        ,
+      axom::getUmpireResourceAllocatorID(umpire::resource::Pinned)
+  #endif
+#endif
+  };
+
   for(int id : memory_locations)
   {
     for(double ratio = 1.0; ratio <= 2.0; ratio += 0.5)
@@ -1094,10 +1094,3 @@ TEST(core_array, check_move_copy)
 }
 
 } /* end namespace axom */
-
-int main(int argc, char** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
-}
