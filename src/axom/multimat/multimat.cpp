@@ -22,7 +22,7 @@
 using namespace std;
 using namespace axom::multimat;
 
-MultiMat::MultiMat(DataLayout d, SparsityLayout s)
+MultiMat::MultiMat(DataLayout AXOM_NOT_USED(d), SparsityLayout AXOM_NOT_USED(s))
   : m_ncells(0)
   , m_nmats(0)
   , m_cellMatRel(nullptr)
@@ -395,7 +395,8 @@ void MultiMat::convertToDynamic()
   // Save what the current layout is for later
   //m_static_layout = Layout { m_dataLayout, m_sparsityLayout };  //old version with single layout for all MM
   m_layout_when_static.resize(m_fieldDataLayoutVec.size());
-  for(auto i = 0; i < m_fieldDataLayoutVec.size(); i++)
+  const int SZ = m_fieldDataLayoutVec.size();
+  for(auto i = 0; i < SZ; i++)
   {
     m_layout_when_static[i].data_layout = m_fieldDataLayoutVec[i];
     m_layout_when_static[i].sparsity_layout = m_fieldSparsityLayoutVec[i];
@@ -521,7 +522,8 @@ void MultiMat::convertToStatic()
 
   //Change each field to their corresponding sparsity
   //if (m_static_layout.sparsity_layout == SparsityLayout::SPARSE) convertLayoutToSparse();
-  for(auto i = 0; i < m_layout_when_static.size(); i++)
+  const int SZ = m_layout_when_static.size();
+  for(auto i = 0; i < SZ; i++)
   {
     if(m_layout_when_static[i].sparsity_layout == SparsityLayout::SPARSE)
     {
@@ -581,7 +583,8 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
 
 void MultiMat::makeOtherRelation()
 {
-  StaticVariableRelationType **oldRelptr, **newRelptr;
+  StaticVariableRelationType** oldRelptr = nullptr;
+  StaticVariableRelationType** newRelptr = nullptr;
   std::vector<SetPosType>*newBeginVec_ptr, *newIndicesVec_ptr;
   if(m_cellMatRel == nullptr && m_matCellRel != nullptr)
   {
@@ -598,7 +601,11 @@ void MultiMat::makeOtherRelation()
     newIndicesVec_ptr = &m_matCellRel_indicesVec;
   }
   else
-    SLIC_ASSERT(false);
+  {
+    SLIC_ERROR(
+      "Either material cell relation or cell material relation must be set");
+    return;
+  }
 
   StaticVariableRelationType*& oldRel = *oldRelptr;
   StaticVariableRelationType*& newRel = *newRelptr;
@@ -724,7 +731,7 @@ void MultiMat::convertFieldLayout(int field_idx,
                                   SparsityLayout new_sparsity,
                                   DataLayout new_layout)
 {
-  SLIC_ASSERT(0 <= field_idx && field_idx < m_mapVec.size());
+  SLIC_ASSERT(0 <= field_idx && field_idx < static_cast<int>(m_mapVec.size()));
 
   DataLayout field_data_layout = m_fieldDataLayoutVec[field_idx];
   SparsityLayout field_sparsity_layout = m_fieldSparsityLayoutVec[field_idx];
@@ -761,7 +768,7 @@ void MultiMat::convertFieldLayout(int field_idx,
 
 void axom::multimat::MultiMat::convertFieldToSparse(int field_idx)
 {
-  SLIC_ASSERT(0 <= field_idx && field_idx < m_mapVec.size());
+  SLIC_ASSERT(0 <= field_idx && field_idx < static_cast<int>(m_mapVec.size()));
 
   SparsityLayout field_sparsity_layout = m_fieldSparsityLayoutVec[field_idx];
 
@@ -796,7 +803,7 @@ void axom::multimat::MultiMat::convertFieldToSparse(int field_idx)
 
 void axom::multimat::MultiMat::convertFieldToDense(int field_idx)
 {
-  SLIC_ASSERT(0 <= field_idx && field_idx < m_mapVec.size());
+  SLIC_ASSERT(0 <= field_idx && field_idx < static_cast<int>(m_mapVec.size()));
 
   SparsityLayout field_sparsity_layout = m_fieldSparsityLayoutVec[field_idx];
 
@@ -916,14 +923,14 @@ void MultiMat::convertToDense_helper(int map_i)
 
 DataLayout MultiMat::getFieldDataLayout(int field_idx)
 {
-  SLIC_ASSERT(0 <= field_idx && field_idx < m_mapVec.size());
+  SLIC_ASSERT(0 <= field_idx && field_idx < static_cast<int>(m_mapVec.size()));
 
   return m_fieldDataLayoutVec[field_idx];
 }
 
 SparsityLayout MultiMat::getFieldSparsityLayout(int field_idx)
 {
-  SLIC_ASSERT(0 <= field_idx && field_idx < m_mapVec.size());
+  SLIC_ASSERT(0 <= field_idx && field_idx < static_cast<int>(m_mapVec.size()));
 
   return m_fieldSparsityLayoutVec[field_idx];
 }
@@ -1274,15 +1281,14 @@ MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(DataLayout layout,
   BivariateSetType* set_ptr = nullptr;
 
   if(sparsity == SparsityLayout::SPARSE)
-    if(layout == DataLayout::CELL_DOM)
-      set_ptr = m_cellMatNZSet;
-    else
-      set_ptr = m_matCellNZSet;
+  {
+    set_ptr = (layout == DataLayout::CELL_DOM) ? m_cellMatNZSet : m_matCellNZSet;
+  }
   else if(sparsity == SparsityLayout::DENSE)
-    if(layout == DataLayout::CELL_DOM)
-      set_ptr = m_cellMatProdSet;
-    else
-      set_ptr = m_matCellProdSet;
+  {
+    set_ptr =
+      (layout == DataLayout::CELL_DOM) ? m_cellMatProdSet : m_matCellProdSet;
+  }
 
   SLIC_ASSERT(set_ptr != nullptr);
   return set_ptr;
@@ -1291,7 +1297,8 @@ MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(DataLayout layout,
 MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(int field_idx)
 {
   SLIC_ASSERT(m_fieldMappingVec[field_idx] == FieldMapping::PER_CELL_MAT);
-  SLIC_ASSERT(0 <= field_idx && field_idx < m_fieldNameVec.size());
+  SLIC_ASSERT(0 <= field_idx &&
+              field_idx < static_cast<int>(m_fieldNameVec.size()));
 
   DataLayout layout = m_fieldDataLayoutVec[field_idx];
   SparsityLayout sparsity = m_fieldSparsityLayoutVec[field_idx];
@@ -1301,13 +1308,14 @@ MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(int field_idx)
 
 MultiMat::StaticVariableRelationType* MultiMat::getRel(int field_idx)
 {
-  //get the sparse relation vector
-  MultiMat::StaticVariableRelationType* rel_ptr;
-  if(m_fieldDataLayoutVec[field_idx] == DataLayout::CELL_DOM)
-    rel_ptr = m_cellMatRel;
-  else if(m_fieldDataLayoutVec[field_idx] == DataLayout::MAT_DOM)
-    rel_ptr = m_matCellRel;
+  SLIC_ASSERT(m_fieldDataLayoutVec[field_idx] == DataLayout::CELL_DOM ||
+              m_fieldDataLayoutVec[field_idx] == DataLayout::MAT_DOM);
 
+  //get the sparse relation vector
+  MultiMat::StaticVariableRelationType* rel_ptr =
+    (m_fieldDataLayoutVec[field_idx] == DataLayout::CELL_DOM) ? m_cellMatRel
+                                                              : m_matCellRel;
   SLIC_ASSERT(rel_ptr != nullptr);
+
   return rel_ptr;
 }
