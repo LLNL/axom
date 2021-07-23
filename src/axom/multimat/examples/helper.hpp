@@ -11,7 +11,9 @@
  * Also defines some helper struct-classes.
  */
 
+#include "axom/core.hpp"
 #include "axom/slam.hpp"
+#include "fmt/fmt.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -25,12 +27,38 @@ struct Value_Checker
 {
   std::vector<double> values;
   void reset() { values.resize(0); }
-  void check(std::vector<double>& vec)
+  void check(std::vector<double>& vec, double EPS = 1e-8)
   {
-    if(values.size() == 0)
+    if(values.empty())
+    {
       values = vec;
-    else if(values != vec)
-      SLIC_ERROR("Calculated values are not the same!");
+    }
+    else
+    {
+      if(values.size() != vec.size())
+      {
+        SLIC_ERROR(
+          fmt::format("Sizes of arrays are different. 'values' has {} "
+                      "elements; 'vec' has {} elements",
+                      values.size(),
+                      vec.size()));
+      }
+      else
+      {
+        using axom::utilities::isNearlyEqual;
+        bool equivalent = true;
+        const int SZ = values.size();
+        for(int i = 0; i < SZ; ++i)
+        {
+          if(!isNearlyEqual(values[i], vec[i], EPS))
+          {
+            equivalent = false;
+          }
+        }
+
+        SLIC_ERROR_IF(!equivalent, "Calculated values are not the same!");
+      }
+    }
   }
 };
 

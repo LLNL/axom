@@ -2357,35 +2357,39 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm,
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
     for(int ic = 0; ic < ncells; ++ic)
     {
-      double xc[2];
-      xc[0] = cen[ic * 2];
-      xc[1] = cen[ic * 2 + 1];
-      int nn = nnbrs[ic];
+      double xc[2] = {cen[ic * 2], cen[ic * 2 + 1]};
+      const int nn = nnbrs[ic];
       int cnbrs[8];
       double dsqr[8];
 
-      for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+      for(int n = 0; n < nn; ++n)
+      {
+        cnbrs[n] = nbrs[ic * 8 + n];
+      }
 
       for(int n = 0; n < nn; ++n)
       {
         dsqr[n] = 0.0;
         for(int d = 0; d < 2; ++d)  //original condition was  d < 1 ???
         {
-          double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
+          const double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
           dsqr[n] += ddist * ddist;
         }
       }
 
       for(int m = 0; m < nmats; ++m)
       {
-        if(*Volfrac.findValue(ic, m) >
-           0.0)  //this check is not needed in sparse layout.
+        //this check is not needed in sparse layout.
+        if(*Volfrac.findValue(ic, m) > 0.0)
         {
           int nnm = 0;  // number of nbrs with this material
           for(int n = 0; n < nn; ++n)
@@ -2399,9 +2403,13 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm,
             }
           }
           if(nnm > 0)
+          {
             MatDensity_average[ic * nmats + m] /= nnm;
+          }
           else
+          {
             SLIC_ASSERT(MatDensity_average[ic * nmats + m] == 0.0);
+          }
         }
         else
         {
