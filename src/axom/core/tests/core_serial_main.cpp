@@ -13,6 +13,8 @@
 #include "core_Path.hpp"
 #include "core_stack_array.hpp"
 #include "core_map.hpp"
+#include "core_mcarray.hpp"
+#include "core_array.hpp"
 
 #ifndef AXOM_USE_MPI
   #include "core_types.hpp"

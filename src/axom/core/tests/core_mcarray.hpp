@@ -951,7 +951,8 @@ TEST(core_mcarray, checkResize)
 TEST(core_mcarray_DeathTest, deathtest_checkResize)
 {
   /* Resizing isn't allowed with a ratio less than 1.0. */
-  MCArray<int> v_int(axom::mint::internal::ZERO, 1, 100);
+  constexpr IndexType ZERO = 0;
+  MCArray<int> v_int(ZERO, 1, 100);
   v_int.setResizeRatio(0.99);
   EXPECT_DEATH_IF_SUPPORTED(internal::check_resize(v_int), IGNORE_OUTPUT);
 }
