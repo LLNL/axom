@@ -23,9 +23,10 @@ set( quest_headers
     AllNearestNeighbors.hpp
     detail/AllNearestNeighbors_detail.hpp
 
-    ## Discretize shapes
+    ## Shaping
     Discretize.hpp
     Discretize_impl.hpp
+    Shaping.hpp
 
     ## In/out query
     InOutOctree.hpp
