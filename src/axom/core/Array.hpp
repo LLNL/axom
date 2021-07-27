@@ -74,6 +74,13 @@ bool operator!=(const Array<T>& lhs, const Array<T>& rhs);
  *
  *  The Array class mirrors std::vector, with future support for GPUs
  *  in-development.
+ * 
+ *  This class is meant to be a drop-in replacement for std::vector.
+ *  However, it differs in its memory management and construction semantics.
+ *  Specifically, we also allow axom::Array to wrap memory that it does
+ *  not own (external storage), we do not require axom::Array to initialize/construct
+ *  its memory at allocation time, and we use axom's memory_management
+ *  and allocator ID abstractions rather than std::allocator.
  *
  *  Depending on which constructor is used, the Array object can have two
  *  different underlying storage types:
