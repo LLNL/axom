@@ -35,6 +35,7 @@ void processAbort();
 
 /*!
  * \brief Returns the absolute value of x.
+ * \accel
  * \param [in] x value whose absolute value is computed.
  * \return abs(x) the absolute value of x.
  */
@@ -46,6 +47,7 @@ inline AXOM_HOST_DEVICE T abs(const T& x)
 
 /*!
  * \brief Returns the max value of x and y.
+ * \accel
  * \param [in] x the first value to check.
  * \param [in] y the second value to check.
  * \return max(x, y) the max value of x and y.
@@ -58,6 +60,7 @@ inline AXOM_HOST_DEVICE const T& max(const T& x, const T& y)
 
 /*!
  * \brief Returns the min value of x and y.
+ * \accel
  * \param [in] x the first value to check.
  * \param [in] y the second value to check.
  * \return min(x, y) the min value of x and y.
@@ -70,6 +73,7 @@ inline AXOM_HOST_DEVICE const T& min(const T& x, const T& y)
 
 /*!
  * \brief Swaps the values of a, b.
+ * \accel
  * \param [in,out] a 1st object to swap.
  * \param [in,out] b 2nd object to swap.
  */
@@ -93,6 +97,7 @@ inline T log2(T& val)
 
 /*!
  * \brief Clamps an input value to a given range.
+ * \accel
  * \param [in] val  The value to clamp.
  * \param [in] lower The lower range.
  * \param [in] upper The upper range.
@@ -108,7 +113,7 @@ inline AXOM_HOST_DEVICE T clampVal(T val, T lower, T upper)
 
 /*!
  * \brief Clamps the upper range on an input value
- *
+ * \accel
  * \param [in] val The value to clamp
  * \param [in] upper The upper range
  * \return upper if val > upper, else val
@@ -122,7 +127,7 @@ inline AXOM_HOST_DEVICE T clampUpper(T val, T upper)
 
 /*!
  * \brief Clamps the lower range on an input value
- *
+ * \accel
  * \param [in] val The value to clamp
  * \param [in] lower The lower range
  * \return lower if val < lower, else val
@@ -257,6 +262,7 @@ T swapEndian(T val)
 
 /*!
  * \brief Fuzzy comparison of two real valued quantities.
+ * \accel
  * \param [in] a The first real valued quantities we are comparing.
  * \param [in] b The second real valued quantities we are comparing.
  * \param [in] thresh The threshold of the fuzzy comparison.  Default is 1.0e-8.
@@ -273,6 +279,7 @@ inline AXOM_HOST_DEVICE bool isNearlyEqual(RealType a,
 
 /*!
  * \brief Fuzzy comparison of two real valued quantities.
+ * \accel
  * \param [in] a The first real valued quantities we are comparing.
  * \param [in] b The second real valued quantities we are comparing.
  * \param [in] relThresh The relative threshold of the fuzzy comparison.

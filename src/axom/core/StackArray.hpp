@@ -13,8 +13,9 @@
 namespace axom
 {
 /*!
+ * \accel
  * \class StackArray
- *
+ * 
  * \brief Provides a wrapper for a compile time sized array, similar to
  *  std::array. This class is needed because NVCC doesn't caputure standard
  *  stack arrays in device lambdas. Furthermore we can't use std::array becuase
