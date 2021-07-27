@@ -1129,7 +1129,8 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox<T, 3>& b1,
  * \return true iff plane intersects with bounding box, otherwise, false.
  */
 template <typename T>
-bool intersect_plane_bbox(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
+AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
+                                           const BoundingBox<T, 3>& bb)
 {
   typedef Vector<T, 3> VectorType;
 
@@ -1154,7 +1155,9 @@ bool intersect_plane_bbox(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
  * \return true iff plane intersects with segment, otherwise, false.
  */
 template <typename T>
-bool intersect_plane_seg(const Plane<T, 3>& plane, const Segment<T, 3>& seg, T& t)
+AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
+                                          const Segment<T, 3>& seg,
+                                          T& t)
 {
   typedef Vector<T, 3> VectorType;
 

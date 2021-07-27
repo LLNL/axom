@@ -295,11 +295,10 @@ AXOM_HOST_DEVICE void poly_clip_vertices(FixedPolyhedron<T, NDIMS>& poly,
           int expectedVertexIndex = poly.nverts;
 
           T lerp_val;
-          SegmentType seg(PointType(poly.verts[i].data()),
-                          PointType(poly.verts[neighborIndex].data()));
+          SegmentType seg(poly.verts[i], poly.verts[neighborIndex]);
           intersect(plane, seg, lerp_val);
 
-          int newVertexIndex = poly.addVertex((seg.at(lerp_val)).data());
+          int newVertexIndex = poly.addVertex(seg.at(lerp_val));
           SLIC_ASSERT(newVertexIndex == expectedVertexIndex);
 
           poly.addNeighbors(newVertexIndex, {i, neighborIndex});

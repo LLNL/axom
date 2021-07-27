@@ -113,7 +113,7 @@ public:
    * \pre In 2D, x1 should not be equal to x2
    * \pre In 3D, the user-supplied points, x1, x2, x3 should not be collinear.
    */
-  Plane(const T* x1, const T* x2, const T* x3);
+  AXOM_HOST_DEVICE Plane(const T* x1, const T* x2, const T* x3);
 
   /// @}
 
@@ -129,13 +129,13 @@ public:
    * \return N the unit normal.
    * \post N != nullptr
    */
-  inline const VectorType getNormal() const { return m_normal; }
+  AXOM_HOST_DEVICE const VectorType getNormal() const { return m_normal; }
 
   /*!
    * \brief Returns the offset of the plane from origin.
    * \return offSet the offset of the plane from origin.
    */
-  inline T getOffset() const { return m_offset; }
+  AXOM_HOST_DEVICE T getOffset() const { return m_offset; }
 
   /*!
    * \brief Computes the signed distance of the specified point to this Plane.
@@ -147,7 +147,7 @@ public:
    *
    * \pre x != nullptr
    */
-  inline T computeSignedDistance(const PointType& x) const
+  AXOM_HOST_DEVICE T computeSignedDistance(const PointType& x) const
   {
     return m_normal.dot(VectorType(x.array())) - m_offset;
   }
@@ -189,7 +189,8 @@ public:
    *
    * \pre x != nullptr
    */
-  inline int getOrientation(const PointType& x, double TOL = 1.e-9) const;
+  AXOM_HOST_DEVICE inline int getOrientation(const PointType& x,
+                                             double TOL = 1.e-9) const;
 
   /*!
    * \brief Prints the Plane information in the given output stream.
@@ -207,7 +208,7 @@ private:
    * \note The supplied buffer must be at least NDIMS long.
    * \pre normal != nullptr
    */
-  inline void setNormal(const VectorType& normal);
+  AXOM_HOST_DEVICE inline void setNormal(const VectorType& normal);
 
   VectorType m_normal; /*!< plane unit-normal  */
   T m_offset;          /*!< offset from origin */
@@ -228,10 +229,12 @@ Plane<T, NDIMS>::Plane(const VectorType& normal, const PointType& x)
 {
   AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
                          "A plane object may be defined in 2-D or 3-D");
+  SLIC_ASSERT_MSG(!normal.is_zero(),
+                  "Normal vector of a plane should be non-zero");
 
   this->setNormal(normal);
-  axom::numerics::normalize(m_normal.data(), NDIMS);
-  m_offset = axom::numerics::dot_product(m_normal.data(), x.data(), NDIMS);
+
+  m_offset = m_normal.dot(VectorType(x.array()));
 }
 
 //------------------------------------------------------------------------------
@@ -240,9 +243,10 @@ Plane<T, NDIMS>::Plane(const VectorType& normal, T offset) : m_offset(offset)
 {
   AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
                          "A plane object may be defined in 2-D or 3-D");
+  SLIC_ASSERT_MSG(!normal.is_zero(),
+                  "Normal vector of a plane should be non-zero");
 
   this->setNormal(normal);
-  axom::numerics::normalize(m_normal.data(), NDIMS);
 }
 
 //------------------------------------------------------------------------------
@@ -255,43 +259,35 @@ Plane<T, NDIMS>::Plane(const T* x1, const T* x2, const T* x3)
   SLIC_ASSERT(x1 != nullptr);
   SLIC_ASSERT(x2 != nullptr);
 
+  VectorType normal;
+
   if(x3 == nullptr)
   {
     SLIC_ASSERT(NDIMS == 2);
-    m_normal[0] = x1[1] - x2[1];  // -dy
-    m_normal[1] = x2[0] - x1[0];  //  dx
+    normal[0] = x1[1] - x2[1];  // -dy
+    normal[1] = x2[0] - x1[0];  //  dx
 
   }  // END if
   else
   {
     SLIC_ASSERT(NDIMS == 3);
 
-    T r1[3];
-    T r2[3];
+    VectorType r1(x1, x2);
+    VectorType r2(x1, x3);
 
-    for(int i = 0; i < 3; ++i)
-    {
-      r1[i] = x2[i] - x1[i];
-      r2[i] = x3[i] - x1[i];
-    }
-
-    axom::numerics::cross_product(r1, r2, m_normal.data());
+    normal = VectorType(VectorType::cross_product(r1, r2).data(), NDIMS);
 
   }  // END else
 
   // check for degenerate line or triangle
-  bool degenerate = utilities::isNearlyEqual(m_normal[0], 0.0);
-  for(int i = 0; i < NDIMS; ++i)
-  {
-    degenerate = degenerate && utilities::isNearlyEqual(m_normal[i], 0.0);
-  }
+  bool degenerate = normal.is_zero();
 
-  SLIC_ERROR_IF(degenerate,
-                "Supplied points form a degenerate "
-                  << ((NDIMS == 2) ? "line" : "triangle"));
+  SLIC_CHECK_MSG(degenerate,
+                 "Supplied points form a degenerate "
+                   << ((NDIMS == 2) ? "line" : "triangle"));
 
-  axom::numerics::normalize(m_normal.data(), NDIMS);
-  m_offset = axom::numerics::dot_product(m_normal.data(), x1, NDIMS);
+  this->setNormal(normal);
+  m_offset = m_normal.dot(x1);
 }
 
 //------------------------------------------------------------------------------
@@ -357,7 +353,7 @@ std::ostream& Plane<T, NDIMS>::print(std::ostream& os) const
 template <typename T, int NDIMS>
 inline void Plane<T, NDIMS>::setNormal(const VectorType& normal)
 {
-  m_normal = normal;
+  m_normal = normal.unitVector();
 }
 
 //------------------------------------------------------------------------------

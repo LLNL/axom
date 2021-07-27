@@ -262,6 +262,7 @@ public:
    * \brief Check if this is a zero vector
    * \return whether this vector consists of all zeros
    */
+  AXOM_HOST_DEVICE
   bool is_zero() const;
 
   /*!
