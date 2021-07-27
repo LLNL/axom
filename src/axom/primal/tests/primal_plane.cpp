@@ -20,9 +20,10 @@ namespace numerics = axom::numerics;
 //------------------------------------------------------------------------------
 namespace
 {
-void ensure_unit_norm(const double* v, int n)
+template <typename T, int NDIMS>
+void ensure_unit_norm(const primal::Vector<T, NDIMS>& v)
 {
-  const double norm = std::sqrt(numerics::dot_product(v, v, n));
+  const double norm = v.norm();
   EXPECT_DOUBLE_EQ(norm, 1.0);
 }
 
@@ -116,7 +117,7 @@ TEST(primal_plane, construct_from_normal_and_point)
   x[1] = 2.0;
 
   primal::Plane<double, 2> P2(normal, x);
-  ensure_unit_norm(P2.getNormal(), 2);
+  ensure_unit_norm(P2.getNormal());
   EXPECT_DOUBLE_EQ(P2.getOffset(), std::sqrt(5.0));
   EXPECT_EQ(P2.getDimension(), 2);
 }
@@ -139,7 +140,7 @@ TEST(primal_plane, construct_from_normal_and_offset)
   normal[1] = 2.0;
   offset = std::sqrt(5.0);
   primal::Plane<double, 2> P2(normal, offset);
-  ensure_unit_norm(P2.getNormal(), 2);
+  ensure_unit_norm(P2.getNormal());
   EXPECT_DOUBLE_EQ(P2.getOffset(), offset);
 }
 
@@ -152,14 +153,14 @@ TEST(primal_plane, construct_from_points)
 
   // test 3D
   primal::Plane<double, 3> P(x1, x2, x3);
-  ensure_unit_norm(P.getNormal(), 3);
+  ensure_unit_norm(P.getNormal());
   EXPECT_DOUBLE_EQ(P.getOffset(), 3.0);
 
   // test 2D
   double a[2] = {2.0, -1.0};
   double b[2] = {2.0, 2.0};
   primal::Plane<double, 2> P2(a, b, nullptr);
-  ensure_unit_norm(P2.getNormal(), 2);
+  ensure_unit_norm(P2.getNormal());
   EXPECT_DOUBLE_EQ(P2.getOffset(), -2.0);
 }
 

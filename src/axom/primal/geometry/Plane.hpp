@@ -9,6 +9,8 @@
 #include "axom/core/Macros.hpp"                        // for Axom macros
 #include "axom/core/numerics/matvecops.hpp"            // for vector operators
 #include "axom/primal/geometry/OrientationResult.hpp"  // for OrientedSide
+#include "axom/primal/geometry/Vector.hpp"             // for primal::Vector
+#include "axom/primal/geometry/Point.hpp"              // for primal::Point
 
 #include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
@@ -61,6 +63,10 @@ template <typename T, int NDIMS>
 class Plane
 {
 public:
+  using VectorType = primal::Vector<T, NDIMS>;
+  using PointType = primal::Point<T, NDIMS>;
+
+public:
   /// \name Constructors
   /// @{
 
@@ -73,14 +79,8 @@ public:
    *
    * \note The supplied normal will be normalized, such that, the Plane's normal
    *  will always be a unit normal.
-   *
-   * \note The supplied buffers, normal and x must point to buffers that are at
-   *  least NDIMS long
-   *
-   * \pre normal != nullptr
-   * \pre x != nullptr
    */
-  Plane(const T* normal, const T* x);
+  Plane(const VectorType& normal, const PointType& x);
 
   /*!
    * \brief Constructs a plane with a specified normal, \f$ \mathcal{N} \f$,
@@ -91,10 +91,8 @@ public:
    *
    * \note The supplied normal will be normalized, such that, the Plane's normal
    *  will always be a unit normal.
-   *
-   * \pre normal != nullptr
    */
-  Plane(const T* normal, T offset);
+  Plane(const VectorType& normal, T offset);
 
   /*!
    * \brief Constructs a Plane that goes through the specified points.
@@ -120,11 +118,6 @@ public:
   /// @}
 
   /*!
-   * \brief Destructor.
-   */
-  ~Plane();
-
-  /*!
    * \brief Returns the dimension of the Plane
    * \return dim the dimension of the Plane.
    * \post (dim==2) || (dim==3)
@@ -136,7 +129,7 @@ public:
    * \return N the unit normal.
    * \post N != nullptr
    */
-  inline const T* getNormal() const { return m_normal; }
+  inline const VectorType getNormal() const { return m_normal; }
 
   /*!
    * \brief Returns the offset of the plane from origin.
@@ -154,9 +147,9 @@ public:
    *
    * \pre x != nullptr
    */
-  inline T computeSignedDistance(const T* x) const
+  inline T computeSignedDistance(const PointType& x) const
   {
-    return (axom::numerics::dot_product(m_normal, x, NDIMS) - m_offset);
+    return m_normal.dot(VectorType(x.array())) - m_offset;
   }
 
   /*!
@@ -168,11 +161,10 @@ public:
    * \note `x` should point to a buffer that is at least NDIMS long.
    * \note `projx` should point to a buffer that is at least NDIMS long.
    *
-   * \pre x != nullptr
    * \pre projx != nullptr
    * \post this->getOrientedSide( projx ) == ON_BOUNDARY
    */
-  inline void projectPoint(const T* x, T* projx) const;
+  inline void projectPoint(const PointType& x, T* projx) const;
 
   /*!
    * \brief Flips the orientation of the plane.
@@ -197,7 +189,7 @@ public:
    *
    * \pre x != nullptr
    */
-  inline int getOrientation(const T* x, double TOL = 1.e-9) const;
+  inline int getOrientation(const PointType& x, double TOL = 1.e-9) const;
 
   /*!
    * \brief Prints the Plane information in the given output stream.
@@ -215,15 +207,10 @@ private:
    * \note The supplied buffer must be at least NDIMS long.
    * \pre normal != nullptr
    */
-  inline void setNormal(const T* normal);
+  inline void setNormal(const VectorType& normal);
 
-  /*!
-   * \brief Default constructor. Private to prevent its use in application code.
-   */
-  Plane() {};
-
-  T m_normal[NDIMS]; /*!< plane unit-normal  */
-  T m_offset;        /*!< offset from origin */
+  VectorType m_normal; /*!< plane unit-normal  */
+  T m_offset;          /*!< offset from origin */
 };
 
 } /* namespace primal */
@@ -237,30 +224,25 @@ namespace axom
 namespace primal
 {
 template <typename T, int NDIMS>
-Plane<T, NDIMS>::Plane(const T* normal, const T* x)
+Plane<T, NDIMS>::Plane(const VectorType& normal, const PointType& x)
 {
   AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
                          "A plane object may be defined in 2-D or 3-D");
 
-  SLIC_ASSERT(normal != nullptr);
-  SLIC_ASSERT(x != nullptr);
-
   this->setNormal(normal);
-  axom::numerics::normalize(m_normal, NDIMS);
-  m_offset = axom::numerics::dot_product(m_normal, x, NDIMS);
+  axom::numerics::normalize(m_normal.data(), NDIMS);
+  m_offset = axom::numerics::dot_product(m_normal.data(), x.data(), NDIMS);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-Plane<T, NDIMS>::Plane(const T* normal, T offset) : m_offset(offset)
+Plane<T, NDIMS>::Plane(const VectorType& normal, T offset) : m_offset(offset)
 {
   AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
                          "A plane object may be defined in 2-D or 3-D");
 
-  SLIC_ASSERT(normal != nullptr);
-
   this->setNormal(normal);
-  axom::numerics::normalize(m_normal, NDIMS);
+  axom::numerics::normalize(m_normal.data(), NDIMS);
 }
 
 //------------------------------------------------------------------------------
@@ -293,7 +275,7 @@ Plane<T, NDIMS>::Plane(const T* x1, const T* x2, const T* x3)
       r2[i] = x3[i] - x1[i];
     }
 
-    axom::numerics::cross_product(r1, r2, m_normal);
+    axom::numerics::cross_product(r1, r2, m_normal.data());
 
   }  // END else
 
@@ -308,18 +290,13 @@ Plane<T, NDIMS>::Plane(const T* x1, const T* x2, const T* x3)
                 "Supplied points form a degenerate "
                   << ((NDIMS == 2) ? "line" : "triangle"));
 
-  axom::numerics::normalize(m_normal, NDIMS);
-  m_offset = axom::numerics::dot_product(m_normal, x1, NDIMS);
+  axom::numerics::normalize(m_normal.data(), NDIMS);
+  m_offset = axom::numerics::dot_product(m_normal.data(), x1, NDIMS);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-Plane<T, NDIMS>::~Plane()
-{ }
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-inline void Plane<T, NDIMS>::projectPoint(const T* x, T* projx) const
+inline void Plane<T, NDIMS>::projectPoint(const PointType& x, T* projx) const
 {
   const T signed_distance = this->computeSignedDistance(x);
   for(int i = 0; i < NDIMS; ++i)
@@ -332,17 +309,13 @@ inline void Plane<T, NDIMS>::projectPoint(const T* x, T* projx) const
 template <typename T, int NDIMS>
 inline void Plane<T, NDIMS>::flip()
 {
-  for(int i = 0; i < NDIMS; ++i)
-  {
-    m_normal[i] *= static_cast<T>(-1.0);
-  }
-
+  m_normal *= static_cast<T>(-1.0);
   m_offset *= static_cast<T>(-1.0);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline int Plane<T, NDIMS>::getOrientation(const T* x, double TOL) const
+inline int Plane<T, NDIMS>::getOrientation(const PointType& x, double TOL) const
 {
   int oriented_side = -1;
 
@@ -382,12 +355,9 @@ std::ostream& Plane<T, NDIMS>::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline void Plane<T, NDIMS>::setNormal(const T* normal)
+inline void Plane<T, NDIMS>::setNormal(const VectorType& normal)
 {
-  for(int i = 0; i < NDIMS; ++i)
-  {
-    m_normal[i] = normal[i];
-  }
+  m_normal = normal;
 }
 
 //------------------------------------------------------------------------------
