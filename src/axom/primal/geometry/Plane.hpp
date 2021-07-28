@@ -282,7 +282,7 @@ Plane<T, NDIMS>::Plane(const T* x1, const T* x2, const T* x3)
   // check for degenerate line or triangle
   bool degenerate = normal.is_zero();
 
-  SLIC_CHECK_MSG(degenerate,
+  SLIC_CHECK_MSG(!degenerate,
                  "Supplied points form a degenerate "
                    << ((NDIMS == 2) ? "line" : "triangle"));
 
