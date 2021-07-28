@@ -16,6 +16,9 @@
 // C/C++ includes
 #include <iostream>  // for std::cerr and std::ostream
 
+namespace axom
+{
+// TODO: Add this as a non-type template parameter to Array/View
 enum MemoryResourceType
 {
   Host,
@@ -29,21 +32,21 @@ enum MemoryResourceType
   Unknown
 };
 
-namespace axom
-{
 namespace detail
 {
+// Takes the product of a parameter pack of IndexTypes
 template <typename T>
-auto product_helper(T&& t)
+IndexType packProduct(T&& t)
 {
   return t;
 }
 
 template <typename T, typename... Args>
-auto product_helper(T&& t, Args... args)
+IndexType packProduct(T&& t, Args... args)
 {
-  return t * product_helper(args...);
+  return t * packProduct(args...);
 }
+
 };  // namespace detail
 
 // Forward declare the templated classes and operator function(s)
@@ -128,8 +131,11 @@ struct Only1D<T, 1, ArrayType>
   void emplace_back(Args&&... args);
 
 private:
-  auto& asDerived() { return static_cast<ArrayType&>(*this); }
-  const auto& asDerived() const { return static_cast<const ArrayType&>(*this); }
+  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  const ArrayType& asDerived() const
+  {
+    return static_cast<const ArrayType&>(*this);
+  }
 };
 
 /*!
@@ -145,7 +151,17 @@ private:
  *  is a tuple of 1 or more components, Axom provides the MCArray class.
  *
  *  The Array class mirrors std::vector, with future support for GPUs
- *  in-development.
+ *  in-development.  This class is currently being modified to support
+ *  multidimensional arrays that roughly resemble numpy's ndarray.
+ * 
+ *  \see https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html
+ * 
+ *  In the 1-dimensional case, this class will behave like std::vector.
+ *  In higher dimensions some vector-like functionality will be unavailable,
+ *  e.g., @p push_back , and multidimensional-specific operations will mirror
+ *  ndarray when possible.  In the future, it will be possible to take "views"
+ *  of the underlying array data that allow for flexible reinterpretation via
+ *  different striding.
  * 
  *  This class is meant to be a drop-in replacement for std::vector.
  *  However, it differs in its memory management and construction semantics.
@@ -216,7 +232,7 @@ public:
   Array();
 
   /*!
-   * \brief Constructs an Array instance with the given number of elements.
+   * \brief Constructs a 1D Array instance with the given number of elements.
    *
    * \param [in] num_elements the number of elements the Array holds.
    * \param [in] capacity the number of elements to allocate space for.
@@ -226,6 +242,7 @@ public:
    *  then it will default to at least num_elements * DEFAULT_RESIZE_RATIO.
    * \note a capacity is specified for the number of elements to store in the
    *  array and does not correspond to the actual bytesize.
+   * \note The option to select a capacity is only available for 1-dimensional Arrays
    *
    * \pre num_elements >= 0
    *
@@ -233,10 +250,24 @@ public:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
+  template <IndexType SFINAE = dim>
   Array(IndexType num_elements,
         IndexType capacity = 0,
-        int allocator_id = axom::getDefaultAllocatorID());
+        int allocator_id = axom::getDefaultAllocatorID(),
+        typename std::enable_if<SFINAE == 1>::type* = nullptr);
 
+  /*!
+   * \brief Generic constructor for an Array of arbitrary dimension
+   *
+   * \param [in] args The parameter pack containing the "shape" of the Array
+   * \see https://numpy.org/doc/stable/reference/generated/numpy.empty.html#numpy.empty
+   *
+   * \pre sizeof...(Args) == dim
+   *
+   * \post capacity() >= fullSize()
+   * \post fullSize() == num_elements
+   * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
+   */
   template <typename... Args>
   Array(Args... args);
 
@@ -362,6 +393,7 @@ public:
 
   /*!
    * \brief Accessor, returns a reference to the given value.
+   * For multidimensional arrays, indexes into the (flat) raw data.
    *
    * \param [in] idx the position of the value to return.
    *
@@ -375,12 +407,44 @@ public:
     assert(inBounds(idx));
     return m_data[idx];
   }
-
+  /// \overload
   const T& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return m_data[idx];
   }
+
+  /*!
+   * \brief Dimension-aware accessor, returns a reference to the given value.
+   *
+   * \param [in] args the parameter pack of indices in each dimension.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre sizeof...(Args) == dim
+   * \pre 0 <= args[i] < m_dims[i] for i in [0, dim)
+   */
+  template <typename... Args,
+            typename SFINAE = typename std::enable_if<sizeof...(Args) == dim>::type>
+  T& operator()(Args... args)
+  {
+    IndexType indices[] = {static_cast<IndexType>(args)...};
+    IndexType idx = std::inner_product(indices, indices + dim, m_strides, 0);
+    assert(inBounds(idx));
+    return m_data[idx];
+  }
+  /// \overload
+  template <typename... Args,
+            typename SFINAE = typename std::enable_if<sizeof...(Args) == dim>::type>
+  const T& operator()(Args... args) const
+  {
+    IndexType indices[] = {static_cast<IndexType>(args)...};
+    IndexType idx = std::inner_product(indices, indices + dim, m_strides, 0);
+    assert(inBounds(idx));
+    return m_data[idx];
+  }
+
+  // TODO: Implement View class for the case where sizeof...(Args) < dim (i.e., where the indexing results in a nonscalar)
 
   /*!
    * \brief Return a pointer to the array of data.
@@ -627,7 +691,8 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  void resize(IndexType new_num_elements);
+  template <typename... Args>
+  void resize(Args... args);
 
   /*!
    * \brief Exchanges the contents of this Array with the other.
@@ -779,7 +844,11 @@ protected:
   double m_resize_ratio = DEFAULT_RESIZE_RATIO;
   bool m_is_external = false;
   int m_allocator_id;
+  // FIXME: What's the best way to make these available to users
+  // Is it sufficient to just give them the raw arrays?
+  /// \brief The sizes (extents?) in each dimension
   IndexType m_dims[dim];
+  /// \brief The strides in each dimension
   IndexType m_strides[dim];
 };
 
@@ -798,7 +867,7 @@ Array<T, dim>::Array(Args... args) : m_dims {static_cast<IndexType>(args)...}
 {
   static_assert(sizeof...(Args) == dim,
                 "Array size must match number of dimensions");
-  initialize(detail::product_helper(args...), 0);
+  initialize(detail::packProduct(args...), 0);
   // Row-major
   m_strides[dim - 1] = 1;
   for(int i = static_cast<int>(dim) - 2; i >= 0; i--)
@@ -809,7 +878,11 @@ Array<T, dim>::Array(Args... args) : m_dims {static_cast<IndexType>(args)...}
 
 //------------------------------------------------------------------------------
 template <typename T, IndexType dim>
-Array<T, dim>::Array(IndexType num_elements, IndexType capacity, int allocator_id)
+template <IndexType SFINAE>
+Array<T, dim>::Array(IndexType num_elements,
+                     IndexType capacity,
+                     int allocator_id,
+                     typename std::enable_if<SFINAE == 1>::type*)
   : m_allocator_id(allocator_id)
 {
   initialize(num_elements, capacity);
@@ -838,6 +911,8 @@ Array<T, dim>::Array(const Array& other, int allocator_id)
 {
   initialize(other.size(), other.capacity());
   axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
+  std::copy(other.m_dims, other.m_dims + dim, m_dims);
+  std::copy(other.m_strides, other.m_strides + dim, m_strides);
 }
 
 //------------------------------------------------------------------------------
@@ -852,12 +927,16 @@ Array<T, dim>::Array(Array&& other)
   m_resize_ratio = other.m_resize_ratio;
   m_is_external = other.m_is_external;
   m_allocator_id = other.m_allocator_id;
+  std::copy(other.m_dims, other.m_dims + dim, m_dims);
+  std::copy(other.m_strides, other.m_strides + dim, m_strides);
 
   other.m_data = nullptr;
   other.m_capacity = 0;
   other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
   other.m_is_external = false;
   other.m_allocator_id = INVALID_ALLOCATOR_ID;
+  std::fill(other.m_dims, other.m_dims + dim, 0);
+  std::fill(other.m_strides, other.m_strides + dim, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -1081,8 +1160,12 @@ inline void Only1D<T, 1, ArrayType>::emplace_back(Args&&... args)
 
 //------------------------------------------------------------------------------
 template <typename T, IndexType dim>
-inline void Array<T, dim>::resize(IndexType new_num_elements)
+template <typename... Args>
+inline void Array<T, dim>::resize(Args... args)
 {
+  static_assert(sizeof...(Args) == dim,
+                "Array size must match number of dimensions");
+  const auto new_num_elements = detail::packProduct(args...);
   assert(new_num_elements >= 0);
 
   if(new_num_elements > m_capacity)
@@ -1091,6 +1174,16 @@ inline void Array<T, dim>::resize(IndexType new_num_elements)
   }
 
   updateNumElements(new_num_elements);
+
+  // Can't reinitialize a raw array so we have to throw it into a temp
+  IndexType temp_dims[] = {static_cast<std::size_t>(args)...};
+  std::copy(temp_dims, temp_dims + dim, m_dims);
+  // Row-major
+  m_strides[dim - 1] = 1;
+  for(int i = static_cast<int>(dim) - 2; i >= 0; i--)
+  {
+    m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -1102,18 +1195,26 @@ inline void Array<T, dim>::swap(Array<T, dim>& other)
   IndexType temp_capacity = m_capacity;
   double temp_resize_ratio = m_resize_ratio;
   bool temp_is_external = m_is_external;
+  IndexType temp_dims[dim];
+  std::copy(m_dims, m_dims + dim, temp_dims);
+  IndexType temp_strides[dim];
+  std::copy(m_strides, m_strides + dim, temp_strides);
 
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
   m_is_external = other.m_is_external;
+  std::copy(other.m_dims, other.m_dims + dim, m_dims);
+  std::copy(other.m_strides, other.m_strides + dim, m_strides);
 
   other.m_data = temp_data;
   other.m_num_elements = temp_num_elements;
   other.m_capacity = temp_capacity;
   other.m_resize_ratio = temp_resize_ratio;
   other.m_is_external = temp_is_external;
+  std::copy(temp_dims, temp_dims + dim, other.m_dims);
+  std::copy(temp_strides, temp_strides + dim, other.m_strides);
 }
 
 //------------------------------------------------------------------------------

@@ -1092,4 +1092,41 @@ TEST(core_array, check_move_copy)
   }
 }
 
+//------------------------------------------------------------------------------
+TEST(core_array, check_multidimensional)
+{
+  constexpr int MAGIC_INT = 255;
+  constexpr double MAGIC_DOUBLE = 5683578.8;
+
+  // First test multidimensional int arrays
+  Array<int, 2> v_int;
+  v_int.resize(2, 2);
+  v_int.fill(MAGIC_INT);
+  // Make sure the number of elements and contents are correct
+  EXPECT_EQ(v_int.fullSize(), 4);
+  for(const auto val : v_int)
+  {
+    EXPECT_EQ(val, MAGIC_INT);
+  }
+  // Then assign different values to each element
+  v_int(0, 0) = 1;
+  v_int(0, 1) = 2;
+  v_int(1, 0) = 3;
+  v_int(1, 1) = 4;
+
+  // FIXME: Should we add a std::initializer_list ctor?
+  Array<int> v_int_flat(4);
+  v_int_flat[0] = 1;
+  v_int_flat[1] = 2;
+  v_int_flat[2] = 3;
+  v_int_flat[3] = 4;
+
+  // FIXME: Should we be able to compare arrays of different dimension (by comparing the raw data)?
+  for(int i = 0; i < v_int_flat.size(); i++)
+  {
+    // For a multidim array, op[] is a "flat" index into the raw data
+    EXPECT_EQ(v_int[i], v_int_flat[i]);
+  }
+}
+
 } /* end namespace axom */
