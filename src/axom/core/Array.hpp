@@ -1176,7 +1176,7 @@ inline void Array<T, dim>::resize(Args... args)
   updateNumElements(new_num_elements);
 
   // Can't reinitialize a raw array so we have to throw it into a temp
-  IndexType temp_dims[] = {static_cast<std::size_t>(args)...};
+  IndexType temp_dims[] = {static_cast<IndexType>(args)...};
   std::copy(temp_dims, temp_dims + dim, m_dims);
   // Row-major
   m_strides[dim - 1] = 1;
