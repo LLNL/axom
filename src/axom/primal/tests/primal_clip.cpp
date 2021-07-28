@@ -5,9 +5,16 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
+
+#include "axom/core/Types.hpp"
+#include "axom/core/execution/for_all.hpp"  // for for_all, execution policies
+#include "axom/core/memory_management.hpp"
+
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Plane.hpp"
 
 #include "axom/primal/operators/clip.hpp"
 
@@ -23,6 +30,7 @@ typedef axom::primal::Tetrahedron<double, 3> TetrahedronType;
 typedef axom::primal::Octahedron<double, 3> OctahedronType;
 typedef axom::primal::Polyhedron<double, 3> PolyhedronType;
 typedef axom::primal::Polygon<double, 3> PolygonType;
+using PlaneType = axom::primal::Plane<double, 3>;
 }  // namespace Primal3D
 
 TEST(primal_clip, simple_clip)
@@ -234,6 +242,119 @@ TEST(primal_clip, experimentalData)
     }
     EXPECT_TRUE(box12.contains(centroid));
   }
+}
+
+template <typename ExecPolicy>
+void unit_check_poly_clip()
+{
+  using namespace Primal3D;
+
+  using PolyhedronType = axom::primal::detail::FixedPolyhedron<double, 3>;
+  constexpr double EPS = 1.e-24;
+
+  // Create a square in 3D space as our "polyhedron", and a plane splitting it
+  // between the middle. The polyhedron after a call to poly_clip_vertices
+  // should have two new vertices where the plane crosses the 0-1 and 2-3 edges:
+  //      |
+  // 3 ---|--- 2        3 -- 2' -- 2
+  // |    |    |        |          |
+  // |    p->  |   -->  |          |
+  // |    |    |        |          |
+  // 0 ---|--- 1        0 -- 1' -- 1
+  //      |
+  // In addition, vertices 0 and 3 should be marked as clipped.
+
+  PolyhedronType square;
+  square.addVertex({0.0, 0.0, 0.0});
+  square.addVertex({1.0, 0.0, 0.0});
+  square.addVertex({1.0, 1.0, 0.0});
+  square.addVertex({0.0, 1.0, 0.0});
+
+  square.addNeighbors(0, {1, 3});
+  square.addNeighbors(1, {0, 2});
+  square.addNeighbors(2, {1, 3});
+  square.addNeighbors(3, {0, 2});
+
+  PlaneType plane(VectorType {1, 0, 0}, PointType {0.5, 0.0, 0.0});
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
+
+  PolyhedronType* out_square = axom::allocate<PolyhedronType>(1);
+  out_square[0] = square;
+
+  unsigned int* out_clipped = axom::allocate<unsigned int>(1);
+  out_clipped[0] = 0;
+
+  axom::for_all<ExecPolicy>(
+    0,
+    1,
+    AXOM_LAMBDA(int idx) {
+      poly_clip_vertices(out_square[0], plane, EPS, out_clipped[0]);
+    });
+
+  const PolyhedronType& clippedSquare = out_square[0];
+
+  EXPECT_EQ(clippedSquare.nverts, 6);
+  // Check that existing vertices were not modified
+  EXPECT_EQ(clippedSquare.verts[0], square.verts[0]);
+  EXPECT_EQ(clippedSquare.verts[1], square.verts[1]);
+  EXPECT_EQ(clippedSquare.verts[2], square.verts[2]);
+  EXPECT_EQ(clippedSquare.verts[3], square.verts[3]);
+
+  int lo_idx = -1, hi_idx = -1;
+  for(int i = 4; i < 6; i++)
+  {
+    if(clippedSquare.verts[i] == PointType {0.5, 0.0, 0.0})
+    {
+      lo_idx = i;
+    }
+    else if(clippedSquare.verts[i] == PointType {0.5, 1.0, 0.0})
+    {
+      hi_idx = i;
+    }
+  }
+
+  // Check that plane-crossing vertices were generated
+  EXPECT_NE(lo_idx, -1);
+  EXPECT_NE(hi_idx, -1);
+
+  // Check that vertices outside the plane were marked as clipped
+  EXPECT_EQ(out_clipped[0], (1 | (1 << 3)));
+
+  // Generate sets of expected neighbors
+  std::vector<std::set<int>> expectedNbrs(6);
+  expectedNbrs[0] = {3, lo_idx};
+  expectedNbrs[1] = {2, lo_idx};
+  expectedNbrs[2] = {1, hi_idx};
+  expectedNbrs[3] = {0, hi_idx};
+  expectedNbrs[lo_idx] = {0, 1};
+  expectedNbrs[hi_idx] = {2, 3};
+
+  // Check connectivity
+  for(int iv = 0; iv < 6; iv++)
+  {
+    // Each vertex should only have two neighbors
+    EXPECT_EQ(clippedSquare.num_nbrs[iv], 2);
+    std::set<int> resultNbrs {clippedSquare.nbrs[iv][0],
+                              clippedSquare.nbrs[iv][1]};
+    // Check that neighbors match expected connectivity
+    EXPECT_EQ(expectedNbrs[iv], resultNbrs);
+  }
+
+  axom::deallocate(out_square);
+  axom::deallocate(out_clipped);
+  axom::setDefaultAllocator(current_allocator);
+}
+
+TEST(primal_clip, unit_poly_clip_vertices)
+{
+  unit_check_poly_clip<axom::SEQ_EXEC>();
+}
+
+AXOM_CUDA_TEST(primal_clip, unit_poly_clip_vertices_gpu)
+{
+  unit_check_poly_clip<axom::CUDA_EXEC<256>>();
 }
 
 // Tetrahedron does not clip octahedron.
