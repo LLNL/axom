@@ -483,7 +483,11 @@ public:
    */
   bool hasNeighbors() const
   {
-    bool has_nbrs = (m_num_vertices > 0);
+    if(m_num_vertices <= 1)
+    {
+      return true;
+    }
+    bool has_nbrs = true;
     for(int i = 0; i < m_num_vertices; i++)
     {
       has_nbrs = has_nbrs && (m_neighbors.getNumNeighbors(i) > 0);
