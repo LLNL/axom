@@ -12,6 +12,8 @@
 #ifndef AXOM_PRIMAL_POLYHEDRON_HPP_
 #define AXOM_PRIMAL_POLYHEDRON_HPP_
 
+#include "axom/core/StackArray.hpp"
+
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -30,6 +32,113 @@ class Polyhedron;
 /*! \brief Overloaded output operator for polyhedrons */
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const Polyhedron<T, NDIMS>& poly);
+
+/*!
+ * \class NeighborCollection
+ *
+ * \brief Represents a collection of neighbor relations between vertices.
+ */
+class NeighborCollection
+{
+public:
+  static constexpr int MAX_VERTS = 32;
+  static constexpr int MAX_NBRS_PER_VERT = 8;
+
+  using VertexNbrs = axom::StackArray<axom::int8, MAX_NBRS_PER_VERT>;
+
+public:
+  AXOM_HOST_DEVICE NeighborCollection() : num_nbrs {0} { }
+
+  AXOM_HOST_DEVICE void clear()
+  {
+    for(int i = 0; i < MAX_VERTS; i++)
+    {
+      num_nbrs[i] = 0;
+    }
+  }
+
+  AXOM_HOST_DEVICE int getNumNeighbors(int vtx) const
+  {
+    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+    return num_nbrs[vtx];
+  }
+
+  AXOM_HOST_DEVICE const VertexNbrs& operator[](int vtx) const
+  {
+    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+    return nbrs[vtx];
+  }
+
+  AXOM_HOST_DEVICE VertexNbrs& operator[](int vtx)
+  {
+    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+    return nbrs[vtx];
+  }
+
+  AXOM_HOST_DEVICE const VertexNbrs& getNeighbors(int vtx) const
+  {
+    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+    return nbrs[vtx];
+  }
+
+  AXOM_HOST_DEVICE VertexNbrs& getNeighbors(int vtx)
+  {
+    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+    return nbrs[vtx];
+  }
+
+  AXOM_HOST_DEVICE void addNeighbors(axom::int8 idx1,
+                                     std::initializer_list<axom::int8> idx2)
+  {
+    SLIC_ASSERT(num_nbrs[idx1] + idx2.size() <= MAX_NBRS_PER_VERT);
+    SLIC_ASSERT(idx1 >= 0 && idx1 < MAX_VERTS);
+    for(axom::int8 nbr : idx2)
+    {
+      axom::int8 idx_insert = num_nbrs[idx1];
+      nbrs[idx1][idx_insert] = nbr;
+      num_nbrs[idx1]++;
+    }
+  };
+
+  AXOM_HOST_DEVICE void insertNeighborAtPos(axom::int8 idx1,
+                                            axom::int8 idx2,
+                                            axom::int8 pos)
+  {
+    SLIC_ASSERT(num_nbrs[idx1] + 1 <= MAX_NBRS_PER_VERT);
+    SLIC_ASSERT(idx1 >= 0 && idx1 < MAX_VERTS);
+    axom::uint8 old_nbrs[MAX_NBRS_PER_VERT];
+    // copy elements from [pos, nnbrs)
+    for(int ip = pos; ip < num_nbrs[idx1]; ip++)
+    {
+      old_nbrs[ip - pos] = nbrs[idx1][ip];
+    }
+    nbrs[idx1][pos] = idx2;
+    for(int ip = pos; ip < num_nbrs[idx1]; ip++)
+    {
+      nbrs[idx1][ip + 1] = old_nbrs[ip - pos];
+    }
+    num_nbrs[idx1]++;
+  }
+
+  AXOM_HOST_DEVICE void pruneNeighbors()
+  {
+    for(int iv = 0; iv < MAX_VERTS; iv++)
+    {
+      int curr_idx = 0;
+      for(int inbr = 0; inbr < num_nbrs[iv]; inbr++)
+      {
+        if(nbrs[iv][inbr] == -1) continue;
+        nbrs[iv][curr_idx] = nbrs[iv][inbr];
+        curr_idx++;
+      }
+      num_nbrs[iv] = curr_idx;
+    }
+  }
+
+private:
+  axom::int8 num_nbrs[MAX_VERTS];
+  VertexNbrs nbrs[MAX_VERTS];
+};
 
 /*!
  * \class Polyhedron
@@ -71,39 +180,31 @@ public:
   using VectorType = Vector<T, NDIMS>;
   using NumArrayType = NumericArray<T, NDIMS>;
 
+  constexpr static int MAX_VERTS = 32;
+
 private:
-  using Coords = std::vector<PointType>;
+  using Coords = StackArray<PointType, MAX_VERTS>;
+  using Neighbors = NeighborCollection;
 
 public:
   /*! Default constructor for an empty polyhedron   */
-  Polyhedron() { }
-
-  /*!
-   * \brief Constructor for an empty polyhedron that reserves space for
-   *  the given number of vertices and optionally neighbors.
-   *
-   * \param [in] numExpectedVerts number of vertices for which to reserve space
-   * \param [in] defineNeighbors optionally reserves space for neighbors
-   *             (false by default)
-   * \pre numExpectedVerts is not negative
-   *
-   */
-  Polyhedron(int numExpectedVerts, bool defineNeighbors = false)
-  {
-    SLIC_ASSERT(numExpectedVerts >= 0);
-    m_vertices.reserve(numExpectedVerts);
-
-    if(defineNeighbors)
-    {
-      m_neighbors.reserve(numExpectedVerts);
-    }
-  }
+  AXOM_HOST_DEVICE Polyhedron() : m_num_vertices(0) { }
 
   /*! Return the number of vertices in the polyhedron */
-  int numVertices() const { return static_cast<int>(m_vertices.size()); }
+  AXOM_HOST_DEVICE int numVertices() const { return m_num_vertices; }
 
-  /*! Appends a vertex to the list of vertices */
-  void addVertex(const PointType& pt) { m_vertices.push_back(pt); }
+  /*!
+   * \brief Appends a vertex to the list of vertices.
+   *
+   * \return The index where the vertex was inserted into.
+   */
+  AXOM_HOST_DEVICE int addVertex(const PointType& pt)
+  {
+    SLIC_ASSERT(m_num_vertices < MAX_VERTS);
+    m_vertices[m_num_vertices] = pt;
+    m_num_vertices++;
+    return m_num_vertices - 1;
+  }
 
   /*!
    * \brief Stores nbrs as the neighbors of vertex pt.
@@ -117,25 +218,40 @@ public:
    * \param [in] pt The vertex to add neighbors
    * \param [in] nbrs The neighbors to add to the list of neighbors
    */
-  void addNeighbors(const PointType& pt, const std::vector<int>& nbrs)
+  AXOM_HOST_DEVICE
+  void addNeighbors(const PointType& pt, std::initializer_list<axom::int8> nbrs)
   {
-    for(unsigned int i = 0; i < m_vertices.size(); i++)
+    for(unsigned int i = 0; i < m_num_vertices; i++)
     {
       if(m_vertices[i] == pt)
       {
-        if(m_neighbors.size() < i + 1)
-        {
-          m_neighbors.resize(numVertices());
-        }
-        m_neighbors[i] = nbrs;
+        m_neighbors.addNeighbors(i, nbrs);
       }
     }
   }
 
-  /*! Clears the list of vertices and neighbors */
-  void clear()
+  /*!
+   * \brief Stores nbrs as the neighbors of vertex pt.
+   *        If vertex pt is not in the polyhedron, neighbors are not added.
+   *        Resizes neighbors list to number of vertices if neighbors list
+   *        size is less than pt's index.
+   *
+   * \note pt should be a vertex of this polyhedron. Otherwise, pt may not
+   *       be found due to floating point precision differences.
+   *
+   * \param [in] pt The vertex to add neighbors
+   * \param [in] nbrs The neighbors to add to the list of neighbors
+   */
+  AXOM_HOST_DEVICE
+  void addNeighbors(int idx, std::initializer_list<axom::int8> nbrs)
   {
-    m_vertices.clear();
+    m_neighbors.addNeighbors(idx, nbrs);
+  }
+
+  /*! Clears the list of vertices and neighbors */
+  AXOM_HOST_DEVICE void clear()
+  {
+    m_num_vertices = 0;
     m_neighbors.clear();
   }
 
@@ -143,17 +259,30 @@ public:
   Coords& getVertices() { return m_vertices; }
 
   /*! Retrieves the vertex at index idx */
-  PointType& operator[](int idx) { return m_vertices[idx]; }
+  AXOM_HOST_DEVICE PointType& operator[](int idx) { return m_vertices[idx]; }
   /*! Retrieves the vertex at index idx */
-  const PointType& operator[](int idx) const { return m_vertices[idx]; }
+  AXOM_HOST_DEVICE const PointType& operator[](int idx) const
+  {
+    return m_vertices[idx];
+  }
 
   /*! Retrieves the neighbors */
-  std::vector<std::vector<int>>& getNeighbors() { return m_neighbors; }
+  AXOM_HOST_DEVICE Neighbors& getNeighbors() { return m_neighbors; }
+
+  AXOM_HOST_DEVICE int getNumNeighbors(int i) const
+  {
+    return m_neighbors.getNumNeighbors(i);
+  }
 
   /*! Retrieves the neighbors for vertex i */
-  std::vector<int>& getNeighbors(int i) { return m_neighbors[i]; }
+  AXOM_HOST_DEVICE
+  typename Neighbors::VertexNbrs& getNeighbors(int i) { return m_neighbors[i]; }
   /*! Retrieves the neighbors for vertex i */
-  const std::vector<int>& getNeighbors(int i) const { return m_neighbors[i]; }
+  AXOM_HOST_DEVICE
+  const typename Neighbors::VertexNbrs& getNeighbors(int i) const
+  {
+    return m_neighbors[i];
+  }
 
   /*!
    * \brief Computes the centroid as the average of the polyhedron's vertex
@@ -201,30 +330,32 @@ public:
     for(int i = 0; i < numVertices(); i++)
     {
       // Check each neighbor index (edge) of the vertex
-      for(int ni : m_neighbors[i])
+      for(int nidx = 0; nidx < m_neighbors.getNumNeighbors(i); nidx++)
       {
+        int ni = m_neighbors[i][nidx];
         // Check if edge has not been visited
         std::vector<int> edgeToCheck {ni, i};
         if(std::find(checkedEdges.begin(), checkedEdges.end(), edgeToCheck) ==
            checkedEdges.end())
         {
           std::vector<int> face {ni};
-          int vstart = ni;
-          int vnext = i;
-          int vprev = ni;
+          axom::int8 vstart = ni;
+          axom::int8 vnext = i;
+          axom::int8 vprev = ni;
 
           // Add neighboring vertices until we reach the starting vertex.
           while(vnext != vstart)
           {
             face.push_back(vnext);
             checkedEdges.push_back({vprev, vnext});
-            auto itr = std::find(m_neighbors[vnext].begin(),
-                                 m_neighbors[vnext].end(),
+            int numNeighbors = m_neighbors.getNumNeighbors(vnext);
+            auto itr = std::find(m_neighbors[vnext] + 0,
+                                 m_neighbors[vnext] + numNeighbors,
                                  vprev);
             vprev = vnext;
-            if(itr == m_neighbors[vnext].begin())
+            if(itr == m_neighbors[vnext] + 0)
             {
-              vnext = m_neighbors[vnext].back();
+              vnext = m_neighbors[vnext][numNeighbors - 1];
             }
             else
             {
@@ -305,10 +436,10 @@ public:
     for(int i = 0; i < sz - 1; ++i)
     {
       os << "Vertex " << i << ": " << m_vertices[i] << "\n";
-      if(hasNeighbors() && !m_neighbors[i].empty())
+      if(hasNeighbors() && m_neighbors.getNumNeighbors(i) > 0)
       {
         os << "Neighbors of vertex " << i << ": ";
-        int nz = m_neighbors[i].size();
+        int nz = m_neighbors.getNumNeighbors(i);
         for(int j = 0; j < nz; j++)
         {
           os << m_neighbors[i][j] << " ";
@@ -319,10 +450,10 @@ public:
     if(sz >= 2)
     {
       os << "Vertex " << sz - 1 << ": " << m_vertices[sz - 1] << "\n";
-      if(hasNeighbors() && !m_neighbors[sz - 1].empty())
+      if(hasNeighbors() && m_neighbors.getNumNeighbors(sz - 1) > 0)
       {
         os << "Neighbors of vertex " << sz - 1 << ": ";
-        int nz = m_neighbors[sz - 1].size();
+        int nz = m_neighbors.getNumNeighbors(sz - 1);
         for(int j = 0; j < nz; j++)
         {
           os << m_neighbors[sz - 1][j] << " ";
@@ -341,7 +472,7 @@ public:
    * Initial check is that the polyhedron has four or more vertices
    * \return True, if the polyhedron is valid, False otherwise
    */
-  bool isValid() const { return m_vertices.size() >= 4; }
+  bool isValid() const { return m_num_vertices >= 4; }
 
   /*!
    * \brief Check if vertex neighbors information is available
@@ -350,11 +481,20 @@ public:
    * \return True, if the polyhedron has neighbors info for each vertex,
    *         False otherwise
    */
-  bool hasNeighbors() const { return !m_neighbors.empty(); }
+  bool hasNeighbors() const
+  {
+    bool has_nbrs = (m_num_vertices > 0);
+    for(int i = 0; i < m_num_vertices; i++)
+    {
+      has_nbrs = has_nbrs && (m_neighbors.getNumNeighbors(i) > 0);
+    }
+    return has_nbrs;
+  }
 
 private:
+  int m_num_vertices;
   Coords m_vertices;
-  std::vector<std::vector<int>> m_neighbors;
+  Neighbors m_neighbors;
 };
 
 //------------------------------------------------------------------------------

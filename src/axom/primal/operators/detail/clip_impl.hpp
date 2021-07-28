@@ -192,77 +192,8 @@ void clipAxisPlane(const Polygon<T, NDIMS>* prevPoly,
   }
 }
 
-// A fixed-size storage polyhedron.
 template <typename T, int NDIMS>
-struct FixedPolyhedron
-{
-  using PointType = Point<T, NDIMS>;
-  static constexpr int MAX_VERTS = 32;
-  static constexpr int MAX_NBRS_PER_VERT = 8;
-  int nverts {0};
-  PointType verts[MAX_VERTS];
-  axom::int8 num_nbrs[MAX_VERTS] {0};
-  axom::int8 nbrs[MAX_VERTS][MAX_NBRS_PER_VERT];
-
-  AXOM_HOST_DEVICE int addVertex(const PointType& p)
-  {
-    SLIC_ASSERT(nverts < MAX_VERTS);
-    verts[nverts] = p;
-    nverts++;
-    return nverts - 1;
-  }
-
-  AXOM_HOST_DEVICE void addNeighbors(axom::int8 idx1,
-                                     std::initializer_list<axom::int8> idx2)
-  {
-    SLIC_ASSERT(num_nbrs[idx1] + idx2.size() <= MAX_NBRS_PER_VERT);
-    SLIC_ASSERT(idx1 >= 0 && idx1 < nverts);
-    for(axom::int8 nbr : idx2)
-    {
-      axom::int8 idx_insert = num_nbrs[idx1];
-      nbrs[idx1][idx_insert] = nbr;
-      num_nbrs[idx1]++;
-    }
-  };
-
-  AXOM_HOST_DEVICE void insertNeighborAtPos(axom::int8 idx1,
-                                            axom::int8 idx2,
-                                            axom::int8 pos)
-  {
-    SLIC_ASSERT(num_nbrs[idx1] + 1 <= MAX_NBRS_PER_VERT);
-    SLIC_ASSERT(idx1 >= 0 && idx1 < nverts);
-    axom::uint8 old_nbrs[MAX_NBRS_PER_VERT];
-    // copy elements from [pos, nnbrs)
-    for(int ip = pos; ip < num_nbrs[idx1]; ip++)
-    {
-      old_nbrs[ip - pos] = nbrs[idx1][ip];
-    }
-    nbrs[idx1][pos] = idx2;
-    for(int ip = pos; ip < num_nbrs[idx1]; ip++)
-    {
-      nbrs[idx1][ip + 1] = old_nbrs[ip - pos];
-    }
-    num_nbrs[idx1]++;
-  }
-
-  AXOM_HOST_DEVICE void pruneNeighbors()
-  {
-    for(int iv = 0; iv < MAX_VERTS; iv++)
-    {
-      int curr_idx = 0;
-      for(int inbr = 0; inbr < num_nbrs[iv]; inbr++)
-      {
-        if(nbrs[iv][inbr] == -1) continue;
-        nbrs[iv][curr_idx] = nbrs[iv][inbr];
-        curr_idx++;
-      }
-      num_nbrs[iv] = curr_idx;
-    }
-  }
-};
-
-template <typename T, int NDIMS>
-AXOM_HOST_DEVICE void poly_clip_vertices(FixedPolyhedron<T, NDIMS>& poly,
+AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
                                          const Plane<T, NDIMS>& plane,
                                          const double eps,
                                          unsigned int& out_clipped)
@@ -271,31 +202,30 @@ AXOM_HOST_DEVICE void poly_clip_vertices(FixedPolyhedron<T, NDIMS>& poly,
   using SegmentType = Segment<T, NDIMS>;
 
   // Loop over Polyhedron vertices
-  int numVerts = poly.nverts;
+  int numVerts = poly.numVertices();
   for(axom::int8 i = 0; i < numVerts; i++)
   {
-    int orientation = plane.getOrientation(poly.verts[i].data(), eps);
+    int orientation = plane.getOrientation(poly[i], eps);
 
     // Vertex is under the plane
     if(orientation == ON_NEGATIVE_SIDE)
     {
       out_clipped |= 1 << i;
       // Check neighbors for vertex above the plane (edge clipped by plane)
-      int numNeighbors = poly.num_nbrs[i];
+      int numNeighbors = poly.getNumNeighbors(i);
       for(int j = 0; j < numNeighbors; j++)
       {
-        axom::int8 neighborIndex = poly.nbrs[i][j];
+        axom::int8 neighborIndex = poly.getNeighbors(i)[j];
 
-        int neighborOrientation =
-          plane.getOrientation(poly.verts[neighborIndex].data(), eps);
+        int neighborOrientation = plane.getOrientation(poly[neighborIndex], eps);
 
         // Insert new vertex to polyhedron, where edge intersects plane.
         if(neighborOrientation == ON_POSITIVE_SIDE)
         {
-          int expectedVertexIndex = poly.nverts;
+          int expectedVertexIndex = poly.numVertices();
 
           T lerp_val;
-          SegmentType seg(poly.verts[i], poly.verts[neighborIndex]);
+          SegmentType seg(poly[i], poly[neighborIndex]);
           intersect(plane, seg, lerp_val);
 
           int newVertexIndex = poly.addVertex(seg.at(lerp_val));
@@ -308,12 +238,12 @@ AXOM_HOST_DEVICE void poly_clip_vertices(FixedPolyhedron<T, NDIMS>& poly,
 
           // Update current vertex's & neighbor's neighbors with the
           // new vertex
-          poly.nbrs[i][j] = newVertexIndex;
-          for(unsigned int k = 0; k < poly.num_nbrs[neighborIndex]; k++)
+          poly.getNeighbors(i)[j] = newVertexIndex;
+          for(unsigned int k = 0; k < poly.getNumNeighbors(neighborIndex); k++)
           {
-            if(poly.nbrs[neighborIndex][k] == i)
+            if(poly.getNeighbors(neighborIndex)[k] == i)
             {
-              poly.nbrs[neighborIndex][k] = newVertexIndex;
+              poly.getNeighbors(neighborIndex)[k] = newVertexIndex;
             }
           }
         }
@@ -323,27 +253,27 @@ AXOM_HOST_DEVICE void poly_clip_vertices(FixedPolyhedron<T, NDIMS>& poly,
 }
 
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE void poly_clip_fix_nbrs(FixedPolyhedron<T, NDIMS>& poly,
+AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
                                          const Plane<T, NDIMS>& plane,
                                          const int oldVerts,
                                          const double eps,
                                          const unsigned int clipped)
 {
+  NeighborCollection& poly_nbrs = poly.getNeighbors();
   // Keep copy of old connectivity
-  FixedPolyhedron<T, NDIMS> oldp = poly;
-  for(int i = 0; i < poly.nverts; i++)
+  NeighborCollection old_nbrs = poly.getNeighbors();
+  for(int i = 0; i < poly.numVertices(); i++)
   {
     // Check clipped created vertices first, then vertices on the plane
-    int vIndex = (i + oldVerts) % poly.nverts;
-    int vOrientation = plane.getOrientation(poly.verts[vIndex].data(), eps);
+    int vIndex = (i + oldVerts) % poly.numVertices();
+    int vOrientation = plane.getOrientation(poly[vIndex], eps);
 
     if(vIndex >= oldVerts || vOrientation == ON_BOUNDARY)
     {
-      for(unsigned int j = 0; j < poly.num_nbrs[vIndex]; j++)
+      for(unsigned int j = 0; j < poly_nbrs.getNumNeighbors(vIndex); j++)
       {
-        int neighborIndex = poly.nbrs[vIndex][j];
-        int neighborOrientation =
-          plane.getOrientation(poly.verts[neighborIndex].data(), eps);
+        int neighborIndex = poly_nbrs[vIndex][j];
+        int neighborOrientation = plane.getOrientation(poly[neighborIndex], eps);
 
         // This neighbor is below the plane
         if(neighborOrientation == ON_NEGATIVE_SIDE)
@@ -358,17 +288,17 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(FixedPolyhedron<T, NDIMS>& poly,
           //while((plane.getOrientation(poly[inext].data(), eps) ==
           //       ON_NEGATIVE_SIDE) &&
           //      (val++ < nverts))
-          while((clipped & (1 << inext)) && (val++ < poly.nverts))
+          while((clipped & (1 << inext)) && (val++ < poly.numVertices()))
           {
             itmp = inext;
-            unsigned int next_nbrs = poly.num_nbrs[inext];
+            unsigned int next_nbrs = poly_nbrs.getNumNeighbors(inext);
             // Find next vertex along face
             for(unsigned int ni = 0; ni < next_nbrs; ni++)
             {
-              if(poly.nbrs[inext][ni] == iprev)
+              if(poly_nbrs[inext][ni] == iprev)
               {
-                inext = (ni == 0) ? poly.nbrs[inext][next_nbrs - 1]
-                                  : poly.nbrs[inext][ni - 1];
+                inext = (ni == 0) ? poly_nbrs[inext][next_nbrs - 1]
+                                  : poly_nbrs[inext][ni - 1];
                 break;
               }
             }
@@ -378,92 +308,85 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(FixedPolyhedron<T, NDIMS>& poly,
 
           // Remove neighbor from list if vertex found was already a neighbor or
           // is the vertex we are currently checking for.
-          if(poly.nbrs[vIndex][(j + 1) % poly.num_nbrs[vIndex]] == inext ||
+          if(poly_nbrs[vIndex][(j + 1) % poly_nbrs.getNumNeighbors(vIndex)] ==
+               inext ||
              inext == vIndex)
           {
-            poly.nbrs[vIndex][j] = -1;
+            poly_nbrs[vIndex][j] = -1;
           }
 
           // Otherwise update neighbor lists of vertex found and vertex we are checking for.
           else
           {
-            poly.nbrs[vIndex][j] = inext;
+            poly_nbrs[vIndex][j] = inext;
 
             if((clipped & (1 << inext)))
             {
-              poly.insertNeighborAtPos(inext, vIndex, 0);
-              oldp.insertNeighborAtPos(inext, -1, 0);
+              poly_nbrs.insertNeighborAtPos(inext, vIndex, 0);
+              old_nbrs.insertNeighborAtPos(inext, -1, 0);
             }
             else
             {
               int offset;
-              for(unsigned int oi = 0; oi < oldp.num_nbrs[inext]; oi++)
+              for(unsigned int oi = 0; oi < old_nbrs.getNumNeighbors(inext); oi++)
               {
-                if(oldp.nbrs[inext][oi] == iprev)
+                if(old_nbrs[inext][oi] == iprev)
                 {
                   offset = oi;
                   break;
                 }
 
                 // Max offset
-                if(oi == oldp.num_nbrs[inext] - 1)
+                if(oi == old_nbrs.getNumNeighbors(inext) - 1)
                 {
-                  offset = oldp.num_nbrs[inext];
+                  offset = old_nbrs.getNumNeighbors(inext);
                 }
               }
-              poly.insertNeighborAtPos(inext, vIndex, offset);
-              oldp.insertNeighborAtPos(inext, vIndex, offset);
+              poly_nbrs.insertNeighborAtPos(inext, vIndex, offset);
+              old_nbrs.insertNeighborAtPos(inext, vIndex, offset);
             }
           }
         }
       }  // end of loop over vertex neighbors
     }
   }  // end of loop over Polyhedron vertices
-  poly.pruneNeighbors();
+  poly.getNeighbors().pruneNeighbors();
 }
 
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE void poly_clip_reindex(FixedPolyhedron<T, NDIMS>& poly,
+AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
                                         const unsigned int clipped)
 {
   // Dictionary for old indices to new indices positions
-  axom::int8 newIndices[FixedPolyhedron<T, NDIMS>::MAX_VERTS];
+  axom::int8 newIndices[Polyhedron<T, NDIMS>::MAX_VERTS];
+
+  Polyhedron<T, NDIMS> old_poly = poly;
+
+  poly.clear();
 
   int curIndex = 0;
-  for(int i = 0; i < poly.nverts; i++)
+  for(int i = 0; i < old_poly.numVertices(); i++)
   {
     if(!(clipped & (1 << i)))
     {
       // Non-clipped vertex
       newIndices[i] = curIndex++;
-      if(newIndices[i] != i)
-      {
-        poly.verts[newIndices[i]] = poly.verts[i];
-        poly.num_nbrs[newIndices[i]] = poly.num_nbrs[i];
-        for(int j = 0; j < poly.num_nbrs[i]; j++)
-        {
-          poly.nbrs[newIndices[i]][j] = poly.nbrs[i][j];
-        }
-      }
-      //polyBox.addPoint(PointType(poly[i].data()));
-    }
-    else
-    {
-      // Clipped vertex - zero out neighbors array
-      poly.num_nbrs[i] = 0;
+      poly.addVertex(old_poly[i]);
     }
   }
 
-  poly.nverts = curIndex;
-
-  // Renumbering neighbors
-  for(int i = 0; i < poly.nverts; i++)
+  // Reinsert neighbors into polyhedron
+  for(int i = 0; i < old_poly.numVertices(); i++)
   {
-    for(int j = 0; j < poly.num_nbrs[i]; j++)
+    if(!(clipped & (1 << i)))
     {
-      poly.nbrs[i][j] = newIndices[poly.nbrs[i][j]];
+      for(int j = 0; j < old_poly.getNumNeighbors(i); j++)
+      {
+        poly.addNeighbors(newIndices[i],
+                          {newIndices[old_poly.getNeighbors()[i][j]]});
+      }
     }
-  }
+  };
 }
 
 /*!
@@ -477,16 +400,17 @@ AXOM_HOST_DEVICE void poly_clip_reindex(FixedPolyhedron<T, NDIMS>& poly,
  *
  */
 template <typename T, int NDIMS>
-Polyhedron<T, NDIMS> clipOctahedron(const Octahedron<T, NDIMS>& oct,
-                                    const Tetrahedron<T, NDIMS>& tet,
-                                    double eps = 1.e-24)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
+  const Octahedron<T, NDIMS>& oct,
+  const Tetrahedron<T, NDIMS>& tet,
+  double eps = 1.e-24)
 {
   using PointType = Point<T, NDIMS>;
   using BoxType = BoundingBox<T, NDIMS>;
   using PlaneType = Plane<T, NDIMS>;
 
   // Initialize our polyhedron to return
-  FixedPolyhedron<T, NDIMS> poly;
+  Polyhedron<T, NDIMS> poly;
 
   poly.addVertex(oct[0]);
   poly.addVertex(oct[1]);
@@ -524,7 +448,7 @@ Polyhedron<T, NDIMS> clipOctahedron(const Octahedron<T, NDIMS>& oct,
     // Check that plane intersects Polyhedron
     if(intersect(plane, polyBox))
     {
-      int numVerts = poly.nverts;
+      int numVerts = poly.numVertices();
 
       // Clip polyhedron against current plane, generating extra vertices
       // where edges meet the plane.
@@ -540,25 +464,14 @@ Polyhedron<T, NDIMS> clipOctahedron(const Octahedron<T, NDIMS>& oct,
       // Generate new bounding box for polyhedron
       polyBox = BoxType();
 
-      for(int i = 0; i < poly.nverts; i++)
+      for(int i = 0; i < poly.numVertices(); i++)
       {
-        polyBox.addPoint(PointType(poly.verts[i]));
+        polyBox.addPoint(PointType(poly[i]));
       }
     }
   }
 
-  Polyhedron<T, NDIMS> out_poly(poly.nverts);
-  out_poly.getVertices() =
-    std::vector<PointType>(poly.verts, poly.verts + poly.nverts);
-  out_poly.getNeighbors().resize(poly.nverts);
-
-  for(int iv = 0; iv < poly.nverts; iv++)
-  {
-    out_poly.getNeighbors(iv) =
-      std::vector<int>(poly.nbrs[iv], poly.nbrs[iv] + poly.num_nbrs[iv]);
-  }
-
-  return out_poly;
+  return poly;
 }
 
 }  // namespace detail

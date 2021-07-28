@@ -31,6 +31,7 @@ typedef axom::primal::Octahedron<double, 3> OctahedronType;
 typedef axom::primal::Polyhedron<double, 3> PolyhedronType;
 typedef axom::primal::Polygon<double, 3> PolygonType;
 using PlaneType = axom::primal::Plane<double, 3>;
+using PolyhedronType = axom::primal::Polyhedron<double, 3>;
 }  // namespace Primal3D
 
 TEST(primal_clip, simple_clip)
@@ -249,7 +250,6 @@ void unit_check_poly_clip()
 {
   using namespace Primal3D;
 
-  using PolyhedronType = axom::primal::detail::FixedPolyhedron<double, 3>;
   constexpr double EPS = 1.e-24;
 
   // Create a square in 3D space as our "polyhedron", and a plane splitting it
@@ -290,26 +290,29 @@ void unit_check_poly_clip()
     0,
     1,
     AXOM_LAMBDA(int idx) {
-      poly_clip_vertices(out_square[0], plane, EPS, out_clipped[0]);
+      axom::primal::detail::poly_clip_vertices(out_square[0],
+                                               plane,
+                                               EPS,
+                                               out_clipped[0]);
     });
 
   const PolyhedronType& clippedSquare = out_square[0];
 
-  EXPECT_EQ(clippedSquare.nverts, 6);
+  EXPECT_EQ(clippedSquare.numVertices(), 6);
   // Check that existing vertices were not modified
-  EXPECT_EQ(clippedSquare.verts[0], square.verts[0]);
-  EXPECT_EQ(clippedSquare.verts[1], square.verts[1]);
-  EXPECT_EQ(clippedSquare.verts[2], square.verts[2]);
-  EXPECT_EQ(clippedSquare.verts[3], square.verts[3]);
+  EXPECT_EQ(clippedSquare[0], square[0]);
+  EXPECT_EQ(clippedSquare[1], square[1]);
+  EXPECT_EQ(clippedSquare[2], square[2]);
+  EXPECT_EQ(clippedSquare[3], square[3]);
 
   int lo_idx = -1, hi_idx = -1;
   for(int i = 4; i < 6; i++)
   {
-    if(clippedSquare.verts[i] == PointType {0.5, 0.0, 0.0})
+    if(clippedSquare[i] == PointType {0.5, 0.0, 0.0})
     {
       lo_idx = i;
     }
-    else if(clippedSquare.verts[i] == PointType {0.5, 1.0, 0.0})
+    else if(clippedSquare[i] == PointType {0.5, 1.0, 0.0})
     {
       hi_idx = i;
     }
@@ -335,9 +338,9 @@ void unit_check_poly_clip()
   for(int iv = 0; iv < 6; iv++)
   {
     // Each vertex should only have two neighbors
-    EXPECT_EQ(clippedSquare.num_nbrs[iv], 2);
-    std::set<int> resultNbrs {clippedSquare.nbrs[iv][0],
-                              clippedSquare.nbrs[iv][1]};
+    EXPECT_EQ(clippedSquare.getNumNeighbors(iv), 2);
+    std::set<int> resultNbrs {clippedSquare.getNeighbors(iv)[0],
+                              clippedSquare.getNeighbors(iv)[1]};
     // Check that neighbors match expected connectivity
     EXPECT_EQ(expectedNbrs[iv], resultNbrs);
   }
