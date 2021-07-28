@@ -41,7 +41,7 @@ public:
   /*!
    * \brief Default constructor. Creates a degenerate octahedron.
    */
-  Octahedron() { }
+  AXOM_HOST_DEVICE Octahedron() { }
 
   /*!
    * \brief Creates an octahedron from the 6 points p,q,r,s,t,u.
@@ -70,16 +70,11 @@ public:
   }
 
   /*!
-   * \brief Destructor
-   */
-  ~Octahedron() { }
-
-  /*!
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1, 2, 3, 4, or 5
    */
-  PointType& operator[](int idx)
+  AXOM_HOST_DEVICE PointType& operator[](int idx)
   {
     SLIC_ASSERT(idx >= 0 && idx < NUM_OCT_VERTS);
     return m_points[idx];
@@ -90,7 +85,7 @@ public:
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1, 2, 3, 4, or 5
    */
-  const PointType& operator[](int idx) const
+  AXOM_HOST_DEVICE const PointType& operator[](int idx) const
   {
     SLIC_ASSERT(idx >= 0 && idx < NUM_OCT_VERTS);
     return m_points[idx];

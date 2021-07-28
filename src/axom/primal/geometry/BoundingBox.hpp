@@ -95,6 +95,7 @@ public:
    * \pre pt must point to at least n valid point
    * \note If n <= 0, defaults to default constructor values
    */
+  AXOM_HOST_DEVICE
   BoundingBox(const PointType* pts, int n);
 
   /*!
@@ -113,6 +114,7 @@ public:
    * \brief Resets the bounds to those of the default constructor
    * \note This invalidates the bounding box (i.e. isValid() will be false)
    */
+  AXOM_HOST_DEVICE
   void clear();
 
   /*!
@@ -551,8 +553,8 @@ void BoundingBox<T, NDIMS>::checkAndFixBounds()
 template <typename T, int NDIMS>
 void BoundingBox<T, NDIMS>::clear()
 {
-  m_min = PointType(std::numeric_limits<T>::max());
-  m_max = PointType(std::numeric_limits<T>::lowest());
+  m_min = PointType(InvalidMin);
+  m_max = PointType(InvalidMax);
 }
 
 //------------------------------------------------------------------------------
