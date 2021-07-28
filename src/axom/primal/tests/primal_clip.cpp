@@ -355,10 +355,12 @@ TEST(primal_clip, unit_poly_clip_vertices)
   unit_check_poly_clip<axom::SEQ_EXEC>();
 }
 
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 AXOM_CUDA_TEST(primal_clip, unit_poly_clip_vertices_gpu)
 {
   unit_check_poly_clip<axom::CUDA_EXEC<256>>();
 }
+#endif
 
 // Tetrahedron does not clip octahedron.
 TEST(primal_clip, oct_tet_clip_nonintersect)

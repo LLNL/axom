@@ -83,20 +83,6 @@ void check_assignment_operator()
 //------------------------------------------------------------------------------
 // UNIT TEST
 //------------------------------------------------------------------------------
-TEST(primal_plane_DeathTest, invalid_construction)
-{
-  const char* IGNORE_OUTPUT = ".*";
-
-  double x[3] = {0.0, 0.0, 0.0};
-
-  typedef primal::Plane<double, 2> Plane2D;
-  typedef primal::Plane<double, 3> Plane3D;
-
-  EXPECT_DEATH_IF_SUPPORTED(Plane2D(x, x, nullptr), IGNORE_OUTPUT);
-  EXPECT_DEATH_IF_SUPPORTED(Plane3D(x, x, x), IGNORE_OUTPUT);
-}
-
-//------------------------------------------------------------------------------
 TEST(primal_plane, construct_from_normal_and_point)
 {
   double normal[3] = {0.0, 0.0, 10.0};

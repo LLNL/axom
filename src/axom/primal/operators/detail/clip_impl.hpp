@@ -285,9 +285,6 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
 
           int val = 0;
 
-          //while((plane.getOrientation(poly[inext].data(), eps) ==
-          //       ON_NEGATIVE_SIDE) &&
-          //      (val++ < nverts))
           while((clipped & (1 << inext)) && (val++ < poly.numVertices()))
           {
             itmp = inext;
@@ -328,7 +325,7 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
             else
             {
               int offset;
-              for(unsigned int oi = 0; oi < old_nbrs.getNumNeighbors(inext); oi++)
+              for(int oi = 0; oi < old_nbrs.getNumNeighbors(inext); oi++)
               {
                 if(old_nbrs[inext][oi] == iprev)
                 {
