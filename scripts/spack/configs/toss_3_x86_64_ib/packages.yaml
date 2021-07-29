@@ -141,7 +141,7 @@ packages:
   mfem:
     variants: ~mpi~metis~zlib
   scr:
-    version: [develop]
+    version: [3.0rc1]
     variants: ~shared
   umpire:
     variants: ~shared
