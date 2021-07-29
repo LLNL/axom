@@ -25,10 +25,9 @@ public:
   /**
    * Set the shapes in this set.
    *
-   * \param dimensions the dimension for all the shapes
    * \param shapes all the shapes in this set
    */
-  void setShapes(Dimensions dimensions, std::vector<Shape> shapes);
+  void setShapes(std::vector<Shape> shapes);
 
   /**
    * Get the shapes in this set.
@@ -63,16 +62,25 @@ public:
   std::string resolvePath(const std::string &filePath) const;
 
   /**
+   * Sets the dimensions for all shapes in the ShapeSet.
+   *
+   * \param dimensions the dimension for all the shapes
+   * \note This function must be called before calling \a getDimensions()
+   */
+  void setDimensions(Dimensions dimensions);
+
+  /**
    * Returns the dimension of the ShapeSet.
    *
-   * \note Only valid once the shapes have been set
+   * \pre Only valid after \a setDimensions() has been called on this instance
+   * \sa setDimensions()
    */
   Dimensions getDimensions() const;
 
 private:
   std::vector<Shape> m_shapes;
   std::string m_path;
-  bool m_shapesHaveBeenSet {false};
+  bool m_dimensionsHaveBeenSet {false};
   Dimensions m_dimensions;
 };
 

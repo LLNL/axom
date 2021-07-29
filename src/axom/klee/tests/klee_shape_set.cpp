@@ -19,9 +19,6 @@ TEST(ShapeSetTest, resolvePath_noPathSet)
 {
   ShapeSet shapeSet;
   EXPECT_THROW(shapeSet.resolvePath("anyPath"), std::logic_error);
-
-  // Can't query the ShapeSet dimensions until setting the shapes
-  EXPECT_THROW(shapeSet.getDimensions(), std::logic_error);
 }
 
 TEST(ShapeSetTest, resolvePath_startWithSimpleFileName)
@@ -32,9 +29,6 @@ TEST(ShapeSetTest, resolvePath_startWithSimpleFileName)
   EXPECT_EQ("d1/d2/newPath.txt", shapeSet.resolvePath("d1/d2/newPath.txt"));
   EXPECT_EQ("/abs/path/newPath.txt",
             shapeSet.resolvePath("/abs/path/newPath.txt"));
-
-  // Can't query the ShapeSet dimensions until setting the shapes
-  EXPECT_THROW(shapeSet.getDimensions(), std::logic_error);
 }
 
 TEST(ShapeSetTest, resolvePath_startWithRelativeFileName)
@@ -57,6 +51,28 @@ TEST(ShapeSetTest, resolvePath_startWithAbsoluteFileName)
             shapeSet.resolvePath("d1/d2/newPath.txt"));
   EXPECT_EQ("/other/abs/path/newPath.txt",
             shapeSet.resolvePath("/other/abs/path/newPath.txt"));
+}
+
+TEST(ShapeSetTest, dimensions_getAndSet)
+{
+  ShapeSet shapeSet;
+
+  // Can't query the ShapeSet dimensions until calling setDimensions
+  EXPECT_THROW(shapeSet.getDimensions(), std::logic_error);
+
+  {
+    shapeSet.setDimensions(Dimensions::Two);
+
+    EXPECT_EQ(Dimensions::Two, shapeSet.getDimensions());
+    EXPECT_NE(Dimensions::Three, shapeSet.getDimensions());
+  }
+
+  {
+    shapeSet.setDimensions(Dimensions::Three);
+
+    EXPECT_NE(Dimensions::Two, shapeSet.getDimensions());
+    EXPECT_EQ(Dimensions::Three, shapeSet.getDimensions());
+  }
 }
 
 }  // namespace
