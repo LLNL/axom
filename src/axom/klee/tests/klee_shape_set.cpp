@@ -19,6 +19,9 @@ TEST(ShapeSetTest, resolvePath_noPathSet)
 {
   ShapeSet shapeSet;
   EXPECT_THROW(shapeSet.resolvePath("anyPath"), std::logic_error);
+
+  // Can't query the ShapeSet dimensions until setting the shapes
+  EXPECT_THROW(shapeSet.getDimensions(), std::logic_error);
 }
 
 TEST(ShapeSetTest, resolvePath_startWithSimpleFileName)
@@ -29,6 +32,9 @@ TEST(ShapeSetTest, resolvePath_startWithSimpleFileName)
   EXPECT_EQ("d1/d2/newPath.txt", shapeSet.resolvePath("d1/d2/newPath.txt"));
   EXPECT_EQ("/abs/path/newPath.txt",
             shapeSet.resolvePath("/abs/path/newPath.txt"));
+
+  // Can't query the ShapeSet dimensions until setting the shapes
+  EXPECT_THROW(shapeSet.getDimensions(), std::logic_error);
 }
 
 TEST(ShapeSetTest, resolvePath_startWithRelativeFileName)

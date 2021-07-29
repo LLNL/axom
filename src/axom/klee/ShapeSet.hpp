@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "axom/klee/Dimensions.hpp"
 #include "axom/klee/Shape.hpp"
 
 namespace axom
@@ -24,9 +25,10 @@ public:
   /**
    * Set the shapes in this set.
    *
+   * \param dimensions the dimension for all the shapes
    * \param shapes all the shapes in this set
    */
-  void setShapes(std::vector<Shape> shapes);
+  void setShapes(Dimensions dimensions, std::vector<Shape> shapes);
 
   /**
    * Get the shapes in this set.
@@ -60,9 +62,18 @@ public:
    */
   std::string resolvePath(const std::string &filePath) const;
 
+  /**
+   * Returns the dimension of the ShapeSet.
+   *
+   * \note Only valid once the shapes have been set
+   */
+  Dimensions getDimensions() const;
+
 private:
   std::vector<Shape> m_shapes;
   std::string m_path;
+  bool m_shapesHaveBeenSet {false};
+  Dimensions m_dimensions;
 };
 
 }  // namespace klee

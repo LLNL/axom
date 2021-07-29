@@ -309,7 +309,7 @@ ShapeSet readShapeSet(std::istream &stream)
   Dimensions dimensions = internal::toDimensions(doc["dimensions"]);
   auto namedOperators = getNamedOperators(doc, dimensions);
   ShapeSet shapeSet;
-  shapeSet.setShapes(convert(shapeData, dimensions, namedOperators));
+  shapeSet.setShapes(dimensions, convert(shapeData, dimensions, namedOperators));
   return shapeSet;
 }
 
