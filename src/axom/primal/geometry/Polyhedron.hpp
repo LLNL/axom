@@ -47,8 +47,14 @@ public:
   using VertexNbrs = axom::StackArray<axom::int8, MAX_NBRS_PER_VERT>;
 
 public:
+  /*!
+   * \brief Constructs an empty NeighborCollection.
+   */
   AXOM_HOST_DEVICE NeighborCollection() : num_nbrs {0} { }
 
+  /*!
+   * \brief Clears the set of neighbors.
+   */
   AXOM_HOST_DEVICE void clear()
   {
     for(int i = 0; i < MAX_VERTS; i++)
@@ -57,69 +63,110 @@ public:
     }
   }
 
+  /*!
+   * \brief Returns the number of neighbors of a given vertex.
+   *
+   * \param [in] vtx index of the vertex to check.
+   * \return num_nbrs the number of neighbors the vertex has.
+   */
   AXOM_HOST_DEVICE int getNumNeighbors(int vtx) const
   {
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
     return num_nbrs[vtx];
   }
 
+  /*!
+   * \brief Gets the array of neighbors for a given vertex index vtx.
+   */
   AXOM_HOST_DEVICE const VertexNbrs& operator[](int vtx) const
   {
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
-    return nbrs[vtx];
+    return getNeighbors(vtx);
   }
 
+  /*!
+   * \brief Gets the array of neighbors for a given vertex index vtx.
+   */
   AXOM_HOST_DEVICE VertexNbrs& operator[](int vtx)
   {
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
-    return nbrs[vtx];
+    return getNeighbors(vtx);
   }
 
+  /*!
+   * \brief Gets the array of neighbors for a given vertex index vtx.
+   */
   AXOM_HOST_DEVICE const VertexNbrs& getNeighbors(int vtx) const
   {
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
     return nbrs[vtx];
   }
 
+  /*!
+   * \brief Gets the array of neighbors for a given vertex index vtx.
+   */
   AXOM_HOST_DEVICE VertexNbrs& getNeighbors(int vtx)
   {
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
     return nbrs[vtx];
   }
 
-  AXOM_HOST_DEVICE void addNeighbors(axom::int8 idx1,
-                                     std::initializer_list<axom::int8> idx2)
+  /*!
+   * \brief Adds a set of neighbors to a given vertex.
+   *
+   * \param [in] vtx the index of the vertex to add new neighbors to
+   * \param [in] nbr a set of indices of neighboring vertices
+   *
+   * \pre vtx < MAX_VERTS
+   */
+  AXOM_HOST_DEVICE void addNeighbors(axom::int8 vtx,
+                                     std::initializer_list<axom::int8> nbrIds)
   {
-    SLIC_ASSERT(num_nbrs[idx1] + idx2.size() <= MAX_NBRS_PER_VERT);
-    SLIC_ASSERT(idx1 >= 0 && idx1 < MAX_VERTS);
-    for(axom::int8 nbr : idx2)
+    SLIC_ASSERT(num_nbrs[vtx] + nbrIds.size() <= MAX_NBRS_PER_VERT);
+    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+    for(axom::int8 nbr : nbrIds)
     {
-      axom::int8 idx_insert = num_nbrs[idx1];
-      nbrs[idx1][idx_insert] = nbr;
-      num_nbrs[idx1]++;
+      axom::int8 idx_insert = num_nbrs[vtx];
+      nbrs[vtx][idx_insert] = nbr;
+      num_nbrs[vtx]++;
     }
   };
 
-  AXOM_HOST_DEVICE void insertNeighborAtPos(axom::int8 idx1,
-                                            axom::int8 idx2,
+  /*!
+   * \brief Inserts a new neighbor for a vertex at a given index in the
+   *  neighbor list.
+   *
+   * \param [in] vtx the index of the vertex to add a new neighbor to
+   * \param [in] nbr the index of the neighboring vertex
+   * \param [in] pos the position in the neighbor list to insert into
+   *
+   * \pre vtx < MAX_VERTS
+   * \pre pos <= num_nbrs[vtx]
+   */
+  AXOM_HOST_DEVICE void insertNeighborAtPos(axom::int8 vtx,
+                                            axom::int8 nbr,
                                             axom::int8 pos)
   {
-    SLIC_ASSERT(num_nbrs[idx1] + 1 <= MAX_NBRS_PER_VERT);
-    SLIC_ASSERT(idx1 >= 0 && idx1 < MAX_VERTS);
+    SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
+    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+    SLIC_ASSERT(pos <= num_nbrs[vtx]);
     axom::uint8 old_nbrs[MAX_NBRS_PER_VERT];
     // copy elements from [pos, nnbrs)
-    for(int ip = pos; ip < num_nbrs[idx1]; ip++)
+    for(int ip = pos; ip < num_nbrs[vtx]; ip++)
     {
-      old_nbrs[ip - pos] = nbrs[idx1][ip];
+      old_nbrs[ip - pos] = nbrs[vtx][ip];
     }
-    nbrs[idx1][pos] = idx2;
-    for(int ip = pos; ip < num_nbrs[idx1]; ip++)
+    nbrs[vtx][pos] = nbr;
+    for(int ip = pos; ip < num_nbrs[vtx]; ip++)
     {
-      nbrs[idx1][ip + 1] = old_nbrs[ip - pos];
+      nbrs[vtx][ip + 1] = old_nbrs[ip - pos];
     }
-    num_nbrs[idx1]++;
+    num_nbrs[vtx]++;
   }
 
+  /*!
+   * \brief Compacts all neighbor sets by removing neighbors with index -1.
+   */
   AXOM_HOST_DEVICE void pruneNeighbors()
   {
     for(int iv = 0; iv < MAX_VERTS; iv++)
@@ -180,7 +227,7 @@ public:
   using VectorType = Vector<T, NDIMS>;
   using NumArrayType = NumericArray<T, NDIMS>;
 
-  constexpr static int MAX_VERTS = 32;
+  constexpr static int MAX_VERTS = NeighborCollection::MAX_VERTS;
 
 private:
   using Coords = StackArray<PointType, MAX_VERTS>;
@@ -209,8 +256,6 @@ public:
   /*!
    * \brief Stores nbrs as the neighbors of vertex pt.
    *        If vertex pt is not in the polyhedron, neighbors are not added.
-   *        Resizes neighbors list to number of vertices if neighbors list
-   *        size is less than pt's index.
    *
    * \note pt should be a vertex of this polyhedron. Otherwise, pt may not
    *       be found due to floating point precision differences.
@@ -231,21 +276,20 @@ public:
   }
 
   /*!
-   * \brief Stores nbrs as the neighbors of vertex pt.
-   *        If vertex pt is not in the polyhedron, neighbors are not added.
-   *        Resizes neighbors list to number of vertices if neighbors list
-   *        size is less than pt's index.
+   * \brief Stores nbrs as the neighbors of vertex at a given index.
    *
-   * \note pt should be a vertex of this polyhedron. Otherwise, pt may not
-   *       be found due to floating point precision differences.
+   * \note Caller is responsible for ensuring a given vertex has enough space
+   *       remaining to fit the new neighbors.
    *
-   * \param [in] pt The vertex to add neighbors
+   * \param [in] vtxId The vertex id to add neighbors
    * \param [in] nbrs The neighbors to add to the list of neighbors
+   *
+   * \pre vtxId < getVertices()
    */
   AXOM_HOST_DEVICE
-  void addNeighbors(int idx, std::initializer_list<axom::int8> nbrs)
+  void addNeighbors(int vtxId, std::initializer_list<axom::int8> nbrs)
   {
-    m_neighbors.addNeighbors(idx, nbrs);
+    m_neighbors.addNeighbors(vtxId, nbrs);
   }
 
   /*! Clears the list of vertices and neighbors */
