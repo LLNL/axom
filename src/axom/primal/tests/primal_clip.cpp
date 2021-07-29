@@ -22,14 +22,14 @@
 
 namespace Primal3D
 {
-typedef axom::primal::Point<double, 3> PointType;
-typedef axom::primal::Vector<double, 3> VectorType;
-typedef axom::primal::BoundingBox<double, 3> BoundingBoxType;
-typedef axom::primal::Triangle<double, 3> TriangleType;
-typedef axom::primal::Tetrahedron<double, 3> TetrahedronType;
-typedef axom::primal::Octahedron<double, 3> OctahedronType;
-typedef axom::primal::Polyhedron<double, 3> PolyhedronType;
-typedef axom::primal::Polygon<double, 3> PolygonType;
+using PointType = axom::primal::Point<double, 3>;
+using VectorType = axom::primal::Vector<double, 3>;
+using BoundingBoxType = axom::primal::BoundingBox<double, 3>;
+using TriangleType = axom::primal::Triangle<double, 3>;
+using TetrahedronType = axom::primal::Tetrahedron<double, 3>;
+using OctahedronType = axom::primal::Octahedron<double, 3>;
+using PolyhedronType = axom::primal::Polyhedron<double, 3>;
+using PolygonType = axom::primal::Polygon<double, 3>;
 using PlaneType = axom::primal::Plane<double, 3>;
 using PolyhedronType = axom::primal::Polyhedron<double, 3>;
 }  // namespace Primal3D
