@@ -127,7 +127,6 @@ public:
   /*!
    * \brief Returns a const pointer to the plane's unit normal.
    * \return N the unit normal.
-   * \post N != nullptr
    */
   AXOM_HOST_DEVICE const VectorType& getNormal() const { return m_normal; }
 
@@ -196,7 +195,6 @@ private:
    *
    * \param [in] normal pointer to a buffer consisting of the normal
    * \note The supplied buffer must be at least NDIMS long.
-   * \pre normal != nullptr
    */
   AXOM_HOST_DEVICE inline void setNormal(const VectorType& normal);
 
