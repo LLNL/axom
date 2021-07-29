@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-// This file exists only to enable documentation of accelerated code within Axom. Do not 
+// This file exists only to enable documentation of accelerated code within Axom. Do not
 // delete this file, nor add any lines of code.
 
 /** @page accelerated_list Acceleration in Axom
