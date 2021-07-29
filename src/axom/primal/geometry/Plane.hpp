@@ -129,7 +129,7 @@ public:
    * \return N the unit normal.
    * \post N != nullptr
    */
-  AXOM_HOST_DEVICE const VectorType getNormal() const { return m_normal; }
+  AXOM_HOST_DEVICE const VectorType& getNormal() const { return m_normal; }
 
   /*!
    * \brief Returns the offset of the plane from origin.
@@ -142,12 +142,8 @@ public:
    *
    * \param [in] x buffer consisting of the query point coordinates.
    * \return d the signed distance of the point x to the plane.
-   *
-   * \note `x`, should point to a buffer that is at least NDIMS long.
-   *
-   * \pre x != nullptr
    */
-  AXOM_HOST_DEVICE T computeSignedDistance(const PointType& x) const
+  AXOM_HOST_DEVICE T signedDistance(const PointType& x) const
   {
     return m_normal.dot(VectorType(x.array())) - m_offset;
   }
@@ -156,15 +152,11 @@ public:
    * \brief Computes the projection of a given point, x, onto this Plane.
    *
    * \param [in] x buffer consisting of the coordinates of the point to project.
-   * \param [out] projx buffer to store the coordinates of the projected point.
+   * \return projx the coordinates of the projected point.
    *
-   * \note `x` should point to a buffer that is at least NDIMS long.
-   * \note `projx` should point to a buffer that is at least NDIMS long.
-   *
-   * \pre projx != nullptr
    * \post this->getOrientedSide( projx ) == ON_BOUNDARY
    */
-  inline void projectPoint(const PointType& x, T* projx) const;
+  PointType projectPoint(const PointType& x) const;
 
   /*!
    * \brief Flips the orientation of the plane.
@@ -186,8 +178,6 @@ public:
    *  </ul>
    *
    * \see OrientationResult
-   *
-   * \pre x != nullptr
    */
   AXOM_HOST_DEVICE inline int getOrientation(const PointType& x,
                                              double TOL = 1.e-9) const;
@@ -292,13 +282,14 @@ Plane<T, NDIMS>::Plane(const T* x1, const T* x2, const T* x3)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline void Plane<T, NDIMS>::projectPoint(const PointType& x, T* projx) const
+inline typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::projectPoint(
+  const PointType& x) const
 {
-  const T signed_distance = this->computeSignedDistance(x);
-  for(int i = 0; i < NDIMS; ++i)
-  {
-    projx[i] = x[i] - signed_distance * m_normal[i];
-  }
+  const T signed_distance = this->signedDistance(x);
+  PointType projx =
+    PointType((VectorType(x) - (m_normal * signed_distance)).array());
+
+  return projx;
 }
 
 //------------------------------------------------------------------------------
@@ -315,7 +306,7 @@ inline int Plane<T, NDIMS>::getOrientation(const PointType& x, double TOL) const
 {
   int oriented_side = -1;
 
-  const T signed_distance = this->computeSignedDistance(x);
+  const T signed_distance = this->signedDistance(x);
 
   if(utilities::isNearlyEqual(signed_distance, 0.0, TOL))
   {
