@@ -43,21 +43,23 @@ foreach ( test ${spin_tests} )
 
 endforeach()
 
+
+blt_add_executable(
+  NAME       spin_bvh_test
+  SOURCES    spin_bvh.cpp
+  OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+  DEPENDS_ON ${spin_depends}
+  FOLDER     axom/spin/tests
+  )
+
+
+axom_add_test(
+  NAME            spin_bvh
+  COMMAND         spin_bvh_test
+  NUM_OMP_THREADS 4
+  )
+
 if ( RAJA_FOUND AND UMPIRE_FOUND )
-
-    blt_add_executable(
-      NAME       spin_bvh_test
-      SOURCES    spin_bvh.cpp
-      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-      DEPENDS_ON ${spin_depends}
-      FOLDER     axom/spin/tests
-      )
-
-    axom_add_test(
-      NAME            spin_bvh
-      COMMAND         spin_bvh_test
-      NUM_OMP_THREADS 4
-      )
 
     # fix for rzmanta of following runtime error:
     #   CUDAassert: peer access is not supported between these two devices /unimportant/path/raja-0.12.1/include/RAJA/policy/cuda/sort.hpp 341
