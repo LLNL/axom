@@ -11,8 +11,6 @@
 #include "axom/core/Types.hpp"   // for axom types
 #include "axom/slic.hpp"         // for SLIC macros
 
-#include "axom/spin/internal/linear_bvh/BVHData.hpp"
-
 namespace axom
 {
 namespace spin

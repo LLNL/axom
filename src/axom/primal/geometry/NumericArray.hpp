@@ -99,8 +99,8 @@ NumericArray<T, SIZE> operator*(double scalar, const NumericArray<T, SIZE>& arr)
  * \return C resulting numeric array, \f$ \ni: C_i = lhs_i * rhs_i, \forall i\f$
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& lhs,
-                                const NumericArray<T, SIZE>& rhs);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& lhs,
+                                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Component-wise division of NumericArrays

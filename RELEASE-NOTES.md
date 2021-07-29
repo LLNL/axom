@@ -33,6 +33,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   portion of the segment contained within the BoundingBox (when the intersection exists)
 - Generalizes Quest's `InOutOctree` class to work with 2D line segment meshes. Previously,
   it only worked with 3D triangle meshes
+- Added support for reading `c2c` ".contour" files in Quest. Contours that enclose a 2D region can be linearized 
+  into line segment meshes and loaded into Quest's `InOutOctree` for in/out queries.
+- Updated the Quest `inout` C API to support 2D queries using the `c2c` library, when Axom is configured with `c2c`
+- Updated the C++ Quest "containment" example to support 2D in/out queries 
+  (in addition to the already supported 3D queries)
+- Added `axom::Array` modeled after `std::vector`. Previous `axom::Array` renamed to `axom::MCArray`. Future changes to both arrays are expected.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -45,11 +51,23 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   was not the appropriate name. This macro elides warnings about unused variables
 - Inlet's `isUserProvided` can now be used to query the status of subobjects of a `Container` via a name parameter
 - Upgrades our `vcpkg` usage for automated Windows builds of our TPLs to its [2021.05.12 release](https://github.com/microsoft/vcpkg/releases/tag/2021.05.12)
+- Upgrades built-in `cli11` library to its [v1.9.1 release](https://github.com/CLIUtils/CLI11/releases/tag/v1.9.1)
+- Quest's `inout` C API has two new functions: `inout_set_dimension()` and `inout_set_segments_per_knot_span()`.
+  The latter is only applicable for 2D queries on `c2c` contours
+- Spin: Refactored `BVH` public API based on user suggestions
+  `BVH` constructor only handles setting up default values, while the actual building of the BVH is
+  now done in a `BVH::initialize(primal::BoundingBox*, int)` method.
+  Alternate Umpire allocator IDs are supplied via `BVH::setAllocatorID(int)`.
+  Other `BVH` methods have been modified to accept or return Primal primitives.
+- Spin: Removed hard dependency on RAJA and Umpire from `BVH`.
+- Moved `slam::IteratorBase` to `axom::IteratorBase`.
+- `sidre::Array` now derives from `axom::MCArray`.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
 - Fixed problem with Cray Fortran compiler not recognizing MSVC pragmas in `axom/config.hpp`. 
   The latter are now only added in MSVC configurations.
+- Fixed bug in `Mint`'s VTK output for fields of type `int64` and `float`
 
 
 ## [Version 0.5.0] - Release date 2021-05-14
