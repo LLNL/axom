@@ -69,6 +69,34 @@ if(AXOM_ENABLE_QUEST)
 endif()
 
 #------------------------------------------------------------------------------
+# data_collection_util is a utility that generates blueprint-conforming sidre
+# output files from an input mfem mesh
+#------------------------------------------------------------------------------
+if( AXOM_ENABLE_SIDRE AND HDF5_FOUND AND MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION )
+
+    set(data_collection_util
+        data_collection_util.cpp
+    )
+    set(data_collection_util_depends
+        axom
+        mfem
+        cli11
+        fmt
+        )
+
+    blt_add_executable(
+        NAME        data_collection_util
+        SOURCES     ${data_collection_util}
+        OUTPUT_DIR  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${data_collection_util_depends}
+        FOLDER      axom/examples
+        )
+    install(TARGETS              data_collection_util
+            DESTINATION          bin
+            )
+
+endif()
+#------------------------------------------------------------------------------
 # Add code checks
 #------------------------------------------------------------------------------
 axom_add_code_checks(PREFIX tools)
