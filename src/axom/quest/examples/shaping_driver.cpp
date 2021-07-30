@@ -65,6 +65,9 @@ public:
   int maxQueryLevel {5};
   int quadratureOrder {5};
   int outputOrder {2};
+  int samplesPerKnotSpan {25};
+  double weldThresh = 1E-9;
+
   VolFracSampling vfSampling {VolFracSampling::SAMPLE_AT_QPTS};
 
   std::vector<double> queryBoxMins;
@@ -72,7 +75,6 @@ public:
 
 private:
   bool m_verboseOutput {false};
-  bool m_hasUserQueryBox {false};
   GeometricBoundingBox m_problemBoundingBox;
 
 public:
@@ -86,7 +88,7 @@ public:
 
   bool isVerbose() const { return m_verboseOutput; }
 
-  bool hasUserQueryBox() const { return m_hasUserQueryBox; }
+  bool hasUserQueryBox() const { return !queryBoxMins.empty(); }
 
   GeometricBoundingBox problemBoundingBox() { return m_problemBoundingBox; }
 
@@ -99,69 +101,79 @@ public:
   {
     if(hasUserQueryBox())
     {
-      return (queryBoxMins[2] == 0. && queryBoxMaxs[2] == 0) ? 2 : 3;
+      if(queryBoxMins.size() > 2 && queryBoxMaxs.size() > 2)
+      {
+        return (queryBoxMins[2] == 0. && queryBoxMaxs[2] == 0) ? 2 : 3;
+      }
+      return 2;
     }
 
-    return 3;
+    return 3;  // This is wrong!
   }
 
   void parse(int argc, char** argv, CLI::App& app)
   {
-    app.add_option("shapeFile", shapeFile, "Path to input shape file")
+    app.add_option("shapeFile", shapeFile)
+      ->description("Path to input shape file")
       ->check(CLI::ExistingFile)
       ->required();
 
-    app
-      .add_flag("-v,--verbose", m_verboseOutput, "Enable/disable verbose output")
+    app.add_flag("-v,--verbose", m_verboseOutput)
+      ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    app
-      .add_option(
-        "-l,--levels",
-        maxQueryLevel,
+    app.add_option("-l,--levels", maxQueryLevel)
+      ->description(
         "Max query resolution. \n"
         "Will query uniform grids at levels 1 through the provided level")
       ->capture_default_str()
       ->check(CLI::PositiveNumber);
 
-    app
-      .add_option("-o,--order", outputOrder, "order of the output grid function")
+    app.add_option("-o,--order", outputOrder)
+      ->description("order of the output grid function")
       ->capture_default_str()
-      ->check(CLI::PositiveNumber);
+      ->check(CLI::NonNegativeNumber);
 
-    app
-      .add_option("-q,--quadrature-order",
-                  quadratureOrder,
-                  "Quadrature order for sampling the inout field. \n"
-                  "Determines number of samples per element in determining "
-                  "volume fraction field")
+    app.add_option("-q,--quadrature-order", quadratureOrder)
+      ->description(
+        "Quadrature order for sampling the inout field. \n"
+        "Determines number of samples per element in determining "
+        "volume fraction field")
       ->capture_default_str()
       ->check(CLI::PositiveNumber);
 
     std::map<std::string, VolFracSampling> vfsamplingMap {
       {"qpts", VolFracSampling::SAMPLE_AT_QPTS},
       {"dofs", VolFracSampling::SAMPLE_AT_DOFS}};
-    app
-      .add_option("-s,--sampling-type",
-                  vfSampling,
-                  "Sampling strategy. \n"
-                  "Sampling either at quadrature points or collocated with "
-                  "degrees of freedom")
+    app.add_option("-s,--sampling-type", vfSampling)
+      ->description(
+        "Sampling strategy. \n"
+        "Sampling either at quadrature points or collocated with "
+        "degrees of freedom")
       ->capture_default_str()
       ->transform(CLI::CheckedTransformer(vfsamplingMap, CLI::ignore_case));
 
+    app.add_option("-n,--segments-per-knot-span", samplesPerKnotSpan)
+      ->description(
+        "(2D only) Number of linear segments to generate per NURBS knot span")
+      ->capture_default_str()
+      ->check(CLI::PositiveNumber);
+
+    app.add_option("-t,--weld-threshold", weldThresh)
+      ->description("Threshold for welding")
+      ->check(CLI::NonNegativeNumber)
+      ->capture_default_str();
+
     // Optional bounding box for query region
     // Note: We're using CLI11@1.8; CLI11@1.9 allows expected(min,max) to simplify 2D and 3D processing
-    auto* minbb =
-      app.add_option("--min", queryBoxMins, "Min bounds for query box (x,y,z)")
-        ->expected(3);
-    auto* maxbb =
-      app
-        .add_option("--max",
-                    queryBoxMaxs,
-                    "Max bounds for query box (x,y,z). \n"
-                    "Query mesh will be 2D if min[2] == max[2] == 0")
-        ->expected(3);
+    auto* minbb = app.add_option("--min", queryBoxMins)
+                    ->description("Min bounds for query box (x,y,z)")
+                    ->expected(2, 3);
+    auto* maxbb = app.add_option("--max", queryBoxMaxs)
+                    ->description(
+                      "Max bounds for query box (x,y,z). \n"
+                      "Query mesh will be 2D if min[2] == max[2] == 0")
+                    ->expected(2, 3);
     minbb->needs(maxbb);
     maxbb->needs(minbb);
 
@@ -172,18 +184,18 @@ public:
 
     slic::setLoggingMsgLevel(m_verboseOutput ? slic::message::Debug
                                              : slic::message::Info);
-
-    m_hasUserQueryBox = app.count("--min") == 3 && app.count("--max") == 3;
   }
 
   void initializeProblemBoundingBox()
   {
     m_problemBoundingBox.clear();
 
+    const int dim = meshDimension();
+
     if(this->hasUserQueryBox())
     {
-      m_problemBoundingBox.addPoint(SpacePt(queryBoxMins.data(), 3));
-      m_problemBoundingBox.addPoint(SpacePt(queryBoxMaxs.data(), 3));
+      m_problemBoundingBox.addPoint(SpacePt(queryBoxMins.data(), dim));
+      m_problemBoundingBox.addPoint(SpacePt(queryBoxMaxs.data(), dim));
     }
     else
     {
@@ -296,6 +308,13 @@ int main(int argc, char** argv)
   params.shapeSet = klee::readShapeSet(params.shapeFile);
   const klee::Dimensions shapeDim = params.shapeSet.getDimensions();
 
+  // Error checking
+#ifndef AXOM_USE_C2C
+  SLIC_ERROR_IF(shapeDim == klee::Dimension::Two,
+                "Shaping with contour files requires an Axom configured with "
+                "the C2C library");
+#endif
+
   params.initializeProblemBoundingBox();
 
   auto bbox = params.problemBoundingBox();
@@ -309,14 +328,16 @@ int main(int argc, char** argv)
   const int sampleOrder = params.quadratureOrder;
   const int outputOrder = params.outputOrder;
 
+  shaper.setSamplesPerKnotSpan(params.samplesPerKnotSpan);
+  shaper.setVertexWeldThreshold(params.weldThresh);
+  shaper.setComm(MPI_COMM_WORLD);
+
   // Sample the InOut quadrature field for each shape using an InOut octree
   // Assumptions: Each shape has a unique name
   SLIC_INFO(fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
   for(const auto& s : params.shapeSet.getShapes())
   {
     shaper.loadShape(s);
-
-    auto* surface_mesh = shaper.getSurfaceMesh();
 
     // Compute mesh bounding box and log some stats about the surface
     shaper.prepareShapeQuery(shapeDim, s);

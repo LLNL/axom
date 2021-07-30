@@ -21,7 +21,7 @@
 #include "axom/klee.hpp"
 
 #include "axom/quest/InOutOctree.hpp"
-#include "axom/quest/readers/STLReader.hpp"
+#include "axom/quest/interface/internal/QuestHelpers.hpp"
 
 #include "mfem.hpp"
 
@@ -207,30 +207,6 @@ void FCT_project(mfem::DenseMatrix& M,
       xy(j) -= fij / ML(j);
     }
   }
-}
-
-void generate_volume_fractions_baseline(mfem::DataCollection* dc,
-                                        mfem::QuadratureFunction* inout,
-                                        const std::string& name,  // vol_frac
-                                        int /*order*/)
-{
-  const int order = inout->GetSpace()->GetElementIntRule(0).GetOrder();
-
-  mfem::Mesh* mesh = dc->GetMesh();
-  const int dim = mesh->Dimension();
-  const int NE = mesh->GetNE();
-
-  std::cout << fmt::format("Mesh has dim {} and {} elements", dim, NE)
-            << std::endl;
-
-  mfem::L2_FECollection* fec =
-    new mfem::L2_FECollection(order, dim, mfem::BasisType::Positive);
-  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
-  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
-  volFrac->MakeOwner(fec);
-  dc->RegisterField(name, volFrac);
-
-  (*volFrac) = (*inout);
 }
 
 void generatePositionsQFunction(mfem::Mesh* mesh,
@@ -475,6 +451,33 @@ void computeVolumeFractions(const std::string& shapeName,
 
 }  // end namespace shaping
 
+namespace unused
+{
+void generate_volume_fractions_baseline(mfem::DataCollection* dc,
+                                        mfem::QuadratureFunction* inout,
+                                        const std::string& name,  // vol_frac
+                                        int /*order*/)
+{
+  const int order = inout->GetSpace()->GetElementIntRule(0).GetOrder();
+
+  mfem::Mesh* mesh = dc->GetMesh();
+  const int dim = mesh->Dimension();
+  const int NE = mesh->GetNE();
+
+  std::cout << fmt::format("Mesh has dim {} and {} elements", dim, NE)
+            << std::endl;
+
+  mfem::L2_FECollection* fec =
+    new mfem::L2_FECollection(order, dim, mfem::BasisType::Positive);
+  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
+  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
+  volFrac->MakeOwner(fec);
+  dc->RegisterField(name, volFrac);
+
+  (*volFrac) = (*inout);
+}
+}  // end namespace unused
+
 template <int NDIMS>
 class SamplingShaper
 {
@@ -664,28 +667,69 @@ public:
     , m_dc("shaping", nullptr, true)
   { }
 
+  void setSamplesPerKnotSpan(int nSamples)
+  {
+    using axom::utilities::clampLower;
+    SLIC_WARNING_IF(
+      nSamples < 1,
+      fmt::format(
+        "Samples per knot span must be at least 1. Provided value was {}",
+        nSamples));
+
+    m_samplesPerKnotSpan = clampLower(nSamples, 1);
+  }
+
+  void setVertexWeldThreshold(double threshold)
+  {
+    SLIC_WARNING_IF(
+      threshold <= 0.,
+      fmt::format(
+        "Vertex weld threshold should be positive Provided value was {}",
+        threshold));
+
+    m_vertexWeldThreshold = threshold;
+  }
+
+  void setComm(MPI_Comm comm) { m_comm = comm; }
+
   sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }
   mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
 
   /// Loads the shape from file into m_surfaceMesh
   void loadShape(const klee::Shape& shape)
   {
-    SLIC_ASSERT(shape.getGeometry().getFormat() == "stl");
+    using axom::utilities::string::endsWith;
+    SLIC_ASSERT(shape.getGeometry().getFormat() == "stl" ||
+                shape.getGeometry().getFormat() == "c2c");
 
     const std::string shapeName = shape.getName();
-    std::string outMsg = fmt::format(" Loading mesh '{}' ", shapeName);
+    std::string outMsg = fmt::format(" Loading shape '{}' ", shapeName);
     SLIC_INFO(fmt::format("{:-^80}", outMsg));
 
-    std::string stlPath = m_shapeSet.resolvePath(shape.getGeometry().getPath());
-    SLIC_INFO("Reading file: " << stlPath << "...");
+    std::string shapePath = m_shapeSet.resolvePath(shape.getGeometry().getPath());
+    SLIC_INFO("Reading file: " << shapePath << "...");
 
-    STLReader reader;
-    reader.setFileName(stlPath);
-    reader.read();
-
-    // Create surface mesh
-    m_surfaceMesh = new shaping::UMesh(3, mint::TRIANGLE);
-    reader.getMesh(static_cast<shaping::UMesh*>(m_surfaceMesh));
+    if(endsWith(shapePath, ".stl"))
+    {
+      quest::internal::read_stl_mesh(shapePath, m_surfaceMesh, m_comm);
+    }
+#ifdef AXOM_USE_C2C
+    else if(endsWith(shapePath, ".contour"))
+    {
+      quest::internal::read_c2c_mesh(shapePath,
+                                     m_samplesPerKnotSpan,
+                                     m_vertexWeldThreshold,
+                                     m_surfaceMesh,
+                                     m_comm);
+    }
+#endif
+    else
+    {
+      SLIC_ERROR(
+        fmt::format("Unsupported filetype for this Axom configuration. "
+                    "Provided file was '{}'",
+                    shapePath));
+    }
   }
 
   void applyTransforms(const klee::Shape& shape)
@@ -813,6 +857,11 @@ public:
   mint::Mesh* m_surfaceMesh {nullptr};
   SamplingShaper<2>* m_samplingShaper2D {nullptr};
   SamplingShaper<3>* m_samplingShaper3D {nullptr};
+
+  int m_samplesPerKnotSpan {25};
+  double m_vertexWeldThreshold {1e-9};
+
+  MPI_Comm m_comm {MPI_COMM_SELF};
 };
 
 }  // end namespace quest
