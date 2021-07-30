@@ -51,12 +51,9 @@ using SpacePt = Octree3D::SpacePt;
 using QFunctionCollection = mfem::NamedFieldsMap<mfem::QuadratureFunction>;
 using DenseTensorCollection = mfem::NamedFieldsMap<mfem::DenseTensor>;
 
+using VolFracSampling = quest::shaping::VolFracSampling;
+
 //------------------------------------------------------------------------------
-enum VolFracSampling
-{
-  SAMPLE_AT_DOFS,
-  SAMPLE_AT_QPTS
-};
 
 /** Struct to parse and store the input parameters */
 struct Input
@@ -65,10 +62,10 @@ public:
   std::string shapeFile;
   klee::ShapeSet shapeSet;
 
-  int maxQueryLevel {7};
+  int maxQueryLevel {5};
   int quadratureOrder {5};
   int outputOrder {2};
-  VolFracSampling vfSampling {SAMPLE_AT_QPTS};
+  VolFracSampling vfSampling {VolFracSampling::SAMPLE_AT_QPTS};
 
   std::vector<double> queryBoxMins;
   std::vector<double> queryBoxMaxs;
@@ -297,6 +294,7 @@ int main(int argc, char** argv)
 
   // Load shape file and extract info
   params.shapeSet = klee::readShapeSet(params.shapeFile);
+  const klee::Dimensions shapeDim = params.shapeSet.getDimensions();
 
   params.initializeProblemBoundingBox();
 
@@ -304,83 +302,31 @@ int main(int argc, char** argv)
   SLIC_INFO("Mesh bounding box: " << bbox);
 
   // Add the mesh to an mfem data collection
-  axom::sidre::MFEMSidreDataCollection dc("shaping", nullptr, true);
+  quest::MFEMShaping shaper(params.shapeSet);
 
-  initializeMesh(params, &dc);
-
-  // TODO: Use MfemSidreDataCollection QFuncs for this when we upgrade to post mfem@4.3
-  QFunctionCollection inoutQFuncs;
-  DenseTensorCollection inoutDofs;
+  initializeMesh(params, shaper.getDC());
+  const int queryDim = params.meshDimension();
+  const int sampleOrder = params.quadratureOrder;
+  const int outputOrder = params.outputOrder;
 
   // Sample the InOut quadrature field for each shape using an InOut octree
   // Assumptions: Each shape has a unique name
   SLIC_INFO(fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
   for(const auto& s : params.shapeSet.getShapes())
   {
-    SLIC_ASSERT(s.getGeometry().getFormat() == "stl");
+    shaper.loadShape(s);
 
-    const std::string shapeName = s.getName();
-
-    std::string stlPath = params.shapeSet.resolvePath(s.getGeometry().getPath());
-    std::string outMsg = fmt::format(" Loading mesh '{}' ", shapeName);
-    SLIC_INFO(fmt::format("{:-^80}", outMsg));
-    SLIC_INFO("Reading file: " << stlPath << "...");
-
-    quest::STLReader reader;
-    reader.setFileName(stlPath);
-    reader.read();
-
-    // Create surface mesh
-    mint::Mesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
-    reader.getMesh(static_cast<UMesh*>(surface_mesh));
+    auto* surface_mesh = shaper.getSurfaceMesh();
 
     // Compute mesh bounding box and log some stats about the surface
-    GeometricBoundingBox meshBB = quest::shaping::compute_bounds(*surface_mesh);
-    SLIC_INFO("Mesh bounding box: " << meshBB);
+    shaper.prepareShapeQuery(shapeDim, s);
 
-    // Create octree over mesh's bounding box
-    SLIC_INFO(fmt::format("{:-^80}", " Generating the octree "));
-    Octree3D octree(meshBB, surface_mesh);
-    octree.generateIndex();
+    shaper.runShapeQuery(params.vfSampling, sampleOrder, outputOrder);
 
-    {
-      const int nVerts = surface_mesh->getNumberOfNodes();
-      const int nCells = surface_mesh->getNumberOfCells();
-
-      SLIC_INFO(fmt::format(
-        "After welding, surface mesh has {} vertices  and {} triangles.",
-        nVerts,
-        nCells));
-      mint::write_vtk(surface_mesh,
-                      fmt::format("meldedTriMesh_{}.vtk", shapeName));
-    }
-
-    SLIC_INFO(fmt::format("{:-^80}", " Querying the octree "));
-
-    // Sample the InOut field at the mesh quadrature points
-    const int sampleOrder = params.quadratureOrder;
-    const int outputOrder = params.outputOrder;
-    switch(params.vfSampling)
-    {
-    case SAMPLE_AT_QPTS:
-      quest::shaping::sampleInOutField(shapeName,
-                                       octree,
-                                       &dc,
-                                       inoutQFuncs,
-                                       sampleOrder);
-      break;
-    case SAMPLE_AT_DOFS:
-      quest::shaping::computeVolumeFractionsBaseline(shapeName,
-                                                     octree,
-                                                     &dc,
-                                                     sampleOrder,
-                                                     outputOrder);
-      break;
-    }
-
-    delete surface_mesh;
-    surface_mesh = nullptr;
+    shaper.finalizeShapeQuery();
   }
+
+  auto& inoutQFuncs = shaper.getInoutQFuncs();
 
   // Apply replacement rules to the quadrature points
   // Assumptions: The replacement rules have been validated, yielding a valid DAG for the replacements
@@ -446,13 +392,13 @@ int main(int argc, char** argv)
 
     switch(params.vfSampling)
     {
-    case SAMPLE_AT_QPTS:
+    case VolFracSampling::SAMPLE_AT_QPTS:
       quest::shaping::computeVolumeFractions(shapeName,
-                                             &dc,
+                                             shaper.getDC(),
                                              inoutQFuncs,
                                              outputOrder);
       break;
-    case SAMPLE_AT_DOFS:
+    case VolFracSampling::SAMPLE_AT_DOFS:
       /* no-op for now */
       break;
     }
@@ -460,7 +406,7 @@ int main(int argc, char** argv)
 
 // Save meshes and fields
 #ifdef MFEM_USE_MPI
-  dc.Save();
+  shaper.getDC()->Save();
 #endif
 
   MPI_Finalize();

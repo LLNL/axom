@@ -21,6 +21,7 @@
 #include "axom/klee.hpp"
 
 #include "axom/quest/InOutOctree.hpp"
+#include "axom/quest/readers/STLReader.hpp"
 
 #include "mfem.hpp"
 
@@ -33,12 +34,6 @@ namespace quest
 {
 namespace shaping
 {
-namespace mint = axom::mint;
-namespace primal = axom::primal;
-namespace quest = axom::quest;
-namespace slic = axom::slic;
-namespace klee = axom::klee;
-
 using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
 using TriVertIndices = primal::Point<axom::IndexType, 3>;
@@ -54,6 +49,12 @@ using BlockIndex = Octree3D::BlockIndex;
 
 using QFunctionCollection = mfem::NamedFieldsMap<mfem::QuadratureFunction>;
 using DenseTensorCollection = mfem::NamedFieldsMap<mfem::DenseTensor>;
+
+enum class VolFracSampling : int
+{
+  SAMPLE_AT_DOFS,
+  SAMPLE_AT_QPTS
+};
 
 /** Computes the bounding box of the surface mesh */
 GeometricBoundingBox compute_bounds(const mint::Mesh& mesh)
@@ -232,77 +233,6 @@ void generate_volume_fractions_baseline(mfem::DataCollection* dc,
   (*volFrac) = (*inout);
 }
 
-/**
- * Compute volume fractions function for shape on a grid of resolution \a gridRes
- * in region defined by bounding box \a queryBounds
- */
-void computeVolumeFractionsBaseline(const std::string shapeName,
-                                    const Octree3D& inOutOctree,
-                                    mfem::DataCollection* dc,
-                                    int AXOM_NOT_USED(sampleRes),
-                                    int outputOrder)
-{
-  // Step 1 -- generate a QField w/ the spatial coordinates
-  mfem::Mesh* mesh = dc->GetMesh();
-  const int NE = mesh->GetNE();
-  const int dim = mesh->Dimension();
-
-  if(NE < 1)
-  {
-    SLIC_WARNING("Mesh has no elements!");
-    return;
-  }
-
-  mfem::L2_FECollection* coll =
-    new mfem::L2_FECollection(outputOrder, dim, mfem::BasisType::Positive);
-  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, coll);
-  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
-  volFrac->MakeOwner(coll);
-  auto volFracName = fmt::format("vol_frac_{}", shapeName);
-  dc->RegisterField(volFracName, volFrac);
-
-  auto* fe = fes->GetFE(0);
-  auto& ir = fe->GetNodes();
-
-  // Assume all elements have the same integration rule
-  const int nq = ir.GetNPoints();
-  const auto* geomFactors =
-    mesh->GetGeometricFactors(ir, mfem::GeometricFactors::COORDINATES);
-
-  mfem::DenseTensor pos_coef(dim, nq, NE);
-
-  // Rearrange positions into quadrature function
-  {
-    for(int i = 0; i < NE; ++i)
-    {
-      for(int j = 0; j < dim; ++j)
-      {
-        for(int k = 0; k < nq; ++k)
-        {
-          pos_coef(j, k, i) = geomFactors->X((i * nq * dim) + (j * nq) + k);
-        }
-      }
-    }
-  }
-
-  // Step 2 -- sample the in/out field at each point -- store directly in volFrac grid function
-  mfem::Vector res(nq);
-  mfem::Array<int> dofs;
-  for(int i = 0; i < NE; ++i)
-  {
-    mfem::DenseMatrix& m = pos_coef(i);
-    for(int p = 0; p < nq; ++p)
-    {
-      const axom::primal::Point3D pt(m.GetColumn(p), dim);
-      const bool in = inOutOctree.within(pt);
-      res(p) = in ? 1. : 0.;
-    }
-
-    fes->GetElementDofs(i, dofs);
-    volFrac->SetSubVector(dofs, res);
-  }
-}
-
 void generatePositionsQFunction(mfem::Mesh* mesh,
                                 QFunctionCollection& inoutQFuncs,
                                 int sampleRes)
@@ -357,63 +287,6 @@ void generatePositionsQFunction(mfem::Mesh* mesh,
 
   // register positions with the QFunction collection, which wil handle its deletion
   inoutQFuncs.Register("positions", pos_coef, true);
-}
-
-void sampleInOutField(const std::string& shapeName,
-                      const Octree3D& inOutOctree,
-                      mfem::DataCollection* dc,
-                      QFunctionCollection& inoutQFuncs,
-                      int sampleRes)
-{
-  auto* mesh = dc->GetMesh();
-  SLIC_ASSERT(mesh != nullptr);
-  const int NE = mesh->GetNE();
-  const int dim = mesh->Dimension();
-
-  // Generate a Quadrature Function with the geometric positions, if not already available
-  if(!inoutQFuncs.Has("positions"))
-  {
-    generatePositionsQFunction(mesh, inoutQFuncs, sampleRes);
-  }
-
-  // Access the positions QFunc and associated QuadratureSpace
-  mfem::QuadratureFunction* pos_coef = inoutQFuncs.Get("positions");
-  mfem::QuadratureSpace* sp = pos_coef->GetSpace();
-  const int nq = sp->GetElementIntRule(0).GetNPoints();
-
-  // Sample the in/out field at each point
-  // store in QField which we register with the QFunc collection
-  const std::string inoutName = fmt::format("inout_{}", shapeName);
-  const int vdim = 1;
-  auto* inout = new mfem::QuadratureFunction(sp, vdim);
-  inoutQFuncs.Register(inoutName, inout, true);
-
-  mfem::DenseMatrix m;
-  mfem::Vector res;
-
-  axom::utilities::Timer timer(true);
-  for(int i = 0; i < NE; ++i)
-  {
-    pos_coef->GetElementValues(i, m);
-    inout->GetElementValues(i, res);
-
-    for(int p = 0; p < nq; ++p)
-    {
-      const axom::primal::Point3D pt(m.GetColumn(p), dim);
-      const bool in = inOutOctree.within(pt);
-      res(p) = in ? 1. : 0.;
-
-      // SLIC_INFO(fmt::format("[{},{}] Pt: {}, In: {}", i,p,pt, (in? "yes" : "no") ));
-    }
-  }
-  timer.stop();
-
-  SLIC_INFO(fmt::format(
-    std::locale("en_US.UTF-8"),
-    "\t Sampling inout field '{}' took {} seconds (@ {:L} queries per second)",
-    inoutName,
-    timer.elapsed(),
-    static_cast<int>((NE * nq) / timer.elapsed())));
 }
 
 /**
@@ -601,6 +474,347 @@ void computeVolumeFractions(const std::string& shapeName,
 }
 
 }  // end namespace shaping
+
+template <int NDIMS>
+class SamplingShaper
+{
+public:
+  static constexpr int DIM = NDIMS;
+  using InOutOctreeType = quest::InOutOctree<DIM>;
+
+  using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
+  using SpacePt = typename InOutOctreeType::SpacePt;
+  using SpaceVector = typename InOutOctreeType::SpaceVector;
+  using GridPt = typename InOutOctreeType::GridPt;
+  using BlockIndex = typename InOutOctreeType::BlockIndex;
+
+public:
+  SamplingShaper(const std::string& shapeName, mint::Mesh* surfaceMesh)
+    : m_shapeName(shapeName)
+    , m_surfaceMesh(surfaceMesh)
+  { }
+
+  ~SamplingShaper() { delete m_octree; }
+
+  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
+
+  /// Computes the bounding box of the surface mesh
+  void computeBounds()
+  {
+    SLIC_ASSERT(m_surfaceMesh != nullptr);
+
+    m_bbox.clear();
+    SpacePt pt;
+
+    for(int i = 0; i < m_surfaceMesh->getNumberOfNodes(); ++i)
+    {
+      m_surfaceMesh->getNode(i, pt.data());
+      m_bbox.addPoint(pt);
+    }
+
+    SLIC_ASSERT(m_bbox.isValid());
+
+    SLIC_INFO("Mesh bounding box: " << m_bbox);
+  }
+
+  void initSpatialIndex()
+  {
+    // Create octree over mesh's bounding box
+    m_octree = new InOutOctreeType(m_bbox, m_surfaceMesh);
+    m_octree->generateIndex();
+  }
+
+  void sampleInOutField(mfem::DataCollection* dc,
+                        shaping::QFunctionCollection& inoutQFuncs,
+                        int sampleRes)
+  {
+    auto* mesh = dc->GetMesh();
+    SLIC_ASSERT(mesh != nullptr);
+    const int NE = mesh->GetNE();
+    const int dim = mesh->Dimension();
+
+    // Generate a Quadrature Function with the geometric positions, if not already available
+    if(!inoutQFuncs.Has("positions"))
+    {
+      shaping::generatePositionsQFunction(mesh, inoutQFuncs, sampleRes);
+    }
+
+    // Access the positions QFunc and associated QuadratureSpace
+    mfem::QuadratureFunction* pos_coef = inoutQFuncs.Get("positions");
+    mfem::QuadratureSpace* sp = pos_coef->GetSpace();
+    const int nq = sp->GetElementIntRule(0).GetNPoints();
+
+    // Sample the in/out field at each point
+    // store in QField which we register with the QFunc collection
+    const std::string inoutName = fmt::format("inout_{}", m_shapeName);
+    const int vdim = 1;
+    auto* inout = new mfem::QuadratureFunction(sp, vdim);
+    inoutQFuncs.Register(inoutName, inout, true);
+
+    mfem::DenseMatrix m;
+    mfem::Vector res;
+
+    axom::utilities::Timer timer(true);
+    for(int i = 0; i < NE; ++i)
+    {
+      pos_coef->GetElementValues(i, m);
+      inout->GetElementValues(i, res);
+
+      for(int p = 0; p < nq; ++p)
+      {
+        const SpacePt pt(m.GetColumn(p), dim);
+        const bool in = m_octree->within(pt);
+        res(p) = in ? 1. : 0.;
+
+        // SLIC_INFO(fmt::format("[{},{}] Pt: {}, In: {}", i,p,pt, (in? "yes" : "no") ));
+      }
+    }
+    timer.stop();
+
+    SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
+                          "\t Sampling inout field '{}' took {} seconds (@ "
+                          "{:L} queries per second)",
+                          inoutName,
+                          timer.elapsed(),
+                          static_cast<int>((NE * nq) / timer.elapsed())));
+  }
+
+  /**
+  * Compute volume fractions function for shape on a grid of resolution \a gridRes
+  * in region defined by bounding box \a queryBounds
+  */
+  void computeVolumeFractionsBaseline(mfem::DataCollection* dc,
+                                      int AXOM_NOT_USED(sampleRes),
+                                      int outputOrder)
+  {
+    // Step 1 -- generate a QField w/ the spatial coordinates
+    mfem::Mesh* mesh = dc->GetMesh();
+    const int NE = mesh->GetNE();
+    const int dim = mesh->Dimension();
+
+    if(NE < 1)
+    {
+      SLIC_WARNING("Mesh has no elements!");
+      return;
+    }
+
+    mfem::L2_FECollection* coll =
+      new mfem::L2_FECollection(outputOrder, dim, mfem::BasisType::Positive);
+    mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, coll);
+    mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
+    volFrac->MakeOwner(coll);
+    auto volFracName = fmt::format("vol_frac_{}", m_shapeName);
+    dc->RegisterField(volFracName, volFrac);
+
+    auto* fe = fes->GetFE(0);
+    auto& ir = fe->GetNodes();
+
+    // Assume all elements have the same integration rule
+    const int nq = ir.GetNPoints();
+    const auto* geomFactors =
+      mesh->GetGeometricFactors(ir, mfem::GeometricFactors::COORDINATES);
+
+    mfem::DenseTensor pos_coef(dim, nq, NE);
+
+    // Rearrange positions into quadrature function
+    {
+      for(int i = 0; i < NE; ++i)
+      {
+        for(int j = 0; j < dim; ++j)
+        {
+          for(int k = 0; k < nq; ++k)
+          {
+            pos_coef(j, k, i) = geomFactors->X((i * nq * dim) + (j * nq) + k);
+          }
+        }
+      }
+    }
+
+    // Step 2 -- sample the in/out field at each point -- store directly in volFrac grid function
+    mfem::Vector res(nq);
+    mfem::Array<int> dofs;
+    for(int i = 0; i < NE; ++i)
+    {
+      mfem::DenseMatrix& m = pos_coef(i);
+      for(int p = 0; p < nq; ++p)
+      {
+        const SpacePt pt(m.GetColumn(p), dim);
+        const bool in = m_octree->within(pt);
+        res(p) = in ? 1. : 0.;
+      }
+
+      fes->GetElementDofs(i, dofs);
+      volFrac->SetSubVector(dofs, res);
+    }
+  }
+
+private:
+  std::string m_shapeName;
+  GeometricBoundingBox m_bbox;
+  mint::Mesh* m_surfaceMesh {nullptr};
+  InOutOctreeType* m_octree {nullptr};
+};
+
+/// Helper class to use an MFEM sampling-based shaper
+class MFEMShaping
+{
+public:
+  MFEMShaping(const klee::ShapeSet& shapeSet)
+    : m_shapeSet(shapeSet)
+    , m_dc("shaping", nullptr, true)
+  { }
+
+  sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }
+  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
+
+  /// Loads the shape from file into m_surfaceMesh
+  void loadShape(const klee::Shape& shape)
+  {
+    SLIC_ASSERT(shape.getGeometry().getFormat() == "stl");
+
+    const std::string shapeName = shape.getName();
+    std::string outMsg = fmt::format(" Loading mesh '{}' ", shapeName);
+    SLIC_INFO(fmt::format("{:-^80}", outMsg));
+
+    std::string stlPath = m_shapeSet.resolvePath(shape.getGeometry().getPath());
+    SLIC_INFO("Reading file: " << stlPath << "...");
+
+    STLReader reader;
+    reader.setFileName(stlPath);
+    reader.read();
+
+    // Create surface mesh
+    m_surfaceMesh = new shaping::UMesh(3, mint::TRIANGLE);
+    reader.getMesh(static_cast<shaping::UMesh*>(m_surfaceMesh));
+  }
+
+  void applyTransforms(const klee::Shape& shape)
+  {
+    // TODO: Implement this as a set of affine transforms to vertices of mesh
+    AXOM_UNUSED_VAR(shape);
+  }
+
+  void prepareShapeQuery(klee::Dimensions shapeDimension, const klee::Shape& shape)
+  {
+    const auto& shapeName = shape.getName();
+
+    SLIC_INFO(fmt::format("{:-^80}", " Generating the octree "));
+    switch(shapeDimension)
+    {
+    case klee::Dimensions::Two:
+      m_samplingShaper2D = new SamplingShaper<2>(shapeName, m_surfaceMesh);
+      m_samplingShaper2D->computeBounds();
+      m_samplingShaper2D->initSpatialIndex();
+      m_surfaceMesh = m_samplingShaper2D->getSurfaceMesh();
+      break;
+
+    case klee::Dimensions::Three:
+      m_samplingShaper3D = new SamplingShaper<3>(shapeName, m_surfaceMesh);
+      m_samplingShaper3D->computeBounds();
+      m_samplingShaper3D->initSpatialIndex();
+      m_surfaceMesh = m_samplingShaper3D->getSurfaceMesh();
+      break;
+
+    default:
+      SLIC_ERROR(
+        "Shaping dimension must be 2 or 3, but requested dimension was "
+        << static_cast<int>(shapeDimension));
+      break;
+    }
+
+    // Check that one of sampling shapers (2D or 3D) is null and the other is not
+    SLIC_ASSERT((m_samplingShaper2D == nullptr && m_samplingShaper3D != nullptr) ||
+                (m_samplingShaper3D == nullptr && m_samplingShaper2D != nullptr));
+
+    // Output some logging info and dump the mesh
+    {
+      const int nVerts = m_surfaceMesh->getNumberOfNodes();
+      const int nCells = m_surfaceMesh->getNumberOfCells();
+
+      SLIC_INFO(fmt::format(
+        "After welding, surface mesh has {} vertices  and {} triangles.",
+        nVerts,
+        nCells));
+      mint::write_vtk(m_surfaceMesh,
+                      fmt::format("meldedTriMesh_{}.vtk", shapeName));
+    }
+  }
+
+  // Handles 2D or 3D shaping, based on the template and associated parameter
+  template <typename SamplingShaperType>
+  void runShapeQueryImpl(SamplingShaperType* shaper,
+                         shaping::VolFracSampling vfSampling,
+                         int samplingOrder,
+                         int outputOrder)
+  {
+    // Sample the InOut field at the mesh quadrature points
+    switch(vfSampling)
+    {
+    case shaping::VolFracSampling::SAMPLE_AT_QPTS:
+      shaper->sampleInOutField(&m_dc, m_inoutQFuncs, samplingOrder);
+      break;
+    case shaping::VolFracSampling::SAMPLE_AT_DOFS:
+      shaper->computeVolumeFractionsBaseline(&m_dc, samplingOrder, outputOrder);
+      break;
+    }
+  }
+
+  void runShapeQuery(shaping::VolFracSampling vfSampling,
+                     int samplingOrder,
+                     int outputOrder)
+  {
+    SLIC_INFO(fmt::format("{:-^80}", " Querying the octree "));
+
+    switch(getShapeDimension())
+    {
+    case klee::Dimensions::Two:
+      runShapeQueryImpl(m_samplingShaper2D, vfSampling, samplingOrder, outputOrder);
+      break;
+    case klee::Dimensions::Three:
+      runShapeQueryImpl(m_samplingShaper3D, vfSampling, samplingOrder, outputOrder);
+      break;
+    }
+  }
+
+  void finalizeShapeQuery()
+  {
+    delete m_samplingShaper2D;
+    m_samplingShaper2D = nullptr;
+
+    delete m_samplingShaper3D;
+    m_samplingShaper3D = nullptr;
+
+    delete m_surfaceMesh;
+    m_surfaceMesh = nullptr;
+  }
+
+  shaping::QFunctionCollection& getInoutQFuncs() { return m_inoutQFuncs; }
+  // shaping::DenseTensorCollection getDenseTensorCollection() const { return m_inoutDofs; }
+
+private:
+  klee::Dimensions getShapeDimension() const
+  {
+    const bool has2D = (m_samplingShaper2D != nullptr);
+    const bool has3D = (m_samplingShaper3D != nullptr);
+    SLIC_ERROR_IF(!(has2D || has3D), "Shape not initialized");
+    SLIC_ERROR_IF(has2D && has3D, "Cannot have concurrent 2D and 3D shapes");
+
+    return has2D ? klee::Dimensions::Two : klee::Dimensions::Three;
+  }
+
+public:
+  const klee::ShapeSet& m_shapeSet;
+  sidre::MFEMSidreDataCollection m_dc;
+
+  // TODO: Use MfemSidreDataCollection QFuncs for this when we upgrade to post mfem@4.3
+  shaping::QFunctionCollection m_inoutQFuncs;
+  shaping::DenseTensorCollection m_inoutDofs;
+
+  mint::Mesh* m_surfaceMesh {nullptr};
+  SamplingShaper<2>* m_samplingShaper2D {nullptr};
+  SamplingShaper<3>* m_samplingShaper3D {nullptr};
+};
+
 }  // end namespace quest
 }  // end namespace axom
 
