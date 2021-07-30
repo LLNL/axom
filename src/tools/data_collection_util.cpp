@@ -41,7 +41,7 @@ enum class MeshForm : int
 struct Input
 {
 public:
-  std::string dcName {"mesh"};
+  std::string dcName;
 
   int uniformRefinements {0};
   int polynomialOrder {2};
@@ -145,6 +145,11 @@ public:
 
   void parse(int argc, char** argv, CLI::App& app)
   {
+    app.add_option("-o, --output-name", dcName)
+      ->description(
+        "Name of the output mesh. Defaults to box{2,3}d for box meshes, and "
+        "the mfem mesh name when loading from an mfem file");
+
     app.add_option("-m, --mfem-file", mfemFile)
       ->description("Path to a mesh file in the mfem format")
       ->check(CLI::ExistingFile);
@@ -198,15 +203,32 @@ public:
     slic::setLoggingMsgLevel(m_verboseOutput ? slic::message::Debug
                                              : slic::message::Info);
 
+    // Fix up some parameters
     if(meshForm == MeshForm::Box)
     {
       fixBoxParams();  // Note: throws on error conditions
+      if(dcName.empty())
+      {
+        dcName = fmt::format("box_{}d", boxDim);
+      }
     }
     else
     {
       if(mfemFile.empty())
       {
         throw "'mfemFile' required when `--mesh-form == File`";
+      }
+
+      if(dcName.empty())
+      {
+        using axom::utilities::string::endsWith;
+        dcName = axom::Path(mfemFile).baseName();
+
+        const std::string suffix = ".mesh";
+        if(endsWith(dcName, suffix))
+        {
+          dcName = dcName.substr(0, dcName.size() - suffix.size());
+        }
       }
     }
   }
