@@ -283,8 +283,8 @@ TEST(primal_plane, project_point)
   qproj2[0] = qproj2[1] = 0.0;
   qproj2 = P2.projectPoint(q2);
   EXPECT_EQ(P2.getOrientation(qproj2), primal::ON_BOUNDARY);
-  EXPECT_DOUBLE_EQ(qproj2[0], q[0]);
-  EXPECT_DOUBLE_EQ(qproj2[1], q[1]);
+  EXPECT_DOUBLE_EQ(qproj2[0], q2[0]);
+  EXPECT_DOUBLE_EQ(qproj2[1], q2[1]);
 }
 
 //------------------------------------------------------------------------------
