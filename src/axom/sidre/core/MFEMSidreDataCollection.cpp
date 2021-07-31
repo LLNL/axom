@@ -858,10 +858,13 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   if(m_comm != MPI_COMM_NULL)
   {
-    IOManager reader(m_comm);
     // The conduit abstraction appears to automatically handle the ".root"
     // suffix, but the IOManager does not, so it gets added here
-    reader.read(m_bp_grp->getDataStore()->getRoot(), path + ".root");
+    using axom::utilities::string::endsWith;
+    std::string suffixedPath = endsWith(path, ".root") ? path : path + ".root";
+
+    IOManager reader(m_comm);
+    reader.read(m_bp_grp->getDataStore()->getRoot(), suffixedPath);
   }
   else
   #endif
