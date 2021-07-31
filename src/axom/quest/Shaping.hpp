@@ -662,10 +662,14 @@ private:
 class MFEMShaping
 {
 public:
-  MFEMShaping(const klee::ShapeSet& shapeSet)
+  MFEMShaping(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
     : m_shapeSet(shapeSet)
-    , m_dc("shaping", nullptr, true)
-  { }
+    , m_dc(dc)
+  {
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+    m_comm = m_dc->GetComm();
+#endif
+  }
 
   void setSamplesPerKnotSpan(int nSamples)
   {
@@ -690,9 +694,7 @@ public:
     m_vertexWeldThreshold = threshold;
   }
 
-  void setComm(MPI_Comm comm) { m_comm = comm; }
-
-  sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }
+  sidre::MFEMSidreDataCollection* getDC() { return m_dc; }
   mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
 
   /// Loads the shape from file into m_surfaceMesh
@@ -795,10 +797,10 @@ public:
     switch(vfSampling)
     {
     case shaping::VolFracSampling::SAMPLE_AT_QPTS:
-      shaper->sampleInOutField(&m_dc, m_inoutQFuncs, samplingOrder);
+      shaper->sampleInOutField(m_dc, m_inoutQFuncs, samplingOrder);
       break;
     case shaping::VolFracSampling::SAMPLE_AT_DOFS:
-      shaper->computeVolumeFractionsBaseline(&m_dc, samplingOrder, outputOrder);
+      shaper->computeVolumeFractionsBaseline(m_dc, samplingOrder, outputOrder);
       break;
     }
   }
@@ -848,7 +850,7 @@ private:
 
 public:
   const klee::ShapeSet& m_shapeSet;
-  sidre::MFEMSidreDataCollection m_dc;
+  sidre::MFEMSidreDataCollection* m_dc;
 
   // TODO: Use MfemSidreDataCollection QFuncs for this when we upgrade to post mfem@4.3
   shaping::QFunctionCollection m_inoutQFuncs;
