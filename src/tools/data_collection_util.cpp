@@ -54,7 +54,10 @@ public:
   std::vector<int> boxResolution;
   int boxDim {-1};
 
+  // File mesh parameters
   std::string mfemFile;
+  std::vector<double> fileScale;
+  std::vector<double> fileTranslate;
 
 private:
   bool m_verboseOutput {false};
@@ -150,25 +153,9 @@ public:
         "Name of the output mesh. Defaults to box{2,3}d for box meshes, and "
         "the mfem mesh name when loading from an mfem file");
 
-    app.add_option("-m, --mfem-file", mfemFile)
-      ->description("Path to a mesh file in the mfem format")
-      ->check(CLI::ExistingFile);
-
     app.add_flag("-v,--verbose", m_verboseOutput)
       ->description("Enable/disable verbose output")
       ->capture_default_str();
-
-    app.add_option("-p,--polynomial-order", polynomialOrder)
-      ->description("polynomial order of the generated mesh")
-      ->capture_default_str()
-      ->check(CLI::NonNegativeNumber);
-
-    std::map<std::string, MeshForm> meshFormMap {{"box", MeshForm::Box},
-                                                 {"file", MeshForm::File}};
-    app.add_option("-f,--mesh-form", meshForm)
-      ->description("Determines the input type -- either box or file")
-      ->capture_default_str()
-      ->transform(CLI::CheckedTransformer(meshFormMap, CLI::ignore_case));
 
     app.add_option("-l,--ref-level", uniformRefinements)
       ->description(
@@ -176,7 +163,15 @@ public:
       ->capture_default_str()
       ->check(CLI::NonNegativeNumber);
 
-    // Optional bounding box for query region
+    // Parameter to determine if we're using a file or a box mesh
+    std::map<std::string, MeshForm> meshFormMap {{"box", MeshForm::Box},
+                                                 {"file", MeshForm::File}};
+    app.add_option("-f,--mesh-form", meshForm)
+      ->description("Determines the input type -- either box or file")
+      ->capture_default_str()
+      ->transform(CLI::CheckedTransformer(meshFormMap, CLI::ignore_case));
+
+    // Parameters for the box mesh option
     auto* minbb = app.add_option("--min", boxMins)
                     ->description("Min bounds for box mesh (x,y[,z])")
                     ->expected(2, 3);
@@ -187,13 +182,32 @@ public:
     maxbb->needs(minbb);
 
     app.add_option("--res", boxResolution)
-      ->description("Reesolution of the box mesh (i,j[,k])")
+      ->description("Resolution of the box mesh (i,j[,k])")
       ->expected(2, 3);
 
     app.add_option("-d,--dimension", boxDim)
-      ->description("dimension of the box mesh")
+      ->description("Dimension of the box mesh")
       ->capture_default_str()
       ->check(CLI::PositiveNumber);
+
+    app.add_option("-p,--polynomial-order", polynomialOrder)
+      ->description("polynomial order of the generated mesh")
+      ->capture_default_str()
+      ->check(CLI::NonNegativeNumber);
+
+    // Parameters for the 'file' option
+    app.add_option("-m, --mfem-file", mfemFile)
+      ->description("Path to a mesh file in the mfem format")
+      ->check(CLI::ExistingFile);
+
+    app.add_option("--scale", fileScale)
+      ->description(
+        "Scale factors for the file mesh. Can either be one value or "
+        "mesh.Dimension() values")
+      ->expected(1, 3);
+    app.add_option("--translate", fileTranslate)
+      ->description("Translation for the file mesh (sx,sy[,sz])")
+      ->expected(2, 3);
 
     app.get_formatter()->column_width(50);
 
@@ -234,7 +248,7 @@ public:
   }
 };
 
-mfem::Mesh* createBoxMesh(Input& params)
+mfem::Mesh* createBoxMesh(const Input& params)
 {
   // Create a background mesh
   // Generate an mfem Cartesian mesh, scaled to the bounding box range
@@ -298,6 +312,136 @@ mfem::Mesh* createBoxMesh(Input& params)
   mesh->SetCurvature(params.polynomialOrder);
 
   return mesh;
+}
+
+mfem::Mesh* loadFileMesh(const Input& params)
+{
+  mfem::Mesh* mesh = new mfem::Mesh(params.mfemFile.c_str(), 1, 1);
+  mesh->EnsureNodes();
+
+  const bool shouldScale = !params.fileScale.empty();
+  const bool shouldTranslate = !params.fileTranslate.empty();
+  bool shouldXForm = shouldScale || shouldTranslate;
+  if(shouldXForm)
+  {
+    const int dim = mesh->Dimension();
+
+    // Set up scaling vector sc
+    mfem::Vector sc(dim);
+    {
+      const int numProvidedScales = params.fileScale.size();
+      switch(numProvidedScales)
+      {
+      case 0:
+        for(int d = 0; d < dim; ++d)
+        {
+          sc(d) = 1.;
+        }
+        break;
+      case 1:
+        for(int d = 0; d < dim; ++d)
+        {
+          sc(d) = params.fileScale[0];
+        }
+        break;
+      default:
+        SLIC_ERROR_IF(
+          dim != numProvidedScales,
+          fmt::format("Incorrect number of scale values. Expected {} got {}",
+                      dim,
+                      numProvidedScales));
+        for(int d = 0; d < dim; ++d)
+        {
+          sc(d) = params.fileScale[d];
+        }
+        break;
+      }
+    }
+
+    // Set up translation vector tr
+    mfem::Vector tr(dim);
+    {
+      const int numProvidedTranslations = params.fileTranslate.size();
+      switch(numProvidedTranslations)
+      {
+      case 0:
+        for(int d = 0; d < dim; ++d)
+        {
+          tr(d) = 0.;
+        }
+        break;
+      default:
+        SLIC_ERROR_IF(
+          dim != numProvidedTranslations,
+          fmt::format(
+            "Incorrect number of translations values. Expected {} got {}",
+            dim,
+            numProvidedTranslations));
+        for(int d = 0; d < dim; ++d)
+        {
+          tr(d) = params.fileTranslate[d];
+        }
+        break;
+      }
+    }
+
+    // Get approximate center of mesh for scaling
+    mfem::Vector ctr(dim);
+    {
+      mfem::Vector mins, maxs;
+      mesh->GetBoundingBox(mins, maxs);
+      for(int d = 0; d < dim; ++d)
+      {
+        ctr(d) = (mins(d) + maxs(d)) / 2.;
+      }
+    }
+
+    // Perform transformation on nodal dofs: scaling about center followed by translation
+    auto* nodes = mesh->GetNodes();
+    auto* fes = nodes->FESpace();
+    const int NDOFS = fes->GetNDofs();
+    for(int i = 0; i < NDOFS; ++i)
+    {
+      for(int d = 0; d < dim; ++d)
+      {
+        double val = (*nodes)(fes->DofToVDof(i, d));
+        val = sc(d) * (val - ctr(d)) + ctr(d) + tr(d);
+        (*nodes)(fes->DofToVDof(i, d)) = val;
+      }
+    }
+  }
+
+  return mesh;
+}
+
+/// Print some info about the mesh
+void printMeshInfo(mfem::Mesh* mesh, int my_rank)
+{
+  if(my_rank == 0)
+  {
+    mfem::Vector mins, maxs;
+    mesh->GetBoundingBox(mins, maxs);
+    switch(mesh->Dimension())
+    {
+    case 2:
+      SLIC_INFO(fmt::format(
+        "After transformations, mesh has {} elements and "
+        "approximate bounding box {}",
+        mesh->GetNE(),
+        primal::BoundingBox<double, 2>(primal::Point<double, 2>(mins.GetData()),
+                                       primal::Point<double, 2>(maxs.GetData()))));
+      break;
+    case 3:
+      SLIC_INFO(fmt::format(
+        "After transformations, mesh has {} elements and "
+        "approximate bounding box {}",
+        mesh->GetNE(),
+        primal::BoundingBox<double, 3>(primal::Point<double, 3>(mins.GetData()),
+                                       primal::Point<double, 3>(maxs.GetData()))));
+      break;
+    }
+  }
+  slic::flushStreams();
 }
 
 /*!
@@ -390,7 +534,7 @@ int main(int argc, char** argv)
     break;
 
   case MeshForm::File:
-    mesh = new mfem::Mesh(params.mfemFile.c_str(), 1, 1);
+    mesh = loadFileMesh(params);
     break;
   }
 
@@ -399,6 +543,10 @@ int main(int argc, char** argv)
   {
     mesh->UniformRefinement();
   }
+
+  // Print out some info about the mesh, including the approximate mesh bounding box
+  // before parallel decomposition
+  printMeshInfo(mesh, my_rank);
 
   // Handle conversion to parallel mfem mesh
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
