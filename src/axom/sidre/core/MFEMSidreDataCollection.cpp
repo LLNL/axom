@@ -876,8 +876,7 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   // the domain and global groups are, and can restore them after the Load().
   //
   // If the data collection did not create the datastore, the host code must
-  // reset these pointers after the load operation and also reset the state
-  // variables.
+  // reset these pointers after the load operation and also reset the state variables.
   if(m_owns_datastore)
   {
     // Use the same path format as was used to create the datastore
@@ -890,6 +889,19 @@ void MFEMSidreDataCollection::Load(const std::string& path,
 
     UpdateStateFromDS();
     UpdateMeshAndFieldsFromDS();
+  }
+
+  // Set the mesh nodal grid function when present
+  const std::string gfPath = "topologies/mesh/grid_function";
+  SLIC_INFO("BPGroup path: " << GetBPGroup()->getPath());
+  if(GetBPGroup()->hasView(gfPath))
+  {
+    const std::string nodalGFName = GetBPGroup()->getView(gfPath)->getString();
+    if(this->HasField(nodalGFName))
+    {
+      this->SetMeshNodesName(nodalGFName);
+      mesh->NewNodes(*this->GetField(nodalGFName), false);
+    }
   }
 }
 
