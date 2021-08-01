@@ -221,20 +221,28 @@ void initializeLogger()
   slic::initialize();
   slic::setLoggingMsgLevel(slic::message::Info);
 
-  slic::LogStream* logStream;
+  slic::LogStream* logStream {nullptr};
 
 #ifdef AXOM_USE_MPI
-  std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
+  int num_ranks = 1;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+  if(num_ranks > 1)
+  {
+    std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
   #ifdef AXOM_USE_LUMBERJACK
-  const int RLIMIT = 8;
-  logStream = new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
+    const int RLIMIT = 8;
+    logStream =
+      new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
   #else
-  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
+    logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
   #endif
-#else
-  std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
-  logStream = new slic::GenericOutputStream(&std::cout, fmt);
+  }
+  else
 #endif  // AXOM_USE_MPI
+  {
+    std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
+    logStream = new slic::GenericOutputStream(&std::cout, fmt);
+  }
 
   slic::addStreamToAllMsgLevels(logStream);
 }
@@ -268,7 +276,7 @@ int main(int argc, char** argv)
 
   // Set up and parse command line arguments
   Input params;
-  CLI::App app {"Driver for In/Out surface containment query"};
+  CLI::App app {"Driver for Klee shaping query"};
 
   try
   {
@@ -294,7 +302,7 @@ int main(int argc, char** argv)
   params.shapeSet = klee::readShapeSet(params.shapeFile);
   const klee::Dimensions shapeDim = params.shapeSet.getDimensions();
 
-  // Error checking
+  // Apply some error checking
 #ifndef AXOM_USE_C2C
   SLIC_ERROR_IF(shapeDim == klee::Dimension::Two,
                 "Shaping with contour files requires an Axom configured with "
