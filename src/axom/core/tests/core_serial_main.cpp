@@ -35,6 +35,7 @@
 #include "utils_endianness.hpp"
 #include "utils_fileUtilities.hpp"
 #include "utils_nvtx_settings.hpp"
+#include "utils_stringUtilities.hpp"
 #include "utils_utilities.hpp"
 #include "utils_about.hpp"
 
