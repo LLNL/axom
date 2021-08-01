@@ -33,7 +33,9 @@
 #include <fstream>
 #include <iomanip>  // for setprecision()
 
-#include "mpi.h"
+#ifdef AXOM_USE_MPI
+  #include "mpi.h"
+#endif
 
 // NOTE: Axom must be configured with AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION compiler define for the klee containment driver
 
@@ -62,7 +64,7 @@ public:
   int quadratureOrder {5};
   int outputOrder {2};
   int samplesPerKnotSpan {25};
-  double weldThresh = 1E-9;
+  double weldThresh {1e-9};
 
   VolFracSampling vfSampling {VolFracSampling::SAMPLE_AT_QPTS};
 
@@ -153,40 +155,116 @@ public:
   }
 };
 
-/// Print some info about the mesh
-void printMeshInfo(mfem::Mesh* mesh)
+/**
+ * \brief Print some info about the mesh
+ *
+ * \note In MPI configurations, this is a collective call, but only prints on rank 0
+ */
+void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 {
   namespace primal = axom::primal;
 
+  int myRank = 0;
+#ifdef AXOM_USE_MPI
+  MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+#endif
+
+  int numElements = mesh->GetNE();
+
   mfem::Vector mins, maxs;
-  mesh->GetBoundingBox(mins, maxs);
-  switch(mesh->Dimension())
+#ifdef MFEM_USE_MPI
+  auto* pmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+  if(pmesh != nullptr)
   {
-  case 2:
-    SLIC_INFO(fmt::format(
-      "mesh has {} elements and (approximate) bounding box {}",
-      mesh->GetNE(),
-      primal::BoundingBox<double, 2>(primal::Point<double, 2>(mins.GetData()),
-                                     primal::Point<double, 2>(maxs.GetData()))));
-    break;
-  case 3:
-    SLIC_INFO(fmt::format(
-      "mesh has {} elements and (approximate) bounding box {}",
-      mesh->GetNE(),
-      primal::BoundingBox<double, 3>(primal::Point<double, 3>(mins.GetData()),
-                                     primal::Point<double, 3>(maxs.GetData()))));
-    break;
+    pmesh->GetBoundingBox(mins, maxs);
+    numElements = pmesh->ReduceInt(numElements);
+    myRank = pmesh->GetMyRank();
   }
+  else
+#endif
+  {
+    mesh->GetBoundingBox(mins, maxs);
+  }
+
+  if(myRank == 0)
+  {
+    switch(mesh->Dimension())
+    {
+    case 2:
+      SLIC_INFO(fmt::format(
+        "{} mesh has {} elements and (approximate) bounding box {}",
+        prefixMessage,
+        numElements,
+        primal::BoundingBox<double, 2>(primal::Point<double, 2>(mins.GetData()),
+                                       primal::Point<double, 2>(maxs.GetData()))));
+      break;
+    case 3:
+      SLIC_INFO(fmt::format(
+        "{} mesh has {} elements and (approximate) bounding box {}",
+        prefixMessage,
+        numElements,
+        primal::BoundingBox<double, 3>(primal::Point<double, 3>(mins.GetData()),
+                                       primal::Point<double, 3>(maxs.GetData()))));
+      break;
+    }
+  }
+
   slic::flushStreams();
+}
+
+/*!
+ * \brief Utility function to initialize the logger
+ */
+void initializeLogger()
+{
+  // Initialize Logger
+  slic::initialize();
+  slic::setLoggingMsgLevel(slic::message::Info);
+
+  slic::LogStream* logStream;
+
+#ifdef AXOM_USE_MPI
+  std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
+  #ifdef AXOM_USE_LUMBERJACK
+  const int RLIMIT = 8;
+  logStream = new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
+  #else
+  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
+  #endif
+#else
+  std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
+  logStream = new slic::GenericOutputStream(&std::cout, fmt);
+#endif  // AXOM_USE_MPI
+
+  slic::addStreamToAllMsgLevels(logStream);
+}
+
+/*!
+ * \brief Utility function to finalize the logger
+ */
+void finalizeLogger()
+{
+  if(slic::isInitialized())
+  {
+    slic::flushStreams();
+    slic::finalize();
+  }
 }
 
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+#ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
+  int my_rank, num_ranks;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+#else
+  int my_rank = 0;
+  int num_ranks = 1;
+#endif
 
-  axom::slic::SimpleLogger logger;  // create & initialize logger
-  // slic::debug::checksAreErrors = true;
+  initializeLogger();
 
   // Set up and parse command line arguments
   Input params;
@@ -198,7 +276,18 @@ int main(int argc, char** argv)
   }
   catch(const CLI::ParseError& e)
   {
-    return app.exit(e);
+    int retval = -1;
+    if(my_rank == 0)
+    {
+      retval = app.exit(e);
+    }
+    finalizeLogger();
+
+#ifdef AXOM_USE_MPI
+    MPI_Bcast(&retval, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Finalize();
+#endif
+    exit(retval);
   }
 
   // Load shape file and extract info
@@ -233,7 +322,7 @@ int main(int argc, char** argv)
       : new mfem::Mesh(*originalMeshDC.GetMesh());
     shapingDC.SetMesh(shapingMesh);
   }
-  printMeshInfo(shapingDC.GetMesh());
+  printMeshInfo(shapingDC.GetMesh(), "After loading");
 
   // Add the mesh to an mfem data collection
   quest::MFEMShaping shaper(params.shapeSet, &shapingDC);
@@ -253,10 +342,13 @@ int main(int argc, char** argv)
 
     // Compute mesh bounding box and log some stats about the surface
     shaper.prepareShapeQuery(shapeDim, s);
+    slic::flushStreams();
 
     shaper.runShapeQuery(params.vfSampling, sampleOrder, outputOrder);
+    slic::flushStreams();
 
     shaper.finalizeShapeQuery();
+    slic::flushStreams();
   }
 
   auto& inoutQFuncs = shaper.getInoutQFuncs();
@@ -342,7 +434,11 @@ int main(int argc, char** argv)
   shaper.getDC()->Save();
 #endif
 
+  // Cleanup and exit
+  finalizeLogger();
+#ifdef AXOM_USE_MPI
   MPI_Finalize();
+#endif
 
   return 0;
 }
