@@ -7,7 +7,7 @@
 #define MINT_ConnectivityArrayHelpers_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/Array.hpp"
+#include "axom/core/MCArray.hpp"
 
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -47,9 +47,9 @@ namespace internal
  * \pre m_values != nullptr
  */
 inline CellType initializeFromGroup(sidre::Group* group,
-                                    Array<IndexType>** m_values,
-                                    Array<IndexType>** m_offsets = nullptr,
-                                    Array<CellType>** m_types = nullptr)
+                                    MCArray<IndexType>** m_values,
+                                    MCArray<IndexType>** m_offsets = nullptr,
+                                    MCArray<CellType>** m_types = nullptr)
 {
   SLIC_ERROR_IF(group == nullptr, "sidre::Group pointer must not be null.");
   SLIC_ERROR_IF(m_values == nullptr, "Pointer values array must not be null.");
@@ -261,8 +261,8 @@ inline IndexType getStride(const sidre::Group* group)
 inline void append(IndexType n_IDs,
                    const IndexType* values,
                    const IndexType* offsets,
-                   Array<IndexType>* m_values,
-                   Array<IndexType>* m_offsets)
+                   MCArray<IndexType>* m_values,
+                   MCArray<IndexType>* m_offsets)
 {
   SLIC_ASSERT(values != nullptr);
   SLIC_ASSERT(offsets != nullptr);
@@ -293,7 +293,7 @@ inline void append(IndexType n_IDs,
  *  the sum of the number of values of each ID to set.
  * \param [in] n_IDs the number of IDs to set.
  * \param [in/out] m_values a pointer to the values array.
- * \param [in] m_offsets a pointer to the offsets Array.
+ * \param [in] m_offsets a pointer to the offsets MCArray.
  *
  * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
  * \pre values != nullptr
@@ -302,8 +302,8 @@ inline void append(IndexType n_IDs,
 inline void set(IndexType start_ID,
                 const IndexType* values,
                 IndexType n_IDs,
-                Array<IndexType>* m_values,
-                Array<IndexType>* m_offsets)
+                MCArray<IndexType>* m_values,
+                MCArray<IndexType>* m_offsets)
 {
   SLIC_ASSERT(start_ID >= 0);
   SLIC_ASSERT(start_ID + n_IDs <= m_offsets->size() - 1);
@@ -322,8 +322,8 @@ inline void set(IndexType start_ID,
  * \param [in] n_IDs the number of IDs to insert.
  * \param [in] values pointer to the values to insert.
  * \param [in] offsets the offsets array of length at least n_IDs + 1.
- * \param [in/out] m_values a pointer to the values Array.
- * \param [in/out] m_offsets a pointer to the offsets Array.
+ * \param [in/out] m_values a pointer to the values MCArray.
+ * \param [in/out] m_offsets a pointer to the offsets MCArray.
  *
  * \note The number of values to insert is given by
  *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
@@ -340,8 +340,8 @@ inline void insert(IndexType start_ID,
                    IndexType n_IDs,
                    const IndexType* values,
                    const IndexType* offsets,
-                   Array<IndexType>* m_values,
-                   Array<IndexType>* m_offsets)
+                   MCArray<IndexType>* m_values,
+                   MCArray<IndexType>* m_offsets)
 {
   SLIC_ASSERT(start_ID >= 0);
   SLIC_ASSERT(start_ID <= m_offsets->size() - 1);

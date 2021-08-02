@@ -16,7 +16,6 @@
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
-#include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 
 #include "axom/spin/MortonIndex.hpp"
@@ -24,8 +23,10 @@
 #include "axom/core/utilities/Utilities.hpp"  // for isNearlyEqual()
 #include "axom/slic/interface/slic.hpp"       // for slic
 
-// RAJA includes
-#include "RAJA/RAJA.hpp"
+#if defined(AXOM_USE_RAJA)
+  // RAJA includes
+  #include "RAJA/RAJA.hpp"
+#endif
 
 #include <atomic>  // For std::atomic_thread_fence
 
@@ -85,27 +86,18 @@ static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
 }
 
 template <typename ExecSpace, typename FloatType, int NDIMS>
-void transform_boxes(const FloatType* boxes,
+void transform_boxes(const primal::BoundingBox<FloatType, NDIMS>* boxes,
                      primal::BoundingBox<FloatType, NDIMS>* aabbs,
                      int32 size,
                      FloatType scale_factor)
 {
   AXOM_PERF_MARK_FUNCTION("transform_boxes");
 
-  constexpr int STRIDE = 2 * NDIMS;
-
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
-      primal::BoundingBox<FloatType, NDIMS> aabb;
+      primal::BoundingBox<FloatType, NDIMS> aabb = boxes[i];
 
-      const int32 offset = i * STRIDE;
-
-      primal::Point<FloatType, NDIMS> min_point(boxes + offset);
-      primal::Point<FloatType, NDIMS> max_point(boxes + offset + NDIMS);
-
-      aabb.addPoint(min_point);
-      aabb.addPoint(max_point);
       aabb.scale(scale_factor);
 
       aabbs[i] = aabb;
@@ -120,6 +112,7 @@ primal::BoundingBox<FloatType, NDIMS> reduce(
 {
   AXOM_PERF_MARK_FUNCTION("reduce_abbs");
 
+#ifdef AXOM_USE_RAJA
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
   primal::Point<FloatType, NDIMS> min_pt, max_pt;
@@ -145,6 +138,16 @@ primal::BoundingBox<FloatType, NDIMS> reduce(
   }
 
   return primal::BoundingBox<FloatType, NDIMS>(min_pt, max_pt);
+#else
+  static_assert(std::is_same<ExecSpace, SEQ_EXEC>::value,
+                "Only SEQ_EXEC supported without RAJA");
+
+  primal::BoundingBox<FloatType, NDIMS> global_bounds;
+
+  for_all<ExecSpace>(size, [&](int32 i) { global_bounds.addBox(aabbs[i]); });
+
+  return global_bounds;
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -221,8 +224,9 @@ void reorder(int32* indices, T*& array, int32 size, int allocatorID)
 }
 
 //------------------------------------------------------------------------------
-#if(RAJA_VERSION_MAJOR > 0) || \
-  ((RAJA_VERSION_MAJOR == 0) && (RAJA_VERSION_MINOR >= 12))
+#if defined(AXOM_USE_RAJA) &&  \
+  ((RAJA_VERSION_MAJOR > 0) || \
+   ((RAJA_VERSION_MAJOR == 0) && (RAJA_VERSION_MINOR >= 12)))
 
 template <typename ExecSpace>
 void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
@@ -446,7 +450,9 @@ AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
   PointType min_pt {BBoxType::InvalidMin};
   PointType max_pt {BBoxType::InvalidMax};
 
+  #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
   int nreads = 0;  // number of extra reads needed for a non-sentinel value
+  #endif
   for(int dim = 0; dim < NDIMS; dim++)
   {
     // Cast to volatile so reads always hit L2$ or memory.
@@ -529,6 +535,25 @@ AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
 }
 
 //------------------------------------------------------------------------------
+template <typename ExecSpace>
+AXOM_HOST_DEVICE static inline int atomic_increment(int* addr)
+{
+#ifdef AXOM_USE_RAJA
+  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+  return RAJA::atomicAdd<atomic_policy>(addr, 1);
+#else
+  static_assert(std::is_same<ExecSpace, SEQ_EXEC>::value,
+                "Only SEQ_EXEC supported without RAJA");
+
+  // TODO: use atomic_ref?
+  int old = *addr;
+  (*addr)++;
+  return old;
+#endif  // AXOM_USE_RAJA
+}
+
+//------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
 void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 {
@@ -551,13 +576,10 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 
   int32* counters_ptr = axom::allocate<int32>(inner_size, allocatorID);
 
-  using PointType = primal::Point<FloatType, NDIMS>;
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   array_memset<ExecSpace>(counters_ptr, inner_size, 0);
   array_memset<ExecSpace>(inner_aabb_ptr, inner_size, BoxType {});
-
-  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   for_all<ExecSpace>(
     leaf_size,
@@ -571,8 +593,7 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
         // TODO: If RAJA atomics get memory ordering policies in the future,
         // we should look at replacing the sync_load/sync_stores by changing
         // the below atomic to an acquire/release atomic.
-        int32 old =
-          RAJA::atomicAdd<atomic_policy>(&(counters_ptr[current_node]), 1);
+        int32 old = atomic_increment<ExecSpace>(&(counters_ptr[current_node]));
 
         if(old == 0)
         {
@@ -609,7 +630,7 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
-void build_radix_tree(const FloatType* boxes,
+void build_radix_tree(const primal::BoundingBox<FloatType, NDIMS>* boxes,
                       int size,
                       primal::BoundingBox<FloatType, NDIMS>& bounds,
                       RadixTree<FloatType, NDIMS>& radix_tree,

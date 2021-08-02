@@ -9,7 +9,7 @@
 // Axom includes
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/Array.hpp"
+#include "axom/core/MCArray.hpp"
 
 // Mint includes
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -153,7 +153,8 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    m_values = new Array<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+    m_values =
+      new MCArray<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
   }
 
   /*!
@@ -173,7 +174,8 @@ public:
   {
     SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero: " << stride);
 
-    m_values = new Array<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+    m_values =
+      new MCArray<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
   }
 
   /// @}
@@ -214,7 +216,7 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    m_values = new Array<IndexType>(values, n_IDs, m_stride, ID_capacity);
+    m_values = new MCArray<IndexType>(values, n_IDs, m_stride, ID_capacity);
   }
 
   /*!
@@ -244,7 +246,7 @@ public:
     , m_stride(stride)
     , m_values(nullptr)
   {
-    m_values = new Array<IndexType>(values, n_IDs, m_stride, ID_capacity);
+    m_values = new MCArray<IndexType>(values, n_IDs, m_stride, ID_capacity);
   }
 
   /// @}
@@ -711,7 +713,7 @@ public:
 private:
   CellType m_cell_type;
   IndexType m_stride;
-  Array<IndexType>* m_values;
+  MCArray<IndexType>* m_values;
 
   DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
   DISABLE_MOVE_AND_ASSIGNMENT(ConnectivityArray);

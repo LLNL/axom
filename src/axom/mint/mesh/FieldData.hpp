@@ -7,8 +7,8 @@
 #define MINT_FIELDDATA_HPP_
 
 // Axom includes
-#include "axom/core/Macros.hpp"  // for Axom macros
-#include "axom/core/Array.hpp"   // for Array
+#include "axom/core/Macros.hpp"   // for Axom macros
+#include "axom/core/MCArray.hpp"  // for MCArray
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
