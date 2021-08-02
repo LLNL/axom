@@ -27,6 +27,7 @@ set( quest_headers
     Discretize.hpp
     Discretize_impl.hpp
     Shaping.hpp
+    detail/shaping/shaping_helpers.hpp
 
     ## In/out query
     InOutOctree.hpp
@@ -62,6 +63,7 @@ set( quest_sources
 
     ## Discretize shapes
     Discretize.cpp
+    detail/shaping/shaping_helpers.cpp
 
     ## Mesh tester
     MeshTester.cpp
