@@ -864,7 +864,9 @@ Array<T, dim>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
 
 template <typename T, IndexType dim>
 template <typename... Args>
-Array<T, dim>::Array(Args... args) : m_dims {static_cast<IndexType>(args)...}
+Array<T, dim>::Array(Args... args)
+  : m_allocator_id(axom::getDefaultAllocatorID())
+  , m_dims {static_cast<IndexType>(args)...}
 {
   static_assert(sizeof...(Args) == dim,
                 "Array size must match number of dimensions");
