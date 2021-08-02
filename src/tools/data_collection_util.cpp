@@ -414,33 +414,59 @@ mfem::Mesh* loadFileMesh(const Input& params)
   return mesh;
 }
 
-/// Print some info about the mesh
-void printMeshInfo(mfem::Mesh* mesh, int my_rank)
+/**
+ * \brief Print some info about the mesh
+ *
+ * \note In MPI configurations, this is a collective call, but only prints on rank 0
+ */
+void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 {
-  if(my_rank == 0)
+  namespace primal = axom::primal;
+
+  int myRank = 0;
+#ifdef AXOM_USE_MPI
+  MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+#endif
+
+  int numElements = mesh->GetNE();
+
+  mfem::Vector mins, maxs;
+#ifdef MFEM_USE_MPI
+  auto* pmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+  if(pmesh != nullptr)
   {
-    mfem::Vector mins, maxs;
+    pmesh->GetBoundingBox(mins, maxs);
+    numElements = pmesh->ReduceInt(numElements);
+  }
+  else
+#endif
+  {
     mesh->GetBoundingBox(mins, maxs);
+  }
+
+  if(myRank == 0)
+  {
     switch(mesh->Dimension())
     {
     case 2:
       SLIC_INFO(fmt::format(
-        "After transformations, mesh has {} elements and "
-        "approximate bounding box {}",
-        mesh->GetNE(),
+        "{} mesh has {} elements and (approximate) bounding box {}",
+        prefixMessage,
+        numElements,
         primal::BoundingBox<double, 2>(primal::Point<double, 2>(mins.GetData()),
                                        primal::Point<double, 2>(maxs.GetData()))));
       break;
     case 3:
       SLIC_INFO(fmt::format(
-        "After transformations, mesh has {} elements and "
-        "approximate bounding box {}",
-        mesh->GetNE(),
+        "{} mesh has {} elements and (approximate) bounding box {}",
+        prefixMessage,
+        numElements,
         primal::BoundingBox<double, 3>(primal::Point<double, 3>(mins.GetData()),
                                        primal::Point<double, 3>(maxs.GetData()))));
       break;
     }
   }
+
   slic::flushStreams();
 }
 
@@ -453,20 +479,28 @@ void initializeLogger()
   slic::initialize();
   slic::setLoggingMsgLevel(slic::message::Info);
 
-  slic::LogStream* logStream;
+  slic::LogStream* logStream {nullptr};
 
 #ifdef AXOM_USE_MPI
-  std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
+  int num_ranks = 1;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+  if(num_ranks > 1)
+  {
+    std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
   #ifdef AXOM_USE_LUMBERJACK
-  const int RLIMIT = 8;
-  logStream = new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
+    const int RLIMIT = 8;
+    logStream =
+      new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
   #else
-  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
+    logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
   #endif
-#else
-  std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
-  logStream = new slic::GenericOutputStream(&std::cout, fmt);
+  }
+  else
 #endif  // AXOM_USE_MPI
+  {
+    std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
+    logStream = new slic::GenericOutputStream(&std::cout, fmt);
+  }
 
   slic::addStreamToAllMsgLevels(logStream);
 }
@@ -546,7 +580,7 @@ int main(int argc, char** argv)
 
   // Print out some info about the mesh, including the approximate mesh bounding box
   // before parallel decomposition
-  printMeshInfo(mesh, my_rank);
+  printMeshInfo(mesh, "After transformations,");
 
   // Handle conversion to parallel mfem mesh
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
