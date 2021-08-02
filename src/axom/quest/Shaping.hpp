@@ -266,45 +266,34 @@ void generatePositionsQFunction(mfem::Mesh* mesh,
 }
 
 /**
- * Utility function to take the union of inouts on all shapes for a given material
- *
- * Note: Registers the new QFunction with \a inoutQFuncs
+ * Utility function to zero out inout quadrature points when a material is replaced
  */
-void mergeQFuncs(const std::string& material,
-                 const std::vector<std::string>& shapes,
-                 QFunctionCollection& inoutQFuncs)
+void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
+                     mfem::QuadratureFunction* materialQFunc,
+                     bool shouldReplace)
 {
-  if(shapes.empty())
+  SLIC_ASSERT(shapeQFunc != nullptr);
+  SLIC_ASSERT(materialQFunc != nullptr);
+  SLIC_ASSERT(materialQFunc->Size() == shapeQFunc->Size());
+
+  const int SZ = materialQFunc->Size();
+  double* mData = materialQFunc->GetData();
+  double* sData = shapeQFunc->GetData();
+
+  if(shouldReplace)
   {
-    return;
-  }
-
-  std::vector<std::pair<std::string, mfem::QuadratureFunction*>> shapeQFuncs;
-  for(auto& s : shapes)
-  {
-    std::string name = fmt::format("inout_{}", s);
-    auto* q = inoutQFuncs.Get(name);
-    SLIC_ASSERT(q != nullptr);
-    shapeQFuncs.push_back({name, q});
-  }
-
-  // initialize material Q function from first shape
-  auto* firstQFunc = shapeQFuncs[0].second;
-  auto* mat_inout = new mfem::QuadratureFunction(*firstQFunc);
-  inoutQFuncs.Register(fmt::format("mat_inout_{}", material), mat_inout, true);
-
-  const int SZ = mat_inout->Size();
-  double* mdata = mat_inout->GetData();
-
-  // add in Q functions from other shapes
-  const int nShapes = shapes.size();
-  for(int i = 1; i < nShapes; ++i)
-  {
-    auto& pair = shapeQFuncs[i];
-    double* sdata = pair.second->GetData();
+    // If shouldReplace, clear material samples if inside current shape
     for(int j = 0; j < SZ; ++j)
     {
-      mdata[j] = (mdata[j] + sdata[j] > 0) ? 1 : 0;
+      mData[j] = sData[j] > 0 ? 0 : mData[j];
+    }
+  }
+  else
+  {
+    // Else, clear current shape samples if in other material
+    for(int j = 0; j < SZ; ++j)
+    {
+      sData[j] = mData[j] > 0 ? 0 : sData[j];
     }
   }
 }
@@ -312,32 +301,20 @@ void mergeQFuncs(const std::string& material,
 /**
  * Utility function to zero out inout quadrature points when a material is replaced
  */
-void replaceMaterials(const std::string& material,
-                      const std::set<std::string>& replacements,
-                      QFunctionCollection& inoutQFuncs)
+void copyShapeIntoMaterial(mfem::QuadratureFunction* shapeQFunc,
+                           mfem::QuadratureFunction* materialQFunc)
 {
-  if(replacements.empty())
+  SLIC_ASSERT(shapeQFunc != nullptr);
+  SLIC_ASSERT(materialQFunc != nullptr);
+  SLIC_ASSERT(materialQFunc->Size() == shapeQFunc->Size());
+
+  const int SZ = materialQFunc->Size();
+  double* mData = materialQFunc->GetData();
+  double* sData = shapeQFunc->GetData();
+
+  for(int j = 0; j < SZ; ++j)
   {
-    return;
-  }
-
-  auto* matQFunc = inoutQFuncs.Get(fmt::format("mat_inout_{}", material));
-  SLIC_ASSERT(matQFunc != nullptr);
-
-  const int SZ = matQFunc->Size();
-  double* mData = matQFunc->GetData();
-
-  for(auto& m : replacements)
-  {
-    std::string name = fmt::format("mat_inout_{}", m);
-    auto* q = inoutQFuncs.Get(name);
-    SLIC_ASSERT(q != nullptr);
-    double* rData = q->GetData();
-
-    for(int j = 0; j < SZ; ++j)
-    {
-      mData[j] = rData[j] > 0 ? 0 : mData[j];
-    }
+    mData[j] = sData[j] > 0 ? 1 : mData[j];
   }
 }
 
@@ -345,16 +322,18 @@ void replaceMaterials(const std::string& material,
  * Compute volume fractions function for shape on a grid of resolution \a gridRes
  * in region defined by bounding box \a queryBounds
  */
-void computeVolumeFractions(const std::string& shapeName,
+void computeVolumeFractions(const std::string& matField,
                             mfem::DataCollection* dc,
                             QFunctionCollection& inoutQFuncs,
                             int outputOrder)
 {
-  auto inoutName = fmt::format("mat_inout_{}", shapeName);
-  auto volFracName = fmt::format("vol_frac_{}", shapeName);
+  using axom::utilities::string::splitLastNTokens;
+
+  auto matName = splitLastNTokens(matField, 2, '_')[1];
+  auto volFracName = fmt::format("vol_frac_{}", matName);
 
   // Grab a pointer to the inout samples QFunc
-  mfem::QuadratureFunction* inout = inoutQFuncs.Get(inoutName);
+  mfem::QuadratureFunction* inout = inoutQFuncs.Get(matField);
 
   const int sampleOrder = inout->GetSpace()->GetElementIntRule(0).GetOrder();
   const int sampleNQ = inout->GetSpace()->GetElementIntRule(0).GetNPoints();
@@ -434,19 +413,6 @@ void computeVolumeFractions(const std::string& shapeName,
                 volFracName,
                 timer.elapsed(),
                 static_cast<int>(fes->GetNDofs() / timer.elapsed())));
-
-  // // Alt strategy for Q0: take a simple average of samples
-  // const int nq = sampleNQ;
-  // double sc = 1. / nq;
-  // for(int i = 0; i < NE; ++i)
-  // {
-  //   int sum = 0;
-  //   for(int k = 0; k < nq; ++k)
-  //   {
-  //     sum += (*inout)(i * nq + k);
-  //   }
-  //   (*volFrac)[i] = sum * sc;
-  // }
 }
 
 }  // end namespace shaping
@@ -653,6 +619,7 @@ public:
 
 private:
   std::string m_shapeName;
+
   GeometricBoundingBox m_bbox;
   mint::Mesh* m_surfaceMesh {nullptr};
   InOutOctreeType* m_octree {nullptr};
@@ -797,7 +764,7 @@ public:
     switch(vfSampling)
     {
     case shaping::VolFracSampling::SAMPLE_AT_QPTS:
-      shaper->sampleInOutField(m_dc, m_inoutQFuncs, samplingOrder);
+      shaper->sampleInOutField(m_dc, m_inoutShapeQFuncs, samplingOrder);
       break;
     case shaping::VolFracSampling::SAMPLE_AT_DOFS:
       shaper->computeVolumeFractionsBaseline(m_dc, samplingOrder, outputOrder);
@@ -822,6 +789,74 @@ public:
     }
   }
 
+  void applyReplacementRules(const klee::Shape& shape)
+  {
+    using axom::utilities::string::splitLastNTokens;
+
+    SLIC_INFO(
+      fmt::format("{:=^80}", "Applying replacement rules over the shapes"));
+
+    // Get inout qfunc for shape
+    const auto& shapeName = shape.getName();
+    auto* shapeQFunc = m_inoutShapeQFuncs.Get(fmt::format("inout_{}", shapeName));
+    SLIC_ASSERT_MSG(
+      shapeQFunc != nullptr,
+      fmt::format("Missing inout samples for shape '{}'", shapeName));
+
+    const auto& materialName = shape.getMaterial();
+
+    // Creata a copy of the inout samples for this shape
+    // Replacements will be applied to this and then copied into our shape
+    auto* shapeQFuncCopy = new mfem::QuadratureFunction(*shapeQFunc);
+
+    // apply replacement rules to all other materials
+    for(auto& mat : m_inoutMaterialQFuncs)
+    {
+      const std::string otherMatName = splitLastNTokens(mat.first, 2, '_')[1];
+
+      // We'll handle the current shape's material at the end
+      if(otherMatName == materialName)
+      {
+        continue;
+      }
+
+      const bool shouldReplace = shape.replaces(otherMatName);
+      SLIC_INFO(fmt::format(
+        "Should we replace material '{}' with shape '{}' of material '{}'? {}",
+        otherMatName,
+        shapeName,
+        materialName,
+        shouldReplace ? "yes" : "no"));
+
+      const std::string& materialQFuncName = mat.first;
+      auto* otherMatQFunc = m_inoutMaterialQFuncs.Get(materialQFuncName);
+      SLIC_ASSERT_MSG(
+        otherMatQFunc != nullptr,
+        fmt::format("Missing inout samples for material '{}'", otherMatName));
+
+      quest::shaping::replaceMaterial(shapeQFuncCopy, otherMatQFunc, shouldReplace);
+    }
+
+    // Get inout qfunc for material
+    const std::string materialQFuncName =
+      fmt::format("mat_inout_{}", materialName);
+    if(!m_inoutMaterialQFuncs.Has(materialQFuncName))
+    {
+      // initialize material from shape inout
+      auto* mat_inout = new mfem::QuadratureFunction(*shapeQFuncCopy);
+      m_inoutMaterialQFuncs.Register(materialQFuncName, mat_inout, true);
+    }
+    else
+    {
+      auto* matQFunc = m_inoutMaterialQFuncs.Get(materialQFuncName);
+      SLIC_ASSERT_MSG(
+        matQFunc != nullptr,
+        fmt::format("Missing inout samples for material '{}'", materialName));
+
+      quest::shaping::copyShapeIntoMaterial(shapeQFuncCopy, matQFunc);
+    }
+  }
+
   void finalizeShapeQuery()
   {
     delete m_samplingShaper2D;
@@ -834,8 +869,30 @@ public:
     m_surfaceMesh = nullptr;
   }
 
-  shaping::QFunctionCollection& getInoutQFuncs() { return m_inoutQFuncs; }
-  // shaping::DenseTensorCollection getDenseTensorCollection() const { return m_inoutDofs; }
+  void adjustVolumeFractions(shaping::VolFracSampling vfSampling, int outputOrder)
+  {
+    for(auto& mat : m_inoutMaterialQFuncs)
+    {
+      const std::string matName = mat.first;
+      SLIC_INFO(
+        fmt::format("Generating volume fraction fields for '{}' material",
+                    matName));
+
+      // Sample the InOut field at the mesh quadrature points
+      switch(vfSampling)
+      {
+      case shaping::VolFracSampling::SAMPLE_AT_QPTS:
+        quest::shaping::computeVolumeFractions(matName,
+                                               m_dc,
+                                               m_inoutMaterialQFuncs,
+                                               outputOrder);
+        break;
+      case shaping::VolFracSampling::SAMPLE_AT_DOFS:
+        /* no-op for now */
+        break;
+      }
+    }
+  }
 
 private:
   klee::Dimensions getShapeDimension() const
@@ -853,7 +910,8 @@ public:
   sidre::MFEMSidreDataCollection* m_dc;
 
   // TODO: Use MfemSidreDataCollection QFuncs for this when we upgrade to post mfem@4.3
-  shaping::QFunctionCollection m_inoutQFuncs;
+  shaping::QFunctionCollection m_inoutShapeQFuncs;
+  shaping::QFunctionCollection m_inoutMaterialQFuncs;
   shaping::DenseTensorCollection m_inoutDofs;
 
   mint::Mesh* m_surfaceMesh {nullptr};

@@ -81,14 +81,11 @@ public:
 
   std::string getDCMeshName() const
   {
-    using axom::utilities::string::endsWith;
+    using axom::utilities::string::removeSuffix;
 
+    // Remove the parent directories and file suffix
     std::string name = axom::Path(meshFile).baseName();
-    std::string suffix = ".root";
-    if(endsWith(name, suffix))
-    {
-      name = name.substr(0, name.size() - suffix.size());
-    }
+    name = removeSuffix(name, ".root");
 
     return name;
   }
@@ -158,7 +155,7 @@ public:
 /**
  * \brief Print some info about the mesh
  *
- * \note In MPI configurations, this is a collective call, but only prints on rank 0
+ * \note In MPI-based configurations, this is a collective call, but only prints on rank 0
  */
 void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 {
@@ -212,9 +209,7 @@ void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
   slic::flushStreams();
 }
 
-/*!
- * \brief Utility function to initialize the logger
- */
+/// \brief Utility function to initialize the logger
 void initializeLogger()
 {
   // Initialize Logger
@@ -247,9 +242,7 @@ void initializeLogger()
   slic::addStreamToAllMsgLevels(logStream);
 }
 
-/*!
- * \brief Utility function to finalize the logger
- */
+/// \brief Utility function to finalize the logger
 void finalizeLogger()
 {
   if(slic::isInitialized())
@@ -355,87 +348,18 @@ int main(int argc, char** argv)
     shaper.runShapeQuery(params.vfSampling, sampleOrder, outputOrder);
     slic::flushStreams();
 
+    shaper.applyReplacementRules(s);
+    slic::flushStreams();
+
     shaper.finalizeShapeQuery();
     slic::flushStreams();
   }
 
-  auto& inoutQFuncs = shaper.getInoutQFuncs();
-
-  // Apply replacement rules to the quadrature points
-  // Assumptions: The replacement rules have been validated, yielding a valid DAG for the replacements
-  SLIC_INFO(
-    fmt::format("{:=^80}", "Applying replacement rules over the shapes"));
-
-  // generate a map from materials to shape names
-  std::map<std::string, std::vector<std::string>> materialsToShapes;
-  {
-    for(const auto& s : params.shapeSet.getShapes())
-    {
-      materialsToShapes[s.getMaterial()].push_back(s.getName());
-    }
-
-    // generate a map from materials to set of materials that it is replaced by
-    std::map<std::string, std::set<std::string>> replaced_by;
-    for(const auto& s : params.shapeSet.getShapes())
-    {
-      auto& material_s = s.getMaterial();
-      for(const auto& t : params.shapeSet.getShapes())
-      {
-        auto& material_t = t.getMaterial();
-        if(material_s != material_t && s.replaces(material_t))
-        {
-          replaced_by[material_t].insert(material_s);
-        }
-      }
-    }
-
-    SLIC_INFO("Replacement rules:");
-    for(const auto& s : params.shapeSet.getShapes())
-    {
-      SLIC_INFO(fmt::format("Shape '{}' of material {} is replaced by: [{}]",
-                            s.getName(),
-                            s.getMaterial(),
-                            fmt::join(replaced_by[s.getMaterial()], " ")));
-    }
-
-    // Merge all shapes of a given material into a single material QFunc
-    for(const auto& kv : materialsToShapes)
-    {
-      auto& mat = kv.first;
-      quest::shaping::mergeQFuncs(mat, kv.second, inoutQFuncs);
-    }
-
-    // Merge all shapes of a given material into a single material QFunc
-    for(const auto& kv : replaced_by)
-    {
-      auto& mat = kv.first;
-      quest::shaping::replaceMaterials(mat, kv.second, inoutQFuncs);
-    }
-  }
   // Generate the volume fractions from the InOut quadrature fields
   SLIC_INFO(
     fmt::format("{:=^80}", "Generating volume fraction fields for materials"));
-  for(const auto& kv : materialsToShapes)
-  {
-    const std::string shapeName = kv.first;
-    const int outputOrder = params.outputOrder;
 
-    SLIC_INFO(fmt::format("Generating volume fraction fields for '{}' shape",
-                          shapeName));
-
-    switch(params.vfSampling)
-    {
-    case VolFracSampling::SAMPLE_AT_QPTS:
-      quest::shaping::computeVolumeFractions(shapeName,
-                                             shaper.getDC(),
-                                             inoutQFuncs,
-                                             outputOrder);
-      break;
-    case VolFracSampling::SAMPLE_AT_DOFS:
-      /* no-op for now */
-      break;
-    }
-  }
+  shaper.adjustVolumeFractions(params.vfSampling, outputOrder);
 
 // Save meshes and fields
 #ifdef MFEM_USE_MPI
