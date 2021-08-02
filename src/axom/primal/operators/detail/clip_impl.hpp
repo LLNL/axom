@@ -210,7 +210,9 @@ AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
     // Vertex is under the plane
     if(orientation == ON_NEGATIVE_SIDE)
     {
+      // Mark this vertex for removal later
       out_clipped |= 1 << i;
+
       // Check neighbors for vertex above the plane (edge clipped by plane)
       int numNeighbors = poly.getNumNeighbors(i);
       for(int j = 0; j < numNeighbors; j++)
@@ -232,9 +234,6 @@ AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
           SLIC_ASSERT(newVertexIndex == expectedVertexIndex);
 
           poly.addNeighbors(newVertexIndex, {i, neighborIndex});
-
-          // Label the new vertex as a clipped created vertex
-          //out_clipped |= 1 << newVertexIndex;
 
           // Update current vertex's & neighbor's neighbors with the
           // new vertex
