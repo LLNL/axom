@@ -267,7 +267,9 @@ int main(int argc, char** argv)
 
   initializeLogger();
 
+  //---------------------------------------------------------------------------
   // Set up and parse command line arguments
+  //---------------------------------------------------------------------------
   Input params;
   CLI::App app {"Driver for Klee shaping query"};
 
@@ -291,17 +293,22 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
-  // Load shape file and extract info
+  //---------------------------------------------------------------------------
+  // Load the klee shape file and extract some information
+  //---------------------------------------------------------------------------
   params.shapeSet = klee::readShapeSet(params.shapeFile);
   const klee::Dimensions shapeDim = params.shapeSet.getDimensions();
 
-  // Apply some error checking
+  // Apply error checking
 #ifndef AXOM_USE_C2C
   SLIC_ERROR_IF(shapeDim == klee::Dimension::Two,
                 "Shaping with contour files requires an Axom configured with "
                 "the C2C library");
 #endif
 
+  //---------------------------------------------------------------------------
+  // Load the computational mesh
+  //---------------------------------------------------------------------------
   const bool dc_owns_data = true;
   sidre::MFEMSidreDataCollection originalMeshDC(params.getDCMeshName(),
                                                 nullptr,
@@ -312,7 +319,9 @@ int main(int argc, char** argv)
     originalMeshDC.Load(params.meshFile, protocol);
   }
 
-  // Set up data collection for shaping
+  //---------------------------------------------------------------------------
+  // Set up DataCollection for shaping
+  //---------------------------------------------------------------------------
   sidre::MFEMSidreDataCollection shapingDC("shaping", nullptr, dc_owns_data);
   {
     shapingDC.SetMeshNodesName("positions");
@@ -325,7 +334,9 @@ int main(int argc, char** argv)
   }
   printMeshInfo(shapingDC.GetMesh(), "After loading");
 
-  // Add the mesh to an mfem data collection
+  //---------------------------------------------------------------------------
+  // Initialize the shaping query object
+  //---------------------------------------------------------------------------
   quest::MFEMShaping shaper(params.shapeSet, &shapingDC);
 
   const int sampleOrder = params.quadratureOrder;
@@ -334,39 +345,55 @@ int main(int argc, char** argv)
   shaper.setSamplesPerKnotSpan(params.samplesPerKnotSpan);
   shaper.setVertexWeldThreshold(params.weldThresh);
 
-  // Sample the InOut quadrature field for each shape using an InOut octree
-  // Assumptions: Each shape has a unique name
+  //---------------------------------------------------------------------------
+  // Process each of the shapes
+  //---------------------------------------------------------------------------
   SLIC_INFO(fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
   for(const auto& s : params.shapeSet.getShapes())
   {
+    // Load the shape from file
     shaper.loadShape(s);
+    slic::flushStreams();
 
-    // Compute mesh bounding box and log some stats about the surface
+    // Apply the specified geometric transforms
+    shaper.applyTransforms(s);
+    slic::flushStreams();
+
+    // Generate a spatial index over the shape
     shaper.prepareShapeQuery(shapeDim, s);
     slic::flushStreams();
 
+    // Query the mesh against this shape
     shaper.runShapeQuery(params.vfSampling, sampleOrder, outputOrder);
     slic::flushStreams();
 
+    // Apply the replacement rules for this shape against the existing materials
     shaper.applyReplacementRules(s);
     slic::flushStreams();
 
+    // Finalize data structures associated with this shape and spatial index
     shaper.finalizeShapeQuery();
     slic::flushStreams();
   }
 
-  // Generate the volume fractions from the InOut quadrature fields
+  //---------------------------------------------------------------------------
+  // After shaping in all shapes, generate/adjust the material volume fractions
+  //---------------------------------------------------------------------------
   SLIC_INFO(
     fmt::format("{:=^80}", "Generating volume fraction fields for materials"));
 
   shaper.adjustVolumeFractions(params.vfSampling, outputOrder);
 
-// Save meshes and fields
+  //---------------------------------------------------------------------------
+  // Save meshes and fields
+  //---------------------------------------------------------------------------
 #ifdef MFEM_USE_MPI
   shaper.getDC()->Save();
 #endif
 
+  //---------------------------------------------------------------------------
   // Cleanup and exit
+  //---------------------------------------------------------------------------
   finalizeLogger();
 #ifdef AXOM_USE_MPI
   MPI_Finalize();
