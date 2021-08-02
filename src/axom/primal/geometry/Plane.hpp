@@ -29,6 +29,41 @@ std::ostream& operator<<(std::ostream& os, const Plane<T, NDIMS>& p);
 
 /// @}
 
+/// \name Forward-declared helper functions
+/// @{
+
+/*!
+ * \brief Constructs a Plane in 2D that goes through the specified points.
+ *
+ * \param [in] x1 coordinates of the first point.
+ * \param [in] x2 coordinates of the second point.
+ *
+ * \return plane the plane/line defined by the two points
+ *
+ * \pre x1 should not be equal to x2
+ */
+template <typename T>
+AXOM_HOST_DEVICE Plane<T, 2> make_plane(const Point<T, 2>& x1,
+                                        const Point<T, 2>& x2);
+
+/*!
+ * \brief Constructs a Plane in 3D that goes through the specified points.
+ *
+ * \param [in] x1 coordinates of the first point.
+ * \param [in] x2 coordinates of the second point.
+ * \param [in] x3 coordinates of the third point.
+ *
+ * \return plane the plane defined by the three points
+ *
+ * \pre The user-supplied points, x1, x2, x3 should not be collinear.
+ */
+template <typename T>
+AXOM_HOST_DEVICE Plane<T, 3> make_plane(const Point<T, 3>& x1,
+                                        const Point<T, 3>& x2,
+                                        const Point<T, 3>& x3);
+
+/// @}
+
 /*!
  * \class Plane
  *
@@ -80,6 +115,7 @@ public:
    * \note The supplied normal will be normalized, such that, the Plane's normal
    *  will always be a unit normal.
    */
+  AXOM_HOST_DEVICE
   Plane(const VectorType& normal, const PointType& x);
 
   /*!
@@ -93,27 +129,6 @@ public:
    *  will always be a unit normal.
    */
   Plane(const VectorType& normal, T offset);
-
-  /*!
-   * \brief Constructs a Plane that goes through the specified points.
-   *
-   * \param [in] x1 coordinates of the first point.
-   * \param [in] x2 coordinates of the second point.
-   * \param [in] x3 coordinates of the third point, or nullptr for 2D.
-   *
-   * \note Two points are required to define a plane in 2D, in which case, the
-   *  caller must pass nullptr as the third argument to this constructor.
-   *
-   * \note The specified points, x1, x2, x3, must point to buffers that are
-   *  at least NDIMS long
-   *
-   * \pre x1 != nullptr
-   * \pre x2 != nullptr
-   * \pre x3 != nullptr \f$ \iff \f$ NDIMS==3
-   * \pre In 2D, x1 should not be equal to x2
-   * \pre In 3D, the user-supplied points, x1, x2, x3 should not be collinear.
-   */
-  AXOM_HOST_DEVICE Plane(const T* x1, const T* x2, const T* x3);
 
   /// @}
 
@@ -239,47 +254,6 @@ Plane<T, NDIMS>::Plane(const VectorType& normal, T offset) : m_offset(offset)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-Plane<T, NDIMS>::Plane(const T* x1, const T* x2, const T* x3)
-{
-  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
-                         "A plane object may be defined in 2-D or 3-D");
-
-  SLIC_ASSERT(x1 != nullptr);
-  SLIC_ASSERT(x2 != nullptr);
-
-  VectorType normal;
-
-  if(x3 == nullptr)
-  {
-    SLIC_ASSERT(NDIMS == 2);
-    normal[0] = x1[1] - x2[1];  // -dy
-    normal[1] = x2[0] - x1[0];  //  dx
-
-  }  // END if
-  else
-  {
-    SLIC_ASSERT(NDIMS == 3);
-
-    VectorType r1(x1, x2);
-    VectorType r2(x1, x3);
-
-    normal = VectorType(VectorType::cross_product(r1, r2).data(), NDIMS);
-
-  }  // END else
-
-  // check for degenerate line or triangle
-  bool degenerate = normal.is_zero();
-
-  SLIC_CHECK_MSG(!degenerate,
-                 "Supplied points form a degenerate "
-                   << ((NDIMS == 2) ? "line" : "triangle"));
-
-  this->setNormal(normal);
-  m_offset = m_normal.dot(x1);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
 inline typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::projectPoint(
   const PointType& x) const
 {
@@ -352,6 +326,40 @@ template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const Plane<T, NDIMS>& p)
 {
   return (p.print(os));
+}
+
+template <typename T>
+Plane<T, 2> make_plane(const Point<T, 2>& x1, const Point<T, 2>& x2)
+{
+  Vector<T, 2> normal;
+  normal[0] = x1[1] - x2[1];  // -dy
+  normal[1] = x2[0] - x1[0];  //  dx
+
+  // check for degenerate line or triangle
+  bool degenerate = normal.is_zero();
+
+  SLIC_CHECK_MSG(!degenerate, "Supplied points form a degenerate line");
+
+  return Plane<T, 2>(normal, x1);
+}
+
+//------------------------------------------------------------------------------
+template <typename T>
+Plane<T, 3> make_plane(const Point<T, 3>& x1,
+                       const Point<T, 3>& x2,
+                       const Point<T, 3>& x3)
+{
+  Vector<T, 3> r1(x1, x2);
+  Vector<T, 3> r2(x1, x3);
+
+  Vector<T, 3> normal = Vector<T, 3>::cross_product(r1, r2);
+
+  // check for degenerate line or triangle
+  bool degenerate = normal.is_zero();
+
+  SLIC_CHECK_MSG(!degenerate, "Supplied points form a degenerate triangle");
+
+  return Plane<T, 3>(normal, x1);
 }
 
 }  // namespace primal

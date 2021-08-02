@@ -427,10 +427,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
 
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
-  PlaneType planes[4] = {PlaneType(tet[1].data(), tet[3].data(), tet[2].data()),
-                         PlaneType(tet[0].data(), tet[2].data(), tet[3].data()),
-                         PlaneType(tet[0].data(), tet[3].data(), tet[1].data()),
-                         PlaneType(tet[0].data(), tet[1].data(), tet[2].data())};
+  PlaneType planes[4] = {make_plane(tet[1], tet[3], tet[2]),
+                         make_plane(tet[0], tet[2], tet[3]),
+                         make_plane(tet[0], tet[3], tet[1]),
+                         make_plane(tet[0], tet[1], tet[2])};
 
   //Clip octahedron by each plane
   for(int planeIndex = 0; planeIndex < 4; planeIndex++)
