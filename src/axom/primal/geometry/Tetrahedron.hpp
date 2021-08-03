@@ -43,7 +43,7 @@ public:
   /*!
    * \brief Default constructor. Creates a degenerate tetrahedron.
    */
-  Tetrahedron() { }
+  AXOM_HOST_DEVICE Tetrahedron() { }
 
   /*!
    * \brief Custom Constructor. Creates a tetrahedron from the 4 points A,B,C,D.
@@ -64,16 +64,11 @@ public:
   }
 
   /*!
-   * \brief Destructor
-   */
-  ~Tetrahedron() { }
-
-  /*!
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1, 2, or 3
    */
-  PointType& operator[](int idx)
+  AXOM_HOST_DEVICE PointType& operator[](int idx)
   {
     SLIC_ASSERT(idx >= 0 && idx < NUM_TET_VERTS);
     return m_points[idx];
@@ -84,7 +79,7 @@ public:
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1, 2, or 3
    */
-  const PointType& operator[](int idx) const
+  AXOM_HOST_DEVICE const PointType& operator[](int idx) const
   {
     SLIC_ASSERT(idx >= 0 && idx < NUM_TET_VERTS);
     return m_points[idx];

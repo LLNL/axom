@@ -545,7 +545,7 @@ bool intersect(const BezierCurve<T, NDIMS>& c1,
  *       Real Time Collision Detection by Christer Ericson.
  */
 template <typename T>
-bool intersect(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
+AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
 {
   return detail::intersect_plane_bbox(p, bb);
 }
@@ -565,7 +565,9 @@ bool intersect(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
  *       Real Time Collision Detection by Christer Ericson.
  */
 template <typename T>
-bool intersect(const Plane<T, 3>& plane, const Segment<T, 3>& seg, T& t)
+AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& plane,
+                                const Segment<T, 3>& seg,
+                                T& t)
 {
   return detail::intersect_plane_seg(plane, seg, t);
 }

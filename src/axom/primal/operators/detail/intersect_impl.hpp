@@ -1129,7 +1129,8 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox<T, 3>& b1,
  * \return true iff plane intersects with bounding box, otherwise, false.
  */
 template <typename T>
-bool intersect_plane_bbox(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
+AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
+                                           const BoundingBox<T, 3>& bb)
 {
   typedef Vector<T, 3> VectorType;
 
@@ -1140,7 +1141,7 @@ bool intersect_plane_bbox(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
     e[1] * utilities::abs<T>(p.getNormal()[1]) +
     e[2] * utilities::abs<T>(p.getNormal()[2]);
 
-  T s = (VectorType(p.getNormal(), 3)).dot(c) - p.getOffset();
+  T s = p.getNormal().dot(c) - p.getOffset();
 
   return utilities::abs<T>(s) <= r;
 }
@@ -1154,12 +1155,14 @@ bool intersect_plane_bbox(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
  * \return true iff plane intersects with segment, otherwise, false.
  */
 template <typename T>
-bool intersect_plane_seg(const Plane<T, 3>& plane, const Segment<T, 3>& seg, T& t)
+AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
+                                          const Segment<T, 3>& seg,
+                                          T& t)
 {
   typedef Vector<T, 3> VectorType;
 
   VectorType ab(seg.source(), seg.target());
-  VectorType normal(plane.getNormal(), 3);
+  VectorType normal = plane.getNormal();
 
   t = (plane.getOffset() - normal.dot(VectorType(seg.source()))) /
     (normal.dot(ab));
