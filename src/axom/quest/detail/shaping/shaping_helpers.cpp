@@ -1,12 +1,15 @@
 #include "shaping_helpers.hpp"
 
+#include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
-#include "mfem.hpp"
-
 #include "fmt/fmt.hpp"
 #include "fmt/locale.h"
+
+#ifndef AXOM_USE_MFEM
+  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
+#endif
 
 namespace axom
 {

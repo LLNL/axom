@@ -9,44 +9,37 @@
  */
 
 // Axom includes
+#include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
-#include "axom/slam.hpp"
-#include "axom/sidre.hpp"
 #include "axom/primal.hpp"
-#include "axom/spin.hpp"
+#include "axom/sidre.hpp"
 #include "axom/klee.hpp"
-#include "axom/mint.hpp"
 #include "axom/quest.hpp"
 
 #include "fmt/fmt.hpp"
-#include "fmt/locale.h"
 #include "CLI11/CLI11.hpp"
 
-#include "mfem.hpp"
+// NOTE: The shaping driver requires Axom to be configured with mfem as well as
+// the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION CMake option
+#ifndef AXOM_USE_MFEM
+  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
+#endif
 
-// C/C++ includes
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <limits>
-#include <fstream>
-#include <iomanip>  // for setprecision()
+#include "mfem.hpp"
 
 #ifdef AXOM_USE_MPI
   #include "mpi.h"
 #endif
 
-// NOTE: Axom must be configured with AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION compiler define for the klee containment driver
+// C/C++ includes
+#include <string>
+#include <vector>
 
-namespace mint = axom::mint;
 namespace quest = axom::quest;
 namespace slic = axom::slic;
 namespace sidre = axom::sidre;
 namespace klee = axom::klee;
-
-using QFunctionCollection = mfem::NamedFieldsMap<mfem::QuadratureFunction>;
-using DenseTensorCollection = mfem::NamedFieldsMap<mfem::DenseTensor>;
 
 using VolFracSampling = quest::shaping::VolFracSampling;
 
@@ -67,9 +60,6 @@ public:
   double weldThresh {1e-9};
 
   VolFracSampling vfSampling {VolFracSampling::SAMPLE_AT_QPTS};
-
-  std::vector<double> queryBoxMins;
-  std::vector<double> queryBoxMaxs;
 
 private:
   bool m_verboseOutput {false};

@@ -12,6 +12,12 @@
 #ifndef AXOM_QUEST_SHAPING_HELPERS__HPP_
 #define AXOM_QUEST_SHAPING_HELPERS__HPP_
 
+#include "axom/config.hpp"
+
+#ifndef AXOM_USE_MFEM
+  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
+#endif
+
 #include "mfem.hpp"
 
 namespace axom

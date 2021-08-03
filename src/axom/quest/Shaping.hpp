@@ -12,6 +12,7 @@
 #ifndef AXOM_QUEST_SHAPING__HPP_
 #define AXOM_QUEST_SHAPING__HPP_
 
+#include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
@@ -20,7 +21,12 @@
 #include "axom/spin.hpp"
 #include "axom/klee.hpp"
 
+#ifndef AXOM_USE_MFEM
+  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
+#endif
+
 #include "axom/quest/InOutOctree.hpp"
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 #include "axom/quest/detail/shaping/shaping_helpers.hpp"
 
@@ -35,19 +41,6 @@ namespace quest
 {
 namespace shaping
 {
-using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
-
-using TriVertIndices = primal::Point<axom::IndexType, 3>;
-using SpaceTriangle = primal::Triangle<double, 3>;
-
-using Octree3D = quest::InOutOctree<3>;
-
-using GeometricBoundingBox = Octree3D::GeometricBoundingBox;
-using SpacePt = Octree3D::SpacePt;
-using SpaceVector = Octree3D::SpaceVector;
-using GridPt = Octree3D::GridPt;
-using BlockIndex = Octree3D::BlockIndex;
-
 using QFunctionCollection = mfem::NamedFieldsMap<mfem::QuadratureFunction>;
 using DenseTensorCollection = mfem::NamedFieldsMap<mfem::DenseTensor>;
 
@@ -56,23 +49,6 @@ enum class VolFracSampling : int
   SAMPLE_AT_DOFS,
   SAMPLE_AT_QPTS
 };
-
-/** Computes the bounding box of the surface mesh */
-GeometricBoundingBox compute_bounds(const mint::Mesh& mesh)
-{
-  GeometricBoundingBox meshBB;
-  SpacePt pt;
-
-  for(int i = 0; i < mesh.getNumberOfNodes(); ++i)
-  {
-    mesh.getNode(i, pt.data());
-    meshBB.addPoint(pt);
-  }
-
-  SLIC_ASSERT(meshBB.isValid());
-
-  return meshBB;
-}
 
 }  // end namespace shaping
 
@@ -437,7 +413,7 @@ public:
 
     const auto& materialName = shape.getMaterial();
 
-    // Creata a copy of the inout samples for this shape
+    // Create a copy of the inout samples for this shape
     // Replacements will be applied to this and then copied into our shape
     auto* shapeQFuncCopy = new mfem::QuadratureFunction(*shapeQFunc);
 

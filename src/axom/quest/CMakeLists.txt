@@ -26,8 +26,6 @@ set( quest_headers
     ## Shaping
     Discretize.hpp
     Discretize_impl.hpp
-    Shaping.hpp
-    detail/shaping/shaping_helpers.hpp
 
     ## In/out query
     InOutOctree.hpp
@@ -63,7 +61,6 @@ set( quest_sources
 
     ## Discretize shapes
     Discretize.cpp
-    detail/shaping/shaping_helpers.cpp
 
     ## Mesh tester
     MeshTester.cpp
@@ -77,7 +74,6 @@ set( quest_sources
     interface/signed_distance.cpp
 
    )
-
 
 
 set( quest_depends_on
@@ -94,7 +90,13 @@ blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
 blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
 blt_list_append(TO quest_depends_on IF MFEM_FOUND ELEMENTS mfem)
-     
+
+if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    list(APPEND quest_headers Shaping.hpp 
+                              detail/shaping/shaping_helpers.hpp)
+    list(APPEND quest_sources detail/shaping/shaping_helpers.cpp)
+endif()
+
 if(C2C_FOUND)
     list(APPEND quest_headers readers/C2CReader.hpp)
     list(APPEND quest_sources readers/C2CReader.cpp)
