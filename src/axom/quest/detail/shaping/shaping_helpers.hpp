@@ -30,8 +30,9 @@ using QFunctionCollection = mfem::NamedFieldsMap<mfem::QuadratureFunction>;
 using DenseTensorCollection = mfem::NamedFieldsMap<mfem::DenseTensor>;
 
 /**
- * Utility function to zero out inout quadrature points when a material is replaced
+ * Utility function to zero out inout quadrature points for a material replaced by a shape
  *
+ * Each location in space can only be covered by one material.
  * When \a shouldReplace is true, we clear all values in \a materialQFunc 
  * that are set in \a shapeQFunc. When it is false, we do the opposite.
  */
@@ -39,8 +40,8 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
                      mfem::QuadratureFunction* materialQFunc,
                      bool shouldReplace);
 
-/// Utility function to copy inout quadrature point values from one QFunc to another
-void copyShapeIntoMaterial(mfem::QuadratureFunction* shapeQFunc,
+/// Utility function to copy inout quadrature point values from \a shapeQFunc to \a materialQFunc
+void copyShapeIntoMaterial(const mfem::QuadratureFunction* shapeQFunc,
                            mfem::QuadratureFunction* materialQFunc);
 
 /// Generates a quadrature function corresponding to the mesh positions
@@ -70,14 +71,18 @@ void FCT_project(mfem::DenseMatrix& M,
                  double y_max,       // 1
                  mfem::Vector& xy);  // indicators * rho
 
-namespace unused
-{
-/// This function is not currently being used, but might be in the near future
-void generate_volume_fractions_baseline(mfem::DataCollection* dc,
-                                        mfem::QuadratureFunction* inout,
-                                        const std::string& name,  // vol_frac
-                                        int /*order*/);
-}  // end namespace unused
+/**
+ * \brief Identity transform for volume fractions from inout samples
+ *
+ * Copies \a inout samples from the quadrature function directly into volume fraction DOFs.
+ * \param dc The data collection to which we will add the volume fractions
+ * \param inout The inout samples
+ * \param name The name of the generated volume fraction function
+ * \note Assumes that the inout samples are co-located with the grid function DOFs.
+ */
+void computeVolumeFractionsIdentity(mfem::DataCollection* dc,
+                                    mfem::QuadratureFunction* inout,
+                                    const std::string& name);
 
 }  // end namespace shaping
 }  // end namespace quest

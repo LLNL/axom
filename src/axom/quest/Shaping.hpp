@@ -66,6 +66,14 @@ public:
   using BlockIndex = typename InOutOctreeType::BlockIndex;
 
 public:
+  /**
+   * \brief Constructor for a SamplingShaper
+   *
+   * \param shapeName The name of the shape; will be used for the field for the associated samples
+   * \param surfaceMesh Pointer to the surface mesh
+   *
+   * \note Does not take ownership of the surface mesh
+   */
   SamplingShaper(const std::string& shapeName, mint::Mesh* surfaceMesh)
     : m_shapeName(shapeName)
     , m_surfaceMesh(surfaceMesh)
@@ -226,6 +234,9 @@ public:
   }
 
 private:
+  DISABLE_COPY_AND_ASSIGNMENT(SamplingShaper);
+  DISABLE_MOVE_AND_ASSIGNMENT(SamplingShaper);
+
   std::string m_shapeName;
 
   GeometricBoundingBox m_bbox;
@@ -233,7 +244,10 @@ private:
   InOutOctreeType* m_octree {nullptr};
 };
 
-/// Helper class to use an MFEM sampling-based shaper
+/**
+ * Helper class to use an MFEM sampling-based shaper
+ *
+ */
 class MFEMShaping
 {
 public:
@@ -513,7 +527,7 @@ private:
     return has2D ? klee::Dimensions::Two : klee::Dimensions::Three;
   }
 
-public:
+private:
   const klee::ShapeSet& m_shapeSet;
   sidre::MFEMSidreDataCollection* m_dc;
 

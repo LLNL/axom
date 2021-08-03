@@ -5,7 +5,7 @@
 
 /*!
  * \file shaping_driver.cpp
- * \brief Driver for shaping material volume fractions onto a simulation mesh
+ * \brief Driver application for shaping material volume fractions onto a simulation mesh
  */
 
 // Axom includes
@@ -45,7 +45,7 @@ using VolFracSampling = quest::shaping::VolFracSampling;
 
 //------------------------------------------------------------------------------
 
-/** Struct to parse and store the input parameters */
+/// Struct to parse and store the input parameters
 struct Input
 {
 public:
@@ -65,8 +65,6 @@ private:
   bool m_verboseOutput {false};
 
 public:
-  Input() = default;
-
   bool isVerbose() const { return m_verboseOutput; }
 
   std::string getDCMeshName() const

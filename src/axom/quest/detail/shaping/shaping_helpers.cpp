@@ -17,7 +17,6 @@ namespace quest
 {
 namespace shaping
 {
-/// Utility function to help with replacing a material by a shape
 void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
                      mfem::QuadratureFunction* materialQFunc,
                      bool shouldReplace)
@@ -32,7 +31,7 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
 
   if(shouldReplace)
   {
-    // If shouldReplace, clear material samples if inside current shape
+    // If shouldReplace, clear material samples that are inside current shape
     for(int j = 0; j < SZ; ++j)
     {
       mData[j] = sData[j] > 0 ? 0 : mData[j];
@@ -40,7 +39,7 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
   }
   else
   {
-    // Else, clear current shape samples if in other material
+    // Otherwise, clear current shape samples that are in the material
     for(int j = 0; j < SZ; ++j)
     {
       sData[j] = mData[j] > 0 ? 0 : sData[j];
@@ -49,7 +48,7 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
 }
 
 /// Utility function to copy in_out quadrature samples from one QFunc to another
-void copyShapeIntoMaterial(mfem::QuadratureFunction* shapeQFunc,
+void copyShapeIntoMaterial(const mfem::QuadratureFunction* shapeQFunc,
                            mfem::QuadratureFunction* materialQFunc)
 {
   SLIC_ASSERT(shapeQFunc != nullptr);
@@ -58,7 +57,7 @@ void copyShapeIntoMaterial(mfem::QuadratureFunction* shapeQFunc,
 
   const int SZ = materialQFunc->Size();
   double* mData = materialQFunc->GetData();
-  double* sData = shapeQFunc->GetData();
+  const double* sData = shapeQFunc->GetData();
 
   for(int j = 0; j < SZ; ++j)
   {
@@ -361,12 +360,10 @@ void FCT_project(mfem::DenseMatrix& M,
   }
 }
 
-namespace unused
-{
-void generate_volume_fractions_baseline(mfem::DataCollection* dc,
-                                        mfem::QuadratureFunction* inout,
-                                        const std::string& name,  // vol_frac
-                                        int /*order*/)
+// Note: This function is not currently being used, but might be in the near future
+void computeVolumeFractionsIdentity(mfem::DataCollection* dc,
+                                    mfem::QuadratureFunction* inout,
+                                    const std::string& name)
 {
   const int order = inout->GetSpace()->GetElementIntRule(0).GetOrder();
 
@@ -386,7 +383,6 @@ void generate_volume_fractions_baseline(mfem::DataCollection* dc,
 
   (*volFrac) = (*inout);
 }
-}  // end namespace unused
 
 }  // end namespace shaping
 }  // end namespace quest
