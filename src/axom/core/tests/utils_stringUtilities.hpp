@@ -17,17 +17,6 @@ TEST(utils_stringUtilities, startsWith)
 {
   {
     std::string testString = "foo.bar";
-    std::string testPrefix = "boo";
-    EXPECT_FALSE(axom::utilities::string::startsWith(testString, testPrefix));
-  }
-
-  {
-    std::string testString = "foo.bar";
-    EXPECT_FALSE(axom::utilities::string::startsWith(testString, 'b'));
-  }
-
-  {
-    std::string testString = "foo.bar";
     std::string testPrefix = "foo";
     EXPECT_TRUE(axom::utilities::string::startsWith(testString, testPrefix));
   }
@@ -36,21 +25,21 @@ TEST(utils_stringUtilities, startsWith)
     std::string testString = "foo.bar";
     EXPECT_TRUE(axom::utilities::string::startsWith(testString, 'f'));
   }
+
+  {
+    std::string testString = "foo.bar";
+    std::string testPrefix = "boo";
+    EXPECT_FALSE(axom::utilities::string::startsWith(testString, testPrefix));
+  }
+
+  {
+    std::string testString = "foo.bar";
+    EXPECT_FALSE(axom::utilities::string::startsWith(testString, 'b'));
+  }
 }
 
 TEST(utils_stringUtilities, endsWith)
 {
-  {
-    std::string testString = "foo.bar";
-    std::string testSuffix = ".baz";
-    EXPECT_FALSE(axom::utilities::string::endsWith(testString, testSuffix));
-  }
-
-  {
-    std::string testString = "foo.bar";
-    EXPECT_FALSE(axom::utilities::string::endsWith(testString, 'z'));
-  }
-
   {
     std::string testString = "foo.bar";
     std::string testSuffix = ".bar";
@@ -61,18 +50,21 @@ TEST(utils_stringUtilities, endsWith)
     std::string testString = "foo.bar";
     EXPECT_TRUE(axom::utilities::string::endsWith(testString, 'r'));
   }
+
+  {
+    std::string testString = "foo.bar";
+    std::string testSuffix = ".baz";
+    EXPECT_FALSE(axom::utilities::string::endsWith(testString, testSuffix));
+  }
+
+  {
+    std::string testString = "foo.bar";
+    EXPECT_FALSE(axom::utilities::string::endsWith(testString, 'z'));
+  }
 }
 
 TEST(utils_stringUtilities, removeSuffix)
 {
-  // different suffix
-  {
-    std::string testString = "foo.bar";
-    std::string testSuffix = ".baz";
-    EXPECT_EQ("foo.bar",
-              axom::utilities::string::removeSuffix(testString, testSuffix));
-  }
-
   // same suffix
   {
     std::string testString = "foo.bar";
@@ -81,7 +73,15 @@ TEST(utils_stringUtilities, removeSuffix)
               axom::utilities::string::removeSuffix(testString, testSuffix));
   }
 
-  // repeated suffix -- only removes one
+  // different suffix
+  {
+    std::string testString = "foo.bar";
+    std::string testSuffix = ".baz";
+    EXPECT_EQ(testString,
+              axom::utilities::string::removeSuffix(testString, testSuffix));
+  }
+
+  // repeated suffix -- only removes one copy
   {
     std::string testString = "foo.bar.bar";
     std::string testSuffix = ".bar";
@@ -129,7 +129,7 @@ TEST(utils_stringUtilities, toUpper)
 {
   // already upper
   {
-    std::string testString = "foo.bar";
+    std::string testString = "FOO.BAR";
     std::string expString = "FOO.BAR";
     axom::utilities::string::toUpper(testString);
     EXPECT_EQ(expString, testString);
@@ -137,7 +137,7 @@ TEST(utils_stringUtilities, toUpper)
 
   // all lower
   {
-    std::string testString = "FOO.BAR";
+    std::string testString = "foo.bar";
     std::string expString = "FOO.BAR";
     axom::utilities::string::toUpper(testString);
     EXPECT_EQ(expString, testString);
@@ -156,7 +156,6 @@ TEST(utils_stringUtilities, split)
 {
   using StrVec = std::vector<std::string>;
 
-  // Test w/ proper delimiter
   {
     std::string testString = "foo/bar/baz";
     StrVec exp {"foo", "bar", "baz"};
@@ -165,7 +164,7 @@ TEST(utils_stringUtilities, split)
     EXPECT_EQ(exp, results);
   }
 
-  // Test empty
+  // Test empty string
   {
     std::string testString = "";
     StrVec exp;
@@ -174,7 +173,7 @@ TEST(utils_stringUtilities, split)
     EXPECT_EQ(exp, results);
   }
 
-  // Test single
+  // Test single token
   {
     std::string testString = "foo";
     StrVec exp {"foo"};
@@ -183,7 +182,7 @@ TEST(utils_stringUtilities, split)
     EXPECT_EQ(exp, results);
   }
 
-  // Test other delimiter
+  // Test other delimiter: '.'
   {
     std::string testString = "foo.bar.baz";
     StrVec exp {"foo", "bar", "baz"};
@@ -192,7 +191,7 @@ TEST(utils_stringUtilities, split)
     EXPECT_EQ(exp, results);
   }
 
-  // Test different delimiter
+  // Test different delimiter: '.' in string, ';' in function call
   {
     std::string testString = "foo.bar.baz";
     StrVec exp {"foo.bar.baz"};
@@ -217,7 +216,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     EXPECT_EQ(exp, results);
   }
 
-  // Test w/ extra tokens
+  // Test w/ more string tokens than N
   {
     const std::size_t N = 2;
     std::string testString = "foo/bar/baz";
@@ -228,7 +227,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     EXPECT_EQ(exp, results);
   }
 
-  // Test w/ extra tokens
+  // Test w/ more string tokens than N
   {
     const std::size_t N = 1;
     std::string testString = "foo/bar/baz";
@@ -239,7 +238,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     EXPECT_EQ(exp, results);
   }
 
-  // Test w/ larger N
+  // Test w/ fewer string tokens than N
   {
     const std::size_t N = 10;
     std::string testString = "foo/bar/baz";
@@ -250,7 +249,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     EXPECT_EQ(exp, results);
   }
 
-  // Test w/ 0 expected tokens
+  // Test w/ N==0
   {
     const std::size_t N = 0;
     std::string testString = "foo/bar/baz";
@@ -261,7 +260,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     EXPECT_EQ(exp, results);
   }
 
-  // Test empty
+  // Test w/ empty string
   {
     const std::size_t N = 3;
     std::string testString = "";
@@ -272,7 +271,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     EXPECT_EQ(exp, results);
   }
 
-  // Test single
+  // Test w/ single token in string
   {
     const std::size_t N = 3;
     std::string testString = "foo";
