@@ -15,8 +15,6 @@
 //------------------------------------------------------------------------------
 TEST(utils_stringUtilities, startsWith)
 {
-  std::cout << "Testing startsWith() functions" << std::endl;
-
   {
     std::string testString = "foo.bar";
     std::string testPrefix = "boo";
@@ -42,8 +40,6 @@ TEST(utils_stringUtilities, startsWith)
 
 TEST(utils_stringUtilities, endsWith)
 {
-  std::cout << "Testing endsWith() functions" << std::endl;
-
   {
     std::string testString = "foo.bar";
     std::string testSuffix = ".baz";
@@ -69,8 +65,6 @@ TEST(utils_stringUtilities, endsWith)
 
 TEST(utils_stringUtilities, removeSuffix)
 {
-  std::cout << "Testing removeSuffix() function" << std::endl;
-
   // different suffix
   {
     std::string testString = "foo.bar";
@@ -106,8 +100,6 @@ TEST(utils_stringUtilities, removeSuffix)
 
 TEST(utils_stringUtilities, toLower)
 {
-  std::cout << "Testing toLower() function" << std::endl;
-
   // already lower
   {
     std::string testString = "foo.bar";
@@ -135,8 +127,6 @@ TEST(utils_stringUtilities, toLower)
 
 TEST(utils_stringUtilities, toUpper)
 {
-  std::cout << "Testing toUpper() function" << std::endl;
-
   // already upper
   {
     std::string testString = "foo.bar";
@@ -164,10 +154,9 @@ TEST(utils_stringUtilities, toUpper)
 
 TEST(utils_stringUtilities, split)
 {
-  std::cout << "Testing split() function" << std::endl;
   using StrVec = std::vector<std::string>;
 
-  // Test w/ proper delim
+  // Test w/ proper delimiter
   {
     std::string testString = "foo/bar/baz";
     StrVec exp {"foo", "bar", "baz"};
@@ -194,7 +183,7 @@ TEST(utils_stringUtilities, split)
     EXPECT_EQ(exp, results);
   }
 
-  // Test other delimeter
+  // Test other delimiter
   {
     std::string testString = "foo.bar.baz";
     StrVec exp {"foo", "bar", "baz"};
@@ -203,7 +192,7 @@ TEST(utils_stringUtilities, split)
     EXPECT_EQ(exp, results);
   }
 
-  // Test different delimeter
+  // Test different delimiter
   {
     std::string testString = "foo.bar.baz";
     StrVec exp {"foo.bar.baz"};
@@ -215,7 +204,6 @@ TEST(utils_stringUtilities, split)
 
 TEST(utils_stringUtilities, splitLastNTokens)
 {
-  std::cout << "Testing split() function" << std::endl;
   using StrVec = std::vector<std::string>;
 
   // Test w/ sufficient tokens
@@ -295,7 +283,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     EXPECT_EQ(exp, results);
   }
 
-  // Test mixed delim: /
+  // Test mixed delim: '/'
   {
     const std::size_t N = 3;
     std::string testString = "foo.bar/baz.qux";
@@ -306,7 +294,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     EXPECT_EQ(exp, results);
   }
 
-  // Test mixed delim: .
+  // Test mixed delim: '.'
   {
     const std::size_t N = 3;
     std::string testString = "foo.bar/baz.qux";
