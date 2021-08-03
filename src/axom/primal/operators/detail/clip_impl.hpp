@@ -382,7 +382,7 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
                           {newIndices[old_poly.getNeighbors()[i][j]]});
       }
     }
-  };
+  }
 }
 
 /*!
