@@ -54,6 +54,7 @@ public:
    *
    * p is opposite s, q is opposite t, r is opposite u.
    */
+  AXOM_HOST_DEVICE
   Octahedron(const PointType& p,
              const PointType& q,
              const PointType& r,

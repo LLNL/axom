@@ -25,6 +25,7 @@ set( quest_headers
 
     ## Discretize shapes
     Discretize.hpp
+    Discretize_impl.hpp
 
     ## In/out query
     InOutOctree.hpp
