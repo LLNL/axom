@@ -14,11 +14,11 @@ and Umpire to access accelerators.
 
 .. warning:: 
    You do need to compile with RAJA and Umpire to fully leverage this Axom functionality. 
-   While both submodules will operate without these tools, they will offer little.
+   While both memory management and execution spaces in Axom will operate without these tools, they will offer little.
 
 The memory management submodule offers a singular interface which allows the user to leverage either C++ memory functions or Umpire, 
 depending on the availability of Umpire at compilation. It supports a simple operation set: allocate, deallocate, reallocate, and copy. 
-If Umpire is in use, an allocator can be specified -- see Umpire documentation(make this a link) for more details. Note that the fall-back to
+If Umpire is in use, an allocator can be specified -- see `Umpire documentation <https://readthedocs.org/projects/umpire>`_. for more details. Note that the fall-back to
 C++ memory functions is automatic, so one piece of code can handle standard C++ or C++ with Umpire. However, to use advanced features, such as 
 accessing unified memory, Umpire must be enabled, otherwise errors will occur at compilation.
 
@@ -30,10 +30,10 @@ Here is an example of using Axom’s memory management tools:
    :language: C++
 
 Throughout Axom, acceleration is increasingly supported. Both internally, and to support users, Axom Core offers an 
-interface that, using RAJA and Umpire internally, provides easy access to for-loop level acceleration via the for-all model, 
+interface that, using RAJA and Umpire internally, provides easy access to for-loop level acceleration via the parallel-for idiom, 
 which applies a given lambda function for every index in range.  
 
-Here is an example of Axom in motion with basic sequential execution:
+Here is an Axom example showing sequential execution:
 
 .. literalinclude:: ../../examples/core_acceleration.cpp
    :start-after: _exebasic_start
