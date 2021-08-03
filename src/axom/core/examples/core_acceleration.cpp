@@ -59,10 +59,9 @@ void demoMemoryManageBasic()
     std::cout << i << " Current value: " << dynamic_memory_array[i] << std::endl;
   }
 
-  //Now, a copy operation.
   dyn_array_dst = axom::allocate<int>(len);
-
-  //It's used exactly like memcpy -- destination, soruce, number of bytes.
+  
+  //Now, a copy operation. It's used exactly like memcpy -- destination, source, number of bytes.
   axom::copy(dyn_array_dst, dynamic_memory_array, sizeof(int) * len);
 
   for(int i = 0; i < len; i++)
@@ -72,7 +71,7 @@ void demoMemoryManageBasic()
               << (dynamic_memory_array[i] == dyn_array_dst[i]) << std::endl;
   }
 
-  //Deallocate is exactly like free. Of course, we won't try to access the now-illegal memory after this:
+  //Deallocate is exactly like free. Of course, we won't try to access the now deallocated memory after this:
   axom::deallocate(dyn_array_dst);
 
   //Reallocate is like realloc -- copies existing contents into a larger memory space.
@@ -92,8 +91,8 @@ void demoMemoryManageBasic()
 void demoAxomExecution()
 {
   // _exebasic_start
-  //This part of the code works regardless of Umpire's presence, allowing for generic use of axom::allocate across C and C++
-  //codes.
+  //This part of the code works regardless of Umpire's presence, allowing for generic use of axom::allocate in C++
+  //code.
   int *A = axom::allocate<int>(1000);
   int *B = axom::allocate<int>(1000);
   int *C = axom::allocate<int>(1000);
@@ -106,7 +105,6 @@ void demoAxomExecution()
   }
 
   //Axom provides an API for the most basic usage of RAJA, the for_all loop.
-  //This'll just be a simple reduce.
   axom::for_all<axom::SEQ_EXEC>(
     0,
     1000,
