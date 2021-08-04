@@ -25,35 +25,50 @@ namespace utilities
 std::string getHostName()
 {
   std::string hostName = "";
+
 #ifdef WIN32
   TCHAR infoBuf[INFO_BUFFER_SIZE];
+#else
+  char infoBuf[INFO_BUFFER_SIZE];
+#endif
+
+  infoBuf[INFO_BUFFER_SIZE-1]= '\0';
+
+#ifdef WIN32
   DWORD bufCharCount = INFO_BUFFER_SIZE;
   if(!GetComputerName(infoBuf, &bufCharCount))
   {
     hostName = std::string(infoBuf);
   }
 #else
-  char infoBuf[INFO_BUFFER_SIZE];
   if(gethostname(infoBuf, INFO_BUFFER_SIZE) == 0)
   {
     hostName = std::string(infoBuf);
   }
 #endif
+
   return hostName;
 }
 
 std::string getUserName()
 {
   std::string userName = "";
+
 #ifdef WIN32
   TCHAR infoBuf[INFO_BUFFER_SIZE];
+#else
+  char infoBuf[INFO_BUFFER_SIZE];
+#endif
+
+  infoBuf[INFO_BUFFER_SIZE-1]= '\0';
+
+#ifdef WIN32
   DWORD bufCharCount = INFO_BUFFER_SIZE;
   if(GetUserName(infoBuf, &bufCharCount))
   {
     userName = std::string(infoBuf);
   }
 #else
-  char infoBuf[INFO_BUFFER_SIZE];
   if(getlogin_r(infoBuf, INFO_BUFFER_SIZE) == 0)
   {
     userName = std::string(infoBuf);
@@ -68,6 +83,7 @@ std::string getUserName()
     }
   }
 #endif
+
   return userName;
 }
 
