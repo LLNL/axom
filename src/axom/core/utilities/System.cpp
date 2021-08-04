@@ -11,7 +11,7 @@
 #else
   #include <unistd.h>
   #include <limits.h>
-  #include <pwd>
+  #include <pwd.h>
 #endif
 
 #include <iostream>
