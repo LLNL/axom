@@ -16,16 +16,12 @@ namespace utilities
 /**
  * @brief Returns the name of the machine
  *
- * @todo Remove when moved to Axom
- *
  * @return The name of the current machine, empty string on failure
  */
 std::string getHostName();
 
 /**
  * @brief Returns the name of the current user
- *
- * @todo Remove when moved to Axom
  *
  * @return The name of the current user, empty string on failure
  */
