@@ -32,7 +32,7 @@ std::string getHostName()
   char infoBuf[INFO_BUFFER_SIZE];
 #endif
 
-  infoBuf[INFO_BUFFER_SIZE-1]= '\0';
+  infoBuf[INFO_BUFFER_SIZE - 1] = '\0';
 
 #ifdef WIN32
   DWORD bufCharCount = INFO_BUFFER_SIZE;
@@ -60,7 +60,7 @@ std::string getUserName()
   char infoBuf[INFO_BUFFER_SIZE];
 #endif
 
-  infoBuf[INFO_BUFFER_SIZE-1]= '\0';
+  infoBuf[INFO_BUFFER_SIZE - 1] = '\0';
 
 #ifdef WIN32
   DWORD bufCharCount = INFO_BUFFER_SIZE;
