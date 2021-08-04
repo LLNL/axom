@@ -5,7 +5,6 @@
 
 #include "quest_discretize.hpp"
 
-
 //------------------------------------------------------------------------------
 enum ReflectDimension
 {
@@ -32,7 +31,7 @@ OctType reflect(ReflectDimension d, OctType o)
  * The routine allocates and returns an array of octahedrons pointed to by out.
  * The caller must free that array.
  */
-void discretized_sphere(OctType *& out)
+void discretized_sphere(OctType*& out)
 {
   // We're going to return three generations in the out-vector:
   // one in the first generation, eight in the second (covering each
@@ -41,7 +40,8 @@ void discretized_sphere(OctType *& out)
   constexpr int FIRST_GEN_COUNT = 1;
   constexpr int SECOND_GEN_COUNT = 8;
   constexpr int THIRD_GEN_COUNT = 32;
-  out = axom::allocate<OctType>(FIRST_GEN_COUNT + SECOND_GEN_COUNT + THIRD_GEN_COUNT);
+  out =
+    axom::allocate<OctType>(FIRST_GEN_COUNT + SECOND_GEN_COUNT + THIRD_GEN_COUNT);
 
   // First generation: one octahedron, with vertices on the unit vectors.
   NAType ihat({1., 0., 0.});
@@ -180,7 +180,7 @@ TEST(quest_discretize, sphere_test)
 {
   // The discretized_sphere() routine produces a list of 41 hand-calculated
   // octahedra (three generations) that discretize the unit sphere.
-  OctType * handcut = nullptr;
+  OctType* handcut = nullptr;
   discretized_sphere(handcut);
 
   // The discretize() routine chops up a given sphere into the specified
@@ -189,7 +189,7 @@ TEST(quest_discretize, sphere_test)
   // discretized_sphere().
   SphereType sph;  // Unit sphere at the origin
   constexpr int generations = 3;
-  OctType * generated = nullptr;
+  OctType* generated = nullptr;
   int octcount = 0;
   axom::quest::discretize(sph, generations, generated, octcount);
 
@@ -224,7 +224,7 @@ TEST(quest_discretize, sphere_test)
 TEST(quest_discretize, degenerate_sphere_test)
 {
   constexpr int generations = 3;
-  OctType * generated = nullptr;
+  OctType* generated = nullptr;
   int octcount = 0;
 
   {
@@ -268,27 +268,27 @@ TEST(quest_discretize, degenerate_segment_test)
   SLIC_INFO("Discretizing with CUDA");
   {
     SCOPED_TRACE("32-wide CUDA execution");
-    run_degen_segment_tests<axom::CUDA_EXEC<32> >();
+    run_degen_segment_tests<axom::CUDA_EXEC<32>>();
   }
 
   {
     SCOPED_TRACE("64-wide CUDA execution");
-    run_degen_segment_tests<axom::CUDA_EXEC<64> >();
+    run_degen_segment_tests<axom::CUDA_EXEC<64>>();
   }
 
   {
     SCOPED_TRACE("128-wide CUDA execution");
-    run_degen_segment_tests<axom::CUDA_EXEC<128> >();
+    run_degen_segment_tests<axom::CUDA_EXEC<128>>();
   }
 
   {
     SCOPED_TRACE("256-wide CUDA execution");
-    run_degen_segment_tests<axom::CUDA_EXEC<256> >();
+    run_degen_segment_tests<axom::CUDA_EXEC<256>>();
   }
 
   {
     SCOPED_TRACE("512-wide CUDA execution");
-    run_degen_segment_tests<axom::CUDA_EXEC<512> >();
+    run_degen_segment_tests<axom::CUDA_EXEC<512>>();
   }
 #endif
 }
@@ -315,27 +315,27 @@ TEST(quest_discretize, segment_test)
   SLIC_INFO("Discretizing with CUDA");
   {
     SCOPED_TRACE("32-wide CUDA execution");
-    run_single_segment_tests<axom::CUDA_EXEC<32> >();
+    run_single_segment_tests<axom::CUDA_EXEC<32>>();
   }
 
   {
     SCOPED_TRACE("64-wide CUDA execution");
-    run_single_segment_tests<axom::CUDA_EXEC<64> >();
+    run_single_segment_tests<axom::CUDA_EXEC<64>>();
   }
 
   {
     SCOPED_TRACE("128-wide CUDA execution");
-    run_single_segment_tests<axom::CUDA_EXEC<128> >();
+    run_single_segment_tests<axom::CUDA_EXEC<128>>();
   }
 
   {
     SCOPED_TRACE("256-wide CUDA execution");
-    run_single_segment_tests<axom::CUDA_EXEC<256> >();
+    run_single_segment_tests<axom::CUDA_EXEC<256>>();
   }
 
   {
     SCOPED_TRACE("512-wide CUDA execution");
-    run_single_segment_tests<axom::CUDA_EXEC<512> >();
+    run_single_segment_tests<axom::CUDA_EXEC<512>>();
   }
 #endif
 }
@@ -362,27 +362,27 @@ TEST(quest_discretize, multi_segment_test)
   SLIC_INFO("Discretizing with CUDA");
   {
     SCOPED_TRACE("32-wide CUDA execution");
-    run_multi_segment_tests<axom::CUDA_EXEC<32> >();
+    run_multi_segment_tests<axom::CUDA_EXEC<32>>();
   }
 
   {
     SCOPED_TRACE("64-wide CUDA execution");
-    run_multi_segment_tests<axom::CUDA_EXEC<64> >();
+    run_multi_segment_tests<axom::CUDA_EXEC<64>>();
   }
 
   {
     SCOPED_TRACE("128-wide CUDA execution");
-    run_multi_segment_tests<axom::CUDA_EXEC<128> >();
+    run_multi_segment_tests<axom::CUDA_EXEC<128>>();
   }
 
   {
     SCOPED_TRACE("256-wide CUDA execution");
-    run_multi_segment_tests<axom::CUDA_EXEC<256> >();
+    run_multi_segment_tests<axom::CUDA_EXEC<256>>();
   }
 
   {
     SCOPED_TRACE("512-wide CUDA execution");
-    run_multi_segment_tests<axom::CUDA_EXEC<512> >();
+    run_multi_segment_tests<axom::CUDA_EXEC<512>>();
   }
 #endif
 }

@@ -39,7 +39,7 @@ using Point2D = primal::Point<double, 2>;
  * This routine allocates an array pointed to by \a out.  The caller is responsible
  * to free the array.
  */
-bool discretize(const SphereType& s, int levels, OctType *& out, int & octcount);
+bool discretize(const SphereType& s, int levels, OctType*& out, int& octcount);
 
 /*!
  * \brief Given a 2D polyline revolved around the positive X-axis, allocate
@@ -59,12 +59,12 @@ bool discretize(const SphereType& s, int levels, OctType *& out, int & octcount)
  * This routine allocates an array pointed to by \a out.  The caller is responsible
  * to free the array.
  */
-template<typename ExecSpace>
-bool discretize(Point2D *& polyline,
+template <typename ExecSpace>
+bool discretize(Point2D*& polyline,
                 int len,
                 int levels,
-                OctType *& out,
-                int & octcount);
+                OctType*& out,
+                int& octcount);
 
 /// @}
 

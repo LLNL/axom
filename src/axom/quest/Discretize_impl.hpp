@@ -26,7 +26,6 @@ using Point2D = axom::quest::Point2D;
 using Point3D = axom::primal::Point<double, 3>;
 using NAType = axom::primal::NumericArray<double, 3>;
 
-
 /* Return an octahedron whose six points lie on the truncated cone
  * described by rotating the line segment ab around the positive X-axis
  * in a right-handed way (thumb points out the axis, fingers spin segment
@@ -74,7 +73,10 @@ int count_segment_prisms(int levels)
     }
     octcount += 1;
   }
-  if (levels < 0) { octcount = 0; }
+  if(levels < 0)
+  {
+    octcount = 0;
+  }
 
   return octcount;
 }
@@ -146,12 +148,8 @@ OctType new_inscribed_prism(OctType &old_oct,
  * Each subsequent level of refinement adds a prism to each exposed
  * quadrilateral side-wall.
  */
-template<typename ExecSpace>
-int discrSeg(const Point2D &a,
-             const Point2D &b,
-             int levels,
-             OctType *& out,
-             int idx)
+template <typename ExecSpace>
+int discrSeg(const Point2D &a, const Point2D &b, int levels, OctType *&out, int idx)
 {
   // Assert input assumptions
   SLIC_ASSERT(b[0] - a[0] >= 0);
@@ -183,7 +181,7 @@ int discrSeg(const Point2D &a,
   Point2D pa, pb;
 
   // Refine: add an octahedron to each exposed face.
-  for (int level = 0; level < levels; ++level)
+  for(int level = 0; level < levels; ++level)
   {
     // Each level of refinement generates a prism for each exposed
     // face, so twice the prisms in the preceding level.  Refining the
@@ -216,10 +214,9 @@ int discrSeg(const Point2D &a,
     // level cap RTP, and vice versa.  Hence the preceding if-statement
     // with comment "the ends switch each level."
     axom::for_all<ExecSpace>(
-    //axom::for_all<axom::SEQ_EXEC>(
+      //axom::for_all<axom::SEQ_EXEC>(
       curr_lvl_count,
-      AXOM_LAMBDA(axom::IndexType i)
-      {
+      AXOM_LAMBDA(axom::IndexType i) {
         out[next_lvl + i * lvl_factor + 0] =
           new_inscribed_prism(out[curr_lvl + i], Q, T, S, R, pa, pb);
         out[next_lvl + i * lvl_factor + 1] =
@@ -241,7 +238,6 @@ int discrSeg(const Point2D &a,
 
 }  // end anonymous namespace
 
-
 namespace axom
 {
 namespace quest
@@ -259,12 +255,12 @@ namespace quest
  * This routine allocates an array pointed to by \a out.  The caller is responsible
  * to free the array.
  */
-template<typename ExecSpace>
-bool discretize(Point2D *& polyline,
+template <typename ExecSpace>
+bool discretize(Point2D *&polyline,
                 int pointcount,
                 int levels,
-                OctType *& out,
-                int & octcount)
+                OctType *&out,
+                int &octcount)
 {
   // Check for invalid input.  If any segment is invalid, exit returning false.
   bool stillValid = true;
@@ -310,6 +306,4 @@ bool discretize(Point2D *& polyline,
 }  // end namespace quest
 }  // end namespace axom
 
-
 #endif /* QUEST_DISCRETIZE_INL_ */
-

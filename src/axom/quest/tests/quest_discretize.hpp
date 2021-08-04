@@ -21,12 +21,11 @@ using NAType = axom::primal::NumericArray<double, 3>;
 // gtest includes
 #include "gtest/gtest.h"
 
-
 #include <vector>
 
 //------------------------------------------------------------------------------
-bool check_generation(OctType *& standard,
-                      OctType *& test,
+bool check_generation(OctType*& standard,
+                      OctType*& test,
                       int generation,
                       int offset,
                       int count)
@@ -78,13 +77,12 @@ bool check_generation(OctType *& standard,
   return matches;
 }
 
-
 /* Return a handwritten list of the octahedra discretizing a one-segment polyline.
  *
  * The routine allocates and returns an array of octahedrons pointed to by out.
  * The caller must free that array.
  */
-void discretized_segment(Point2D a, Point2D b, OctType *& out)
+void discretized_segment(Point2D a, Point2D b, OctType*& out)
 {
   // We're going to return three generations in the out-vector:
   // one in the first generation, three in the second (covering each of the
@@ -99,7 +97,8 @@ void discretized_segment(Point2D a, Point2D b, OctType *& out)
   constexpr int FIRST_GEN_COUNT = 1;
   constexpr int SECOND_GEN_COUNT = 3;
   constexpr int THIRD_GEN_COUNT = 6;
-  out = axom::allocate<OctType>(FIRST_GEN_COUNT + SECOND_GEN_COUNT + THIRD_GEN_COUNT);
+  out =
+    axom::allocate<OctType>(FIRST_GEN_COUNT + SECOND_GEN_COUNT + THIRD_GEN_COUNT);
 
   // The first generation puts a triangle in the end-discs of the truncated
   // cones with vertices at 12, 4, and 8 o'clock.
@@ -166,23 +165,27 @@ void discretized_segment(Point2D a, Point2D b, OctType *& out)
   out[9] = OctType(Xa, XIb, XIa, XIIb, XIIa, Xb);
 }
 
-
-template<typename ExecPolicy>
-void degenerate_segment_test(const char * label, Point2D * polyline, int len, bool expsuccess)
+template <typename ExecPolicy>
+void degenerate_segment_test(const char* label,
+                             Point2D* polyline,
+                             int len,
+                             bool expsuccess)
 {
   constexpr int gens = 3;
   int octcount = 0;
 
   SCOPED_TRACE(label);
 
-  OctType * generated = nullptr;
-  if (expsuccess)
+  OctType* generated = nullptr;
+  if(expsuccess)
   {
-     EXPECT_TRUE(axom::quest::discretize<ExecPolicy>(polyline, len, gens, generated, octcount));
+    EXPECT_TRUE(
+      axom::quest::discretize<ExecPolicy>(polyline, len, gens, generated, octcount));
   }
   else
   {
-     EXPECT_FALSE(axom::quest::discretize<ExecPolicy>(polyline, len, gens, generated, octcount));
+    EXPECT_FALSE(
+      axom::quest::discretize<ExecPolicy>(polyline, len, gens, generated, octcount));
   }
   EXPECT_EQ(0, octcount);
 
@@ -190,14 +193,14 @@ void degenerate_segment_test(const char * label, Point2D * polyline, int len, bo
 }
 
 //------------------------------------------------------------------------------
-template<typename ExecPolicy>
+template <typename ExecPolicy>
 void run_degen_segment_tests()
 {
   // Test each of the three generations.
   // We don't know what order they'll be in, but we do know how many octahedra
   // will be in each generation.
 
-  Point2D * polyline = axom::allocate<Point2D>(2);
+  Point2D* polyline = axom::allocate<Point2D>(2);
 
   polyline[0] = {0., 0.};
   polyline[1] = {0., 0.};
@@ -210,7 +213,7 @@ void run_degen_segment_tests()
   polyline[0] = {1., -0.1};
   polyline[1] = {1.5, 1.};
   degenerate_segment_test<ExecPolicy>("a.y < 0", polyline, 2, false);
-  
+
   polyline[0] = {1., -0.1};
   polyline[1] = {1.5, 1.};
   degenerate_segment_test<ExecPolicy>("a.y < 0", polyline, 2, false);
@@ -226,8 +229,8 @@ void run_degen_segment_tests()
   axom::deallocate(polyline);
 }
 
-template<typename ExecPolicy>
-void one_segment_test(const char * label, Point2D * polyline, int len)
+template <typename ExecPolicy>
+void one_segment_test(const char* label, Point2D* polyline, int len)
 {
   SCOPED_TRACE(label);
 
@@ -246,12 +249,16 @@ void one_segment_test(const char * label, Point2D * polyline, int len)
   // octahedra (three generations) that discretize the surface of revolution
   // (SoR) produced by revolving a one-segment polyline around the positive
   // X-axis.
-  OctType * handcut = nullptr;
+  OctType* handcut = nullptr;
   discretized_segment(polyline[0], polyline[1], handcut);
 
-  OctType * generated = nullptr;
+  OctType* generated = nullptr;
   int octcount = 0;
-  axom::quest::discretize<ExecPolicy>(polyline, len, generations, generated, octcount);
+  axom::quest::discretize<ExecPolicy>(polyline,
+                                      len,
+                                      generations,
+                                      generated,
+                                      octcount);
 
   EXPECT_TRUE(
     check_generation(handcut, generated, generation, 0, FIRST_GEN_COUNT));
@@ -272,10 +279,10 @@ void one_segment_test(const char * label, Point2D * polyline, int len)
 }
 
 //------------------------------------------------------------------------------
-template<typename ExecPolicy>
+template <typename ExecPolicy>
 void run_single_segment_tests()
 {
-  Point2D * polyline = axom::allocate<Point2D>(2);
+  Point2D* polyline = axom::allocate<Point2D>(2);
 
   polyline[0] = Point2D {0.5, 0.};
   polyline[1] = Point2D {1.8, 0.8};
@@ -300,8 +307,8 @@ void run_single_segment_tests()
   axom::deallocate(polyline);
 }
 
-template<typename ExecPolicy>
-void multi_segment_test(const char * label, Point2D * polyline, int len)
+template <typename ExecPolicy>
+void multi_segment_test(const char* label, Point2D* polyline, int len)
 {
   SCOPED_TRACE(label);
 
@@ -313,47 +320,53 @@ void multi_segment_test(const char * label, Point2D * polyline, int len)
   constexpr int FIRST_GEN_COUNT = 1;
   constexpr int SECOND_GEN_COUNT = 3;
   constexpr int THIRD_GEN_COUNT = 6;
-  constexpr int TOTAL_COUNT = FIRST_GEN_COUNT + SECOND_GEN_COUNT + THIRD_GEN_COUNT;
+  constexpr int TOTAL_COUNT =
+    FIRST_GEN_COUNT + SECOND_GEN_COUNT + THIRD_GEN_COUNT;
 
   int generation = 0;
 
-  OctType * generated = nullptr;
+  OctType* generated = nullptr;
   int octcount = 0;
-  axom::quest::discretize<ExecPolicy>(polyline, len, generations, generated, octcount);
+  axom::quest::discretize<ExecPolicy>(polyline,
+                                      len,
+                                      generations,
+                                      generated,
+                                      octcount);
 
-  int segcount = len-1;
-  OctType * handcut = new OctType[segcount * TOTAL_COUNT];
+  int segcount = len - 1;
+  OctType* handcut = new OctType[segcount * TOTAL_COUNT];
 
-  for (int segidx = 0; segidx < segcount; ++segidx)
+  for(int segidx = 0; segidx < segcount; ++segidx)
   {
-     std::stringstream seglabel;
-     seglabel << "Segment " << segidx;
-     SCOPED_TRACE(seglabel.str());
+    std::stringstream seglabel;
+    seglabel << "Segment " << segidx;
+    SCOPED_TRACE(seglabel.str());
 
-     // The discretized_segment() routine produces a list of 10 hand-calculated
-     // octahedra (three generations) that discretize the surface of revolution
-     // (SoR) produced by revolving a one-segment polyline around the positive
-     // X-axis.
-     OctType * octpointer = &handcut[segidx * TOTAL_COUNT];
-     discretized_segment(polyline[segidx], polyline[segidx + 1], octpointer);
+    // The discretized_segment() routine produces a list of 10 hand-calculated
+    // octahedra (three generations) that discretize the surface of revolution
+    // (SoR) produced by revolving a one-segment polyline around the positive
+    // X-axis.
+    OctType* octpointer = &handcut[segidx * TOTAL_COUNT];
+    discretized_segment(polyline[segidx], polyline[segidx + 1], octpointer);
 
-     EXPECT_TRUE(check_generation(octpointer,
-                                  generated,
-                                  generation,
-                                  segidx*TOTAL_COUNT + 0,
-                                  FIRST_GEN_COUNT));
-     generation += 1;
-     EXPECT_TRUE(check_generation(octpointer,
-                                  generated,
-                                  generation,
-                                  segidx*TOTAL_COUNT + FIRST_GEN_COUNT,
-                                  SECOND_GEN_COUNT));
-     generation += 1;
-     EXPECT_TRUE(check_generation(octpointer,
-                                  generated,
-                                  generation,
-                                  segidx*TOTAL_COUNT + FIRST_GEN_COUNT + SECOND_GEN_COUNT,
-                                  THIRD_GEN_COUNT));
+    EXPECT_TRUE(check_generation(octpointer,
+                                 generated,
+                                 generation,
+                                 segidx * TOTAL_COUNT + 0,
+                                 FIRST_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(octpointer,
+                                 generated,
+                                 generation,
+                                 segidx * TOTAL_COUNT + FIRST_GEN_COUNT,
+                                 SECOND_GEN_COUNT));
+    generation += 1;
+    EXPECT_TRUE(check_generation(
+      octpointer,
+      generated,
+      generation,
+      segidx * TOTAL_COUNT + FIRST_GEN_COUNT + SECOND_GEN_COUNT,
+      THIRD_GEN_COUNT));
   }
 
   axom::deallocate(handcut);
@@ -361,11 +374,11 @@ void multi_segment_test(const char * label, Point2D * polyline, int len)
 }
 
 //------------------------------------------------------------------------------
-template<typename ExecPolicy>
+template <typename ExecPolicy>
 void run_multi_segment_tests()
 {
   constexpr int pointcount = 5;
-  Point2D * polyline = axom::allocate<Point2D>(pointcount);
+  Point2D* polyline = axom::allocate<Point2D>(pointcount);
 
   polyline[0] = Point2D {1.0, 0.5};
   polyline[1] = Point2D {1.6, 0.3};
@@ -377,5 +390,4 @@ void run_multi_segment_tests()
   axom::deallocate(polyline);
 }
 
-
-#endif  /* QUEST_DISCRETIZE_TEST_HPP_ */
+#endif /* QUEST_DISCRETIZE_TEST_HPP_ */

@@ -16,7 +16,6 @@ namespace axom
 {
 namespace quest
 {
-
 /* ------------------------------------------------------------ */
 /* Project a Point onto a sphere.
  */
@@ -109,7 +108,7 @@ OctType new_inscribed_oct(const SphereType &sphere, OctType &o, int s, int t, in
  * This routine allocates an array pointed to by \a out.  The caller is responsible
  * to free the array.
  */
-bool discretize(const SphereType &sphere, int levels, OctType *& out, int & octcount)
+bool discretize(const SphereType &sphere, int levels, OctType *&out, int &octcount)
 {
   // Check input.  Negative radius: return false.
   if(sphere.getRadius() < 0)
