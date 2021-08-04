@@ -20,9 +20,7 @@ namespace axom
 {
 namespace utilities
 {
-#ifdef WIN32
-  #define INFO_BUFFER_SIZE 32767
-#endif
+#define INFO_BUFFER_SIZE 32767
 
 std::string getHostName()
 {
@@ -57,8 +55,8 @@ std::string getUserName()
     userName = std::string(infoBuf);
   }
 #else
-  char infoBuf[LOGIN_NAME_MAX];
-  if(getlogin_r(infoBuf, LOGIN_NAME_MAX) == 0)
+  char infoBuf[INFO_BUFFER_SIZE];
+  if(getlogin_r(infoBuf, INFO_BUFFER_SIZE) == 0)
   {
     userName = std::string(infoBuf);
   }
