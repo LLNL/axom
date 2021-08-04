@@ -198,7 +198,6 @@ AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
                                          const double eps,
                                          unsigned int& out_clipped)
 {
-  using PointType = Point<T, NDIMS>;
   using SegmentType = Segment<T, NDIMS>;
 
   // Loop over Polyhedron vertices
@@ -238,7 +237,7 @@ AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
           // Update current vertex's & neighbor's neighbors with the
           // new vertex
           poly.getNeighbors(i)[j] = newVertexIndex;
-          for(unsigned int k = 0; k < poly.getNumNeighbors(neighborIndex); k++)
+          for(int k = 0; k < poly.getNumNeighbors(neighborIndex); k++)
           {
             if(poly.getNeighbors(neighborIndex)[k] == i)
             {
@@ -269,7 +268,7 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
 
     if(vIndex >= oldVerts || vOrientation == ON_BOUNDARY)
     {
-      for(unsigned int j = 0; j < poly_nbrs.getNumNeighbors(vIndex); j++)
+      for(int j = 0; j < poly_nbrs.getNumNeighbors(vIndex); j++)
       {
         int neighborIndex = poly_nbrs[vIndex][j];
         int neighborOrientation = plane.getOrientation(poly[neighborIndex], eps);

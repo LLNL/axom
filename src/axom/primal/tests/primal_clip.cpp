@@ -289,7 +289,7 @@ void unit_check_poly_clip()
   axom::for_all<ExecPolicy>(
     0,
     1,
-    AXOM_LAMBDA(int idx) {
+    AXOM_LAMBDA(int /* idx */) {
       axom::primal::detail::poly_clip_vertices(out_square[0],
                                                plane,
                                                EPS,
