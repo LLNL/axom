@@ -64,7 +64,7 @@ std::string getUserName()
   {
     // fallback on getpwuid if getlogin_r fails
     struct passwd *pwd = getpwuid(getuid());
-    if (pwd)
+    if(pwd)
     {
       userName = std::string(pwd->pw_name);
     }
