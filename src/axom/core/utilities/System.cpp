@@ -20,7 +20,9 @@ namespace axom
 {
 namespace utilities
 {
-#define INFO_BUFFER_SIZE 32767
+#ifdef WIN32
+  #define INFO_BUFFER_SIZE 32767
+#endif
 
 std::string getHostName()
 {
