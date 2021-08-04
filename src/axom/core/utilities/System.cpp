@@ -55,7 +55,12 @@ std::string getUserName()
   char infoBuf[LOGIN_NAME_MAX];
   if(getlogin_r(infoBuf, LOGIN_NAME_MAX) == 0)
   {
+    SLIC_INFO("~~~ getlogin_r succeeded!")
     userName = std::string(infoBuf);
+  }
+  else
+  {
+    SLIC_INFO("~~~ getlogin_r failed!")
   }
 #endif
   return userName;
