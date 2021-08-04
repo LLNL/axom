@@ -11,6 +11,7 @@
 #else
   #include <unistd.h>
   #include <limits.h>
+  #include <pwd>
 #endif
 
 #include <iostream>
@@ -62,7 +63,13 @@ std::string getUserName()
   }
   else
   {
+    // fallback on getpwuid if getlogin_r fails
     std::cout << "~~~ getlogin_r failed!" << std::endl;
+    struct passwd *pwd = getpwuid(getuid());
+    if (pwd)
+    {
+      userName = std::string(pwd->pw_name);
+    }
   }
 #endif
   return userName;
