@@ -856,13 +856,23 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   DataCollection::DeleteAll();
   // Reset DataStore?
 
+  int numInputRanks = 1;
+  int numCommRanks = 1;
+
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   if(m_comm != MPI_COMM_NULL)
   {
-    IOManager reader(m_comm);
     // The conduit abstraction appears to automatically handle the ".root"
     // suffix, but the IOManager does not, so it gets added here
-    reader.read(m_bp_grp->getDataStore()->getRoot(), path + ".root");
+    using axom::utilities::string::endsWith;
+    std::string suffixedPath = endsWith(path, ".root") ? path : path + ".root";
+
+    IOManager reader(m_comm);
+    reader.read(m_bp_grp->getDataStore()->getRoot(), suffixedPath);
+
+    // Get some data in support of error checks below
+    numInputRanks = reader.getNumGroupsFromRoot(suffixedPath);
+    MPI_Comm_size(m_comm, &numCommRanks);
   }
   else
   #endif
@@ -874,20 +884,36 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   // the domain and global groups are, and can restore them after the Load().
   //
   // If the data collection did not create the datastore, the host code must
-  // reset these pointers after the load operation and also reset the state
-  // variables.
+  // reset these pointers after the load operation and also reset the state variables.
   if(m_owns_datastore)
   {
     // Use the same path format as was used to create the datastore
     SetGroupPointers(m_datastore_ptr->getRoot()->getGroup(
                        name + "_global/blueprint_index/" + name),
                      m_datastore_ptr->getRoot()->getGroup(name));
-    SLIC_ERROR_IF(m_bp_grp->getNumGroups() == 0,
-                  "Loaded datastore is empty, was the datastore created on a "
-                  "different number of nodes?");
+    SLIC_ERROR_IF(
+      m_bp_grp->getNumGroups() == 0,
+      fmt::format("Loaded datastore is empty, was the datastore created on a "
+                  "different number of ranks? Current run has {} ranks, but "
+                  "dataset was created using {} ranks",
+                  numCommRanks,
+                  numInputRanks));
 
     UpdateStateFromDS();
     UpdateMeshAndFieldsFromDS();
+  }
+
+  // Set the mesh nodal grid function when present
+  const std::string gfPath =
+    fmt::format("topologies/{}/grid_function", s_mesh_topology_name);
+  if(GetBPGroup()->hasView(gfPath))
+  {
+    const std::string nodalGFName = GetBPGroup()->getView(gfPath)->getString();
+    if(this->HasField(nodalGFName))
+    {
+      this->SetMeshNodesName(nodalGFName);
+      mesh->NewNodes(*this->GetField(nodalGFName), false);
+    }
   }
 }
 

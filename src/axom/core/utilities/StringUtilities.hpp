@@ -64,6 +64,21 @@ inline bool startsWith(const std::string& str, const char prefix)
 }
 
 /*!
+ * \brief Removes \a suffix from the end of \a str, if present
+ * \param [in] str string to be searched
+ * \param [in] suffix string to check for
+ * \return     String with (one copy of) \a suffix removed from end, if it was present  
+ */
+inline std::string removeSuffix(const std::string& str, const std::string& suffix)
+{
+  if(!suffix.empty() && endsWith(str, suffix))
+  {
+    return str.substr(0, str.size() - suffix.size());
+  }
+  return str;
+}
+
+/*!
  * \brief Splits the given string based on the given delimiter
  * \param [out] tokens    vector that the found tokens are appended to
  * \param [in]  str       string to be tokenized
