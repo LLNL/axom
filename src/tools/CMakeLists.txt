@@ -91,6 +91,12 @@ if( AXOM_ENABLE_SIDRE AND MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION )
         DEPENDS_ON  ${data_collection_util_depends}
         FOLDER      axom/examples
         )
+
+    axom_add_test(
+      NAME    data_collection_util_box2D
+      COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
+      )
+
     install(TARGETS              data_collection_util
             DESTINATION          bin
             )
