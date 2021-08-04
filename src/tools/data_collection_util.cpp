@@ -64,6 +64,7 @@ private:
 
   /**
    * Fixes up parameters associated with a box mesh based on user-provided input
+   * \throws CLI::ValidationError if the options are invalid or insufficient
    */
   void fixBoxParams()
   {
@@ -74,8 +75,10 @@ private:
     // First check: we need at least one of: dimension, mins/maxs, resolution
     if(!(dimProvided || rangeProvided || resProvided))
     {
-      throw "Box mesh must have at least one of: dimension, mins and maxs or "
-        "resolution to determine the dimension";
+      throw CLI::ValidationError(
+        "box",
+        "Box mesh must have at least one of: dimension, mins and maxs or "
+        "resolution to determine the dimension");
     }
 
     int szMins = boxMins.size();
@@ -85,32 +88,42 @@ private:
     // Error checking on provided dimension
     if(dimProvided)
     {
-      if(boxDim < 1 || boxDim > 3)
+      if(boxDim <= 1 || boxDim > 3)
       {
-        throw "Dimension cannot exceed 3";
+        throw CLI::ValidationError(
+          "box",
+          fmt::format("Invalid dimension: {}. Only 2D and 3D supported", boxDim));
       }
 
       // Ensure that range and resolution have the right number of entries
       if(rangeProvided && (szMins != boxDim || szMaxs != boxDim))
       {
-        throw "Bounding box has different dimension than provided dimension";
+        throw CLI::ValidationError(
+          "box",
+          "Bounding box has different dimension than provided dimension");
       }
       if(resProvided && (szRes != boxDim))
       {
-        throw "Box resolution has different dimension than provided dimension";
+        throw CLI::ValidationError(
+          "box",
+          "Box resolution has different dimension than provided dimension");
       }
     }
 
     // Error checking on provided range; note: accounts for previous checks on dim
     if(rangeProvided && (szMins != szMaxs))
     {
-      throw "Bounding box mins and maxs has different dimensions";
+      throw CLI::ValidationError(
+        "box",
+        "Bounding box mins and maxs has different dimensions");
     }
 
     // Error checking on provided range and resolution; note: accounts for previous checks on dim and range
     if(rangeProvided && resProvided && (szMins != szRes))
     {
-      throw "Bounding box mins and maxs has different dimensions than resolution";
+      throw CLI::ValidationError(
+        "box",
+        "Bounding box mins and maxs has different dimensions than resolution");
     }
 
     // Now that we've checked errors, let's fill in missing data
@@ -230,7 +243,9 @@ public:
     {
       if(mfemFile.empty())
       {
-        throw "'mfemFile' required when `--mesh-form == File`";
+        throw CLI::ValidationError(
+          "file",
+          "'mfemFile' required when `--mesh-form == File`");
       }
 
       if(dcName.empty())
