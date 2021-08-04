@@ -13,11 +13,15 @@
 TEST(utils_system, getUserName)
 {
   // Returns empty string on failure
-  EXPECT_TRUE(axom::utilities::getUserName() != "");
+  std::string user_name = axom::utilities::getUserName();
+  std::cout << "user name = " << user_name << std::endl;
+  EXPECT_TRUE(user_name != "");
 }
 
 TEST(utils_system, getHostName)
 {
   // Returns empty string on failure
-  EXPECT_TRUE(axom::utilities::getHostName() != "");
+  std::string host_name = axom::utilities::getHostName();
+  std::cout << "host name = " << host_name << std::endl;
+  EXPECT_TRUE(host_name != "");
 }

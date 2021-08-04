@@ -58,13 +58,11 @@ std::string getUserName()
   char infoBuf[LOGIN_NAME_MAX];
   if(getlogin_r(infoBuf, LOGIN_NAME_MAX) == 0)
   {
-    std::cout << "~~~ getlogin_r succeeded!" << std::endl;
     userName = std::string(infoBuf);
   }
   else
   {
     // fallback on getpwuid if getlogin_r fails
-    std::cout << "~~~ getlogin_r failed!" << std::endl;
     struct passwd *pwd = getpwuid(getuid());
     if (pwd)
     {
