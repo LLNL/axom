@@ -13,6 +13,8 @@
   #include <limits.h>
 #endif
 
+#include <iostream>
+
 namespace axom
 {
 namespace utilities
@@ -55,12 +57,12 @@ std::string getUserName()
   char infoBuf[LOGIN_NAME_MAX];
   if(getlogin_r(infoBuf, LOGIN_NAME_MAX) == 0)
   {
-    SLIC_INFO("~~~ getlogin_r succeeded!")
+    std::cout << "~~~ getlogin_r succeeded!" << std::endl;
     userName = std::string(infoBuf);
   }
   else
   {
-    SLIC_INFO("~~~ getlogin_r failed!")
+    std::cout << "~~~ getlogin_r failed!" << std::endl;
   }
 #endif
   return userName;
