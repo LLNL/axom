@@ -161,6 +161,7 @@ public:
 
   void parse(int argc, char** argv, CLI::App& app)
   {
+    // Options that are always available
     app.add_option("-o, --output-name", dcName)
       ->description(
         "Name of the output mesh. Defaults to box{2,3}d for box meshes, and "
@@ -185,40 +186,44 @@ public:
       ->transform(CLI::CheckedTransformer(meshFormMap, CLI::ignore_case));
 
     // Parameters for the box mesh option
-    auto* minbb = app.add_option("--min", boxMins)
+    auto* box_options =
+      app.add_option_group("box", "Options for setting up a box mesh");
+    auto* minbb = box_options->add_option("--min", boxMins)
                     ->description("Min bounds for box mesh (x,y[,z])")
                     ->expected(2, 3);
-    auto* maxbb = app.add_option("--max", boxMaxs)
+    auto* maxbb = box_options->add_option("--max", boxMaxs)
                     ->description("Max bounds for box mesh (x,y[,z])")
                     ->expected(2, 3);
     minbb->needs(maxbb);
     maxbb->needs(minbb);
 
-    app.add_option("--res", boxResolution)
+    box_options->add_option("--res", boxResolution)
       ->description("Resolution of the box mesh (i,j[,k])")
       ->expected(2, 3);
 
-    app.add_option("-d,--dimension", boxDim)
+    box_options->add_option("-d,--dimension", boxDim)
       ->description("Dimension of the box mesh")
-      ->capture_default_str()
       ->check(CLI::PositiveNumber);
 
-    app.add_option("-p,--polynomial-order", polynomialOrder)
+    box_options->add_option("-p,--polynomial-order", polynomialOrder)
       ->description("polynomial order of the generated mesh")
       ->capture_default_str()
       ->check(CLI::NonNegativeNumber);
 
     // Parameters for the 'file' option
-    app.add_option("-m, --mfem-file", mfemFile)
+    auto* file_options =
+      app.add_option_group("file", "Options for loading from an mfem mesh file");
+
+    file_options->add_option("-m, --mfem-file", mfemFile)
       ->description("Path to a mesh file in the mfem format")
       ->check(CLI::ExistingFile);
 
-    app.add_option("--scale", fileScale)
+    file_options->add_option("--scale", fileScale)
       ->description(
         "Scale factors for the file mesh. Can either be one value or "
         "mesh.Dimension() values")
       ->expected(1, 3);
-    app.add_option("--translate", fileTranslate)
+    file_options->add_option("--translate", fileTranslate)
       ->description("Translation for the file mesh (sx,sy[,sz])")
       ->expected(2, 3);
 
