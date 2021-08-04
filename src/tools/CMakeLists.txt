@@ -19,7 +19,7 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
     set(datastore_converter_sources
         convert_sidre_protocol.cpp
     )
-    set(datastore_converter_depends 
+    set(datastore_converter_depends
         axom
         mpi
         cli11
@@ -45,7 +45,7 @@ endif()
 set(mesh_tester_sources
     mesh_tester.cpp
 )
-set(mesh_tester_depends 
+set(mesh_tester_depends
     axom
     )
 
@@ -72,7 +72,7 @@ endif()
 # data_collection_util is a utility that generates blueprint-conforming sidre
 # output files from an input mfem mesh
 #------------------------------------------------------------------------------
-if( AXOM_ENABLE_SIDRE AND HDF5_FOUND AND MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION )
+if( AXOM_ENABLE_SIDRE AND MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION )
 
     set(data_collection_util
         data_collection_util.cpp
