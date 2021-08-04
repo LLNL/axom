@@ -12,7 +12,6 @@ namespace axom
 {
 namespace utilities
 {
-
 /**
  * @brief Returns the name of the machine
  *
@@ -26,8 +25,6 @@ std::string getHostName();
  * @return The name of the current user, empty string on failure
  */
 std::string getUserName();
-
-
 
 }  // end namespace utilities
 }  // end namespace axom

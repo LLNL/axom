@@ -6,18 +6,17 @@
 #include "axom/core/utilities/System.hpp"
 
 #ifdef WIN32
-#include <windows.h>
-#include <tchar.h>
+  #include <windows.h>
+  #include <tchar.h>
 #else
-#include <unistd.h>
-#include <limits.h>
+  #include <unistd.h>
+  #include <limits.h>
 #endif
 
 namespace axom
 {
 namespace utilities
 {
-
 #define INFO_BUFFER_SIZE 32767
 
 std::string getHostName()
@@ -26,13 +25,15 @@ std::string getHostName()
 #ifdef WIN32
   TCHAR infoBuf[INFO_BUFFER_SIZE];
   DWORD bufCharCount = INFO_BUFFER_SIZE;
-  bufCharCount       = INFO_BUFFER_SIZE;
-  if (!GetComputerName(infoBuf, &bufCharCount)) {
+  bufCharCount = INFO_BUFFER_SIZE;
+  if(!GetComputerName(infoBuf, &bufCharCount))
+  {
     hostName = std::string(infoBuf);
   }
 #else
   char infoBuf[HOST_NAME_MAX];
-  if (gethostname(infoBuf, HOST_NAME_MAX) == 0) {
+  if(gethostname(infoBuf, HOST_NAME_MAX) == 0)
+  {
     hostName = std::string(infoBuf);
   }
 #endif
@@ -45,13 +46,15 @@ std::string getUserName()
 #ifdef WIN32
   TCHAR infoBuf[INFO_BUFFER_SIZE];
   DWORD bufCharCount = INFO_BUFFER_SIZE;
-  bufCharCount       = INFO_BUFFER_SIZE;
-  if (GetUserName(infoBuf, &bufCharCount)) {
+  bufCharCount = INFO_BUFFER_SIZE;
+  if(GetUserName(infoBuf, &bufCharCount))
+  {
     userName = std::string(infoBuf);
   }
 #else
   char infoBuf[LOGIN_NAME_MAX];
-  if (getlogin_r(infoBuf, LOGIN_NAME_MAX) == 0) {
+  if(getlogin_r(infoBuf, LOGIN_NAME_MAX) == 0)
+  {
     userName = std::string(infoBuf);
   }
 #endif
