@@ -34,8 +34,8 @@ std::string getHostName()
     hostName = std::string(infoBuf);
   }
 #else
-  char infoBuf[HOST_NAME_MAX];
-  if(gethostname(infoBuf, HOST_NAME_MAX) == 0)
+  char infoBuf[INFO_BUFFER_SIZE];
+  if(gethostname(infoBuf, INFO_BUFFER_SIZE) == 0)
   {
     hostName = std::string(infoBuf);
   }
