@@ -903,7 +903,8 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   }
 
   // Set the mesh nodal grid function when present
-  const std::string gfPath = "topologies/mesh/grid_function";
+  const std::string gfPath =
+    fmt::format("topologies/{}/grid_function", s_mesh_topology_name);
   if(GetBPGroup()->hasView(gfPath))
   {
     const std::string nodalGFName = GetBPGroup()->getView(gfPath)->getString();
