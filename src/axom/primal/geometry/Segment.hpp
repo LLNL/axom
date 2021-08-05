@@ -6,6 +6,7 @@
 #ifndef AXOM_PRIMAL_SEGMENT_HPP_
 #define AXOM_PRIMAL_SEGMENT_HPP_
 
+#include "axom/core/Macros.hpp"  // for Axom macros
 #include "axom/slic.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"

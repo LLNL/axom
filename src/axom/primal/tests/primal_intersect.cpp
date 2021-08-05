@@ -10,6 +10,9 @@
 #include "axom/config.hpp"
 #include "axom/slic/interface/slic.hpp"
 
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/memory_management.hpp"
+
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -2189,9 +2192,9 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
 TEST(primal_intersect, plane_bb_test_intersection)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Plane<double, DIM> PlaneType;
-  typedef primal::BoundingBox<double, DIM> BoundingBoxType;
+  using PointType = primal::Point<double, DIM>;
+  using PlaneType = primal::Plane<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
 
   // Bounding Box containing (0,0,0) and (1,1,1)
   BoundingBoxType unitBB(PointType::zero(), PointType::ones());
@@ -2238,9 +2241,9 @@ TEST(primal_intersect, plane_seg_test_intersection)
 {
   double t1, t2, t3;
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Plane<double, DIM> PlaneType;
-  typedef primal::Segment<double, DIM> SegmentType;
+  using PointType = primal::Point<double, DIM>;
+  using PlaneType = primal::Plane<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
 
   // Line segment goes from (0,0,0) to (1,1,1)
   PointType A(0.0, 3);
@@ -2278,6 +2281,244 @@ TEST(primal_intersect, plane_seg_test_intersection)
 
   EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
 }
+
+//------------------------------------------------------------------------------
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+
+template <typename ExecSpace>
+void check_plane_bb_intersect()
+{
+  const int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+  using PlaneType = primal::Plane<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Determine new allocator (for CUDA policy, set to device)
+  umpire::Allocator allocator =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? rm.getAllocator(umpire::resource::Device)
+       : rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID()));
+
+  // Set new default to device
+  axom::setDefaultAllocator(allocator.getId());
+
+  // Initialize bounding box and planes on device,
+  // intersection results in unified memory to check results on host.
+  BoundingBoxType* unitBB = axom::allocate<BoundingBoxType>(1);
+  PlaneType* planes = axom::allocate<PlaneType>(4);
+  bool* res =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? axom::allocate<bool>(4,
+                              rm.getAllocator(umpire::resource::Unified).getId())
+       : axom::allocate<bool>(4));
+
+  for_all<ExecSpace>(
+    4,
+    AXOM_LAMBDA(int i) {
+      unitBB[0] = BoundingBoxType(PointType::zero(), PointType::ones());
+      double normal[3];
+      double offset;
+
+      // bottom face
+      if(i == 0)
+      {
+        normal[0] = 0.0;
+        normal[1] = 1.0;
+        normal[2] = 0.0;
+        offset = 0.0;
+      }
+
+      // top face
+      if(i == 1)
+      {
+        normal[0] = 0.0;
+        normal[1] = -1.0;
+        normal[2] = 0.0;
+        offset = -1.0;
+      }
+
+      // center
+      if(i == 2)
+      {
+        normal[0] = 1.0;
+        normal[1] = 1.0;
+        normal[2] = 1.0;
+        offset = 0.5;
+      }
+
+      // non-intersect
+      if(i == 3)
+      {
+        normal[0] = 1.0;
+        normal[1] = 1.0;
+        normal[2] = 1.0;
+        offset = -0.5;
+      }
+
+      planes[i] = PlaneType(normal, offset);
+      res[i] = axom::primal::intersect(planes[i], unitBB[0]);
+    });
+
+  EXPECT_TRUE(res[0]);
+  EXPECT_TRUE(res[1]);
+  EXPECT_TRUE(res[2]);
+  EXPECT_FALSE(res[3]);
+
+  axom::deallocate(unitBB);
+  axom::deallocate(planes);
+  axom::deallocate(res);
+  axom::setDefaultAllocator(current_allocator);
+}
+
+template <typename ExecSpace>
+void check_plane_seg_intersect()
+{
+  const int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+  using PlaneType = primal::Plane<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Determine new allocator (for CUDA policy, set to device)
+  umpire::Allocator allocator =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? rm.getAllocator(umpire::resource::Device)
+       : rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID()));
+
+  // Set new default to device
+  axom::setDefaultAllocator(allocator.getId());
+
+  // Initialize planes and segments on device,
+  // intersection results in unified memory to check results on host.
+  PlaneType* planes = axom::allocate<PlaneType>(4);
+  SegmentType* segments = axom::allocate<SegmentType>(1);
+  double* lerp_val = (axom::execution_space<ExecSpace>::onDevice()
+                        ? axom::allocate<double>(
+                            4,
+                            rm.getAllocator(umpire::resource::Unified).getId())
+                        : axom::allocate<double>(4));
+  bool* res =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? axom::allocate<bool>(4,
+                              rm.getAllocator(umpire::resource::Unified).getId())
+       : axom::allocate<bool>(4));
+
+  for_all<ExecSpace>(
+    4,
+    AXOM_LAMBDA(int i) {
+      double normal[3];
+      double offset;
+      PointType A(0.0, 3);
+      PointType B(1.0, 3);
+      segments[0] = SegmentType(A, B);
+
+      // intersect A
+      if(i == 0)
+      {
+        normal[0] = 0.0;
+        normal[1] = 1.0;
+        normal[2] = 0.0;
+        offset = 0.0;
+      }
+
+      // intersect midpoint
+      if(i == 1)
+      {
+        normal[0] = 0.0;
+        normal[1] = 1.0;
+        normal[2] = 0.0;
+        offset = 0.5;
+      }
+
+      // intersect B
+      if(i == 2)
+      {
+        normal[0] = 0.0;
+        normal[1] = 1.0;
+        normal[2] = 0.0;
+        offset = 1.0;
+      }
+
+      // non-intersect
+      if(i == 3)
+      {
+        normal[0] = 1.0;
+        normal[1] = 1.0;
+        normal[2] = 1.0;
+        offset = -0.5;
+      }
+
+      planes[i] = PlaneType(normal, offset);
+      res[i] = axom::primal::intersect(planes[i], segments[0], lerp_val[i]);
+    });
+
+  EXPECT_TRUE(res[0]);
+  EXPECT_TRUE(res[1]);
+  EXPECT_TRUE(res[2]);
+  EXPECT_FALSE(res[3]);
+
+  EXPECT_EQ(lerp_val[0], 0.0);
+  EXPECT_EQ(lerp_val[1], 0.5);
+  EXPECT_EQ(lerp_val[2], 1.0);
+  EXPECT_LT(lerp_val[3], 0.0);
+
+  axom::deallocate(planes);
+  axom::deallocate(segments);
+  axom::deallocate(lerp_val);
+  axom::deallocate(res);
+  axom::setDefaultAllocator(current_allocator);
+}
+
+TEST(primal_intersect, plane_bb_test_intersection_sequential)
+{
+  check_plane_bb_intersect<axom::SEQ_EXEC>();
+}
+
+TEST(primal_intersect, plane_seg_test_intersection_sequential)
+{
+  check_plane_seg_intersect<axom::SEQ_EXEC>();
+}
+
+  #ifdef AXOM_USE_OPENMP
+TEST(primal_intersect, plane_bb_test_intersection_omp)
+{
+  check_plane_bb_intersect<axom::OMP_EXEC>();
+}
+
+TEST(primal_intersect, plane_seg_test_intersection_omp)
+{
+  check_plane_seg_intersect<axom::OMP_EXEC>();
+}
+  #endif /* AXOM_USE_OPENMP */
+
+  #ifdef AXOM_USE_CUDA
+AXOM_CUDA_TEST(primal_intersect, plane_bb_test_intersection_cuda)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+
+  check_plane_bb_intersect<exec>();
+}
+
+AXOM_CUDA_TEST(primal_intersect, plane_seg_test_intersection_cuda)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+
+  check_plane_seg_intersect<exec>();
+}
+  #endif /* AXOM_USE_CUDA */
+
+#endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
