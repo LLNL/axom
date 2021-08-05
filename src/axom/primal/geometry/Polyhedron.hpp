@@ -247,7 +247,7 @@ public:
    */
   AXOM_HOST_DEVICE int addVertex(const PointType& pt)
   {
-    SLIC_ASSERT(m_num_vertices < MAX_VERTS);
+    SLIC_ASSERT(m_num_vertices + 1 < MAX_VERTS);
     m_vertices[m_num_vertices] = pt;
     m_num_vertices++;
     return m_num_vertices - 1;
@@ -351,38 +351,55 @@ public:
     return sum;
   }
 
+
+private: 
   /*!
    * \brief Finds the faces of the Polyhedron, assuming the vertex neighbors
    *        are in counter-clockwise ordering.
    *
-   * \return The polyhedron faces as vertex indices for each face
+   * param [out] faces is the vertex indices for faces
+   * param [out] face_offset is the offset for each face
+   * param [out] face_size is the number of vertices for each face
    *
    * \note Function is based off extractFaces() in Mike Owen's PolyClipper.
    *
    * \pre polyhedron vertex neighbors are defined
    */
-  std::vector<std::vector<int>> getFaces() const
+  AXOM_HOST_DEVICE
+  void getFaces(int* faces, int* face_size, int* face_offset, int& face_count) const
   {
-    SLIC_CHECK_MSG(
-      hasNeighbors(),
-      "Polyhedron::getFaces() is only valid with vertex neighbors.");
-
-    std::vector<std::vector<int>> faces;
-    std::vector<std::vector<int>> checkedEdges;
+    axom::int8 curFaceIndex = 0;
+    axom::int8 checkedSize = 0;
+    axom::int8 facesAdded = 0;
+    // # edges * (# vertices per edge) * (# orientation per edge)
+    axom::int8 checkedEdges[MAX_VERTS * 2 * 2];
 
     // Check each vertex
     for(int i = 0; i < numVertices(); i++)
     {
       // Check each neighbor index (edge) of the vertex
-      for(int nidx = 0; nidx < m_neighbors.getNumNeighbors(i); nidx++)
+      for(int j = 0; j < m_neighbors.getNumNeighbors(i); j++)
       {
-        int ni = m_neighbors[i][nidx];
         // Check if edge has not been visited
-        std::vector<int> edgeToCheck {ni, i};
-        if(std::find(checkedEdges.begin(), checkedEdges.end(), edgeToCheck) ==
-           checkedEdges.end())
+        int ni = m_neighbors[i][j];
+        int edgeToCheck[2] = {ni, i};
+        bool alreadyChecked = false;
+
+        for(int edge = 0; edge < checkedSize; edge++)
         {
-          std::vector<int> face {ni};
+          if(edgeToCheck[0] == checkedEdges[edge * 2] &&
+             edgeToCheck[1] == checkedEdges[(edge * 2) + 1])
+          {
+            alreadyChecked = true;
+            break;
+          }
+        }
+
+        if(!alreadyChecked)
+        {
+          face_offset[facesAdded] = curFaceIndex;
+          faces[curFaceIndex++] = ni;
+          axom::int8 curFaceSize = 1;
           axom::int8 vstart = ni;
           axom::int8 vnext = i;
           axom::int8 vprev = ni;
@@ -390,33 +407,45 @@ public:
           // Add neighboring vertices until we reach the starting vertex.
           while(vnext != vstart)
           {
-            face.push_back(vnext);
-            checkedEdges.push_back({vprev, vnext});
+            faces[curFaceIndex++] = vnext;
+            curFaceSize++;
+            checkedEdges[checkedSize * 2] = vprev;
+            checkedEdges[(checkedSize * 2) + 1] = vnext;
+            checkedSize++;
+
             int numNeighbors = m_neighbors.getNumNeighbors(vnext);
-            auto itr = std::find(m_neighbors[vnext] + 0,
-                                 m_neighbors[vnext] + numNeighbors,
-                                 vprev);
+            int itr = -1;
+            for(int k = 0; k < m_neighbors.getNumNeighbors(vnext); k++)
+            {
+              if(m_neighbors[vnext][k] == vprev)
+              {
+                itr = k;
+              }
+            }
             vprev = vnext;
-            if(itr == m_neighbors[vnext] + 0)
+            if(itr == 0)
             {
               vnext = m_neighbors[vnext][numNeighbors - 1];
             }
             else
             {
-              vnext = *(itr - 1);
+              vnext = m_neighbors[vnext][itr - 1];
             }
           }  // end of while loop
 
           // Add last edge connecting the face
-          checkedEdges.push_back({vprev, vnext});
-          faces.push_back(face);
+          checkedEdges[checkedSize * 2] = vprev;
+          checkedEdges[(checkedSize * 2) + 1] = vnext;
+          checkedSize++;
+
+          face_size[facesAdded++] = curFaceSize++;
         }
       }
     }
-
-    return faces;
+    face_count = facesAdded;
   }
 
+public:
   /*!
    * \brief Finds the volume of the polyhedron.
    *
@@ -426,10 +455,11 @@ public:
    *
    * \pre polyhedron vertex neighbors are defined, and polyhedron is 3D
    */
+  AXOM_HOST_DEVICE
   double volume() const
   {
     SLIC_CHECK_MSG(hasNeighbors(),
-                   "Polyhedron::volume() is only valid with vertex neighbors.");
+                 "Polyhedron::volume() is only valid with vertex neighbors.");
 
     double retVol = 0.0;
 
@@ -443,19 +473,26 @@ public:
     // faces and an arbitrary origin (the first vertex)
     else
     {
-      std::vector<std::vector<int>> faces = getFaces();
+      // faces is an overestimation
+      int faces[MAX_VERTS * MAX_VERTS];
+      int face_size[MAX_VERTS * 2];
+      int face_offset[MAX_VERTS * 2];
+      int face_count;
+      getFaces(faces, face_size, face_offset, face_count);
       VectorType origin(m_vertices[0].data());
-      for(std::vector<int>& face : faces)
+
+      for(int i = 0; i < face_count; i++)
       {
-        int n = face.size();
-        VectorType v0(m_vertices[face[0]].data());
+        int n = face_size[i];
+        VectorType v0(m_vertices[faces[face_offset[i]]].data());
         v0 -= origin;
 
-        for(int i = 1; i < n - 1; ++i)
+        for(int j = 1; j < n - 1; ++j)
         {
-          VectorType v1(m_vertices[face[i]].data());
+          VectorType v1(m_vertices[faces[face_offset[i] + j]].data());
           v1 -= origin;
-          VectorType v2(m_vertices[face[(i + 1) % n]].data());
+          VectorType v2(
+            m_vertices[faces[face_offset[i] + ((j + 1) % n)]].data());
           v2 -= origin;
           double partialVol = v0.dot(VectorType::cross_product(v1, v2));
           retVol += partialVol;
@@ -465,6 +502,7 @@ public:
 
     return retVol / 6.0;
   }
+
 
   /*!
    * \brief Simple formatted print of a polyhedron instance
@@ -525,11 +563,12 @@ public:
    * \return True, if the polyhedron has neighbors info for each vertex,
    *         False otherwise
    */
+  AXOM_HOST_DEVICE
   bool hasNeighbors() const
   {
     if(m_num_vertices <= 1)
     {
-      return true;
+      return false;
     }
     bool has_nbrs = true;
     for(int i = 0; i < m_num_vertices; i++)

@@ -128,6 +128,7 @@ public:
    * \note The supplied normal will be normalized, such that, the Plane's normal
    *  will always be a unit normal.
    */
+  AXOM_HOST_DEVICE
   Plane(const VectorType& normal, T offset);
 
   /// @}
@@ -137,6 +138,7 @@ public:
    * \return dim the dimension of the Plane.
    * \post (dim==2) || (dim==3)
    */
+  AXOM_HOST_DEVICE
   inline int getDimension() const { return NDIMS; };
 
   /*!

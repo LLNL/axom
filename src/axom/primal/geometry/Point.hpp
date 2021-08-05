@@ -29,6 +29,7 @@ class Point;
  * \brief Equality comparison operator for points
  */
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 bool operator==(const Point<T, NDIMS>& lhs, const Point<T, NDIMS>& rhs);
 
 /*!
@@ -226,6 +227,7 @@ public:
   /*!
    * \brief Helper function to return a point whose coordinates are all 0
    */
+  AXOM_HOST_DEVICE
   static Point zero() { return Point(); }
 
   /*!
@@ -234,6 +236,7 @@ public:
    * (with the appropriate casting) and is only valid for Points with
    * a numerical type (i.e. where static_cast<T>(1) is valid.
    */
+  AXOM_HOST_DEVICE
   static Point ones() { return Point(static_cast<T>(1)); }
 
 private:

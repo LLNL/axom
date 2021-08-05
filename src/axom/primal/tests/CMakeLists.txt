@@ -22,6 +22,7 @@ set( primal_tests
     primal_plane.cpp
     primal_point.cpp
     primal_polygon.cpp
+    primal_polyhedron.cpp
     primal_ray_intersect.cpp
     primal_bounding_box_intersect.cpp
     primal_segment.cpp
@@ -36,6 +37,7 @@ set( primal_tests
 set(primal_test_depends axom fmt gtest)
 
 blt_list_append( TO primal_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO primal_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
 
 foreach ( test ${primal_tests} )
 
