@@ -30,7 +30,7 @@ namespace axom_map
 /// @{
 /*!
    * \class Node
-   * 
+   *
    * \brief Node is the foundational data type of the Map, being the lowest-level data storage unit,
    *  with the key and value data for a given item, along with a next value for the linked list.
    *
@@ -52,10 +52,10 @@ struct Node
 
 /*!
    * \class Pair
-   * 
-   * \brief Pair is strictly for returning from insert, to match the pair-returning setup of STL 
+   *
+   * \brief Pair is strictly for returning from insert, to match the pair-returning setup of STL
    *  unordered_map.
-   * 
+   *
    * \tparam Key the type of key stored in the associated Node.
    * \tparam T the type of value stored in the associated Node.
    */
@@ -85,13 +85,13 @@ public:
   /// \name Bucket Construction
   ///@{
   /*!
-     * \brief Default constructor so new Buckets just construct into nothing. 
-     *  Can likely just be removed. 
+     * \brief Default constructor so new Buckets just construct into nothing.
+     *  Can likely just be removed.
      */
   Bucket() { }
 
   /*!
-     * \brief Basic constructor, creates singly-linked list with provided size. 
+     * \brief Basic constructor, creates singly-linked list with provided size.
      *
      * \param [in] len the number of items this Bucket instance needs to be able to store.
      *
@@ -101,7 +101,7 @@ public:
 
   /*!
      * \brief If a Bucket instance is created with the default contructor, this
-     *  is used to initialize and allocate all the member variables. 
+     *  is used to initialize and allocate all the member variables.
      *
      * \param [in] len the number of items this Bucket instance needs to be able to store.
      *
@@ -127,7 +127,7 @@ public:
   /// \name Bucket Methods
   /// @{
   /*!
-     * \brief Inserts a given key-value pair into the linked list if an item with 
+     * \brief Inserts a given key-value pair into the linked list if an item with
      *  given key does not already exist. Fails if list is full or item with given key
      *  already exists.
      *
@@ -181,8 +181,8 @@ public:
   }
 
   /*!
-     * \brief Inserts a given key-value pair into the linked list if an item with 
-     *  given key does not already exist, and updates the item's current value with the supplied 
+     * \brief Inserts a given key-value pair into the linked list if an item with
+     *  given key does not already exist, and updates the item's current value with the supplied
      *  one if item already exists. Fails if list is full.
      *
      * \param [in] key the key of the key-value pair to be inserted.
@@ -190,7 +190,7 @@ public:
      *
      * \return Returns a Pair object, with the first element being a pointer to the inserted node
      *  and the second element being boolean value true if successful. If insertion fails, or assignment
-     *  was performed, the bool is set to False. If assignment occured, the node pointed to is the item 
+     *  was performed, the bool is set to False. If assignment occured, the node pointed to is the item
      *  corresponding to the supplied key. Otherwise, if insertion and assignment failed, the node pointed to is the end node.
      */
   axom_map::Pair<Key, T> insert_update(const Key& key, const T& value)
@@ -250,8 +250,8 @@ public:
      *
      * \param [in] key the key of the item to be found and removed.
      *
-     * \return Returns true if item was found and removed, false otherwise. 
-     *  
+     * \return Returns true if item was found and removed, false otherwise.
+     *
      */
   bool remove(const Key& key)
   {
@@ -340,14 +340,14 @@ public:
 /*!
  * \class Map
  *
- * \brief Provides a hashmap implementation, relying upon chaining to 
- *  resolve hash collisions. Simple hashmap for now, future work will use 
- *  RAJA and Umpire to allow use of map within kernels. Resembles 
+ * \brief Provides a hashmap implementation, relying upon chaining to
+ *  resolve hash collisions. Simple hashmap for now, future work will use
+ *  RAJA and Umpire to allow use of map within kernels. Resembles
  *  unordered_map, which we can't use due to a lack of host-device decoration.
  *
- * \tparam Key the type of keys. Must allow equality comparison, must be copyable. 
+ * \tparam Key the type of keys. Must allow equality comparison, must be copyable.
  * \tparam T the type of values to hold, must be copyable.
- * \tparam Hash functor that takes an object of Key type and returns 
+ * \tparam Hash functor that takes an object of Key type and returns
  *  a hashed value of size_t (for now)
  */
 
@@ -388,23 +388,23 @@ public:
    * from original Map.
    *
    * \param [in] buckets user-specified number of buckets in new Map. -1 to fall back to multiplicative factor.
-   * \param [in] factor user-specified multiplicative factor to determine size of new Map based upon current size. 
+   * \param [in] factor user-specified multiplicative factor to determine size of new Map based upon current size.
    *  -1 to fall back to default -- would be more efficient to specify neither input.
    *
    * \return true if the hash table is now in a safe state, false otherwise
    *
-   * \note if neither input is specified, the new Map will be of size 2*old Map size. 
+   * \note if neither input is specified, the new Map will be of size 2*old Map size.
    * \note both map instances exist in memory until rehash returns. Risks running out of memory.
    * \note Rehash should generally ensure a previously filled bucket is no longer filled, and the load_factor is correct,
    *  if used properly. However, since this highly manual process has room for error this implementation does
-   *  perform a check for if any bucket is now full. 
+   *  perform a check for if any bucket is now full.
    */
   bool rehash(IndexType buckets = -1, int factor = -1)
   {
     IndexType newlen = 0;
     IndexType ind;
     std::size_t hashed;
-    if(buckets != -1 && buckets > m_bucket_count)
+    if(buckets != -1 && buckets > static_cast<int>(m_bucket_count))
     {
       newlen = buckets;
     }
@@ -488,13 +488,13 @@ public:
    * \param [in] key the key used to index into the Map to store this item
    * \param [in] val the data value of the pair to insert into the map
    *
-   * \note Deviation from STL unordered_map is that insertion fails when map full, rather than automatically rehashing. 
+   * \note Deviation from STL unordered_map is that insertion fails when map full, rather than automatically rehashing.
    *  Manual call of rehash() required.
    *
    * \note Can set "full bucket" flag for Map, which is only unset by rehashing.
    *
    * \return A pair whose first element is a pointer to the inserted item and bool set to true
-   *  if successful. Otherwise, the second element is set to false, and the first to one of two values: a sentinel node 
+   *  if successful. Otherwise, the second element is set to false, and the first to one of two values: a sentinel node
    *  if the map is overfilled, and the actual node with the given key if an item with given key already exists.
    *
    */
@@ -535,13 +535,13 @@ public:
    * \param [in] key the key used to index into the Map to store this item
    * \param [in] val the data value of the pair to insert into the map
    *
-   * \note Deviation from STL unordered_map is that insertion fails when map full, rather than automatically rehashing. 
+   * \note Deviation from STL unordered_map is that insertion fails when map full, rather than automatically rehashing.
    *  Manual call of rehash() required.
    *
    * \note Can set "full bucket" flag for Map, which is only unset by rehashing.
    *
    * \return A pair whose first element is a pointer to the inserted item and bool set to true
-   *  if insertion was performed. Otherwise, the second element is set to false, and the first to one of two values: a sentinel node 
+   *  if insertion was performed. Otherwise, the second element is set to false, and the first to one of two values: a sentinel node
    *  if the map is overfilled, and the actual node with the given key if an assignment occured.
    *
    */
@@ -578,7 +578,7 @@ public:
 
   /*!
    * \brief Finds reference to value of key-value pair mapped to supplied pair, returns value from sentinel node
-   *  if fails, meaning value at reference will be data type T initialized with 0. 
+   *  if fails, meaning value at reference will be data type T initialized with 0.
    *
    * \param [in] key the key used to index into the Map to find item
    *
@@ -606,7 +606,7 @@ public:
    * \note Deviation from STL unordered_map in returning a boolean instead of an iterator to next item in map.
    *  Mostly useful on sparing logic when this moves to paralellism, since the bucket boundaries would become inconvenient.
    *
-   * \return A bool value of true if the item was successfully removed, false otherwise. 
+   * \return A bool value of true if the item was successfully removed, false otherwise.
    */
   bool erase(const Key& key)
   {
@@ -645,7 +645,7 @@ public:
   }
 
   /*!
-   * \brief Returns id of bucket associated with a 64-bit integer, intended to be the hash 
+   * \brief Returns id of bucket associated with a 64-bit integer, intended to be the hash
    *  of a key.
    *
    * \param [in] hash the id of the bucket to be queried.
@@ -663,7 +663,7 @@ public:
   IndexType bucket_size() const { return m_bucket_len; }
   /*!
    * \brief Returns the number of buckets in the Map.
-   * \return bucket_count 
+   * \return bucket_count
    */
   IndexType bucket_count() const { return m_bucket_count; }
   /*!
@@ -696,7 +696,7 @@ public:
   float max_load_factor() const { return m_load_factor; }
   /*!
    * \brief Sets maximum load factor (ratio between size and bucket count)
-   * hash table will reach before check_rehash returns true. Default value is 
+   * hash table will reach before check_rehash returns true. Default value is
    *  1.0.
    *
    * \param [in] load_factor desired maximum load factor
@@ -710,11 +710,11 @@ public:
   float load_factor() const { return m_size / m_bucket_count; }
 
   /*!
-   * \brief Returns whether a rehash is necessary for this Map instance. Does so based on two metrics. The 
-   *  first is whether the load factor of the map (ratio between size and bucket count) has exceeded its 
-   *  maximum load factor (default 1.0). The second is whether any of the buckets are currently full. 
+   * \brief Returns whether a rehash is necessary for this Map instance. Does so based on two metrics. The
+   *  first is whether the load factor of the map (ratio between size and bucket count) has exceeded its
+   *  maximum load factor (default 1.0). The second is whether any of the buckets are currently full.
    *
-   * \note This function does not exist in the STL unordered_map, because it performs automatic rehashes as 
+   * \note This function does not exist in the STL unordered_map, because it performs automatic rehashes as
    *  necessary. To support the portability constraints put on this data structure, the user must regularly
    *  call this function to verify whether they need to rehash to maintain performance. Another metric is
    *  when an insertion fails and returns end(), but this will yield an answer before such an event.
@@ -739,9 +739,9 @@ private:
    *  Kept separate from constructor and rehasher for sake of modularity in case this needs to be swapped
    *  with a different method in the future.
    *
-   * \param [in] bucount the number of buckets to be in side the allocated Map instance. 
+   * \param [in] bucount the number of buckets to be in side the allocated Map instance.
    * \param [in] bucklen the amount of items that can fit in a bucket in the allocated Map instance.
-   * 
+   *
    * \return A pointer to the now-allocated array of linked lists.
    */
   axom_map::Bucket<Key, T>* alloc_map(IndexType bucount, IndexType bucklen)
@@ -756,7 +756,7 @@ private:
     return tmp;
   }
   /*!
-   * \brief Returns hash value for a given input. 
+   * \brief Returns hash value for a given input.
    *
    * \note Currently uses std::hash, will switch to a custom hasher in future.
    *
@@ -851,7 +851,7 @@ private:
   }
 
   /*!
-   * \brief Deallocates and destroys every lock used for this Map instance. 
+   * \brief Deallocates and destroys every lock used for this Map instance.
    */
   void destroy_locks(axom::OMP_EXEC overload) const
   {
