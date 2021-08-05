@@ -41,6 +41,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added `axom::Array` modeled after `std::vector`. Previous `axom::Array` renamed to `axom::MCArray`. Future changes to both arrays are expected.
 - Added a `data_collection_util` tool to generate Mesh Blueprint compliant high order distributed meshes from
   an mfem mesh or over a Cartesian domain
+- Added utility functions `axom::utilities::getHostName()` and `axom::utilities::getUserName()`.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
