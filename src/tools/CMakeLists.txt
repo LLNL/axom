@@ -84,6 +84,8 @@ if( AXOM_ENABLE_SIDRE AND MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION )
         fmt
         )
 
+    blt_list_append(TO data_collection_util_depends ELEMENTS mpi IF ENABLE_MPI)
+
     blt_add_executable(
         NAME        data_collection_util
         SOURCES     ${data_collection_util}
@@ -92,10 +94,18 @@ if( AXOM_ENABLE_SIDRE AND MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION )
         FOLDER      axom/examples
         )
 
-    axom_add_test(
-      NAME    data_collection_util_box2D
-      COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
-      )
+    if(ENABLE_MPI)
+        axom_add_test(
+            NAME    data_collection_util_box2D
+            COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
+            NUM_MPI_TASKS 2
+        )
+    else()
+        axom_add_test(
+            NAME    data_collection_util_box2D
+            COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
+        )
+    endif()
 
     install(TARGETS              data_collection_util
             DESTINATION          bin
