@@ -298,11 +298,12 @@ int main(int argc, char** argv)
   // Load the computational mesh
   //---------------------------------------------------------------------------
   const bool dc_owns_data = true;
+  mfem::Mesh* originalMesh = nullptr;
   sidre::MFEMSidreDataCollection originalMeshDC(params.getDCMeshName(),
-                                                nullptr,
+                                                originalMesh,
                                                 dc_owns_data);
-  originalMeshDC.SetComm(MPI_COMM_WORLD);
   {
+    originalMeshDC.SetComm(MPI_COMM_WORLD);
     std::string protocol = "sidre_hdf5";
     originalMeshDC.Load(params.meshFile, protocol);
   }
@@ -310,14 +311,14 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Set up DataCollection for shaping
   //---------------------------------------------------------------------------
-  sidre::MFEMSidreDataCollection shapingDC("shaping", nullptr, dc_owns_data);
+  mfem::Mesh* shapingMesh = nullptr;
+  sidre::MFEMSidreDataCollection shapingDC("shaping", shapingMesh, dc_owns_data);
   {
     shapingDC.SetMeshNodesName("positions");
 
     auto* pmesh = dynamic_cast<mfem::ParMesh*>(originalMeshDC.GetMesh());
-    mfem::Mesh* shapingMesh = (pmesh != nullptr)
-      ? new mfem::ParMesh(*pmesh)
-      : new mfem::Mesh(*originalMeshDC.GetMesh());
+    shapingMesh = (pmesh != nullptr) ? new mfem::ParMesh(*pmesh)
+                                     : new mfem::Mesh(*originalMeshDC.GetMesh());
     shapingDC.SetMesh(shapingMesh);
   }
   printMeshInfo(shapingDC.GetMesh(), "After loading");
@@ -325,42 +326,48 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Initialize the shaping query object
   //---------------------------------------------------------------------------
-  quest::MFEMShaping shaper(params.shapeSet, &shapingDC);
+  quest::Shaper* shaper = new quest::SamplingShaper(params.shapeSet, &shapingDC);
 
-  const int sampleOrder = params.quadratureOrder;
-  const int outputOrder = params.outputOrder;
+  // Set generic parameters for the base Shaper instance
+  shaper->setSamplesPerKnotSpan(params.samplesPerKnotSpan);
+  shaper->setVertexWeldThreshold(params.weldThresh);
 
-  shaper.setSamplesPerKnotSpan(params.samplesPerKnotSpan);
-  shaper.setVertexWeldThreshold(params.weldThresh);
+  // Set specific parameters for a SamplingShaper, if appropriate
+  if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
+  {
+    samplingShaper->setSamplingType(params.vfSampling);
+    samplingShaper->setQuadratureOrder(params.quadratureOrder);
+    samplingShaper->setVolumeFractionOrder(params.outputOrder);
+  }
 
   //---------------------------------------------------------------------------
   // Process each of the shapes
   //---------------------------------------------------------------------------
   SLIC_INFO(fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
-  for(const auto& s : params.shapeSet.getShapes())
+  for(const auto& shape : params.shapeSet.getShapes())
   {
     // Load the shape from file
-    shaper.loadShape(s);
+    shaper->loadShape(shape);
     slic::flushStreams();
 
     // Apply the specified geometric transforms
-    shaper.applyTransforms(s);
+    shaper->applyTransforms(shape);
     slic::flushStreams();
 
     // Generate a spatial index over the shape
-    shaper.prepareShapeQuery(shapeDim, s);
+    shaper->prepareShapeQuery(shapeDim, shape);
     slic::flushStreams();
 
     // Query the mesh against this shape
-    shaper.runShapeQuery(params.vfSampling, sampleOrder, outputOrder);
+    shaper->runShapeQuery();
     slic::flushStreams();
 
     // Apply the replacement rules for this shape against the existing materials
-    shaper.applyReplacementRules(s);
+    shaper->applyReplacementRules(shape);
     slic::flushStreams();
 
     // Finalize data structures associated with this shape and spatial index
-    shaper.finalizeShapeQuery();
+    shaper->finalizeShapeQuery();
     slic::flushStreams();
   }
 
@@ -370,14 +377,16 @@ int main(int argc, char** argv)
   SLIC_INFO(
     fmt::format("{:=^80}", "Generating volume fraction fields for materials"));
 
-  shaper.adjustVolumeFractions(params.vfSampling, outputOrder);
+  shaper->adjustVolumeFractions();
 
   //---------------------------------------------------------------------------
   // Save meshes and fields
   //---------------------------------------------------------------------------
 #ifdef MFEM_USE_MPI
-  shaper.getDC()->Save();
+  shaper->getDC()->Save();
 #endif
+
+  delete shaper;
 
   //---------------------------------------------------------------------------
   // Cleanup and exit

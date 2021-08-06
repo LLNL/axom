@@ -4,13 +4,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file Shaping.hpp
+ * \file Shaper.hpp
  *
  * \brief Helper class for shaping queries
  */
 
-#ifndef AXOM_QUEST_SHAPING__HPP_
-#define AXOM_QUEST_SHAPING__HPP_
+#ifndef AXOM_QUEST_SAMPLING_SHAPER__HPP_
+#define AXOM_QUEST_SAMPLING_SHAPER__HPP_
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
@@ -25,6 +25,7 @@
   #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
 #endif
 
+#include "axom/quest/Shaper.hpp"
 #include "axom/quest/InOutOctree.hpp"
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
@@ -50,10 +51,8 @@ enum class VolFracSampling : int
   SAMPLE_AT_QPTS
 };
 
-}  // end namespace shaping
-
 template <int NDIMS>
-class SamplingShaper
+class InOutSampler
 {
 public:
   static constexpr int DIM = NDIMS;
@@ -74,12 +73,12 @@ public:
    *
    * \note Does not take ownership of the surface mesh
    */
-  SamplingShaper(const std::string& shapeName, mint::Mesh* surfaceMesh)
+  InOutSampler(const std::string& shapeName, mint::Mesh* surfaceMesh)
     : m_shapeName(shapeName)
     , m_surfaceMesh(surfaceMesh)
   { }
 
-  ~SamplingShaper() { delete m_octree; }
+  ~InOutSampler() { delete m_octree; }
 
   mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
 
@@ -234,8 +233,8 @@ public:
   }
 
 private:
-  DISABLE_COPY_AND_ASSIGNMENT(SamplingShaper);
-  DISABLE_MOVE_AND_ASSIGNMENT(SamplingShaper);
+  DISABLE_COPY_AND_ASSIGNMENT(InOutSampler);
+  DISABLE_MOVE_AND_ASSIGNMENT(InOutSampler);
 
   std::string m_shapeName;
 
@@ -244,92 +243,57 @@ private:
   InOutOctreeType* m_octree {nullptr};
 };
 
-/**
- * Helper class to use an MFEM sampling-based shaper
- *
+}  // end namespace shaping
+
+/*!
+ * \brief Concrete class for sample based shaping
  */
-class MFEMShaping
+class SamplingShaper : public Shaper
 {
 public:
-  MFEMShaping(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
-    : m_shapeSet(shapeSet)
-    , m_dc(dc)
+  SamplingShaper(const klee::ShapeSet& shapeSet,
+                 sidre::MFEMSidreDataCollection* dc)
+    : Shaper(shapeSet, dc)
+  { }
+
+  //@{
+  //!  @name Functions to get and set shaping parameters related to sampling; supplements parameters in base class
+
+  void setSamplingType(shaping::VolFracSampling vfSampling)
   {
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    m_comm = m_dc->GetComm();
-#endif
+    m_vfSampling = vfSampling;
   }
 
-  void setSamplesPerKnotSpan(int nSamples)
+  void setQuadratureOrder(int quadratureOrder)
   {
-    using axom::utilities::clampLower;
-    SLIC_WARNING_IF(
-      nSamples < 1,
-      fmt::format(
-        "Samples per knot span must be at least 1. Provided value was {}",
-        nSamples));
-
-    m_samplesPerKnotSpan = clampLower(nSamples, 1);
+    m_quadratureOrder = quadratureOrder;
   }
 
-  void setVertexWeldThreshold(double threshold)
+  void setVolumeFractionOrder(int volfracOrder)
   {
-    SLIC_WARNING_IF(
-      threshold <= 0.,
-      fmt::format(
-        "Vertex weld threshold should be positive Provided value was {}",
-        threshold));
-
-    m_vertexWeldThreshold = threshold;
+    m_volfracOrder = volfracOrder;
   }
 
-  sidre::MFEMSidreDataCollection* getDC() { return m_dc; }
-  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
+  //@}
 
-  /// Loads the shape from file into m_surfaceMesh
-  void loadShape(const klee::Shape& shape)
+private:
+  klee::Dimensions getShapeDimension() const
   {
-    using axom::utilities::string::endsWith;
-    SLIC_ASSERT(shape.getGeometry().getFormat() == "stl" ||
-                shape.getGeometry().getFormat() == "c2c");
+    const bool has2D = (m_inoutSampler2D != nullptr);
+    const bool has3D = (m_inoutSampler3D != nullptr);
+    SLIC_ERROR_IF(!(has2D || has3D), "Shape not initialized");
+    SLIC_ERROR_IF(has2D && has3D, "Cannot have concurrent 2D and 3D shapes");
 
-    const std::string shapeName = shape.getName();
-    std::string outMsg = fmt::format(" Loading shape '{}' ", shapeName);
-    SLIC_INFO(fmt::format("{:-^80}", outMsg));
-
-    std::string shapePath = m_shapeSet.resolvePath(shape.getGeometry().getPath());
-    SLIC_INFO("Reading file: " << shapePath << "...");
-
-    if(endsWith(shapePath, ".stl"))
-    {
-      quest::internal::read_stl_mesh(shapePath, m_surfaceMesh, m_comm);
-    }
-#ifdef AXOM_USE_C2C
-    else if(endsWith(shapePath, ".contour"))
-    {
-      quest::internal::read_c2c_mesh(shapePath,
-                                     m_samplesPerKnotSpan,
-                                     m_vertexWeldThreshold,
-                                     m_surfaceMesh,
-                                     m_comm);
-    }
-#endif
-    else
-    {
-      SLIC_ERROR(
-        fmt::format("Unsupported filetype for this Axom configuration. "
-                    "Provided file was '{}'",
-                    shapePath));
-    }
+    return has2D ? klee::Dimensions::Two : klee::Dimensions::Three;
   }
 
-  void applyTransforms(const klee::Shape& shape)
-  {
-    // TODO: Implement this as a set of affine transforms to vertices of mesh
-    AXOM_UNUSED_VAR(shape);
-  }
+public:
+  //@{
+  //!  @name Functions related to the stages for a given shape
 
-  void prepareShapeQuery(klee::Dimensions shapeDimension, const klee::Shape& shape)
+  /// Initializes the spatial index for shaping
+  void prepareShapeQuery(klee::Dimensions shapeDimension,
+                         const klee::Shape& shape) override
   {
     const auto& shapeName = shape.getName();
 
@@ -337,17 +301,17 @@ public:
     switch(shapeDimension)
     {
     case klee::Dimensions::Two:
-      m_samplingShaper2D = new SamplingShaper<2>(shapeName, m_surfaceMesh);
-      m_samplingShaper2D->computeBounds();
-      m_samplingShaper2D->initSpatialIndex();
-      m_surfaceMesh = m_samplingShaper2D->getSurfaceMesh();
+      m_inoutSampler2D = new shaping::InOutSampler<2>(shapeName, m_surfaceMesh);
+      m_inoutSampler2D->computeBounds();
+      m_inoutSampler2D->initSpatialIndex();
+      m_surfaceMesh = m_inoutSampler2D->getSurfaceMesh();
       break;
 
     case klee::Dimensions::Three:
-      m_samplingShaper3D = new SamplingShaper<3>(shapeName, m_surfaceMesh);
-      m_samplingShaper3D->computeBounds();
-      m_samplingShaper3D->initSpatialIndex();
-      m_surfaceMesh = m_samplingShaper3D->getSurfaceMesh();
+      m_inoutSampler3D = new shaping::InOutSampler<3>(shapeName, m_surfaceMesh);
+      m_inoutSampler3D->computeBounds();
+      m_inoutSampler3D->initSpatialIndex();
+      m_surfaceMesh = m_inoutSampler3D->getSurfaceMesh();
       break;
 
     default:
@@ -358,10 +322,11 @@ public:
     }
 
     // Check that one of sampling shapers (2D or 3D) is null and the other is not
-    SLIC_ASSERT((m_samplingShaper2D == nullptr && m_samplingShaper3D != nullptr) ||
-                (m_samplingShaper3D == nullptr && m_samplingShaper2D != nullptr));
+    SLIC_ASSERT((m_inoutSampler2D == nullptr && m_inoutSampler3D != nullptr) ||
+                (m_inoutSampler3D == nullptr && m_inoutSampler2D != nullptr));
 
     // Output some logging info and dump the mesh
+    if(this->getRank() == 0)
     {
       const int nVerts = m_surfaceMesh->getNumberOfNodes();
       const int nCells = m_surfaceMesh->getNumberOfCells();
@@ -375,83 +340,60 @@ public:
     }
   }
 
-  // Handles 2D or 3D shaping, based on the template and associated parameter
-  template <typename SamplingShaperType>
-  void runShapeQueryImpl(SamplingShaperType* shaper,
-                         shaping::VolFracSampling vfSampling,
-                         int samplingOrder,
-                         int outputOrder)
-  {
-    // Sample the InOut field at the mesh quadrature points
-    switch(vfSampling)
-    {
-    case shaping::VolFracSampling::SAMPLE_AT_QPTS:
-      shaper->sampleInOutField(m_dc, m_inoutShapeQFuncs, samplingOrder);
-      break;
-    case shaping::VolFracSampling::SAMPLE_AT_DOFS:
-      shaper->computeVolumeFractionsBaseline(m_dc, samplingOrder, outputOrder);
-      break;
-    }
-  }
-
-  void runShapeQuery(shaping::VolFracSampling vfSampling,
-                     int samplingOrder,
-                     int outputOrder)
+  void runShapeQuery() override
   {
     SLIC_INFO(fmt::format("{:-^80}", " Querying the octree "));
 
     switch(getShapeDimension())
     {
     case klee::Dimensions::Two:
-      runShapeQueryImpl(m_samplingShaper2D, vfSampling, samplingOrder, outputOrder);
+      runShapeQueryImpl(m_inoutSampler2D);
       break;
     case klee::Dimensions::Three:
-      runShapeQueryImpl(m_samplingShaper3D, vfSampling, samplingOrder, outputOrder);
+      runShapeQueryImpl(m_inoutSampler3D);
       break;
     }
   }
 
-  void applyReplacementRules(const klee::Shape& shape)
+  void applyReplacementRules(const klee::Shape& shape) override
   {
     using axom::utilities::string::splitLastNTokens;
 
     SLIC_INFO(
-      fmt::format("{:=^80}", "Applying replacement rules over the shapes"));
+      fmt::format("{:-^80}", "Applying replacement rules over the shapes"));
 
-    // Get inout qfunc for shape
+    // Get inout qfunc for this shape
     const auto& shapeName = shape.getName();
     auto* shapeQFunc = m_inoutShapeQFuncs.Get(fmt::format("inout_{}", shapeName));
     SLIC_ASSERT_MSG(
       shapeQFunc != nullptr,
       fmt::format("Missing inout samples for shape '{}'", shapeName));
 
-    const auto& materialName = shape.getMaterial();
-
     // Create a copy of the inout samples for this shape
-    // Replacements will be applied to this and then copied into our shape
+    // Replacements will be applied to this and then copied into our shape's material
     auto* shapeQFuncCopy = new mfem::QuadratureFunction(*shapeQFunc);
 
     // apply replacement rules to all other materials
+    const auto& thisMatName = shape.getMaterial();
     for(auto& mat : m_inoutMaterialQFuncs)
     {
       const std::string otherMatName = splitLastNTokens(mat.first, 2, '_')[1];
 
       // We'll handle the current shape's material at the end
-      if(otherMatName == materialName)
+      if(otherMatName == thisMatName)
       {
         continue;
       }
 
       const bool shouldReplace = shape.replaces(otherMatName);
-      SLIC_INFO(fmt::format(
+      SLIC_DEBUG(fmt::format(
         "Should we replace material '{}' with shape '{}' of material '{}'? {}",
         otherMatName,
         shapeName,
-        materialName,
+        thisMatName,
         shouldReplace ? "yes" : "no"));
 
-      const std::string& materialQFuncName = mat.first;
-      auto* otherMatQFunc = m_inoutMaterialQFuncs.Get(materialQFuncName);
+      auto* otherMatQFunc = mat.second;
       SLIC_ASSERT_MSG(
         otherMatQFunc != nullptr,
         fmt::format("Missing inout samples for material '{}'", otherMatName));
@@ -459,39 +401,45 @@ public:
       quest::shaping::replaceMaterial(shapeQFuncCopy, otherMatQFunc, shouldReplace);
     }
 
-    // Get inout qfunc for material
+    // Get inout qfunc for the current material
     const std::string materialQFuncName =
-      fmt::format("mat_inout_{}", materialName);
+      fmt::format("mat_inout_{}", thisMatName);
     if(!m_inoutMaterialQFuncs.Has(materialQFuncName))
     {
-      // initialize material from shape inout
-      auto* mat_inout = new mfem::QuadratureFunction(*shapeQFuncCopy);
-      m_inoutMaterialQFuncs.Register(materialQFuncName, mat_inout, true);
+      // initialize material from shape inout, the QFunc registry takes ownership
+      m_inoutMaterialQFuncs.Register(materialQFuncName, shapeQFuncCopy, true);
     }
     else
     {
+      // copy shape data into current material and delete the copy
       auto* matQFunc = m_inoutMaterialQFuncs.Get(materialQFuncName);
       SLIC_ASSERT_MSG(
         matQFunc != nullptr,
-        fmt::format("Missing inout samples for material '{}'", materialName));
+        fmt::format("Missing inout samples for material '{}'", thisMatName));
 
       quest::shaping::copyShapeIntoMaterial(shapeQFuncCopy, matQFunc);
+
+      delete shapeQFuncCopy;
+      shapeQFuncCopy = nullptr;
     }
   }
 
-  void finalizeShapeQuery()
+  void finalizeShapeQuery() override
   {
-    delete m_samplingShaper2D;
-    m_samplingShaper2D = nullptr;
+    delete m_inoutSampler2D;
+    m_inoutSampler2D = nullptr;
 
-    delete m_samplingShaper3D;
-    m_samplingShaper3D = nullptr;
+    delete m_inoutSampler3D;
+    m_inoutSampler3D = nullptr;
 
     delete m_surfaceMesh;
     m_surfaceMesh = nullptr;
   }
 
-  void adjustVolumeFractions(shaping::VolFracSampling vfSampling, int outputOrder)
+  //@}
+
+public:
+  void adjustVolumeFractions() override
   {
     for(auto& mat : m_inoutMaterialQFuncs)
     {
@@ -501,13 +449,13 @@ public:
                     matName));
 
       // Sample the InOut field at the mesh quadrature points
-      switch(vfSampling)
+      switch(m_vfSampling)
       {
       case shaping::VolFracSampling::SAMPLE_AT_QPTS:
         quest::shaping::computeVolumeFractions(matName,
                                                m_dc,
                                                m_inoutMaterialQFuncs,
-                                               outputOrder);
+                                               m_volfracOrder);
         break;
       case shaping::VolFracSampling::SAMPLE_AT_DOFS:
         /* no-op for now */
@@ -517,36 +465,39 @@ public:
   }
 
 private:
-  klee::Dimensions getShapeDimension() const
+  // Handles 2D or 3D shaping, based on the template and associated parameter
+  template <typename InOutSamplerType>
+  void runShapeQueryImpl(InOutSamplerType* shaper)
   {
-    const bool has2D = (m_samplingShaper2D != nullptr);
-    const bool has3D = (m_samplingShaper3D != nullptr);
-    SLIC_ERROR_IF(!(has2D || has3D), "Shape not initialized");
-    SLIC_ERROR_IF(has2D && has3D, "Cannot have concurrent 2D and 3D shapes");
-
-    return has2D ? klee::Dimensions::Two : klee::Dimensions::Three;
+    // Sample the InOut field at the mesh quadrature points
+    switch(m_vfSampling)
+    {
+    case shaping::VolFracSampling::SAMPLE_AT_QPTS:
+      shaper->sampleInOutField(m_dc, m_inoutShapeQFuncs, m_quadratureOrder);
+      break;
+    case shaping::VolFracSampling::SAMPLE_AT_DOFS:
+      shaper->computeVolumeFractionsBaseline(m_dc,
+                                             m_quadratureOrder,
+                                             m_volfracOrder);
+      break;
+    }
   }
 
 private:
-  const klee::ShapeSet& m_shapeSet;
-  sidre::MFEMSidreDataCollection* m_dc;
-
   // TODO: Use MfemSidreDataCollection QFuncs for this when we upgrade to post mfem@4.3
   shaping::QFunctionCollection m_inoutShapeQFuncs;
   shaping::QFunctionCollection m_inoutMaterialQFuncs;
   shaping::DenseTensorCollection m_inoutDofs;
 
-  mint::Mesh* m_surfaceMesh {nullptr};
-  SamplingShaper<2>* m_samplingShaper2D {nullptr};
-  SamplingShaper<3>* m_samplingShaper3D {nullptr};
+  shaping::InOutSampler<2>* m_inoutSampler2D {nullptr};
+  shaping::InOutSampler<3>* m_inoutSampler3D {nullptr};
 
-  int m_samplesPerKnotSpan {25};
-  double m_vertexWeldThreshold {1e-9};
-
-  MPI_Comm m_comm {MPI_COMM_SELF};
+  shaping::VolFracSampling m_vfSampling {shaping::VolFracSampling::SAMPLE_AT_QPTS};
+  int m_quadratureOrder {5};
+  int m_volfracOrder {2};
 };
 
 }  // end namespace quest
 }  // end namespace axom
 
-#endif  // AXOM_QUEST_SHAPING__HPP_
+#endif  // AXOM_QUEST_SAMPLING_SHAPER__HPP_
