@@ -39,6 +39,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated the C++ Quest "containment" example to support 2D in/out queries 
   (in addition to the already supported 3D queries)
 - Added `axom::Array` modeled after `std::vector`. Previous `axom::Array` renamed to `axom::MCArray`. Future changes to both arrays are expected.
+- Added a `data_collection_util` tool to generate Mesh Blueprint compliant high order distributed meshes from
+  an mfem mesh or over a Cartesian domain
+- Added utility functions `axom::utilities::getHostName()` and `axom::utilities::getUserName()`.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -68,6 +71,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed problem with Cray Fortran compiler not recognizing MSVC pragmas in `axom/config.hpp`. 
   The latter are now only added in MSVC configurations.
 - Fixed bug in `Mint`'s VTK output for fields of type `int64` and `float`
+- Improved loading of data collections in `MFEMSidreDataCollection`
 
 
 ## [Version 0.5.0] - Release date 2021-05-14
