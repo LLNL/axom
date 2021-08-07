@@ -40,7 +40,7 @@
 rzansel-clang_8_0_1_nvcc_xlf-src:
   variables:
     COMPILER: "clang@8.0.1_nvcc_xlf"
-    HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+    HOST_CONFIG: "rzansel-klee-${COMPILER}.cmake"
   extends: [.src_build_on_rzansel, .with_cuda]
 
 rzansel-clang_9_0_0_upstream_xlf-src:
