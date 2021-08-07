@@ -29,8 +29,8 @@ class Point;
  * \brief Equality comparison operator for points
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE
-bool operator==(const Point<T, NDIMS>& lhs, const Point<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator==(const Point<T, NDIMS>& lhs,
+                                 const Point<T, NDIMS>& rhs);
 
 /*!
  * \brief Inequality comparison operator for points
