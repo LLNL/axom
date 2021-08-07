@@ -68,9 +68,47 @@ public:
 
   void runShapeQuery() override
   {
+    constexpr int NUM_VERTS_PER_HEX = 8;
+
     SLIC_INFO(fmt::format("{:-^80}", " Querying the BVH tree "));
 
-    // Implementation here
+    mfem::Mesh* mesh = getDC()->GetMesh();
+
+    // Intersection algorithm only works on linear elements
+    SLIC_ASSERT(mesh != nullptr);
+    int const NE = mesh->GetNE();
+    if(NE > 0)
+    {
+      SLIC_ASSERT(mesh->GetNodes() == nullptr ||
+                  mesh->GetNodes()->FESpace()->GetOrder(0));
+    }
+
+    for(int i = 0; i < NE; i++)
+    {
+      // Get the indices of this element's vertices
+      mfem::Array<int> verts;
+      mesh->GetElementVertices(i, verts);
+      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
+
+      // Get the coordinates for the vertices
+      double* vertCoords[NUM_VERTS_PER_HEX];
+      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      {
+        vertCoords[j] = mesh->GetVertex(verts[j]);
+      }
+
+      // Do something with the vertex coordinates; in this case, just print them
+      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      {
+        SLIC_INFO(
+          fmt::format("Element {} -- coords for vertex {} are: {} {} {}",
+                      i,
+                      j,
+                      vertCoords[j][0],
+                      vertCoords[j][1],
+                      vertCoords[j][2]));
+      }
+    }
   }
 
   void applyReplacementRules(const klee::Shape& shape) override
