@@ -19,7 +19,7 @@ namespace shaping
 {
 void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
                      mfem::QuadratureFunction* materialQFunc,
-                     bool shouldReplace)
+                     bool shapeReplacesMaterial)
 {
   SLIC_ASSERT(shapeQFunc != nullptr);
   SLIC_ASSERT(materialQFunc != nullptr);
@@ -29,9 +29,9 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
   double* mData = materialQFunc->GetData();
   double* sData = shapeQFunc->GetData();
 
-  if(shouldReplace)
+  if(shapeReplacesMaterial)
   {
-    // If shouldReplace, clear material samples that are inside current shape
+    // If shapeReplacesMaterial, clear material samples that are inside current shape
     for(int j = 0; j < SZ; ++j)
     {
       mData[j] = sData[j] > 0 ? 0 : mData[j];
@@ -106,13 +106,14 @@ void generatePositionsQFunction(mfem::Mesh* mesh,
   {
     for(int i = 0; i < NE; ++i)
     {
+      const int elStartIdx = i * nq * dim;
       for(int j = 0; j < dim; ++j)
       {
         for(int k = 0; k < nq; ++k)
         {
           //X has dims nqpts x sdim x ne
-          (*pos_coef)((i * nq * dim) + (k * dim) + j) =
-            geomFactors->X((i * nq * dim) + (j * nq) + k);
+          (*pos_coef)(elStartIdx + (k * dim) + j) =
+            geomFactors->X(elStartIdx + (j * nq) + k);
         }
       }
     }

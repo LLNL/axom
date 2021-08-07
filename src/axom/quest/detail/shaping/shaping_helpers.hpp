@@ -35,6 +35,11 @@ using DenseTensorCollection = mfem::NamedFieldsMap<mfem::DenseTensor>;
  * Each location in space can only be covered by one material.
  * When \a shouldReplace is true, we clear all values in \a materialQFunc 
  * that are set in \a shapeQFunc. When it is false, we do the opposite.
+ *
+ * \param shapeQFunc The inout quadrature function for the shape samples
+ * \param materialQFunc The inout quadrature function for the material samples
+ * \param shapeReplacesMaterial Flag for whether the shape replaces the material 
+ *   or whether the material remains and we should zero out the shape sample (when false)
  */
 void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
                      mfem::QuadratureFunction* materialQFunc,
