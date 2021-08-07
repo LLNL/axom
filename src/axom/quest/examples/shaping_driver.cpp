@@ -45,6 +45,13 @@ using VolFracSampling = quest::shaping::VolFracSampling;
 
 //------------------------------------------------------------------------------
 
+/// Struct to help choose if our shaping method: sampling or intersection for now
+enum class ShapingMethod : int
+{
+  Sampling,
+  Intersection
+};
+
 /// Struct to parse and store the input parameters
 struct Input
 {
@@ -54,6 +61,7 @@ public:
   std::string shapeFile;
   klee::ShapeSet shapeSet;
 
+  ShapingMethod shapingMethod {ShapingMethod::Sampling};
   int quadratureOrder {5};
   int outputOrder {2};
   int samplesPerKnotSpan {25};
@@ -91,33 +99,9 @@ public:
       ->check(CLI::ExistingFile)
       ->required();
 
-    app.add_flag("-v,--verbose", m_verboseOutput)
+    app.add_flag("-v,--verbose,!--no-verbose", m_verboseOutput)
       ->description("Enable/disable verbose output")
       ->capture_default_str();
-
-    app.add_option("-o,--order", outputOrder)
-      ->description("order of the output grid function")
-      ->capture_default_str()
-      ->check(CLI::NonNegativeNumber);
-
-    app.add_option("-q,--quadrature-order", quadratureOrder)
-      ->description(
-        "Quadrature order for sampling the inout field. \n"
-        "Determines number of samples per element in determining "
-        "volume fraction field")
-      ->capture_default_str()
-      ->check(CLI::PositiveNumber);
-
-    std::map<std::string, VolFracSampling> vfsamplingMap {
-      {"qpts", VolFracSampling::SAMPLE_AT_QPTS},
-      {"dofs", VolFracSampling::SAMPLE_AT_DOFS}};
-    app.add_option("-s,--sampling-type", vfSampling)
-      ->description(
-        "Sampling strategy. \n"
-        "Sampling either at quadrature points or collocated with "
-        "degrees of freedom")
-      ->capture_default_str()
-      ->transform(CLI::CheckedTransformer(vfsamplingMap, CLI::ignore_case));
 
     app.add_option("-n,--segments-per-knot-span", samplesPerKnotSpan)
       ->description(
@@ -130,7 +114,46 @@ public:
       ->check(CLI::NonNegativeNumber)
       ->capture_default_str();
 
-    app.get_formatter()->column_width(35);
+    // Parameter to determine if we're using a file or a box mesh
+    std::map<std::string, ShapingMethod> methodMap {
+      {"sampling", ShapingMethod::Sampling},
+      {"intersection", ShapingMethod::Intersection}};
+    app.add_option("--method", shapingMethod)
+      ->description(
+        "Determines the shaping method -- either sampling or intersection")
+      ->capture_default_str()
+      ->transform(CLI::CheckedTransformer(methodMap, CLI::ignore_case));
+
+    // parameters that only apply to the sampling method
+    auto* sampling_options =
+      app.add_option_group("sampling",
+                           "Options related to sampling-based queries");
+
+    sampling_options->add_option("-o,--order", outputOrder)
+      ->description("order of the output grid function")
+      ->capture_default_str()
+      ->check(CLI::NonNegativeNumber);
+
+    sampling_options->add_option("-q,--quadrature-order", quadratureOrder)
+      ->description(
+        "Quadrature order for sampling the inout field. \n"
+        "Determines number of samples per element in determining "
+        "volume fraction field")
+      ->capture_default_str()
+      ->check(CLI::PositiveNumber);
+
+    std::map<std::string, VolFracSampling> vfsamplingMap {
+      {"qpts", VolFracSampling::SAMPLE_AT_QPTS},
+      {"dofs", VolFracSampling::SAMPLE_AT_DOFS}};
+    sampling_options->add_option("-s,--sampling-type", vfSampling)
+      ->description(
+        "Sampling strategy. \n"
+        "Sampling either at quadrature points or collocated with "
+        "degrees of freedom")
+      ->capture_default_str()
+      ->transform(CLI::CheckedTransformer(vfsamplingMap, CLI::ignore_case));
+
+    app.get_formatter()->column_width(50);
 
     // could throw an exception
     app.parse(argc, argv);
@@ -326,7 +349,17 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Initialize the shaping query object
   //---------------------------------------------------------------------------
-  quest::Shaper* shaper = new quest::SamplingShaper(params.shapeSet, &shapingDC);
+  quest::Shaper* shaper = nullptr;
+  switch(params.shapingMethod)
+  {
+  case ShapingMethod::Sampling:
+    shaper = new quest::SamplingShaper(params.shapeSet, &shapingDC);
+    break;
+  case ShapingMethod::Intersection:
+    shaper = new quest::IntersectionShaper(params.shapeSet, &shapingDC);
+    break;
+  }
+  SLIC_ASSERT_MSG(shaper != nullptr, "Invalid shaping method selected!");
 
   // Set generic parameters for the base Shaper instance
   shaper->setSamplesPerKnotSpan(params.samplesPerKnotSpan);

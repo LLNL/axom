@@ -94,7 +94,7 @@ blt_list_append(TO quest_depends_on IF MFEM_FOUND ELEMENTS mfem)
 if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     list(APPEND quest_headers Shaper.hpp
                               SamplingShaper.hpp
-                              OverlayShaper.hpp
+                              IntersectionShaper.hpp
                               detail/shaping/shaping_helpers.hpp)
     list(APPEND quest_sources detail/shaping/shaping_helpers.cpp)
 endif()

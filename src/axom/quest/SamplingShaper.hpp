@@ -4,9 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file Shaper.hpp
+ * \file SamplingShaper.hpp
  *
- * \brief Helper class for shaping queries
+ * \brief Helper class for sampling-based shaping queries
  */
 
 #ifndef AXOM_QUEST_SAMPLING_SHAPER__HPP_
@@ -359,11 +359,12 @@ public:
   {
     using axom::utilities::string::splitLastNTokens;
 
-    SLIC_INFO(
-      fmt::format("{:-^80}", "Applying replacement rules over the shapes"));
+    const auto& shapeName = shape.getName();
+    SLIC_INFO(fmt::format(
+      "{:-^80}",
+      fmt::format("Applying replacement rules over for shape '{}'", shapeName)));
 
     // Get inout qfunc for this shape
-    const auto& shapeName = shape.getName();
     auto* shapeQFunc = m_inoutShapeQFuncs.Get(fmt::format("inout_{}", shapeName));
     SLIC_ASSERT_MSG(
       shapeQFunc != nullptr,
