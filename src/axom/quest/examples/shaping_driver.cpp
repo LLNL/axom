@@ -307,7 +307,32 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Load the klee shape file and extract some information
   //---------------------------------------------------------------------------
-  params.shapeSet = klee::readShapeSet(params.shapeFile);
+  try
+  {
+    params.shapeSet = klee::readShapeSet(params.shapeFile);
+  }
+  catch(klee::KleeError& error)
+  {
+    std::vector<std::string> errs;
+    for(auto verificationError : error.getErrors())
+    {
+      errs.push_back(fmt::format(" - '{}': {}",
+                                 static_cast<std::string>(verificationError.path),
+                                 verificationError.message));
+    }
+
+    SLIC_WARNING(fmt::format(
+      "Error during parsing klee input. Found the following errors:\n{}",
+      fmt::join(errs, "\n")));
+
+    finalizeLogger();
+
+#ifdef AXOM_USE_MPI
+    MPI_Finalize();
+#endif
+    exit(1);
+  }
+
   const klee::Dimensions shapeDim = params.shapeSet.getDimensions();
 
   // Apply error checking
