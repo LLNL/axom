@@ -31,7 +31,7 @@ using NAType = axom::primal::NumericArray<double, 3>;
  * in a right-handed way (thumb points out the axis, fingers spin segment
  * toward wrist).
  */
-OctType from_segment(const Point2D &a, const Point2D &b)
+inline OctType from_segment(const Point2D &a, const Point2D &b)
 {
   const double SQ_3_2 = sqrt(3.) / 2.;
 
@@ -58,7 +58,7 @@ OctType from_segment(const Point2D &a, const Point2D &b)
  * For levels < 0, we return 0.  This lets us call the routine to find
  * the offset in an array to store prisms for level (levels + 1).
  */
-int count_segment_prisms(int levels)
+inline int count_segment_prisms(int levels)
 {
   int octcount = 1;
   for(int level = levels; level > 0; --level)
@@ -97,13 +97,13 @@ Point3D rescale_YZ(const Point3D &p, double new_dst)
 }
 
 AXOM_HOST_DEVICE
-OctType new_inscribed_prism(OctType &old_oct,
-                            int p_off,
-                            int s_off,
-                            int t_off,
-                            int u_off,
-                            Point2D pa,
-                            Point2D pb)
+inline OctType new_inscribed_prism(OctType &old_oct,
+                                   int p_off,
+                                   int s_off,
+                                   int t_off,
+                                   int u_off,
+                                   Point2D pa,
+                                   Point2D pb)
 {
   OctType retval;
   retval[P] = old_oct[p_off];
