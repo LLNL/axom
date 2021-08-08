@@ -392,7 +392,7 @@ int main(int argc, char** argv)
     slic::flushStreams();
 
     // Query the mesh against this shape
-    shaper->runShapeQuery();
+    shaper->runShapeQuery(shape);
     slic::flushStreams();
 
     // Apply the replacement rules for this shape against the existing materials

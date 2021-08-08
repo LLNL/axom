@@ -340,9 +340,11 @@ public:
     }
   }
 
-  void runShapeQuery() override
+  void runShapeQuery(const klee::Shape& shape) override
   {
-    SLIC_INFO(fmt::format("{:-^80}", " Querying the octree "));
+    SLIC_INFO(fmt::format(
+      "{:-^80}",
+      fmt::format(" Querying the octree for shape '{}'", shape.getName())));
 
     switch(getShapeDimension())
     {

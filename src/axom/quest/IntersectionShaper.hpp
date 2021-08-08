@@ -49,7 +49,6 @@ public:
   { }
 
 public:
-public:
   //@{
   //!  @name Functions related to the stages for a given shape
 
@@ -66,7 +65,7 @@ public:
     //  -- generate the BVH tree over the octahedra
   }
 
-  void runShapeQuery() override
+  void runShapeQuery(const klee::Shape& shape) override
   {
     constexpr int NUM_VERTS_PER_HEX = 8;
 
@@ -83,11 +82,17 @@ public:
                   mesh->GetNodes()->FESpace()->GetOrder(0));
     }
 
-    for(int i = 0; i < NE; i++)
+    // Create and register a scalar field for this shape's volume fractions
+    // The Degrees of Freedom will be in correspondence with the elements
+    auto* volFrac = this->newVolFracGridFunction();
+    auto volFracName = fmt::format("shape_vol_frac_{}", shape.getName());
+    this->getDC()->RegisterField(volFracName, volFrac);
+
+    for(int el = 0; el < NE; ++el)
     {
       // Get the indices of this element's vertices
       mfem::Array<int> verts;
-      mesh->GetElementVertices(i, verts);
+      mesh->GetElementVertices(el, verts);
       SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
 
       // Get the coordinates for the vertices
@@ -102,23 +107,52 @@ public:
       {
         SLIC_INFO(
           fmt::format("Element {} -- coords for vertex {} are: {} {} {}",
-                      i,
+                      el,
                       j,
                       vertCoords[j][0],
                       vertCoords[j][1],
                       vertCoords[j][2]));
       }
+
+      // run the query for this element
+      // HACK: To get a concrete value, let's just set every element's vf to 1 for now
+      double vf = 1.0;
+      (*volFrac)(el) = vf;
     }
   }
 
   void applyReplacementRules(const klee::Shape& shape) override
   {
     const auto& shapeName = shape.getName();
+    const auto& materialName = shape.getMaterial();
     SLIC_INFO(fmt::format(
       "{:-^80}",
-      fmt::format("Applying replacement rules over for shape '{}'", shapeName)));
+      fmt::format("Applying replacement rules for shape '{}' of material {}",
+                  shapeName)));
 
-    // Implementation here -- update volume fractions based on replacement rules
+    auto shapeVolFracName = fmt::format("shape_vol_frac_{}", shapeName);
+    auto materialVolFracName = fmt::format("vol_frac_{}", materialName);
+
+    auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
+    SLIC_ASSERT(shapeVolFrac != nullptr);
+
+    // Get or create the volume fraction field for this shape's material
+    mfem::GridFunction* matVolFrac = nullptr;
+    if(this->getDC()->HasField(materialVolFracName))
+    {
+      matVolFrac = this->getDC()->GetField(materialVolFracName);
+    }
+    else
+    {
+      matVolFrac = newVolFracGridFunction();
+      this->getDC()->RegisterField(materialVolFracName, matVolFrac);
+    }
+
+    /// Implementation here -- update material volume fractions based on replacement rules
+
+    // HACK: For simplicity at first, let's just set the material vol fraction to that of the shape
+    // This will have to be updated
+    *matVolFrac = *shapeVolFrac;
   }
 
   void finalizeShapeQuery() override
@@ -137,6 +171,22 @@ public:
   }
 
 private:
+  /// Create and return a new volume fraction grid function for the current mesh
+  mfem::GridFunction* newVolFracGridFunction()
+  {
+    mfem::Mesh* mesh = getDC()->GetMesh();
+    SLIC_ASSERT(mesh != nullptr);
+
+    const int vfOrder = 0;
+    const int dim = mesh->Dimension();
+    mfem::L2_FECollection* coll =
+      new mfem::L2_FECollection(vfOrder, dim, mfem::BasisType::Positive);
+    mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, coll);
+    mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
+    volFrac->MakeOwner(coll);
+
+    return volFrac;
+  }
 };
 
 }  // end namespace quest

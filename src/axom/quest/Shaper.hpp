@@ -144,7 +144,7 @@ public:
   virtual void prepareShapeQuery(klee::Dimensions shapeDimension,
                                  const klee::Shape& shape) = 0;
 
-  virtual void runShapeQuery() = 0;
+  virtual void runShapeQuery(const klee::Shape& shape) = 0;
 
   virtual void applyReplacementRules(const klee::Shape& shape) = 0;
 
