@@ -101,10 +101,11 @@ public:
     SLIC_INFO("Mesh bounding box: " << m_bbox);
   }
 
-  void initSpatialIndex()
+  void initSpatialIndex(double vertexWeldThreshold)
   {
     // Create octree over mesh's bounding box
     m_octree = new InOutOctreeType(m_bbox, m_surfaceMesh);
+    m_octree->setVertexWeldThreshold(vertexWeldThreshold);
     m_octree->generateIndex();
   }
 
@@ -298,19 +299,23 @@ public:
     const auto& shapeName = shape.getName();
 
     SLIC_INFO(fmt::format("{:-^80}", " Generating the octree "));
+
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+
     switch(shapeDimension)
     {
     case klee::Dimensions::Two:
       m_inoutSampler2D = new shaping::InOutSampler<2>(shapeName, m_surfaceMesh);
       m_inoutSampler2D->computeBounds();
-      m_inoutSampler2D->initSpatialIndex();
+      m_inoutSampler2D->initSpatialIndex(this->m_vertexWeldThreshold);
       m_surfaceMesh = m_inoutSampler2D->getSurfaceMesh();
       break;
 
     case klee::Dimensions::Three:
       m_inoutSampler3D = new shaping::InOutSampler<3>(shapeName, m_surfaceMesh);
       m_inoutSampler3D->computeBounds();
-      m_inoutSampler3D->initSpatialIndex();
+      m_inoutSampler3D->initSpatialIndex(this->m_vertexWeldThreshold);
       m_surfaceMesh = m_inoutSampler3D->getSurfaceMesh();
       break;
 
@@ -326,7 +331,7 @@ public:
                 (m_inoutSampler3D == nullptr && m_inoutSampler2D != nullptr));
 
     // Output some logging info and dump the mesh
-    if(this->getRank() == 0)
+    if(this->isVerbose() && this->getRank() == 0)
     {
       const int nVerts = m_surfaceMesh->getNumberOfNodes();
       const int nCells = m_surfaceMesh->getNumberOfCells();
@@ -345,6 +350,9 @@ public:
     SLIC_INFO(fmt::format(
       "{:-^80}",
       fmt::format(" Querying the octree for shape '{}'", shape.getName())));
+
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     switch(getShapeDimension())
     {
@@ -365,6 +373,9 @@ public:
     SLIC_INFO(fmt::format(
       "{:-^80}",
       fmt::format("Applying replacement rules over for shape '{}'", shapeName)));
+
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     // Get inout qfunc for this shape
     auto* shapeQFunc = m_inoutShapeQFuncs.Get(fmt::format("inout_{}", shapeName));
@@ -444,6 +455,9 @@ public:
 public:
   void adjustVolumeFractions() override
   {
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+
     for(auto& mat : m_inoutMaterialQFuncs)
     {
       const std::string matName = mat.first;

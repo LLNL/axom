@@ -103,15 +103,18 @@ public:
       }
 
       // Do something with the vertex coordinates; in this case, just print them
-      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      if(this->isVerbose())
       {
-        SLIC_INFO(
-          fmt::format("Element {} -- coords for vertex {} are: {} {} {}",
-                      el,
-                      j,
-                      vertCoords[j][0],
-                      vertCoords[j][1],
-                      vertCoords[j][2]));
+        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+        {
+          SLIC_INFO(
+            fmt::format("Element {} -- coords for vertex {} are: {} {} {}",
+                        el,
+                        j,
+                        vertCoords[j][0],
+                        vertCoords[j][1],
+                        vertCoords[j][2]));
+        }
       }
 
       // run the query for this element
@@ -128,7 +131,8 @@ public:
     SLIC_INFO(fmt::format(
       "{:-^80}",
       fmt::format("Applying replacement rules for shape '{}' of material {}",
-                  shapeName)));
+                  shapeName,
+                  materialName)));
 
     auto shapeVolFracName = fmt::format("shape_vol_frac_{}", shapeName);
     auto materialVolFracName = fmt::format("vol_frac_{}", materialName);

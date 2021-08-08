@@ -83,7 +83,11 @@ public:
     m_vertexWeldThreshold = threshold;
   }
 
+  void setVerbosity(bool isVerbose) { m_verboseOutput = isVerbose; }
+
   //@}
+
+  bool isVerbose() const { return m_verboseOutput; }
 
   sidre::MFEMSidreDataCollection* getDC() { return m_dc; }
   mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
@@ -187,6 +191,7 @@ protected:
 
   int m_samplesPerKnotSpan {25};
   double m_vertexWeldThreshold {1e-9};
+  bool m_verboseOutput {false};
 
   MPI_Comm m_comm {MPI_COMM_SELF};
 };

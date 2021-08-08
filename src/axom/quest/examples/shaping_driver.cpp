@@ -364,6 +364,7 @@ int main(int argc, char** argv)
   // Set generic parameters for the base Shaper instance
   shaper->setSamplesPerKnotSpan(params.samplesPerKnotSpan);
   shaper->setVertexWeldThreshold(params.weldThresh);
+  shaper->setVerbosity(params.isVerbose());
 
   // Set specific parameters for a SamplingShaper, if appropriate
   if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
