@@ -96,7 +96,8 @@ if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
                               SamplingShaper.hpp
                               IntersectionShaper.hpp
                               detail/shaping/shaping_helpers.hpp)
-    list(APPEND quest_sources detail/shaping/shaping_helpers.cpp)
+    list(APPEND quest_sources Shaper.cpp
+                              detail/shaping/shaping_helpers.cpp)
 endif()
 
 if(C2C_FOUND)
