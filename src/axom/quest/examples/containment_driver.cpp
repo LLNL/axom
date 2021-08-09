@@ -415,10 +415,10 @@ public:
     if(dimension() == 3)
     {
       fmt::memory_buffer edgeHistStr;
-      fmt::format_to(edgeHistStr, "Edge length histogram (lg-arithmic): ");
+      fmt::format_to(std::back_inserter(edgeHistStr), "Edge length histogram (lg-arithmic): ");
       for(auto it = edgeLenHist.begin(); it != edgeLenHist.end(); ++it)
       {
-        fmt::format_to(edgeHistStr,
+        fmt::format_to(std::back_inserter(edgeHistStr),
                        "\n\texp: {}\tcount: {}\tRange: {}",
                        it->first,
                        it->second / 2,
@@ -428,10 +428,10 @@ public:
     }
 
     fmt::memory_buffer cellHistStr;
-    fmt::format_to(cellHistStr, "Cell areas histogram (lg-arithmic): ");
+    fmt::format_to(std::back_inserter(cellHistStr), "Cell areas histogram (lg-arithmic): ");
     for(auto it = areaHist.begin(); it != areaHist.end(); ++it)
     {
-      fmt::format_to(cellHistStr,
+      fmt::format_to(std::back_inserter(cellHistStr),
                      "\n\texp: {}\tcount: {}\tRange: {}",
                      it->first,
                      it->second,
@@ -442,11 +442,11 @@ public:
     if(!badCells.empty())
     {
       fmt::memory_buffer badCellStr;
-      fmt::format_to(badCellStr,
+      fmt::format_to(std::back_inserter(badCellStr),
                      "The following cell(s) have zero area/edge lengths:");
       for(auto it = badCells.begin(); it != badCells.end(); ++it)
       {
-        fmt::format_to(badCellStr, "\n\tCell {}", *it);
+        fmt::format_to(std::back_inserter(badCellStr), "\n\tCell {}", *it);
         CellVertIndices vertIndices;
         m_surfaceMesh->getCellNodeIDs(*it, vertIndices.data());
 
@@ -454,7 +454,7 @@ public:
         for(int j = 0; j < DIM; ++j)
         {
           m_surfaceMesh->getNode(vertIndices[j], vertPos.data());
-          fmt::format_to(badCellStr,
+          fmt::format_to(std::back_inserter(badCellStr),
                          "\n\t\t vId: {} @ position: {}",
                          vertIndices[j],
                          vertPos);
