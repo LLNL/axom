@@ -60,18 +60,19 @@ mark_as_advanced(CLI11_FOUND)
 set(fmt_headers
     fmt/fmt.hpp
     fmt/args.h
-    fmt/compile.h
-    fmt/core.h
-    fmt/format.h
-    fmt/format-inl.h
-    fmt/os.h
-    fmt/ostream.h
-    fmt/posix.h
-    fmt/printf.h
-    fmt/ranges.h
     fmt/chrono.h
     fmt/color.h
+    fmt/compile.h
+    fmt/core.h
+    fmt/fmt.hpp
+    fmt/format-inl.h
+    fmt/format.h
     fmt/locale.h
+    fmt/os.h
+    fmt/ostream.h
+    fmt/printf.h
+    fmt/ranges.h
+    fmt/xchar.h
     )
 
 blt_add_library(NAME    fmt
