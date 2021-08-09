@@ -17,6 +17,13 @@ def detect_scheduler():
     return 'SLURM'
 
 
+def detect_scheduler():
+    if which('aprun'):
+        return 'APRUN'
+    if which('jsrun'):
+        return 'LSF'
+    return 'SLURM'
+
 class Scr(CMakePackage):
     """SCR caches checkpoint data in storage on the compute nodes of a
        Linux cluster to provide a fast, scalable checkpoint/restart
