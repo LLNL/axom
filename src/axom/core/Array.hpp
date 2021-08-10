@@ -14,6 +14,7 @@
 #include "axom/core/IteratorBase.hpp"         // for Iterator
 
 // C/C++ includes
+#include <array>     // for std::array
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::inner_product
 
@@ -94,12 +95,78 @@ bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
 
 // Stuff we only want to make available to the 1D case (where we want to closely emulate std::vector)
 template <typename T, IndexType DIM, typename ArrayType>
-struct Only1D
-{ };
+class Only1D
+{
+public:
+  template <typename... Args>
+  Only1D(Args... args) : m_dims {static_cast<IndexType>(args)...}
+  {
+    // Row-major
+    m_strides[DIM - 1] = 1;
+    for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
+    {
+      m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
+    }
+  }
+
+  /*!
+   * \brief Dimension-aware accessor, returns a reference to the given value.
+   *
+   * \param [in] args the parameter pack of indices in each dimension.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre sizeof...(Args) == DIM
+   * \pre 0 <= args[i] < m_dims[i] for i in [0, DIM)
+   */
+  template <typename... Args,
+            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
+  T& operator()(Args... args)
+  {
+    IndexType indices[] = {static_cast<IndexType>(args)...};
+    IndexType idx =
+      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
+    // assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+  /// \overload
+  template <typename... Args,
+            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
+  const T& operator()(Args... args) const
+  {
+    IndexType indices[] = {static_cast<IndexType>(args)...};
+    IndexType idx =
+      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
+    // assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+
+  friend void swap(Only1D& lhs, Only1D& rhs)
+  {
+    std::swap(lhs.m_dims, rhs.m_dims);
+    std::swap(lhs.m_strides, rhs.m_strides);
+  }
+
+private:
+  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  const ArrayType& asDerived() const
+  {
+    return static_cast<const ArrayType&>(*this);
+  }
+
+  // FIXME: What's the best way to make these available to users
+  // Is it sufficient to just give them the raw arrays?
+  /// \brief The sizes (extents?) in each dimension
+  std::array<IndexType, DIM> m_dims;
+  /// \brief The strides in each dimension
+  std::array<IndexType, DIM> m_strides;
+};
 
 template <typename T, typename ArrayType>
-struct Only1D<T, 1, ArrayType>
+class Only1D<T, 1, ArrayType>
 {
+public:
+  Only1D(IndexType size = 0) { }
   IndexType size() const { return asDerived().fullSize(); }
 
   /*!
@@ -138,6 +205,10 @@ private:
     return static_cast<const ArrayType&>(*this);
   }
 };
+
+template <typename T, typename ArrayType>
+void swap(Only1D<T, 1, ArrayType>& lhs, Only1D<T, 1, ArrayType>& rhs)
+{ }
 
 /*!
  * \class Array
@@ -410,36 +481,6 @@ public:
   /// \overload
   const T& operator[](const IndexType idx) const
   {
-    assert(inBounds(idx));
-    return m_data[idx];
-  }
-
-  /*!
-   * \brief Dimension-aware accessor, returns a reference to the given value.
-   *
-   * \param [in] args the parameter pack of indices in each dimension.
-   *
-   * \note equivalent to *(array.data() + idx).
-   *
-   * \pre sizeof...(Args) == DIM
-   * \pre 0 <= args[i] < m_dims[i] for i in [0, DIM)
-   */
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  T& operator()(Args... args)
-  {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx = std::inner_product(indices, indices + DIM, m_strides, 0);
-    assert(inBounds(idx));
-    return m_data[idx];
-  }
-  /// \overload
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  const T& operator()(Args... args) const
-  {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx = std::inner_product(indices, indices + DIM, m_strides, 0);
     assert(inBounds(idx));
     return m_data[idx];
   }
@@ -844,12 +885,6 @@ protected:
   double m_resize_ratio = DEFAULT_RESIZE_RATIO;
   bool m_is_external = false;
   int m_allocator_id;
-  // FIXME: What's the best way to make these available to users
-  // Is it sufficient to just give them the raw arrays?
-  /// \brief The sizes (extents?) in each dimension
-  IndexType m_dims[DIM];
-  /// \brief The strides in each dimension
-  IndexType m_strides[DIM];
 };
 
 //------------------------------------------------------------------------------
@@ -864,18 +899,13 @@ Array<T, DIM>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
 template <typename T, IndexType DIM>
 template <typename... Args>
 Array<T, DIM>::Array(Args... args)
-  : m_allocator_id(axom::getDefaultAllocatorID())
-  , m_dims {static_cast<IndexType>(args)...}
+  : Only1D<T, DIM, Array<T, DIM>>(args...)
+  , m_allocator_id(axom::getDefaultAllocatorID())
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
+
   initialize(detail::packProduct(args...), 0);
-  // Row-major
-  m_strides[DIM - 1] = 1;
-  for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
-  {
-    m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
-  }
 }
 
 //------------------------------------------------------------------------------
@@ -909,18 +939,20 @@ Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
 //------------------------------------------------------------------------------
 template <typename T, IndexType DIM>
 Array<T, DIM>::Array(const Array& other, int allocator_id)
-  : m_allocator_id(allocator_id)
+  : Only1D<T, DIM, Array<T, DIM>>(
+      static_cast<const Only1D<T, DIM, Array<T, DIM>>&>(other))
+  , m_allocator_id(allocator_id)
 {
   initialize(other.size(), other.capacity());
   axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
-  std::copy(other.m_dims, other.m_dims + DIM, m_dims);
-  std::copy(other.m_strides, other.m_strides + DIM, m_strides);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, IndexType DIM>
 Array<T, DIM>::Array(Array&& other)
-  : m_resize_ratio(0.0)
+  : Only1D<T, DIM, Array<T, DIM>>(
+      static_cast<Only1D<T, DIM, Array<T, DIM>>&&>(other))
+  , m_resize_ratio(0.0)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
   m_data = other.m_data;
@@ -929,16 +961,12 @@ Array<T, DIM>::Array(Array&& other)
   m_resize_ratio = other.m_resize_ratio;
   m_is_external = other.m_is_external;
   m_allocator_id = other.m_allocator_id;
-  std::copy(other.m_dims, other.m_dims + DIM, m_dims);
-  std::copy(other.m_strides, other.m_strides + DIM, m_strides);
 
   other.m_data = nullptr;
   other.m_capacity = 0;
   other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
   other.m_is_external = false;
   other.m_allocator_id = INVALID_ALLOCATOR_ID;
-  std::fill(other.m_dims, other.m_dims + DIM, 0);
-  std::fill(other.m_strides, other.m_strides + DIM, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -1177,46 +1205,34 @@ inline void Array<T, DIM>::resize(Args... args)
 
   updateNumElements(new_num_elements);
 
-  // Can't reinitialize a raw array so we have to throw it into a temp
-  IndexType temp_dims[] = {static_cast<IndexType>(args)...};
-  std::copy(temp_dims, temp_dims + DIM, m_dims);
-  // Row-major
-  m_strides[DIM - 1] = 1;
-  for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
-  {
-    m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
-  }
+  static_cast<Only1D<T, DIM, Array<T, DIM>>&>(*this) =
+    Only1D<T, DIM, Array<T, DIM>> {static_cast<IndexType>(args)...};
 }
 
 //------------------------------------------------------------------------------
 template <typename T, IndexType DIM>
 inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 {
+  // FIXME: Why doesn't ADL work here?
+  // swap(static_cast<Only1D<T, DIM, Array<T, DIM>>&>(*this),
+  //      static_cast<Only1D<T, DIM, Array<T, DIM>>&>(other));
   T* temp_data = m_data;
   IndexType temp_num_elements = m_num_elements;
   IndexType temp_capacity = m_capacity;
   double temp_resize_ratio = m_resize_ratio;
   bool temp_is_external = m_is_external;
-  IndexType temp_dims[DIM];
-  std::copy(m_dims, m_dims + DIM, temp_dims);
-  IndexType temp_strides[DIM];
-  std::copy(m_strides, m_strides + DIM, temp_strides);
 
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
   m_is_external = other.m_is_external;
-  std::copy(other.m_dims, other.m_dims + DIM, m_dims);
-  std::copy(other.m_strides, other.m_strides + DIM, m_strides);
 
   other.m_data = temp_data;
   other.m_num_elements = temp_num_elements;
   other.m_capacity = temp_capacity;
   other.m_resize_ratio = temp_resize_ratio;
   other.m_is_external = temp_is_external;
-  std::copy(temp_dims, temp_dims + DIM, other.m_dims);
-  std::copy(temp_strides, temp_strides + DIM, other.m_strides);
 }
 
 //------------------------------------------------------------------------------
