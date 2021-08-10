@@ -39,6 +39,8 @@ TEST(IOTest, readShapeSet_noShapes)
         dimensions: 2
         shapes: [])");
   EXPECT_TRUE(shapeSet.getShapes().empty());
+  EXPECT_EQ(Dimensions::Two, shapeSet.getDimensions());
+  EXPECT_NE(Dimensions::Three, shapeSet.getDimensions());
 }
 
 TEST(IOTest, readShapeSet_invalidDimensions)
@@ -295,6 +297,7 @@ TEST(IOTest, readShapeSet_geometryOperators)
   ASSERT_NE(translation, nullptr);
   EXPECT_THAT(translation->getOffset(), AlmostEqVector(Vector3D {10, 20, 0}));
   EXPECT_EQ(LengthUnit::m, translation->getEndProperties().units);
+  EXPECT_EQ(shapeSet.getDimensions(), translation->getEndProperties().dimensions);
 }
 
 TEST(IOTest, readShapeSet_geometryOperatorsWithoutUnits)
@@ -378,6 +381,7 @@ TEST(IOTest, readShapeSet_differentDimensions)
                                                          LengthUnit::cm};
   EXPECT_EQ(expectedStartProperties, geometry.getStartProperties());
   EXPECT_EQ(expectedEndProperties, geometry.getEndProperties());
+  EXPECT_EQ(shapeSet.getDimensions(), geometry.getEndProperties().dimensions);
   auto &geometryOperator = geometry.getGeometryOperator();
   ASSERT_TRUE(geometryOperator);
   auto composite =

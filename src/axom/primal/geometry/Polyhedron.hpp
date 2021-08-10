@@ -351,8 +351,7 @@ public:
     return sum;
   }
 
-
-private: 
+private:
   /*!
    * \brief Finds the faces of the Polyhedron, assuming the vertex neighbors
    *        are in counter-clockwise ordering.
@@ -459,7 +458,7 @@ public:
   double volume() const
   {
     SLIC_CHECK_MSG(hasNeighbors(),
-                 "Polyhedron::volume() is only valid with vertex neighbors.");
+                   "Polyhedron::volume() is only valid with vertex neighbors.");
 
     double retVol = 0.0;
 
@@ -491,8 +490,7 @@ public:
         {
           VectorType v1(m_vertices[faces[face_offset[i] + j]].data());
           v1 -= origin;
-          VectorType v2(
-            m_vertices[faces[face_offset[i] + ((j + 1) % n)]].data());
+          VectorType v2(m_vertices[faces[face_offset[i] + ((j + 1) % n)]].data());
           v2 -= origin;
           double partialVol = v0.dot(VectorType::cross_product(v1, v2));
           retVol += partialVol;
@@ -502,7 +500,6 @@ public:
 
     return retVol / 6.0;
   }
-
 
   /*!
    * \brief Simple formatted print of a polyhedron instance

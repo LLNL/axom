@@ -35,5 +35,23 @@ std::string ShapeSet::resolvePath(const std::string &filePath) const
   utilities::filesystem::getDirName(dir, m_path);
   return utilities::filesystem::joinPath(dir, filePath);
 }
+
+void ShapeSet::setDimensions(Dimensions dimensions)
+{
+  m_dimensions = dimensions;
+  m_dimensionsHaveBeenSet = true;
+}
+
+Dimensions ShapeSet::getDimensions() const
+{
+  if(!m_dimensionsHaveBeenSet)
+  {
+    throw std::logic_error(
+      "Can only query the ShapeSet dimensions after calling setShapes()");
+  }
+
+  return m_dimensions;
+}
+
 }  // namespace klee
 }  // namespace axom

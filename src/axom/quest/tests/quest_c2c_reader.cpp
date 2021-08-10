@@ -59,9 +59,9 @@ void writeSquare(const std::string& filename)
 {
   std::ofstream c2cFile(filename, std::ios::out);
   c2cFile << "point = start" << std::endl;
-  c2cFile << "piece = line(start=(0cm, 0cm), end=(1cm, 0cm))" << std::endl;
+  c2cFile << "piece = line(start=(0cm, 0cm), end=(0cm, 1cm))" << std::endl;
   c2cFile << "piece = line()" << std::endl;
-  c2cFile << "piece = line(start=(1cm, 1cm), end=(0cm, 1cm))" << std::endl;
+  c2cFile << "piece = line(start=(1cm, 1cm), end=(1cm, 0cm))" << std::endl;
   c2cFile << "piece = line(end=start)" << std::endl;
 }
 
@@ -77,8 +77,8 @@ void writeSpline(const std::string& filename)
   const int NPTS = 2 * freq;
   for(int i = 0; i <= NPTS; ++i)
   {
-    double x = 2 * M_PI * static_cast<double>(i) / NPTS;
-    double y = offset + amplitude * cos(freq * x);
+    double y = 2 * M_PI * static_cast<double>(i) / NPTS;
+    double x = offset + amplitude * cos(freq * y);
     pts.emplace_back(fmt::format("{} {}", x, y));
   }
 
@@ -86,15 +86,15 @@ void writeSpline(const std::string& filename)
   // output sine wave spline
   c2cFile << "point = spline_start" << std::endl;
   c2cFile << fmt::format(
-               "piece = rz(units=cm, spline=cubic, beginTan=-90deg, "
-               "endTan=-90deg, rz={})",
+               "piece = rz(units=cm, spline=cubic, beginTan=-180deg, "
+               "endTan=-180deg, rz={})",
                fmt::join(pts.rbegin(), pts.rend(), "\n\t\t"))
           << std::endl;
   c2cFile << "point = spline_end" << std::endl;
 
   // add straight edges within first quadrant
   c2cFile << "piece = line(end=(0cm,0cm))" << std::endl;
-  c2cFile << fmt::format("piece = line(end=({}cm,0cm))", 2 * M_PI) << std::endl;
+  c2cFile << fmt::format("piece = line(end=(0cm,{}cm))", 2 * M_PI) << std::endl;
   c2cFile << "piece = line(end=spline_start)" << std::endl;
 }
 

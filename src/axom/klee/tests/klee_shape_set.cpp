@@ -53,6 +53,28 @@ TEST(ShapeSetTest, resolvePath_startWithAbsoluteFileName)
             shapeSet.resolvePath("/other/abs/path/newPath.txt"));
 }
 
+TEST(ShapeSetTest, dimensions_getAndSet)
+{
+  ShapeSet shapeSet;
+
+  // Can't query the ShapeSet dimensions until calling setDimensions
+  EXPECT_THROW(shapeSet.getDimensions(), std::logic_error);
+
+  {
+    shapeSet.setDimensions(Dimensions::Two);
+
+    EXPECT_EQ(Dimensions::Two, shapeSet.getDimensions());
+    EXPECT_NE(Dimensions::Three, shapeSet.getDimensions());
+  }
+
+  {
+    shapeSet.setDimensions(Dimensions::Three);
+
+    EXPECT_NE(Dimensions::Two, shapeSet.getDimensions());
+    EXPECT_EQ(Dimensions::Three, shapeSet.getDimensions());
+  }
+}
+
 }  // namespace
 }  // namespace klee
 }  // namespace axom

@@ -50,8 +50,8 @@ packages:
   netlib-lapack:
     buildable: false
     externals:
-    - spec: netlib-lapack@3.6.1
-      prefix: /usr
+    - spec: netlib-lapack@3.8.0 %clang@8.0.1_nvcc_xlf
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
 
 # System level packages to not build
   autoconf:
