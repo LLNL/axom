@@ -245,6 +245,7 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
     pointer = axom::allocate<T>(0);
   }
 
+  AXOM_UNUSED_VAR(allocID);
 #endif
 
   return pointer;

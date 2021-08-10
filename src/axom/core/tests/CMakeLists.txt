@@ -93,7 +93,7 @@ endif()
 #------------------------------------------------------------------------------
 # OpenMP GTests
 #------------------------------------------------------------------------------
-if (ENABLE_OPENMP)
+if (ENABLE_OPENMP AND AXOM_USE_RAJA)
   set( core_openmp_tests
        core_openmp_map.hpp
        )

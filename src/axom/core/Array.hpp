@@ -51,7 +51,7 @@ IndexType packProduct(T&& t, Args... args)
 };  // namespace detail
 
 // Forward declare the templated classes and operator function(s)
-template <typename T, IndexType dim>
+template <typename T, IndexType DIM>
 class Array;
 
 /// \name Overloaded Array Operator(s)
@@ -65,8 +65,8 @@ class Array;
  * \param [in] arr user-supplied Array instance.
  * \return os the updated output stream object.
  */
-template <typename T, IndexType dim>
-std::ostream& operator<<(std::ostream& os, const Array<T, dim>& arr);
+template <typename T, IndexType DIM>
+std::ostream& operator<<(std::ostream& os, const Array<T, DIM>& arr);
 
 /*!
  * \brief Equality comparison operator for Arrays
@@ -76,8 +76,8 @@ std::ostream& operator<<(std::ostream& os, const Array<T, dim>& arr);
  * \return true if the Arrays have the same allocator ID, are of equal length,
  * and have the same elements.
  */
-template <typename T, IndexType dim>
-bool operator==(const Array<T, dim>& lhs, const Array<T, dim>& rhs);
+template <typename T, IndexType DIM>
+bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
 
 /*!
  * \brief Inequality comparison operator for Arrays
@@ -87,13 +87,13 @@ bool operator==(const Array<T, dim>& lhs, const Array<T, dim>& rhs);
  * \return true if the Arrays do not have the same allocator ID, are not of
  * equal length, or do not have the same elements.
  */
-template <typename T, IndexType dim>
-bool operator!=(const Array<T, dim>& lhs, const Array<T, dim>& rhs);
+template <typename T, IndexType DIM>
+bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
 
 /// @}
 
 // Stuff we only want to make available to the 1D case (where we want to closely emulate std::vector)
-template <typename T, IndexType dim, typename ArrayType>
+template <typename T, IndexType DIM, typename ArrayType>
 struct Only1D
 { };
 
@@ -209,12 +209,11 @@ private:
  *
  *
  * \tparam T the type of the values to hold.
- * \tparam dim The dimension of the array.
- * \tparam memory The memory space of the array.
+ * \tparam DIM The dimension of the array.
  *
  */
-template <typename T, IndexType dim = 1>
-class Array : public Only1D<T, dim, Array<T, dim>>
+template <typename T, IndexType DIM = 1>
+class Array : public Only1D<T, DIM, Array<T, DIM>>
 {
 public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
@@ -251,7 +250,7 @@ public:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  template <IndexType SFINAE = dim>
+  template <IndexType SFINAE = DIM>
   Array(IndexType num_elements,
         IndexType capacity = 0,
         int allocator_id = axom::getDefaultAllocatorID(),
@@ -263,7 +262,7 @@ public:
    * \param [in] args The parameter pack containing the "shape" of the Array
    * \see https://numpy.org/doc/stable/reference/generated/numpy.empty.html#numpy.empty
    *
-   * \pre sizeof...(Args) == dim
+   * \pre sizeof...(Args) == DIM
    *
    * \post capacity() >= fullSize()
    * \post fullSize() == num_elements
@@ -422,30 +421,30 @@ public:
    *
    * \note equivalent to *(array.data() + idx).
    *
-   * \pre sizeof...(Args) == dim
-   * \pre 0 <= args[i] < m_dims[i] for i in [0, dim)
+   * \pre sizeof...(Args) == DIM
+   * \pre 0 <= args[i] < m_dims[i] for i in [0, DIM)
    */
   template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == dim>::type>
+            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
   T& operator()(Args... args)
   {
     IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx = std::inner_product(indices, indices + dim, m_strides, 0);
+    IndexType idx = std::inner_product(indices, indices + DIM, m_strides, 0);
     assert(inBounds(idx));
     return m_data[idx];
   }
   /// \overload
   template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == dim>::type>
+            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
   const T& operator()(Args... args) const
   {
     IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx = std::inner_product(indices, indices + dim, m_strides, 0);
+    IndexType idx = std::inner_product(indices, indices + DIM, m_strides, 0);
     assert(inBounds(idx));
     return m_data[idx];
   }
 
-  // TODO: Implement View class for the case where sizeof...(Args) < dim (i.e., where the indexing results in a nonscalar)
+  // TODO: Implement View class for the case where sizeof...(Args) < DIM (i.e., where the indexing results in a nonscalar)
 
   /*!
    * \brief Return a pointer to the array of data.
@@ -700,7 +699,7 @@ public:
    *
    * \note The externality of the buffers will follow the swap
    */
-  void swap(Array<T, dim>& other);
+  void swap(Array<T, DIM>& other);
 
   /*!
    * \brief Get the ratio by which the capacity increases upon dynamic resize.
@@ -848,9 +847,9 @@ protected:
   // FIXME: What's the best way to make these available to users
   // Is it sufficient to just give them the raw arrays?
   /// \brief The sizes (extents?) in each dimension
-  IndexType m_dims[dim];
+  IndexType m_dims[DIM];
   /// \brief The strides in each dimension
-  IndexType m_strides[dim];
+  IndexType m_strides[DIM];
 };
 
 //------------------------------------------------------------------------------
@@ -858,29 +857,29 @@ protected:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-Array<T, dim>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
+template <typename T, IndexType DIM>
+Array<T, DIM>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
 { }
 
-template <typename T, IndexType dim>
+template <typename T, IndexType DIM>
 template <typename... Args>
-Array<T, dim>::Array(Args... args) : m_dims {static_cast<IndexType>(args)...}
+Array<T, DIM>::Array(Args... args) : m_dims {static_cast<IndexType>(args)...}
 {
-  static_assert(sizeof...(Args) == dim,
+  static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   initialize(detail::packProduct(args...), 0);
   // Row-major
-  m_strides[dim - 1] = 1;
-  for(int i = static_cast<int>(dim) - 2; i >= 0; i--)
+  m_strides[DIM - 1] = 1;
+  for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
   {
     m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
   }
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
+template <typename T, IndexType DIM>
 template <IndexType SFINAE>
-Array<T, dim>::Array(IndexType num_elements,
+Array<T, DIM>::Array(IndexType num_elements,
                      IndexType capacity,
                      int allocator_id,
                      typename std::enable_if<SFINAE == 1>::type*)
@@ -890,8 +889,8 @@ Array<T, dim>::Array(IndexType num_elements,
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-Array<T, dim>::Array(T* data, IndexType num_elements, IndexType capacity)
+template <typename T, IndexType DIM>
+Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
   : m_data(data)
   , m_num_elements(num_elements)
   , m_resize_ratio(0.0)
@@ -906,19 +905,19 @@ Array<T, dim>::Array(T* data, IndexType num_elements, IndexType capacity)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-Array<T, dim>::Array(const Array& other, int allocator_id)
+template <typename T, IndexType DIM>
+Array<T, DIM>::Array(const Array& other, int allocator_id)
   : m_allocator_id(allocator_id)
 {
   initialize(other.size(), other.capacity());
   axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
-  std::copy(other.m_dims, other.m_dims + dim, m_dims);
-  std::copy(other.m_strides, other.m_strides + dim, m_strides);
+  std::copy(other.m_dims, other.m_dims + DIM, m_dims);
+  std::copy(other.m_strides, other.m_strides + DIM, m_strides);
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-Array<T, dim>::Array(Array&& other)
+template <typename T, IndexType DIM>
+Array<T, DIM>::Array(Array&& other)
   : m_resize_ratio(0.0)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
@@ -928,21 +927,21 @@ Array<T, dim>::Array(Array&& other)
   m_resize_ratio = other.m_resize_ratio;
   m_is_external = other.m_is_external;
   m_allocator_id = other.m_allocator_id;
-  std::copy(other.m_dims, other.m_dims + dim, m_dims);
-  std::copy(other.m_strides, other.m_strides + dim, m_strides);
+  std::copy(other.m_dims, other.m_dims + DIM, m_dims);
+  std::copy(other.m_strides, other.m_strides + DIM, m_strides);
 
   other.m_data = nullptr;
   other.m_capacity = 0;
   other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
   other.m_is_external = false;
   other.m_allocator_id = INVALID_ALLOCATOR_ID;
-  std::fill(other.m_dims, other.m_dims + dim, 0);
-  std::fill(other.m_strides, other.m_strides + dim, 0);
+  std::fill(other.m_dims, other.m_dims + DIM, 0);
+  std::fill(other.m_strides, other.m_strides + DIM, 0);
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-Array<T, dim>::~Array()
+template <typename T, IndexType DIM>
+Array<T, DIM>::~Array()
 {
   if(m_data != nullptr && !m_is_external)
   {
@@ -953,8 +952,8 @@ Array<T, dim>::~Array()
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::fill(const T& value)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::fill(const T& value)
 {
   for(IndexType i = 0; i < m_num_elements; i++)
   {
@@ -977,8 +976,8 @@ inline void Only1D<T, 1, ArrayType>::push_back(T&& value)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::set(const T* elements, IndexType n, IndexType pos)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::set(const T* elements, IndexType n, IndexType pos)
 {
   assert(elements != nullptr);
   assert(pos >= 0);
@@ -991,8 +990,8 @@ inline void Array<T, dim>::set(const T* elements, IndexType n, IndexType pos)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::clear()
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::clear()
 {
   // This most likely needs to be a call to erase() instead.
   for(IndexType i = 0; i < m_num_elements; ++i)
@@ -1004,17 +1003,17 @@ inline void Array<T, dim>::clear()
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::insert(IndexType pos, const T& value)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::insert(IndexType pos, const T& value)
 {
   reserveForInsert(1, pos);
   m_data[pos] = value;
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline typename Array<T, dim>::ArrayIterator Array<T, dim>::insert(
-  Array<T, dim>::ArrayIterator pos,
+template <typename T, IndexType DIM>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
+  Array<T, DIM>::ArrayIterator pos,
   const T& value)
 {
   assert(pos >= begin() && pos <= end());
@@ -1023,8 +1022,8 @@ inline typename Array<T, dim>::ArrayIterator Array<T, dim>::insert(
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::insert(IndexType pos, IndexType n, const T* values)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T* values)
 {
   assert(values != nullptr);
   reserveForInsert(n, pos);
@@ -1035,9 +1034,9 @@ inline void Array<T, dim>::insert(IndexType pos, IndexType n, const T* values)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline typename Array<T, dim>::ArrayIterator Array<T, dim>::insert(
-  Array<T, dim>::ArrayIterator pos,
+template <typename T, IndexType DIM>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
+  Array<T, DIM>::ArrayIterator pos,
   IndexType n,
   const T* values)
 {
@@ -1047,8 +1046,8 @@ inline typename Array<T, dim>::ArrayIterator Array<T, dim>::insert(
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::insert(IndexType pos, IndexType n, const T& value)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T& value)
 {
   reserveForInsert(n, pos);
   for(IndexType i = 0; i < n; ++i)
@@ -1058,9 +1057,9 @@ inline void Array<T, dim>::insert(IndexType pos, IndexType n, const T& value)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline typename Array<T, dim>::ArrayIterator Array<T, dim>::insert(
-  Array<T, dim>::ArrayIterator pos,
+template <typename T, IndexType DIM>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
+  Array<T, DIM>::ArrayIterator pos,
   IndexType n,
   const T& value)
 {
@@ -1070,9 +1069,9 @@ inline typename Array<T, dim>::ArrayIterator Array<T, dim>::insert(
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline typename Array<T, dim>::ArrayIterator Array<T, dim>::erase(
-  Array<T, dim>::ArrayIterator pos)
+template <typename T, IndexType DIM>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::erase(
+  Array<T, DIM>::ArrayIterator pos)
 {
   assert(pos >= begin() && pos < end());
   int counter = 0;
@@ -1090,10 +1089,10 @@ inline typename Array<T, dim>::ArrayIterator Array<T, dim>::erase(
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline typename Array<T, dim>::ArrayIterator Array<T, dim>::erase(
-  Array<T, dim>::ArrayIterator first,
-  Array<T, dim>::ArrayIterator last)
+template <typename T, IndexType DIM>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::erase(
+  Array<T, DIM>::ArrayIterator first,
+  Array<T, DIM>::ArrayIterator last)
 {
   assert(first >= begin() && first < end());
   assert(last >= first && last <= end());
@@ -1131,19 +1130,19 @@ inline typename Array<T, dim>::ArrayIterator Array<T, dim>::erase(
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
+template <typename T, IndexType DIM>
 template <typename... Args>
-inline void Array<T, dim>::emplace(IndexType pos, Args&&... args)
+inline void Array<T, DIM>::emplace(IndexType pos, Args&&... args)
 {
   reserveForInsert(1, pos);
   m_data[pos] = std::move(T(std::forward<Args>(args)...));
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
+template <typename T, IndexType DIM>
 template <typename... Args>
-inline typename Array<T, dim>::ArrayIterator Array<T, dim>::emplace(
-  Array<T, dim>::ArrayIterator pos,
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::emplace(
+  Array<T, DIM>::ArrayIterator pos,
   Args&&... args)
 {
   assert(pos >= begin() && pos <= end());
@@ -1160,11 +1159,11 @@ inline void Only1D<T, 1, ArrayType>::emplace_back(Args&&... args)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
+template <typename T, IndexType DIM>
 template <typename... Args>
-inline void Array<T, dim>::resize(Args... args)
+inline void Array<T, DIM>::resize(Args... args)
 {
-  static_assert(sizeof...(Args) == dim,
+  static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   const auto new_num_elements = detail::packProduct(args...);
   assert(new_num_elements >= 0);
@@ -1178,49 +1177,49 @@ inline void Array<T, dim>::resize(Args... args)
 
   // Can't reinitialize a raw array so we have to throw it into a temp
   IndexType temp_dims[] = {static_cast<IndexType>(args)...};
-  std::copy(temp_dims, temp_dims + dim, m_dims);
+  std::copy(temp_dims, temp_dims + DIM, m_dims);
   // Row-major
-  m_strides[dim - 1] = 1;
-  for(int i = static_cast<int>(dim) - 2; i >= 0; i--)
+  m_strides[DIM - 1] = 1;
+  for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
   {
     m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
   }
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::swap(Array<T, dim>& other)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 {
   T* temp_data = m_data;
   IndexType temp_num_elements = m_num_elements;
   IndexType temp_capacity = m_capacity;
   double temp_resize_ratio = m_resize_ratio;
   bool temp_is_external = m_is_external;
-  IndexType temp_dims[dim];
-  std::copy(m_dims, m_dims + dim, temp_dims);
-  IndexType temp_strides[dim];
-  std::copy(m_strides, m_strides + dim, temp_strides);
+  IndexType temp_dims[DIM];
+  std::copy(m_dims, m_dims + DIM, temp_dims);
+  IndexType temp_strides[DIM];
+  std::copy(m_strides, m_strides + DIM, temp_strides);
 
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
   m_is_external = other.m_is_external;
-  std::copy(other.m_dims, other.m_dims + dim, m_dims);
-  std::copy(other.m_strides, other.m_strides + dim, m_strides);
+  std::copy(other.m_dims, other.m_dims + DIM, m_dims);
+  std::copy(other.m_strides, other.m_strides + DIM, m_strides);
 
   other.m_data = temp_data;
   other.m_num_elements = temp_num_elements;
   other.m_capacity = temp_capacity;
   other.m_resize_ratio = temp_resize_ratio;
   other.m_is_external = temp_is_external;
-  std::copy(temp_dims, temp_dims + dim, other.m_dims);
-  std::copy(temp_strides, temp_strides + dim, other.m_strides);
+  std::copy(temp_dims, temp_dims + DIM, other.m_dims);
+  std::copy(temp_strides, temp_strides + DIM, other.m_strides);
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline std::ostream& Array<T, dim>::print(std::ostream& os) const
+template <typename T, IndexType DIM>
+inline std::ostream& Array<T, DIM>::print(std::ostream& os) const
 {
 #if defined(AXOM_USE_UMPIRE)
   if(m_allocator_id ==
@@ -1244,8 +1243,8 @@ inline std::ostream& Array<T, dim>::print(std::ostream& os) const
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::initialize(IndexType num_elements, IndexType capacity)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::initialize(IndexType num_elements, IndexType capacity)
 {
   assert(num_elements >= 0);
 
@@ -1270,8 +1269,8 @@ inline void Array<T, dim>::initialize(IndexType num_elements, IndexType capacity
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline T* Array<T, dim>::reserveForInsert(IndexType n, IndexType pos)
+template <typename T, IndexType DIM>
+inline T* Array<T, DIM>::reserveForInsert(IndexType n, IndexType pos)
 {
   assert(n >= 0);
   assert(pos >= 0);
@@ -1300,8 +1299,8 @@ inline T* Array<T, dim>::reserveForInsert(IndexType n, IndexType pos)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::updateNumElements(IndexType new_num_elements)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::updateNumElements(IndexType new_num_elements)
 {
   assert(new_num_elements >= 0);
   assert(new_num_elements <= m_capacity);
@@ -1309,8 +1308,8 @@ inline void Array<T, dim>::updateNumElements(IndexType new_num_elements)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::setCapacity(IndexType new_capacity)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::setCapacity(IndexType new_capacity)
 {
   assert(new_capacity >= 0);
 
@@ -1337,8 +1336,8 @@ inline void Array<T, dim>::setCapacity(IndexType new_capacity)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-inline void Array<T, dim>::dynamicRealloc(IndexType new_num_elements)
+template <typename T, IndexType DIM>
+inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
 {
   if(m_is_external)
   {
@@ -1367,15 +1366,15 @@ inline void Array<T, dim>::dynamicRealloc(IndexType new_num_elements)
 //------------------------------------------------------------------------------
 /// Free functions implementing Array's operator(s)
 //------------------------------------------------------------------------------
-template <typename T, IndexType dim>
-std::ostream& operator<<(std::ostream& os, const Array<T, dim>& arr)
+template <typename T, IndexType DIM>
+std::ostream& operator<<(std::ostream& os, const Array<T, DIM>& arr)
 {
   arr.print(os);
   return os;
 }
 
-template <typename T, IndexType dim>
-bool operator==(const Array<T, dim>& lhs, const Array<T, dim>& rhs)
+template <typename T, IndexType DIM>
+bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
 {
   if(lhs.getAllocatorID() != rhs.getAllocatorID())
   {
@@ -1398,8 +1397,8 @@ bool operator==(const Array<T, dim>& lhs, const Array<T, dim>& rhs)
   return true;
 }
 
-template <typename T, IndexType dim>
-bool operator!=(const Array<T, dim>& lhs, const Array<T, dim>& rhs)
+template <typename T, IndexType DIM>
+bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
 {
   return !(lhs == rhs);
 }
