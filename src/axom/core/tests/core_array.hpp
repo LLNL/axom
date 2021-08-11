@@ -1103,7 +1103,9 @@ TEST(core_array, check_multidimensional)
   v_int.resize(2, 2);
   v_int.fill(MAGIC_INT);
   // Make sure the number of elements and contents are correct
-  EXPECT_EQ(v_int.fullSize(), 4);
+  EXPECT_EQ(v_int.size(), 4);
+  std::array<IndexType, 2> expected_shape = {2, 2};
+  EXPECT_EQ(v_int.shape(), expected_shape);
   for(const auto val : v_int)
   {
     EXPECT_EQ(val, MAGIC_INT);
@@ -1120,6 +1122,8 @@ TEST(core_array, check_multidimensional)
   v_int_flat[1] = 2;
   v_int_flat[2] = 3;
   v_int_flat[3] = 4;
+  std::array<IndexType, 1> expected_flat_shape = {4};
+  EXPECT_EQ(v_int_flat.shape(), expected_flat_shape);
 
   // FIXME: Should we be able to compare arrays of different dimension (by comparing the raw data)?
   for(int i = 0; i < v_int_flat.size(); i++)

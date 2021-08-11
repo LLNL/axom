@@ -93,13 +93,20 @@ bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
 
 /// @}
 
-// Stuff we only want to make available to the 1D case (where we want to closely emulate std::vector)
-template <typename T, IndexType DIM, typename ArrayType>
-class Only1D
+/*!
+ * \brief Policy class for implementing Array behavior that differs
+ * between the 1D and multidimensional cases
+ * 
+ * \tparam T The element/value type
+ * \tparam DIM The dimension of the Array
+ */
+template <typename T, IndexType DIM>
+class ArrayImpl
 {
 public:
+  using ArrayType = Array<T, DIM>;
   template <typename... Args>
-  Only1D(Args... args) : m_dims {static_cast<IndexType>(args)...}
+  ArrayImpl(Args... args) : m_dims {static_cast<IndexType>(args)...}
   {
     // Row-major
     m_strides[DIM - 1] = 1;
@@ -141,11 +148,17 @@ public:
     return asDerived().data()[idx];
   }
 
-  friend void swap(Only1D& lhs, Only1D& rhs)
+  friend void swap(ArrayImpl& lhs, ArrayImpl& rhs)
   {
     std::swap(lhs.m_dims, rhs.m_dims);
     std::swap(lhs.m_strides, rhs.m_strides);
   }
+
+  /// \brief Returns the dimensions of the Array
+  const std::array<IndexType, DIM>& shape() const { return m_dims; }
+
+  /// \brief Returns the strides of the Array
+  const std::array<IndexType, DIM>& strides() const { return m_strides; }
 
 private:
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
@@ -154,7 +167,6 @@ private:
     return static_cast<const ArrayType&>(*this);
   }
 
-  // FIXME: What's the best way to make these available to users
   // Is it sufficient to just give them the raw arrays?
   /// \brief The sizes (extents?) in each dimension
   std::array<IndexType, DIM> m_dims;
@@ -162,41 +174,46 @@ private:
   std::array<IndexType, DIM> m_strides;
 };
 
-template <typename T, typename ArrayType>
-class Only1D<T, 1, ArrayType>
+/// \brief Array implementation specific to 1D Arrays
+template <typename T>
+class ArrayImpl<T, 1>
 {
 public:
-  Only1D(IndexType size = 0) { }
-  IndexType size() const { return asDerived().fullSize(); }
+  using ArrayType = Array<T, 1>;
+  ArrayImpl(IndexType = 0) { }
 
   /*!
-     * \brief Push a value to the back of the array.
-     *
-     * \param [in] value the value to the back.
-     *
-     * \note Reallocation is done if the new size will exceed the capacity.
-     */
+   * \brief Push a value to the back of the array.
+   *
+   * \param [in] value the value to the back.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
   void push_back(const T& value);
 
   /*!
-     * \brief Push a value to the back of the array.
-     *
-     * \param [in] value the value to move to the back.
-     *
-     * \note Reallocation is done if the new size will exceed the capacity.
-     */
+   * \brief Push a value to the back of the array.
+   *
+   * \param [in] value the value to move to the back.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
   void push_back(T&& value);
 
   /*!
-     * \brief Inserts new element at the end of the Array.
-     *
-     * \param [in] args the arguments to forward to constructor of the element.
-     *
-     * \note Reallocation is done if the new size will exceed the capacity.
-     * \note The size increases by 1.
-     */
+   * \brief Inserts new element at the end of the Array.
+   *
+   * \param [in] args the arguments to forward to constructor of the element.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   */
   template <typename... Args>
   void emplace_back(Args&&... args);
+
+  /// \brief Returns the dimensions of the Array
+  // FIXME: std::array is used for consistency with multidim case, should we just return the scalar?
+  std::array<IndexType, 1> shape() const { return {asDerived().size()}; }
 
 private:
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
@@ -206,8 +223,8 @@ private:
   }
 };
 
-template <typename T, typename ArrayType>
-void swap(Only1D<T, 1, ArrayType>& lhs, Only1D<T, 1, ArrayType>& rhs)
+template <typename T>
+void swap(ArrayImpl<T, 1>& lhs, ArrayImpl<T, 1>& rhs)
 { }
 
 /*!
@@ -284,7 +301,7 @@ void swap(Only1D<T, 1, ArrayType>& lhs, Only1D<T, 1, ArrayType>& rhs)
  *
  */
 template <typename T, IndexType DIM = 1>
-class Array : public Only1D<T, DIM, Array<T, DIM>>
+class Array : public ArrayImpl<T, DIM>
 {
 public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
@@ -335,8 +352,8 @@ public:
    *
    * \pre sizeof...(Args) == DIM
    *
-   * \post capacity() >= fullSize()
-   * \post fullSize() == num_elements
+   * \post capacity() >= size()
+   * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
   template <typename... Args>
@@ -707,7 +724,7 @@ public:
   ArrayIterator end()
   {
     assert(m_data != nullptr);
-    return ArrayIterator(fullSize(), this);
+    return ArrayIterator(size(), this);
   }
 
   /*!
@@ -725,7 +742,7 @@ public:
   /*!
    * \brief Return the number of elements stored in the data array.
    */
-  IndexType fullSize() const { return m_num_elements; }
+  IndexType size() const { return m_num_elements; }
 
   /*!
    * \brief Update the number of elements stored in the data array.
@@ -899,7 +916,7 @@ Array<T, DIM>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
 template <typename T, IndexType DIM>
 template <typename... Args>
 Array<T, DIM>::Array(Args... args)
-  : Only1D<T, DIM, Array<T, DIM>>(args...)
+  : ArrayImpl<T, DIM>(args...)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
   static_assert(sizeof...(Args) == DIM,
@@ -939,8 +956,7 @@ Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
 //------------------------------------------------------------------------------
 template <typename T, IndexType DIM>
 Array<T, DIM>::Array(const Array& other, int allocator_id)
-  : Only1D<T, DIM, Array<T, DIM>>(
-      static_cast<const Only1D<T, DIM, Array<T, DIM>>&>(other))
+  : ArrayImpl<T, DIM>(static_cast<const ArrayImpl<T, DIM>&>(other))
   , m_allocator_id(allocator_id)
 {
   initialize(other.size(), other.capacity());
@@ -950,8 +966,7 @@ Array<T, DIM>::Array(const Array& other, int allocator_id)
 //------------------------------------------------------------------------------
 template <typename T, IndexType DIM>
 Array<T, DIM>::Array(Array&& other)
-  : Only1D<T, DIM, Array<T, DIM>>(
-      static_cast<Only1D<T, DIM, Array<T, DIM>>&&>(other))
+  : ArrayImpl<T, DIM>(static_cast<ArrayImpl<T, DIM>&&>(other))
   , m_resize_ratio(0.0)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
@@ -992,15 +1007,15 @@ inline void Array<T, DIM>::fill(const T& value)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void Only1D<T, 1, ArrayType>::push_back(const T& value)
+template <typename T>
+inline void ArrayImpl<T, 1>::push_back(const T& value)
 {
   emplace_back(value);
 }
 
 //------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void Only1D<T, 1, ArrayType>::push_back(T&& value)
+template <typename T>
+inline void ArrayImpl<T, 1>::push_back(T&& value)
 {
   emplace_back(std::move(value));
 }
@@ -1181,11 +1196,11 @@ inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::emplace(
 }
 
 //------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
+template <typename T>
 template <typename... Args>
-inline void Only1D<T, 1, ArrayType>::emplace_back(Args&&... args)
+inline void ArrayImpl<T, 1>::emplace_back(Args&&... args)
 {
-  asDerived().emplace(asDerived().fullSize(), args...);
+  asDerived().emplace(asDerived().size(), args...);
 }
 
 //------------------------------------------------------------------------------
@@ -1205,8 +1220,8 @@ inline void Array<T, DIM>::resize(Args... args)
 
   updateNumElements(new_num_elements);
 
-  static_cast<Only1D<T, DIM, Array<T, DIM>>&>(*this) =
-    Only1D<T, DIM, Array<T, DIM>> {static_cast<IndexType>(args)...};
+  static_cast<ArrayImpl<T, DIM>&>(*this) =
+    ArrayImpl<T, DIM> {static_cast<IndexType>(args)...};
 }
 
 //------------------------------------------------------------------------------
@@ -1214,25 +1229,28 @@ template <typename T, IndexType DIM>
 inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 {
   // FIXME: Why doesn't ADL work here?
-  // swap(static_cast<Only1D<T, DIM, Array<T, DIM>>&>(*this),
-  //      static_cast<Only1D<T, DIM, Array<T, DIM>>&>(other));
+  // swap(static_cast<ArrayImpl<T, DIM>&>(*this),
+  //      static_cast<ArrayImpl<T, DIM>&>(other));
   T* temp_data = m_data;
   IndexType temp_num_elements = m_num_elements;
   IndexType temp_capacity = m_capacity;
   double temp_resize_ratio = m_resize_ratio;
   bool temp_is_external = m_is_external;
+  auto temp_arrayimpl = static_cast<ArrayImpl<T, DIM>&>(*this);
 
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
   m_is_external = other.m_is_external;
+  static_cast<ArrayImpl<T, DIM>&>(*this) = static_cast<ArrayImpl<T, DIM>&>(other);
 
   other.m_data = temp_data;
   other.m_num_elements = temp_num_elements;
   other.m_capacity = temp_capacity;
   other.m_resize_ratio = temp_resize_ratio;
   other.m_is_external = temp_is_external;
+  static_cast<ArrayImpl<T, DIM>&>(other) = temp_arrayimpl;
 }
 
 //------------------------------------------------------------------------------
