@@ -32,7 +32,7 @@ struct ZipBase<Point<FloatType, NDIMS>>
   static constexpr bool Exists = true;
 
   /*!
-   * \brief Creates a ZipIndexable from an initializer list of arrays.
+   * \brief Creates a ZipIndexable over a set of arrays.
    * \param [in] arrays the arrays storing coordinate data for each dimension
    */
   ZipBase(const StackArray<const FloatType*, NDIMS>& arrays)

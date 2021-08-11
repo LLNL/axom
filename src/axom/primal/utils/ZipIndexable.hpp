@@ -41,7 +41,14 @@ public:
                 "type. Check that you are passing in a supported Primal type "
                 "as a template parameter.");
 
+  /**
+   * \brief Inherited constructor from detail instance.
+   */
   using detail::ZipBase<GeomType>::ZipBase;
+
+  /**
+   * \brief Inherited implementation of array index operator.
+   */
   using detail::ZipBase<GeomType>::operator[];
 };
 

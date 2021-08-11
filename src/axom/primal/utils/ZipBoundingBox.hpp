@@ -19,6 +19,9 @@ namespace primal
 {
 namespace detail
 {
+/*!
+ * \brief Implements ZipIndexable for a primal::BoundingBox instantiation
+ */
 template <typename FloatType, int NDIMS>
 struct ZipBase<BoundingBox<FloatType, NDIMS>>
 {

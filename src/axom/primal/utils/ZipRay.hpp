@@ -19,6 +19,9 @@ namespace primal
 {
 namespace detail
 {
+/*!
+ * \brief Implements ZipIndexable for a primal::Ray instantiation
+ */
 template <typename FloatType, int NDIMS>
 struct ZipBase<Ray<FloatType, NDIMS>>
 {
