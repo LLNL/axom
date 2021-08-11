@@ -213,7 +213,8 @@ public:
 
   /// \brief Returns the dimensions of the Array
   // FIXME: std::array is used for consistency with multidim case, should we just return the scalar?
-  std::array<IndexType, 1> shape() const { return {asDerived().size()}; }
+  // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
+  std::array<IndexType, 1> shape() const { return {{asDerived().size()}}; }
 
 private:
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
