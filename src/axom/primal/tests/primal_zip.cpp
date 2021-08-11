@@ -186,8 +186,8 @@ void check_zip_rays_3d()
       PointType orig {xo[idx], yo[idx], zo[idx]};
       VectorType dir {xd[idx], yd[idx], zd[idx]};
       RayType actual(orig, dir);
-      valid[idx] = (it[idx].origin() == actual.origin())
-                && (it[idx].direction() == actual.direction());
+      valid[idx] = (it[idx].origin() == actual.origin()) &&
+        (it[idx].direction() == actual.direction());
     });
 
   for(int i = 0; i < N; i++)
