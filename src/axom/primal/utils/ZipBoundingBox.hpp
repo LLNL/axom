@@ -26,9 +26,7 @@ template <typename FloatType, int NDIMS>
 struct ZipBase<BoundingBox<FloatType, NDIMS>>
 {
   using GeomType = BoundingBox<FloatType, NDIMS>;
-  using CoordType = FloatType;
 
-  static constexpr int Dims = NDIMS;
   static constexpr bool Exists = true;
 
   /*!

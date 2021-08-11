@@ -26,9 +26,7 @@ template <typename FloatType, int NDIMS>
 struct ZipBase<Point<FloatType, NDIMS>>
 {
   using GeomType = Point<FloatType, NDIMS>;
-  using CoordType = FloatType;
 
-  static constexpr int Dims = NDIMS;
   static constexpr bool Exists = true;
 
   /*!
