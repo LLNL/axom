@@ -13,6 +13,7 @@
 #include "axom/primal/utils/ZipPoint.hpp"
 #include "axom/primal/utils/ZipVector.hpp"
 #include "axom/primal/utils/ZipBoundingBox.hpp"
+#include "axom/primal/utils/ZipRay.hpp"
 
 #include "gtest/gtest.h"
 
@@ -130,6 +131,82 @@ void check_zip_bbs_3d()
   axom::setDefaultAllocator(current_allocator);
 }
 
+template <typename ExecSpace>
+void check_zip_rays_3d()
+{
+  using RayType = primal::Ray<double, 3>;
+  using PointType = typename RayType::PointType;
+  using VectorType = typename RayType::VectorType;
+  using ZipType = primal::ZipIndexable<RayType>;
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+  // create arrays of data
+  constexpr int N = 4;
+  double* xo = axom::allocate<double>(N);
+  double* yo = axom::allocate<double>(N);
+  double* zo = axom::allocate<double>(N);
+
+  double* xd = axom::allocate<double>(N);
+  double* yd = axom::allocate<double>(N);
+  double* zd = axom::allocate<double>(N);
+
+  bool* valid = axom::allocate<bool>(N);
+
+  axom::for_all<ExecSpace>(
+    0,
+    4,
+    AXOM_LAMBDA(int idx) {
+      if(idx < 2)
+      {
+        xo[idx] = yo[idx] = zo[idx] = 1.0;
+      }
+      else
+      {
+        xo[idx] = yo[idx] = zo[idx] = -1.0;
+      }
+
+      if(idx % 2 == 0)
+      {
+        xd[idx] = yd[idx] = zd[idx] = 1.0;
+      }
+      else
+      {
+        xd[idx] = yd[idx] = zd[idx] = -1.0;
+      }
+    });
+
+  ZipType it {{xo, yo, zo}, {xd, yd, zd}};
+
+  axom::for_all<ExecSpace>(
+    0,
+    4,
+    AXOM_LAMBDA(int idx) {
+      PointType orig {xo[idx], yo[idx], zo[idx]};
+      VectorType dir {xd[idx], yd[idx], zd[idx]};
+      RayType actual(orig, dir);
+      valid[idx] = (it[idx].origin() == actual.origin())
+                && (it[idx].direction() == actual.direction());
+    });
+
+  for(int i = 0; i < N; i++)
+  {
+    EXPECT_EQ(valid[i], true);
+  }
+
+  axom::deallocate(xo);
+  axom::deallocate(yo);
+  axom::deallocate(zo);
+
+  axom::deallocate(xd);
+  axom::deallocate(yd);
+  axom::deallocate(zd);
+
+  axom::deallocate(valid);
+  axom::setDefaultAllocator(current_allocator);
+}
+
 TEST(primal_zip, zip_points_3d)
 {
   using PointType = primal::Point<double, 3>;
@@ -151,6 +228,13 @@ TEST(primal_zip, zip_bbs_3d)
   using ExecSpace = axom::SEQ_EXEC;
 
   check_zip_bbs_3d<ExecSpace>();
+}
+
+TEST(primal_zip, zip_rays_3d)
+{
+  using ExecSpace = axom::SEQ_EXEC;
+
+  check_zip_rays_3d<ExecSpace>();
 }
 
 #ifdef AXOM_USE_CUDA

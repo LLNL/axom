@@ -52,6 +52,7 @@ set( primal_headers
      utils/ZipIndexable.hpp
      utils/ZipBoundingBox.hpp
      utils/ZipPoint.hpp
+     utils/ZipRay.hpp
      utils/ZipVector.hpp
    )
 
