@@ -50,6 +50,7 @@ set( primal_headers
 
      ## utils
      utils/ZipIndexable.hpp
+     utils/ZipBoundingBox.hpp
      utils/ZipPoint.hpp
      utils/ZipVector.hpp
    )

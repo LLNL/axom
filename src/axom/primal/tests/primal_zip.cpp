@@ -12,6 +12,7 @@
 #include "axom/primal/utils/ZipIndexable.hpp"
 #include "axom/primal/utils/ZipPoint.hpp"
 #include "axom/primal/utils/ZipVector.hpp"
+#include "axom/primal/utils/ZipBoundingBox.hpp"
 
 #include "gtest/gtest.h"
 
@@ -65,6 +66,70 @@ void check_zip_points_3d()
   axom::setDefaultAllocator(current_allocator);
 }
 
+template <typename ExecSpace>
+void check_zip_bbs_3d()
+{
+  using BoxType = primal::BoundingBox<double, 3>;
+  using PointType = typename BoxType::PointType;
+  using ZipType = primal::ZipIndexable<BoxType>;
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+  // create arrays of data
+  constexpr int N = 8;
+  double* xmin = axom::allocate<double>(N);
+  double* ymin = axom::allocate<double>(N);
+  double* zmin = axom::allocate<double>(N);
+
+  double* xmax = axom::allocate<double>(N);
+  double* ymax = axom::allocate<double>(N);
+  double* zmax = axom::allocate<double>(N);
+
+  bool* valid = axom::allocate<bool>(N);
+
+  axom::for_all<ExecSpace>(
+    0,
+    8,
+    AXOM_LAMBDA(int idx) {
+      xmin[idx] = (idx % 2) + 1;
+      ymin[idx] = ((idx / 2) % 2) + 1;
+      zmin[idx] = (idx / 4) + 1;
+
+      xmax[idx] = xmin[idx] + 1.0;
+      ymax[idx] = ymin[idx] + 1.0;
+      zmax[idx] = zmin[idx] + 1.0;
+    });
+
+  ZipType it {{xmin, ymin, zmin}, {xmax, ymax, zmax}};
+
+  axom::for_all<ExecSpace>(
+    0,
+    8,
+    AXOM_LAMBDA(int idx) {
+      BoxType actual;
+      actual.addPoint(PointType {xmin[idx], ymin[idx], zmin[idx]});
+      actual.addPoint(PointType {xmax[idx], ymax[idx], zmax[idx]});
+      valid[idx] = (it[idx] == actual);
+    });
+
+  for(int i = 0; i < N; i++)
+  {
+    EXPECT_EQ(valid[i], true);
+  }
+
+  axom::deallocate(xmin);
+  axom::deallocate(ymin);
+  axom::deallocate(zmin);
+
+  axom::deallocate(xmax);
+  axom::deallocate(ymax);
+  axom::deallocate(zmax);
+
+  axom::deallocate(valid);
+  axom::setDefaultAllocator(current_allocator);
+}
+
 TEST(primal_zip, zip_points_3d)
 {
   using PointType = primal::Point<double, 3>;
@@ -79,6 +144,13 @@ TEST(primal_zip, zip_vectors_3d)
   using ExecSpace = axom::SEQ_EXEC;
 
   check_zip_points_3d<ExecSpace, PointType>();
+}
+
+TEST(primal_zip, zip_bbs_3d)
+{
+  using ExecSpace = axom::SEQ_EXEC;
+
+  check_zip_bbs_3d<ExecSpace>();
 }
 
 #ifdef AXOM_USE_CUDA
@@ -96,6 +168,13 @@ AXOM_CUDA_TEST(primal_zip, zip_vectors_3d_gpu)
   using ExecSpace = axom::CUDA_EXEC<256>;
 
   check_zip_points_3d<ExecSpace, PointType>();
+}
+
+AXOM_CUDA_TEST(primal_zip, zip_bbs_3d_gpu)
+{
+  using ExecSpace = axom::CUDA_EXEC<256>;
+
+  check_zip_bbs_3d<ExecSpace>();
 }
 #endif
 
