@@ -44,7 +44,7 @@ void check_zip_points_3d()
       z[idx] = (idx / 4) + 1;
     });
 
-  ZipType it {x, y, z};
+  ZipType it {{x, y, z}};
 
   axom::for_all<ExecSpace>(
     0,

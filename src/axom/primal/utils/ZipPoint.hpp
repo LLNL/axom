@@ -13,8 +13,6 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/utils/ZipIndexable.hpp"
 
-#include <initializer_list>
-
 namespace axom
 {
 namespace primal
@@ -25,7 +23,7 @@ namespace detail
  * \brief Implements ZipIndexable for a primal::Point instantiation
  */
 template <typename FloatType, int NDIMS>
-class ZipBase<Point<FloatType, NDIMS>>
+struct ZipBase<Point<FloatType, NDIMS>>
 {
   using GeomType = Point<FloatType, NDIMS>;
   using CoordType = FloatType;
@@ -37,19 +35,11 @@ class ZipBase<Point<FloatType, NDIMS>>
    * \brief Creates a ZipIndexable from an initializer list of arrays.
    * \param [in] arrays the arrays storing coordinate data for each dimension
    */
-  ZipBase(std::initializer_list<const FloatType*> arrays)
+  ZipBase(const StackArray<const FloatType*, NDIMS>& arrays)
   {
-#if __cplusplus >= 201402L
-    // initializer_list::size() was made constexpr in C++14
-    AXOM_STATIC_ASSERT_MSG(arrays.size() == NDIMS);
-#else
-    SLIC_ASSERT(arrays.size() == NDIMS);
-#endif
-    auto it = arrays.begin();
     for(int i = 0; i < NDIMS; i++)
     {
-      pts_arrays[i] = *it;
-      it++;
+      pts_arrays[i] = arrays[i];
     }
   }
 

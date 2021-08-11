@@ -13,8 +13,6 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/utils/ZipIndexable.hpp"
 
-#include <initializer_list>
-
 namespace axom
 {
 namespace primal
@@ -34,19 +32,11 @@ struct ZipBase<Vector<FloatType, NDIMS>>
    * \brief Creates a ZipIndexable from an initializer list of arrays.
    * \param [in] arrays the arrays storing coordinate data for each dimension
    */
-  ZipBase(std::initializer_list<const FloatType*> arrays)
+  ZipBase(const StackArray<const FloatType*, NDIMS>& arrays)
   {
-#if __cplusplus >= 201402L
-    // initializer_list::size() was made constexpr in C++14
-    AXOM_STATIC_ASSERT_MSG(arrays.size() == NDIMS);
-#else
-    SLIC_ASSERT(arrays.size() == NDIMS);
-#endif
-    auto it = arrays.begin();
     for(int i = 0; i < NDIMS; i++)
     {
-      vec_arrays[i] = *it;
-      it++;
+      vec_arrays[i] = arrays[i];
     }
   }
 
