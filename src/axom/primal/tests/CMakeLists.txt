@@ -27,6 +27,7 @@ set( primal_tests
     primal_bounding_box_intersect.cpp
     primal_segment.cpp
     primal_sphere.cpp
+    primal_split.cpp
     primal_squared_distance.cpp
     primal_tetrahedron.cpp
     primal_octahedron.cpp
