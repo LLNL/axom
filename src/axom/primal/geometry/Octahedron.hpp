@@ -24,6 +24,44 @@ namespace primal
  * \brief Represents an octahedral geometric shape defined by six points.
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of spatial dimensions
+ *
+ * There are six vertices in the octahedron, labelled P through U as the
+ * constructor's arguments.  They are accessible using the square-brackets
+ * operator, with P being index 0, Q index 1, through U as index 5.
+ *
+ * Imagine a regular octahedron with two parallel triangles, top and bottom---
+ * the end-caps, as it were.  If you look "down", normal to the end-cap triangles,
+ * you will see that the vertices of the top triangle protrude beyond the
+ * edges of the bottom triangle (and vice versa).  Here's a diagram showing
+ * just the end-cap triangles, omitting the other edges for clarity.
+ *
+ * \verbatim
+ *
+ *         P
+ *         /\
+ *    Q -------- U
+ *      \      /
+ *      /\    /\
+ *    R --\  /-- T
+ *         \/
+ *         S
+ *
+ * \endverbatim
+ *
+ * Now imagine looking from the side, edge-on to the end-caps.  If you unroll
+ * the "side-wall" triangles, you get a triangle strip.  Here's another diagram
+ * showing just the triangle strip, with the same points labeled.  Points P
+ * and Q are repeated so we can show all eight faces.
+ *
+ * \verbatim
+ *
+ *        Q --- S --- U --- Q
+ *       / \   / \   / \   /
+ *      /   \ /   \ /   \ /
+ *     P --- R --- T --- P
+ *
+ * \endverbatim
+ *
  */
 template <typename T, int NDIMS = 3>
 class Octahedron
