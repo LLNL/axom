@@ -44,14 +44,14 @@ ruby_release:
 .src_build_on_ruby:
   stage: build
   variables:
-    ALLOC_COMMAND: "srun -p pdebug -t 30 -N 1 --interactive "
+    ALLOC_COMMAND: "srun -p pdebug -t 30 -N 1 --overlap "
   extends: [.src_build_script, .on_ruby, .src_workflow]
   needs: [ruby_allocate]
 
 .full_build_on_ruby:
   stage: build
   variables:
-    ALLOC_COMMAND: "srun -p pdebug -t 60 -N 1 --interactive "
+    ALLOC_COMMAND: "srun -p pdebug -t 60 -N 1 --overlap "
   extends: [.full_build_script, .on_ruby, .full_workflow]
   needs: []
 
