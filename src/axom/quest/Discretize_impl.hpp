@@ -214,14 +214,13 @@ int discrSeg(const Point2D &a, const Point2D &b, int levels, OctType *&out, int 
     // level cap RTP, and vice versa.  Hence the preceding if-statement
     // with comment "the ends switch each level."
     axom::for_all<ExecSpace>(
-      //axom::for_all<axom::SEQ_EXEC>(
       curr_lvl_count,
       AXOM_LAMBDA(axom::IndexType i) {
         out[next_lvl + i * lvl_factor + 0] =
           new_inscribed_prism(out[curr_lvl + i], Q, T, S, R, pa, pb);
         out[next_lvl + i * lvl_factor + 1] =
           new_inscribed_prism(out[curr_lvl + i], U, R, Q, P, pa, pb);
-        if(curr_lvl == 0)
+        if(level == 0)
         {
           out[next_lvl + i * lvl_factor + 2] =
             new_inscribed_prism(out[curr_lvl + i], S, P, U, T, pa, pb);
