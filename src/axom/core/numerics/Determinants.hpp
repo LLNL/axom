@@ -83,6 +83,7 @@ inline real determinant(const real& a00,  const real& a01,  const real& a02,
  * \return det the determinant of the 4x4 matrix
  */
 template <typename real>
+AXOM_HOST_DEVICE
 inline real determinant(
   const real& a00, const real& a01, const real& a02, const real& a03,
   const real& a10, const real& a11, const real& a12, const real& a13,

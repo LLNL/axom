@@ -30,7 +30,6 @@ TEST(primal_polyhedron, polyhedron_empty)
 TEST(primal_polyhedron, polyhedron_unit_cube)
 {
   using PolyhedronType = primal::Polyhedron<double, 3>;
-  using PointType = primal::Point<double, 3>;
   PolyhedronType poly;
   poly.addVertex({0, 0, 0});
   poly.addVertex({1, 0, 0});
@@ -134,7 +133,6 @@ template <typename ExecSpace>
 void check_volume()
 {
   const int DIM = 3;
-  using PointType = primal::Point<double, DIM>;
   using PolyhedronType = primal::Polyhedron<double, DIM>;
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
@@ -179,7 +177,7 @@ void check_volume()
 
   axom::for_all<ExecSpace>(
     1,
-    AXOM_LAMBDA(int i) { res[0] = polys[0].volume(); });
+    AXOM_LAMBDA(int i) { res[i] = polys[i].volume(); });
 
   EXPECT_EQ(res[0], 1);
 
@@ -209,6 +207,194 @@ AXOM_CUDA_TEST(primal_polyhedron, check_volume_cuda)
   #endif /* AXOM_USE_CUDA */
 
 #endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
+
+TEST(primal_polyhedron, polyhedron_decomposition)
+{
+  using PolyhedronType = primal::Polyhedron<double, 3>;
+  using PointType = primal::Point<double, 3>;
+
+  static const double EPS = 1e-4;
+
+  PolyhedronType poly;
+  poly.addVertex({0, 0, 0});
+  poly.addVertex({1, 0, 0});
+  poly.addVertex({1, 1, 0});
+  poly.addVertex({0, 1, 0});
+  poly.addVertex({0, 0, 1});
+  poly.addVertex({1, 0, 1});
+  poly.addVertex({1, 1, 1});
+  poly.addVertex({0, 1, 1});
+
+  poly.addNeighbors(poly[0], {1, 4, 3});
+  poly.addNeighbors(poly[1], {5, 0, 2});
+  poly.addNeighbors(poly[2], {3, 6, 1});
+  poly.addNeighbors(poly[3], {7, 2, 0});
+  poly.addNeighbors(poly[4], {5, 7, 0});
+  poly.addNeighbors(poly[5], {1, 6, 4});
+  poly.addNeighbors(poly[6], {2, 7, 5});
+  poly.addNeighbors(poly[7], {4, 6, 3});
+
+  // Hex center (hc)
+  PointType hc = poly.centroid();
+
+  //Face means (fm)
+  PointType fm1 = PointType::midpoint(PointType::midpoint(poly[0], poly[1]),
+                                      PointType::midpoint(poly[2], poly[3]));
+
+  PointType fm2 = PointType::midpoint(PointType::midpoint(poly[0], poly[1]),
+                                      PointType::midpoint(poly[4], poly[5]));
+
+  PointType fm3 = PointType::midpoint(PointType::midpoint(poly[0], poly[3]),
+                                      PointType::midpoint(poly[4], poly[7]));
+
+  PointType fm4 = PointType::midpoint(PointType::midpoint(poly[1], poly[2]),
+                                      PointType::midpoint(poly[5], poly[6]));
+
+  PointType fm5 = PointType::midpoint(PointType::midpoint(poly[2], poly[3]),
+                                      PointType::midpoint(poly[6], poly[7]));
+
+  PointType fm6 = PointType::midpoint(PointType::midpoint(poly[4], poly[5]),
+                                      PointType::midpoint(poly[6], poly[7]));
+
+  PolyhedronType tets[24];
+
+  tets[0].addVertex(hc);
+  tets[0].addVertex(poly[1]);
+  tets[0].addVertex(poly[0]);
+  tets[0].addVertex(fm1);
+
+  tets[1].addVertex(hc);
+  tets[1].addVertex(poly[0]);
+  tets[1].addVertex(poly[3]);
+  tets[1].addVertex(fm1);
+
+  tets[2].addVertex(hc);
+  tets[2].addVertex(poly[3]);
+  tets[2].addVertex(poly[2]);
+  tets[2].addVertex(fm1);
+
+  tets[3].addVertex(hc);
+  tets[3].addVertex(poly[2]);
+  tets[3].addVertex(poly[1]);
+  tets[3].addVertex(fm1);
+
+  tets[4].addVertex(hc);
+  tets[4].addVertex(poly[4]);
+  tets[4].addVertex(poly[0]);
+  tets[4].addVertex(fm2);
+
+  tets[5].addVertex(hc);
+  tets[5].addVertex(poly[0]);
+  tets[5].addVertex(poly[1]);
+  tets[5].addVertex(fm2);
+
+  tets[6].addVertex(hc);
+  tets[6].addVertex(poly[1]);
+  tets[6].addVertex(poly[5]);
+  tets[6].addVertex(fm2);
+
+  tets[7].addVertex(hc);
+  tets[7].addVertex(poly[5]);
+  tets[7].addVertex(poly[4]);
+  tets[7].addVertex(fm2);
+
+  tets[8].addVertex(hc);
+  tets[8].addVertex(poly[3]);
+  tets[8].addVertex(poly[0]);
+  tets[8].addVertex(fm3);
+
+  tets[9].addVertex(hc);
+  tets[9].addVertex(poly[0]);
+  tets[9].addVertex(poly[4]);
+  tets[9].addVertex(fm3);
+
+  tets[10].addVertex(hc);
+  tets[10].addVertex(poly[4]);
+  tets[10].addVertex(poly[7]);
+  tets[10].addVertex(fm3);
+
+  tets[11].addVertex(hc);
+  tets[11].addVertex(poly[7]);
+  tets[11].addVertex(poly[3]);
+  tets[11].addVertex(fm3);
+
+  tets[12].addVertex(hc);
+  tets[12].addVertex(poly[5]);
+  tets[12].addVertex(poly[1]);
+  tets[12].addVertex(fm4);
+
+  tets[13].addVertex(hc);
+  tets[13].addVertex(poly[1]);
+  tets[13].addVertex(poly[2]);
+  tets[13].addVertex(fm4);
+
+  tets[14].addVertex(hc);
+  tets[14].addVertex(poly[2]);
+  tets[14].addVertex(poly[6]);
+  tets[14].addVertex(fm4);
+
+  tets[15].addVertex(hc);
+  tets[15].addVertex(poly[6]);
+  tets[15].addVertex(poly[5]);
+  tets[15].addVertex(fm4);
+
+  tets[16].addVertex(hc);
+  tets[16].addVertex(poly[6]);
+  tets[16].addVertex(poly[2]);
+  tets[16].addVertex(fm5);
+
+  tets[17].addVertex(hc);
+  tets[17].addVertex(poly[2]);
+  tets[17].addVertex(poly[3]);
+  tets[17].addVertex(fm5);
+
+  tets[18].addVertex(hc);
+  tets[18].addVertex(poly[3]);
+  tets[18].addVertex(poly[7]);
+  tets[18].addVertex(fm5);
+
+  tets[19].addVertex(hc);
+  tets[19].addVertex(poly[7]);
+  tets[19].addVertex(poly[6]);
+  tets[19].addVertex(fm5);
+
+  tets[20].addVertex(hc);
+  tets[20].addVertex(poly[7]);
+  tets[20].addVertex(poly[4]);
+  tets[20].addVertex(fm6);
+
+  tets[21].addVertex(hc);
+  tets[21].addVertex(poly[4]);
+  tets[21].addVertex(poly[5]);
+  tets[21].addVertex(fm6);
+
+  tets[22].addVertex(hc);
+  tets[22].addVertex(poly[5]);
+  tets[22].addVertex(poly[6]);
+  tets[22].addVertex(fm6);
+
+  tets[23].addVertex(hc);
+  tets[23].addVertex(poly[6]);
+  tets[23].addVertex(poly[7]);
+  tets[23].addVertex(fm6);
+
+  for(int i = 0; i < 24; i++)
+  {
+    tets[i].addNeighbors(tets[i][0], {1, 3, 2});
+    tets[i].addNeighbors(tets[i][1], {0, 2, 3});
+    tets[i].addNeighbors(tets[i][2], {0, 3, 1});
+    tets[i].addNeighbors(tets[i][3], {0, 1, 2});
+  }
+
+  double sum = 0;
+  for(int i = 0; i < 24; i++)
+  {
+    EXPECT_NEAR(0.0416, tets[i].volume(), EPS);
+    sum += tets[i].volume();
+  }
+
+  EXPECT_NEAR(1.000, sum, EPS);
+}
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/SimpleLogger.hpp"

@@ -178,11 +178,6 @@ void discretized_sphere(OctType*& out)
 //------------------------------------------------------------------------------
 TEST(quest_discretize, sphere_test)
 {
-  // The discretized_sphere() routine produces a list of 41 hand-calculated
-  // octahedra (three generations) that discretize the unit sphere.
-  OctType* handcut = nullptr;
-  discretized_sphere(handcut);
-
   // The discretize() routine chops up a given sphere into the specified
   // number of generations of octahedra.  Here, we'll discretize the unit
   // sphere in three generations, to match the hand-calculated octs from
@@ -192,6 +187,11 @@ TEST(quest_discretize, sphere_test)
   OctType* generated = nullptr;
   int octcount = 0;
   axom::quest::discretize(sph, generations, generated, octcount);
+
+  // The discretized_sphere() routine produces a list of 41 hand-calculated
+  // octahedra (three generations) that discretize the unit sphere.
+  OctType* handcut = nullptr;
+  discretized_sphere(handcut);
 
   // Test each of the three generations.
   // We don't know what order they'll be in, but we do know how many octahedra

@@ -6,6 +6,7 @@
 #ifndef AXOM_PRIMAL_TETRAHEDRON_HPP_
 #define AXOM_PRIMAL_TETRAHEDRON_HPP_
 
+#include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"  // For numerics::determinant()
 #include "axom/core/utilities/Utilities.hpp"
 
@@ -52,6 +53,7 @@ public:
    * \param [in] C point instance corresponding to vertex C of the tetrahedron.
    * \param [in] D point instance corresponding to vertex D of the tetrahedron.
    */
+  AXOM_HOST_DEVICE
   Tetrahedron(const PointType& A,
               const PointType& B,
               const PointType& C,
@@ -190,6 +192,7 @@ private:
    * \return The signed parallelepiped volume
    * \sa signedVolume(), volume()
    */
+  AXOM_HOST_DEVICE
   double ppedVolume() const
   {
     if(NDIMS != 3)

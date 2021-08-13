@@ -273,8 +273,8 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
         int neighborIndex = poly_nbrs[vIndex][j];
         int neighborOrientation = plane.getOrientation(poly[neighborIndex], eps);
 
-        // This neighbor is below the plane
-        if(neighborOrientation == ON_NEGATIVE_SIDE)
+        // This neighbor is not newly inserted and below the plane
+        if(neighborIndex < oldVerts && neighborOrientation == ON_NEGATIVE_SIDE)
         {
           // Look for 1st vertex along this face not below the plane.
           int iprev = vIndex;
@@ -315,7 +315,7 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
           {
             poly_nbrs[vIndex][j] = inext;
 
-            if((clipped & (1 << inext)))
+            if(inext >= oldVerts)
             {
               poly_nbrs.insertNeighborAtPos(inext, vIndex, 0);
               old_nbrs.insertNeighborAtPos(inext, -1, 0);
@@ -353,13 +353,23 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
                                         const unsigned int clipped)
 {
   // Dictionary for old indices to new indices positions
-  axom::int8 newIndices[Polyhedron<T, NDIMS>::MAX_VERTS];
+  axom::int8 newIndices[Polyhedron<T, NDIMS>::MAX_VERTS] = {0};
 
-  Polyhedron<T, NDIMS> old_poly = poly;
+  Polyhedron<T, NDIMS> old_poly;
+
+  for(int i = 0; i < poly.numVertices(); i++)
+  {
+    old_poly.addVertex(poly[i]);
+    for(int j = 0; j < poly.getNumNeighbors(i); j++)
+    {
+      old_poly.addNeighbors(i, poly.getNeighbors(i)[j]);
+    }
+  }
 
   poly.clear();
 
   int curIndex = 0;
+
   for(int i = 0; i < old_poly.numVertices(); i++)
   {
     if(!(clipped & (1 << i)))
@@ -398,7 +408,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   const Octahedron<T, NDIMS>& oct,
   const Tetrahedron<T, NDIMS>& tet,
-  double eps = 1.e-24)
+  double eps = 1.e-10)
 {
   using PointType = Point<T, NDIMS>;
   using BoxType = BoundingBox<T, NDIMS>;
@@ -421,6 +431,13 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   poly.addNeighbors(4, {0, 5, 3, 2});
   poly.addNeighbors(5, {0, 1, 3, 4});
 
+  // Reverses order of vertices 1,2 and 4,5 if volume is negative
+  if(poly.volume() < 0)
+  {
+    axom::utilities::swap<PointType>(poly[1], poly[2]);
+    axom::utilities::swap<PointType>(poly[4], poly[5]);
+  }
+
   //Bounding Box of Polyhedron
   BoxType polyBox(&oct[0], 6);
 
@@ -441,7 +458,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
     PlaneType plane = planes[planeIndex];
 
     // Check that plane intersects Polyhedron
-    if(intersect(plane, polyBox))
+    if(intersect(plane, polyBox, true, eps))
     {
       int numVerts = poly.numVertices();
 
@@ -462,6 +479,26 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
       for(int i = 0; i < poly.numVertices(); i++)
       {
         polyBox.addPoint(PointType(poly[i]));
+      }
+    }
+
+    // If entire polyhedron is below a plane (points can be on the plane), it is completely removed.
+    else
+    {
+      bool completeClip = true;
+      for(int i = 0; i < poly.numVertices(); i++)
+      {
+        if(plane.getOrientation(poly[i], eps) == ON_POSITIVE_SIDE)
+        {
+          completeClip = false;
+          break;
+        }
+      }
+
+      if(completeClip)
+      {
+        poly.clear();
+        return poly;
       }
     }
   }

@@ -537,17 +537,32 @@ bool intersect(const BezierCurve<T, NDIMS>& c1,
 
 /*!
  * \brief Determines if a 3D plane intersects a 3D bounding box.
+ *        By default (checkOverlaps is false), checks if |s| <= r, 
+ *        where "s" is the distance of the bounding box center to the plane,
+ *        and "r" is the projected radius of the bounding box along the line
+ *        parallel to the plane normal and going through the box center.
+ *        If checkOverlaps is true, checks if |s| < r,
+ *        where the bounding box overlaps both half spaces of the plane.
  * \param [in] p A 3D plane
  * \param [in] bb A 3D bounding box
+ * \param [in] checkOverlaps If true, checks if bounding box overlaps both 
+ *             halfspaces of the plane.
+ *             Otherwise, overlap of both halfspaces is not guaranteed.
+ *             Default is false.
+ * \param [in] EPS tolerance parameter for determining if "s"
+ *             is just within min/max of "r".
  * \return true iff plane intersects with bounding box, otherwise, false.
  *
  * \note Uses method from pg 164 of 
  *       Real Time Collision Detection by Christer Ericson.
  */
 template <typename T>
-AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p, const BoundingBox<T, 3>& bb)
+AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
+                                const BoundingBox<T, 3>& bb,
+                                bool checkOverlaps = false,
+                                double EPS = 1E-08)
 {
-  return detail::intersect_plane_bbox(p, bb);
+  return detail::intersect_plane_bbox(p, bb, checkOverlaps, EPS);
 }
 
 /*!
