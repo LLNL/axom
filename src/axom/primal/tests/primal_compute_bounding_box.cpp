@@ -129,6 +129,74 @@ TEST(primal_compute_bounding_box, merge_aligned_box_test)
   EXPECT_TRUE(bbox5.contains(bbox4));
 }
 
+TEST(primal_compute_bounding_box, compute_oct_box_test)
+{
+  static const int DIM = 3;
+  typedef double CoordType;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  typedef primal::Octahedron<CoordType, DIM> QOct;
+
+  QPoint p1({1, 0, 0});
+  QPoint p2({1, 1, 0});
+  QPoint p3({0, 1, 0});
+  QPoint p4({0, 1, 1});
+  QPoint p5({0, 0, 1});
+  QPoint p6({1, 0, 1});
+
+  QOct oct(p1, p2, p3, p4, p5, p6);
+
+  QBBox box = primal::compute_bounding_box<CoordType, DIM>(oct);
+  EXPECT_TRUE(box.contains(p1));
+  EXPECT_TRUE(box.contains(p2));
+  EXPECT_TRUE(box.contains(p3));
+  EXPECT_TRUE(box.contains(p4));
+  EXPECT_TRUE(box.contains(p5));
+  EXPECT_TRUE(box.contains(p6));
+  EXPECT_EQ(box.getMin(), QPoint::zero());
+  EXPECT_EQ(box.getMax(), QPoint::ones());
+}
+
+TEST(primal_compute_bounding_box, compute_poly_box_test)
+{
+  static const int DIM = 3;
+  typedef double CoordType;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  typedef primal::Polyhedron<CoordType, DIM> QPoly;
+
+  QPoly poly;
+  QPoint p1({0, 0, 0});
+  QPoint p2({1, 0, 0});
+  QPoint p3({1, 1, 0});
+  QPoint p4({0, 1, 0});
+  QPoint p5({0, 0, 1});
+  QPoint p6({1, 0, 1});
+  QPoint p7({1, 1, 1});
+  QPoint p8({0, 1, 1});
+
+  poly.addVertex(p1);
+  poly.addVertex(p2);
+  poly.addVertex(p3);
+  poly.addVertex(p4);
+  poly.addVertex(p5);
+  poly.addVertex(p6);
+  poly.addVertex(p7);
+  poly.addVertex(p8);
+
+  QBBox box = primal::compute_bounding_box<CoordType, DIM>(poly);
+  EXPECT_TRUE(box.contains(p1));
+  EXPECT_TRUE(box.contains(p2));
+  EXPECT_TRUE(box.contains(p3));
+  EXPECT_TRUE(box.contains(p4));
+  EXPECT_TRUE(box.contains(p5));
+  EXPECT_TRUE(box.contains(p6));
+  EXPECT_TRUE(box.contains(p7));
+  EXPECT_TRUE(box.contains(p8));
+  EXPECT_EQ(box.getMin(), QPoint::zero());
+  EXPECT_EQ(box.getMax(), QPoint::ones());
+}
+
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);

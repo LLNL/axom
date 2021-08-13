@@ -124,7 +124,7 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
                                        const Tetrahedron<T, 3>& tet,
-                                       double eps = 1.e-24)
+                                       double eps = 1.e-10)
 {
   return detail::clipOctahedron(oct, tet, eps);
 }

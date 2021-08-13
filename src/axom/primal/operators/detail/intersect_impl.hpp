@@ -1124,13 +1124,28 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox<T, 3>& b1,
 
 /*!
  * \brief Determines if a 3D plane intersects a 3D bounding box.
- * \param [in] b1 A 3D plane
- * \param [in] b2 A 3D bounding box
+ *        By default (checkOverlaps is false), checks if |s| <= r, 
+ *        where "s" is the distance of the bounding box center to the plane,
+ *        and "r" is the projected radius of the bounding box along the line
+ *        parallel to the plane normal and going through the box center.
+ *        If checkOverlaps is true, checks if |s| < r,
+ *        where the bounding box overlaps both half spaces of the plane.
+ * \param [in] p A 3D plane
+ * \param [in] bb A 3D bounding box
+ * \param [in] checkOverlaps If true, checks if bounding box overlaps both 
+ *             halfspaces of the plane.
+ *             Otherwise, overlap of both halfspaces is not guaranteed.
+ *             Default is false.
+ * \param [in] EPS tolerance parameter for determining if "s"
+ *             is just within min/max of "r".
+ * \return true iff plane intersects with bounding box, otherwise, false.
  * \return true iff plane intersects with bounding box, otherwise, false.
  */
 template <typename T>
 AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
-                                           const BoundingBox<T, 3>& bb)
+                                           const BoundingBox<T, 3>& bb,
+                                           bool checkOverlaps = false,
+                                           double EPS = 1E-12)
 {
   typedef Vector<T, 3> VectorType;
 
@@ -1143,7 +1158,15 @@ AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
 
   T s = p.getNormal().dot(c) - p.getOffset();
 
-  return utilities::abs<T>(s) <= r;
+  if(checkOverlaps)
+  {
+    return isLt(utilities::abs<T>(s), r, EPS);
+  }
+
+  else
+  {
+    return isLeq(utilities::abs<T>(s), r, EPS);
+  }
 }
 
 /*!

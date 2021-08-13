@@ -18,7 +18,6 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 
-#include <vector>
 #include <ostream>  // for std::ostream
 
 namespace axom
@@ -130,6 +129,23 @@ public:
       nbrs[vtx][idx_insert] = nbr;
       num_nbrs[vtx]++;
     }
+  };
+
+  /*!
+   * \brief Adds a single neighbor to a given vertex.
+   *
+   * \param [in] vtx the index of the vertex to add the new neighbor to
+   * \param [in] nbr an index of a neighboring vertex
+   *
+   * \pre vtx < MAX_VERTS
+   */
+  AXOM_HOST_DEVICE void addNeighbors(axom::int8 vtx, axom::int8 nbrId)
+  {
+    SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
+    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+    axom::int8 idx_insert = num_nbrs[vtx];
+    nbrs[vtx][idx_insert] = nbrId;
+    num_nbrs[vtx]++;
   };
 
   /*!
@@ -266,7 +282,7 @@ public:
   AXOM_HOST_DEVICE
   void addNeighbors(const PointType& pt, std::initializer_list<axom::int8> nbrs)
   {
-    for(unsigned int i = 0; i < m_num_vertices; i++)
+    for(int i = 0; i < m_num_vertices; i++)
     {
       if(m_vertices[i] == pt)
       {
@@ -290,6 +306,23 @@ public:
   void addNeighbors(int vtxId, std::initializer_list<axom::int8> nbrs)
   {
     m_neighbors.addNeighbors(vtxId, nbrs);
+  }
+
+  /*!
+   * \brief Adds a single nbr as the neighbor of vertex at a given index.
+   *
+   * \note Caller is responsible for ensuring a given vertex has enough space
+   *       remaining to fit the new neighbor.
+   *
+   * \param [in] vtxId The vertex id to add the neighbor
+   * \param [in] nbr The neighbor to add to the list of neighbors
+   *
+   * \pre vtxId < getVertices()
+   */
+  AXOM_HOST_DEVICE
+  void addNeighbors(int vtxId, int nbr)
+  {
+    m_neighbors.addNeighbors(vtxId, nbr);
   }
 
   /*! Clears the list of vertices and neighbors */
@@ -336,6 +369,7 @@ public:
    *
    * \pre  polyhedron.isValid() is true
    */
+  AXOM_HOST_DEVICE
   PointType centroid() const
   {
     SLIC_ASSERT(isValid());
@@ -381,7 +415,8 @@ private:
       {
         // Check if edge has not been visited
         int ni = m_neighbors[i][j];
-        int edgeToCheck[2] = {ni, i};
+        int edgeToCheck[2] = {i, ni};
+
         bool alreadyChecked = false;
 
         for(int edge = 0; edge < checkedSize; edge++)
@@ -397,11 +432,11 @@ private:
         if(!alreadyChecked)
         {
           face_offset[facesAdded] = curFaceIndex;
-          faces[curFaceIndex++] = ni;
+          faces[curFaceIndex++] = i;
           axom::int8 curFaceSize = 1;
-          axom::int8 vstart = ni;
-          axom::int8 vnext = i;
-          axom::int8 vprev = ni;
+          axom::int8 vstart = i;
+          axom::int8 vnext = ni;
+          axom::int8 vprev = i;
 
           // Add neighboring vertices until we reach the starting vertex.
           while(vnext != vstart)
@@ -419,6 +454,7 @@ private:
               if(m_neighbors[vnext][k] == vprev)
               {
                 itr = k;
+                break;
               }
             }
             vprev = vnext;
@@ -478,6 +514,7 @@ public:
       int face_offset[MAX_VERTS * 2];
       int face_count;
       getFaces(faces, face_size, face_offset, face_count);
+
       VectorType origin(m_vertices[0].data());
 
       for(int i = 0; i < face_count; i++)
@@ -521,7 +558,8 @@ public:
         int nz = m_neighbors.getNumNeighbors(i);
         for(int j = 0; j < nz; j++)
         {
-          os << m_neighbors[i][j] << " ";
+          int curN = getNeighbors(i)[j];
+          os << curN << " ";
         }
         os << "\n";
       }
@@ -535,7 +573,8 @@ public:
         int nz = m_neighbors.getNumNeighbors(sz - 1);
         for(int j = 0; j < nz; j++)
         {
-          os << m_neighbors[sz - 1][j] << " ";
+          int curN = getNeighbors(sz - 1)[j];
+          os << curN << " ";
         }
         os << "\n";
       }
@@ -551,6 +590,7 @@ public:
    * Initial check is that the polyhedron has four or more vertices
    * \return True, if the polyhedron is valid, False otherwise
    */
+  AXOM_HOST_DEVICE
   bool isValid() const { return m_num_vertices >= 4; }
 
   /*!

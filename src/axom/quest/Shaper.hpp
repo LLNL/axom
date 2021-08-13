@@ -95,6 +95,13 @@ protected:
    */
   int getRank() const;
 
+  /*!
+   * \brief Helper to apply a parallel sum reduction to a quantity
+   *
+   * \note This is a no-op when running without MPI 
+   */
+  double allReduceSum(double val) const;
+
 protected:
   const klee::ShapeSet& m_shapeSet;
   sidre::MFEMSidreDataCollection* m_dc;
