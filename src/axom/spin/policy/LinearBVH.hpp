@@ -219,8 +219,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   AXOM_PERF_MARK_FUNCTION("LinearBVH::findCandidatesImpl");
 
   SLIC_ERROR_IF(offsets == nullptr, "supplied null pointer for offsets!");
-  SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
-  SLIC_ERROR_IF(objs == nullptr, "supplied null pointer for test primitives!");
+  SLIC_ERROR_IF(counts == nullptr, "supplied null value for counts!");
 
   const BoundingBoxType* inner_nodes = m_inner_nodes;
   const int32* inner_node_children = m_inner_node_children;

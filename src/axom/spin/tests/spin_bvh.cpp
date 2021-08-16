@@ -15,6 +15,7 @@
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/utils/ZipPoint.hpp"
 
 // axom/spin includes
 #include "axom/spin/BVH.hpp"
@@ -1108,6 +1109,103 @@ void check_single_box3d()
   axom::setDefaultAllocator(current_allocator);
 }
 
+//------------------------------------------------------------------------------
+
+/*!
+ * \brief Tests the find algorithm of the BVH in 3D.
+ *
+ *  A uniform mesh is used for this test where the query points are generated
+ *  by taking the centroids of the constituent cells of the mesh. Since the
+ *  mesh is a uniform, cartesian mesh the find algorithm should return exactly
+ *  one candidate for each query point corresponding to the cell on the mesh
+ *  that generated the centroid. This property is checked by using the
+ *  spin::UniformGrid class.
+ *
+ *  In addition, the test shifts the points by an offset to ensure that points
+ *  outside the mesh return no candidate.
+ *
+ */
+template <typename ExecSpace, typename FloatType>
+void check_find_points_zip3d()
+{
+  constexpr int NDIMS = 3;
+  constexpr IndexType N = 4;
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using PointDbl = primal::Point<double, NDIMS>;
+
+  double lo[NDIMS] = {0.0, 0.0, 0.0};
+  double hi[NDIMS] = {3.0, 3.0, 3.0};
+  int res[NDIMS] = {N - 1, N - 1, N - 1};
+
+  mint::UniformMesh mesh(lo, hi, N, N, N);
+  FloatType* centroids_raw =
+    mesh.createField<FloatType>("centroid", mint::CELL_CENTERED, NDIMS);
+  PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
+  const IndexType ncells = mesh.getNumberOfCells();
+
+  BoxType* aabbs = nullptr;
+  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
+
+  FloatType* xs = axom::allocate<FloatType>(ncells);
+  FloatType* ys = axom::allocate<FloatType>(ncells);
+  FloatType* zs = axom::allocate<FloatType>(ncells);
+
+  for(int icell = 0; icell < ncells; icell++)
+  {
+    xs[icell] = centroids[icell][0];
+    ys[icell] = centroids[icell][1];
+    zs[icell] = centroids[icell][2];
+  }
+
+  primal::ZipIndexable<PointType> zip_test {{xs, ys, zs}};
+
+  // construct the BVH
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+  bvh.setScaleFactor(1.0);  // i.e., no scaling
+  bvh.initialize(aabbs, ncells);
+
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
+  {
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+  }
+
+  // traverse the BVH to find the candidates for all the centroids
+  IndexType* offsets = axom::allocate<IndexType>(ncells);
+  IndexType* counts = axom::allocate<IndexType>(ncells);
+  IndexType* candidates = nullptr;
+  bvh.findPoints(offsets, counts, candidates, ncells, zip_test);
+
+  EXPECT_TRUE(candidates != nullptr);
+
+  spin::UniformGrid<IndexType, NDIMS> ug(lo, hi, res);
+
+  for(IndexType i = 0; i < ncells; ++i)
+  {
+    PointDbl q = PointDbl {centroids[i][0], centroids[i][1], centroids[i][2]};
+    const int donorCellIdx = ug.getBinIndex(q);
+    EXPECT_EQ(counts[i], 1);
+    EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
+  }  // END for all cell centroids
+
+  axom::deallocate(xs);
+  axom::deallocate(ys);
+  axom::deallocate(zs);
+  axom::deallocate(offsets);
+  axom::deallocate(candidates);
+  axom::deallocate(counts);
+  axom::deallocate(aabbs);
+
+  axom::setDefaultAllocator(current_allocator);
+}
+
 } /* end unnamed namespace */
 
 //------------------------------------------------------------------------------
@@ -1180,6 +1278,13 @@ TEST(spin_bvh, single_box3d_sequential)
 {
   check_single_box3d<axom::SEQ_EXEC, double>();
   check_single_box3d<axom::SEQ_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
+TEST(spin_bvh, find_points_3d_sequential_zip)
+{
+  check_find_points_zip3d<axom::SEQ_EXEC, double>();
+  check_find_points_zip3d<axom::SEQ_EXEC, float>();
 }
 
 //------------------------------------------------------------------------------

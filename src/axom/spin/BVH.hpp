@@ -160,7 +160,7 @@ private:
     // The base object of the return type of a call to iter[], or std::false_type
     // if operator[] does not exist.
     using BaseType =
-      typename std::decay<decltype(array_operator_type(It {}))>::type;
+      typename std::decay<decltype(array_operator_type(std::declval<It>()))>::type;
 
     // The iterator must be an array-like type.
     static_assert(
