@@ -473,7 +473,6 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
   SLIC_ASSERT(offsets != nullptr);
   SLIC_ASSERT(counts != nullptr);
   SLIC_ASSERT(candidates == nullptr);
-  SLIC_ASSERT(pts != nullptr);
 
   // Define traversal predicates
   auto predicate = [=] AXOM_HOST_DEVICE(const PointType& p,
@@ -511,7 +510,6 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
   SLIC_ASSERT(offsets != nullptr);
   SLIC_ASSERT(counts != nullptr);
   SLIC_ASSERT(candidates == nullptr);
-  SLIC_ASSERT(rays != nullptr);
 
   const FloatType TOL = m_tolerance;
 
@@ -554,7 +552,6 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
   SLIC_ASSERT(offsets != nullptr);
   SLIC_ASSERT(counts != nullptr);
   SLIC_ASSERT(candidates == nullptr);
-  SLIC_ASSERT(boxes != nullptr);
 
   // STEP 2: define traversal predicates
   auto predicate = [=] AXOM_HOST_DEVICE(const BoxType& bb1,
