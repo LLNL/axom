@@ -148,7 +148,7 @@ private:
   {
   private:
     template <typename U, typename Ret = decltype(std::declval<U&>()[0])>
-    static Ret array_operator_type(U obj)
+    static Ret array_operator_type(U AXOM_NOT_USED(obj))
     { }
 
     static std::false_type array_operator_type(...)
@@ -203,7 +203,7 @@ public:
    *  the code will use the default allocator ID for the execution space
    *  specified via axom::execution_space<ExecSpace>::allocatorID() when the
    *  BVH object is instantiated.
-   * 
+   *
    * \warning The supplied boxes array must point to a buffer in a memory space
    *  that is compatible with the execution space. For example, when using
    *  CUDA_EXEC, boxes must be in unified memory or GPU memory. The code

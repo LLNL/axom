@@ -34,6 +34,8 @@ set(gtest_utils_tests
     utils_endianness.hpp
     utils_fileUtilities.hpp
     utils_nvtx_settings.hpp
+    utils_stringUtilities.hpp
+    utils_system.hpp
     utils_utilities.hpp
     utils_about.hpp
     )
