@@ -105,6 +105,12 @@ class ArrayImpl
 {
 public:
   using ArrayType = Array<T, DIM>;
+
+  /*!
+   * \brief Parameterized constructor that sets up the default strides
+   *
+   * \param [in] args the parameter pack of sizes in each dimension.
+   */
   template <typename... Args>
   ArrayImpl(Args... args) : m_dims {static_cast<IndexType>(args)...}
   {
@@ -148,6 +154,7 @@ public:
     return asDerived().data()[idx];
   }
 
+  /// \brief Swaps two ArrayImpls
   friend void swap(ArrayImpl& lhs, ArrayImpl& rhs)
   {
     std::swap(lhs.m_dims, rhs.m_dims);
@@ -216,6 +223,9 @@ public:
   // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
   std::array<IndexType, 1> shape() const { return {{asDerived().size()}}; }
 
+  /// \brief Swaps two ArrayImpls
+  friend void swap(ArrayImpl& lhs, ArrayImpl& rhs) { }
+
 private:
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
   const ArrayType& asDerived() const
@@ -223,10 +233,6 @@ private:
     return static_cast<const ArrayType&>(*this);
   }
 };
-
-template <typename T>
-void swap(ArrayImpl<T, 1>& lhs, ArrayImpl<T, 1>& rhs)
-{ }
 
 /*!
  * \class Array
@@ -245,13 +251,6 @@ void swap(ArrayImpl<T, 1>& lhs, ArrayImpl<T, 1>& rhs)
  *  multidimensional arrays that roughly resemble numpy's ndarray.
  * 
  *  \see https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html
- * 
- *  In the 1-dimensional case, this class will behave like std::vector.
- *  In higher dimensions some vector-like functionality will be unavailable,
- *  e.g., @p push_back , and multidimensional-specific operations will mirror
- *  ndarray when possible.  In the future, it will be possible to take "views"
- *  of the underlying array data that allow for flexible reinterpretation via
- *  different striding.
  * 
  *  This class is meant to be a drop-in replacement for std::vector.
  *  However, it differs in its memory management and construction semantics.
