@@ -35,7 +35,7 @@
 #include "axom/mint/execution/internal/structured_exec.hpp"
 
 // clang-format off
-#if defined (AXOM_USE_RAJA)
+#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
   using seq_exec = axom::SEQ_EXEC;
 
   #if defined(AXOM_USE_OPENMP)
@@ -648,7 +648,7 @@ int main(int argc, char** argv)
                                                 degenerate,
                                                 params.intersectionThreshold);
         break;
-#ifdef AXOM_USE_RAJA
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
       case raja_seq:
         collisions =
           naiveIntersectionAlgorithm<seq_exec>(surface_mesh,
@@ -687,7 +687,7 @@ int main(int argc, char** argv)
                                                 degenerate,
                                                 params.intersectionThreshold);
         break;
-#ifdef AXOM_USE_RAJA
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
       case raja_seq:
         quest::findTriMeshIntersectionsBVH<seq_exec, double>(
           surface_mesh,
@@ -713,7 +713,7 @@ int main(int argc, char** argv)
           params.intersectionThreshold);
         break;
   #endif
-#endif  // AXOM_USE_RAJA
+#endif  // AXOM_USE_RAJA && AXOM_USE_UMPIRE
       default:
         SLIC_ERROR("Unhandled runtime policy case " << params.policy);
         break;

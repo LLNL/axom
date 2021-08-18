@@ -1139,7 +1139,6 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox<T, 3>& b1,
  * \param [in] EPS tolerance parameter for determining if "s"
  *             is just within min/max of "r".
  * \return true iff plane intersects with bounding box, otherwise, false.
- * \return true iff plane intersects with bounding box, otherwise, false.
  */
 template <typename T>
 AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,

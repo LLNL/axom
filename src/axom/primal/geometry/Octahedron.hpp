@@ -133,6 +133,7 @@ public:
   /*!
     * \brief Test if this Octahedron is equal to another, within a tolerance
     */
+  AXOM_HOST_DEVICE
   bool equals(const Octahedron& other, double eps = 1.e-24) const
   {
     // Two octs are equal if each vertex is closer than eps to a vertex of the other.

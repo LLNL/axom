@@ -36,6 +36,30 @@
 #include "fmt/fmt.hpp"
 #include "fmt/locale.h"
 
+// RAJA
+#if defined(AXOM_USE_RAJA)
+  #include "RAJA/RAJA.hpp"
+#endif
+
+// clang-format off
+#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
+  using seq_exec = axom::SEQ_EXEC;
+
+  #if defined(AXOM_USE_OPENMP)
+    using omp_exec = axom::OMP_EXEC;
+  #else
+    using omp_exec = seq_exec;
+  #endif
+
+  #if defined(AXOM_USE_CUDA)
+    constexpr int CUDA_BLOCK_SIZE = 256;
+    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
+  #else
+    using cuda_exec = seq_exec;
+  #endif
+#endif
+// clang-format on
+
 namespace axom
 {
 namespace quest
@@ -50,6 +74,14 @@ public:
   using Point3D = primal::Point<double, 3>;
   using TetrahedronType = primal::Tetrahedron<double, 3>;
 
+  /// Choose runtime policy for RAJA
+  enum ExecPolicy
+  {
+    seq = 0,
+    omp = 1,
+    cuda = 2
+  };
+
 public:
   IntersectionShaper(const klee::ShapeSet& shapeSet,
                      sidre::MFEMSidreDataCollection* dc)
@@ -61,6 +93,7 @@ public:
 
   void setLevel(int level) { m_level = level; }
 
+  void setExecPolicy(int policy) { m_execPolicy = (ExecPolicy)policy; }
   //@}
 
 private:
@@ -162,12 +195,14 @@ private:
   }
 
 public:
-  //@{
-  //!  @name Functions related to the stages for a given shape
+//@{
+//!  @name Functions related to the stages for a given shape
 
-  /// Initializes the spatial index for shaping
+/// Initializes the spatial index for shaping
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   template <typename ExecSpace>
-  void prepareShapeQuery(klee::Dimensions shapeDimension, const klee::Shape& shape)
+  void prepareShapeQueryImpl(klee::Dimensions shapeDimension,
+                             const klee::Shape& shape)
   {
     SLIC_INFO(fmt::format(
       "{:-^80}",
@@ -309,65 +344,73 @@ public:
                     all_oct_bb));
 
       // Print out the total volume of all the octahedra
-      double total_oct_vol = 0.0;
-      for(int i = 0; i < m_octcount; i++)
-      {
-        // Convert Octahedron into Polyhedrom
-        PolyhedronType octPoly;
-        double octVolume;
+      using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
+      RAJA::ReduceSum<REDUCE_POL, double> total_oct_vol(0.0);
+      axom::for_all<ExecSpace>(
+        m_octcount,
+        AXOM_LAMBDA(axom::IndexType i) {
+          // Convert Octahedron into Polyhedrom
+          PolyhedronType octPoly;
+          double octVolume;
 
-        octPoly.addVertex(m_octs[i][0]);
-        octPoly.addVertex(m_octs[i][1]);
-        octPoly.addVertex(m_octs[i][2]);
-        octPoly.addVertex(m_octs[i][3]);
-        octPoly.addVertex(m_octs[i][4]);
-        octPoly.addVertex(m_octs[i][5]);
+          octPoly.addVertex(m_octs[i][0]);
+          octPoly.addVertex(m_octs[i][1]);
+          octPoly.addVertex(m_octs[i][2]);
+          octPoly.addVertex(m_octs[i][3]);
+          octPoly.addVertex(m_octs[i][4]);
+          octPoly.addVertex(m_octs[i][5]);
 
-        octPoly.addNeighbors(0, {1, 5, 4, 2});
-        octPoly.addNeighbors(1, {0, 2, 3, 5});
-        octPoly.addNeighbors(2, {0, 4, 3, 1});
-        octPoly.addNeighbors(3, {1, 2, 4, 5});
-        octPoly.addNeighbors(4, {0, 5, 3, 2});
-        octPoly.addNeighbors(5, {0, 1, 3, 4});
+          octPoly.addNeighbors(0, {1, 5, 4, 2});
+          octPoly.addNeighbors(1, {0, 2, 3, 5});
+          octPoly.addNeighbors(2, {0, 4, 3, 1});
+          octPoly.addNeighbors(3, {1, 2, 4, 5});
+          octPoly.addNeighbors(4, {0, 5, 3, 2});
+          octPoly.addNeighbors(5, {0, 1, 3, 4});
 
-        octVolume = octPoly.volume();
+          octVolume = octPoly.volume();
 
-        // Flip sign if volume is negative
-        // (expected when vertex order is reversed)
-        if(octVolume < 0)
-        {
-          octVolume = -octVolume;
-        }
-        total_oct_vol += octVolume;
-      }
+          // Flip sign if volume is negative
+          // (expected when vertex order is reversed)
+          if(octVolume < 0)
+          {
+            octVolume = -octVolume;
+          }
+          total_oct_vol += octVolume;
+        });
+
       SLIC_INFO(
         fmt::format("DEBUG: Total volume of all generated octahedra is {}",
-                    total_oct_vol));
+                    total_oct_vol.get()));
 
       // Check if any Octahedron are degenerate with all points {0,0,0}
-      OctahedronType degenerate_oct;
-      int num_degenerate = 0;
-      for(int i = 0; i < m_octcount; i++)
-      {
-        if(m_octs[i].equals(degenerate_oct))
-        {
-          num_degenerate += 1;
-        }
-      }
+      RAJA::ReduceSum<REDUCE_POL, int> num_degenerate(0);
+      axom::for_all<ExecSpace>(
+        m_octcount,
+        AXOM_LAMBDA(axom::IndexType i) {
+          OctahedronType degenerate_oct;
+          if(m_octs[i].equals(degenerate_oct))
+          {
+            num_degenerate += 1;
+          }
+        });
+
       SLIC_INFO(
         fmt::format("DEBUG: {} Octahedron found with all points (0,0,0)",
-                    num_degenerate));
+                    num_degenerate.get()));
 
     }  // end of verbose output for contour
 
     axom::deallocate(polyline);
     axom::setDefaultAllocator(current_allocator);
   }
+#endif
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   template <typename ExecSpace>
-  void runShapeQuery(const klee::Shape& shape)
+  void runShapeQueryImpl(const klee::Shape& shape)
   {
     constexpr int NUM_VERTS_PER_HEX = 8;
+    constexpr int NUM_COMPS_PER_VERT = 3;
     constexpr int NUM_TETS_PER_HEX = 24;
     constexpr double ZERO_THRESHOLD = 1.e-10;
 
@@ -396,10 +439,11 @@ public:
     m_aabbs = axom::allocate<BoundingBoxType>(m_octcount);
 
     // Get the bounding boxes for the Octahedrons
-    for(int i = 0; i < m_octcount; i++)
-    {
-      m_aabbs[i] = primal::compute_bounding_box<double, 3>(m_octs[i]);
-    }
+    axom::for_all<ExecSpace>(
+      m_octcount,
+      AXOM_LAMBDA(axom::IndexType i) {
+        m_aabbs[i] = primal::compute_bounding_box<double, 3>(m_octs[i]);
+      });
 
     // Insert Octahedra Bounding Boxes into BVH.
     //bvh.setAllocatorID(poolID);
@@ -415,10 +459,13 @@ public:
     int const NE = mesh->GetNE();
     m_num_elements = NE;
 
-    SLIC_INFO(fmt::format(
-      "{:-^80}",
-      fmt::format(" Initializing {} hexahedral elements from given mesh ",
-                  m_num_elements)));
+    if(this->isVerbose())
+    {
+      SLIC_INFO(fmt::format(
+        "{:-^80}",
+        fmt::format(" Initializing {} hexahedral elements from given mesh ",
+                    m_num_elements)));
+    }
 
     if(NE > 0)
     {
@@ -436,6 +483,12 @@ public:
     m_hexes = axom::allocate<PolyhedronType>(NE);
     m_hex_bbs = axom::allocate<BoundingBoxType>(NE);
 
+    // Initialize vertices from mfem mesh and
+    // set each shape volume fraction to 1
+    // Allocation size is:
+    // # of elements * # of vertices per hex * # of components per vertex
+    double* vertCoords =
+      axom::allocate<double>(NE * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT);
     for(int i = 0; i < NE; i++)
     {
       // Get the indices of this element's vertices
@@ -443,67 +496,82 @@ public:
       mesh->GetElementVertices(i, verts);
       SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
 
-      // Get the coordinates for the vertices
-      double* vertCoords[NUM_VERTS_PER_HEX];
-      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
-      {
-        vertCoords[j] = mesh->GetVertex(verts[j]);
-      }
-
-      // Set each shape volume fraction to 0
+      // Set each shape volume fraction to 1
       double vf = 1.0;
       (*volFrac)(i) = vf;
 
-      // Set each hexahedral element vertices
-      m_hexes[i] = PolyhedronType();
+      // Get the coordinates for the vertices
       for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
       {
-        m_hexes[i].addVertex(
-          {vertCoords[j][0], vertCoords[j][1], vertCoords[j][2]});
-
-        // Set hexahedra components to zero if within threshold
-        if(axom::utilities::isNearlyEqual(m_hexes[i][j][0], 0.0, ZERO_THRESHOLD))
+        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
         {
-          m_hexes[i][j][0] = 0.0;
-        }
-
-        if(axom::utilities::isNearlyEqual(m_hexes[i][j][1], 0.0, ZERO_THRESHOLD))
-        {
-          m_hexes[i][j][1] = 0.0;
-        }
-
-        if(axom::utilities::isNearlyEqual(m_hexes[i][j][2], 0.0, ZERO_THRESHOLD))
-        {
-          m_hexes[i][j][2] = 0.0;
-        }
-      }
-
-      // Get bounding box for hexahedral element
-      m_hex_bbs[i] = primal::compute_bounding_box<double, 3>(m_hexes[i]);
-
-    }  // end of loop to initialize hexahedral elements and bounding boxes
-
-    // Set octahedra components to zero if within threshold
-    for(int i = 0; i < m_octcount; i++)
-    {
-      for(int j = 0; j < OctahedronType::NUM_OCT_VERTS; j++)
-      {
-        if(axom::utilities::isNearlyEqual(m_octs[i][j][0], 0.0, ZERO_THRESHOLD))
-        {
-          m_octs[i][j][0] = 0.0;
-        }
-
-        if(axom::utilities::isNearlyEqual(m_octs[i][j][1], 0.0, ZERO_THRESHOLD))
-        {
-          m_octs[i][j][1] = 0.0;
-        }
-
-        if(axom::utilities::isNearlyEqual(m_octs[i][j][2], 0.0, ZERO_THRESHOLD))
-        {
-          m_octs[i][j][2] = 0.0;
+          vertCoords[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
+                     (j * NUM_COMPS_PER_VERT) + k] =
+            (mesh->GetVertex(verts[j]))[k];
         }
       }
     }
+
+    // Initialize each hexahedral element and its bounding box
+    axom::for_all<ExecSpace>(
+      NE,
+      AXOM_LAMBDA(axom::IndexType i) {
+        // Set each hexahedral element vertices
+        m_hexes[i] = PolyhedronType();
+        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+        {
+          int vertIndex = (i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
+            j * NUM_COMPS_PER_VERT;
+          m_hexes[i].addVertex({vertCoords[vertIndex],
+                                vertCoords[vertIndex + 1],
+                                vertCoords[vertIndex + 2]});
+
+          // Set hexahedra components to zero if within threshold
+          if(axom::utilities::isNearlyEqual(m_hexes[i][j][0], 0.0, ZERO_THRESHOLD))
+          {
+            m_hexes[i][j][0] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(m_hexes[i][j][1], 0.0, ZERO_THRESHOLD))
+          {
+            m_hexes[i][j][1] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(m_hexes[i][j][2], 0.0, ZERO_THRESHOLD))
+          {
+            m_hexes[i][j][2] = 0.0;
+          }
+        }
+
+        // Get bounding box for hexahedral element
+        m_hex_bbs[i] = primal::compute_bounding_box<double, 3>(m_hexes[i]);
+      });  // end of loop to initialize hexahedral elements and bounding boxes
+
+    // Deallocatem no longer needed
+    axom::deallocate(vertCoords);
+
+    // Set octahedra components to zero if within threshold
+    axom::for_all<ExecSpace>(
+      m_octcount,
+      AXOM_LAMBDA(axom::IndexType i) {
+        for(int j = 0; j < OctahedronType::NUM_OCT_VERTS; j++)
+        {
+          if(axom::utilities::isNearlyEqual(m_octs[i][j][0], 0.0, ZERO_THRESHOLD))
+          {
+            m_octs[i][j][0] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(m_octs[i][j][1], 0.0, ZERO_THRESHOLD))
+          {
+            m_octs[i][j][1] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(m_octs[i][j][2], 0.0, ZERO_THRESHOLD))
+          {
+            m_octs[i][j][2] = 0.0;
+          }
+        }
+      });
 
     // Find which octahedra bounding boxes intersect hexahedron bounding boxes
     SLIC_INFO(fmt::format(
@@ -598,11 +666,12 @@ public:
     m_hex_volumes = axom::allocate<double>(NE);
 
     // Set initial values to 0
-    for(int i = 0; i < NE; i++)
-    {
-      m_hex_volumes[i] = 0;
-      m_overlap_volumes[i] = 0;
-    }
+    axom::for_all<ExecSpace>(
+      NE,
+      AXOM_LAMBDA(axom::IndexType i) {
+        m_hex_volumes[i] = 0;
+        m_overlap_volumes[i] = 0;
+      });
 
     SLIC_INFO(fmt::format("{:-^80}", " Calculating hexahedron element volume "));
 
@@ -643,13 +712,15 @@ public:
           }
         }););
 
-    double totalOverlap = 0;
-    double totalHex = 0;
-    for(int i = 0; i < NE; i++)
-    {
-      totalOverlap += m_overlap_volumes[i];
-      totalHex += m_hex_volumes[i];
-    }
+    RAJA::ReduceSum<REDUCE_POL, double> totalOverlap(0);
+    RAJA::ReduceSum<REDUCE_POL, double> totalHex(0);
+
+    axom::for_all<ExecSpace>(
+      NE,
+      AXOM_LAMBDA(axom::IndexType i) {
+        totalOverlap += m_overlap_volumes[i];
+        totalHex += m_hex_volumes[i];
+      });
 
     SLIC_INFO(fmt::format("Total overlap volume with shape is {}",
                           this->allReduceSum(totalOverlap)));
@@ -672,6 +743,7 @@ public:
 
     axom::setDefaultAllocator(current_allocator);
   }  // end of runShapeQuery() function
+#endif
 
   void applyReplacementRules(const klee::Shape& shape) override
   {
@@ -723,18 +795,59 @@ public:
   //@}
 
 public:
-  // Empty implementation (use templated version)
+  // Prepares the shaping query, based on the policy member set
+  // (default is sequential)
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
-    AXOM_UNUSED_VAR(shapeDimension);
-    AXOM_UNUSED_VAR(shape);
+    switch(m_execPolicy)
+    {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+    case seq:
+      prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
+      break;
+  #if defined(AXOM_USE_OPENMP)
+    case omp:
+      prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
+      break;
+  #endif  // AXOM_USE_OPENMP
+  #if defined(AXOM_USE_CUDA)
+    case cuda:
+      prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
+      break;
+  #endif  // AXOM_USE_CUDA
+#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
+    default:
+      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
+      break;
+    }
   }
 
-  // Empty implementation (use templated version)
+  // Runs the shaping query, based on the policy member set
+  // (default is sequential)
   void runShapeQuery(const klee::Shape& shape) override
   {
-    AXOM_UNUSED_VAR(shape);
+    switch(m_execPolicy)
+    {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+    case seq:
+      runShapeQueryImpl<seq_exec>(shape);
+      break;
+  #if defined(AXOM_USE_OPENMP)
+    case omp:
+      runShapeQueryImpl<omp_exec>(shape);
+      break;
+  #endif  // AXOM_USE_OPENMP
+  #if defined(AXOM_USE_CUDA)
+    case cuda:
+      runShapeQueryImpl<cuda_exec>(shape);
+      break;
+  #endif  // AXOM_USE_CUDA
+#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
+    default:
+      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
+      break;
+    }
   }
 
   void adjustVolumeFractions() override
@@ -761,6 +874,7 @@ private:
   }
 
 private:
+  ExecPolicy m_execPolicy {seq};
   double m_vertexWeldThreshold {1.e-10};
   int m_level {7};
   int m_octcount {0};

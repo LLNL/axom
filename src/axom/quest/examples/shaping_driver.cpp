@@ -37,25 +37,6 @@
   #include "RAJA/RAJA.hpp"
 #endif
 
-// clang-format off
-#if defined (AXOM_USE_RAJA)
-  using seq_exec = axom::SEQ_EXEC;
-
-  #if defined(AXOM_USE_OPENMP)
-    using omp_exec = axom::OMP_EXEC;
-  #else
-    using omp_exec = seq_exec;
-  #endif
-
-  #if defined(AXOM_USE_CUDA)
-    constexpr int CUDA_BLOCK_SIZE = 256;
-    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
-  #else
-    using cuda_exec = seq_exec;
-  #endif
-#endif
-// clang-format on
-
 // C/C++ includes
 #include <string>
 #include <vector>
@@ -108,7 +89,7 @@ private:
 
   // clang-format off
   const std::map<std::string, RuntimePolicy> s_validPolicies{
-    #ifdef AXOM_USE_RAJA
+    #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
       {"seq", seq}
       #ifdef AXOM_USE_OPENMP
     , {"omp", omp}
@@ -213,7 +194,7 @@ public:
 
     std::stringstream pol_sstr;
     pol_sstr << "Set runtime policy for intersection-based sampling method.";
-#ifdef AXOM_USE_RAJA
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     pol_sstr << "\nSet to \'seq\' or 0 to use the RAJA sequential policy.";
   #ifdef AXOM_USE_OPENMP
     pol_sstr << "\nSet to \'omp\' or 1 to use the RAJA OpenMP policy.";
@@ -477,6 +458,7 @@ int main(int argc, char** argv)
   if(auto* intersectionShaper = dynamic_cast<quest::IntersectionShaper*>(shaper))
   {
     intersectionShaper->setLevel(params.refinementLevel);
+    intersectionShaper->setExecPolicy(params.policy);
   }
 
   //---------------------------------------------------------------------------
@@ -493,65 +475,13 @@ int main(int argc, char** argv)
     shaper->applyTransforms(shape);
     slic::flushStreams();
 
-    // Call untemplated queries for SamplingShaper
-    if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
-    {
-      // Generate a spatial index over the shape
-      shaper->prepareShapeQuery(shapeDim, shape);
-      slic::flushStreams();
+    // Generate a spatial index over the shape
+    shaper->prepareShapeQuery(shapeDim, shape);
+    slic::flushStreams();
 
-      // Query the mesh against this shape
-      shaper->runShapeQuery(shape);
-      slic::flushStreams();
-    }
-
-    // Call templated queries for IntersectionShaper
-    else
-    {
-      quest::IntersectionShaper* intersectionShaper =
-        static_cast<quest::IntersectionShaper*>(shaper);
-
-      switch(params.policy)
-      {
-#ifdef AXOM_USE_RAJA
-      case seq:
-        // Generate a spatial index over the shape
-        intersectionShaper->prepareShapeQuery<seq_exec>(shapeDim, shape);
-        slic::flushStreams();
-
-        // Query the mesh against this shape
-        intersectionShaper->runShapeQuery<seq_exec>(shape);
-        slic::flushStreams();
-        break;
-  #ifdef AXOM_USE_OPENMP
-      case omp:
-        // Generate a spatial index over the shape
-        intersectionShaper->prepareShapeQuery<omp_exec>(shapeDim, shape);
-        slic::flushStreams();
-
-        // Query the mesh against this shape
-        intersectionShaper->runShapeQuery<omp_exec>(shape);
-        slic::flushStreams();
-        break;
-  #endif
-  #ifdef AXOM_USE_CUDA
-      case cuda:
-        // Generate a spatial index over the shape
-        intersectionShaper->prepareShapeQuery<cuda_exec>(shapeDim, shape);
-        slic::flushStreams();
-
-        // Query the mesh against this shape
-        intersectionShaper->runShapeQuery<cuda_exec>(shape);
-        slic::flushStreams();
-        break;
-  #endif
-#endif  // AXOM_USE_RAJA
-
-      default:
-        SLIC_ERROR("Unhandled runtime policy case " << params.policy);
-        break;
-      }
-    }
+    // Query the mesh against this shape
+    shaper->runShapeQuery(shape);
+    slic::flushStreams();
 
     // Apply the replacement rules for this shape against the existing materials
     shaper->applyReplacementRules(shape);
