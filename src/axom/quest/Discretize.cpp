@@ -141,7 +141,7 @@ bool discretize(const SphereType &sphere, int levels, OctType *&out, int &octcou
 
   // Refine: add an octahedron to each exposed face.  Start at 1 because we
   // already filled level 0 with the call to from_sphere().
-  for(int level = 0; level < levels; ++level)
+  for(int level = 1; level < levels; ++level)
   {
     max_last_gen = outindex - 1;
     while(index <= max_last_gen)
