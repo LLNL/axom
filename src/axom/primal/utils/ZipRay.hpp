@@ -35,10 +35,16 @@ struct ZipBase<Ray<FloatType, NDIMS>>
    *  of the ray
    * \param [in] dir_arrays the arrays storing for each dimension the direction
    *  of the ray
+   *
+   * \pre Size1 >= NDIMS
+   * \pre Size2 >= NDIMS
    */
-  ZipBase(const StackArray<const FloatType*, NDIMS>& orig_arrays,
-          const StackArray<const FloatType*, NDIMS>& dir_arrays)
+  template <size_t Size1, size_t Size2>
+  ZipBase(FloatType* const (&orig_arrays)[Size1],
+          FloatType* const (&dir_arrays)[Size2])
   {
+    AXOM_STATIC_ASSERT_MSG(Size1 >= NDIMS, "Must provide at least NDIMS arrays");
+    AXOM_STATIC_ASSERT_MSG(Size2 >= NDIMS, "Must provide at least NDIMS arrays");
     for(int i = 0; i < NDIMS; i++)
     {
       ray_origs[i] = orig_arrays[i];

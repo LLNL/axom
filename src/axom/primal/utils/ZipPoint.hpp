@@ -32,9 +32,13 @@ struct ZipBase<Point<FloatType, NDIMS>>
   /*!
    * \brief Creates a ZipIndexable over a set of arrays.
    * \param [in] arrays the arrays storing coordinate data for each dimension
+   *
+   * \pre Size >= NDIMS
    */
-  ZipBase(const StackArray<const FloatType*, NDIMS>& arrays)
+  template <size_t Size>
+  ZipBase(FloatType* const (&arrays)[Size])
   {
+    AXOM_STATIC_ASSERT_MSG(Size >= NDIMS, "Must provide at least NDIMS arrays");
     for(int i = 0; i < NDIMS; i++)
     {
       pts_arrays[i] = arrays[i];

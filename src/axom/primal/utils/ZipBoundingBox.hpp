@@ -35,10 +35,16 @@ struct ZipBase<BoundingBox<FloatType, NDIMS>>
    *  dimension
    * \param [in] max_arrays the arrays storing the max coordinate for each
    *  dimension
+   *
+   * \pre Size1 >= NDIMS
+   * \pre Size2 >= NDIMS
    */
-  ZipBase(const StackArray<const FloatType*, NDIMS>& min_arrays,
-          const StackArray<const FloatType*, NDIMS>& max_arrays)
+  template <size_t Size1, size_t Size2>
+  ZipBase(FloatType* const (&min_arrays)[Size1],
+          FloatType* const (&max_arrays)[Size2])
   {
+    AXOM_STATIC_ASSERT_MSG(Size1 >= NDIMS, "Must provide at least NDIMS arrays");
+    AXOM_STATIC_ASSERT_MSG(Size2 >= NDIMS, "Must provide at least NDIMS arrays");
     for(int i = 0; i < NDIMS; i++)
     {
       bb_min_arrays[i] = min_arrays[i];
