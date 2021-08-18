@@ -8,7 +8,14 @@
 #include "axom/core.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
+#include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
+#include "axom/primal/operators/split.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/Mesh.hpp"             /* for Mesh base class */
+#include "axom/mint/mesh/UnstructuredMesh.hpp" /* for UnstructuredMesh */
+#include "axom/mint/mesh/CellTypes.hpp"
 
 #include <cmath>
 
@@ -139,9 +146,9 @@ bool discretize(const SphereType &sphere, int levels, OctType *&out, int &octcou
   // max_last_gen indexes to the last oct of the last generation.
   int max_last_gen = 0;
 
-  // Refine: add an octahedron to each exposed face.  Start at 1 because we
-  // already filled level 0 with the call to from_sphere().
-  for(int level = 1; level < levels; ++level)
+  // Refine: add an octahedron to each exposed face.  Perform "levels"
+  // refinements beyond the level-0 octahedron.
+  for(int level = 0; level < levels; ++level)
   {
     max_last_gen = outindex - 1;
     while(index <= max_last_gen)
@@ -171,6 +178,144 @@ bool discretize(const SphereType &sphere, int levels, OctType *&out, int &octcou
   }
 
   return true;
+}
+
+namespace
+{
+constexpr mint::CellType CELL_TYPE = mint::TET;
+using TetType = primal::Tetrahedron<double, 3>;
+using PolyhedronType = primal::Polyhedron<double, 3>;
+
+double octPolyVolume(const OctType& o)
+{
+   // Convert Octahedron into Polyhedrom
+   PolyhedronType octPoly;
+   double octVolume;
+
+   octPoly.addVertex(o[0]);
+   octPoly.addVertex(o[1]);
+   octPoly.addVertex(o[2]);
+   octPoly.addVertex(o[3]);
+   octPoly.addVertex(o[4]);
+   octPoly.addVertex(o[5]);
+
+   octPoly.addNeighbors(0, {1, 5, 4, 2});
+   octPoly.addNeighbors(1, {0, 2, 3, 5});
+   octPoly.addNeighbors(2, {0, 4, 3, 1});
+   octPoly.addNeighbors(3, {1, 2, 4, 5});
+   octPoly.addNeighbors(4, {0, 5, 3, 2});
+   octPoly.addNeighbors(5, {0, 1, 3, 4});
+
+   octVolume = octPoly.volume();
+
+   // Flip sign if volume is negative
+   // (expected when vertex order is reversed)
+   if(octVolume < 0)
+   {
+      octVolume = -octVolume;
+   }
+
+   return octVolume;
+}
+}  // namespace
+
+//------------------------------------------------------------------------------
+int mesh_from_discretized_polyline(const OctType* octs,
+                                   int octcount,
+                                   int segcount,
+                                   mint::Mesh*& mesh)
+{
+  SLIC_ASSERT(octs != nullptr);
+
+  const int tetcount = 8 * octcount;
+  const int vertcount = 4 * tetcount;
+  int octPerSeg = octcount / segcount;
+  int remainderOcts = octcount % segcount;
+  SLIC_ASSERT_MSG(remainderOcts == 0,
+                  "Total octahedron count is not evenly divisible by segment count");
+
+  // Step 0: create the UnstructuredMesh
+  mint::UnstructuredMesh<mint::SINGLE_SHAPE>* um =
+     new mint::UnstructuredMesh<mint::SINGLE_SHAPE>(3,
+                                                   CELL_TYPE,
+                                                   vertcount,
+                                                   tetcount);
+
+  // Step 1: Add fields
+  int* octlevel =
+    um->createField<int>("level_of_refinement", mint::CELL_CENTERED);
+  int* octidx = um->createField<int>("octahedron_index", mint::CELL_CENTERED);
+  int* segidx = um->createField<int>("segment_index", mint::CELL_CENTERED);
+  double* vol = um->createField<double>("octahedron_volume", mint::CELL_CENTERED);
+  double* pvol = um->createField<double>("oct_as_polyhedron_volume", mint::CELL_CENTERED);
+
+  // Step 2: for each oct,
+  //    - split it into tets
+  //    - add the nodes
+  //    - add the cells
+  //    - add the fields
+  constexpr int TETS_PER_OCT = 8;
+  constexpr int NODES_PER_TET = 4;
+  int level, octInLevel, maxOctIdxInLevel;
+  Array<TetType> tets;
+  for(int o = 0; o < octcount; ++o)
+  {
+    tets.clear();
+    int segmentIndex = o / octPerSeg;  // integer division
+    int octInSegment = o % octPerSeg;
+    if(octInSegment == 0)
+    {
+      level = 0;
+      octInLevel = 1;
+      maxOctIdxInLevel = 0;
+    }
+    if(octInSegment > maxOctIdxInLevel)
+    {
+      level += 1;
+      if(level == 1)
+      {
+        octInLevel *= 3;
+      }
+      else
+      {
+        octInLevel *= 2;
+      }
+      maxOctIdxInLevel += octInLevel;
+    }
+
+    primal::split(octs[o], tets);
+
+    double octvol = 0.;
+    for(int t = 0; t < 8; ++t)
+    {
+      TetType& tet = tets[t];
+      for(int n = 0; n < 4; ++n)
+      {
+        um->appendNode(tet[n][0], tet[n][1], tet[n][2]);
+      }
+      axom::IndexType nidx =
+        o * (TETS_PER_OCT * NODES_PER_TET) + t * NODES_PER_TET;
+      axom::IndexType cell[NODES_PER_TET] = {nidx + 0, nidx + 2, nidx + 1, nidx + 3};
+      um->appendCell(cell);
+
+      octvol += tets[t].signedVolume();
+    }
+
+    double pvolume = octPolyVolume(octs[o]);
+
+    axom::IndexType idx = o * TETS_PER_OCT;
+    for(int t = 0; t < 8; ++t)
+    {
+      vol[idx + t] = octvol;
+      pvol[idx + t] = pvolume;
+      octidx[idx + t] = octInSegment;
+      segidx[idx + t] = segmentIndex;
+      octlevel[idx + t] = level;
+    }
+  }
+
+  mesh = um;
+  return 0;
 }
 
 }  // end namespace quest

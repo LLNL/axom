@@ -25,7 +25,7 @@ set( quest_headers
 
     ## Shaping
     Discretize.hpp
-    Discretize_impl.hpp
+    detail/Discretize_detail.hpp
 
     ## In/out query
     InOutOctree.hpp
