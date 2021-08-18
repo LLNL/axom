@@ -72,6 +72,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   The latter are now only added in MSVC configurations.
 - Fixed bug in `Mint`'s VTK output for fields of type `int64` and `float`
 - Improved loading of data collections in `MFEMSidreDataCollection`
+- Added workaround to `MFEMSidreDataCollection` for `C++14` standard library feature that was not available in `gcc@4.9.3`
 
 
 ## [Version 0.5.0] - Release date 2021-05-14
