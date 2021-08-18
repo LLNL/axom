@@ -180,7 +180,8 @@ int discrSeg(const Point2D &a, const Point2D &b, int levels, OctType *&out, int 
 
   Point2D pa, pb;
 
-  // Refine: add an octahedron to each exposed face.
+  // Refine: add an octahedron to each exposed face.  Perform "levels"
+  // refinements beyond the level-0 octahedron.
   for(int level = 0; level < levels; ++level)
   {
     // Each level of refinement generates a prism for each exposed

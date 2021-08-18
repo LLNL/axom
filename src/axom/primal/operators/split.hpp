@@ -10,8 +10,8 @@
  *        (a collection of) another primal primitive
  */
 
-#ifndef AXOM_PRIMAL_CLIP_HPP_
-#define AXOM_PRIMAL_CLIP_HPP_
+#ifndef AXOM_PRIMAL_SPLIT_HPP_
+#define AXOM_PRIMAL_SPLIT_HPP_
 
 #include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
@@ -80,4 +80,4 @@ void split(const Octahedron<Tp, NDIMS>& oct,
 }  // namespace primal
 }  // namespace axom
 
-#endif  // AXOM_PRIMAL_CLIP_HPP_
+#endif  // AXOM_PRIMAL_SPLIT_HPP_

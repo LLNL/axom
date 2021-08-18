@@ -33,24 +33,16 @@ set(quest_tests_depends
 
 blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
 
-set(quest_test_headers )
-
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
-
-    if(${test_name} STREQUAL "quest_discretize")
-      set(quest_test_headers quest_discretize.hpp)
-    endif()
 
     blt_add_executable(
         NAME ${test_name}_test
         SOURCES ${test}
-        HEADERS ${quest_test_headers}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends}
         FOLDER axom/quest/tests
         )
-    set(quest_test_headers )
 
     axom_add_test(
         NAME ${test_name}

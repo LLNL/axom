@@ -398,6 +398,13 @@ public:
         fmt::format("DEBUG: {} Octahedron found with all points (0,0,0)",
                     num_degenerate.get()));
 
+      // Dump discretized octs as a tet mesh
+      axom::mint::Mesh *tetmesh;
+      axom::quest::mesh_from_discretized_polyline(m_octs, m_octcount,
+                                                  polyline_size - 1, tetmesh);
+      axom::mint::write_vtk(tetmesh, "discretized_surface_of_revolution.vtk");
+      delete tetmesh;
+
     }  // end of verbose output for contour
 
     axom::deallocate(polyline);

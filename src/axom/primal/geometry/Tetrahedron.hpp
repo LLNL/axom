@@ -178,7 +178,7 @@ public:
   }
 
   /*!
-   * \brief Returns the signed volume of the tetrahedron
+   * \brief Returns the absolute (unsigned) volume of the tetrahedron
    * \sa signedVolume()
    */
   double volume() const { return axom::utilities::abs(signedVolume()); }
