@@ -183,7 +183,8 @@ private:
     return static_cast<const ArrayType&>(*this);
   }
 
-  // Is it sufficient to just give them the raw arrays?
+  // FIXME: Do we really need this for sidre::Array??
+protected:
   /// \brief The sizes (extents?) in each dimension
   std::array<IndexType, DIM> m_dims;
   /// \brief The strides in each dimension
@@ -789,6 +790,11 @@ public:
    * \brief Return true iff the external buffer constructor was called.
    */
   bool isExternal() const { return m_is_external; }
+
+  /*!
+   * \brief Return true iff a sidre constructor was called.
+   */
+  virtual bool isInSidre() const { return false; }
 
   /*!
    * \brief Prints the Array

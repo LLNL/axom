@@ -62,16 +62,15 @@ public:
   ConnectivityArray(IndexType ID_capacity = USE_DEFAULT,
                     IndexType value_capacity = USE_DEFAULT)
     : m_values(nullptr)
-    , m_types(new MCArray<CellType>(axom::internal::ZERO, 1, ID_capacity))
+    , m_types(new Array<CellType>(axom::internal::ZERO, ID_capacity))
     , m_offsets(
-        new MCArray<IndexType>(axom::internal::ZERO, 1, m_types->capacity() + 1))
+        new Array<IndexType>(axom::internal::ZERO, m_types->capacity() + 1))
   {
     IndexType new_value_capacity =
       internal::calcValueCapacity(0, getIDCapacity(), 0, value_capacity);
-    m_values =
-      new MCArray<IndexType>(axom::internal::ZERO, 1, new_value_capacity);
+    m_values = new Array<IndexType>(axom::internal::ZERO, new_value_capacity);
 
-    m_offsets->append(0);
+    m_offsets->push_back(0);
   }
 
   /// @}
@@ -113,9 +112,8 @@ public:
                     IndexType ID_capacity = USE_DEFAULT,
                     IndexType value_capacity = USE_DEFAULT)
     : m_values(nullptr)
-    , m_types(new MCArray<CellType>(types, n_IDs, 1, ID_capacity))
-    , m_offsets(
-        new MCArray<IndexType>(offsets, n_IDs + 1, 1, m_types->capacity() + 1))
+    , m_types(new Array<CellType>(types, n_IDs, ID_capacity))
+    , m_offsets(new Array<IndexType>(offsets, n_IDs + 1, m_types->capacity() + 1))
   {
     SLIC_ERROR_IF(n_IDs < 0,
                   "Number of IDs must be positive, not " << n_IDs << ".");
@@ -129,7 +127,7 @@ public:
                     << "Expected item 0 to be 0 not " << (*m_offsets)[0] << ".");
 
     IndexType n_values = (*m_offsets)[n_IDs];
-    m_values = new MCArray<IndexType>(values, n_values, 1, value_capacity);
+    m_values = new Array<IndexType>(values, n_values, value_capacity);
   }
 
   /// @}
@@ -207,19 +205,18 @@ public:
     m_offsets = new sidre::Array<IndexType>(
       offsets_view,
       1,
-      1,
       (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1);
     SLIC_ASSERT(m_offsets != nullptr);
     (*m_offsets)[0] = 0;
 
     sidre::View* types_view = elems_group->getView("types");
-    m_types = new sidre::Array<CellType>(types_view, 0, 1, ID_capacity);
+    m_types = new sidre::Array<CellType>(types_view, 0, ID_capacity);
     SLIC_ASSERT(m_types != nullptr);
 
     IndexType new_value_capacity =
       internal::calcValueCapacity(0, getIDCapacity(), 0, value_capacity);
     sidre::View* connec_view = elems_group->getView("connectivity");
-    m_values = new sidre::Array<IndexType>(connec_view, 0, 1, new_value_capacity);
+    m_values = new sidre::Array<IndexType>(connec_view, 0, new_value_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -458,13 +455,13 @@ public:
   IndexType* operator[](IndexType ID)
   {
     SLIC_ASSERT((ID >= 0) && (ID < getNumberOfIDs()));
-    return m_values->getData() + (*m_offsets)[ID];
+    return m_values->data() + (*m_offsets)[ID];
   }
 
   const IndexType* operator[](IndexType ID) const
   {
     SLIC_ASSERT((ID >= 0) && (ID < getNumberOfIDs()));
-    return m_values->getData() + (*m_offsets)[ID];
+    return m_values->data() + (*m_offsets)[ID];
   }
 
   /// @}
@@ -475,9 +472,9 @@ public:
    */
   /// @{
 
-  IndexType* getValuePtr() { return m_values->getData(); }
+  IndexType* getValuePtr() { return m_values->data(); }
 
-  const IndexType* getValuePtr() const { return m_values->getData(); }
+  const IndexType* getValuePtr() const { return m_values->data(); }
 
   /// @}
 
@@ -487,9 +484,9 @@ public:
    */
   /// @{
 
-  IndexType* getOffsetPtr() { return m_offsets->getData(); }
+  IndexType* getOffsetPtr() { return m_offsets->data(); }
 
-  const IndexType* getOffsetPtr() const { return m_offsets->getData(); }
+  const IndexType* getOffsetPtr() const { return m_offsets->data(); }
 
   /// @}
 
@@ -499,9 +496,9 @@ public:
    */
   /// @{
 
-  CellType* getTypePtr() { return m_types->getData(); }
+  CellType* getTypePtr() { return m_types->data(); }
 
-  const CellType* getTypePtr() const { return m_types->getData(); }
+  const CellType* getTypePtr() const { return m_types->data(); }
 
   /// @}
 
@@ -519,9 +516,9 @@ public:
   {
     SLIC_ASSERT(values != nullptr);
     SLIC_ASSERT(type != UNDEFINED_CELL);
-    m_values->append(values, n_values);
-    m_offsets->append(getNumberOfValues());
-    m_types->append(type);
+    m_values->insert(m_values->size(), n_values, values);
+    m_offsets->push_back(getNumberOfValues());
+    m_types->push_back(type);
   }
 
   /*!
@@ -546,7 +543,7 @@ public:
                const CellType* types)
   {
     internal::append(n_IDs, values, offsets, m_values, m_offsets);
-    m_types->append(types, n_IDs);
+    m_types->insert(m_types->size(), n_IDs, types);
   }
 
   /*!
@@ -638,15 +635,15 @@ public:
                const CellType* types)
   {
     internal::insert(start_ID, n_IDs, values, offsets, m_values, m_offsets);
-    m_types->insert(types, n_IDs, start_ID);
+    m_types->insert(start_ID, n_IDs, types);
   }
 
   /// @}
 
 private:
-  MCArray<IndexType>* m_values;
-  MCArray<CellType>* m_types;
-  MCArray<IndexType>* m_offsets;
+  Array<IndexType>* m_values;
+  Array<CellType>* m_types;
+  Array<IndexType>* m_offsets;
 
   DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
   DISABLE_MOVE_AND_ASSIGNMENT(ConnectivityArray);

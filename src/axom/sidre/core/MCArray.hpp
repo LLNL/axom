@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SIDRE_ARRAY_HPP_
-#define SIDRE_ARRAY_HPP_
+#ifndef SIDRE_MCARRAY_HPP_
+#define SIDRE_MCARRAY_HPP_
 
 #include "axom/core/Macros.hpp"  // for disable copy/assignment macro
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
@@ -23,30 +23,23 @@ namespace axom
 {
 namespace sidre
 {
-/* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
- * constructor calls. */
-namespace internal
-{
-constexpr axom::IndexType ZERO = 0;
-}
-
 /*!
- * \class Array
+ * \class MCArray
  *
- * \brief Provides a generic multi-component array, contained in Sidre.
+ * \brief Provides a generic multi-component MCArray, contained in Sidre.
  *
  *  This sidre::Array class extends axom::MCArray by storing
  *  data in a Sidre `DataStore`.  This class provides a generic
- *  multi-component array container with dynamic re-allocation and insertion.
- *  Each element in the array is a tuple consisting of 1 or more components,
+ *  multi-component MCArray container with dynamic re-allocation and insertion.
+ *  Each element in the MCArray is a tuple consisting of 1 or more components,
  *  which are stored contiguously.
  *
  *  Objects of the sidre::Array class may be constructed from a View.
- *  All array operations can be performed as with the base
- *  axom::utilities::Array class.  The size of the Array can grow as needed,
+ *  All MCArray operations can be performed as with the base
+ *  axom::utilities::Array class.  The size of the MCArray can grow as needed,
  *  and all memory management is delegated to Sidre.
  *
- *  \note When the Array object is deleted, it does not delete the associated
+ *  \note When the MCArray object is deleted, it does not delete the associated
  *   data in Sidre, since, Sidre owns the data.
  *
  * \warning Reallocations tend to be costly operations in terms of performance.
@@ -59,24 +52,24 @@ constexpr axom::IndexType ZERO = 0;
  * \see View
  */
 template <typename T>
-class Array : public axom::Array<T>
+class MCArray : public axom::MCArray<T>
 {
 public:
   /*!
    * \brief Default constructor. Disabled.
    */
-  Array() = delete;
+  MCArray() = delete;
 
-  /// \name Sidre Array constructors
+  /// \name Sidre MCArray constructors
   /// @{
 
   /*!
-   * \brief Creates an Array instance from a View that already has data.
+   * \brief Creates an MCArray instance from a View that already has data.
    *
-   * \param [in] view the View that holds this Array's data.
+   * \param [in] view the View that holds this MCArray's data.
    *
    * \note The Sidre view shape has two dimensions. The first dimension
-   *  corresponds to the max capacity of the array and the second corresponds to
+   *  corresponds to the max capacity of the MCArray and the second corresponds to
    *  the number of components per tuple.
    *
    * \pre view != nullptr
@@ -87,25 +80,25 @@ public:
    * \post numComponents() == view->getDimension(1)
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array(View* view);
+  MCArray(View* view);
 
   /*!
-   * \brief Creates an Array instance of `num_tuples` size, where each
+   * \brief Creates an MCArray instance of `num_tuples` size, where each
    *  tuple consists of `num_components` values and populates the associated
    *  View.
    *
-   * \param [in] view the View that will hold this Array's data.
-   * \param [in] num_tuples the number of tuples accounted for in the Array.
+   * \param [in] view the View that will hold this MCArray's data.
+   * \param [in] num_tuples the number of tuples accounted for in the MCArray.
    * \param [in] num_components the number of values per tuple. If not
    *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
    *
    * \note The last argument is optional. If not specified or if less than
-   *  num_tuples, the capacity of the array will be initialized to
+   *  num_tuples, the capacity of the MCArray will be initialized to
    *  num_tuples * DEFAULT_RESIZE_RATIO.
    *
    * \note The view is expected to be empty and will be populated to hold this
-   *  Array's data.
+   *  MCArray's data.
    *
    * \note The Sidre view shape has two dimensions. The first dimension
    *  corresponds to the number of tuples and the second corresponds to
@@ -122,16 +115,19 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array(View* view, axom::IndexType num_tuples, axom::IndexType capacity = 0);
+  MCArray(View* view,
+          axom::IndexType num_tuples,
+          axom::IndexType num_components = 1,
+          axom::IndexType capacity = 0);
 
   /// @}
 
   /*!
    * Destructor.  Frees the associated buffer unless owned by Sidre.
    */
-  virtual ~Array();
+  virtual ~MCArray();
 
-  /// \name Array methods to query and set attributes
+  /// \name MCArray methods to query and set attributes
   /// @{
 
   /*!
@@ -145,7 +141,7 @@ public:
   virtual bool isInSidre() const { return true; }
 
   /*!
-   * \brief Return a pointer to the View that this Array wraps.
+   * \brief Return a pointer to the View that this MCArray wraps.
    */
   const View* getView() const { return m_view; }
 
@@ -160,14 +156,14 @@ protected:
   virtual void updateNumTuples(axom::IndexType new_num_tuples);
 
   /*!
-   * \brief Set the number of tuples allocated for the data array.
+   * \brief Set the number of tuples allocated for the data MCArray.
    *
    * \param [in] capacity the new number of tuples to allocate.
    */
   virtual void setCapacity(axom::IndexType new_capacity);
 
   /*!
-   * \brief Reallocates the data array when the size exceeds the capacity.
+   * \brief Reallocates the data MCArray when the size exceeds the capacity.
    *
    * \param [in] new_num_tuples the number of tuples which exceeds the current
    *  capacity.
@@ -197,7 +193,7 @@ protected:
   }
 
   /*!
-   * \brief Applies this Array's type and dimensions to the sidre View.
+   * \brief Applies this MCArray's type and dimensions to the sidre View.
    *
    * Calls m_view->apply(sidreTypeId(), 2, {m_num_tuples, m_num_components}).
    */
@@ -215,7 +211,7 @@ protected:
   axom::IndexType getViewShape(int dim) const;
 
   /*!
-   * \brief Allocates space within the Array's View.
+   * \brief Allocates space within the MCArray's View.
    *
    * \param [in] new_num_tuples the number of tuples which exceeds the current
    *  capacity.
@@ -224,34 +220,44 @@ protected:
 
   View* m_view;
 
-  DISABLE_COPY_AND_ASSIGNMENT(Array);
-  DISABLE_MOVE_AND_ASSIGNMENT(Array);
+  DISABLE_COPY_AND_ASSIGNMENT(MCArray);
+  DISABLE_MOVE_AND_ASSIGNMENT(MCArray);
 };
 
 //------------------------------------------------------------------------------
-//                            Array IMPLEMENTATION
+//                            MCArray IMPLEMENTATION
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 template <typename T>
-Array<T>::Array(View* view) : axom::Array<T>()
-                            , m_view(view)
+MCArray<T>::MCArray(View* view) : axom::MCArray<T>()
+                                , m_view(view)
 {
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
   SLIC_ERROR_IF(m_view->isEmpty(), "Provided View cannot be empty.");
 
-  this->m_num_elements = getViewShape(0);
+  this->m_dims[0] = getViewShape(0);
+  this->m_dims[1] = getViewShape(1);
 
   axom::IndexType buffer_size = m_view->getBuffer()->getNumElements();
-  this->m_capacity = buffer_size;
+  SLIC_ERROR_IF(buffer_size % this->m_dims[1] != 0,
+                "The buffer size ("
+                  << buffer_size << ") "
+                  << "is not a multiple of the number of components "
+                  << "(" << this->m_dims[1] << ").");
+  this->m_capacity = buffer_size / this->m_dims[1];
 
-  SLIC_ERROR_IF(this->m_num_elements < 0,
-                "Number of tuples (" << this->m_num_elements << ") "
+  SLIC_ERROR_IF(this->m_dims[0] < 0,
+                "Number of tuples (" << this->m_dims[0] << ") "
                                      << "cannot be negative.");
 
-  SLIC_ERROR_IF(this->m_num_elements > this->m_capacity,
+  SLIC_ERROR_IF(this->m_dims[1] <= 0,
+                "Number of components (" << this->m_dims[1] << ") "
+                                         << "must be greater than 0.");
+
+  SLIC_ERROR_IF(this->m_dims[0] > this->m_capacity,
                 "Number of tuples ("
-                  << this->m_num_elements << ") "
+                  << this->m_dims[0] << ") "
                   << "cannot be greater than the tuple capacity "
                   << "(" << this->m_capacity << ").");
 
@@ -259,8 +265,8 @@ Array<T>::Array(View* view) : axom::Array<T>()
   TypeID T_type = sidreTypeId();
   SLIC_ERROR_IF(view_type != T_type,
                 "View data type (" << view_type << ")"
-                                   << "differs from this Array type (" << T_type
-                                   << ").");
+                                   << "differs from this MCArray type ("
+                                   << T_type << ").");
 
   this->m_data = static_cast<T*>(m_view->getVoidPtr());
   SLIC_ERROR_IF(this->m_data == nullptr && this->m_capacity > 0,
@@ -270,8 +276,11 @@ Array<T>::Array(View* view) : axom::Array<T>()
 
 //------------------------------------------------------------------------------
 template <typename T>
-Array<T>::Array(View* view, axom::IndexType num_tuples, axom::IndexType capacity)
-  : axom::Array<T>(num_tuples, capacity)
+MCArray<T>::MCArray(View* view,
+                    axom::IndexType num_tuples,
+                    axom::IndexType num_components,
+                    axom::IndexType capacity)
+  : axom::MCArray<T>(num_tuples, num_components)
   , m_view(view)
 {
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
@@ -279,21 +288,26 @@ Array<T>::Array(View* view, axom::IndexType num_tuples, axom::IndexType capacity
   SLIC_ERROR_IF(num_tuples < 0,
                 "Number of tuples (" << num_tuples << ") "
                                      << "cannot be negative.");
+  SLIC_ERROR_IF(num_components <= 0,
+                "Components per tuple (" << num_components << ") "
+                                         << "must be greater than 0.");
+  // FIXME: We're ignoring the capacity - sort of messy to deal with in multiple dimensions
 
-  SLIC_ERROR_IF(this->m_num_elements > this->m_capacity,
+  SLIC_ERROR_IF(this->m_dims[0] > this->m_capacity,
                 "Number of tuples ("
-                  << this->m_num_elements << ") "
+                  << this->m_dims[0] << ") "
                   << "cannot be greater than the tuple capacity "
                   << "(" << this->m_capacity << ").");
 
   // sanity checks
   SLIC_ASSERT(this->m_data != nullptr);
-  SLIC_ASSERT(this->m_num_elements >= 0);
+  SLIC_ASSERT(this->m_dims[0] >= 0);
+  SLIC_ASSERT(this->m_dims[1] >= 1);
 }
 
 //------------------------------------------------------------------------------
 template <typename T>
-Array<T>::~Array()
+MCArray<T>::~MCArray()
 {
   m_view = nullptr;
   this->m_data = nullptr;
@@ -301,21 +315,21 @@ Array<T>::~Array()
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::updateNumTuples(axom::IndexType new_num_tuples)
+inline void MCArray<T>::updateNumTuples(axom::IndexType new_num_tuples)
 {
   SLIC_ASSERT(new_num_tuples >= 0);
   SLIC_ASSERT(new_num_tuples <= this->m_capacity);
-  this->m_num_elements = new_num_tuples;
+  this->m_dims[0] = new_num_tuples;
   describeView();
 }
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::setCapacity(axom::IndexType new_capacity)
+inline void MCArray<T>::setCapacity(axom::IndexType new_capacity)
 {
   SLIC_ASSERT(new_capacity >= 0);
 
-  if(new_capacity < this->m_num_elements)
+  if(new_capacity < this->m_dims[0])
   {
     updateNumTuples(new_capacity);
   }
@@ -325,7 +339,7 @@ inline void Array<T>::setCapacity(axom::IndexType new_capacity)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::dynamicRealloc(axom::IndexType new_num_tuples)
+inline void MCArray<T>::dynamicRealloc(axom::IndexType new_num_tuples)
 {
   SLIC_ERROR_IF(this->m_resize_ratio < 1.0,
                 "Resize ratio of " << this->m_resize_ratio
@@ -337,20 +351,21 @@ inline void Array<T>::dynamicRealloc(axom::IndexType new_num_tuples)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::describeView()
+inline void MCArray<T>::describeView()
 {
   SLIC_ASSERT(m_view != nullptr);
 
   static constexpr TypeID T_type = sidreTypeId();
-  IndexType dims[1];
-  dims[0] = this->m_num_elements;
+  IndexType dims[2];
+  dims[0] = this->m_dims[0];
+  dims[1] = this->m_dims[1];
 
-  m_view->apply(T_type, 1, dims);
+  m_view->apply(T_type, 2, dims);
 }
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline axom::IndexType Array<T>::getViewShape(int dim) const
+inline axom::IndexType MCArray<T>::getViewShape(int dim) const
 {
   SLIC_ERROR_IF(dim > 1, "Only two dimensional views supported.");
   SLIC_ERROR_IF(m_view->isEmpty(), "view cannot be empty.");
@@ -363,16 +378,16 @@ inline axom::IndexType Array<T>::getViewShape(int dim) const
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::reallocViewData(IndexType new_capacity)
+inline void MCArray<T>::reallocViewData(IndexType new_capacity)
 {
   if(m_view->isEmpty())
   {
     constexpr sidre::TypeID T_type = sidreTypeId();
-    m_view->allocate(T_type, new_capacity);
+    m_view->allocate(T_type, new_capacity * this->m_dims[1]);
   }
   else
   {
-    m_view->reallocate(new_capacity);
+    m_view->reallocate(new_capacity * this->m_dims[1]);
   }
 
   this->m_capacity = new_capacity;
@@ -386,4 +401,4 @@ inline void Array<T>::reallocViewData(IndexType new_capacity)
 } /* namespace sidre */
 } /* namespace axom */
 
-#endif /* SIDRE_ARRAY_HPP_ */
+#endif /* SIDRE_MCARRAY_HPP_ */

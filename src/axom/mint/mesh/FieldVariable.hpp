@@ -17,6 +17,7 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre/core/MCArray.hpp"  // for sidre::MCArray
 #endif
 
 #include "axom/slic/interface/slic.hpp"
@@ -242,7 +243,7 @@ public:
    */
   virtual IndexType getNumComponents() const final override
   {
-    return m_field->numComponents();
+    return m_field->shape()[1];
   };
 
   /*!
@@ -264,7 +265,8 @@ public:
    */
   virtual void resize(IndexType newNumTuples) final override
   {
-    m_field->resize(newNumTuples);
+    // Keep the second dimension the same
+    m_field->resize(newNumTuples, m_field->shape()[1]);
   }
 
   /*!
@@ -342,9 +344,9 @@ public:
    */
   /// @{
 
-  inline T* getFieldVariablePtr() { return m_field->getData(); }
+  inline T* getFieldVariablePtr() { return m_field->data(); }
 
-  inline const T* getFieldVariablePtr() const { return m_field->getData(); }
+  inline const T* getFieldVariablePtr() const { return m_field->data(); }
 
   /// @}
 
@@ -368,7 +370,8 @@ FieldVariable<T>::FieldVariable(const std::string& name,
                                 IndexType capacity)
   : Field(name, field_traits<T>::type())
 {
-  m_field = new MCArray<T>(num_tuples, num_components, capacity);
+  // FIXME: Capacity ignored
+  m_field = new MCArray<T>(num_tuples, num_components);
   SLIC_ASSERT(m_field != nullptr);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
@@ -395,7 +398,7 @@ template <typename T>
 FieldVariable<T>::FieldVariable(const std::string& name, sidre::View* field_view)
   : Field(name, field_traits<T>::type())
 {
-  m_field = new sidre::Array<T>(field_view);
+  m_field = new sidre::MCArray<T>(field_view);
   SLIC_ASSERT(m_field != nullptr);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
@@ -409,7 +412,8 @@ FieldVariable<T>::FieldVariable(const std::string& name,
                                 IndexType capacity)
   : Field(name, field_traits<T>::type())
 {
-  m_field = new sidre::Array<T>(field_view, num_tuples, num_components, capacity);
+  m_field =
+    new sidre::MCArray<T>(field_view, num_tuples, num_components, capacity);
   SLIC_ASSERT(m_field != nullptr);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }

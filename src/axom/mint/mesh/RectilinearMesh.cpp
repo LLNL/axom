@@ -48,7 +48,7 @@ RectilinearMesh::RectilinearMesh(IndexType Ni,
     SLIC_ERROR_IF(ptrs[dim] == nullptr,
                   "encountered null coordinate array for dim=" << dim);
     const IndexType N = getNodeResolution(dim);
-    m_coordinates[dim] = new MCArray<double>(ptrs[dim], N);
+    m_coordinates[dim] = new Array<double>(ptrs[dim], N);
   }
 }
 
@@ -105,7 +105,7 @@ void RectilinearMesh::allocateCoordsOnSidre()
   {
     IndexType N = getNodeResolution(dim);
     sidre::View* view = coordsgrp->createView(coords[dim]);
-    m_coordinates[dim] = new sidre::Array<double>(view, N, 1, N);
+    m_coordinates[dim] = new sidre::Array<double>(view, N);
     m_coordinates[dim]->setResizeRatio(0.0);
   }
 
@@ -144,7 +144,7 @@ void RectilinearMesh::allocateCoords()
   for(int dim = 0; dim < m_ndims; ++dim)
   {
     const IndexType N = getNodeResolution(dim);
-    m_coordinates[dim] = new MCArray<double>(N, 1, N);
+    m_coordinates[dim] = new Array<double>(N);
     m_coordinates[dim]->setResizeRatio(0.0);
   }  // END for all dimensions
 }
@@ -154,7 +154,7 @@ double* RectilinearMesh::getCoordinateArray(int dim)
 {
   SLIC_ASSERT(0 <= dim && dim < getDimension());
   SLIC_ASSERT(m_coordinates[dim] != nullptr);
-  return m_coordinates[dim]->getData();
+  return m_coordinates[dim]->data();
 }
 
 //------------------------------------------------------------------------------
@@ -162,7 +162,7 @@ const double* RectilinearMesh::getCoordinateArray(int dim) const
 {
   SLIC_ASSERT(0 <= dim && dim < getDimension());
   SLIC_ASSERT(m_coordinates[dim] != nullptr);
-  return m_coordinates[dim]->getData();
+  return m_coordinates[dim]->data();
 }
 
 //------------------------------------------------------------------------------

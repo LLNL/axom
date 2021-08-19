@@ -16,6 +16,7 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre/core/MCArray.hpp"
 #endif
 
 #include <cmath>   /* for std::ceil */
@@ -29,6 +30,10 @@ namespace mint
 namespace internal
 {
 #ifdef AXOM_MINT_USE_SIDRE
+
+template <typename T, IndexType DIM>
+using SidreArrayType =
+  typename std::conditional<DIM == 1, sidre::Array<T>, sidre::MCArray<T>>::type;
 
 /*!
  * \brief Initializes the members of a ConnectivityArray instance from a
@@ -46,10 +51,11 @@ namespace internal
  * \pre group != nullptr
  * \pre m_values != nullptr
  */
+template <IndexType DIM>
 inline CellType initializeFromGroup(sidre::Group* group,
-                                    MCArray<IndexType>** m_values,
-                                    MCArray<IndexType>** m_offsets = nullptr,
-                                    MCArray<CellType>** m_types = nullptr)
+                                    Array<IndexType, DIM>** m_values,
+                                    Array<IndexType, DIM>** m_offsets = nullptr,
+                                    Array<CellType, DIM>** m_types = nullptr)
 {
   SLIC_ERROR_IF(group == nullptr, "sidre::Group pointer must not be null.");
   SLIC_ERROR_IF(m_values == nullptr, "Pointer values array must not be null.");
@@ -114,7 +120,7 @@ inline CellType initializeFromGroup(sidre::Group* group,
                   << "does not have a child view 'connectivity'.");
 
   sidre::View* connec_view = elems_group->getView("connectivity");
-  *m_values = new sidre::Array<IndexType>(connec_view);
+  *m_values = new SidreArrayType<IndexType, DIM>(connec_view);
   SLIC_ERROR_IF(*m_values == nullptr, "Error in Array allocation.");
 
   if(m_offsets != nullptr)
@@ -124,16 +130,16 @@ inline CellType initializeFromGroup(sidre::Group* group,
                                   << " does not conform to mesh blueprint.");
 
     sidre::View* offsets_view = elems_group->getView("offsets");
-    *m_offsets = new sidre::Array<IndexType>(offsets_view);
+    *m_offsets = new SidreArrayType<IndexType, DIM>(offsets_view);
 
     SLIC_ERROR_IF(*m_offsets == nullptr, "Error in Array allocation.");
-    SLIC_ERROR_IF((*m_offsets)->numComponents() != 1,
+    SLIC_ERROR_IF((*m_offsets)->shape()[1] != 1,
                   "offsets array must have only 1 component not "
-                    << (*m_offsets)->numComponents() << ".");
+                    << (*m_offsets)->shape()[1] << ".");
 
     if((*m_offsets)->size() == 0)
     {
-      (*m_offsets)->append(0);
+      (*m_offsets)->insert((*m_offsets)->size(), 0);
     }
     SLIC_ERROR_IF((**m_offsets)[0] != 0,
                   "The offset of ID 0 must be 0 not " << (**m_offsets)[0] << ".");
@@ -146,12 +152,12 @@ inline CellType initializeFromGroup(sidre::Group* group,
                                   << " does not conform to mesh blueprint.");
 
     sidre::View* type_view = elems_group->getView("types");
-    *m_types = new sidre::Array<CellType>(type_view);
+    *m_types = new SidreArrayType<CellType, DIM>(type_view);
 
     SLIC_ERROR_IF(*m_types == nullptr, "Error in Array allocation.");
-    SLIC_ERROR_IF((*m_types)->numComponents() != 1,
+    SLIC_ERROR_IF((*m_types)->shape()[1] != 1,
                   "Types array must have only 1 component not "
-                    << (*m_types)->numComponents() << ".");
+                    << (*m_types)->shape()[1] << ".");
   }
 
   return cell_type;
@@ -261,8 +267,8 @@ inline IndexType getStride(const sidre::Group* group)
 inline void append(IndexType n_IDs,
                    const IndexType* values,
                    const IndexType* offsets,
-                   MCArray<IndexType>* m_values,
-                   MCArray<IndexType>* m_offsets)
+                   Array<IndexType>* m_values,
+                   Array<IndexType>* m_offsets)
 {
   SLIC_ASSERT(values != nullptr);
   SLIC_ASSERT(offsets != nullptr);
@@ -273,11 +279,11 @@ inline void append(IndexType n_IDs,
   IndexType old_n_values = m_values->size();
   IndexType old_n_offsets = m_offsets->size();
 
-  m_offsets->append(offsets + 1, n_IDs);
-  m_values->append(values, n_values_to_add);
+  m_offsets->insert(m_offsets->size(), n_IDs, offsets + 1);
+  m_values->insert(m_values->size(), n_values_to_add, values);
 
   /* Correct the appended offsets. */
-  IndexType* m_offsets_ptr = m_offsets->getData();
+  IndexType* m_offsets_ptr = m_offsets->data();
   const IndexType correction = old_n_values - offsets[0];
   for(IndexType i = 0; i < n_IDs; ++i)
   {
@@ -302,8 +308,8 @@ inline void append(IndexType n_IDs,
 inline void set(IndexType start_ID,
                 const IndexType* values,
                 IndexType n_IDs,
-                MCArray<IndexType>* m_values,
-                MCArray<IndexType>* m_offsets)
+                Array<IndexType>* m_values,
+                Array<IndexType>* m_offsets)
 {
   SLIC_ASSERT(start_ID >= 0);
   SLIC_ASSERT(start_ID + n_IDs <= m_offsets->size() - 1);
@@ -340,8 +346,8 @@ inline void insert(IndexType start_ID,
                    IndexType n_IDs,
                    const IndexType* values,
                    const IndexType* offsets,
-                   MCArray<IndexType>* m_values,
-                   MCArray<IndexType>* m_offsets)
+                   Array<IndexType>* m_values,
+                   Array<IndexType>* m_offsets)
 {
   SLIC_ASSERT(start_ID >= 0);
   SLIC_ASSERT(start_ID <= m_offsets->size() - 1);
@@ -352,7 +358,7 @@ inline void insert(IndexType start_ID,
   SLIC_ASSERT(m_offsets != nullptr);
 
   IndexType n_values = offsets[n_IDs] - offsets[0];
-  IndexType* m_offsets_ptr = m_offsets->getData();
+  IndexType* m_offsets_ptr = m_offsets->data();
   IndexType insert_pos = m_offsets_ptr[start_ID];
 
   /* Increment the offsets after the insertion position. */
@@ -362,11 +368,11 @@ inline void insert(IndexType start_ID,
     m_offsets_ptr[i] += n_values;
   }
 
-  m_offsets->insert(offsets + 1, n_IDs, start_ID + 1);
-  m_values->insert(values, n_values, insert_pos);
+  m_offsets->insert(start_ID + 1, n_IDs, offsets + 1);
+  m_values->insert(insert_pos, n_values, values);
 
   /* Correct the inserted offsets. */
-  m_offsets_ptr = m_offsets->getData();
+  m_offsets_ptr = m_offsets->data();
   const IndexType correction = insert_pos - offsets[0];
   for(IndexType i = 0; i < n_IDs; ++i)
   {

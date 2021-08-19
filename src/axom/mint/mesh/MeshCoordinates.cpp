@@ -37,7 +37,7 @@ MeshCoordinates::MeshCoordinates(int dimension,
   IndexType max_capacity = -1;
   if(capacity == USE_DEFAULT)
   {
-    const double ratio = MCArray<double>::DEFAULT_RESIZE_RATIO;
+    const double ratio = Array<double>::DEFAULT_RESIZE_RATIO;
     max_capacity = utilities::max(DEFAULT_CAPACITY,
                                   static_cast<IndexType>(numNodes * ratio + 0.5));
   }
@@ -77,7 +77,7 @@ MeshCoordinates::MeshCoordinates(IndexType numNodes,
     SLIC_ERROR_IF(ptrs[i] == nullptr,
                   "encountered null coordinate array for i=" << i);
 
-    m_coordinates[i] = new MCArray<double>(ptrs[i], numNodes, 1, capacity);
+    m_coordinates[i] = new Array<double>(ptrs[i], numNodes, capacity);
   }
 
   SLIC_ASSERT(consistencyCheck());
@@ -162,8 +162,7 @@ MeshCoordinates::MeshCoordinates(sidre::Group* group,
   {
     const char* coord_name = coord_names[dim];
     sidre::View* coord_view = values->createView(coord_name);
-    m_coordinates[dim] =
-      new sidre::Array<double>(coord_view, numNodes, 1, capacity);
+    m_coordinates[dim] = new sidre::Array<double>(coord_view, numNodes, capacity);
   }
 }
 
@@ -198,7 +197,7 @@ bool MeshCoordinates::consistencyCheck() const
   for(int i = 1; i < m_ndims; ++i)
   {
     const IndexType actual_size = m_coordinates[i]->size();
-    const IndexType actual_components = m_coordinates[i]->numComponents();
+    const IndexType actual_components = m_coordinates[i]->shape()[1];
     const IndexType actual_capacity = m_coordinates[i]->capacity();
     const double actual_resize_ratio = m_coordinates[i]->getResizeRatio();
 
