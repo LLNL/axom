@@ -40,8 +40,8 @@ struct ZipBase<BoundingBox<FloatType, NDIMS>>
    * \pre Size2 >= NDIMS
    */
   template <size_t Size1, size_t Size2>
-  ZipBase(FloatType* const (&min_arrays)[Size1],
-          FloatType* const (&max_arrays)[Size2])
+  ZipBase(const FloatType* const (&min_arrays)[Size1],
+          const FloatType* const (&max_arrays)[Size2])
   {
     AXOM_STATIC_ASSERT_MSG(Size1 >= NDIMS, "Must provide at least NDIMS arrays");
     AXOM_STATIC_ASSERT_MSG(Size2 >= NDIMS, "Must provide at least NDIMS arrays");
