@@ -80,9 +80,10 @@ void demoArrayBasic()
   a[1] = 5;
   a[2] = 11;
 
-  // An MCArray increases in size if a value is appended.
-  a.append(4);
-  std::cout << "After appending a value, a's length = " << a.size() << std::endl;
+  // An MCArray increases in size if a value is pushed back.
+  a.push_back(4);
+  std::cout << "After pushing back a value, a's length = " << a.size()
+            << std::endl;
 
   // You can also insert a value in the middle of the MCArray.
   // Here we insert value 6 at position 2 and value 1 and position 4.

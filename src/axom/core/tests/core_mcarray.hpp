@@ -73,7 +73,7 @@ void check_storage(MCArray<T>& v)
   {
     for(T i = 0; i < capacity / 2; ++i)
     {
-      v.append(i);
+      v.push_back(i);
     }
   }
   else
@@ -102,7 +102,7 @@ void check_storage(MCArray<T>& v)
   {
     for(T i = capacity / 2; i < capacity; ++i)
     {
-      v.append(i);
+      v.push_back(i);
     }
   }
   else
@@ -114,7 +114,7 @@ void check_storage(MCArray<T>& v)
       {
         tuple[j] = i * num_components + j;
       }
-      v.append(tuple, 1);
+      v.push_back(tuple, 1);
     }
     deallocate(tuple);
     tuple = nullptr;

@@ -20,6 +20,7 @@ axom_component_requires(NAME       Sidre
 #------------------------------------------------------------------------------
 set(sidre_headers
     core/Array.hpp
+    core/MCArray.hpp
     core/Buffer.hpp
     core/Group.hpp
     core/DataStore.hpp
