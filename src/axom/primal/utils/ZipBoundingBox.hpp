@@ -22,10 +22,10 @@ namespace detail
 /*!
  * \brief Implements ZipIndexable for a primal::BoundingBox instantiation
  */
-template <typename FloatType, int NDIMS>
-struct ZipBase<BoundingBox<FloatType, NDIMS>>
+template <typename T, int NDIMS>
+struct ZipBase<BoundingBox<T, NDIMS>>
 {
-  using GeomType = BoundingBox<FloatType, NDIMS>;
+  using GeomType = BoundingBox<T, NDIMS>;
 
   static constexpr bool Exists = true;
 
@@ -40,8 +40,8 @@ struct ZipBase<BoundingBox<FloatType, NDIMS>>
    * \pre Size2 >= NDIMS
    */
   template <size_t Size1, size_t Size2>
-  ZipBase(const FloatType* const (&min_arrays)[Size1],
-          const FloatType* const (&max_arrays)[Size2])
+  ZipBase(const T* const (&min_arrays)[Size1],
+          const T* const (&max_arrays)[Size2])
   {
     AXOM_STATIC_ASSERT_MSG(Size1 >= NDIMS, "Must provide at least NDIMS arrays");
     AXOM_STATIC_ASSERT_MSG(Size2 >= NDIMS, "Must provide at least NDIMS arrays");
@@ -59,7 +59,7 @@ struct ZipBase<BoundingBox<FloatType, NDIMS>>
   AXOM_HOST_DEVICE GeomType operator[](int i) const
   {
     using PointType = typename GeomType::PointType;
-    StackArray<FloatType, NDIMS> min_data, max_data;
+    StackArray<T, NDIMS> min_data, max_data;
     for(int d = 0; d < NDIMS; d++)
     {
       min_data[d] = bb_min_arrays[d][i];
@@ -69,8 +69,8 @@ struct ZipBase<BoundingBox<FloatType, NDIMS>>
   }
 
 private:
-  const FloatType* bb_min_arrays[NDIMS];
-  const FloatType* bb_max_arrays[NDIMS];
+  const T* bb_min_arrays[NDIMS];
+  const T* bb_max_arrays[NDIMS];
 };
 
 }  // namespace detail

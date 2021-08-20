@@ -22,10 +22,10 @@ namespace detail
 /*!
  * \brief Implements ZipIndexable for a primal::Point instantiation
  */
-template <typename FloatType, int NDIMS>
-struct ZipBase<Point<FloatType, NDIMS>>
+template <typename T, int NDIMS>
+struct ZipBase<Point<T, NDIMS>>
 {
-  using GeomType = Point<FloatType, NDIMS>;
+  using GeomType = Point<T, NDIMS>;
 
   static constexpr bool Exists = true;
 
@@ -36,7 +36,7 @@ struct ZipBase<Point<FloatType, NDIMS>>
    * \pre Size >= NDIMS
    */
   template <size_t Size>
-  ZipBase(const FloatType* const (&arrays)[Size])
+  ZipBase(const T* const (&arrays)[Size])
   {
     AXOM_STATIC_ASSERT_MSG(Size >= NDIMS, "Must provide at least NDIMS arrays");
     for(int i = 0; i < NDIMS; i++)
@@ -51,7 +51,7 @@ struct ZipBase<Point<FloatType, NDIMS>>
    */
   AXOM_HOST_DEVICE GeomType operator[](int i) const
   {
-    StackArray<FloatType, NDIMS> pt_data;
+    StackArray<T, NDIMS> pt_data;
     for(int d = 0; d < NDIMS; d++)
     {
       pt_data[d] = pts_arrays[d][i];
@@ -60,7 +60,7 @@ struct ZipBase<Point<FloatType, NDIMS>>
   }
 
 private:
-  const FloatType* pts_arrays[NDIMS];
+  const T* pts_arrays[NDIMS];
 };
 
 }  // namespace detail

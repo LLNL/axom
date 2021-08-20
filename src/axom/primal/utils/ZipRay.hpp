@@ -22,10 +22,10 @@ namespace detail
 /*!
  * \brief Implements ZipIndexable for a primal::Ray instantiation
  */
-template <typename FloatType, int NDIMS>
-struct ZipBase<Ray<FloatType, NDIMS>>
+template <typename T, int NDIMS>
+struct ZipBase<Ray<T, NDIMS>>
 {
-  using GeomType = Ray<FloatType, NDIMS>;
+  using GeomType = Ray<T, NDIMS>;
 
   static constexpr bool Exists = true;
 
@@ -40,8 +40,8 @@ struct ZipBase<Ray<FloatType, NDIMS>>
    * \pre Size2 >= NDIMS
    */
   template <size_t Size1, size_t Size2>
-  ZipBase(const FloatType* const (&orig_arrays)[Size1],
-          const FloatType* const (&dir_arrays)[Size2])
+  ZipBase(const T* const (&orig_arrays)[Size1],
+          const T* const (&dir_arrays)[Size2])
   {
     AXOM_STATIC_ASSERT_MSG(Size1 >= NDIMS, "Must provide at least NDIMS arrays");
     AXOM_STATIC_ASSERT_MSG(Size2 >= NDIMS, "Must provide at least NDIMS arrays");
@@ -60,7 +60,7 @@ struct ZipBase<Ray<FloatType, NDIMS>>
   {
     using PointType = typename GeomType::PointType;
     using VectorType = typename GeomType::VectorType;
-    StackArray<FloatType, NDIMS> orig_data, dir_data;
+    StackArray<T, NDIMS> orig_data, dir_data;
     for(int d = 0; d < NDIMS; d++)
     {
       orig_data[d] = ray_origs[d][i];
@@ -70,8 +70,8 @@ struct ZipBase<Ray<FloatType, NDIMS>>
   }
 
 private:
-  const FloatType* ray_origs[NDIMS];
-  const FloatType* ray_dirs[NDIMS];
+  const T* ray_origs[NDIMS];
+  const T* ray_dirs[NDIMS];
 };
 
 }  // namespace detail
