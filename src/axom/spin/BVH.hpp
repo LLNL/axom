@@ -437,11 +437,11 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
           boxesptr[i] = empty_box;
         }
       });
-    m_bvh->template buildImpl(boxesptr, numBoxes, m_scaleFactor, m_AllocatorID);
+    m_bvh->buildImpl(boxesptr, numBoxes, m_scaleFactor, m_AllocatorID);
   }
   else
   {
-    m_bvh->template buildImpl(boxes, numBoxes, m_scaleFactor, m_AllocatorID);
+    m_bvh->buildImpl(boxes, numBoxes, m_scaleFactor, m_AllocatorID);
   }
 
   // STEP 5: deallocate boxesptr if user supplied a single box
