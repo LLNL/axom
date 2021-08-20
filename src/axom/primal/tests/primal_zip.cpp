@@ -39,7 +39,7 @@ void check_zip_points_3d()
 
   axom::for_all<ExecSpace>(
     0,
-    8,
+    N,
     AXOM_LAMBDA(int idx) {
       x[idx] = (idx % 2) + 1;
       y[idx] = ((idx / 2) % 2) + 1;
@@ -50,14 +50,14 @@ void check_zip_points_3d()
 
   axom::for_all<ExecSpace>(
     0,
-    8,
+    N,
     AXOM_LAMBDA(int idx) {
       valid[idx] = (it[idx] == PrimitiveType {x[idx], y[idx], z[idx]});
     });
 
   for(int i = 0; i < N; i++)
   {
-    EXPECT_EQ(valid[i], true);
+    EXPECT_TRUE(valid[i]);
   }
 
   axom::deallocate(x);
@@ -103,7 +103,7 @@ void check_zip_points_2d_from_3d()
 
   for(int i = 0; i < N; i++)
   {
-    EXPECT_EQ(valid[i], true);
+    EXPECT_TRUE(valid[i]);
   }
 
   axom::deallocate(x);
@@ -148,7 +148,7 @@ void check_zip_vectors_2d_from_3d()
 
   for(int i = 0; i < N; i++)
   {
-    EXPECT_EQ(valid[i], true);
+    EXPECT_TRUE(valid[i]);
   }
 
   axom::deallocate(x);
@@ -181,7 +181,7 @@ void check_zip_bbs_3d()
 
   axom::for_all<ExecSpace>(
     0,
-    8,
+    N,
     AXOM_LAMBDA(int idx) {
       xmin[idx] = (idx % 2) + 1;
       ymin[idx] = ((idx / 2) % 2) + 1;
@@ -196,7 +196,7 @@ void check_zip_bbs_3d()
 
   axom::for_all<ExecSpace>(
     0,
-    8,
+    N,
     AXOM_LAMBDA(int idx) {
       BoxType actual;
       actual.addPoint(PointType {xmin[idx], ymin[idx], zmin[idx]});
@@ -206,7 +206,7 @@ void check_zip_bbs_3d()
 
   for(int i = 0; i < N; i++)
   {
-    EXPECT_EQ(valid[i], true);
+    EXPECT_TRUE(valid[i]);
   }
 
   axom::deallocate(xmin);
@@ -268,7 +268,7 @@ void check_zip_bbs_2d_from_3d()
 
   for(int i = 0; i < N; i++)
   {
-    EXPECT_EQ(valid[i], true);
+    EXPECT_TRUE(valid[i]);
   }
 
   axom::deallocate(xmin);
@@ -306,7 +306,7 @@ void check_zip_rays_3d()
 
   axom::for_all<ExecSpace>(
     0,
-    4,
+    N,
     AXOM_LAMBDA(int idx) {
       if(idx < 2)
       {
@@ -331,7 +331,7 @@ void check_zip_rays_3d()
 
   axom::for_all<ExecSpace>(
     0,
-    4,
+    N,
     AXOM_LAMBDA(int idx) {
       PointType orig {xo[idx], yo[idx], zo[idx]};
       VectorType dir {xd[idx], yd[idx], zd[idx]};
@@ -342,7 +342,7 @@ void check_zip_rays_3d()
 
   for(int i = 0; i < N; i++)
   {
-    EXPECT_EQ(valid[i], true);
+    EXPECT_TRUE(valid[i]);
   }
 
   axom::deallocate(xo);
@@ -382,7 +382,7 @@ void check_zip_rays_2d_from_3d()
 
   axom::for_all<ExecSpace>(
     0,
-    4,
+    N,
     AXOM_LAMBDA(int idx) {
       if(idx < 2)
       {
@@ -407,7 +407,7 @@ void check_zip_rays_2d_from_3d()
 
   axom::for_all<ExecSpace>(
     0,
-    4,
+    N,
     AXOM_LAMBDA(int idx) {
       PointType orig {xo[idx], yo[idx]};
       VectorType dir {xd[idx], yd[idx]};
@@ -418,7 +418,7 @@ void check_zip_rays_2d_from_3d()
 
   for(int i = 0; i < N; i++)
   {
-    EXPECT_EQ(valid[i], true);
+    EXPECT_TRUE(valid[i]);
   }
 
   axom::deallocate(xo);
