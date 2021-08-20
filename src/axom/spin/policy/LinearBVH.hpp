@@ -62,7 +62,8 @@ public:
    * \param [in] numBoxes the number of bounding boxes
    * \param [in] scaleFactor scale factor applied to each bounding box before insertion into the BVH
    */
-  void buildImpl(const BoundingBoxType* boxes,
+  template <typename BoxIndexable>
+  void buildImpl(const BoxIndexable boxes,
                  IndexType numBoxes,
                  FloatType scaleFactor,
                  int allocatorID);
@@ -116,7 +117,8 @@ private:
 };
 
 template <typename FloatType, int NDIMS, typename ExecSpace>
-void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoundingBoxType* boxes,
+template <typename BoxIndexable>
+void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
                                                        IndexType numBoxes,
                                                        FloatType scaleFactor,
                                                        int allocatorID)

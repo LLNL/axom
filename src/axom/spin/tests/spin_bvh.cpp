@@ -16,6 +16,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/utils/ZipPoint.hpp"
+#include "axom/primal/utils/ZipBoundingBox.hpp"
 
 // axom/spin includes
 #include "axom/spin/BVH.hpp"
@@ -1112,6 +1113,67 @@ void check_single_box3d()
 //------------------------------------------------------------------------------
 
 /*!
+ * \brief Tests the construction of the BVH in 3D by inserting two bounding
+ *  boxes in the BVH and ensuring that the bounds of the BVH are as expected.
+ */
+template <typename ExecSpace, typename FloatType>
+void check_build_bvh_zip3d()
+{
+  constexpr int NUM_BOXES = 2;
+  constexpr int NDIMS = 3;
+
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using ZipIter = typename primal::ZipIndexable<BoxType>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+  FloatType* xmin = axom::allocate<FloatType>(NUM_BOXES);
+  FloatType* ymin = axom::allocate<FloatType>(NUM_BOXES);
+  FloatType* zmin = axom::allocate<FloatType>(NUM_BOXES);
+
+  FloatType* xmax = axom::allocate<FloatType>(NUM_BOXES);
+  FloatType* ymax = axom::allocate<FloatType>(NUM_BOXES);
+  FloatType* zmax = axom::allocate<FloatType>(NUM_BOXES);
+
+  xmin[0] = ymin[0] = zmin[0] = 0.;
+  xmax[0] = ymax[0] = zmax[0] = 1.;
+  xmin[1] = ymin[1] = zmin[1] = 1.;
+  xmax[1] = ymax[1] = zmax[1] = 2.;
+
+  ZipIter it {{xmin, ymin, zmin}, {xmax, ymax, zmax}};
+
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+
+  bvh.setScaleFactor(1.0);  // i.e., no scaling
+  bvh.initialize(it, NUM_BOXES);
+
+  int allocatorID = bvh.getAllocatorID();
+  EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
+
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
+  {
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 2.0);
+  }
+
+  axom::deallocate(xmin);
+  axom::deallocate(ymin);
+  axom::deallocate(zmin);
+
+  axom::deallocate(xmax);
+  axom::deallocate(ymax);
+  axom::deallocate(zmax);
+
+  axom::setDefaultAllocator(current_allocator);
+}
+
+//------------------------------------------------------------------------------
+
+/*!
  * \brief Tests the find algorithm of the BVH in 3D.
  *
  *  A uniform mesh is used for this test where the query points are generated
@@ -1371,6 +1433,13 @@ TEST(spin_bvh, single_box3d_sequential)
 {
   check_single_box3d<axom::SEQ_EXEC, double>();
   check_single_box3d<axom::SEQ_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
+TEST(spin_bvh, construct3D_sequential_zip)
+{
+  check_build_bvh_zip3d<axom::SEQ_EXEC, double>();
+  check_build_bvh_zip3d<axom::SEQ_EXEC, float>();
 }
 
 //------------------------------------------------------------------------------

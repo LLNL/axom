@@ -212,7 +212,8 @@ public:
    * \pre boxes != nullptr
    * \pre numItems > 0
    */
-  int initialize(const BoxType* boxes, IndexType numItems);
+  template <typename BoxIndexable>
+  int initialize(const BoxIndexable boxes, IndexType numItems);
 
   bool isInitialized() const { return m_bvh != nullptr; }
 
@@ -389,10 +390,18 @@ private:
 //  BVH implementation
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
-int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxType* boxes,
+template <typename BoxIndexable>
+int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
                                                        IndexType numBoxes)
 {
   AXOM_PERF_MARK_FUNCTION("BVH::initialize");
+
+  using IterBase = typename IteratorTraits<BoxIndexable>::BaseType;
+
+  // Ensure that the iterator returns objects convertible to primal::BoundingBox.
+  static_assert(
+    std::is_convertible<IterBase, BoxType>::value,
+    "Iterator must return objects convertible to primal::BoundingBox.");
 
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
@@ -428,20 +437,12 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxType* boxes,
           boxesptr[i] = empty_box;
         }
       });
-
-  }  // END if single item
-
-  const BoxType* boxes_const;
-  if(boxesptr)
-  {
-    boxes_const = boxesptr;
+    m_bvh->template buildImpl(boxesptr, numBoxes, m_scaleFactor, m_AllocatorID);
   }
   else
   {
-    boxes_const = boxes;
+    m_bvh->template buildImpl(boxes, numBoxes, m_scaleFactor, m_AllocatorID);
   }
-
-  m_bvh->buildImpl(boxes_const, numBoxes, m_scaleFactor, m_AllocatorID);
 
   // STEP 5: deallocate boxesptr if user supplied a single box
   if(boxesptr)
