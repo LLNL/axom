@@ -42,6 +42,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added a `data_collection_util` tool to generate Mesh Blueprint compliant high order distributed meshes from
   an mfem mesh or over a Cartesian domain
 - Added utility functions `axom::utilities::getHostName()` and `axom::utilities::getUserName()`.
+- Added new `axom::primal::ZipIterable<T>` type to convert structure-of-arrays data to a given
+  Primal geometric primitive.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
