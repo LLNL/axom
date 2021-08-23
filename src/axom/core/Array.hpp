@@ -360,6 +360,22 @@ public:
   template <typename... Args>
   Array(Args... args);
 
+  /*!
+   * \brief Generic constructor for an Array of arbitrary dimension with external data
+   *
+   * \param [in] data the external data this Array will wrap.
+   * \param [in] args The parameter pack containing the "shape" of the Array
+   * \see https://numpy.org/doc/stable/reference/generated/numpy.empty.html#numpy.empty
+   *
+   * \pre sizeof...(Args) == DIM
+   *
+   * \post capacity() >= size()
+   * \post size() == num_elements
+   * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
+   */
+  template <typename... Args>
+  Array(T* data, Args... args);
+
   /*! 
    * \brief Copy constructor for an Array instance 
    * 
@@ -929,6 +945,20 @@ Array<T, DIM>::Array(Args... args)
                 "Array size must match number of dimensions");
 
   initialize(detail::packProduct(args...), 0);
+}
+
+template <typename T, IndexType DIM>
+template <typename... Args>
+Array<T, DIM>::Array(T* data, Args... args)
+  : ArrayImpl<T, DIM>(args...)
+  , m_data(data)
+  , m_num_elements(detail::packProduct(args...))
+  , m_resize_ratio(0.0)
+  , m_is_external(true)
+  , m_allocator_id(INVALID_ALLOCATOR_ID)
+{
+  static_assert(sizeof...(Args) == DIM,
+                "Array size must match number of dimensions");
 }
 
 //------------------------------------------------------------------------------
