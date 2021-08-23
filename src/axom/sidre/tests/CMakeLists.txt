@@ -24,7 +24,7 @@ set(gtest_sidre_tests
    sidre_native_layout.cpp
    sidre_attribute.cpp
    sidre_iterator.cpp
-   sidre_array.cpp
+   sidre_mcarray.cpp
    )
 
 set(gtest_sidre_C_tests

@@ -36,9 +36,9 @@ void sleep(int numSeconds)
 #include <iostream>
 #include <vector>
 
-void showArray(axom::MCArray<int>& a, const char* name)
+void showArray(axom::Array<int>& a, const char* name)
 {
-  std::cout << "MCArray " << name << " = [";
+  std::cout << "Array " << name << " = [";
   for(int i = 0; i < a.size(); ++i)
   {
     if(i > 0)
@@ -52,12 +52,12 @@ void showArray(axom::MCArray<int>& a, const char* name)
 
 void showTupleArray(axom::MCArray<int>& a, const char* name)
 {
-  std::cout << "MCArray " << name << " with " << a.size() << " "
-            << a.numComponents() << "-tuples = [" << std::endl;
-  for(int i = 0; i < a.size(); ++i)
+  std::cout << "MCArray " << name << " with " << a.shape()[0] << " "
+            << a.shape()[1] << "-tuples = [" << std::endl;
+  for(int i = 0; i < a.shape()[0]; ++i)
   {
     std::cout << "  [";
-    for(int j = 0; j < a.numComponents(); ++j)
+    for(int j = 0; j < a.shape()[1]; ++j)
     {
       if(j > 0)
       {
@@ -73,19 +73,19 @@ void showTupleArray(axom::MCArray<int>& a, const char* name)
 void demoArrayBasic()
 {
   // _arraybasic_start
-  // Here is an MCArray of ints with length three.
-  axom::MCArray<int> a(3);
+  // Here is an Array of ints with length three.
+  axom::Array<int> a(3);
   std::cout << "Length of a = " << a.size() << std::endl;
   a[0] = 2;
   a[1] = 5;
   a[2] = 11;
 
-  // An MCArray increases in size if a value is pushed back.
+  // An Array increases in size if a value is pushed back.
   a.push_back(4);
   std::cout << "After pushing back a value, a's length = " << a.size()
             << std::endl;
 
-  // You can also insert a value in the middle of the MCArray.
+  // You can also insert a value in the middle of the Array.
   // Here we insert value 6 at position 2 and value 1 and position 4.
   showArray(a, "a");
   a.insert(6, 2);
@@ -113,14 +113,14 @@ void demoArrayBasic()
   // Now, insert two tuples, (0, -1, 1), (1, -1, 0), into the MCArray, directly
   // after tuple 0.
   int jval[6] = {0, -1, 1, 1, -1, 0};
-  b.insert(jval, 2, 1);
+  b.insert(1, 2 * b.shape()[1], jval);
 
   showTupleArray(b, "b");
   // _arraytuple_end
 
   // _extbuffer_start
   // The internal buffer maintained by an MCArray is accessible.
-  int* pa = a.getData();
+  int* pa = a.data();
   // An MCArray can be constructed with a pointer to an external buffer.
   // Here's an Array interpreting the memory pointed to by pa as three 2-tuples.
   axom::MCArray<int> c(pa, 3, 2);
@@ -129,7 +129,7 @@ void demoArrayBasic()
   showTupleArray(c, "c");
 
   // Since c is an alias to a's internal memory, changes affect both Arrays.
-  a(0, 0) = 1;
+  a[0] = 1;
   c(1, 1) = 9;
 
   std::cout << "MCArrays a and c use the same memory, a's internal buffer."
