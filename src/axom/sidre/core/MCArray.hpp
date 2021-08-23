@@ -291,8 +291,8 @@ MCArray<T>::MCArray(View* view,
   SLIC_ERROR_IF(num_components <= 0,
                 "Components per tuple (" << num_components << ") "
                                          << "must be greater than 0.");
-  // FIXME: We're ignoring the capacity - sort of messy to deal with in multiple dimensions
-
+  // FIXME: Double allocation - add to constructor somehow?
+  axom::MCArray<T>::reserve(capacity);
   SLIC_ERROR_IF(this->m_dims[0] > this->m_capacity,
                 "Number of tuples ("
                   << this->m_dims[0] << ") "
