@@ -14,9 +14,10 @@
 #include "axom/core/IteratorBase.hpp"         // for Iterator
 
 // C/C++ includes
-#include <array>     // for std::array
-#include <iostream>  // for std::cerr and std::ostream
-#include <numeric>   // for std::inner_product
+#include <array>      // for std::array
+#include <algorithm>  // for std::transform
+#include <iostream>   // for std::cerr and std::ostream
+#include <numeric>    // for std::inner_product
 
 namespace axom
 {
@@ -123,12 +124,7 @@ public:
   template <typename... Args>
   ArrayImpl(Args... args) : m_dims {static_cast<IndexType>(args)...}
   {
-    // Row-major
-    m_strides[DIM - 1] = 1;
-    for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
-    {
-      m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
-    }
+    updateStrides();
   }
 
   /*!
@@ -176,11 +172,47 @@ public:
   /// \brief Returns the strides of the Array
   const std::array<IndexType, DIM>& strides() const { return m_strides; }
 
+  /*!
+   * \brief Appends an Array to the end of the calling object
+   *
+   * \param [in] other The Array to append
+   * 
+   * \pre The shapes of the calling Array and @a Other are the same
+   * (excluding the leading dimension), i.e., shape()[1:] == other.shape()[1:]
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void insert(IndexType pos, const ArrayType& other)
+  {
+    // TODO: Do we want this for release builds
+    if(!std::equal(m_dims.begin() + 1, m_dims.end(), other.shape().begin() + 1))
+    {
+      std::cerr << "Cannot append a multidimensional array of incorrect shape.";
+      utilities::processAbort();
+    }
+
+    // First add the raw data to the buffer
+    asDerived().insert(pos, other.size(), other.data());
+    // Then update the dimensions - we're adding only to the leading dimension
+    m_dims[0] += other.shape()[0];
+    updateStrides();
+  }
+
 private:
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
   const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
+  }
+
+  void updateStrides()
+  {
+    // Row-major
+    m_strides[DIM - 1] = 1;
+    for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
+    {
+      m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
+    }
   }
 
   // FIXME: Do we really need this for sidre::Array??
@@ -235,6 +267,18 @@ public:
 
   /// \brief Swaps two ArrayImpls
   void swap(ArrayImpl&) { }
+
+  /*!
+   * \brief Appends an Array to the end of the calling object
+   *
+   * \param [in] other The Array to append
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void insert(IndexType pos, const ArrayType& other)
+  {
+    asDerived().insert(pos, other.size(), other.data());
+  }
 
 private:
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
@@ -664,6 +708,18 @@ public:
    * \return ArrayIterator to first element inserted (pos if n == 0)
    */
   ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
+
+  // Make the overload "visible"
+  using ArrayImpl<T, DIM>::insert;
+
+  /*!
+   * \brief Appends an Array to the end of the calling object
+   *
+   * \param [in] other The Array to append
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void append(const Array& other) { ArrayImpl<T, DIM>::insert(size(), other); }
 
   /*!
    * \brief Erases an element from the Array 
