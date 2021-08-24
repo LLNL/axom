@@ -965,7 +965,7 @@ Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 Array<T, DIM>::Array(const Array& other, int allocator_id)
-  : ArrayImpl<T, DIM>(static_cast<const ArrayImpl<T, DIM>&>(other))
+  : ArrayImpl<T, DIM>(other)
   , m_allocator_id(allocator_id)
 {
   initialize(other.size(), other.capacity());
@@ -975,7 +975,7 @@ Array<T, DIM>::Array(const Array& other, int allocator_id)
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 Array<T, DIM>::Array(Array&& other)
-  : ArrayImpl<T, DIM>(static_cast<ArrayImpl<T, DIM>&&>(other))
+  : ArrayImpl<T, DIM>(std::move(other))
   , m_resize_ratio(0.0)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
@@ -1237,8 +1237,7 @@ inline void Array<T, DIM>::resize(Args... args)
 template <typename T, int DIM>
 inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 {
-  static_cast<ArrayImpl<T, DIM>&>(*this).swap(
-    static_cast<ArrayImpl<T, DIM>&>(other));
+  ArrayImpl<T, DIM>::swap(other);
   T* temp_data = m_data;
   IndexType temp_num_elements = m_num_elements;
   IndexType temp_capacity = m_capacity;
