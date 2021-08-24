@@ -85,8 +85,8 @@ static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
   return convertPointToMorton<int64>(integer_pt);
 }
 
-template <typename ExecSpace, typename FloatType, int NDIMS>
-void transform_boxes(const primal::BoundingBox<FloatType, NDIMS>* boxes,
+template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
+void transform_boxes(const BoxIndexable boxes,
                      primal::BoundingBox<FloatType, NDIMS>* aabbs,
                      int32 size,
                      FloatType scale_factor)
@@ -629,8 +629,8 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 }
 
 //------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType, int NDIMS>
-void build_radix_tree(const primal::BoundingBox<FloatType, NDIMS>* boxes,
+template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
+void build_radix_tree(const BoxIndexable boxes,
                       int size,
                       primal::BoundingBox<FloatType, NDIMS>& bounds,
                       RadixTree<FloatType, NDIMS>& radix_tree,
@@ -640,7 +640,6 @@ void build_radix_tree(const primal::BoundingBox<FloatType, NDIMS>* boxes,
   AXOM_PERF_MARK_FUNCTION("build_radix_tree");
 
   // sanity checks
-  SLIC_ASSERT(boxes != nullptr);
   SLIC_ASSERT(size > 0);
 
   radix_tree.allocate(size, allocatorID);
