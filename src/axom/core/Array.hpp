@@ -39,26 +39,23 @@ namespace axom
 namespace detail
 {
 // Takes the product of a parameter pack of IndexTypes
-template <typename T>
-IndexType packProduct(T&& t)
+template <int N>
+IndexType packProduct(const IndexType (&arr)[N])
 {
-  return t;
+  return std::accumulate(arr, arr + N, 1, std::multiplies<IndexType> {});
 }
 
-template <typename T, typename... Args>
-IndexType packProduct(T&& t, Args... args)
+template <int N>
+bool allPositive(const IndexType (&arr)[N])
 {
-  return t * packProduct(args...);
-}
-
-template <typename... Args>
-bool allPositive(Args... args)
-{
-  // Use the "expander trick" because we don't have fold expressions
-  using expander = int[];
-  bool result = true;
-  (void)expander {(result = result && (args > 0), 0)...};
-  return result;
+  for(int i = 0; i < N; i++)
+  {
+    if(arr[i] <= 0)
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 };  // namespace detail
@@ -236,7 +233,7 @@ public:
   std::array<IndexType, 1> shape() const { return {{asDerived().size()}}; }
 
   /// \brief Swaps two ArrayImpls
-  friend void swap(ArrayImpl& lhs, ArrayImpl& rhs) { }
+  void swap(ArrayImpl&) { }
 
 private:
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
@@ -933,8 +930,8 @@ Array<T, DIM>::Array(Args... args)
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
-  assert(detail::allPositive(args...));
-  initialize(detail::packProduct(args...), 0);
+  assert(detail::allPositive({IndexType(args)...}));
+  initialize(detail::packProduct({IndexType(args)...}), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -1222,8 +1219,8 @@ inline void Array<T, DIM>::resize(Args... args)
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
-  assert(detail::allPositive(args...));
-  const auto new_num_elements = detail::packProduct(args...);
+  assert(detail::allPositive({IndexType(args)...}));
+  const auto new_num_elements = detail::packProduct({IndexType(args)...});
 
   if(new_num_elements > m_capacity)
   {
@@ -1240,29 +1237,25 @@ inline void Array<T, DIM>::resize(Args... args)
 template <typename T, int DIM>
 inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 {
-  // FIXME: Why doesn't ADL work here?
-  // swap(static_cast<ArrayImpl<T, DIM>&>(*this),
-  //      static_cast<ArrayImpl<T, DIM>&>(other));
+  static_cast<ArrayImpl<T, DIM>&>(*this).swap(
+    static_cast<ArrayImpl<T, DIM>&>(other));
   T* temp_data = m_data;
   IndexType temp_num_elements = m_num_elements;
   IndexType temp_capacity = m_capacity;
   double temp_resize_ratio = m_resize_ratio;
   bool temp_is_external = m_is_external;
-  auto temp_arrayimpl = static_cast<ArrayImpl<T, DIM>&>(*this);
 
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
   m_is_external = other.m_is_external;
-  static_cast<ArrayImpl<T, DIM>&>(*this) = static_cast<ArrayImpl<T, DIM>&>(other);
 
   other.m_data = temp_data;
   other.m_num_elements = temp_num_elements;
   other.m_capacity = temp_capacity;
   other.m_resize_ratio = temp_resize_ratio;
   other.m_is_external = temp_is_external;
-  static_cast<ArrayImpl<T, DIM>&>(other) = temp_arrayimpl;
 }
 
 //------------------------------------------------------------------------------
