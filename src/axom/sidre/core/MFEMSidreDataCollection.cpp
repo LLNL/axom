@@ -2419,15 +2419,15 @@ void MFEMSidreDataCollection::reconstructFields()
       {
         // The vdim is being overwritten here with the value in the basis string so we
         // can correctly construct the QuadratureFunction
-        m_quadspaces.emplace(basis_name,
-                             detail::NewQuadratureSpace(basis_name, mesh, vdim));
+        m_quadspaces[basis_name] = std::unique_ptr<mfem::QuadratureSpace>(
+          detail::NewQuadratureSpace(basis_name, mesh, vdim));
         is_gridfunc = false;
       }
       // Only need to create a new FEColl if one doesn't already exist
       else if(m_fecolls.count(basis_name) == 0)
       {
-        m_fecolls.emplace(basis_name,
-                          mfem::FiniteElementCollection::New(basis_name.c_str()));
+        m_fecolls[basis_name] = std::unique_ptr<mfem::FiniteElementCollection>(
+          mfem::FiniteElementCollection::New(basis_name.c_str()));
       }
 
       View* value_view = nullptr;
@@ -2462,8 +2462,7 @@ void MFEMSidreDataCollection::reconstructFields()
         auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
         if(parmesh)
         {
-          m_fespaces.emplace(
-            basis_name,
+          m_fespaces[basis_name] = std::unique_ptr<mfem::ParFiniteElementSpace>(
             new mfem::ParFiniteElementSpace(parmesh,
                                             m_fecolls.at(basis_name).get(),
                                             vdim,
@@ -2472,8 +2471,7 @@ void MFEMSidreDataCollection::reconstructFields()
         else
   #endif
         {
-          m_fespaces.emplace(
-            basis_name,
+          m_fespaces[basis_name] = std::unique_ptr<mfem::FiniteElementSpace>(
             new mfem::FiniteElementSpace(mesh,
                                          m_fecolls.at(basis_name).get(),
                                          vdim,
