@@ -67,6 +67,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Spin: Removed hard dependency on RAJA and Umpire from `BVH`.
 - Moved `slam::IteratorBase` to `axom::IteratorBase`.
 - `sidre::Array` now derives from `axom::MCArray`.
+- `axom::Array` is now multidimensional; it intends to behave like `std::vector` in the 1D case
+  and `numpy.ndarray` in the multidimensional case
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
