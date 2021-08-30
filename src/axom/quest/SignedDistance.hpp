@@ -35,7 +35,7 @@ namespace axom
 {
 namespace quest
 {
-template <int NDIMS>
+template <int NDIMS, typename ExecSpace = axom::SEQ_EXEC>
 class SignedDistance
 {
 public:
@@ -43,9 +43,7 @@ public:
   using VectorType = axom::primal::Vector<double, NDIMS>;
   using TriangleType = axom::primal::Triangle<double, NDIMS>;
   using BoxType = axom::primal::BoundingBox<double, NDIMS>;
-  using BVHTreeType = axom::spin::BVH<NDIMS>;
-
-  using ExecSpace = axom::SEQ_EXEC;
+  using BVHTreeType = axom::spin::BVH<NDIMS, ExecSpace>;
 
 public:
   /*!
@@ -63,11 +61,6 @@ public:
                  int maxObjects,
                  int maxLevels,
                  bool computeSign = true);
-
-  /*!
-   * \brief Destructor.
-   */
-  ~SignedDistance();
 
   /*!
    * \brief Computes the distance of the given point to the input surface mesh.
@@ -158,12 +151,12 @@ namespace axom
 namespace quest
 {
 //------------------------------------------------------------------------------
-template <int NDIMS>
-SignedDistance<NDIMS>::SignedDistance(const mint::Mesh* surfaceMesh,
-                                      bool isWatertight,
-                                      int maxObjects,
-                                      int maxLevels,
-                                      bool computeSign)
+template <int NDIMS, typename ExecSpace>
+SignedDistance<NDIMS, ExecSpace>::SignedDistance(const mint::Mesh* surfaceMesh,
+                                                 bool isWatertight,
+                                                 int maxObjects,
+                                                 int maxLevels,
+                                                 bool computeSign)
   : m_isInputWatertight(isWatertight)
   , m_computeSign(computeSign)
 {
@@ -201,13 +194,9 @@ SignedDistance<NDIMS>::SignedDistance(const mint::Mesh* surfaceMesh,
 }
 
 //------------------------------------------------------------------------------
-template <int NDIMS>
-SignedDistance<NDIMS>::~SignedDistance()
-{ }
-
-//------------------------------------------------------------------------------
-template <int NDIMS>
-inline double SignedDistance<NDIMS>::computeDistance(const PointType& pt) const
+template <int NDIMS, typename ExecSpace>
+inline double SignedDistance<NDIMS, ExecSpace>::computeDistance(
+  const PointType& pt) const
 {
   PointType closest_pt;
   double dist;
@@ -216,11 +205,12 @@ inline double SignedDistance<NDIMS>::computeDistance(const PointType& pt) const
 }
 
 //------------------------------------------------------------------------------
-template <int NDIMS>
-inline void SignedDistance<NDIMS>::computeDistances(int npts,
-                                                    const PointType* queryPts,
-                                                    double* out_sdist,
-                                                    PointType* out_closestPts) const
+template <int NDIMS, typename ExecSpace>
+inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
+  int npts,
+  const PointType* queryPts,
+  double* out_sdist,
+  PointType* out_closestPts) const
 {
   SLIC_ASSERT(m_surfaceMesh != nullptr);
   SLIC_ASSERT(queryPts != nullptr);
@@ -331,9 +321,9 @@ inline void SignedDistance<NDIMS>::computeDistances(int npts,
 }
 
 //------------------------------------------------------------------------------
-template <int NDIMS>
+template <int NDIMS, typename ExecSpace>
 inline axom::primal::BoundingBox<double, NDIMS>
-SignedDistance<NDIMS>::getCellBoundingBox(axom::IndexType icell)
+SignedDistance<NDIMS, ExecSpace>::getCellBoundingBox(axom::IndexType icell)
 {
   // Sanity checks
   SLIC_ASSERT(m_surfaceMesh != nullptr);
