@@ -31,7 +31,7 @@ namespace internal
 {
 #ifdef AXOM_MINT_USE_SIDRE
 
-template <typename T, IndexType DIM>
+template <typename T, int DIM>
 using SidreArrayType =
   typename std::conditional<DIM == 1, sidre::Array<T>, sidre::MCArray<T>>::type;
 
@@ -51,7 +51,7 @@ using SidreArrayType =
  * \pre group != nullptr
  * \pre m_values != nullptr
  */
-template <IndexType DIM>
+template <int DIM>
 inline CellType initializeFromGroup(sidre::Group* group,
                                     Array<IndexType, DIM>** m_values,
                                     Array<IndexType, DIM>** m_offsets = nullptr,

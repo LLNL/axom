@@ -39,19 +39,19 @@ namespace axom
 
 namespace detail
 {
-// Takes the product of a parameter pack of IndexTypes
-template <int N>
-IndexType packProduct(const IndexType (&arr)[N])
+// Takes the product of a parameter pack of T
+template <typename T, int N>
+T packProduct(const T (&arr)[N])
 {
-  return std::accumulate(arr, arr + N, 1, std::multiplies<IndexType> {});
+  return std::accumulate(arr, arr + N, 1, std::multiplies<T> {});
 }
 
-template <int N>
-bool allPositive(const IndexType (&arr)[N])
+template <typename T, int N>
+bool allNonNegative(const T (&arr)[N])
 {
   for(int i = 0; i < N; i++)
   {
-    if(arr[i] <= 0)
+    if(arr[i] < 0)
     {
       return false;
     }
@@ -475,7 +475,11 @@ public:
    * \note This constructor wraps the supplied buffer and does not own the data.
    *  Consequently, the Array instance cannot be reallocated.
    */
-  Array(T* data, IndexType num_elements, IndexType capacity = 0);
+  template <IndexType SFINAE = DIM>
+  Array(T* data,
+        IndexType num_elements,
+        IndexType capacity = 0,
+        typename std::enable_if<SFINAE == 1>::type* = nullptr);
 
   /// @}
 
@@ -1010,22 +1014,24 @@ Array<T, DIM>::Array(Args... args)
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
   IndexType tmp_args[] = {args...};
-  assert(detail::allPositive(tmp_args));
+  assert(detail::allNonNegative(tmp_args));
   initialize(detail::packProduct(tmp_args), 0);
 }
 
-template <typename T, IndexType DIM>
+template <typename T, int DIM>
 template <typename... Args>
 Array<T, DIM>::Array(T* data, Args... args)
   : ArrayImpl<T, DIM>(args...)
   , m_data(data)
-  , m_num_elements(detail::packProduct(args...))
   , m_resize_ratio(0.0)
   , m_is_external(true)
   , m_allocator_id(INVALID_ALLOCATOR_ID)
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
+  // Intel hits internal compiler error when casting as part of function call
+  IndexType tmp_args[] = {args...};
+  m_num_elements = detail::packProduct(tmp_args);
 }
 
 //------------------------------------------------------------------------------
@@ -1042,7 +1048,11 @@ Array<T, DIM>::Array(IndexType num_elements,
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
+template <IndexType SFINAE>
+Array<T, DIM>::Array(T* data,
+                     IndexType num_elements,
+                     IndexType capacity,
+                     typename std::enable_if<SFINAE == 1>::type*)
   : m_data(data)
   , m_num_elements(num_elements)
   , m_resize_ratio(0.0)
@@ -1315,7 +1325,7 @@ inline void Array<T, DIM>::resize(Args... args)
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
   IndexType tmp_args[] = {args...};
-  assert(detail::allPositive(tmp_args));
+  assert(detail::allNonNegative(tmp_args));
   const auto new_num_elements = detail::packProduct(tmp_args);
 
   if(new_num_elements > m_capacity)

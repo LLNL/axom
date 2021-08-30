@@ -248,8 +248,8 @@ void check_set(MCArray<T>& v)
 {
   constexpr T ZERO = 0;
   const axom::IndexType capacity = v.capacity();
-  const axom::IndexType size = v.size();
   const axom::IndexType num_components = v.shape()[1];
+  const axom::IndexType size = v.size() / num_components;
   const double ratio = v.getResizeRatio();
   const T* const data_ptr = v.data();
 
@@ -267,11 +267,11 @@ void check_set(MCArray<T>& v)
 
   /* Set the first half of the tuples in the MCArray to the sequential values in
    * buffer. */
-  v.set(buffer, buffer_size, 0);
+  v.set(buffer, buffer_size * num_components, 0);
 
   /* Check the MCArray metadata. */
   EXPECT_EQ(capacity, v.capacity());
-  EXPECT_EQ(size, v.size());
+  EXPECT_EQ(size, v.size() / num_components);
   EXPECT_EQ(num_components, v.shape()[1]);
   EXPECT_EQ(ratio, v.getResizeRatio());
   EXPECT_EQ(data_ptr, v.data());
@@ -279,7 +279,7 @@ void check_set(MCArray<T>& v)
   /* Check that the first half of the tuples in the MCArray are equivalent to
    * those in buffer. */
   // NOTE: size now refers to the number of Ts and not the number of components
-  for(axom::IndexType i = 0; i < buffer_size / num_components; ++i)
+  for(axom::IndexType i = 0; i < buffer_size; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -288,8 +288,7 @@ void check_set(MCArray<T>& v)
   }
 
   /* Check that the second half of the tuples in the MCArray are all zero. */
-  for(axom::IndexType i = buffer_size / num_components; i < size / num_components;
-      ++i)
+  for(axom::IndexType i = buffer_size; i < size; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -298,24 +297,24 @@ void check_set(MCArray<T>& v)
   }
 
   /* Reset the values in buffer to the next sequential values. */
-  for(axom::IndexType i = 0; i < buffer_size; ++i)
+  for(axom::IndexType i = 0; i < buffer_size * num_components; ++i)
   {
-    buffer[i] = i + buffer_size;
+    buffer[i] = i + (buffer_size * num_components);
   }
 
   /* Set the second half of the tuples in the MCArray to the new sequential values
    * in buffer. */
-  v.set(buffer, buffer_size, buffer_size);
+  v.set(buffer, buffer_size * num_components, buffer_size);
 
   /* Check the MCArray metadata. */
   EXPECT_EQ(capacity, v.capacity());
-  EXPECT_EQ(size, v.size());
+  EXPECT_EQ(size, v.size() / num_components);
   EXPECT_EQ(num_components, v.shape()[1]);
   EXPECT_EQ(ratio, v.getResizeRatio());
   EXPECT_EQ(data_ptr, v.data());
 
   /* Check that all the tuples in the MCArray now hold sequential values. */
-  for(axom::IndexType i = 0; i < 2 * buffer_size / num_components; ++i)
+  for(axom::IndexType i = 0; i < 2 * buffer_size; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
