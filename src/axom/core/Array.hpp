@@ -1008,8 +1008,10 @@ Array<T, DIM>::Array(Args... args)
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
-  assert(detail::allPositive({IndexType(args)...}));
-  initialize(detail::packProduct({IndexType(args)...}), 0);
+  // Intel hits internal compiler error when casting as part of function call
+  IndexType tmp_args[] = {args...};
+  assert(detail::allPositive(tmp_args));
+  initialize(detail::packProduct(tmp_args), 0);
 }
 
 template <typename T, IndexType DIM>
@@ -1311,8 +1313,10 @@ inline void Array<T, DIM>::resize(Args... args)
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
-  assert(detail::allPositive({IndexType(args)...}));
-  const auto new_num_elements = detail::packProduct({IndexType(args)...});
+  // Intel hits internal compiler error when casting as part of function call
+  IndexType tmp_args[] = {args...};
+  assert(detail::allPositive(tmp_args));
+  const auto new_num_elements = detail::packProduct(tmp_args);
 
   if(new_num_elements > m_capacity)
   {
