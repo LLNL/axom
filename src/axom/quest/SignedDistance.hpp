@@ -119,7 +119,7 @@ public:
   void computeDistances(int npts,
                         const PointType* queryPts,
                         double* out_sdist,
-                        PointType* out_closestPts) const;
+                        PointType* out_closestPts = nullptr) const;
 
   /*!
    * \brief Returns a const reference to the underlying bucket tree.
@@ -128,7 +128,6 @@ public:
   const BVHTreeType& getBVHTree() const { return m_bvh; }
 
 private:
-
   /*!
    * \brief Computes the bounding box of the given cell on the surface mesh.
    * \param [in] icell the index of the cell on the surface mesh.
@@ -158,7 +157,6 @@ namespace axom
 {
 namespace quest
 {
-
 //------------------------------------------------------------------------------
 template <int NDIMS>
 SignedDistance<NDIMS>::SignedDistance(const mint::Mesh* surfaceMesh,
@@ -227,7 +225,6 @@ inline void SignedDistance<NDIMS>::computeDistances(int npts,
   SLIC_ASSERT(m_surfaceMesh != nullptr);
   SLIC_ASSERT(queryPts != nullptr);
   SLIC_ASSERT(out_sdist != nullptr);
-  SLIC_ASSERT(out_closestPts != nullptr);
 
   using ZipPoint = primal::ZipIndexable<PointType>;
 
@@ -315,7 +312,7 @@ inline void SignedDistance<NDIMS>::computeDistances(int npts,
 
           // STEP 0: if point is outside the bounding box of the surface mesh, then
           // it is outside, just return 1.0
-          if (!(watertightInput && !boxDomain.contains(minPt)))
+          if(!(watertightInput && !boxDomain.contains(minPt)))
           {
             // CASE 1: closest point is on the face of the surface element
             VectorType N = minTri.normal();
@@ -326,8 +323,10 @@ inline void SignedDistance<NDIMS>::computeDistances(int npts,
         }
 
         out_sdist[idx] = sqrt(minSqDist) * sgn;
-        out_closestPts[idx] = minPt;
-
+        if(out_closestPts)
+        {
+          out_closestPts[idx] = minPt;
+        }
       }););
 }
 
