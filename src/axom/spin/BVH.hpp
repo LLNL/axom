@@ -183,6 +183,8 @@ public:
   using PointType = typename primal::Point<FloatType, NDIMS>;
   using RayType = typename primal::Ray<FloatType, NDIMS>;
 
+  using TraverserType = typename ImplType::TraverserType;
+
 public:
   /*!
    * \brief Default constructor.
@@ -275,6 +277,8 @@ public:
       return BoxType {};
     }
   }
+
+  TraverserType getIterator() const { return m_bvh->getIteratorImpl(); }
 
   /*!
    * \brief Finds the candidate bins that contain each of the query points.
