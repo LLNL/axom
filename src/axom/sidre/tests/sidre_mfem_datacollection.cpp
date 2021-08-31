@@ -698,6 +698,11 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
   auto reader_group_data = getGroupData(*reader_pmesh);
   EXPECT_EQ(writer_group_data, reader_group_data);
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+
+  // Make sure that orientation checks pass
+  // These can fail if the nodal GF is not set up correction for a periodic (and HO?) mesh
+  EXPECT_EQ(sdc_reader.GetMesh()->CheckElementOrientation(), 0);
+  EXPECT_EQ(sdc_reader.GetMesh()->CheckBdrElementOrientation(), 0);
 }
 
 /**
@@ -775,6 +780,24 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_large)
 {
   // 2D mesh divided into triangles
   mfem::Mesh mesh(100, 100, mfem::Element::TRIANGLE);
+  testParallelMeshReloadAllPartitionings(mesh);
+}
+
+TEST(sidre_datacollection, dc_par_reload_mesh_2D_periodic)
+{
+  // periodi2D mesh divided into triangles
+  mfem::Mesh base_mesh(10, 10, mfem::Element::Type::QUADRILATERAL, false, 1.0, 1.0);
+  // FIXME: MFEM 4.3
+  // mfem::Mesh::MakeCartesian2D(10,
+  //                             10,
+  //                             mfem::Element::Type::QUADRILATERAL,
+  //                             false,
+  //                             1.0,
+  //                             1.0);
+  std::vector<mfem::Vector> translations = {mfem::Vector({1.0, 0.0}),
+                                            mfem::Vector({0.0, 1.0})};
+  auto vertex_map = base_mesh.CreatePeriodicVertexMapping(translations);
+  auto mesh = mfem::Mesh::MakePeriodic(base_mesh, vertex_map);
   testParallelMeshReloadAllPartitionings(mesh);
 }
 

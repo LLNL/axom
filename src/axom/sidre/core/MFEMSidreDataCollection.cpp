@@ -914,6 +914,11 @@ void MFEMSidreDataCollection::Load(const std::string& path,
       mesh->NewNodes(*this->GetField(nodalGFName), false);
     }
   }
+
+  // Now we can finalize the mesh
+  const bool fix_orientation = false;
+  const bool refine = false;
+  mesh->Finalize(refine, fix_orientation);
 }
 
 void MFEMSidreDataCollection::LoadExternalData(const std::string& path)
@@ -1973,9 +1978,7 @@ public:
       }
     }
 
-    const bool fix_orientation = false;
-    const bool refine = false;
-    Finalize(refine, fix_orientation);
+    // Delay the finalization of the mesh until we can set the nodal GridFunction
   }
 
 private:
