@@ -188,9 +188,13 @@ TEST(quest_signed_distance, sphere_test)
 }
 
 //------------------------------------------------------------------------------
-TEST(quest_signed_distance, sphere_test_vector)
+template <typename ExecSpace>
+void run_vectorized_sphere_test()
 {
   using PointType = primal::Point<double, 3>;
+
+  const int curr_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   constexpr double l1norm_expected = 6.7051997372579715;
   constexpr double l2norm_expected = 2.5894400431865519;
@@ -231,11 +235,11 @@ TEST(quest_signed_distance, sphere_test_vector)
   constexpr int max_objects = 25;
   constexpr int max_levels = 10;
   constexpr bool compute_signs = true;
-  axom::quest::SignedDistance<3> signed_distance(surface_mesh,
-                                                 is_watertight,
-                                                 max_objects,
-                                                 max_levels,
-                                                 compute_signs);
+  quest::SignedDistance<3, ExecSpace> signed_distance(surface_mesh,
+                                                      is_watertight,
+                                                      max_objects,
+                                                      max_levels,
+                                                      compute_signs);
   // _quest_distance_cpp_init_end
 
   SLIC_INFO("Compute signed distance...");
@@ -284,11 +288,40 @@ TEST(quest_signed_distance, sphere_test_vector)
   EXPECT_NEAR(l2norm_expected, l2norm, TOL);
   EXPECT_NEAR(linf_expected, linf, TOL);
 
+  axom::deallocate(queryPts);
+
   delete surface_mesh;
   delete umesh;
 
+  axom::setDefaultAllocator(curr_allocator);
+
   SLIC_INFO("Done.");
 }
+
+//------------------------------------------------------------------------------
+TEST(quest_signed_distance, sphere_vec_test)
+{
+  run_vectorized_sphere_test<axom::SEQ_EXEC>();
+}
+
+//------------------------------------------------------------------------------
+#if defined(AXOM_USE_OPENMP)
+TEST(quest_signed_distance, sphere_vec_omp_test)
+{
+  run_vectorized_sphere_test<axom::OMP_EXEC>();
+}
+#endif  // AXOM_USE_OPENMP
+
+//------------------------------------------------------------------------------
+#if defined(AXOM_USE_CUDA)
+TEST(quest_signed_distance, sphere_vec_cuda_test)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+
+  run_vectorized_sphere_test<exec>();
+}
+#endif  // AXOM_USE_CUDA
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])

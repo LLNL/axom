@@ -35,6 +35,22 @@ namespace axom
 {
 namespace quest
 {
+namespace detail
+{
+struct UcdMeshData
+{
+  int shape_type;
+  const IndexType* cells_to_nodes;
+  IndexType nodes_per_cell;
+  const IndexType* cell_node_offsets;
+
+  AXOM_HOST_DEVICE int getCellNodeIDs(IndexType cellId, IndexType* outNodes) const;
+};
+
+bool SD_GetUcdMeshData(const mint::Mesh* surfaceMesh, UcdMeshData& outSurfData);
+
+}  // end namespace detail
+
 template <int NDIMS, typename ExecSpace = axom::SEQ_EXEC>
 class SignedDistance
 {
@@ -190,7 +206,7 @@ SignedDistance<NDIMS, ExecSpace>::SignedDistance(const mint::Mesh* surfaceMesh,
 
   // Build bounding volume hierarchy
   int result = m_bvh.initialize(boxes, ncells);
-  SLIC_ASSERT(result == BVH_BUILD_OK);
+  SLIC_ASSERT(result == spin::BVH_BUILD_OK);
 }
 
 //------------------------------------------------------------------------------
@@ -236,6 +252,10 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
   const BoxType boxDomain = m_boxDomain;
   const bool computeSigns = m_computeSign;
 
+  detail::UcdMeshData surfaceData;
+  bool result = detail::SD_GetUcdMeshData(m_surfaceMesh, surfaceData);
+  SLIC_CHECK_MSG(result, "Input mesh is not an unstructured surface mesh");
+
   AXOM_PERF_MARK_SECTION(
     "ComputeDistances",
     for_all<ExecSpace>(
@@ -253,7 +273,8 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
           int candidate_idx = leaf_nodes[current_node];
 
           IndexType nodes[4];
-          IndexType nnodes = m_surfaceMesh->getCellNodeIDs(candidate_idx, nodes);
+          IndexType nnodes = surfaceData.getCellNodeIDs(candidate_idx, nodes);
+          SLIC_ASSERT(nnodes <= 4);
 
           TriangleType surface_elems[2];
 

@@ -36,7 +36,8 @@ class Vector;
  * \return C resulting vector, \f$ C_i = A_i + B_i \forall i \f$
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A, const Vector<T, NDIMS>& B);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A,
+                                            const Vector<T, NDIMS>& B);
 
 /*!
  * \brief Subtracts vectors A, B and stores the result into a new vector C
@@ -234,6 +235,7 @@ public:
    * \param [in] v the vector to add.
    * \return A reference to the Vector instance after vector addition.
    */
+  AXOM_HOST_DEVICE
   Vector<T, NDIMS>& operator+=(const Vector<T, NDIMS>& v);
 
   /*!
