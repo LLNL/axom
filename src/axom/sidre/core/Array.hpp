@@ -285,7 +285,7 @@ Array<T>::Array(View* view, axom::IndexType num_tuples, axom::IndexType capacity
                   << this->m_num_elements << ") "
                   << "cannot be greater than the tuple capacity "
                   << "(" << this->m_capacity << ").");
-
+  reallocViewData(capacity);
   // sanity checks
   SLIC_ASSERT(this->m_data != nullptr);
   SLIC_ASSERT(this->m_num_elements >= 0);
