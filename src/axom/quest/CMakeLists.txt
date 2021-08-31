@@ -10,7 +10,7 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       QUEST
-                        COMPONENTS MINT PRIMAL SLAM SLIC)
+                        COMPONENTS MINT PRIMAL SLAM SLIC SPIN)
 
 #------------------------------------------------------------------------------
 # Specify headers, sources and dependencies
