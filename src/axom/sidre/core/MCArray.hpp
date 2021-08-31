@@ -291,8 +291,7 @@ MCArray<T>::MCArray(View* view,
   SLIC_ERROR_IF(num_components <= 0,
                 "Components per tuple (" << num_components << ") "
                                          << "must be greater than 0.");
-  // FIXME: Double allocation - add to constructor somehow?
-  axom::MCArray<T>::reserve(capacity);
+  reallocViewData(capacity);
   SLIC_ERROR_IF(this->m_dims[0] > this->m_capacity,
                 "Number of tuples ("
                   << this->m_dims[0] << ") "
