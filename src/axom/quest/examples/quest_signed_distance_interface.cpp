@@ -53,6 +53,16 @@ MPI_Comm global_comm;
 int mpirank;
 int numranks;
 
+const std::map<std::string, int> validExecPolicies {
+  {"seq", quest::SIGNED_DIST_EVAL_CPU},
+#ifdef AXOM_USE_OPENMP
+  {"omp", quest::SIGNED_DIST_EVAL_OPENMP},
+#endif
+#ifdef AXOM_USE_CUDA
+  {"gpu", quest::SIGNED_DIST_EVAL_GPU}
+#endif
+};
+
 /*!
  * \brief Holds command-line arguments
  */
@@ -70,6 +80,7 @@ struct Arguments
   bool use_shared {false};
   bool use_batched_query {false};
   bool ignore_signs {false};
+  int exec_space {0};
 
   void parse(int argc, char** argv, CLI::App& app)
   {
@@ -134,6 +145,19 @@ struct Arguments
                 "distance query should ignore signs")
       ->capture_default_str();
 
+    std::string pol_info =
+      "Sets execution space of the SignedDistance query.\n";
+    pol_info += "Set to \'seq\' to use sequential execution policy.";
+#ifdef AXOM_USE_OPENMP
+    pol_info += "\nSet to \'omp\' to use an OpenMP execution policy.";
+#endif
+#ifdef AXOM_USE_CUDA
+    pol_info += "\nSet to \'gpu\' to use a GPU execution policy.";
+#endif
+    app.add_option("-e, --exec_space", this->exec_space, pol_info)
+      ->capture_default_str()
+      ->transform(CLI::CheckedTransformer(validExecPolicies));
+
     app.get_formatter()->column_width(40);
 
     // could throw an exception
@@ -197,6 +221,7 @@ int main(int argc, char** argv)
   SLIC_INFO("input file: " << args.fileName);
   SLIC_INFO("max_levels=" << args.maxLevels);
   SLIC_INFO("max_occupancy=" << args.maxOccupancy);
+  SLIC_INFO("exec_space=" << args.exec_space);
   slic::flushStreams();
 
   timer.start();
@@ -205,6 +230,7 @@ int main(int argc, char** argv)
   quest::signed_distance_set_max_levels(args.maxLevels);
   quest::signed_distance_set_max_occupancy(args.maxOccupancy);
   quest::signed_distance_set_compute_signs(!args.ignore_signs);
+  bool spaceSet = quest::signed_distance_set_execution_space(args.exec_space);
   // _quest_distance_interface_init_start
   int rc = quest::signed_distance_init(args.fileName, global_comm);
   // _quest_distance_interface_init_end

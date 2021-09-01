@@ -137,8 +137,9 @@ public:
    */
   double computeDistance(const PointType& queryPnt) const;
 
+  template <typename PointIndexable>
   void computeDistances(int npts,
-                        const PointType* queryPts,
+                        PointIndexable queryPts,
                         double* out_sdist,
                         PointType* out_closestPts = nullptr) const;
 
@@ -245,14 +246,14 @@ inline double SignedDistance<NDIMS, ExecSpace>::computeDistance(
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace>
+template <typename PointIndexable>
 inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
   int npts,
-  const PointType* queryPts,
+  PointIndexable queryPts,
   double* out_sdist,
   PointType* out_closestPts) const
 {
   SLIC_ASSERT(m_surfaceMesh != nullptr);
-  SLIC_ASSERT(queryPts != nullptr);
   SLIC_ASSERT(out_sdist != nullptr);
 
   // Get a device-useable iterator
