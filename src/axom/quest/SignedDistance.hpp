@@ -59,7 +59,19 @@ public:
   using VectorType = axom::primal::Vector<double, NDIMS>;
   using TriangleType = axom::primal::Triangle<double, NDIMS>;
   using BoxType = axom::primal::BoundingBox<double, NDIMS>;
+  using ZipPoint = axom::primal::ZipIndexable<PointType>;
   using BVHTreeType = axom::spin::BVH<NDIMS, ExecSpace>;
+
+private:
+  struct MinCandidate
+  {
+    double minSqDist =
+      numerics::floating_point_limits<double>::max();  // Squared distance to query point
+    PointType minPt;      // Closest point on element
+    int minLoc;           // Location of closest point on element
+    int minElem;          // Closest element index in mesh
+    TriangleType minTri;  // The actual cell element
+  };
 
 public:
   /*!
@@ -145,6 +157,17 @@ private:
    * \pre icell >= 0 && icell < m_surfaceMesh->getNumberOfCells()
    */
   BoxType getCellBoundingBox(axom::IndexType icell);
+
+  AXOM_HOST_DEVICE static void checkCandidate(const PointType& qpt,
+                                              MinCandidate& curr_min,
+                                              IndexType cellId,
+                                              const detail::UcdMeshData& mesh,
+                                              ZipPoint mesh_pts);
+
+  AXOM_HOST_DEVICE static double computeSign(const PointType& qpt,
+                                             const MinCandidate& curr_min,
+                                             const detail::UcdMeshData& mesh,
+                                             ZipPoint mesh_pts);
 
 private:
   bool m_isInputWatertight;        /*!< indicates if input is watertight     */
@@ -232,8 +255,6 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
   SLIC_ASSERT(queryPts != nullptr);
   SLIC_ASSERT(out_sdist != nullptr);
 
-  using ZipPoint = primal::ZipIndexable<PointType>;
-
   // Get a device-useable iterator
   auto it = m_bvh.getIterator();
 
@@ -263,54 +284,17 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
       AXOM_LAMBDA(int32 idx) {
         PointType qpt = queryPts[idx];
 
-        double minSqDist = numerics::floating_point_limits<double>::max();
-        PointType minPt;
-        int minLoc;
-        int minElem;
-        TriangleType minTri;
+        MinCandidate curr_min {};
 
         auto searchMinDist = [&](int32 current_node, const int32* leaf_nodes) {
           int candidate_idx = leaf_nodes[current_node];
 
-          IndexType nodes[4];
-          IndexType nnodes = surfaceData.getCellNodeIDs(candidate_idx, nodes);
-          SLIC_ASSERT(nnodes <= 4);
-
-          TriangleType surface_elems[2];
-
-          int num_candidates = 1;
-          surface_elems[0] = TriangleType {surf_pts[nodes[0]],
-                                           surf_pts[nodes[1]],
-                                           surf_pts[nodes[2]]};
-
-          if(nnodes == 4)
-          {
-            num_candidates = 2;
-            surface_elems[1] = TriangleType {surf_pts[nodes[0]],
-                                             surf_pts[nodes[2]],
-                                             surf_pts[nodes[3]]};
-          }
-
-          for(int ei = 0; ei < num_candidates; ei++)
-          {
-            int candidate_loc;
-            PointType candidate_pt =
-              axom::primal::closest_point(qpt, surface_elems[ei], &candidate_loc);
-            double sq_dist = axom::primal::squared_distance(qpt, candidate_pt);
-            if(sq_dist < minSqDist)
-            {
-              minSqDist = sq_dist;
-              minPt = candidate_pt;
-              minLoc = candidate_loc;
-              minElem = candidate_idx;
-              minTri = surface_elems[ei];
-            }
-          }
+          checkCandidate(qpt, curr_min, candidate_idx, surfaceData, surf_pts);
         };
 
         auto traversePredicate = [&](const PointType& p,
                                      const BoxType& bb) -> bool {
-          return axom::primal::squared_distance(p, bb) <= minSqDist;
+          return axom::primal::squared_distance(p, bb) <= curr_min.minSqDist;
         };
 
         // Traverse the tree, searching for the point with minimum distance.
@@ -319,24 +303,18 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
         double sgn = 1.0;
         if(computeSigns)
         {
-          //TODO
-
           // STEP 0: if point is outside the bounding box of the surface mesh, then
           // it is outside, just return 1.0
-          if(!(watertightInput && !boxDomain.contains(minPt)))
+          if(!(watertightInput && !boxDomain.contains(curr_min.minPt)))
           {
-            // CASE 1: closest point is on the face of the surface element
-            VectorType N = minTri.normal();
-            VectorType r(minPt, qpt);
-            double dotprod = r.dot(N);
-            sgn = (dotprod >= 0.0) ? 1.0 : -1.0;
+            sgn = computeSign(qpt, curr_min, surfaceData, surf_pts);
           }
         }
 
-        out_sdist[idx] = sqrt(minSqDist) * sgn;
+        out_sdist[idx] = sqrt(curr_min.minSqDist) * sgn;
         if(out_closestPts)
         {
-          out_closestPts[idx] = minPt;
+          out_closestPts[idx] = curr_min.minPt;
         }
       }););
 }
@@ -375,6 +353,68 @@ SignedDistance<NDIMS, ExecSpace>::getCellBoundingBox(axom::IndexType icell)
   delete[] cellIds;
 
   return (bb);
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace>
+inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
+  const PointType& qpt,
+  MinCandidate& curr_min,
+  IndexType cellId,
+  const detail::UcdMeshData& mesh,
+  ZipPoint mesh_pts)
+{
+  IndexType nodes[4];
+  IndexType nnodes = mesh.getCellNodeIDs(cellId, nodes);
+  SLIC_ASSERT(nnodes <= 4);
+
+  TriangleType surface_elems[2];
+
+  int num_candidates = 1;
+  surface_elems[0] =
+    TriangleType {mesh_pts[nodes[0]], mesh_pts[nodes[1]], mesh_pts[nodes[2]]};
+
+  if(nnodes == 4)
+  {
+    num_candidates = 2;
+    surface_elems[1] =
+      TriangleType {mesh_pts[nodes[0]], mesh_pts[nodes[2]], mesh_pts[nodes[3]]};
+  }
+
+  for(int ei = 0; ei < num_candidates; ei++)
+  {
+    int candidate_loc;
+    PointType candidate_pt =
+      axom::primal::closest_point(qpt, surface_elems[ei], &candidate_loc);
+    double sq_dist = axom::primal::squared_distance(qpt, candidate_pt);
+    if(sq_dist < curr_min.minSqDist)
+    {
+      curr_min.minSqDist = sq_dist;
+      curr_min.minPt = candidate_pt;
+      curr_min.minLoc = candidate_loc;
+      curr_min.minElem = cellId;
+      curr_min.minTri = surface_elems[ei];
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace>
+inline double SignedDistance<NDIMS, ExecSpace>::computeSign(
+  const PointType& qpt,
+  const MinCandidate& curr_min,
+  const detail::UcdMeshData& mesh,
+  ZipPoint mesh_pts)
+{
+  // TODO
+
+  double sgn = 1.0;
+  // CASE 1: closest point is on the face of the surface element
+  VectorType N = curr_min.minTri.normal();
+  VectorType r(curr_min.minPt, qpt);
+  double dotprod = r.dot(N);
+  sgn = (dotprod >= 0.0) ? 1.0 : -1.0;
+  return sgn;
 }
 
 }  // end namespace quest
