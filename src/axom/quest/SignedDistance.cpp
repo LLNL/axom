@@ -27,26 +27,24 @@ AXOM_HOST_DEVICE mint::CellType UcdMeshData::getCellType(IndexType cellId) const
   }
 }
 
-AXOM_HOST_DEVICE int UcdMeshData::getCellNodeIDs(IndexType cellId,
-                                                 IndexType* outNodes) const
+AXOM_HOST_DEVICE const IndexType* UcdMeshData::getCellNodeIDs(IndexType cellId,
+                                                              int& nnodes) const
 {
-  SLIC_ASSERT(outNodes != nullptr);
-  int cellBegin, nelems;
+  SLIC_ASSERT(cells_to_nodes != nullptr);
+  int cellBegin;
   if(shape_type == mint::SINGLE_SHAPE)
   {
+    SLIC_ASSERT(nodes_per_cell != -1);
     cellBegin = cellId * nodes_per_cell;
-    nelems = nodes_per_cell;
+    nnodes = nodes_per_cell;
   }
   else
   {
+    SLIC_ASSERT(cell_node_offsets != nullptr);
     cellBegin = cell_node_offsets[cellId];
-    nelems = cell_node_offsets[cellId + 1] - cell_node_offsets[cellId];
+    nnodes = cell_node_offsets[cellId + 1] - cell_node_offsets[cellId];
   }
-  for(int ie = 0; ie < nelems; ie++)
-  {
-    outNodes[ie] = cells_to_nodes[cellBegin + ie];
-  }
-  return nelems;
+  return cells_to_nodes + cellBegin;
 }
 
 bool SD_GetUcdMeshData(const mint::Mesh* surfaceMesh, UcdMeshData& outSurfData)

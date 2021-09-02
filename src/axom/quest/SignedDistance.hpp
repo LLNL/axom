@@ -48,7 +48,8 @@ struct UcdMeshData
 
   AXOM_HOST_DEVICE mint::CellType getCellType(IndexType cellId) const;
 
-  AXOM_HOST_DEVICE int getCellNodeIDs(IndexType cellId, IndexType* outNodes) const;
+  AXOM_HOST_DEVICE const IndexType* getCellNodeIDs(IndexType cellId,
+                                                   int& nnodes) const;
 };
 
 bool SD_GetUcdMeshData(const mint::Mesh* surfaceMesh, UcdMeshData& outSurfData);
@@ -455,8 +456,8 @@ SignedDistance<NDIMS, ExecSpace>::getCellBoundingBox(axom::IndexType icell,
   constexpr int MAX_NODES = 4;
 
   // Get the cell node IDs that make up the cell
-  axom::IndexType cellIds[MAX_NODES];
-  int nnodes = mesh.getCellNodeIDs(icell, cellIds);
+  int nnodes;
+  const axom::IndexType* cellIds = mesh.getCellNodeIDs(icell, nnodes);
   SLIC_ASSERT(nnodes <= MAX_NODES);
 
   // compute the cell's bounding box
@@ -479,8 +480,8 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
   const detail::UcdMeshData& mesh,
   ZipPoint meshPts)
 {
-  IndexType nodes[4];
-  IndexType nnodes = mesh.getCellNodeIDs(cellId, nodes);
+  int nnodes;
+  const IndexType* nodes = mesh.getCellNodeIDs(cellId, nnodes);
   SLIC_ASSERT(nnodes <= 4);
 
   TriangleType surface_elems[2];
