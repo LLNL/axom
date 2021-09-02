@@ -13,6 +13,20 @@ namespace quest
 {
 namespace detail
 {
+AXOM_HOST_DEVICE mint::CellType UcdMeshData::getCellType(IndexType cellId) const
+{
+  if(shape_type == mint::SINGLE_SHAPE)
+  {
+    SLIC_ASSERT(single_cell_type != mint::UNDEFINED_CELL);
+    return single_cell_type;
+  }
+  else
+  {
+    SLIC_ASSERT(cell_types != nullptr);
+    return cell_types[cellId];
+  }
+}
+
 AXOM_HOST_DEVICE int UcdMeshData::getCellNodeIDs(IndexType cellId,
                                                  IndexType* outNodes) const
 {
@@ -44,6 +58,7 @@ bool SD_GetUcdMeshData(const mint::Mesh* surfaceMesh, UcdMeshData& outSurfData)
   {
     auto pSingleSurfMesh = static_cast<const SingleShapeMesh*>(surfaceMesh);
     outSurfData.shape_type = mint::SINGLE_SHAPE;
+    outSurfData.single_cell_type = pSingleSurfMesh->getCellType();
     outSurfData.cells_to_nodes = pSingleSurfMesh->getCellNodesArray();
     outSurfData.nodes_per_cell = pSingleSurfMesh->getNumberOfCellNodes();
     outSurfData.cell_node_offsets = nullptr;
@@ -52,6 +67,7 @@ bool SD_GetUcdMeshData(const mint::Mesh* surfaceMesh, UcdMeshData& outSurfData)
   {
     auto pMixSurfMesh = static_cast<const MixedShapeMesh*>(surfaceMesh);
     outSurfData.shape_type = mint::MIXED_SHAPE;
+    outSurfData.cell_types = pMixSurfMesh->getCellTypesArray();
     outSurfData.cells_to_nodes = pMixSurfMesh->getCellNodesArray();
     outSurfData.nodes_per_cell = -1;
     outSurfData.cell_node_offsets = pMixSurfMesh->getCellNodesOffsetsArray();

@@ -40,9 +40,13 @@ namespace detail
 struct UcdMeshData
 {
   int shape_type;
+  mint::CellType single_cell_type;
+  const mint::CellType* cell_types;
   const IndexType* cells_to_nodes;
   IndexType nodes_per_cell;
   const IndexType* cell_node_offsets;
+
+  AXOM_HOST_DEVICE mint::CellType getCellType(IndexType cellId) const;
 
   AXOM_HOST_DEVICE int getCellNodeIDs(IndexType cellId, IndexType* outNodes) const;
 };
@@ -89,6 +93,14 @@ public:
                  int maxObjects,
                  int maxLevels,
                  bool computeSign = true);
+
+  /*!
+   * \brief Reinitializes a SignedDistance instance with a new surface mesh.
+   * \param [in] surfaceMesh user-supplied surface mesh.
+   * \return status true if reinitialization was successful.
+   * \pre surfaceMesh != nullptr
+   */
+  bool setMesh(const mint::Mesh* surfaceMesh);
 
   /*!
    * \brief Computes the distance of the given point to the input surface mesh.
@@ -179,11 +191,14 @@ private:
   /*!
    * \brief Computes the bounding box of the given cell on the surface mesh.
    * \param [in] icell the index of the cell on the surface mesh.
+   * \param [in] mesh the surface mesh data
+   * \param [in] meshPts the surface mesh point coordinate data
    * \return box bounding box of the cell.
-   * \pre m_surfaceMesh != nullptr
    * \pre icell >= 0 && icell < m_surfaceMesh->getNumberOfCells()
    */
-  BoxType getCellBoundingBox(axom::IndexType icell);
+  AXOM_HOST_DEVICE static BoxType getCellBoundingBox(axom::IndexType icell,
+                                                     const detail::UcdMeshData& mesh,
+                                                     ZipPoint meshPts);
 
   /*!
    * \brief Checks a given candidate surface element against a query point
@@ -251,33 +266,87 @@ SignedDistance<NDIMS, ExecSpace>::SignedDistance(const mint::Mesh* surfaceMesh,
   SLIC_ASSERT(surfaceMesh != nullptr);
   SLIC_ASSERT(maxLevels >= 1);
 
+  bool bvh_constructed = setMesh(surfaceMesh);
+  SLIC_ASSERT(bvh_constructed);
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace>
+bool SignedDistance<NDIMS, ExecSpace>::setMesh(const mint::Mesh* surfaceMesh)
+{
+  AXOM_PERF_MARK_FUNCTION("SignedDistance::setMesh");
+  SLIC_ASSERT(surfaceMesh != nullptr);
+
   m_surfaceMesh = surfaceMesh;
   const axom::IndexType ncells = m_surfaceMesh->getNumberOfCells();
   const axom::IndexType nnodes = m_surfaceMesh->getNumberOfNodes();
 
+  // Get device-usable mesh data
+  const double* xs = m_surfaceMesh->getCoordinateArray(0);
+  const double* ys = m_surfaceMesh->getCoordinateArray(1);
+  const double* zs = nullptr;
+  if(NDIMS == 3)
+  {
+    zs = m_surfaceMesh->getCoordinateArray(2);
+  }
+
+  ZipPoint surfPts {{xs, ys, zs}};
+
+  detail::UcdMeshData surfaceData;
+  bool mesh_valid = detail::SD_GetUcdMeshData(m_surfaceMesh, surfaceData);
+  AXOM_UNUSED_VAR(mesh_valid);
+  SLIC_CHECK_MSG(mesh_valid, "Input mesh is not an unstructured surface mesh");
+
   // compute bounding box of surface mesh
   // NOTE: this should be changed to an oriented bounding box in the future.
+#ifdef AXOM_USE_RAJA
+  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
+  double minInit = numerics::floating_point_limits<double>::max();
+  double maxInit = numerics::floating_point_limits<double>::lowest();
+  RAJA::ReduceMin<reduce_policy, double> xmin(minInit), ymin(minInit),
+    zmin(minInit);
+
+  RAJA::ReduceMax<reduce_policy, double> xmax(maxInit), ymax(maxInit),
+    zmax(maxInit);
+
+  for_all<ExecSpace>(
+    nnodes,
+    AXOM_LAMBDA(axom::IndexType inode) {
+      xmin.min(xs[inode]);
+      xmax.max(xs[inode]);
+
+      ymin.min(ys[inode]);
+      ymax.max(ys[inode]);
+
+      if(NDIMS == 3)
+      {
+        zmin.min(zs[inode]);
+        zmax.max(zs[inode]);
+      }
+    });
+  PointType boxMin {xmin.get(), ymin.get(), zmin.get()};
+  PointType boxMax {xmax.get(), ymax.get(), zmax.get()};
+  m_boxDomain = BoxType {boxMin, boxMax};
+#else
   for(axom::IndexType inode = 0; inode < nnodes; ++inode)
   {
-    PointType pt;
-    for(int i = 0; i < NDIMS; ++i)
-    {
-      pt[i] = m_surfaceMesh->getCoordinateArray(i)[inode];
-    }
-    m_boxDomain.addPoint(pt);
+    m_boxDomain.addPoint(surfPts[inode]);
   }
+#endif
 
   // Initialize BVH with the surface elements.
 
   BoxType* boxes = axom::allocate<BoxType>(ncells);
-  for(axom::IndexType icell = 0; icell < ncells; ++icell)
-  {
-    boxes[icell] = this->getCellBoundingBox(icell);
-  }  // END for all cells
+  for_all<ExecSpace>(
+    ncells,
+    AXOM_LAMBDA(axom::IndexType icell) {
+      boxes[icell] = getCellBoundingBox(icell, surfaceData, surfPts);
+    });
 
   // Build bounding volume hierarchy
   int result = m_bvh.initialize(boxes, ncells);
-  SLIC_ASSERT(result == spin::BVH_BUILD_OK);
+  return (result == spin::BVH_BUILD_OK);
 }
 
 //------------------------------------------------------------------------------
@@ -324,6 +393,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
 
   detail::UcdMeshData surfaceData;
   bool result = detail::SD_GetUcdMeshData(m_surfaceMesh, surfaceData);
+  AXOM_UNUSED_VAR(result);
   SLIC_CHECK_MSG(result, "Input mesh is not an unstructured surface mesh");
 
   AXOM_PERF_MARK_SECTION(
@@ -371,35 +441,31 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace>
 inline axom::primal::BoundingBox<double, NDIMS>
-SignedDistance<NDIMS, ExecSpace>::getCellBoundingBox(axom::IndexType icell)
+SignedDistance<NDIMS, ExecSpace>::getCellBoundingBox(axom::IndexType icell,
+                                                     const detail::UcdMeshData& mesh,
+                                                     ZipPoint meshPts)
 {
-  // Sanity checks
-  SLIC_ASSERT(m_surfaceMesh != nullptr);
-  SLIC_ASSERT(icell >= 0 && icell < m_surfaceMesh->getNumberOfCells());
-
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.
-  const mint::CellType cellType = m_surfaceMesh->getCellType(icell);
+  const mint::CellType cellType = mesh.getCellType(icell);
   SLIC_ASSERT(cellType == mint::TRIANGLE || cellType == mint::QUAD ||
               cellType == mint::SEGMENT);
-  const int nnodes = axom::mint::getCellInfo(cellType).num_nodes;
+
+  // If another shape is supported, you might need to increase this number.
+  constexpr int MAX_NODES = 4;
 
   // Get the cell node IDs that make up the cell
-  axom::IndexType* cellIds = new axom::IndexType[nnodes];
-  m_surfaceMesh->getCellNodeIDs(icell, cellIds);
+  axom::IndexType cellIds[MAX_NODES];
+  int nnodes = mesh.getCellNodeIDs(icell, cellIds);
+  SLIC_ASSERT(nnodes <= MAX_NODES);
 
   // compute the cell's bounding box
   BoxType bb;
-  PointType pt;
 
   for(int i = 0; i < nnodes; ++i)
   {
-    m_surfaceMesh->getNode(cellIds[i], pt.data());
-    bb.addPoint(pt);
+    bb.addPoint(meshPts[cellIds[i]]);
   }  // END for all cell nodes
-
-  // clean up all dynamically allocated memory
-  delete[] cellIds;
 
   return (bb);
 }
