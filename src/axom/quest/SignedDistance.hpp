@@ -67,7 +67,7 @@ private:
   {
     double minSqDist =
       numerics::floating_point_limits<double>::max();  // Squared distance to query point
-    PointType minPt{};      // Closest point on element
+    PointType minPt {};   // Closest point on element
     int minLoc;           // Location of closest point on element
     int minElem;          // Closest element index in mesh
     TriangleType minTri;  // The actual cell element
