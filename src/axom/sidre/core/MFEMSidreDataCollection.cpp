@@ -901,24 +901,6 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     UpdateStateFromDS();
     UpdateMeshAndFieldsFromDS();
   }
-
-  // Set the mesh nodal grid function when present
-  const std::string gfPath =
-    fmt::format("topologies/{}/grid_function", s_mesh_topology_name);
-  if(GetBPGroup()->hasView(gfPath))
-  {
-    const std::string nodalGFName = GetBPGroup()->getView(gfPath)->getString();
-    if(this->HasField(nodalGFName))
-    {
-      this->SetMeshNodesName(nodalGFName);
-      mesh->NewNodes(*this->GetField(nodalGFName), false);
-    }
-  }
-
-  // Now we can finalize the mesh
-  const bool fix_orientation = false;
-  const bool refine = false;
-  mesh->Finalize(refine, fix_orientation);
 }
 
 void MFEMSidreDataCollection::LoadExternalData(const std::string& path)
@@ -958,6 +940,40 @@ void MFEMSidreDataCollection::UpdateStateToDS()
     m_bp_index_grp->getView("state/cycle")->setScalar(GetCycle());
     m_bp_index_grp->getView("state/time")->setScalar(time);
   }
+}
+
+void MFEMSidreDataCollection::UpdateMeshAndFieldsFromDS()
+{
+  // 1. Start by constructing the mesh
+  reconstructMesh();
+
+  // 2. Set the mesh nodal grid function when present
+  // QUESTION: Does this logic only apply when we own the datastore (i.e., when we know where things are)
+  // or should we unconditionally run this logic whenever we Load()?
+  const std::string gfPath =
+    fmt::format("topologies/{}/grid_function", s_mesh_topology_name);
+  if(GetBPGroup()->hasView(gfPath))
+  {
+    const std::string nodalGFName = GetBPGroup()->getView(gfPath)->getString();
+    Group* fields_grp = m_bp_grp->getGroup("fields");
+    if(fields_grp->hasGroup(nodalGFName))
+    {
+      reconstructField(fields_grp->getGroup(nodalGFName));
+      if(this->HasField(nodalGFName))
+      {
+        this->SetMeshNodesName(nodalGFName);
+        mesh->NewNodes(*this->GetField(nodalGFName), false);
+      }
+    }
+  }
+
+  // 3. Now we can finalize the mesh
+  const bool fix_orientation = false;
+  const bool refine = false;
+  mesh->Finalize(refine, fix_orientation);
+
+  // 4. And then finally reconstruct the remaining fields
+  reconstructFields();
 }
 
 void MFEMSidreDataCollection::PrepareToSave()
@@ -2402,6 +2418,116 @@ void MFEMSidreDataCollection::reconstructMesh()
   mesh = m_owned_mesh.get();
 }
 
+void MFEMSidreDataCollection::reconstructField(Group* field_grp)
+{
+  // Filter out the non-user-registered attribute fields
+  if(!field_grp->hasView("association"))
+  {
+    int vdim = 1;  // The default
+    // GridFunction vs QuadratureFunction
+    bool is_gridfunc = true;
+    // FiniteElementCollection/QuadratureSpace construction
+    const std::string basis_name = field_grp->getView("basis")->getString();
+    // Check if it's a QuadratureFunction
+    if(basis_name.find("QF") == 0 && (m_quadspaces.count(basis_name) == 0))
+    {
+      // The vdim is being overwritten here with the value in the basis string so we
+      // can correctly construct the QuadratureFunction
+      m_quadspaces[basis_name] = std::unique_ptr<mfem::QuadratureSpace>(
+        detail::NewQuadratureSpace(basis_name, mesh, vdim));
+      is_gridfunc = false;
+    }
+    // Only need to create a new FEColl if one doesn't already exist
+    else if(m_fecolls.count(basis_name) == 0)
+    {
+      m_fecolls[basis_name] = std::unique_ptr<mfem::FiniteElementCollection>(
+        mfem::FiniteElementCollection::New(basis_name.c_str()));
+    }
+
+    View* value_view = nullptr;
+    auto ordering = mfem::Ordering::byNODES;  // The default
+    // Scalar grid function
+    if(field_grp->hasView("values"))
+    {
+      value_view = field_grp->getView("values");
+    }
+
+    // Vector grid function
+    else if(field_grp->hasGroup("values"))
+    {
+      // Sufficient to use address of first component as data is interleaved
+      value_view = field_grp->getGroup("values")->getView("x0");
+      vdim = field_grp->getGroup("values")->getNumViews();
+      if(value_view->getStride() == static_cast<axom::sidre::IndexType>(vdim))
+      {
+        ordering = mfem::Ordering::byVDIM;
+      }
+    }
+    else
+    {
+      SLIC_ERROR("Cannot reconstruct grid function - field values not found");
+    }
+
+    // Only need to create a new FESpace if one doesn't already exist
+    if(is_gridfunc && (m_fespaces.count(basis_name) == 0))
+    {
+      // FiniteElementSpace - mesh ptr and FEColl ptr
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+      auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+      if(parmesh)
+      {
+        m_fespaces[basis_name] = std::unique_ptr<mfem::ParFiniteElementSpace>(
+          new mfem::ParFiniteElementSpace(parmesh,
+                                          m_fecolls.at(basis_name).get(),
+                                          vdim,
+                                          ordering));
+      }
+      else
+  #endif
+      {
+        m_fespaces[basis_name] = std::unique_ptr<mfem::FiniteElementSpace>(
+          new mfem::FiniteElementSpace(mesh,
+                                       m_fecolls.at(basis_name).get(),
+                                       vdim,
+                                       ordering));
+      }
+    }
+
+    double* values = value_view->getData();
+
+    if(is_gridfunc)
+    {
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+      auto parfes = dynamic_cast<mfem::ParFiniteElementSpace*>(
+        m_fespaces.at(basis_name).get());
+      if(parfes)
+      {
+        m_owned_gridfuncs.emplace_back(new mfem::ParGridFunction(parfes, values));
+      }
+      else
+  #endif
+      {
+        m_owned_gridfuncs.emplace_back(
+          new mfem::GridFunction(m_fespaces.at(basis_name).get(), values));
+      }
+
+      // Register a non-owning pointer with the base subobject
+      DataCollection::RegisterField(field_grp->getName(),
+                                    m_owned_gridfuncs.back().get());
+    }
+    else
+    {
+      m_owned_quadfuncs.emplace_back(
+        new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(),
+                                     values,
+                                     vdim));
+      // Register a non-owning pointer with the base subobject
+      DataCollection::RegisterQField(field_grp->getName(),
+                                     m_owned_quadfuncs.back().get());
+    }
+  }
+}
+
 void MFEMSidreDataCollection::reconstructFields()
 {
   sidre::Group* f = m_bp_grp->getGroup("fields");
@@ -2409,112 +2535,10 @@ void MFEMSidreDataCollection::reconstructFields()
       idx = f->getNextValidGroupIndex(idx))
   {
     Group* field_grp = f->getGroup(idx);
-    // Filter out the non-user-registered attribute fields
-    if(!field_grp->hasView("association"))
+    // The nodal grid function will already have been reconstructed
+    if(field_grp->getName() != m_meshNodesGFName)
     {
-      int vdim = 1;  // The default
-      // GridFunction vs QuadratureFunction
-      bool is_gridfunc = true;
-      // FiniteElementCollection/QuadratureSpace construction
-      const std::string basis_name = field_grp->getView("basis")->getString();
-      // Check if it's a QuadratureFunction
-      if(basis_name.find("QF") == 0 && (m_quadspaces.count(basis_name) == 0))
-      {
-        // The vdim is being overwritten here with the value in the basis string so we
-        // can correctly construct the QuadratureFunction
-        m_quadspaces[basis_name] = std::unique_ptr<mfem::QuadratureSpace>(
-          detail::NewQuadratureSpace(basis_name, mesh, vdim));
-        is_gridfunc = false;
-      }
-      // Only need to create a new FEColl if one doesn't already exist
-      else if(m_fecolls.count(basis_name) == 0)
-      {
-        m_fecolls[basis_name] = std::unique_ptr<mfem::FiniteElementCollection>(
-          mfem::FiniteElementCollection::New(basis_name.c_str()));
-      }
-
-      View* value_view = nullptr;
-      auto ordering = mfem::Ordering::byNODES;  // The default
-      // Scalar grid function
-      if(field_grp->hasView("values"))
-      {
-        value_view = field_grp->getView("values");
-      }
-
-      // Vector grid function
-      else if(field_grp->hasGroup("values"))
-      {
-        // Sufficient to use address of first component as data is interleaved
-        value_view = field_grp->getGroup("values")->getView("x0");
-        vdim = field_grp->getGroup("values")->getNumViews();
-        if(value_view->getStride() == static_cast<axom::sidre::IndexType>(vdim))
-        {
-          ordering = mfem::Ordering::byVDIM;
-        }
-      }
-      else
-      {
-        SLIC_ERROR("Cannot reconstruct grid function - field values not found");
-      }
-
-      // Only need to create a new FESpace if one doesn't already exist
-      if(is_gridfunc && (m_fespaces.count(basis_name) == 0))
-      {
-        // FiniteElementSpace - mesh ptr and FEColl ptr
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-        auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
-        if(parmesh)
-        {
-          m_fespaces[basis_name] = std::unique_ptr<mfem::ParFiniteElementSpace>(
-            new mfem::ParFiniteElementSpace(parmesh,
-                                            m_fecolls.at(basis_name).get(),
-                                            vdim,
-                                            ordering));
-        }
-        else
-  #endif
-        {
-          m_fespaces[basis_name] = std::unique_ptr<mfem::FiniteElementSpace>(
-            new mfem::FiniteElementSpace(mesh,
-                                         m_fecolls.at(basis_name).get(),
-                                         vdim,
-                                         ordering));
-        }
-      }
-
-      double* values = value_view->getData();
-
-      if(is_gridfunc)
-      {
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-        auto parfes = dynamic_cast<mfem::ParFiniteElementSpace*>(
-          m_fespaces.at(basis_name).get());
-        if(parfes)
-        {
-          m_owned_gridfuncs.emplace_back(
-            new mfem::ParGridFunction(parfes, values));
-        }
-        else
-  #endif
-        {
-          m_owned_gridfuncs.emplace_back(
-            new mfem::GridFunction(m_fespaces.at(basis_name).get(), values));
-        }
-
-        // Register a non-owning pointer with the base subobject
-        DataCollection::RegisterField(field_grp->getName(),
-                                      m_owned_gridfuncs.back().get());
-      }
-      else
-      {
-        m_owned_quadfuncs.emplace_back(
-          new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(),
-                                       values,
-                                       vdim));
-        // Register a non-owning pointer with the base subobject
-        DataCollection::RegisterQField(field_grp->getName(),
-                                       m_owned_quadfuncs.back().get());
-      }
+      reconstructField(field_grp);
     }
   }
 }

@@ -650,7 +650,8 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
 {
   mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh, nullptr, part_method);
 
-  mfem::H1_FECollection fec(1, base_mesh.Dimension());
+  // Use second-order elements to ensure that the nodal gridfunction gets set up properly as well
+  mfem::H1_FECollection fec(2, base_mesh.Dimension());
   mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
 
   // The mesh must be owned by Sidre to properly manage data in case of
