@@ -40,5 +40,5 @@ There are several other utility functions.  Some are numerical functions such as
 variations on ``clamp`` (ensure a variable is restricted to a given range) and
 ``swap`` (exchange the values of two variables).  There are also functions for
 testing values with tolerances, such as ``isNearlyEqual`` and
-``isNearlyEqualRelative``.  There is also ``processAbort``, to gracefully end an
-application.  For details on all these, please see the API documentation.
+``isNearlyEqualRelative``.  There is also ``processAbort``, to gracefully exit 
+an application.  For details on all these, please see the API documentation.
