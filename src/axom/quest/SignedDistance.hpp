@@ -76,6 +76,9 @@ private:
     int minLoc;           // Location of closest point on element
     int minElem;          // Closest element index in mesh
     TriangleType minTri;  // The actual cell element
+
+    VectorType sumNormals {};  // The normal if the closest point is on an edge
+    VectorType sumNormalsAngWt {};  // The normal if the closest point is a node
   };
 
 public:
@@ -210,12 +213,15 @@ private:
    * \param [in] cellId the surface element ID to evaluate
    * \param [in] mesh the surface mesh data
    * \param [in] meshPts the surface mesh point coordinate data
+   * \param [in] computeSign if true, will compute normals for the minimum
+   *  candidate to use in determining sign
    */
   AXOM_HOST_DEVICE static void checkCandidate(const PointType& qpt,
                                               MinCandidate& currMin,
                                               IndexType cellId,
                                               const detail::UcdMeshData& mesh,
-                                              ZipPoint meshPts);
+                                              ZipPoint meshPts,
+                                              bool computeSign);
 
   /*!
    * \brief Computes the sign of the given query point given the closest point
@@ -409,7 +415,12 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
         auto searchMinDist = [&](int32 current_node, const int32* leaf_nodes) {
           int candidate_idx = leaf_nodes[current_node];
 
-          checkCandidate(qpt, curr_min, candidate_idx, surfaceData, surf_pts);
+          checkCandidate(qpt,
+                         curr_min,
+                         candidate_idx,
+                         surfaceData,
+                         surf_pts,
+                         computeSigns);
         };
 
         auto traversePredicate = [&](const PointType& p,
@@ -478,7 +489,8 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
   MinCandidate& currMin,
   IndexType cellId,
   const detail::UcdMeshData& mesh,
-  ZipPoint meshPts)
+  ZipPoint meshPts,
+  bool computeNormal)
 {
   int nnodes;
   const IndexType* nodes = mesh.getCellNodeIDs(cellId, nnodes);
@@ -510,6 +522,33 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
       currMin.minLoc = candidate_loc;
       currMin.minElem = cellId;
       currMin.minTri = surface_elems[ei];
+
+      currMin.sumNormals = VectorType {};
+      currMin.sumNormalsAngWt = VectorType {};
+    }
+    if(computeNormal && currMin.minLoc < TriangleType::NUM_TRI_VERTS &&
+       utilities::isNearlyEqual(sq_dist, currMin.minSqDist))
+    {
+      VectorType norm = surface_elems[ei].normal();
+
+      // 0 = closest point on edge
+      // 1 = closest point on vertex
+      // 2 = closest point on face
+      int cpt_type = (candidate_loc + 3) / 3;
+
+      if(cpt_type == 0)
+      {
+        // Candidate closest point is on an edge - add the normal of a
+        // potentially-adjacent face
+        currMin.sumNormals += norm;
+      }
+      else if(cpt_type == 1 && !surface_elems[ei].degenerate())
+      {
+        // Candidate closest point is on a vertex - add the angle-weighted
+        // normal of a face potentially sharing a vertex
+        double alpha = surface_elems[ei].angle(candidate_loc);
+        currMin.sumNormalsAngWt += (norm.unitVector() * alpha);
+      }
     }
   }
 }
@@ -522,11 +561,30 @@ inline double SignedDistance<NDIMS, ExecSpace>::computeSign(
   const detail::UcdMeshData& mesh,
   ZipPoint meshPts)
 {
-  // TODO
-
   double sgn = 1.0;
-  // CASE 1: closest point is on the face of the surface element
-  VectorType N = currMin.minTri.normal();
+  // STEP 1: Select the pseudo-normal N at the closest point to calculate the
+  // sign.
+  // There are effectively 3 cases based on the location of the closest point.
+  VectorType N;
+  if(currMin.minLoc >= TriangleType::NUM_TRI_VERTS)
+  {
+    // CASE 1: closest point is on the face of the surface element
+    N = currMin.minTri.normal();
+  }
+  else if(currMin.minLoc < 0)
+  {
+    // CASE 2: closest point is on an edge, use sum of normals of equidistant
+    // faces
+    N = currMin.sumNormals;
+  }
+  else
+  {
+    // CASE 3: closest point is on a node, use angle-weighted pseudo-normal
+    N = currMin.sumNormalsAngWt;
+  }
+  // STEP 2: Given the pseudo-normal, N, and the vector r from the closest point
+  // to the query point, compute the sign by checking the sign of their dot
+  // product.
   VectorType r(currMin.minPt, qpt);
   double dotprod = r.dot(N);
   sgn = (dotprod >= 0.0) ? 1.0 : -1.0;

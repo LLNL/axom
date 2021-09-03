@@ -283,6 +283,7 @@ public:
    * \return alpha the incidence angle in the range [0, pi].
    * \pre idx >= 0 && idx < NUM_TRI_VERTS
    */
+  AXOM_HOST_DEVICE
   double angle(int idx) const;
 
   /*!
