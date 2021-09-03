@@ -33,8 +33,8 @@ class NumericArray;
  * \return status true if lhs==rhs, otherwise, false.
  */
 template <typename T, int SIZE>
-bool operator==(const NumericArray<T, SIZE>& lhs,
-                const NumericArray<T, SIZE>& rhs);
+AXOM_HOST_DEVICE bool operator==(const NumericArray<T, SIZE>& lhs,
+                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Checks if two numeric arrays are *not* component-wise equal.

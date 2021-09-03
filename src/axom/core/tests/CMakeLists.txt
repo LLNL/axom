@@ -35,6 +35,7 @@ set(gtest_utils_tests
     utils_fileUtilities.hpp
     utils_nvtx_settings.hpp
     utils_stringUtilities.hpp
+    utils_system.hpp
     utils_utilities.hpp
     utils_about.hpp
     )
@@ -94,7 +95,7 @@ endif()
 #------------------------------------------------------------------------------
 # OpenMP GTests
 #------------------------------------------------------------------------------
-if (ENABLE_OPENMP)
+if (ENABLE_OPENMP AND AXOM_USE_RAJA)
   set( core_openmp_tests
        core_openmp_map.hpp
        )

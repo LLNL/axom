@@ -33,6 +33,7 @@ set( primal_tests
     primal_octahedron.cpp
     primal_triangle.cpp
     primal_vector.cpp
+    primal_zip.cpp
    )
 
 set(primal_test_depends axom fmt gtest)

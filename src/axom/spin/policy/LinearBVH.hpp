@@ -62,7 +62,8 @@ public:
    * \param [in] numBoxes the number of bounding boxes
    * \param [in] scaleFactor scale factor applied to each bounding box before insertion into the BVH
    */
-  void buildImpl(const BoundingBoxType* boxes,
+  template <typename BoxIndexable>
+  void buildImpl(const BoxIndexable boxes,
                  IndexType numBoxes,
                  FloatType scaleFactor,
                  int allocatorID);
@@ -116,7 +117,8 @@ private:
 };
 
 template <typename FloatType, int NDIMS, typename ExecSpace>
-void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoundingBoxType* boxes,
+template <typename BoxIndexable>
+void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
                                                        IndexType numBoxes,
                                                        FloatType scaleFactor,
                                                        int allocatorID)
@@ -219,8 +221,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   AXOM_PERF_MARK_FUNCTION("LinearBVH::findCandidatesImpl");
 
   SLIC_ERROR_IF(offsets == nullptr, "supplied null pointer for offsets!");
-  SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
-  SLIC_ERROR_IF(objs == nullptr, "supplied null pointer for test primitives!");
+  SLIC_ERROR_IF(counts == nullptr, "supplied null value for counts!");
 
   const BoundingBoxType* inner_nodes = m_inner_nodes;
   const int32* inner_node_children = m_inner_node_children;
