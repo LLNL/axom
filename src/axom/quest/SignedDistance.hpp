@@ -463,13 +463,9 @@ SignedDistance<NDIMS, ExecSpace>::getCellBoundingBox(axom::IndexType icell,
   SLIC_ASSERT(cellType == mint::TRIANGLE || cellType == mint::QUAD ||
               cellType == mint::SEGMENT);
 
-  // If another shape is supported, you might need to increase this number.
-  constexpr int MAX_NODES = 4;
-
   // Get the cell node IDs that make up the cell
   int nnodes;
   const axom::IndexType* cellIds = mesh.getCellNodeIDs(icell, nnodes);
-  SLIC_ASSERT(nnodes <= MAX_NODES);
 
   // compute the cell's bounding box
   BoxType bb;
@@ -527,7 +523,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
       currMin.sumNormalsAngWt = VectorType {};
     }
     if(computeNormal && currMin.minLoc < TriangleType::NUM_TRI_VERTS &&
-       utilities::isNearlyEqual(sq_dist, currMin.minSqDist))
+       axom::utilities::isNearlyEqual(sq_dist, currMin.minSqDist))
     {
       VectorType norm = surface_elems[ei].normal();
 
