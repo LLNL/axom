@@ -110,6 +110,11 @@ declarations:
                                        const std::string& index_path,
                                        int num_domains )
 
+  - decl: bool generateBlueprintIndex( MPI_Comm comm,
+                                       const std::string& domain_path,
+                                       const std::string& mesh_name,
+                                       const std::string& index_path);
+
   # Methods for iterating over Buffers in DataStore
 #  - decl: IndexType getFirstValidBufferIndex() const
 #  - decl: IndexType getNextValidBufferIndex(IndexType idx) const;
