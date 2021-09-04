@@ -17,11 +17,11 @@ stages:
 
 .src_workflow:
   rules:
-    - if: '$FULL_BUILD != "ON" && $CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$FULL_BUILD != "ON"'
 
 .full_workflow:
   rules:
-    - if: '$FULL_BUILD == "ON" && $CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$FULL_BUILD == "ON"'
 
 ####
 # Template
@@ -57,6 +57,5 @@ stages:
 
 # This is where jobs are included
 include:
-  - local: .gitlab/build_rzgenie.yml
-  - local: .gitlab/build_rzansel.yml
-
+  - local: .gitlab/build_ruby.yml
+  - local: .gitlab/build_lassen.yml
