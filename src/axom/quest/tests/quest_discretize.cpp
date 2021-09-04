@@ -95,8 +95,8 @@ void discretized_segment(Point2D a, Point2D b, OctType*& out)
   constexpr int ZEROTH_GEN_COUNT = 1;
   constexpr int FIRST_GEN_COUNT = 3;
   constexpr int SECOND_GEN_COUNT = 6;
-  out =
-    axom::allocate<OctType>(ZEROTH_GEN_COUNT + FIRST_GEN_COUNT + SECOND_GEN_COUNT);
+  out = axom::allocate<OctType>(ZEROTH_GEN_COUNT + FIRST_GEN_COUNT +
+                                SECOND_GEN_COUNT);
 
   // The first generation puts a triangle in the end-discs of the truncated
   // cones with vertices at 12, 4, and 8 o'clock.
@@ -423,8 +423,8 @@ void discretized_sphere(OctType*& out)
   constexpr int ZEROTH_GEN_COUNT = 1;
   constexpr int FIRST_GEN_COUNT = 8;
   constexpr int SECOND_GEN_COUNT = 32;
-  out =
-    axom::allocate<OctType>(ZEROTH_GEN_COUNT + FIRST_GEN_COUNT + SECOND_GEN_COUNT);
+  out = axom::allocate<OctType>(ZEROTH_GEN_COUNT + FIRST_GEN_COUNT +
+                                SECOND_GEN_COUNT);
 
   // First generation: one octahedron, with vertices on the unit vectors.
   NAType ihat({1., 0., 0.});
@@ -793,10 +793,7 @@ TEST(quest_discretize, to_tet_mesh)
                                           octcount);
 
   axom::mint::Mesh* mesh;
-  axom::quest::mesh_from_discretized_polyline(generated,
-                                              octcount,
-                                              segcount,
-                                              mesh);
+  axom::quest::mesh_from_discretized_polyline(generated, octcount, segcount, mesh);
   axom::mint::write_vtk(mesh, "tet_mesh.vtk");
 
   delete mesh;

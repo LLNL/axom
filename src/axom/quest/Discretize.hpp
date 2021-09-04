@@ -15,7 +15,6 @@
 
 namespace axom
 {
-
 // forward declare Mesh
 namespace mint
 {

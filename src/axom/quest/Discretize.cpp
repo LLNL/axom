@@ -26,9 +26,9 @@ namespace quest
 /* ------------------------------------------------------------ */
 /* Project a Point onto a sphere.
  */
-Point3D project_to_shape(const Point3D &p, const SphereType &sphere)
+Point3D project_to_shape(const Point3D& p, const SphereType& sphere)
 {
-  const double *ctr = sphere.getCenter();
+  const double* ctr = sphere.getCenter();
   double dist2 = primal::squared_distance(ctr, p.data(), 3);
   double dist = sqrt(dist2);
   double drat = sphere.getRadius() * dist / (dist2 + PTINY);
@@ -40,7 +40,7 @@ Point3D project_to_shape(const Point3D &p, const SphereType &sphere)
 
 /* Return an octahedron whose six points lie on the given sphere.
  */
-OctType from_sphere(const SphereType &sphere)
+OctType from_sphere(const SphereType& sphere)
 {
   NAType center(sphere.getCenter());
   NAType ihat({1., 0., 0.});
@@ -91,7 +91,7 @@ int count_sphere_octahedra(int levels)
  * octahedron, return a new oct sharing the face (s,t,u) and all other
  * faces looking "outward" toward the sphere.
  */
-OctType new_inscribed_oct(const SphereType &sphere, OctType &o, int s, int t, int u)
+OctType new_inscribed_oct(const SphereType& sphere, OctType& o, int s, int t, int u)
 {
   Point3D P = Point3D::midpoint(o[t], o[u]);
   Point3D Q = Point3D::midpoint(o[s], o[u]);
@@ -115,7 +115,7 @@ OctType new_inscribed_oct(const SphereType &sphere, OctType &o, int s, int t, in
  * This routine allocates an array pointed to by \a out.  The caller is responsible
  * to free the array.
  */
-bool discretize(const SphereType &sphere, int levels, OctType *&out, int &octcount)
+bool discretize(const SphereType& sphere, int levels, OctType*& out, int& octcount)
 {
   // Check input.  Negative radius: return false.
   if(sphere.getRadius() < 0)
@@ -188,34 +188,34 @@ using PolyhedronType = primal::Polyhedron<double, 3>;
 
 double octPolyVolume(const OctType& o)
 {
-   // Convert Octahedron into Polyhedrom
-   PolyhedronType octPoly;
-   double octVolume;
+  // Convert Octahedron into Polyhedrom
+  PolyhedronType octPoly;
+  double octVolume;
 
-   octPoly.addVertex(o[0]);
-   octPoly.addVertex(o[1]);
-   octPoly.addVertex(o[2]);
-   octPoly.addVertex(o[3]);
-   octPoly.addVertex(o[4]);
-   octPoly.addVertex(o[5]);
+  octPoly.addVertex(o[0]);
+  octPoly.addVertex(o[1]);
+  octPoly.addVertex(o[2]);
+  octPoly.addVertex(o[3]);
+  octPoly.addVertex(o[4]);
+  octPoly.addVertex(o[5]);
 
-   octPoly.addNeighbors(0, {1, 5, 4, 2});
-   octPoly.addNeighbors(1, {0, 2, 3, 5});
-   octPoly.addNeighbors(2, {0, 4, 3, 1});
-   octPoly.addNeighbors(3, {1, 2, 4, 5});
-   octPoly.addNeighbors(4, {0, 5, 3, 2});
-   octPoly.addNeighbors(5, {0, 1, 3, 4});
+  octPoly.addNeighbors(0, {1, 5, 4, 2});
+  octPoly.addNeighbors(1, {0, 2, 3, 5});
+  octPoly.addNeighbors(2, {0, 4, 3, 1});
+  octPoly.addNeighbors(3, {1, 2, 4, 5});
+  octPoly.addNeighbors(4, {0, 5, 3, 2});
+  octPoly.addNeighbors(5, {0, 1, 3, 4});
 
-   octVolume = octPoly.volume();
+  octVolume = octPoly.volume();
 
-   // Flip sign if volume is negative
-   // (expected when vertex order is reversed)
-   if(octVolume < 0)
-   {
-      octVolume = -octVolume;
-   }
+  // Flip sign if volume is negative
+  // (expected when vertex order is reversed)
+  if(octVolume < 0)
+  {
+    octVolume = -octVolume;
+  }
 
-   return octVolume;
+  return octVolume;
 }
 }  // namespace
 
@@ -231,12 +231,13 @@ int mesh_from_discretized_polyline(const OctType* octs,
   const int vertcount = 4 * tetcount;
   int octPerSeg = octcount / segcount;
   int remainderOcts = octcount % segcount;
-  SLIC_ASSERT_MSG(remainderOcts == 0,
-                  "Total octahedron count is not evenly divisible by segment count");
+  SLIC_ASSERT_MSG(
+    remainderOcts == 0,
+    "Total octahedron count is not evenly divisible by segment count");
 
   // Step 0: create the UnstructuredMesh
   mint::UnstructuredMesh<mint::SINGLE_SHAPE>* um =
-     new mint::UnstructuredMesh<mint::SINGLE_SHAPE>(3,
+    new mint::UnstructuredMesh<mint::SINGLE_SHAPE>(3,
                                                    CELL_TYPE,
                                                    vertcount,
                                                    tetcount);
@@ -247,7 +248,8 @@ int mesh_from_discretized_polyline(const OctType* octs,
   int* octidx = um->createField<int>("octahedron_index", mint::CELL_CENTERED);
   int* segidx = um->createField<int>("segment_index", mint::CELL_CENTERED);
   double* vol = um->createField<double>("octahedron_volume", mint::CELL_CENTERED);
-  double* pvol = um->createField<double>("oct_as_polyhedron_volume", mint::CELL_CENTERED);
+  double* pvol =
+    um->createField<double>("oct_as_polyhedron_volume", mint::CELL_CENTERED);
 
   // Step 2: for each oct,
   //    - split it into tets
