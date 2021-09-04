@@ -47,11 +47,11 @@ jobs:
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
       osx_gcc:
         VM_ImageName: 'macos-10.14'
-        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=OFF -DAXOM_ENABLE_INLET=OFF -DAXOM_ENABLE_KLEE=OFF'
         TEST_TARGET: 'osx_gcc'
       windows:
         VM_ImageName: 'windows-2019'
-        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=OFF -DAXOM_ENABLE_INLET=OFF -DAXOM_ENABLE_KLEE=OFF'
         TEST_TARGET: 'win_vs'
 
   pool:
