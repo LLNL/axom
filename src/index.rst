@@ -117,6 +117,7 @@ Axom has the following inter-component dependencies:
 - Mint optionally depends on Sidre
 - Quest depends on Slam, Spin, Primal, and Mint
 - Inlet depends on Sidre, Slic, and Primal
+- Klee depends on Sidre, Slic, Inlet and Primal
 
 The figure below summarizes these dependencies. Solid links indicate hard 
 dependencies; dashed links indicate optional dependencies.
