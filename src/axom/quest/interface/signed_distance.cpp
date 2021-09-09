@@ -338,7 +338,7 @@ void signed_distance_use_shared_memory(bool status)
 }
 
 //------------------------------------------------------------------------------
-bool signed_distance_set_execution_space(int exec_space)
+void signed_distance_set_execution_space(int exec_space)
 {
   SLIC_ERROR_IF(
     signed_distance_initialized(),
@@ -356,7 +356,7 @@ bool signed_distance_set_execution_space(int exec_space)
     requested_exec = Exec::OMP;
     axom::setDefaultAllocator(axom::execution_space<ExecSeq>::allocatorID());
 #else
-    return false;
+    SLIC_ERROR("Signed distance query not compiled with OpenMP support");
 #endif
   }
   else if(exec_space == SIGNED_DIST_EVAL_GPU)
@@ -365,16 +365,14 @@ bool signed_distance_set_execution_space(int exec_space)
     requested_exec = Exec::GPU;
     axom::setDefaultAllocator(axom::execution_space<ExecGPU>::allocatorID());
 #else
-    return false;
+    SLIC_ERROR("Signed distance query not compiled with GPU support");
 #endif
   }
   else
   {
-    SLIC_WARNING("Requested execution space value out of bounds");
-    return false;
+    SLIC_ERROR("Requested execution space value out of bounds");
   }
   Parameters.exec_space = requested_exec;
-  return true;
 }
 
 //------------------------------------------------------------------------------

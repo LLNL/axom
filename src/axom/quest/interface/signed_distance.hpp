@@ -232,14 +232,11 @@ void signed_distance_use_shared_memory(bool status);
  * \param [in] exec_space the execution space setting, either
  *  SIGNED_DIST_EVAL_CPU, SIGNED_DIST_EVAL_OPENMP, or SIGNED_DIST_EVAL_GPU.
  *
- * \return status true if the requested execution space could be set, false
- *  otherwise
- *
  * \note This function resets the default allocator based on the requested
  *  execution space. If a custom allocator ID is desired, set it in a call to
  *  axom::setDefaultAllocator after this call.
  */
-bool signed_distance_set_execution_space(int exec_space);
+void signed_distance_set_execution_space(int exec_space);
 
 /// @}
 
