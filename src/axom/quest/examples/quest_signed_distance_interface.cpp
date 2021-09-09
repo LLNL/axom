@@ -230,7 +230,7 @@ int main(int argc, char** argv)
   quest::signed_distance_set_max_levels(args.maxLevels);
   quest::signed_distance_set_max_occupancy(args.maxOccupancy);
   quest::signed_distance_set_compute_signs(!args.ignore_signs);
-  bool spaceSet = quest::signed_distance_set_execution_space(args.exec_space);
+  quest::signed_distance_set_execution_space(args.exec_space);
   // _quest_distance_interface_init_start
   int rc = quest::signed_distance_init(args.fileName, global_comm);
   // _quest_distance_interface_init_end
