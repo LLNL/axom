@@ -168,8 +168,8 @@ TEST(quest_signed_distance, sphere_test)
 
   l2norm = std::sqrt(l2norm);
 
-  SLIC_INFO("l1 =" << l1norm);
-  SLIC_INFO("l2 =" << l2norm);
+  SLIC_INFO("l1 = " << l1norm);
+  SLIC_INFO("l2 = " << l2norm);
   SLIC_INFO("linf = " << linf);
 
 #ifdef QUEST_SIGNED_DISTANCE_TEST_DUMP_VTK
@@ -275,8 +275,8 @@ void run_vectorized_sphere_test()
 
   l2norm = std::sqrt(l2norm);
 
-  SLIC_INFO("l1 =" << l1norm);
-  SLIC_INFO("l2 =" << l2norm);
+  SLIC_INFO("l1 = " << l1norm);
+  SLIC_INFO("l2 = " << l2norm);
   SLIC_INFO("linf = " << linf);
 
 #ifdef QUEST_SIGNED_DISTANCE_TEST_DUMP_VTK
