@@ -51,7 +51,7 @@ void demoMemoryManageBasic()
   }
 
   dyn_array_dst = axom::allocate<int>(len);
-  
+
   //Now, a copy operation. It's used exactly like memcpy -- destination, source, number of bytes.
   axom::copy(dyn_array_dst, dynamic_memory_array, sizeof(int) * len);
 
