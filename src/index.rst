@@ -107,10 +107,13 @@ Component Level Dependencies
 
 Axom has the following inter-component dependencies:
 
-- Core, Slic, and Lumberjack provide basic services to the rest of Axom and to user code 
+- Core, Slic, and Lumberjack provide basic services to the rest of Axom and to user code
+
   - Core has no dependencies, and the other modules depend on Core
   - Slic optionally depends on Lumberjack
+
 - Slam, Primal, Sidre, Spin, Inlet, Mint, and Quest all depend on Slic and Core
+
   - Inlet depends on Sidre and Primal
   - Mint optionally depends on Sidre
   - Spin depends on Primal and Slam
