@@ -582,6 +582,11 @@ inline double SignedDistance<NDIMS, ExecSpace>::computeSign(
   {
     // CASE 2: closest point is on an edge, use sum of normals of equidistant
     // faces
+    // TODO: Sometimes, the traversal fails to find the opposite face, so only
+    // a single face's normal is accumulated here. The proper solution would be
+    // to precompute edge pseudo-normals during construction time, but that
+    // would also require generating cell-to-face connectivity for the surface
+    // mesh.
     N = currMin.sumNormals;
   }
   else
