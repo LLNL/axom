@@ -7,20 +7,20 @@
 Core acceleration
 ******************************************************
 
-Axom Core provides support to ease the implementation of user applications that
-intend to support execution utilizing accelerators. In order to supply this,
-Axom provides a simple API to access memory and computation, using RAJA
-and Umpire to access accelerators.
+Axom Core provides support for user applications that target accelerators.
+Axom lets users control execution space using RAJA and memory space using Umpire.
 
 .. warning:: 
    You do need to compile with RAJA and Umpire to fully leverage this Axom functionality. 
-   While both memory management and execution spaces in Axom will operate without these tools, they will offer little.
+   While both memory management and execution spaces in Axom will operate without these 
+   tools, they will offer little.
 
-The memory management submodule offers a singular interface which allows the user to leverage either C++ memory functions or Umpire, 
+The memory management facility offers a singular interface which allows the user to leverage either C++ memory functions or Umpire, 
 depending on the availability of Umpire at compilation. It supports a simple operation set: allocate, deallocate, reallocate, and copy. 
-If Umpire is in use, an allocator can be specified -- see `Umpire documentation <https://readthedocs.org/projects/umpire>`_. for more details. Note that the fall-back to
-C++ memory functions is automatic, so one piece of code can handle standard C++ or C++ with Umpire. However, to use advanced features, such as 
-accessing unified memory, Umpire must be enabled, otherwise errors will occur at compilation.
+If Umpire is in use, an allocator can be specified -- see `Umpire documentation <https://readthedocs.org/projects/umpire>`_ 
+for more details. Note that the fall-back to C++ memory functions is automatic, so the same piece of code can handle standard C++ 
+or C++ with Umpire. However, to use advanced features, such as accessing unified memory, Umpire must be enabled, otherwise errors 
+will occur at compilation.
 
 Here is an example of using Axom’s memory management tools:
 

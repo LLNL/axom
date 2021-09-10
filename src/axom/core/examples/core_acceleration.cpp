@@ -23,20 +23,22 @@
 #include "axom/core/execution/synchronize.hpp"
 #include "axom/core/memory_management.hpp"
 
-#ifdef WIN32
-  #include "windows.h"
-void sleep(int numSeconds)
-{
-  int numMilliSecs = numSeconds * 1000;
-  Sleep(numMilliSecs);
-}
-#else
-  #include <unistd.h>  // for sleep()
-#endif
+// #ifdef WIN32
+//   #include "windows.h"
+// void sleep(int numSeconds)
+// {
+//   int numMilliSecs = numSeconds * 1000;
+//   Sleep(numMilliSecs);
+// }
+// #else
+//   #include <unistd.h>  // for sleep()
+// #endif
 
 // C/C++ includes
 #include <iostream>
 #include <vector>
+
+constexpr int N = 1000;
 
 void demoMemoryManageBasic()
 {
@@ -71,7 +73,8 @@ void demoMemoryManageBasic()
               << (dynamic_memory_array[i] == dyn_array_dst[i]) << std::endl;
   }
 
-  //Deallocate is exactly like free. Of course, we won't try to access the now deallocated memory after this:
+  //Deallocate is exactly like free. Of course, we won't try to access the now-deallocated
+  //memory after this:
   axom::deallocate(dyn_array_dst);
 
   //Reallocate is like realloc -- copies existing contents into a larger memory space.
@@ -91,13 +94,13 @@ void demoMemoryManageBasic()
 void demoAxomExecution()
 {
   // _exebasic_start
-  //This part of the code works regardless of Umpire's presence, allowing for generic use of axom::allocate in C++
-  //code.
-  int *A = axom::allocate<int>(1000);
-  int *B = axom::allocate<int>(1000);
-  int *C = axom::allocate<int>(1000);
+  //This part of the code works regardless of Umpire's presence, allowing for generic
+  //use of axom::allocate in C++ code.
+  int *A = axom::allocate<int>(N);
+  int *B = axom::allocate<int>(N);
+  int *C = axom::allocate<int>(N);
 
-  for(int i = 0; i < 1000; i++)
+  for(int i = 0; i < N; i++)
   {
     A[i] = i * 5;
     B[i] = i * 2;
@@ -107,11 +110,11 @@ void demoAxomExecution()
   //Axom provides an API for the most basic usage of RAJA, the for_all loop.
   axom::for_all<axom::SEQ_EXEC>(
     0,
-    1000,
+    N,
     AXOM_LAMBDA(axom::IndexType i) { C[i] = A[i] + B[i]; });
 
   std::cout << "Sums: " << std::endl;
-  for(int i = 0; i < 1000; i++)
+  for(int i = 0; i < N; i++)
   {
     std::cout << C[i] << " ";
     C[i] = 0;
@@ -124,17 +127,13 @@ void demoAxomExecution()
   defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   // _cudaexebasic_start
   //This example requires Umpire to be in use, and Unified memory available.
-  A = axom::allocate<int>(1000,
-                          axom::getUmpireResourceAllocatorID(
-                            umpire::resource::MemoryResourceType::Unified));
-  B = axom::allocate<int>(1000,
-                          axom::getUmpireResourceAllocatorID(
-                            umpire::resource::MemoryResourceType::Unified));
-  C = axom::allocate<int>(1000,
-                          axom::getUmpireResourceAllocatorID(
-                            umpire::resource::MemoryResourceType::Unified));
+  const int allocator_id =
+    axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified));
+  A = axom::allocate<int>(N, allocator_id);
+  B = axom::allocate<int>(N, allocator_id);
+  C = axom::allocate<int>(N, allocator_id);
 
-  for(int i = 0; i < 1000; i++)
+  for(int i = 0; i < N; i++)
   {
     A[i] = i * 5;
     B[i] = i * 2;
@@ -143,11 +142,11 @@ void demoAxomExecution()
 
   axom::for_all<axom::CUDA_EXEC<256>>(
     0,
-    1000,
+    N,
     AXOM_LAMBDA(axom::IndexType i) { C[i] = A[i] + B[i]; });
 
   std::cout << "Sums: " << std::endl;
-  for(int i = 0; i < 1000; i++)
+  for(int i = 0; i < N; i++)
   {
     std::cout << C[i] << " ";
   }
