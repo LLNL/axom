@@ -103,7 +103,7 @@ BoundingBox<T, NDIMS> merge_boxes(const BoundingBox<T, NDIMS> &l,
 
 /*!
  * \brief Creates a bounding box around a Triangle
- * \accel
+ * \accelerated
  * \param [in] tri The Triangle
  */
 template <typename T, int NDIMS>

@@ -16,7 +16,7 @@ namespace axom
 namespace numerics
 {
 /*!
- * \accel
+ * \accelerated
  * \brief Traits class for floating point types to query limit information.
  *  The floating_point_limits class is traits class providing a standardized
  *  and portable way to query the following information on either host/device:

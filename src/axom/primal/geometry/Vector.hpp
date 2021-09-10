@@ -97,7 +97,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, NDIMS>& vec);
 /// @}
 
 /*!
- * \accel
+ * \accelerated
  * \class Vector
  *
  * \brief Represents a vector, \f$ v \in \mathcal{R}^d \f$. It provides access

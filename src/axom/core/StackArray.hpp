@@ -13,7 +13,7 @@
 namespace axom
 {
 /*!
- * \accel
+ * \accelerated
  * \class StackArray
  * 
  * \brief Provides a wrapper for a compile time sized array, similar to

@@ -21,7 +21,7 @@ namespace numerics
 
 /*!
  * \brief Computes a 2X2 determinant of the given matrix.
- * \accel
+ * \accelerated
  * \param [in] a00 matrix element
  * \param [in] a01 matrix element
  * \param [in] a10 matrix element

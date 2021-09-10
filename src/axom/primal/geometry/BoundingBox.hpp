@@ -53,7 +53,7 @@ std::ostream& operator<<(std::ostream& os, const BoundingBox<T, NDIMS>& bb);
 ///@}
 
 /*!
- * \accel
+ * \accelerated
  * \class
  *
  * \brief BoundingBox represents and axis-aligned bounding box defined by

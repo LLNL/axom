@@ -167,7 +167,7 @@ struct NonChar<unsigned char>
 };
 
 /*!
- * \accel
+ * \accelerated
  * \class NumericArray
  *
  * \brief A simple statically sized array of data with component-wise operators.

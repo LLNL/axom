@@ -122,7 +122,7 @@ struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
  *     axom::deallocate( candidates );
  *
  *  \endcode
- *  \accel
+ *  \accelerated
  */
 template <int NDIMS,
           typename ExecSpace = axom::SEQ_EXEC,

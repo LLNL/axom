@@ -34,7 +34,7 @@ namespace axom
 namespace primal
 {
 /// \name Triangle Intersection Routines
-/// \accel
+/// \accelerated
 /// @{
 
 /*!
