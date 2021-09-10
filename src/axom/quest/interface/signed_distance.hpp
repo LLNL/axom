@@ -84,9 +84,13 @@ class Mesh;
 
 namespace quest
 {
-constexpr int SIGNED_DIST_EVAL_CPU = 0;
-constexpr int SIGNED_DIST_EVAL_OPENMP = 1;
-constexpr int SIGNED_DIST_EVAL_GPU = 2;
+// Signed Distance execution policies
+enum class SignedDistExec
+{
+  CPU = 0,
+  OpenMP = 1,
+  GPU = 2
+};
 
 /// \name Signed Distance Query Initialization Methods
 /// @{
@@ -229,14 +233,14 @@ void signed_distance_use_shared_memory(bool status);
  * \brief Set the execution space in which to run signed distance queries. By
  *  default this option is set to SIGNED_DIST_EVAL_CPU.
  *
- * \param [in] exec_space the execution space setting, either
- *  SIGNED_DIST_EVAL_CPU, SIGNED_DIST_EVAL_OPENMP, or SIGNED_DIST_EVAL_GPU.
+ * \param [in] exec_space the execution space setting, one of the enum values
+ *  in SignedDistExec.
  *
  * \note This function resets the default allocator based on the requested
  *  execution space. If a custom allocator ID is desired, set it in a call to
  *  axom::setDefaultAllocator after this call.
  */
-void signed_distance_set_execution_space(int exec_space);
+void signed_distance_set_execution_space(SignedDistExec execSpace);
 
 /// @}
 

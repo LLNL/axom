@@ -29,13 +29,6 @@ namespace
 constexpr int INIT_FAILED = -1;
 constexpr int INIT_SUCCESS = 0;
 
-enum class Exec
-{
-  CPU,
-  OMP,
-  GPU,
-};
-
 using ExecSeq = axom::SEQ_EXEC;
 using SignedDistance3D = SignedDistance<3>;
 using SignedDistance2D = SignedDistance<2>;
@@ -64,7 +57,7 @@ static struct parameters_t
   bool is_closed_surface; /*!< indicates if the input is a closed surface */
   bool use_shared_memory; /*!< use MPI-3 shared memory for the surface mesh */
   bool compute_sign;      /*!< indicates if sign should be computed */
-  Exec exec_space;        /*!< indicates the execution space to run in */
+  SignedDistExec exec_space; /*!< indicates the execution space to run in */
 
   /*!
    * \brief Default Constructor. Sets default values for the parameters.
@@ -77,7 +70,7 @@ static struct parameters_t
     , is_closed_surface(true)
     , use_shared_memory(false)
     , compute_sign(true)
-    , exec_space(Exec::CPU)
+    , exec_space(SignedDistExec::CPU)
   { }
 
 } Parameters;
@@ -195,7 +188,7 @@ int signed_distance_init(const mint::Mesh* m, MPI_Comm comm)
 
   switch(Parameters.exec_space)
   {
-  case Exec::CPU:
+  case SignedDistExec::CPU:
     s_query = new SignedDistance3D(s_surface_mesh,
                                    Parameters.is_closed_surface,
                                    Parameters.max_occupancy,
@@ -203,7 +196,7 @@ int signed_distance_init(const mint::Mesh* m, MPI_Comm comm)
                                    Parameters.compute_sign);
     break;
 #ifdef AXOM_USE_OPENMP
-  case Exec::OMP:
+  case SignedDistExec::OpenMP:
     s_query_omp = new SignedDistance3DOMP(s_surface_mesh,
                                           Parameters.is_closed_surface,
                                           Parameters.max_occupancy,
@@ -212,7 +205,7 @@ int signed_distance_init(const mint::Mesh* m, MPI_Comm comm)
     break;
 #endif
 #ifdef AXOM_USE_CUDA
-  case Exec::GPU:
+  case SignedDistExec::GPU:
     s_query_gpu = new SignedDistance3DGPU(s_surface_mesh,
                                           Parameters.is_closed_surface,
                                           Parameters.max_occupancy,
@@ -233,14 +226,14 @@ bool signed_distance_initialized()
 {
   switch(Parameters.exec_space)
   {
-  case Exec::CPU:
+  case SignedDistExec::CPU:
     return (s_query != nullptr);
 #ifdef AXOM_USE_OPENMP
-  case Exec::OMP:
+  case SignedDistExec::OpenMP:
     return (s_query_omp != nullptr);
 #endif
 #ifdef AXOM_USE_CUDA
-  case Exec::GPU:
+  case SignedDistExec::GPU:
     return (s_query_gpu != nullptr);
 #endif
   default:
@@ -338,31 +331,27 @@ void signed_distance_use_shared_memory(bool status)
 }
 
 //------------------------------------------------------------------------------
-void signed_distance_set_execution_space(int exec_space)
+void signed_distance_set_execution_space(SignedDistExec exec_space)
 {
   SLIC_ERROR_IF(
     signed_distance_initialized(),
     "signed distance query already initialized; setting option has no effect!");
 
-  Exec requested_exec;
-  if(exec_space == SIGNED_DIST_EVAL_CPU)
+  if(exec_space == SignedDistExec::CPU)
   {
-    requested_exec = Exec::CPU;
     axom::setDefaultAllocator(axom::execution_space<ExecSeq>::allocatorID());
   }
-  else if(exec_space == SIGNED_DIST_EVAL_OPENMP)
+  else if(exec_space == SignedDistExec::OpenMP)
   {
 #ifdef AXOM_USE_OPENMP
-    requested_exec = Exec::OMP;
     axom::setDefaultAllocator(axom::execution_space<ExecSeq>::allocatorID());
 #else
     SLIC_ERROR("Signed distance query not compiled with OpenMP support");
 #endif
   }
-  else if(exec_space == SIGNED_DIST_EVAL_GPU)
+  else if(exec_space == SignedDistExec::GPU)
   {
 #ifdef AXOM_USE_CUDA
-    requested_exec = Exec::GPU;
     axom::setDefaultAllocator(axom::execution_space<ExecGPU>::allocatorID());
 #else
     SLIC_ERROR("Signed distance query not compiled with GPU support");
@@ -372,7 +361,7 @@ void signed_distance_set_execution_space(int exec_space)
   {
     SLIC_ERROR("Requested execution space value out of bounds");
   }
-  Parameters.exec_space = requested_exec;
+  Parameters.exec_space = exec_space;
 }
 
 //------------------------------------------------------------------------------
@@ -385,16 +374,16 @@ double signed_distance_evaluate(double x, double y, double z)
   double phi = 0.0;
   switch(Parameters.exec_space)
   {
-  case Exec::CPU:
+  case SignedDistExec::CPU:
     phi = s_query->computeDistance(x, y, z);
     break;
 #ifdef AXOM_USE_OPENMP
-  case Exec::OMP:
+  case SignedDistExec::OpenMP:
     phi = s_query_omp->computeDistance(x, y, z);
     break;
 #endif
 #ifdef AXOM_USE_CUDA
-  case Exec::GPU:
+  case SignedDistExec::GPU:
     phi = s_query_gpu->computeDistance(x, y, z);
     break;
 #endif
@@ -427,16 +416,16 @@ void signed_distance_evaluate(const double* x,
 
   switch(Parameters.exec_space)
   {
-  case Exec::CPU:
+  case SignedDistExec::CPU:
     s_query->computeDistances(npoints, it, phi);
     break;
 #ifdef AXOM_USE_OPENMP
-  case Exec::OMP:
+  case SignedDistExec::OpenMP:
     s_query_omp->computeDistances(npoints, it, phi);
     break;
 #endif
 #ifdef AXOM_USE_CUDA
-  case Exec::GPU:
+  case SignedDistExec::GPU:
     s_query_gpu->computeDistances(npoints, it, phi);
     break;
 #endif

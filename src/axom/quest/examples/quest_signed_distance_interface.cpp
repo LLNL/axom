@@ -53,13 +53,13 @@ MPI_Comm global_comm;
 int mpirank;
 int numranks;
 
-const std::map<std::string, int> validExecPolicies {
-  {"seq", quest::SIGNED_DIST_EVAL_CPU},
+const std::map<std::string, quest::SignedDistExec> validExecPolicies {
+  {"seq", quest::SignedDistExec::CPU},
 #ifdef AXOM_USE_OPENMP
-  {"omp", quest::SIGNED_DIST_EVAL_OPENMP},
+  {"omp", quest::SignedDistExec::OpenMP},
 #endif
 #ifdef AXOM_USE_CUDA
-  {"gpu", quest::SIGNED_DIST_EVAL_GPU}
+  {"gpu", quest::SignedDistExec::GPU}
 #endif
 };
 
@@ -80,7 +80,7 @@ struct Arguments
   bool use_shared {false};
   bool use_batched_query {false};
   bool ignore_signs {false};
-  int exec_space {0};
+  quest::SignedDistExec exec_space;
 
   void parse(int argc, char** argv, CLI::App& app)
   {
@@ -221,7 +221,7 @@ int main(int argc, char** argv)
   SLIC_INFO("input file: " << args.fileName);
   SLIC_INFO("max_levels=" << args.maxLevels);
   SLIC_INFO("max_occupancy=" << args.maxOccupancy);
-  SLIC_INFO("exec_space=" << args.exec_space);
+  SLIC_INFO("exec_space=" << (int)args.exec_space);
   slic::flushStreams();
 
   timer.start();
