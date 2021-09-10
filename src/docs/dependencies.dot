@@ -1,16 +1,11 @@
 digraph dependencies {
-  compound=true;
-  style="rounded";
-  subgraph cluster_basic {
-    slic -> core;
-    slic -> lumberjack [style="dashed"];
-    lumberjack -> core;
-  }
-  subgraph cluster_app {
-    quest -> {slam primal mint spin};
-    mint -> sidre [style="dashed"];
-    spin -> {slam primal};
-    inlet -> {sidre primal};
-  }
-  primal -> slic [ltail=cluster_app, lhead=cluster_basic];
+  quest -> {slam primal mint spin};
+  {quest slam primal mint spin} -> {slic core};
+  mint -> sidre [style="dashed"];
+  spin -> {slam primal};
+  sidre -> {slic core};
+  slic -> core;
+  slic -> lumberjack [style="dashed"];
+  lumberjack -> core;
+  inlet -> {sidre slic primal core};
 }
