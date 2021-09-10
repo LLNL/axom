@@ -23,17 +23,6 @@
 #include "axom/core/execution/synchronize.hpp"
 #include "axom/core/memory_management.hpp"
 
-// #ifdef WIN32
-//   #include "windows.h"
-// void sleep(int numSeconds)
-// {
-//   int numMilliSecs = numSeconds * 1000;
-//   Sleep(numMilliSecs);
-// }
-// #else
-//   #include <unistd.h>  // for sleep()
-// #endif
-
 // C/C++ includes
 #include <iostream>
 #include <vector>
