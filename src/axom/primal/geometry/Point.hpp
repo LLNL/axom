@@ -162,6 +162,7 @@ public:
   /*!
    * \brief Equality comparison operator for points
    */
+  AXOM_HOST_DEVICE
   friend inline bool operator==(const Point& lhs, const Point& rhs)
   {
     return lhs.m_components == rhs.m_components;

@@ -115,6 +115,7 @@ class Vector
 {
 public:
   using PointType = Point<T, NDIMS>;
+  using CoordType = T;
 
 public:
   /*!
@@ -215,6 +216,7 @@ public:
   /*!
    * \brief Equality comparison operator for vectors.
    */
+  AXOM_HOST_DEVICE
   friend bool operator==(const Vector& lhs, const Vector& rhs)
   {
     return lhs.m_components == rhs.m_components;

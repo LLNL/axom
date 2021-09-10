@@ -1092,4 +1092,74 @@ TEST(core_array, check_move_copy)
   }
 }
 
+//------------------------------------------------------------------------------
+TEST(core_array, check_multidimensional)
+{
+  constexpr int MAGIC_INT = 255;
+  constexpr double MAGIC_DOUBLE = 5683578.8;
+
+  // First test multidimensional int arrays
+  Array<int, 2> v_int;
+  v_int.resize(2, 2);
+  v_int.fill(MAGIC_INT);
+  // Make sure the number of elements and contents are correct
+  EXPECT_EQ(v_int.size(), 2 * 2);
+  std::array<IndexType, 2> expected_shape = {2, 2};
+  EXPECT_EQ(v_int.shape(), expected_shape);
+  for(const auto val : v_int)
+  {
+    EXPECT_EQ(val, MAGIC_INT);
+  }
+  // Then assign different values to each element
+  v_int(0, 0) = 1;
+  v_int(0, 1) = 2;
+  v_int(1, 0) = 3;
+  v_int(1, 1) = 4;
+
+  // FIXME: Should we add a std::initializer_list ctor?
+  Array<int> v_int_flat(4);
+  v_int_flat[0] = 1;
+  v_int_flat[1] = 2;
+  v_int_flat[2] = 3;
+  v_int_flat[3] = 4;
+  std::array<IndexType, 1> expected_flat_shape = {4};
+  EXPECT_EQ(v_int_flat.shape(), expected_flat_shape);
+
+  for(int i = 0; i < v_int_flat.size(); i++)
+  {
+    // For a multidim array, op[] is a "flat" index into the raw data
+    EXPECT_EQ(v_int[i], v_int_flat[i]);
+  }
+
+  Array<double, 3> v_double(4, 3, 2);
+  v_double.fill(MAGIC_DOUBLE);
+  EXPECT_EQ(v_double.size(), 4 * 3 * 2);
+  std::array<IndexType, 3> expected_double_shape = {4, 3, 2};
+  EXPECT_EQ(v_double.shape(), expected_double_shape);
+  for(const auto val : v_double)
+  {
+    EXPECT_EQ(val, MAGIC_DOUBLE);
+  }
+
+  Array<double> v_double_flat(4 * 3 * 2);
+  int double_flat_idx = 0;
+  for(int i = 0; i < v_double.shape()[0]; i++)
+  {
+    for(int j = 0; j < v_double.shape()[1]; j++)
+    {
+      for(int k = 0; k < v_double.shape()[2]; k++)
+      {
+        v_double(i, j, k) = (i * i) + (5 * j) + k;
+        v_double_flat[double_flat_idx++] = (i * i) + (5 * j) + k;
+      }
+    }
+  }
+
+  for(int i = 0; i < v_double.size(); i++)
+  {
+    // For a multidim array, op[] is a "flat" index into the raw data
+    EXPECT_EQ(v_double[i], v_double_flat[i]);
+  }
+}
+
 } /* end namespace axom */

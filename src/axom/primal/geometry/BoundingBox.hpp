@@ -33,8 +33,8 @@ class BoundingBox;
  * Two bounding boxes are equal when they have the same bounds
  */
 template <typename T, int NDIMS>
-bool operator==(const BoundingBox<T, NDIMS>& lhs,
-                const BoundingBox<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator==(const BoundingBox<T, NDIMS>& lhs,
+                                 const BoundingBox<T, NDIMS>& rhs);
 
 /*!
  * \brief Inequality comparison operator for bounding boxes.

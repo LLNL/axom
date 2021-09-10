@@ -39,6 +39,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated the C++ Quest "containment" example to support 2D in/out queries 
   (in addition to the already supported 3D queries)
 - Added `axom::Array` modeled after `std::vector`. Previous `axom::Array` renamed to `axom::MCArray`. Future changes to both arrays are expected.
+- Added a `data_collection_util` tool to generate Mesh Blueprint compliant high order distributed meshes from
+  an mfem mesh or over a Cartesian domain
+- Added utility functions `axom::utilities::getHostName()` and `axom::utilities::getUserName()`.
+- Added new `axom::primal::ZipIterable<T>` type to convert structure-of-arrays data to a given
+  Primal geometric primitive.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -62,12 +67,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Spin: Removed hard dependency on RAJA and Umpire from `BVH`.
 - Moved `slam::IteratorBase` to `axom::IteratorBase`.
 - `sidre::Array` now derives from `axom::MCArray`.
+- `axom::Array` is now multidimensional; it intends to behave like `std::vector` in the 1D case
+  and `numpy.ndarray` in the multidimensional case
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
 - Fixed problem with Cray Fortran compiler not recognizing MSVC pragmas in `axom/config.hpp`. 
   The latter are now only added in MSVC configurations.
 - Fixed bug in `Mint`'s VTK output for fields of type `int64` and `float`
+- Improved loading of data collections in `MFEMSidreDataCollection`
+- Added workaround to `MFEMSidreDataCollection` for `C++14` standard library feature that was not available in `gcc@4.9.3`
 
 
 ## [Version 0.5.0] - Release date 2021-05-14

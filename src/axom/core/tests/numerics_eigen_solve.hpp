@@ -181,4 +181,7 @@ TEST(numerics_eigen_solve, eigen_solve_with_three_by_three)
   EXPECT_NEAR(lambdas[0], 10., EPS);
   EXPECT_NEAR(lambdas[1], 6., EPS);
   EXPECT_NEAR(lambdas[2], 4., EPS);
+
+  delete[] u;
+  delete[] lambdas;
 }

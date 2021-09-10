@@ -19,7 +19,7 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
     set(datastore_converter_sources
         convert_sidre_protocol.cpp
     )
-    set(datastore_converter_depends 
+    set(datastore_converter_depends
         axom
         mpi
         cli11
@@ -45,7 +45,7 @@ endif()
 set(mesh_tester_sources
     mesh_tester.cpp
 )
-set(mesh_tester_depends 
+set(mesh_tester_depends
     axom
     )
 
@@ -68,6 +68,50 @@ if(AXOM_ENABLE_QUEST)
             )
 endif()
 
+#------------------------------------------------------------------------------
+# data_collection_util is a utility that generates blueprint-conforming sidre
+# output files from an input mfem mesh
+#------------------------------------------------------------------------------
+if( AXOM_ENABLE_SIDRE AND MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION )
+
+    set(data_collection_util
+        data_collection_util.cpp
+    )
+    set(data_collection_util_depends
+        axom
+        mfem
+        cli11
+        fmt
+        )
+
+    blt_list_append(TO data_collection_util_depends ELEMENTS mpi IF ENABLE_MPI)
+
+    blt_add_executable(
+        NAME        data_collection_util
+        SOURCES     ${data_collection_util}
+        OUTPUT_DIR  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${data_collection_util_depends}
+        FOLDER      axom/examples
+        )
+
+    if(ENABLE_MPI)
+        axom_add_test(
+            NAME    data_collection_util_box2D
+            COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
+            NUM_MPI_TASKS 2
+        )
+    else()
+        axom_add_test(
+            NAME    data_collection_util_box2D
+            COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
+        )
+    endif()
+
+    install(TARGETS              data_collection_util
+            DESTINATION          bin
+            )
+
+endif()
 #------------------------------------------------------------------------------
 # Add code checks
 #------------------------------------------------------------------------------

@@ -7,11 +7,25 @@
 Core containers
 ******************************************************
 
-Axom Core contains the Array and StackArray classes.  Among other things, these
+.. warning::
+   Axom's containers are currently the target of a refactoring effort. The following
+   information is subject to change, as are the interfaces for the containers themselves.
+
+Axom Core contains the Array, MCArray, and StackArray classes.  Among other things, these
 data containers facilitate porting code that uses `std::vector` to the GPU.
 
+Array is a multidimensional contiguous container template.  In the 1-dimensional case,
+this class will behave like std::vector.  In higher dimensions some vector-like
+functionality will be unavailable, e.g., ``push_back``, and multidimensional-specific
+operations will mirror the ``ndarray`` provided by ``numpy`` when possible.
+In the future, it will be possible to take "views" of the underlying array data that
+allow for flexible reinterpretation via different striding.
 
-Here's an example showing how to use Array instead of `std::vector`.
+MCArray (or Multi-Component Array) is a container template for a contiguous array of tuples.
+In this sense it can be thought of as a two-dimensional array.  MCArray will be removed
+imminently as Array provides/will provide this multidimensional functionality.
+
+Here's an example showing how to use MCArray instead of `std::vector`.
 
 .. literalinclude:: ../../examples/core_containers.cpp
    :start-after: _arraybasic_start
@@ -19,14 +33,14 @@ Here's an example showing how to use Array instead of `std::vector`.
    :language: C++
 
 Applications commonly store tuples of data in a flat array or a `std::vector`.
-The Array class formalizes tuple storage, as shown in the next example.
+The MCArray class formalizes tuple storage, as shown in the next example.
 
 .. literalinclude:: ../../examples/core_containers.cpp
    :start-after: _arraytuple_start
    :end-before: _arraytuple_end
    :language: C++
 
-The Array class can use an external memory buffer, with the restriction that 
+The MCArray class can use an external memory buffer, with the restriction that 
 operations that would cause the buffer to resize are not permitted.
 
 .. literalinclude:: ../../examples/core_containers.cpp
@@ -34,7 +48,7 @@ operations that would cause the buffer to resize are not permitted.
    :end-before: _extbuffer_end
    :language: C++
 
-Similar to `std::vector`, when using an internal array the Array class can
+Similar to `std::vector`, when using an internal array the Array and MCArray classes can
 reserve memory in anticipation of future growth as well as shrink to just the
 memory currently in use.
 

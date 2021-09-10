@@ -42,6 +42,7 @@ template <typename T, int NDIMS>
 class Ray
 {
 public:
+  using CoordType = T;
   using PointType = Point<T, NDIMS>;
   using SegmentType = Segment<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;

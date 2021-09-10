@@ -91,16 +91,9 @@ TEST(utils_Utilities, random_real_with_seed)
   constexpr double a = -5.0;
   constexpr double b = 5.0;
 
-  const double expected_reals[5] = {-1.5112829544380526,
-                                    -2.3311429024686219,
-                                    -3.6335370551231403,
-                                    -4.714431326610093,
-                                    3.6893326916732878};
-
-  for(int i = 0; i < 5; ++i)
+  for(int i = 0; i < 1000; ++i)
   {
     const double real = axom::utilities::random_real(a, b, seed);
-    EXPECT_DOUBLE_EQ(real, expected_reals[i]);
     EXPECT_GE(real, a);
     EXPECT_LT(real, b);
   }
@@ -128,8 +121,8 @@ TEST(utils_Utilities, minmax)
     double a = 5.2;
     double b = -1.7;
 
-    int temp_min = axom::utilities::min(a, b);
-    int temp_max = axom::utilities::max(a, b);
+    double temp_min = axom::utilities::min(a, b);
+    double temp_max = axom::utilities::max(a, b);
 
     EXPECT_EQ(b, temp_min);
     EXPECT_EQ(a, temp_max);
