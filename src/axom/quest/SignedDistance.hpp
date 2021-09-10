@@ -511,6 +511,9 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
     PointType candidate_pt =
       axom::primal::closest_point(qpt, surface_elems[ei], &candidate_loc);
     double sq_dist = axom::primal::squared_distance(qpt, candidate_pt);
+
+    bool shares_min_pt = true;
+
     if(sq_dist < currMin.minSqDist)
     {
       currMin.minSqDist = sq_dist;
@@ -522,8 +525,16 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
       currMin.sumNormals = VectorType {};
       currMin.sumNormalsAngWt = VectorType {};
     }
-    if(computeNormal && currMin.minLoc < TriangleType::NUM_TRI_VERTS &&
-       axom::utilities::isNearlyEqual(sq_dist, currMin.minSqDist))
+    else
+    {
+      // check if we have an element sharing the same closest point
+      double pt_dist_to_curr =
+        axom::primal::squared_distance(candidate_pt, currMin.minPt);
+      shares_min_pt = axom::utilities::isNearlyEqual(pt_dist_to_curr, 0.0, 1e-16);
+    }
+
+    if(computeNormal && shares_min_pt &&
+       currMin.minLoc < TriangleType::NUM_TRI_VERTS)
     {
       VectorType norm = surface_elems[ei].normal();
 
