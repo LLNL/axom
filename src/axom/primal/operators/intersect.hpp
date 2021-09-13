@@ -34,11 +34,12 @@ namespace axom
 namespace primal
 {
 /// \name Triangle Intersection Routines
+/// \accelerated
 /// @{
 
 /*!
  * \brief Tests if 3D Triangles t1 and t2 intersect.
- *
+ * 
  * \param [in] t1 The first triangle
  * \param [in] t2 The second triangle
  * \param [in] includeBoundary Indicates if boundaries should be considered
