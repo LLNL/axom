@@ -16,7 +16,7 @@ code: on the CPU, using OpenMP, or on GPU hardware accelerators, and the options
 constantly developing.  RAJA controls *where* code runs; Umpire moves data between
 memory spaces.
 
-.. warning::
+.. note::
    Axom's memory management and execution space APIs have default implementations when Axom is not
    configured with Umpire and RAJA, respectively, and can be used in all Axom configurations.
 
