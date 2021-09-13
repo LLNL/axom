@@ -602,7 +602,8 @@ private:
   void reconstructField(Group* field_grp);
 
   // Reconstructs all non-mesh-related fields using the current contents
-  // of the datastore, used as part of Load()
+  // of the datastore, used as part of Load() - it is expected/required
+  // that the nodel grid function has already been reconstructed/registered
   void reconstructFields();
 
   /**
