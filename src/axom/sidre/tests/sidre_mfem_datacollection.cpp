@@ -701,7 +701,9 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 
   // Make sure that orientation checks pass
-  // These can fail if the nodal GF is not set up correction for a periodic (and HO?) mesh
+  // These checks assume that the test mesh is orientable and are intended to make sure
+  // that Mesh::Nodes was set up correctly - otherwise these can fail for periodic (and HO?) meshes
+  // QUESTION: What does this method do for a non-orientable mesh?
   EXPECT_EQ(sdc_reader.GetMesh()->CheckElementOrientation(), 0);
   EXPECT_EQ(sdc_reader.GetMesh()->CheckBdrElementOrientation(), 0);
 }
@@ -786,7 +788,7 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_large)
 
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_periodic)
 {
-  // periodi2D mesh divided into triangles
+  // periodic 2D mesh divided into triangles
   mfem::Mesh base_mesh(10, 10, mfem::Element::Type::QUADRILATERAL, false, 1.0, 1.0);
   // FIXME: MFEM 4.3
   // mfem::Mesh::MakeCartesian2D(10,
