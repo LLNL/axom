@@ -116,8 +116,8 @@ void demoAxomExecution()
   defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   // _cudaexebasic_start
   //This example requires Umpire to be in use, and Unified memory available.
-  const int allocator_id =
-     axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified);
+  const int allocator_id = axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Unified);
   A = axom::allocate<int>(N, allocator_id);
   B = axom::allocate<int>(N, allocator_id);
   C = axom::allocate<int>(N, allocator_id);
