@@ -278,7 +278,7 @@ public:
     }
   }
 
-  TraverserType getIterator() const { return m_bvh->getIteratorImpl(); }
+  TraverserType getTraverser() const { return m_bvh->getTraverserImpl(); }
 
   /*!
    * \brief Finds the candidate bins that contain each of the query points.

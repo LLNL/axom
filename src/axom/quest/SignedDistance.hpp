@@ -404,7 +404,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
   SLIC_ASSERT(outSgnDist != nullptr);
 
   // Get a device-useable iterator
-  auto it = m_bvh.getIterator();
+  auto it = m_bvh.getTraverser();
 
   // Get mesh data
   const double* xs = m_surfaceMesh->getCoordinateArray(0);

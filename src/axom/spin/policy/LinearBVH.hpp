@@ -126,7 +126,7 @@ public:
 
   BoundingBoxType getBoundsImpl() const { return m_bounds; }
 
-  TraverserType getIteratorImpl() const
+  TraverserType getTraverserImpl() const
   {
     return TraverserType(m_inner_nodes, m_inner_node_children, m_leaf_nodes);
   }
