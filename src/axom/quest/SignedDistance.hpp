@@ -112,22 +112,46 @@ public:
    * \param [in] maxObjects max number of objects for spatial decomposition.
    * \param [in] maxLevels max levels for spatial decomposition.
    * \param [in] computeSign indicates if distance queries should compute signs (optional).
+   * \param [in] allocatorID the allocator to create the underlying BVH with.
+   *
    * \note computeSign defaults to \a true when not specified.
+   *
+   * \note The given surface mesh must be allocated in a memory space
+   *  compatible with the execution space specified in the SignedDistance
+   *  instantiation.
+   *
+   * \note The given allocatorID must be compatible with the execution space
+   *  specified in the SignedDistance instantiation. By default, a compatible
+   *  allocator ID used if allocatorID is not specified.
+   *
    * \pre surfaceMesh != nullptr
    */
   SignedDistance(const mint::Mesh* surfaceMesh,
                  bool isWatertight,
                  int maxObjects,
                  int maxLevels,
-                 bool computeSign = true);
+                 bool computeSign = true,
+                 int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
 
   /*!
    * \brief Reinitializes a SignedDistance instance with a new surface mesh.
+   *
    * \param [in] surfaceMesh user-supplied surface mesh.
+   * \param [in] allocatorID the allocator to create the underlying BVH with.
+   *
+   * \note The given surface mesh must be allocated in a memory space
+   *  compatible with the execution space specified in the SignedDistance
+   *  instantiation.
+   *
+   * \note The given allocatorID must be compatible with the execution space
+   *  specified in the SignedDistance instantiation. By default, a compatible
+   *  allocator ID used if allocatorID is not specified.
+   *
    * \return status true if reinitialization was successful.
    * \pre surfaceMesh != nullptr
    */
-  bool setMesh(const mint::Mesh* surfaceMesh);
+  bool setMesh(const mint::Mesh* surfaceMesh,
+               int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
 
   /*!
    * \brief Computes the distance of the given point to the input surface mesh.
@@ -288,7 +312,8 @@ SignedDistance<NDIMS, ExecSpace>::SignedDistance(const mint::Mesh* surfaceMesh,
                                                  bool isWatertight,
                                                  int maxObjects,
                                                  int maxLevels,
-                                                 bool computeSign)
+                                                 bool computeSign,
+                                                 int allocatorID)
   : m_isInputWatertight(isWatertight)
   , m_computeSign(computeSign)
 {
@@ -296,13 +321,14 @@ SignedDistance<NDIMS, ExecSpace>::SignedDistance(const mint::Mesh* surfaceMesh,
   SLIC_ASSERT(surfaceMesh != nullptr);
   SLIC_ASSERT(maxLevels >= 1);
 
-  bool bvh_constructed = setMesh(surfaceMesh);
+  bool bvh_constructed = setMesh(surfaceMesh, allocatorID);
   SLIC_ASSERT(bvh_constructed);
 }
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace>
-bool SignedDistance<NDIMS, ExecSpace>::setMesh(const mint::Mesh* surfaceMesh)
+bool SignedDistance<NDIMS, ExecSpace>::setMesh(const mint::Mesh* surfaceMesh,
+                                               int allocatorID)
 {
   AXOM_PERF_MARK_FUNCTION("SignedDistance::setMesh");
   SLIC_ASSERT(surfaceMesh != nullptr);
@@ -367,7 +393,7 @@ bool SignedDistance<NDIMS, ExecSpace>::setMesh(const mint::Mesh* surfaceMesh)
 
   // Initialize BVH with the surface elements.
 
-  BoxType* boxes = axom::allocate<BoxType>(ncells);
+  BoxType* boxes = axom::allocate<BoxType>(ncells, allocatorID);
   for_all<ExecSpace>(
     ncells,
     AXOM_LAMBDA(axom::IndexType icell) {
@@ -375,6 +401,7 @@ bool SignedDistance<NDIMS, ExecSpace>::setMesh(const mint::Mesh* surfaceMesh)
     });
 
   // Build bounding volume hierarchy
+  m_bvh.setAllocatorID(allocatorID);
   int result = m_bvh.initialize(boxes, ncells);
   return (result == spin::BVH_BUILD_OK);
 }
