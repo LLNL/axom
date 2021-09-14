@@ -36,6 +36,38 @@ namespace policy
 {
 namespace lbvh = internal::linear_bvh;
 
+template <typename FloatType, int NDIMS>
+class LinearBVHTraverser
+{
+public:
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+
+  LinearBVHTraverser(BoxType* bboxes, int32* inner_node_children, int32* leaf_nodes)
+    : m_inner_nodes(bboxes)
+    , m_inner_node_children(inner_node_children)
+    , m_leaf_nodes(leaf_nodes)
+  { }
+
+  template <typename LeafAction, typename Predicate>
+  AXOM_HOST_DEVICE void traverse_tree(const PointType& p,
+                                      LeafAction&& lf,
+                                      Predicate&& predicate) const
+  {
+    lbvh::bvh_traverse(m_inner_nodes,
+                       m_inner_node_children,
+                       m_leaf_nodes,
+                       p,
+                       predicate,
+                       lf);
+  }
+
+private:
+  BoxType* m_inner_nodes {nullptr};  // BVH bins including leafs
+  int32* m_inner_node_children {nullptr};
+  int32* m_leaf_nodes {nullptr};  // leaf data
+};
+
 /*!
  * \brief LinearBVH provides a policy for a BVH implementation which supports
  *  parallel linear construction on both CPU and GPU.
@@ -50,6 +82,7 @@ template <typename FloatType, int NDIMS, typename ExecSpace>
 class LinearBVH
 {
 public:
+  using TraverserType = LinearBVHTraverser<FloatType, NDIMS>;
   using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   LinearBVH() = default;
@@ -92,6 +125,11 @@ public:
   void writeVtkFileImpl(const std::string& fileName) const;
 
   BoundingBoxType getBoundsImpl() const { return m_bounds; }
+
+  TraverserType getTraverserImpl() const
+  {
+    return TraverserType(m_inner_nodes, m_inner_node_children, m_leaf_nodes);
+  }
 
 private:
   void allocate(int32 size, int allocID)

@@ -345,6 +345,10 @@ TEST(quest_signed_distance_interface_DeathTest, set_params_after_init)
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_verbose(true),
                             IGNORE_OUTPUT);
 
+  EXPECT_DEATH_IF_SUPPORTED(
+    quest::signed_distance_set_execution_space(quest::SignedDistExec::CPU),
+    IGNORE_OUTPUT);
+
   // STEP 2: finalize
   quest::signed_distance_finalize();
   delete surface_mesh;
