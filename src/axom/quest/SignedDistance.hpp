@@ -37,6 +37,9 @@ namespace quest
 {
 namespace detail
 {
+/*!
+ * \brief Helper class for handling unstructured surface meshes on the GPU.
+ */
 struct UcdMeshData
 {
   int shape_type;
@@ -46,12 +49,32 @@ struct UcdMeshData
   IndexType nodes_per_cell;
   const IndexType* cell_node_offsets;
 
+  /*!
+   * \brief Returns the type of the cell at the given index.
+   */
   AXOM_HOST_DEVICE mint::CellType getCellType(IndexType cellId) const;
 
+  /*!
+   * \brief Returns the node IDs of a given cell index.
+   *
+   * \param [in] cellId the cell index to query
+   * \param [out] nnodes the number of nodes in the given cell
+   *
+   * \return pointer to the node IDs in the underlying cell node array.
+   */
   AXOM_HOST_DEVICE const IndexType* getCellNodeIDs(IndexType cellId,
                                                    int& nnodes) const;
 };
 
+/*!
+ * \brief Creates a POD UcdMeshData object from a polymorphic mint::Mesh
+ *  pointer.
+ *
+ * \param [in] surfaceMesh the mint::Mesh pointer with the surface mesh
+ * \param [out] outSurfData the UcdMeshData object with underlying mesh data
+ *
+ * \return true if the mesh was an unstructured mesh, false otherwise
+ */
 bool SD_GetUcdMeshData(const mint::Mesh* surfaceMesh, UcdMeshData& outSurfData);
 
 }  // end namespace detail
