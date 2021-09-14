@@ -278,6 +278,15 @@ public:
     }
   }
 
+  /*!
+   * \brief Returns a device-copyable object that can be used to traverse the
+   *  BVH from inside a device kernel.
+   *
+   * \return it the traverser object for the current BVH.
+   *
+   * \node The traverser object may only be used in the same execution space as
+   *  the one that the BVH class was instantiated with.
+   */
   TraverserType getTraverser() const { return m_bvh->getTraverserImpl(); }
 
   /*!
