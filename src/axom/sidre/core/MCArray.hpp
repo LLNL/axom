@@ -160,15 +160,15 @@ protected:
    *
    * \param [in] capacity the new number of tuples to allocate.
    */
-  virtual void setCapacity(axom::IndexType new_capacity);
+  virtual void setCapacity(axom::IndexType new_tuples_capacity);
 
   /*!
    * \brief Reallocates the data MCArray when the size exceeds the capacity.
    *
-   * \param [in] new_num_tuples the number of tuples which exceeds the current
+   * \param [in] new_num_elements the number of elements which exceeds the current
    *  capacity.
    */
-  virtual void dynamicRealloc(axom::IndexType new_num_tuples);
+  virtual void dynamicRealloc(axom::IndexType new_num_elements);
 
   /*!
    * \brief Return the TypeID corresponding to T. This function
@@ -213,7 +213,7 @@ protected:
   /*!
    * \brief Allocates space within the MCArray's View.
    *
-   * \param [in] new_num_tuples the number of tuples which exceeds the current
+   * \param [in] new_num_tuples the number of elements which exceeds the current
    *  capacity.
    */
   void reallocViewData(IndexType new_capacity);
@@ -245,7 +245,8 @@ MCArray<T>::MCArray(View* view) : axom::MCArray<T>()
                   << buffer_size << ") "
                   << "is not a multiple of the number of components "
                   << "(" << this->m_dims[1] << ").");
-  this->m_capacity = buffer_size / this->m_dims[1];
+  this->m_capacity = buffer_size;
+  this->m_num_elements = buffer_size;
 
   SLIC_ERROR_IF(this->m_dims[0] < 0,
                 "Number of tuples (" << this->m_dims[0] << ") "
@@ -255,10 +256,10 @@ MCArray<T>::MCArray(View* view) : axom::MCArray<T>()
                 "Number of components (" << this->m_dims[1] << ") "
                                          << "must be greater than 0.");
 
-  SLIC_ERROR_IF(this->m_dims[0] > this->m_capacity,
-                "Number of tuples ("
-                  << this->m_dims[0] << ") "
-                  << "cannot be greater than the tuple capacity "
+  SLIC_ERROR_IF((this->m_dims[0] * this->m_dims[1]) > this->m_capacity,
+                "Number of elements ("
+                  << this->m_dims[0] * this->m_dims[1] << ") "
+                  << "cannot be greater than the element capacity "
                   << "(" << this->m_capacity << ").");
 
   TypeID view_type = m_view->getTypeID();
@@ -291,7 +292,19 @@ MCArray<T>::MCArray(View* view,
   SLIC_ERROR_IF(num_components <= 0,
                 "Components per tuple (" << num_components << ") "
                                          << "must be greater than 0.");
-  reallocViewData(capacity);
+  // FIXME: What we probably want is a Sidre allocator (as opposed to the regular host allocator for example)
+  // Would something like that even be possible?
+  this->m_dims[0] = num_tuples;
+  this->m_dims[1] = num_components;
+  this->updateStrides();
+  this->m_num_elements = num_tuples * num_components;
+  IndexType real_capacity = capacity;
+  if(real_capacity < this->m_num_elements)
+  {
+    real_capacity = this->m_num_elements;
+  }
+  reallocViewData(real_capacity);
+
   SLIC_ERROR_IF(this->m_dims[0] > this->m_capacity,
                 "Number of tuples ("
                   << this->m_dims[0] << ") "
@@ -324,27 +337,33 @@ inline void MCArray<T>::updateNumTuples(axom::IndexType new_num_tuples)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void MCArray<T>::setCapacity(axom::IndexType new_capacity)
+inline void MCArray<T>::setCapacity(axom::IndexType new_tuples_capacity)
 {
-  SLIC_ASSERT(new_capacity >= 0);
+  SLIC_ASSERT(new_tuples_capacity >= 0);
 
-  if(new_capacity < this->m_dims[0])
+  if(new_tuples_capacity < (this->m_capacity / this->m_dims[1]))
   {
-    updateNumTuples(new_capacity);
+    updateNumTuples(new_tuples_capacity);
   }
 
-  return reallocViewData(new_capacity);
+  return reallocViewData(new_tuples_capacity * this->m_dims[1]);
 }
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void MCArray<T>::dynamicRealloc(axom::IndexType new_num_tuples)
+inline void MCArray<T>::dynamicRealloc(axom::IndexType new_num_elements)
 {
   SLIC_ERROR_IF(this->m_resize_ratio < 1.0,
                 "Resize ratio of " << this->m_resize_ratio
                                    << " doesn't support dynamic resizing");
 
-  IndexType new_capacity = new_num_tuples * this->m_resize_ratio + 0.5;
+  IndexType new_capacity = new_num_elements * this->m_resize_ratio + 0.5;
+  const IndexType block_size = this->blockSize();
+  const IndexType remainder = new_capacity % block_size;
+  if(remainder != 0)
+  {
+    new_capacity += block_size - remainder;
+  }
   return reallocViewData(new_capacity);
 }
 
@@ -382,11 +401,11 @@ inline void MCArray<T>::reallocViewData(IndexType new_capacity)
   if(m_view->isEmpty())
   {
     constexpr sidre::TypeID T_type = sidreTypeId();
-    m_view->allocate(T_type, new_capacity * this->m_dims[1]);
+    m_view->allocate(T_type, new_capacity);
   }
   else
   {
-    m_view->reallocate(new_capacity * this->m_dims[1]);
+    m_view->reallocate(new_capacity);
   }
 
   this->m_capacity = new_capacity;
