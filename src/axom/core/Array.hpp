@@ -198,12 +198,14 @@ public:
     updateStrides();
   }
 
-private:
-  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
-  const ArrayType& asDerived() const
-  {
-    return static_cast<const ArrayType&>(*this);
-  }
+protected:
+  /*!
+   * \brief Returns the minimum "chunk size" that should be allocated
+   * For example, 2 would be the chunk size of a 2D array whose second dimension is of size 2.
+   * This is used when resizing/reallocating; it wouldn't make sense to have a
+   * capacity of 3 in the array described above.
+   */
+  IndexType blockSize() const { return m_strides[0]; }
 
   void updateStrides()
   {
@@ -213,6 +215,13 @@ private:
     {
       m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
     }
+  }
+
+private:
+  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  const ArrayType& asDerived() const
+  {
+    return static_cast<const ArrayType&>(*this);
   }
 
   // FIXME: Do we really need this for sidre::Array??
@@ -279,6 +288,12 @@ public:
   {
     asDerived().insert(pos, other.size(), other.data());
   }
+
+protected:
+  /*!
+   * \brief Returns the minimum "chunk size" that should be allocated
+   */
+  IndexType blockSize() const { return 1; }
 
 private:
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
@@ -1492,7 +1507,13 @@ inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
   }
 
   assert(m_resize_ratio >= 1.0);
-  const IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
+  IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
+  const IndexType block_size = this->blockSize();
+  const IndexType remainder = new_capacity % block_size;
+  if(remainder != 0)
+  {
+    new_capacity += block_size - remainder;
+  }
 
   if(m_resize_ratio < 1.0)
   {
