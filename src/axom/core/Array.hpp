@@ -191,10 +191,10 @@ public:
       utilities::processAbort();
     }
 
-    // First add the raw data to the buffer
-    asDerived().insert(pos, other.size(), other.data());
-    // Then update the dimensions - we're adding only to the leading dimension
+    // First update the dimensions - we're adding only to the leading dimension
     m_dims[0] += other.shape()[0];
+    // Then add the raw data to the buffer
+    asDerived().insert(pos, other.size(), other.data());
     updateStrides();
   }
 
@@ -1046,7 +1046,9 @@ Array<T, DIM>::Array(T* data, Args... args)
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
   IndexType tmp_args[] = {args...};
-  m_num_elements = detail::packProduct(tmp_args);
+  const auto num_elements = detail::packProduct(tmp_args);
+  m_capacity = num_elements;
+  updateNumElements(num_elements);
 }
 
 //------------------------------------------------------------------------------
@@ -1409,8 +1411,6 @@ inline void Array<T, DIM>::initialize(IndexType num_elements, IndexType capacity
 {
   assert(num_elements >= 0);
 
-  m_num_elements = num_elements;
-
   if(capacity < 0 || num_elements > capacity)
   {
     capacity = 0;
@@ -1422,6 +1422,7 @@ inline void Array<T, DIM>::initialize(IndexType num_elements, IndexType capacity
                                                      : MIN_DEFAULT_CAPACITY;
   }
   setCapacity(capacity);
+  updateNumElements(num_elements);
 
   // quick checks
   assert(m_data != nullptr);

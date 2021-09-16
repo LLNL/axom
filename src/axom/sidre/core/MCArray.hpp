@@ -149,11 +149,11 @@ public:
 
 protected:
   /*!
-   * \brief Update the number of tuples.
+   * \brief Update the number of elements.
    *
-   * \param [in] new_num_tuples the new number of tuples.
+   * \param [in] new_num_elements the new number of elements.
    */
-  virtual void updateNumTuples(axom::IndexType new_num_tuples);
+  void updateNumElements(axom::IndexType new_num_elements) override;
 
   /*!
    * \brief Set the number of tuples allocated for the data MCArray.
@@ -327,11 +327,11 @@ MCArray<T>::~MCArray()
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void MCArray<T>::updateNumTuples(axom::IndexType new_num_tuples)
+inline void MCArray<T>::updateNumElements(axom::IndexType new_num_elements)
 {
-  SLIC_ASSERT(new_num_tuples >= 0);
-  SLIC_ASSERT(new_num_tuples <= this->m_capacity);
-  this->m_dims[0] = new_num_tuples;
+  SLIC_ASSERT(new_num_elements >= 0);
+  SLIC_ASSERT(new_num_elements <= this->m_capacity);
+  this->m_num_elements = new_num_elements;
   describeView();
 }
 
@@ -343,7 +343,7 @@ inline void MCArray<T>::setCapacity(axom::IndexType new_tuples_capacity)
 
   if(new_tuples_capacity < (this->m_capacity / this->m_dims[1]))
   {
-    updateNumTuples(new_tuples_capacity);
+    this->m_dims[0] = new_tuples_capacity;
   }
 
   return reallocViewData(new_tuples_capacity * this->m_dims[1]);

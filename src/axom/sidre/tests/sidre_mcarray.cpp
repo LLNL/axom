@@ -108,14 +108,14 @@ void check_storage(MCArray<T>& v)
   const T* data_ptr = v.data();
 
   /* Append up to half the capacity. */
-  if(num_components == 1)
-  {
-    for(T i = 0; i < capacity / 2; ++i)
-    {
-      v.insert(v.size(), i);
-    }
-  }
-  else
+  // if(num_components == 1)
+  // {
+  //   for(T i = 0; i < capacity / 2; ++i)
+  //   {
+  //     v.insert(v.size(), i);
+  //   }
+  // }
+  // else
   {
     T* tuple = new T[num_components];
     for(axom::IndexType i = 0; i < num_tuples_capacity / 2; ++i)
@@ -137,14 +137,14 @@ void check_storage(MCArray<T>& v)
   EXPECT_EQ(v.data(), data_ptr);
 
   /* Append up to the full capacity. */
-  if(num_components == 1)
-  {
-    for(T i = capacity / 2; i < capacity; ++i)
-    {
-      v.insert(v.size(), i);
-    }
-  }
-  else
+  // if(num_components == 1)
+  // {
+  //   for(T i = capacity / 2; i < capacity; ++i)
+  //   {
+  //     v.insert(v.size(), i);
+  //   }
+  // }
+  // else
   {
     T* tuple = new T[num_components];
     for(axom::IndexType i = num_tuples_capacity / 2; i < num_tuples_capacity; ++i)
