@@ -504,6 +504,29 @@ static PyObject *PY_signed_distance_use_shared_memory(PyObject *SHROUD_UNUSED(se
   // splicer end function.signed_distance_use_shared_memory
 }
 
+static char PY_signed_distance_set_execution_space__doc__[] = "documentation";
+
+static PyObject *PY_signed_distance_set_execution_space(PyObject *SHROUD_UNUSED(self),
+                                                        PyObject *args,
+                                                        PyObject *kwds)
+{
+  // splicer begin function.signed_distance_set_execution_space
+  int execSpace;
+  const char *SHT_kwlist[] = {"execSpace", nullptr};
+
+  if(!PyArg_ParseTupleAndKeywords(args,
+                                  kwds,
+                                  "i:signed_distance_set_execution_space",
+                                  const_cast<char **>(SHT_kwlist),
+                                  &execSpace))
+    return nullptr;
+  axom::quest::SignedDistExec SH_execSpace =
+    static_cast<axom::quest::SignedDistExec>(execSpace);
+  axom::quest::signed_distance_set_execution_space(SH_execSpace);
+  Py_RETURN_NONE;
+  // splicer end function.signed_distance_set_execution_space
+}
+
 static char PY_signed_distance_evaluate__doc__[] = "documentation";
 
 static PyObject *PY_signed_distance_evaluate(PyObject *SHROUD_UNUSED(self),
@@ -697,6 +720,10 @@ static PyMethodDef PY_methods[] = {
    (PyCFunction)PY_signed_distance_use_shared_memory,
    METH_VARARGS | METH_KEYWORDS,
    PY_signed_distance_use_shared_memory__doc__},
+  {"signed_distance_set_execution_space",
+   (PyCFunction)PY_signed_distance_set_execution_space,
+   METH_VARARGS | METH_KEYWORDS,
+   PY_signed_distance_set_execution_space__doc__},
   {"signed_distance_evaluate",
    (PyCFunction)PY_signed_distance_evaluate,
    METH_VARARGS | METH_KEYWORDS,
@@ -791,6 +818,11 @@ initquest(void)
 #endif
   if(m == nullptr) return RETVAL;
   struct module_state *st = GETSTATE(m);
+
+  // enum axom::quest::SignedDistExec
+  PyModule_AddIntConstant(m, "CPU", axom::quest::CPU);
+  PyModule_AddIntConstant(m, "OpenMP", axom::quest::OpenMP);
+  PyModule_AddIntConstant(m, "GPU", axom::quest::GPU);
 
   PY_error_obj = PyErr_NewException((char *)error_name, nullptr, nullptr);
   if(PY_error_obj == nullptr) return RETVAL;

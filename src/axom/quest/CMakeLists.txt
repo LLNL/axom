@@ -52,6 +52,9 @@ set( quest_headers
 
 set( quest_sources
 
+    ## Signed-distance query
+    SignedDistance.cpp
+
     ## All-nearest-neighbors query
     AllNearestNeighbors.cpp
 

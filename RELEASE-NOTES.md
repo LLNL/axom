@@ -44,6 +44,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added utility functions `axom::utilities::getHostName()` and `axom::utilities::getUserName()`.
 - Added new `axom::primal::ZipIterable<T>` type to convert structure-of-arrays data to a given
   Primal geometric primitive.
+- Quest: Added a `computeDistances()` function to `SignedDistance` class for batched
+  signed-distance queries.
+- Spin: Added a `getTraverser()` function to `BVH`, enabling the customized traversal of a
+  BVH from within a device kernel.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -69,6 +73,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `sidre::Array` now derives from `axom::MCArray`.
 - `axom::Array` is now multidimensional; it intends to behave like `std::vector` in the 1D case
   and `numpy.ndarray` in the multidimensional case
+- Quest: `SignedDistance` has been modified to use `spin::BVH` instead of `BVHTree`. This
+  enables signed-distance queries to run on the GPU, as specified via a new template
+  parameter.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
