@@ -403,6 +403,8 @@ bool SignedDistance<NDIMS, ExecSpace>::setMesh(const mint::Mesh* surfaceMesh,
   // Build bounding volume hierarchy
   m_bvh.setAllocatorID(allocatorID);
   int result = m_bvh.initialize(boxes, ncells);
+
+  axom::deallocate(boxes);
   return (result == spin::BVH_BUILD_OK);
 }
 
