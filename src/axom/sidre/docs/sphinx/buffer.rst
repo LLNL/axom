@@ -25,7 +25,7 @@ amount of data they will hold before deciding how and when to allocate data.
           * Each ``Buffer`` object has a unique integer identifier generated 
             when the buffer is created. If you want to retrieve a buffer or
             interact with it directly, you must keep a pointer to it or note 
-            its id so that you can retrieve it from a dataStore when needed.
+            its id so that you can retrieve it from a ``DataStore`` when needed.
 
 ``Buffer`` objects hold data for Sidre ``View`` objects in most cases. Each 
 buffer maintains references to the views that refer to its data. These 

@@ -19,8 +19,8 @@ Among other things, these data containers facilitate porting code that uses
 
 ``Array`` is a multidimensional contiguous container template. In the 
 1-dimensional case, this class behaves similar to ``std::vector``. In higher 
-dimensions, some vector-like functionality will be unavailable, e.g., 
-``push_back``, and multidimensional-specific operations will mirror the 
+dimensions, some vector-like functionality, such as ``push_back``, are not
+available and multidimensional-specific operations will mirror the 
 ``ndarray`` provided by ``numpy`` when possible. In the future, it will be 
 possible to take "views" of the underlying array data that allow for 
 flexible reinterpretation via different striding.
@@ -28,7 +28,7 @@ flexible reinterpretation via different striding.
 ``MCArray`` (or Multi-Component Array) is a container template for a contiguous
 array of tuples. In this sense, it can be thought of as a two-dimensional array.
 ``MCArray`` will be removed in the future as ``Array`` will provide all the 
-this multidimensional functionality of ``MCArray``..
+multidimensional functionality of ``MCArray``..
 
 Here's an example showing how to use ``MCArray`` instead of ``std::vector``.
 

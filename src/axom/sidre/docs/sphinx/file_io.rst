@@ -55,7 +55,7 @@ Overloads of the ``save()`` and ``load()`` methods that take HDF5 handles and
 the ``loadExternalData()`` method are used to implement parallel I/O through 
 the Sidre ``IOManager`` class.
 
-Please see `Sidre API Documentation <../../../../doxygen/html/sidretop.html>` 
+Please see `Sidre API Documentation <../../../../doxygen/html/sidretop.html>`_ 
 for more detailed description of these ``Group`` class methods and the Sidre 
 I/O protocols that can be used with them.
 

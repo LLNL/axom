@@ -63,7 +63,7 @@ capabilities include:
 So far, Sidre development has focused on designing and building flexible and
 powerful concepts to build on. The Sidre API includes five main concepts:
 
-* **Datastore.** The main access point to data managed by Sidre; it contains 
+* **DataStore.** The main access point to data managed by Sidre; it contains 
   a collection of Buffers, a collection of default Attributes, and a tree 
   structure of Groups.
 * **Buffer.** Describes and holds a chunk of data in memory owned by Sidre.

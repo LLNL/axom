@@ -17,7 +17,7 @@ filesystem, and string manipulation utilities in the ``axom::utilities``
 namespace.  Axom Core also contains the ``axom::Array`` and ``axom::StackArray``
 container classes.
 
-..note:: The Core library does not depend on any other Axom components/libraries. In particular, Core does not use macros from the Axom Slic library for output.
+.. note:: The Core library does not depend on any other Axom components/libraries. In particular, Core does not use macros from the Axom Slic library for output.
 
 
 API Documentation

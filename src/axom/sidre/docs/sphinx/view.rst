@@ -9,8 +9,8 @@
 View
 ==========
 
-A Sidre ``View`` objects describes data and provides access to it. A view can 
-describe a (portion) of a data allocation in **any way that is compatible** 
+A Sidre ``View`` object describes data and provides access to it. A view can 
+describe a (portion of a) data allocation in **any way that is compatible** 
 with the allocation. Specifically, the allocation must contain enough bytes 
 to support the description. In particular, the data type of a view description 
 need not match the types associated with the allocation or types of other views
@@ -21,10 +21,10 @@ that refer to that data.
           private.
 
 Each view has a name and is owned by one group in a Sidre group hierarchy; i.e.,
-its *owning* Group. A view maintains a pointer to the group that owns it.
+its *owning* group. A view maintains a pointer to the group that owns it.
 
 .. note:: * The name (string) of a view **must be unique** within its
-            owning Group.
+            owning group.
           * A view has a unique integer identifier within its owning group, 
             which is generated when the view is created.
           * Views in a group can be accessed by name or integer id.

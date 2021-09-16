@@ -8,7 +8,8 @@ Core concepts
 ******************************************************
 
 As noted earlier and described in the previous example, Sidre provides five 
-main classes: ``Datastore``, ``Buffer``, ``Group``, ``View``, and ``Attribute``.In combination, these classes implement a data store with a tree structure 
+main classes: ``DataStore``, ``Buffer``, ``Group``, ``View``, and ``Attribute``.
+In combination, these classes implement a data store with a tree structure 
 to organize data in a hierarchy. Before delving into details of these 
 classes/concepts, we summarize their basic intent:
 

@@ -13,8 +13,8 @@ Sidre ``Group`` objects are used to define a tree-like hierarchical organization
 for application data, such as meshes and fields used in a simulation. Each 
 group has a name and one parent group (except for the root group, which has no
 parent) and contains zero or more child groups and zero or more data views. 
-A Sidre dataStore has exactly one root group that is created when the 
-dataStore is created. The root group's name is initially the empty string.
+A Sidre datastore has exactly one root group that is created when the 
+datastore is created. The root group's name is initially the empty string.
 See :ref:`datastore-label` for more information.
 
 A group hierarchy is constructed by creating child groups of the root group, 
@@ -41,11 +41,11 @@ to access groups and views in it, as needed.
 A group can be moved or copied to another group. When a group is moved
 to another group, it is removed from its original parent and the group to 
 which it is moved becomes its parent. This implies that the entire subtree 
-of groups and giews within the moved group is moved as well and can no longer 
+of groups and views within the moved group is moved as well and can no longer 
 be accessed via the original parent group. When a group is copied to another 
 group, a copy of the entire group subtree rooted at the copied group is added
 to the group to which it is copied. A **shallow** copy is performed for the
-data in each view. SPecifically, a new view objects is created in the 
+data in each view. Specifically, a new view objects is created in the 
 destination, but the data is shared by the original and new view.
 
 .. note:: ``View`` object copy operations perform **shallow** copies of the 
@@ -114,7 +114,7 @@ Group Properties
  * Query whether a group has an immediate child group with a given integer id
  * Query the name of a child group with a given id, or the id of a child group
    with a given name
- * Get a pointer to the dataStore that owns the hierarchy in which a group 
+ * Get a pointer to the datastore that owns the hierarchy in which a group 
    resides
 
 Group Access
@@ -213,7 +213,8 @@ in the group subtree rooted at any group.
 I/O methods on the group class use `Conduit <https://github.com/LLNL/conduit>`_
 to :ref:`write the data (sub)tree <sidre-serial-io>` rooted in a group to a 
 file, `HDF5 <https://www.hdfgroup.org/HDF5/>`_ handle, or other
-Conduit protocol, or to an in-memory Conduit data structure. An application may
+Conduit protocol, or to an in-memory Conduit data structure. Please see 
+:ref:`sidre-conduit` for more information. An application may
 provide an attribute to the method call, so only views with that attribute
 explicitly set will be written. See :ref:`spio-core-concepts` for more 
 information.

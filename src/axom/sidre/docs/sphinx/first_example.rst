@@ -35,7 +35,7 @@ provides the main interface to access those objects.
 Rounded rectangles represent Sidre ``Group`` objects. Each ``Group`` has a 
 name and one parent group, except for the root group (i.e. "/"), which 
 has no parent. A datastore provides one root group (i.e. "/") that is 
-created when a ``Datastore`` object is constructed; thus, an application does 
+created when a ``DataStore`` object is constructed; thus, an application does 
 not create the root. A ``Group`` may have zero or more child groups
 (indicated by an arrow from the parent to each child). Each group also owns
 zero or more ``View`` objects, which are shown as rectangles. An arrow points 
@@ -48,10 +48,10 @@ and owned by Sidre ``Buffer`` objects). Each array view has a data pointer
 and describes data in terms of data type, number of elements, offset, and 
 stride. Data pointers held by array view are shown as dashed arrows.
 
-A ``Datastore`` also contains a collection of ``Buffer`` objects, shown as 
+A ``DataStore`` also contains a collection of ``Buffer`` objects, shown as 
 segmented rectangles.
 
-A ``Datastore`` contains a list of ``Attribute`` objects. Each ``Attribute`` 
+A ``DataStore`` contains a list of ``Attribute`` objects. Each ``Attribute`` 
 is outlined with a hexagon and defines a metadata label and a default value 
 associated with that label. In the example, the datastore has "vis" (with 
 default value 0) and "restart" (with default value 1) attributes.
@@ -63,7 +63,7 @@ Various aspects of Sidre usage are illustrated in the C++ code shown next.
 Sidre provides full C and Fortran APIs that can also be used to generate 
 the same result.
 
-First, we create a ``Datastore`` object, define some ``Attribute`` objects 
+First, we create a ``DataStore`` object, define some ``Attribute`` objects 
 along with their default values, and add some child ``Group`` objects to the
 root ``Group``.
 

@@ -23,9 +23,9 @@ A default value can be changed later as needed.
             and destructor are private (see :ref:`datastore-label`).
           * Each ``Attribute`` object has a unique name and integer identifier.
             Either can be used to retrieve an ``Attribute`` object from a 
-            dataStore.
+            ``DataStore`` object..
 
-Each Sidre view inherits all attributes contained in a dataStore with their 
+Each Sidre view inherits all attributes contained in a datastore with their 
 default strings or values. Then, an application may explicitly set any
 attribute on a view. The application may also query the value of a view 
 attribute, query whether the attribute was explicitly set, or set the 
