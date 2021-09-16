@@ -90,8 +90,12 @@ The output of this example is::
   ]
 
 Similar to ``std::vector``, when using an internal array the ``Array`` and 
-``MCArray`` classes can reserve memory in anticipation of future growth as 
-well as shrink to the memory in use.
+``MCArray`` classes can reserve memory in anticipation of future growth as
+well as shrink to the memory in use. Please refer to the 
+`Array API Documentation <../../../../doxygen/html/classaxom_1_1Array.html>`_ 
+and 
+`MCArray API Documentation <../../../../doxygen/html/classaxom_1_1Array.html>`_ 
+for details.
 
 The ``StackArray`` class is a work-around for a limitation in older versions
 of the nvcc compiler, which do not capture arrays on the stack in device 
