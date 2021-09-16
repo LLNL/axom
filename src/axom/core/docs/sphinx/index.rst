@@ -6,7 +6,7 @@
 Axom Core User Guide
 ====================
 
-The Axom Core library provides fundamental data structures and operations used
+The Axom Core component provides fundamental data structures and operations used
 throughout Axom.  Different compilers and platforms support these essential 
 building blocks in various ways; the Core library provides a uniform interface.
 
@@ -17,8 +17,7 @@ filesystem, and string manipulation utilities in the ``axom::utilities``
 namespace.  Axom Core also contains the ``axom::Array`` and ``axom::StackArray``
 container classes.
 
-The Core library does not depend on any other Axom components/libraries. In
-particular, Core does not use macros from the Axom Slic library for output.
+..note:: The Core library does not depend on any other Axom components/libraries. In particular, Core does not use macros from the Axom Slic library for output.
 
 
 API Documentation
