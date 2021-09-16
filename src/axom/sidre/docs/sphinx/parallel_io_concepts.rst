@@ -39,7 +39,8 @@ Parallel I/O using the IOManager class
 A Sidre ``IOManager`` object is created with an MPI communicator and provides 
 various overloads of ``write()`` and ``read()`` methods.  These methods save 
 a ``Group`` object in parallel to a set of files and read a ``Group`` object
-from existing files. The I/O manager can optionally use the SCR library for 
+from existing files. The I/O manager can optionally use the 
+`SCR <https://github.com/LLNL/scr>`_ library for 
 scalable I/O management (such as using burst buffers when available).
 
 In typical usage, a run that calls ``read()`` on a certain set of files
@@ -184,7 +185,7 @@ The root file is automatically created to provide the ``IOManager`` object
 with bookkeeping information that is used when reading data, but it can also
 be used to store additional data that may be useful to the calling code or
 is needed to allow other tools to interact with the data in the output files,
-such as for visualization.  For example, a ``Conduit Mesh Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html>`_ index can be 
+such as for visualization.  For example, a `Conduit Mesh Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html>`_ index can be 
 :ref:`stored in a DataGroup <sidre-conduit>` written to the root file to 
 provide metadata about the mesh layout and data fields that can be visualized 
 from the output files.
