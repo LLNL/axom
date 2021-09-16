@@ -124,6 +124,7 @@ void demoArrayBasic()
   // Here's an Array interpreting the memory pointed to by pa as three 2-tuples.
   axom::MCArray<int> c(pa, 3, 2);
 
+  showArray(a, "a");
   showTupleArray(c, "c");
 
   // Since c is an alias to a's internal memory, changes affect both Arrays.
