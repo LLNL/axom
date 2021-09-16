@@ -34,3 +34,4 @@ Doxygen generated API documentation can be found here: `API documentation <../..
    core_numerics
    core_utilities
    core_containers
+   core_acceleration
