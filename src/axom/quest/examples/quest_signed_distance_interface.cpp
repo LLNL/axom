@@ -215,6 +215,13 @@ int main(int argc, char** argv)
 #endif
     exit(retval);
   }
+#ifdef AXOM_USE_CUDA
+  if(args.exec_space == quest::SignedDistExec::GPU)
+  {
+    using GPUExec = axom::CUDA_EXEC<256>;
+    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+  }
+#endif
 
   // STEP 3: initialize the signed distance interface
   SLIC_INFO("initializing signed distance function...");
