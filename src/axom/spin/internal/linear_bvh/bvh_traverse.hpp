@@ -36,11 +36,21 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  * \param [in] p the primitive in query, e.g., a point, ray, etc.
  * \param [in] B functor that defines the check for the bins
  * \param [in] A functor that defines the leaf action
+ * \param [in] Comp functor used for determining which child node to traverse
+ *  down first if both bins are to be traversed
  *
  * \note The supplied functor `B` is expected to take the following two
  *  arguments:
  *    (1) The supplied primitive, p
  *    (2) a primal::BoundingBox< FloatType, NDIMS > of the BVH bin
+ *
+ * \note The supplied functor `Comp` is expected to take the following three
+ *  arguments:
+ *    (1) The left child bounding box
+ *    (2) The right child bounding box
+ *    (3) The primitive being queried
+ *  It should return true if the right child is closer (indicating a swap is
+ *  necessary) and false if the left child is closer.
  *
  * \see BVHData for the details on the internal data layout of the BVH.
  *
@@ -48,14 +58,20 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  *  if the specified traversal predicate is satisfied.
  *
  */
-template <int NDIMS, typename FloatType, typename PrimitiveType, typename InBinCheck, typename LeafAction>
+template <int NDIMS,
+          typename FloatType,
+          typename PrimitiveType,
+          typename InBinCheck,
+          typename LeafAction,
+          typename TraversePref>
 AXOM_HOST_DEVICE inline void bvh_traverse(
   const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
   const int32* inner_node_children,
   const int32* leaf_nodes,
   const PrimitiveType& p,
   InBinCheck&& B,
-  LeafAction&& A)
+  LeafAction&& A,
+  TraversePref&& Comp)
 {
   using BBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
@@ -80,6 +96,7 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
       const bool in_right = B(p, right_bin);
       int32 l_child = inner_node_children[current_node + 0];
       int32 r_child = inner_node_children[current_node + 1];
+      bool swap = Comp(left_bin, right_bin, p);
 
       if(!in_left && !in_right)
       {
@@ -90,14 +107,17 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
       else
       {
         current_node = (in_left) ? l_child : r_child;
-
         if(in_left && in_right)
         {
+          if(swap)
+          {
+            // Ensure we go down the closer of the two children.
+            // (For a user-defined meaning of "closer")
+            axom::utilities::swap(current_node, r_child);
+          }
+
           stackptr++;
           todo[stackptr] = r_child;
-          // TODO: if we are in both children we could
-          // go down the "closer" first by perhaps the distance
-          // from the point to the center of the aabb
         }
       }  // END else
 
