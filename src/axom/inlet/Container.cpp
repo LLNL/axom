@@ -332,8 +332,7 @@ Function& Container::addFunctionInternal(axom::sidre::Group* sidreGroup,
     fullName,
     cpp11_compat::make_unique<Function>(sidreGroup,
                                         m_sidreRootGroup,
-                                        std::move(func),
-                                        m_docEnabled));
+                                        std::move(func)));
   // emplace_result is a pair whose first element is an iterator to the inserted element
   return *(emplace_result.first->second);
 }
