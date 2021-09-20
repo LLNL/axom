@@ -49,8 +49,9 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  *    (1) The left child bounding box
  *    (2) The right child bounding box
  *    (3) The primitive being queried
- *  It should return true if the right child is closer (indicating a swap is
- *  necessary) and false if the left child is closer.
+ *  It should return true if the primitive is closer to the right child bounding
+ *  box (indicating a swap is necessary) and false if the primitive is closer to
+ *  the left child bounding box.
  *
  * \see BVHData for the details on the internal data layout of the BVH.
  *
