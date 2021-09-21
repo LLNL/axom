@@ -86,10 +86,10 @@ void demoArrayBasic()
             << std::endl;
 
   // You can also insert a value in the middle of the Array.
-  // Here we insert value 6 at position 2 and value 1 and position 4.
+  // Here we insert value 6 at position 2 and value 1 at position 4.
   showArray(a, "a");
-  a.insert(6, 2);
-  a.insert(1, 4);
+  a.insert(2, 6);
+  a.insert(4, 1);
   std::cout << "After inserting two values, ";
   showArray(a, "a");
   // _arraybasic_end

@@ -1345,15 +1345,15 @@ inline void Array<T, DIM>::resize(Args... args)
   assert(detail::allNonNegative(tmp_args));
   const auto new_num_elements = detail::packProduct(tmp_args);
 
+  static_cast<ArrayImpl<T, DIM>&>(*this) =
+    ArrayImpl<T, DIM> {static_cast<IndexType>(args)...};
+
   if(new_num_elements > m_capacity)
   {
     dynamicRealloc(new_num_elements);
   }
 
   updateNumElements(new_num_elements);
-
-  static_cast<ArrayImpl<T, DIM>&>(*this) =
-    ArrayImpl<T, DIM> {static_cast<IndexType>(args)...};
 }
 
 //------------------------------------------------------------------------------

@@ -32,9 +32,9 @@ constexpr axom::IndexType ZERO = 0;
 
 namespace detail
 {
-void describeViewImpl(TypeID T_type,
-                      const std::array<IndexType, 1>& shape,
-                      View* view)
+inline void describeViewImpl(TypeID T_type,
+                             const std::array<IndexType, 1>& shape,
+                             View* view)
 {
   SLIC_ASSERT(view != nullptr);
   IndexType dims[1];
@@ -43,9 +43,9 @@ void describeViewImpl(TypeID T_type,
   view->apply(T_type, 1, dims);
 }
 
-void describeViewImpl(TypeID T_type,
-                      const std::array<IndexType, 2>& shape,
-                      View* view)
+inline void describeViewImpl(TypeID T_type,
+                             const std::array<IndexType, 2>& shape,
+                             View* view)
 {
   SLIC_ASSERT(view != nullptr);
 
@@ -57,10 +57,10 @@ void describeViewImpl(TypeID T_type,
 }
 
 template <int DIM>
-IndexType getViewShapeImpl(int dim, const View* view);
+inline IndexType getViewShapeImpl(int dim, const View* view);
 
 template <>
-IndexType getViewShapeImpl<1>(int dim, const View* view)
+inline IndexType getViewShapeImpl<1>(int dim, const View* view)
 {
   SLIC_ERROR_IF(dim > 0, "Only one dimensional views supported.");
   SLIC_ERROR_IF(view->isEmpty(), "view cannot be empty.");
@@ -72,7 +72,7 @@ IndexType getViewShapeImpl<1>(int dim, const View* view)
 }
 
 template <>
-IndexType getViewShapeImpl<2>(int dim, const View* view)
+inline IndexType getViewShapeImpl<2>(int dim, const View* view)
 {
   SLIC_ERROR_IF(dim > 1, "Only two dimensional views supported.");
   SLIC_ERROR_IF(view->isEmpty(), "view cannot be empty.");
@@ -381,6 +381,7 @@ Array<T, DIM>::Array(View* view, typename std::enable_if<SFINAE == 2>::type*)
 
   this->m_dims[0] = getViewShape(0);
   this->m_dims[1] = getViewShape(1);
+  this->updateStrides();
 
   axom::IndexType buffer_size = m_view->getBuffer()->getNumElements();
   SLIC_ERROR_IF(buffer_size % this->m_dims[1] != 0,

@@ -115,7 +115,7 @@ void create_sidre_data(sidre::DataStore& ds, int numTuples, int numComponents)
 
   // create view to hold field values
   sidre::View* values_view = gp->createView("values");
-  sidre::Array<double> data(values_view, numTuples, numComponents);
+  sidre::MCArray<double> data(values_view, numTuples, numComponents);
 
   // fill in with some data
   populate_array(data);
@@ -239,8 +239,8 @@ TEST(mint_mesh_field_variable, sidre_push_constructor)
 
       // ensure data remains persistent in Sidre
       sidre::Array<double> dataArray(values_view);
-      EXPECT_EQ(dataArray.size(), NUM_TUPLES);
-      EXPECT_EQ(dataArray.numComponents(), NUM_COMPONENTS);
+      EXPECT_EQ(dataArray.shape()[0], NUM_TUPLES);
+      EXPECT_EQ(dataArray.shape()[1], NUM_COMPONENTS);
 
       // check data
       check_array(dataArray);
@@ -287,8 +287,8 @@ TEST(mint_mesh_field_variable, sidre_pull_constructor)
 
       // ensure data remains persistent in Sidre
       sidre::Array<double> dataArray(values_view);
-      EXPECT_EQ(dataArray.size(), NUM_TUPLES);
-      EXPECT_EQ(dataArray.numComponents(), NUM_COMPONENTS);
+      EXPECT_EQ(dataArray.shape()[0], NUM_TUPLES);
+      EXPECT_EQ(dataArray.shape()[1], NUM_COMPONENTS);
 
       check_array(dataArray);
 

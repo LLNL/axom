@@ -512,17 +512,16 @@ TEST(mint_mesh_field_data, create_and_access_fields)
   EXPECT_EQ(f1->getView("values")->getTypeID(), sidre::INT32_ID);
 
   sidre::Array<int> f1_array(f1->getView("values"));
-  EXPECT_EQ(f1_array.size(), NUM_TUPLES);
-  EXPECT_EQ(f1_array.numComponents(), 1);
+  EXPECT_EQ(f1_array.shape()[0], NUM_TUPLES);
 
   sidre::Group* f2 = fields_group->getGroup("f2");
   EXPECT_TRUE(f2 != nullptr);
   check_blueprint(f2);
   EXPECT_EQ(f2->getView("values")->getTypeID(), sidre::FLOAT64_ID);
 
-  sidre::Array<double> f2_array(f2->getView("values"));
-  EXPECT_EQ(f2_array.size(), NUM_TUPLES);
-  EXPECT_EQ(f2_array.numComponents(), NUM_COMPONENTS);
+  sidre::MCArray<double> f2_array(f2->getView("values"));
+  EXPECT_EQ(f2_array.shape()[0], NUM_TUPLES);
+  EXPECT_EQ(f2_array.shape()[1], NUM_COMPONENTS);
 
   // check data
   for(int i = 0; i < NUM_TUPLES; ++i)

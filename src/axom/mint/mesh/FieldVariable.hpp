@@ -385,7 +385,7 @@ FieldVariable<T>::FieldVariable(const std::string& name,
                                 IndexType capacity)
   : Field(name, field_traits<T>::type())
 {
-  m_field = new MCArray<T>(data, num_tuples, num_components, capacity);
+  m_field = new MCArray<T>(data, num_tuples, num_components);
   SLIC_ASSERT(m_field != nullptr);
   SLIC_ASSERT(m_field->isExternal() == true);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");

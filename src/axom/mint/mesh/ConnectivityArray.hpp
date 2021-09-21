@@ -216,7 +216,7 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    m_values = new MCArray<IndexType>(values, n_IDs, m_stride, ID_capacity);
+    m_values = new MCArray<IndexType>(values, n_IDs, m_stride);
   }
 
   /*!
@@ -246,7 +246,7 @@ public:
     , m_stride(stride)
     , m_values(nullptr)
   {
-    m_values = new MCArray<IndexType>(values, n_IDs, m_stride, ID_capacity);
+    m_values = new MCArray<IndexType>(values, n_IDs, m_stride);
   }
 
   /// @}
