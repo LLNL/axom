@@ -340,6 +340,8 @@ void check_set(MCArray<T>& v)
       EXPECT_EQ(v(i, j), i * num_components + j);
     }
   }
+
+  delete[] buffer;
 }
 
 /*!
