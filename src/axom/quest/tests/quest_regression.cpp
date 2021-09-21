@@ -408,19 +408,10 @@ void runContainmentQueries(Input& clargs)
  */
 void runDistanceQueries(Input& clargs)
 {
-  constexpr int maxDepth = 10;
-  constexpr int maxEltsPerBucket = 25;
-
-  SLIC_INFO(
-    fmt::format("Initializing BVH tree (maxDepth: {}, "
-                "maxEltsPerBucket: {}) over mesh '{}'...",
-                maxDepth,
-                maxEltsPerBucket,
-                clargs.meshName));
+  SLIC_INFO(fmt::format("Initializing linear BVH tree over mesh '{}'...",
+                        clargs.meshName));
   utilities::Timer buildTimer(true);
 
-  quest::signed_distance_set_max_levels(maxDepth);
-  quest::signed_distance_set_max_occupancy(maxEltsPerBucket);
   quest::signed_distance_init(clargs.meshName, MPI_COMM_WORLD);
 
   buildTimer.stop();

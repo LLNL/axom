@@ -48,8 +48,6 @@ program quest_signed_distance_interface
 !...variables  
   integer :: ierr, rc, i, file_name_length
   integer :: ndims = 3, N=10
-  integer :: max_occupancy = 5
-  integer :: max_levels = 15
   character(LEN=:), allocatable :: file_name
   logical :: is_verbose = .true.
   logical :: is_watertight = .true.
@@ -68,8 +66,6 @@ program quest_signed_distance_interface
 
 !...set various parameters for the signed distance query
   call quest_signed_distance_set_dimension( ndims )
-  call quest_signed_distance_set_max_levels( max_levels )
-  call quest_signed_distance_set_max_occupancy( max_occupancy )
   call quest_signed_distance_set_closed_surface( is_watertight )
   call quest_signed_distance_set_verbose( is_verbose )
   call quest_signed_distance_set_compute_signs( compute_signs )
