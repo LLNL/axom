@@ -58,9 +58,9 @@ namespace primal
  *  Chapter 5.1.5 Closest Point on Triangle to Point".
  */
 template <typename T, int NDIMS>
-inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
-                                     const Triangle<T, NDIMS>& tri,
-                                     int* loc = nullptr)
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Triangle<T, NDIMS>& tri,
+                                                      int* loc = nullptr)
 {
 // convenience macros to access triangle vertices
 #define A(t) t[0]

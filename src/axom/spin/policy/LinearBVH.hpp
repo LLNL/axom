@@ -36,6 +36,45 @@ namespace policy
 {
 namespace lbvh = internal::linear_bvh;
 
+template <typename FloatType, int NDIMS>
+class LinearBVHTraverser
+{
+public:
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+
+  LinearBVHTraverser(BoxType* bboxes, int32* inner_node_children, int32* leaf_nodes)
+    : m_inner_nodes(bboxes)
+    , m_inner_node_children(inner_node_children)
+    , m_leaf_nodes(leaf_nodes)
+  { }
+
+  template <typename LeafAction, typename Predicate>
+  AXOM_HOST_DEVICE void traverse_tree(const PointType& p,
+                                      LeafAction&& lf,
+                                      Predicate&& predicate) const
+  {
+    auto traversePref = [](const BoxType& l, const BoxType& r, const PointType& p) {
+      double sqDistL = primal::squared_distance(p, l.getCentroid());
+      double sqDistR = primal::squared_distance(p, r.getCentroid());
+      return sqDistL > sqDistR;
+    };
+
+    lbvh::bvh_traverse(m_inner_nodes,
+                       m_inner_node_children,
+                       m_leaf_nodes,
+                       p,
+                       predicate,
+                       lf,
+                       traversePref);
+  }
+
+private:
+  BoxType* m_inner_nodes {nullptr};  // BVH bins including leafs
+  int32* m_inner_node_children {nullptr};
+  int32* m_leaf_nodes {nullptr};  // leaf data
+};
+
 /*!
  * \brief LinearBVH provides a policy for a BVH implementation which supports
  *  parallel linear construction on both CPU and GPU.
@@ -50,6 +89,7 @@ template <typename FloatType, int NDIMS, typename ExecSpace>
 class LinearBVH
 {
 public:
+  using TraverserType = LinearBVHTraverser<FloatType, NDIMS>;
   using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   LinearBVH() = default;
@@ -92,6 +132,11 @@ public:
   void writeVtkFileImpl(const std::string& fileName) const;
 
   BoundingBoxType getBoundsImpl() const { return m_bounds; }
+
+  TraverserType getTraverserImpl() const
+  {
+    return TraverserType(m_inner_nodes, m_inner_node_children, m_leaf_nodes);
+  }
 
 private:
   void allocate(int32 size, int allocID)
@@ -230,6 +275,12 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
+  auto noTraversePref = [] AXOM_HOST_DEVICE(const BoundingBoxType&,
+                                            const BoundingBoxType&,
+                                            const PrimitiveType&) {
+    return false;
+  };
+
 #if defined(AXOM_USE_RAJA)
   // STEP 1: count number of candidates for each query point
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -253,7 +304,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                            leaf_nodes,
                            primitive,
                            predicate,
-                           leafAction);
+                           leafAction,
+                           noTraversePref);
 
         counts[i] = count;
         total_count_reduce += count;
@@ -296,7 +348,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                                                 leaf_nodes,
                                                 obj,
                                                 predicate,
-                                                leafAction);
+                                                leafAction,
+                                                noTraversePref);
                            }););
 #else  // CPU-only and no RAJA: do single traversal
 
@@ -321,7 +374,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                          leaf_nodes,
                          obj,
                          predicate,
-                         leafAction);
+                         leafAction,
+                         noTraversePref);
       counts[i] = matching_leaves;
     }););
 
