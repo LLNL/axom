@@ -99,10 +99,7 @@ void create_sidre_data(sidre::DataStore& ds, int dimension)
 
     // NOTE: even though the array goes out-of-scope here, the data
     // remains persistent in sidre
-    sidre::Array<double> coord_array(coord_view,
-                                     SMALL_NUM_NODES,
-                                     1,
-                                     SMALL_NUM_NODES);
+    sidre::Array<double> coord_array(coord_view, SMALL_NUM_NODES);
 
     coord_array.set(ptrs[idim], SMALL_NUM_NODES, 0);
   }  // END for all dimensions
