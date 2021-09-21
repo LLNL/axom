@@ -109,8 +109,6 @@ public:
    * \brief Creates a SignedDistance instance for queries on the given mesh.
    * \param [in] surfaceMesh user-supplied surface mesh.
    * \param [in] isWatertight indicates if the surface mesh is closed.
-   * \param [in] maxObjects max number of objects for spatial decomposition.
-   * \param [in] maxLevels max levels for spatial decomposition.
    * \param [in] computeSign indicates if distance queries should compute signs (optional).
    * \param [in] allocatorID the allocator to create the underlying BVH with.
    *
@@ -128,8 +126,6 @@ public:
    */
   SignedDistance(const mint::Mesh* surfaceMesh,
                  bool isWatertight,
-                 int maxObjects,
-                 int maxLevels,
                  bool computeSign = true,
                  int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
 
@@ -276,15 +272,11 @@ private:
    *
    * \param [in] qpt query point to check against surface element
    * \param [in] currMin the minimum-distance surface element data
-   * \param [in] mesh the surface mesh data
-   * \param [in] meshPts the surface mesh point coordinate data
    *
    * \return sgn 1.0 if outside, -1.0 if inside
    */
   AXOM_HOST_DEVICE static double computeSign(const PointType& qpt,
-                                             const MinCandidate& currMin,
-                                             const detail::UcdMeshData& mesh,
-                                             ZipPoint meshPts);
+                                             const MinCandidate& currMin);
 
 private:
   bool m_isInputWatertight;        /*!< indicates if input is watertight     */
@@ -310,8 +302,6 @@ namespace quest
 template <int NDIMS, typename ExecSpace>
 SignedDistance<NDIMS, ExecSpace>::SignedDistance(const mint::Mesh* surfaceMesh,
                                                  bool isWatertight,
-                                                 int maxObjects,
-                                                 int maxLevels,
                                                  bool computeSign,
                                                  int allocatorID)
   : m_isInputWatertight(isWatertight)
@@ -319,7 +309,6 @@ SignedDistance<NDIMS, ExecSpace>::SignedDistance(const mint::Mesh* surfaceMesh,
 {
   // Sanity checks
   SLIC_ASSERT(surfaceMesh != nullptr);
-  SLIC_ASSERT(maxLevels >= 1);
 
   bool bvh_constructed = setMesh(surfaceMesh, allocatorID);
   SLIC_ASSERT(bvh_constructed);
@@ -490,7 +479,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
           // it is outside, just return 1.0
           if(!(watertightInput && !boxDomain.contains(curr_min.minPt)))
           {
-            sgn = computeSign(qpt, curr_min, surfaceData, surf_pts);
+            sgn = computeSign(qpt, curr_min);
           }
         }
 
@@ -616,9 +605,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
 template <int NDIMS, typename ExecSpace>
 inline double SignedDistance<NDIMS, ExecSpace>::computeSign(
   const PointType& qpt,
-  const MinCandidate& currMin,
-  const detail::UcdMeshData& mesh,
-  ZipPoint meshPts)
+  const MinCandidate& currMin)
 {
   double sgn = 1.0;
   // STEP 1: Select the pseudo-normal N at the closest point to calculate the

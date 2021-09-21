@@ -191,16 +191,12 @@ int signed_distance_init(const mint::Mesh* m, MPI_Comm comm)
   case SignedDistExec::CPU:
     s_query = new SignedDistance3D(s_surface_mesh,
                                    Parameters.is_closed_surface,
-                                   Parameters.max_occupancy,
-                                   Parameters.max_levels,
                                    Parameters.compute_sign);
     break;
 #ifdef AXOM_USE_OPENMP
   case SignedDistExec::OpenMP:
     s_query_omp = new SignedDistance3DOMP(s_surface_mesh,
                                           Parameters.is_closed_surface,
-                                          Parameters.max_occupancy,
-                                          Parameters.max_levels,
                                           Parameters.compute_sign);
     break;
 #endif
@@ -208,8 +204,6 @@ int signed_distance_init(const mint::Mesh* m, MPI_Comm comm)
   case SignedDistExec::GPU:
     s_query_gpu = new SignedDistance3DGPU(s_surface_mesh,
                                           Parameters.is_closed_surface,
-                                          Parameters.max_occupancy,
-                                          Parameters.max_levels,
                                           Parameters.compute_sign);
     break;
 #endif
