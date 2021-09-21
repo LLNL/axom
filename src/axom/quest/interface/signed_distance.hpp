@@ -189,26 +189,6 @@ void signed_distance_set_closed_surface(bool status);
 void signed_distance_set_compute_signs(bool computeSign);
 
 /*!
- * \brief Sets the maximum levels of subdivision for the BVH decomposition.
- * \param [in] maxLevels the maximum levels of subdivision.
- *
- * \note Options must be set before initializing the Signed Distance Query.
- */
-void signed_distance_set_max_levels(int maxLevels);
-
-/*!
- * \brief Sets threshold on the max number of items per BVH bin. This option
- *  controls the BVH decomposition.
- *
- * \param [in] threshold max number of items per bin.
- *
- * \note Options must be set before initializing the Signed Distance Query.
- *
- * \pre theshold >= 1
- */
-void signed_distance_set_max_occupancy(int threshold);
-
-/*!
  * \brief Enables/Disables verbose output for the Signed Distance Query.
  * \param [in] status flag indicating whether to enable/disable verbose output
  *

@@ -51,8 +51,6 @@ static struct parameters_t
 {
   int dimension; /*!< the dimension, 2 or 3 */
 
-  int max_levels;         /*!< max levels of subdivision for the BVH */
-  int max_occupancy;      /*!< max occupancy per BVH bin */
   bool verbose;           /*!< logger verbosity */
   bool is_closed_surface; /*!< indicates if the input is a closed surface */
   bool use_shared_memory; /*!< use MPI-3 shared memory for the surface mesh */
@@ -64,8 +62,6 @@ static struct parameters_t
    */
   parameters_t()
     : dimension(3)
-    , max_levels(12)
-    , max_occupancy(5)
     , verbose(false)
     , is_closed_surface(true)
     , use_shared_memory(false)
@@ -277,26 +273,6 @@ void signed_distance_set_compute_signs(bool computeSign)
     "signed distance query already initialized; setting option has no effect!");
 
   Parameters.compute_sign = computeSign;
-}
-
-//------------------------------------------------------------------------------
-void signed_distance_set_max_levels(int maxLevels)
-{
-  SLIC_ERROR_IF(
-    signed_distance_initialized(),
-    "signed distance query already initialized; setting option has no effect!");
-
-  Parameters.max_levels = maxLevels;
-}
-
-//------------------------------------------------------------------------------
-void signed_distance_set_max_occupancy(int threshold)
-{
-  SLIC_ERROR_IF(
-    signed_distance_initialized(),
-    "signed distance query already initialized; setting option has no effect!");
-
-  Parameters.max_occupancy = threshold;
 }
 
 //------------------------------------------------------------------------------
