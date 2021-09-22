@@ -9,7 +9,7 @@
 #include "axom/slic/core/SimpleLogger.hpp"
 #include "mfem.hpp"
 
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 #include <unordered_map>
 #include <iostream>

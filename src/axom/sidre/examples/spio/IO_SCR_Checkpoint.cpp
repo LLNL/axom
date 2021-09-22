@@ -12,7 +12,7 @@
 #include "spio_scr.hpp"
 
 #include "mpi.h"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 #ifndef AXOM_USE_SCR
   #error This file depends on SCR. Configure Axom with SCR to use this.

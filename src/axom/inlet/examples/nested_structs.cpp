@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 #include "axom/fmt.hpp"
 
 #include "axom/slic/core/SimpleLogger.hpp"

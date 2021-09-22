@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 
 #include "axom/config.hpp"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 #include <iostream>
 #include <sstream>

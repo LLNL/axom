@@ -18,7 +18,7 @@
 #include "axom/primal.hpp"
 
 #include "axom/fmt.hpp"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 // _quest_inout_interface_include_start
 #include "axom/quest/interface/inout.hpp"

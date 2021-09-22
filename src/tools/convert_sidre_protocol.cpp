@@ -30,7 +30,7 @@
 
 #include "mpi.h"
 #include "axom/fmt.hpp"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 #include <limits>   // for numeric_limits<int>
 #include <cstdlib>  // for atoi

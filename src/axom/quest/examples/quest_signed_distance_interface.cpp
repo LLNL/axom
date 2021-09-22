@@ -12,7 +12,7 @@
 // _quest_distance_interface_include_end
 #include "axom/slic.hpp"
 
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>

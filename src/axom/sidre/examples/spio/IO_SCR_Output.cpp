@@ -11,7 +11,7 @@
 #include "axom/sidre.hpp"
 
 #include "mpi.h"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 #ifdef AXOM_USE_SCR
   #include "scr.h"

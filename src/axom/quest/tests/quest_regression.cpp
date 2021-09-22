@@ -42,7 +42,7 @@
 #include "axom/quest/interface/signed_distance.hpp"
 
 #include "axom/fmt.hpp"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 // MPI includes
 #include "mpi.h"

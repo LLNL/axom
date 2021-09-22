@@ -19,7 +19,7 @@
 #include "axom/slam.hpp"
 
 #include "axom/fmt.hpp"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 // C/C++ includes
 #include <algorithm>

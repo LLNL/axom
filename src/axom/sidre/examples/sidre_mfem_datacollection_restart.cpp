@@ -32,7 +32,7 @@
 
 // MFEM includes - needed to set up simulation
 #include "mfem.hpp"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 // Stores the state of the simulation - a mesh, fields, and associated objects
 class SimulationState

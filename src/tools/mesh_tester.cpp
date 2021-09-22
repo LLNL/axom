@@ -53,7 +53,7 @@
 #endif
 // clang-format on
 
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 // C/C++ includes
 #include <fstream>

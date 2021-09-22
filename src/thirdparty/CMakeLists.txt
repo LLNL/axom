@@ -37,8 +37,8 @@ message(STATUS "SOL Enabled: ${SOL_FOUND}")
 # Register the built-in CLI11 library for command line option parsing
 #------------------------------------------------------------------------------
 
-blt_add_library(NAME cli11
-                HEADERS CLI11/CLI11.hpp)
+blt_add_library(NAME    cli11
+                HEADERS axom/CLI11.hpp)
 
 target_include_directories(cli11 SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -46,8 +46,8 @@ target_include_directories(cli11 SYSTEM INTERFACE
 install(TARGETS              cli11
         EXPORT               axom-targets
         INCLUDES DESTINATION include)
-install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/CLI11
-        DESTINATION include )
+install(FILES       ${PROJECT_SOURCE_DIR}/thirdparty/axom/CLI11.hpp
+        DESTINATION include/axom )
 install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(CLI11_FOUND TRUE CACHE INTERNAL "")
