@@ -123,7 +123,7 @@
 #include "ItemCollection.hpp"
 
 #if defined(AXOM_USE_SPARSEHASH)
-  #include <sparsehash/dense_hash_map>
+  #include "axom/sparsehash/dense_hash_map"
 #else
   #include <unordered_map>
 #endif

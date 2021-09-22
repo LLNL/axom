@@ -147,22 +147,22 @@ if (AXOM_ENABLE_SPARSEHASH)
     # Explicitly list sparsehash files for copy-headers,
     # Separate into two lists to maintain sparsehash's hierarchy
     set(sparsehash_headers
-      sparsehash/README
-      sparsehash/dense_hash_map
-      sparsehash/dense_hash_set
-      sparsehash/sparse_hash_map
-      sparsehash/sparse_hash_set
-      sparsehash/sparsetable
-      sparsehash/template_util.h
-      sparsehash/type_traits.h     
+      axom/sparsehash/README
+      axom/sparsehash/dense_hash_map
+      axom/sparsehash/dense_hash_set
+      axom/sparsehash/sparse_hash_map
+      axom/sparsehash/sparse_hash_set
+      axom/sparsehash/sparsetable
+      axom/sparsehash/template_util.h
+      axom/sparsehash/type_traits.h     
      )
 
     set(sparsehash_headers_internal
-      sparsehash/internal/densehashtable.h
-      sparsehash/internal/hashtable-common.h
-      sparsehash/internal/libc_allocator_with_realloc.h
-      sparsehash/internal/sparseconfig.h
-      sparsehash/internal/sparsehashtable.h
+      axom/sparsehash/internal/densehashtable.h
+      axom/sparsehash/internal/hashtable-common.h
+      axom/sparsehash/internal/libc_allocator_with_realloc.h
+      axom/sparsehash/internal/sparseconfig.h
+      axom/sparsehash/internal/sparsehashtable.h
      )
      
     blt_add_library(NAME sparsehash
@@ -184,8 +184,8 @@ if (AXOM_ENABLE_SPARSEHASH)
             EXPORT               axom-targets
             INCLUDES DESTINATION include)
 
-    install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sparsehash
-            DESTINATION include)
+    install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/sparsehash
+            DESTINATION include/axom)
 
     install(EXPORT axom-targets DESTINATION lib/cmake)
 

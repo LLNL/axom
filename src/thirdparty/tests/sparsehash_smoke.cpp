@@ -10,7 +10,7 @@
 ///
 //-----------------------------------------------------------------------------
 
-#include "sparsehash/dense_hash_map"
+#include "axom/sparsehash/dense_hash_map"
 
 #include "gtest/gtest.h"
 
