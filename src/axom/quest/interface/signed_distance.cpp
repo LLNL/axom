@@ -56,7 +56,7 @@ static struct parameters_t
   bool is_closed_surface; /*!< indicates if the input is a closed surface */
   bool use_shared_memory; /*!< use MPI-3 shared memory for the surface mesh */
   bool compute_sign;      /*!< indicates if sign should be computed */
-  int allocator_id; /*!< the allocator ID to create BVH with (-1 for default) */
+  int allocator_id;       /*!< the allocator ID to create BVH with (-1 for default) */
   SignedDistExec exec_space; /*!< indicates the execution space to run in */
 
   /*!
