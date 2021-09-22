@@ -180,13 +180,13 @@ int main(int argc, char** argv)
   axom::slic::SimpleLogger logger;
 
   // Handle command line arguments
-  CLI::App app {"Basic example of Axom's Inlet component"};
+  axom::CLI::App app {"Basic example of Axom's Inlet component"};
   bool docsEnabled {false};
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");
 
   std::string inputFileName;
   auto opt = app.add_option("--file", inputFileName, "Path to input file");
-  opt->check(CLI::ExistingFile);
+  opt->check(axom::CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);
 

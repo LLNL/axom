@@ -150,27 +150,27 @@ int main(int argc, char** argv)
   int segmentsPerKnotSpan = 25;
   double weldThresh = 1E-9;
 
-  CLI::App app {"Driver for containment query using inout API"};
+  axom::CLI::App app {"Driver for containment query using inout API"};
   app.add_option("-i,--input", fileName)
     ->description("The input file describing a closed surface in 2D or 3D")
-    ->check(CLI::ExistingFile)
+    ->check(axom::CLI::ExistingFile)
     ->required();
   app.add_flag("-v,--verbose", isVerbose)
     ->description("Enable/disable verbose output")
     ->capture_default_str();
   app.add_option("-t,--weld-threshold", weldThresh)
     ->description("Threshold for welding")
-    ->check(CLI::NonNegativeNumber)
+    ->check(axom::CLI::NonNegativeNumber)
     ->capture_default_str();
   app.add_option("-q,--num-query-points", nQueryPoints)
     ->description("Number of query points")
-    ->check(CLI::NonNegativeNumber)
+    ->check(axom::CLI::NonNegativeNumber)
     ->capture_default_str();
   app.add_option("-n,--segments-per-knot-span", segmentsPerKnotSpan)
     ->description(
       "(2D only) Number of linear segments to generate per NURBS knot span")
     ->capture_default_str()
-    ->check(CLI::PositiveNumber);
+    ->check(axom::CLI::PositiveNumber);
 
   app.get_formatter()->column_width(50);
 
@@ -178,7 +178,7 @@ int main(int argc, char** argv)
   {
     app.parse(argc, argv);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     int retval = -1;
     if(my_rank == 0)

@@ -82,14 +82,14 @@ struct CommandLineArguments
 
   CommandLineArguments() : m_numFiles(0), m_fileBase("test.hdf") { }
 
-  void parse(int argc, char** argv, CLI::App& app);
+  void parse(int argc, char** argv, axom::CLI::App& app);
 };
 
 /** Parse the command line arguments */
-void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
+void CommandLineArguments::parse(int argc, char** argv, axom::CLI::App& app)
 {
   app.add_option("-n,--num", m_numFiles, "Number of files per checkpoint")
-    ->check(CLI::PositiveNumber);
+    ->check(axom::CLI::PositiveNumber);
 
   app.add_option("-f,--file", m_fileBase, "Base name of checkpoint files");
 
@@ -123,13 +123,13 @@ int main(int argc, char* argv[])
 
   // parse the command line arguments
   CommandLineArguments args;
-  CLI::App app {"SCR Output example"};
+  axom::CLI::App app {"SCR Output example"};
 
   try
   {
     args.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     int retval = -1;
     if(my_rank == 0)

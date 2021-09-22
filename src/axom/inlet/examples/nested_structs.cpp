@@ -312,7 +312,8 @@ int main(int argc, char** argv)
   // Inlet requires a SLIC logger to be initialized to output runtime information
   axom::slic::SimpleLogger logger;
 
-  CLI::App app {"Example of Axom's Inlet component for nested structures"};
+  axom::CLI::App app {
+    "Example of Axom's Inlet component for nested structures"};
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");
   bool strictVerification {false};

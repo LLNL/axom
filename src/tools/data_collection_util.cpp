@@ -64,7 +64,7 @@ private:
 
   /**
    * Fixes up parameters associated with a box mesh based on user-provided input
-   * \throws CLI::ValidationError if the options are invalid or insufficient
+   * \throws axom::CLI::ValidationError if the options are invalid or insufficient
    */
   void fixBoxParams()
   {
@@ -75,7 +75,7 @@ private:
     // First check: we need at least one of: dimension, mins/maxs, resolution
     if(!(dimProvided || rangeProvided || resProvided))
     {
-      throw CLI::ValidationError(
+      throw axom::CLI::ValidationError(
         "box",
         "Box mesh must have at least one of: dimension, mins and maxs or "
         "resolution to determine the dimension");
@@ -90,7 +90,7 @@ private:
     {
       if(boxDim <= 1 || boxDim > 3)
       {
-        throw CLI::ValidationError(
+        throw axom::CLI::ValidationError(
           "box",
           axom::fmt::format("Invalid dimension: {}. Only 2D and 3D supported",
                             boxDim));
@@ -99,13 +99,13 @@ private:
       // Ensure that range and resolution have the right number of entries
       if(rangeProvided && (szMins != boxDim || szMaxs != boxDim))
       {
-        throw CLI::ValidationError(
+        throw axom::CLI::ValidationError(
           "box",
           "Bounding box has different dimension than provided dimension");
       }
       if(resProvided && (szRes != boxDim))
       {
-        throw CLI::ValidationError(
+        throw axom::CLI::ValidationError(
           "box",
           "Box resolution has different dimension than provided dimension");
       }
@@ -114,7 +114,7 @@ private:
     // Error checking on provided range; note: accounts for previous checks on dim
     if(rangeProvided && (szMins != szMaxs))
     {
-      throw CLI::ValidationError(
+      throw axom::CLI::ValidationError(
         "box",
         "Bounding box mins and maxs has different dimensions");
     }
@@ -122,7 +122,7 @@ private:
     // Error checking on provided range and resolution; note: accounts for previous checks on dim and range
     if(rangeProvided && resProvided && (szMins != szRes))
     {
-      throw CLI::ValidationError(
+      throw axom::CLI::ValidationError(
         "box",
         "Bounding box mins and maxs has different dimensions than resolution");
     }
@@ -160,7 +160,7 @@ public:
 
   bool isVerbose() const { return m_verboseOutput; }
 
-  void parse(int argc, char** argv, CLI::App& app)
+  void parse(int argc, char** argv, axom::CLI::App& app)
   {
     // Options that are always available
     app.add_option("-o, --output-name", dcName)
@@ -176,7 +176,7 @@ public:
       ->description(
         "The number of uniform refinement levels to apply to the mesh")
       ->capture_default_str()
-      ->check(CLI::NonNegativeNumber);
+      ->check(axom::CLI::NonNegativeNumber);
 
     // Parameter to determine if we're using a file or a box mesh
     std::map<std::string, MeshForm> meshFormMap {{"box", MeshForm::Box},
@@ -184,7 +184,8 @@ public:
     app.add_option("-f,--mesh-form", meshForm)
       ->description("Determines the input type -- either box or file")
       ->capture_default_str()
-      ->transform(CLI::CheckedTransformer(meshFormMap, CLI::ignore_case));
+      ->transform(
+        axom::CLI::CheckedTransformer(meshFormMap, axom::CLI::ignore_case));
 
     // Parameters for the box mesh option
     auto* box_options =
@@ -204,12 +205,12 @@ public:
 
     box_options->add_option("-d,--dimension", boxDim)
       ->description("Dimension of the box mesh")
-      ->check(CLI::PositiveNumber);
+      ->check(axom::CLI::PositiveNumber);
 
     box_options->add_option("-p,--polynomial-order", polynomialOrder)
       ->description("polynomial order of the generated mesh")
       ->capture_default_str()
-      ->check(CLI::NonNegativeNumber);
+      ->check(axom::CLI::NonNegativeNumber);
 
     // Parameters for the 'file' option
     auto* file_options =
@@ -217,7 +218,7 @@ public:
 
     file_options->add_option("-m, --mfem-file", mfemFile)
       ->description("Path to a mesh file in the mfem format")
-      ->check(CLI::ExistingFile);
+      ->check(axom::CLI::ExistingFile);
 
     file_options->add_option("--scale", fileScale)
       ->description(
@@ -249,7 +250,7 @@ public:
     {
       if(mfemFile.empty())
       {
-        throw CLI::ValidationError(
+        throw axom::CLI::ValidationError(
           "file",
           "'mfemFile' required when `--mesh-form == File`");
       }
@@ -555,13 +556,14 @@ int main(int argc, char** argv)
 
   // Set up and parse command line arguments
   Input params;
-  CLI::App app {"Utility tool to create a blueprint compliant data store"};
+  axom::CLI::App app {
+    "Utility tool to create a blueprint compliant data store"};
 
   try
   {
     params.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     int retval = -1;
     if(my_rank == 0)

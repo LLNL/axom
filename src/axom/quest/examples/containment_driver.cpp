@@ -515,10 +515,10 @@ public:
 
   bool useBatchedQuery() const { return m_use_batched_query; }
 
-  void parse(int argc, char** argv, CLI::App& app)
+  void parse(int argc, char** argv, axom::CLI::App& app)
   {
     app.add_option("-i,--input", inputFile, "Path to input file")
-      ->check(CLI::ExistingFile);
+      ->check(axom::CLI::ExistingFile);
 
     app
       .add_flag("-v,--verbose",
@@ -534,7 +534,7 @@ public:
         "Max query resolution. \n"
         "Will query uniform grids at levels 1 through the provided level")
       ->capture_default_str()
-      ->check(CLI::PositiveNumber);
+      ->check(axom::CLI::PositiveNumber);
 
     // Optional bounding box for query region
     auto* minbb =
@@ -561,7 +561,7 @@ public:
         samplesPerKnotSpan,
         "(2D only) Number of linear segments to generate per NURBS knot span")
       ->capture_default_str()
-      ->check(CLI::PositiveNumber);
+      ->check(axom::CLI::PositiveNumber);
 
     app.get_formatter()->column_width(45);
 
@@ -581,13 +581,13 @@ int main(int argc, char** argv)
 
   // Set up and parse command line arguments
   Input params;
-  CLI::App app {"Driver for In/Out surface containment query"};
+  axom::CLI::App app {"Driver for In/Out surface containment query"};
 
   try
   {
     params.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     return app.exit(e);
   }

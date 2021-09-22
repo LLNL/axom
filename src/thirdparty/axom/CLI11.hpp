@@ -159,6 +159,8 @@
 
 // From StringTools.hpp:
 
+namespace axom {
+
 namespace CLI {
 
 /// Include the items in this namespace to get free conversion of enums to/from streams.
@@ -522,7 +524,12 @@ inline std::string &add_quotes_if_needed(std::string &str) {
 
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From Error.hpp:
+
+namespace axom {
 
 namespace CLI {
 
@@ -569,7 +576,7 @@ enum class ExitCodes {
 /// @defgroup error_group Errors
 /// @brief Errors thrown by CLI11
 ///
-/// These are the errors that can be thrown. Some of them, like CLI::Success, are not really errors.
+/// These are the errors that can be thrown. Some of them, like axom::CLI::Success, are not really errors.
 /// @{
 
 /// All errors derive from this one
@@ -848,7 +855,12 @@ class OptionNotFound : public Error {
 
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From TypeTools.hpp:
+
+namespace axom {
 
 namespace CLI {
 
@@ -1101,7 +1113,7 @@ std::string to_string(T &&variable) {
     auto cval = variable.begin();
     auto end = variable.end();
     while(cval != end) {
-        defaults.emplace_back(CLI::detail::to_string(*cval));
+        defaults.emplace_back(axom::CLI::detail::to_string(*cval));
         ++cval;
     }
     return std::string("[" + detail::join(defaults) + "]");
@@ -1845,7 +1857,12 @@ void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
 }  // namespace detail
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From Split.hpp:
+
+namespace axom {
 
 namespace CLI {
 namespace detail {
@@ -1970,7 +1987,12 @@ get_names(const std::vector<std::string> &input) {
 }  // namespace detail
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From ConfigFwd.hpp:
+
+namespace axom {
 
 namespace CLI {
 
@@ -2087,7 +2109,12 @@ class ConfigTOML : public ConfigINI {
 };
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From Validators.hpp:
+
+namespace axom {
 
 namespace CLI {
 
@@ -2432,7 +2459,7 @@ class IPV4Validator : public Validator {
   public:
     IPV4Validator() : Validator("IPV4") {
         func_ = [](std::string &ip_addr) {
-            auto result = CLI::detail::split(ip_addr, '.');
+            auto result = axom::CLI::detail::split(ip_addr, '.');
             if(result.size() != 4) {
                 return std::string("Invalid IPV4 address must have four parts (") + ip_addr + ')';
             }
@@ -3168,7 +3195,12 @@ inline std::pair<std::string, std::string> split_program_name(std::string comman
 
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From FormatterFwd.hpp:
+
+namespace axom {
 
 namespace CLI {
 
@@ -3189,7 +3221,7 @@ enum class AppFormatMode {
 /// This is the minimum requirements to run a formatter.
 ///
 /// A user can subclass this is if they do not care at all
-/// about the structure in CLI::Formatter.
+/// about the structure in axom::CLI::Formatter.
 class FormatterBase {
   protected:
     /// @name Options
@@ -3336,7 +3368,12 @@ class Formatter : public FormatterBase {
 
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From Option.hpp:
+
+namespace axom {
 
 namespace CLI {
 
@@ -4413,7 +4450,7 @@ class Option : public OptionBase<Option> {
                 _validate_results(results_);
                 current_option_state_ = old_option_state;
             }
-        } catch(const CLI::Error &) {
+        } catch(const axom::CLI::Error &) {
             // this should be done
             results_ = std::move(old_results);
             current_option_state_ = old_option_state;
@@ -4446,7 +4483,7 @@ class Option : public OptionBase<Option> {
             if(type_size_max_ > 1) {  // in this context index refers to the index in the type
                 int index = 0;
                 if(get_items_expected_max() < static_cast<int>(res.size()) &&
-                   multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
+                   multi_option_policy_ == axom::CLI::MultiOptionPolicy::TakeLast) {
                     // create a negative index for the earliest ones
                     index = get_items_expected_max() - static_cast<int>(res.size());
                 }
@@ -4464,7 +4501,7 @@ class Option : public OptionBase<Option> {
             } else {
                 int index = 0;
                 if(expected_max_ < static_cast<int>(res.size()) &&
-                   multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
+                   multi_option_policy_ == axom::CLI::MultiOptionPolicy::TakeLast) {
                     // create a negative index for the earliest ones
                     index = expected_max_ - static_cast<int>(res.size());
                 }
@@ -4562,7 +4599,7 @@ class Option : public OptionBase<Option> {
            result.back() == ']') {  // this is now a vector string likely from the default or user entry
             result.pop_back();
 
-            for(auto &var : CLI::detail::split(result.substr(1), ',')) {
+            for(auto &var : axom::CLI::detail::split(result.substr(1), ',')) {
                 if(!var.empty()) {
                     result_count += _add_result(std::move(var), res);
                 }
@@ -4574,7 +4611,7 @@ class Option : public OptionBase<Option> {
             ++result_count;
         } else {
             if((result.find_first_of(delimiter_) != std::string::npos)) {
-                for(const auto &var : CLI::detail::split(result, delimiter_)) {
+                for(const auto &var : axom::CLI::detail::split(result, delimiter_)) {
                     if(!var.empty()) {
                         res.push_back(var);
                         ++result_count;
@@ -4591,7 +4628,12 @@ class Option : public OptionBase<Option> {
 
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From App.hpp:
+
+namespace axom {
 
 namespace CLI {
 
@@ -4599,7 +4641,7 @@ namespace CLI {
 #define CLI11_PARSE(app, argc, argv)                                                                                   \
     try {                                                                                                              \
         (app).parse((argc), (argv));                                                                                   \
-    } catch(const CLI::ParseError &e) {                                                                                \
+    } catch(const axom::CLI::ParseError &e) {                                                                                \
         return (app).exit(e);                                                                                          \
     }
 #endif
@@ -5162,12 +5204,12 @@ class App {
                        std::string option_description = "",
                        bool defaulted = false) {
 
-        auto fun = [&variable](const CLI::results_t &res) {  // comment for spacing
+        auto fun = [&variable](const axom::CLI::results_t &res) {  // comment for spacing
             return detail::lexical_conversion<AssignTo, ConvertTo>(res, variable);
         };
 
         Option *opt = add_option(option_name, fun, option_description, defaulted, [&variable]() {
-            return CLI::detail::checked_to_string<AssignTo, ConvertTo>(variable);
+            return axom::CLI::detail::checked_to_string<AssignTo, ConvertTo>(variable);
         });
         opt->type_name(detail::type_name<ConvertTo>());
         // these must be actual lvalues since (std::max) sometimes is defined in terms of references and references
@@ -5186,7 +5228,7 @@ class App {
                                 const std::function<void(const T &)> &func,  ///< the callback to execute
                                 std::string option_description = "") {
 
-        auto fun = [func](const CLI::results_t &res) {
+        auto fun = [func](const axom::CLI::results_t &res) {
             T variable;
             bool result = detail::lexical_conversion<T, T>(res, variable);
             if(result) {
@@ -5204,7 +5246,7 @@ class App {
 
     /// Add option with no description or variable assignment
     Option *add_option(std::string option_name) {
-        return add_option(option_name, CLI::callback_t(), std::string{}, false);
+        return add_option(option_name, axom::CLI::callback_t(), std::string{}, false);
     }
 
     /// Add option with description but with no variable assignment or callback
@@ -5212,7 +5254,7 @@ class App {
               enable_if_t<std::is_const<T>::value && std::is_constructible<std::string, T>::value, detail::enabler> =
                   detail::dummy>
     Option *add_option(std::string option_name, T &option_description) {
-        return add_option(option_name, CLI::callback_t(), option_description, false);
+        return add_option(option_name, axom::CLI::callback_t(), option_description, false);
     }
 
     /// Set a help flag, replace the existing one if present
@@ -5251,7 +5293,7 @@ class App {
 
   private:
     /// Internal function for adding a flag
-    Option *_add_flag_internal(std::string flag_name, CLI::callback_t fun, std::string flag_description) {
+    Option *_add_flag_internal(std::string flag_name, axom::CLI::callback_t fun, std::string flag_description) {
         Option *opt;
         if(detail::has_default_flag_values(flag_name)) {
             // check for default values and if it has them
@@ -5278,7 +5320,7 @@ class App {
 
   public:
     /// Add a flag with no description or variable assignment
-    Option *add_flag(std::string flag_name) { return _add_flag_internal(flag_name, CLI::callback_t(), std::string{}); }
+    Option *add_flag(std::string flag_name) { return _add_flag_internal(flag_name, axom::CLI::callback_t(), std::string{}); }
 
     /// Add flag with description but with no variable assignment or callback
     /// takes a constant string,  if a variable string is passed that variable will be assigned the results from the
@@ -5287,18 +5329,18 @@ class App {
               enable_if_t<std::is_const<T>::value && std::is_constructible<std::string, T>::value, detail::enabler> =
                   detail::dummy>
     Option *add_flag(std::string flag_name, T &flag_description) {
-        return _add_flag_internal(flag_name, CLI::callback_t(), flag_description);
+        return _add_flag_internal(flag_name, axom::CLI::callback_t(), flag_description);
     }
 
     /// Add option for flag with integer result - defaults to allowing multiple passings, but can be forced to one
-    /// if `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
+    /// if `multi_option_policy(axom::CLI::MultiOptionPolicy::Throw)` is used.
     template <typename T,
               enable_if_t<std::is_integral<T>::value && !is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,
                      T &flag_count,  ///< A variable holding the count
                      std::string flag_description = "") {
         flag_count = 0;
-        CLI::callback_t fun = [&flag_count](const CLI::results_t &res) {
+        axom::CLI::callback_t fun = [&flag_count](const axom::CLI::results_t &res) {
             try {
                 detail::sum_flag_vector(res, flag_count);
             } catch(const std::invalid_argument &) {
@@ -5321,8 +5363,8 @@ class App {
                      T &flag_result,  ///< A variable holding true if passed
                      std::string flag_description = "") {
 
-        CLI::callback_t fun = [&flag_result](const CLI::results_t &res) {
-            return CLI::detail::lexical_cast(res[0], flag_result);
+        axom::CLI::callback_t fun = [&flag_result](const axom::CLI::results_t &res) {
+            return axom::CLI::detail::lexical_cast(res[0], flag_result);
         };
         return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))->run_callback_for_default();
     }
@@ -5334,7 +5376,7 @@ class App {
     Option *add_flag(std::string flag_name,
                      std::vector<T> &flag_results,  ///< A vector of values with the flag results
                      std::string flag_description = "") {
-        CLI::callback_t fun = [&flag_results](const CLI::results_t &res) {
+        axom::CLI::callback_t fun = [&flag_results](const axom::CLI::results_t &res) {
             bool retval = true;
             for(const auto &elem : res) {
                 flag_results.emplace_back();
@@ -5352,9 +5394,9 @@ class App {
                               std::function<void(void)> function,  ///< A function to call, void(void)
                               std::string flag_description = "") {
 
-        CLI::callback_t fun = [function](const CLI::results_t &res) {
+        axom::CLI::callback_t fun = [function](const axom::CLI::results_t &res) {
             bool trigger{false};
-            auto result = CLI::detail::lexical_cast(res[0], trigger);
+            auto result = axom::CLI::detail::lexical_cast(res[0], trigger);
             if(result && trigger) {
                 function();
             }
@@ -5368,7 +5410,7 @@ class App {
                               std::function<void(std::int64_t)> function,  ///< A function to call, void(int)
                               std::string flag_description = "") {
 
-        CLI::callback_t fun = [function](const CLI::results_t &res) {
+        axom::CLI::callback_t fun = [function](const axom::CLI::results_t &res) {
             std::int64_t flag_count = 0;
             detail::sum_flag_vector(res, flag_count);
             function(flag_count);
@@ -5445,7 +5487,7 @@ class App {
                         bool defaulted = false,
                         std::string label = "COMPLEX") {
 
-        CLI::callback_t fun = [&variable](const results_t &res) {
+        axom::CLI::callback_t fun = [&variable](const results_t &res) {
             XC x, y;
             bool worked;
             if(res.size() >= 2 && !res[1].empty()) {
@@ -5478,9 +5520,9 @@ class App {
             return worked;
         };
 
-        auto default_function = [&variable]() { return CLI::detail::checked_to_string<T, T>(variable); };
+        auto default_function = [&variable]() { return axom::CLI::detail::checked_to_string<T, T>(variable); };
 
-        CLI::Option *opt =
+        axom::CLI::Option *opt =
             add_option(option_name, std::move(fun), std::move(option_description), defaulted, default_function);
 
         opt->type_name(label)->type_size(1, 2)->delimiter('+')->run_callback_for_default();
@@ -5556,12 +5598,12 @@ class App {
         if(!subcommand_name.empty() && !detail::valid_name_string(subcommand_name)) {
             throw IncorrectConstruction("subcommand name is not valid");
         }
-        CLI::App_p subcom = std::shared_ptr<App>(new App(std::move(subcommand_description), subcommand_name, this));
+        axom::CLI::App_p subcom = std::shared_ptr<App>(new App(std::move(subcommand_description), subcommand_name, this));
         return add_subcommand(std::move(subcom));
     }
 
     /// Add a previously created app as a subcommand
-    App *add_subcommand(CLI::App_p subcom) {
+    App *add_subcommand(axom::CLI::App_p subcom) {
         if(!subcom)
             throw IncorrectConstruction("passed App is not valid");
         auto ckapp = (name_.empty() && parent_ != nullptr) ? _get_fallthrough_parent() : this;
@@ -5619,7 +5661,7 @@ class App {
     }
 
     /// Check to see if a subcommand is part of this command and get a shared_ptr to it
-    CLI::App_p get_subcommand_ptr(App *subcom) const {
+    axom::CLI::App_p get_subcommand_ptr(App *subcom) const {
         if(subcom == nullptr)
             throw OptionNotFound("nullptr passed");
         for(const App_p &subcomptr : subcommands_)
@@ -5629,7 +5671,7 @@ class App {
     }
 
     /// Check to see if a subcommand is part of this command (text version)
-    CLI::App_p get_subcommand_ptr(std::string subcom) const {
+    axom::CLI::App_p get_subcommand_ptr(std::string subcom) const {
         for(const App_p &subcomptr : subcommands_)
             if(subcomptr->check_name(subcom))
                 return subcomptr;
@@ -5637,7 +5679,7 @@ class App {
     }
 
     /// Get an owning pointer to subcommand by index
-    CLI::App_p get_subcommand_ptr(int index = 0) const {
+    axom::CLI::App_p get_subcommand_ptr(int index = 0) const {
         if(index >= 0) {
             auto uindex = static_cast<unsigned>(index);
             if(uindex < subcommands_.size())
@@ -5877,7 +5919,7 @@ class App {
     /// Print a nice error message and return the exit code
     int exit(const Error &e, std::ostream &out = std::cout, std::ostream &err = std::cerr) const {
 
-        /// Avoid printing anything if this is a CLI::RuntimeError
+        /// Avoid printing anything if this is a axom::CLI::RuntimeError
         if(e.get_name() == "RuntimeError")
             return e.get_exit_code();
 
@@ -6760,7 +6802,7 @@ class App {
             }
 
             if(sub->required_ && sub->count_all() == 0) {
-                throw(CLI::RequiredError(sub->get_display_name()));
+                throw(axom::CLI::RequiredError(sub->get_display_name()));
             }
         }
     }
@@ -7084,7 +7126,7 @@ class App {
         }
 
         if(positionals_at_end_) {
-            throw CLI::ExtrasError(name_, args);
+            throw axom::CLI::ExtrasError(name_, args);
         }
         /// If this is an option group don't deal with it
         if(parent_ != nullptr && name_.empty()) {
@@ -7657,7 +7699,12 @@ struct AppFriend {
 
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From Config.hpp:
+
+namespace axom {
 
 namespace CLI {
 
@@ -7987,7 +8034,12 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
 }  // namespace CLI
 
+}  // namespace axom
+
+
 // From Formatter.hpp:
+
+namespace axom {
 
 namespace CLI {
 
@@ -8092,7 +8144,7 @@ inline std::string Formatter::make_usage(const App *app, std::string name) const
 
     // Add a marker if subcommands are expected or optional
     if(!app->get_subcommands(
-               [](const CLI::App *subc) { return ((!subc->get_disabled()) && (!subc->get_name().empty())); })
+               [](const axom::CLI::App *subc) { return ((!subc->get_disabled()) && (!subc->get_name().empty())); })
             .empty()) {
         out << " " << (app->get_require_subcommand_min() == 0 ? "[" : "")
             << get_label(app->get_require_subcommand_max() < 2 || app->get_require_subcommand_min() > 1 ? "SUBCOMMAND"
@@ -8255,4 +8307,7 @@ inline std::string Formatter::make_option_usage(const Option *opt) const {
 }
 
 }  // namespace CLI
+
+}  // namespace axom
+
 

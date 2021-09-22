@@ -68,7 +68,7 @@ struct CommandLineArguments
     , m_numStripElts(-1)
   { }
 
-  void parse(int argc, char** argv, CLI::App& app);
+  void parse(int argc, char** argv, axom::CLI::App& app);
 
   bool shouldStripData() const { return m_numStripElts >= 0; }
 
@@ -97,14 +97,14 @@ void quitProgram(int exitCode = 0)
 }
 
 /** Parse the command line arguments */
-void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
+void CommandLineArguments::parse(int argc, char** argv, axom::CLI::App& app)
 {
   app
     .add_option("-i,--input",
                 m_inputName,
                 "Filename of input sidre-hdf5 datastore")
     ->required()
-    ->check(CLI::ExistingFile);
+    ->check(axom::CLI::ExistingFile);
 
   app
     .add_option("-o,--output",
@@ -117,14 +117,14 @@ void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
                 m_protocol,
                 "Desired protocol for output datastore")
     ->capture_default_str()
-    ->check(CLI::IsMember {CommandLineArguments::s_validProtocols});
+    ->check(axom::CLI::IsMember {CommandLineArguments::s_validProtocols});
 
   app
     .add_option(
       "-s,--strip",
       m_numStripElts,
       "If provided, output arrays will be stripped to first N entries")
-    ->check(CLI::PositiveNumber);
+    ->check(axom::CLI::PositiveNumber);
 
   bool verboseOutput = false;
   app.add_flag("-v,--verbose", verboseOutput, "Sets output to verbose")
@@ -406,13 +406,13 @@ int main(int argc, char* argv[])
 
   // parse the command line arguments
   CommandLineArguments args;
-  CLI::App app {"Sidre protocol converter"};
+  axom::CLI::App app {"Sidre protocol converter"};
 
   try
   {
     args.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     int retval = -1;
     if(my_rank == 0)

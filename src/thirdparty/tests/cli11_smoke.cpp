@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
   std::stringstream sstr;
   sstr << "Smoke test for CLI11 TPL, version " << getVersion();
 
-  CLI::App app {sstr.str()};
+  axom::CLI::App app {sstr.str()};
 
   // variables for command line options
   bool opt_bool = false;
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 
   app.add_option("-f,--some-float", opt_float, "float input")
     ->capture_default_str()
-    ->check(CLI::Range(1., 4.).description("Range [1,4]"));
+    ->check(axom::CLI::Range(1., 4.).description("Range [1,4]"));
 
   app.add_option("-s,--some-string", opt_str, "string input");
 

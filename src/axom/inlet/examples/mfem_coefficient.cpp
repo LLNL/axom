@@ -177,11 +177,12 @@ int main(int argc, char** argv)
   // Inlet requires a SLIC logger to be initialized to output runtime information
   axom::slic::SimpleLogger logger;
 
-  CLI::App app {"Example of Axom's Inlet component with user-defined types"};
+  axom::CLI::App app {
+    "Example of Axom's Inlet component with user-defined types"};
   // Intended to be used with mfem_coef.lua
   std::string inputFileName;
   auto opt = app.add_option("--file", inputFileName, "Path to input file");
-  opt->check(CLI::ExistingFile);
+  opt->check(axom::CLI::ExistingFile);
 
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");

@@ -108,7 +108,7 @@ struct Input
   /**
  * \brief Parses the command line options
  */
-  void parse(int argc, char** argv, CLI::App& app)
+  void parse(int argc, char** argv, axom::CLI::App& app)
   {
     app
       .add_option("-m,--mesh",
@@ -186,7 +186,7 @@ struct Input
     }
     else if(!hasRes || !hasBBox)
     {
-      throw CLI::Error(
+      throw axom::CLI::Error(
         "IncorrectConstruction",
         "Resolution and bounding box required when baseline is not supplied");
     }
@@ -202,7 +202,7 @@ struct Input
 
     if(!testContainment && !testDistance)
     {
-      throw CLI::Error(
+      throw axom::CLI::Error(
         "IncorrectConstruction",
         "At least one of {--distance; --containment} must be enabled.");
     }
@@ -791,14 +791,14 @@ int main(int argc, char** argv)
 
   // parse the command arguments
   Input args;
-  CLI::App app {
+  axom::CLI::App app {
     "Regression tester for point containment and signed distance tests"};
 
   try
   {
     args.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     return app.exit(e);
   }

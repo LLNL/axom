@@ -80,11 +80,11 @@ struct Arguments
   bool ignore_signs {false};
   quest::SignedDistExec exec_space;
 
-  void parse(int argc, char** argv, CLI::App& app)
+  void parse(int argc, char** argv, axom::CLI::App& app)
   {
     app
       .add_option("-f,--file", this->fileName, "specifies the input mesh file")
-      ->check(CLI::ExistingFile)
+      ->check(axom::CLI::ExistingFile)
       ->required();
 
     app.add_option("--dimension", this->ndims, "the problem dimension")
@@ -142,7 +142,7 @@ struct Arguments
 #endif
     app.add_option("-e, --exec_space", this->exec_space, pol_info)
       ->capture_default_str()
-      ->transform(CLI::CheckedTransformer(validExecPolicies));
+      ->transform(axom::CLI::CheckedTransformer(validExecPolicies));
 
     app.get_formatter()->column_width(40);
 
@@ -180,13 +180,13 @@ int main(int argc, char** argv)
 
   // STEP 2: parse command line arguments
   Arguments args;
-  CLI::App app {"Driver for signed distance query"};
+  axom::CLI::App app {"Driver for signed distance query"};
 
   try
   {
     args.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     int retval = -1;
     if(mpirank == 0)

@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
 #endif
 
   // Command-line argument to load in a specific cycle - optional
-  CLI::App app {"Example of Axom's MFEMSidreDataCollection for restarts"};
+  axom::CLI::App app {"Example of Axom's MFEMSidreDataCollection for restarts"};
   int cycle_to_load = -1;
   app.add_option("--cycle", cycle_to_load, "Optional simulation cycle to load");
   CLI11_PARSE(app, argc, argv);
