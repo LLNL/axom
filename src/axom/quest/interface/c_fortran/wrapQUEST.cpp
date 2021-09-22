@@ -248,6 +248,13 @@ void QUEST_signed_distance_set_compute_signs(bool computeSign)
   // splicer end function.signed_distance_set_compute_signs
 }
 
+void QUEST_signed_distance_set_allocator(int allocatorID)
+{
+  // splicer begin function.signed_distance_set_allocator
+  axom::quest::signed_distance_set_allocator(allocatorID);
+  // splicer end function.signed_distance_set_allocator
+}
+
 void QUEST_signed_distance_set_verbose(bool status)
 {
   // splicer begin function.signed_distance_set_verbose

@@ -414,6 +414,27 @@ static PyObject *PY_signed_distance_set_compute_signs(PyObject *SHROUD_UNUSED(se
   // splicer end function.signed_distance_set_compute_signs
 }
 
+static char PY_signed_distance_set_allocator__doc__[] = "documentation";
+
+static PyObject *PY_signed_distance_set_allocator(PyObject *SHROUD_UNUSED(self),
+                                                  PyObject *args,
+                                                  PyObject *kwds)
+{
+  // splicer begin function.signed_distance_set_allocator
+  int allocatorID;
+  const char *SHT_kwlist[] = {"allocatorID", nullptr};
+
+  if(!PyArg_ParseTupleAndKeywords(args,
+                                  kwds,
+                                  "i:signed_distance_set_allocator",
+                                  const_cast<char **>(SHT_kwlist),
+                                  &allocatorID))
+    return nullptr;
+  axom::quest::signed_distance_set_allocator(allocatorID);
+  Py_RETURN_NONE;
+  // splicer end function.signed_distance_set_allocator
+}
+
 static char PY_signed_distance_set_verbose__doc__[] = "documentation";
 
 static PyObject *PY_signed_distance_set_verbose(PyObject *SHROUD_UNUSED(self),
@@ -662,6 +683,10 @@ static PyMethodDef PY_methods[] = {
    (PyCFunction)PY_signed_distance_set_compute_signs,
    METH_VARARGS | METH_KEYWORDS,
    PY_signed_distance_set_compute_signs__doc__},
+  {"signed_distance_set_allocator",
+   (PyCFunction)PY_signed_distance_set_allocator,
+   METH_VARARGS | METH_KEYWORDS,
+   PY_signed_distance_set_allocator__doc__},
   {"signed_distance_set_verbose",
    (PyCFunction)PY_signed_distance_set_verbose,
    METH_VARARGS | METH_KEYWORDS,

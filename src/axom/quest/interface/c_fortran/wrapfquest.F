@@ -270,6 +270,13 @@ module axom_quest
             logical(C_BOOL), value, intent(IN) :: computeSign
         end subroutine c_signed_distance_set_compute_signs
 
+        subroutine quest_signed_distance_set_allocator(allocatorID) &
+                bind(C, name="QUEST_signed_distance_set_allocator")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: allocatorID
+        end subroutine quest_signed_distance_set_allocator
+
         subroutine c_signed_distance_set_verbose(status) &
                 bind(C, name="QUEST_signed_distance_set_verbose")
             use iso_c_binding, only : C_BOOL
