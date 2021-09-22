@@ -10,8 +10,8 @@
 ///
 //-----------------------------------------------------------------------------
 
-#include "axom/core/utilities/About.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/core.hpp"
+#include "axom/fmt.hpp"
 
 #include <iostream>
 
