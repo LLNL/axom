@@ -13,7 +13,7 @@
 #include "axom/slic.hpp"
 #include "axom/mint.hpp"
 #include "axom/primal.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"

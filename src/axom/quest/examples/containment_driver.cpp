@@ -18,7 +18,7 @@
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "CLI11/CLI11.hpp"
 
 // C/C++ includes

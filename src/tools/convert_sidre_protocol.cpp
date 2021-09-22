@@ -24,12 +24,12 @@
  */
 
 #include "axom/config.hpp"
-#include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 #include "axom/slam.hpp"
 
 #include "mpi.h"
+#include "axom/fmt.hpp"
 #include "CLI11/CLI11.hpp"
 
 #include <limits>   // for numeric_limits<int>

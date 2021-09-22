@@ -57,25 +57,29 @@ mark_as_advanced(CLI11_FOUND)
 # Register the built-in fmt library for string formatting
 #------------------------------------------------------------------------------
 
+# Headers that Axom adds to fmt
+set(axom_fmt_headers
+    axom/fmt.hpp
+    )
+
+# Headers that come from fmt
 set(fmt_headers
-    fmt/fmt.hpp
-    fmt/args.h
-    fmt/compile.h
-    fmt/core.h
-    fmt/format.h
-    fmt/format-inl.h
-    fmt/os.h
-    fmt/ostream.h
-    fmt/posix.h
-    fmt/printf.h
-    fmt/ranges.h
-    fmt/chrono.h
-    fmt/color.h
-    fmt/locale.h
+    axom/fmt/args.h
+    axom/fmt/chrono.h
+    axom/fmt/color.h
+    axom/fmt/compile.h
+    axom/fmt/core.h
+    axom/fmt/format-inl.h
+    axom/fmt/format.h
+    axom/fmt/locale.h
+    axom/fmt/os.h
+    axom/fmt/ostream.h
+    axom/fmt/printf.h
+    axom/fmt/ranges.h
     )
 
 blt_add_library(NAME    fmt
-                HEADERS ${fmt_headers})
+                HEADERS ${fmt_headers} ${axom_fmt_headers})
 
 target_include_directories(fmt SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -87,8 +91,13 @@ set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
 install(TARGETS              fmt
         EXPORT               axom-targets
         INCLUDES DESTINATION include)
-install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
-        DESTINATION include
+# Install our helper header to axom
+install(FILES   ${axom_fmt_headers}
+        DESTINATION include/axom
+        )
+# Install fmt's headers to axom/fmt
+install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/fmt
+        DESTINATION include/axom
         )
 install(EXPORT axom-targets DESTINATION lib/cmake)
 

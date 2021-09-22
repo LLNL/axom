@@ -43,7 +43,7 @@
 #include <fstream>
 #include <vector>
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 // almost all our examples are in 3D
 constexpr int in3D = 3;

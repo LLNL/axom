@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "axom/sidre.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
 #include "axom/core/Path.hpp"
 

@@ -19,7 +19,7 @@
 #include "axom/core/utilities/StringUtilities.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "axom/slic.hpp"
 
 namespace axom

@@ -31,7 +31,7 @@
 
 #include "axom/sidre/core/sidre.hpp"
 #include "axom/sidre/spio/IOManager.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "mpi.h"
 // _parallel_io_headers_end

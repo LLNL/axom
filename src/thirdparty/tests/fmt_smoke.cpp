@@ -12,7 +12,7 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "gtest/gtest.h"
 

@@ -11,7 +11,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include <cmath>
 

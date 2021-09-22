@@ -10,7 +10,7 @@
 #include "axom/sidre.hpp"
 #include "axom/primal.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "CLI11/CLI11.hpp"
 
 // MFEM is required

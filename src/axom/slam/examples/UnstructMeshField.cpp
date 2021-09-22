@@ -22,7 +22,7 @@
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include <fstream>
 #include <sstream>

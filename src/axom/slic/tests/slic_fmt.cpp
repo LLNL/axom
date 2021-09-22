@@ -10,7 +10,7 @@
  */
 
 #include "axom/config.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"

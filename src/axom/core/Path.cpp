@@ -8,7 +8,7 @@
 #include <iostream>
 #include <iterator>
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/core/utilities/StringUtilities.hpp"
 

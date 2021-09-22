@@ -38,7 +38,7 @@
 #include "axom/slic/core/SimpleLogger.hpp"
 using axom::slic::SimpleLogger;
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include <fstream>
 #include <vector>
