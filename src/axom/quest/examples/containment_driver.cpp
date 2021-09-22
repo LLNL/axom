@@ -188,13 +188,13 @@ public:
                          : batchedPointContainment3D(umesh, timer);
     }
 
-    SLIC_INFO(
-      axom::fmt::format("\tQuerying {}^{} containment field took {} seconds (@ {} "
-                  "queries per second)",
-                  gridRes,
-                  DIM,
-                  timer.elapsed(),
-                  nnodes / timer.elapsed()));
+    SLIC_INFO(axom::fmt::format(
+      "\tQuerying {}^{} containment field took {} seconds (@ {} "
+      "queries per second)",
+      gridRes,
+      DIM,
+      timer.elapsed(),
+      nnodes / timer.elapsed()));
 
     if(shouldOutputMeshes)
     {
@@ -404,7 +404,8 @@ public:
 
     // Log the results
     const int nVerts = m_surfaceMesh->getNumberOfNodes();
-    SLIC_INFO(axom::fmt::format("Mesh has {} vertices  and {} cells.", nVerts, nCells));
+    SLIC_INFO(
+      axom::fmt::format("Mesh has {} vertices  and {} cells.", nVerts, nCells));
 
     if(dimension() == 3)
     {
@@ -419,10 +420,10 @@ public:
       for(auto it = edgeLenHist.begin(); it != edgeLenHist.end(); ++it)
       {
         axom::fmt::format_to(edgeHistStr,
-                       "\n\texp: {}\tcount: {}\tRange: {}",
-                       it->first,
-                       it->second / 2,
-                       edgeLenRangeMap[it->first]);
+                             "\n\texp: {}\tcount: {}\tRange: {}",
+                             it->first,
+                             it->second / 2,
+                             edgeLenRangeMap[it->first]);
       }
       SLIC_DEBUG(axom::fmt::to_string(edgeHistStr));
     }
@@ -432,18 +433,19 @@ public:
     for(auto it = areaHist.begin(); it != areaHist.end(); ++it)
     {
       axom::fmt::format_to(cellHistStr,
-                     "\n\texp: {}\tcount: {}\tRange: {}",
-                     it->first,
-                     it->second,
-                     areaRangeMap[it->first]);
+                           "\n\texp: {}\tcount: {}\tRange: {}",
+                           it->first,
+                           it->second,
+                           areaRangeMap[it->first]);
     }
     SLIC_DEBUG(axom::fmt::to_string(cellHistStr));
 
     if(!badCells.empty())
     {
       axom::fmt::memory_buffer badCellStr;
-      axom::fmt::format_to(badCellStr,
-                     "The following cell(s) have zero area/edge lengths:");
+      axom::fmt::format_to(
+        badCellStr,
+        "The following cell(s) have zero area/edge lengths:");
       for(auto it = badCells.begin(); it != badCells.end(); ++it)
       {
         axom::fmt::format_to(badCellStr, "\n\tCell {}", *it);
@@ -455,9 +457,9 @@ public:
         {
           m_surfaceMesh->getNode(vertIndices[j], vertPos.data());
           axom::fmt::format_to(badCellStr,
-                         "\n\t\t vId: {} @ position: {}",
-                         vertIndices[j],
-                         vertPos);
+                               "\n\t\t vId: {} @ position: {}",
+                               vertIndices[j],
+                               vertPos);
         }
       }
       SLIC_DEBUG(axom::fmt::to_string(badCellStr));

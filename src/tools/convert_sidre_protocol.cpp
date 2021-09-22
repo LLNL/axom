@@ -212,10 +212,10 @@ void modifyFinalValuesImpl(sidre::View* view, int origSize)
     for(auto i : viewInds.positions())
     {
       axom::fmt::format_to(out,
-                     "\n\ti: {0}; index: {1}; arr[{1}] = {2}",
-                     i,
-                     viewInds[i],
-                     arr[viewInds[i]]);
+                           "\n\ti: {0}; index: {1}; arr[{1}] = {2}",
+                           i,
+                           viewInds[i],
+                           arr[viewInds[i]]);
     }
     SLIC_DEBUG("Before truncation" << axom::fmt::to_string(out));
   }

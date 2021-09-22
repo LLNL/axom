@@ -205,8 +205,8 @@ public:
     {
       bool fExists = axom::utilities::filesystem::pathExists(fileName);
       SLIC_ERROR(axom::fmt::format("Attempted to open file '{}'. It {}.",
-                             fileName,
-                             fExists ? "exists" : "does not exist"));
+                                   fileName,
+                                   fExists ? "exists" : "does not exist"));
     }
   }
   ~SimpleVTKHexMeshReader()
@@ -258,12 +258,13 @@ public:
     // different.
     SLIC_ASSERT_MSG(
       (listSize - numZones) == numNodeZoneIndices,
-      axom::fmt::format("Error while reading mesh!\n "
-                  "numZones = {0}; numZones*{1} = {2}; indices in file = {3}",
-                  numZones,
-                  static_cast<int>(HexMesh::NODES_PER_ZONE),
-                  numNodeZoneIndices,
-                  listSize - numZones));
+      axom::fmt::format(
+        "Error while reading mesh!\n "
+        "numZones = {0}; numZones*{1} = {2}; indices in file = {3}",
+        numZones,
+        static_cast<int>(HexMesh::NODES_PER_ZONE),
+        numNodeZoneIndices,
+        listSize - numZones));
 
     IndexBuf& zn_indices =
       Repository::intsRegistry.addBuffer("zone_node_indices", numNodeZoneIndices);
@@ -550,11 +551,11 @@ int main(int argc, char** argv)
     // Some error checking based on precomputed values
     if(!axom::utilities::isNearlyEqual(errVal, expectedResults[res]))
     {
-      SLIC_WARNING("Error differed from expected value -- "
-                   << axom::fmt::format("Expected {}, but got {} (difference: {}",
-                                  expectedResults[res],
-                                  errVal,
-                                  errVal - expectedResults[res]));
+      SLIC_WARNING("Error differed from expected value -- " << axom::fmt::format(
+                     "Expected {}, but got {} (difference: {}",
+                     expectedResults[res],
+                     errVal,
+                     errVal - expectedResults[res]));
 
       ++numFailedTests;
     }
@@ -564,8 +565,8 @@ int main(int argc, char** argv)
 
   //--------------------------------------------------------------
   SLIC_INFO(axom::fmt::format("-- {} tests out of {} passed",
-                        NUM_RESOLUTIONS - numFailedTests,
-                        NUM_RESOLUTIONS));
+                              NUM_RESOLUTIONS - numFailedTests,
+                              NUM_RESOLUTIONS));
 
   return (numFailedTests == 0) ? 0 : 1;
 }

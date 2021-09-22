@@ -324,12 +324,12 @@ public:
     // Output some diagnostics
     SLIC_INFO(
       axom::fmt::format("Querying {} pts on {} quad mesh took {} s "
-                  " -- rate: {} q/s (includes {} inverse xforms)",
-                  pts.size(),
-                  meshTypeStr,
-                  queryTimer.elapsed(),
-                  pts.size() / queryTimer.elapsed(),
-                  numInverseXforms));
+                        " -- rate: {} q/s (includes {} inverse xforms)",
+                        pts.size(),
+                        meshTypeStr,
+                        queryTimer.elapsed(),
+                        pts.size() / queryTimer.elapsed(),
+                        numInverseXforms));
 
     SLIC_INFO(axom::fmt::format(
       "On {} mesh, verified plausibility in {} of {} cases ({:.1f}%)",
@@ -429,12 +429,12 @@ public:
       }
     }
 
-    SLIC_INFO(
-      axom::fmt::format("Verifying {} pts on {} quad mesh took {} s -- rate: {} q/s",
-                  pts.size() * m_mesh->GetNE(),
-                  meshTypeStr,
-                  queryTimer2.elapsed(),
-                  pts.size() * m_mesh->GetNE() / queryTimer2.elapsed()));
+    SLIC_INFO(axom::fmt::format(
+      "Verifying {} pts on {} quad mesh took {} s -- rate: {} q/s",
+      pts.size() * m_mesh->GetNE(),
+      meshTypeStr,
+      queryTimer2.elapsed(),
+      pts.size() * m_mesh->GetNE() / queryTimer2.elapsed()));
   }
 
   mfem::Mesh* getMesh() { return m_mesh; }
@@ -566,18 +566,18 @@ public:
       meshDescSstr << "curved";
 
       sstr << axom::fmt::format(m_highOrderNodesStr,
-                          vertVal,
-                          vertVal * std::sqrt(2.) / 2.,
-                          feCollName);
+                                vertVal,
+                                vertVal * std::sqrt(2.) / 2.,
+                                feCollName);
       break;
     case QUADRATIC_POS_MESH:
       feCollName = "QuadraticPos";
       meshDescSstr << "curved_pos";
 
       sstr << axom::fmt::format(m_highOrderNodesStr,
-                          vertVal,
-                          vertVal * (std::sqrt(2.) - 0.5),
-                          feCollName);
+                                vertVal,
+                                vertVal * (std::sqrt(2.) - 0.5),
+                                feCollName);
       break;
     case C_SHAPED_MESH:
       feCollName = "Quadratic";
@@ -603,12 +603,14 @@ public:
 
       m_meshDescriptorStr = meshDescSstr.str();
 
-      SLIC_INFO(
-        axom::fmt::format("Generating {} mfem quad mesh", feCollName)
-        << (jitterFactor > 0 ? axom::fmt::format(" with jitter factor {}", jitterFactor)
-                             : "")
-        << (numRefine > 0 ? axom::fmt::format(" refined to level {}.", numRefine) : "")
-        << "\nDescriptor string: " << m_meshDescriptorStr);
+      SLIC_INFO(axom::fmt::format("Generating {} mfem quad mesh", feCollName)
+                << (jitterFactor > 0
+                      ? axom::fmt::format(" with jitter factor {}", jitterFactor)
+                      : "")
+                << (numRefine > 0
+                      ? axom::fmt::format(" refined to level {}.", numRefine)
+                      : "")
+                << "\nDescriptor string: " << m_meshDescriptorStr);
     }
 
     // Create the MFEM mesh
@@ -776,10 +778,10 @@ public:
       meshDescSstr << "curved";
 
       sstr << axom::fmt::format(m_highOrderNodesStr,
-                          vertVal,
-                          vertVal * std::sqrt(1.5),
-                          vertVal * std::sqrt(3.),
-                          feCollName);
+                                vertVal,
+                                vertVal * std::sqrt(1.5),
+                                vertVal * std::sqrt(3.),
+                                feCollName);
       break;
     case QUADRATIC_POS_MESH:
       FAIL() << "Undefined for now";
@@ -805,12 +807,14 @@ public:
 
       m_meshDescriptorStr = meshDescSstr.str();
 
-      SLIC_INFO(
-        axom::fmt::format("Generating {} mfem quad mesh", feCollName)
-        << (jitterFactor > 0 ? axom::fmt::format(" with jitter factor {}", jitterFactor)
-                             : "")
-        << (numRefine > 0 ? axom::fmt::format(" refined to level {}.", numRefine) : "")
-        << "\nDescriptor string: " << m_meshDescriptorStr);
+      SLIC_INFO(axom::fmt::format("Generating {} mfem quad mesh", feCollName)
+                << (jitterFactor > 0
+                      ? axom::fmt::format(" with jitter factor {}", jitterFactor)
+                      : "")
+                << (numRefine > 0
+                      ? axom::fmt::format(" refined to level {}.", numRefine)
+                      : "")
+                << "\nDescriptor string: " << m_meshDescriptorStr);
     }
 
     // Create the MFEM mesh instance
@@ -1197,13 +1201,14 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped)
     }
   }
 
-  SLIC_INFO(axom::fmt::format("Querying {} random pts on two C-shaped quadratic "
-                        "quad meshes took {} s -- rate: {} q/s",
-                        num_pts * 2,
-                        queryTimer.elapsed(),
-                        num_pts * 2 / queryTimer.elapsed())
-            << "\n\t (includes " << numUntransformed
-            << " transformations back into space)");
+  SLIC_INFO(
+    axom::fmt::format("Querying {} random pts on two C-shaped quadratic "
+                      "quad meshes took {} s -- rate: {} q/s",
+                      num_pts * 2,
+                      queryTimer.elapsed(),
+                      num_pts * 2 / queryTimer.elapsed())
+    << "\n\t (includes " << numUntransformed
+    << " transformations back into space)");
 
   /// Test that fixed set of isoparametric coords on each cell map correctly
   std::vector<SpacePt> pts = this->generateIsoParTestPoints(10);
@@ -1249,10 +1254,10 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped)
 
   SLIC_INFO(
     axom::fmt::format("Verifying {} pts on curved quad jittered mesh"
-                " took {} s -- rate: {} q/s",
-                pts.size() * mesh2.GetNE() * 2,
-                queryTimer2.elapsed(),
-                pts.size() * mesh2.GetNE() * 2 / queryTimer2.elapsed()));
+                      " took {} s -- rate: {} q/s",
+                      pts.size() * mesh2.GetNE() * 2,
+                      queryTimer2.elapsed(),
+                      pts.size() * mesh2.GetNE() * 2 / queryTimer2.elapsed()));
 }
 
 TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
@@ -1340,9 +1345,9 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
     }
 
     SLIC_INFO(axom::fmt::format("Found {} of {} points ({}%)",
-                          numSuccesses,
-                          numCells,
-                          (100. * numSuccesses) / numCells));
+                                numSuccesses,
+                                numCells,
+                                (100. * numSuccesses) / numCells));
   }
 
   // Dump the mint mesh
@@ -1490,7 +1495,8 @@ TEST_F(PointInCell3DTest, pic_curved_refined_hex_jittered)
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(axom::fmt::format("point_in_cell_{}", meshTypeStr));
 
-  std::string filename = axom::fmt::format("quadratic_hex_mesh_refined_jittered");
+  std::string filename =
+    axom::fmt::format("quadratic_hex_mesh_refined_jittered");
   {
     mfem::Mesh& mesh = *this->getMesh();
 

@@ -92,7 +92,8 @@ private:
       {
         throw CLI::ValidationError(
           "box",
-          axom::fmt::format("Invalid dimension: {}. Only 2D and 3D supported", boxDim));
+          axom::fmt::format("Invalid dimension: {}. Only 2D and 3D supported",
+                            boxDim));
       }
 
       // Ensure that range and resolution have the right number of entries
@@ -365,11 +366,11 @@ mfem::Mesh* loadFileMesh(const Input& params)
         }
         break;
       default:
-        SLIC_ERROR_IF(
-          dim != numProvidedScales,
-          axom::fmt::format("Incorrect number of scale values. Expected {} got {}",
-                      dim,
-                      numProvidedScales));
+        SLIC_ERROR_IF(dim != numProvidedScales,
+                      axom::fmt::format(
+                        "Incorrect number of scale values. Expected {} got {}",
+                        dim,
+                        numProvidedScales));
         for(int d = 0; d < dim; ++d)
         {
           sc(d) = params.fileScale[d];

@@ -314,14 +314,15 @@ mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res
  */
 void runContainmentQueries(Input& clargs)
 {
-  SLIC_INFO(
-    axom::fmt::format("Initializing InOutOctree over mesh '{}'...", clargs.meshName));
+  SLIC_INFO(axom::fmt::format("Initializing InOutOctree over mesh '{}'...",
+                              clargs.meshName));
   utilities::Timer buildTimer(true);
 
   quest::inout_init(clargs.meshName, MPI_COMM_WORLD);
 
   buildTimer.stop();
-  SLIC_INFO(axom::fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
+  SLIC_INFO(
+    axom::fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
 
   SpacePt bbMin;
   SpacePt bbMax;
@@ -348,12 +349,13 @@ void runContainmentQueries(Input& clargs)
   #pragma omp master
   SLIC_INFO(
     axom::fmt::format("Querying InOutOctree on uniform grid "
-                "of resolution {} using {} threads",
-                clargs.queryResolution,
-                omp_get_num_threads()));
+                      "of resolution {} using {} threads",
+                      clargs.queryResolution,
+                      omp_get_num_threads()));
 #else
-  SLIC_INFO(axom::fmt::format("Querying InOutOctree on uniform grid of resolution {}",
-                        clargs.queryResolution));
+  SLIC_INFO(
+    axom::fmt::format("Querying InOutOctree on uniform grid of resolution {}",
+                      clargs.queryResolution));
 #endif
 
   // Add a scalar field for the containment queries
@@ -387,13 +389,13 @@ void runContainmentQueries(Input& clargs)
   queryTimer.stop();
 
   SLIC_INFO(axom::fmt::format("Filling coordinates array took {} seconds",
-                        fillTimer.elapsed()));
+                              fillTimer.elapsed()));
   SLIC_INFO(
     axom::fmt::format("Querying {}^3 containment field (InOutOctree) "
-                "took {} seconds (@ {} queries per second)",
-                clargs.queryResolution,
-                queryTimer.elapsed(),
-                nnodes / queryTimer.elapsed()));
+                      "took {} seconds (@ {} queries per second)",
+                      clargs.queryResolution,
+                      queryTimer.elapsed(),
+                      nnodes / queryTimer.elapsed()));
 
   delete[] xcoords;
   delete[] ycoords;
@@ -416,7 +418,8 @@ void runDistanceQueries(Input& clargs)
 
   buildTimer.stop();
 
-  SLIC_INFO(axom::fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
+  SLIC_INFO(
+    axom::fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
 
   SpacePt bbMin, bbMax;
   quest::signed_distance_get_mesh_bounds(bbMin.data(), bbMax.data());
@@ -488,13 +491,13 @@ void runDistanceQueries(Input& clargs)
   }
 
   SLIC_INFO(axom::fmt::format("Filling coordinates array took {} seconds",
-                        fillTimer.elapsed()));
+                              fillTimer.elapsed()));
   SLIC_INFO(
     axom::fmt::format("Querying {}^3 signed distance field (BVH) "
-                "took {} seconds (@ {} queries per second)",
-                clargs.queryResolution,
-                distanceTimer.elapsed(),
-                nnodes / distanceTimer.elapsed()));
+                      "took {} seconds (@ {} queries per second)",
+                      clargs.queryResolution,
+                      distanceTimer.elapsed(),
+                      nnodes / distanceTimer.elapsed()));
 
   delete[] xcoords;
   delete[] ycoords;
@@ -560,13 +563,13 @@ bool compareDistanceAndContainment(Input& clargs)
             umesh->getNode(inode, pt.data());
 
             axom::fmt::format_to(out,
-                           "\n  Disagreement on sample {} @ {}.  "
-                           "Signed distance: {} ({}) -- InOutOctree: {} ",
-                           inode,
-                           pt,
-                           bvh_d,
-                           bvh_c ? "inside" : "outside",
-                           oct_c ? "inside" : "outside");
+                                 "\n  Disagreement on sample {} @ {}.  "
+                                 "Signed distance: {} ({}) -- InOutOctree: {} ",
+                                 inode,
+                                 pt,
+                                 bvh_d,
+                                 bvh_c ? "inside" : "outside",
+                                 oct_c ? "inside" : "outside");
           }
           ++diffCount;
         }
@@ -767,9 +770,10 @@ void saveBaseline(axom::sidre::Group* grp, Input& clargs)
   std::string protocol = "sidre_hdf5";
   sidre::IOManager writer(MPI_COMM_WORLD);
   writer.write(grp, 1, outfile, protocol);
-  SLIC_INFO(axom::fmt::format("** Saved baseline file '{}' using '{}' protocol.",
-                        outfile,
-                        protocol));
+  SLIC_INFO(
+    axom::fmt::format("** Saved baseline file '{}' using '{}' protocol.",
+                      outfile,
+                      protocol));
 }
 
 /**
