@@ -224,7 +224,7 @@
 #ifndef UTIL_GTL_SPARSETABLE_H_
 #define UTIL_GTL_SPARSETABLE_H_
 
-#include <sparsehash/internal/sparseconfig.h>
+#include <axom/sparsehash/internal/sparseconfig.h>
 #include <stdlib.h>             // for malloc/free
 #include <stdio.h>              // to read/write tables
 #include <string.h>             // for memcpy
@@ -242,9 +242,9 @@
 #include <algorithm>            // equal, lexicographical_compare, swap,...
 #include <memory>               // uninitialized_copy, uninitialized_fill
 #include <vector>               // a sparsetable is a vector of groups
-#include <sparsehash/type_traits.h>
-#include <sparsehash/internal/hashtable-common.h>
-#include <sparsehash/internal/libc_allocator_with_realloc.h>
+#include <axom/sparsehash/type_traits.h>
+#include <axom/sparsehash/internal/hashtable-common.h>
+#include <axom/sparsehash/internal/libc_allocator_with_realloc.h>
 
 // A lot of work to get a type that's guaranteed to be 16 bits...
 #ifndef HAVE_U_INT16_T

@@ -88,13 +88,13 @@
 #ifndef _SPARSE_HASH_SET_H_
 #define _SPARSE_HASH_SET_H_
 
-#include <sparsehash/internal/sparseconfig.h>
+#include <axom/sparsehash/internal/sparseconfig.h>
 #include <algorithm>                       // needed by stl_alloc
 #include <functional>                      // for equal_to<>
 #include <memory>                          // for alloc (which we don't use)
 #include <utility>                         // for pair<>
-#include <sparsehash/internal/libc_allocator_with_realloc.h>
-#include <sparsehash/internal/sparsehashtable.h>      // IWYU pragma: export
+#include <axom/sparsehash/internal/libc_allocator_with_realloc.h>
+#include <axom/sparsehash/internal/sparsehashtable.h>      // IWYU pragma: export
 #include HASH_FUN_H                // for hash<>
 
 _START_GOOGLE_NAMESPACE_
