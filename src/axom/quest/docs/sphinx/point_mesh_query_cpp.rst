@@ -71,15 +71,18 @@ a triangle surface mesh.  The second argument indicates the mesh is a watertight
 mesh, a manifold.  The signed distance from a point to a manifold is
 mathematically well-defined.  When the input is not a closed surface mesh, the
 mesh must span the entire computational mesh domain, dividing it into two regions.
-The third and fourth arguments are used to build the underlying BVH tree
-spatial index.  They indicate that BVH tree buckets will be split after 25 objects
-and that the BVH tree will contain at most 10 levels.  These are safe default 
-values and can be adjusted if application benchmarking shows a need.  Note that
-the second and subsequent arguments to the constructor correspond to
+The third argument is optional, and allows toggling the computation of signs in
+distance queries; by default, this is set to ``true``, enabling the computation
+of signs in queries.  The fourth argument is also optional, and allows for setting
+a custom Umpire allocator to use in constructing the underlying bounding volume
+hierarchy.
+Note that the second and subsequent arguments to the constructor correspond to
 ``quest::signed_distance_set`` functions in the C API.
 
 As with the ``InOutOctree``, the class is templated on the dimensionality
-of the mesh, with only 3D meshes being supported.
+of the mesh, with only 3D meshes being supported. The class also accepts a
+template parameter for execution space, for running signed distance queries with
+OpenMP or on a GPU.
 
 .. literalinclude:: ../../tests/quest_signed_distance.cpp
    :start-after: _quest_distance_cpp_init_start
