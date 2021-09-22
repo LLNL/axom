@@ -27,16 +27,16 @@ void createExplicitCoords(sidre::Group* c1,
                           const std::string& type_string)
 {
   c1->createView("type")->setString(type_string);
-  sidre::Array<double> x(c1->createView("values/x"), 5, 1);
+  sidre::deprecated::MCArray<double> x(c1->createView("values/x"), 5, 1);
 
   if(dimension > 1)
   {
-    sidre::Array<double> y(c1->createView("values/y"), 5, 1);
+    sidre::deprecated::MCArray<double> y(c1->createView("values/y"), 5, 1);
   }
 
   if(dimension > 2)
   {
-    sidre::Array<double> z(c1->createView("values/z"), 5, 1);
+    sidre::deprecated::MCArray<double> z(c1->createView("values/z"), 5, 1);
   }
 }
 

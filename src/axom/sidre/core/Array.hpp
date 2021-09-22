@@ -8,7 +8,7 @@
 
 #include "axom/core/Macros.hpp"  // for disable copy/assignment macro
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
-#include "axom/core/MCArray.hpp"              // to inherit
+#include "axom/core/Array.hpp"                // to inherit
 #include "axom/core/Types.hpp"
 
 #include "axom/slic/interface/slic.hpp"  // for slic logging macros
@@ -90,7 +90,7 @@ inline IndexType getViewShapeImpl<2>(int dim, const View* view)
  *
  * \brief Provides a generic multi-component array, contained in Sidre.
  *
- *  This sidre::Array class extends axom::MCArray by storing
+ *  This sidre::Array class extends axom::Array by storing
  *  data in a Sidre `DataStore`.  This class provides a generic
  *  multi-component array container with dynamic re-allocation and insertion.
  *  Each element in the array is a tuple consisting of 1 or more components,

@@ -7,11 +7,12 @@
 #define MINT_FIELDDATA_HPP_
 
 // Axom includes
-#include "axom/core/Macros.hpp"   // for Axom macros
-#include "axom/core/MCArray.hpp"  // for MCArray
+#include "axom/core/Macros.hpp"  // for Axom macros
+#include "axom/mint/core/MCArray.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
+  #include "axom/mint/core/SidreMCArray.hpp"
 #endif
 
 // Mint includes
