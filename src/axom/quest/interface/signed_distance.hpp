@@ -189,6 +189,15 @@ void signed_distance_set_closed_surface(bool status);
 void signed_distance_set_compute_signs(bool computeSign);
 
 /*!
+ * \brief Sets the allocator to use for creating internal signed distance query
+ *  data structures.
+ * \param [in] allocatorID the allocator ID to use
+ *
+ * \note Allocator should be compatible with the set execution space.
+ */
+void signed_distance_set_allocator(int allocatorID);
+
+/*!
  * \brief Enables/Disables verbose output for the Signed Distance Query.
  * \param [in] status flag indicating whether to enable/disable verbose output
  *

@@ -34,8 +34,9 @@ using SignedDistance3D = SignedDistance<3>;
 using SignedDistance2D = SignedDistance<2>;
 
 #ifdef AXOM_USE_OPENMP
-using SignedDistance3DOMP = SignedDistance<3, axom::OMP_EXEC>;
-using SignedDistance2DOMP = SignedDistance<2, axom::OMP_EXEC>;
+using ExecOMP = axom::OMP_EXEC;
+using SignedDistance3DOMP = SignedDistance<3, ExecOMP>;
+using SignedDistance2DOMP = SignedDistance<2, ExecOMP>;
 #endif
 
 #ifdef AXOM_USE_CUDA
@@ -55,6 +56,7 @@ static struct parameters_t
   bool is_closed_surface; /*!< indicates if the input is a closed surface */
   bool use_shared_memory; /*!< use MPI-3 shared memory for the surface mesh */
   bool compute_sign;      /*!< indicates if sign should be computed */
+  int allocator_id; /*!< the allocator ID to create BVH with (-1 for default) */
   SignedDistExec exec_space; /*!< indicates the execution space to run in */
 
   /*!
@@ -66,6 +68,7 @@ static struct parameters_t
     , is_closed_surface(true)
     , use_shared_memory(false)
     , compute_sign(true)
+    , allocator_id(-1)
     , exec_space(SignedDistExec::CPU)
   { }
 
@@ -182,25 +185,41 @@ int signed_distance_init(const mint::Mesh* m, MPI_Comm comm)
     s_must_delete_mesh = false;
   }
 
+  int allocatorID = Parameters.allocator_id;
   switch(Parameters.exec_space)
   {
   case SignedDistExec::CPU:
+    if(allocatorID == -1)
+    {
+      allocatorID = axom::execution_space<ExecSeq>::allocatorID();
+    }
     s_query = new SignedDistance3D(s_surface_mesh,
                                    Parameters.is_closed_surface,
-                                   Parameters.compute_sign);
+                                   Parameters.compute_sign,
+                                   allocatorID);
     break;
 #ifdef AXOM_USE_OPENMP
   case SignedDistExec::OpenMP:
+    if(allocatorID == -1)
+    {
+      allocatorID = axom::execution_space<ExecOMP>::allocatorID();
+    }
     s_query_omp = new SignedDistance3DOMP(s_surface_mesh,
                                           Parameters.is_closed_surface,
-                                          Parameters.compute_sign);
+                                          Parameters.compute_sign,
+                                          allocatorID);
     break;
 #endif
 #ifdef AXOM_USE_CUDA
   case SignedDistExec::GPU:
+    if(allocatorID == -1)
+    {
+      allocatorID = axom::execution_space<ExecGPU>::allocatorID();
+    }
     s_query_gpu = new SignedDistance3DGPU(s_surface_mesh,
                                           Parameters.is_closed_surface,
-                                          Parameters.compute_sign);
+                                          Parameters.compute_sign,
+                                          allocatorID);
     break;
 #endif
   default:
@@ -273,6 +292,16 @@ void signed_distance_set_compute_signs(bool computeSign)
     "signed distance query already initialized; setting option has no effect!");
 
   Parameters.compute_sign = computeSign;
+}
+
+//------------------------------------------------------------------------------
+void signed_distance_set_allocator(int allocatorID)
+{
+  SLIC_ERROR_IF(
+    signed_distance_initialized(),
+    "signed distance query already initialized; setting option has no effect!");
+
+  Parameters.allocator_id = allocatorID;
 }
 
 //------------------------------------------------------------------------------
