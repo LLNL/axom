@@ -9,7 +9,7 @@
 // Axom includes
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/MCArray.hpp"
+#include "axom/mint/core/MCArray.hpp"
 
 // Mint includes
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -21,6 +21,7 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
+  #include "axom/mint/core/SidreMCArray.hpp"
 #endif
 
 namespace axom
@@ -153,8 +154,10 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    // FIXME: Capacity is ignored
-    m_values = new MCArray<IndexType>(axom::internal::ZERO, m_stride);
+    m_values =
+      new axom::deprecated::MCArray<IndexType>(axom::deprecated::internal::ZERO,
+                                               m_stride,
+                                               ID_capacity);
   }
 
   /*!
@@ -174,8 +177,10 @@ public:
   {
     SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero: " << stride);
 
-    // FIXME: Capacity is ignored
-    m_values = new MCArray<IndexType>(axom::internal::ZERO, m_stride);
+    m_values =
+      new axom::deprecated::MCArray<IndexType>(axom::deprecated::internal::ZERO,
+                                               m_stride,
+                                               ID_capacity);
   }
 
   /// @}
@@ -216,7 +221,10 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    m_values = new MCArray<IndexType>(values, n_IDs, m_stride);
+    m_values = new axom::deprecated::MCArray<IndexType>(values,
+                                                        n_IDs,
+                                                        m_stride,
+                                                        ID_capacity);
   }
 
   /*!
@@ -246,7 +254,10 @@ public:
     , m_stride(stride)
     , m_values(nullptr)
   {
-    m_values = new MCArray<IndexType>(values, n_IDs, m_stride);
+    m_values = new axom::deprecated::MCArray<IndexType>(values,
+                                                        n_IDs,
+                                                        m_stride,
+                                                        ID_capacity);
   }
 
   /// @}
@@ -284,9 +295,9 @@ public:
 
     SLIC_ERROR_IF(m_stride <= 0, "Stride must be greater than zero.");
 
-    SLIC_ERROR_IF(m_values->shape()[1] != m_stride,
+    SLIC_ERROR_IF(m_values->numComponents() != m_stride,
                   "values array must have " << m_stride << " components, is "
-                                            << m_values->shape()[1] << ".");
+                                            << m_values->numComponents() << ".");
   }
 
   /*!
@@ -324,8 +335,10 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* connec_view = elems_group->getView("connectivity");
-    m_values =
-      new sidre::MCArray<IndexType>(connec_view, 0, m_stride, ID_capacity);
+    m_values = new sidre::deprecated::MCArray<IndexType>(connec_view,
+                                                         0,
+                                                         m_stride,
+                                                         ID_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -363,8 +376,10 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* connec_view = elems_group->getView("connectivity");
-    m_values =
-      new sidre::MCArray<IndexType>(connec_view, 0, m_stride, ID_capacity);
+    m_values = new sidre::deprecated::MCArray<IndexType>(connec_view,
+                                                         0,
+                                                         m_stride,
+                                                         ID_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -433,8 +448,7 @@ public:
    */
   void resize(IndexType ID_size, IndexType AXOM_NOT_USED(value_size) = 0)
   {
-    // Keep the second dimension the same
-    m_values->resize(ID_size, m_values->shape()[1]);
+    m_values->resize(ID_size);
   }
 
   /*!
@@ -492,7 +506,7 @@ public:
       return nullptr;
     }
 
-    return static_cast<sidre::MCArray<IndexType>*>(m_values)
+    return static_cast<sidre::deprecated::MCArray<IndexType>*>(m_values)
       ->getView()
       ->getOwningGroup()
       ->getParent();
@@ -540,13 +554,13 @@ public:
   IndexType* operator[](IndexType ID)
   {
     SLIC_ASSERT((ID >= 0) && (ID < getNumberOfIDs()));
-    return m_values->data() + ID * m_stride;
+    return m_values->getData() + ID * m_stride;
   }
 
   const IndexType* operator[](IndexType ID) const
   {
     SLIC_ASSERT((ID >= 0) && (ID < getNumberOfIDs()));
-    return m_values->data() + ID * m_stride;
+    return m_values->getData() + ID * m_stride;
   }
 
   /// @}
@@ -557,9 +571,9 @@ public:
    */
   /// @{
 
-  IndexType* getValuePtr() { return m_values->data(); }
+  IndexType* getValuePtr() { return m_values->getData(); }
 
-  const IndexType* getValuePtr() const { return m_values->data(); }
+  const IndexType* getValuePtr() const { return m_values->getData(); }
 
   /// @}
 
@@ -625,7 +639,7 @@ public:
   {
     SLIC_ASSERT(values != nullptr);
     SLIC_ASSERT(n_IDs >= 0);
-    m_values->insert(m_values->size(), n_IDs, values);
+    m_values->append(values, n_IDs);
   }
 
   /*!
@@ -708,7 +722,7 @@ public:
     SLIC_ASSERT(start_ID >= 0);
     SLIC_ASSERT(start_ID <= getNumberOfIDs());
     SLIC_ASSERT(values != nullptr);
-    m_values->insert(start_ID, n_IDs, values);
+    m_values->insert(values, n_IDs, start_ID);
   }
 
   /// @}
@@ -716,7 +730,7 @@ public:
 private:
   CellType m_cell_type;
   IndexType m_stride;
-  MCArray<IndexType>* m_values;
+  axom::deprecated::MCArray<IndexType>* m_values;
 
   DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
   DISABLE_MOVE_AND_ASSIGNMENT(ConnectivityArray);

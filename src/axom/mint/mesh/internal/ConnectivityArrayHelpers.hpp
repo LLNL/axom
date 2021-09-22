@@ -7,8 +7,8 @@
 #define MINT_ConnectivityArrayHelpers_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/MCArray.hpp"
 
+#include "axom/mint/core/MCArray.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 
@@ -16,7 +16,7 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
-  #include "axom/sidre/core/MCArray.hpp"
+  #include "axom/mint/core/SidreMCArray.hpp"
 #endif
 
 #include <cmath>   /* for std::ceil */
@@ -30,10 +30,6 @@ namespace mint
 namespace internal
 {
 #ifdef AXOM_MINT_USE_SIDRE
-
-template <typename T, int DIM>
-using SidreArrayType =
-  typename std::conditional<DIM == 1, sidre::Array<T>, sidre::MCArray<T>>::type;
 
 /*!
  * \brief Initializes the members of a ConnectivityArray instance from a
@@ -51,11 +47,11 @@ using SidreArrayType =
  * \pre group != nullptr
  * \pre m_values != nullptr
  */
-template <int DIM>
-inline CellType initializeFromGroup(sidre::Group* group,
-                                    Array<IndexType, DIM>** m_values,
-                                    Array<IndexType, DIM>** m_offsets = nullptr,
-                                    Array<CellType, DIM>** m_types = nullptr)
+inline CellType initializeFromGroup(
+  sidre::Group* group,
+  axom::deprecated::MCArray<IndexType>** m_values,
+  axom::deprecated::MCArray<IndexType>** m_offsets = nullptr,
+  axom::deprecated::MCArray<CellType>** m_types = nullptr)
 {
   SLIC_ERROR_IF(group == nullptr, "sidre::Group pointer must not be null.");
   SLIC_ERROR_IF(m_values == nullptr, "Pointer values array must not be null.");
@@ -120,7 +116,7 @@ inline CellType initializeFromGroup(sidre::Group* group,
                   << "does not have a child view 'connectivity'.");
 
   sidre::View* connec_view = elems_group->getView("connectivity");
-  *m_values = new SidreArrayType<IndexType, DIM>(connec_view);
+  *m_values = new sidre::deprecated::MCArray<IndexType>(connec_view);
   SLIC_ERROR_IF(*m_values == nullptr, "Error in Array allocation.");
 
   if(m_offsets != nullptr)
@@ -130,16 +126,16 @@ inline CellType initializeFromGroup(sidre::Group* group,
                                   << " does not conform to mesh blueprint.");
 
     sidre::View* offsets_view = elems_group->getView("offsets");
-    *m_offsets = new SidreArrayType<IndexType, DIM>(offsets_view);
+    *m_offsets = new sidre::deprecated::MCArray<IndexType>(offsets_view);
 
     SLIC_ERROR_IF(*m_offsets == nullptr, "Error in Array allocation.");
-    SLIC_ERROR_IF((*m_offsets)->shape()[1] != 1,
+    SLIC_ERROR_IF((*m_offsets)->numComponents() != 1,
                   "offsets array must have only 1 component not "
-                    << (*m_offsets)->shape()[1] << ".");
+                    << (*m_offsets)->numComponents() << ".");
 
     if((*m_offsets)->size() == 0)
     {
-      (*m_offsets)->insert((*m_offsets)->size(), 0);
+      (*m_offsets)->append(0);
     }
     SLIC_ERROR_IF((**m_offsets)[0] != 0,
                   "The offset of ID 0 must be 0 not " << (**m_offsets)[0] << ".");
@@ -152,12 +148,12 @@ inline CellType initializeFromGroup(sidre::Group* group,
                                   << " does not conform to mesh blueprint.");
 
     sidre::View* type_view = elems_group->getView("types");
-    *m_types = new SidreArrayType<CellType, DIM>(type_view);
+    *m_types = new sidre::deprecated::MCArray<CellType>(type_view);
 
     SLIC_ERROR_IF(*m_types == nullptr, "Error in Array allocation.");
-    SLIC_ERROR_IF((*m_types)->shape()[1] != 1,
+    SLIC_ERROR_IF((*m_types)->numComponents() != 1,
                   "Types array must have only 1 component not "
-                    << (*m_types)->shape()[1] << ".");
+                    << (*m_types)->numComponents() << ".");
   }
 
   return cell_type;
@@ -267,8 +263,8 @@ inline IndexType getStride(const sidre::Group* group)
 inline void append(IndexType n_IDs,
                    const IndexType* values,
                    const IndexType* offsets,
-                   Array<IndexType>* m_values,
-                   Array<IndexType>* m_offsets)
+                   axom::deprecated::MCArray<IndexType>* m_values,
+                   axom::deprecated::MCArray<IndexType>* m_offsets)
 {
   SLIC_ASSERT(values != nullptr);
   SLIC_ASSERT(offsets != nullptr);
@@ -279,11 +275,11 @@ inline void append(IndexType n_IDs,
   IndexType old_n_values = m_values->size();
   IndexType old_n_offsets = m_offsets->size();
 
-  m_offsets->insert(m_offsets->size(), n_IDs, offsets + 1);
-  m_values->insert(m_values->size(), n_values_to_add, values);
+  m_offsets->append(offsets + 1, n_IDs);
+  m_values->append(values, n_values_to_add);
 
   /* Correct the appended offsets. */
-  IndexType* m_offsets_ptr = m_offsets->data();
+  IndexType* m_offsets_ptr = m_offsets->getData();
   const IndexType correction = old_n_values - offsets[0];
   for(IndexType i = 0; i < n_IDs; ++i)
   {
@@ -299,7 +295,7 @@ inline void append(IndexType n_IDs,
  *  the sum of the number of values of each ID to set.
  * \param [in] n_IDs the number of IDs to set.
  * \param [in/out] m_values a pointer to the values array.
- * \param [in] m_offsets a pointer to the offsets MCArray.
+ * \param [in] m_offsets a pointer to the offsets axom::deprecated::MCArray.
  *
  * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
  * \pre values != nullptr
@@ -308,8 +304,8 @@ inline void append(IndexType n_IDs,
 inline void set(IndexType start_ID,
                 const IndexType* values,
                 IndexType n_IDs,
-                Array<IndexType>* m_values,
-                Array<IndexType>* m_offsets)
+                axom::deprecated::MCArray<IndexType>* m_values,
+                axom::deprecated::MCArray<IndexType>* m_offsets)
 {
   SLIC_ASSERT(start_ID >= 0);
   SLIC_ASSERT(start_ID + n_IDs <= m_offsets->size() - 1);
@@ -328,8 +324,8 @@ inline void set(IndexType start_ID,
  * \param [in] n_IDs the number of IDs to insert.
  * \param [in] values pointer to the values to insert.
  * \param [in] offsets the offsets array of length at least n_IDs + 1.
- * \param [in/out] m_values a pointer to the values MCArray.
- * \param [in/out] m_offsets a pointer to the offsets MCArray.
+ * \param [in/out] m_values a pointer to the values axom::deprecated::MCArray.
+ * \param [in/out] m_offsets a pointer to the offsets axom::deprecated::MCArray.
  *
  * \note The number of values to insert is given by
  *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
@@ -346,8 +342,8 @@ inline void insert(IndexType start_ID,
                    IndexType n_IDs,
                    const IndexType* values,
                    const IndexType* offsets,
-                   Array<IndexType>* m_values,
-                   Array<IndexType>* m_offsets)
+                   axom::deprecated::MCArray<IndexType>* m_values,
+                   axom::deprecated::MCArray<IndexType>* m_offsets)
 {
   SLIC_ASSERT(start_ID >= 0);
   SLIC_ASSERT(start_ID <= m_offsets->size() - 1);
@@ -358,7 +354,7 @@ inline void insert(IndexType start_ID,
   SLIC_ASSERT(m_offsets != nullptr);
 
   IndexType n_values = offsets[n_IDs] - offsets[0];
-  IndexType* m_offsets_ptr = m_offsets->data();
+  IndexType* m_offsets_ptr = m_offsets->getData();
   IndexType insert_pos = m_offsets_ptr[start_ID];
 
   /* Increment the offsets after the insertion position. */
@@ -368,11 +364,11 @@ inline void insert(IndexType start_ID,
     m_offsets_ptr[i] += n_values;
   }
 
-  m_offsets->insert(start_ID + 1, n_IDs, offsets + 1);
-  m_values->insert(insert_pos, n_values, values);
+  m_offsets->insert(offsets + 1, n_IDs, start_ID + 1);
+  m_values->insert(values, n_values, insert_pos);
 
   /* Correct the inserted offsets. */
-  m_offsets_ptr = m_offsets->data();
+  m_offsets_ptr = m_offsets->getData();
   const IndexType correction = insert_pos - offsets[0];
   for(IndexType i = 0; i < n_IDs; ++i)
   {

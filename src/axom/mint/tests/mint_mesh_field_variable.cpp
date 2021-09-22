@@ -30,7 +30,7 @@ namespace utilities = axom::utilities;
 namespace
 {
 template <typename T>
-void populate_array(axom::MCArray<T>& data)
+void populate_array(axom::deprecated::MCArray<T>& data)
 {
   const axom::IndexType numTuples = data.size();
   const axom::IndexType numComponents = data.numComponents();
@@ -47,7 +47,7 @@ void populate_array(axom::MCArray<T>& data)
 
 //------------------------------------------------------------------------------
 template <typename T>
-void check_array(axom::MCArray<T>& data)
+void check_array(axom::deprecated::MCArray<T>& data)
 {
   const axom::IndexType numTuples = data.size();
   const axom::IndexType numComponents = data.numComponents();
@@ -115,7 +115,7 @@ void create_sidre_data(sidre::DataStore& ds, int numTuples, int numComponents)
 
   // create view to hold field values
   sidre::View* values_view = gp->createView("values");
-  sidre::MCArray<double> data(values_view, numTuples, numComponents);
+  sidre::deprecated::MCArray<double> data(values_view, numTuples, numComponents);
 
   // fill in with some data
   populate_array(data);
@@ -138,13 +138,14 @@ TEST(mint_mesh_field_variable_DeathTest, invalid_construction)
 
   EXPECT_DEATH_IF_SUPPORTED(
     mint::FieldVariable<invalid_type>("foo",
-                                      axom::internal::ZERO,
-                                      axom::internal::ZERO),
+                                      axom::deprecated::internal::ZERO,
+                                      axom::deprecated::internal::ZERO),
     IGNORE_OUTPUT);
-  EXPECT_DEATH_IF_SUPPORTED(mint::FieldVariable<double>(EMPTY_STRING,
-                                                        axom::internal::ZERO,
-                                                        axom::internal::ZERO),
-                            IGNORE_OUTPUT);
+  EXPECT_DEATH_IF_SUPPORTED(
+    mint::FieldVariable<double>(EMPTY_STRING,
+                                axom::deprecated::internal::ZERO,
+                                axom::deprecated::internal::ZERO),
+    IGNORE_OUTPUT);
 }
 
 //------------------------------------------------------------------------------
@@ -238,9 +239,9 @@ TEST(mint_mesh_field_variable, sidre_push_constructor)
       // END SCOPE
 
       // ensure data remains persistent in Sidre
-      sidre::Array<double> dataArray(values_view);
-      EXPECT_EQ(dataArray.shape()[0], NUM_TUPLES);
-      EXPECT_EQ(dataArray.shape()[1], NUM_COMPONENTS);
+      sidre::deprecated::MCArray<double> dataArray(values_view);
+      EXPECT_EQ(dataArray.size(), NUM_TUPLES);
+      EXPECT_EQ(dataArray.numComponents(), NUM_COMPONENTS);
 
       // check data
       check_array(dataArray);
@@ -286,9 +287,9 @@ TEST(mint_mesh_field_variable, sidre_pull_constructor)
       // END SCOPE
 
       // ensure data remains persistent in Sidre
-      sidre::Array<double> dataArray(values_view);
-      EXPECT_EQ(dataArray.shape()[0], NUM_TUPLES);
-      EXPECT_EQ(dataArray.shape()[1], NUM_COMPONENTS);
+      sidre::deprecated::MCArray<double> dataArray(values_view);
+      EXPECT_EQ(dataArray.size(), NUM_TUPLES);
+      EXPECT_EQ(dataArray.numComponents(), NUM_COMPONENTS);
 
       check_array(dataArray);
 

@@ -10,7 +10,8 @@
 #include "axom/slic/interface/slic.hpp"       // for slic macros
 
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/sidre.hpp"  // for sidre::Group, sidre::View
+  #include "axom/sidre/core/sidre.hpp"        // for sidre::Group, sidre::View
+  #include "axom/mint/core/SidreMCArray.hpp"  // for sidre::deprecated::MCArray
 #endif
 
 // C/C++ includes
@@ -37,7 +38,7 @@ MeshCoordinates::MeshCoordinates(int dimension,
   IndexType max_capacity = -1;
   if(capacity == USE_DEFAULT)
   {
-    const double ratio = Array<double>::DEFAULT_RESIZE_RATIO;
+    const double ratio = axom::deprecated::MCArray<double>::DEFAULT_RESIZE_RATIO;
     max_capacity = utilities::max(DEFAULT_CAPACITY,
                                   static_cast<IndexType>(numNodes * ratio + 0.5));
   }
@@ -77,7 +78,8 @@ MeshCoordinates::MeshCoordinates(IndexType numNodes,
     SLIC_ERROR_IF(ptrs[i] == nullptr,
                   "encountered null coordinate array for i=" << i);
 
-    m_coordinates[i] = new Array<double>(ptrs[i], numNodes, capacity);
+    m_coordinates[i] =
+      new axom::deprecated::MCArray<double>(ptrs[i], numNodes, 1, capacity);
   }
 
   SLIC_ASSERT(consistencyCheck());
@@ -134,7 +136,7 @@ MeshCoordinates::MeshCoordinates(sidre::Group* group)
     coord_view->getShape(2, dims);
     SLIC_ERROR_IF(dims[1] != 1, "number of components is expected to be 1");
 
-    m_coordinates[i] = new sidre::Array<double>(coord_view);
+    m_coordinates[i] = new sidre::deprecated::MCArray<double>(coord_view);
 
   }  // END for all dimensions
 }
@@ -162,7 +164,8 @@ MeshCoordinates::MeshCoordinates(sidre::Group* group,
   {
     const char* coord_name = coord_names[dim];
     sidre::View* coord_view = values->createView(coord_name);
-    m_coordinates[dim] = new sidre::Array<double>(coord_view, numNodes, capacity);
+    m_coordinates[dim] =
+      new sidre::deprecated::MCArray<double>(coord_view, numNodes, 1, capacity);
   }
 }
 
@@ -197,7 +200,7 @@ bool MeshCoordinates::consistencyCheck() const
   for(int i = 1; i < m_ndims; ++i)
   {
     const IndexType actual_size = m_coordinates[i]->size();
-    const IndexType actual_components = m_coordinates[i]->shape()[1];
+    const IndexType actual_components = m_coordinates[i]->numComponents();
     const IndexType actual_capacity = m_coordinates[i]->capacity();
     const double actual_resize_ratio = m_coordinates[i]->getResizeRatio();
 
