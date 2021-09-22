@@ -290,7 +290,7 @@ int main(int argc, char** argv)
 
   // -- Run the queries (the z-coordinate is ignored for 2D queries)
   int numInside = 0;
-  SLIC_INFO(fmt::format("Querying mesh with {} query points...", nQueryPoints));
+  SLIC_INFO(axom::fmt::format("Querying mesh with {} query points...", nQueryPoints));
   timer.start();
   for(auto& pt : queryPoints)
   {
@@ -303,10 +303,10 @@ int main(int argc, char** argv)
 
   // -- Output some query statistics
   {
-    SLIC_INFO(fmt::format("  queries took {} seconds.", timer.elapsed()));
-    SLIC_INFO(fmt::format("  query rate: {} queries per second.",
+    SLIC_INFO(axom::fmt::format("  queries took {} seconds.", timer.elapsed()));
+    SLIC_INFO(axom::fmt::format("  query rate: {} queries per second.",
                           queryPoints.size() / timer.elapsed()));
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "  {} of {} ({}%) of the query points were contained in the surface.",
       numInside,
       queryPoints.size(),

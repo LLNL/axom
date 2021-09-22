@@ -189,15 +189,18 @@
 #    define FMT_INLINE_NAMESPACE inline namespace
 #    define FMT_END_NAMESPACE \
       }                       \
+      }                       \
       }
 #  else
 #    define FMT_INLINE_NAMESPACE namespace
 #    define FMT_END_NAMESPACE \
       }                       \
       using namespace v7;     \
+      }                       \
       }
 #  endif
 #  define FMT_BEGIN_NAMESPACE \
+    namespace axom {          \
     namespace fmt {           \
     FMT_INLINE_NAMESPACE v7 {
 #endif
@@ -302,7 +305,7 @@ FMT_NORETURN FMT_API void assert_fail(const char* file, int line,
 #    define FMT_ASSERT(condition, message)                                    \
       ((condition) /* void() fails with -Winvalid-constexpr on clang 4.0.1 */ \
            ? (void)0                                                          \
-           : ::fmt::detail::assert_fail(__FILE__, __LINE__, (message)))
+           : ::axom::fmt::detail::assert_fail(__FILE__, __LINE__, (message)))
 #  endif
 #endif
 
@@ -357,7 +360,7 @@ namespace internal = detail;  // DEPRECATED
 
 /**
   An implementation of ``std::basic_string_view`` for pre-C++17. It provides a
-  subset of the API. ``fmt::basic_string_view`` is used for format strings even
+  subset of the API. ``axom::fmt::basic_string_view`` is used for format strings even
   if ``std::string_view`` is available to prevent issues when a library is
   compiled with a different ``-std`` option than the client code (which is not
   recommended).
@@ -471,7 +474,7 @@ template <> struct is_char<char32_t> : std::true_type {};
       return {s.data(), s.length()};
     }
     }
-    std::string message = fmt::format(my_string("The answer is {}"), 42);
+    std::string message = axom::fmt::format(my_string("The answer is {}"), 42);
   \endrst
  */
 template <typename Char, FMT_ENABLE_IF(is_char<Char>::value)>
@@ -510,9 +513,9 @@ constexpr basic_string_view<typename S::char_type> to_string_view(const S& s) {
 
 namespace detail {
 void to_string_view(...);
-using fmt::v7::to_string_view;
+using axom::fmt::v7::to_string_view;
 
-// Specifies whether S is a string type convertible to fmt::basic_string_view.
+// Specifies whether S is a string type convertible to axom::fmt::basic_string_view.
 // It should be a constexpr function but MSVC 2017 fails to compile it in
 // enable_if and MSVC 2015 fails to compile it as an alias template.
 template <typename S>
@@ -669,7 +672,7 @@ inline Container& get_container(std::back_insert_iterator<Container> it) {
 /**
   \rst
   A contiguous memory buffer with an optional growing ability. It is an internal
-  class and shouldn't be used directly, only via `~fmt::basic_memory_buffer`.
+  class and shouldn't be used directly, only via `~axom::fmt::basic_memory_buffer`.
   \endrst
  */
 template <typename T> class buffer {
@@ -1537,8 +1540,8 @@ using is_formattable = bool_constant<!std::is_same<
 /**
   \rst
   An array of references to arguments. It can be implicitly converted into
-  `~fmt::basic_format_args` for passing into type-erased formatting functions
-  such as `~fmt::vformat`.
+  `~axom::fmt::basic_format_args` for passing into type-erased formatting functions
+  such as `~axom::fmt::vformat`.
   \endrst
  */
 template <typename Context, typename... Args>
@@ -1584,10 +1587,10 @@ class format_arg_store
 
 /**
   \rst
-  Constructs a `~fmt::format_arg_store` object that contains references to
-  arguments and can be implicitly converted to `~fmt::format_args`. `Context`
-  can be omitted in which case it defaults to `~fmt::context`.
-  See `~fmt::arg` for lifetime considerations.
+  Constructs a `~axom::fmt::format_arg_store` object that contains references to
+  arguments and can be implicitly converted to `~axom::fmt::format_args`. `Context`
+  can be omitted in which case it defaults to `~axom::fmt::context`.
+  See `~axom::fmt::arg` for lifetime considerations.
   \endrst
  */
 template <typename Context = format_context, typename... Args>
@@ -1598,8 +1601,8 @@ constexpr format_arg_store<Context, Args...> make_format_args(
 
 /**
   \rst
-  Constructs a `~fmt::format_arg_store` object that contains references
-  to arguments and can be implicitly converted to `~fmt::format_args`.
+  Constructs a `~axom::fmt::format_arg_store` object that contains references
+  to arguments and can be implicitly converted to `~axom::fmt::format_args`.
   If ``format_str`` is a compile-time string then `make_args_checked` checks
   its validity at compile time.
   \endrst
@@ -1625,7 +1628,7 @@ inline auto make_args_checked(const S& format_str,
 
   **Example**::
 
-    fmt::print("Elapsed time: {s:.2f} seconds", fmt::arg("s", 1.23));
+    axom::fmt::print("Elapsed time: {s:.2f} seconds", axom::fmt::arg("s", 1.23));
   \endrst
  */
 template <typename Char, typename T>
@@ -1689,7 +1692,7 @@ template <typename Context> class basic_format_args {
 
   /**
    \rst
-   Constructs a `basic_format_args` object from `~fmt::format_arg_store`.
+   Constructs a `basic_format_args` object from `~axom::fmt::format_arg_store`.
    \endrst
    */
   template <typename... Args>
@@ -1701,7 +1704,7 @@ template <typename Context> class basic_format_args {
   /**
    \rst
    Constructs a `basic_format_args` object from
-   `~fmt::dynamic_format_arg_store`.
+   `~axom::fmt::dynamic_format_arg_store`.
    \endrst
    */
   constexpr FMT_INLINE basic_format_args(
@@ -1817,7 +1820,7 @@ auto vformat_to(OutputIt out, const S& format_str,
  **Example**::
 
    std::vector<char> out;
-   fmt::format_to(std::back_inserter(out), "{}", 42);
+   axom::fmt::format_to(std::back_inserter(out), "{}", 42);
  \endrst
  */
 // We cannot use FMT_ENABLE_IF because of a bug in gcc 8.3.
@@ -1825,7 +1828,7 @@ template <typename OutputIt, typename S, typename... Args,
           bool enable = detail::is_output_iterator<OutputIt, char_t<S>>::value>
 inline auto format_to(OutputIt out, const S& format_str, Args&&... args) ->
     typename std::enable_if<enable, OutputIt>::type {
-  const auto& vargs = fmt::make_args_checked<Args...>(format_str, args...);
+  const auto& vargs = axom::fmt::make_args_checked<Args...>(format_str, args...);
   return vformat_to(out, to_string_view(format_str), vargs);
 }
 
@@ -1859,7 +1862,7 @@ template <typename OutputIt, typename S, typename... Args,
 inline auto format_to_n(OutputIt out, size_t n, const S& format_str,
                         const Args&... args) ->
     typename std::enable_if<enable, format_to_n_result<OutputIt>>::type {
-  const auto& vargs = fmt::make_args_checked<Args...>(format_str, args...);
+  const auto& vargs = axom::fmt::make_args_checked<Args...>(format_str, args...);
   return vformat_to_n(out, n, to_string_view(format_str), vargs);
 }
 
@@ -1869,7 +1872,7 @@ inline auto format_to_n(OutputIt out, size_t n, const S& format_str,
  */
 template <typename S, typename... Args, typename Char = char_t<S>>
 inline size_t formatted_size(const S& format_str, Args&&... args) {
-  const auto& vargs = fmt::make_args_checked<Args...>(format_str, args...);
+  const auto& vargs = axom::fmt::make_args_checked<Args...>(format_str, args...);
   detail::counting_buffer<> buf;
   detail::vformat_to(buf, to_string_view(format_str), vargs);
   return buf.count();
@@ -1889,7 +1892,7 @@ FMT_INLINE std::basic_string<Char> vformat(
   **Example**::
 
     #include <fmt/core.h>
-    std::string message = fmt::format("The answer is {}", 42);
+    std::string message = axom::fmt::format("The answer is {}", 42);
   \endrst
 */
 // Pass char_t as a default template parameter instead of using
@@ -1898,7 +1901,7 @@ template <typename S, typename... Args, typename Char = char_t<S>,
           FMT_ENABLE_IF(!FMT_COMPILE_TIME_CHECKS ||
                         !std::is_same<Char, char>::value)>
 FMT_INLINE std::basic_string<Char> format(const S& format_str, Args&&... args) {
-  const auto& vargs = fmt::make_args_checked<Args...>(format_str, args...);
+  const auto& vargs = axom::fmt::make_args_checked<Args...>(format_str, args...);
   return detail::vformat(to_string_view(format_str), vargs);
 }
 
@@ -1913,12 +1916,12 @@ FMT_API void vprint(std::FILE*, string_view, format_args);
 
   **Example**::
 
-    fmt::print(stderr, "Don't {}!", "panic");
+    axom::fmt::print(stderr, "Don't {}!", "panic");
   \endrst
  */
 template <typename S, typename... Args, typename Char = char_t<S>>
 inline void print(std::FILE* f, const S& format_str, Args&&... args) {
-  const auto& vargs = fmt::make_args_checked<Args...>(format_str, args...);
+  const auto& vargs = axom::fmt::make_args_checked<Args...>(format_str, args...);
   return detail::is_unicode<Char>()
              ? vprint(f, to_string_view(format_str), vargs)
              : detail::vprint_mojibake(f, to_string_view(format_str), vargs);
@@ -1932,12 +1935,12 @@ inline void print(std::FILE* f, const S& format_str, Args&&... args) {
 
   **Example**::
 
-    fmt::print("Elapsed time: {0:.2f} seconds", 1.23);
+    axom::fmt::print("Elapsed time: {0:.2f} seconds", 1.23);
   \endrst
  */
 template <typename S, typename... Args, typename Char = char_t<S>>
 inline void print(const S& format_str, Args&&... args) {
-  const auto& vargs = fmt::make_args_checked<Args...>(format_str, args...);
+  const auto& vargs = axom::fmt::make_args_checked<Args...>(format_str, args...);
   return detail::is_unicode<Char>()
              ? vprint(to_string_view(format_str), vargs)
              : detail::vprint_mojibake(stdout, to_string_view(format_str),

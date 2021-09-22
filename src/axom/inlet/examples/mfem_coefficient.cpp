@@ -220,14 +220,14 @@ int main(int argc, char** argv)
     if(info.second.scalar_func)
     {
       const double result = info.second.scalar_func(input_vec, t);
-      SLIC_INFO(fmt::format("Calling scalar function with {0} returned: {1}",
+      SLIC_INFO(axom::fmt::format("Calling scalar function with {0} returned: {1}",
                             toInletVector(input_vec),
                             result));
     }
     else if(info.second.vec_func)
     {
       info.second.vec_func(input_vec, t, output_vec);
-      SLIC_INFO(fmt::format("Calling vector function with {0} returned: {1}",
+      SLIC_INFO(axom::fmt::format("Calling vector function with {0} returned: {1}",
                             toInletVector(input_vec),
                             toInletVector(output_vec)));
     }

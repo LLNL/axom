@@ -165,14 +165,14 @@ void vprint(std::basic_ostream<Char>& os, basic_string_view<Char> format_str,
 
   **Example**::
 
-    fmt::print(cerr, "Don't {}!", "panic");
+    axom::fmt::print(cerr, "Don't {}!", "panic");
   \endrst
  */
 template <typename S, typename... Args,
           typename Char = enable_if_t<detail::is_string<S>::value, char_t<S>>>
 void print(std::basic_ostream<Char>& os, const S& format_str, Args&&... args) {
   vprint(os, to_string_view(format_str),
-         fmt::make_args_checked<Args...>(format_str, args...));
+         axom::fmt::make_args_checked<Args...>(format_str, args...));
 }
 FMT_END_NAMESPACE
 

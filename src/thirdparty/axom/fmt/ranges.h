@@ -80,7 +80,7 @@ template <typename T> class is_like_std_string {
 };
 
 template <typename Char>
-struct is_like_std_string<fmt::basic_string_view<Char>> : std::true_type {};
+struct is_like_std_string<axom::fmt::basic_string_view<Char>> : std::true_type {};
 
 template <typename... Ts> struct conditional_helper {};
 
@@ -282,7 +282,7 @@ template <typename T> struct is_tuple_like {
 };
 
 template <typename TupleT, typename Char>
-struct formatter<TupleT, Char, enable_if_t<fmt::is_tuple_like<TupleT>::value>> {
+struct formatter<TupleT, Char, enable_if_t<axom::fmt::is_tuple_like<TupleT>::value>> {
  private:
   // C++11 generic lambda for format()
   template <typename FormatContext> struct format_each {
@@ -328,7 +328,7 @@ template <typename T, typename Char> struct is_range {
 template <typename T, typename Char>
 struct formatter<
     T, Char,
-    enable_if_t<fmt::is_range<T, Char>::value
+    enable_if_t<axom::fmt::is_range<T, Char>::value
 // Workaround a bug in MSVC 2017 and earlier.
 #if !FMT_MSC_VER || FMT_MSC_VER >= 1927
                 &&
@@ -423,7 +423,7 @@ struct formatter<tuple_arg_join<Char, T...>, Char> {
   **Example**::
 
     std::tuple<int, char> t = {1, 'a'};
-    fmt::print("{}", fmt::join(t, ", "));
+    axom::fmt::print("{}", axom::fmt::join(t, ", "));
     // Output: "1, a"
   \endrst
  */
@@ -446,7 +446,7 @@ FMT_CONSTEXPR tuple_arg_join<wchar_t, T...> join(const std::tuple<T...>& tuple,
 
   **Example**::
 
-    fmt::print("{}", fmt::join({1, 2, 3}, ", "));
+    axom::fmt::print("{}", axom::fmt::join({1, 2, 3}, ", "));
     // Output: "1, 2, 3"
   \endrst
  */

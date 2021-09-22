@@ -917,7 +917,7 @@ TEST(spio_parallel, parallel_decrease_procs)
        * Verify that the contents of ds2 on rank 0 match those written from ds.
        */
       std::string output_name =
-        fmt::sprintf("rank_%07d/sidre_input", output_rank);
+        axom::fmt::sprintf("rank_%07d/sidre_input", output_rank);
 
       int testvalue = 101 * output_rank;
       int testvalue2 = ds2_root->getGroup(output_name)

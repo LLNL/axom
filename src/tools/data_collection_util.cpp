@@ -92,7 +92,7 @@ private:
       {
         throw CLI::ValidationError(
           "box",
-          fmt::format("Invalid dimension: {}. Only 2D and 3D supported", boxDim));
+          axom::fmt::format("Invalid dimension: {}. Only 2D and 3D supported", boxDim));
       }
 
       // Ensure that range and resolution have the right number of entries
@@ -241,7 +241,7 @@ public:
       fixBoxParams();  // Note: throws on error conditions
       if(dcName.empty())
       {
-        dcName = fmt::format("box_{}d", boxDim);
+        dcName = axom::fmt::format("box_{}d", boxDim);
       }
     }
     else
@@ -284,7 +284,7 @@ mfem::Mesh* createBoxMesh(const Input& params)
   switch(dim)
   {
   case 2:
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "Creating a box mesh of resolution {} and bounding box {}",
       primal::Point<int, 2>(res.data()),
       primal::BoundingBox<double, 2>(primal::Point<double, 2>(lo.data()),
@@ -298,7 +298,7 @@ mfem::Mesh* createBoxMesh(const Input& params)
                           hi[1] - lo[1]);
     break;
   case 3:
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "Creating a box mesh of resolution {} and bounding box {}",
       primal::Point<int, 3>(res.data()),
       primal::BoundingBox<double, 3>(primal::Point<double, 3>(lo.data()),
@@ -367,7 +367,7 @@ mfem::Mesh* loadFileMesh(const Input& params)
       default:
         SLIC_ERROR_IF(
           dim != numProvidedScales,
-          fmt::format("Incorrect number of scale values. Expected {} got {}",
+          axom::fmt::format("Incorrect number of scale values. Expected {} got {}",
                       dim,
                       numProvidedScales));
         for(int d = 0; d < dim; ++d)
@@ -393,7 +393,7 @@ mfem::Mesh* loadFileMesh(const Input& params)
       default:
         SLIC_ERROR_IF(
           dim != numProvidedTranslations,
-          fmt::format(
+          axom::fmt::format(
             "Incorrect number of translations values. Expected {} got {}",
             dim,
             numProvidedTranslations));
@@ -469,7 +469,7 @@ void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
     switch(mesh->Dimension())
     {
     case 2:
-      SLIC_INFO(fmt::format(
+      SLIC_INFO(axom::fmt::format(
         "{} mesh has {} elements and (approximate) bounding box {}",
         prefixMessage,
         numElements,
@@ -477,7 +477,7 @@ void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
                                        primal::Point<double, 2>(maxs.GetData()))));
       break;
     case 3:
-      SLIC_INFO(fmt::format(
+      SLIC_INFO(axom::fmt::format(
         "{} mesh has {} elements and (approximate) bounding box {}",
         prefixMessage,
         numElements,
@@ -625,7 +625,7 @@ int main(int argc, char** argv)
 
   // TODO: Optionally convert to low order mesh ?
 
-  SLIC_INFO(fmt::format("Saving mesh file '{}'", dc.GetCollectionName()));
+  SLIC_INFO(axom::fmt::format("Saving mesh file '{}'", dc.GetCollectionName()));
 #ifdef MFEM_USE_MPI
   dc.Save();
 #endif

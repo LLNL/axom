@@ -527,7 +527,7 @@ void vprint(std::FILE* f, const text_style& ts, const S& format,
 
   **Example**::
 
-    fmt::print(fmt::emphasis::bold | fg(fmt::color::red),
+    axom::fmt::print(axom::fmt::emphasis::bold | fg(axom::fmt::color::red),
                "Elapsed time: {0:.2f} seconds", 1.23);
   \endrst
  */
@@ -536,7 +536,7 @@ template <typename S, typename... Args,
 void print(std::FILE* f, const text_style& ts, const S& format_str,
            const Args&... args) {
   vprint(f, ts, format_str,
-         fmt::make_args_checked<Args...>(format_str, args...));
+         axom::fmt::make_args_checked<Args...>(format_str, args...));
 }
 
 /**
@@ -546,7 +546,7 @@ void print(std::FILE* f, const text_style& ts, const S& format_str,
 
   **Example**::
 
-    fmt::print(fmt::emphasis::bold | fg(fmt::color::red),
+    axom::fmt::print(axom::fmt::emphasis::bold | fg(axom::fmt::color::red),
                "Elapsed time: {0:.2f} seconds", 1.23);
   \endrst
  */
@@ -562,7 +562,7 @@ inline std::basic_string<Char> vformat(
     basic_format_args<buffer_context<type_identity_t<Char>>> args) {
   basic_memory_buffer<Char> buf;
   detail::vformat_to(buf, ts, to_string_view(format_str), args);
-  return fmt::to_string(buf);
+  return axom::fmt::to_string(buf);
 }
 
 /**
@@ -573,7 +573,7 @@ inline std::basic_string<Char> vformat(
   **Example**::
 
     #include <fmt/color.h>
-    std::string message = fmt::format(fmt::emphasis::bold | fg(fmt::color::red),
+    std::string message = axom::fmt::format(axom::fmt::emphasis::bold | fg(axom::fmt::color::red),
                                       "The answer is {}", 42);
   \endrst
 */
@@ -581,7 +581,7 @@ template <typename S, typename... Args, typename Char = char_t<S>>
 inline std::basic_string<Char> format(const text_style& ts, const S& format_str,
                                       const Args&... args) {
   return vformat(ts, to_string_view(format_str),
-                 fmt::make_args_checked<Args...>(format_str, args...));
+                 axom::fmt::make_args_checked<Args...>(format_str, args...));
 }
 
 /**
@@ -605,8 +605,8 @@ OutputIt vformat_to(
   **Example**::
 
     std::vector<char> out;
-    fmt::format_to(std::back_inserter(out),
-                   fmt::emphasis::bold | fg(fmt::color::red), "{}", 42);
+    axom::fmt::format_to(std::back_inserter(out),
+                   axom::fmt::emphasis::bold | fg(axom::fmt::color::red), "{}", 42);
   \endrst
 */
 template <typename OutputIt, typename S, typename... Args,
@@ -616,7 +616,7 @@ inline auto format_to(OutputIt out, const text_style& ts, const S& format_str,
                       Args&&... args) ->
     typename std::enable_if<enable, OutputIt>::type {
   return vformat_to(out, ts, to_string_view(format_str),
-                    fmt::make_args_checked<Args...>(format_str, args...));
+                    axom::fmt::make_args_checked<Args...>(format_str, args...));
 }
 
 FMT_END_NAMESPACE

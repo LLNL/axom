@@ -79,22 +79,22 @@ void writeSpline(const std::string& filename)
   {
     double x = 2 * M_PI * static_cast<double>(i) / NPTS;
     double y = offset + amplitude * cos(freq * x);
-    pts.emplace_back(fmt::format("{} {}", x, y));
+    pts.emplace_back(axom::fmt::format("{} {}", x, y));
   }
 
   std::ofstream c2cFile(filename, std::ios::out);
   // output sine wave spline
   c2cFile << "point = spline_start" << std::endl;
-  c2cFile << fmt::format(
+  c2cFile << axom::fmt::format(
                "piece = rz(units=cm, spline=cubic, beginTan=-90deg, "
                "endTan=-90deg, rz={})",
-               fmt::join(pts.rbegin(), pts.rend(), "\n\t\t"))
+               axom::fmt::join(pts.rbegin(), pts.rend(), "\n\t\t"))
           << std::endl;
   c2cFile << "point = spline_end" << std::endl;
 
   // add straight edges within first quadrant
   c2cFile << "piece = line(end=(0cm,0cm))" << std::endl;
-  c2cFile << fmt::format("piece = line(end=({}cm,0cm))", 2 * M_PI) << std::endl;
+  c2cFile << axom::fmt::format("piece = line(end=({}cm,0cm))", 2 * M_PI) << std::endl;
   c2cFile << "piece = line(end=spline_start)" << std::endl;
 }
 
@@ -129,7 +129,7 @@ TEST(quest_c2c_reader, interpolate_circle)
   reader.getLinearMesh(mesh, segmentsPerKnotSpan);
 
   // The circle is defined by a single NURBS curve with four spans
-  SLIC_INFO(fmt::format("Mesh has {} nodes and {} cells",
+  SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
                         mesh->getNumberOfNodes(),
                         mesh->getNumberOfCells()));
   const int numSpans = 4;
@@ -173,7 +173,7 @@ TEST(quest_c2c_reader, interpolate_square)
   int segmentsPerKnotSpan = 10;
   reader.getLinearMesh(mesh, segmentsPerKnotSpan);
 
-  SLIC_INFO(fmt::format("Mesh has {} nodes and {} cells",
+  SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
                         mesh->getNumberOfNodes(),
                         mesh->getNumberOfCells()));
 
@@ -207,7 +207,7 @@ TEST(quest_c2c_reader, interpolate_spline)
   int segmentsPerKnotSpan = 20;
   reader.getLinearMesh(mesh, segmentsPerKnotSpan);
 
-  SLIC_INFO(fmt::format("Mesh has {} nodes and {} cells",
+  SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
                         mesh->getNumberOfNodes(),
                         mesh->getNumberOfCells()));
 

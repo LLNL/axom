@@ -204,7 +204,7 @@ public:
     if(!vtkMesh)
     {
       bool fExists = axom::utilities::filesystem::pathExists(fileName);
-      SLIC_ERROR(fmt::format("Attempted to open file '{}'. It {}.",
+      SLIC_ERROR(axom::fmt::format("Attempted to open file '{}'. It {}.",
                              fileName,
                              fExists ? "exists" : "does not exist"));
     }
@@ -258,7 +258,7 @@ public:
     // different.
     SLIC_ASSERT_MSG(
       (listSize - numZones) == numNodeZoneIndices,
-      fmt::format("Error while reading mesh!\n "
+      axom::fmt::format("Error while reading mesh!\n "
                   "numZones = {0}; numZones*{1} = {2}; indices in file = {3}",
                   numZones,
                   static_cast<int>(HexMesh::NODES_PER_ZONE),
@@ -522,7 +522,7 @@ int main(int argc, char** argv)
   for(int res = 0; res < NUM_RESOLUTIONS; ++res)
   {
     std::string meshName =
-      fmt::format("{}/ball_{}.vtk", dataDir, fileResolutions[res]);
+      axom::fmt::format("{}/ball_{}.vtk", dataDir, fileResolutions[res]);
 
     SLIC_INFO("Loading mesh file '" << meshName
                                     << "' and generating zone-> node relation");
@@ -551,7 +551,7 @@ int main(int argc, char** argv)
     if(!axom::utilities::isNearlyEqual(errVal, expectedResults[res]))
     {
       SLIC_WARNING("Error differed from expected value -- "
-                   << fmt::format("Expected {}, but got {} (difference: {}",
+                   << axom::fmt::format("Expected {}, but got {} (difference: {}",
                                   expectedResults[res],
                                   errVal,
                                   errVal - expectedResults[res]));
@@ -563,7 +563,7 @@ int main(int argc, char** argv)
   }
 
   //--------------------------------------------------------------
-  SLIC_INFO(fmt::format("-- {} tests out of {} passed",
+  SLIC_INFO(axom::fmt::format("-- {} tests out of {} passed",
                         NUM_RESOLUTIONS - numFailedTests,
                         NUM_RESOLUTIONS));
 

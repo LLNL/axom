@@ -227,7 +227,7 @@ class printf_arg_formatter : public detail::arg_formatter_base<OutputIt, Char> {
 
   OutputIt operator()(monostate value) { return base::operator()(value); }
 
-  template <typename T, FMT_ENABLE_IF(fmt::detail::is_integral<T>::value)>
+  template <typename T, FMT_ENABLE_IF(axom::fmt::detail::is_integral<T>::value)>
   OutputIt operator()(T value) {
     // MSVC2013 fails to compile separate overloads for bool and Char so use
     // std::is_same instead.
@@ -579,8 +579,8 @@ using wprintf_args = basic_format_args<wprintf_context>;
 
 /**
   \rst
-  Constructs an `~fmt::format_arg_store` object that contains references to
-  arguments and can be implicitly converted to `~fmt::printf_args`.
+  Constructs an `~axom::fmt::format_arg_store` object that contains references to
+  arguments and can be implicitly converted to `~axom::fmt::printf_args`.
   \endrst
  */
 template <typename... Args>
@@ -591,8 +591,8 @@ inline format_arg_store<printf_context, Args...> make_printf_args(
 
 /**
   \rst
-  Constructs an `~fmt::format_arg_store` object that contains references to
-  arguments and can be implicitly converted to `~fmt::wprintf_args`.
+  Constructs an `~axom::fmt::format_arg_store` object that contains references to
+  arguments and can be implicitly converted to `~axom::fmt::wprintf_args`.
   \endrst
  */
 template <typename... Args>
@@ -616,7 +616,7 @@ inline std::basic_string<Char> vsprintf(
 
   **Example**::
 
-    std::string message = fmt::sprintf("The answer is %d", 42);
+    std::string message = axom::fmt::sprintf("The answer is %d", 42);
   \endrst
 */
 template <typename S, typename... Args,
@@ -644,7 +644,7 @@ inline int vfprintf(
 
   **Example**::
 
-    fmt::fprintf(stderr, "Don't %s!", "panic");
+    axom::fmt::fprintf(stderr, "Don't %s!", "panic");
   \endrst
  */
 template <typename S, typename... Args,
@@ -668,7 +668,7 @@ inline int vprintf(
 
   **Example**::
 
-    fmt::printf("Elapsed time: %.2f seconds", 1.23);
+    axom::fmt::printf("Elapsed time: %.2f seconds", 1.23);
   \endrst
  */
 template <typename S, typename... Args,
@@ -707,7 +707,7 @@ typename ArgFormatter::iterator vprintf(
 
   **Example**::
 
-    fmt::fprintf(cerr, "Don't %s!", "panic");
+    axom::fmt::fprintf(cerr, "Don't %s!", "panic");
   \endrst
  */
 template <typename S, typename... Args, typename Char = char_t<S>>

@@ -162,7 +162,7 @@ class windows_error : public system_error {
  public:
   /**
    \rst
-   Constructs a :class:`fmt::windows_error` object with the description
+   Constructs a :class:`axom::fmt::windows_error` object with the description
    of the form
 
    .. parsed-literal::
@@ -183,7 +183,7 @@ class windows_error : public system_error {
      LPOFSTRUCT of = LPOFSTRUCT();
      HFILE file = OpenFile(filename, &of, OF_READ);
      if (file == HFILE_ERROR) {
-       throw fmt::windows_error(GetLastError(),
+       throw axom::fmt::windows_error(GetLastError(),
                                 "cannot open file '{}'", filename);
      }
    \endrst
@@ -245,7 +245,7 @@ class buffered_file {
   FMT_API int(fileno)() const;
 
   void vprint(string_view format_str, format_args args) {
-    fmt::vprint(file_, format_str, args);
+    axom::fmt::vprint(file_, format_str, args);
   }
 
   template <typename... Args>
@@ -257,7 +257,7 @@ class buffered_file {
 #if FMT_USE_FCNTL
 // A file. Closed file is represented by a file object with descriptor -1.
 // Methods that are not declared with FMT_NOEXCEPT may throw
-// fmt::system_error in case of failure. Note that some errors such as
+// axom::fmt::system_error in case of failure. Note that some errors such as
 // closing the file multiple times will cause a crash on Windows rather
 // than an exception. You can get standard behavior by overriding the
 // invalid parameter handler with _set_invalid_parameter_handler.
@@ -432,7 +432,7 @@ class ostream final : private detail::buffer<char> {
 
   **Example**::
 
-    auto out = fmt::output_file("guide.txt");
+    auto out = axom::fmt::output_file("guide.txt");
     out.print("Don't {}", "Panic");
   \endrst
  */

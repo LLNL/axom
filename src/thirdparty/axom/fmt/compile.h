@@ -120,10 +120,10 @@ struct is_compiled_string : std::is_base_of<compiled_string, S> {};
 
     // Converts 42 into std::string using the most efficient method and no
     // runtime format string processing.
-    std::string s = fmt::format(FMT_COMPILE("{}"), 42);
+    std::string s = axom::fmt::format(FMT_COMPILE("{}"), 42);
   \endrst
  */
-#define FMT_COMPILE(s) FMT_STRING_IMPL(s, fmt::detail::compiled_string)
+#define FMT_COMPILE(s) FMT_STRING_IMPL(s, axom::fmt::detail::compiled_string)
 
 #if FMT_USE_NONTYPE_TEMPLATE_PARAMETERS
 template <typename Char, size_t N> struct fixed_string {
@@ -666,7 +666,7 @@ constexpr parse_specs_result<T, Char> parse_specs(basic_string_view<Char> str,
   auto ctx = basic_format_parse_context<Char>(str, {}, next_arg_id);
   auto f = formatter<T, Char>();
   auto end = f.parse(ctx);
-  return {f, pos + fmt::detail::to_unsigned(end - str.data()) + 1,
+  return {f, pos + axom::fmt::detail::to_unsigned(end - str.data()) + 1,
           next_arg_id == 0 ? manual_indexing_id : ctx.next_arg_id()};
 }
 
@@ -861,9 +861,9 @@ FMT_INLINE std::basic_string<typename S::char_type> format(const S&,
       const auto& first = detail::first(args...);
       if constexpr (detail::is_named_arg<
                         remove_cvref_t<decltype(first)>>::value) {
-        return fmt::to_string(first.value);
+        return axom::fmt::to_string(first.value);
       } else {
-        return fmt::to_string(first);
+        return axom::fmt::to_string(first);
       }
     }
   }

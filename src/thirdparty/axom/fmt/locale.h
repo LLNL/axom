@@ -21,7 +21,7 @@ std::basic_string<Char> vformat(
     basic_format_args<buffer_context<type_identity_t<Char>>> args) {
   basic_memory_buffer<Char> buffer;
   detail::vformat_to(buffer, format_str, args, detail::locale_ref(loc));
-  return fmt::to_string(buffer);
+  return axom::fmt::to_string(buffer);
 }
 }  // namespace detail
 
@@ -36,7 +36,7 @@ template <typename S, typename... Args, typename Char = char_t<S>>
 inline std::basic_string<Char> format(const std::locale& loc,
                                       const S& format_str, Args&&... args) {
   return detail::vformat(loc, to_string_view(format_str),
-                         fmt::make_args_checked<Args...>(format_str, args...));
+                         axom::fmt::make_args_checked<Args...>(format_str, args...));
 }
 
 template <typename S, typename OutputIt, typename... Args,
@@ -55,7 +55,7 @@ template <typename OutputIt, typename S, typename... Args,
 inline auto format_to(OutputIt out, const std::locale& loc, const S& format_str,
                       Args&&... args) ->
     typename std::enable_if<enable, OutputIt>::type {
-  const auto& vargs = fmt::make_args_checked<Args...>(format_str, args...);
+  const auto& vargs = axom::fmt::make_args_checked<Args...>(format_str, args...);
   return vformat_to(out, loc, to_string_view(format_str), vargs);
 }
 

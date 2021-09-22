@@ -189,7 +189,7 @@ public:
     }
 
     SLIC_INFO(
-      fmt::format("\tQuerying {}^{} containment field took {} seconds (@ {} "
+      axom::fmt::format("\tQuerying {}^{} containment field took {} seconds (@ {} "
                   "queries per second)",
                   gridRes,
                   DIM,
@@ -198,7 +198,7 @@ public:
 
     if(shouldOutputMeshes)
     {
-      std::string fname = fmt::format("gridContainment_{}.vtk", gridRes);
+      std::string fname = axom::fmt::format("gridContainment_{}.vtk", gridRes);
       mint::write_vtk(umesh, fname);
     }
 
@@ -404,7 +404,7 @@ public:
 
     // Log the results
     const int nVerts = m_surfaceMesh->getNumberOfNodes();
-    SLIC_INFO(fmt::format("Mesh has {} vertices  and {} cells.", nVerts, nCells));
+    SLIC_INFO(axom::fmt::format("Mesh has {} vertices  and {} cells.", nVerts, nCells));
 
     if(dimension() == 3)
     {
@@ -414,39 +414,39 @@ public:
 
     if(dimension() == 3)
     {
-      fmt::memory_buffer edgeHistStr;
-      fmt::format_to(edgeHistStr, "Edge length histogram (lg-arithmic): ");
+      axom::fmt::memory_buffer edgeHistStr;
+      axom::fmt::format_to(edgeHistStr, "Edge length histogram (lg-arithmic): ");
       for(auto it = edgeLenHist.begin(); it != edgeLenHist.end(); ++it)
       {
-        fmt::format_to(edgeHistStr,
+        axom::fmt::format_to(edgeHistStr,
                        "\n\texp: {}\tcount: {}\tRange: {}",
                        it->first,
                        it->second / 2,
                        edgeLenRangeMap[it->first]);
       }
-      SLIC_DEBUG(fmt::to_string(edgeHistStr));
+      SLIC_DEBUG(axom::fmt::to_string(edgeHistStr));
     }
 
-    fmt::memory_buffer cellHistStr;
-    fmt::format_to(cellHistStr, "Cell areas histogram (lg-arithmic): ");
+    axom::fmt::memory_buffer cellHistStr;
+    axom::fmt::format_to(cellHistStr, "Cell areas histogram (lg-arithmic): ");
     for(auto it = areaHist.begin(); it != areaHist.end(); ++it)
     {
-      fmt::format_to(cellHistStr,
+      axom::fmt::format_to(cellHistStr,
                      "\n\texp: {}\tcount: {}\tRange: {}",
                      it->first,
                      it->second,
                      areaRangeMap[it->first]);
     }
-    SLIC_DEBUG(fmt::to_string(cellHistStr));
+    SLIC_DEBUG(axom::fmt::to_string(cellHistStr));
 
     if(!badCells.empty())
     {
-      fmt::memory_buffer badCellStr;
-      fmt::format_to(badCellStr,
+      axom::fmt::memory_buffer badCellStr;
+      axom::fmt::format_to(badCellStr,
                      "The following cell(s) have zero area/edge lengths:");
       for(auto it = badCells.begin(); it != badCells.end(); ++it)
       {
-        fmt::format_to(badCellStr, "\n\tCell {}", *it);
+        axom::fmt::format_to(badCellStr, "\n\tCell {}", *it);
         CellVertIndices vertIndices;
         m_surfaceMesh->getCellNodeIDs(*it, vertIndices.data());
 
@@ -454,13 +454,13 @@ public:
         for(int j = 0; j < DIM; ++j)
         {
           m_surfaceMesh->getNode(vertIndices[j], vertPos.data());
-          fmt::format_to(badCellStr,
+          axom::fmt::format_to(badCellStr,
                          "\n\t\t vId: {} @ position: {}",
                          vertIndices[j],
                          vertPos);
         }
       }
-      SLIC_DEBUG(fmt::to_string(badCellStr));
+      SLIC_DEBUG(axom::fmt::to_string(badCellStr));
     }
   }
 
@@ -596,7 +596,7 @@ int main(int argc, char** argv)
   ContainmentDriver<3> driver3D;
 
   /// Load mesh file
-  SLIC_INFO(fmt::format("{:*^80}", " Loading the mesh "));
+  SLIC_INFO(axom::fmt::format("{:*^80}", " Loading the mesh "));
   SLIC_INFO("Reading file: " << params.inputFile << "...");
 
   if(is2D)
@@ -621,7 +621,7 @@ int main(int argc, char** argv)
   }
 
   /// Create octree over mesh's bounding box
-  SLIC_INFO(fmt::format("{:*^80}", " Generating the octree "));
+  SLIC_INFO(axom::fmt::format("{:*^80}", " Generating the octree "));
   if(is2D)
   {
     driver2D.initializeInOutOctree();
@@ -638,7 +638,7 @@ int main(int argc, char** argv)
   }
 
   /// Query the octree over mesh's bounding box
-  SLIC_INFO(fmt::format("{:*^80}", " Querying the octree "));
+  SLIC_INFO(axom::fmt::format("{:*^80}", " Querying the octree "));
   if(is2D)
   {
     driver2D.initializeQueryBox(params.queryBoxMins, params.queryBoxMaxs);

@@ -713,7 +713,7 @@ enum { inline_buffer_size = 500 };
 
   **Example**::
 
-     fmt::memory_buffer out;
+     axom::fmt::memory_buffer out;
      format_to(out, "The answer is {}.", 42);
 
   This will append the following output to the ``out`` object:
@@ -775,7 +775,7 @@ class basic_memory_buffer final : public detail::buffer<T> {
  public:
   /**
     \rst
-    Constructs a :class:`fmt::basic_memory_buffer` object moving the content
+    Constructs a :class:`axom::fmt::basic_memory_buffer` object moving the content
     of the other object to it.
     \endrst
    */
@@ -3246,10 +3246,10 @@ FMT_CONSTEXPR basic_string_view<Char> compile_string_to_view(
     /* Use the hidden visibility as a workaround for a GCC bug (#1973). */ \
     /* Use a macro-like name to avoid shadowing warnings. */               \
     struct FMT_GCC_VISIBILITY_HIDDEN FMT_COMPILE_STRING : base {           \
-      using char_type = fmt::remove_cvref_t<decltype(s[0])>;               \
+      using char_type = axom::fmt::remove_cvref_t<decltype(s[0])>;               \
       FMT_MAYBE_UNUSED FMT_CONSTEXPR                                       \
-      operator fmt::basic_string_view<char_type>() const {                 \
-        return fmt::detail::compile_string_to_view<char_type>(s);          \
+      operator axom::fmt::basic_string_view<char_type>() const {                 \
+        return axom::fmt::detail::compile_string_to_view<char_type>(s);          \
       }                                                                    \
     };                                                                     \
     return FMT_COMPILE_STRING();                                           \
@@ -3262,10 +3262,10 @@ FMT_CONSTEXPR basic_string_view<Char> compile_string_to_view(
   **Example**::
 
     // A compile-time error because 'd' is an invalid specifier for strings.
-    std::string s = fmt::format(FMT_STRING("{:d}"), "foo");
+    std::string s = axom::fmt::format(FMT_STRING("{:d}"), "foo");
   \endrst
  */
-#define FMT_STRING(s) FMT_STRING_IMPL(s, fmt::compile_string)
+#define FMT_STRING(s) FMT_STRING_IMPL(s, axom::fmt::compile_string)
 
 template <typename... Args, typename S,
           enable_if_t<(is_compile_string<S>::value), int>>
@@ -3326,10 +3326,10 @@ class FMT_API system_error : public std::runtime_error {
  public:
   /**
    \rst
-   Constructs a :class:`fmt::system_error` object with a description
-   formatted with `fmt::format_system_error`. *message* and additional
+   Constructs a :class:`axom::fmt::system_error` object with a description
+   formatted with `axom::fmt::format_system_error`. *message* and additional
    arguments passed into the constructor are formatted similarly to
-   `fmt::format`.
+   `axom::fmt::format`.
 
    **Example**::
 
@@ -3339,7 +3339,7 @@ class FMT_API system_error : public std::runtime_error {
      const char *filename = "madeup";
      std::FILE *file = std::fopen(filename, "r");
      if (!file)
-       throw fmt::system_error(errno, "cannot open file '{}'", filename);
+       throw axom::fmt::system_error(errno, "cannot open file '{}'", filename);
    \endrst
   */
   template <typename... Args>
@@ -3656,7 +3656,7 @@ FMT_CONSTEXPR void advance_to(
 
   **Example**::
 
-    auto s = fmt::format("{}", fmt::ptr(p));
+    auto s = axom::fmt::format("{}", axom::fmt::ptr(p));
   \endrst
  */
 template <typename T> const void* ptr(T p) {
@@ -3769,12 +3769,12 @@ arg_join<It, Sentinel, wchar_t> join(It begin, Sentinel end, wstring_view sep) {
   **Example**::
 
     std::vector<int> v = {1, 2, 3};
-    fmt::print("{}", fmt::join(v, ", "));
+    axom::fmt::print("{}", axom::fmt::join(v, ", "));
     // Output: "1, 2, 3"
 
-  ``fmt::join`` applies passed format specifiers to the range elements::
+  ``axom::fmt::join`` applies passed format specifiers to the range elements::
 
-    fmt::print("{:02}", fmt::join(v, ", "));
+    axom::fmt::print("{:02}", axom::fmt::join(v, ", "));
     // Output: "01, 02, 03"
   \endrst
  */
@@ -3798,7 +3798,7 @@ arg_join<detail::iterator_t<Range>, detail::sentinel_t<Range>, wchar_t> join(
 
     #include <fmt/format.h>
 
-    std::string answer = fmt::to_string(42);
+    std::string answer = axom::fmt::to_string(42);
   \endrst
  */
 template <typename T, FMT_ENABLE_IF(!std::is_integral<T>::value)>
@@ -3892,7 +3892,7 @@ template <typename S, typename... Args, size_t SIZE = inline_buffer_size,
           typename Char = enable_if_t<detail::is_string<S>::value, char_t<S>>>
 inline typename buffer_context<Char>::iterator format_to(
     basic_memory_buffer<Char, SIZE>& buf, const S& format_str, Args&&... args) {
-  const auto& vargs = fmt::make_args_checked<Args...>(format_str, args...);
+  const auto& vargs = axom::fmt::make_args_checked<Args...>(format_str, args...);
   detail::vformat_to(buf, to_string_view(format_str), vargs);
   return detail::buffer_appender<Char>(buf);
 }
@@ -3987,11 +3987,11 @@ template <typename Char> struct udl_arg {
 inline namespace literals {
 /**
   \rst
-  User-defined literal equivalent of :func:`fmt::format`.
+  User-defined literal equivalent of :func:`axom::fmt::format`.
 
   **Example**::
 
-    using namespace fmt::literals;
+    using namespace axom::fmt::literals;
     std::string message = "The answer is {}"_format(42);
   \endrst
  */
@@ -4006,12 +4006,12 @@ constexpr detail::udl_formatter<wchar_t> operator"" _format(const wchar_t* s,
 
 /**
   \rst
-  User-defined literal equivalent of :func:`fmt::arg`.
+  User-defined literal equivalent of :func:`axom::fmt::arg`.
 
   **Example**::
 
-    using namespace fmt::literals;
-    fmt::print("Elapsed time: {s:.2f} seconds", "s"_a=1.23);
+    using namespace axom::fmt::literals;
+    axom::fmt::print("Elapsed time: {s:.2f} seconds", "s"_a=1.23);
   \endrst
  */
 constexpr detail::udl_arg<char> operator"" _a(const char* s, size_t) {
