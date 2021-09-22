@@ -61,15 +61,15 @@ using TriangleType = axom::primal::Triangle<double, in3D>;
 using UniformGridType = axom::spin::UniformGrid<int, in3D>;
 // _ugrid_triintersect_header_end
 
-// _bvhtree_header_start
-#include "axom/spin/BVHTree.hpp"
-// the BVHTree is in 2D, storing an index to 2D triangles
-using BVHTree2DType = axom::spin::BVHTree<int, in2D>;
+// _bvh_header_start
+#include "axom/spin/BVH.hpp"
+// the BVH is in 2D, storing an index to 2D triangles
+using BVH2DType = axom::spin::BVH<in2D>;
 // supporting classes
 using BoundingBox2DType = axom::primal::BoundingBox<double, in2D>;
 using Point2DType = axom::primal::Point<double, in2D>;
 using Triangle2DType = axom::primal::Triangle<double, in2D>;
-// _bvhtree_header_end
+// _bvh_header_end
 
 // _igrid_header_start
 #include "axom/spin/ImplicitGrid.hpp"
@@ -517,70 +517,52 @@ void driveUniformGrid()
   std::cout << std::endl;
 }
 
-// _bvhtree_build_start
+// _bvh_build_start
 BoundingBox2DType findBbox(Triangle2DType& tri);
 
-BVHTree2DType* buildBVHTree(std::vector<Triangle2DType>& tris)
+BVH2DType* buildBVHTree(std::vector<Triangle2DType>& tris)
 {
-  // Initialize BVHTree with the triangles
-  const int MaxBinFill = 1;
-  const int MaxLevels = 4;
-  int tricount = static_cast<int>(tris.size());
-  BVHTree2DType* tree = new BVHTree2DType(tricount, MaxLevels);
+  // Create a BVH
+  BVH2DType* tree = new BVH2DType;
 
-  for(int i = 0; i < tricount; ++i)
+  std::vector<BoundingBox2DType> bboxes(tris.size());
+
+  // Get bounding boxes of each element
+  for(int i = 0; i < tris.size(); ++i)
   {
-    tree->insert(findBbox(tris[i]), i);
+    bboxes[i] = findBbox(tris[i]);
   }
 
-  // Build bounding volume hierarchy
-  tree->build(MaxBinFill);
+  // Build bounding volume hierarchy from bounding boxes
+  tree->initialize(bboxes.data(), bboxes.size());
 
   return tree;
 }
-// _bvhtree_build_end
+// _bvh_build_end
 
-// _bvhtree_candidate_start
-void findCandidateBVHTreeBins(BVHTree2DType* tree,
+// _bvh_candidate_start
+void findCandidateBVHTreeBins(BVH2DType* tree,
                               Point2DType ppoint,
                               std::vector<int>& candidates)
 {
-  // Which triangles does the probe point intersect?
-  // Get the candidate bins
-  std::vector<int> bins;
-  tree->find(ppoint, bins);
-  size_t nbins = bins.size();
+  int offsets;
+  int counts;
+  int* candidatesPtr;
+  // Get the candidates for a given probe point:
+  // BVH::findPoints takes an array of points, and allocates and fills an array
+  // for all the candidate intersections with the points in a packed manner.
+  tree->findPoints(&offsets, &counts, candidatesPtr, 1, &ppoint);
 
-  // for each candidate bin,
-  for(size_t curb = 0; curb < nbins; ++curb)
-  {
-    // get its size and object array
-    int bcount = tree->getBucketNumObjects(bins[curb]);
-    const int* ary = tree->getBucketObjectArray(bins[curb]);
+  // Since we are only querying one point, offsets == 0 and
+  // len(candidatesPtr) == counts
+  candidates = std::vector<int>(candidatesPtr, candidatesPtr + counts);
 
-    // For each object in the current bin,
-    for(int j = 0; j < bcount; ++j)
-    {
-      // find the tree's internal object ID
-      int treeObjID = ary[j];
-      // and use it to retrieve the triangle's ID.
-      int triID = tree->getObjectData(treeObjID);
-
-      // Then store the ID in the candidates list.
-      candidates.push_back(triID);
-    }
-  }
-
-  // Sort the candidate triangles, and throw out duplicates.
-  // This is not strictly necessary but saves some calls to checkInTriangle().
-  std::sort(candidates.begin(), candidates.end());
-  std::vector<int>::iterator jend =
-    std::unique(candidates.begin(), candidates.end());
-  candidates.erase(jend, candidates.end());
+  // Deallocate candidates array
+  axom::deallocate(candidatesPtr);
 }
-// _bvhtree_candidate_end
+// _bvh_candidate_end
 
-// _bvhtree_cand_int_start
+// _bvh_cand_int_start
 void findIntersectionsWithCandidates(std::vector<Triangle2DType>& tris,
                                      std::vector<int>& candidates,
                                      Point2DType ppoint,
@@ -597,7 +579,7 @@ void findIntersectionsWithCandidates(std::vector<Triangle2DType>& tris,
     }
   }
 }
-// _bvhtree_cand_int_end
+// _bvh_cand_int_end
 
 void makeTreeTriangles(std::vector<Triangle2DType>& tris)
 {
@@ -665,7 +647,7 @@ void driveBVHTree()
   Point2DType ppoint = Point2DType::make_point(0.45, 0.25);
   std::vector<int> intersections, candidates;
 
-  BVHTree2DType* tree = buildBVHTree(tris);
+  BVH2DType* tree = buildBVHTree(tris);
   findCandidateBVHTreeBins(tree, ppoint, candidates);
   findIntersectionsWithCandidates(tris, candidates, ppoint, intersections);
   tree->writeVtkFile("BVHTree.out.vtk");
