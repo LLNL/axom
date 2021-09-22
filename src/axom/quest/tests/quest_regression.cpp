@@ -408,8 +408,8 @@ void runContainmentQueries(Input& clargs)
  */
 void runDistanceQueries(Input& clargs)
 {
-  SLIC_INFO(fmt::format("Initializing linear BVH tree over mesh '{}'...",
-                        clargs.meshName));
+  SLIC_INFO(
+    fmt::format("Initializing linear BVH over mesh '{}'...", clargs.meshName));
   utilities::Timer buildTimer(true);
 
   quest::signed_distance_init(clargs.meshName, MPI_COMM_WORLD);
@@ -440,12 +440,12 @@ void runDistanceQueries(Input& clargs)
   #pragma omp parallel
   #pragma omp master
   SLIC_INFO(
-    fmt::format("Querying BVH tree on uniform grid "
+    fmt::format("Querying BVH on uniform grid "
                 "of resolution {} using {} threads",
                 clargs.queryResolution,
                 omp_get_num_threads()));
 #else
-  SLIC_INFO(fmt::format("Querying BVH tree on uniform grid of resolution {}",
+  SLIC_INFO(fmt::format("Querying BVH on uniform grid of resolution {}",
                         clargs.queryResolution));
 #endif
 
