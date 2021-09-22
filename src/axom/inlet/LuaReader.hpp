@@ -15,7 +15,7 @@
 #define INLET_LUAMAP_HPP
 
 #include "axom/inlet/Reader.hpp"
-#include <sol/sol.hpp>
+#include <axom/sol.hpp>
 
 extern "C" {
 #include "lua.h"

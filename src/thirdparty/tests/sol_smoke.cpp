@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "sol/sol.hpp"
+#include "axom/sol.hpp"
 #include "gtest/gtest.h"
 
 TEST(sol_smoke, basic_use)

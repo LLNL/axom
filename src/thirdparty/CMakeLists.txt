@@ -13,7 +13,7 @@
 
 if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
   blt_add_library(NAME    sol
-                  HEADERS sol/sol.hpp)
+                  HEADERS axom/sol.hpp)
 
   target_include_directories(sol SYSTEM INTERFACE
               $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -21,8 +21,8 @@ if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
   install(TARGETS              sol
           EXPORT               axom-targets
           INCLUDES DESTINATION include)
-  install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sol
-          DESTINATION include )
+  install(FILES        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol.hpp
+          DESTINATION include/axom )
   install(EXPORT axom-targets DESTINATION lib/cmake)
 
   set(SOL_FOUND TRUE CACHE INTERNAL "")
