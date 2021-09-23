@@ -45,3 +45,38 @@ Finally, test the point against all candidate neighbor triangles.
    :start-after: _bvh_cand_int_start
    :end-before: _bvh_cand_int_end
    :language: C++
+
+Device Traversal API
+--------------------
+
+The ``BVH`` class contains a ``getTraverser()`` method, which returns an object
+that can be used to traverse a BVH with user-defined actions.
+
+The returned traverser type has one function, ``traverse_tree()``, which takes the
+following arguments:
+- ``const PointType& p``: the query point to traverse the BVH with
+- ``LeafAction&& lf``: a function or lambda which is executed on each leaf node
+  of the BVH that is reached during traversal. It should take in two arguments,
+  the index of the leaf node in the BVH, and a pointer to an array mapping leaf
+  node indices to the original index of elements.
+- ``Predicate&& predicate``: a function which determines whether to traverse
+  down to a given internal node. It should take in two arguments: the query
+  point, and the tentative node's bounding box.
+
+This object may be used within a CUDA kernel, so long as the execution space
+parameter of ``BVH`` is set correctly.
+
+This method can be used to avoid the extra memory allocation needed for holding an
+array of candidate intersections. For example, if we only wish to count the number
+of intersections for a given query point, our leaf action could get the underlying
+mesh element based on the element index, check whether the query point intersects it
+and then increment a per-point counter.
+
+This method also allows uses of the BVH beyond intersection testing.
+``quest::SignedDistance`` uses the BVH traversal object to search for the closest
+surface elements to a query point. The leaf action that is used checks each candidate
+leaf against a current-minimum candidate; if closer, the current-minimum candidate
+is set to the new surface element. The predicate used for traversal also utilizes the
+current-minimum candidate data to avoid traversing internal nodes that are farther than
+the current minimum squared distance.
+
