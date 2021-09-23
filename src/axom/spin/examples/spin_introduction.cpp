@@ -528,7 +528,7 @@ BVH2DType* buildBVHTree(std::vector<Triangle2DType>& tris)
   std::vector<BoundingBox2DType> bboxes(tris.size());
 
   // Get bounding boxes of each element
-  for(int i = 0; i < tris.size(); ++i)
+  for(size_t i = 0; i < tris.size(); ++i)
   {
     bboxes[i] = findBbox(tris[i]);
   }
@@ -545,9 +545,9 @@ void findCandidateBVHTreeBins(BVH2DType* tree,
                               Point2DType ppoint,
                               std::vector<int>& candidates)
 {
-  int offsets;
-  int counts;
-  int* candidatesPtr;
+  axom::IndexType offsets;
+  axom::IndexType counts;
+  axom::IndexType* candidatesPtr;
   // Get the candidates for a given probe point:
   // BVH::findPoints takes an array of points, and allocates and fills an array
   // for all the candidate intersections with the points in a packed manner.
