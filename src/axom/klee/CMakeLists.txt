@@ -9,31 +9,31 @@ axom_component_requires(NAME       Klee
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 set(klee_headers
-        Dimensions.hpp
-        Geometry.hpp
-        GeometryOperators.hpp
-        IO.hpp
-        Shape.hpp
-        ShapeSet.hpp
-        Units.hpp
-        KleeError.hpp
+    Dimensions.hpp
+    Geometry.hpp
+    GeometryOperators.hpp
+    IO.hpp
+    Shape.hpp
+    ShapeSet.hpp
+    Units.hpp
+    KleeError.hpp
     )
 
 set(klee_internal_headers
-        GeometryOperatorsIO.hpp
-        IOUtil.hpp
+    GeometryOperatorsIO.hpp
+    IOUtil.hpp
     )
 
 set(klee_sources
-        Geometry.cpp
-        GeometryOperators.cpp
-        GeometryOperatorsIO.cpp
-        KleeError.cpp
-        IO.cpp
-        IOUtil.cpp
-        Shape.cpp
-        ShapeSet.cpp
-        Units.cpp
+    Geometry.cpp
+    GeometryOperators.cpp
+    GeometryOperatorsIO.cpp
+    KleeError.cpp
+    IO.cpp
+    IOUtil.cpp
+    Shape.cpp
+    ShapeSet.cpp
+    Units.cpp
     )
 
 #------------------------------------------------------------------------------
