@@ -70,8 +70,8 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& A,
  * \return d the signed distance from P to the closest point on B.
  */
 template <typename T, int NDIMS>
-inline double squared_distance(const Point<T, NDIMS>& P,
-                               const BoundingBox<T, NDIMS>& B)
+AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
+                                                const BoundingBox<T, NDIMS>& B)
 {
   if(B.contains(P))
   {

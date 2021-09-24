@@ -79,6 +79,7 @@ Matrix<T> upper_triangular(const Matrix<T>& A, bool unit_diagonal = true);
 /// @}
 
 /*!
+ * \accelerated
  * \class Matrix
  *
  * \brief The Matrix class is used to represent \f$ M \times N \f$ matrices. It

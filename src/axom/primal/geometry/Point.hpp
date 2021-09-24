@@ -47,6 +47,7 @@ std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt);
 ///@}
 
 /*!
+ * \accelerated
  * \class Point
  *
  * \brief The point class represents a point, \f$ p \in \mathcal{R}^d \f$ . It
