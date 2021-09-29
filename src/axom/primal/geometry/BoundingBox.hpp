@@ -11,7 +11,7 @@
 #include "axom/config.hpp"
 
 #include "axom/core/Macros.hpp"  // for AXOM_HOST__DEVICE
-#include "axom/core/numerics/floating_point_limits.hpp"  // floating_point_limits
+#include "axom/core/numerics/floating_point_limits.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
