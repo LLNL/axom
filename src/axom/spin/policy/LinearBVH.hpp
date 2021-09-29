@@ -54,12 +54,19 @@ public:
                                       LeafAction&& lf,
                                       Predicate&& predicate) const
   {
+    auto traversePref = [](const BoxType& l, const BoxType& r, const PointType& p) {
+      double sqDistL = primal::squared_distance(p, l.getCentroid());
+      double sqDistR = primal::squared_distance(p, r.getCentroid());
+      return sqDistL > sqDistR;
+    };
+
     lbvh::bvh_traverse(m_inner_nodes,
                        m_inner_node_children,
                        m_leaf_nodes,
                        p,
                        predicate,
-                       lf);
+                       lf,
+                       traversePref);
   }
 
 private:
@@ -268,6 +275,12 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
 
+  auto noTraversePref = [] AXOM_HOST_DEVICE(const BoundingBoxType&,
+                                            const BoundingBoxType&,
+                                            const PrimitiveType&) {
+    return false;
+  };
+
 #if defined(AXOM_USE_RAJA)
   // STEP 1: count number of candidates for each query point
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -291,7 +304,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                            leaf_nodes,
                            primitive,
                            predicate,
-                           leafAction);
+                           leafAction,
+                           noTraversePref);
 
         counts[i] = count;
         total_count_reduce += count;
@@ -334,7 +348,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                                                 leaf_nodes,
                                                 obj,
                                                 predicate,
-                                                leafAction);
+                                                leafAction,
+                                                noTraversePref);
                            }););
 #else  // CPU-only and no RAJA: do single traversal
 
@@ -359,7 +374,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                          leaf_nodes,
                          obj,
                          predicate,
-                         leafAction);
+                         leafAction,
+                         noTraversePref);
       counts[i] = matching_leaves;
     }););
 
