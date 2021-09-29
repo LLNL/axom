@@ -13,7 +13,7 @@ These hide the difference between versions of C++ and between supported computin
   - Templated arithmetic and logical comparison functions
 - [Containers]
   - [Basic linear array](@ref axom::Array)
-  - [Mutli-component array](@ref axom::MCArray)
+  - [Multi-component array](@ref axom::MCArray)
   - [Stack array](@ref axom::StackArray) for passing stack arrays to device kernels (e.g., GPU) via lambda capture properly.
 - [Numerics](@ref axom::numerics) include
   - A [Matrix](@ref axom::numerics::Matrix) class and operators
