@@ -270,19 +270,12 @@ module axom_quest
             logical(C_BOOL), value, intent(IN) :: computeSign
         end subroutine c_signed_distance_set_compute_signs
 
-        subroutine quest_signed_distance_set_max_levels(maxLevels) &
-                bind(C, name="QUEST_signed_distance_set_max_levels")
+        subroutine quest_signed_distance_set_allocator(allocatorID) &
+                bind(C, name="QUEST_signed_distance_set_allocator")
             use iso_c_binding, only : C_INT
             implicit none
-            integer(C_INT), value, intent(IN) :: maxLevels
-        end subroutine quest_signed_distance_set_max_levels
-
-        subroutine quest_signed_distance_set_max_occupancy(maxOccupancy) &
-                bind(C, name="QUEST_signed_distance_set_max_occupancy")
-            use iso_c_binding, only : C_INT
-            implicit none
-            integer(C_INT), value, intent(IN) :: maxOccupancy
-        end subroutine quest_signed_distance_set_max_occupancy
+            integer(C_INT), value, intent(IN) :: allocatorID
+        end subroutine quest_signed_distance_set_allocator
 
         subroutine c_signed_distance_set_verbose(status) &
                 bind(C, name="QUEST_signed_distance_set_verbose")

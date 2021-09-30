@@ -248,18 +248,11 @@ void QUEST_signed_distance_set_compute_signs(bool computeSign)
   // splicer end function.signed_distance_set_compute_signs
 }
 
-void QUEST_signed_distance_set_max_levels(int maxLevels)
+void QUEST_signed_distance_set_allocator(int allocatorID)
 {
-  // splicer begin function.signed_distance_set_max_levels
-  axom::quest::signed_distance_set_max_levels(maxLevels);
-  // splicer end function.signed_distance_set_max_levels
-}
-
-void QUEST_signed_distance_set_max_occupancy(int maxOccupancy)
-{
-  // splicer begin function.signed_distance_set_max_occupancy
-  axom::quest::signed_distance_set_max_occupancy(maxOccupancy);
-  // splicer end function.signed_distance_set_max_occupancy
+  // splicer begin function.signed_distance_set_allocator
+  axom::quest::signed_distance_set_allocator(allocatorID);
+  // splicer end function.signed_distance_set_allocator
 }
 
 void QUEST_signed_distance_set_verbose(bool status)
