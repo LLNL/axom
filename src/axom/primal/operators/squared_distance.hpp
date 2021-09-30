@@ -55,7 +55,8 @@ inline double squared_distance(const double* A, const double* B, int N)
  * \return d the distance from point A to point B.
  */
 template <typename T, int NDIMS>
-inline double squared_distance(const Point<T, NDIMS>& A, const Point<T, NDIMS>& B)
+AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& A,
+                                                const Point<T, NDIMS>& B)
 {
   Vector<T, NDIMS> v(A, B);
   return (v.squared_norm());
@@ -69,8 +70,8 @@ inline double squared_distance(const Point<T, NDIMS>& A, const Point<T, NDIMS>& 
  * \return d the signed distance from P to the closest point on B.
  */
 template <typename T, int NDIMS>
-inline double squared_distance(const Point<T, NDIMS>& P,
-                               const BoundingBox<T, NDIMS>& B)
+AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
+                                                const BoundingBox<T, NDIMS>& B)
 {
   if(B.contains(P))
   {

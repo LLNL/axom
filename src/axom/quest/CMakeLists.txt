@@ -10,7 +10,7 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       QUEST
-                        COMPONENTS MINT PRIMAL SLAM SLIC)
+                        COMPONENTS MINT PRIMAL SLAM SLIC SPIN)
 
 #------------------------------------------------------------------------------
 # Specify headers, sources and dependencies
@@ -51,6 +51,9 @@ set( quest_headers
     )
 
 set( quest_sources
+
+    ## Signed-distance query
+    SignedDistance.cpp
 
     ## All-nearest-neighbors query
     AllNearestNeighbors.cpp

@@ -276,6 +276,15 @@ void QUEST_signed_distance_use_shared_memory(bool status)
   // splicer end function.signed_distance_use_shared_memory
 }
 
+void QUEST_signed_distance_set_execution_space(int execSpace)
+{
+  // splicer begin function.signed_distance_set_execution_space
+  axom::quest::SignedDistExec SHCXX_execSpace =
+    static_cast<axom::quest::SignedDistExec>(execSpace);
+  axom::quest::signed_distance_set_execution_space(SHCXX_execSpace);
+  // splicer end function.signed_distance_set_execution_space
+}
+
 double QUEST_signed_distance_evaluate(double x, double y, double z)
 {
   // splicer begin function.signed_distance_evaluate
