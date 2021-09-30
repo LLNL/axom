@@ -77,7 +77,9 @@ The constructor takes several arguments:
 - ``bool computeSign`` (default ``true``): Optional. Enables or disables the
   computation of signs in distance queries.
 - ``int allocatorID``: Optional. Sets a custom Umpire allocator to use in
-  constructing the underlying BVH.
+  constructing the underlying BVH; by default, this is set to a default allocator
+  for the execution space the ``SignedDistance`` class is instantiated in
+  (host-side memory for CPU and OpenMP, unified memory for GPUs).
 
 Note that the second and subsequent arguments to the constructor correspond to
 ``quest::signed_distance_set`` functions in the C API.

@@ -110,7 +110,7 @@ public:
    * \param [in] surfaceMesh user-supplied surface mesh.
    * \param [in] isWatertight indicates if the surface mesh is closed.
    * \param [in] computeSign indicates if distance queries should compute signs (optional).
-   * \param [in] allocatorID the allocator to create the underlying BVH with.
+   * \param [in] allocatorID the allocator to create the underlying BVH with (optional).
    *
    * \note computeSign defaults to \a true when not specified.
    *
@@ -133,7 +133,7 @@ public:
    * \brief Reinitializes a SignedDistance instance with a new surface mesh.
    *
    * \param [in] surfaceMesh user-supplied surface mesh.
-   * \param [in] allocatorID the allocator to create the underlying BVH with.
+   * \param [in] allocatorID the allocator to create the underlying BVH with (optional).
    *
    * \note The given surface mesh must be allocated in a memory space
    *  compatible with the execution space specified in the SignedDistance
