@@ -39,6 +39,9 @@ probe point must be tested against each triangle.
    :end-before: _bvh_candidate_end
    :language: C++
 
+Note that the returned packed candidate intersection array (``candidatesPtr`` above)
+needs to be deallocated by the caller.
+
 Finally, test the point against all candidate neighbor triangles.
 
 .. literalinclude:: ../../examples/spin_introduction.cpp
