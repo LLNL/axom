@@ -410,8 +410,8 @@ void runContainmentQueries(Input& clargs)
  */
 void runDistanceQueries(Input& clargs)
 {
-  SLIC_INFO(
-    axom::fmt::format("Initializing linear BVH over mesh '{}'...", clargs.meshName));
+  SLIC_INFO(axom::fmt::format("Initializing linear BVH over mesh '{}'...",
+                              clargs.meshName));
   utilities::Timer buildTimer(true);
 
   quest::signed_distance_init(clargs.meshName, MPI_COMM_WORLD);
@@ -444,12 +444,12 @@ void runDistanceQueries(Input& clargs)
   #pragma omp master
   SLIC_INFO(
     axom::fmt::format("Querying BVH on uniform grid "
-                "of resolution {} using {} threads",
-                clargs.queryResolution,
-                omp_get_num_threads()));
+                      "of resolution {} using {} threads",
+                      clargs.queryResolution,
+                      omp_get_num_threads()));
 #else
   SLIC_INFO(axom::fmt::format("Querying BVH on uniform grid of resolution {}",
-                        clargs.queryResolution));
+                              clargs.queryResolution));
 #endif
 
   // Add a scalar field for the containment queries
