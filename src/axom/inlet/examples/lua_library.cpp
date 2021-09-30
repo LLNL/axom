@@ -37,7 +37,7 @@ int main()
   auto lr = std::make_unique<axom::inlet::LuaReader>();
 
   // Load extra io Lua library
-  lr->solState().open_libraries(sol::lib::io);
+  lr->solState().open_libraries(axom::sol::lib::io);
 
   // Parse example input string
   lr->parseString(input);

@@ -10,7 +10,7 @@
 
 TEST(sol_smoke, basic_use)
 {
-  sol::state lua;
+  axom::sol::state lua;
   lua.script(
     "table1={"
     "  table2={"
