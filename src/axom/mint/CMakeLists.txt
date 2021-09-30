@@ -30,7 +30,6 @@ set( mint_headers
 
     ## Core containers
     core/MCArray.hpp
-    core/SidreMCArray.hpp
 
     ## exec
     execution/xargs.hpp
@@ -88,6 +87,8 @@ set( mint_headers
     utils/vtk_utils.hpp
     utils/su2_utils.hpp
    )
+
+blt_list_append(TO mint_headers ELEMENTS core/SidreMCArray.hpp IF AXOM_MINT_USE_SIDRE)
 
 set( mint_sources
 
