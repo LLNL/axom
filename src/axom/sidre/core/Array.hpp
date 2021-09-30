@@ -33,7 +33,7 @@ constexpr axom::IndexType ZERO = 0;
 namespace detail
 {
 inline void describeViewImpl(TypeID T_type,
-                             const std::array<IndexType, 1>& shape,
+                             const std::array<axom::IndexType, 1>& shape,
                              View* view)
 {
   SLIC_ASSERT(view != nullptr);
@@ -44,7 +44,7 @@ inline void describeViewImpl(TypeID T_type,
 }
 
 inline void describeViewImpl(TypeID T_type,
-                             const std::array<IndexType, 2>& shape,
+                             const std::array<axom::IndexType, 2>& shape,
                              View* view)
 {
   SLIC_ASSERT(view != nullptr);
