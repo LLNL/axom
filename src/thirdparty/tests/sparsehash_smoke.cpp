@@ -17,7 +17,7 @@
 //-----------------------------------------------------------------------------
 TEST(sparsehash_smoke, basic_use)
 {
-  typedef google::dense_hash_map<std::string, double> MapType;
+  typedef axom::google::dense_hash_map<std::string, double> MapType;
 
   const std::string deletedKey = "DELETED";
   const std::string emptyKey = "EMPTY";
