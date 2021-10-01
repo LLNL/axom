@@ -4,7 +4,7 @@ Spin {#spintop}
 [Spin](@ref axom::spin) provides data structures to index space and their
 associated support classes.
 - Tree structures
-  - [BVHTree](@ref axom::spin::BVHTree) creates a bounding volume hierarchy
+  - [BVHTree](@ref axom::spin::BVH) creates a bounding volume hierarchy
   - [SpatialOctree](@ref axom::spin::SpatialOctree) creates an octree
 - One-level structures
   - [UniformGrid](@ref axom::spin::UniformGrid) divides a region of interest
