@@ -76,6 +76,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: `SignedDistance` has been modified to use `spin::BVH` instead of `BVHTree`. This
   enables signed-distance queries to run on the GPU, as specified via a new template
   parameter.
+- Spin: Removed `BVHTree` class in favor of `BVH`.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
