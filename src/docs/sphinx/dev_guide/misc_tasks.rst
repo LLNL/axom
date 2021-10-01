@@ -52,9 +52,10 @@ reviewers to check over your changes.
 Axom Third-party Library (TPL) Dependency Installation and Update
 ========================================================================
 
-Axom dependencies are grouped into three categories: Git submodules,
-system TPL dependencies, other TPL libraries. The following sections
-describe how to install and update these dependencies for Axom.
+Axom dependencies are grouped into four categories: Git submodules,
+built-in TPLs in the Axom source tree, system-level TPLs, and other 
+TPL libraries. The following sections describe how to install and update 
+these dependencies for Axom.
 
 Git submodules
 --------------
@@ -77,8 +78,13 @@ its directory in Axom and check out a new version. If a version is intended
 to be changed in the Axom repo, make the version change on a branch and 
 submit a GitHub pull request as you would do for other software changes.
 
-TPLs
-----
+Built-in TPLs
+-------------
+
+**TODO: describe how to change versions here...**
+
+TPLs (system-level and others)
+------------------------------
 
 The following instructions describe how to install local copies of Axom
 TPLs on Livermore Computing (LC) platforms. Typically, this process is 
@@ -122,14 +128,23 @@ other Axom developers to use, to use in Axom CI testing, etc.
    where ``local/install/path`` is a directory location where you want the 
    libraries to be installed.
 
-   This will do a full installation of the TPLs, which you can use to check 
-   that the the correct new version is installed and works. 
+   The script will do a full installation of all TPLs for the plaform you 
+   are running on. It will output whether the TPL install succeeded and, 
+   subsequently, whether an Axom build against the TPL install succeeded.
 
-   Running the command above also produces new host-config files (i.e., 
-   CMake cache files) that you use to build and test Axom with the installation.
-   These new host-config files will be located in the top-level Axom directory
-   of your local clone of the repo. If any changes to Axom code are needed 
-   to work with the TPL update(s), make the changes and test them.
+   Running the script produces new host-config files (i.e., CMake cache files) 
+   that you can use to build and test Axom with the installation, if issues
+   arise. The generated host-config files will be located in the top-level Axom
+   directory of your local clone of the repo. If any changes to Axom code are 
+   needed to work with the TPL update(s), make the changes and test them.
+
+   .. note :: You can build a subset of TPLs for a platform, by passing Spack
+              spec arguments to the Python script. For example,
+
+                $ ./scripts/llnl_scripts/build_tpls.py --spec clang@10.0.0~cpp14+devtools+mfem+c2c ...
+
+              will build the TPLs for the clang 10.0.0 compiler. Please see the
+              ``scripts/spack/specs.json`` file for available specs. 
 
 #. When you are confident that everything is correct, log in as user
    ``atk`` to each of the machines named in Axom's standard host-configs and run
