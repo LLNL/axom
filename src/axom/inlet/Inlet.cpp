@@ -14,7 +14,7 @@
 
 #include "axom/inlet/Inlet.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "axom/slic.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 #include <algorithm>

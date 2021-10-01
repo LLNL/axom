@@ -13,7 +13,7 @@
   #include <type_traits>  // for checking layout
 
   #include "conduit_blueprint.hpp"
-  #include "fmt/fmt.hpp"
+  #include "axom/fmt.hpp"
 
   #include "MFEMSidreDataCollection.hpp"
 

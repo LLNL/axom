@@ -77,6 +77,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   enables signed-distance queries to run on the GPU, as specified via a new template
   parameter.
 - Spin: Removed `BVHTree` class in favor of `BVH`.
+- All built-in third-party libraries (fmt, cli11, sol, and sparsehash) have been guarded to allow downstream users to
+  have their own versions. This includes moving their headers under `include/axom` instead of `include/` and 
+  moving their C++ namespace under `axom` (eg. `fmt` to `axom::fmt`).  If you don't use our built-n TPLs this has no
+  affect on you, but if you do these are some the changes you will need to make:
+  * `fmt::` to `axom::fmt::`
+  * `#include "fmt/fmt.hpp"` to `#include "axom/fmt.hpp"`
+  * `sol::` to `axom::sol::`
+  * `#include "sol/sol.hpp"` to `#include "axom/sol.hpp"`
+  * `google::` to `axom::google::`
+  * `#include "sparsehash` to `#include "axom/sparsehash`
+  * `CLI::` to `axom::CLI::`
+  * `#include "CLI11/CLI11.hpp"` to `#include "axom/CLI11.hpp"`
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length

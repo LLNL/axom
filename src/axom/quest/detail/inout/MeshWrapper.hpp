@@ -19,7 +19,7 @@
 #include "axom/mint.hpp"
 #include "axom/spin.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 namespace axom
 {

@@ -53,7 +53,7 @@
 #endif
 // clang-format on
 
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 // C/C++ includes
 #include <fstream>
@@ -103,7 +103,7 @@ struct Input
 
   Input() = default;
 
-  void parse(int argc, char** argv, CLI::App& app);
+  void parse(int argc, char** argv, axom::CLI::App& app);
 
   std::string collisionsMeshName() { return vtkOutput + ".collisions.vtk"; }
   std::string collisionsTextName() { return vtkOutput + ".collisions.txt"; }
@@ -134,7 +134,7 @@ const std::map<std::string, RuntimePolicy> Input::s_validPolicies({
 });
 // clang-format on
 
-void Input::parse(int argc, char** argv, CLI::App& app)
+void Input::parse(int argc, char** argv, axom::CLI::App& app)
 {
   app
     .add_option(
@@ -145,7 +145,7 @@ void Input::parse(int argc, char** argv, CLI::App& app)
       "Set to \'naive\' to use the naive algorithm (without a spatial index).\n"
       "Set to \'uniform\' to use the uniform grid spatial index.")
     ->capture_default_str()
-    ->check(CLI::IsMember {Input::s_validMethods});
+    ->check(axom::CLI::IsMember {Input::s_validMethods});
 
   app
     .add_option("-r,--resolution",
@@ -172,11 +172,11 @@ void Input::parse(int argc, char** argv, CLI::App& app)
 
   app.add_option("-p, --policy", policy, pol_sstr.str())
     ->capture_default_str()
-    ->transform(CLI::CheckedTransformer(Input::s_validPolicies));
+    ->transform(axom::CLI::CheckedTransformer(Input::s_validPolicies));
 
   app.add_option("-i,--infile", stlInput, "The STL input file")
     ->required()
-    ->check(CLI::ExistingFile);
+    ->check(axom::CLI::ExistingFile);
 
   app.add_option("-o,--outfile",
                  vtkOutput,
@@ -585,13 +585,13 @@ int main(int argc, char** argv)
 
   // Parse the command line arguments
   Input params;
-  CLI::App app {"MeshTester example"};
+  axom::CLI::App app {"MeshTester example"};
 
   try
   {
     params.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     return app.exit(e);
   }
