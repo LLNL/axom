@@ -1,0 +1,1245 @@
+diff --git a/src/thirdparty/axom/sol.hpp b/src/thirdparty/axom/sol.hpp
+index d5ffc1c67..5cb77045c 100644
+--- a/src/thirdparty/axom/sol.hpp
++++ b/src/thirdparty/axom/sol.hpp
+@@ -285,6 +285,7 @@ extern "C" {
+ 
+ // end of sol/feature_test.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <bool b>
+@@ -418,7 +419,7 @@ namespace sol {
+ 	template <typename T>
+ 	struct unique_usertype_traits;
+ } // namespace sol
+-
++} // namespace axom
+ // end of sol/forward.hpp
+ 
+ // beginning of sol/state.hpp
+@@ -430,6 +431,7 @@ namespace sol {
+ #include <stdexcept>
+ #include <string>
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		struct direct_error_tag {};
+@@ -466,6 +468,7 @@ namespace sol {
+ 	};
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/error.hpp
+ 
+@@ -482,6 +485,7 @@ namespace sol {
+ #include <tuple>
+ #include <cstddef>
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		using swallow = std::initializer_list<int>;
+@@ -544,11 +548,13 @@ namespace sol {
+ 
+ 	} // namespace meta
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/tuple.hpp
+ 
+ // beginning of sol/bind_traits.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace meta {
+ 	namespace meta_detail {
+@@ -1063,6 +1069,7 @@ namespace meta {
+ 	using function_return_t = typename bind_traits<Signature>::return_type;
+ }
+ } // namespace sol::meta
++} // namespace axom
+ 
+ // end of sol/bind_traits.hpp
+ 
+@@ -1076,6 +1083,7 @@ namespace meta {
+ #include <boost/functional/hash.hpp>
+ #endif
+ 
++namespace axom {
+ namespace sol {
+ #if defined(SOL_CXX17_FEATURES) && SOL_CXX17_FEATURES
+ 	template <typename C, typename T = std::char_traits<C>>
+@@ -1201,12 +1209,14 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ namespace std {
+ 	template <typename Ch, typename Tr>
+-	struct hash< ::sol::basic_string_view<Ch, Tr> > : ::sol::basic_string_view_hash<Ch, Tr> {};
++	struct hash< ::axom::sol::basic_string_view<Ch, Tr> > : ::axom::sol::basic_string_view_hash<Ch, Tr> {};
+ } // namespace std
+ 
++namespace axom {
+ namespace sol {
+ 	using string_view = basic_string_view<char>;
+ 	using wstring_view = basic_string_view<wchar_t>;
+@@ -1215,6 +1225,7 @@ namespace sol {
+ 	using string_view_hash = std::hash<string_view>;
+ #endif // C++17 Support
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/string_view.hpp
+ 
+@@ -1225,6 +1236,7 @@ namespace sol {
+ #include <iterator>
+ #include <iosfwd>
+ 
++namespace axom {
+ namespace sol {
+ 	template <std::size_t I>
+ 	using index_value = std::integral_constant<std::size_t, I>;
+@@ -1899,6 +1911,7 @@ namespace sol {
+ 		}
+ 	} // namespace detail
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/traits.hpp
+ 
+@@ -3216,6 +3229,7 @@ COMPAT53_API void luaL_requiref(lua_State *L, const char *modname,
+ 
+ #include <utility>
+ 
++namespace axom {
+ namespace sol {
+ 
+ #if defined(SOL_CXX17_FEATURES) && SOL_CXX17_FEATURES
+@@ -3277,6 +3291,7 @@ namespace sol {
+ #endif
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/in_place.hpp
+ 
+@@ -3377,6 +3392,7 @@ namespace sol {
+ #pragma warning(disable : 4814)
+ #endif
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	// BEGIN workaround for missing is_trivially_destructible
+@@ -4364,12 +4380,13 @@ namespace sol {
+ 	}
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ namespace std {
+ 	template <typename T>
+-	struct hash<sol::optional<T>> {
++	struct hash<axom::sol::optional<T>> {
+ 		typedef typename hash<T>::result_type result_type;
+-		typedef sol::optional<T> argument_type;
++		typedef axom::sol::optional<T> argument_type;
+ 
+ 		constexpr result_type operator()(argument_type const& arg) const {
+ 			return arg ? ::std::hash<T>{}(*arg) : result_type{};
+@@ -4377,9 +4394,9 @@ namespace std {
+ 	};
+ 
+ 	template <typename T>
+-	struct hash<sol::optional<T&>> {
++	struct hash<axom::sol::optional<T&>> {
+ 		typedef typename hash<T>::result_type result_type;
+-		typedef sol::optional<T&> argument_type;
++		typedef axom::sol::optional<T&> argument_type;
+ 
+ 		constexpr result_type operator()(argument_type const& arg) const {
+ 			return arg ? ::std::hash<T>{}(*arg) : result_type{};
+@@ -4398,6 +4415,7 @@ namespace std {
+ 
+ #endif // Boost vs. Better optional
+ 
++namespace axom {
+ namespace sol {
+ 
+ #if defined(SOL_USE_BOOST) && SOL_USE_BOOST
+@@ -4414,11 +4432,13 @@ namespace sol {
+ 		struct is_optional<optional<T>> : std::true_type {};
+ 	} // namespace meta
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/optional.hpp
+ 
+ // beginning of sol/forward_detail.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		const bool default_safe_function_calls =
+@@ -4451,11 +4471,13 @@ namespace sol {
+ 		void make_destructor(Regs& l, int& index);
+ 	} // namespace usertype_detail
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/forward_detail.hpp
+ 
+ // beginning of sol/raii.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		struct default_construct {
+@@ -4574,11 +4596,13 @@ namespace sol {
+ 	}
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/raii.hpp
+ 
+ // beginning of sol/filters.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		struct filter_base_tag {};
+@@ -4639,6 +4663,7 @@ namespace sol {
+ 		return filter_wrapper<std::decay_t<F>, std::decay_t<Args>...>(std::forward<F>(f), std::forward<Args>(args)...);
+ 	}
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/filters.hpp
+ 
+@@ -4654,6 +4679,7 @@ namespace sol {
+ #include <unordered_map>
+ #endif // Using Boost
+ 
++namespace axom {
+ namespace sol {
+ 	namespace usertype_detail {
+ #if defined(SOL_USE_BOOST)
+@@ -5632,10 +5658,10 @@ namespace sol {
+ #endif // SOL_CXX17_FEATURES
+ 
+ 		template <typename T>
+-		struct lua_type_of<nested<T>, std::enable_if_t<::sol::is_container<T>::value>> : std::integral_constant<type, type::table> {};
++		struct lua_type_of<nested<T>, std::enable_if_t<::axom::sol::is_container<T>::value>> : std::integral_constant<type, type::table> {};
+ 
+ 		template <typename T>
+-		struct lua_type_of<nested<T>, std::enable_if_t<!::sol::is_container<T>::value>> : lua_type_of<T> {};
++		struct lua_type_of<nested<T>, std::enable_if_t<!::axom::sol::is_container<T>::value>> : lua_type_of<T> {};
+ 
+ 		template <typename C, C v, template <typename...> class V, typename... Args>
+ 		struct accumulate : std::integral_constant<C, v> {};
+@@ -5839,6 +5865,7 @@ namespace sol {
+ 		} const verified{};
+ 	} // namespace detail
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/types.hpp
+ 
+@@ -5849,6 +5876,7 @@ namespace sol {
+ #include <iostream>
+ #endif
+ 
++namespace axom {
+ namespace sol {
+ 	// must push a single object to be the error object
+ 	// NOTE: the VAST MAJORITY of all Lua libraries -- C or otherwise -- expect a string for the type of error
+@@ -6028,6 +6056,7 @@ namespace sol {
+ 		lua_setglobal(L, detail::default_exception_handler_name());
+ 	}
+ } // sol
++} // namespace axom
+ 
+ // end of sol/trampoline.hpp
+ 
+@@ -6046,6 +6075,7 @@ extern "C" {
+ #endif // MinGW is on some stuff
+ #include <locale>
+ 
++namespace axom {
+ namespace sol {
+ namespace detail {
+ #if defined(__GNUC__) || defined(__clang__)
+@@ -6180,9 +6210,11 @@ namespace detail {
+ 	}
+ }
+ } // namespace sol::detail
++} // namespace axom
+ 
+ // end of sol/demangle.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <typename T>
+@@ -6214,9 +6246,11 @@ namespace sol {
+ 	};
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/usertype_traits.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename... Args>
+ 	struct base_list {};
+@@ -6326,11 +6360,13 @@ namespace sol {
+ 		using inheritance_unique_cast_function = decltype(&inheritance<void>::type_unique_cast<void>);
+ 	} // namespace detail
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/inheritance.hpp
+ 
+ // beginning of sol/error_handler.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	inline std::string associated_type_name(lua_State* L, int index, type t) {
+@@ -6448,6 +6484,7 @@ namespace sol {
+ 	}
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/error_handler.hpp
+ 
+@@ -6455,6 +6492,7 @@ namespace sol {
+ 
+ // beginning of sol/stack_reference.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		inline bool xmovable(lua_State* leftL, lua_State* rightL) {
+@@ -6586,9 +6624,11 @@ namespace sol {
+ 		return rhs.valid();
+ 	}
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/stack_reference.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		inline const char (&default_main_thread_name())[9] {
+@@ -7045,11 +7085,13 @@ namespace sol {
+ 		return rhs.valid();
+ 	}
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/reference.hpp
+ 
+ // beginning of sol/tie.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	namespace detail {
+@@ -7061,7 +7103,7 @@ namespace sol {
+ 	struct tie_size : std::tuple_size<T> {};
+ 
+ 	template <typename T>
+-	struct is_tieable : std::integral_constant<bool, (::sol::tie_size<T>::value > 0)> {};
++	struct is_tieable : std::integral_constant<bool, (::axom::sol::tie_size<T>::value > 0)> {};
+ 
+ 	template <typename... Tn>
+ 	struct tie_t : public std::tuple<std::add_lvalue_reference_t<Tn>...> {
+@@ -7120,11 +7162,13 @@ namespace sol {
+ 	using namespace adl_barrier_detail;
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/tie.hpp
+ 
+ // beginning of sol/stack_guard.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		inline void stack_fail(int, int) {
+@@ -7162,6 +7206,7 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/stack_guard.hpp
+ 
+@@ -7171,6 +7216,7 @@ namespace sol {
+ #if defined(SOL_CXX17_FEATURES) && SOL_CXX17_FEATURES
+ #endif // C++17
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		struct as_reference_tag {};
+@@ -8169,6 +8215,7 @@ namespace sol {
+ 		}
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/stack_core.hpp
+ 
+@@ -8182,6 +8229,7 @@ namespace sol {
+ #endif // SOL_STD_VARIANT
+ #endif // SOL_CXX17_FEATURES
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 	namespace stack_detail {
+@@ -8812,11 +8860,13 @@ namespace stack {
+ #endif // SOL_CXX17_FEATURES
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_check_unqualified.hpp
+ 
+ // beginning of sol/stack_check_qualified.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 
+@@ -8886,6 +8936,7 @@ namespace stack {
+ 	};
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_check_qualified.hpp
+ 
+@@ -8897,6 +8948,7 @@ namespace stack {
+ 
+ // beginning of sol/overload.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename... Functions>
+ 	struct overload_set {
+@@ -8916,11 +8968,13 @@ namespace sol {
+ 		return overload_set<std::decay_t<Args>...>(std::forward<Args>(args)...);
+ 	}
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/overload.hpp
+ 
+ // beginning of sol/unicode.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	// Everything here was lifted pretty much straight out of
+ 	// ogonek, because fuck figuring it out=
+@@ -9221,6 +9275,8 @@ namespace sol {
+ 		}
+ 	}
+ }
++} // namespace axom
++
+ // end of sol/unicode.hpp
+ 
+ #if defined(SOL_CXX17_FEATURES) && SOL_CXX17_FEATURES
+@@ -9228,6 +9284,7 @@ namespace sol {
+ #endif // Apple clang screwed up
+ #endif // C++17
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 
+@@ -10114,11 +10171,13 @@ namespace stack {
+ #endif // SOL_CXX17_FEATURES
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_get_unqualified.hpp
+ 
+ // beginning of sol/stack_get_qualified.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 
+@@ -10154,12 +10213,13 @@ namespace stack {
+ 				return stack_detail::unchecked_unqualified_get<T>(L, index, tracking);
+ 			}
+ 			else {
+-				return stack_detail::unchecked_unqualified_get<sol::nested<T>>(L, index, tracking);
++				return stack_detail::unchecked_unqualified_get<axom::sol::nested<T>>(L, index, tracking);
+ 			}
+ 		}
+ 	};
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_get_qualified.hpp
+ 
+@@ -10172,6 +10232,7 @@ namespace stack {
+ #if defined(SOL_CXX17_FEATURES) && SOL_CXX17_FEATURES
+ #endif // C++17
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 	template <typename T, typename>
+@@ -10333,17 +10394,20 @@ namespace stack {
+ #endif // SOL_CXX17_FEATURES
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_check_get_unqualified.hpp
+ 
+ // beginning of sol/stack_check_get_qualified.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 	template <typename T, typename C>
+ 	struct qualified_check_getter : check_getter<meta::unqualified_t<T>, C> {};
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_check_get_qualified.hpp
+ 
+@@ -10357,6 +10421,7 @@ namespace stack {
+ #endif // Can use variant
+ #endif // C++17
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 	inline int push_environment_of(lua_State* L, int index = -1) {
+@@ -11388,11 +11453,13 @@ namespace stack {
+ #endif // C++17 Support
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_push.hpp
+ 
+ // beginning of sol/stack_pop.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 	template <typename T, typename>
+@@ -11415,11 +11482,13 @@ namespace stack {
+ 	};
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_pop.hpp
+ 
+ // beginning of sol/stack_field.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 	template <typename T, bool, bool, typename>
+@@ -11663,11 +11732,13 @@ namespace stack {
+ 	};
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_field.hpp
+ 
+ // beginning of sol/stack_probe.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace stack {
+ 	template <typename T, typename P, bool b, bool raw, typename>
+@@ -11725,9 +11796,11 @@ namespace stack {
+ 	};
+ }
+ } // namespace sol::stack
++} // namespace axom
+ 
+ // end of sol/stack_probe.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		using typical_chunk_name_t = char[32];
+@@ -11951,6 +12024,7 @@ namespace sol {
+ 		}
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/stack.hpp
+ 
+@@ -11962,6 +12036,7 @@ namespace sol {
+ 
+ // beginning of sol/proxy_base.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	struct proxy_base_tag {};
+ 
+@@ -11990,11 +12065,13 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/proxy_base.hpp
+ 
+ // beginning of sol/stack_iterator.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename proxy_t, bool is_const>
+ 	struct stack_iterator {
+@@ -12118,6 +12195,7 @@ namespace sol {
+ 		return r + n;
+ 	}
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/stack_iterator.hpp
+ 
+@@ -12125,6 +12203,7 @@ namespace sol {
+ 
+ // beginning of sol/stack_proxy_base.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	struct stack_proxy_base : public proxy_base<stack_proxy_base> {
+ 	private:
+@@ -12192,9 +12271,11 @@ namespace sol {
+ 	} // namespace stack
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/stack_proxy_base.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	struct stack_proxy : public stack_proxy_base {
+ 	public:
+@@ -12230,9 +12311,11 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/stack_proxy.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	struct protected_function_result : public proxy_base<protected_function_result> {
+ 	private:
+@@ -12422,11 +12505,13 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/protected_function_result.hpp
+ 
+ // beginning of sol/unsafe_function_result.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	struct unsafe_function_result : public proxy_base<unsafe_function_result> {
+ 	private:
+@@ -12566,9 +12651,11 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/unsafe_function_result.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	namespace detail {
+@@ -12614,6 +12701,7 @@ namespace sol {
+ 		return detail::get(t, index_value<I>(), index_value<0>(), fr);
+ 	}
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/function_result.hpp
+ 
+@@ -12623,6 +12711,7 @@ namespace sol {
+ 
+ // beginning of sol/wrapper.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	namespace detail {
+@@ -12888,9 +12977,11 @@ namespace sol {
+ #endif // noexcept is part of a function's type
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/wrapper.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace function_detail {
+ 	template <typename Fx, int start = 1, bool is_yielding = false>
+@@ -12906,6 +12997,7 @@ namespace function_detail {
+ 	}
+ }
+ } // namespace sol::function_detail
++} // namespace axom
+ 
+ // end of sol/function_types_core.hpp
+ 
+@@ -12915,6 +13007,7 @@ namespace function_detail {
+ 
+ // beginning of sol/protect.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <typename T>
+@@ -12938,11 +13031,13 @@ namespace sol {
+ 	}
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/protect.hpp
+ 
+ // beginning of sol/property.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	struct no_prop {};
+@@ -13054,9 +13149,11 @@ namespace sol {
+ 	} // namespace meta
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/property.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace usertype_detail {
+ 
+@@ -13790,9 +13887,11 @@ namespace sol {
+ 	struct is_function_binding : meta::neg<is_variable_binding<T>> {};
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/call.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace function_detail {
+ 		template <typename F, F fx>
+@@ -13914,11 +14013,13 @@ namespace sol {
+ 	}
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/function_types_templated.hpp
+ 
+ // beginning of sol/function_types_stateless.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace function_detail {
+ 	template <typename Function, bool is_yielding>
+@@ -14154,11 +14255,13 @@ namespace function_detail {
+ 	};
+ }
+ } // namespace sol::function_detail
++} // namespace axom
+ 
+ // end of sol/function_types_stateless.hpp
+ 
+ // beginning of sol/function_types_stateful.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace function_detail {
+ 	template <typename Func, bool is_yielding, bool no_trampoline>
+@@ -14266,11 +14369,13 @@ namespace function_detail {
+ 	};
+ }
+ } // namespace sol::function_detail
++} // namespace axom
+ 
+ // end of sol/function_types_stateful.hpp
+ 
+ // beginning of sol/function_types_overloaded.hpp
+ 
++namespace axom {
+ namespace sol {
+ namespace function_detail {
+ 	template <int start_skew = 0, typename... Functions>
+@@ -14300,11 +14405,13 @@ namespace function_detail {
+ 	};
+ }
+ } // namespace sol::function_detail
++} // namespace axom
+ 
+ // end of sol/function_types_overloaded.hpp
+ 
+ // beginning of sol/resolve.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ #ifndef __clang__
+@@ -14449,9 +14556,11 @@ namespace sol {
+ #endif
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/resolve.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace function_detail {
+ 		template <typename T>
+@@ -14957,9 +15066,11 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/function_types.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename base_t, bool aligned = false>
+ 	class basic_function : public base_t {
+@@ -15067,6 +15178,7 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/unsafe_function.hpp
+ 
+@@ -15074,6 +15186,7 @@ namespace sol {
+ 
+ // beginning of sol/protected_handler.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		inline const char(&default_handler_name())[9]{
+@@ -15148,9 +15261,11 @@ namespace sol {
+ 		}
+ 	} // namespace detail
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/protected_handler.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename base_t, bool aligned = false, typename handler_t = reference>
+ 	class basic_protected_function : public base_t {
+@@ -15426,9 +15541,11 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/protected_function.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename... Ret, typename... Args>
+ 	inline decltype(auto) stack_proxy::call(Args&&... args) {
+@@ -15518,9 +15635,11 @@ namespace sol {
+ 	} // namespace stack
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/function.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename Table, typename Key>
+ 	struct proxy : public proxy_base<proxy<Table, Key>> {
+@@ -15752,6 +15871,7 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/proxy.hpp
+ 
+@@ -15771,6 +15891,7 @@ namespace sol {
+ #endif // compilers
+ #endif // SOL_DEPRECATED
+ 
++namespace axom {
+ namespace sol {
+ namespace detail {
+ 	template <typename T>
+@@ -15779,6 +15900,7 @@ namespace detail {
+ 	};
+ }
+ } // namespace sol::detail
++} // namespace axom
+ 
+ // end of sol/deprecate.hpp
+ 
+@@ -15786,6 +15908,7 @@ namespace detail {
+ 
+ // beginning of sol/object_base.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <typename base_t>
+@@ -15840,11 +15963,13 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/object_base.hpp
+ 
+ // beginning of sol/userdata.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename base_type>
+ 	class basic_userdata : public basic_table<base_type> {
+@@ -15955,11 +16080,13 @@ namespace sol {
+ 	};
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/userdata.hpp
+ 
+ // beginning of sol/as_args.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename T>
+ 	struct as_args_t {
+@@ -15984,11 +16111,13 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/as_args.hpp
+ 
+ // beginning of sol/variadic_args.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	struct variadic_args {
+ 	private:
+@@ -16139,9 +16268,11 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/variadic_args.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <typename R = reference, bool should_pop = !is_stack_based<R>::value, typename T>
+@@ -16261,6 +16392,7 @@ namespace sol {
+ 		return make_reference<T, object, true>(L, std::forward<Args>(args)...);
+ 	}
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/object.hpp
+ 
+@@ -16268,6 +16400,7 @@ namespace sol {
+ 
+ // beginning of sol/container_traits.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <typename T>
+@@ -17721,9 +17854,11 @@ namespace sol {
+ 	struct container_traits : container_detail::container_traits_default<T> {};
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/container_traits.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <typename X>
+@@ -18138,6 +18273,7 @@ namespace sol {
+ 	} // namespace stack
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/container_usertype_metatable.hpp
+ 
+@@ -18145,6 +18281,7 @@ namespace sol {
+ 
+ #include <sstream>
+ 
++namespace axom {
+ namespace sol {
+ 	namespace usertype_detail {
+ 		struct no_comp {
+@@ -18391,12 +18528,14 @@ namespace sol {
+ 	}
+ 	} // namespace stack::stack_detail
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/usertype_core.hpp
+ 
+ #include <cstdio>
+ #include <bitset>
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	struct usertype_metatable_core;
+@@ -19196,11 +19335,13 @@ namespace sol {
+ 	} // namespace stack
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/usertype_metatable.hpp
+ 
+ // beginning of sol/simple_usertype_metatable.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	namespace usertype_detail {
+@@ -19824,9 +19965,11 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/simple_usertype_metatable.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <typename T>
+@@ -19910,11 +20053,13 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/usertype.hpp
+ 
+ // beginning of sol/table_iterator.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <typename reference_type>
+@@ -20004,9 +20149,11 @@ namespace sol {
+ 	};
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/table_iterator.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	namespace detail {
+ 		template <std::size_t n>
+@@ -20577,9 +20724,11 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/table_core.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	typedef table_core<false> table;
+ 
+@@ -20595,11 +20744,13 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/table.hpp
+ 
+ // beginning of sol/environment.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	template <typename base_type>
+@@ -20798,11 +20949,13 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/environment.hpp
+ 
+ // beginning of sol/load_result.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	struct load_result : public proxy_base<load_result> {
+ 	private:
+@@ -20921,6 +21074,7 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/load_result.hpp
+ 
+@@ -20929,6 +21083,7 @@ namespace sol {
+ #if defined(SOL_PRINT_ERRORS) && SOL_PRINT_ERRORS
+ #endif
+ 
++namespace axom {
+ namespace sol {
+ 	inline void register_main_thread(lua_State* L) {
+ #if SOL_LUA_VERSION < 502
+@@ -21072,9 +21227,11 @@ namespace sol {
+ #endif
+ 	}
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/state_handling.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	class state_view {
+@@ -21708,11 +21865,13 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/state_view.hpp
+ 
+ // beginning of sol/thread.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	struct lua_thread_state {
+ 		lua_State* L;
+@@ -21875,9 +22034,11 @@ namespace sol {
+ 	typedef basic_thread<reference> thread;
+ 	typedef basic_thread<stack_reference> stack_thread;
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/thread.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	class state : private std::unique_ptr<lua_State, detail::state_deleter>, public state_view {
+@@ -21910,11 +22071,13 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/state.hpp
+ 
+ // beginning of sol/coroutine.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename base_t>
+ 	class basic_coroutine : public base_t {
+@@ -22125,6 +22288,7 @@ namespace sol {
+ 		}
+ 	};
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/coroutine.hpp
+ 
+@@ -22132,6 +22296,7 @@ namespace sol {
+ 
+ // beginning of sol/as_returns.hpp
+ 
++namespace axom {
+ namespace sol {
+ 	template <typename T>
+ 	struct as_returns_t {
+@@ -22157,9 +22322,11 @@ namespace sol {
+ 		};
+ 	} // namespace stack
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/as_returns.hpp
+ 
++namespace axom {
+ namespace sol {
+ 
+ 	struct variadic_results : public std::vector<object> {
+@@ -22180,6 +22347,7 @@ namespace sol {
+ 	} // namespace stack
+ 
+ } // namespace sol
++} // namespace axom
+ 
+ // end of sol/variadic_results.hpp
+ 
