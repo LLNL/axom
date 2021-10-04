@@ -5,7 +5,7 @@
 
 #include "gtest/gtest.h"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/config.hpp"
 #include "axom/slic/interface/slic.hpp"
