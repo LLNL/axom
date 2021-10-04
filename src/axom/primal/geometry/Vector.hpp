@@ -290,6 +290,7 @@ public:
   /*!
    * \brief Component-wise negation of the vector.
    */
+  AXOM_HOST_DEVICE
   void negate();
 
   /*!
