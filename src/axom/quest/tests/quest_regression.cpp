@@ -41,8 +41,8 @@
 #include "axom/quest/interface/inout.hpp"
 #include "axom/quest/interface/signed_distance.hpp"
 
-#include "fmt/fmt.hpp"
-#include "CLI11/CLI11.hpp"
+#include "axom/fmt.hpp"
+#include "axom/CLI11.hpp"
 
 // MPI includes
 #include "mpi.h"
@@ -108,7 +108,7 @@ struct Input
   /**
  * \brief Parses the command line options
  */
-  void parse(int argc, char** argv, CLI::App& app)
+  void parse(int argc, char** argv, axom::CLI::App& app)
   {
     app
       .add_option("-m,--mesh",
@@ -186,7 +186,7 @@ struct Input
     }
     else if(!hasRes || !hasBBox)
     {
-      throw CLI::Error(
+      throw axom::CLI::Error(
         "IncorrectConstruction",
         "Resolution and bounding box required when baseline is not supplied");
     }
@@ -202,7 +202,7 @@ struct Input
 
     if(!testContainment && !testDistance)
     {
-      throw CLI::Error(
+      throw axom::CLI::Error(
         "IncorrectConstruction",
         "At least one of {--distance; --containment} must be enabled.");
     }
@@ -314,14 +314,15 @@ mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res
  */
 void runContainmentQueries(Input& clargs)
 {
-  SLIC_INFO(
-    fmt::format("Initializing InOutOctree over mesh '{}'...", clargs.meshName));
+  SLIC_INFO(axom::fmt::format("Initializing InOutOctree over mesh '{}'...",
+                              clargs.meshName));
   utilities::Timer buildTimer(true);
 
   quest::inout_init(clargs.meshName, MPI_COMM_WORLD);
 
   buildTimer.stop();
-  SLIC_INFO(fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
+  SLIC_INFO(
+    axom::fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
 
   SpacePt bbMin;
   SpacePt bbMax;
@@ -347,13 +348,14 @@ void runContainmentQueries(Input& clargs)
   #pragma omp parallel
   #pragma omp master
   SLIC_INFO(
-    fmt::format("Querying InOutOctree on uniform grid "
-                "of resolution {} using {} threads",
-                clargs.queryResolution,
-                omp_get_num_threads()));
+    axom::fmt::format("Querying InOutOctree on uniform grid "
+                      "of resolution {} using {} threads",
+                      clargs.queryResolution,
+                      omp_get_num_threads()));
 #else
-  SLIC_INFO(fmt::format("Querying InOutOctree on uniform grid of resolution {}",
-                        clargs.queryResolution));
+  SLIC_INFO(
+    axom::fmt::format("Querying InOutOctree on uniform grid of resolution {}",
+                      clargs.queryResolution));
 #endif
 
   // Add a scalar field for the containment queries
@@ -386,14 +388,14 @@ void runContainmentQueries(Input& clargs)
   quest::inout_evaluate(xcoords, ycoords, zcoords, nnodes, containment);
   queryTimer.stop();
 
-  SLIC_INFO(fmt::format("Filling coordinates array took {} seconds",
-                        fillTimer.elapsed()));
+  SLIC_INFO(axom::fmt::format("Filling coordinates array took {} seconds",
+                              fillTimer.elapsed()));
   SLIC_INFO(
-    fmt::format("Querying {}^3 containment field (InOutOctree) "
-                "took {} seconds (@ {} queries per second)",
-                clargs.queryResolution,
-                queryTimer.elapsed(),
-                nnodes / queryTimer.elapsed()));
+    axom::fmt::format("Querying {}^3 containment field (InOutOctree) "
+                      "took {} seconds (@ {} queries per second)",
+                      clargs.queryResolution,
+                      queryTimer.elapsed(),
+                      nnodes / queryTimer.elapsed()));
 
   delete[] xcoords;
   delete[] ycoords;
@@ -408,24 +410,16 @@ void runContainmentQueries(Input& clargs)
  */
 void runDistanceQueries(Input& clargs)
 {
-  constexpr int maxDepth = 10;
-  constexpr int maxEltsPerBucket = 25;
-
-  SLIC_INFO(
-    fmt::format("Initializing BVH tree (maxDepth: {}, "
-                "maxEltsPerBucket: {}) over mesh '{}'...",
-                maxDepth,
-                maxEltsPerBucket,
-                clargs.meshName));
+  SLIC_INFO(axom::fmt::format("Initializing linear BVH over mesh '{}'...",
+                              clargs.meshName));
   utilities::Timer buildTimer(true);
 
-  quest::signed_distance_set_max_levels(maxDepth);
-  quest::signed_distance_set_max_occupancy(maxEltsPerBucket);
   quest::signed_distance_init(clargs.meshName, MPI_COMM_WORLD);
 
   buildTimer.stop();
 
-  SLIC_INFO(fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
+  SLIC_INFO(
+    axom::fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
 
   SpacePt bbMin, bbMax;
   quest::signed_distance_get_mesh_bounds(bbMin.data(), bbMax.data());
@@ -449,13 +443,13 @@ void runDistanceQueries(Input& clargs)
   #pragma omp parallel
   #pragma omp master
   SLIC_INFO(
-    fmt::format("Querying BVH tree on uniform grid "
-                "of resolution {} using {} threads",
-                clargs.queryResolution,
-                omp_get_num_threads()));
+    axom::fmt::format("Querying BVH on uniform grid "
+                      "of resolution {} using {} threads",
+                      clargs.queryResolution,
+                      omp_get_num_threads()));
 #else
-  SLIC_INFO(fmt::format("Querying BVH tree on uniform grid of resolution {}",
-                        clargs.queryResolution));
+  SLIC_INFO(axom::fmt::format("Querying BVH on uniform grid of resolution {}",
+                              clargs.queryResolution));
 #endif
 
   // Add a scalar field for the containment queries
@@ -496,14 +490,14 @@ void runDistanceQueries(Input& clargs)
     containment[inode] = (std::signbit(distance[inode]) != 0) ? 1 : 0;
   }
 
-  SLIC_INFO(fmt::format("Filling coordinates array took {} seconds",
-                        fillTimer.elapsed()));
+  SLIC_INFO(axom::fmt::format("Filling coordinates array took {} seconds",
+                              fillTimer.elapsed()));
   SLIC_INFO(
-    fmt::format("Querying {}^3 signed distance field (BVH) "
-                "took {} seconds (@ {} queries per second)",
-                clargs.queryResolution,
-                distanceTimer.elapsed(),
-                nnodes / distanceTimer.elapsed()));
+    axom::fmt::format("Querying {}^3 signed distance field (BVH) "
+                      "took {} seconds (@ {} queries per second)",
+                      clargs.queryResolution,
+                      distanceTimer.elapsed(),
+                      nnodes / distanceTimer.elapsed()));
 
   delete[] xcoords;
   delete[] ycoords;
@@ -543,7 +537,7 @@ bool compareDistanceAndContainment(Input& clargs)
   {
     // compare containment results of the two approaches
     int diffCount = 0;
-    fmt::memory_buffer out;
+    axom::fmt::memory_buffer out;
 
     int* oct_containment =
       umesh->getFieldPtr<int>("octree_containment", mint::NODE_CENTERED);
@@ -568,14 +562,14 @@ bool compareDistanceAndContainment(Input& clargs)
             primal::Point<double, 3> pt;
             umesh->getNode(inode, pt.data());
 
-            fmt::format_to(out,
-                           "\n  Disagreement on sample {} @ {}.  "
-                           "Signed distance: {} ({}) -- InOutOctree: {} ",
-                           inode,
-                           pt,
-                           bvh_d,
-                           bvh_c ? "inside" : "outside",
-                           oct_c ? "inside" : "outside");
+            axom::fmt::format_to(out,
+                                 "\n  Disagreement on sample {} @ {}.  "
+                                 "Signed distance: {} ({}) -- InOutOctree: {} ",
+                                 inode,
+                                 pt,
+                                 bvh_d,
+                                 bvh_c ? "inside" : "outside",
+                                 oct_c ? "inside" : "outside");
           }
           ++diffCount;
         }
@@ -615,7 +609,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
   if(clargs.testContainment)
   {
     int diffCount = 0;
-    fmt::memory_buffer out;
+    axom::fmt::memory_buffer out;
 
     int* exp_containment =
       umesh->getFieldPtr<int>("octree_containment", mint::NODE_CENTERED);
@@ -632,7 +626,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
           primal::Point<double, 3> pt;
           umesh->getNode(inode, pt.data());
 
-          fmt::format_to(
+          axom::fmt::format_to(
             out,
             "\n  Disagreement on sample {} @ {}.  Expected {}, got {}",
             inode,
@@ -656,7 +650,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
   if(clargs.testDistance)
   {
     int diffCount = 0;
-    fmt::memory_buffer out;
+    axom::fmt::memory_buffer out;
 
     int* base_containment = grp->getView("bvh_containment")->getArray();
     int* exp_containment =
@@ -680,7 +674,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
           primal::Point<double, 3> pt;
           umesh->getNode(inode, pt.data());
 
-          fmt::format_to(
+          axom::fmt::format_to(
             out,
             "\n  Disagreement on sample {} @ {}. Expected {} ({}), got {} ({})",
             inode,
@@ -768,17 +762,18 @@ void saveBaseline(axom::sidre::Group* grp, Input& clargs)
   const GridPt& res = clargs.queryResolution;
   bool resAllSame = (res[0] == res[1] && res[1] == res[2]);
   std::string resStr = resAllSame
-    ? fmt::format("{}", res[0])
-    : fmt::format("{}_{}_{}", res[0], res[1], res[2]);
+    ? axom::fmt::format("{}", res[0])
+    : axom::fmt::format("{}_{}_{}", res[0], res[1], res[2]);
 
   std::string outfile =
-    fmt::format("{}_{}_{}", meshNameNoExt, resStr, "baseline");
+    axom::fmt::format("{}_{}_{}", meshNameNoExt, resStr, "baseline");
   std::string protocol = "sidre_hdf5";
   sidre::IOManager writer(MPI_COMM_WORLD);
   writer.write(grp, 1, outfile, protocol);
-  SLIC_INFO(fmt::format("** Saved baseline file '{}' using '{}' protocol.",
-                        outfile,
-                        protocol));
+  SLIC_INFO(
+    axom::fmt::format("** Saved baseline file '{}' using '{}' protocol.",
+                      outfile,
+                      protocol));
 }
 
 /**
@@ -796,14 +791,14 @@ int main(int argc, char** argv)
 
   // parse the command arguments
   Input args;
-  CLI::App app {
+  axom::CLI::App app {
     "Regression tester for point containment and signed distance tests"};
 
   try
   {
     args.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     return app.exit(e);
   }

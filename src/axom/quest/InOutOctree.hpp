@@ -24,7 +24,7 @@
 #include "detail/inout/InOutOctreeValidator.hpp"
 #include "detail/inout/InOutOctreeStats.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include <vector>
 #include <iterator>

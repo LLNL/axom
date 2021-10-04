@@ -123,7 +123,7 @@
 #include "ItemCollection.hpp"
 
 #if defined(AXOM_USE_SPARSEHASH)
-  #include <sparsehash/dense_hash_map>
+  #include "axom/sparsehash/dense_hash_map"
 #else
   #include <unordered_map>
 #endif
@@ -262,7 +262,7 @@ private:
   std::stack<IndexType> m_free_ids;
 
 #if defined(AXOM_USE_SPARSEHASH)
-  using MapType = google::dense_hash_map<std::string, IndexType>;
+  using MapType = axom::google::dense_hash_map<std::string, IndexType>;
 #else
   using MapType = std::unordered_map<std::string, IndexType>;
 #endif
