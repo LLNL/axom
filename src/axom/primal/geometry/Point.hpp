@@ -157,6 +157,7 @@ public:
    * \pre The user needs to make sure that the array has been allocated
    * and has sufficient space for NDIMS coordinates.
    */
+  AXOM_HOST_DEVICE
   void to_array(T* arr) const { m_components.to_array(arr); }
 
   /*!
