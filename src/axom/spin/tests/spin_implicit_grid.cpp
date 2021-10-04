@@ -214,10 +214,7 @@ TYPED_TEST(ImplicitGridTest, insert_contains)
 
   // Insert objects into implicit grid.
   // Note: We do not insert an object with id 0
-  for(int i = 1; i < numDefinedObjs; ++i)
-  {
-    grid.insert(objBox[i], i);
-  }
+  grid.insert(numDefinedObjs - 1, objBox + 1, 1);
 
   // Test that points are contained in the expected grid cells
   const int i_max = DIM >= 1 ? grid.gridResolution()[0] : 1;

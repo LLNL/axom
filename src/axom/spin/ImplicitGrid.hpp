@@ -11,6 +11,8 @@
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
+#include "axom/core/execution/execution_space.hpp"  // for execution spaces
+
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -71,6 +73,7 @@ public:
                               BitsetType,
                               slam::policies::StrideOne<IndexType>,
                               slam::policies::ArrayStorage<BitsetType>>;
+  using ExecSpace = axom::SEQ_EXEC;
 
   /*!
    * \brief Default constructor for an ImplicitGrid
@@ -218,33 +221,59 @@ public:
    * \note \a bbox is intentionally passed by value since insert()
    * modifies its bounds
    */
-  void insert(SpatialBoundingBox bbox, IndexType idx)
+  void insert(const SpatialBoundingBox& bbox, IndexType idx)
+  {
+    insert(1, &bbox, idx);
+  }
+
+  /*!
+   * \brief Inserts a set of elements represented by bounding boxes \a bboxes
+   *  and beginning at index \a startIdx into the implicit grid
+   *
+   * \param [in] nelems the number of elements to insert
+   * \param [in] bboxes an array of bounding boxes for each element
+   * \param [in] startIdx the first index of the first bounding box in bboxes
+   */
+  void insert(IndexType nelems, const SpatialBoundingBox* bboxes, IndexType startIdx)
   {
     SLIC_ASSERT(m_initialized);
+    const double expansionFactor = m_expansionFactor;
+    LatticeType lattice = m_lattice;
 
-    // Note: We slightly inflate the bbox of the objects.
-    //       This effectively ensures that objects on grid boundaries are added
-    //       in all nearby grid cells.
-
-    bbox.expand(m_expansionFactor);
-
-    const GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
-    const GridCell upperCell = m_lattice.gridCell(bbox.getMax());
-
-    for(int i = 0; i < NDIMS; ++i)
+    BitMapRef binData[NDIMS];
+    for(int i = 0; i < NDIMS; i++)
     {
-      BinBitMap& binData = m_binData[i];
-
-      const IndexType lower =
-        axom::utilities::clampLower(lowerCell[i], IndexType());
-      const IndexType upper =
-        axom::utilities::clampUpper(upperCell[i], highestBin(i));
-
-      for(int j = lower; j <= upper; ++j)
-      {
-        binData[j].set(idx);
-      }
+      binData[i] = m_binData[i];
     }
+
+    for_all<ExecSpace>(
+      nelems,
+      AXOM_LAMBDA(axom::IndexType ibox) mutable {
+        IndexType elemIdx = startIdx + ibox;
+
+        SpatialBoundingBox scaledBox = bboxes[ibox];
+        // Note: We slightly inflate the bbox of the objects.
+        //       This effectively ensures that objects on grid boundaries are added
+        //       in all nearby grid cells.
+        scaledBox.expand(expansionFactor);
+
+        const GridCell lowerCell = lattice.gridCell(scaledBox.getMin());
+        const GridCell upperCell = lattice.gridCell(scaledBox.getMax());
+
+        for(int idim = 0; idim < NDIMS; idim++)
+        {
+          const IndexType lower =
+            axom::utilities::clampLower(lowerCell[idim], IndexType());
+          const IndexType upper =
+            axom::utilities::clampUpper(upperCell[idim], highestBin(idim));
+
+          for(int j = lower; j <= upper; ++j)
+          {
+            BitsetView bin = binData[idim][j];
+            bin.set(elemIdx);
+          }
+        }
+      });
   }
 
   /*!
