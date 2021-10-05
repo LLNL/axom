@@ -75,6 +75,8 @@ public:
                               slam::policies::ArrayStorage<BitsetType>>;
   using ExecSpace = axom::SEQ_EXEC;
 
+  struct QueryObject;
+
   /*!
    * \brief Default constructor for an ImplicitGrid
    *
@@ -142,6 +144,8 @@ public:
 
   /*! Predicate to check if the ImplicitGrid has been initialized */
   bool isInitialized() const { return m_initialized; }
+
+  QueryObject getQueryObject() const;
 
   /*!
    * \brief Initializes an implicit grid or resolution gridRes over an axis
@@ -464,5 +468,76 @@ private:
 
 }  // end namespace spin
 }  // end namespace axom
+
+//------------------------------------------------------------------------------
+//  ImplicitGrid Implementation
+//------------------------------------------------------------------------------
+
+namespace axom
+{
+namespace spin
+{
+/*!
+ * \brief Device-copyable query object for running implicit grid queries on the
+ *  GPU.
+ */
+template <int NDIMS, typename IndexType>
+struct ImplicitGrid<NDIMS, IndexType>::QueryObject
+{
+public:
+  using SpatialBoundingBox = primal::BoundingBox<double, NDIMS>;
+
+  using LatticeType = RectangularLattice<NDIMS, double, IndexType>;
+  using BitsetType = slam::BitSet<slam::policies::UniqueType>;
+  using BitsetView = slam::BitSet<slam::policies::RefType>;
+  using BinBitMap = slam::Map<slam::Set<IndexType, IndexType>,
+                              BitsetType,
+                              slam::policies::StrideOne<IndexType>,
+                              slam::policies::UniqueType>;
+
+  using BitMapRef = slam::Map<slam::Set<IndexType, IndexType>,
+                              BitsetType,
+                              slam::policies::StrideOne<IndexType>,
+                              slam::policies::RefType>;
+  QueryObject(const SpatialBoundingBox& spaceBb,
+              const LatticeType& lattice,
+              BinBitMap (&binData)[NDIMS])
+    : m_bb(spaceBb)
+    , m_lattice(lattice)
+  {
+    for(int idim = 0; idim < NDIMS; idim++)
+    {
+      m_highestBins[idim] = binData[idim].set()->size() - 1;
+      m_binData[idim] = binData[idim];
+    }
+  }
+
+private:
+  //! The bounding box of the ImplicitGrid
+  SpatialBoundingBox m_bb;
+
+  //! A lattice to help in converting from points in space to GridCells
+  LatticeType m_lattice;
+
+  //! The highest bin index in each dimension
+  IndexType m_highestBins[NDIMS];
+
+  //! The data associated with each bin
+  BitMapRef m_binData[NDIMS];
+};
+
+template <int NDIMS, typename IndexType>
+typename ImplicitGrid<NDIMS, IndexType>::QueryObject
+ImplicitGrid<NDIMS, IndexType>::getQueryObject() const
+{
+  static_assert(std::is_copy_constructible<ImplicitGrid::QueryObject>::value,
+                "ImplicitGrid::QueryObject must be copy-constructible.");
+
+  SLIC_ASSERT(m_initialized);
+  return QueryObject {m_bb, m_lattice, const_cast<ImplicitGrid*>(this)->m_binData};
+}
+
+}  // namespace spin
+}  // namespace axom
 
 #endif  // AXOM_SPIN_IMPLICIT_GRID__HPP_
