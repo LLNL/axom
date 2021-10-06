@@ -185,7 +185,7 @@ void check_constructor(int dimension,
   // STEP 2: check actual capacity
   const IndexType actual_capacity = coords->capacity();
 
-  const double ratio = MCArray<double>::DEFAULT_RESIZE_RATIO;
+  const double ratio = deprecated::MCArray<double>::DEFAULT_RESIZE_RATIO;
   const IndexType expected_computed_capacity =
     utilities::max(DEFAULT_CAPACITY,
                    static_cast<IndexType>(numNodes * ratio + 0.5));
@@ -1056,7 +1056,8 @@ TEST(mint_mesh_coordinates, shrink)
 TEST(mint_mesh_coordinates, change_resize_ratio)
 {
   constexpr int NDIMS = 3;
-  constexpr double DEFAULT_RESIZE_RATIO = MCArray<double>::DEFAULT_RESIZE_RATIO;
+  constexpr double DEFAULT_RESIZE_RATIO =
+    deprecated::MCArray<double>::DEFAULT_RESIZE_RATIO;
   constexpr double NEW_RESIZE_RATIO = 2.5;
 
   MeshCoordinates mc(NDIMS);
