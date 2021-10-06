@@ -328,6 +328,10 @@ protected:
   DISABLE_MOVE_AND_ASSIGNMENT(Array);
 };
 
+/// \brief Helper alias for multi-component arrays
+template <typename T>
+using MCArray = Array<T, 2>;
+
 //------------------------------------------------------------------------------
 //                            Array IMPLEMENTATION
 //------------------------------------------------------------------------------

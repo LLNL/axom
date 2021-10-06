@@ -17,7 +17,7 @@
   */
 
 // Axom includes
-#include "axom/core/MCArray.hpp"
+#include "axom/core/Array.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/memory_management.hpp"
 
