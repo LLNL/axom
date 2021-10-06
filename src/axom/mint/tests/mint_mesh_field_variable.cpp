@@ -394,9 +394,9 @@ TEST(mint_mesh_field_variable, shrink)
   axom::IndexType capacity =
     static_cast<axom::IndexType>(SMALL_NUM_TUPLES * ratio + 0.5);
 
-  if(capacity < axom::MCArray<axom::IndexType>::MIN_DEFAULT_CAPACITY)
+  if(capacity < axom::deprecated::MCArray<axom::IndexType>::MIN_DEFAULT_CAPACITY)
   {
-    capacity = axom::MCArray<axom::IndexType>::MIN_DEFAULT_CAPACITY;
+    capacity = axom::deprecated::MCArray<axom::IndexType>::MIN_DEFAULT_CAPACITY;
   }
   EXPECT_EQ(field.getCapacity(), capacity);
 
