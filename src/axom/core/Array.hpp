@@ -647,7 +647,10 @@ public:
    * \note The size increases by 1.
    *
    */
-  void insert(IndexType pos, const T& value);
+  template <IndexType SFINAE = DIM>
+  void insert(IndexType pos,
+              const T& value,
+              typename std::enable_if<SFINAE == 1>::type* = nullptr);
 
   /*!
    * \brief Insert an element into the array at the value before pos.
@@ -660,7 +663,10 @@ public:
    *
    * \return ArrayIterator to inserted value
    */
-  ArrayIterator insert(ArrayIterator pos, const T& value);
+  template <IndexType SFINAE = DIM>
+  ArrayIterator insert(ArrayIterator pos,
+                       const T& value,
+                       typename std::enable_if<SFINAE == 1>::type* = nullptr);
 
   /*!
    * \brief Insert elements into the array at the given position.
@@ -692,7 +698,11 @@ public:
    *
    * \return ArrayIterator to first element inserted (pos if n == 0)
    */
-  ArrayIterator insert(ArrayIterator pos, IndexType n, const T* values);
+  template <IndexType SFINAE = DIM>
+  ArrayIterator insert(ArrayIterator pos,
+                       IndexType n,
+                       const T* values,
+                       typename std::enable_if<SFINAE == 1>::type* = nullptr);
 
   /*!
    * \brief Insert n copies of element into the array at the given position.
@@ -708,7 +718,11 @@ public:
    *
    * \pre pos <= m_num_elements.
    */
-  void insert(IndexType pos, IndexType n, const T& value);
+  template <IndexType SFINAE = DIM>
+  void insert(IndexType pos,
+              IndexType n,
+              const T& value,
+              typename std::enable_if<SFINAE == 1>::type* = nullptr);
 
   /*!
    * \brief Insert n copies of element into the array at the value before pos.
@@ -726,7 +740,11 @@ public:
    *
    * \return ArrayIterator to first element inserted (pos if n == 0)
    */
-  ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
+  template <IndexType SFINAE = DIM>
+  ArrayIterator insert(ArrayIterator pos,
+                       IndexType n,
+                       const T& value,
+                       typename std::enable_if<SFINAE == 1>::type* = nullptr);
 
   // Make the overload "visible"
   using ArrayImpl<T, DIM>::insert;
@@ -1179,7 +1197,10 @@ inline void Array<T, DIM>::clear()
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-inline void Array<T, DIM>::insert(IndexType pos, const T& value)
+template <IndexType SFINAE>
+inline void Array<T, DIM>::insert(IndexType pos,
+                                  const T& value,
+                                  typename std::enable_if<SFINAE == 1>::type*)
 {
   reserveForInsert(1, pos);
   m_data[pos] = value;
@@ -1187,9 +1208,11 @@ inline void Array<T, DIM>::insert(IndexType pos, const T& value)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
+template <IndexType SFINAE>
 inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
   Array<T, DIM>::ArrayIterator pos,
-  const T& value)
+  const T& value,
+  typename std::enable_if<SFINAE == 1>::type*)
 {
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), value);
@@ -1210,10 +1233,12 @@ inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T* values)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
+template <IndexType SFINAE>
 inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
   Array<T, DIM>::ArrayIterator pos,
   IndexType n,
-  const T* values)
+  const T* values,
+  typename std::enable_if<SFINAE == 1>::type*)
 {
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), n, values);
@@ -1222,7 +1247,11 @@ inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T& value)
+template <IndexType SFINAE>
+inline void Array<T, DIM>::insert(IndexType pos,
+                                  IndexType n,
+                                  const T& value,
+                                  typename std::enable_if<SFINAE == 1>::type*)
 {
   reserveForInsert(n, pos);
   for(IndexType i = 0; i < n; ++i)
@@ -1233,10 +1262,12 @@ inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T& value)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
+template <IndexType SFINAE>
 inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
   Array<T, DIM>::ArrayIterator pos,
   IndexType n,
-  const T& value)
+  const T& value,
+  typename std::enable_if<SFINAE == 1>::type*)
 {
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), n, value);
