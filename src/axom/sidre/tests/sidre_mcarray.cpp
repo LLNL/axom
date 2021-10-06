@@ -24,22 +24,6 @@ const char IGNORE_OUTPUT[] = ".*";
 namespace internal
 {
 /*!
- * \brief Normalize the capacity of the MCArray to evenly match the number of tuples
- * \param [in] v, the MCArray in question.
- */
-template <typename T>
-void normalize_capacity(MCArray<T>& v)
-{
-  axom::IndexType num_components = v.shape()[1];
-  // FIXME: Is there a better way to clean this up?
-  const auto remainder = v.capacity() % num_components;
-  if(remainder != 0)
-  {
-    v.reserve(v.capacity() + (num_components - remainder));
-  }
-}
-
-/*!
  * \brief Calculate the new capacity for and MCArray given an increase in the
  *  size.
  * \param [in] v, the MCArray in question.
@@ -54,13 +38,6 @@ axom::IndexType calc_new_capacity(MCArray<T>& v, axom::IndexType increase)
   if((new_num_tuples * num_components) > v.capacity())
   {
     return new_num_tuples * v.getResizeRatio() + 0.5;
-    // const IndexType block_size = v.strides()[0]; // Assumes row-major
-    // const IndexType remainder = new_capacity % block_size;
-    // if(remainder != 0)
-    // {
-    //   new_capacity += block_size - remainder;
-    // }
-    // return new_capacity / num_components;
   }
 
   return v.capacity() / num_components;
@@ -93,8 +70,6 @@ void check_storage(MCArray<T>& v)
 {
   EXPECT_TRUE(v.empty());
   EXPECT_EQ(v.size(), 0);
-
-  normalize_capacity(v);
 
   axom::IndexType num_components = v.shape()[1];
   axom::IndexType num_tuples_capacity = v.capacity() / num_components;
@@ -335,7 +310,6 @@ void check_set(MCArray<T>& v)
 template <typename T>
 void check_resize(MCArray<T>& v)
 {
-  normalize_capacity(v);
   /* Resize the array up to the capacity */
   axom::IndexType capacity = v.capacity();
   axom::IndexType num_components = v.shape()[1];
@@ -535,7 +509,6 @@ void check_resize(MCArray<T>& v)
 template <typename T>
 void check_insert(MCArray<T>& v)
 {
-  normalize_capacity(v);
   /* Resize the MCArray up to the capacity */
   axom::IndexType capacity = v.capacity();
   axom::IndexType num_components = v.shape()[1];
@@ -656,7 +629,6 @@ void check_emplace(MCArray<T>& v)
 {
   constexpr T MAGIC_NUM = 52706;
 
-  normalize_capacity(v);
   /* Resize the MCArray up to the capacity */
   axom::IndexType capacity = v.capacity();
   axom::IndexType num_components = v.shape()[1];
@@ -942,7 +914,7 @@ void check_external(MCArray<T>& v)
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_MCArray, checkStorage)
+TEST(sidre_core_mcarray, checkStorage)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -971,7 +943,7 @@ TEST(sidre_core_MCArray, checkStorage)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_MCArray, checkFill)
+TEST(sidre_core_mcarray, checkFill)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -999,7 +971,7 @@ TEST(sidre_core_MCArray, checkFill)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_MCArray, checkSet)
+TEST(sidre_core_mcarray, checkSet)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -1027,7 +999,7 @@ TEST(sidre_core_MCArray, checkSet)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_MCArray, checkResize)
+TEST(sidre_core_mcarray, checkResize)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -1061,7 +1033,7 @@ TEST(sidre_core_MCArray, checkResize)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_MCArray_DeathTest, checkResize)
+TEST(sidre_core_mcarray_DeathTest, checkResize)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -1073,7 +1045,7 @@ TEST(sidre_core_MCArray_DeathTest, checkResize)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_MCArray, checkInsert)
+TEST(sidre_core_mcarray, checkInsert)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -1107,7 +1079,7 @@ TEST(sidre_core_MCArray, checkInsert)
 }
 
 //------------------------------------------------------------------------------
-// TEST(sidre_core_MCArray, checkEmplace)
+// TEST(sidre_core_mcarray, checkEmplace)
 // {
 //   sidre::DataStore ds;
 //   sidre::Group* root = ds.getRoot();
@@ -1143,7 +1115,7 @@ TEST(sidre_core_MCArray, checkInsert)
 /* Sidre specific tests */
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_MCArray, checkSidre)
+TEST(sidre_core_mcarray, checkSidre)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -1179,7 +1151,7 @@ TEST(sidre_core_MCArray, checkSidre)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_MCArray, checkSidrePermanence)
+TEST(sidre_core_mcarray, checkSidrePermanence)
 {
   constexpr double MAGIC_NUM = 5683578.8;
 
