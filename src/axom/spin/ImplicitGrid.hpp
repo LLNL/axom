@@ -557,6 +557,53 @@ public:
     }
   }
 
+  template <typename FuncType>
+  void visitCandidates(const SpatialBoundingBox& bbox,
+                       FuncType&& candidatePredicate) const
+  {
+    if(!m_bb.intersectsWith(bbox)) return;
+
+    const GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
+    const GridCell upperCell = m_lattice.gridCell(bbox.getMax());
+
+    // HACK: we use the underlying word data in the bitsets
+    // is it possible to lazy-evaluate whole-bitset operations?
+    int bitsetSize = m_binData[0][0].size();
+    int nwords = 1 + (bitsetSize - 1) / BitsetType::BitsPerWord;
+    for(int iword = 0; iword <= nwords; iword++)
+    {
+      BitsetType::Word currWord = ~(BitsetType::Word {0});
+      for(int idim = 0; idim < NDIMS; idim++)
+      {
+        // Note: Need to clamp the gridCell ranges since the input box boundaries
+        //       are not restricted to the implicit grid's bounding box
+        int lower = axom::utilities::clampLower(lowerCell[idim], 0);
+        int upper =
+          axom::utilities::clampUpper(upperCell[idim], m_highestBins[idim]);
+        // Compute candidates across all bins for current word
+        BitsetType::Word dimWord {0};
+        for(int ibin = lower; ibin <= upper; ibin++)
+        {
+          dimWord |= m_binData[idim][ibin].data()[iword];
+        }
+        // Intersect with candidate sets from other dimensions
+        currWord &= dimWord;
+      }
+      // currWord now contains the resulting candidacy information
+      // for our given point
+      int numBits =
+        axom::utilities::min(BitsetType::BitsPerWord, bitsetSize - (iword * 64));
+      for(int ibit = 0; ibit < numBits; ibit++)
+      {
+        BitsetType::Word mask = BitsetType::Word {1} << ibit;
+        if((currWord & mask) != BitsetType::Word {0})
+        {
+          candidatePredicate(iword * BitsetType::BitsPerWord + ibit);
+        }
+      }
+    }
+  }
+
 private:
   //! The bounding box of the ImplicitGrid
   SpatialBoundingBox m_bb;

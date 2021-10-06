@@ -698,6 +698,129 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box)
   }
 }
 
+TYPED_TEST(ImplicitGridTest, get_candidates_box_query_obj)
+{
+  const int DIM = TestFixture::DIM;
+  using GridCell = typename TestFixture::GridCell;
+  using BBox = typename TestFixture::BBox;
+  using GridT = typename TestFixture::GridT;
+  using SpacePt = typename TestFixture::SpacePt;
+
+  SLIC_INFO("Test ImplicitGrid visitCandidates() for boxes in " << DIM << "D");
+
+  using IndexType = typename GridT::IndexType;
+  using CandidateBitset = typename GridT::BitsetType;
+  using CandidateVector = std::vector<IndexType>;
+
+  // Note: A 10 x 10 x 10 implicit grid in the unit cube.
+  //       Grid cells have a spacing of .1 along each dimension
+  GridCell res(10);
+  BBox bbox(SpacePt(0.), SpacePt(1.));
+  const int maxElts = 30;
+
+  GridT grid(bbox, &res, maxElts);
+  const int i_max = DIM >= 1 ? grid.gridResolution()[0] : 1;
+  const int j_max = DIM >= 2 ? grid.gridResolution()[1] : 1;
+  const int k_max = DIM >= 3 ? grid.gridResolution()[2] : 1;
+
+  // Add some boxes to the spatial index
+  {
+    // Assumes unit cube
+    // Create 10 objects per dimension (up to D == 3)
+    // Each object will be in one box in that dimension and all
+    // boxes in the other dimensions
+    //
+    // Each grid cell will be covered by DIM objects
+
+    for(int i = 0; i < res[0]; ++i)
+    {
+      grid.insert(BBox(SpacePt::make_point(0.025 + 0.1 * i, .05, .05),
+                       SpacePt::make_point(0.075 + 0.1 * i, .95, .95)),
+                  i);
+    }
+
+    if(DIM >= 2)
+    {
+      for(int i = 0; i < res[1]; ++i)
+      {
+        grid.insert(BBox(SpacePt::make_point(0.05, 0.025 + 0.1 * i, .05),
+                         SpacePt::make_point(0.95, 0.075 + 0.1 * i, .95)),
+                    10 + i);
+      }
+    }
+
+    if(DIM >= 3)
+    {
+      for(int i = 0; i < res[2]; ++i)
+      {
+        grid.insert(BBox(SpacePt::make_point(0.05, 0.05, 0.025 + 0.1 * i),
+                         SpacePt::make_point(0.95, 0.95, 0.075 + 0.1 * i)),
+                    20 + i);
+      }
+    }
+
+    // Check that each grid cell contains DIM objects
+    for(int i = 0; i < i_max; ++i)
+    {
+      for(int j = 0; j < j_max; ++j)
+      {
+        for(int k = 0; k < k_max; ++k)
+        {
+          double pos[3] = {i * .1 + .05, j * .1 + .05, k * .1 + .05};
+          SpacePt queryPt = SpacePt::make_point(pos[0], pos[1], pos[2]);
+
+          EXPECT_EQ(DIM, grid.getCandidates(queryPt).count());
+        }
+      }
+    }
+  }
+
+  //// Run some queries
+  std::vector<BBox> queryBoxes {
+    // Empty box -- covers no objects
+    {},
+    // Box covers entire domain -- covers all objects
+    bbox,
+    // Box is larger than domain -- covers all objects
+    {SpacePt(-1.), SpacePt(2.)},
+    // Box only covers first quadrant/octant of domain
+    {SpacePt(-1.), SpacePt(0.45)},
+    // Box covers a single cell
+    {SpacePt(0.525), SpacePt(0.575)},
+    // Box only covers last quadrant/octant of domain
+    {SpacePt(0.55), SpacePt(2.)},
+    // Box covers middle of domain
+    {SpacePt(0.25), SpacePt(0.75)},
+    // Box is inverted -- BoundingBox constructor fixes this
+    {SpacePt(2.), SpacePt(-1)}};
+
+  std::vector<int> expectedVisits {0,
+                                   DIM * 10,
+                                   DIM * 10,
+                                   DIM * 5,
+                                   DIM,
+                                   DIM * 5,
+                                   DIM * 6,
+                                   DIM * 10};
+
+  std::vector<std::unordered_set<int>> outCandidates(queryBoxes.size());
+
+  // Run query against implicit grid
+  auto queryObj = grid.getQueryObject();
+  for(int i = 0; i < queryBoxes.size(); i++)
+  {
+    queryObj.visitCandidates(queryBoxes[i], [&](int candidateIdx) {
+      outCandidates[i].emplace(candidateIdx);
+    });
+    EXPECT_EQ(expectedVisits[i], outCandidates[i].size());
+  }
+
+  // check single cell results
+  EXPECT_EQ(DIM >= 1, outCandidates[4].count(5) == 1);
+  EXPECT_EQ(DIM >= 2, outCandidates[4].count(15) == 1);
+  EXPECT_EQ(DIM >= 3, outCandidates[4].count(25) == 1);
+}
+
 //----------------------------------------------------------------------
 
 int main(int argc, char* argv[])
