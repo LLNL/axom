@@ -30,45 +30,33 @@ struct BitTraits;
 template <>
 struct BitTraits<axom::uint64>
 {
-  enum
-  {
-    NUM_BYTES = 8,
-    BITS_PER_WORD = NUM_BYTES << 3,
-    LG_BITS_PER_WORD = 6
-  };
+  constexpr static int NUM_BYTES = 8;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 6;
 };
 
 template <>
 struct BitTraits<axom::uint32>
 {
-  enum
-  {
-    NUM_BYTES = 4,
-    BITS_PER_WORD = NUM_BYTES << 3,
-    LG_BITS_PER_WORD = 5
-  };
+  constexpr static int NUM_BYTES = 4;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 5;
 };
 
 template <>
 struct BitTraits<axom::uint16>
 {
-  enum
-  {
-    NUM_BYTES = 2,
-    BITS_PER_WORD = NUM_BYTES << 3,
-    LG_BITS_PER_WORD = 4
-  };
+  constexpr static int NUM_BYTES = 2;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 4;
 };
 
 template <>
 struct BitTraits<axom::uint8>
 {
-  enum
-  {
-    NUM_BYTES = 1,
-    BITS_PER_WORD = NUM_BYTES << 3,
-    LG_BITS_PER_WORD = 3
-  };
+  constexpr static int NUM_BYTES = 1;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 3;
 };
 
 /**

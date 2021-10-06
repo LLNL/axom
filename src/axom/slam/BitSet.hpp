@@ -116,12 +116,12 @@ public:
   // Use vector for initial implementation -- TODO: update using a policy
   using ArrayType = axom::Array<Word>;
 
-  AXOM_EXPORT static const Index npos;
+  static constexpr Index npos = -2;
+  static constexpr int BitsPerWord = internal::BitTraits<Word>::BITS_PER_WORD;
 
 private:
   enum
   {
-    BITS_PER_WORD = internal::BitTraits<Word>::BITS_PER_WORD,
     LG_BITS_PER_WORD = internal::BitTraits<Word>::LG_BITS_PER_WORD
   };
 
@@ -142,7 +142,7 @@ public:
       "slam::BitSet must be initialized with a non-zero number of bits");
 
     m_numBits = axom::utilities::max(numBits, 0);
-    m_numWords = (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BITS_PER_WORD;
+    m_numWords = (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BitsPerWord;
 
     m_data = ArrayType(m_numWords, m_numWords, allocatorID);
     m_data.fill(0);
@@ -153,6 +153,11 @@ public:
 
   /** \brief Inequality operator for two bitsets */
   bool operator!=(const BitSet& other) const { return !(operator==(other)); }
+
+  /*!
+   * \brief Gets the underlying data of a BitSet.
+   */
+  const Word* data() const { return m_data.data(); }
 
 public:
   /// \name Bitset bitwise assignment operators
@@ -311,7 +316,7 @@ private:
   {
     if(checkIndexValid) checkValidIndex(idx);
 
-    const Index wIdx = idx / BITS_PER_WORD;
+    const Index wIdx = idx / BitsPerWord;
     return m_data[wIdx];
   }
 
@@ -323,7 +328,7 @@ private:
   {
     if(checkIndexValid) checkValidIndex(idx);
 
-    const Index wIdx = idx / BITS_PER_WORD;
+    const Index wIdx = idx / BitsPerWord;
     return m_data[wIdx];
   }
 
@@ -335,7 +340,7 @@ private:
    */
   Word mask(Index idx) const
   {
-    const Index wOffset = idx % BITS_PER_WORD;
+    const Index wOffset = idx % BitsPerWord;
     return Word(1) << wOffset;
   }
 
@@ -365,7 +370,7 @@ private:
    * for the final word of the bitset
    *
    * The last word is full when the bitset has exactly
-   * m_words * BITS_PER_WORD bits
+   * m_words * BitsPerWord bits
    */
   bool isLastWordFull() const
   {

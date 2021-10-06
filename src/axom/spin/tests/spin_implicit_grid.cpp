@@ -17,6 +17,7 @@
 #include "axom/spin.hpp"
 
 #include <vector>
+#include <unordered_set>
 #include <algorithm>  // for std::find
 
 /*!
@@ -409,6 +410,109 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt)
 
     bool has3 = end != std::find(beg, end, IndexType(3));
     EXPECT_TRUE(has3);
+  }
+}
+
+TYPED_TEST(ImplicitGridTest, get_candidates_pt_query_obj)
+{
+  const int DIM = TestFixture::DIM;
+  using GridCell = typename TestFixture::GridCell;
+  using BBox = typename TestFixture::BBox;
+  using GridT = typename TestFixture::GridT;
+  using SpacePt = typename TestFixture::SpacePt;
+
+  SLIC_INFO("Test ImplicitGrid getCandidates() for points in " << DIM << "D");
+
+  using IndexType = typename GridT::IndexType;
+  using CandidateBitset = typename GridT::BitsetType;
+  using CandidateVector = std::vector<IndexType>;
+
+  // Note: A 10 x 10 x 10 implicit grid in the unit cube.
+  //       Grid cells have a spacing of .1 along each dimension
+  GridCell res(10);
+  BBox bbox(SpacePt(0.), SpacePt(1.));
+  const int maxElts = 10;
+
+  GridT grid(bbox, &res, maxElts);
+
+  BBox objBox1(SpacePt::make_point(.15, .25, .05),
+               SpacePt::make_point(.45, .25, .35));
+  grid.insert(objBox1, 1);
+
+  {
+    SpacePt queryPts[] = {
+      // First three query points inside only obj1
+      objBox1.getMin(),
+      objBox1.getMax(),
+      objBox1.getCentroid(),
+
+      // Next two points are not in obj1, but in same grid cells
+      SpacePt::make_point(0.11, 0.21, 0.01),
+      SpacePt::make_point(0.49, 0.29, 0.39),
+
+      // Next four points are not in obj1 or any of same cells
+      SpacePt(0.55),
+      SpacePt::make_point(.99, 0.25, 0.25),  // outside coord 0
+      SpacePt::make_point(.35, 0.99, 0.25),  // outside coord 1
+      SpacePt::make_point(.35, 0.25, 0.99),  // outside coord 2
+    };
+
+    std::vector<std::unordered_set<int>> outCandidates(10);
+
+    // Run query against implicit grid
+    auto queryObj = grid.getQueryObject();
+    for(int i = 0; i < 10; i++)
+    {
+      queryObj.visitCandidates(queryPts[i], [&](int candidateIdx) {
+        outCandidates[i].emplace(candidateIdx);
+      });
+    }
+
+    // Test some points that are expected to match
+    for(int i = 0; i < 5; ++i)
+    {
+      std::unordered_set<int> expected {1};
+      EXPECT_EQ(expected, outCandidates[i]);
+    }
+
+    // Test some points that are expected to not match
+    for(int i = 5; i < 6 + DIM; ++i)
+    {
+      std::unordered_set<int> expected {};
+      EXPECT_EQ(expected, outCandidates[i]);
+    }
+  }
+
+  BBox objBox2(SpacePt::make_point(.75, .85, .85), SpacePt(.85));
+  grid.insert(objBox2, 2);
+
+  BBox objBox3(SpacePt::make_point(.85, .85, .75), SpacePt(.95));
+  grid.insert(objBox3, 3);
+
+  {
+    SpacePt queryPts[] = {// Should only be inside obj2
+                          SpacePt::make_point(.75, .85, .85),
+                          // Should only be inside obj3
+                          SpacePt(.91),
+                          // Should be inside obj2 and obj3, but not obj1
+                          SpacePt::make_point(.85, .85, .85)};
+
+    std::vector<std::unordered_set<int>> outCandidates(3);
+
+    // Run query against implicit grid
+    auto queryObj = grid.getQueryObject();
+    for(int i = 0; i < 3; i++)
+    {
+      queryObj.visitCandidates(queryPts[i], [&](int candidateIdx) {
+        outCandidates[i].emplace(candidateIdx);
+      });
+    }
+    std::unordered_set<int> expected2 {2};
+    std::unordered_set<int> expected3 {3};
+    std::unordered_set<int> expected2_3 {2, 3};
+    EXPECT_EQ(outCandidates[0], expected2);
+    EXPECT_EQ(outCandidates[1], expected3);
+    EXPECT_EQ(outCandidates[2], expected2_3);
   }
 }
 

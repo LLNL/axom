@@ -485,6 +485,7 @@ template <int NDIMS, typename IndexType>
 struct ImplicitGrid<NDIMS, IndexType>::QueryObject
 {
 public:
+  using SpacePoint = primal::Point<double, NDIMS>;
   using SpatialBoundingBox = primal::BoundingBox<double, NDIMS>;
 
   using LatticeType = RectangularLattice<NDIMS, double, IndexType>;
@@ -509,6 +510,50 @@ public:
     {
       m_highestBins[idim] = binData[idim].set()->size() - 1;
       m_binData[idim] = binData[idim];
+    }
+  }
+
+  template <typename FuncType>
+  void visitCandidates(const SpacePoint& pt, const FuncType&& candidatePredicate)
+  {
+    if(!m_bb.contains(pt)) return;
+
+    const GridCell gridCell = m_lattice.gridCell(pt);
+
+    // Note: Need to clamp the upper range of the gridCell
+    //       to handle points on the upper boundaries of the bbox
+    //       This is valid since we've already ensured that pt is in the bbox.
+
+    BitsetView cellData[NDIMS];
+    for(int idim = 0; idim < NDIMS; idim++)
+    {
+      IndexType idx =
+        axom::utilities::clampUpper(gridCell[idim], m_highestBins[idim]);
+      cellData[idim] = m_binData[idim][idx];
+    }
+
+    // HACK: we use the underlying word data in the bitsets
+    // is it possible to lazy-evaluate whole-bitset operations?
+    int nwords = 1 + (cellData[0].size() - 1) / BitsetType::BitsPerWord;
+    for(int iword = 0; iword <= nwords; iword++)
+    {
+      BitsetType::Word currWord = ~(BitsetType::Word {0});
+      for(int idim = 0; idim < NDIMS; idim++)
+      {
+        currWord &= cellData[idim].data()[iword];
+      }
+      // currWord now contains the resulting candidacy information
+      // for our given point
+      int numBits = axom::utilities::min(BitsetType::BitsPerWord,
+                                         cellData[0].size() - (iword * 64));
+      for(int ibit = 0; ibit < numBits; ibit++)
+      {
+        BitsetType::Word mask = BitsetType::Word {1} << ibit;
+        if((currWord & mask) != BitsetType::Word {0})
+        {
+          candidatePredicate(iword * BitsetType::BitsPerWord + ibit);
+        }
+      }
     }
   }
 
