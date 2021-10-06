@@ -514,7 +514,7 @@ public:
   }
 
   template <typename FuncType>
-  void visitCandidates(const SpacePoint& pt, const FuncType&& candidatePredicate)
+  void visitCandidates(const SpacePoint& pt, FuncType&& candidatePredicate) const
   {
     if(!m_bb.contains(pt)) return;
 
