@@ -9,6 +9,8 @@ The Sidre component in Axom provides a data repository library for flexible, low
 * [DataStore](@ref axom::sidre::DataStore) is the central access point for a Sidre data hierarchy. It contains Buffers and a root Group.
 * [Attribute](@ref axom::sidre::Attribute) holds metadata that apply to Views for selective processing of data.
 
+Sidre also provides parallel I/O facilities via the [IOManager](@ref axom::sidre::IOManager) class.
+
 # Work flow {#workflow}
 
 Typically, an application code will

@@ -7,10 +7,11 @@
 Core utilities
 ******************************************************
 
-The `axom::utilities` namespace contains basic useful functions.  Often these
-have started out in another, higher-level library and proven so useful they're
-"promoted" to Axom Core.  In some cases, `axom::utilities` brings functionality
-from recent standards of C++ to platforms restricted to older compilers.
+The ``axom::utilities`` namespace contains basic commonly-used functions.
+Often these started out in another Axom component and were "promoted" to Axom 
+Core when they were useful in other Axom libraries. In some cases, 
+``axom::utilities`` brings functionality from recent C++ standards to 
+platforms restricted to older compilers.
 
 Axom can print a self-explanatory message and provide a version string.
 
@@ -27,7 +28,7 @@ in Axom Core.
    :end-before: _fs_string_end
    :language: C++
 
-Axom Core also includes a `Timer` class.  Here, we time the preceding
+Axom Core also includes a ``Timer`` class.  Here, we time the preceding
 filesystem example snippet.
 
 .. literalinclude:: ../../examples/core_utilities.cpp
@@ -36,8 +37,10 @@ filesystem example snippet.
    :language: C++
 
 There are several other utility functions.  Some are numerical functions such as
-variations on `clamp` (ensure a variable is restricted to a given range) and
-`swap` (exchange the values of two variables).  There are also functions for
-testing values with tolerances, such as `isNearlyEqual` and
-`isNearlyEqualRelative`.  There is also `processAbort`, to gracefully end an
-application.  For details on all these, please see the API documentation.
+variations on ``clamp`` (ensure a variable is restricted to a given range) and
+``swap`` (exchange the values of two variables).  There are also functions for
+testing values with tolerances, such as ``isNearlyEqual`` and
+``isNearlyEqualRelative``. These are provided since they work in device (GPU) 
+kernel code, wheras C++ standard library routines do not. There is also 
+``processAbort``, to gracefully exit an application.  For details, please see 
+the `Axom Core API Documentation <../../../../doxygen/html/coretop.html>`_.
