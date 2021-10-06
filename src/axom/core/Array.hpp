@@ -1028,6 +1028,10 @@ protected:
   int m_allocator_id;
 };
 
+/// \brief Helper alias for multi-component arrays
+template <typename T>
+using MCArray = Array<T, 2>;
+
 //------------------------------------------------------------------------------
 //                            Array IMPLEMENTATION
 //------------------------------------------------------------------------------

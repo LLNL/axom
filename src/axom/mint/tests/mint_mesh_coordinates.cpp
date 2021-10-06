@@ -5,7 +5,6 @@
 
 #include "axom/slic/interface/slic.hpp"  // for slic macros
 
-#include "axom/core/MCArray.hpp"              // for axom::MCArray
 #include "axom/core/utilities/Utilities.hpp"  // for utilities::max()
 
 #include "axom/mint/config.hpp"                // for IndexType

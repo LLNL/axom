@@ -89,6 +89,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   * `#include "sparsehash` to `#include "axom/sparsehash`
   * `CLI::` to `axom::CLI::`
   * `#include "CLI11/CLI11.hpp"` to `#include "axom/CLI11.hpp"`
+- Moved `axom::MCArray` and the `sidre::Array` it was based on into `mint`
+  as `axom::deprecated::MCArray` and `sidre::deprecated::MCArray`, respectively.
+  `sidre::Array` is now based on `axom::Array`.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
