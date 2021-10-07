@@ -56,6 +56,28 @@ void check_copy(const MCArray<T>& lhs, const MCArray<T>& rhs)
   EXPECT_EQ(lhs.shape()[1], rhs.shape()[1]);
   EXPECT_EQ(lhs.capacity(), rhs.capacity());
 
+  for(int i = 0; i < lhs.shape()[0]; i++)
+  {
+    for(int j = 0; j < lhs.shape()[1]; j++)
+    {
+      EXPECT_EQ(lhs(i, j), rhs(i, j));
+    }
+  }
+}
+
+/*!
+ * \brief Check if two MCArrays are referentially equivalent. Does not check the resize ratio.
+ * \param [in] lhs, the first MCArray to compare.
+ * \param [in] rhs, the second MCArray to compare.
+ * \return the new capacity.
+ */
+template <typename T>
+void check_referential_copy(const MCArray<T>& lhs, const MCArray<T>& rhs)
+{
+  EXPECT_EQ(lhs.size(), rhs.size());
+  EXPECT_EQ(lhs.shape()[1], rhs.shape()[1]);
+  EXPECT_EQ(lhs.capacity(), rhs.capacity());
+
   const T* lhs_data = lhs.data();
   const T* rhs_data = rhs.data();
   EXPECT_EQ(lhs_data, rhs_data);
@@ -819,6 +841,43 @@ void check_emplace(MCArray<T>& v)
 }
 
 /*!
+ * \brief Check that the copy/move constructors/assignment operators are working properly.
+ * \param [in] v the MCArray to check.
+ */
+template <typename T>
+void check_copy_move(MCArray<T>& v)
+{
+  /* Resize the MCArray up to the capacity */
+  axom::IndexType capacity = v.capacity();
+  axom::IndexType num_components = v.shape()[1];
+  v.resize(capacity / num_components, num_components);
+  axom::IndexType size = capacity;
+
+  /* Set the existing data in v */
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
+  {
+    for(axom::IndexType j = 0; j < num_components; ++j)
+    {
+      v(i, j) = i * j - 5 * i + 7 * j;
+    }
+  }
+
+  // Call the copy constructor
+  MCArray<T> cpy(v);
+  /* Check that the copy holds the same data. */
+  check_copy(v, cpy);
+  EXPECT_EQ(v.getView(), cpy.getView());
+
+  // Move from the copy (call the move constructor)
+  MCArray<T> moved(std::move(cpy));
+  EXPECT_EQ(cpy.getView(), nullptr);
+
+  // Check that the moved-to object is the same as the original
+  check_copy(v, moved);
+  EXPECT_EQ(v.getView(), moved.getView());
+}
+
+/*!
  * \brief Make a copy of an MCArray through sidre and check it for defects.
  * \param [in] v the MCArray to copy.
  */
@@ -833,7 +892,7 @@ void check_sidre(MCArray<T>& v)
   cpy.setResizeRatio(v.getResizeRatio());
 
   /* Check that the copy holds the same data. */
-  check_copy(v, cpy);
+  check_referential_copy(v, cpy);
 
   /* Resize the copy and check that it functions correctly. */
   cpy.resize(0, cpy.shape()[1]);
@@ -1081,6 +1140,9 @@ TEST(sidre_core_mcarray, checkInsert)
 }
 
 //------------------------------------------------------------------------------
+// NOTE: The functionality provided by the old MCArray::emplace() is completely different
+// than emplace() as defined on e.g. std::vector
+// This test has been disabled for that reason
 // TEST(sidre_core_mcarray, checkEmplace)
 // {
 //   sidre::DataStore ds;
@@ -1113,6 +1175,40 @@ TEST(sidre_core_mcarray, checkInsert)
 //     }
 //   }
 // }
+
+//------------------------------------------------------------------------------
+TEST(sidre_core_mcarray, checkCopyMove)
+{
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+
+  constexpr axom::IndexType ZERO = 0;
+
+  for(double ratio = 1.0; ratio <= 2.0; ratio += 0.5)
+  {
+    for(axom::IndexType capacity = 2; capacity <= 512; capacity *= 2)
+    {
+      for(axom::IndexType n_components = 1; n_components <= 3; n_components++)
+      {
+        MCArray<int> v_int_sidre(root->createView("int"),
+                                 ZERO,
+                                 n_components,
+                                 capacity);
+        v_int_sidre.setResizeRatio(ratio);
+        internal::check_copy_move(v_int_sidre);
+
+        MCArray<double> v_double_sidre(root->createView("double"),
+                                       ZERO,
+                                       n_components,
+                                       capacity);
+        v_double_sidre.setResizeRatio(ratio);
+        internal::check_copy_move(v_double_sidre);
+
+        root->destroyViewsAndData();
+      }
+    }
+  }
+}
 
 /* Sidre specific tests */
 
