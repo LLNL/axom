@@ -144,12 +144,12 @@ public:
    * \post numComponents() == view->getDimension(1)
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  template <int SFINAE = DIM>
-  Array(View* view, typename std::enable_if<SFINAE == 1>::type* = nullptr);
+  template <int SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  Array(View* view);
 
   /// \overload
-  template <int SFINAE = DIM>
-  Array(View* view, typename std::enable_if<SFINAE == 2>::type* = nullptr);
+  template <int SFINAE = DIM, typename std::enable_if<SFINAE == 2>::type* = nullptr>
+  Array(View* view);
 
   /*!
    * \brief Creates an Array instance of `num_elements` size
@@ -159,11 +159,11 @@ public:
    * \param [in] num_elements the number of values.
    * \param [in] capacity the number of values to allocate space for.
    *
-   * \note The last argument is optional. If not specified or if less than
+   * \note The capacity argument is optional. If not specified or if less than
    *  num_elements, the capacity of the array will be initialized to
    *  num_elements * DEFAULT_RESIZE_RATIO.
    *
-   * \note The view is expected to be empty and will be populated to hold this
+   * \note The non-null view is expected to be empty and will be populated to hold this
    *  Array's data.
    *
    * \note The Sidre view shape has one dimension.
@@ -178,11 +178,8 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  template <int SFINAE = DIM>
-  Array(View* view,
-        axom::IndexType num_elements,
-        axom::IndexType capacity = 0,
-        typename std::enable_if<SFINAE == 1>::type* = nullptr);
+  template <int SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  Array(View* view, axom::IndexType num_elements, axom::IndexType capacity = 0);
 
   /*!
    * \brief Creates an Array instance of `num_tuples` size, where each
@@ -195,11 +192,11 @@ public:
    *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
    *
-   * \note The last argument is optional. If not specified or if less than
+   * \note The capacity argument is optional. If not specified or if less than
    *  num_tuples, the capacity of the Array will be initialized to
    *  num_tuples * DEFAULT_RESIZE_RATIO.
    *
-   * \note The view is expected to be empty and will be populated to hold this
+   * \note The non-null view is expected to be empty and will be populated to hold this
    *  Array's data.
    *
    * \note The Sidre view shape has two dimensions. The first dimension
@@ -217,12 +214,11 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  template <int SFINAE = DIM>
+  template <int SFINAE = DIM, typename std::enable_if<SFINAE == 2>::type* = nullptr>
   Array(View* view,
         axom::IndexType num_tuples,
         axom::IndexType num_components = 1,
-        axom::IndexType capacity = 0,
-        typename std::enable_if<SFINAE == 2>::type* = nullptr);
+        axom::IndexType capacity = 0);
 
   /// @}
 
@@ -238,11 +234,6 @@ public:
    * \brief Return true iff the external buffer constructor was called.
    */
   virtual bool isExternal() const { return false; }
-
-  /*!
-   * \brief Return true iff a sidre constructor was called.
-   */
-  virtual bool isInSidre() const { return true; }
 
   /*!
    * \brief Return a pointer to the View that this Array wraps.
@@ -338,10 +329,9 @@ using MCArray = Array<T, 2>;
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <int SFINAE>
-Array<T, DIM>::Array(View* view, typename std::enable_if<SFINAE == 1>::type*)
-  : axom::Array<T, 1>()
-  , m_view(view)
+template <int SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+Array<T, DIM>::Array(View* view) : axom::Array<T, 1>()
+                                 , m_view(view)
 {
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
   SLIC_ERROR_IF(m_view->isEmpty(), "Provided View cannot be empty.");
@@ -375,10 +365,9 @@ Array<T, DIM>::Array(View* view, typename std::enable_if<SFINAE == 1>::type*)
 }
 
 template <typename T, int DIM>
-template <int SFINAE>
-Array<T, DIM>::Array(View* view, typename std::enable_if<SFINAE == 2>::type*)
-  : axom::Array<T, 2>()
-  , m_view(view)
+template <int SFINAE, typename std::enable_if<SFINAE == 2>::type*>
+Array<T, DIM>::Array(View* view) : axom::Array<T, 2>()
+                                 , m_view(view)
 {
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
   SLIC_ERROR_IF(m_view->isEmpty(), "Provided View cannot be empty.");
@@ -425,11 +414,10 @@ Array<T, DIM>::Array(View* view, typename std::enable_if<SFINAE == 2>::type*)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <int SFINAE>
+template <int SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 Array<T, DIM>::Array(View* view,
                      axom::IndexType num_elements,
-                     axom::IndexType capacity,
-                     typename std::enable_if<SFINAE == 1>::type*)
+                     axom::IndexType capacity)
   : axom::Array<T, 1>()
   , m_view(view)
 {
@@ -456,12 +444,11 @@ Array<T, DIM>::Array(View* view,
 }
 
 template <typename T, int DIM>
-template <int SFINAE>
+template <int SFINAE, typename std::enable_if<SFINAE == 2>::type*>
 Array<T, DIM>::Array(View* view,
                      axom::IndexType num_tuples,
                      axom::IndexType num_components,
-                     axom::IndexType capacity,
-                     typename std::enable_if<SFINAE == 2>::type*)
+                     axom::IndexType capacity)
   : axom::Array<T, DIM>()
   , m_view(view)
 {

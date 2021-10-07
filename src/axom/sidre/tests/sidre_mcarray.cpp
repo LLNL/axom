@@ -24,7 +24,7 @@ const char IGNORE_OUTPUT[] = ".*";
 namespace internal
 {
 /*!
- * \brief Calculate the new capacity for and MCArray given an increase in the
+ * \brief Calculate the new capacity for an MCArray given an increase in the
  *  size.
  * \param [in] v, the MCArray in question.
  * \param [in] increase, the number of tuples the size will increase by
@@ -825,7 +825,9 @@ void check_emplace(MCArray<T>& v)
 template <typename T>
 void check_sidre(MCArray<T>& v)
 {
-  ASSERT_TRUE(v.isInSidre());
+  // These should be equivalent
+  ASSERT_NE(dynamic_cast<sidre::MCArray<T>*>(&v), nullptr);
+  // ASSERT_TRUE(v.isInSidre());
   /* Create a copy. */
   MCArray<T> cpy(const_cast<sidre::View*>(v.getView()));
   cpy.setResizeRatio(v.getResizeRatio());
