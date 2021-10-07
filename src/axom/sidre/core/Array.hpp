@@ -6,7 +6,6 @@
 #ifndef SIDRE_ARRAY_HPP_
 #define SIDRE_ARRAY_HPP_
 
-#include "axom/core/Macros.hpp"  // for disable copy/assignment macro
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
 #include "axom/core/Array.hpp"                // to inherit
 #include "axom/core/Types.hpp"
@@ -124,6 +123,18 @@ public:
    */
   Array() = delete;
 
+  /*!
+   * \brief Copy constructor.
+   * \param [in] other The array to copy from
+   */
+  Array(const Array& other);
+
+  /*!
+   * \brief Move constructor.
+   * \param [in] other The array to move from
+   */
+  Array(Array&& other);
+
   /// \name Sidre Array constructors
   /// @{
 
@@ -227,6 +238,18 @@ public:
    */
   virtual ~Array();
 
+  /*!
+   * \brief Copy assignment.
+   * \param [in] other The Array to copy from
+   */
+  Array& operator=(const Array& other);
+
+  /*!
+   * \brief Move assignment.
+   * \param [in] other The Array to move from
+   */
+  Array& operator=(Array&& other);
+
   /// \name Array methods to query and set attributes
   /// @{
 
@@ -314,9 +337,6 @@ protected:
   void reallocViewData(IndexType new_capacity);
 
   View* m_view;
-
-  DISABLE_COPY_AND_ASSIGNMENT(Array);
-  DISABLE_MOVE_AND_ASSIGNMENT(Array);
 };
 
 /// \brief Helper alias for multi-component arrays
@@ -326,6 +346,39 @@ using MCArray = Array<T, 2>;
 //------------------------------------------------------------------------------
 //                            Array IMPLEMENTATION
 //------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+Array<T, DIM>::Array(const Array<T, DIM>& other)
+  : axom::Array<T, DIM>(static_cast<const axom::Array<T, DIM>&>(other))
+  , m_view(other.m_view)
+{ }
+
+template <typename T, int DIM>
+Array<T, DIM>::Array(Array<T, DIM>&& other)
+  : axom::Array<T, DIM>(static_cast<axom::Array<T, DIM>&&>(std::move(other)))
+  , m_view(other.m_view)
+{
+  other.m_view = nullptr;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+Array<T, DIM>& Array<T, DIM>::operator=(const Array<T, DIM>& other)
+{
+  axom::Array<T, DIM>::operator=(other);
+  m_view = other.m_view;
+  return *this;
+}
+
+template <typename T, int DIM>
+Array<T, DIM>& Array<T, DIM>::operator=(Array<T, DIM>&& other)
+{
+  axom::Array<T, DIM>::operator=(std::move(other));
+  m_view = other.m_view;
+  other.m_view = nullptr;
+  return *this;
+}
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
