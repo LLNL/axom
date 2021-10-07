@@ -1,0 +1,280 @@
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+/**************************************************************************
+ *************************************************************************/
+
+#include "axom/sidre.hpp"
+
+using namespace axom;
+using namespace sidre;
+
+/**************************************************************************
+ * Subroutine:  main
+ * Purpose   : Provide examples showing when deleting a sidre group or view
+ *             also deletes the associated data and when it does not.
+ *************************************************************************/
+
+/* This example code contains snippets used in the Sidre Sphinx documentation.
+ * They begin and end with comments
+ *
+ * first_example_creategroups_start
+ * first_example_creategroups_end
+ *
+ * each prepended with an underscore.
+ */
+
+int main(int argc, char* argv[])
+{
+  AXOM_UNUSED_VAR(argc);
+  AXOM_UNUSED_VAR(argv);
+
+  // 
+  // Create a datastore with a simple group hierarchy.
+  //
+  // _datastore_initial_start
+  DataStore* ds = new DataStore();
+  Group* root_grp = ds->getRoot();
+
+  Group* A_grp = root_grp->createGroup("A"); 
+  Group* B_grp = root_grp->createGroup("B"); 
+  // _datastore_initial_end
+
+  //
+  // Initially, datastore contains no buffer objects since no data has 
+  // been allocated yet. Also, the groups have no views.
+  //
+  std::cout << "Datastore start state...." << std::endl;
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
+  std::cout << "\tNum views in group B: " << B_grp->getNumViews() << std::endl;
+
+  std::cout << std::endl;
+
+  const int dat_size = 10;
+
+  //
+  // Example 1: One-to-one Buffer to View relationship
+  //
+  // Create a view with an integer array of length dat_size. Verify that the
+  // group has one view and the datastore has one buffer (holding the 
+  // view's data). 
+  //
+  // Initialize the elements of the integer array.  Then, deallocate the view. 
+  //
+  // The view and its description of the data remains, but the buffer
+  // holding the integer array is destroyed on de-alloction since there 
+  // is only one view referencing its data. 
+  //
+
+  std::cout << "Example 1: One-to-one Buffer to View relationship\n\n";
+
+  // _ex1_oneview_onebuffer_start
+  View* aview = A_grp->createViewAndAllocate("aview", INT_ID, dat_size); 
+  std::cout << "After A_grp->createViewAndAllocate() call\n";
+  std::cout << "\tNum buffers in datastore: " 
+            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
+  axom::IndexType nelems = aview->getNumElements(); 
+  std::cout << "\tNum elements in view: " << nelems << std::endl;
+  
+  Buffer* buf1 = aview->getBuffer();
+  std::cout << "\tNum views attached to buffer: " 
+            << buf1->getNumViews() << std::endl; 
+  std::cout << "\tNum elements in buffer array: " 
+            << buf1->getNumElements() << std::endl;
+
+  int* a_array = aview->getArray();
+  for (axom::IndexType i = 0; i < nelems; ++i) {
+    a_array[i] = i+2;
+  }
+
+  std::cout << std::endl;
+
+  std::cout << "After initialization of view array\n";
+  int* buf1_ptr = buf1->getData();
+  std::cout << "\tValue of elt 5 in buffer array (expect 7): " 
+            << buf1_ptr[5] << std::endl;
+
+  std::cout << std::endl;
+
+  aview->deallocate();
+  std::cout << "After view deallocate call, its description remains. "
+            << "For example,\n"
+            << "num elements in view: " << aview->getNumElements() << std::endl;
+  std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
+  std::cout << "\tNum buffers in datastore: "
+            << ds->getNumBuffers() << std::endl;
+  
+  std::cout << std::endl;
+
+  aview->allocate();
+  std::cout << "After allocating view again, num elements in view: " 
+            << aview->getNumElements() << std::endl;
+  std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
+  std::cout << "\tNum buffers in datastore: "
+            << ds->getNumBuffers() << std::endl;
+
+  std::cout << std::endl;
+
+  A_grp->destroyViewAndData("aview");
+  std::cout << "After destroyViewAndData() call\n";
+  std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl; 
+  std::cout << "\tNum buffers in datastore: "
+            << ds->getNumBuffers() << std::endl;
+  // _ex1_oneview_onebuffer_end
+
+
+  //
+  // Example 2: One-to-many Buffer to View relationships
+  //
+  // Create a buffer with a double array of length dat_size and initialize its
+  // data. Attach the buffer to two views, with data descriptions that vary in 
+  // offset. Verify that the data associated with each view is correct.
+  //
+  // Destroy one of the views. Verify that the data is still accessible via
+  // the other view and that all data is still accessible via buffer.
+  //
+  std::cout << "\nExample 2: One-to-one Buffer to View relationships\n\n";
+
+  std::cout << "\nDatastore start state\n";
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
+  std::cout << "\tNum views in group B: " << B_grp->getNumViews() << std::endl;
+
+  // _ex2_twoviews_onebuffer_start
+  Buffer* buf2 = ds->createBuffer(DOUBLE_ID, dat_size)->allocate();
+
+  double* dat2 = buf2->getData();
+  for (axom::IndexType i = 0; i < dat_size; ++i) {
+    dat2[i] = i;
+  }
+
+  View* aview1 = A_grp->createView("aview1", buf2);
+  View* aview2 = A_grp->createView("aview2", buf2);
+
+  //
+  // aview1 data gets even values, aview2 data gets odd values.
+  //
+  axom::IndexType view_nelem = dat_size / 2;
+
+  aview1->apply(DOUBLE_ID, view_nelem, 0 /*offset*/, 2 /*stride*/); 
+  aview2->apply(DOUBLE_ID, view_nelem, 1 /*offset*/, 2 /*stride*/); 
+
+  std::cout << "After buffer allocation and attaching to views\n";
+  std::cout << "\tNum buffers in datastore: " 
+            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tBuffer num elements: " << buf2->getNumElements() << std::endl;
+
+  std::cout << "\taview1 data has even values:\t";
+  double* arr1 = aview1->getArray();
+  axom::IndexType vlen = aview1->getNumElements(); 
+  axom::IndexType vstr = aview1->getStride(); 
+  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+    std::cout << arr1[i] << "   ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "\taview2 data has odd values:\t";
+  double* arr2 = aview2->getArray();
+  vlen = aview2->getNumElements(); 
+  vstr = aview2->getStride(); 
+  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+    std::cout << arr2[i] << "   ";
+  }
+  std::cout << std::endl;
+
+  A_grp->destroyViewAndData("aview1"); 
+ 
+  std::cout << "\nAfter destroyViewAndData(aview1) call\n";
+  std::cout << "\tNum buffers in datastore: "
+            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tBuffer num elements: " << buf2->getNumElements() << std::endl;
+  std::cout << "\taview2 data still has its odd values:\t";
+  arr2 = aview2->getArray();
+  vlen = aview2->getNumElements(); 
+  vstr = aview2->getStride(); 
+  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+    std::cout << arr2[i] << "   ";
+  }
+  // _ex2_twoviews_onebuffer_end
+  std::cout << std::endl;
+
+  //
+  // Example 3: One-to-many Buffer to View relationships (view copy)
+  //
+  // Create a buffer with a double array of length dat_size and initialize its
+  // data. Attach the buffer to two views, with data descriptions that vary in
+  // offset. Verify that the data associated with each view is correct.
+  //
+  // Destroy one of the views. Verify that the data is still accessible via
+  // the other view and that all data is still accessible via buffer.
+  //
+  std::cout << "\nExample 3: One-to-one Buffer to View relationships (view copy)\n\n";
+
+  std::cout << "\nDatastore start state\n";
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
+  std::cout << "\tNum views in group B: " << B_grp->getNumViews() << std::endl;
+
+  // _ex3_twoviews_onebuffer_copy_start
+  B_grp->copyView(aview2);
+
+  std::cout << "\nAfter copying aview2 to group B\n";
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
+  std::cout << "\tNum views in group B: " << B_grp->getNumViews() << std::endl;
+
+  View* aview2_in_Agrp = A_grp->getView("aview2");
+  View* aview2_in_Bgrp = B_grp->getView("aview2");
+
+  std::cout << "\taview2 in A group has values:\t";
+  double* arr_A = aview2_in_Agrp->getArray();
+  vlen = aview2_in_Agrp->getNumElements();
+  vstr = aview2_in_Agrp->getStride();
+  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+    std::cout << arr_A[i] << "   ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "\taview2 in B group has same values as view in group A:\t";
+  double* arr_B = aview2_in_Bgrp->getArray();
+  vlen = aview2_in_Bgrp->getNumElements();
+  vstr = aview2_in_Bgrp->getStride();
+  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+    std::cout << arr_B[i] << "   ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "\nThis is expected since the views reference the same data,\n"
+            << "which can be seen by looking at the addresses of the data\n";
+  std::cout << "\tAddress of array in A group: " << arr_A << std::endl;
+  std::cout << "\tAddress of array in A group: " << arr_A << std::endl;
+
+  root_grp->destroyGroup("A_grp"); 
+ 
+  std::cout << "\nAfter destroyGroup(A_grp) call:\n";
+  std::cout << "\tNum buffers in datastore: "
+            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum views in group B: " << B_grp->getNumViews() << std::endl;
+
+  std::cout << "\taview2 in B group still has the same values:\t";
+  aview2_in_Bgrp = B_grp->getView("aview2");
+  arr_B = aview2_in_Bgrp->getArray();
+  vlen = aview2_in_Bgrp->getNumElements();
+  vstr = aview2_in_Bgrp->getStride();
+  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+    std::cout << arr_B[i] << "   ";
+  }
+  // _ex3_twoviews_onebuffer_copy_end
+  std::cout << std::endl;
+
+  //
+  // Clean up....
+  //
+  delete ds;
+
+  return 0;
+}
