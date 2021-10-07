@@ -177,19 +177,20 @@ public:
    *
    * \param [in] other The Array to append
    * 
-   * \pre The shapes of the calling Array and @a Other are the same
+   * \pre The shapes of the calling Array and @a other are the same
    * (excluding the leading dimension), i.e., shape()[1:] == other.shape()[1:]
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
   void insert(IndexType pos, const ArrayType& other)
   {
-    // TODO: Do we want this for release builds
+#ifdef AXOM_DEBUG
     if(!std::equal(m_dims.begin() + 1, m_dims.end(), other.shape().begin() + 1))
     {
       std::cerr << "Cannot append a multidimensional array of incorrect shape.";
       utilities::processAbort();
     }
+#endif
 
     // First update the dimensions - we're adding only to the leading dimension
     m_dims[0] += other.shape()[0];
@@ -207,6 +208,12 @@ protected:
    */
   IndexType blockSize() const { return m_strides[0]; }
 
+  /*!
+   * \brief Updates the internal striding information to a row-major format
+   * Intended to be called after @p m_dims is updated.
+   * In the future, this class will support different striding schemes (e.g., column-major)
+   * and/or user-provided striding
+   */
   void updateStrides()
   {
     // Row-major
@@ -218,13 +225,14 @@ protected:
   }
 
 private:
+  /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  /// \overload
   const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
   }
 
-  // FIXME: Do we really need this for sidre::Array??
 protected:
   /// \brief The sizes (extents?) in each dimension
   std::array<IndexType, DIM> m_dims;
@@ -296,7 +304,9 @@ protected:
   IndexType blockSize() const { return 1; }
 
 private:
+  /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  /// \overload
   const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
@@ -407,11 +417,10 @@ public:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  template <IndexType SFINAE = DIM>
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   Array(IndexType num_elements,
         IndexType capacity = 0,
-        int allocator_id = axom::getDefaultAllocatorID(),
-        typename std::enable_if<SFINAE == 1>::type* = nullptr);
+        int allocator_id = axom::getDefaultAllocatorID());
 
   /*!
    * \brief Generic constructor for an Array of arbitrary dimension
@@ -490,11 +499,8 @@ public:
    * \note This constructor wraps the supplied buffer and does not own the data.
    *  Consequently, the Array instance cannot be reallocated.
    */
-  template <IndexType SFINAE = DIM>
-  Array(T* data,
-        IndexType num_elements,
-        IndexType capacity = 0,
-        typename std::enable_if<SFINAE == 1>::type* = nullptr);
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  Array(T* data, IndexType num_elements, IndexType capacity = 0);
 
   /// @}
 
@@ -647,10 +653,8 @@ public:
    * \note The size increases by 1.
    *
    */
-  template <IndexType SFINAE = DIM>
-  void insert(IndexType pos,
-              const T& value,
-              typename std::enable_if<SFINAE == 1>::type* = nullptr);
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  void insert(IndexType pos, const T& value);
 
   /*!
    * \brief Insert an element into the array at the value before pos.
@@ -663,10 +667,8 @@ public:
    *
    * \return ArrayIterator to inserted value
    */
-  template <IndexType SFINAE = DIM>
-  ArrayIterator insert(ArrayIterator pos,
-                       const T& value,
-                       typename std::enable_if<SFINAE == 1>::type* = nullptr);
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  ArrayIterator insert(ArrayIterator pos, const T& value);
 
   /*!
    * \brief Insert elements into the array at the given position.
@@ -698,11 +700,8 @@ public:
    *
    * \return ArrayIterator to first element inserted (pos if n == 0)
    */
-  template <IndexType SFINAE = DIM>
-  ArrayIterator insert(ArrayIterator pos,
-                       IndexType n,
-                       const T* values,
-                       typename std::enable_if<SFINAE == 1>::type* = nullptr);
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  ArrayIterator insert(ArrayIterator pos, IndexType n, const T* values);
 
   /*!
    * \brief Insert n copies of element into the array at the given position.
@@ -718,11 +717,8 @@ public:
    *
    * \pre pos <= m_num_elements.
    */
-  template <IndexType SFINAE = DIM>
-  void insert(IndexType pos,
-              IndexType n,
-              const T& value,
-              typename std::enable_if<SFINAE == 1>::type* = nullptr);
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  void insert(IndexType pos, IndexType n, const T& value);
 
   /*!
    * \brief Insert n copies of element into the array at the value before pos.
@@ -740,11 +736,8 @@ public:
    *
    * \return ArrayIterator to first element inserted (pos if n == 0)
    */
-  template <IndexType SFINAE = DIM>
-  ArrayIterator insert(ArrayIterator pos,
-                       IndexType n,
-                       const T& value,
-                       typename std::enable_if<SFINAE == 1>::type* = nullptr);
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
 
   // Make the overload "visible"
   using ArrayImpl<T, DIM>::insert;
@@ -901,11 +894,6 @@ public:
   bool isExternal() const { return m_is_external; }
 
   /*!
-   * \brief Return true iff a sidre constructor was called.
-   */
-  virtual bool isInSidre() const { return false; }
-
-  /*!
    * \brief Prints the Array
    *
    * \param os The output stream to write to
@@ -1050,7 +1038,7 @@ Array<T, DIM>::Array(Args... args)
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
-  IndexType tmp_args[] = {args...};
+  const IndexType tmp_args[] = {args...};
   assert(detail::allNonNegative(tmp_args));
   initialize(detail::packProduct(tmp_args), 0);
 }
@@ -1067,7 +1055,7 @@ Array<T, DIM>::Array(T* data, Args... args)
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
-  IndexType tmp_args[] = {args...};
+  const IndexType tmp_args[] = {args...};
   const auto num_elements = detail::packProduct(tmp_args);
   m_capacity = num_elements;
   updateNumElements(num_elements);
@@ -1075,11 +1063,8 @@ Array<T, DIM>::Array(T* data, Args... args)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <IndexType SFINAE>
-Array<T, DIM>::Array(IndexType num_elements,
-                     IndexType capacity,
-                     int allocator_id,
-                     typename std::enable_if<SFINAE == 1>::type*)
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+Array<T, DIM>::Array(IndexType num_elements, IndexType capacity, int allocator_id)
   : m_allocator_id(allocator_id)
 {
   initialize(num_elements, capacity);
@@ -1087,11 +1072,8 @@ Array<T, DIM>::Array(IndexType num_elements,
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <IndexType SFINAE>
-Array<T, DIM>::Array(T* data,
-                     IndexType num_elements,
-                     IndexType capacity,
-                     typename std::enable_if<SFINAE == 1>::type*)
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
   : m_data(data)
   , m_num_elements(num_elements)
   , m_resize_ratio(0.0)
@@ -1201,10 +1183,8 @@ inline void Array<T, DIM>::clear()
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <IndexType SFINAE>
-inline void Array<T, DIM>::insert(IndexType pos,
-                                  const T& value,
-                                  typename std::enable_if<SFINAE == 1>::type*)
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+inline void Array<T, DIM>::insert(IndexType pos, const T& value)
 {
   reserveForInsert(1, pos);
   m_data[pos] = value;
@@ -1212,11 +1192,10 @@ inline void Array<T, DIM>::insert(IndexType pos,
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <IndexType SFINAE>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
   Array<T, DIM>::ArrayIterator pos,
-  const T& value,
-  typename std::enable_if<SFINAE == 1>::type*)
+  const T& value)
 {
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), value);
@@ -1237,12 +1216,11 @@ inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T* values)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <IndexType SFINAE>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
   Array<T, DIM>::ArrayIterator pos,
   IndexType n,
-  const T* values,
-  typename std::enable_if<SFINAE == 1>::type*)
+  const T* values)
 {
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), n, values);
@@ -1251,11 +1229,8 @@ inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <IndexType SFINAE>
-inline void Array<T, DIM>::insert(IndexType pos,
-                                  IndexType n,
-                                  const T& value,
-                                  typename std::enable_if<SFINAE == 1>::type*)
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T& value)
 {
   reserveForInsert(n, pos);
   for(IndexType i = 0; i < n; ++i)
@@ -1266,12 +1241,11 @@ inline void Array<T, DIM>::insert(IndexType pos,
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <IndexType SFINAE>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
   Array<T, DIM>::ArrayIterator pos,
   IndexType n,
-  const T& value,
-  typename std::enable_if<SFINAE == 1>::type*)
+  const T& value)
 {
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), n, value);
@@ -1376,7 +1350,7 @@ inline void Array<T, DIM>::resize(Args... args)
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
-  IndexType tmp_args[] = {args...};
+  const IndexType tmp_args[] = {args...};
   assert(detail::allNonNegative(tmp_args));
   const auto new_num_elements = detail::packProduct(tmp_args);
 
