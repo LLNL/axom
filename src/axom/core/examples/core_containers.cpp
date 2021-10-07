@@ -38,34 +38,19 @@ void sleep(int numSeconds)
 
 void showArray(axom::Array<int>& a, const char* name)
 {
-  std::cout << "Array " << name << " = [";
-  for(int i = 0; i < a.size(); ++i)
-  {
-    if(i > 0)
-    {
-      std::cout << ", ";
-    }
-    std::cout << a[i];
-  }
-  std::cout << "]" << std::endl;
+  std::cout << "Array " << name << " = " << a << std::endl;
 }
 
 void showTupleArray(axom::MCArray<int>& a, const char* name)
 {
+  const auto numComponents = a.shape()[1];
   std::cout << "MCArray " << name << " with " << a.shape()[0] << " "
-            << a.shape()[1] << "-tuples = [" << std::endl;
+            << numComponents << "-tuples = [" << std::endl;
   for(int i = 0; i < a.shape()[0]; ++i)
   {
-    std::cout << "  [";
-    for(int j = 0; j < a.shape()[1]; ++j)
-    {
-      if(j > 0)
-      {
-        std::cout << ", ";
-      }
-      std::cout << a(i, j);
-    }
-    std::cout << "]" << std::endl;
+    // FIXME: Replace with ArrayView
+    axom::Array<int> temp(a.data() + (i * numComponents), numComponents);
+    std::cout << "  " << temp << std::endl;
   }
   std::cout << "]" << std::endl;
 }
@@ -96,7 +81,9 @@ void demoArrayBasic()
 
   // _arraytuple_start
   // Here is an MCArray of ints, containing two triples.
-  axom::MCArray<int> b(2, 3);
+  const int numTuples = 2;
+  const int numComponents = 3;
+  axom::MCArray<int> b(numTuples, numComponents);
   // Set tuple 0 to (1, 4, 2).
   b(0, 0) = 1;
   b(0, 1) = 4;
@@ -113,7 +100,7 @@ void demoArrayBasic()
   // Now, insert two tuples, (0, -1, 1), (1, -1, 0), into the MCArray, directly
   // after tuple 0.
   int jval[6] = {0, -1, 1, 1, -1, 0};
-  b.insert(1, 2 * b.shape()[1], jval);
+  b.insert(1, numTuples * numComponents, jval);
 
   showTupleArray(b, "b");
   // _arraytuple_end

@@ -9,7 +9,7 @@
 // Axom includes
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/mint/core/MCArray.hpp"
+#include "axom/mint/deprecated/MCArray.hpp"
 
 // Mint includes
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -21,7 +21,7 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
-  #include "axom/mint/core/SidreMCArray.hpp"
+  #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 
 namespace axom

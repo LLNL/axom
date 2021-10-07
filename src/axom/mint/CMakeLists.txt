@@ -28,8 +28,8 @@ configure_file ( core/config.hpp.in
 
 set( mint_headers
 
-    ## Core containers
-    core/MCArray.hpp
+    ## Deprecated containers
+    deprecated/MCArray.hpp
 
     ## exec
     execution/xargs.hpp
@@ -88,7 +88,7 @@ set( mint_headers
     utils/su2_utils.hpp
    )
 
-blt_list_append(TO mint_headers ELEMENTS core/SidreMCArray.hpp IF AXOM_MINT_USE_SIDRE)
+blt_list_append(TO mint_headers ELEMENTS deprecated/SidreMCArray.hpp IF AXOM_MINT_USE_SIDRE)
 
 set( mint_sources
 
