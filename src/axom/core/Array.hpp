@@ -1393,7 +1393,7 @@ inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 template <typename T, int DIM>
 inline std::ostream& Array<T, DIM>::print(std::ostream& os) const
 {
-#if defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
   if(m_allocator_id ==
        axom::getUmpireResourceAllocatorID(umpire::resource::Device) ||
      m_allocator_id ==
