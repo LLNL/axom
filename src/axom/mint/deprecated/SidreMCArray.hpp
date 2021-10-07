@@ -9,7 +9,7 @@
 #include "axom/core/Macros.hpp"  // for disable copy/assignment macro
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
 #include "axom/core/Types.hpp"
-#include "axom/mint/core/MCArray.hpp"  // to inherit
+#include "axom/mint/deprecated/MCArray.hpp"  // to inherit
 
 #include "axom/slic/interface/slic.hpp"  // for slic logging macros
 

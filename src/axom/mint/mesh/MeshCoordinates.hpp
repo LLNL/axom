@@ -7,10 +7,10 @@
 #define MINT_MESHCOORDINATES_HPP_
 
 #include "axom/core/Macros.hpp"  // for Axom macros and definitions
-#include "axom/mint/core/MCArray.hpp"
+#include "axom/mint/deprecated/MCArray.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/mint/core/SidreMCArray.hpp"  // for sidre::deprecated::MCArray
+  #include "axom/mint/deprecated/SidreMCArray.hpp"  // for sidre::deprecated::MCArray
 #endif
 
 #include "axom/slic/interface/slic.hpp"  // for slic logging macros

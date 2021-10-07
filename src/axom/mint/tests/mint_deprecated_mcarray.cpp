@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/mint/core/MCArray.hpp"      /* for axom::deprecated::MCArray */
-#include "axom/core/memory_management.hpp" /* for alloc() and free() */
+#include "axom/mint/deprecated/MCArray.hpp" /* for axom::deprecated::MCArray */
+#include "axom/core/memory_management.hpp"  /* for alloc() and free() */
 
 #include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
 
