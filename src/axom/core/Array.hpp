@@ -1394,10 +1394,11 @@ template <typename T, int DIM>
 inline std::ostream& Array<T, DIM>::print(std::ostream& os) const
 {
 #if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
+  // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
+  // if there exists no allocator for Constant memory. Is there a more fine-grained
+  // approach we can use to see what allocators are available before trying to get their IDs?
   if(m_allocator_id ==
-       axom::getUmpireResourceAllocatorID(umpire::resource::Device) ||
-     m_allocator_id ==
-       axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
+     axom::getUmpireResourceAllocatorID(umpire::resource::Device))
   {
     std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
     utilities::processAbort();
