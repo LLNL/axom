@@ -17,13 +17,12 @@ using namespace sidre;
  *             also deletes the associated data and when it does not.
  *************************************************************************/
 
-/* This example code contains snippets used in the Sidre Sphinx documentation.
- * They begin and end with comments
+/* 
+ * This example code contains snippets used in the Sidre Sphinx documentation.
+ * They begin and end with comments, such as
  *
- * first_example_creategroups_start
- * first_example_creategroups_end
- *
- * each prepended with an underscore.
+ * _datastore_initial_start
+ * _datastore_initial_end
  */
 
 int main(int argc, char* argv[])
@@ -53,8 +52,6 @@ int main(int argc, char* argv[])
 
   std::cout << std::endl;
 
-  const int dat_size = 10;
-
   //
   // Example 1: One-to-one Buffer to View relationship
   //
@@ -71,7 +68,9 @@ int main(int argc, char* argv[])
 
   std::cout << "Example 1: One-to-one Buffer to View relationship\n\n";
 
-  // _ex1_oneview_onebuffer_start
+  // _ex1_oneview_onebuffer_create_start
+  const int dat_size = 10;
+
   View* aview = A_grp->createViewAndAllocate("aview", INT_ID, dat_size); 
   std::cout << "After A_grp->createViewAndAllocate() call\n";
   std::cout << "\tNum buffers in datastore: " 
@@ -97,34 +96,42 @@ int main(int argc, char* argv[])
   int* buf1_ptr = buf1->getData();
   std::cout << "\tValue of elt 5 in buffer array (expect 7): " 
             << buf1_ptr[5] << std::endl;
+  // _ex1_oneview_onebuffer_create_end
 
   std::cout << std::endl;
 
+  // _ex1_oneview_onebuffer_deallocalloc_start
   aview->deallocate();
-  std::cout << "After view deallocate call, its description remains. "
-            << "For example,\n"
-            << "num elements in view: " << aview->getNumElements() << std::endl;
+  std::cout << "After view deallocate call, the data is no longer accessible\n"
+            << "via the view, but its description remains." << std::endl;
   std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
+  std::cout << "\tNum elements in view: " << aview->getNumElements() << std::endl;
   std::cout << "\tNum buffers in datastore: "
             << ds->getNumBuffers() << std::endl;
+  std::cout << "\tIs buffer allocated? " << buf1->isAllocated() << std::endl;
   
   std::cout << std::endl;
 
   aview->allocate();
-  std::cout << "After allocating view again, num elements in view: " 
-            << aview->getNumElements() << std::endl;
+  std::cout << "After allocating view again...\n";
   std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
+  std::cout << "\tNum elements in view: " << aview->getNumElements() << std::endl;
+  a_array = aview->getArray();
+  std::cout << "\tValue of elt 5 in view array (expect 7): "
+            << a_array[5] << std::endl;
   std::cout << "\tNum buffers in datastore: "
             << ds->getNumBuffers() << std::endl;
+  // _ex1_oneview_onebuffer_deallocalloc_end
 
   std::cout << std::endl;
 
+  // _ex1_oneview_onebuffer_destroy_start
   A_grp->destroyViewAndData("aview");
   std::cout << "After destroyViewAndData() call\n";
   std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl; 
   std::cout << "\tNum buffers in datastore: "
             << ds->getNumBuffers() << std::endl;
-  // _ex1_oneview_onebuffer_end
+  // _ex1_oneview_onebuffer_destroy_end
 
 
   //
