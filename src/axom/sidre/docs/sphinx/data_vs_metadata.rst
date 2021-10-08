@@ -41,14 +41,14 @@ buffers.
 
 We begin by creating a view in group "A" describing an integer array of length 
 10 and allocating the array via the view. This creates a buffer in the datastore
-which owns the array. Then, we get a handle to the buffer from the view
-from which we get a pointer to the start of the array and initialize the 
-array values. To give some insight into the internal Sidre mechanics, we access
-and print various pieces of information along the way to show the the number of
-views in group "A", the number of elements in the view, the number of buffers
-in the datastore, the number of views attached to the buffer, and the number of 
-elements in the the buffer. We also print the value of the buffer array at 
-slot 5 to confirm that the buffer is indeed holding the view's data. 
+which owns the array. Then, we get a pointer to the start of the array from the
+view and initialize the array values. To give some insight into the internal 
+Sidre mechanics, we access and print various pieces of information along the 
+way to show the the number of views in group "A", the number of elements in the 
+view, the number of buffers in the datastore, the number of views attached to 
+the buffer, and the number of elements in the the buffer. We also print the 
+value of the buffer array at slot 5 to confirm that the buffer is indeed 
+holding the view's data. 
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
    :start-after: _ex1_oneview_onebuffer_create_start
@@ -185,13 +185,14 @@ at the end of the second example.
 
 We begin by making a copy of the view in group "A" in group "B". The new 
 view is identical in description and data associated with it as the original
-view. In particular, the data in the new view *is the same data* in the the
+view. In particular, the data in the new view *is the same data* in the
 original view. Recall that Sidre copy operations for groups and views are
 **shallow copy operations**. We verify this, by printing the values of the
 array associated with each view and also the base address of each array.
 
 Next, we destroy the "A" group which owned the original view. This operation
 destroys that view, but leaves the copied view in group "B" and its data intact.
+Finally, we destroy the "B" group. This deallocates the view data
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
    :start-after: _ex3_twoviews_onebuffer_copy_start 

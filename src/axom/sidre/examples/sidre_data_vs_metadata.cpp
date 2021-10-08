@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
   std::cout << std::endl;
 
   std::cout << "\tBase address of array in A group: " << arr_A << std::endl;
-  std::cout << "\tBase address of array in A group: " << arr_A << std::endl;
+  std::cout << "\tBase address of array in B group: " << arr_B << std::endl;
 
   root_grp->destroyGroup("A_grp");
 
@@ -287,6 +287,13 @@ int main(int argc, char* argv[])
   {
     std::cout << arr_B[i] << "   ";
   }
+
+  std::cout << std::endl;
+
+  root_grp->destroyGroup("B_grp");
+
+  std::cout << "\nAfter destroyGroup(B_grp) call:\n";
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   // _ex3_twoviews_onebuffer_copy_end
   std::cout << std::endl;
 
