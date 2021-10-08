@@ -225,7 +225,7 @@ int main(int argc, char* argv[])
     ->capture_default_str();
   app.add_option("--protocol", protocol)
     ->description("Optional sidre protocol to use for checkpoints and restarts")
-    ->check(CLI::IsMember(sidre_protocols))
+    ->check(axom::CLI::IsMember(sidre_protocols))
     ->capture_default_str();
   CLI11_PARSE(app, argc, argv);
 
