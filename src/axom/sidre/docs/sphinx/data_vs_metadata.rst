@@ -23,8 +23,8 @@ in which the root group has two child groups named "A" and "B". This structure
 is generated as follows:
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
-   :start-after: _datastore_initial_start
-   :end-before: _datastore_initial_end
+   :start-after: _ex_datastore_initial_start
+   :end-before: _ex_datastore_initial_end
    :language: C++
 
 At this point, the datastore has zero buffers and the groups have no views.
@@ -38,10 +38,11 @@ array of length 10 and allocate it. This creates a buffer in the datastore
 which owns the array. Then, we get a handle to the buffer from the view
 from which we get a pointer to the start of the array and initialize the 
 array values. To give some insight into the internal Sidre mechanics, we access
-and print various pieces of information showing the number of buffers in the 
-datastore, the number of views in group "A", the number of elements in the view,
-the number of views attached to the buffer, the number of elements in the 
-the buffer, and the buffer array value at slot 5.
+and print various pieces of information along the way to show the the number of
+views in group "A", the number of elements in the view, the number of buffers
+in the datastore, the number of views attached to the buffer, and the number of 
+elements in the the buffer. We also print the value of the buffer array at 
+slot 5 to confirm that the buffer is indeed holding the view's data. 
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
    :start-after: _ex1_oneview_onebuffer_create_start
@@ -51,9 +52,9 @@ the buffer, and the buffer array value at slot 5.
 The output printed by the code is::
 
   After A_grp->createViewAndAllocate() call
-        Num buffers in datastore: 1
         Num views in group A: 1
         Num elements in view: 10
+        Num buffers in datastore: 1
         Num views attached to buffer: 1
         Num elements in buffer array: 10
 
@@ -61,14 +62,15 @@ The output printed by the code is::
         Value of elt 5 in buffer array (expect 7): 7
 
 Next, we deallocate the view and show that its decription remains intact; 
-for example, num elements is 10. But, the view itself is no longer allocated
-meaning that the data is no longer accessible via the view. The allocated 
-buffer still exists in the datastore. Then, we allocate the buffer (again). 
-Since we have not changed the view description and the view is still attached
-to the buffer (we did not explicitly detach it), the allocate operation 
-re-associates the buffer data with the view and does not create a new buffer 
-in the datastore. We verify this by showing that the array value at slot 5 is 
-the same as before and that the number of buffers in the datastore is still one.
+for example, num elements is still 10. The view is no longer allocated,
+but it is still attached to its buffer. We confirm that the buffer is no longer 
+allocated as expected. 
+
+Then, we allocate the view again. Since the buffer is still attached to the
+view, a new buffer is not created in the datastore and the existing buffer is 
+re-allocated. We verify this by showing that datastore still has one buffer.
+The buffer and view are both shown to be allocated and the number of elements
+in the view remains 10 since the view description has not changed.
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
    :start-after: _ex1_oneview_onebuffer_deallocalloc_start
@@ -77,18 +79,19 @@ the same as before and that the number of buffers in the datastore is still one.
 
 The output of the code is::
 
-  After view deallocate call, the data is no longer accessible
-  via the view, but its description remains.
-        Is view allocated? 0
+  After view deallocate call, the data no longer exists,
+  but the view description remains.
         Num elements in view: 10
+        View has buffer? 1
+        Is view allocated? 0
         Num buffers in datastore: 1
         Is buffer allocated? 0
 
   After allocating view again...
+        Num buffers in datastore: 1
+        Is buffer allocated? 1
         Is view allocated? 1
         Num elements in view: 10 
-        Value of elt 5 in view array (expect 7): 7
-        Num buffers in datastore: 1
 
 Lastly, we destroy the view and its data with a single method call and verify
 that the view and associated buffer no longer exist.

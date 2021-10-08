@@ -33,13 +33,13 @@ int main(int argc, char* argv[])
   // 
   // Create a datastore with a simple group hierarchy.
   //
-  // _datastore_initial_start
+  // _ex_datastore_initial_start
   DataStore* ds = new DataStore();
   Group* root_grp = ds->getRoot();
 
   Group* A_grp = root_grp->createGroup("A"); 
   Group* B_grp = root_grp->createGroup("B"); 
-  // _datastore_initial_end
+  // _ex_datastore_initial_end
 
   //
   // Initially, datastore contains no buffer objects since no data has 
@@ -52,9 +52,10 @@ int main(int argc, char* argv[])
 
   std::cout << std::endl;
 
-  //
+  // -----------------------------------------------------------------------
   // Example 1: One-to-one Buffer to View relationship
-  //
+  // -----------------------------------------------------------------------
+  // 
   // Create a view with an integer array of length dat_size. Verify that the
   // group has one view and the datastore has one buffer (holding the 
   // view's data). 
@@ -73,13 +74,13 @@ int main(int argc, char* argv[])
 
   View* aview = A_grp->createViewAndAllocate("aview", INT_ID, dat_size); 
   std::cout << "After A_grp->createViewAndAllocate() call\n";
-  std::cout << "\tNum buffers in datastore: " 
-            << ds->getNumBuffers() << std::endl;
   std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
   axom::IndexType nelems = aview->getNumElements(); 
   std::cout << "\tNum elements in view: " << nelems << std::endl;
   
   Buffer* buf1 = aview->getBuffer();
+  std::cout << "\tNum buffers in datastore: " 
+            << ds->getNumBuffers() << std::endl;
   std::cout << "\tNum views attached to buffer: " 
             << buf1->getNumViews() << std::endl; 
   std::cout << "\tNum elements in buffer array: " 
@@ -102,10 +103,11 @@ int main(int argc, char* argv[])
 
   // _ex1_oneview_onebuffer_deallocalloc_start
   aview->deallocate();
-  std::cout << "After view deallocate call, the data is no longer accessible\n"
-            << "via the view, but its description remains." << std::endl;
-  std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
+  std::cout << "After view deallocate call, the data no longer exists,\n"
+            << "but the view description remains." << std::endl;
   std::cout << "\tNum elements in view: " << aview->getNumElements() << std::endl;
+  std::cout << "\tView has buffer? " << aview->hasBuffer() << std::endl;
+  std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
   std::cout << "\tNum buffers in datastore: "
             << ds->getNumBuffers() << std::endl;
   std::cout << "\tIs buffer allocated? " << buf1->isAllocated() << std::endl;
@@ -114,13 +116,11 @@ int main(int argc, char* argv[])
 
   aview->allocate();
   std::cout << "After allocating view again...\n";
-  std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
-  std::cout << "\tNum elements in view: " << aview->getNumElements() << std::endl;
-  a_array = aview->getArray();
-  std::cout << "\tValue of elt 5 in view array (expect 7): "
-            << a_array[5] << std::endl;
   std::cout << "\tNum buffers in datastore: "
             << ds->getNumBuffers() << std::endl;
+  std::cout << "\tIs buffer allocated? " << buf1->isAllocated() << std::endl;
+  std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
+  std::cout << "\tNum elements in view: " << aview->getNumElements() << std::endl;
   // _ex1_oneview_onebuffer_deallocalloc_end
 
   std::cout << std::endl;
@@ -134,8 +134,9 @@ int main(int argc, char* argv[])
   // _ex1_oneview_onebuffer_destroy_end
 
 
-  //
+  // -----------------------------------------------------------------------
   // Example 2: One-to-many Buffer to View relationships
+  // -----------------------------------------------------------------------
   //
   // Create a buffer with a double array of length dat_size and initialize its
   // data. Attach the buffer to two views, with data descriptions that vary in 
@@ -209,8 +210,10 @@ int main(int argc, char* argv[])
   // _ex2_twoviews_onebuffer_end
   std::cout << std::endl;
 
-  //
+
+  // -----------------------------------------------------------------------
   // Example 3: One-to-many Buffer to View relationships (view copy)
+  // -----------------------------------------------------------------------
   //
   // Create a buffer with a double array of length dat_size and initialize its
   // data. Attach the buffer to two views, with data descriptions that vary in
