@@ -18,6 +18,7 @@
 namespace mint = axom::mint;
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
+  #include "axom/mint/deprecated/SidreMCArray.hpp"
 namespace sidre = axom::sidre;
 #endif
 
@@ -220,7 +221,7 @@ void add_field_to_group(sidre::Group* gp,
   sidre::View* fv = fg->createView("values");
   SLIC_ASSERT(fv != nullptr);
 
-  sidre::Array<T> data(fv, numTuples, numComponents);
+  sidre::deprecated::MCArray<T> data(fv, numTuples, numComponents);
   data.fill(fill_value);
 
   EXPECT_TRUE(gp->hasGroup(name));
@@ -283,7 +284,7 @@ TEST(mint_mesh_field_data_DeathTest, invalid_construction)
 
   // should still fail -- association is foo/bar
   sidre::View* fv = f1->createView("values");
-  sidre::Array<int> data(fv, 4, 1);
+  sidre::deprecated::MCArray<int> data(fv, 4, 1);
   data.fill(42);
 
   f1->getView("association")->setString("foobar");
@@ -511,7 +512,7 @@ TEST(mint_mesh_field_data, create_and_access_fields)
   check_blueprint(f1);
   EXPECT_EQ(f1->getView("values")->getTypeID(), sidre::INT32_ID);
 
-  sidre::Array<int> f1_array(f1->getView("values"));
+  sidre::deprecated::MCArray<int> f1_array(f1->getView("values"));
   EXPECT_EQ(f1_array.size(), NUM_TUPLES);
   EXPECT_EQ(f1_array.numComponents(), 1);
 
@@ -520,7 +521,7 @@ TEST(mint_mesh_field_data, create_and_access_fields)
   check_blueprint(f2);
   EXPECT_EQ(f2->getView("values")->getTypeID(), sidre::FLOAT64_ID);
 
-  sidre::Array<double> f2_array(f2->getView("values"));
+  sidre::deprecated::MCArray<double> f2_array(f2->getView("values"));
   EXPECT_EQ(f2_array.size(), NUM_TUPLES);
   EXPECT_EQ(f2_array.numComponents(), NUM_COMPONENTS);
 
@@ -633,8 +634,8 @@ TEST(mint_mesh_field_data, resize)
   check_resize(sidre_data, NEW_NUM_TUPLES);
 
   // check the raw sidre data
-  sidre::Array<int> f1(fields_group->getView("f1/values"));
-  sidre::Array<double> f2(fields_group->getView("f2/values"));
+  sidre::deprecated::MCArray<int> f1(fields_group->getView("f1/values"));
+  sidre::deprecated::MCArray<double> f2(fields_group->getView("f2/values"));
   EXPECT_EQ(f1.size(), NEW_NUM_TUPLES);
   EXPECT_EQ(f1.numComponents(), 1);
   EXPECT_EQ(f2.size(), NEW_NUM_TUPLES);
@@ -676,8 +677,8 @@ TEST(mint_mesh_field_data, reserve)
   check_reserve(sidre_data, NEW_CAPACITY);
 
   // check the raw sidre data
-  sidre::Array<int> f1(fields_group->getView("f1/values"));
-  sidre::Array<double> f2(fields_group->getView("f2/values"));
+  sidre::deprecated::MCArray<int> f1(fields_group->getView("f1/values"));
+  sidre::deprecated::MCArray<double> f2(fields_group->getView("f2/values"));
   EXPECT_EQ(f1.capacity(), NEW_CAPACITY);
   EXPECT_EQ(f2.capacity(), NEW_CAPACITY);
 #endif
@@ -717,8 +718,8 @@ TEST(mint_mesh_field_data, shrink)
   check_shrink(sidre_data);
 
   // check the raw sidre data
-  sidre::Array<int> f1(fields_group->getView("f1/values"));
-  sidre::Array<double> f2(fields_group->getView("f2/values"));
+  sidre::deprecated::MCArray<int> f1(fields_group->getView("f1/values"));
+  sidre::deprecated::MCArray<double> f2(fields_group->getView("f2/values"));
   EXPECT_EQ(f1.capacity(), f1.size());
   EXPECT_EQ(f2.capacity(), f2.size());
 #endif

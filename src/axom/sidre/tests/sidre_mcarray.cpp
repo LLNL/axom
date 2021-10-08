@@ -24,116 +24,130 @@ const char IGNORE_OUTPUT[] = ".*";
 namespace internal
 {
 /*!
- * \brief Calculate the new capacity for and Array given an increase in the
+ * \brief Calculate the new capacity for an MCArray given an increase in the
  *  size.
- * \param [in] v, the Array in question.
- * \param [in] increase, the amount the size will increase by
- * \return the new capacity.
+ * \param [in] v, the MCArray in question.
+ * \param [in] increase, the number of tuples the size will increase by
+ * \return the new capacity, in number of tuples
  */
 template <typename T>
-axom::IndexType calc_new_capacity(Array<T>& v, axom::IndexType increase)
+axom::IndexType calc_new_capacity(MCArray<T>& v, axom::IndexType increase)
 {
-  axom::IndexType new_num_tuples = v.size() + increase;
-  if(new_num_tuples > v.capacity())
+  const auto num_components = v.shape()[1];
+  axom::IndexType new_num_tuples = (v.size() / num_components) + increase;
+  if((new_num_tuples * num_components) > v.capacity())
   {
     return new_num_tuples * v.getResizeRatio() + 0.5;
   }
 
-  return v.capacity();
+  return v.capacity() / num_components;
 }
 
 /*!
- * \brief Check if two Arrays are equivalent. Does not check the resize ratio.
- * \param [in] lhs, the first Array to compare.
- * \param [in] rhs, the second Array to compare.
+ * \brief Check if two MCArrays are equivalent. Does not check the resize ratio.
+ * \param [in] lhs, the first MCArray to compare.
+ * \param [in] rhs, the second MCArray to compare.
  * \return the new capacity.
  */
 template <typename T>
-void check_copy(const Array<T>& lhs, const Array<T>& rhs)
+void check_copy(const MCArray<T>& lhs, const MCArray<T>& rhs)
 {
   EXPECT_EQ(lhs.size(), rhs.size());
-  EXPECT_EQ(lhs.numComponents(), rhs.numComponents());
+  EXPECT_EQ(lhs.shape()[1], rhs.shape()[1]);
   EXPECT_EQ(lhs.capacity(), rhs.capacity());
 
-  const T* lhs_data = lhs.getData();
-  const T* rhs_data = rhs.getData();
+  for(int i = 0; i < lhs.shape()[0]; i++)
+  {
+    for(int j = 0; j < lhs.shape()[1]; j++)
+    {
+      EXPECT_EQ(lhs(i, j), rhs(i, j));
+    }
+  }
+}
+
+/*!
+ * \brief Check if two MCArrays are referentially equivalent. Does not check the resize ratio.
+ * \param [in] lhs, the first MCArray to compare.
+ * \param [in] rhs, the second MCArray to compare.
+ * \return the new capacity.
+ */
+template <typename T>
+void check_referential_copy(const MCArray<T>& lhs, const MCArray<T>& rhs)
+{
+  EXPECT_EQ(lhs.size(), rhs.size());
+  EXPECT_EQ(lhs.shape()[1], rhs.shape()[1]);
+  EXPECT_EQ(lhs.capacity(), rhs.capacity());
+
+  const T* lhs_data = lhs.data();
+  const T* rhs_data = rhs.data();
   EXPECT_EQ(lhs_data, rhs_data);
 }
 
 /*!
- * \brief Check that the storage of an Array is working properly.
- * \param [in] v the Array to check.
+ * \brief Check that the storage of an MCArray is working properly.
+ * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_storage(Array<T>& v)
+void check_storage(MCArray<T>& v)
 {
   EXPECT_TRUE(v.empty());
   EXPECT_EQ(v.size(), 0);
 
+  axom::IndexType num_components = v.shape()[1];
+  axom::IndexType num_tuples_capacity = v.capacity() / num_components;
+  // FIXME: Messy way of making sure the number of tuples is divisible by two
+  if(num_tuples_capacity % 2 != 0)
+  {
+    v.reserve(v.capacity() + num_components);
+    num_tuples_capacity++;
+  }
   axom::IndexType capacity = v.capacity();
-  axom::IndexType num_components = v.numComponents();
-  const T* data_ptr = v.getData();
+  const T* data_ptr = v.data();
 
   /* Append up to half the capacity. */
-  if(num_components == 1)
-  {
-    for(T i = 0; i < capacity / 2; ++i)
-    {
-      v.append(i);
-    }
-  }
-  else
   {
     T* tuple = new T[num_components];
-    for(axom::IndexType i = 0; i < capacity / 2; ++i)
+    for(axom::IndexType i = 0; i < num_tuples_capacity / 2; ++i)
     {
       for(axom::IndexType j = 0; j < num_components; ++j)
       {
         tuple[j] = i * num_components + j;
       }
-      v.append(tuple, 1);
+      v.append(axom::MCArray<T>(tuple, 1, num_components));
     }
     delete[] tuple;
     tuple = nullptr;
   }
 
-  /* Check the array metadata. */
+  /* Check the MCArray metadata. */
   EXPECT_TRUE(!v.empty());
   EXPECT_EQ(v.size(), capacity / 2);
   EXPECT_EQ(v.capacity(), capacity);
-  EXPECT_EQ(v.getData(), data_ptr);
+  EXPECT_EQ(v.data(), data_ptr);
 
   /* Append up to the full capacity. */
-  if(num_components == 1)
-  {
-    for(T i = capacity / 2; i < capacity; ++i)
-    {
-      v.append(i);
-    }
-  }
-  else
   {
     T* tuple = new T[num_components];
-    for(axom::IndexType i = capacity / 2; i < capacity; ++i)
+    for(axom::IndexType i = num_tuples_capacity / 2; i < num_tuples_capacity; ++i)
     {
       for(axom::IndexType j = 0; j < num_components; ++j)
       {
         tuple[j] = i * num_components + j;
       }
-      v.append(tuple, 1);
+      v.append(axom::MCArray<T>(tuple, 1, num_components));
     }
     delete[] tuple;
     tuple = nullptr;
   }
 
-  /* Check the array metadata. */
+  /* Check the MCArray metadata. */
   EXPECT_TRUE(!v.empty());
   EXPECT_EQ(v.size(), capacity);
   EXPECT_EQ(v.capacity(), capacity);
-  EXPECT_EQ(v.getData(), data_ptr);
+  EXPECT_EQ(v.data(), data_ptr);
 
-  /* Check the array data using the () and [] operators and the raw pointer. */
-  for(axom::IndexType i = 0; i < capacity; ++i)
+  /* Check the MCArray data using the () and [] operators and the raw pointer. */
+  for(axom::IndexType i = 0; i < num_tuples_capacity; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -143,8 +157,8 @@ void check_storage(Array<T>& v)
     }
   }
 
-  /* Set the array data to new values using the () operator. */
-  for(axom::IndexType i = 0; i < capacity; ++i)
+  /* Set the MCArray data to new values using the () operator. */
+  for(axom::IndexType i = 0; i < num_tuples_capacity; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -152,8 +166,8 @@ void check_storage(Array<T>& v)
     }
   }
 
-  /* Check the array data using the () and [] operators and the raw pointer. */
-  for(axom::IndexType i = 0; i < capacity; ++i)
+  /* Check the MCArray data using the () and [] operators and the raw pointer. */
+  for(axom::IndexType i = 0; i < num_tuples_capacity; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -163,40 +177,41 @@ void check_storage(Array<T>& v)
     }
   }
 
-  /* Check the array metadata. */
+  /* Check the MCArray metadata. */
   EXPECT_TRUE(!v.empty());
   EXPECT_EQ(v.size(), capacity);
   EXPECT_EQ(v.capacity(), capacity);
-  EXPECT_EQ(v.getData(), data_ptr);
+  EXPECT_EQ(v.data(), data_ptr);
 }
 
 /*!
  * \brief Check that the fill method is working properly.
- * \param [in] v the Array to check.
+ * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_fill(Array<T>& v)
+void check_fill(MCArray<T>& v)
 {
   constexpr T MAGIC_NUM_0 = 55;
   constexpr T MAGIC_NUM_1 = 6834;
   const axom::IndexType capacity = v.capacity();
   const axom::IndexType size = v.size();
-  const axom::IndexType num_components = v.numComponents();
+  const axom::IndexType num_components = v.shape()[1];
   const double ratio = v.getResizeRatio();
-  const T* const data_ptr = v.getData();
+  const T* const data_ptr = v.data();
 
-  /* Fill the Array with MAGIC_NUM_0. */
+  /* Fill the MCArray with MAGIC_NUM_0. */
   v.fill(MAGIC_NUM_0);
 
   /* Check the meta data. */
   EXPECT_EQ(capacity, v.capacity());
   EXPECT_EQ(size, v.size());
-  EXPECT_EQ(num_components, v.numComponents());
+  EXPECT_EQ(num_components, v.shape()[1]);
   EXPECT_EQ(ratio, v.getResizeRatio());
-  EXPECT_EQ(data_ptr, v.getData());
+  EXPECT_EQ(data_ptr, v.data());
 
   /* Check that the entries are all MAGIC_NUM_0. */
-  for(axom::IndexType i = 0; i < size; ++i)
+  // NOTE: size now refers to the number of Ts and not the number of tuples
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -204,18 +219,18 @@ void check_fill(Array<T>& v)
     }
   }
 
-  /* Fill the Array with MAGIC_NUM_1. */
+  /* Fill the MCArray with MAGIC_NUM_1. */
   v.fill(MAGIC_NUM_1);
 
   /* Check the meta data. */
   EXPECT_EQ(capacity, v.capacity());
   EXPECT_EQ(size, v.size());
-  EXPECT_EQ(num_components, v.numComponents());
+  EXPECT_EQ(num_components, v.shape()[1]);
   EXPECT_EQ(ratio, v.getResizeRatio());
-  EXPECT_EQ(data_ptr, v.getData());
+  EXPECT_EQ(data_ptr, v.data());
 
   /* Check that the entries are all MAGIC_NUM_1. */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -226,42 +241,43 @@ void check_fill(Array<T>& v)
 
 /*!
  * \brief Check that the set method is working properly.
- * \param [in] v the Array to check.
+ * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_set(Array<T>& v)
+void check_set(MCArray<T>& v)
 {
   constexpr T ZERO = 0;
   const axom::IndexType capacity = v.capacity();
-  const axom::IndexType size = v.size();
-  const axom::IndexType num_components = v.numComponents();
+  const axom::IndexType num_components = v.shape()[1];
+  const axom::IndexType num_tuples = v.size() / num_components;
   const double ratio = v.getResizeRatio();
-  const T* const data_ptr = v.getData();
+  const T* const data_ptr = v.data();
 
-  /* Allocate a buffer half the size of the array. Fill it up with sequential
+  /* Allocate a buffer half the size of the MCArray. Fill it up with sequential
    * values. */
-  const axom::IndexType buffer_size = size / 2;
+  // buffer_size is the number of tuples
+  const axom::IndexType buffer_size = num_tuples / 2;
   T* buffer = new T[buffer_size * num_components];
   for(axom::IndexType i = 0; i < buffer_size * num_components; ++i)
   {
     buffer[i] = i;
   }
 
-  /* Set all the values in the array to zero. */
+  /* Set all the values in the MCArray to zero. */
   v.fill(ZERO);
 
-  /* Set the first half of the tuples in the array to the sequential values in
+  /* Set the first half of the tuples in the MCArray to the sequential values in
    * buffer. */
-  v.set(buffer, buffer_size, 0);
+  v.set(buffer, buffer_size * num_components, 0);
 
-  /* Check the array metadata. */
+  /* Check the MCArray metadata. */
   EXPECT_EQ(capacity, v.capacity());
-  EXPECT_EQ(size, v.size());
-  EXPECT_EQ(num_components, v.numComponents());
+  EXPECT_EQ(num_tuples, v.size() / num_components);
+  EXPECT_EQ(num_components, v.shape()[1]);
   EXPECT_EQ(ratio, v.getResizeRatio());
-  EXPECT_EQ(data_ptr, v.getData());
+  EXPECT_EQ(data_ptr, v.data());
 
-  /* Check that the first half of the tuples in the array are equivalent to
+  /* Check that the first half of the tuples in the MCArray are equivalent to
    * those in buffer. */
   for(axom::IndexType i = 0; i < buffer_size; ++i)
   {
@@ -271,8 +287,8 @@ void check_set(Array<T>& v)
     }
   }
 
-  /* Check that the second half of the tuples in the array are all zero. */
-  for(axom::IndexType i = buffer_size; i < size; ++i)
+  /* Check that the second half of the tuples in the MCArray are all zero. */
+  for(axom::IndexType i = buffer_size; i < num_tuples; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -283,21 +299,21 @@ void check_set(Array<T>& v)
   /* Reset the values in buffer to the next sequential values. */
   for(axom::IndexType i = 0; i < buffer_size * num_components; ++i)
   {
-    buffer[i] = i + buffer_size * num_components;
+    buffer[i] = i + (buffer_size * num_components);
   }
 
-  /* Set the second half of the tuples in the array to the new sequential values
+  /* Set the second half of the tuples in the MCArray to the new sequential values
    * in buffer. */
-  v.set(buffer, buffer_size, buffer_size);
+  v.set(buffer, buffer_size * num_components, buffer_size * num_components);
 
-  /* Check the array metadata. */
+  /* Check the MCArray metadata. */
   EXPECT_EQ(capacity, v.capacity());
-  EXPECT_EQ(size, v.size());
-  EXPECT_EQ(num_components, v.numComponents());
+  EXPECT_EQ(num_tuples, v.size() / num_components);
+  EXPECT_EQ(num_components, v.shape()[1]);
   EXPECT_EQ(ratio, v.getResizeRatio());
-  EXPECT_EQ(data_ptr, v.getData());
+  EXPECT_EQ(data_ptr, v.data());
 
-  /* Check that all the tuples in the array now hold sequential values. */
+  /* Check that all the tuples in the MCArray now hold sequential values. */
   for(axom::IndexType i = 0; i < 2 * buffer_size; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
@@ -305,26 +321,28 @@ void check_set(Array<T>& v)
       EXPECT_EQ(v(i, j), i * num_components + j);
     }
   }
+
+  delete[] buffer;
 }
 
 /*!
- * \brief Check that the resizing of an Array is working properly.
- * \param [in] v the Array to check.
+ * \brief Check that the resizing of an MCArray is working properly.
+ * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_resize(Array<T>& v)
+void check_resize(MCArray<T>& v)
 {
   /* Resize the array up to the capacity */
   axom::IndexType capacity = v.capacity();
-  v.resize(capacity);
+  axom::IndexType num_components = v.shape()[1];
+  v.resize(capacity / num_components, num_components);
   axom::IndexType size = capacity;
-  axom::IndexType num_components = v.numComponents();
 
   /* Check that the size equals the capacity. */
   EXPECT_EQ(v.size(), v.capacity());
 
   /* Set the existing data in v */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -334,14 +352,14 @@ void check_resize(Array<T>& v)
 
   /* Append a new tuple, should resize. */
   axom::IndexType old_capacity = capacity;
-  capacity = calc_new_capacity(v, 1);
+  capacity = calc_new_capacity(v, 1) * num_components;
   T* tuple = new T[num_components];
   for(axom::IndexType j = 0; j < num_components; ++j)
   {
-    tuple[j] = size * j - 5 * size + 7 * j;
+    tuple[j] = (size / num_components) * j - 5 * (size / num_components) + 7 * j;
   }
-  v.append(tuple, 1);
-  size++;
+  v.append(axom::MCArray<T>(tuple, 1, num_components));
+  size += num_components;
 
   /* Check that it resized properly */
   EXPECT_GT(capacity, old_capacity);
@@ -349,7 +367,7 @@ void check_resize(Array<T>& v)
   EXPECT_EQ(v.size(), size);
 
   /* Check that the data is still intact. */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -364,22 +382,22 @@ void check_resize(Array<T>& v)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
-      axom::IndexType i_real = i + size;
+      axom::IndexType i_real = i + (size / num_components);
       values[i * num_components + j] = i_real * j - 5 * i_real + 7 * j;
     }
   }
 
   /* Append the new tuples. */
-  capacity = calc_new_capacity(v, n_tuples);
-  v.append(values, n_tuples);
-  size += n_tuples;
+  capacity = calc_new_capacity(v, n_tuples) * num_components;
+  v.append(axom::MCArray<T>(values, n_tuples, num_components));
+  size += n_tuples * num_components;
 
   /* Check that size and capacity are as expected. */
   EXPECT_EQ(v.capacity(), capacity);
   EXPECT_EQ(v.size(), size);
 
   /* Check that the data is still intact. */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -388,17 +406,17 @@ void check_resize(Array<T>& v)
   }
 
   /* Reduce the size down to 500 tuples */
-  T* data_address = v.getData();
-  size = 500;
-  v.resize(size);
+  T* data_address = v.data();
+  size = 500 * num_components;
+  v.resize(size / num_components, num_components);
 
   /* Check the metadata. */
   EXPECT_EQ(v.size(), size);
   EXPECT_EQ(v.capacity(), capacity);
-  EXPECT_EQ(v.getData(), data_address);
+  EXPECT_EQ(v.data(), data_address);
 
   /* Check the data. */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -415,7 +433,7 @@ void check_resize(Array<T>& v)
   EXPECT_EQ(v.size(), size);
 
   /* Check that the data is intact. */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -425,13 +443,13 @@ void check_resize(Array<T>& v)
 
   /* Append a new tuple, should resize. */
   old_capacity = capacity;
-  capacity = calc_new_capacity(v, 1);
+  capacity = calc_new_capacity(v, 1) * num_components;
   for(axom::IndexType j = 0; j < num_components; ++j)
   {
-    tuple[j] = size * j - 5 * size + 7 * j;
+    tuple[j] = (size / num_components) * j - 5 * (size / num_components) + 7 * j;
   }
-  v.append(tuple, 1);
-  size++;
+  v.append(axom::MCArray<T>(tuple, 1, num_components));
+  size += num_components;
 
   /* Check the new size and capacity. */
   EXPECT_GT(capacity, old_capacity);
@@ -439,7 +457,7 @@ void check_resize(Array<T>& v)
   EXPECT_EQ(v.size(), size);
 
   /* Check that the data is intact. */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -448,8 +466,8 @@ void check_resize(Array<T>& v)
   }
 
   /* Reset the data */
-  T* data_ptr = v.getData();
-  for(axom::IndexType i = 0; i < size * num_components; ++i)
+  T* data_ptr = v.data();
+  for(axom::IndexType i = 0; i < size; ++i)
   {
     data_ptr[i] = i;
   }
@@ -457,18 +475,20 @@ void check_resize(Array<T>& v)
   /* Append a bunch of tuples to fill in up to the capacity. Resize should
    * not occur. */
   old_capacity = capacity;
-  for(axom::IndexType i = size; i < old_capacity; ++i)
+  for(axom::IndexType i = size / num_components;
+      i < old_capacity / num_components;
+      ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
       tuple[j] = i * num_components + j;
     }
 
-    v.append(tuple, 1);
-    size++;
+    v.append(axom::MCArray<T>(tuple, 1, num_components));
+    size += num_components;
     EXPECT_EQ(v.capacity(), old_capacity);
     EXPECT_EQ(v.size(), size);
-    EXPECT_EQ(v.getData(), data_ptr);
+    EXPECT_EQ(v.data(), data_ptr);
   }
 
   EXPECT_EQ(v.size(), old_capacity);
@@ -476,12 +496,12 @@ void check_resize(Array<T>& v)
   /* Append a final tuple that should trigger a resize. */
   for(axom::IndexType j = 0; j < num_components; ++j)
   {
-    tuple[j] = size * num_components + j;
+    tuple[j] = size + j;
   }
 
-  capacity = calc_new_capacity(v, old_capacity - size + 1);
-  v.append(tuple, 1);
-  size++;
+  capacity = calc_new_capacity(v, old_capacity - size + 1) * num_components;
+  v.append(axom::MCArray<T>(tuple, 1, num_components));
+  size += num_components;
 
   /* Check the new capacity and size. */
   EXPECT_GT(capacity, old_capacity);
@@ -489,7 +509,7 @@ void check_resize(Array<T>& v)
   EXPECT_EQ(v.size(), size);
 
   /* Check the data. */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -505,22 +525,22 @@ void check_resize(Array<T>& v)
 }
 
 /*!
- * \brief Check that the insertion into an Array is working properly.
- * \param [in] v the Array to check.
+ * \brief Check that the insertion into an MCArray is working properly.
+ * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_insert(Array<T>& v)
+void check_insert(MCArray<T>& v)
 {
-  /* Resize the array up to the capacity */
+  /* Resize the MCArray up to the capacity */
   axom::IndexType capacity = v.capacity();
-  v.resize(capacity);
+  axom::IndexType num_components = v.shape()[1];
+  v.resize(capacity / num_components, num_components);
   axom::IndexType size = capacity;
-  axom::IndexType num_components = v.numComponents();
 
   EXPECT_EQ(v.size(), v.capacity());
 
   /* Set the existing data in v */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -530,20 +550,20 @@ void check_insert(Array<T>& v)
 
   /* Append a new tuple, should resize. */
   axom::IndexType old_capacity = capacity;
-  capacity = calc_new_capacity(v, 1);
+  capacity = calc_new_capacity(v, 1) * num_components;
   T* tuple = new T[num_components];
   for(axom::IndexType j = 0; j < num_components; ++j)
   {
-    tuple[j] = size * j - 5 * size + 7 * j;
+    tuple[j] = (size / num_components) * j - 5 * (size / num_components) + 7 * j;
   }
-  v.insert(tuple, 1, v.size());
-  size++;
+  v.append(axom::MCArray<T>(tuple, 1, num_components));
+  size += num_components;
 
   /* Check that it resized properly */
   EXPECT_GT(capacity, old_capacity);
   EXPECT_EQ(v.capacity(), capacity);
   EXPECT_EQ(v.size(), size);
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -558,53 +578,56 @@ void check_insert(Array<T>& v)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
-      axom::IndexType i_real = i + size;
+      axom::IndexType i_real = i + (size / num_components);
       values[i * num_components + j] = i_real * j - 5 * i_real + 7 * j;
     }
   }
 
-  capacity = calc_new_capacity(v, n_tuples);
-  v.insert(values, n_tuples, size);
-  size += n_tuples;
+  capacity = calc_new_capacity(v, n_tuples) * num_components;
+  v.append(axom::MCArray<T>(values, n_tuples, num_components));
+  size += n_tuples * num_components;
 
   /* Check that it resizes properly */
   EXPECT_EQ(v.capacity(), capacity);
   EXPECT_EQ(v.size(), size);
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
       EXPECT_EQ(v(i, j), i * j - 5 * i + 7 * j);
     }
   }
-
+  // std::cout << "capcity 1 is " << v.capacity() << "\n";
   capacity = size;
   v.shrink();
-  axom::IndexType n_insert_front = 100;
+  axom::IndexType n_insert_front = 2;
+  // std::cout << "capcity 1-1 is " << v.capacity() << "\n";
 
   /* Reset the data */
-  T* data_ptr = v.getData();
-  for(axom::IndexType i = 0; i < size * num_components; ++i)
+  T* data_ptr = v.data();
+  for(axom::IndexType i = 0; i < size; ++i)
   {
     data_ptr[i] = i + num_components * n_insert_front;
   }
+  // std::cout << "capcity 2 is " << v.capacity() << "\n";
 
-  /* Insert into the front of the Array. */
+  /* Insert into the front of the MCArray. */
   for(axom::IndexType i = n_insert_front - 1; i >= 0; i--)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
       tuple[j] = i * num_components + j;
     }
-    capacity = calc_new_capacity(v, 1);
-    v.insert(tuple, 1, 0);
-    size++;
+    capacity = calc_new_capacity(v, 1) * num_components;
+    v.insert(0, axom::MCArray<T>(tuple, 1, num_components));
+    size += num_components;
   }
+  // std::cout << "capcity 3 is " << v.capacity() << "\n";
 
   /* Check that the insertion worked as expected */
   EXPECT_EQ(v.capacity(), capacity);
   EXPECT_EQ(v.size(), size);
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -621,23 +644,23 @@ void check_insert(Array<T>& v)
 
 /*!
  * \brief Check that the emplace method is working properly.
- * \param [in] v the Array to check.
+ * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_emplace(Array<T>& v)
+void check_emplace(MCArray<T>& v)
 {
   constexpr T MAGIC_NUM = 52706;
 
-  /* Resize the array up to the capacity */
+  /* Resize the MCArray up to the capacity */
   axom::IndexType capacity = v.capacity();
-  v.resize(capacity);
+  axom::IndexType num_components = v.shape()[1];
+  v.resize(capacity / num_components, num_components);
   axom::IndexType size = capacity;
-  const axom::IndexType num_components = v.numComponents();
 
   EXPECT_EQ(v.size(), v.capacity());
 
   /* Set the existing data in v */
-  for(axom::IndexType i = 0; i < size; ++i)
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -645,22 +668,25 @@ void check_emplace(Array<T>& v)
     }
   }
 
-  /* Emplace 1 tuple at the end of the array with the default value,
+  /* Emplace 1 tuple at the end of the MCArray with the default value,
    * should resize. */
-  capacity = calc_new_capacity(v, 1);
-  v.emplace(1, v.size());
+  capacity = calc_new_capacity(v, 1) * num_components;
+  v.emplace(v.size(), T {});
 
-  /* Emplace 9 tuples at the end of the array with MAGIC_NUM. */
-  capacity = calc_new_capacity(v, 9);
-  v.emplace(9, v.size(), MAGIC_NUM);
-  size += 10;
+  /* Emplace 9 tuples at the end of the MCArray with MAGIC_NUM. */
+  for(axom::IndexType i = 0; i < 9; i++)
+  {
+    capacity = calc_new_capacity(v, 1) * num_components;
+    v.emplace(v.size(), MAGIC_NUM);
+  }
+  size += 10 * num_components;
 
   /* Check that it resized properly */
   EXPECT_EQ(v.capacity(), capacity);
   EXPECT_EQ(v.size(), size);
 
   /* Check the data */
-  for(axom::IndexType i = 0; i < size - 10; ++i)
+  for(axom::IndexType i = 0; i < (size / num_components) - 10; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -670,10 +696,11 @@ void check_emplace(Array<T>& v)
 
   for(axom::IndexType j = 0; j < num_components; ++j)
   {
-    EXPECT_EQ(v(size - 10, j), T());
+    EXPECT_EQ(v((size / num_components) - 10, j), T());
   }
 
-  for(axom::IndexType i = size - 9; i < size; ++i)
+  for(axom::IndexType i = (size / num_components) - 9; i < size / num_components;
+      ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -681,14 +708,17 @@ void check_emplace(Array<T>& v)
     }
   }
 
-  /* Emplace 10 tuples at the beginning of the array with MAGIC_NUM. */
-  capacity = calc_new_capacity(v, 9);
-  v.emplace(9, 0, MAGIC_NUM);
+  /* Emplace 9 tuples at the beginning of the MCArray with MAGIC_NUM. */
+  for(axom::IndexType i = 0; i < 9; i++)
+  {
+    capacity = calc_new_capacity(v, 1) * num_components;
+    v.emplace(0, MAGIC_NUM);
+  }
 
-  /* Emplace 1 tuple at the beginning of the array with the default value. */
-  capacity = calc_new_capacity(v, 1);
-  v.emplace(1, 0);
-  size += 10;
+  /* Emplace 1 tuple at the beginning of the MCArray with the default value. */
+  capacity = calc_new_capacity(v, 1) * num_components;
+  v.emplace(0, T {});
+  size += 10 * num_components;
 
   /* Check that it resized properly */
   EXPECT_EQ(v.capacity(), capacity);
@@ -709,7 +739,7 @@ void check_emplace(Array<T>& v)
   }
 
   /* Check the middle */
-  for(axom::IndexType i = 10; i < size - 10; ++i)
+  for(axom::IndexType i = 10; i < (size / num_components) - 10; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -723,7 +753,8 @@ void check_emplace(Array<T>& v)
     EXPECT_EQ(v(size - 10, j), T());
   }
 
-  for(axom::IndexType i = size - 9; i < size; ++i)
+  for(axom::IndexType i = (size / num_components) - 9; i < size / num_components;
+      ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
@@ -731,15 +762,18 @@ void check_emplace(Array<T>& v)
     }
   }
 
-  /* Emplace 9 tuples in the middle of the array with MAGIC_NUM. */
-  axom::IndexType middle = size / 2;
-  capacity = calc_new_capacity(v, 9);
-  v.emplace(9, middle, MAGIC_NUM);
+  /* Emplace 9 tuples in the middle of the MCArray with MAGIC_NUM. */
+  axom::IndexType middle = (size / num_components) / 2;
+  for(axom::IndexType i = 0; i < 9; i++)
+  {
+    capacity = calc_new_capacity(v, 1) * num_components;
+    v.emplace(middle, MAGIC_NUM);
+  }
 
-  /* Emplace 1 tuple in the middle of the array with the default value. */
-  capacity = calc_new_capacity(v, 1);
-  v.emplace(1, middle);
-  size += 10;
+  /* Emplace 1 tuple in the middle of the MCArray with the default value. */
+  capacity = calc_new_capacity(v, 1) * num_components;
+  v.emplace(middle, T {});
+  size += 10 * num_components;
 
   /* Check that it resized properly */
   EXPECT_EQ(v.capacity(), capacity);
@@ -807,44 +841,83 @@ void check_emplace(Array<T>& v)
 }
 
 /*!
- * \brief Make a copy of an Array through sidre and check it for defects.
- * \param [in] v the Array to copy.
+ * \brief Check that the copy/move constructors/assignment operators are working properly.
+ * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_sidre(Array<T>& v)
+void check_copy_move(MCArray<T>& v)
 {
-  ASSERT_TRUE(v.isInSidre());
+  /* Resize the MCArray up to the capacity */
+  axom::IndexType capacity = v.capacity();
+  axom::IndexType num_components = v.shape()[1];
+  v.resize(capacity / num_components, num_components);
+  axom::IndexType size = capacity;
+
+  /* Set the existing data in v */
+  for(axom::IndexType i = 0; i < size / num_components; ++i)
+  {
+    for(axom::IndexType j = 0; j < num_components; ++j)
+    {
+      v(i, j) = i * j - 5 * i + 7 * j;
+    }
+  }
+
+  // Call the copy constructor
+  MCArray<T> cpy(v);
+  /* Check that the copy holds the same data. */
+  check_copy(v, cpy);
+  EXPECT_EQ(v.getView(), cpy.getView());
+
+  // Move from the copy (call the move constructor)
+  MCArray<T> moved(std::move(cpy));
+  EXPECT_EQ(cpy.getView(), nullptr);
+
+  // Check that the moved-to object is the same as the original
+  check_copy(v, moved);
+  EXPECT_EQ(v.getView(), moved.getView());
+}
+
+/*!
+ * \brief Make a copy of an MCArray through sidre and check it for defects.
+ * \param [in] v the MCArray to copy.
+ */
+template <typename T>
+void check_sidre(MCArray<T>& v)
+{
+  // These should be equivalent
+  ASSERT_NE(dynamic_cast<sidre::MCArray<T>*>(&v), nullptr);
+  // ASSERT_TRUE(v.isInSidre());
   /* Create a copy. */
-  Array<T> cpy(const_cast<sidre::View*>(v.getView()));
+  MCArray<T> cpy(const_cast<sidre::View*>(v.getView()));
   cpy.setResizeRatio(v.getResizeRatio());
 
   /* Check that the copy holds the same data. */
-  check_copy(v, cpy);
+  check_referential_copy(v, cpy);
 
   /* Resize the copy and check that it functions correctly. */
-  cpy.resize(0);
+  cpy.resize(0, cpy.shape()[1]);
   check_storage(cpy);
   check_insert(cpy);
 }
 
 /*!
- * \brief Check an external array for defects.
- * \param [in] v the external array to check.
+ * \brief Check an external MCArray for defects.
+ * \param [in] v the external MCArray to check.
  */
 template <typename T>
-void check_external(Array<T>& v)
+void check_external(MCArray<T>& v)
 {
   ASSERT_TRUE(v.isExternal());
 
-  /* Check that the array is full. */
+  /* Check that the MCArray is full. */
   ASSERT_EQ(v.size(), v.capacity());
 
   const axom::IndexType size = v.size();
-  const axom::IndexType num_components = v.numComponents();
+  const axom::IndexType num_components = v.shape()[1];
   const axom::IndexType num_values = size * num_components;
-  T* const data_ptr = v.getData();
+  T* const data_ptr = v.data();
 
-  /* Set the tuples in the array. */
+  /* Set the tuples in the MCArray. */
   for(axom::IndexType i = 0; i < size; ++i)
   {
     for(axom::IndexType j = 0; j < num_components; ++j)
@@ -879,13 +952,16 @@ void check_external(Array<T>& v)
 
   EXPECT_EQ(size, v.size());
   EXPECT_EQ(size, v.capacity());
-  EXPECT_EQ(data_ptr, v.getData());
+  EXPECT_EQ(data_ptr, v.data());
 
-  /* Since the array is full all of the following calls should require a
+  /* Since the MCArray is full all of the following calls should require a
    * reallocation and cause a fatal error. */
   T* tuple = new T[num_components];
-  EXPECT_DEATH_IF_SUPPORTED(v.append(tuple, 1), IGNORE_OUTPUT);
-  EXPECT_DEATH_IF_SUPPORTED(v.insert(tuple, 1, 0), IGNORE_OUTPUT);
+  EXPECT_DEATH_IF_SUPPORTED(v.append(axom::MCArray<T>(tuple, 1, num_components)),
+                            IGNORE_OUTPUT);
+  EXPECT_DEATH_IF_SUPPORTED(
+    v.insert(0, axom::MCArray<T>(tuple, 1, num_components)),
+    IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(v.reserve(size + 1), IGNORE_OUTPUT);
 
   delete[] tuple;
@@ -899,7 +975,7 @@ void check_external(Array<T>& v)
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_array, checkStorage)
+TEST(sidre_core_mcarray, checkStorage)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -910,13 +986,16 @@ TEST(sidre_core_array, checkStorage)
   {
     for(axom::IndexType n_components = 1; n_components <= 4; n_components++)
     {
-      Array<int> v_int_sidre(root->createView("int"), ZERO, n_components, capacity);
+      MCArray<int> v_int_sidre(root->createView("int"),
+                               ZERO,
+                               n_components,
+                               capacity * n_components);
       internal::check_storage(v_int_sidre);
 
-      Array<double> v_double_sidre(root->createView("double"),
-                                   ZERO,
-                                   n_components,
-                                   capacity);
+      MCArray<double> v_double_sidre(root->createView("double"),
+                                     ZERO,
+                                     n_components,
+                                     capacity * n_components);
       internal::check_storage(v_double_sidre);
 
       root->destroyViewsAndData();
@@ -925,7 +1004,7 @@ TEST(sidre_core_array, checkStorage)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_array, checkFill)
+TEST(sidre_core_mcarray, checkFill)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -935,13 +1014,16 @@ TEST(sidre_core_array, checkFill)
     axom::IndexType size = capacity / 2;
     for(axom::IndexType n_components = 1; n_components <= 4; n_components++)
     {
-      Array<int> v_int_sidre(root->createView("int"), size, n_components, capacity);
+      MCArray<int> v_int_sidre(root->createView("int"),
+                               size,
+                               n_components,
+                               capacity * n_components);
       internal::check_fill(v_int_sidre);
 
-      Array<double> v_double_sidre(root->createView("double"),
-                                   size,
-                                   n_components,
-                                   capacity);
+      MCArray<double> v_double_sidre(root->createView("double"),
+                                     size,
+                                     n_components,
+                                     capacity * n_components);
       internal::check_fill(v_double_sidre);
 
       root->destroyViewsAndData();
@@ -950,7 +1032,7 @@ TEST(sidre_core_array, checkFill)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_array, checkSet)
+TEST(sidre_core_mcarray, checkSet)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -960,13 +1042,16 @@ TEST(sidre_core_array, checkSet)
     axom::IndexType size = capacity / 2;
     for(axom::IndexType n_components = 1; n_components <= 4; n_components++)
     {
-      Array<int> v_int_sidre(root->createView("int"), size, n_components, capacity);
+      MCArray<int> v_int_sidre(root->createView("int"),
+                               size,
+                               n_components,
+                               capacity * n_components);
       internal::check_set(v_int_sidre);
 
-      Array<double> v_double_sidre(root->createView("double"),
-                                   size,
-                                   n_components,
-                                   capacity);
+      MCArray<double> v_double_sidre(root->createView("double"),
+                                     size,
+                                     n_components,
+                                     capacity * n_components);
       internal::check_set(v_double_sidre);
 
       root->destroyViewsAndData();
@@ -975,7 +1060,7 @@ TEST(sidre_core_array, checkSet)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_array, checkResize)
+TEST(sidre_core_mcarray, checkResize)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -988,17 +1073,17 @@ TEST(sidre_core_array, checkResize)
     {
       for(axom::IndexType n_components = 1; n_components <= 4; n_components++)
       {
-        Array<int> v_int_sidre(root->createView("int"),
-                               ZERO,
-                               n_components,
-                               capacity);
+        MCArray<int> v_int_sidre(root->createView("int"),
+                                 ZERO,
+                                 n_components,
+                                 capacity * n_components);
         v_int_sidre.setResizeRatio(ratio);
         internal::check_resize(v_int_sidre);
 
-        Array<double> v_double_sidre(root->createView("double"),
-                                     ZERO,
-                                     n_components,
-                                     capacity);
+        MCArray<double> v_double_sidre(root->createView("double"),
+                                       ZERO,
+                                       n_components,
+                                       capacity * n_components);
         v_double_sidre.setResizeRatio(ratio);
         internal::check_resize(v_double_sidre);
 
@@ -1009,19 +1094,19 @@ TEST(sidre_core_array, checkResize)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_array_DeathTest, checkResize)
+TEST(sidre_core_mcarray_DeathTest, checkResize)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
   /* Resizing isn't allowed with a ratio less than 1.0. */
-  Array<int> v_int(root->createView("int"), internal::ZERO, 1, 100);
+  MCArray<int> v_int(root->createView("int"), internal::ZERO, 1, 100);
   v_int.setResizeRatio(0.99);
   EXPECT_DEATH_IF_SUPPORTED(internal::check_resize(v_int), IGNORE_OUTPUT);
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_array, checkInsert)
+TEST(sidre_core_mcarray, checkInsert)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -1034,17 +1119,17 @@ TEST(sidre_core_array, checkInsert)
     {
       for(axom::IndexType n_components = 1; n_components <= 3; n_components++)
       {
-        Array<int> v_int_sidre(root->createView("int"),
-                               ZERO,
-                               n_components,
-                               capacity);
+        MCArray<int> v_int_sidre(root->createView("int"),
+                                 ZERO,
+                                 n_components,
+                                 capacity * n_components);
         v_int_sidre.setResizeRatio(ratio);
         internal::check_insert(v_int_sidre);
 
-        Array<double> v_double_sidre(root->createView("double"),
-                                     ZERO,
-                                     n_components,
-                                     capacity);
+        MCArray<double> v_double_sidre(root->createView("double"),
+                                       ZERO,
+                                       n_components,
+                                       capacity * n_components);
         v_double_sidre.setResizeRatio(ratio);
         internal::check_insert(v_double_sidre);
 
@@ -1055,7 +1140,44 @@ TEST(sidre_core_array, checkInsert)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_array, checkEmplace)
+// NOTE: The functionality provided by the old MCArray::emplace() is completely different
+// than emplace() as defined on e.g. std::vector
+// This test has been disabled for that reason
+// TEST(sidre_core_mcarray, checkEmplace)
+// {
+//   sidre::DataStore ds;
+//   sidre::Group* root = ds.getRoot();
+
+//   constexpr axom::IndexType ZERO = 0;
+
+//   for(double ratio = 1.0; ratio <= 2.0; ratio += 0.5)
+//   {
+//     for(axom::IndexType capacity = 2; capacity <= 512; capacity *= 2)
+//     {
+//       for(axom::IndexType n_components = 1; n_components <= 3; n_components++)
+//       {
+//         MCArray<int> v_int_sidre(root->createView("int"),
+//                                  ZERO,
+//                                  n_components,
+//                                  capacity);
+//         v_int_sidre.setResizeRatio(ratio);
+//         internal::check_emplace(v_int_sidre);
+
+//         MCArray<double> v_double_sidre(root->createView("double"),
+//                                        ZERO,
+//                                        n_components,
+//                                        capacity);
+//         v_double_sidre.setResizeRatio(ratio);
+//         internal::check_emplace(v_double_sidre);
+
+//         root->destroyViewsAndData();
+//       }
+//     }
+//   }
+// }
+
+//------------------------------------------------------------------------------
+TEST(sidre_core_mcarray, checkCopyMove)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -1068,19 +1190,19 @@ TEST(sidre_core_array, checkEmplace)
     {
       for(axom::IndexType n_components = 1; n_components <= 3; n_components++)
       {
-        Array<int> v_int_sidre(root->createView("int"),
-                               ZERO,
-                               n_components,
-                               capacity);
+        MCArray<int> v_int_sidre(root->createView("int"),
+                                 ZERO,
+                                 n_components,
+                                 capacity);
         v_int_sidre.setResizeRatio(ratio);
-        internal::check_emplace(v_int_sidre);
+        internal::check_copy_move(v_int_sidre);
 
-        Array<double> v_double_sidre(root->createView("double"),
-                                     ZERO,
-                                     n_components,
-                                     capacity);
+        MCArray<double> v_double_sidre(root->createView("double"),
+                                       ZERO,
+                                       n_components,
+                                       capacity);
         v_double_sidre.setResizeRatio(ratio);
-        internal::check_emplace(v_double_sidre);
+        internal::check_copy_move(v_double_sidre);
 
         root->destroyViewsAndData();
       }
@@ -1091,7 +1213,7 @@ TEST(sidre_core_array, checkEmplace)
 /* Sidre specific tests */
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_array, checkSidre)
+TEST(sidre_core_mcarray, checkSidre)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -1104,15 +1226,18 @@ TEST(sidre_core_array, checkSidre)
     {
       for(axom::IndexType n_components = 1; n_components <= 3; n_components++)
       {
-        Array<int> v_int(root->createView("int"), ZERO, n_components, capacity);
+        MCArray<int> v_int(root->createView("int"),
+                           ZERO,
+                           n_components,
+                           capacity * n_components);
         v_int.setResizeRatio(ratio);
         internal::check_storage(v_int);
         internal::check_sidre(v_int);
 
-        Array<double> v_double(root->createView("double"),
-                               ZERO,
-                               n_components,
-                               capacity);
+        MCArray<double> v_double(root->createView("double"),
+                                 ZERO,
+                                 n_components,
+                                 capacity * n_components);
         v_double.setResizeRatio(ratio);
         internal::check_storage(v_double);
         internal::check_sidre(v_double);
@@ -1124,7 +1249,7 @@ TEST(sidre_core_array, checkSidre)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_array, checkSidrePermanence)
+TEST(sidre_core_mcarray, checkSidrePermanence)
 {
   constexpr double MAGIC_NUM = 5683578.8;
 
@@ -1139,19 +1264,22 @@ TEST(sidre_core_array, checkSidrePermanence)
     {
       for(axom::IndexType n_components = 1; n_components <= 3; n_components++)
       {
-        const double* array_data_ptr;
+        const double* MCArray_data_ptr;
         axom::IndexType num_values;
         { /* Begin scope */
-          Array<double> v(root->createView("double"), ZERO, n_components, capacity);
-          array_data_ptr = v.getData();
-          num_values = v.size() * v.numComponents();
+          MCArray<double> v(root->createView("double"),
+                            ZERO,
+                            n_components,
+                            capacity * n_components);
+          MCArray_data_ptr = v.data();
+          num_values = v.size();
           v.setResizeRatio(ratio);
           internal::check_storage(v);
 
           /* Set v's data to MAGIC_NUM */
-          for(axom::IndexType i = 0; i < v.size(); ++i)
+          for(axom::IndexType i = 0; i < v.size() / n_components; ++i)
           {
-            for(axom::IndexType j = 0; j < v.numComponents(); ++j)
+            for(axom::IndexType j = 0; j < n_components; ++j)
             {
               v(i, j) = MAGIC_NUM;
             }
@@ -1162,7 +1290,7 @@ TEST(sidre_core_array, checkSidrePermanence)
         sidre::View* view = root->getView("double");
         const double* view_data_ptr =
           static_cast<const double*>(view->getVoidPtr());
-        EXPECT_EQ(view_data_ptr, array_data_ptr);
+        EXPECT_EQ(view_data_ptr, MCArray_data_ptr);
         EXPECT_EQ(view->getNumDimensions(), 2);
 
         IndexType dims[2];

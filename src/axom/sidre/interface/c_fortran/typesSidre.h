@@ -17,7 +17,7 @@ extern "C" {
 // helper capsule_SIDRE_Buffer
 struct s_SIDRE_Buffer
 {
-  void* addr; /* address of C++ memory */
+  void *addr; /* address of C++ memory */
   int idtor;  /* index of destructor */
 };
 typedef struct s_SIDRE_Buffer SIDRE_Buffer;
@@ -25,7 +25,7 @@ typedef struct s_SIDRE_Buffer SIDRE_Buffer;
 // helper capsule_SIDRE_DataStore
 struct s_SIDRE_DataStore
 {
-  void* addr; /* address of C++ memory */
+  void *addr; /* address of C++ memory */
   int idtor;  /* index of destructor */
 };
 typedef struct s_SIDRE_DataStore SIDRE_DataStore;
@@ -33,7 +33,7 @@ typedef struct s_SIDRE_DataStore SIDRE_DataStore;
 // helper capsule_SIDRE_Group
 struct s_SIDRE_Group
 {
-  void* addr; /* address of C++ memory */
+  void *addr; /* address of C++ memory */
   int idtor;  /* index of destructor */
 };
 typedef struct s_SIDRE_Group SIDRE_Group;
@@ -41,7 +41,7 @@ typedef struct s_SIDRE_Group SIDRE_Group;
 // helper capsule_SIDRE_View
 struct s_SIDRE_View
 {
-  void* addr; /* address of C++ memory */
+  void *addr; /* address of C++ memory */
   int idtor;  /* index of destructor */
 };
 typedef struct s_SIDRE_View SIDRE_View;
@@ -49,12 +49,12 @@ typedef struct s_SIDRE_View SIDRE_View;
 // helper capsule_data_helper
 struct s_SIDRE_SHROUD_capsule_data
 {
-  void* addr; /* address of C++ memory */
+  void *addr; /* address of C++ memory */
   int idtor;  /* index of destructor */
 };
 typedef struct s_SIDRE_SHROUD_capsule_data SIDRE_SHROUD_capsule_data;
 
-void SIDRE_SHROUD_memory_destructor(SIDRE_SHROUD_capsule_data* cap);
+void SIDRE_SHROUD_memory_destructor(SIDRE_SHROUD_capsule_data *cap);
 
 #ifdef __cplusplus
 }

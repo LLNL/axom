@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/MCArray.hpp"           /* for axom::MCArray */
-#include "axom/core/memory_management.hpp" /* for alloc() and free() */
+#include "axom/mint/deprecated/MCArray.hpp" /* for axom::deprecated::MCArray */
+#include "axom/core/memory_management.hpp"  /* for alloc() and free() */
 
 #include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
 
@@ -25,7 +25,7 @@ namespace internal
  * \return the new capacity.
  */
 template <typename T>
-IndexType calc_new_capacity(MCArray<T>& v, IndexType increase)
+IndexType calc_new_capacity(deprecated::MCArray<T>& v, IndexType increase)
 {
   IndexType new_num_tuples = v.size() + increase;
   if(new_num_tuples > v.capacity())
@@ -43,7 +43,8 @@ IndexType calc_new_capacity(MCArray<T>& v, IndexType increase)
  * \return the new capacity.
  */
 template <typename T>
-void check_copy(const MCArray<T>& lhs, const MCArray<T>& rhs)
+void check_copy(const deprecated::MCArray<T>& lhs,
+                const deprecated::MCArray<T>& rhs)
 {
   EXPECT_EQ(lhs.size(), rhs.size());
   EXPECT_EQ(lhs.numComponents(), rhs.numComponents());
@@ -59,7 +60,7 @@ void check_copy(const MCArray<T>& lhs, const MCArray<T>& rhs)
  * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_storage(MCArray<T>& v)
+void check_storage(deprecated::MCArray<T>& v)
 {
   EXPECT_TRUE(v.empty());
   EXPECT_EQ(v.size(), 0);
@@ -169,7 +170,7 @@ void check_storage(MCArray<T>& v)
  * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_fill(MCArray<T>& v)
+void check_fill(deprecated::MCArray<T>& v)
 {
   constexpr T MAGIC_NUM_0 = 55;
   constexpr T MAGIC_NUM_1 = 6834;
@@ -223,7 +224,7 @@ void check_fill(MCArray<T>& v)
  * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_set(MCArray<T>& v)
+void check_set(deprecated::MCArray<T>& v)
 {
   constexpr T ZERO_VAL = 0;
   const IndexType capacity = v.capacity();
@@ -308,7 +309,7 @@ void check_set(MCArray<T>& v)
  * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_resize(MCArray<T>& v)
+void check_resize(deprecated::MCArray<T>& v)
 {
   /* Resize the MCArray up to the capacity */
   IndexType capacity = v.capacity();
@@ -505,7 +506,7 @@ void check_resize(MCArray<T>& v)
  * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_insert(MCArray<T>& v)
+void check_insert(deprecated::MCArray<T>& v)
 {
   /* Resize the MCArray up to the capacity */
   IndexType capacity = v.capacity();
@@ -620,7 +621,7 @@ void check_insert(MCArray<T>& v)
  * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_emplace(MCArray<T>& v)
+void check_emplace(deprecated::MCArray<T>& v)
 {
   constexpr T MAGIC_NUM = 52706;
 
@@ -807,7 +808,7 @@ void check_emplace(MCArray<T>& v)
  * \param [in] v the external MCArray to check.
  */
 template <typename T>
-void check_external(MCArray<T>& v)
+void check_external(deprecated::MCArray<T>& v)
 {
   ASSERT_TRUE(v.isExternal());
 
@@ -882,10 +883,10 @@ TEST(core_mcarray, checkStorage)
   {
     for(IndexType n_components = 1; n_components <= 4; n_components++)
     {
-      MCArray<int> v_int(ZERO_VAL, n_components, capacity);
+      deprecated::MCArray<int> v_int(ZERO_VAL, n_components, capacity);
       internal::check_storage(v_int);
 
-      MCArray<double> v_double(ZERO_VAL, n_components, capacity);
+      deprecated::MCArray<double> v_double(ZERO_VAL, n_components, capacity);
       internal::check_storage(v_double);
     }
   }
@@ -899,10 +900,10 @@ TEST(core_mcarray, checkFill)
     IndexType size = capacity / 2;
     for(IndexType n_components = 1; n_components <= 4; n_components++)
     {
-      MCArray<int> v_int(size, n_components, capacity);
+      deprecated::MCArray<int> v_int(size, n_components, capacity);
       internal::check_fill(v_int);
 
-      MCArray<double> v_double(size, n_components, capacity);
+      deprecated::MCArray<double> v_double(size, n_components, capacity);
       internal::check_fill(v_double);
     }
   }
@@ -915,10 +916,10 @@ TEST(core_mcarray, checkSet)
   {
     for(IndexType n_components = 1; n_components <= 4; n_components++)
     {
-      MCArray<int> v_int(size, n_components);
+      deprecated::MCArray<int> v_int(size, n_components);
       internal::check_set(v_int);
 
-      MCArray<double> v_double(size, n_components);
+      deprecated::MCArray<double> v_double(size, n_components);
       internal::check_set(v_double);
     }
   }
@@ -935,11 +936,11 @@ TEST(core_mcarray, checkResize)
     {
       for(IndexType n_components = 1; n_components <= 4; n_components++)
       {
-        MCArray<int> v_int(ZERO_VAL, n_components, capacity);
+        deprecated::MCArray<int> v_int(ZERO_VAL, n_components, capacity);
         v_int.setResizeRatio(ratio);
         internal::check_resize(v_int);
 
-        MCArray<double> v_double(ZERO_VAL, n_components, capacity);
+        deprecated::MCArray<double> v_double(ZERO_VAL, n_components, capacity);
         v_double.setResizeRatio(ratio);
         internal::check_resize(v_double);
       }
@@ -952,7 +953,7 @@ TEST(core_mcarray_DeathTest, deathtest_checkResize)
 {
   /* Resizing isn't allowed with a ratio less than 1.0. */
   constexpr IndexType ZERO = 0;
-  MCArray<int> v_int(ZERO, 1, 100);
+  deprecated::MCArray<int> v_int(ZERO, 1, 100);
   v_int.setResizeRatio(0.99);
   EXPECT_DEATH_IF_SUPPORTED(internal::check_resize(v_int), IGNORE_OUTPUT);
 }
@@ -968,11 +969,11 @@ TEST(core_mcarray, checkInsert)
     {
       for(IndexType n_components = 1; n_components <= 3; n_components++)
       {
-        MCArray<int> v_int(ZERO_VAL, n_components, capacity);
+        deprecated::MCArray<int> v_int(ZERO_VAL, n_components, capacity);
         v_int.setResizeRatio(ratio);
         internal::check_insert(v_int);
 
-        MCArray<double> v_double(ZERO_VAL, n_components, capacity);
+        deprecated::MCArray<double> v_double(ZERO_VAL, n_components, capacity);
         v_double.setResizeRatio(ratio);
         internal::check_insert(v_double);
       }
@@ -991,11 +992,11 @@ TEST(core_mcarray, checkEmplace)
     {
       for(IndexType n_components = 1; n_components <= 3; n_components++)
       {
-        MCArray<int> v_int(ZERO_VAL, n_components, capacity);
+        deprecated::MCArray<int> v_int(ZERO_VAL, n_components, capacity);
         v_int.setResizeRatio(ratio);
         internal::check_emplace(v_int);
 
-        MCArray<double> v_double(ZERO_VAL, n_components, capacity);
+        deprecated::MCArray<double> v_double(ZERO_VAL, n_components, capacity);
         v_double.setResizeRatio(ratio);
         internal::check_emplace(v_double);
       }
@@ -1023,11 +1024,11 @@ TEST(core_mcarray_DeathTest, checkExternal)
   {
     for(IndexType n_comp = 1; n_comp <= MAX_COMPONENTS; n_comp++)
     {
-      MCArray<int> v_int(buffer.ints, size, n_comp);
+      deprecated::MCArray<int> v_int(buffer.ints, size, n_comp);
       EXPECT_EQ(v_int.getData(), buffer.ints);
       internal::check_external(v_int);
 
-      MCArray<double> v_double(buffer.doubles, size, n_comp);
+      deprecated::MCArray<double> v_double(buffer.doubles, size, n_comp);
       EXPECT_EQ(v_double.getData(), buffer.doubles);
       internal::check_external(v_double);
 
@@ -1044,3 +1045,22 @@ TEST(core_mcarray_DeathTest, checkExternal)
 }
 
 } /* end namespace axom */
+
+//------------------------------------------------------------------------------
+#include "axom/slic/core/SimpleLogger.hpp"
+using axom::slic::SimpleLogger;
+
+int main(int argc, char* argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  SimpleLogger logger;  // create & initialize test logger,
+
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
+}
