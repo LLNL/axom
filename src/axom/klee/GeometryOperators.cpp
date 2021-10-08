@@ -5,9 +5,12 @@
 
 #include "axom/klee/GeometryOperators.hpp"
 
+#include "axom/config.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 #include "axom/klee/Units.hpp"
 
+// C/C++ includes
+#include <cmath>
 #include <stdexcept>
 
 namespace axom
