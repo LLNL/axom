@@ -6,15 +6,16 @@
 #ifndef AXOM_KLEE_GEOMETRYOPERATOR_HPP
 #define AXOM_KLEE_GEOMETRYOPERATOR_HPP
 
-#include <memory>
-#include <vector>
-
+#include "axom/config.hpp"
 #include "axom/core/numerics/Matrix.hpp"
 #include "axom/klee/Dimensions.hpp"
 #include "axom/klee/Geometry.hpp"
 #include "axom/klee/Units.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
+
+#include <memory>
+#include <vector>
 
 namespace axom
 {
