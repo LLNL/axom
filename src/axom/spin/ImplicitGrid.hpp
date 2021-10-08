@@ -12,6 +12,7 @@
 #include "axom/slam.hpp"
 
 #include "axom/core/execution/execution_space.hpp"  // for execution spaces
+#include "axom/core/memory_management.hpp"          // for setDefaultAllocator()
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -52,7 +53,7 @@ namespace spin
  * is designed for quick indexing and searching over a static (and relatively
  * small index space) in a relatively coarse grid.
  */
-template <int NDIMS, typename TheIndexType = int>
+template <int NDIMS, typename ExecSpace = axom::SEQ_EXEC, typename TheIndexType = int>
 class ImplicitGrid
 {
 public:
@@ -99,11 +100,12 @@ public:
    */
   ImplicitGrid(const SpatialBoundingBox& boundingBox,
                const GridCell* gridRes,
-               int numElts)
+               int numElts,
+               int allocatorID = axom::execution_space<ExecSpace>::allocatorID())
     : m_bb(boundingBox)
     , m_initialized(false)
   {
-    initialize(m_bb, gridRes, numElts);
+    initialize(m_bb, gridRes, numElts, allocatorID);
   }
 
   /*!
@@ -122,7 +124,8 @@ public:
   ImplicitGrid(const double* bbMin,
                const double* bbMax,
                const int* gridRes,
-               int numElts)
+               int numElts,
+               int allocatorID = axom::execution_space<ExecSpace>::allocatorID())
     : m_initialized(false)
   {
     SLIC_ASSERT(bbMin != nullptr);
@@ -139,7 +142,8 @@ public:
 
     initialize(SpatialBoundingBox(SpacePoint(bbMin), SpacePoint(bbMax)),
                (gridRes != nullptr) ? &res : nullptr,
-               numElts);
+               numElts,
+               allocatorID);
   }
 
   /*! Predicate to check if the ImplicitGrid has been initialized */
@@ -164,7 +168,8 @@ public:
    */
   void initialize(const SpatialBoundingBox& boundingBox,
                   const GridCell* gridRes,
-                  int numElts)
+                  int numElts,
+                  int allocatorID = axom::execution_space<ExecSpace>::allocatorID())
   {
     SLIC_ASSERT(!m_initialized);
 
@@ -199,6 +204,7 @@ public:
       m_bins[i] = BinSet(m_gridRes[i]);
       m_binData[i] = BinBitMap(&m_bins[i], BitsetType(numElts));
     }
+    axom::setDefaultAllocator(savedAllocator);
 
     // Set the expansion factor for each element to a small fraction of the
     // grid's bounding boxes diameter
@@ -483,8 +489,8 @@ namespace spin
  * \brief Device-copyable query object for running implicit grid queries on the
  *  GPU.
  */
-template <int NDIMS, typename IndexType>
-struct ImplicitGrid<NDIMS, IndexType>::QueryObject
+template <int NDIMS, typename ExecSpace, typename IndexType>
+struct ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject
 {
 public:
   using SpacePoint = primal::Point<double, NDIMS>;
@@ -523,6 +529,8 @@ public:
 
     const GridCell gridCell = m_lattice.gridCell(pt);
 
+    const int bitsPerWord = BitsetType::BitsPerWord;
+
     // Note: Need to clamp the upper range of the gridCell
     //       to handle points on the upper boundaries of the bbox
     //       This is valid since we've already ensured that pt is in the bbox.
@@ -547,8 +555,8 @@ public:
       }
       // currWord now contains the resulting candidacy information
       // for our given point
-      int numBits = axom::utilities::min(BitsetType::BitsPerWord,
-                                         cellData[0].size() - (iword * 64));
+      int numBits =
+        axom::utilities::min(bitsPerWord, cellData[0].size() - (iword * 64));
       for(int ibit = 0; ibit < numBits; ibit++)
       {
         BitsetType::Word mask = BitsetType::Word {1} << ibit;
@@ -568,6 +576,8 @@ public:
 
     const GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
     const GridCell upperCell = m_lattice.gridCell(bbox.getMax());
+
+    const int bitsPerWord = BitsetType::BitsPerWord;
 
     // HACK: we use the underlying word data in the bitsets
     // is it possible to lazy-evaluate whole-bitset operations?
@@ -594,8 +604,7 @@ public:
       }
       // currWord now contains the resulting candidacy information
       // for our given point
-      int numBits =
-        axom::utilities::min(BitsetType::BitsPerWord, bitsetSize - (iword * 64));
+      int numBits = axom::utilities::min(bitsPerWord, bitsetSize - (iword * 64));
       for(int ibit = 0; ibit < numBits; ibit++)
       {
         BitsetType::Word mask = BitsetType::Word {1} << ibit;
@@ -621,9 +630,9 @@ private:
   typename BitMapRef::OrderedMap m_binData[NDIMS];
 };
 
-template <int NDIMS, typename IndexType>
-typename ImplicitGrid<NDIMS, IndexType>::QueryObject
-ImplicitGrid<NDIMS, IndexType>::getQueryObject() const
+template <int NDIMS, typename ExecSpace, typename IndexType>
+typename ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject
+ImplicitGrid<NDIMS, ExecSpace, IndexType>::getQueryObject() const
 {
   static_assert(std::is_copy_constructible<ImplicitGrid::QueryObject>::value,
                 "ImplicitGrid::QueryObject must be copy-constructible.");
