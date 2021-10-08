@@ -122,7 +122,7 @@ struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
  *     axom::deallocate( candidates );
  *
  *  \endcode
- *
+ *  \accelerated
  */
 template <int NDIMS,
           typename ExecSpace = axom::SEQ_EXEC,
@@ -182,6 +182,8 @@ public:
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
   using RayType = typename primal::Ray<FloatType, NDIMS>;
+
+  using TraverserType = typename ImplType::TraverserType;
 
 public:
   /*!
@@ -275,6 +277,17 @@ public:
       return BoxType {};
     }
   }
+
+  /*!
+   * \brief Returns a device-copyable object that can be used to traverse the
+   *  BVH from inside a device kernel.
+   *
+   * \return it the traverser object for the current BVH.
+   *
+   * \node The traverser object may only be used in the same execution space as
+   *  the one that the BVH class was instantiated with.
+   */
+  TraverserType getTraverser() const { return m_bvh->getTraverserImpl(); }
 
   /*!
    * \brief Finds the candidate bins that contain each of the query points.

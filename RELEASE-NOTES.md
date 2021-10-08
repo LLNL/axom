@@ -44,6 +44,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added utility functions `axom::utilities::getHostName()` and `axom::utilities::getUserName()`.
 - Added new `axom::primal::ZipIterable<T>` type to convert structure-of-arrays data to a given
   Primal geometric primitive.
+- Quest: Added a `computeDistances()` function to `SignedDistance` class for batched
+  signed-distance queries.
+- Spin: Added a `getTraverser()` function to `BVH`, enabling the customized traversal of a
+  BVH from within a device kernel.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -69,6 +73,25 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `sidre::Array` now derives from `axom::MCArray`.
 - `axom::Array` is now multidimensional; it intends to behave like `std::vector` in the 1D case
   and `numpy.ndarray` in the multidimensional case
+- Quest: `SignedDistance` has been modified to use `spin::BVH` instead of `BVHTree`. This
+  enables signed-distance queries to run on the GPU, as specified via a new template
+  parameter.
+- Spin: Removed `BVHTree` class in favor of `BVH`.
+- All built-in third-party libraries (fmt, cli11, sol, and sparsehash) have been guarded to allow downstream users to
+  have their own versions. This includes moving their headers under `include/axom` instead of `include/` and 
+  moving their C++ namespace under `axom` (eg. `fmt` to `axom::fmt`).  If you don't use our built-n TPLs this has no
+  affect on you, but if you do these are some the changes you will need to make:
+  * `fmt::` to `axom::fmt::`
+  * `#include "fmt/fmt.hpp"` to `#include "axom/fmt.hpp"`
+  * `sol::` to `axom::sol::`
+  * `#include "sol/sol.hpp"` to `#include "axom/sol.hpp"`
+  * `google::` to `axom::google::`
+  * `#include "sparsehash` to `#include "axom/sparsehash`
+  * `CLI::` to `axom::CLI::`
+  * `#include "CLI11/CLI11.hpp"` to `#include "axom/CLI11.hpp"`
+- Moved `axom::MCArray` and the `sidre::Array` it was based on into `mint`
+  as `axom::deprecated::MCArray` and `sidre::deprecated::MCArray`, respectively.
+  `sidre::Array` is now based on `axom::Array`.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
@@ -77,6 +100,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed bug in `Mint`'s VTK output for fields of type `int64` and `float`
 - Improved loading of data collections in `MFEMSidreDataCollection`
 - Added workaround to `MFEMSidreDataCollection` for `C++14` standard library feature that was not available in `gcc@4.9.3`
+- Delayed finalizing reloaded mesh in `MFEMSidreDataCollection` until after setting
+  the nodal `GridFunction` (when applicable)
 
 
 ## [Version 0.5.0] - Release date 2021-05-14

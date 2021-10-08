@@ -15,7 +15,7 @@
 #define INLET_LUAMAP_HPP
 
 #include "axom/inlet/Reader.hpp"
-#include <sol/sol.hpp>
+#include "axom/sol.hpp"
 
 extern "C" {
 #include "lua.h"
@@ -101,7 +101,7 @@ public:
    * \return Reference to the Sol Lua state
    *****************************************************************************
    */
-  sol::state& solState() { return m_lua; }
+  axom::sol::state& solState() { return m_lua; }
 
 private:
   // Expect this to be called for only Inlet-supported types.
@@ -112,7 +112,7 @@ private:
   template <typename Key, typename Val>
   ReaderResult getMap(const std::string& id,
                       std::unordered_map<Key, Val>& values,
-                      sol::type type);
+                      axom::sol::type type);
 
   template <typename T>
   ReaderResult getIndicesInternal(const std::string& id, std::vector<T>& indices);
@@ -136,7 +136,7 @@ private:
    *****************************************************************************
    */
   template <typename Iter>
-  bool traverseToTable(Iter begin, Iter end, sol::table& table);
+  bool traverseToTable(Iter begin, Iter end, axom::sol::table& table);
 
   /*!
    *****************************************************************************
@@ -147,9 +147,9 @@ private:
    * \return The function, compares false if not found
    *****************************************************************************
    */
-  sol::protected_function getFunctionInternal(const std::string& id);
+  axom::sol::protected_function getFunctionInternal(const std::string& id);
 
-  sol::state m_lua;
+  axom::sol::state m_lua;
   // The elements in the global table preloaded by Sol/Lua, these are ignored
   // to ensure that name retrieval only includes user-provided paths
   std::vector<std::string> m_preloaded_globals;

@@ -6,6 +6,7 @@
 #include "axom/core/utilities/StringUtilities.hpp"
 
 #include <algorithm>
+#include <cctype>
 
 namespace axom
 {

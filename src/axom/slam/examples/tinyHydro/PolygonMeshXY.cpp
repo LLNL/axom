@@ -161,14 +161,14 @@ namespace tinyHydro {
 
   void PolygonMeshXY::dumpMesh()
   {
-    SLIC_INFO( fmt::format("Mesh has {} nodes and {} zones", nodes.size(), zones.size()) );
+    SLIC_INFO( axom::fmt::format("Mesh has {} nodes and {} zones", nodes.size(), zones.size()) );
 
     std::stringstream nodesStr;
     nodesStr << "Nodes";
     for(int i = 0; i< nodes.size(); ++i)
     {
       VectorXY p = getPos(i);
-      nodesStr << fmt::format("\n\t Node {} -- pos ({},{})", i, p.x, p.y);
+      nodesStr << axom::fmt::format("\n\t Node {} -- pos ({},{})", i, p.x, p.y);
     }
     SLIC_INFO(nodesStr.str() << "\n----\n");
 
@@ -180,11 +180,11 @@ namespace tinyHydro {
       ZoneToNodeRelation::RelationSubset zNodes = zoneToNodes[i];
       ZoneToNodeRelation::RelationSubset zFaces = zoneToFaces[i];
       zonesStr  << "\n\t Zone " << i
-                << fmt::format("-- pos ({},{})", p.x, p.y)
+                << axom::fmt::format("-- pos ({},{})", p.x, p.y)
                 << " -- vol " << zoneVol(i)
                 << "-- zNumNodes " << zNodes.size()
-                << fmt::format("-- zoneNodes {} {} {} {}", zNodes[0], zNodes[1], zNodes[2], zNodes[3])
-                << fmt::format("-- zoneFaces {} {} {} {}", zFaces[0], zFaces[1], zFaces[2], zFaces[3]);
+                << axom::fmt::format("-- zoneNodes {} {} {} {}", zNodes[0], zNodes[1], zNodes[2], zNodes[3])
+                << axom::fmt::format("-- zoneFaces {} {} {} {}", zFaces[0], zFaces[1], zFaces[2], zFaces[3]);
     }
     SLIC_INFO(zonesStr.str() << "\n----\n");
 

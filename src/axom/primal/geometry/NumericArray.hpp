@@ -167,6 +167,7 @@ struct NonChar<unsigned char>
 };
 
 /*!
+ * \accelerated
  * \class NumericArray
  *
  * \brief A simple statically sized array of data with component-wise operators.
@@ -177,12 +178,6 @@ struct NonChar<unsigned char>
 template <typename T, int SIZE>
 class NumericArray
 {
-public:
-  enum
-  {
-    NBYTES = SIZE * sizeof(T)
-  };
-
 public:
   // -- TODO: Add static_assert that T has numeric type --
 
@@ -252,6 +247,7 @@ public:
    * \pre The user needs to make sure that the provided array has been allocated
    * and has sufficient space for SIZE coordinates.
    */
+  AXOM_HOST_DEVICE
   void to_array(T* arr) const;
 
   /*!
@@ -478,7 +474,10 @@ template <typename T, int SIZE>
 void NumericArray<T, SIZE>::to_array(T* arr) const
 {
   SLIC_ASSERT(arr != nullptr);
-  memcpy(arr, m_components, NBYTES);
+  for(int dim = 0; dim < SIZE; ++dim)
+  {
+    arr[dim] = m_components[dim];
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -41,8 +41,9 @@ bool validateString(Inlet& inlet, const std::string& luaString)
 
   inlet.write(JSONSchemaWriter(schemaFile));
 
-  const std::string cmd =
-    fmt::format(JSONSCHEMA_EXECUTABLE " -i {0} {1}", instanceFile, schemaFile);
+  const std::string cmd = axom::fmt::format(JSONSCHEMA_EXECUTABLE " -i {0} {1}",
+                                            instanceFile,
+                                            schemaFile);
   return std::system(cmd.c_str()) == 0;
 }
 

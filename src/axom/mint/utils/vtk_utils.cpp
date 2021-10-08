@@ -24,7 +24,7 @@
 
 #include "axom/slic/interface/slic.hpp"  // for slic macros
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 // C/C++ includes
 #include <fstream>  // for std::ofstream

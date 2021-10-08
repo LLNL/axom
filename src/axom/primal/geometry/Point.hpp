@@ -46,6 +46,7 @@ std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt);
 ///@}
 
 /*!
+ * \accelerated
  * \class Point
  *
  * \brief The point class represents a point, \f$ p \in \mathcal{R}^d \f$ . It
@@ -156,6 +157,7 @@ public:
    * \pre The user needs to make sure that the array has been allocated
    * and has sufficient space for NDIMS coordinates.
    */
+  AXOM_HOST_DEVICE
   void to_array(T* arr) const { m_components.to_array(arr); }
 
   /*!

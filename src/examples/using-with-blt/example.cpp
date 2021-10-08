@@ -10,15 +10,15 @@
 ///
 //-----------------------------------------------------------------------------
 
-#include "axom/core/utilities/About.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/core.hpp"
+#include "axom/fmt.hpp"
 
 #include <iostream>
 
 int main()
 {
    // Using fmt library exported by axom
-   std::cout << fmt::format(
+   std::cout << axom::fmt::format(
         "Example of using and installed version of axom v{}.{}.{}-{}",
         AXOM_VERSION_MAJOR, AXOM_VERSION_MINOR,
         AXOM_VERSION_PATCH, AXOM_VERSION_EXTRA) << std::endl << std::endl;

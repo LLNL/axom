@@ -29,6 +29,14 @@
 extern "C" {
 #endif
 
+//  axom::quest::SignedDistExec
+enum QUEST_SignedDistExec
+{
+  QUEST_SignedDistExec_CPU = 0,
+  QUEST_SignedDistExec_OpenMP = 1,
+  QUEST_SignedDistExec_GPU = 2
+};
+
 // splicer begin C_declarations
 // splicer end C_declarations
 
@@ -102,13 +110,13 @@ void QUEST_signed_distance_set_closed_surface(bool status);
 
 void QUEST_signed_distance_set_compute_signs(bool computeSign);
 
-void QUEST_signed_distance_set_max_levels(int maxLevels);
-
-void QUEST_signed_distance_set_max_occupancy(int maxOccupancy);
+void QUEST_signed_distance_set_allocator(int allocatorID);
 
 void QUEST_signed_distance_set_verbose(bool status);
 
 void QUEST_signed_distance_use_shared_memory(bool status);
+
+void QUEST_signed_distance_set_execution_space(int execSpace);
 
 double QUEST_signed_distance_evaluate(double x, double y, double z);
 
