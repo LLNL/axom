@@ -671,7 +671,7 @@ int main(int argc, char** argv)
                                                 params.intersectionThreshold);
         break;
   #endif
-#endif  // AXOM_USE_RAJA
+#endif  // AXOM_USE_RAJA && AXOM_USE_UMPIRE
 
       default:
         SLIC_ERROR("Unhandled runtime policy case " << params.policy);

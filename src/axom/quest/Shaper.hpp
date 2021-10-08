@@ -13,13 +13,16 @@
 #define AXOM_QUEST_SHAPER__HPP_
 
 #include "axom/config.hpp"
-#include "axom/sidre.hpp"
-#include "axom/klee.hpp"
-#include "axom/mint.hpp"
-
+#ifndef AXOM_ENABLE_KLEE
+  #error Shaping functionality requires Axom to be configured with the Klee component
+#endif
 #ifndef AXOM_USE_MFEM
   #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
 #endif
+
+#include "axom/sidre.hpp"
+#include "axom/klee.hpp"
+#include "axom/mint.hpp"
 
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 

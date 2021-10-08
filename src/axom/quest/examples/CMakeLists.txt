@@ -19,7 +19,9 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
-if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION AND ENABLE_MPI AND MFEM_USE_MPI)
+if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI 
+              AND AXOM_USE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION 
+              AND AXOM_USE_KLEE)
     blt_add_executable(
         NAME        quest_shaping_driver_ex
         SOURCES     shaping_driver.cpp
