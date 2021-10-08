@@ -1,6 +1,6 @@
 digraph dependencies {
   quest -> {slam primal mint spin};
-  {quest slam primal mint spin klee} -> {slic core};
+  {inlet klee mint primal quest slam spin} -> {slic core};
   mint -> sidre [style="dashed"];
   spin -> {slam primal};
   sidre -> {slic core};
