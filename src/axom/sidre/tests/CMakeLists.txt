@@ -106,7 +106,6 @@ endif()
 #------------------------------------------------------------------------------
 if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     set(_sidre_mfem_dc_depends axom gtest)
-    blt_list_append(TO _sidre_mfem_dc_depends ELEMENTS mpi IF ENABLE_MPI)
 
     blt_add_executable( NAME sidre_mfem_datacollection_test
                         SOURCES sidre_mfem_datacollection.cpp

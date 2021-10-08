@@ -38,8 +38,8 @@ set( primal_tests
 
 set(primal_test_depends axom fmt gtest)
 
-blt_list_append( TO primal_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO primal_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
+blt_list_append( TO primal_test_depends ELEMENTS cuda IF ENABLE_CUDA )
+blt_list_append( TO primal_test_depends ELEMENTS openmp IF ENABLE_OPENMP )
 
 foreach ( test ${primal_tests} )
 

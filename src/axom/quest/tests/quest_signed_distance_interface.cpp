@@ -455,9 +455,6 @@ TEST(quest_signed_distance_interface, analytic_sphere)
   constexpr int SPHERE_PHI_RES = 25;
   const double SPHERE_CENTER[3] = {0.0, 0.0, 0.0};
 
-  constexpr int MAX_LEVELS = 10;
-  constexpr int MAX_OCCUPANCY = 5;
-
   // STEP 1: create analytic sphere object to compare results with
   primal::Sphere<double, 3> analytic_sphere(SPHERE_RADIUS);
 

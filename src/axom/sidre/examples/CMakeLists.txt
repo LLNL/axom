@@ -95,7 +95,7 @@ if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
         sidre_mfem_datacollection_restart.cpp
         sidre_mfem_datacollection_vis.cpp)
 
-    set(_mfem_dc_test_depends sidre mfem ${EXTRA_LIBS})
+    set(_mfem_dc_test_depends axom mfem ${EXTRA_LIBS})
     blt_list_append(TO _mfem_dc_test_depends ELEMENTS mpi IF ENABLE_MPI)
 
     foreach(example_source ${_mfem_dc_tests})

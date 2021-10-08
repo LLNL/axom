@@ -25,7 +25,7 @@ void check_vector_policy()
 
   axom::for_all<ExecSpace>(
     1,
-    AXOM_LAMBDA(int i) {
+    AXOM_LAMBDA(int /*i*/) {
       vec[0] = VectorType(-1.0);
       vec[0].negate();
     });
