@@ -14,9 +14,10 @@
 #include "axom/core/IteratorBase.hpp"         // for Iterator
 
 // C/C++ includes
-#include <array>     // for std::array
-#include <iostream>  // for std::cerr and std::ostream
-#include <numeric>   // for std::inner_product
+#include <array>      // for std::array
+#include <algorithm>  // for std::transform
+#include <iostream>   // for std::cerr and std::ostream
+#include <numeric>    // for std::inner_product
 
 namespace axom
 {
@@ -38,19 +39,19 @@ namespace axom
 
 namespace detail
 {
-// Takes the product of a parameter pack of IndexTypes
-template <int N>
-IndexType packProduct(const IndexType (&arr)[N])
+// Takes the product of a parameter pack of T
+template <typename T, int N>
+T packProduct(const T (&arr)[N])
 {
-  return std::accumulate(arr, arr + N, 1, std::multiplies<IndexType> {});
+  return std::accumulate(arr, arr + N, 1, std::multiplies<T> {});
 }
 
-template <int N>
-bool allPositive(const IndexType (&arr)[N])
+template <typename T, int N>
+bool allNonNegative(const T (&arr)[N])
 {
   for(int i = 0; i < N; i++)
   {
-    if(arr[i] <= 0)
+    if(arr[i] < 0)
     {
       return false;
     }
@@ -123,12 +124,7 @@ public:
   template <typename... Args>
   ArrayImpl(Args... args) : m_dims {static_cast<IndexType>(args)...}
   {
-    // Row-major
-    m_strides[DIM - 1] = 1;
-    for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
-    {
-      m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
-    }
+    updateStrides();
   }
 
   /*!
@@ -176,14 +172,68 @@ public:
   /// \brief Returns the strides of the Array
   const std::array<IndexType, DIM>& strides() const { return m_strides; }
 
+  /*!
+   * \brief Appends an Array to the end of the calling object
+   *
+   * \param [in] other The Array to append
+   * 
+   * \pre The shapes of the calling Array and @a other are the same
+   * (excluding the leading dimension), i.e., shape()[1:] == other.shape()[1:]
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void insert(IndexType pos, const ArrayType& other)
+  {
+#ifdef AXOM_DEBUG
+    if(!std::equal(m_dims.begin() + 1, m_dims.end(), other.shape().begin() + 1))
+    {
+      std::cerr << "Cannot append a multidimensional array of incorrect shape.";
+      utilities::processAbort();
+    }
+#endif
+
+    // First update the dimensions - we're adding only to the leading dimension
+    m_dims[0] += other.shape()[0];
+    // Then add the raw data to the buffer
+    asDerived().insert(pos, other.size(), other.data());
+    updateStrides();
+  }
+
+protected:
+  /*!
+   * \brief Returns the minimum "chunk size" that should be allocated
+   * For example, 2 would be the chunk size of a 2D array whose second dimension is of size 2.
+   * This is used when resizing/reallocating; it wouldn't make sense to have a
+   * capacity of 3 in the array described above.
+   */
+  IndexType blockSize() const { return m_strides[0]; }
+
+  /*!
+   * \brief Updates the internal striding information to a row-major format
+   * Intended to be called after @p m_dims is updated.
+   * In the future, this class will support different striding schemes (e.g., column-major)
+   * and/or user-provided striding
+   */
+  void updateStrides()
+  {
+    // Row-major
+    m_strides[DIM - 1] = 1;
+    for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
+    {
+      m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
+    }
+  }
+
 private:
+  /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  /// \overload
   const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
   }
 
-  // Is it sufficient to just give them the raw arrays?
+protected:
   /// \brief The sizes (extents?) in each dimension
   std::array<IndexType, DIM> m_dims;
   /// \brief The strides in each dimension
@@ -235,8 +285,28 @@ public:
   /// \brief Swaps two ArrayImpls
   void swap(ArrayImpl&) { }
 
+  /*!
+   * \brief Appends an Array to the end of the calling object
+   *
+   * \param [in] other The Array to append
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void insert(IndexType pos, const ArrayType& other)
+  {
+    asDerived().insert(pos, other.size(), other.data());
+  }
+
+protected:
+  /*!
+   * \brief Returns the minimum "chunk size" that should be allocated
+   */
+  IndexType blockSize() const { return 1; }
+
 private:
+  /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
   ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  /// \overload
   const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
@@ -347,11 +417,10 @@ public:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  template <IndexType SFINAE = DIM>
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   Array(IndexType num_elements,
         IndexType capacity = 0,
-        int allocator_id = axom::getDefaultAllocatorID(),
-        typename std::enable_if<SFINAE == 1>::type* = nullptr);
+        int allocator_id = axom::getDefaultAllocatorID());
 
   /*!
    * \brief Generic constructor for an Array of arbitrary dimension
@@ -367,6 +436,22 @@ public:
    */
   template <typename... Args>
   Array(Args... args);
+
+  /*!
+   * \brief Generic constructor for an Array of arbitrary dimension with external data
+   *
+   * \param [in] data the external data this Array will wrap.
+   * \param [in] args The parameter pack containing the "shape" of the Array
+   * \see https://numpy.org/doc/stable/reference/generated/numpy.empty.html#numpy.empty
+   *
+   * \pre sizeof...(Args) == DIM
+   *
+   * \post capacity() >= size()
+   * \post size() == num_elements
+   * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
+   */
+  template <typename... Args>
+  Array(T* data, Args... args);
 
   /*! 
    * \brief Copy constructor for an Array instance 
@@ -414,6 +499,7 @@ public:
    * \note This constructor wraps the supplied buffer and does not own the data.
    *  Consequently, the Array instance cannot be reallocated.
    */
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   Array(T* data, IndexType num_elements, IndexType capacity = 0);
 
   /// @}
@@ -567,6 +653,7 @@ public:
    * \note The size increases by 1.
    *
    */
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   void insert(IndexType pos, const T& value);
 
   /*!
@@ -580,6 +667,7 @@ public:
    *
    * \return ArrayIterator to inserted value
    */
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   ArrayIterator insert(ArrayIterator pos, const T& value);
 
   /*!
@@ -612,6 +700,7 @@ public:
    *
    * \return ArrayIterator to first element inserted (pos if n == 0)
    */
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   ArrayIterator insert(ArrayIterator pos, IndexType n, const T* values);
 
   /*!
@@ -628,6 +717,7 @@ public:
    *
    * \pre pos <= m_num_elements.
    */
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   void insert(IndexType pos, IndexType n, const T& value);
 
   /*!
@@ -646,7 +736,20 @@ public:
    *
    * \return ArrayIterator to first element inserted (pos if n == 0)
    */
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
+
+  // Make the overload "visible"
+  using ArrayImpl<T, DIM>::insert;
+
+  /*!
+   * \brief Appends an Array to the end of the calling object
+   *
+   * \param [in] other The Array to append
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void append(const Array& other) { ArrayImpl<T, DIM>::insert(size(), other); }
 
   /*!
    * \brief Erases an element from the Array 
@@ -913,6 +1016,10 @@ protected:
   int m_allocator_id;
 };
 
+/// \brief Helper alias for multi-component arrays
+template <typename T>
+using MCArray = Array<T, 2>;
+
 //------------------------------------------------------------------------------
 //                            Array IMPLEMENTATION
 //------------------------------------------------------------------------------
@@ -931,18 +1038,33 @@ Array<T, DIM>::Array(Args... args)
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
-  IndexType tmp_args[] = {args...};
-  assert(detail::allPositive(tmp_args));
+  const IndexType tmp_args[] = {args...};
+  assert(detail::allNonNegative(tmp_args));
   initialize(detail::packProduct(tmp_args), 0);
+}
+
+template <typename T, int DIM>
+template <typename... Args>
+Array<T, DIM>::Array(T* data, Args... args)
+  : ArrayImpl<T, DIM>(args...)
+  , m_data(data)
+  , m_resize_ratio(0.0)
+  , m_is_external(true)
+  , m_allocator_id(INVALID_ALLOCATOR_ID)
+{
+  static_assert(sizeof...(Args) == DIM,
+                "Array size must match number of dimensions");
+  // Intel hits internal compiler error when casting as part of function call
+  const IndexType tmp_args[] = {args...};
+  const auto num_elements = detail::packProduct(tmp_args);
+  m_capacity = num_elements;
+  updateNumElements(num_elements);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <IndexType SFINAE>
-Array<T, DIM>::Array(IndexType num_elements,
-                     IndexType capacity,
-                     int allocator_id,
-                     typename std::enable_if<SFINAE == 1>::type*)
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+Array<T, DIM>::Array(IndexType num_elements, IndexType capacity, int allocator_id)
   : m_allocator_id(allocator_id)
 {
   initialize(num_elements, capacity);
@@ -950,6 +1072,7 @@ Array<T, DIM>::Array(IndexType num_elements,
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
   : m_data(data)
   , m_num_elements(num_elements)
@@ -967,7 +1090,7 @@ Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 Array<T, DIM>::Array(const Array& other, int allocator_id)
-  : ArrayImpl<T, DIM>(other)
+  : ArrayImpl<T, DIM>(static_cast<const ArrayImpl<T, DIM>&>(other))
   , m_allocator_id(allocator_id)
 {
   initialize(other.size(), other.capacity());
@@ -977,7 +1100,7 @@ Array<T, DIM>::Array(const Array& other, int allocator_id)
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 Array<T, DIM>::Array(Array&& other)
-  : ArrayImpl<T, DIM>(std::move(other))
+  : ArrayImpl<T, DIM>(static_cast<ArrayImpl<T, DIM>&&>(std::move(other)))
   , m_resize_ratio(0.0)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
@@ -1060,6 +1183,7 @@ inline void Array<T, DIM>::clear()
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline void Array<T, DIM>::insert(IndexType pos, const T& value)
 {
   reserveForInsert(1, pos);
@@ -1068,6 +1192,7 @@ inline void Array<T, DIM>::insert(IndexType pos, const T& value)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
   Array<T, DIM>::ArrayIterator pos,
   const T& value)
@@ -1091,6 +1216,7 @@ inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T* values)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
   Array<T, DIM>::ArrayIterator pos,
   IndexType n,
@@ -1103,6 +1229,7 @@ inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T& value)
 {
   reserveForInsert(n, pos);
@@ -1114,6 +1241,7 @@ inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T& value)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
   Array<T, DIM>::ArrayIterator pos,
   IndexType n,
@@ -1222,9 +1350,12 @@ inline void Array<T, DIM>::resize(Args... args)
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
-  IndexType tmp_args[] = {args...};
-  assert(detail::allPositive(tmp_args));
+  const IndexType tmp_args[] = {args...};
+  assert(detail::allNonNegative(tmp_args));
   const auto new_num_elements = detail::packProduct(tmp_args);
+
+  static_cast<ArrayImpl<T, DIM>&>(*this) =
+    ArrayImpl<T, DIM> {static_cast<IndexType>(args)...};
 
   if(new_num_elements > m_capacity)
   {
@@ -1232,9 +1363,6 @@ inline void Array<T, DIM>::resize(Args... args)
   }
 
   updateNumElements(new_num_elements);
-
-  static_cast<ArrayImpl<T, DIM>&>(*this) =
-    ArrayImpl<T, DIM> {static_cast<IndexType>(args)...};
 }
 
 //------------------------------------------------------------------------------
@@ -1265,11 +1393,12 @@ inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 template <typename T, int DIM>
 inline std::ostream& Array<T, DIM>::print(std::ostream& os) const
 {
-#if defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
+  // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
+  // if there exists no allocator for Constant memory. Is there a more fine-grained
+  // approach we can use to see what allocators are available before trying to get their IDs?
   if(m_allocator_id ==
-       axom::getUmpireResourceAllocatorID(umpire::resource::Device) ||
-     m_allocator_id ==
-       axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
+     axom::getUmpireResourceAllocatorID(umpire::resource::Device))
   {
     std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
     utilities::processAbort();
@@ -1292,8 +1421,6 @@ inline void Array<T, DIM>::initialize(IndexType num_elements, IndexType capacity
 {
   assert(num_elements >= 0);
 
-  m_num_elements = num_elements;
-
   if(capacity < 0 || num_elements > capacity)
   {
     capacity = 0;
@@ -1305,6 +1432,7 @@ inline void Array<T, DIM>::initialize(IndexType num_elements, IndexType capacity
                                                      : MIN_DEFAULT_CAPACITY;
   }
   setCapacity(capacity);
+  updateNumElements(num_elements);
 
   // quick checks
   assert(m_data != nullptr);
@@ -1390,7 +1518,13 @@ inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
   }
 
   assert(m_resize_ratio >= 1.0);
-  const IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
+  IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
+  const IndexType block_size = this->blockSize();
+  const IndexType remainder = new_capacity % block_size;
+  if(remainder != 0)
+  {
+    new_capacity += block_size - remainder;
+  }
 
   if(m_resize_ratio < 1.0)
   {

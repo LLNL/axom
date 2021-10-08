@@ -39,9 +39,9 @@ int main(int argc, char** argv)
   // STEP 1: create an array with some data
   constexpr axom::IndexType NUM_NODES = 10;
   constexpr axom::IndexType DIMENSION = 4;
-  sidre::Array<int> nodes_1(root1->createView("nodes_1/data"),
-                            NUM_NODES,
-                            DIMENSION);
+  sidre::MCArray<int> nodes_1(root1->createView("nodes_1/data"),
+                              NUM_NODES,
+                              DIMENSION);
 
   int value = 0;
   for(axom::IndexType i = 0; i < NUM_NODES; ++i)
@@ -78,9 +78,9 @@ int main(int argc, char** argv)
   std::cout << std::endl;
   // END DEBUG
 
-  sidre::Array<int> nodes_2(root2->getView("nodes_1/data"));
-  SLIC_ASSERT(nodes_2.size() == NUM_NODES);
-  SLIC_ASSERT(nodes_2.numComponents() == DIMENSION);
+  sidre::MCArray<int> nodes_2(root2->getView("nodes_1/data"));
+  SLIC_ASSERT(nodes_2.shape()[0] == NUM_NODES);
+  SLIC_ASSERT(nodes_2.shape()[1] == DIMENSION);
 
   // STEP 4: ensure the data is correct
   int expected_value = 0;

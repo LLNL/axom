@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_MCARRAY_HPP_
-#define AXOM_MCARRAY_HPP_
+#ifndef AXOM_DEPRECATED_MCARRAY_HPP_
+#define AXOM_DEPRECATED_MCARRAY_HPP_
 
 #include "axom/config.hpp"                    // for compile-time defines
 #include "axom/core/Macros.hpp"               // for axom macros
@@ -17,6 +17,8 @@
 #include <iostream>  // for std::cerr
 
 namespace axom
+{
+namespace deprecated
 {
 /* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
  * constructor calls. */
@@ -761,6 +763,8 @@ inline void MCArray<T>::dynamicRealloc(IndexType new_num_tuples)
   assert(m_data != nullptr || m_capacity <= 0);
 }
 
+} /* namespace deprecated */
+
 } /* namespace axom */
 
-#endif /* AXOM_MCARRAY_HPP_ */
+#endif /* AXOM_DEPRECATED_MCARRAY_HPP_ */
