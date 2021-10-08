@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
   // Destroy one of the views. Verify that the data is still accessible via
   // the other view and that all data is still accessible via buffer.
   //
-  std::cout << "\nExample 2: One-to-one Buffer to View relationships\n\n";
+  std::cout << "\nExample 2: One-to-one Buffer to View relationships\n";
 
   // _ex2_twoviews_onebuffer_start
   std::cout << "\nDatastore start state\n";
@@ -231,14 +231,14 @@ int main(int argc, char* argv[])
   // Destroy one of the views. Verify that the data is still accessible via
   // the other view and that all data is still accessible via buffer.
   //
-  std::cout << "\nExample 3: One-to-one Buffer to View relationships (view copy)\n\n";
+  std::cout << "\nExample 3: One-to-one Buffer to View relationships (view copy)\n";
 
+  // _ex3_twoviews_onebuffer_copy_start
   std::cout << "\nDatastore start state\n";
   std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
   std::cout << "\tNum views in group B: " << B_grp->getNumViews() << std::endl;
 
-  // _ex3_twoviews_onebuffer_copy_start
   B_grp->copyView(aview2);
 
   std::cout << "\nAfter copying aview2 to group B\n";
@@ -258,7 +258,7 @@ int main(int argc, char* argv[])
   }
   std::cout << std::endl;
 
-  std::cout << "\taview2 in B group has same values as view in group A:\t";
+  std::cout << "\taview2 in B group has values:\t";
   double* arr_B = aview2_in_Bgrp->getArray();
   vlen = aview2_in_Bgrp->getNumElements();
   vstr = aview2_in_Bgrp->getStride();
@@ -267,10 +267,10 @@ int main(int argc, char* argv[])
   }
   std::cout << std::endl;
 
-  std::cout << "\nThis is expected since the views reference the same data,\n"
-            << "which can be seen by looking at the addresses of the data\n";
-  std::cout << "\tAddress of array in A group: " << arr_A << std::endl;
-  std::cout << "\tAddress of array in A group: " << arr_A << std::endl;
+  std::cout << std::endl;
+
+  std::cout << "\tBase address of array in A group: " << arr_A << std::endl;
+  std::cout << "\tBase address of array in A group: " << arr_A << std::endl;
 
   root_grp->destroyGroup("A_grp"); 
  
@@ -279,7 +279,7 @@ int main(int argc, char* argv[])
             << ds->getNumBuffers() << std::endl;
   std::cout << "\tNum views in group B: " << B_grp->getNumViews() << std::endl;
 
-  std::cout << "\taview2 in B group still has the same values:\t";
+  std::cout << "\taview2 in B group has values:\t";
   aview2_in_Bgrp = B_grp->getView("aview2");
   arr_B = aview2_in_Bgrp->getArray();
   vlen = aview2_in_Bgrp->getNumElements();

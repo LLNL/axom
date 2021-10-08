@@ -13,9 +13,10 @@ This section describes examples that illustrate some common Sidre usage
 patterns involving buffers, groups, and views. In particular, it shows
 how data associated with a view is related to a buffer, how the lifetimes
 of data associated with a view and the buffer owning the data are related,
-and how the description of data in a view is not completely dependent on the
-data in the corresponding buffer. The code snippets shown and described here
-exist in the file ``axom/src/axom/sidre/examples/sidre_data_vs_metadata.cpp``,
+and how the description of data in a view (metadata) is independent of the
+the allocation state of the data in a view and a corresponding buffer. The 
+code snippets shown and described here exist in the file 
+``axom/src/axom/sidre/examples/sidre_data_vs_metadata.cpp``,
 which can be built and run to experiment with if you wish.
 
 The starting point for the examples is a simple Sidre datastore group hierarchy
@@ -66,7 +67,7 @@ The output printed by the code is::
   After initialization of view array
         Value of elt 5 in buffer array (expect 7): 7
 
-Next, we deallocate the view and show that its decription remains intact; 
+Next, we deallocate the view and show that its description remains intact; 
 for example, the number of elements is still 10. The view is no longer 
 allocated, but it is still attached to its buffer. We confirm this and that 
 the buffer is no longer allocated as expected. 
@@ -171,12 +172,50 @@ The output of the code is::
        	Buffer num elements: 10
        	aview2 data still has its odd values:	1   3   5   7   9 
 
-----------------------------
-Example 3
-----------------------------
+-----------------------------------------------
+Example 3: Two Views and One Buffer (View Copy)
+-----------------------------------------------
+
+The third example illustrates a Sidre usage pattern in which multiple views 
+share the same data in a single buffer. As in the case in example two, this 
+represents a many-to-one relationship between views and buffers. Before we 
+start, we verify that the datastore contains one buffer and that the "A" group 
+contains one view. This is the Sidre buffer, group, and view state that exists 
+at the end of the second example.
+
+We begin by making a copy of the view in group "A" in group "B". The new 
+view is identical in description and data associated with it as the original
+view. In particular, the data in the new view *is the same data* in the the
+original view. Recall that Sidre copy operations for groups and views are
+**shallow copy operations**. We verify this, by printing the values of the
+array associated with each view and also the base address of each array.
+
+Next, we destroy the "A" group which owned the original view. This operation
+destroys that view, but leaves the copied view in group "B" and its data intact.
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
    :start-after: _ex3_twoviews_onebuffer_copy_start 
    :end-before: _ex3_twoviews_onebuffer_copy_end
    :language: C++
 
+The output of the code is::
+
+  Datastore start state
+       	Num buffers in datastore: 1
+       	Num views in group A: 1
+       	Num views in group B: 0
+
+  After copying aview2 to group B
+       	Num buffers in datastore: 1
+       	Num views in group A: 1
+       	Num views in group B: 1
+       	aview2 in A group has values:	1   3   5   7   9   
+       	aview2 in B group has values:	1   3   5   7   9   
+
+       	Base address of array in A group: 0xc585b8
+       	Base address of array in A group: 0xc585b8
+
+  After destroyGroup(A_grp) call:
+       	Num buffers in datastore: 1
+       	Num views in group B: 1
+       	aview2 in B group has values:	1   3   5   7   9
