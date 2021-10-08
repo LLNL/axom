@@ -213,7 +213,7 @@ primal::Point3D getPerpendicularSliceOrigin(const inlet::Proxy &sliceProxy,
                                             char const *planeName,
                                             const primal::Vector3D &defaultNormal)
 {
-  double axisIntercept = sliceProxy[planeName].get<double>();
+  double axisIntercept = sliceProxy[planeName];
 
   primal::Point3D defaultOrigin;
   int nonZeroIndex = -1;

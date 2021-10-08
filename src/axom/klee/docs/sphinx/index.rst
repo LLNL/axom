@@ -7,7 +7,7 @@
 Klee User Guide
 ===============
 
-Klee provides a way to embded 2D and 3D non-conformal geometry in a mesh.
+Klee provides a way to embed 2D and 3D non-conformal geometry in a mesh.
 
 **Contents:**
 
