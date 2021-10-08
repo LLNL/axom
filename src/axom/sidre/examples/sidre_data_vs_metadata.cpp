@@ -30,19 +30,19 @@ int main(int argc, char* argv[])
   AXOM_UNUSED_VAR(argc);
   AXOM_UNUSED_VAR(argv);
 
-  // 
+  //
   // Create a datastore with a simple group hierarchy.
   //
   // _ex_datastore_initial_start
   DataStore* ds = new DataStore();
   Group* root_grp = ds->getRoot();
 
-  Group* A_grp = root_grp->createGroup("A"); 
-  Group* B_grp = root_grp->createGroup("B"); 
+  Group* A_grp = root_grp->createGroup("A");
+  Group* B_grp = root_grp->createGroup("B");
   // _ex_datastore_initial_end
 
   //
-  // Initially, datastore contains no buffer objects since no data has 
+  // Initially, datastore contains no buffer objects since no data has
   // been allocated yet. Also, the groups have no views.
   //
   std::cout << "Datastore start state...." << std::endl;
@@ -55,16 +55,16 @@ int main(int argc, char* argv[])
   // -----------------------------------------------------------------------
   // Example 1: One-to-one Buffer to View relationship
   // -----------------------------------------------------------------------
-  // 
-  // Create a view with an integer array of length dat_size. Verify that the
-  // group has one view and the datastore has one buffer (holding the 
-  // view's data). 
   //
-  // Initialize the elements of the integer array.  Then, deallocate the view. 
+  // Create a view with an integer array of length dat_size. Verify that the
+  // group has one view and the datastore has one buffer (holding the
+  // view's data).
+  //
+  // Initialize the elements of the integer array.  Then, deallocate the view.
   //
   // The view and its description of the data remains, but the buffer
-  // holding the integer array is destroyed on de-alloction since there 
-  // is only one view referencing its data. 
+  // holding the integer array is destroyed on de-alloction since there
+  // is only one view referencing its data.
   //
 
   std::cout << "Example 1: One-to-one Buffer to View relationship\n\n";
@@ -72,31 +72,31 @@ int main(int argc, char* argv[])
   // _ex1_oneview_onebuffer_create_start
   const int dat_size = 10;
 
-  View* aview = A_grp->createViewAndAllocate("aview", INT_ID, dat_size); 
+  View* aview = A_grp->createViewAndAllocate("aview", INT_ID, dat_size);
   std::cout << "After A_grp->createViewAndAllocate() call\n";
   std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
-  axom::IndexType nelems = aview->getNumElements(); 
+  axom::IndexType nelems = aview->getNumElements();
   std::cout << "\tNum elements in view: " << nelems << std::endl;
-  
+
   Buffer* buf1 = aview->getBuffer();
-  std::cout << "\tNum buffers in datastore: " 
-            << ds->getNumBuffers() << std::endl;
-  std::cout << "\tNum views attached to buffer: " 
-            << buf1->getNumViews() << std::endl; 
-  std::cout << "\tNum elements in buffer array: " 
-            << buf1->getNumElements() << std::endl;
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum views attached to buffer: " << buf1->getNumViews()
+            << std::endl;
+  std::cout << "\tNum elements in buffer array: " << buf1->getNumElements()
+            << std::endl;
 
   int* a_array = aview->getArray();
-  for (axom::IndexType i = 0; i < nelems; ++i) {
-    a_array[i] = i+2;
+  for(axom::IndexType i = 0; i < nelems; ++i)
+  {
+    a_array[i] = i + 2;
   }
 
   std::cout << std::endl;
 
   std::cout << "After initialization of view array\n";
   int* buf1_ptr = buf1->getData();
-  std::cout << "\tValue of elt 5 in buffer array (expect 7): " 
-            << buf1_ptr[5] << std::endl;
+  std::cout << "\tValue of elt 5 in buffer array (expect 7): " << buf1_ptr[5]
+            << std::endl;
   // _ex1_oneview_onebuffer_create_end
 
   std::cout << std::endl;
@@ -108,16 +108,14 @@ int main(int argc, char* argv[])
   std::cout << "\tNum elements in view: " << aview->getNumElements() << std::endl;
   std::cout << "\tView has buffer? " << aview->hasBuffer() << std::endl;
   std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
-  std::cout << "\tNum buffers in datastore: "
-            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   std::cout << "\tIs buffer allocated? " << buf1->isAllocated() << std::endl;
-  
+
   std::cout << std::endl;
 
   aview->allocate();
   std::cout << "After allocating view again...\n";
-  std::cout << "\tNum buffers in datastore: "
-            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   std::cout << "\tIs buffer allocated? " << buf1->isAllocated() << std::endl;
   std::cout << "\tIs view allocated? " << aview->isAllocated() << std::endl;
   std::cout << "\tNum elements in view: " << aview->getNumElements() << std::endl;
@@ -128,18 +126,16 @@ int main(int argc, char* argv[])
   // _ex1_oneview_onebuffer_destroy_start
   A_grp->destroyViewAndData("aview");
   std::cout << "After destroyViewAndData() call\n";
-  std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl; 
-  std::cout << "\tNum buffers in datastore: "
-            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   // _ex1_oneview_onebuffer_destroy_end
-
 
   // -----------------------------------------------------------------------
   // Example 2: One-to-many Buffer to View relationships
   // -----------------------------------------------------------------------
   //
   // Create a buffer with a double array of length dat_size and initialize its
-  // data. Attach the buffer to two views, with data descriptions that vary in 
+  // data. Attach the buffer to two views, with data descriptions that vary in
   // offset. Verify that the data associated with each view is correct.
   //
   // Destroy one of the views. Verify that the data is still accessible via
@@ -156,7 +152,8 @@ int main(int argc, char* argv[])
   Buffer* buf2 = ds->createBuffer(DOUBLE_ID, dat_size)->allocate();
 
   double* dat2 = buf2->getData();
-  for (axom::IndexType i = 0; i < dat_size; ++i) {
+  for(axom::IndexType i = 0; i < dat_size; ++i)
+  {
     dat2[i] = i;
   }
 
@@ -168,12 +165,11 @@ int main(int argc, char* argv[])
   //
   axom::IndexType view_nelem = dat_size / 2;
 
-  aview1->apply(DOUBLE_ID, view_nelem, 0 /*offset*/, 2 /*stride*/); 
-  aview2->apply(DOUBLE_ID, view_nelem, 1 /*offset*/, 2 /*stride*/); 
+  aview1->apply(DOUBLE_ID, view_nelem, 0 /*offset*/, 2 /*stride*/);
+  aview2->apply(DOUBLE_ID, view_nelem, 1 /*offset*/, 2 /*stride*/);
 
   std::cout << "\nAfter buffer allocation and attaching to views\n";
-  std::cout << "\tNum buffers in datastore: " 
-            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   std::cout << "\tBuffer num elements: " << buf2->getNumElements() << std::endl;
 
   std::cout << "\n\taview1 data has even values:\n";
@@ -181,10 +177,11 @@ int main(int argc, char* argv[])
   std::cout << "\taview1 offset: " << aview1->getOffset() << std::endl;
   std::cout << "\taview1 stride: " << aview1->getStride() << std::endl;
   double* arr1 = aview1->getArray();
-  axom::IndexType vlen = aview1->getNumElements(); 
-  axom::IndexType vstr = aview1->getStride(); 
+  axom::IndexType vlen = aview1->getNumElements();
+  axom::IndexType vstr = aview1->getStride();
   std::cout << "\taview1 data:\t";
-  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+  for(axom::IndexType i = 0; i < vlen * vstr; i += vstr)
+  {
     std::cout << arr1[i] << "   ";
   }
   std::cout << std::endl;
@@ -194,31 +191,31 @@ int main(int argc, char* argv[])
   std::cout << "\taview2 offset: " << aview2->getOffset() << std::endl;
   std::cout << "\taview2 stride: " << aview2->getStride() << std::endl;
   double* arr2 = aview2->getArray();
-  vlen = aview2->getNumElements(); 
-  vstr = aview2->getStride(); 
+  vlen = aview2->getNumElements();
+  vstr = aview2->getStride();
   std::cout << "\taview2 data:\t";
-  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+  for(axom::IndexType i = 0; i < vlen * vstr; i += vstr)
+  {
     std::cout << arr2[i] << "   ";
   }
   std::cout << std::endl;
 
-  A_grp->destroyViewAndData("aview1"); 
- 
+  A_grp->destroyViewAndData("aview1");
+
   std::cout << "\nAfter destroyViewAndData(aview1) call\n";
   std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
-  std::cout << "\tNum buffers in datastore: "
-            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   std::cout << "\tBuffer num elements: " << buf2->getNumElements() << std::endl;
   std::cout << "\taview2 data still has its odd values:\t";
   arr2 = aview2->getArray();
-  vlen = aview2->getNumElements(); 
+  vlen = aview2->getNumElements();
   vstr = aview2->getStride();
-  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+  for(axom::IndexType i = 0; i < vlen * vstr; i += vstr)
+  {
     std::cout << arr2[i] << "   ";
   }
   // _ex2_twoviews_onebuffer_end
   std::cout << std::endl;
-
 
   // -----------------------------------------------------------------------
   // Example 3: One-to-many Buffer to View relationships (view copy)
@@ -231,7 +228,8 @@ int main(int argc, char* argv[])
   // Destroy one of the views. Verify that the data is still accessible via
   // the other view and that all data is still accessible via buffer.
   //
-  std::cout << "\nExample 3: One-to-one Buffer to View relationships (view copy)\n";
+  std::cout
+    << "\nExample 3: One-to-one Buffer to View relationships (view copy)\n";
 
   // _ex3_twoviews_onebuffer_copy_start
   std::cout << "\nDatastore start state\n";
@@ -253,7 +251,8 @@ int main(int argc, char* argv[])
   double* arr_A = aview2_in_Agrp->getArray();
   vlen = aview2_in_Agrp->getNumElements();
   vstr = aview2_in_Agrp->getStride();
-  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+  for(axom::IndexType i = 0; i < vlen * vstr; i += vstr)
+  {
     std::cout << arr_A[i] << "   ";
   }
   std::cout << std::endl;
@@ -262,7 +261,8 @@ int main(int argc, char* argv[])
   double* arr_B = aview2_in_Bgrp->getArray();
   vlen = aview2_in_Bgrp->getNumElements();
   vstr = aview2_in_Bgrp->getStride();
-  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+  for(axom::IndexType i = 0; i < vlen * vstr; i += vstr)
+  {
     std::cout << arr_B[i] << "   ";
   }
   std::cout << std::endl;
@@ -272,11 +272,10 @@ int main(int argc, char* argv[])
   std::cout << "\tBase address of array in A group: " << arr_A << std::endl;
   std::cout << "\tBase address of array in A group: " << arr_A << std::endl;
 
-  root_grp->destroyGroup("A_grp"); 
- 
+  root_grp->destroyGroup("A_grp");
+
   std::cout << "\nAfter destroyGroup(A_grp) call:\n";
-  std::cout << "\tNum buffers in datastore: "
-            << ds->getNumBuffers() << std::endl;
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   std::cout << "\tNum views in group B: " << B_grp->getNumViews() << std::endl;
 
   std::cout << "\taview2 in B group has values:\t";
@@ -284,7 +283,8 @@ int main(int argc, char* argv[])
   arr_B = aview2_in_Bgrp->getArray();
   vlen = aview2_in_Bgrp->getNumElements();
   vstr = aview2_in_Bgrp->getStride();
-  for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
+  for(axom::IndexType i = 0; i < vlen * vstr; i += vstr)
+  {
     std::cout << arr_B[i] << "   ";
   }
   // _ex3_twoviews_onebuffer_copy_end
