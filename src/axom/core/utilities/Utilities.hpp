@@ -46,6 +46,18 @@ inline AXOM_HOST_DEVICE T abs(const T& x)
 }
 
 /*!
+ * \brief Returns the largest integer less than x.
+ * \accelerated
+ * \param [in] x value whose floor value is computed.
+ * \return floor(x) the largest integer less than x.
+ */
+template <typename T>
+inline AXOM_HOST_DEVICE T floor(const T& x)
+{
+  return ::floor(x);
+}
+
+/*!
  * \brief Returns the max value of x and y.
  * \accelerated
  * \param [in] x the first value to check.

@@ -413,7 +413,8 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt)
   }
 }
 
-TYPED_TEST(ImplicitGridTest, get_candidates_pt_query_obj)
+template <typename TestFixture>
+void run_query_obj_pt_query()
 {
   const int DIM = TestFixture::DIM;
   using GridCell = typename TestFixture::GridCell;
@@ -424,8 +425,6 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt_query_obj)
   SLIC_INFO("Test ImplicitGrid getCandidates() for points in " << DIM << "D");
 
   using IndexType = typename GridT::IndexType;
-  using CandidateBitset = typename GridT::BitsetType;
-  using CandidateVector = std::vector<IndexType>;
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -459,14 +458,19 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt_query_obj)
 
     std::vector<std::unordered_set<int>> outCandidates(10);
 
+    std::unordered_set<int>* pOutCandidates = outCandidates.data();
+
     // Run query against implicit grid
     auto queryObj = grid.getQueryObject();
-    for(int i = 0; i < 10; i++)
-    {
-      queryObj.visitCandidates(queryPts[i], [&](int candidateIdx) {
-        outCandidates[i].emplace(candidateIdx);
+    axom::for_all<axom::SEQ_EXEC>(
+      10,
+      AXOM_LAMBDA(IndexType i) {
+#ifndef AXOM_DEVICE_CODE
+        queryObj.visitCandidates(queryPts[i], [&](int candidateIdx) {
+          pOutCandidates[i].emplace(candidateIdx);
+        });
+#endif
       });
-    }
 
     // Test some points that are expected to match
     for(int i = 0; i < 5; ++i)
@@ -499,14 +503,19 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt_query_obj)
 
     std::vector<std::unordered_set<int>> outCandidates(3);
 
+    std::unordered_set<int>* pOutCandidates = outCandidates.data();
+
     // Run query against implicit grid
     auto queryObj = grid.getQueryObject();
-    for(int i = 0; i < 3; i++)
-    {
-      queryObj.visitCandidates(queryPts[i], [&](int candidateIdx) {
-        outCandidates[i].emplace(candidateIdx);
+    axom::for_all<axom::SEQ_EXEC>(
+      3,
+      AXOM_LAMBDA(IndexType i) {
+#ifndef AXOM_DEVICE_CODE
+        queryObj.visitCandidates(queryPts[i], [&](int candidateIdx) {
+          pOutCandidates[i].emplace(candidateIdx);
+        });
+#endif
       });
-    }
     std::unordered_set<int> expected2 {2};
     std::unordered_set<int> expected3 {3};
     std::unordered_set<int> expected2_3 {2, 3};
@@ -514,6 +523,11 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt_query_obj)
     EXPECT_EQ(outCandidates[1], expected3);
     EXPECT_EQ(outCandidates[2], expected2_3);
   }
+}
+
+TYPED_TEST(ImplicitGridTest, get_candidates_pt_query_obj)
+{
+  run_query_obj_pt_query<TestFixture>();
 }
 
 TYPED_TEST(ImplicitGridTest, get_candidates_box)
@@ -698,7 +712,8 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box)
   }
 }
 
-TYPED_TEST(ImplicitGridTest, get_candidates_box_query_obj)
+template <typename TestFixture>
+void run_query_obj_box_query()
 {
   const int DIM = TestFixture::DIM;
   using GridCell = typename TestFixture::GridCell;
@@ -709,8 +724,6 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box_query_obj)
   SLIC_INFO("Test ImplicitGrid visitCandidates() for boxes in " << DIM << "D");
 
   using IndexType = typename GridT::IndexType;
-  using CandidateBitset = typename GridT::BitsetType;
-  using CandidateVector = std::vector<IndexType>;
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -805,13 +818,21 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box_query_obj)
 
   std::vector<std::unordered_set<int>> outCandidates(queryBoxes.size());
 
+  std::unordered_set<int>* pOutCandidates = outCandidates.data();
+
   // Run query against implicit grid
   auto queryObj = grid.getQueryObject();
+  axom::for_all<axom::SEQ_EXEC>(
+    queryBoxes.size(),
+    AXOM_LAMBDA(IndexType i) {
+#ifndef AXOM_DEVICE_CODE
+      queryObj.visitCandidates(queryBoxes[i], [&](int candidateIdx) {
+        pOutCandidates[i].emplace(candidateIdx);
+      });
+#endif
+    });
   for(int i = 0; i < queryBoxes.size(); i++)
   {
-    queryObj.visitCandidates(queryBoxes[i], [&](int candidateIdx) {
-      outCandidates[i].emplace(candidateIdx);
-    });
     EXPECT_EQ(expectedVisits[i], outCandidates[i].size());
   }
 
@@ -819,6 +840,11 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box_query_obj)
   EXPECT_EQ(DIM >= 1, outCandidates[4].count(5) == 1);
   EXPECT_EQ(DIM >= 2, outCandidates[4].count(15) == 1);
   EXPECT_EQ(DIM >= 3, outCandidates[4].count(25) == 1);
+}
+
+TYPED_TEST(ImplicitGridTest, get_candidates_box_query_obj)
+{
+  run_query_obj_box_query<TestFixture>();
 }
 
 //----------------------------------------------------------------------

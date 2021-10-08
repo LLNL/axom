@@ -157,7 +157,7 @@ public:
   /*!
    * \brief Gets the underlying data of a BitSet.
    */
-  const Word* data() const { return m_data.data(); }
+  AXOM_HOST_DEVICE const Word* data() const { return m_data.data(); }
 
 public:
   /// \name Bitset bitwise assignment operators
@@ -243,7 +243,7 @@ public:
   /// @{
 
   /** \brief Returns the cardinality of the bitset */
-  int size() const { return m_numBits; }
+  AXOM_HOST_DEVICE int size() const { return m_numBits; }
 
   /** \brief Returns the number of bits that are set */
   int count() const;
@@ -286,6 +286,7 @@ public:
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
+  AXOM_HOST_DEVICE
   void set(Index idx) { getWord(idx) |= mask(idx); }
 
   /**
@@ -312,6 +313,7 @@ private:
    * \param checkIndexValid Option to enable bounds checking to ensure
    * that \a idx is within range [0, size() )
    */
+  AXOM_HOST_DEVICE
   Word& getWord(Index idx, bool checkIndexValid = true)
   {
     if(checkIndexValid) checkValidIndex(idx);
@@ -324,6 +326,7 @@ private:
    * \brief Const implementation of getWord()
    * \sa getWord()
    */
+  AXOM_HOST_DEVICE
   const Word& getWord(Index idx, bool checkIndexValid = true) const
   {
     if(checkIndexValid) checkValidIndex(idx);
@@ -338,6 +341,7 @@ private:
    *
    * \param idx The index of the desired bit
    */
+  AXOM_HOST_DEVICE
   Word mask(Index idx) const
   {
     const Index wOffset = idx % BitsPerWord;
@@ -357,6 +361,7 @@ private:
    *
    * \note This function is a no-op in Release builds
    */
+  AXOM_HOST_DEVICE
   void checkValidIndex(Index idx) const
   {
     AXOM_UNUSED_VAR(idx);

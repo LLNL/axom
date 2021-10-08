@@ -244,10 +244,12 @@ public:
     const double expansionFactor = m_expansionFactor;
     LatticeType lattice = m_lattice;
 
-    BitMapRef binData[NDIMS];
+    typename BitMapRef::OrderedMap binData[NDIMS];
+    IndexType highestBins[NDIMS];
     for(int i = 0; i < NDIMS; i++)
     {
-      binData[i] = m_binData[i];
+      binData[i] = m_binData[i].data().ref();
+      highestBins[i] = m_binData[i].set()->size() - 1;
     }
 
     for_all<ExecSpace>(
@@ -269,7 +271,7 @@ public:
           const IndexType lower =
             axom::utilities::clampLower(lowerCell[idim], IndexType());
           const IndexType upper =
-            axom::utilities::clampUpper(upperCell[idim], highestBin(idim));
+            axom::utilities::clampUpper(upperCell[idim], highestBins[idim]);
 
           for(int j = lower; j <= upper; ++j)
           {
@@ -509,12 +511,13 @@ public:
     for(int idim = 0; idim < NDIMS; idim++)
     {
       m_highestBins[idim] = binData[idim].set()->size() - 1;
-      m_binData[idim] = binData[idim];
+      m_binData[idim] = binData[idim].data().ref();
     }
   }
 
   template <typename FuncType>
-  void visitCandidates(const SpacePoint& pt, FuncType&& candidatePredicate) const
+  AXOM_HOST_DEVICE void visitCandidates(const SpacePoint& pt,
+                                        FuncType&& candidatePredicate) const
   {
     if(!m_bb.contains(pt)) return;
 
@@ -558,8 +561,8 @@ public:
   }
 
   template <typename FuncType>
-  void visitCandidates(const SpatialBoundingBox& bbox,
-                       FuncType&& candidatePredicate) const
+  AXOM_HOST_DEVICE void visitCandidates(const SpatialBoundingBox& bbox,
+                                        FuncType&& candidatePredicate) const
   {
     if(!m_bb.intersectsWith(bbox)) return;
 
@@ -615,7 +618,7 @@ private:
   IndexType m_highestBins[NDIMS];
 
   //! The data associated with each bin
-  BitMapRef m_binData[NDIMS];
+  typename BitMapRef::OrderedMap m_binData[NDIMS];
 };
 
 template <int NDIMS, typename IndexType>
