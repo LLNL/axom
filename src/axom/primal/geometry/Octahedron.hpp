@@ -22,6 +22,8 @@ namespace primal
  * \class Octahedron
  *
  * \brief Represents an octahedral geometric shape defined by six points.
+ *
+ * \accelerated
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of spatial dimensions
  *

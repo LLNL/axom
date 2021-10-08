@@ -65,6 +65,8 @@ inline real determinant(const real& a00,  const real& a01,  const real& a02,
 
 /*!
  * \brief Computes the 4x4 determinant of the given matrix.
+ *
+ * \accelerated
  * \param [in] a00 matrix element
  * \param [in] a01 matrix element
  * \param [in] a02 matrix element

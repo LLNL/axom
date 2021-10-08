@@ -148,6 +148,7 @@ bool orthonormalize(T* basis, int size, int dim, double eps = 1E-16);
 /*!
  * \brief Normalizes the passed in array.
  *
+ * \accelerated
  * \tparam T data type
  * \param [in] v pointer the array
  * \param [in] dim the dimension of v

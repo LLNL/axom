@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef QUEST_DISCRETIZE_INL_
-#define QUEST_DISCRETIZE_INL_
+#ifndef AXOM_QUEST_DISCRETIZE_DETAIL_
+#define AXOM_QUEST_DISCRETIZE_DETAIL_
 
 namespace
 {
@@ -306,4 +306,4 @@ bool discretize(Point2D *&polyline,
 }  // end namespace quest
 }  // end namespace axom
 
-#endif /* QUEST_DISCRETIZE_INL_ */
+#endif  // AXOM_QUEST_DISCRETIZE_DETAIL_

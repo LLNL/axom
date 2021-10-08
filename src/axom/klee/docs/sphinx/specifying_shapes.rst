@@ -115,8 +115,13 @@ specified by its geometry file. This can be overridden by using the
 
 In the example above, the wheel would only replace rubber and air. Any other
 materials that happen to be in the same space as it would be left untouched.
-The windshield would replace everything except steel. It is an error to
-specify both :code:`replaces` and :code:`does_not_replace`.
+The windshield would replace everything except steel. 
+
+.. warning::
+
+   It is an error to specify both :code:`replaces` and :code:`does_not_replace` 
+   for the same shape.
+
 
 Operators
 ---------
@@ -245,7 +250,7 @@ Operators may also have additional required or optional parameters.
 * Changing Units
 
   :description: Change the units in which subsequent operators are expressed.
-    this is the same as scaling by the appropriate factor.
+    This is the same as scaling by the appropriate factor.
   :name: :code:`convert_units_to`
   :value: the name of the units to convert to. Must be one of the named units.
   :example:
@@ -272,7 +277,7 @@ Operators may also have additional required or optional parameters.
 
     :origin: the point to use as the origin of the new coordinate system
     :normal: a vector normal to the slice plane
-    :up: a vector which will be mapped to the positive Y direction.
+    :up: a vector which will be mapped to the positive Y direction on the cut plane.
   :optional arguments:
     :x: a single value specifying that the cut plane perpendicular to the
       x-axis at this value. See defaults table below.
@@ -329,8 +334,8 @@ object. This is a list where each entry has the following values:
 :start_units (optional, must specify this or units): the units in which the
   first operator is specified
 :end_units (optional, must specify this or units): the units in which the
-  last operator is specified. It is an error if the right conversion are
-  not done.
+  last operator is specified. It is an error if the units aren't properly
+  converted to `end_units` after applying all operations.
 
 The example below demonstrates how to create and then use a named operator.
 Note that :code:`ref` is just one entry in the list of operators, and

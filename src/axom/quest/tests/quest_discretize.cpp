@@ -5,10 +5,10 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
+#include "axom/slic.hpp"
 #include "axom/mint.hpp"
 #include "axom/primal.hpp"
-#include "axom/quest/Discretize.hpp"  // quest::Discretize
-#include "axom/slic/interface/slic.hpp"
+#include "axom/quest/Discretize.hpp"
 
 using SphereType = axom::primal::Sphere<double, 3>;
 using OctType = axom::primal::Octahedron<double, 3>;
@@ -802,19 +802,13 @@ TEST(quest_discretize, to_tet_mesh)
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
-
+  axom::slic::SimpleLogger logger;
   result = RUN_ALL_TESTS();
 
   return result;
