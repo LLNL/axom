@@ -7,14 +7,10 @@
 
 #include "axom/primal/geometry/Polyhedron.hpp"
 
-#include "axom/core/execution/for_all.hpp"
-#include "axom/core/execution/execution_space.hpp"
-#include "axom/core/memory_management.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
-#include "fmt/fmt.hpp"
-#include "axom/slic/interface/slic.hpp"
-
-using namespace axom;
+namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
 TEST(primal_polyhedron, polyhedron_empty)
@@ -397,8 +393,6 @@ TEST(primal_polyhedron, polyhedron_decomposition)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
@@ -406,10 +400,9 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  SimpleLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
-
-  // finalized when exiting main scope
+  namespace slic = axom::slic;
+  slic::SimpleLogger logger;
+  slic::setLoggingMsgLevel(slic::message::Info);
 
   result = RUN_ALL_TESTS();
 

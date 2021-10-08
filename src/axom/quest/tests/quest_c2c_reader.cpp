@@ -79,7 +79,7 @@ void writeSpline(const std::string& filename)
   {
     double y = 2 * M_PI * static_cast<double>(i) / NPTS;
     double x = offset + amplitude * cos(freq * y);
-    pts.emplace_back(fmt::format("{} {}", x, y));
+    pts.emplace_back(axom::fmt::format("{} {}", x, y));
   }
 
   std::ofstream c2cFile(filename, std::ios::out);

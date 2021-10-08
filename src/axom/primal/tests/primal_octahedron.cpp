@@ -6,12 +6,10 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
-
-#include "fmt/fmt.hpp"
-#include "axom/slic/interface/slic.hpp"
 
 #include <cmath>
 
@@ -123,14 +121,12 @@ TEST_F(OctahedronTest, equals)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();

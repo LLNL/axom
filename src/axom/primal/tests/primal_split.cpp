@@ -5,26 +5,21 @@
 
 #include "gtest/gtest.h"
 
-#include "fmt/fmt.hpp"
-
 #include "axom/config.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
 
-#include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 
 #include "axom/primal/operators/split.hpp"
 
-#include <cmath>  // for sqrt
+#include <cmath>
 
-using namespace axom;
-
-using OctType = primal::Octahedron<double, 3>;
-using TetType = primal::Tetrahedron<double, 3>;
+using OctType = axom::primal::Octahedron<double, 3>;
+using TetType = axom::primal::Tetrahedron<double, 3>;
 using PointType = OctType::PointType;
-using ArrayType = Array<TetType>;
+using ArrayType = axom::Array<TetType>;
 
 TEST(primal_split, split_basics)
 {
@@ -50,7 +45,7 @@ TEST(primal_split, split_basics)
   ArrayType tets;
   int old_tetlength = tets.size();
 
-  primal::split(oct, tets);
+  axom::primal::split(oct, tets);
 
   constexpr int tets_in_oct = 8;
   EXPECT_EQ(tets.size() - old_tetlength, tets_in_oct);
