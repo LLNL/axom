@@ -6,8 +6,31 @@
 #include "gtest/gtest.h"
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
+#include "axom/core/execution/for_all.hpp"          // for_all()
 
 using namespace axom;
+
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+void check_point_policy()
+{
+  const int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+
+  double* coords =
+    axom::allocate<double>(DIM, axom::execution_space<ExecSpace>::allocatorID());
+
+  axom::for_all<ExecSpace>(
+    1,
+    AXOM_LAMBDA(int i) {
+      PointType ones = PointType::ones();
+      ones.to_array(coords);
+    });
+
+  EXPECT_EQ(PointType(coords), PointType::ones());
+  axom::deallocate(coords);
+}
 
 //------------------------------------------------------------------------------
 TEST(primal_point, point_default_constructor)
@@ -346,6 +369,29 @@ TEST(primal_point, point_linear_interpolation)
   EXPECT_TRUE(QPoint::lerp(p0, p1, 0.5) == QPoint::midpoint(p0, p1));
   EXPECT_TRUE(QPoint::lerp(p0, p1, .25) == QPoint(25));
   EXPECT_TRUE(QPoint::lerp(p0, p1, .75) == QPoint(75));
+}
+
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST(primal_point, point_check_policies)
+{
+  using seq_exec = axom::SEQ_EXEC;
+  check_point_policy<seq_exec>();
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
+  defined(RAJA_ENABLE_OPENMP)
+
+  using omp_exec = axom::OMP_EXEC;
+  check_point_policy<omp_exec>();
+
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
+
+  using cuda_exec = axom::CUDA_EXEC<512>;
+
+  check_point_policy<cuda_exec>();
+#endif
 }
 
 //------------------------------------------------------------------------------

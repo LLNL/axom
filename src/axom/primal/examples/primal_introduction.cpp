@@ -67,7 +67,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 // _using_start
 // "using" directives to simplify code

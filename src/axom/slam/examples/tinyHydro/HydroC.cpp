@@ -92,7 +92,7 @@ namespace tinyHydro {
     IndexBuffer* bcNodeList[NUM_DOMAIN_BOUNDARIES];
     for(int i = 0; i< boundaryEdgeSet.size(); ++i)
     {
-      bcNodeList[i] = &DataRegistry::setRegistry.addBuffer(fmt::format("bc_nodes_{}",i));
+      bcNodeList[i] = &DataRegistry::setRegistry.addBuffer(axom::fmt::format("bc_nodes_{}",i));
     }
 
     for (int n = 0; n < mesh.numNodes(); n++)

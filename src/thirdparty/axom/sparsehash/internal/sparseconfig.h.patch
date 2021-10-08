@@ -1,0 +1,23 @@
+diff --git a/src/thirdparty/axom/sparsehash/internal/sparseconfig.h b/src/thirdparty/axom/sparsehash/internal/sparseconfig.h
+index 37a7a1bfd..898fa78d7 100644
+--- a/src/thirdparty/axom/sparsehash/internal/sparseconfig.h
++++ b/src/thirdparty/axom/sparsehash/internal/sparseconfig.h
+@@ -7,7 +7,7 @@
+ #include "axom/config.hpp"  
+ 
+ /* Namespace for Google classes */
+-#define GOOGLE_NAMESPACE ::google
++#define GOOGLE_NAMESPACE axom::google
+ 
+ /* the location of the header defining hash functions */
+ #define HASH_FUN_H SPARSEHASH_HASHFUN_HEADER
+@@ -43,7 +43,7 @@
+ #define SPARSEHASH_HASH HASH_NAMESPACE::hash
+ 
+ /* Stops putting the code inside the Google namespace */
+-#define _END_GOOGLE_NAMESPACE_ }
++#define _END_GOOGLE_NAMESPACE_ } }
+ 
+ /* Puts following code inside the Google namespace */
+-#define _START_GOOGLE_NAMESPACE_ namespace google {
++#define _START_GOOGLE_NAMESPACE_ namespace axom { namespace google {

@@ -36,7 +36,7 @@
 
 // MFEM includes - needed to set up simulation
 #include "mfem.hpp"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 // Stores the state of the simulation - a mesh, fields, and associated objects
 class SimulationState
@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
 #endif
 
   // Command-line argument to load in a specific cycle - optional
-  CLI::App app {"Example of Axom's MFEMSidreDataCollection for restarts"};
+  axom::CLI::App app {"Example of Axom's MFEMSidreDataCollection for restarts"};
   int cycle_to_load = -1;
 
   std::vector<std::string> sidre_protocols = {"sidre_conduit_json",

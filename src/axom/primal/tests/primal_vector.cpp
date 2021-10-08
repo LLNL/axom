@@ -3,11 +3,36 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/primal/geometry/Vector.hpp"
-
 #include "gtest/gtest.h"
 
+#include "axom/primal/geometry/Vector.hpp"
+
+#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
+#include "axom/core/execution/for_all.hpp"          // for_all()
+
 using namespace axom;
+
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+void check_vector_policy()
+{
+  const int DIM = 3;
+  using VectorType = primal::Vector<double, DIM>;
+
+  VectorType* vec =
+    axom::allocate<VectorType>(1,
+                               axom::execution_space<ExecSpace>::allocatorID());
+
+  axom::for_all<ExecSpace>(
+    1,
+    AXOM_LAMBDA(int i) {
+      vec[0] = VectorType(-1.0);
+      vec[0].negate();
+    });
+
+  EXPECT_EQ(vec[0], VectorType(1));
+  axom::deallocate(vec);
+}
 
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_constructors)
@@ -268,6 +293,29 @@ TEST(primal_vector, vector_zero)
     notZero[i] = 1e-7;
     EXPECT_FALSE(notZero.is_zero()) << "Wrong when changing index " << i;
   }
+}
+
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
+{
+  using seq_exec = axom::SEQ_EXEC;
+  check_vector_policy<seq_exec>();
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
+  defined(RAJA_ENABLE_OPENMP)
+
+  using omp_exec = axom::OMP_EXEC;
+  check_vector_policy<omp_exec>();
+
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
+
+  using cuda_exec = axom::CUDA_EXEC<512>;
+
+  check_vector_policy<cuda_exec>();
+#endif
 }
 
 //----------------------------------------------------------------------

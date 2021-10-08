@@ -22,7 +22,7 @@
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -204,9 +204,9 @@ public:
     if(!vtkMesh)
     {
       bool fExists = axom::utilities::filesystem::pathExists(fileName);
-      SLIC_ERROR(fmt::format("Attempted to open file '{}'. It {}.",
-                             fileName,
-                             fExists ? "exists" : "does not exist"));
+      SLIC_ERROR(axom::fmt::format("Attempted to open file '{}'. It {}.",
+                                   fileName,
+                                   fExists ? "exists" : "does not exist"));
     }
   }
   ~SimpleVTKHexMeshReader()
@@ -258,12 +258,13 @@ public:
     // different.
     SLIC_ASSERT_MSG(
       (listSize - numZones) == numNodeZoneIndices,
-      fmt::format("Error while reading mesh!\n "
-                  "numZones = {0}; numZones*{1} = {2}; indices in file = {3}",
-                  numZones,
-                  static_cast<int>(HexMesh::NODES_PER_ZONE),
-                  numNodeZoneIndices,
-                  listSize - numZones));
+      axom::fmt::format(
+        "Error while reading mesh!\n "
+        "numZones = {0}; numZones*{1} = {2}; indices in file = {3}",
+        numZones,
+        static_cast<int>(HexMesh::NODES_PER_ZONE),
+        numNodeZoneIndices,
+        listSize - numZones));
 
     IndexBuf& zn_indices =
       Repository::intsRegistry.addBuffer("zone_node_indices", numNodeZoneIndices);
@@ -522,7 +523,7 @@ int main(int argc, char** argv)
   for(int res = 0; res < NUM_RESOLUTIONS; ++res)
   {
     std::string meshName =
-      fmt::format("{}/ball_{}.vtk", dataDir, fileResolutions[res]);
+      axom::fmt::format("{}/ball_{}.vtk", dataDir, fileResolutions[res]);
 
     SLIC_INFO("Loading mesh file '" << meshName
                                     << "' and generating zone-> node relation");
@@ -550,11 +551,11 @@ int main(int argc, char** argv)
     // Some error checking based on precomputed values
     if(!axom::utilities::isNearlyEqual(errVal, expectedResults[res]))
     {
-      SLIC_WARNING("Error differed from expected value -- "
-                   << fmt::format("Expected {}, but got {} (difference: {}",
-                                  expectedResults[res],
-                                  errVal,
-                                  errVal - expectedResults[res]));
+      SLIC_WARNING("Error differed from expected value -- " << axom::fmt::format(
+                     "Expected {}, but got {} (difference: {}",
+                     expectedResults[res],
+                     errVal,
+                     errVal - expectedResults[res]));
 
       ++numFailedTests;
     }
@@ -563,9 +564,9 @@ int main(int argc, char** argv)
   }
 
   //--------------------------------------------------------------
-  SLIC_INFO(fmt::format("-- {} tests out of {} passed",
-                        NUM_RESOLUTIONS - numFailedTests,
-                        NUM_RESOLUTIONS));
+  SLIC_INFO(axom::fmt::format("-- {} tests out of {} passed",
+                              NUM_RESOLUTIONS - numFailedTests,
+                              NUM_RESOLUTIONS));
 
   return (numFailedTests == 0) ? 0 : 1;
 }
