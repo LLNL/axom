@@ -147,12 +147,12 @@ int main(int argc, char* argv[])
   //
   std::cout << "\nExample 2: One-to-one Buffer to View relationships\n\n";
 
+  // _ex2_twoviews_onebuffer_start
   std::cout << "\nDatastore start state\n";
   std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
   std::cout << "\tNum views in group B: " << B_grp->getNumViews() << std::endl;
 
-  // _ex2_twoviews_onebuffer_start
   Buffer* buf2 = ds->createBuffer(DOUBLE_ID, dat_size)->allocate();
 
   double* dat2 = buf2->getData();
@@ -171,24 +171,32 @@ int main(int argc, char* argv[])
   aview1->apply(DOUBLE_ID, view_nelem, 0 /*offset*/, 2 /*stride*/); 
   aview2->apply(DOUBLE_ID, view_nelem, 1 /*offset*/, 2 /*stride*/); 
 
-  std::cout << "After buffer allocation and attaching to views\n";
+  std::cout << "\nAfter buffer allocation and attaching to views\n";
   std::cout << "\tNum buffers in datastore: " 
             << ds->getNumBuffers() << std::endl;
   std::cout << "\tBuffer num elements: " << buf2->getNumElements() << std::endl;
 
-  std::cout << "\taview1 data has even values:\t";
+  std::cout << "\n\taview1 data has even values:\n";
+  std::cout << "\taview1 num elements: " << aview1->getNumElements() << std::endl;
+  std::cout << "\taview1 offset: " << aview1->getOffset() << std::endl;
+  std::cout << "\taview1 stride: " << aview1->getStride() << std::endl;
   double* arr1 = aview1->getArray();
   axom::IndexType vlen = aview1->getNumElements(); 
   axom::IndexType vstr = aview1->getStride(); 
+  std::cout << "\taview1 data:\t";
   for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
     std::cout << arr1[i] << "   ";
   }
   std::cout << std::endl;
 
-  std::cout << "\taview2 data has odd values:\t";
+  std::cout << "\n\taview2 data has odd values:\n";
+  std::cout << "\taview2 num elements: " << aview2->getNumElements() << std::endl;
+  std::cout << "\taview2 offset: " << aview2->getOffset() << std::endl;
+  std::cout << "\taview2 stride: " << aview2->getStride() << std::endl;
   double* arr2 = aview2->getArray();
   vlen = aview2->getNumElements(); 
   vstr = aview2->getStride(); 
+  std::cout << "\taview2 data:\t";
   for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
     std::cout << arr2[i] << "   ";
   }
@@ -197,13 +205,14 @@ int main(int argc, char* argv[])
   A_grp->destroyViewAndData("aview1"); 
  
   std::cout << "\nAfter destroyViewAndData(aview1) call\n";
+  std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
   std::cout << "\tNum buffers in datastore: "
             << ds->getNumBuffers() << std::endl;
   std::cout << "\tBuffer num elements: " << buf2->getNumElements() << std::endl;
   std::cout << "\taview2 data still has its odd values:\t";
   arr2 = aview2->getArray();
   vlen = aview2->getNumElements(); 
-  vstr = aview2->getStride(); 
+  vstr = aview2->getStride();
   for (axom::IndexType i = 0; i < vlen*vstr; i += vstr) {
     std::cout << arr2[i] << "   ";
   }

@@ -33,8 +33,13 @@ At this point, the datastore has zero buffers and the groups have no views.
 Example 1: One View, One Buffer 
 --------------------------------
 
-In the first exaample, we first create a view in group "A" describing an integer
-array of length 10 and allocate it. This creates a buffer in the datastore
+The first example illustrates a common Sidre usage pattern in which
+a view is created in a group and the data associated with the view is managed
+via the view. This case represents a one-to-one relationship between views and
+buffers.
+
+We begin by creating a view in group "A" describing an integer array of length 
+10 and allocating the array via the view. This creates a buffer in the datastore
 which owns the array. Then, we get a handle to the buffer from the view
 from which we get a pointer to the start of the array and initialize the 
 array values. To give some insight into the internal Sidre mechanics, we access
@@ -62,9 +67,9 @@ The output printed by the code is::
         Value of elt 5 in buffer array (expect 7): 7
 
 Next, we deallocate the view and show that its decription remains intact; 
-for example, num elements is still 10. The view is no longer allocated,
-but it is still attached to its buffer. We confirm that the buffer is no longer 
-allocated as expected. 
+for example, the number of elements is still 10. The view is no longer 
+allocated, but it is still attached to its buffer. We confirm this and that 
+the buffer is no longer allocated as expected. 
 
 Then, we allocate the view again. Since the buffer is still attached to the
 view, a new buffer is not created in the datastore and the existing buffer is 
@@ -107,14 +112,64 @@ The out of the code is::
         Num views in group A: 0
         Num buffers in datastore: 0
 
-----------------------------
-Example 2
-----------------------------
+---------------------------------
+Example 2: Two Views, One Buffer 
+---------------------------------
+
+The second example illustrates a Sidre usage pattern in which multiple views 
+are created to describe portions of data held in a shared buffer. This case 
+represents a many-to-one relationship between views and buffers. Before we 
+start, we verify that the datastore contains no buffers and that the groups 
+we created earlier contain no views. 
+
+We start by creating and allocating a buffer holding an array of doubles of 
+length 10. We initialize the array so that each element has a value matching 
+its position in the array; i.e., the values 0 through 9. Then, we create two 
+views in group "A" each *attached* to the buffer. Next, we apply a data 
+description containing an offset and stride to each view so that one view 
+is associated with the even values in the buffer and the other is associated
+with the odd values. Accessing the data pointer in each view and printing
+the values shows that this is indeed the case.
+
+We call a method to destroy the first view and its data, similar to the
+last part of the first example. The view is destroyed. However, since the 
+buffer that held its data is shared by the other view, the buffer and its
+data remain intact. In addition, the data associated with the remaining view
+is also untouched.
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
    :start-after: _ex2_twoviews_onebuffer_start
    :end-before: _ex2_twoviews_onebuffer_end
    :language: C++
+
+The output of the code is::
+
+  Datastore start state
+        Num buffers in datastore: 0
+       	Num views in group A: 0
+        Num views in group B: 0
+
+  After buffer allocation and attaching to views
+       	Num buffers in datastore: 1
+       	Buffer num elements: 10
+
+       	aview1 data has even values:
+       	aview1 num elements: 5
+       	aview1 offset: 0
+       	aview1 stride: 2
+       	aview1 data:	0   2   4   6   8   
+
+       	aview2 data has odd values:
+       	aview2 num elements: 5
+       	aview2 offset: 1
+       	aview2 stride: 2
+       	aview2 data:	1   3   5   7   9   
+
+  After destroyViewAndData(aview1) call
+       	Num views in group A: 1
+       	Num buffers in datastore: 1
+       	Buffer num elements: 10
+       	aview2 data still has its odd values:	1   3   5   7   9 
 
 ----------------------------
 Example 3
