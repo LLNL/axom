@@ -795,6 +795,8 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_large)
   testParallelMeshReloadAllPartitionings(mesh);
 }
 
+  // The following test requires a function from mfem@4.3
+  #if(MFEM_VERSION >= 40300)
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_periodic)
 {
   // periodic 2D mesh divided into triangles
@@ -812,6 +814,7 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_periodic)
   auto mesh = mfem::Mesh::MakePeriodic(base_mesh, vertex_map);
   testParallelMeshReloadAllPartitionings(mesh);
 }
+  #endif
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_tet)
 {
