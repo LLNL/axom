@@ -47,11 +47,11 @@ jobs:
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
       osx_gcc:
         VM_ImageName: 'macos-10.14'
-        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF'
         TEST_TARGET: 'osx_gcc'
       windows:
         VM_ImageName: 'windows-2019'
-        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF'
         TEST_TARGET: 'win_vs'
 
   pool:
@@ -71,24 +71,29 @@ jobs:
       solution: 'build/*.sln'
       vsVersion: 'latest'
     condition: eq( variables['Agent.OS'], 'Windows_NT')
-    displayName: 'Visual Studio Build'
+    displayName: 'Visual Studio Build ($(TEST_TARGET))'
+  - script: |
+      cd build
+      ctest -C Debug -T test --output-on-failure -V
+    condition: eq( variables['Agent.OS'], 'Windows_NT')
+    displayName: 'Visual Studio Test ($(TEST_TARGET))'
   - script: |
       cd build
       make
-    displayName: '$(TEST_TARGET) Build'
     condition: eq( variables['Agent.OS'], 'Darwin')
+    displayName: 'Darwin Build ($(TEST_TARGET))'
   - script: |
       cd build
       ctest -T test --output-on-failure -V
-    displayName: '$(TEST_TARGET) Test'
-    condition: or( eq( variables['Agent.OS'], 'Windows_NT'), eq( variables['Agent.OS'], 'Darwin'))
+    condition: eq( variables['Agent.OS'], 'Darwin')
+    displayName: 'Darwin Test ($(TEST_TARGET))'
   - script:  |
       echo " -e $TEST_TARGET -e $COMPILER -e $DO_BUILD -e $DO_TEST -e $CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh"
       docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
       docker run --rm -v `pwd`:/home/axom/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e DO_CLEAN -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-build_and_test.sh
 
     condition: eq( variables['Agent.OS'], 'Linux')
-    displayName: '$(TEST_TARGET) Build & Test'
+    displayName: 'Linux Build & Test ($(TEST_TARGET))'
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'cTest'
@@ -114,3 +119,4 @@ jobs:
       docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
       docker run --rm -v `pwd`:/home/axom/axom -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-check.sh
     displayName: '$(TEST_TARGET) Style Check'
+
