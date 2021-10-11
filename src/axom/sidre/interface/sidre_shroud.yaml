@@ -109,7 +109,7 @@ declarations:
     - decl: (int64_t id)
       function_suffix: _int64_t
 
-  # Method for generateing Blueprint
+  # Method for generating Blueprint
   - decl: bool generateBlueprintIndex( const std::string& domain_path,
                                        const std::string& mesh_name,
                                        const std::string& index_path,
