@@ -134,7 +134,6 @@ int main(int argc, char* argv[])
   std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   // _ex1_oneview_onebuffer_destroy_end
 
-  
   // -----------------------------------------------------------------------
   // Example 2: One-to-many Buffer to View relationships
   // -----------------------------------------------------------------------
@@ -222,7 +221,6 @@ int main(int argc, char* argv[])
   // _ex2_twoviews_onebuffer_end
   std::cout << std::endl;
 
-
   // -----------------------------------------------------------------------
   // Example 3: One-to-many Buffer to View relationships (view copy)
   // -----------------------------------------------------------------------
@@ -304,9 +302,8 @@ int main(int argc, char* argv[])
   root_grp->destroyGroup("B_grp");
 
   std::cout << "\nAfter destroyGroup(B_grp) call:\n";
-  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() 
-            << std::endl;
-  std::cout << "\tIs buffer allocated? " << buf_aview2->isAllocated() 
+  std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
+  std::cout << "\tIs buffer allocated? " << buf_aview2->isAllocated()
             << std::endl;
   std::cout << "\tNum views attached to buffer: " << buf_aview2->getNumViews()
             << std::endl;
@@ -318,18 +315,17 @@ int main(int argc, char* argv[])
   //
   delete ds;
 
-
   // -----------------------------------------------------------------------
   // Example 4: More on basic mechanics
   // -----------------------------------------------------------------------
   //
   // We first create a new datastore and one group "A" in the root group.
-  // Then, we create and allocate a view in that group, and grab a pointer to 
+  // Then, we create and allocate a view in that group, and grab a pointer to
   // the associated buffer.
   //
   // When we destoy the view (but not its data as we did in the first example),
-  // we verify that the buffer is still in the datastore, described and 
-  // allocated. 
+  // we verify that the buffer is still in the datastore, described and
+  // allocated.
   //
   // We recreate the view, attach the buffer to it, and describe the view
   // data as before. We verify that the view is allocated since its buffer is.
@@ -341,8 +337,7 @@ int main(int argc, char* argv[])
   // Lastly, we destroy the buffer and see that the datastore has zero buffers.
   // However, the view remains in the group described and unallocated.
   //
-  std::cout
-    << "\nExample 4: More on basic mechanics\n";
+  std::cout << "\nExample 4: More on basic mechanics\n";
 
   // _ex4_more_mechanics_start
   ds = new DataStore();
@@ -365,8 +360,8 @@ int main(int argc, char* argv[])
             << std::endl;
   std::cout << "\tIs buffer allocated? " << bufa->isAllocated() << std::endl;
 
-  std::cout << std::endl; 
- 
+  std::cout << std::endl;
+
   A_grp->destroyView("aview");
   std::cout << "After A_grp->destroyView() call:\n";
   std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
@@ -377,11 +372,12 @@ int main(int argc, char* argv[])
             << std::endl;
   std::cout << "\tIs buffer allocated? " << bufa->isAllocated() << std::endl;
 
-  std::cout << std::endl; 
- 
+  std::cout << std::endl;
+
   aview = A_grp->createView("aview1", bufa);
   aview->apply(INT_ID, dat_size);
-  std::cout << "After recreating view, attaching buffer, and describing data:\n";
+  std::cout
+    << "After recreating view, attaching buffer, and describing data:\n";
   std::cout << "\tNum views in group A: " << A_grp->getNumViews() << std::endl;
   nelems = aview->getNumElements();
   std::cout << "\tNum elements in view: " << nelems << std::endl;
@@ -419,7 +415,6 @@ int main(int argc, char* argv[])
 
   std::cout << "\tNum buffers in datastore: " << ds->getNumBuffers() << std::endl;
   // _ex4_more_mechanics_end
-
 
   //
   // Clean up...
