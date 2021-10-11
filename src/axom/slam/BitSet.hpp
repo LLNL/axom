@@ -13,6 +13,7 @@
 #define SLAM_BITSET_H_
 
 #include "axom/config.hpp"
+#include "axom/core/Array.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic.hpp"
 
@@ -113,7 +114,7 @@ public:
   using Word = axom::uint64;
 
   // Use vector for initial implementation -- TODO: update using a policy
-  using ArrayType = std::vector<Word>;
+  using ArrayType = axom::Array<Word>;
 
   AXOM_EXPORT static const Index npos;
 
@@ -133,7 +134,8 @@ public:
    * \post bset.size() == numBits
    * \post All bits will be off
    */
-  explicit BitSet(int numBits = 0)
+  explicit BitSet(int numBits = 0,
+                  int allocatorID = axom::getDefaultAllocatorID())
   {
     SLIC_ASSERT_MSG(
       numBits >= 0,
@@ -142,15 +144,9 @@ public:
     m_numBits = axom::utilities::max(numBits, 0);
     m_numWords = (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BITS_PER_WORD;
 
-    m_data = ArrayType(m_numWords);
+    m_data = ArrayType(m_numWords, m_numWords, allocatorID);
+    m_data.fill(0);
   }
-
-  /** \brief Copy constructor for BitSet class */
-  BitSet(const BitSet& other)
-    : m_data(other.m_data)
-    , m_numBits(other.m_numBits)
-    , m_numWords(other.m_numWords)
-  { }
 
   /** \brief Equality operator for two bitsets */
   bool operator==(const BitSet& other) const;
@@ -161,18 +157,6 @@ public:
 public:
   /// \name Bitset bitwise assignment operators
   /// @{
-
-  /** \brief Assignment operator for BitSet class */
-  BitSet& operator=(const BitSet& other)
-  {
-    if(this != &other)
-    {
-      m_data = other.m_data;
-      m_numBits = other.m_numBits;
-      m_numWords = other.m_numWords;
-    }
-    return *this;
-  }
 
   /**
    * \brief BitSet union-assignment operator
