@@ -253,7 +253,7 @@ The output of the code is::
         Num views attached to buffer: 2
   
 -------------------------------------
-More Basic Mechanics
+Example 4: More Basic Mechanics
 -------------------------------------
 
 The last example should help to make clear the point made at the end of 
