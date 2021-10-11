@@ -18,11 +18,10 @@ the allocation state of the data in a view and a corresponding buffer.
 
 .. note:: Object and data creation and destruction is very explicit in Sidre
           to allow maximum flexibility to compose complex operations from 
-          simpler ones. This should become apparent in the following examples. 
+          simpler ones. This should become apparent by reading the following 
+          examples. 
 
-The code snippets shown and described here exist in the file 
-``axom/src/axom/sidre/examples/sidre_data_vs_metadata.cpp``,
-which can be built and run to experiment with if you wish.
+The code snippets shown and described here exist in the file ``axom/src/axom/sidre/examples/sidre_data_vs_metadata.cpp``, which can be built and run to experiment with if you wish.
 
 The starting point for the first three examples is a simple Sidre datastore 
 group hierarchy in which the root group has two child groups named "A" and "B". 
@@ -215,8 +214,8 @@ explicit nature of Sidre operations. For example, when a group is destroyed,
 its views and their data remain intact. There are specific methods provided
 to destroy views and to deallocate and destroy buffers. This was an early
 design choice for Sidre to yield maximum flexibility in defining data 
-hierarchies while keeping internal bookkeeping simple. The next example, 
-continues on this point.
+hierarchies while keeping internal bookkeeping simple. The example following 
+this one continues on this point.
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
    :start-after: _ex3_twoviews_onebuffer_copy_start 
@@ -256,8 +255,9 @@ The output of the code is::
 Example 4: More Basic Mechanics
 -------------------------------------
 
-The last example should help to make clear the point made at the end of 
-example three about all Sidre operations being simple and explicit.
+The last example should help to make clear the point made at the beginning of
+this section end the end of example three about all Sidre operations being 
+simple and explicit.
 
 We start with a fresh datastore with one group "A" in the root group. We
 create a view "aview" in the group and allocate it. The output of the 
@@ -326,5 +326,5 @@ The output of the code is::
 The point of this final example is to demonstrate that most Sidre operations are
 atomic and do precisely what you expect with few side effects. If this were not
 the case, we believe that the Sidre API would become bloated and confusing to 
-support the range of usage patterns we know about.
+be able to support the range of usage patterns applied by Axom users.
 
