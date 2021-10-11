@@ -9,8 +9,8 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG10_IMAGENAME: 'axom/tpls:clang-10_06-04-21_01h-36m'
-  GCC8_IMAGENAME: 'axom/tpls:gcc-8_06-04-21_01h-36m'
+  CLANG10_IMAGENAME: 'axom/tpls:clang-10_10-11-21_17h-49m'
+  GCC8_IMAGENAME: ' axom/tpls:gcc-8_10-11-21_17h-49m'
 
 jobs:
 - job: Build_and_Test
@@ -23,14 +23,14 @@ jobs:
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc8'
-        HOST_CONFIG: 'docker-linux-ubuntu16.04-ivybridge-gcc@8.1.0'
+        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-gcc@8.4.0'
       linux_gcc8_64bit:
         VM_ImageName: 'ubuntu-18.04'
         Compiler_ImageName: '$(GCC8_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON'
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc8_64bit'
-        HOST_CONFIG: 'docker-linux-ubuntu16.04-ivybridge-gcc@8.1.0'
+        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-gcc@8.4.0'
       linux_clang10:
         VM_ImageName: 'ubuntu-18.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
