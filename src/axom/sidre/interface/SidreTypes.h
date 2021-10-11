@@ -13,6 +13,7 @@
 #ifndef SIDRETYPES_H
 #define SIDRETYPES_H
 
+#include "axom/config.hpp"
 #include "axom/sidre/core/SidreDataTypeIds.h"
 
 #define SIDRE_InvalidName NULL
