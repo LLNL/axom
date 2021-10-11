@@ -19,7 +19,7 @@ Path::Path(const std::string& path, const char delim) : m_delim(delim)
   // Check if the path has more than one component
   if(path.find(delim) != std::string::npos)
   {
-    utilities::string::split(m_components, path, delim);
+    m_components = utilities::string::split(path, delim);
 
     // Remove empty parts
     m_components.erase(

@@ -7,6 +7,9 @@
 
 #include <algorithm>
 #include <cctype>
+#include <iostream>
+
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -14,16 +17,16 @@ namespace utilities
 {
 namespace string
 {
-void split(std::vector<std::string>& tokens,
-           const std::string& str,
-           const char delimiter)
+std::vector<std::string> split(const std::string& str, const char delimiter)
 {
+  std::vector<std::string> tokens;
   std::string token;
   std::istringstream tokenStream(str);
   while(std::getline(tokenStream, token, delimiter))
   {
     tokens.push_back(token);
   }
+  return tokens;
 }
 
 void toLower(std::string& str)
@@ -63,6 +66,50 @@ std::vector<std::string> splitLastNTokens(const std::string& input,
     std::reverse(result.begin(), result.end());
   }
 
+  return result;
+}
+
+std::string appendPrefix(const std::string& prefix, const std::string& name)
+{
+  return (prefix == "") ? name : prefix + "/" + name;
+}
+
+std::string removePrefix(const std::string& prefix, const std::string& name)
+{
+  if(prefix.empty())
+  {
+    return name;
+  }
+  else if(axom::utilities::string::startsWith(name, prefix + "/"))
+  {
+    return name.substr(prefix.size());
+  }
+  std::cerr << axom::fmt::format(
+                 "Provided name {0} does not "
+                 "contain prefix {1}",
+                 name,
+                 prefix)
+            << std::endl;
+  return name;
+}
+
+std::string removeBeforeDelimiter(const std::string& str, const char delim)
+{
+  auto pos = str.find_last_of(delim);
+  // Will return an empty string if the delimiter was not found
+  return str.substr(pos + 1);
+}
+
+std::string removeAllInstances(const std::string& target,
+                               const std::string& substr)
+{
+  std::string result = target;
+  auto pos = result.find(substr);
+  while(pos != std::string::npos)
+  {
+    result.erase(pos, substr.length());
+    pos = result.find(substr);
+  }
   return result;
 }
 
