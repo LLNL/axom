@@ -14,7 +14,9 @@
 #ifndef WRAPDATASTORE_H
 #define WRAPDATASTORE_H
 
-#include "mpi.h"
+#ifdef AXOM_USE_MPI
+  #include "mpi.h"
+#endif
 #include "typesSidre.h"
 #ifdef __cplusplus
   #include <cstddef>
@@ -73,12 +75,15 @@ bool SIDRE_DataStore_generate_blueprint_index_0_bufferify(SIDRE_DataStore* self,
                                                           int Lindex_path,
                                                           int num_domains);
 
+#ifdef AXOM_USE_MPI
 bool SIDRE_DataStore_generate_blueprint_index_1(SIDRE_DataStore* self,
                                                 MPI_Fint comm,
                                                 const char* domain_path,
                                                 const char* mesh_name,
                                                 const char* index_path);
+#endif
 
+#ifdef AXOM_USE_MPI
 bool SIDRE_DataStore_generate_blueprint_index_1_bufferify(SIDRE_DataStore* self,
                                                           MPI_Fint comm,
                                                           const char* domain_path,
@@ -87,6 +92,7 @@ bool SIDRE_DataStore_generate_blueprint_index_1_bufferify(SIDRE_DataStore* self,
                                                           int Lmesh_name,
                                                           const char* index_path,
                                                           int Lindex_path);
+#endif
 
 void SIDRE_DataStore_print(const SIDRE_DataStore* self);
 

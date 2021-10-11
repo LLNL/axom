@@ -174,6 +174,7 @@ bool SIDRE_DataStore_generate_blueprint_index_0_bufferify(SIDRE_DataStore *self,
   // splicer end class.DataStore.method.generate_blueprint_index_0_bufferify
 }
 
+#ifdef AXOM_USE_MPI
 bool SIDRE_DataStore_generate_blueprint_index_1(SIDRE_DataStore *self,
                                                 MPI_Fint comm,
                                                 const char *domain_path,
@@ -194,7 +195,9 @@ bool SIDRE_DataStore_generate_blueprint_index_1(SIDRE_DataStore *self,
   return SHC_rv;
   // splicer end class.DataStore.method.generate_blueprint_index_1
 }
+#endif  // ifdef AXOM_USE_MPI
 
+#ifdef AXOM_USE_MPI
 bool SIDRE_DataStore_generate_blueprint_index_1_bufferify(SIDRE_DataStore *self,
                                                           MPI_Fint comm,
                                                           const char *domain_path,
@@ -218,6 +221,7 @@ bool SIDRE_DataStore_generate_blueprint_index_1_bufferify(SIDRE_DataStore *self,
   return SHC_rv;
   // splicer end class.DataStore.method.generate_blueprint_index_1_bufferify
 }
+#endif  // ifdef AXOM_USE_MPI
 
 void SIDRE_DataStore_print(const SIDRE_DataStore *self)
 {

@@ -499,7 +499,9 @@ module axom_sidre
         procedure :: destroy_buffer_int32_t => datastore_destroy_buffer_int32_t
         procedure :: destroy_buffer_int64_t => datastore_destroy_buffer_int64_t
         procedure :: generate_blueprint_index_0 => datastore_generate_blueprint_index_0
+#ifdef AXOM_USE_MPI
         procedure :: generate_blueprint_index_1 => datastore_generate_blueprint_index_1
+#endif
         procedure :: print => datastore_print
         procedure :: get_instance => datastore_get_instance
         procedure :: set_instance => datastore_set_instance
@@ -509,8 +511,10 @@ module axom_sidre
             create_buffer_from_type_int64_t
         generic :: destroy_buffer => destroy_buffer_int32_t,  &
             destroy_buffer_int64_t
-        generic :: generate_blueprint_index =>  &
-            generate_blueprint_index_0, generate_blueprint_index_1
+        generic :: generate_blueprint_index => generate_blueprint_index_0
+#ifdef AXOM_USE_MPI
+        generic :: generate_blueprint_index => generate_blueprint_index_1
+#endif
         generic :: get_buffer => get_buffer_int32_t, get_buffer_int64_t
         ! splicer begin class.DataStore.type_bound_procedure_part
         ! splicer end class.DataStore.type_bound_procedure_part
@@ -2511,6 +2515,7 @@ module axom_sidre
             logical(C_BOOL) :: SHT_rv
         end function c_datastore_generate_blueprint_index_0_bufferify
 
+#ifdef AXOM_USE_MPI
         function c_datastore_generate_blueprint_index_1(self, comm, &
                 domain_path, mesh_name, index_path) &
                 result(SHT_rv) &
@@ -2525,7 +2530,9 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: index_path(*)
             logical(C_BOOL) :: SHT_rv
         end function c_datastore_generate_blueprint_index_1
+#endif
 
+#ifdef AXOM_USE_MPI
         function c_datastore_generate_blueprint_index_1_bufferify(self, &
                 comm, domain_path, Ldomain_path, mesh_name, Lmesh_name, &
                 index_path, Lindex_path) &
@@ -2544,6 +2551,7 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: Lindex_path
             logical(C_BOOL) :: SHT_rv
         end function c_datastore_generate_blueprint_index_1_bufferify
+#endif
 
         subroutine c_datastore_print(self) &
                 bind(C, name="SIDRE_DataStore_print")
@@ -6641,6 +6649,7 @@ contains
         ! splicer end class.DataStore.method.generate_blueprint_index_0
     end function datastore_generate_blueprint_index_0
 
+#ifdef AXOM_USE_MPI
     function datastore_generate_blueprint_index_1(obj, comm, &
             domain_path, mesh_name, index_path) &
             result(SHT_rv)
@@ -6658,6 +6667,7 @@ contains
             len_trim(index_path, kind=C_INT))
         ! splicer end class.DataStore.method.generate_blueprint_index_1
     end function datastore_generate_blueprint_index_1
+#endif
 
     subroutine datastore_print(obj)
         class(SidreDataStore) :: obj
