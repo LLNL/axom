@@ -109,8 +109,8 @@ const conduit::Node* traverseNode(const conduit::Node& root, const std::string& 
   }
 
   const conduit::Node* node = &root;
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  std::vector<std::string> tokens =
+    axom::utilities::string::split(id, SCOPE_DELIMITER);
   for(const auto& token : tokens)
   {
     // Prefer the string name, but if it doesn't exist, try converting to int

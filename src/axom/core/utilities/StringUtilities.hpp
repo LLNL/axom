@@ -80,13 +80,12 @@ inline std::string removeSuffix(const std::string& str, const std::string& suffi
 
 /*!
  * \brief Splits the given string based on the given delimiter
- * \param [out] tokens    vector that the found tokens are appended to
  * \param [in]  str       string to be tokenized
  * \param [in]  delimiter char to split string on
+ * 
+ * \return vector containing the found tokens
  */
-void split(std::vector<std::string>& tokens,
-           const std::string& str,
-           const char delimiter);
+std::vector<std::string> split(const std::string& str, const char delimiter);
 
 /*!
  * \brief Converts a string to lowercase
@@ -113,6 +112,57 @@ void toUpper(std::string& str);
 std::vector<std::string> splitLastNTokens(const std::string& input,
                                           const std::size_t n,
                                           const char delim);
+
+/*!
+*****************************************************************************
+* \brief This function appends the prefix name to the ending name.
+*
+* \param [in] The prefix string name.
+* \param [in] The ending string name.
+*
+* \return The appended string.
+*****************************************************************************
+*/
+std::string appendPrefix(const std::string& prefix, const std::string& name);
+
+/*!
+*****************************************************************************
+* \brief This function returns the tail of a string following a given prefix
+*
+* \param [in] The prefix of the name, to be removed.
+* \param [in] The full name.
+*
+* \return The extracted string.
+*****************************************************************************
+*/
+std::string removePrefix(const std::string& prefix, const std::string& name);
+
+/*!
+*****************************************************************************
+* \brief This function extracts the substring following the last instance
+* of the delimiting character
+*
+* \param [in] str The string to extract from
+* \param [in] delim The delimiting character
+*
+* \return The extracted string.
+*****************************************************************************
+*/
+std::string removeBeforeDelimiter(const std::string& str, const char delim = '/');
+
+/*!
+*****************************************************************************
+* \brief This function removes all instances of the substring from the target
+* string
+*
+* \param [in] target The string to operate on
+* \param [in] substr The string to remove
+*
+* \return The filtered string.
+*****************************************************************************
+*/
+std::string removeAllInstances(const std::string& target,
+                               const std::string& substr);
 
 }  // end namespace string
 }  // end namespace utilities

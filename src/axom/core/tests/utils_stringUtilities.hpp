@@ -159,8 +159,7 @@ TEST(utils_stringUtilities, split)
   {
     std::string testString = "foo/bar/baz";
     StrVec exp {"foo", "bar", "baz"};
-    StrVec results;
-    axom::utilities::string::split(results, testString, '/');
+    StrVec results = axom::utilities::string::split(testString, '/');
     EXPECT_EQ(exp, results);
   }
 
@@ -168,8 +167,7 @@ TEST(utils_stringUtilities, split)
   {
     std::string testString = "";
     StrVec exp;
-    StrVec results;
-    axom::utilities::string::split(results, testString, '/');
+    StrVec results = axom::utilities::string::split(testString, '/');
     EXPECT_EQ(exp, results);
   }
 
@@ -177,8 +175,7 @@ TEST(utils_stringUtilities, split)
   {
     std::string testString = "foo";
     StrVec exp {"foo"};
-    StrVec results;
-    axom::utilities::string::split(results, testString, '/');
+    StrVec results = axom::utilities::string::split(testString, '/');
     EXPECT_EQ(exp, results);
   }
 
@@ -186,8 +183,7 @@ TEST(utils_stringUtilities, split)
   {
     std::string testString = "foo.bar.baz";
     StrVec exp {"foo", "bar", "baz"};
-    StrVec results;
-    axom::utilities::string::split(results, testString, '.');
+    StrVec results = axom::utilities::string::split(testString, '.');
     EXPECT_EQ(exp, results);
   }
 
@@ -195,8 +191,7 @@ TEST(utils_stringUtilities, split)
   {
     std::string testString = "foo.bar.baz";
     StrVec exp {"foo.bar.baz"};
-    StrVec results;
-    axom::utilities::string::split(results, testString, ';');
+    StrVec results = axom::utilities::string::split(testString, ';');
     EXPECT_EQ(exp, results);
   }
 }
