@@ -57,6 +57,7 @@ that can be used to traverse a BVH with user-defined actions.
 
 The returned traverser type has one function, ``traverse_tree()``, which takes the
 following arguments:
+
 - ``const PointType& p``: the query point to traverse the BVH with
 - ``LeafAction&& lf``: a function or lambda which is executed on each leaf node
   of the BVH that is reached during traversal. It should take in two arguments,
