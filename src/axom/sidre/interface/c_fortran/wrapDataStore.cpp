@@ -131,15 +131,15 @@ void SIDRE_DataStore_destroy_buffer(SIDRE_DataStore *self, SIDRE_IndexType id)
   // splicer end class.DataStore.method.destroy_buffer
 }
 
-bool SIDRE_DataStore_generate_blueprint_index(SIDRE_DataStore *self,
-                                              const char *domain_path,
-                                              const char *mesh_name,
-                                              const char *index_path,
-                                              int num_domains)
+bool SIDRE_DataStore_generate_blueprint_index_0(SIDRE_DataStore *self,
+                                                const char *domain_path,
+                                                const char *mesh_name,
+                                                const char *index_path,
+                                                int num_domains)
 {
   axom::sidre::DataStore *SH_this =
     static_cast<axom::sidre::DataStore *>(self->addr);
-  // splicer begin class.DataStore.method.generate_blueprint_index
+  // splicer begin class.DataStore.method.generate_blueprint_index_0
   const std::string SHCXX_domain_path(domain_path);
   const std::string SHCXX_mesh_name(mesh_name);
   const std::string SHCXX_index_path(index_path);
@@ -148,21 +148,21 @@ bool SIDRE_DataStore_generate_blueprint_index(SIDRE_DataStore *self,
                                                 SHCXX_index_path,
                                                 num_domains);
   return SHC_rv;
-  // splicer end class.DataStore.method.generate_blueprint_index
+  // splicer end class.DataStore.method.generate_blueprint_index_0
 }
 
-bool SIDRE_DataStore_generate_blueprint_index_bufferify(SIDRE_DataStore *self,
-                                                        const char *domain_path,
-                                                        int Ldomain_path,
-                                                        const char *mesh_name,
-                                                        int Lmesh_name,
-                                                        const char *index_path,
-                                                        int Lindex_path,
-                                                        int num_domains)
+bool SIDRE_DataStore_generate_blueprint_index_0_bufferify(SIDRE_DataStore *self,
+                                                          const char *domain_path,
+                                                          int Ldomain_path,
+                                                          const char *mesh_name,
+                                                          int Lmesh_name,
+                                                          const char *index_path,
+                                                          int Lindex_path,
+                                                          int num_domains)
 {
   axom::sidre::DataStore *SH_this =
     static_cast<axom::sidre::DataStore *>(self->addr);
-  // splicer begin class.DataStore.method.generate_blueprint_index_bufferify
+  // splicer begin class.DataStore.method.generate_blueprint_index_0_bufferify
   const std::string SHCXX_domain_path(domain_path, Ldomain_path);
   const std::string SHCXX_mesh_name(mesh_name, Lmesh_name);
   const std::string SHCXX_index_path(index_path, Lindex_path);
@@ -171,8 +171,57 @@ bool SIDRE_DataStore_generate_blueprint_index_bufferify(SIDRE_DataStore *self,
                                                 SHCXX_index_path,
                                                 num_domains);
   return SHC_rv;
-  // splicer end class.DataStore.method.generate_blueprint_index_bufferify
+  // splicer end class.DataStore.method.generate_blueprint_index_0_bufferify
 }
+
+#ifdef AXOM_USE_MPI
+bool SIDRE_DataStore_generate_blueprint_index_1(SIDRE_DataStore *self,
+                                                MPI_Fint comm,
+                                                const char *domain_path,
+                                                const char *mesh_name,
+                                                const char *index_path)
+{
+  axom::sidre::DataStore *SH_this =
+    static_cast<axom::sidre::DataStore *>(self->addr);
+  // splicer begin class.DataStore.method.generate_blueprint_index_1
+  MPI_Comm SHCXX_comm = MPI_Comm_f2c(comm);
+  const std::string SHCXX_domain_path(domain_path);
+  const std::string SHCXX_mesh_name(mesh_name);
+  const std::string SHCXX_index_path(index_path);
+  bool SHC_rv = SH_this->generateBlueprintIndex(SHCXX_comm,
+                                                SHCXX_domain_path,
+                                                SHCXX_mesh_name,
+                                                SHCXX_index_path);
+  return SHC_rv;
+  // splicer end class.DataStore.method.generate_blueprint_index_1
+}
+#endif  // ifdef AXOM_USE_MPI
+
+#ifdef AXOM_USE_MPI
+bool SIDRE_DataStore_generate_blueprint_index_1_bufferify(SIDRE_DataStore *self,
+                                                          MPI_Fint comm,
+                                                          const char *domain_path,
+                                                          int Ldomain_path,
+                                                          const char *mesh_name,
+                                                          int Lmesh_name,
+                                                          const char *index_path,
+                                                          int Lindex_path)
+{
+  axom::sidre::DataStore *SH_this =
+    static_cast<axom::sidre::DataStore *>(self->addr);
+  // splicer begin class.DataStore.method.generate_blueprint_index_1_bufferify
+  MPI_Comm SHCXX_comm = MPI_Comm_f2c(comm);
+  const std::string SHCXX_domain_path(domain_path, Ldomain_path);
+  const std::string SHCXX_mesh_name(mesh_name, Lmesh_name);
+  const std::string SHCXX_index_path(index_path, Lindex_path);
+  bool SHC_rv = SH_this->generateBlueprintIndex(SHCXX_comm,
+                                                SHCXX_domain_path,
+                                                SHCXX_mesh_name,
+                                                SHCXX_index_path);
+  return SHC_rv;
+  // splicer end class.DataStore.method.generate_blueprint_index_1_bufferify
+}
+#endif  // ifdef AXOM_USE_MPI
 
 void SIDRE_DataStore_print(const SIDRE_DataStore *self)
 {
