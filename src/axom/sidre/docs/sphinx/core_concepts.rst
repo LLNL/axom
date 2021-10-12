@@ -33,4 +33,5 @@ of these Sidre classes.
    group
    view 
    attribute
+   data_vs_metadata
 
