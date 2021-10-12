@@ -1478,13 +1478,13 @@ inline void Array<T, DIM>::updateNumElements(IndexType new_num_elements)
   assert(new_num_elements <= m_capacity);
 
   int new_elems = new_num_elements - m_num_elements;
-  for (int ielem = 0; ielem < new_elems; ielem++)
+  for(int ielem = 0; ielem < new_elems; ielem++)
   {
     // TODO: what to do here when T isn't default-constructible?
     // we should probably do what std::vector does (zero out memory?)
-    new (&m_data[ielem + m_num_elements]) T;
+    new(&m_data[ielem + m_num_elements]) T;
   }
-  
+
   m_num_elements = new_num_elements;
 }
 
