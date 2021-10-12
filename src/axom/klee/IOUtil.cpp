@@ -114,7 +114,8 @@ std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
   return std::make_tuple(LengthUnit::unspecified, LengthUnit::unspecified);
 }
 
-std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Container &container)
+std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(
+  const inlet::Container &container)
 {
   auto units = getOptionalStartAndEndUnits(container);
   if(std::get<0>(units) == LengthUnit::unspecified)

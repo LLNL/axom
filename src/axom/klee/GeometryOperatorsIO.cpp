@@ -252,11 +252,12 @@ primal::Point3D getPerpendicularSliceOrigin(const inlet::Container &sliceContain
     return defaultOrigin;
   }
 
-  primal::Point3D givenOrigin = toPoint(sliceContainer, "origin", Dimensions::Three);
+  primal::Point3D givenOrigin =
+    toPoint(sliceContainer, "origin", Dimensions::Three);
   if(givenOrigin[nonZeroIndex] != axisIntercept)
   {
-    throw KleeError(
-      {sliceContainer["origin"].name(), "The origin must be on the slice plane"});
+    throw KleeError({sliceContainer["origin"].name(),
+                     "The origin must be on the slice plane"});
   }
   return givenOrigin;
 }

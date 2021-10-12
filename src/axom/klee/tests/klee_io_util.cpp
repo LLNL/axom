@@ -225,8 +225,8 @@ Point3D parsePoint(const char *value, Dimensions dims, Point3D defaultValue)
     value,
     dims,
     defaultValue,
-    static_cast<
-      Point3D (*)(const inlet::Container &, char const *, Dimensions, const Point3D &)>(
+    static_cast<Point3D (
+        *)(const inlet::Container &, char const *, Dimensions, const Point3D &)>(
       toPoint));
 }
 
