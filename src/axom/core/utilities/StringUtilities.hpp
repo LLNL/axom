@@ -122,7 +122,7 @@ std::vector<std::string> rsplitN(const std::string& input,
 * \param [in] name The ending string name.
 * \param [in] delim The delimiting character inserted between the prefix and the name, if both are non-empty
 *
-* \return The appended string.
+* \return The appended string.  If @a prefix is empty, then just @a name is returned.
 *****************************************************************************
 */
 std::string appendPrefix(const std::string& prefix,
