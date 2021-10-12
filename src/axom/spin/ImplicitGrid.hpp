@@ -74,7 +74,6 @@ public:
                               BitsetType,
                               slam::policies::StrideOne<IndexType>,
                               slam::policies::ArrayStorage<BitsetType>>;
-  using ExecSpace = axom::SEQ_EXEC;
 
   struct QueryObject;
 
@@ -202,9 +201,12 @@ public:
     for(int i = 0; i < NDIMS; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i], BitsetType(numElts));
+      m_binData[i] = BinBitMap(&m_bins[i], BitsetType {}, 1, allocatorID);
+      for(int ibin = 0; ibin < m_bins[i].size(); ibin++)
+      {
+        m_binData[i][ibin] = BitsetType(numElts, allocatorID);
+      }
     }
-    axom::setDefaultAllocator(savedAllocator);
 
     // Set the expansion factor for each element to a small fraction of the
     // grid's bounding boxes diameter
@@ -250,11 +252,11 @@ public:
     const double expansionFactor = m_expansionFactor;
     LatticeType lattice = m_lattice;
 
-    typename BitMapRef::OrderedMap binData[NDIMS];
+    BitsetType* binData[NDIMS];
     IndexType highestBins[NDIMS];
     for(int i = 0; i < NDIMS; i++)
     {
-      binData[i] = m_binData[i].data().ref();
+      binData[i] = m_binData[i].data().data();
       highestBins[i] = m_binData[i].set()->size() - 1;
     }
 
@@ -281,8 +283,7 @@ public:
 
           for(int j = lower; j <= upper; ++j)
           {
-            BitsetView bin = binData[idim][j];
-            bin.set(elemIdx);
+            binData[idim][j].set(elemIdx);
           }
         }
       });
@@ -497,17 +498,13 @@ public:
   using SpatialBoundingBox = primal::BoundingBox<double, NDIMS>;
 
   using LatticeType = RectangularLattice<NDIMS, double, IndexType>;
-  using BitsetType = slam::BitSet<slam::policies::UniqueType>;
-  using BitsetView = slam::BitSet<slam::policies::RefType>;
+
+  using BitsetType = slam::BitSet;
   using BinBitMap = slam::Map<slam::Set<IndexType, IndexType>,
                               BitsetType,
                               slam::policies::StrideOne<IndexType>,
-                              slam::policies::UniqueType>;
+                              slam::policies::ArrayStorage<BitsetType>>;
 
-  using BitMapRef = slam::Map<slam::Set<IndexType, IndexType>,
-                              BitsetType,
-                              slam::policies::StrideOne<IndexType>,
-                              slam::policies::RefType>;
   QueryObject(const SpatialBoundingBox& spaceBb,
               const LatticeType& lattice,
               BinBitMap (&binData)[NDIMS])
@@ -517,7 +514,7 @@ public:
     for(int idim = 0; idim < NDIMS; idim++)
     {
       m_highestBins[idim] = binData[idim].set()->size() - 1;
-      m_binData[idim] = binData[idim].data().ref();
+      m_binData[idim] = binData[idim].data().data();
     }
   }
 
@@ -535,28 +532,27 @@ public:
     //       to handle points on the upper boundaries of the bbox
     //       This is valid since we've already ensured that pt is in the bbox.
 
-    BitsetView cellData[NDIMS];
+    IndexType cellIdx[NDIMS];
     for(int idim = 0; idim < NDIMS; idim++)
     {
-      IndexType idx =
+      cellIdx[idim] =
         axom::utilities::clampUpper(gridCell[idim], m_highestBins[idim]);
-      cellData[idim] = m_binData[idim][idx];
     }
 
     // HACK: we use the underlying word data in the bitsets
     // is it possible to lazy-evaluate whole-bitset operations?
-    int nwords = 1 + (cellData[0].size() - 1) / BitsetType::BitsPerWord;
+    int nbits = m_binData[0][0].size();
+    int nwords = 1 + (nbits - 1) / BitsetType::BitsPerWord;
     for(int iword = 0; iword <= nwords; iword++)
     {
       BitsetType::Word currWord = ~(BitsetType::Word {0});
       for(int idim = 0; idim < NDIMS; idim++)
       {
-        currWord &= cellData[idim].data()[iword];
+        currWord &= m_binData[idim][cellIdx[idim]].data()[iword];
       }
       // currWord now contains the resulting candidacy information
       // for our given point
-      int numBits =
-        axom::utilities::min(bitsPerWord, cellData[0].size() - (iword * 64));
+      int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
       for(int ibit = 0; ibit < numBits; ibit++)
       {
         BitsetType::Word mask = BitsetType::Word {1} << ibit;
@@ -627,7 +623,7 @@ private:
   IndexType m_highestBins[NDIMS];
 
   //! The data associated with each bin
-  typename BitMapRef::OrderedMap m_binData[NDIMS];
+  const BitsetType* m_binData[NDIMS];
 };
 
 template <int NDIMS, typename ExecSpace, typename IndexType>

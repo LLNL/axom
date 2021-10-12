@@ -9,8 +9,6 @@ namespace axom
 {
 namespace slam
 {
-BitSet::Index const BitSet::npos = -2;
-
 void BitSet::clear()
 {
   for(int i = 0; i < m_numWords; ++i)
@@ -83,7 +81,7 @@ bool BitSet::isValid() const
   else
   {
     // check num words vs. num bits
-    int expWords = (m_numBits - 1) / BITS_PER_WORD + 1;
+    int expWords = (m_numBits - 1) / BitsPerWord + 1;
     if(expWords != m_numWords) valid = false;
 
     // check that highest bits are not set
@@ -118,15 +116,15 @@ BitSet::Index BitSet::find_next(Index idx) const
     checkValidIndex(idx);
 
     const Index startIdx = idx + 1;
-    startWordIdx = startIdx / BITS_PER_WORD;
+    startWordIdx = startIdx / BitsPerWord;
 
     // Check for next set bit in current word
-    const Index startOffset = startIdx % BITS_PER_WORD;
+    const Index startOffset = startIdx % BitsPerWord;
 
     const Word startWord = m_data[startWordIdx] >> startOffset;
     if(startWord != Word(0))
     {
-      return (startWordIdx * BITS_PER_WORD) +
+      return (startWordIdx * BitsPerWord) +
         internal::trailingZeros(startWord << startOffset);
     }
 
@@ -139,7 +137,7 @@ BitSet::Index BitSet::find_next(Index idx) const
     const Word& w = m_data[i];
     if(w != Word(0))
     {
-      return (i * BITS_PER_WORD) + internal::trailingZeros(w);
+      return (i * BitsPerWord) + internal::trailingZeros(w);
     }
   }
   return BitSet::npos;
