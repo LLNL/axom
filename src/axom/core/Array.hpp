@@ -585,13 +585,13 @@ public:
    * \pre 0 <= idx < m_num_elements
    */
   /// @{
-  T& operator[](const IndexType idx)
+  AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
     assert(inBounds(idx));
     return m_data[idx];
   }
   /// \overload
-  const T& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE const T& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return m_data[idx];
@@ -604,8 +604,8 @@ public:
    */
   /// @{
 
-  T* data() { return m_data; }
-  const T* data() const { return m_data; }
+  AXOM_HOST_DEVICE T* data() { return m_data; }
+  AXOM_HOST_DEVICE const T* data() const { return m_data; }
 
   /// @}
 
@@ -1000,7 +1000,7 @@ protected:
   /// @{
 
   /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
+  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < m_num_elements;
   }
