@@ -92,6 +92,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Moved `axom::MCArray` and the `sidre::Array` it was based on into `mint`
   as `axom::deprecated::MCArray` and `sidre::deprecated::MCArray`, respectively.
   `sidre::Array` is now based on `axom::Array`.
+- `utilities::string::split` now returns a vector instead of using an out-parameter,
+  Inlet's string utilities were moved to Core, and `splitLastNTokens` was renamed to `rsplitN`
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length

@@ -196,7 +196,7 @@ TEST(utils_stringUtilities, split)
   }
 }
 
-TEST(utils_stringUtilities, splitLastNTokens)
+TEST(utils_stringUtilities, rsplitN)
 {
   using StrVec = std::vector<std::string>;
 
@@ -205,8 +205,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     const std::size_t N = 3;
     std::string testString = "foo/bar/baz";
     StrVec exp {"foo", "bar", "baz"};
-    StrVec results =
-      axom::utilities::string::splitLastNTokens(testString, N, '/');
+    StrVec results = axom::utilities::string::rsplitN(testString, N, '/');
     EXPECT_LE(results.size(), N);
     EXPECT_EQ(exp, results);
   }
@@ -216,8 +215,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     const std::size_t N = 2;
     std::string testString = "foo/bar/baz";
     StrVec exp {"foo/bar", "baz"};
-    StrVec results =
-      axom::utilities::string::splitLastNTokens(testString, N, '/');
+    StrVec results = axom::utilities::string::rsplitN(testString, N, '/');
     EXPECT_LE(results.size(), N);
     EXPECT_EQ(exp, results);
   }
@@ -227,8 +225,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     const std::size_t N = 1;
     std::string testString = "foo/bar/baz";
     StrVec exp {"foo/bar/baz"};
-    StrVec results =
-      axom::utilities::string::splitLastNTokens(testString, N, '/');
+    StrVec results = axom::utilities::string::rsplitN(testString, N, '/');
     EXPECT_LE(results.size(), N);
     EXPECT_EQ(exp, results);
   }
@@ -238,8 +235,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     const std::size_t N = 10;
     std::string testString = "foo/bar/baz";
     StrVec exp {"foo", "bar", "baz"};
-    StrVec results =
-      axom::utilities::string::splitLastNTokens(testString, N, '/');
+    StrVec results = axom::utilities::string::rsplitN(testString, N, '/');
     EXPECT_LE(results.size(), N);
     EXPECT_EQ(exp, results);
   }
@@ -249,19 +245,17 @@ TEST(utils_stringUtilities, splitLastNTokens)
     const std::size_t N = 0;
     std::string testString = "foo/bar/baz";
     StrVec exp;
-    StrVec results =
-      axom::utilities::string::splitLastNTokens(testString, N, '/');
+    StrVec results = axom::utilities::string::rsplitN(testString, N, '/');
     EXPECT_TRUE(results.empty());
     EXPECT_EQ(exp, results);
   }
 
-  // Test w/ empty string
+  // Test w/ empty stringrsplitN
   {
     const std::size_t N = 3;
     std::string testString = "";
     StrVec exp;
-    StrVec results =
-      axom::utilities::string::splitLastNTokens(testString, N, '/');
+    StrVec results = axom::utilities::string::rsplitN(testString, N, '/');
     EXPECT_LE(results.size(), N);
     EXPECT_EQ(exp, results);
   }
@@ -271,8 +265,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     const std::size_t N = 3;
     std::string testString = "foo";
     StrVec exp {"foo"};
-    StrVec results =
-      axom::utilities::string::splitLastNTokens(testString, N, '/');
+    StrVec results = axom::utilities::string::rsplitN(testString, N, '/');
     EXPECT_LE(results.size(), N);
     EXPECT_EQ(exp, results);
   }
@@ -282,8 +275,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     const std::size_t N = 3;
     std::string testString = "foo.bar/baz.qux";
     StrVec exp {"foo.bar", "baz.qux"};
-    StrVec results =
-      axom::utilities::string::splitLastNTokens(testString, N, '/');
+    StrVec results = axom::utilities::string::rsplitN(testString, N, '/');
     EXPECT_LE(results.size(), N);
     EXPECT_EQ(exp, results);
   }
@@ -293,8 +285,7 @@ TEST(utils_stringUtilities, splitLastNTokens)
     const std::size_t N = 3;
     std::string testString = "foo.bar/baz.qux";
     StrVec exp {"foo", "bar/baz", "qux"};
-    StrVec results =
-      axom::utilities::string::splitLastNTokens(testString, N, '.');
+    StrVec results = axom::utilities::string::rsplitN(testString, N, '.');
     EXPECT_LE(results.size(), N);
     EXPECT_EQ(exp, results);
   }
