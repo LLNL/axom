@@ -338,12 +338,23 @@ object. This is a list where each entry has the following values:
   converted to `end_units` after applying all operations.
 
 The example below demonstrates how to create and then use a named operator.
-Note that :code:`ref` is just one entry in the list of operators, and
-additional operators may be used.
+Notice how we can use multiple :code:`ref` entries in the list of
+operators and we can intermix these with other operators as needed.
 
 .. code-block:: yaml
 
     dimensions: 2
+
+    named_operators:
+      - name: MyFirstOperator
+        units: cm
+        value:
+          - translate: [10, 20]
+          - scale: 1.5
+      - name: AnotherOperator
+        unit: cm
+        value:
+          - translate: [30, 40]
 
     shapes:
       - name: wheel
@@ -355,13 +366,7 @@ additional operators may be used.
           operators:
             - ref: MyFirstOperator
             - rotate: 90
-
-    named_operators:
-      - name: MyFirstOperator
-        units: cm
-        value:
-          - translate: [10, 20]
-          - scale: 1.5
+            - ref: AnotherOperator
 
 An important thing to note is that the units of the named operator and
 the shape that uses it do not have to match. The appropriate conversions

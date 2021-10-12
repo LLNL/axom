@@ -79,6 +79,27 @@ std::unordered_set<std::string> getChildNames(const inlet::Container &container)
 /**
  * Verify that a Container has the correct fields.
  *
+ * While Inlet can do a lot of the verification, there are some situations
+ * where we need some extra manual checks. For example, operators can look
+ * like this:
+ *
+ * \code{.yaml}
+ *
+ * operators:
+ *   - translate: [10, 20, 30]
+ *   - rotate: 90
+ *     center: [1, 2, 3]
+ *     axis: [4, 5, 6]
+ *
+ * \endcode
+ *
+ * In the above, "translate", "rotate", "center", and "axis" are all valid
+ * entries, but not in arbitrary combinations. You can't specify both
+ * "translate" and "axis", for example, or "translate" and "rotate" within
+ * the same entry.
+ *
+ * This function can be used to handle cases like the above.
+ *
  * \param containerToTest the Container to test
  * \param name the name of the container. This must be one of its fields.
  * \param additionalRequiredFields any additional required fields
@@ -204,16 +225,16 @@ OpPtr makeCheckedSlice(Point3D origin,
 /**
  * Get the origin to use for a perpendicular slice.
  *
- * \param sliceProxy the Proxy describing the slice
+ * \param sliceContainer the Container describing the slice
  * \param planeName the name of the plane ("x", "y", or "z")
  * \param defaultNormal the default normal vector
  * \return the point to use as the origin
  */
-primal::Point3D getPerpendicularSliceOrigin(const inlet::Proxy &sliceProxy,
+primal::Point3D getPerpendicularSliceOrigin(const inlet::Container &sliceContainer,
                                             char const *planeName,
                                             const primal::Vector3D &defaultNormal)
 {
-  double axisIntercept = sliceProxy[planeName];
+  double axisIntercept = sliceContainer[planeName];
 
   primal::Point3D defaultOrigin;
   int nonZeroIndex = -1;
@@ -226,16 +247,16 @@ primal::Point3D getPerpendicularSliceOrigin(const inlet::Proxy &sliceProxy,
     }
   }
 
-  if(!sliceProxy.contains("origin"))
+  if(!sliceContainer.contains("origin"))
   {
     return defaultOrigin;
   }
 
-  primal::Point3D givenOrigin = toPoint(sliceProxy, "origin", Dimensions::Three);
+  primal::Point3D givenOrigin = toPoint(sliceContainer, "origin", Dimensions::Three);
   if(givenOrigin[nonZeroIndex] != axisIntercept)
   {
     throw KleeError(
-      {sliceProxy["origin"].name(), "The origin must be on the slice plane"});
+      {sliceContainer["origin"].name(), "The origin must be on the slice plane"});
   }
   return givenOrigin;
 }
@@ -243,25 +264,25 @@ primal::Point3D getPerpendicularSliceOrigin(const inlet::Proxy &sliceProxy,
 /**
  * Get the normal vector to use for a perpendicular slice.
  *
- * \param sliceProxy the Proxy describing the slice
+ * \param sliceContainer the Container describing the slice
  * \param defaultNormal the default normal vector
  * \return the vector to use as the normal
  */
-primal::Vector3D getPerpendicularSliceNormal(const inlet::Proxy &sliceProxy,
+primal::Vector3D getPerpendicularSliceNormal(const inlet::Container &sliceContainer,
                                              const primal::Vector3D &defaultNormal)
 {
-  if(!sliceProxy.contains("normal"))
+  if(!sliceContainer.contains("normal"))
   {
     return defaultNormal;
   }
 
   primal::Vector3D givenNormal =
-    toVector(sliceProxy, "normal", Dimensions::Three);
+    toVector(sliceContainer, "normal", Dimensions::Three);
   auto cross = primal::Vector3D::cross_product(givenNormal, defaultNormal);
   bool parallel = cross.is_zero();
   if(!parallel)
   {
-    throw KleeError({sliceProxy["normal"].name(), "Invalid normal"});
+    throw KleeError({sliceContainer["normal"].name(), "Invalid normal"});
   }
   return givenNormal;
 }
@@ -318,8 +339,7 @@ OpPtr parseSlice(const inlet::Container &opContainer,
   verifyObjectFields(opContainer, "slice", FieldSet {}, FieldSet {});
   auto &sliceContainer =
     *opContainer.getChildContainers().at(opContainer.name() + "/slice").get();
-  inlet::Proxy sliceProxy {sliceContainer};
-  if(sliceProxy.contains("x"))
+  if(sliceContainer.contains("x"))
   {
     return readPerpendicularSlice(sliceContainer,
                                   "x",
@@ -327,7 +347,7 @@ OpPtr parseSlice(const inlet::Container &opContainer,
                                   {0, 0, 1},
                                   startProperties);
   }
-  else if(sliceProxy.contains("y"))
+  else if(sliceContainer.contains("y"))
   {
     return readPerpendicularSlice(sliceContainer,
                                   "y",
@@ -335,7 +355,7 @@ OpPtr parseSlice(const inlet::Container &opContainer,
                                   {1, 0, 0},
                                   startProperties);
   }
-  else if(sliceProxy.contains("z"))
+  else if(sliceContainer.contains("z"))
   {
     return readPerpendicularSlice(sliceContainer,
                                   "z",
@@ -346,11 +366,11 @@ OpPtr parseSlice(const inlet::Container &opContainer,
 
   verifyObjectFields(sliceContainer, "origin", {"normal", "up"}, FieldSet {});
 
-  return makeCheckedSlice(toPoint(sliceProxy, "origin", Dimensions::Three),
-                          toVector(sliceProxy, "normal", Dimensions::Three),
-                          toVector(sliceProxy, "up", Dimensions::Three),
+  return makeCheckedSlice(toPoint(sliceContainer, "origin", Dimensions::Three),
+                          toVector(sliceContainer, "normal", Dimensions::Three),
+                          toVector(sliceContainer, "up", Dimensions::Three),
                           startProperties,
-                          sliceProxy.name());
+                          sliceContainer.name());
 }
 
 /**

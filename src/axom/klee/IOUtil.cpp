@@ -54,14 +54,14 @@ T toArrayLike(inlet::Proxy const &parent,
   return defaultValue;
 }
 
-primal::Point3D toPoint(inlet::Proxy const &parent,
+primal::Point3D toPoint(inlet::Container const &parent,
                         char const *fieldName,
                         Dimensions expectedDims)
 {
   return toArrayLike<primal::Point3D>(parent, fieldName, expectedDims);
 }
 
-primal::Point3D toPoint(inlet::Proxy const &parent,
+primal::Point3D toPoint(inlet::Container const &parent,
                         char const *fieldName,
                         Dimensions expectedDims,
                         const primal::Point3D &defaultValue)
@@ -69,14 +69,14 @@ primal::Point3D toPoint(inlet::Proxy const &parent,
   return toArrayLike(parent, fieldName, expectedDims, defaultValue);
 }
 
-primal::Vector3D toVector(inlet::Proxy const &parent,
+primal::Vector3D toVector(inlet::Container const &parent,
                           char const *fieldName,
                           Dimensions expectedDims)
 {
   return toArrayLike<primal::Vector3D>(parent, fieldName, expectedDims);
 }
 
-primal::Vector3D toVector(inlet::Proxy const &parent,
+primal::Vector3D toVector(inlet::Container const &parent,
                           char const *fieldName,
                           Dimensions expectedDims,
                           const primal::Vector3D &defaultValue)
@@ -85,19 +85,19 @@ primal::Vector3D toVector(inlet::Proxy const &parent,
 }
 
 std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
-  const inlet::Proxy &proxy)
+  const inlet::Container &container)
 {
-  bool hasStartUnits = proxy.contains("start_units");
-  bool hasEndUnits = proxy.contains("end_units");
-  if(proxy.contains("units"))
+  bool hasStartUnits = container.contains("start_units");
+  bool hasEndUnits = container.contains("end_units");
+  if(container.contains("units"))
   {
     if(hasStartUnits || hasEndUnits)
     {
       throw KleeError(
-        {proxy.name(),
+        {container.name(),
          "Can't specify 'units' with 'start_units' or 'end_units'"});
     }
-    auto units = parseLengthUnits(proxy["units"]);
+    auto units = parseLengthUnits(container["units"]);
     return std::make_tuple(units, units);
   }
   else if(hasStartUnits || hasEndUnits)
@@ -105,21 +105,21 @@ std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
     if(!(hasStartUnits && hasEndUnits))
     {
       throw KleeError(
-        {proxy.name(), "Must specify both 'start_units' and 'end_units'"});
+        {container.name(), "Must specify both 'start_units' and 'end_units'"});
     }
-    auto startUnits = parseLengthUnits(proxy["start_units"]);
-    auto endUnits = parseLengthUnits(proxy["end_units"]);
+    auto startUnits = parseLengthUnits(container["start_units"]);
+    auto endUnits = parseLengthUnits(container["end_units"]);
     return std::make_tuple(startUnits, endUnits);
   }
   return std::make_tuple(LengthUnit::unspecified, LengthUnit::unspecified);
 }
 
-std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy)
+std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Container &container)
 {
-  auto units = getOptionalStartAndEndUnits(proxy);
+  auto units = getOptionalStartAndEndUnits(container);
   if(std::get<0>(units) == LengthUnit::unspecified)
   {
-    throw KleeError({proxy.name(), "Did not specify units"});
+    throw KleeError({container.name(), "Did not specify units"});
   }
   return units;
 }

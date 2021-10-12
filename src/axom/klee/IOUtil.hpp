@@ -48,7 +48,7 @@ std::vector<double> toDoubleVector(inlet::Proxy const &field,
  * @param expectedDims the expected dimensionality of the point
  * @return the field as a primal::Point3D
  */
-primal::Point3D toPoint(inlet::Proxy const &parent,
+primal::Point3D toPoint(inlet::Container const &parent,
                         char const *fieldName,
                         Dimensions expectedDims);
 
@@ -63,7 +63,7 @@ primal::Point3D toPoint(inlet::Proxy const &parent,
  * @param defaultValue the default value of the field if it is not present
  * @return the field as a primal::Point3D
  */
-primal::Point3D toPoint(inlet::Proxy const &parent,
+primal::Point3D toPoint(inlet::Container const &parent,
                         char const *fieldName,
                         Dimensions expectedDims,
                         const primal::Point3D &defaultValue);
@@ -77,7 +77,7 @@ primal::Point3D toPoint(inlet::Proxy const &parent,
  * @param expectedDims the expected dimensionality of the vector
  * @return the field as a primal::Vector3D
  */
-primal::Vector3D toVector(inlet::Proxy const &parent,
+primal::Vector3D toVector(inlet::Container const &parent,
                           char const *fieldName,
                           Dimensions expectedDims);
 
@@ -92,39 +92,39 @@ primal::Vector3D toVector(inlet::Proxy const &parent,
  * @param defaultValue the default value of the field if it is not present
  * @return the field as a primal::Vector3D
  */
-primal::Vector3D toVector(inlet::Proxy const &parent,
+primal::Vector3D toVector(inlet::Container const &parent,
                           char const *fieldName,
                           Dimensions expectedDims,
                           const primal::Vector3D &defaultValue);
 
 /**
- * Get the start and end units in a Proxy.
+ * Get the start and end units in a Container.
  *
- * The Proxy may either have a "units" field, or a "start_units" and "end_units".
+ * The Container may either have a "units" field, or a "start_units" and "end_units".
  * In the first case, "units" will be used for both the start and end. In the
  * second, both must be present. In the case where no units are present at
  * all, both returned units will be LengthUnit::unspecified.
  *
- * \param proxy the Proxy from which to get the units
+ * \param container the Container from which to get the units
  * \return the start and end units
  * \throws KleeError if an invalid combination of fields is specified
  */
 std::tuple<LengthUnit, LengthUnit> getOptionalStartAndEndUnits(
-  const inlet::Proxy &proxy);
+  const inlet::Container &container);
 
 /**
- * Get the start and end units in a Proxy.
+ * Get the start and end units in a Container.
  *
- * The Proxy may either have a "units" field, or a "start_units" and "end_units".
+ * The Container may either have a "units" field, or a "start_units" and "end_units".
  * In the first case, "units" will be used for both the start and end. In the
  * second, both must be present.
  *
- * \param proxy the Proxy from which to get the units
+ * \param container the Container from which to get the units
  * \return the start and end units
  * \throws KleeError if an invalid combination of fields is
  * specified or if no units are specified.
  */
-std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Proxy &proxy);
+std::tuple<LengthUnit, LengthUnit> getStartAndEndUnits(const inlet::Container &container);
 
 /**
  * Define the schema for units. This is the schema that will be

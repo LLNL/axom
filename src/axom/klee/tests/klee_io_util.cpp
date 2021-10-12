@@ -215,7 +215,7 @@ Point3D parsePoint(const char *value, Dimensions dims)
   return parseArray<Point3D>(
     value,
     dims,
-    static_cast<Point3D (*)(const inlet::Proxy &, char const *, Dimensions)>(
+    static_cast<Point3D (*)(const inlet::Container &, char const *, Dimensions)>(
       toPoint));
 }
 
@@ -226,7 +226,7 @@ Point3D parsePoint(const char *value, Dimensions dims, Point3D defaultValue)
     dims,
     defaultValue,
     static_cast<
-      Point3D (*)(const inlet::Proxy &, char const *, Dimensions, const Point3D &)>(
+      Point3D (*)(const inlet::Container &, char const *, Dimensions, const Point3D &)>(
       toPoint));
 }
 
@@ -235,7 +235,7 @@ Vector3D parseVector(const char *value, Dimensions dims)
   return parseArray<Vector3D>(
     value,
     dims,
-    static_cast<Vector3D (*)(const inlet::Proxy &, char const *, Dimensions)>(
+    static_cast<Vector3D (*)(const inlet::Container &, char const *, Dimensions)>(
       toVector));
 }
 
@@ -246,7 +246,7 @@ Vector3D parseVector(const char *value, Dimensions dims, Vector3D defaultValue)
     dims,
     defaultValue,
     static_cast<Vector3D (
-        *)(const inlet::Proxy &, char const *, Dimensions, const Vector3D &)>(
+        *)(const inlet::Container &, char const *, Dimensions, const Vector3D &)>(
       toVector));
 }
 
