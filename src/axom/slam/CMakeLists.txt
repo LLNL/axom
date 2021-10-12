@@ -35,6 +35,7 @@ set(slam_headers
     policies/StridePolicies.hpp
     policies/IndirectionPolicies.hpp
     policies/SubsettingPolicies.hpp
+    policies/StoragePolicies.hpp
     policies/PolicyTraits.hpp
 
     # SRM Set headers
