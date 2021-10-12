@@ -36,7 +36,7 @@ std::string getHostName()
 
 #ifdef WIN32
   DWORD bufCharCount = INFO_BUFFER_SIZE;
-  if(!GetComputerName(infoBuf, &bufCharCount))
+  if(GetComputerName(infoBuf, &bufCharCount))
   {
     hostName = std::string(infoBuf);
   }

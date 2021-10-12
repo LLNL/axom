@@ -10,6 +10,7 @@
 # List of single source file examples
 #------------------------------------------------------------------------------
 set(example_sources
+    sidre_data_vs_metadata.cpp
     sidre_stressgroups.cpp
     sidre_shocktube.cpp
 )
