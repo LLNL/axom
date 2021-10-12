@@ -74,7 +74,7 @@ std::string appendPrefix(const std::string& prefix,
 {
   if(prefix.empty() || name.empty())
   {
-    return {};
+    return name;
   }
   else
   {
