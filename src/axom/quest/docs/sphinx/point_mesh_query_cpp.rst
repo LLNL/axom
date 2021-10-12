@@ -95,6 +95,7 @@ OpenMP or on a GPU.
    :language: C++
 
 Test a query point.
+
 .. code-block:: C++
 
    axom::primal::Point< double,3 > pt =
@@ -102,6 +103,7 @@ Test a query point.
    double signedDistance = signed_distance.computeDistance(pt);
 
 Test a batch of query points.
+
 .. code-block:: C++
 
    const int numPoints = 20;
