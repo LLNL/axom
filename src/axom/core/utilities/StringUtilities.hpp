@@ -106,36 +106,46 @@ void toUpper(std::string& str);
  * \param [in] delim The delimiter to split with
  * 
  * \return A list of tokens (of size \a n )
+ * \note If @a delim is not found in the input string, the full input string is returned
  * 
  * Splits a string starting from the end of the string into a maximum of \a n tokens
  */
-std::vector<std::string> splitLastNTokens(const std::string& input,
-                                          const std::size_t n,
-                                          const char delim);
+std::vector<std::string> rsplitN(const std::string& input,
+                                 const std::size_t n,
+                                 const char delim);
 
 /*!
 *****************************************************************************
 * \brief This function appends the prefix name to the ending name.
 *
-* \param [in] The prefix string name.
-* \param [in] The ending string name.
+* \param [in] prefix The prefix string name.
+* \param [in] name The ending string name.
+* \param [in] delim The delimiting character inserted between the prefix and the name, if both are non-empty
 *
 * \return The appended string.
 *****************************************************************************
 */
-std::string appendPrefix(const std::string& prefix, const std::string& name);
+std::string appendPrefix(const std::string& prefix,
+                         const std::string& name,
+                         const char delim = '/');
 
 /*!
 *****************************************************************************
-* \brief This function returns the tail of a string following a given prefix
+* \brief This function returns the tail of a string following a given prefix plus a delimiter
 *
-* \param [in] The prefix of the name, to be removed.
-* \param [in] The full name.
+* \param [in] prefix The prefix of the name, to be removed.
+* \param [in] name The full name.
+* \param [in] delim The delimiting character "expected" to separate the prefix and the return value
 *
 * \return The extracted string.
+*
+* For example, removePrefix("foo", "foo/bar") will return "bar".
+* If the prefix is empty or not found the full @a name string is returned.
 *****************************************************************************
 */
-std::string removePrefix(const std::string& prefix, const std::string& name);
+std::string removePrefix(const std::string& prefix,
+                         const std::string& name,
+                         const char delim = '/');
 
 /*!
 *****************************************************************************

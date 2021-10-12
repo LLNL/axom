@@ -53,7 +53,7 @@ mfem::QuadratureSpace* NewQuadratureSpace(const std::string& name,
                                           Mesh* mesh,
                                           int& vdim)
 {
-  const auto tokens = utilities::string::splitLastNTokens(name, 4, '_');
+  const auto tokens = utilities::string::rsplitN(name, 4, '_');
   // Uses raw pointers for consistency with MFEM
   mfem::QuadratureSpace* qspace = nullptr;
   if((tokens.size() == 4) && (tokens[0] == "QF"))
@@ -1654,7 +1654,7 @@ View* MFEMSidreDataCollection::getFieldValuesView(const std::string& field_name)
 
 void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 {
-  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
+  const auto tokens = utilities::string::rsplitN(field_name, 2, '_');
   // Expecting [base_field_name, material_id]
   if(tokens.size() != 2)
   {
@@ -1680,7 +1680,7 @@ void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 
 void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
 {
-  const auto tokens = utilities::string::splitLastNTokens(field_name, 3, '_');
+  const auto tokens = utilities::string::rsplitN(field_name, 3, '_');
   // Expecting [base_field_name, material_id, component]
   if(tokens.size() != 3)
   {
@@ -1708,7 +1708,7 @@ void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
 void MFEMSidreDataCollection::checkForMaterialDependentField(
   const std::string& field_name)
 {
-  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
+  const auto tokens = utilities::string::rsplitN(field_name, 2, '_');
   // Expecting [base_field_name, material_id]
   if(tokens.size() != 2)
   {

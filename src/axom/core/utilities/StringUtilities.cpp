@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <iostream>
 
 #include "axom/fmt.hpp"
 
@@ -43,9 +42,9 @@ void toUpper(std::string& str)
   });
 }
 
-std::vector<std::string> splitLastNTokens(const std::string& input,
-                                          const std::size_t n,
-                                          const char delim)
+std::vector<std::string> rsplitN(const std::string& input,
+                                 const std::size_t n,
+                                 const char delim)
 {
   std::vector<std::string> result;
 
@@ -69,27 +68,32 @@ std::vector<std::string> splitLastNTokens(const std::string& input,
   return result;
 }
 
-std::string appendPrefix(const std::string& prefix, const std::string& name)
+std::string appendPrefix(const std::string& prefix,
+                         const std::string& name,
+                         const char delim)
 {
-  return (prefix == "") ? name : prefix + "/" + name;
+  if(prefix.empty() || name.empty())
+  {
+    return {};
+  }
+  else
+  {
+    return prefix + std::string(1, delim) + name;
+  }
 }
 
-std::string removePrefix(const std::string& prefix, const std::string& name)
+std::string removePrefix(const std::string& prefix,
+                         const std::string& name,
+                         const char delim)
 {
   if(prefix.empty())
   {
     return name;
   }
-  else if(axom::utilities::string::startsWith(name, prefix + "/"))
+  else if(startsWith(name, prefix + std::string(1, delim)))
   {
     return name.substr(prefix.size());
   }
-  std::cerr << axom::fmt::format(
-                 "Provided name {0} does not "
-                 "contain prefix {1}",
-                 name,
-                 prefix)
-            << std::endl;
   return name;
 }
 
