@@ -13,6 +13,7 @@ set(core_headers
 
     ## utilities
     utilities/AnnotationMacros.hpp
+    utilities/BitUtilities.hpp
     utilities/FileUtilities.hpp
     utilities/StringUtilities.hpp
     utilities/System.hpp

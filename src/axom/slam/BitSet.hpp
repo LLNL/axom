@@ -15,9 +15,8 @@
 #include "axom/config.hpp"
 #include "axom/core/Array.hpp"
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/BitUtilities.hpp"
 #include "axom/slic.hpp"
-
-#include "axom/slam/internal/BitTwiddle.hpp"
 
 #include <vector>
 
@@ -117,12 +116,13 @@ public:
   using ArrayType = axom::Array<Word>;
 
   static constexpr Index npos = -2;
-  static constexpr int BitsPerWord = internal::BitTraits<Word>::BITS_PER_WORD;
+  static constexpr int BitsPerWord =
+    axom::utilities::BitTraits<Word>::BITS_PER_WORD;
 
 private:
   enum
   {
-    LG_BITS_PER_WORD = internal::BitTraits<Word>::LG_BITS_PER_WORD
+    LG_BITS_PER_WORD = axom::utilities::BitTraits<Word>::LG_BITS_PER_WORD
   };
 
 public:

@@ -48,7 +48,6 @@ set(slam_headers
     Set.hpp
     BivariateSet.hpp
     BitSet.hpp
-    internal/BitTwiddle.hpp
     RelationSet.hpp
 
     # SRM Relation headers

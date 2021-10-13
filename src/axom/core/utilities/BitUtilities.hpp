@@ -3,22 +3,23 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
- * \file BitTwiddle
+/*!
  *
- * \brief Some bit twiddling operations in support of slam::BitSet
+ * \file BitUtilities.hpp
+ *
+ * \brief Header file containing bitwise utility functions.
+ *
  */
 
-#ifndef SLAM_BIT_TWIDDLE_H_
-#define SLAM_BIT_TWIDDLE_H_
+#ifndef AXOM_BIT_UTILITIES_HPP
+#define AXOM_BIT_UTILITIES_HPP
 
+#include "axom/core/Macros.hpp"  // for AXOM_DEVICE_CODE
 #include "axom/core/Types.hpp"
 
 namespace axom
 {
-namespace slam
-{
-namespace internal
+namespace utilities
 {
 /**
  * Helper traits template for determining the number of bits and bytes
@@ -66,7 +67,7 @@ struct BitTraits<axom::uint8>
  * starting with the least significant bit, or 64 if \a word == 0.
  */
 /* clang-format off */
-inline int trailingZeros(axom::uint64 word)
+AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
 {
   // Explicit implementation adapted from bit twiddling hacks
   // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightParallel
@@ -89,8 +90,12 @@ inline int trailingZeros(axom::uint64 word)
 /* clang-format on */
 
 /** Counts the number of set bits in \a word */
-inline int popCount(axom::uint64 word)
+AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
 {
+#ifdef AXOM_DEVICE_CODE
+  // Use CUDA intrinsic for popcount
+  return __popcll(word);
+#else
   // 64 bit popcount implementation from:
   // http://chessprogramming.wikispaces.com/Population+Count#SWARPopcount
 
@@ -108,10 +113,10 @@ inline int popCount(axom::uint64 word)
   word = (word & masks[1]) + ((word >> 2) & masks[1]);
   word = (word + (word >> 4)) & masks[2];
   return static_cast<int>((word * masks[3]) >> 56);
+#endif
 }
 
-}  // end namespace internal
-}  // end namespace slam
-}  // end namespace axom
+}  // namespace utilities
+}  // namespace axom
 
-#endif  //  SLAM_BIT_TWIDDLE_H_
+#endif  // AXOM_BIT_UTILITIES_HPP

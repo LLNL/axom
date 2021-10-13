@@ -3,7 +3,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "BitSet.hpp"
+#include "axom/core/utilities/BitUtilities.hpp"
+
+#include "axom/slam/BitSet.hpp"
 
 namespace axom
 {
@@ -57,7 +59,7 @@ int BitSet::count() const
 
   for(int i = 0; i < m_numWords; ++i)
   {
-    ctr += internal::popCount(m_data[i]);
+    ctr += axom::utilities::popCount(m_data[i]);
   }
   return ctr;
 }
@@ -125,7 +127,7 @@ BitSet::Index BitSet::find_next(Index idx) const
     if(startWord != Word(0))
     {
       return (startWordIdx * BitsPerWord) +
-        internal::trailingZeros(startWord << startOffset);
+        axom::utilities::trailingZeros(startWord << startOffset);
     }
 
     ++startWordIdx;
@@ -137,7 +139,7 @@ BitSet::Index BitSet::find_next(Index idx) const
     const Word& w = m_data[i];
     if(w != Word(0))
     {
-      return (i * BitsPerWord) + internal::trailingZeros(w);
+      return (i * BitsPerWord) + axom::utilities::trailingZeros(w);
     }
   }
   return BitSet::npos;
