@@ -53,7 +53,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Adds a `clip()` operator for computing the intersection of a `Tetrahedron` and an `Octahedron` as a `Polyhedron`
 - Klee: Adds a new component, `klee`, for specifying non-conformal shape overlays for materials onto simulation meshes.
   This component defines a schema for defining, transforming and overlaying 2D and 3D shapes
-  and validates klee input files.
+  and validates klee input files. See the [klee documentation](https://axom.readthedocs.io/en/latest/axom/klee/docs/sphinx) for more information.
 - Quest: Adds a new query for sampling-based "shaping" onto low- or high-order computational meshes
 - Quest: Adds a new query for intersection-based "shaping" of revolved contours onto 3D hexahedral meshes.
   This capability uses a RAJA policy operate on various execution spaces (host, openmp, device).
