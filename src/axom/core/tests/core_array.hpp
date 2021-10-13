@@ -1162,4 +1162,72 @@ TEST(core_array, check_multidimensional)
   }
 }
 
+//------------------------------------------------------------------------------
+TEST(core_array, check_multidimensional_view)
+{
+  constexpr int MAGIC_INT = 255;
+  constexpr double MAGIC_DOUBLE = 5683578.8;
+
+  // First test multidimensional int arrays
+  int v_int_arr[] = {MAGIC_INT, MAGIC_INT, MAGIC_INT, MAGIC_INT};
+  ArrayView<int, 2> v_int_view(v_int_arr, 2, 2);
+  // Make sure the number of elements and contents are correct
+  EXPECT_EQ(v_int_view.size(), 2 * 2);
+  std::array<IndexType, 2> expected_shape = {2, 2};
+  EXPECT_EQ(v_int_view.shape(), expected_shape);
+  for(const auto val : v_int_view)
+  {
+    EXPECT_EQ(val, MAGIC_INT);
+  }
+  // Then assign different values to each element
+  v_int_view(0, 0) = 1;
+  v_int_view(0, 1) = 2;
+  v_int_view(1, 0) = 3;
+  v_int_view(1, 1) = 4;
+
+  // FIXME: Should we add a std::initializer_list ctor?
+  int v_int_flat_arr[] = {1, 2, 3, 4};
+  ArrayView<int> v_int_flat_view(v_int_flat_arr, 4);
+  std::array<IndexType, 1> expected_flat_shape = {4};
+  EXPECT_EQ(v_int_flat_view.shape(), expected_flat_shape);
+
+  for(int i = 0; i < v_int_flat_view.size(); i++)
+  {
+    // For a multidim array, op[] is a "flat" index into the raw data
+    EXPECT_EQ(v_int_view[i], v_int_flat_view[i]);
+  }
+
+  double v_double_arr[4 * 3 * 2];
+  std::fill_n(v_double_arr, 4 * 3 * 2, MAGIC_DOUBLE);
+  ArrayView<double, 3> v_double_view(v_double_arr, 4, 3, 2);
+  EXPECT_EQ(v_double_view.size(), 4 * 3 * 2);
+  std::array<IndexType, 3> expected_double_shape = {4, 3, 2};
+  EXPECT_EQ(v_double_view.shape(), expected_double_shape);
+  for(const auto val : v_double_view)
+  {
+    EXPECT_EQ(val, MAGIC_DOUBLE);
+  }
+
+  double v_double_flat_arr[4 * 3 * 2];
+  ArrayView<double> v_double_flat_view(v_double_flat_arr, 4 * 3 * 2);
+  int double_flat_idx = 0;
+  for(int i = 0; i < v_double_view.shape()[0]; i++)
+  {
+    for(int j = 0; j < v_double_view.shape()[1]; j++)
+    {
+      for(int k = 0; k < v_double_view.shape()[2]; k++)
+      {
+        v_double_view(i, j, k) = (i * i) + (5 * j) + k;
+        v_double_flat_view[double_flat_idx++] = (i * i) + (5 * j) + k;
+      }
+    }
+  }
+
+  for(int i = 0; i < v_double_view.size(); i++)
+  {
+    // For a multidim array, op[] is a "flat" index into the raw data
+    EXPECT_EQ(v_double_view[i], v_double_flat_view[i]);
+  }
+}
+
 } /* end namespace axom */

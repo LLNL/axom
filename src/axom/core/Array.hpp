@@ -103,6 +103,48 @@ bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
 
 /// @}
 
+/// \name ArrayIteratorImpl to iterate through Array
+/// @{
+
+/**
+ * \class   ArrayIteratorImpl
+ * \brief   An iterator type for Arrays.
+ *          Each increment operation advances the iterator to the next
+ *          element in the Array.
+ * \tparam ArrayType The type of the Array that is being iterated over
+ */
+template <typename ArrayType>
+class ArrayIteratorImpl
+  : public IteratorBase<ArrayIteratorImpl<ArrayType>, IndexType>
+{
+public:
+  ArrayIteratorImpl(IndexType pos, ArrayType* arr)
+    : IteratorBase<ArrayIteratorImpl<ArrayType>, IndexType>(pos)
+    , m_arrayPtr(arr)
+  { }
+
+  /**
+   * \brief Returns the current iterator value
+   */
+  typename ArrayType::value_type& operator*()
+  {
+    return (
+      *m_arrayPtr)[IteratorBase<ArrayIteratorImpl<ArrayType>, IndexType>::m_pos];
+  }
+
+protected:
+  /** Implementation of advance() as required by IteratorBase */
+  void advance(IndexType n)
+  {
+    IteratorBase<ArrayIteratorImpl<ArrayType>, IndexType>::m_pos += n;
+  }
+
+protected:
+  ArrayType* const m_arrayPtr;
+};  // end of ArrayIteratorImpl class
+
+/// @}
+
 /*!
  * \brief Policy class for implementing Array behavior that differs
  * between the 1D and multidimensional cases
@@ -110,12 +152,10 @@ bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
  * \tparam T The element/value type
  * \tparam DIM The dimension of the Array
  */
-template <typename T, int DIM>
+template <typename T, int DIM, typename ArrayType>
 class ArrayImpl
 {
 public:
-  using ArrayType = Array<T, DIM>;
-
   /*!
    * \brief Parameterized constructor that sets up the default strides
    *
@@ -144,7 +184,7 @@ public:
     IndexType indices[] = {static_cast<IndexType>(args)...};
     IndexType idx =
       std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
-    // assert(inBounds(idx));
+    assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
@@ -155,9 +195,33 @@ public:
     IndexType indices[] = {static_cast<IndexType>(args)...};
     IndexType idx =
       std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
-    // assert(inBounds(idx));
+    assert(inBounds(idx));
     return asDerived().data()[idx];
   }
+
+  /*!
+   * \brief Accessor, returns a reference to the given value.
+   * For multidimensional arrays, indexes into the (flat) raw data.
+   *
+   * \param [in] idx the position of the value to return.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre 0 <= idx < m_num_elements
+   */
+  /// @{
+  T& operator[](const IndexType idx)
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+  /// \overload
+  const T& operator[](const IndexType idx) const
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+  /// @}
 
   /// \brief Swaps two ArrayImpls
   friend void swap(ArrayImpl& lhs, ArrayImpl& rhs)
@@ -233,6 +297,16 @@ private:
     return static_cast<const ArrayType&>(*this);
   }
 
+  /// \name Internal bounds-checking routines
+  /// @{
+
+  /*! \brief Test if idx is within bounds */
+  inline bool inBounds(IndexType idx) const
+  {
+    return idx >= 0 && idx < asDerived().size();
+  }
+  /// @}
+
 protected:
   /// \brief The sizes (extents?) in each dimension
   std::array<IndexType, DIM> m_dims;
@@ -241,11 +315,10 @@ protected:
 };
 
 /// \brief Array implementation specific to 1D Arrays
-template <typename T>
-class ArrayImpl<T, 1>
+template <typename T, typename ArrayType>
+class ArrayImpl<T, 1, ArrayType>
 {
 public:
-  using ArrayType = Array<T, 1>;
   ArrayImpl(IndexType = 0) { }
 
   /*!
@@ -282,6 +355,30 @@ public:
   // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
   std::array<IndexType, 1> shape() const { return {{asDerived().size()}}; }
 
+  /*!
+   * \brief Accessor, returns a reference to the given value.
+   * For multidimensional arrays, indexes into the (flat) raw data.
+   *
+   * \param [in] idx the position of the value to return.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre 0 <= idx < m_num_elements
+   */
+  /// @{
+  T& operator[](const IndexType idx)
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+  /// \overload
+  const T& operator[](const IndexType idx) const
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+  /// @}
+
   /// \brief Swaps two ArrayImpls
   void swap(ArrayImpl&) { }
 
@@ -311,6 +408,89 @@ private:
   {
     return static_cast<const ArrayType&>(*this);
   }
+
+  /// \name Internal bounds-checking routines
+  /// @{
+
+  /*! \brief Test if idx is within bounds */
+  inline bool inBounds(IndexType idx) const
+  {
+    return idx >= 0 && idx < asDerived().size();
+  }
+  /// @}
+};
+
+/*!
+ * \class ArrayView
+ *
+ * \brief Provides a view over a generic array container.
+ * 
+ * The ArrayView expresses a non-owning relationship over a pointer
+ *
+ * \tparam T the type of the values to hold.
+ * \tparam DIM The dimension of the array.
+ *
+ */
+template <typename T, int DIM = 1>
+class ArrayView : public ArrayImpl<T, DIM, ArrayView<T, DIM>>
+{
+public:
+  using value_type = T;
+  static constexpr int dimension = DIM;
+  using ArrayViewIterator = ArrayIteratorImpl<ArrayView<T, DIM>>;
+
+  /*!
+   * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
+   *
+   * \param [in] data the external data this ArrayView will wrap.
+   * \param [in] args The parameter pack containing the "shape" of the ArrayView
+   *
+   * \pre sizeof...(Args) == DIM
+   *
+   * \post size() == num_elements
+   */
+  template <typename... Args>
+  ArrayView(T* data, Args... args);
+
+  /*!
+   * \brief Return the number of elements stored in the data array.
+   */
+  inline IndexType size() const { return m_num_elements; }
+
+  /*!
+   * \brief Returns an ArrayViewIterator to the first element of the Array
+   */
+  ArrayViewIterator begin()
+  {
+    assert(m_data != nullptr);
+    return ArrayViewIterator(0, this);
+  }
+
+  /*!
+   * \brief Returns an ArrayViewIterator to the element following the last
+   *  element of the Array.
+   */
+  ArrayViewIterator end()
+  {
+    assert(m_data != nullptr);
+    return ArrayViewIterator(size(), this);
+  }
+
+  /*!
+   * \brief Return a pointer to the array of data.
+   */
+  /// @{
+
+  inline T* data() { return m_data; }
+  inline const T* data() const { return m_data; }
+
+  /// @}
+
+private:
+  T* m_data = nullptr;
+  /// \brief The full number of elements in the array
+  ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
+  IndexType m_num_elements = 0;
 };
 
 /*!
@@ -380,12 +560,14 @@ private:
  *
  */
 template <typename T, int DIM = 1>
-class Array : public ArrayImpl<T, DIM>
+class Array : public ArrayImpl<T, DIM, Array<T, DIM>>
 {
 public:
+  using value_type = T;
+  static constexpr int dimension = DIM;
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
   static constexpr IndexType MIN_DEFAULT_CAPACITY = 32;
-  class ArrayIterator;
+  using ArrayIterator = ArrayIteratorImpl<Array<T, DIM>>;
 
 public:
   /// \name Native Storage Array Constructors
@@ -574,29 +756,6 @@ public:
   /// \name Array element access operators
   /// @{
 
-  /*!
-   * \brief Accessor, returns a reference to the given value.
-   * For multidimensional arrays, indexes into the (flat) raw data.
-   *
-   * \param [in] idx the position of the value to return.
-   *
-   * \note equivalent to *(array.data() + idx).
-   *
-   * \pre 0 <= idx < m_num_elements
-   */
-  /// @{
-  T& operator[](const IndexType idx)
-  {
-    assert(inBounds(idx));
-    return m_data[idx];
-  }
-  /// \overload
-  const T& operator[](const IndexType idx) const
-  {
-    assert(inBounds(idx));
-    return m_data[idx];
-  }
-
   // TODO: Implement View class for the case where sizeof...(Args) < DIM (i.e., where the indexing results in a nonscalar)
 
   /*!
@@ -604,8 +763,8 @@ public:
    */
   /// @{
 
-  T* data() { return m_data; }
-  const T* data() const { return m_data; }
+  inline T* data() { return m_data; }
+  inline const T* data() const { return m_data; }
 
   /// @}
 
@@ -740,7 +899,7 @@ public:
   ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
 
   // Make the overload "visible"
-  using ArrayImpl<T, DIM>::insert;
+  using ArrayImpl<T, DIM, Array<T, DIM>>::insert;
 
   /*!
    * \brief Appends an Array to the end of the calling object
@@ -749,7 +908,10 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  void append(const Array& other) { ArrayImpl<T, DIM>::insert(size(), other); }
+  void append(const Array& other)
+  {
+    ArrayImpl<T, DIM, Array<T, DIM>>::insert(size(), other);
+  }
 
   /*!
    * \brief Erases an element from the Array 
@@ -854,7 +1016,7 @@ public:
   /*!
    * \brief Return the number of elements stored in the data array.
    */
-  IndexType size() const { return m_num_elements; }
+  inline IndexType size() const { return m_num_elements; }
 
   /*!
    * \brief Update the number of elements stored in the data array.
@@ -900,45 +1062,6 @@ public:
    * \return A reference to the modified ostream
    */
   std::ostream& print(std::ostream& os) const;
-
-  /// @}
-
-public:
-  /// \name ArrayIterator to iterate through Array
-  /// @{
-
-  /**
-   * \class   ArrayIterator
-   * \brief   An iterator type for Array.
-   *          Each increment operation advances the iterator to the next
-   *          element in the Array.
-   */
-  class ArrayIterator : public IteratorBase<ArrayIterator, IndexType>
-  {
-  public:
-    ArrayIterator(IndexType pos, Array* arr)
-      : IteratorBase<ArrayIterator, IndexType>(pos)
-      , m_arrayPtr(arr)
-    { }
-
-    /**
-     * \brief Returns the current iterator value
-     */
-    T& operator*()
-    {
-      return (*m_arrayPtr)[IteratorBase<ArrayIterator, IndexType>::m_pos];
-    }
-
-  protected:
-    /** Implementation of advance() as required by IteratorBase */
-    void advance(IndexType n)
-    {
-      IteratorBase<ArrayIterator, IndexType>::m_pos += n;
-    }
-
-  protected:
-    Array* const m_arrayPtr;
-  };  // end of ArrayIterator class
 
   /// @}
 
@@ -996,16 +1119,6 @@ protected:
    */
   virtual void dynamicRealloc(IndexType new_num_elements);
 
-  /// \name Internal bounds-checking routines
-  /// @{
-
-  /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
-  {
-    return idx >= 0 && idx < m_num_elements;
-  }
-  /// @}
-
   T* m_data = nullptr;
   /// \brief The full number of elements in the array
   ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
@@ -1021,6 +1134,24 @@ template <typename T>
 using MCArray = Array<T, 2>;
 
 //------------------------------------------------------------------------------
+//                            ArrayView IMPLEMENTATION
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+template <typename... Args>
+ArrayView<T, DIM>::ArrayView(T* data, Args... args)
+  : ArrayImpl<T, DIM, ArrayView<T, DIM>>(args...)
+  , m_data(data)
+{
+  static_assert(sizeof...(Args) == DIM,
+                "Array size must match number of dimensions");
+  // Intel hits internal compiler error when casting as part of function call
+  IndexType tmp_args[] = {args...};
+  m_num_elements = detail::packProduct(tmp_args);
+}
+
+//------------------------------------------------------------------------------
 //                            Array IMPLEMENTATION
 //------------------------------------------------------------------------------
 
@@ -1032,7 +1163,7 @@ Array<T, DIM>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
 template <typename T, int DIM>
 template <typename... Args>
 Array<T, DIM>::Array(Args... args)
-  : ArrayImpl<T, DIM>(args...)
+  : ArrayImpl<T, DIM, Array<T, DIM>>(args...)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
   static_assert(sizeof...(Args) == DIM,
@@ -1046,7 +1177,7 @@ Array<T, DIM>::Array(Args... args)
 template <typename T, int DIM>
 template <typename... Args>
 Array<T, DIM>::Array(T* data, Args... args)
-  : ArrayImpl<T, DIM>(args...)
+  : ArrayImpl<T, DIM, Array<T, DIM>>(args...)
   , m_data(data)
   , m_resize_ratio(0.0)
   , m_is_external(true)
@@ -1090,7 +1221,8 @@ Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 Array<T, DIM>::Array(const Array& other, int allocator_id)
-  : ArrayImpl<T, DIM>(static_cast<const ArrayImpl<T, DIM>&>(other))
+  : ArrayImpl<T, DIM, Array<T, DIM>>(
+      static_cast<const ArrayImpl<T, DIM, Array<T, DIM>>&>(other))
   , m_allocator_id(allocator_id)
 {
   initialize(other.size(), other.capacity());
@@ -1100,7 +1232,8 @@ Array<T, DIM>::Array(const Array& other, int allocator_id)
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 Array<T, DIM>::Array(Array&& other)
-  : ArrayImpl<T, DIM>(static_cast<ArrayImpl<T, DIM>&&>(std::move(other)))
+  : ArrayImpl<T, DIM, Array<T, DIM>>(
+      static_cast<ArrayImpl<T, DIM, Array<T, DIM>>&&>(std::move(other)))
   , m_resize_ratio(0.0)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
@@ -1141,15 +1274,15 @@ inline void Array<T, DIM>::fill(const T& value)
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void ArrayImpl<T, 1>::push_back(const T& value)
+template <typename T, typename ArrayType>
+inline void ArrayImpl<T, 1, ArrayType>::push_back(const T& value)
 {
   emplace_back(value);
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void ArrayImpl<T, 1>::push_back(T&& value)
+template <typename T, typename ArrayType>
+inline void ArrayImpl<T, 1, ArrayType>::push_back(T&& value)
 {
   emplace_back(std::move(value));
 }
@@ -1335,9 +1468,9 @@ inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::emplace(
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
+template <typename T, typename ArrayType>
 template <typename... Args>
-inline void ArrayImpl<T, 1>::emplace_back(Args&&... args)
+inline void ArrayImpl<T, 1, ArrayType>::emplace_back(Args&&... args)
 {
   asDerived().emplace(asDerived().size(), args...);
 }
@@ -1354,8 +1487,8 @@ inline void Array<T, DIM>::resize(Args... args)
   assert(detail::allNonNegative(tmp_args));
   const auto new_num_elements = detail::packProduct(tmp_args);
 
-  static_cast<ArrayImpl<T, DIM>&>(*this) =
-    ArrayImpl<T, DIM> {static_cast<IndexType>(args)...};
+  static_cast<ArrayImpl<T, DIM, Array<T, DIM>>&>(*this) =
+    ArrayImpl<T, DIM, Array<T, DIM>> {static_cast<IndexType>(args)...};
 
   if(new_num_elements > m_capacity)
   {
@@ -1369,7 +1502,7 @@ inline void Array<T, DIM>::resize(Args... args)
 template <typename T, int DIM>
 inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 {
-  ArrayImpl<T, DIM>::swap(other);
+  ArrayImpl<T, DIM, Array<T, DIM>>::swap(other);
   T* temp_data = m_data;
   IndexType temp_num_elements = m_num_elements;
   IndexType temp_capacity = m_capacity;
