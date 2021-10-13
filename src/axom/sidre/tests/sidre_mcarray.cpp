@@ -113,7 +113,7 @@ void check_storage(MCArray<T>& v)
       {
         tuple[j] = i * num_components + j;
       }
-      v.append(axom::MCArray<T>(tuple, 1, num_components));
+      v.append(axom::MCArrayView<T>(tuple, 1, num_components));
     }
     delete[] tuple;
     tuple = nullptr;
@@ -134,7 +134,7 @@ void check_storage(MCArray<T>& v)
       {
         tuple[j] = i * num_components + j;
       }
-      v.append(axom::MCArray<T>(tuple, 1, num_components));
+      v.append(axom::MCArrayView<T>(tuple, 1, num_components));
     }
     delete[] tuple;
     tuple = nullptr;
@@ -358,7 +358,7 @@ void check_resize(MCArray<T>& v)
   {
     tuple[j] = (size / num_components) * j - 5 * (size / num_components) + 7 * j;
   }
-  v.append(axom::MCArray<T>(tuple, 1, num_components));
+  v.append(axom::MCArrayView<T>(tuple, 1, num_components));
   size += num_components;
 
   /* Check that it resized properly */
@@ -389,7 +389,7 @@ void check_resize(MCArray<T>& v)
 
   /* Append the new tuples. */
   capacity = calc_new_capacity(v, n_tuples) * num_components;
-  v.append(axom::MCArray<T>(values, n_tuples, num_components));
+  v.append(axom::MCArrayView<T>(values, n_tuples, num_components));
   size += n_tuples * num_components;
 
   /* Check that size and capacity are as expected. */
@@ -448,7 +448,7 @@ void check_resize(MCArray<T>& v)
   {
     tuple[j] = (size / num_components) * j - 5 * (size / num_components) + 7 * j;
   }
-  v.append(axom::MCArray<T>(tuple, 1, num_components));
+  v.append(axom::MCArrayView<T>(tuple, 1, num_components));
   size += num_components;
 
   /* Check the new size and capacity. */
@@ -484,7 +484,7 @@ void check_resize(MCArray<T>& v)
       tuple[j] = i * num_components + j;
     }
 
-    v.append(axom::MCArray<T>(tuple, 1, num_components));
+    v.append(axom::MCArrayView<T>(tuple, 1, num_components));
     size += num_components;
     EXPECT_EQ(v.capacity(), old_capacity);
     EXPECT_EQ(v.size(), size);
@@ -500,7 +500,7 @@ void check_resize(MCArray<T>& v)
   }
 
   capacity = calc_new_capacity(v, old_capacity - size + 1) * num_components;
-  v.append(axom::MCArray<T>(tuple, 1, num_components));
+  v.append(axom::MCArrayView<T>(tuple, 1, num_components));
   size += num_components;
 
   /* Check the new capacity and size. */
@@ -556,7 +556,7 @@ void check_insert(MCArray<T>& v)
   {
     tuple[j] = (size / num_components) * j - 5 * (size / num_components) + 7 * j;
   }
-  v.append(axom::MCArray<T>(tuple, 1, num_components));
+  v.append(axom::MCArrayView<T>(tuple, 1, num_components));
   size += num_components;
 
   /* Check that it resized properly */
@@ -584,7 +584,7 @@ void check_insert(MCArray<T>& v)
   }
 
   capacity = calc_new_capacity(v, n_tuples) * num_components;
-  v.append(axom::MCArray<T>(values, n_tuples, num_components));
+  v.append(axom::MCArrayView<T>(values, n_tuples, num_components));
   size += n_tuples * num_components;
 
   /* Check that it resizes properly */
@@ -619,7 +619,7 @@ void check_insert(MCArray<T>& v)
       tuple[j] = i * num_components + j;
     }
     capacity = calc_new_capacity(v, 1) * num_components;
-    v.insert(0, axom::MCArray<T>(tuple, 1, num_components));
+    v.insert(0, axom::MCArrayView<T>(tuple, 1, num_components));
     size += num_components;
   }
   // std::cout << "capcity 3 is " << v.capacity() << "\n";
@@ -957,10 +957,11 @@ void check_external(MCArray<T>& v)
   /* Since the MCArray is full all of the following calls should require a
    * reallocation and cause a fatal error. */
   T* tuple = new T[num_components];
-  EXPECT_DEATH_IF_SUPPORTED(v.append(axom::MCArray<T>(tuple, 1, num_components)),
-                            IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(
-    v.insert(0, axom::MCArray<T>(tuple, 1, num_components)),
+    v.append(axom::MCArrayView<T>(tuple, 1, num_components)),
+    IGNORE_OUTPUT);
+  EXPECT_DEATH_IF_SUPPORTED(
+    v.insert(0, axom::MCArrayView<T>(tuple, 1, num_components)),
     IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(v.reserve(size + 1), IGNORE_OUTPUT);
 

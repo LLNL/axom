@@ -62,8 +62,14 @@ bool allNonNegative(const T (&arr)[N])
 };  // namespace detail
 
 // Forward declare the templated classes and operator function(s)
+template <typename T, int DIM, typename ArrayType>
+class ArrayImpl;
+
 template <typename T, int DIM>
 class Array;
+
+template <typename T, int DIM>
+class ArrayView;
 
 /// \name Overloaded Array Operator(s)
 /// @{
@@ -76,8 +82,9 @@ class Array;
  * \param [in] arr user-supplied Array instance.
  * \return os the updated output stream object.
  */
-template <typename T, int DIM>
-std::ostream& operator<<(std::ostream& os, const Array<T, DIM>& arr);
+template <typename T, int DIM, typename ArrayType>
+std::ostream& operator<<(std::ostream& os,
+                         const ArrayImpl<T, DIM, ArrayType>& arr);
 
 /*!
  * \brief Equality comparison operator for Arrays
@@ -100,6 +107,26 @@ bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
  */
 template <typename T, int DIM>
 bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
+
+/*!
+ * \brief Equality comparison operator for ArrayViews
+ *
+ * \param [in] lhs left ArrayView to compare
+ * \param [in] rhs right ArrayView to compare
+ * \return true if the ArrayViews are of equal length and have the same elements.
+ */
+template <typename T, int DIM>
+bool operator==(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs);
+
+/*!
+ * \brief Inequality comparison operator for ArrayViews
+ *
+ * \param [in] lhs left ArrayView to compare
+ * \param [in] rhs right ArrayView to compare
+ * \return true if the ArrayViews are not of equal length or do not have the same elements.
+ */
+template <typename T, int DIM>
+bool operator!=(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs);
 
 /// @}
 
@@ -246,7 +273,8 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  void insert(IndexType pos, const ArrayType& other)
+  template <typename OtherArrayType>
+  void insert(IndexType pos, const ArrayImpl<T, DIM, OtherArrayType>& other)
   {
 #ifdef AXOM_DEBUG
     if(!std::equal(m_dims.begin() + 1, m_dims.end(), other.shape().begin() + 1))
@@ -259,7 +287,9 @@ public:
     // First update the dimensions - we're adding only to the leading dimension
     m_dims[0] += other.shape()[0];
     // Then add the raw data to the buffer
-    asDerived().insert(pos, other.size(), other.data());
+    asDerived().insert(pos,
+                       static_cast<const OtherArrayType&>(other).size(),
+                       static_cast<const OtherArrayType&>(other).data());
     updateStrides();
   }
 
@@ -389,9 +419,12 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  void insert(IndexType pos, const ArrayType& other)
+  template <typename OtherArrayType>
+  void insert(IndexType pos, const ArrayImpl<T, 1, OtherArrayType>& other)
   {
-    asDerived().insert(pos, other.size(), other.data());
+    asDerived().insert(pos,
+                       static_cast<const OtherArrayType&>(other).size(),
+                       static_cast<const OtherArrayType&>(other).data());
   }
 
 protected:
@@ -438,6 +471,9 @@ public:
   using value_type = T;
   static constexpr int dimension = DIM;
   using ArrayViewIterator = ArrayIteratorImpl<ArrayView<T, DIM>>;
+
+  /// \brief Default constructor
+  ArrayView() = default;
 
   /*!
    * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
@@ -492,6 +528,10 @@ private:
   ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
   IndexType m_num_elements = 0;
 };
+
+/// \brief Helper alias for multi-component arrays
+template <typename T>
+using MCArrayView = ArrayView<T, 2>;
 
 /*!
  * \class Array
@@ -619,70 +659,17 @@ public:
   template <typename... Args>
   Array(Args... args);
 
-  /*!
-   * \brief Generic constructor for an Array of arbitrary dimension with external data
-   *
-   * \param [in] data the external data this Array will wrap.
-   * \param [in] args The parameter pack containing the "shape" of the Array
-   * \see https://numpy.org/doc/stable/reference/generated/numpy.empty.html#numpy.empty
-   *
-   * \pre sizeof...(Args) == DIM
-   *
-   * \post capacity() >= size()
-   * \post size() == num_elements
-   * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
-   */
-  template <typename... Args>
-  Array(T* data, Args... args);
-
   /*! 
    * \brief Copy constructor for an Array instance 
    * 
    * \param [in] allocator_id the ID of the allocator to use (optional)
-   *
-   * \note If you use the copy constructor on an argument Array 
-   *  with data from an external data buffer, the copy-constructed Array 
-   *  will have a deep copy of the data and own the data copy. 
    */
   Array(const Array& other, int allocator_id = axom::getDefaultAllocatorID());
 
   /*! 
    * \brief Move constructor for an Array instance 
-   *
-   * \note If you use the move constructor on an argument Array with an 
-   *  external data buffer, the move-constructed Array will wrap the external 
-   *  data buffer and the argument Array will be left in a valid empty state. 
    */
   Array(Array&& other);
-
-  /// @}
-
-  /// \name External Storage Array Constructors
-  /// @{
-
-  /*!
-   * \brief Constructs an Array instance with the given number of elements from
-   *  an external data buffer.
-   *
-   * \param [in] data the external data this Array will wrap.
-   * \param [in] num_elements the number of elements in the Array.
-   * \param [in] capacity the capacity of the external buffer.
-   *
-   * \pre data != nullptr
-   * \pre num_elements > 0
-   *
-   * \post getResizeRatio == 0.0
-   *
-   * \note a capacity is specified for the number of elements to store in the
-   *  array and does not correspond to the actual bytesize.
-   * \note If no capacity or capacity less than num_elements is specified then
-   *  it will default to the number of elements.
-   *
-   * \note This constructor wraps the supplied buffer and does not own the data.
-   *  Consequently, the Array instance cannot be reallocated.
-   */
-  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
-  Array(T* data, IndexType num_elements, IndexType capacity = 0);
 
   /// @}
 
@@ -691,10 +678,6 @@ public:
 
   /*! 
    * \brief Copy assignment operator for Array 
-   * 
-   * \note If you use the copy assignment operator on an argument Array 
-   *  with data from an external data buffer, the copy-assigned Array 
-   *  will have a deep copy of the data and own the data copy. 
    *
    * \note The data will be allocated using the allocator ID of the
    *  copy-assigned Array, not the argument Array.
@@ -713,11 +696,7 @@ public:
   }
 
   /*! 
-   * \brief Move assignment operator for Array 
-   * 
-   * \note If you use the move assignment operator on an argument Array with 
-   *  an external data buffer, the move-assigned Array will wrap the external 
-   *  data buffer and the argument Array will be left in a valid empty state. 
+   * \brief Move assignment operator for Array
    */
   Array& operator=(Array&& other)
   {
@@ -905,10 +884,12 @@ public:
    * \brief Appends an Array to the end of the calling object
    *
    * \param [in] other The Array to append
+   * \tparam OtherArrayType The underlying type of the other array
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  void append(const Array& other)
+  template <typename OtherArrayType>
+  void append(const ArrayImpl<T, DIM, OtherArrayType>& other)
   {
     ArrayImpl<T, DIM, Array<T, DIM>>::insert(size(), other);
   }
@@ -1055,14 +1036,6 @@ public:
    */
   bool isExternal() const { return m_is_external; }
 
-  /*!
-   * \brief Prints the Array
-   *
-   * \param os The output stream to write to
-   * \return A reference to the modified ostream
-   */
-  std::ostream& print(std::ostream& os) const;
-
   /// @}
 
 protected:
@@ -1134,6 +1107,59 @@ template <typename T>
 using MCArray = Array<T, 2>;
 
 //------------------------------------------------------------------------------
+//                            ArrayImpl IMPLEMENTATION
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+template <typename T, typename ArrayType>
+inline void ArrayImpl<T, 1, ArrayType>::push_back(const T& value)
+{
+  emplace_back(value);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, typename ArrayType>
+inline void ArrayImpl<T, 1, ArrayType>::push_back(T&& value)
+{
+  emplace_back(std::move(value));
+}
+
+//------------------------------------------------------------------------------
+template <typename T, typename ArrayType>
+template <typename... Args>
+inline void ArrayImpl<T, 1, ArrayType>::emplace_back(Args&&... args)
+{
+  asDerived().emplace(asDerived().size(), args...);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, typename ArrayType>
+inline std::ostream& print(std::ostream& os,
+                           const ArrayImpl<T, DIM, ArrayType>& array)
+{
+#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
+  // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
+  // if there exists no allocator for Constant memory. Is there a more fine-grained
+  // approach we can use to see what allocators are available before trying to get their IDs?
+  if(array.getAllocatorID() ==
+     axom::getUmpireResourceAllocatorID(umpire::resource::Device))
+  {
+    std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
+    utilities::processAbort();
+  }
+#endif
+  const T* data = static_cast<const ArrayType&>(array).data();
+  os << "[ ";
+  for(IndexType i = 0; i < static_cast<const ArrayType&>(array).size(); i++)
+  {
+    os << data[i] << " ";
+  }
+  os << " ]";
+
+  return os;
+}
+
+//------------------------------------------------------------------------------
 //                            ArrayView IMPLEMENTATION
 //------------------------------------------------------------------------------
 
@@ -1174,24 +1200,6 @@ Array<T, DIM>::Array(Args... args)
   initialize(detail::packProduct(tmp_args), 0);
 }
 
-template <typename T, int DIM>
-template <typename... Args>
-Array<T, DIM>::Array(T* data, Args... args)
-  : ArrayImpl<T, DIM, Array<T, DIM>>(args...)
-  , m_data(data)
-  , m_resize_ratio(0.0)
-  , m_is_external(true)
-  , m_allocator_id(INVALID_ALLOCATOR_ID)
-{
-  static_assert(sizeof...(Args) == DIM,
-                "Array size must match number of dimensions");
-  // Intel hits internal compiler error when casting as part of function call
-  const IndexType tmp_args[] = {args...};
-  const auto num_elements = detail::packProduct(tmp_args);
-  m_capacity = num_elements;
-  updateNumElements(num_elements);
-}
-
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
@@ -1199,23 +1207,6 @@ Array<T, DIM>::Array(IndexType num_elements, IndexType capacity, int allocator_i
   : m_allocator_id(allocator_id)
 {
   initialize(num_elements, capacity);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int DIM>
-template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
-Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
-  : m_data(data)
-  , m_num_elements(num_elements)
-  , m_resize_ratio(0.0)
-  , m_is_external(true)
-  , m_allocator_id(INVALID_ALLOCATOR_ID)
-{
-  m_capacity = (capacity < num_elements) ? num_elements : capacity;
-
-  assert(m_num_elements >= 0);
-  assert(m_num_elements <= m_capacity);
-  assert(m_data != nullptr || m_capacity <= 0);
 }
 
 //------------------------------------------------------------------------------
@@ -1271,20 +1262,6 @@ inline void Array<T, DIM>::fill(const T& value)
   {
     m_data[i] = value;
   }
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayImpl<T, 1, ArrayType>::push_back(const T& value)
-{
-  emplace_back(value);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayImpl<T, 1, ArrayType>::push_back(T&& value)
-{
-  emplace_back(std::move(value));
 }
 
 //------------------------------------------------------------------------------
@@ -1468,14 +1445,6 @@ inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::emplace(
 }
 
 //------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-template <typename... Args>
-inline void ArrayImpl<T, 1, ArrayType>::emplace_back(Args&&... args)
-{
-  asDerived().emplace(asDerived().size(), args...);
-}
-
-//------------------------------------------------------------------------------
 template <typename T, int DIM>
 template <typename... Args>
 inline void Array<T, DIM>::resize(Args... args)
@@ -1520,32 +1489,6 @@ inline void Array<T, DIM>::swap(Array<T, DIM>& other)
   other.m_capacity = temp_capacity;
   other.m_resize_ratio = temp_resize_ratio;
   other.m_is_external = temp_is_external;
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int DIM>
-inline std::ostream& Array<T, DIM>::print(std::ostream& os) const
-{
-#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
-  // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
-  // if there exists no allocator for Constant memory. Is there a more fine-grained
-  // approach we can use to see what allocators are available before trying to get their IDs?
-  if(m_allocator_id ==
-     axom::getUmpireResourceAllocatorID(umpire::resource::Device))
-  {
-    std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
-    utilities::processAbort();
-  }
-#endif
-
-  os << "[ ";
-  for(IndexType i = 0; i < m_num_elements; i++)
-  {
-    os << m_data[i] << " ";
-  }
-  os << " ]";
-
-  return os;
 }
 
 //------------------------------------------------------------------------------
@@ -1677,10 +1620,10 @@ inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
 //------------------------------------------------------------------------------
 /// Free functions implementing Array's operator(s)
 //------------------------------------------------------------------------------
-template <typename T, int DIM>
-std::ostream& operator<<(std::ostream& os, const Array<T, DIM>& arr)
+template <typename T, int DIM, typename ArrayType>
+std::ostream& operator<<(std::ostream& os, const ArrayImpl<T, DIM, ArrayType>& arr)
 {
-  arr.print(os);
+  print(os, arr);
   return os;
 }
 
@@ -1710,6 +1653,33 @@ bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
 
 template <typename T, int DIM>
 bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
+{
+  return !(lhs == rhs);
+}
+
+template <typename T, int DIM>
+bool operator==(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs)
+{
+  // FIXME: When GPU support is fully added, some means of comparing memory spaces will be needed
+
+  if(lhs.shape() != rhs.shape())
+  {
+    return false;
+  }
+
+  for(int i = 0; i < lhs.size(); i++)
+  {
+    if(!(lhs[i] == rhs[i]))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+template <typename T, int DIM>
+bool operator!=(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs)
 {
   return !(lhs == rhs);
 }

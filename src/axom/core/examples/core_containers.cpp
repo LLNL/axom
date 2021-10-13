@@ -49,7 +49,7 @@ void showTupleArray(axom::MCArray<int>& a, const char* name)
   for(int i = 0; i < a.shape()[0]; ++i)
   {
     // FIXME: Replace with ArrayView
-    axom::Array<int> temp(a.data() + (i * numComponents), numComponents);
+    axom::ArrayView<int> temp(a.data() + (i * numComponents), numComponents);
     std::cout << "  " << temp << std::endl;
   }
   std::cout << "]" << std::endl;
