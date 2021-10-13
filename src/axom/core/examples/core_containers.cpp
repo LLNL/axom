@@ -55,6 +55,20 @@ void showTupleArray(axom::MCArray<int>& a, const char* name)
   std::cout << "]" << std::endl;
 }
 
+void showTupleArrayView(axom::MCArrayView<int>& a, const char* name)
+{
+  const auto numComponents = a.shape()[1];
+  std::cout << "MCArrayView " << name << " with " << a.shape()[0] << " "
+            << numComponents << "-tuples = [" << std::endl;
+  for(int i = 0; i < a.shape()[0]; ++i)
+  {
+    // FIXME: Replace with ArrayView
+    axom::ArrayView<int> temp(a.data() + (i * numComponents), numComponents);
+    std::cout << "  " << temp << std::endl;
+  }
+  std::cout << "]" << std::endl;
+}
+
 void demoArrayBasic()
 {
   // _arraybasic_start
@@ -110,10 +124,10 @@ void demoArrayBasic()
   int* pa = a.data();
   // An MCArray can be constructed with a pointer to an external buffer.
   // Here's an Array interpreting the memory pointed to by pa as three 2-tuples.
-  axom::MCArray<int> c(pa, 3, 2);
+  axom::MCArrayView<int> c(pa, 3, 2);
 
   showArray(a, "a");
-  showTupleArray(c, "c");
+  showTupleArrayView(c, "c");
 
   // Since c is an alias to a's internal memory, changes affect both Arrays.
   a[0] = 1;
@@ -122,7 +136,7 @@ void demoArrayBasic()
   std::cout << "MCArrays a and c use the same memory, a's internal buffer."
             << std::endl;
   showArray(a, "a");
-  showTupleArray(c, "c");
+  showTupleArrayView(c, "c");
   // _extbuffer_end
 }
 
