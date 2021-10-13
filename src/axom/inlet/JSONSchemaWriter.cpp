@@ -283,8 +283,8 @@ void JSONSchemaWriter::documentContainer(const Container& container)
   detail::augmentCollectionPaths(filteredPathName,
                                  m_DictionaryPaths,
                                  dictionaryElementSchema);
-  std::vector<std::string> tokens;
-  utilities::string::split(tokens, filteredPathName, '/');
+  std::vector<std::string> tokens =
+    utilities::string::split(filteredPathName, '/');
   auto iter =
     std::find(tokens.begin(), tokens.end(), detail::COLLECTION_GROUP_NAME);
   // Replace collection group annotations with a token corresponding to the correct path
@@ -299,7 +299,8 @@ void JSONSchemaWriter::documentContainer(const Container& container)
       // so after removing the GROUP_NAME we prepend to the "baz" element and remove
       // the "foo" element
       // in practice "baz" will always be "items" or "additionalProperties"
-      *afterRemoved = appendPrefix(*(afterRemoved - 1), *afterRemoved);
+      *afterRemoved =
+        utilities::string::appendPrefix(*(afterRemoved - 1), *afterRemoved);
       tokens.erase(afterRemoved - 1);
     }
     iter = std::find(tokens.begin(), tokens.end(), detail::COLLECTION_GROUP_NAME);
@@ -358,7 +359,8 @@ void JSONSchemaWriter::documentContainer(const Container& container)
   {
     for(const auto& fieldEntry : container.getChildFields())
     {
-      const auto name = removeBeforeDelimiter(fieldEntry.first);
+      const auto name =
+        utilities::string::removeBeforeDelimiter(fieldEntry.first);
       auto& childNode = containerNode["properties"][name];
       detail::recordFieldSchema(*fieldEntry.second, childNode);
       if(fieldEntry.second->isRequired())

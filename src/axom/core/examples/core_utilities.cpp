@@ -54,8 +54,7 @@ void demoFileSystemAndString(const char* argv0)
 #else
   const char pathsep = '/';
 #endif
-  std::vector<std::string> cmp;
-  string::split(cmp, cwd, pathsep);
+  std::vector<std::string> cmp = string::split(cwd, pathsep);
 
   // Count how many start with "ax" or end with "exe"
   // (we could also use std::count_if)

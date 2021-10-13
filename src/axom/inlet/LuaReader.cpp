@@ -83,7 +83,8 @@ void nameRetrievalHelper(const std::vector<std::string>& ignores,
   for(const auto& entry : table)
   {
     const auto variantKey = detail::extractAs<VariantKey>(entry.first);
-    const std::string fullName = appendPrefix(prefix, toString(variantKey));
+    const std::string fullName =
+      utilities::string::appendPrefix(prefix, toString(variantKey));
     if(std::find(ignores.begin(), ignores.end(), fullName) == ignores.end())
     {
       names.push_back(fullName);
@@ -540,8 +541,8 @@ FunctionVariant LuaReader::getFunction(const std::string& id,
 template <typename T>
 ReaderResult LuaReader::getValue(const std::string& id, T& value)
 {
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  std::vector<std::string> tokens =
+    axom::utilities::string::split(id, SCOPE_DELIMITER);
 
   if(tokens.size() == 1)
   {
@@ -578,8 +579,8 @@ ReaderResult LuaReader::getMap(const std::string& id,
                                axom::sol::type type)
 {
   values.clear();
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  std::vector<std::string> tokens =
+    axom::utilities::string::split(id, SCOPE_DELIMITER);
 
   axom::sol::table t;
   if(tokens.empty() || !traverseToTable(tokens.begin(), tokens.end(), t))
@@ -623,8 +624,8 @@ template <typename T>
 ReaderResult LuaReader::getIndicesInternal(const std::string& id,
                                            std::vector<T>& indices)
 {
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  std::vector<std::string> tokens =
+    axom::utilities::string::split(id, SCOPE_DELIMITER);
 
   axom::sol::table t;
 
@@ -645,8 +646,8 @@ ReaderResult LuaReader::getIndicesInternal(const std::string& id,
 
 axom::sol::protected_function LuaReader::getFunctionInternal(const std::string& id)
 {
-  std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  std::vector<std::string> tokens =
+    axom::utilities::string::split(id, SCOPE_DELIMITER);
   axom::sol::protected_function lua_func;
 
   if(tokens.size() == 1)
