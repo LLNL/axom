@@ -841,11 +841,11 @@ void check_emplace(MCArray<T>& v)
 }
 
 /*!
- * \brief Check that the copy/move constructors/assignment operators are working properly.
+ * \brief Check that the move constructors/assignment operators are working properly.
  * \param [in] v the MCArray to check.
  */
 template <typename T>
-void check_copy_move(MCArray<T>& v)
+void check_move(MCArray<T>& v)
 {
   /* Resize the MCArray up to the capacity */
   axom::IndexType capacity = v.capacity();
@@ -862,11 +862,8 @@ void check_copy_move(MCArray<T>& v)
     }
   }
 
-  // Call the copy constructor
-  MCArray<T> cpy(v);
-  /* Check that the copy holds the same data. */
-  check_copy(v, cpy);
-  EXPECT_EQ(v.getView(), cpy.getView());
+  /* Create a copy. */
+  MCArray<T> cpy(const_cast<sidre::View*>(v.getView()));
 
   // Move from the copy (call the move constructor)
   MCArray<T> moved(std::move(cpy));
@@ -898,75 +895,6 @@ void check_sidre(MCArray<T>& v)
   cpy.resize(0, cpy.shape()[1]);
   check_storage(cpy);
   check_insert(cpy);
-}
-
-/*!
- * \brief Check an external MCArray for defects.
- * \param [in] v the external MCArray to check.
- */
-template <typename T>
-void check_external(MCArray<T>& v)
-{
-  ASSERT_TRUE(v.isExternal());
-
-  /* Check that the MCArray is full. */
-  ASSERT_EQ(v.size(), v.capacity());
-
-  const axom::IndexType size = v.size();
-  const axom::IndexType num_components = v.shape()[1];
-  const axom::IndexType num_values = size * num_components;
-  T* const data_ptr = v.data();
-
-  /* Set the tuples in the MCArray. */
-  for(axom::IndexType i = 0; i < size; ++i)
-  {
-    for(axom::IndexType j = 0; j < num_components; ++j)
-    {
-      v(i, j) = i * num_components + j;
-    }
-  }
-
-  /* Check the tuples using the raw pointer. */
-  for(axom::IndexType i = 0; i < num_values; ++i)
-  {
-    EXPECT_EQ(data_ptr[i], i);
-  }
-
-  /* Set the tuples using the raw pointer. */
-  for(axom::IndexType i = 0; i < size; ++i)
-  {
-    for(axom::IndexType j = 0; j < num_components; ++j)
-    {
-      data_ptr[i * num_components + j] = i * j - i - j;
-    }
-  }
-
-  /* Check the tuples using the () operator. */
-  for(axom::IndexType i = 0; i < size; ++i)
-  {
-    for(axom::IndexType j = 0; j < num_components; ++j)
-    {
-      EXPECT_EQ(v(i, j), i * j - i - j);
-    }
-  }
-
-  EXPECT_EQ(size, v.size());
-  EXPECT_EQ(size, v.capacity());
-  EXPECT_EQ(data_ptr, v.data());
-
-  /* Since the MCArray is full all of the following calls should require a
-   * reallocation and cause a fatal error. */
-  T* tuple = new T[num_components];
-  EXPECT_DEATH_IF_SUPPORTED(
-    v.append(axom::MCArrayView<T>(tuple, 1, num_components)),
-    IGNORE_OUTPUT);
-  EXPECT_DEATH_IF_SUPPORTED(
-    v.insert(0, axom::MCArrayView<T>(tuple, 1, num_components)),
-    IGNORE_OUTPUT);
-  EXPECT_DEATH_IF_SUPPORTED(v.reserve(size + 1), IGNORE_OUTPUT);
-
-  delete[] tuple;
-  tuple = nullptr;
 }
 
 } /* end namespace internal */
@@ -1178,7 +1106,7 @@ TEST(sidre_core_mcarray, checkInsert)
 // }
 
 //------------------------------------------------------------------------------
-TEST(sidre_core_mcarray, checkCopyMove)
+TEST(sidre_core_mcarray, checkMove)
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -1194,16 +1122,16 @@ TEST(sidre_core_mcarray, checkCopyMove)
         MCArray<int> v_int_sidre(root->createView("int"),
                                  ZERO,
                                  n_components,
-                                 capacity);
+                                 capacity * n_components);
         v_int_sidre.setResizeRatio(ratio);
-        internal::check_copy_move(v_int_sidre);
+        internal::check_move(v_int_sidre);
 
         MCArray<double> v_double_sidre(root->createView("double"),
                                        ZERO,
                                        n_components,
-                                       capacity);
+                                       capacity * n_components);
         v_double_sidre.setResizeRatio(ratio);
-        internal::check_copy_move(v_double_sidre);
+        internal::check_move(v_double_sidre);
 
         root->destroyViewsAndData();
       }

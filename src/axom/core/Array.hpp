@@ -553,9 +553,8 @@ using MCArrayView = ArrayView<T, 2>;
  * 
  *  This class is meant to be a drop-in replacement for std::vector.
  *  However, it differs in its memory management and construction semantics.
- *  Specifically, we also allow axom::Array to wrap memory that it does
- *  not own (external storage), we do not require axom::Array to initialize/construct
- *  its memory at allocation time, and we use axom's memory_management
+ *  Specifically, we do not require axom::Array to initialize/construct
+ *  its memory at allocation time and we use axom's memory_management
  *  and allocator ID abstractions rather than std::allocator.
  *
  *  Depending on which constructor is used, the Array object can have two
@@ -580,20 +579,6 @@ using MCArrayView = ArrayView<T, 2>;
  *
  *     \note The Array destructor deallocates and returns all memory associated
  *      with it to the system.
- *
- *  * <b> External Storage </b> <br />
- *
- *    An Array object may be constructed from an external, user-supplied buffer
- *    consisting of the given number of elements. In this case, the Array
- *    object does not own the memory.  Instead, the Array object makes a
- *    shallow copy of the pointer.
- *
- *    \warning An Array object that points to an external buffer has a fixed
- *     size and cannot be dynamically resized.
- *
- *    \note The Array destructor does not deallocate a user-supplied buffer,
- *     since it does not manage that memory.
- *
  *
  * \tparam T the type of the values to hold.
  * \tparam DIM The dimension of the array.
@@ -687,7 +672,6 @@ public:
     if(this != &other)
     {
       m_resize_ratio = other.m_resize_ratio;
-      m_is_external = false;
       initialize(other.size(), other.capacity());
       axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
     }
@@ -702,7 +686,7 @@ public:
   {
     if(this != &other)
     {
-      if(m_data != nullptr && !m_is_external)
+      if(m_data != nullptr)
       {
         axom::deallocate(m_data);
       }
@@ -711,14 +695,12 @@ public:
       m_num_elements = other.m_num_elements;
       m_capacity = other.m_capacity;
       m_resize_ratio = other.m_resize_ratio;
-      m_is_external = other.m_is_external;
       m_allocator_id = other.m_allocator_id;
 
       other.m_data = nullptr;
       other.m_num_elements = 0;
       other.m_capacity = 0;
       other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
-      other.m_is_external = false;
       other.m_allocator_id = INVALID_ALLOCATOR_ID;
     }
 
@@ -728,7 +710,7 @@ public:
   /// @}
 
   /*!
-   * Destructor. Frees the associated buffer unless the memory is external.
+   * Destructor. Frees the associated buffer.
    */
   virtual ~Array();
 
@@ -1009,8 +991,6 @@ public:
 
   /*!
    * \brief Exchanges the contents of this Array with the other.
-   *
-   * \note The externality of the buffers will follow the swap
    */
   void swap(Array<T, DIM>& other);
 
@@ -1030,11 +1010,6 @@ public:
    * \brief Get the ID for the umpire allocator
    */
   int getAllocatorID() const { return m_allocator_id; }
-
-  /*!
-   * \brief Return true iff the external buffer constructor was called.
-   */
-  bool isExternal() const { return m_is_external; }
 
   /// @}
 
@@ -1098,7 +1073,6 @@ protected:
   IndexType m_num_elements = 0;
   IndexType m_capacity = 0;
   double m_resize_ratio = DEFAULT_RESIZE_RATIO;
-  bool m_is_external = false;
   int m_allocator_id;
 };
 
@@ -1232,13 +1206,11 @@ Array<T, DIM>::Array(Array&& other)
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
-  m_is_external = other.m_is_external;
   m_allocator_id = other.m_allocator_id;
 
   other.m_data = nullptr;
   other.m_capacity = 0;
   other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
-  other.m_is_external = false;
   other.m_allocator_id = INVALID_ALLOCATOR_ID;
 }
 
@@ -1246,7 +1218,7 @@ Array<T, DIM>::Array(Array&& other)
 template <typename T, int DIM>
 Array<T, DIM>::~Array()
 {
-  if(m_data != nullptr && !m_is_external)
+  if(m_data != nullptr)
   {
     axom::deallocate(m_data);
   }
@@ -1476,19 +1448,16 @@ inline void Array<T, DIM>::swap(Array<T, DIM>& other)
   IndexType temp_num_elements = m_num_elements;
   IndexType temp_capacity = m_capacity;
   double temp_resize_ratio = m_resize_ratio;
-  bool temp_is_external = m_is_external;
 
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
-  m_is_external = other.m_is_external;
 
   other.m_data = temp_data;
   other.m_num_elements = temp_num_elements;
   other.m_capacity = temp_capacity;
   other.m_resize_ratio = temp_resize_ratio;
-  other.m_is_external = temp_is_external;
 }
 
 //------------------------------------------------------------------------------
@@ -1561,17 +1530,6 @@ inline void Array<T, DIM>::setCapacity(IndexType new_capacity)
 {
   assert(new_capacity >= 0);
 
-  if(m_is_external && new_capacity <= m_capacity)
-  {
-    return;
-  }
-
-  if(m_is_external)
-  {
-    std::cerr << "Cannot reallocate an externally provided buffer.";
-    utilities::processAbort();
-  }
-
   if(new_capacity < m_num_elements)
   {
     updateNumElements(new_capacity);
@@ -1587,12 +1545,6 @@ inline void Array<T, DIM>::setCapacity(IndexType new_capacity)
 template <typename T, int DIM>
 inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
 {
-  if(m_is_external)
-  {
-    std::cerr << "Cannot reallocate an externally provided buffer.";
-    utilities::processAbort();
-  }
-
   assert(m_resize_ratio >= 1.0);
   IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
   const IndexType block_size = this->blockSize();
