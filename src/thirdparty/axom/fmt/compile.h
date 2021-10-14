@@ -475,7 +475,9 @@ class compiled_format : private compiled_format_base<S> {
       : compiled_format_base<S>(format_str), format_str_(format_str) {}
 };
 
-#ifdef __cpp_if_constexpr
+// start axom change
+#if defined(__cpp_if_constexpr) && defined(__cpp_return_type_deduction)
+// end axom change
 template <typename... Args> struct type_list {};
 
 // Returns a reference to the argument at index N from [first, rest...].
@@ -798,7 +800,9 @@ template <typename... Args, typename S,
 constexpr auto compile(S format_str) -> detail::compiled_format<S, Args...> {
   return detail::compiled_format<S, Args...>(to_string_view(format_str));
 }
-#endif  // __cpp_if_constexpr
+// start axom change
+#endif  // defined(__cpp_if_constexpr) && defined(__cpp_return_type_deduction)
+// end axom change
 
 // Compiles the format string which must be a string literal.
 template <typename... Args, typename Char, size_t N>
