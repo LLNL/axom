@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/core/Array.hpp"
+#include "axom/core/ArrayView.hpp"
 #include "axom/core/memory_management.hpp"
 
 #include "gtest/gtest.h"

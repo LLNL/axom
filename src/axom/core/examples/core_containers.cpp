@@ -18,6 +18,7 @@
 
 // Axom includes
 #include "axom/core/Array.hpp"
+#include "axom/core/ArrayView.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/memory_management.hpp"
 

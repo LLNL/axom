@@ -96,6 +96,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `sidre::Array` is now based on `axom::Array`.
 - `utilities::string::split` now returns a vector instead of using an out-parameter,
   Inlet's string utilities were moved to Core, and `splitLastNTokens` was renamed to `rsplitN`
+- `axom::Array`-related classes have been moved into individual files.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length

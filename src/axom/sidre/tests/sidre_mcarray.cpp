@@ -10,6 +10,7 @@
 
 #include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
 
+#include "axom/core/ArrayView.hpp"
 #include "axom/sidre/core/sidre.hpp"
 
 // C/C++ includes

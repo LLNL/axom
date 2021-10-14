@@ -11,13 +11,12 @@
 #include "axom/core/memory_management.hpp"    // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
-#include "axom/core/IteratorBase.hpp"         // for Iterator
+#include "axom/core/ArrayBase.hpp"
+#include "axom/core/ArrayIteratorBase.hpp"
 
 // C/C++ includes
-#include <array>      // for std::array
 #include <algorithm>  // for std::transform
 #include <iostream>   // for std::cerr and std::ostream
-#include <numeric>    // for std::inner_product
 
 namespace axom
 {
@@ -37,39 +36,9 @@ namespace axom
 //   Unknown
 // };
 
-namespace detail
-{
-// Takes the product of a parameter pack of T
-template <typename T, int N>
-T packProduct(const T (&arr)[N])
-{
-  return std::accumulate(arr, arr + N, 1, std::multiplies<T> {});
-}
-
-template <typename T, int N>
-bool allNonNegative(const T (&arr)[N])
-{
-  for(int i = 0; i < N; i++)
-  {
-    if(arr[i] < 0)
-    {
-      return false;
-    }
-  }
-  return true;
-}
-
-};  // namespace detail
-
 // Forward declare the templated classes and operator function(s)
-template <typename T, int DIM, typename ArrayType>
-class ArrayImpl;
-
 template <typename T, int DIM>
 class Array;
-
-template <typename T, int DIM>
-class ArrayView;
 
 /// \name Overloaded Array Operator(s)
 /// @{
@@ -84,7 +53,7 @@ class ArrayView;
  */
 template <typename T, int DIM, typename ArrayType>
 std::ostream& operator<<(std::ostream& os,
-                         const ArrayImpl<T, DIM, ArrayType>& arr);
+                         const ArrayBase<T, DIM, ArrayType>& arr);
 
 /*!
  * \brief Equality comparison operator for Arrays
@@ -108,438 +77,7 @@ bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
 template <typename T, int DIM>
 bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
 
-/*!
- * \brief Equality comparison operator for ArrayViews
- *
- * \param [in] lhs left ArrayView to compare
- * \param [in] rhs right ArrayView to compare
- * \return true if the ArrayViews are of equal length and have the same elements.
- */
-template <typename T, int DIM>
-bool operator==(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs);
-
-/*!
- * \brief Inequality comparison operator for ArrayViews
- *
- * \param [in] lhs left ArrayView to compare
- * \param [in] rhs right ArrayView to compare
- * \return true if the ArrayViews are not of equal length or do not have the same elements.
- */
-template <typename T, int DIM>
-bool operator!=(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs);
-
 /// @}
-
-/// \name ArrayIteratorImpl to iterate through Array
-/// @{
-
-/**
- * \class   ArrayIteratorImpl
- * \brief   An iterator type for Arrays.
- *          Each increment operation advances the iterator to the next
- *          element in the Array.
- * \tparam ArrayType The type of the Array that is being iterated over
- */
-template <typename ArrayType>
-class ArrayIteratorImpl
-  : public IteratorBase<ArrayIteratorImpl<ArrayType>, IndexType>
-{
-public:
-  ArrayIteratorImpl(IndexType pos, ArrayType* arr)
-    : IteratorBase<ArrayIteratorImpl<ArrayType>, IndexType>(pos)
-    , m_arrayPtr(arr)
-  { }
-
-  /**
-   * \brief Returns the current iterator value
-   */
-  typename ArrayType::value_type& operator*()
-  {
-    return (
-      *m_arrayPtr)[IteratorBase<ArrayIteratorImpl<ArrayType>, IndexType>::m_pos];
-  }
-
-protected:
-  /** Implementation of advance() as required by IteratorBase */
-  void advance(IndexType n)
-  {
-    IteratorBase<ArrayIteratorImpl<ArrayType>, IndexType>::m_pos += n;
-  }
-
-protected:
-  ArrayType* const m_arrayPtr;
-};  // end of ArrayIteratorImpl class
-
-/// @}
-
-/*!
- * \brief Policy class for implementing Array behavior that differs
- * between the 1D and multidimensional cases
- * 
- * \tparam T The element/value type
- * \tparam DIM The dimension of the Array
- * \tparam ArrayType The type of the underlying array
- * 
- * \pre ArrayType must provide methods with the following signatures:
- * \code{.cpp}
- * IndexType size() const;
- * T* data();
- * const T* data() const;
- * \endcode
- */
-template <typename T, int DIM, typename ArrayType>
-class ArrayImpl
-{
-public:
-  /*!
-   * \brief Parameterized constructor that sets up the default strides
-   *
-   * \param [in] args the parameter pack of sizes in each dimension.
-   */
-  template <typename... Args>
-  ArrayImpl(Args... args) : m_dims {static_cast<IndexType>(args)...}
-  {
-    updateStrides();
-  }
-
-  /*!
-   * \brief Dimension-aware accessor, returns a reference to the given value.
-   *
-   * \param [in] args the parameter pack of indices in each dimension.
-   *
-   * \note equivalent to *(array.data() + idx).
-   *
-   * \pre sizeof...(Args) == DIM
-   * \pre 0 <= args[i] < m_dims[i] for i in [0, DIM)
-   */
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  T& operator()(Args... args)
-  {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx =
-      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
-  }
-  /// \overload
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  const T& operator()(Args... args) const
-  {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx =
-      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
-  }
-
-  /*!
-   * \brief Accessor, returns a reference to the given value.
-   * For multidimensional arrays, indexes into the (flat) raw data.
-   *
-   * \param [in] idx the position of the value to return.
-   *
-   * \note equivalent to *(array.data() + idx).
-   *
-   * \pre 0 <= idx < m_num_elements
-   */
-  /// @{
-  T& operator[](const IndexType idx)
-  {
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
-  }
-  /// \overload
-  const T& operator[](const IndexType idx) const
-  {
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
-  }
-  /// @}
-
-  /// \brief Swaps two ArrayImpls
-  friend void swap(ArrayImpl& lhs, ArrayImpl& rhs)
-  {
-    std::swap(lhs.m_dims, rhs.m_dims);
-    std::swap(lhs.m_strides, rhs.m_strides);
-  }
-
-  /// \brief Returns the dimensions of the Array
-  const std::array<IndexType, DIM>& shape() const { return m_dims; }
-
-  /// \brief Returns the strides of the Array
-  const std::array<IndexType, DIM>& strides() const { return m_strides; }
-
-  /*!
-   * \brief Appends an Array to the end of the calling object
-   *
-   * \param [in] other The Array to append
-   * 
-   * \pre The shapes of the calling Array and @a other are the same
-   * (excluding the leading dimension), i.e., shape()[1:] == other.shape()[1:]
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  template <typename OtherArrayType>
-  void insert(IndexType pos, const ArrayImpl<T, DIM, OtherArrayType>& other)
-  {
-#ifdef AXOM_DEBUG
-    if(!std::equal(m_dims.begin() + 1, m_dims.end(), other.shape().begin() + 1))
-    {
-      std::cerr << "Cannot append a multidimensional array of incorrect shape.";
-      utilities::processAbort();
-    }
-#endif
-
-    // First update the dimensions - we're adding only to the leading dimension
-    m_dims[0] += other.shape()[0];
-    // Then add the raw data to the buffer
-    asDerived().insert(pos,
-                       static_cast<const OtherArrayType&>(other).size(),
-                       static_cast<const OtherArrayType&>(other).data());
-    updateStrides();
-  }
-
-protected:
-  /*!
-   * \brief Returns the minimum "chunk size" that should be allocated
-   * For example, 2 would be the chunk size of a 2D array whose second dimension is of size 2.
-   * This is used when resizing/reallocating; it wouldn't make sense to have a
-   * capacity of 3 in the array described above.
-   */
-  IndexType blockSize() const { return m_strides[0]; }
-
-  /*!
-   * \brief Updates the internal striding information to a row-major format
-   * Intended to be called after @p m_dims is updated.
-   * In the future, this class will support different striding schemes (e.g., column-major)
-   * and/or user-provided striding
-   */
-  void updateStrides()
-  {
-    // Row-major
-    m_strides[DIM - 1] = 1;
-    for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
-    {
-      m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
-    }
-  }
-
-private:
-  /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
-  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
-  /// \overload
-  const ArrayType& asDerived() const
-  {
-    return static_cast<const ArrayType&>(*this);
-  }
-
-  /// \name Internal bounds-checking routines
-  /// @{
-
-  /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
-  {
-    return idx >= 0 && idx < asDerived().size();
-  }
-  /// @}
-
-protected:
-  /// \brief The sizes (extents?) in each dimension
-  std::array<IndexType, DIM> m_dims;
-  /// \brief The strides in each dimension
-  std::array<IndexType, DIM> m_strides;
-};
-
-/// \brief Array implementation specific to 1D Arrays
-template <typename T, typename ArrayType>
-class ArrayImpl<T, 1, ArrayType>
-{
-public:
-  ArrayImpl(IndexType = 0) { }
-
-  /*!
-   * \brief Push a value to the back of the array.
-   *
-   * \param [in] value the value to be added to the back.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  void push_back(const T& value);
-
-  /*!
-   * \brief Push a value to the back of the array.
-   *
-   * \param [in] value the value to move to the back.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  void push_back(T&& value);
-
-  /*!
-   * \brief Inserts new element at the end of the Array.
-   *
-   * \param [in] args the arguments to forward to constructor of the element.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   * \note The size increases by 1.
-   */
-  template <typename... Args>
-  void emplace_back(Args&&... args);
-
-  /// \brief Returns the dimensions of the Array
-  // FIXME: std::array is used for consistency with multidim case, should we just return the scalar?
-  // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
-  std::array<IndexType, 1> shape() const { return {{asDerived().size()}}; }
-
-  /*!
-   * \brief Accessor, returns a reference to the given value.
-   * For multidimensional arrays, indexes into the (flat) raw data.
-   *
-   * \param [in] idx the position of the value to return.
-   *
-   * \note equivalent to *(array.data() + idx).
-   *
-   * \pre 0 <= idx < m_num_elements
-   */
-  /// @{
-  T& operator[](const IndexType idx)
-  {
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
-  }
-  /// \overload
-  const T& operator[](const IndexType idx) const
-  {
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
-  }
-  /// @}
-
-  /// \brief Swaps two ArrayImpls
-  void swap(ArrayImpl&) { }
-
-  /*!
-   * \brief Appends an Array to the end of the calling object
-   *
-   * \param [in] other The Array to append
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  template <typename OtherArrayType>
-  void insert(IndexType pos, const ArrayImpl<T, 1, OtherArrayType>& other)
-  {
-    asDerived().insert(pos,
-                       static_cast<const OtherArrayType&>(other).size(),
-                       static_cast<const OtherArrayType&>(other).data());
-  }
-
-protected:
-  /*!
-   * \brief Returns the minimum "chunk size" that should be allocated
-   */
-  IndexType blockSize() const { return 1; }
-
-private:
-  /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
-  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
-  /// \overload
-  const ArrayType& asDerived() const
-  {
-    return static_cast<const ArrayType&>(*this);
-  }
-
-  /// \name Internal bounds-checking routines
-  /// @{
-
-  /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
-  {
-    return idx >= 0 && idx < asDerived().size();
-  }
-  /// @}
-};
-
-/*!
- * \class ArrayView
- *
- * \brief Provides a view over a generic array container.
- * 
- * The ArrayView expresses a non-owning relationship over a pointer
- *
- * \tparam T the type of the values to hold.
- * \tparam DIM The dimension of the array.
- *
- */
-template <typename T, int DIM = 1>
-class ArrayView : public ArrayImpl<T, DIM, ArrayView<T, DIM>>
-{
-public:
-  using value_type = T;
-  static constexpr int dimension = DIM;
-  using ArrayViewIterator = ArrayIteratorImpl<ArrayView<T, DIM>>;
-
-  /// \brief Default constructor
-  ArrayView() = default;
-
-  /*!
-   * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
-   *
-   * \param [in] data the external data this ArrayView will wrap.
-   * \param [in] args The parameter pack containing the "shape" of the ArrayView
-   *
-   * \pre sizeof...(Args) == DIM
-   *
-   * \post size() == num_elements
-   */
-  template <typename... Args>
-  ArrayView(T* data, Args... args);
-
-  /*!
-   * \brief Return the number of elements stored in the data array.
-   */
-  inline IndexType size() const { return m_num_elements; }
-
-  /*!
-   * \brief Returns an ArrayViewIterator to the first element of the Array
-   */
-  ArrayViewIterator begin()
-  {
-    assert(m_data != nullptr);
-    return ArrayViewIterator(0, this);
-  }
-
-  /*!
-   * \brief Returns an ArrayViewIterator to the element following the last
-   *  element of the Array.
-   */
-  ArrayViewIterator end()
-  {
-    assert(m_data != nullptr);
-    return ArrayViewIterator(size(), this);
-  }
-
-  /*!
-   * \brief Return a pointer to the array of data.
-   */
-  /// @{
-
-  inline T* data() { return m_data; }
-  inline const T* data() const { return m_data; }
-
-  /// @}
-
-private:
-  T* m_data = nullptr;
-  /// \brief The full number of elements in the array
-  ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
-  IndexType m_num_elements = 0;
-};
-
-/// \brief Helper alias for multi-component arrays
-template <typename T>
-using MCArrayView = ArrayView<T, 2>;
 
 /*!
  * \class Array
@@ -593,14 +131,13 @@ using MCArrayView = ArrayView<T, 2>;
  *
  */
 template <typename T, int DIM = 1>
-class Array : public ArrayImpl<T, DIM, Array<T, DIM>>
+class Array : public ArrayBase<T, DIM, Array<T, DIM>>
 {
 public:
-  using value_type = T;
-  static constexpr int dimension = DIM;
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
   static constexpr IndexType MIN_DEFAULT_CAPACITY = 32;
-  using ArrayIterator = ArrayIteratorImpl<Array<T, DIM>>;
+  using value_type = T;
+  using ArrayIterator = ArrayIteratorBase<Array<T, DIM>>;
 
 public:
   /// \name Native Storage Array Constructors
@@ -868,7 +405,7 @@ public:
   ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
 
   // Make the overload "visible"
-  using ArrayImpl<T, DIM, Array<T, DIM>>::insert;
+  using ArrayBase<T, DIM, Array<T, DIM>>::insert;
 
   /*!
    * \brief Appends an Array to the end of the calling object
@@ -879,9 +416,9 @@ public:
    * \note Reallocation is done if the new size will exceed the capacity.
    */
   template <typename OtherArrayType>
-  void append(const ArrayImpl<T, DIM, OtherArrayType>& other)
+  void append(const ArrayBase<T, DIM, OtherArrayType>& other)
   {
-    ArrayImpl<T, DIM, Array<T, DIM>>::insert(size(), other);
+    ArrayBase<T, DIM, Array<T, DIM>>::insert(size(), other);
   }
 
   /*!
@@ -1089,77 +626,6 @@ template <typename T>
 using MCArray = Array<T, 2>;
 
 //------------------------------------------------------------------------------
-//                            ArrayImpl IMPLEMENTATION
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayImpl<T, 1, ArrayType>::push_back(const T& value)
-{
-  emplace_back(value);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayImpl<T, 1, ArrayType>::push_back(T&& value)
-{
-  emplace_back(std::move(value));
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-template <typename... Args>
-inline void ArrayImpl<T, 1, ArrayType>::emplace_back(Args&&... args)
-{
-  asDerived().emplace(asDerived().size(), args...);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int DIM, typename ArrayType>
-inline std::ostream& print(std::ostream& os,
-                           const ArrayImpl<T, DIM, ArrayType>& array)
-{
-#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
-  // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
-  // if there exists no allocator for Constant memory. Is there a more fine-grained
-  // approach we can use to see what allocators are available before trying to get their IDs?
-  if(array.getAllocatorID() ==
-     axom::getUmpireResourceAllocatorID(umpire::resource::Device))
-  {
-    std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
-    utilities::processAbort();
-  }
-#endif
-  const T* data = static_cast<const ArrayType&>(array).data();
-  os << "[ ";
-  for(IndexType i = 0; i < static_cast<const ArrayType&>(array).size(); i++)
-  {
-    os << data[i] << " ";
-  }
-  os << " ]";
-
-  return os;
-}
-
-//------------------------------------------------------------------------------
-//                            ArrayView IMPLEMENTATION
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-template <typename T, int DIM>
-template <typename... Args>
-ArrayView<T, DIM>::ArrayView(T* data, Args... args)
-  : ArrayImpl<T, DIM, ArrayView<T, DIM>>(args...)
-  , m_data(data)
-{
-  static_assert(sizeof...(Args) == DIM,
-                "Array size must match number of dimensions");
-  // Intel hits internal compiler error when casting as part of function call
-  IndexType tmp_args[] = {args...};
-  m_num_elements = detail::packProduct(tmp_args);
-}
-
-//------------------------------------------------------------------------------
 //                            Array IMPLEMENTATION
 //------------------------------------------------------------------------------
 
@@ -1171,7 +637,7 @@ Array<T, DIM>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
 template <typename T, int DIM>
 template <typename... Args>
 Array<T, DIM>::Array(Args... args)
-  : ArrayImpl<T, DIM, Array<T, DIM>>(args...)
+  : ArrayBase<T, DIM, Array<T, DIM>>(args...)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
   static_assert(sizeof...(Args) == DIM,
@@ -1194,8 +660,8 @@ Array<T, DIM>::Array(IndexType num_elements, IndexType capacity, int allocator_i
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 Array<T, DIM>::Array(const Array& other, int allocator_id)
-  : ArrayImpl<T, DIM, Array<T, DIM>>(
-      static_cast<const ArrayImpl<T, DIM, Array<T, DIM>>&>(other))
+  : ArrayBase<T, DIM, Array<T, DIM>>(
+      static_cast<const ArrayBase<T, DIM, Array<T, DIM>>&>(other))
   , m_allocator_id(allocator_id)
 {
   initialize(other.size(), other.capacity());
@@ -1205,8 +671,8 @@ Array<T, DIM>::Array(const Array& other, int allocator_id)
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 Array<T, DIM>::Array(Array&& other)
-  : ArrayImpl<T, DIM, Array<T, DIM>>(
-      static_cast<ArrayImpl<T, DIM, Array<T, DIM>>&&>(std::move(other)))
+  : ArrayBase<T, DIM, Array<T, DIM>>(
+      static_cast<ArrayBase<T, DIM, Array<T, DIM>>&&>(std::move(other)))
   , m_resize_ratio(0.0)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
@@ -1436,8 +902,8 @@ inline void Array<T, DIM>::resize(Args... args)
   assert(detail::allNonNegative(tmp_args));
   const auto new_num_elements = detail::packProduct(tmp_args);
 
-  static_cast<ArrayImpl<T, DIM, Array<T, DIM>>&>(*this) =
-    ArrayImpl<T, DIM, Array<T, DIM>> {static_cast<IndexType>(args)...};
+  static_cast<ArrayBase<T, DIM, Array<T, DIM>>&>(*this) =
+    ArrayBase<T, DIM, Array<T, DIM>> {static_cast<IndexType>(args)...};
 
   if(new_num_elements > m_capacity)
   {
@@ -1451,7 +917,7 @@ inline void Array<T, DIM>::resize(Args... args)
 template <typename T, int DIM>
 inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 {
-  ArrayImpl<T, DIM, Array<T, DIM>>::swap(other);
+  ArrayBase<T, DIM, Array<T, DIM>>::swap(other);
   T* temp_data = m_data;
   IndexType temp_num_elements = m_num_elements;
   IndexType temp_capacity = m_capacity;
@@ -1581,7 +1047,7 @@ inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
 /// Free functions implementing Array's operator(s)
 //------------------------------------------------------------------------------
 template <typename T, int DIM, typename ArrayType>
-std::ostream& operator<<(std::ostream& os, const ArrayImpl<T, DIM, ArrayType>& arr)
+std::ostream& operator<<(std::ostream& os, const ArrayBase<T, DIM, ArrayType>& arr)
 {
   print(os, arr);
   return os;
@@ -1613,33 +1079,6 @@ bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
 
 template <typename T, int DIM>
 bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
-{
-  return !(lhs == rhs);
-}
-
-template <typename T, int DIM>
-bool operator==(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs)
-{
-  // FIXME: When GPU support is fully added, some means of comparing memory spaces will be needed
-
-  if(lhs.shape() != rhs.shape())
-  {
-    return false;
-  }
-
-  for(int i = 0; i < lhs.size(); i++)
-  {
-    if(!(lhs[i] == rhs[i]))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-template <typename T, int DIM>
-bool operator!=(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs)
 {
   return !(lhs == rhs);
 }
