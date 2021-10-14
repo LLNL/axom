@@ -48,6 +48,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   signed-distance queries.
 - Spin: Added a `getTraverser()` function to `BVH`, enabling the customized traversal of a
   BVH from within a device kernel.
+- Core now provides an `axom::ArrayView` that provides view/indexing semantics over a raw pointer.
+  This replaces the external buffer logic previously provided by `axom::Array`.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis

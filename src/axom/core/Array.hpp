@@ -178,6 +178,14 @@ protected:
  * 
  * \tparam T The element/value type
  * \tparam DIM The dimension of the Array
+ * \tparam ArrayType The type of the underlying array
+ * 
+ * \pre ArrayType must provide methods with the following signatures:
+ * \code{.cpp}
+ * IndexType size() const;
+ * T* data();
+ * const T* data() const;
+ * \endcode
  */
 template <typename T, int DIM, typename ArrayType>
 class ArrayImpl
