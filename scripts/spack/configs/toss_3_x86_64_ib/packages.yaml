@@ -136,15 +136,19 @@ packages:
 
 # Globally lock version of third party libraries
   conduit:
-    version: [0.7.2]
-    variants: ~shared
+    version: [develop]
+    variants: ~shared~test
+  hdf5:
+    variants: ~shared~mpi
   mfem:
     variants: ~mpi~metis~zlib
+  raja:
+    variants: ~shared~examples~exercises
   scr:
     version: [develop]
     variants: ~shared
   umpire:
-    variants: ~shared
+    variants: ~shared~examples
 
 # Globally lock in versions of Devtools
   cppcheck:

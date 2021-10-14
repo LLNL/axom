@@ -75,9 +75,20 @@ packages:
 # Globally lock in version of CMake
   cmake:
     version: [3.9.6]
+
+
 # Globally lock version of third party libraries
   conduit:
-    version: [0.5.1]
-    variants: ~shared
+    version: [develop]
+    variants: ~shared~test
+  hdf5:
+    variants: ~shared~mpi
   mfem:
     variants: ~mpi~metis~zlib
+  raja:
+    variants: ~shared~examples~exercises
+  scr:
+    version: [develop]
+    variants: ~shared
+  umpire:
+    variants: ~shared~examples
