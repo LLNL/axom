@@ -52,6 +52,7 @@ std::ostream& operator<<(std::ostream& os,
  * IndexType size() const;
  * T* data();
  * const T* data() const;
+ * int getAllocatorID() const;
  * \endcode
  */
 template <typename T, int DIM, typename ArrayType>
@@ -341,7 +342,7 @@ inline std::ostream& print(std::ostream& os,
   // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
   // if there exists no allocator for Constant memory. Is there a more fine-grained
   // approach we can use to see what allocators are available before trying to get their IDs?
-  if(array.getAllocatorID() ==
+  if(static_cast<const ArrayType&>(array).getAllocatorID() ==
      axom::getUmpireResourceAllocatorID(umpire::resource::Device))
   {
     std::cerr << "Cannot print Array allocated on the GPU" << std::endl;

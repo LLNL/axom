@@ -6,6 +6,7 @@
 #ifndef AXOM_ARRAYVIEW_HPP_
 #define AXOM_ARRAYVIEW_HPP_
 
+#include "axom/core/memory_management.hpp"  // for memory allocation functions
 #include "axom/core/ArrayBase.hpp"
 #include "axom/core/ArrayIteratorBase.hpp"
 
@@ -111,6 +112,13 @@ public:
   inline const T* data() const { return m_data; }
 
   /// @}
+
+  /*!
+   * \brief Get the ID for the umpire allocator
+   * 
+   * FIXME: This is just a stand-in impl, extend this class to support wrapping of GPU pointers
+   */
+  int getAllocatorID() const { return axom::getDefaultAllocatorID(); }
 
 private:
   T* m_data = nullptr;
