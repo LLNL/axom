@@ -563,11 +563,9 @@ AXOM_HOST_DEVICE IndexType
 ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   const SpacePoint& pt) const
 {
-  if(!m_bb.contains(pt)) return;
+  if(!m_bb.contains(pt)) return 0;
 
   const GridCell gridCell = m_lattice.gridCell(pt);
-
-  const int bitsPerWord = BitsetType::BitsPerWord;
 
   IndexType ncandidates {0};
 
@@ -605,12 +603,10 @@ AXOM_HOST_DEVICE IndexType
 ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   const SpatialBoundingBox& bbox) const
 {
-  if(!m_bb.intersectsWith(bbox)) return;
+  if(!m_bb.intersectsWith(bbox)) return 0;
 
   const GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
   const GridCell upperCell = m_lattice.gridCell(bbox.getMax());
-
-  const int bitsPerWord = BitsetType::BitsPerWord;
 
   IndexType ncandidates {0};
 
