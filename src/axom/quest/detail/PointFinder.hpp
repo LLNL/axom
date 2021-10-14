@@ -38,11 +38,11 @@ class PointInCellMeshWrapper;
  *   \arg axom::quest::PointInCellTraits
  *   \arg axom::quest::detail::PointInCellMeshWrapper
  */
-template <int NDIMS, typename mesh_tag>
+template <int NDIMS, typename mesh_tag, typename ExecSpace>
 class PointFinder
 {
 public:
-  using GridType = spin::ImplicitGrid<NDIMS>;
+  using GridType = spin::ImplicitGrid<NDIMS, ExecSpace>;
 
   using SpacePoint = typename GridType::SpacePoint;
   using SpatialBoundingBox = typename GridType::SpatialBoundingBox;
@@ -63,20 +63,23 @@ public:
    */
   PointFinder(const MeshWrapperType* meshWrapper,
               const int* res,
-              double bboxScaleFactor)
+              double bboxScaleFactor,
+              int allocatorID)
     : m_meshWrapper(meshWrapper)
+    , m_allocatorID(allocatorID)
   {
     SLIC_ASSERT(m_meshWrapper != nullptr);
     SLIC_ASSERT(bboxScaleFactor >= 1.);
 
-    const int numCells = m_meshWrapper->numElements();
+    const IndexType numCells = m_meshWrapper->numElements();
 
     // setup bounding boxes -- Slightly scaled for robustness
 
     SpatialBoundingBox meshBBox;
-    m_cellBBoxes = std::vector<SpatialBoundingBox>(numCells);
+    m_cellBBoxes =
+      axom::Array<SpatialBoundingBox>(numCells, numCells, allocatorID);
     m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor,
-                                                        m_cellBBoxes,
+                                                        m_cellBBoxes.data(),
                                                         meshBBox);
 
     // initialize implicit grid, handle case where resolution is a NULL pointer
@@ -84,18 +87,15 @@ public:
     {
       using GridResolution = axom::primal::Point<int, NDIMS>;
       GridResolution gridRes(res);
-      m_grid.initialize(meshBBox, &gridRes, numCells);
+      m_grid.initialize(meshBBox, &gridRes, numCells, allocatorID);
     }
     else
     {
-      m_grid.initialize(meshBBox, nullptr, numCells);
+      m_grid.initialize(meshBBox, nullptr, numCells, allocatorID);
     }
 
     // add mesh elements to grid
-    for(int i = 0; i < numCells; ++i)
-    {
-      m_grid.insert(m_cellBBoxes[i], i);
-    }
+    m_grid.insert(numCells, m_cellBBoxes.data());
   }
 
   /*!
@@ -152,7 +152,8 @@ public:
 private:
   GridType m_grid;
   const MeshWrapperType* m_meshWrapper;
-  std::vector<SpatialBoundingBox> m_cellBBoxes;
+  axom::Array<SpatialBoundingBox> m_cellBBoxes;
+  int m_allocatorID;
 };
 
 }  // end namespace detail

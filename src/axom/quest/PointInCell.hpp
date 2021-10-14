@@ -93,10 +93,12 @@ public:
   using MeshType = typename MeshTraits::MeshType;
   using IndexType = typename MeshTraits::IndexType;
 
+  using ExecSpace = axom::SEQ_EXEC;
+
   using MeshWrapperType = detail::PointInCellMeshWrapper<mesh_tag>;
 
-  using PointFinder2D = detail::PointFinder<2, mesh_tag>;
-  using PointFinder3D = detail::PointFinder<3, mesh_tag>;
+  using PointFinder2D = detail::PointFinder<2, mesh_tag, axom::SEQ_EXEC>;
+  using PointFinder3D = detail::PointFinder<3, mesh_tag, axom::SEQ_EXEC>;
 
   /*!
    * Construct a point in cell query structure over a computational mesh
@@ -118,7 +120,10 @@ public:
    * \pre If resolution is not NULL, it must have space for at least
    * meshDimension() entries.
    */
-  PointInCell(MeshType* mesh, int* resolution = nullptr, double bboxTolerance = 1e-8)
+  PointInCell(MeshType* mesh,
+              int* resolution = nullptr,
+              double bboxTolerance = 1e-8,
+              int allocatorID = axom::execution_space<ExecSpace>::allocatorID())
     : m_meshWrapper(mesh)
     , m_pointFinder2D(nullptr)
     , m_pointFinder3D(nullptr)
@@ -133,11 +138,11 @@ public:
     {
     case 2:
       m_pointFinder2D =
-        new PointFinder2D(&m_meshWrapper, resolution, bboxScaleFactor);
+        new PointFinder2D(&m_meshWrapper, resolution, bboxScaleFactor, allocatorID);
       break;
     case 3:
       m_pointFinder3D =
-        new PointFinder3D(&m_meshWrapper, resolution, bboxScaleFactor);
+        new PointFinder3D(&m_meshWrapper, resolution, bboxScaleFactor, allocatorID);
       break;
     default:
       SLIC_ERROR("Point in Cell query only defined for 2D or 3D meshes.");
