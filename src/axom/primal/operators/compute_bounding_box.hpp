@@ -16,6 +16,8 @@
 #include "axom/core/numerics/Matrix.hpp"          // for Matrix
 #include "axom/core/Macros.hpp"                   // for AXOM_HOST__DEVICE
 #include "axom/core/numerics/eigen_solve.hpp"     // for eigen_solve
+#include "axom/primal/geometry/Polyhedron.hpp"
+#include "axom/primal/geometry/Octahedron.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -114,6 +116,40 @@ AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   for(int i = 1; i < 3; i++)
   {
     res.addPoint(tri[i]);
+  }
+  return res;
+}
+
+/*!
+ * \brief Creates a bounding box around an Octahedron
+ *
+ * \param [in] oct The Octahedron
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
+  const Octahedron<T, NDIMS> &oct)
+{
+  BoundingBox<T, NDIMS> res(oct[0]);
+  for(int i = 1; i < 6; i++)
+  {
+    res.addPoint(oct[i]);
+  }
+  return res;
+}
+
+/*!
+ * \brief Creates a bounding box around a Polyhedron
+ *
+ * \param [in] poly The Polyhedron
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
+  const Polyhedron<T, NDIMS> &poly)
+{
+  BoundingBox<T, NDIMS> res(poly[0]);
+  for(int i = 1; i < poly.numVertices(); i++)
+  {
+    res.addPoint(poly[i]);
   }
   return res;
 }

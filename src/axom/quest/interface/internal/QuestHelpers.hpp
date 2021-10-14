@@ -8,6 +8,7 @@
 
 // Axom includes
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 #include "axom/mint/mesh/Mesh.hpp"
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 #include "axom/quest/readers/STLReader.hpp"
@@ -28,6 +29,35 @@ namespace internal
 {
 constexpr int READ_FAILED = -1;
 constexpr int READ_SUCCESS = 0;
+
+/*!
+ * \brief Simple RAII-based utility class to update the slic logging level within a scope
+ *
+ * The original logging level will be restored when this instance goes out of scope
+ */
+class ScopedLogLevelChanger
+{
+public:
+  ScopedLogLevelChanger(slic::message::Level newLevel)
+  {
+    if(slic::isInitialized())
+    {
+      m_previousLevel = slic::getLoggingMsgLevel();
+      slic::setLoggingMsgLevel(newLevel);
+    }
+  }
+
+  ~ScopedLogLevelChanger()
+  {
+    if(slic::isInitialized())
+    {
+      slic::setLoggingMsgLevel(m_previousLevel);
+    }
+  }
+
+private:
+  slic::message::Level m_previousLevel;
+};
 
 /// \name MPI Helper/Wrapper Methods
 /// @{

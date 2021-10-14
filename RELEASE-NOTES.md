@@ -48,6 +48,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   signed-distance queries.
 - Spin: Added a `getTraverser()` function to `BVH`, enabling the customized traversal of a
   BVH from within a device kernel.
+- Primal: Adds an `Octahedron` primitive
+- Primal: Adds a `Polyhedron` primitive for representing convex polyhedra bounded by planar polygons in 3D
+- Primal: Adds a `clip()` operator for computing the intersection of a `Tetrahedron` and an `Octahedron` as a `Polyhedron`
+- Klee: Adds a new component, `klee`, for specifying non-conformal shape overlays for materials onto simulation meshes.
+  This component defines a schema for defining, transforming and overlaying 2D and 3D shapes
+  and validates klee input files. See the [klee documentation](https://axom.readthedocs.io/en/latest/axom/klee/docs/sphinx) for more information.
+- Quest: Adds a new query for sampling-based "shaping" onto low- or high-order computational meshes
+- Quest: Adds a new query for intersection-based "shaping" of revolved contours onto 3D hexahedral meshes.
+  This capability uses a RAJA policy operate on various execution spaces (host, openmp, device).
+- Quest: Adds a "shaping" example for embedding a klee specification onto an MFEM mesh
 - Core now provides an `axom::ArrayView` that provides view/indexing semantics over a raw pointer.
   This replaces the external buffer logic previously provided by `axom::Array`.
 
@@ -107,7 +117,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added workaround to `MFEMSidreDataCollection` for `C++14` standard library feature that was not available in `gcc@4.9.3`
 - Delayed finalizing reloaded mesh in `MFEMSidreDataCollection` until after setting
   the nodal `GridFunction` (when applicable)
-
+- Transposed `R` and `Z` coordinates when linearizing NURBS curves in `c2c` reader
 
 ## [Version 0.5.0] - Release date 2021-05-14
 

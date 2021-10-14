@@ -6,6 +6,7 @@
 #ifndef AXOM_PRIMAL_SEGMENT_HPP_
 #define AXOM_PRIMAL_SEGMENT_HPP_
 
+#include "axom/core/Macros.hpp"  // for Axom macros
 #include "axom/slic.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -73,19 +74,21 @@ public:
    * \param A user-supplied source point
    * \param B user-supplied target point
    */
-  Segment(const PointType& A, const PointType& B) : m_source(A), m_target(B) {};
+  AXOM_HOST_DEVICE Segment(const PointType& A, const PointType& B)
+    : m_source(A)
+    , m_target(B) {};
 
   /*!
    * \brief Returns the source point of the segment.
    * \return s the source point of the segment.
    */
-  const PointType& source() const { return m_source; };
+  AXOM_HOST_DEVICE const PointType& source() const { return m_source; };
 
   /*!
    * \brief Returns the target point of the segment.
    * \return t the target point of the segment.
    */
-  const PointType& target() const { return m_target; };
+  AXOM_HOST_DEVICE const PointType& target() const { return m_target; };
 
   /*!
    * \brief Index operator to get the i^th vertex
@@ -119,7 +122,7 @@ public:
    * \post If \f$ t = 0, \f$ the return point \f$ P = A. \f$
    * \post If \f$ t = 1, \f$ the return point \f$ P = B. \f$
    */
-  PointType at(const T& t) const
+  AXOM_HOST_DEVICE PointType at(const T& t) const
   {
     return PointType::lerp(m_source, m_target, t);
   }

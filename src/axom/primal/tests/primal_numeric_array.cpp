@@ -27,7 +27,7 @@ void check_numeric_array_policy()
 
   axom::for_all<ExecSpace>(
     1,
-    AXOM_LAMBDA(int i) {
+    AXOM_LAMBDA(int /*i*/) {
       NumericArrayType ones(1.0);
       ones.to_array(coords);
     });

@@ -168,6 +168,7 @@ void test_rehash(experimental::Map<Key, T, Hash, Policy> &test, int num, int fac
 
 }  // namespace internal
 
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 TEST(core_map, initialization)
 {
   for(int i : {1, 2, 5, 10, 20, 100})
@@ -272,4 +273,6 @@ TEST(core_map, rehash)
     }
   }
 }
+#endif  // AXOM_USE_OPENMP && AXOM_USE_RAJA
+
 } /* namespace axom */
