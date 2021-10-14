@@ -11,6 +11,7 @@ set(quest_tests
     quest_inout_octree.cpp
     quest_inout_quadtree.cpp
     quest_signed_distance.cpp
+    quest_discretize.cpp
     quest_stl_reader.cpp
     quest_vertex_weld.cpp
    )
@@ -34,6 +35,7 @@ blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
+
     blt_add_executable(
         NAME ${test_name}_test
         SOURCES ${test}
@@ -48,6 +50,12 @@ foreach(test ${quest_tests})
         )
 endforeach()
 
+if(TARGET quest_discretize_test)
+    axom_add_test( NAME quest_discretize_test_openmp
+                   COMMAND quest_discretize_test
+                   NUM_OMP_THREADS 8
+                   )
+endif()
 
 #------------------------------------------------------------------------------
 # Tests that use MFEM when available

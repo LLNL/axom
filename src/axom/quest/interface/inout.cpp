@@ -54,7 +54,6 @@ struct InOutHelper
     bool m_logger_is_initialized {false};
     bool m_should_delete_logger {false};
     bool m_should_delete_mesh {false};
-    slic::message::Level m_previousLevel {slic::message::Num_Levels};
 
     void setDefault() { *this = State {}; }
   };
@@ -84,25 +83,6 @@ struct InOutHelper
   void setSegmentsPerKnotSpan(int numSegments)
   {
     m_params.m_segmentsPerKnotSpan = numSegments;
-  }
-
-  /// Saves the current slic logging level
-  void saveLoggingLevel()
-  {
-    if(slic::isInitialized())
-    {
-      m_state.m_previousLevel = slic::getLoggingMsgLevel();
-    }
-  }
-
-  /// Restores the saved slic logging level
-  void restoreLoggingLevel()
-  {
-    if(slic::isInitialized())
-    {
-      slic::setLoggingMsgLevel(m_state.m_previousLevel);
-      slic::flushStreams();
-    }
   }
 
   /*!
@@ -165,9 +145,8 @@ struct InOutHelper
                           comm);
 
     // Update log level based on verbosity
-    this->saveLoggingLevel();
-    slic::setLoggingMsgLevel(m_params.m_verbose ? slic::message::Debug
-                                                : slic::message::Warning);
+    internal::ScopedLogLevelChanger logLevelChanger(
+      m_params.m_verbose ? slic::message::Debug : slic::message::Warning);
 
     // handle mesh pointer, with some error checking
     if(mesh == nullptr)
@@ -216,8 +195,6 @@ struct InOutHelper
 
     // Update the mesh parameter since the InOutOctree modifies the mesh
     mesh = m_surfaceMesh;
-
-    this->restoreLoggingLevel();
 
     // set the initialized flag to true
     m_state.m_initialized = true;
@@ -363,10 +340,6 @@ int inout_init(const std::string& file, MPI_Comm comm)
     s_inoutHelper2D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
 
     rc = s_inoutHelper2D.initialize(file, comm);
-    if(rc == QUEST_INOUT_FAILED)
-    {
-      s_inoutHelper2D.restoreLoggingLevel();
-    }
     break;
 
   case 3:
@@ -374,16 +347,13 @@ int inout_init(const std::string& file, MPI_Comm comm)
     s_inoutHelper3D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
 
     rc = s_inoutHelper3D.initialize(file, comm);
-    if(rc == QUEST_INOUT_FAILED)
-    {
-      s_inoutHelper3D.restoreLoggingLevel();
-    }
     break;
 
   default:
     rc = QUEST_INOUT_FAILED;
     break;
   }
+  slic::flushStreams();
 
   return rc;
 }
@@ -407,10 +377,6 @@ int inout_init(mint::Mesh*& mesh, MPI_Comm comm)
     s_inoutHelper2D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
 
     rc = s_inoutHelper2D.initialize(mesh, comm);
-    if(rc == QUEST_INOUT_FAILED)
-    {
-      s_inoutHelper2D.restoreLoggingLevel();
-    }
     break;
 
   case 3:
@@ -419,16 +385,13 @@ int inout_init(mint::Mesh*& mesh, MPI_Comm comm)
     s_inoutHelper3D.setVertexWeldThreshold(s_inoutParams.m_vertexWeldThreshold);
 
     rc = s_inoutHelper3D.initialize(mesh, comm);
-    if(rc == QUEST_INOUT_FAILED)
-    {
-      s_inoutHelper3D.restoreLoggingLevel();
-    }
     break;
 
   default:
     rc = QUEST_INOUT_FAILED;
     break;
   }
+  slic::flushStreams();
 
   return rc;
 }
