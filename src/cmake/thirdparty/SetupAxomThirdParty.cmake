@@ -163,32 +163,6 @@ else()
 endif()
 
 
-# Remove exported OpenMP flags because they are not language agnostic
-set(_props)
-if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13.0" )
-    list(APPEND _props INTERFACE_LINK_OPTIONS)
-endif()
-list(APPEND _props INTERFACE_COMPILE_OPTIONS)
-
-foreach(_target RAJA camp umpire umpire_alloc)
-    if(TARGET ${_target})
-        message(STATUS "Removing OpenMP Flags from target[${_target}]")
-
-        foreach(_prop ${_props})
-            get_target_property(_flags ${_target} ${_prop})
-            if ( _flags )
-                string( REPLACE "${OpenMP_CXX_FLAGS}" ""
-                        correct_flags "${_flags}" )
-                string( REPLACE "${OpenMP_Fortran_FLAGS}" ""
-                        correct_flags "${correct_flags}" )
-
-                set_target_properties( ${_target} PROPERTIES ${_prop} "${correct_flags}" )
-            endif()
-        endforeach()
-    endif()
-endforeach()
-
-
 #------------------------------------------------------------------------------
 # LUA
 #------------------------------------------------------------------------------
@@ -223,6 +197,44 @@ else()
     message(STATUS "c2c support is OFF")
     set(C2C_FOUND OFF CACHE BOOL "")
 endif()
+
+
+#------------------------------------------------------------------------------
+# Remove exported OpenMP flags because they are not language agnostic
+#------------------------------------------------------------------------------
+set(_props)
+if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13.0" )
+    list(APPEND _props INTERFACE_LINK_OPTIONS)
+endif()
+list(APPEND _props INTERFACE_COMPILE_OPTIONS)
+
+foreach(_target RAJA camp umpire umpire_alloc conduit::conduit)
+    if(TARGET ${_target})
+        message(STATUS "Removing OpenMP Flags from target[${_target}]")
+
+        foreach(_prop ${_props})
+            get_target_property(_flags ${_target} ${_prop})
+            if ( _flags )
+                string( REPLACE "${OpenMP_CXX_FLAGS}" ""
+                        correct_flags "${_flags}" )
+                string( REPLACE "${OpenMP_Fortran_FLAGS}" ""
+                        correct_flags "${correct_flags}" )
+
+                set_target_properties( ${_target} PROPERTIES ${_prop} "${correct_flags}" )
+            endif()
+        endforeach()
+    endif()
+endforeach()
+
+# Newer versions of RAJA keeps its flags in a specific target
+if(TARGET RAJA)
+    get_target_property(_flags RAJA INTERFACE_LINK_LIBRARIES)
+    if ( _flags )
+        list(REMOVE_ITEM _flags "RAJA::openmp")
+        set_target_properties( RAJA PROPERTIES INTERFACE_LINK_LIBRARIES "${_flags}" )
+    endif()
+endif()
+
 
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
