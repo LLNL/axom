@@ -362,7 +362,7 @@ AXOM_CUDA_TEST(quest_signed_distance, sphere_vec_cuda_custom_alloc)
   constexpr size_t PoolSize = 1024 * 1024 * 1024;
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator device_allocator =
-    rm.makeAllocator<umpire::strategy::DynamicPool>(
+    rm.makeAllocator<umpire::strategy::QuickPool>(
       "DEVICE_POOL",
       rm.getAllocator(umpire::resource::Device),
       PoolSize);

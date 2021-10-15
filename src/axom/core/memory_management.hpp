@@ -15,6 +15,7 @@
   #include "umpire/config.hpp"
   #include "umpire/ResourceManager.hpp"
   #include "umpire/op/MemoryOperationRegistry.hpp"
+  #include "umpire/strategy/QuickPool.hpp"
 #else
   #include <cstring>  // for std::memcpy
   #include <cstdlib>  // for std::malloc, std::realloc, std::free
