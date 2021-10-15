@@ -15,8 +15,16 @@
 //------------------------------------------------------------------------------
 TEST(umpire_smoke, check_version)
 {
-  EXPECT_TRUE(UMPIRE_VERSION_MAJOR >= 0);
-  EXPECT_TRUE(UMPIRE_VERSION_MINOR >= 0);
+  // Umpire version must be 2.1.0 or greater
+  EXPECT_TRUE(UMPIRE_VERSION_MAJOR >= 2);
+  if(UMPIRE_VERSION_MAJOR == 2)
+  {
+    EXPECT_TRUE(UMPIRE_VERSION_MINOR >= 1);
+  }
+  else
+  {
+    EXPECT_TRUE(UMPIRE_VERSION_MINOR >= 0);
+  }
   EXPECT_TRUE(UMPIRE_VERSION_PATCH >= 0);
 }
 

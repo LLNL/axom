@@ -12,7 +12,6 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
-#include "axom/fmt.hpp"
 
 namespace axom
 {
