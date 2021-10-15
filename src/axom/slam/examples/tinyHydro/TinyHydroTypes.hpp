@@ -11,7 +11,7 @@
 
 #include "VectorXY.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/slam.hpp"
 

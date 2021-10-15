@@ -19,7 +19,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/sidre.hpp"
 

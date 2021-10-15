@@ -34,7 +34,7 @@
 #endif
 
 // fmt format header
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 // C++ headers
 #include <cstring>

@@ -29,7 +29,8 @@ class Point;
  * \brief Equality comparison operator for points
  */
 template <typename T, int NDIMS>
-bool operator==(const Point<T, NDIMS>& lhs, const Point<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator==(const Point<T, NDIMS>& lhs,
+                                 const Point<T, NDIMS>& rhs);
 
 /*!
  * \brief Inequality comparison operator for points
@@ -157,6 +158,7 @@ public:
    * \pre The user needs to make sure that the array has been allocated
    * and has sufficient space for NDIMS coordinates.
    */
+  AXOM_HOST_DEVICE
   void to_array(T* arr) const { m_components.to_array(arr); }
 
   /*!
@@ -222,11 +224,13 @@ public:
    * \post \f$ P==B\f$ when \f$ \alpha=1.0\f$
    * \post The return point, P, and the user-supplied points A, B are collinear.
    */
+  AXOM_HOST_DEVICE
   static Point lerp(const Point& A, const Point& B, T alpha);
 
   /*!
    * \brief Helper function to return a point whose coordinates are all 0
    */
+  AXOM_HOST_DEVICE
   static Point zero() { return Point(); }
 
   /*!
@@ -235,6 +239,7 @@ public:
    * (with the appropriate casting) and is only valid for Points with
    * a numerical type (i.e. where static_cast<T>(1) is valid.
    */
+  AXOM_HOST_DEVICE
   static Point ones() { return Point(static_cast<T>(1)); }
 
 private:

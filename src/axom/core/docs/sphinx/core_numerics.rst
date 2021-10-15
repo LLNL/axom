@@ -7,9 +7,9 @@
 Core numerics
 ******************************************************
 
-The `axom::numerics` namespace was designed for convenient representation
-and use of a mathematical matrix, with accompanying manipulation and 
-solver routines.
+The ``axom::numerics`` namespace was designed for convenient representation
+and use of matrices and vectors, with accompanying manipulation and solver 
+routines.
 
 As an example, the following code shows vector operations.
 
@@ -54,10 +54,10 @@ matrices.  In the following snippet, we show both the power method and the
 Jacobi method to demonstrate that they get the same answer.
 
 .. note::
-   As of August 2020, the API of `eigen_solve` is not consistent
-   with `jacobi_eigensolve` (`eigen_solve` takes a `double` pointer as input
-   instead of a `Matrix` and the return codes differ).  This is an issue we're
-   fixing.
+   As of August 2020, the API of ``eigen_solve`` is not consistent
+   with ``jacobi_eigensolve`` (``eigen_solve`` takes a ``double`` pointer as 
+   input instead of a ``Matrix`` and the return codes differ).  This is an 
+   issue we're fixing.
 
 .. literalinclude:: ../../examples/core_numerics.cpp
    :start-after: _eigs_start

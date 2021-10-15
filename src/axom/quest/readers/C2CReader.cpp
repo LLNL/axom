@@ -12,7 +12,7 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -196,8 +196,8 @@ struct NURBSInterpolator
       const double weight = m_curve.weights[offset];
       const auto& controlPoint = m_curve.controlPoints[offset];
 
-      cw[0] += N[j] * weight * controlPoint.getR().getValue();
-      cw[1] += N[j] * weight * controlPoint.getZ().getValue();
+      cw[0] += N[j] * weight * controlPoint.getZ().getValue();
+      cw[1] += N[j] * weight * controlPoint.getR().getValue();
       cw[2] += N[j] * weight;
     }
 

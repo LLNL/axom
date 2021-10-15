@@ -119,7 +119,7 @@ TEST(quest_inout_quadtree, circle_mesh)
       ASSERT_TRUE(num_segments >= 3);
       mint::Mesh* mesh =
         quest::utilities::make_circle_mesh_2d(radius, num_segments);
-      //mint::write_vtk(mesh,fmt::format("circle_mesh_r{:.3f}_s{:06}.vtk", radius, num_segments));
+      //mint::write_vtk(mesh,axom::fmt::format("circle_mesh_r{:.3f}_s{:06}.vtk", radius, num_segments));
 
       GeometricBoundingBox bbox = computeBoundingBox(mesh).scale(1.2);
 
@@ -179,7 +179,7 @@ TEST(quest_inout_quadtree, circle_mesh)
       }
 
       // Output some stats about the query
-      SLIC_INFO(fmt::format(
+      SLIC_INFO(axom::fmt::format(
         "Queried quadtree over circle mesh of radius {}"
         " defined by {} segments using {} query points. \n "
         "Of which: "

@@ -7,8 +7,8 @@
 
 #include <iostream>
 
-#include "CLI11/CLI11.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/CLI11.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/slic/core/SimpleLogger.hpp"
 
@@ -133,19 +133,19 @@ std::ostream& operator<<(std::ostream& os, const Operator& op)
   {
   case Operator::Type::Translate:
     os << "   Translation operator:\n";
-    os << fmt::format("      with vector: {0}\n", op.translate);
+    os << axom::fmt::format("      with vector: {0}\n", op.translate);
     break;
   case Operator::Type::Rotate:
     os << "   Rotation operator:\n";
-    os << fmt::format("      with axis: {0}\n", op.axis);
-    os << fmt::format("      with center: {0}\n", op.center);
+    os << axom::fmt::format("      with axis: {0}\n", op.axis);
+    os << axom::fmt::format("      with center: {0}\n", op.center);
     break;
   case Operator::Type::Slice:
     os << "   Slice operator:\n";
-    os << fmt::format("      with x-coord: {0}\n", op.x);
-    os << fmt::format("      with y-coord: {0}\n", op.y);
-    os << fmt::format("      with z-coord: {0}\n", op.z);
-    os << fmt::format("       with origin: {0}\n", op.origin);
+    os << axom::fmt::format("      with x-coord: {0}\n", op.x);
+    os << axom::fmt::format("      with y-coord: {0}\n", op.y);
+    os << axom::fmt::format("      with z-coord: {0}\n", op.z);
+    os << axom::fmt::format("       with origin: {0}\n", op.origin);
     break;
   default:
     SLIC_ERROR("Operator had unknown type");
@@ -212,8 +212,8 @@ struct FromInlet<Geometry>
 
 std::ostream& operator<<(std::ostream& os, const Geometry& geom)
 {
-  os << fmt::format("Geometry in format: '{0}'\n", geom.format);
-  os << fmt::format("  with path: '{0}'\n", geom.path);
+  os << axom::fmt::format("Geometry in format: '{0}'\n", geom.format);
+  os << axom::fmt::format("  with path: '{0}'\n", geom.path);
   for(const auto& op : geom.operators)
   {
     os << op;
@@ -247,7 +247,7 @@ struct Shape
 
 std::ostream& operator<<(std::ostream& os, const Shape& shape)
 {
-  os << fmt::format("Shape: '{0}'\n", shape.name);
+  os << axom::fmt::format("Shape: '{0}'\n", shape.name);
   os << shape.geom;
   return os;
 }
@@ -312,7 +312,8 @@ int main(int argc, char** argv)
   // Inlet requires a SLIC logger to be initialized to output runtime information
   axom::slic::SimpleLogger logger;
 
-  CLI::App app {"Example of Axom's Inlet component for nested structures"};
+  axom::CLI::App app {
+    "Example of Axom's Inlet component for nested structures"};
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");
   bool strictVerification {false};

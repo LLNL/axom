@@ -7,10 +7,34 @@
 
 #include "axom/primal/geometry/NumericArray.hpp"
 
+#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
+#include "axom/core/execution/for_all.hpp"          // for_all()
+
 #include "axom/slic/core/SimpleLogger.hpp"
 using axom::slic::SimpleLogger;
 
 using namespace axom;
+
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+void check_numeric_array_policy()
+{
+  const int DIM = 3;
+  using NumericArrayType = primal::NumericArray<double, DIM>;
+
+  double* coords =
+    axom::allocate<double>(DIM, axom::execution_space<ExecSpace>::allocatorID());
+
+  axom::for_all<ExecSpace>(
+    1,
+    AXOM_LAMBDA(int /*i*/) {
+      NumericArrayType ones(1.0);
+      ones.to_array(coords);
+    });
+
+  EXPECT_EQ(NumericArrayType(coords), NumericArrayType(1));
+  axom::deallocate(coords);
+}
 
 //------------------------------------------------------------------------------
 TEST(primal_numeric_array, constructors)
@@ -242,6 +266,29 @@ TEST(primal_numeric_array, clamping)
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED(QArray(seq).clamp(7, 3), "");
 
+#endif
+}
+
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
+{
+  using seq_exec = axom::SEQ_EXEC;
+  check_numeric_array_policy<seq_exec>();
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
+  defined(RAJA_ENABLE_OPENMP)
+
+  using omp_exec = axom::OMP_EXEC;
+  check_numeric_array_policy<omp_exec>();
+
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
+
+  using cuda_exec = axom::CUDA_EXEC<512>;
+
+  check_numeric_array_policy<cuda_exec>();
 #endif
 }
 

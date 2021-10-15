@@ -6,7 +6,7 @@
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "axom/slic.hpp"
 
 namespace axom
@@ -549,8 +549,8 @@ bool Field::searchValidValues<std::string>(const axom::sidre::View& view) const
 
 std::string Field::name() const
 {
-  return removePrefix(m_sidreRootGroup->getPathName(),
-                      m_sidreGroup->getPathName());
+  return utilities::string::removePrefix(m_sidreRootGroup->getPathName(),
+                                         m_sidreGroup->getPathName());
 }
 
 bool AggregateField::verify(std::vector<VerificationError>* errors) const

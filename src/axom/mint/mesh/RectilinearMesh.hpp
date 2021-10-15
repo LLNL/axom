@@ -286,7 +286,7 @@ private:
 
 #endif
 
-  MCArray<double>* m_coordinates[3] = {nullptr, nullptr, nullptr};
+  axom::deprecated::MCArray<double>* m_coordinates[3] = {nullptr, nullptr, nullptr};
 
   DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(RectilinearMesh);

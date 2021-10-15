@@ -233,7 +233,7 @@ void check_analytic_plane(bool use_shared = false)
     mesh.getNode(inode, pt);
     phi[inode] = quest::signed_distance_evaluate(pt[0], pt[1], pt[2]);
 
-    const double phi_expected = analytic_plane.computeSignedDistance(pt);
+    const double phi_expected = analytic_plane.signedDistance(pt);
     EXPECT_DOUBLE_EQ(phi[inode], phi_expected);
     err[inode] = utilities::abs(phi[inode] - phi_expected);
   }
@@ -334,12 +334,6 @@ TEST(quest_signed_distance_interface_DeathTest, set_params_after_init)
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_dimension(3),
                             IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_closed_surface(true),
-                            IGNORE_OUTPUT);
-
-  EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_max_levels(5),
-                            IGNORE_OUTPUT);
-
-  EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_max_occupancy(5),
                             IGNORE_OUTPUT);
 
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_verbose(true),
@@ -461,9 +455,6 @@ TEST(quest_signed_distance_interface, analytic_sphere)
   constexpr int SPHERE_PHI_RES = 25;
   const double SPHERE_CENTER[3] = {0.0, 0.0, 0.0};
 
-  constexpr int MAX_LEVELS = 10;
-  constexpr int MAX_OCCUPANCY = 5;
-
   // STEP 1: create analytic sphere object to compare results with
   primal::Sphere<double, 3> analytic_sphere(SPHERE_RADIUS);
 
@@ -490,8 +481,6 @@ TEST(quest_signed_distance_interface, analytic_sphere)
   double* phi_err = umesh->createField<double>("phi_err", mint::NODE_CENTERED);
 
   // STEP 3: initialize the signed distance query
-  quest::signed_distance_set_max_levels(MAX_LEVELS);
-  quest::signed_distance_set_max_occupancy(MAX_OCCUPANCY);
   quest::signed_distance_set_closed_surface(true);
   quest::signed_distance_init(surface_mesh);
   EXPECT_TRUE(quest::signed_distance_initialized());

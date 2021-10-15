@@ -14,7 +14,7 @@
 
 #include "axom/inlet/Inlet.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "axom/slic.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 #include <algorithm>
@@ -79,7 +79,8 @@ void writerHelper(Writer& writer, const Container& container)
       writerHelper(
         writer,
         *container.getChildContainers().at(
-          appendPrefix(container.name(), detail::indexToString(indices[0]))));
+          utilities::string::appendPrefix(container.name(),
+                                          detail::indexToString(indices[0]))));
     }
   }
   else

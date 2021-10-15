@@ -7,7 +7,6 @@
 #------------------------------------------------------------------------------
 
 set(spin_tests
-    spin_bvhtree.cpp
     spin_implicit_grid.cpp
     spin_morton.cpp
     spin_octree.cpp

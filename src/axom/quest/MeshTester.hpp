@@ -107,7 +107,7 @@ inline detail::Triangle3 getMeshTriangle(axom::IndexType i,
  * are not reported as intersecting other triangles.
  *
  */
-#if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 template <typename ExecSpace, typename FloatType>
 void findTriMeshIntersectionsBVH(
   mint::UnstructuredMesh<mint::SINGLE_SHAPE>* surface_mesh,

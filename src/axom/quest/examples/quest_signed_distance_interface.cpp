@@ -12,7 +12,7 @@
 // _quest_distance_interface_include_end
 #include "axom/slic.hpp"
 
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>
@@ -70,8 +70,6 @@ struct Arguments
 {
   std::string fileName;
   int ndims {3};
-  int maxLevels {15};
-  int maxOccupancy {5};
   std::vector<axom::IndexType> box_dims {32, 32, 32};
   std::vector<double> box_min;
   std::vector<double> box_max;
@@ -82,26 +80,14 @@ struct Arguments
   bool ignore_signs {false};
   quest::SignedDistExec exec_space;
 
-  void parse(int argc, char** argv, CLI::App& app)
+  void parse(int argc, char** argv, axom::CLI::App& app)
   {
     app
       .add_option("-f,--file", this->fileName, "specifies the input mesh file")
-      ->check(CLI::ExistingFile)
+      ->check(axom::CLI::ExistingFile)
       ->required();
 
     app.add_option("--dimension", this->ndims, "the problem dimension")
-      ->capture_default_str();
-
-    app
-      .add_option("--maxLevels",
-                  this->maxLevels,
-                  "max levels of subdivision for the BVH")
-      ->capture_default_str();
-
-    app
-      .add_option("--maxOccupancy",
-                  this->maxOccupancy,
-                  "max number of item per BVH bin")
       ->capture_default_str();
 
     app.add_option("--box-dims", box_dims, "the dimensions of the box mesh")
@@ -156,7 +142,7 @@ struct Arguments
 #endif
     app.add_option("-e, --exec_space", this->exec_space, pol_info)
       ->capture_default_str()
-      ->transform(CLI::CheckedTransformer(validExecPolicies));
+      ->transform(axom::CLI::CheckedTransformer(validExecPolicies));
 
     app.get_formatter()->column_width(40);
 
@@ -194,13 +180,13 @@ int main(int argc, char** argv)
 
   // STEP 2: parse command line arguments
   Arguments args;
-  CLI::App app {"Driver for signed distance query"};
+  axom::CLI::App app {"Driver for signed distance query"};
 
   try
   {
     args.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     int retval = -1;
     if(mpirank == 0)
@@ -215,20 +201,23 @@ int main(int argc, char** argv)
 #endif
     exit(retval);
   }
+#ifdef AXOM_USE_CUDA
+  if(args.exec_space == quest::SignedDistExec::GPU)
+  {
+    using GPUExec = axom::CUDA_EXEC<256>;
+    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+  }
+#endif
 
   // STEP 3: initialize the signed distance interface
   SLIC_INFO("initializing signed distance function...");
   SLIC_INFO("input file: " << args.fileName);
-  SLIC_INFO("max_levels=" << args.maxLevels);
-  SLIC_INFO("max_occupancy=" << args.maxOccupancy);
   SLIC_INFO("exec_space=" << (int)args.exec_space);
   slic::flushStreams();
 
   timer.start();
   quest::signed_distance_use_shared_memory(args.use_shared);
   quest::signed_distance_set_closed_surface(args.is_water_tight);
-  quest::signed_distance_set_max_levels(args.maxLevels);
-  quest::signed_distance_set_max_occupancy(args.maxOccupancy);
   quest::signed_distance_set_compute_signs(!args.ignore_signs);
   quest::signed_distance_set_execution_space(args.exec_space);
   // _quest_distance_interface_init_start

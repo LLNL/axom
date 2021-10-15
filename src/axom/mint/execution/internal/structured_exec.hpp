@@ -114,7 +114,7 @@ constexpr int TILE_SIZE_Y = 8;
 constexpr int TILE_SIZE_Z = 4;
 
 //--------------------------------------------------------| CUDA_EXEC |---------
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
 template <int BLOCK_SIZE>
 struct structured_exec<CUDA_EXEC<BLOCK_SIZE, SYNCHRONOUS>>

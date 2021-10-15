@@ -18,7 +18,6 @@ axom_component_requires(NAME       SPIN
 set( spin_headers
 
      BVH.hpp
-     BVHTree.hpp
      Brood.hpp
      DenseOctreeLevel.hpp
      ImplicitGrid.hpp

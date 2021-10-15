@@ -30,7 +30,7 @@
 
 #include <atomic>  // For std::atomic_thread_fence
 
-#if defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
   // NOTE: uses the cub installation that is  bundled with RAJA
   #include "cub/device/device_radix_sort.cuh"
 #endif
@@ -513,7 +513,7 @@ template <typename ExecSpace, typename BBoxType>
 AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
                                                const BBoxType& value)
 {
-#ifdef __CUDA_ARCH__
+#if defined(__CUDA_ARCH__) && defined(AXOM_USE_RAJA)
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   using FloatType = typename BBoxType::CoordType;
