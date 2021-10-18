@@ -79,7 +79,8 @@ void writerHelper(Writer& writer, const Container& container)
       writerHelper(
         writer,
         *container.getChildContainers().at(
-          appendPrefix(container.name(), detail::indexToString(indices[0]))));
+          utilities::string::appendPrefix(container.name(),
+                                          detail::indexToString(indices[0]))));
     }
   }
   else

@@ -39,4 +39,3 @@ RUN cp ./*.cmake /home/axom/export_hostconfig
 WORKDIR "/home/axom"
 RUN rm -rf axom
 RUN rm -rf axom_tpls/builds
-

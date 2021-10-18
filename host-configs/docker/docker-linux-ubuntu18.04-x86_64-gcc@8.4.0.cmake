@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: gcc@8.1.0
+# Compiler Spec: gcc@8.4.0
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
@@ -69,9 +69,11 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/home/axom/axom_tpls/gcc-8.1.0" CACHE PATH "")
+set(TPL_ROOT "/home/axom/axom_tpls/gcc-8.4.0" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2" CACHE PATH "")
+
+# C2C not built
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.2.0" CACHE PATH "")
 

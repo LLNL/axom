@@ -29,7 +29,7 @@ namespace xargs = mint::xargs;
 using IndexType = axom::IndexType;
 
 // compile-time switch for execution policy
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
 constexpr int NUM_BLOCKS = 512;
 using ExecPolicy = axom::CUDA_EXEC<NUM_BLOCKS>;
 #elif defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)

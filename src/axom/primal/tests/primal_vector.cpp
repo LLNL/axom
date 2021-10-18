@@ -25,7 +25,7 @@ void check_vector_policy()
 
   axom::for_all<ExecSpace>(
     1,
-    AXOM_LAMBDA(int i) {
+    AXOM_LAMBDA(int /*i*/) {
       vec[0] = VectorType(-1.0);
       vec[0].negate();
     });
@@ -277,6 +277,22 @@ TEST(primal_vector, vector_outer_product)
   EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
   EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
   EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_vector, vector_zero)
+{
+  constexpr int DIM = 5;
+  typedef primal::Vector<double, DIM> QVec;
+  QVec zero {0.0};
+  EXPECT_TRUE(zero.is_zero());
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    QVec notZero = zero;
+    notZero[i] = 1e-7;
+    EXPECT_FALSE(notZero.is_zero()) << "Wrong when changing index " << i;
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -10,6 +10,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/numerics/matvecops.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 // Primal includes
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -265,6 +266,13 @@ public:
   Vector<T, NDIMS>& operator/=(T scalar);
 
   /*!
+   * \brief Check if this is a zero vector
+   * \return whether this vector consists of all zeros
+   */
+  AXOM_HOST_DEVICE
+  bool is_zero() const;
+
+  /*!
    * \brief Dot product of the Vector instance with another vector v
    * \param [in] v the other vector in the dot product
    * \return The dot product of the two vectors.
@@ -444,6 +452,20 @@ inline void Vector<T, NDIMS>::negate()
   {
     m_components[i] = -m_components[i];
   }
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+inline bool Vector<T, NDIMS>::is_zero() const
+{
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    if(!utilities::isNearlyEqual(m_components[i], 0.0))
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 //------------------------------------------------------------------------------

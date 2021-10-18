@@ -40,6 +40,8 @@ set(core_headers
 
     ## core
     Array.hpp
+    ArrayBase.hpp
+    ArrayIteratorBase.hpp
     IteratorBase.hpp
     Macros.hpp
     Map.hpp
