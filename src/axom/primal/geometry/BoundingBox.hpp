@@ -89,7 +89,7 @@ public:
    * \brief Constructor. Creates a bounding box containing a single point
    */
   AXOM_HOST_DEVICE
-  BoundingBox(const PointType& pt) : m_min(pt), m_max(pt) { }
+  explicit BoundingBox(const PointType& pt) : m_min(pt), m_max(pt) { }
 
   /*!
    * \brief Constructor. Creates a bounding box containing the collection of

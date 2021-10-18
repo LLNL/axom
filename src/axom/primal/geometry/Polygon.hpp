@@ -63,7 +63,7 @@ public:
    * \pre numExpectedVerts is not negative
    *
    */
-  Polygon(int numExpectedVerts)
+  explicit Polygon(int numExpectedVerts)
   {
     SLIC_ASSERT(numExpectedVerts >= 0);
     m_vertices.reserve(numExpectedVerts);
@@ -103,7 +103,7 @@ public:
     }
     sum /= numVertices();
 
-    return sum;
+    return PointType(sum);
   }
 
   /*!
