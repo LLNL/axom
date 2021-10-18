@@ -124,49 +124,6 @@ bool verifyRequired(const axom::sidre::Group& target,
   return true;
 }
 
-std::string appendPrefix(const std::string& prefix, const std::string& name)
-{
-  return (prefix == "") ? name : prefix + "/" + name;
-}
-
-std::string removePrefix(const std::string& prefix, const std::string& name)
-{
-  if(prefix.empty())
-  {
-    return name;
-  }
-  else if(axom::utilities::string::startsWith(name, prefix + "/"))
-  {
-    return name.substr(prefix.size());
-  }
-  SLIC_WARNING(
-    fmt::format("[Inlet] Provided name {0} does not "
-                "contain prefix {1}",
-                name,
-                prefix));
-  return name;
-}
-
-std::string removeBeforeDelimiter(const std::string& path, const char delim)
-{
-  auto pos = path.find_last_of(delim);
-  // Will return an empty string if the delimiter was not found
-  return path.substr(pos + 1);
-}
-
-std::string removeAllInstances(const std::string& target,
-                               const std::string& substr)
-{
-  std::string result = target;
-  auto pos = result.find(substr);
-  while(pos != std::string::npos)
-  {
-    result.erase(pos, substr.length());
-    pos = result.find(substr);
-  }
-  return result;
-}
-
 void markAsStructCollection(axom::sidre::Group& target)
 {
   if(target.hasView(detail::STRUCT_COLLECTION_FLAG))

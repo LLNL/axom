@@ -94,7 +94,7 @@ TYPED_TEST(inlet_errors, heterogeneous_array)
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
       // FIXME: Do we want to strip out the _inlet_collection from the error messages?
       return (err.path ==
-              axom::inlet::appendPrefix(
+              axom::utilities::string::appendPrefix(
                 "foo",
                 axom::inlet::detail::COLLECTION_GROUP_NAME)) &&
         err.messageContains("not homogeneous");
@@ -117,7 +117,7 @@ TYPED_TEST(inlet_errors, heterogeneous_array_nested)
   EXPECT_TRUE(
     std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
       return (err.path ==
-              axom::inlet::appendPrefix(
+              axom::utilities::string::appendPrefix(
                 "foo/bar/baz",
                 axom::inlet::detail::COLLECTION_GROUP_NAME)) &&
         err.messageContains("not homogeneous");

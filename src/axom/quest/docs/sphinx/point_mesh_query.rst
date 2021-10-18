@@ -108,9 +108,17 @@ Before initialization, a code can set some parameters for the distance query.
   lets the user read in a non-closed "terrain mesh" that divides
   its bounding box into "above" (positive distance to the surface mesh)
   and "below" (negative distance).
-- ``quest::signed_distance_set_max_levels()`` and
-  ``quest::signed_distance_set_max_occupancy()`` control options for the
-  BVH tree spatial index used to accelerate signed distance queries.
+- ``quest::signed_distance_set_execution_space()`` allows setting the execution
+  space to run the signed distance query in. The following values are accepted:
+   - ``quest::SignedDistExec::CPU`` runs the signed distance query on the CPU.
+   - ``quest::SignedDistExec::OpenMP`` runs the signed distance query with multiple
+     threads on the CPU using OpenMP. Requires building Axom with OpenMP support.
+   - ``quest::SignedDistExec::GPU`` runs the signed distance query on the GPU,
+     if supported. This currently requires CUDA support.
+- ``quest::signed_distance_set_allocator()`` allows setting a custom
+  Umpire allocator to allocate the underlying BVH in. The allocator should be
+  compatible with the execution space set in the call to
+  ``quest::signed_distance_set_execution_space()``.
 - If the SLIC logging environment is in use, passing ``true`` to
   ``quest::signed_distance_set_verbose()`` will turn on verbose logging.
 - Use of MPI-3 shared memory can be enabled by passing ``true`` to

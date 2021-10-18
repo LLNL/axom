@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "axom/sidre.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
 #include "axom/core/Path.hpp"
 
@@ -128,58 +128,6 @@ bool verifyRequired(const axom::sidre::Group& target,
                     const bool condition,
                     const std::string& type,
                     std::vector<VerificationError>* errors = nullptr);
-
-/*!
-*****************************************************************************
-* \brief This function appends the prefix name to the ending name.
-*
-* \param [in] The prefix string name.
-* \param [in] The ending string name.
-*
-* \return The appended string.
-*****************************************************************************
-*/
-std::string appendPrefix(const std::string& prefix, const std::string& name);
-
-/*!
-*****************************************************************************
-* \brief This function extracts the Container name from the full name.
-*
-* \param [in] The prefix of the name, to be removed.
-* \param [in] The full name.
-*
-* \return The extracted string.
-*****************************************************************************
-*/
-std::string removePrefix(const std::string& prefix, const std::string& name);
-
-/*!
-*****************************************************************************
-* \brief This function extracts the substring following the last instance
-* of the delimiting character
-*
-* \param [in] path The path to extract from
-* \param [in] delim The delimiting character
-*
-* \return The extracted string.
-*****************************************************************************
-*/
-std::string removeBeforeDelimiter(const std::string& path,
-                                  const char delim = '/');
-
-/*!
-*****************************************************************************
-* \brief This function removes all instances of the substring from the target
-* string
-*
-* \param [in] target The string to operate on
-* \param [in] substr The string to remove
-*
-* \return The filtered string.
-*****************************************************************************
-*/
-std::string removeAllInstances(const std::string& target,
-                               const std::string& substr);
 
 namespace detail
 {

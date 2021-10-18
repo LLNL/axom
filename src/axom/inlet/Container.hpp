@@ -21,7 +21,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Function.hpp"

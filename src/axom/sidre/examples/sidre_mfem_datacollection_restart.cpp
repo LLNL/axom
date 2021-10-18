@@ -26,13 +26,17 @@
 
 #include <memory>  // for unique_ptr
 
-#ifdef AXOM_USE_MPI
+// Create a simple compiler define for whether we're using MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #define EXAMPLE_USES_MPI
   #include "mpi.h"
+#else
+  #undef EXAMPLE_USES_MPI
 #endif
 
 // MFEM includes - needed to set up simulation
 #include "mfem.hpp"
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 // Stores the state of the simulation - a mesh, fields, and associated objects
 class SimulationState
@@ -44,7 +48,7 @@ public:
                   const int cycle_to_load)
     : m_datacoll(dc)
   {
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
     MPI_Comm_rank(m_datacoll.GetComm(), &m_rank);
 #endif
     // Check if this is a restart run
@@ -101,7 +105,7 @@ private:
     // Build a 2D mesh with 100 square elements
     m_mesh = new mfem::Mesh(10, 10, mfem::Element::QUADRILATERAL);
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
     mfem::Mesh* tmp_mesh = m_mesh;
     m_mesh = new mfem::ParMesh(MPI_COMM_WORLD, *tmp_mesh);
     delete tmp_mesh;
@@ -112,7 +116,7 @@ private:
     // Set up the FiniteElementSpace - needed for the grid functions
     // Initialize with H1 elements of order 1
     m_fecoll = new mfem::H1_FECollection(/*order=*/1, m_mesh->Dimension());
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
     auto par_mesh = dynamic_cast<mfem::ParMesh*>(m_mesh);
     m_fespace = new mfem::ParFiniteElementSpace(par_mesh, m_fecoll);
 #else
@@ -123,7 +127,7 @@ private:
 
     // Set the data to nullptr so the datacollection will initialize it with
     // its own managed data (needed for a restart)
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
     auto par_fespace = dynamic_cast<mfem::ParFiniteElementSpace*>(m_fespace);
     m_soln_field =
       new mfem::ParGridFunction(par_fespace, static_cast<double*>(nullptr));
@@ -167,25 +171,25 @@ private:
 
   // FEM-related objects needed as part of a simulation
   // In a real simulation these would be exposed via accessors
-  mfem::Mesh* m_mesh;
-  const mfem::FiniteElementCollection* m_fecoll;
-  mfem::FiniteElementSpace* m_fespace;
-  mfem::GridFunction* m_soln_field;
-  mfem::QuadratureSpace* m_qspace;
-  mfem::QuadratureFunction* m_qfunc;
-  bool m_owns_data = false;
+  mfem::Mesh* m_mesh {nullptr};
+  const mfem::FiniteElementCollection* m_fecoll {nullptr};
+  mfem::FiniteElementSpace* m_fespace {nullptr};
+  mfem::GridFunction* m_soln_field {nullptr};
+  mfem::QuadratureSpace* m_qspace {nullptr};
+  mfem::QuadratureFunction* m_qfunc {nullptr};
+  bool m_owns_data {false};
 
   // A reference to the datacollection so it can be updated with time/cycle
   // information on each time step
   axom::sidre::MFEMSidreDataCollection& m_datacoll;
 
   // The MPI rank, used to display messages on just one node
-  int m_rank = 0;
+  int m_rank {0};
 };
 
 int main(int argc, char* argv[])
 {
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
   MPI_Init(&argc, &argv);
 #endif
 
@@ -195,14 +199,34 @@ int main(int argc, char* argv[])
   axom::sidre::MFEMSidreDataCollection dc("sidre_mfem_datacoll_restart_ex",
                                           nullptr,
                                           owns_mesh_data);
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
   dc.SetComm(MPI_COMM_WORLD);
 #endif
 
   // Command-line argument to load in a specific cycle - optional
-  CLI::App app {"Example of Axom's MFEMSidreDataCollection for restarts"};
+  axom::CLI::App app {"Example of Axom's MFEMSidreDataCollection for restarts"};
   int cycle_to_load = -1;
-  app.add_option("--cycle", cycle_to_load, "Optional simulation cycle to load");
+
+  std::vector<std::string> sidre_protocols = {"sidre_conduit_json",
+                                              "sidre_json",
+                                              "conduit_bin",
+                                              "conduit_json",
+                                              "json"};
+#ifdef AXOM_USE_HDF5
+  std::string protocol = "sidre_hdf5";
+  sidre_protocols.push_back("sidre_hdf5");
+  sidre_protocols.push_back("conduit_hdf5");
+#else
+  std::string protocol = "sidre_conduit_json";
+#endif
+
+  app.add_option("--cycle", cycle_to_load)
+    ->description("Optional simulation cycle to load")
+    ->capture_default_str();
+  app.add_option("--protocol", protocol)
+    ->description("Optional sidre protocol to use for checkpoints and restarts")
+    ->check(axom::CLI::IsMember(sidre_protocols))
+    ->capture_default_str();
   CLI11_PARSE(app, argc, argv);
 
   // Initialize the simulation data structures
@@ -211,7 +235,7 @@ int main(int argc, char* argv[])
   // This is where the time-dependent operator would be set up...
 
   // Save initial state of simulation
-  dc.Save("sidre_mfem_datacoll_restart_ex", "sidre_hdf5");
+  dc.Save("sidre_mfem_datacoll_restart_ex", protocol);
 
   // Sample time parameters
   const int n_iter = 10;
@@ -224,11 +248,11 @@ int main(int argc, char* argv[])
     if(i % n_checkpoint == 0)
     {
       // then save it at each checkpoint
-      dc.Save("sidre_mfem_datacoll_restart_ex", "sidre_hdf5");
+      dc.Save("sidre_mfem_datacoll_restart_ex", protocol);
     }
   }
 
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+#ifdef EXAMPLE_USES_MPI
   MPI_Finalize();
 #endif
 }

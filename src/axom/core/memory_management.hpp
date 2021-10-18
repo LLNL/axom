@@ -187,44 +187,8 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
 {
   const std::size_t numbytes = n * sizeof(T);
 
-#if defined(AXOM_USE_UMPIRE) && !defined(UMPIRE_VERSION_MAJOR)
+#if defined(AXOM_USE_UMPIRE)
 
-  // Workaround for bug in Umpire's handling on reallocate(0)
-  // Fixed in Umpire PR #292 (after v1.1.0)
-
-  // NOTE: The UMPIRE_VERSION_MAJOR macro was added in umpire-v2.0.0. If the
-  // macro is not defined, we assume that the Umpire version is less than 2.0.0
-  // and that the workaround is needed.
-  if(n == 0)
-  {
-    axom::deallocate<T>(pointer);
-    pointer = axom::allocate<T>(0, allocID);
-    return pointer;
-  }
-
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-
-  // Workaround for bug in Umpire's handling of reallocate
-  // called on a zero-sized allocation
-  // Fixed in Umpire PR #292 (after v1.1.0)
-  if(pointer != nullptr)
-  {
-    auto* allocRecord = rm.findAllocationRecord(pointer);
-    if(allocRecord && allocRecord->size == 0)
-    {
-      axom::deallocate<T>(pointer);
-      pointer = axom::allocate<T>(n, allocID);
-      return pointer;
-    }
-  }
-
-  pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
-
-#elif defined(AXOM_USE_UMPIRE) &&                                   \
-    ((UMPIRE_VERSION_MAJOR == 2) && (UMPIRE_VERSION_MINOR >= 1)) || \
-  (UMPIRE_VERSION_MAJOR > 2)
-
-  // Umpire 2.1.0 and above handles reallocate(0) natively
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   if(pointer == nullptr)
   {

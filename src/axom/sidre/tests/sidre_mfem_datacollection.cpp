@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #ifndef AXOM_USE_MFEM
   #error This file requires MFEM
@@ -15,6 +16,10 @@
 
 #include "axom/sidre/core/sidre.hpp"
 #include "axom/sidre/core/MFEMSidreDataCollection.hpp"
+
+#ifdef AXOM_USE_MPI
+  #include "mpi.h"
+#endif
 
 using axom::sidre::Group;
 using axom::sidre::MFEMSidreDataCollection;
@@ -92,6 +97,10 @@ TEST(sidre_datacollection, dc_save)
   // 1D mesh divided into 10 segments
   mfem::Mesh mesh(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
+
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc.SetComm(MPI_COMM_WORLD);
+#endif
 
   sdc.Save();
 
@@ -650,7 +659,8 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
 {
   mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh, nullptr, part_method);
 
-  mfem::H1_FECollection fec(1, base_mesh.Dimension());
+  // Use second-order elements to ensure that the nodal gridfunction gets set up properly as well
+  mfem::H1_FECollection fec(2, base_mesh.Dimension());
   mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
 
   // The mesh must be owned by Sidre to properly manage data in case of
@@ -698,6 +708,13 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
   auto reader_group_data = getGroupData(*reader_pmesh);
   EXPECT_EQ(writer_group_data, reader_group_data);
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+
+  // Make sure that orientation checks pass
+  // These checks assume that the test mesh is orientable and are intended to make sure
+  // that Mesh::Nodes was set up correctly - otherwise these can fail for periodic (and HO?) meshes
+  // QUESTION: What does this method do for a non-orientable mesh?
+  EXPECT_EQ(sdc_reader.GetMesh()->CheckElementOrientation(), 0);
+  EXPECT_EQ(sdc_reader.GetMesh()->CheckBdrElementOrientation(), 0);
 }
 
 /**
@@ -778,6 +795,27 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_large)
   testParallelMeshReloadAllPartitionings(mesh);
 }
 
+  // The following test requires a function from mfem@4.3
+  #if(MFEM_VERSION >= 40300)
+TEST(sidre_datacollection, dc_par_reload_mesh_2D_periodic)
+{
+  // periodic 2D mesh divided into triangles
+  mfem::Mesh base_mesh(10, 10, mfem::Element::Type::QUADRILATERAL, false, 1.0, 1.0);
+  // FIXME: MFEM 4.3
+  // mfem::Mesh::MakeCartesian2D(10,
+  //                             10,
+  //                             mfem::Element::Type::QUADRILATERAL,
+  //                             false,
+  //                             1.0,
+  //                             1.0);
+  std::vector<mfem::Vector> translations = {mfem::Vector({1.0, 0.0}),
+                                            mfem::Vector({0.0, 1.0})};
+  auto vertex_map = base_mesh.CreatePeriodicVertexMapping(translations);
+  auto mesh = mfem::Mesh::MakePeriodic(base_mesh, vertex_map);
+  testParallelMeshReloadAllPartitionings(mesh);
+}
+  #endif
+
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_tet)
 {
   // 3D mesh divided into tetrahedra
@@ -805,24 +843,26 @@ TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_hex)
   mfem::Mesh mesh(10, 10, 10, mfem::Element::HEXAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
 }
+#endif  // defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 
-  //----------------------------------------------------------------------
-  #include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
+//----------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
+#ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
+#endif
+
   result = RUN_ALL_TESTS();
+
+#ifdef AXOM_USE_MPI
   MPI_Finalize();
+#endif
 
   return result;
 }
-
-#endif  // defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)

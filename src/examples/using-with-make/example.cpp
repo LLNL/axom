@@ -12,7 +12,7 @@
 
 #include <iostream>
 
-#include "axom/core/utilities/About.hpp"
+#include "axom/core.hpp"
 
 int main()
 {

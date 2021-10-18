@@ -4,10 +4,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 #include "axom/mint/mesh/RectilinearMesh.hpp"
 
-#include "axom/core/MCArray.hpp"         // for core::MCArray
-#include "axom/mint/mesh/blueprint.hpp"  // for blueprint functions
-#include "axom/mint/config.hpp"          // for compile-time definitions
-#include "axom/mint/mesh/MeshTypes.hpp"  // for STRUCTURED_RECTILINEAR_MESH
+#include "axom/mint/deprecated/MCArray.hpp"  // for MCArray
+#include "axom/mint/mesh/blueprint.hpp"      // for blueprint functions
+#include "axom/mint/config.hpp"              // for compile-time definitions
+#include "axom/mint/mesh/MeshTypes.hpp"      // for STRUCTURED_RECTILINEAR_MESH
 
 #include "axom/mint/mesh/internal/MeshHelpers.hpp"  // for internal helper
 
@@ -48,7 +48,7 @@ RectilinearMesh::RectilinearMesh(IndexType Ni,
     SLIC_ERROR_IF(ptrs[dim] == nullptr,
                   "encountered null coordinate array for dim=" << dim);
     const IndexType N = getNodeResolution(dim);
-    m_coordinates[dim] = new MCArray<double>(ptrs[dim], N);
+    m_coordinates[dim] = new axom::deprecated::MCArray<double>(ptrs[dim], N);
   }
 }
 
@@ -72,7 +72,8 @@ RectilinearMesh::RectilinearMesh(sidre::Group* group, const std::string& topo)
   // initialize coordinates
   for(int dim = 0; dim < m_ndims; ++dim)
   {
-    m_coordinates[dim] = new sidre::Array<double>(c->getView(coords[dim]));
+    m_coordinates[dim] =
+      new sidre::deprecated::MCArray<double>(c->getView(coords[dim]));
     SLIC_ERROR_IF(getNodeResolution(dim) != m_coordinates[dim]->size(),
                   "coordinates size does not match rectilinear mesh extent");
   }
@@ -105,7 +106,7 @@ void RectilinearMesh::allocateCoordsOnSidre()
   {
     IndexType N = getNodeResolution(dim);
     sidre::View* view = coordsgrp->createView(coords[dim]);
-    m_coordinates[dim] = new sidre::Array<double>(view, N, 1, N);
+    m_coordinates[dim] = new sidre::deprecated::MCArray<double>(view, N, 1, N);
     m_coordinates[dim]->setResizeRatio(0.0);
   }
 
@@ -144,7 +145,7 @@ void RectilinearMesh::allocateCoords()
   for(int dim = 0; dim < m_ndims; ++dim)
   {
     const IndexType N = getNodeResolution(dim);
-    m_coordinates[dim] = new MCArray<double>(N, 1, N);
+    m_coordinates[dim] = new axom::deprecated::MCArray<double>(N, 1, N);
     m_coordinates[dim]->setResizeRatio(0.0);
   }  // END for all dimensions
 }

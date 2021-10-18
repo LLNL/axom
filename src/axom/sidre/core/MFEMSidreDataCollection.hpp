@@ -505,11 +505,7 @@ public:
 
   /** @brief Updates the DataCollection's mesh and registered fields
       with the values from the data store. */
-  void UpdateMeshAndFieldsFromDS()
-  {
-    reconstructMesh();
-    reconstructFields();
-  }
+  void UpdateMeshAndFieldsFromDS();
 
   /// Verifies that the contents of the mesh blueprint data is valid.
   bool verifyMeshBlueprint();
@@ -602,8 +598,12 @@ private:
   // Used as part of Load()
   void reconstructMesh();
 
+  // Reconstructs a single field from its corresponding Sidre group
+  void reconstructField(Group* field_grp);
+
   // Reconstructs all non-mesh-related fields using the current contents
-  // of the datastore, used as part of Load()
+  // of the datastore, used as part of Load() - it is expected/required
+  // that the nodel grid function has already been reconstructed/registered
   void reconstructFields();
 
   /**

@@ -66,20 +66,28 @@ Class header:
    :end-before: _quest_distance_cpp_include_end
    :language: C++
 
-The constructor takes several arguments.  Here, ``surface_mesh`` is a pointer to
-a triangle surface mesh.  The second argument indicates the mesh is a watertight
-mesh, a manifold.  The signed distance from a point to a manifold is
-mathematically well-defined.  When the input is not a closed surface mesh, the
-mesh must span the entire computational mesh domain, dividing it into two regions.
-The third and fourth arguments are used to build the underlying BVH tree
-spatial index.  They indicate that BVH tree buckets will be split after 25 objects
-and that the BVH tree will contain at most 10 levels.  These are safe default 
-values and can be adjusted if application benchmarking shows a need.  Note that
-the second and subsequent arguments to the constructor correspond to
+The constructor takes several arguments:
+
+- ``const mint::Mesh* surfaceMesh``: A pointer to a surface mesh with triangles
+  and/or quadrilaterals.
+- ``bool isWatertight``: Indicates the mesh is a watertight mesh, a manifold.
+  The signed distance from a point to a manifold is mathematically well-defined.
+  When the input is not a closed surface mesh, the mesh must span the entire
+  computational mesh domain, dividing it into two regions.
+- ``bool computeSign`` (default ``true``): Optional. Enables or disables the
+  computation of signs in distance queries.
+- ``int allocatorID``: Optional. Sets a custom Umpire allocator to use in
+  constructing the underlying BVH; by default, this is set to a default allocator
+  for the execution space the ``SignedDistance`` class is instantiated in
+  (host-side memory for CPU and OpenMP, unified memory for GPUs).
+
+Note that the second and subsequent arguments to the constructor correspond to
 ``quest::signed_distance_set`` functions in the C API.
 
 As with the ``InOutOctree``, the class is templated on the dimensionality
-of the mesh, with only 3D meshes being supported.
+of the mesh, with only 3D meshes being supported. The class also accepts a
+template parameter for execution space, for running signed distance queries with
+OpenMP or on a GPU.
 
 .. literalinclude:: ../../tests/quest_signed_distance.cpp
    :start-after: _quest_distance_cpp_init_start
@@ -87,10 +95,26 @@ of the mesh, with only 3D meshes being supported.
    :language: C++
 
 Test a query point.
-::
+
+.. code-block:: C++
 
    axom::primal::Point< double,3 > pt =
      axom::primal::Point< double,3 >::make_point(2., 3., 1.);
    double signedDistance = signed_distance.computeDistance(pt);
+
+Test a batch of query points.
+
+.. code-block:: C++
+
+   const int numPoints = 20;
+   axom::primal::Point<double, 3>* pts =
+     axom::allocate<axom::primal::Point<double, 3>>(numPoints);
+   for (int ipt = 0; ipt < numPoints; ipt++)
+   {
+     // fill pts array
+     pts[ipt] = ...;
+   }
+   double signedDists = axom::allocate<double>(20);
+   signed_distance.computeDistances(numPts, pts, signedDists);
 
 The object destructor takes care of all cleanup.

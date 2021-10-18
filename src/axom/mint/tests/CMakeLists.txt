@@ -38,6 +38,9 @@ set( mint_tests
      ## util tests
      mint_su2_io.cpp
      mint_util_write_vtk.cpp
+
+     ## container tests
+     mint_deprecated_mcarray.cpp
    )
 
 set( mint_test_dependencies axom )

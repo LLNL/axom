@@ -48,6 +48,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   signed-distance queries.
 - Spin: Added a `getTraverser()` function to `BVH`, enabling the customized traversal of a
   BVH from within a device kernel.
+- Primal: Adds an `Octahedron` primitive
+- Primal: Adds a `Polyhedron` primitive for representing convex polyhedra bounded by planar polygons in 3D
+- Primal: Adds a `clip()` operator for computing the intersection of a `Tetrahedron` and an `Octahedron` as a `Polyhedron`
+- Klee: Adds a new component, `klee`, for specifying non-conformal shape overlays for materials onto simulation meshes.
+  This component defines a schema for defining, transforming and overlaying 2D and 3D shapes
+  and validates klee input files. See the [klee documentation](https://axom.readthedocs.io/en/latest/axom/klee/docs/sphinx) for more information.
+- Quest: Adds a new query for sampling-based "shaping" onto low- or high-order computational meshes
+- Quest: Adds a new query for intersection-based "shaping" of revolved contours onto 3D hexahedral meshes.
+  This capability uses a RAJA policy operate on various execution spaces (host, openmp, device).
+- Quest: Adds a "shaping" example for embedding a klee specification onto an MFEM mesh
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -76,6 +86,27 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: `SignedDistance` has been modified to use `spin::BVH` instead of `BVHTree`. This
   enables signed-distance queries to run on the GPU, as specified via a new template
   parameter.
+- Spin: Removed `BVHTree` class in favor of `BVH`.
+- All built-in third-party libraries (fmt, cli11, sol, and sparsehash) have been guarded to allow downstream users to
+  have their own versions. This includes moving their headers under `include/axom` instead of `include/` and 
+  moving their C++ namespace under `axom` (eg. `fmt` to `axom::fmt`).  If you don't use our built-n TPLs this has no
+  affect on you, but if you do these are some the changes you will need to make:
+  * `fmt::` to `axom::fmt::`
+  * `#include "fmt/fmt.hpp"` to `#include "axom/fmt.hpp"`
+  * `sol::` to `axom::sol::`
+  * `#include "sol/sol.hpp"` to `#include "axom/sol.hpp"`
+  * `google::` to `axom::google::`
+  * `#include "sparsehash` to `#include "axom/sparsehash`
+  * `CLI::` to `axom::CLI::`
+  * `#include "CLI11/CLI11.hpp"` to `#include "axom/CLI11.hpp"`
+- Moved `axom::MCArray` and the `sidre::Array` it was based on into `mint`
+  as `axom::deprecated::MCArray` and `sidre::deprecated::MCArray`, respectively.
+  `sidre::Array` is now based on `axom::Array`.
+- `utilities::string::split` now returns a vector instead of using an out-parameter,
+  Inlet's string utilities were moved to Core, and `splitLastNTokens` was renamed to `rsplitN`
+- `axom::Array`-related classes have been moved into individual files.
+- Removed logic from ``axom::reallocate()`` relating to older versions of Umpire.
+  Axom requires Umpire v2.1.0+.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
@@ -84,7 +115,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed bug in `Mint`'s VTK output for fields of type `int64` and `float`
 - Improved loading of data collections in `MFEMSidreDataCollection`
 - Added workaround to `MFEMSidreDataCollection` for `C++14` standard library feature that was not available in `gcc@4.9.3`
-
+- Delayed finalizing reloaded mesh in `MFEMSidreDataCollection` until after setting
+  the nodal `GridFunction` (when applicable)
+- Transposed `R` and `Z` coordinates when linearizing NURBS curves in `c2c` reader
 
 ## [Version 0.5.0] - Release date 2021-05-14
 

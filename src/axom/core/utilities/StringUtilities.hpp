@@ -80,13 +80,12 @@ inline std::string removeSuffix(const std::string& str, const std::string& suffi
 
 /*!
  * \brief Splits the given string based on the given delimiter
- * \param [out] tokens    vector that the found tokens are appended to
  * \param [in]  str       string to be tokenized
  * \param [in]  delimiter char to split string on
+ * 
+ * \return vector containing the found tokens
  */
-void split(std::vector<std::string>& tokens,
-           const std::string& str,
-           const char delimiter);
+std::vector<std::string> split(const std::string& str, const char delimiter);
 
 /*!
  * \brief Converts a string to lowercase
@@ -107,12 +106,73 @@ void toUpper(std::string& str);
  * \param [in] delim The delimiter to split with
  * 
  * \return A list of tokens (of size \a n )
+ * \note If @a delim is not found in the input string, the full input string is returned
  * 
  * Splits a string starting from the end of the string into a maximum of \a n tokens
  */
-std::vector<std::string> splitLastNTokens(const std::string& input,
-                                          const std::size_t n,
-                                          const char delim);
+std::vector<std::string> rsplitN(const std::string& input,
+                                 const std::size_t n,
+                                 const char delim);
+
+/*!
+*****************************************************************************
+* \brief This function appends the prefix name to the ending name.
+*
+* \param [in] prefix The prefix string name.
+* \param [in] name The ending string name.
+* \param [in] delim The delimiting character inserted between the prefix and the name, if both are non-empty
+*
+* \return The appended string.  If @a prefix is empty, then just @a name is returned.
+*****************************************************************************
+*/
+std::string appendPrefix(const std::string& prefix,
+                         const std::string& name,
+                         const char delim = '/');
+
+/*!
+*****************************************************************************
+* \brief This function returns the tail of a string following a given prefix plus a delimiter
+*
+* \param [in] prefix The prefix of the name, to be removed.
+* \param [in] name The full name.
+* \param [in] delim The delimiting character "expected" to separate the prefix and the return value
+*
+* \return The extracted string.
+*
+* For example, removePrefix("foo", "foo/bar") will return "bar".
+* If the prefix is empty or not found the full @a name string is returned.
+*****************************************************************************
+*/
+std::string removePrefix(const std::string& prefix,
+                         const std::string& name,
+                         const char delim = '/');
+
+/*!
+*****************************************************************************
+* \brief This function extracts the substring following the last instance
+* of the delimiting character
+*
+* \param [in] str The string to extract from
+* \param [in] delim The delimiting character
+*
+* \return The extracted string.
+*****************************************************************************
+*/
+std::string removeBeforeDelimiter(const std::string& str, const char delim = '/');
+
+/*!
+*****************************************************************************
+* \brief This function removes all instances of the substring from the target
+* string
+*
+* \param [in] target The string to operate on
+* \param [in] substr The string to remove
+*
+* \return The filtered string.
+*****************************************************************************
+*/
+std::string removeAllInstances(const std::string& target,
+                               const std::string& substr);
 
 }  // end namespace string
 }  // end namespace utilities

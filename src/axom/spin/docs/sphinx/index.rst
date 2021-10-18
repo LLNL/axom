@@ -33,6 +33,6 @@ Doxygen generated API documentation can be found here: `API documentation <../..
    :maxdepth: 2
    :caption: Tree-structure indexes
 
-   bvhtree
+   bvh
    octree
 
