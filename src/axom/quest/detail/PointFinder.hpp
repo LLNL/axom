@@ -105,34 +105,13 @@ public:
    */
   IndexType locatePoint(const double* pos, double* isoparametric) const
   {
-    using BitsetType = typename GridType::BitsetType;
-
     IndexType containingCell = PointInCellTraits<mesh_tag>::NO_CELL;
 
     SLIC_ASSERT(pos != nullptr);
     SpacePoint pt(pos);
     SpacePoint isopar;
 
-    // Note: ImplicitGrid::getCandidates() checks the mesh bounding box for us
-    BitsetType candidates = m_grid.getCandidates(pt);
-
-    bool foundContainingCell = false;
-    for(IndexType cellIdx = candidates.find_first();
-        !foundContainingCell && cellIdx != BitsetType::npos;
-        cellIdx = candidates.find_next(cellIdx))
-    {
-      // First check that pt is in bounding box of element
-      if(cellBoundingBox(cellIdx).contains(pt))
-      {
-        // if isopar is in the proper range
-        if(m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data()))
-        {
-          // then we have found the cellID
-          foundContainingCell = true;
-          containingCell = cellIdx;
-        }
-      }
-    }
+    locatePoints(1, &pt, &containingCell, &isopar);
 
     // Copy data back to input parameter isoparametric, if necessary
     if(isoparametric != nullptr)
@@ -141,6 +120,109 @@ public:
     }
 
     return containingCell;
+  }
+
+  void locatePoints(int npts,
+                    const SpacePoint* pts,
+                    IndexType* outCellIds,
+                    SpacePoint* outIsoparametricCoords) const
+  {
+    auto gridQuery = m_grid.getQueryObject();
+
+    axom::Array<IndexType> offsets(npts, npts, m_allocatorID);
+    axom::Array<IndexType> counts(npts, npts, m_allocatorID);
+
+#ifdef AXOM_USE_RAJA
+    IndexType* countsPtr = counts.data();
+
+    using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+    RAJA::ReduceSum<reduce_pol, IndexType> totalCountReduce(0);
+    // Step 1: count number of candidate intersections for each point
+    for_all<ExecSpace>(
+      npts,
+      AXOM_LAMBDA(IndexType i) {
+        countsPtr[i] = gridQuery.countCandidates(pts[i]);
+        totalCountReduce += countsPtr[i];
+      });
+
+    // Step 2: exclusive scan for offsets in candidate array
+    using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+    RAJA::exclusive_scan<exec_policy>(counts.data(),
+                                      counts.data() + npts,
+                                      offsets.data(),
+                                      RAJA::operators::plus<IndexType> {});
+
+    IndexType totalCount = totalCountReduce.get();
+
+    // Step 3: allocate memory for all candidates
+    axom::Array<IndexType> candidates(totalCount, totalCount, m_allocatorID);
+    IndexType* candidatesPtr = candidates.data();
+    IndexType* offsetsPtr = offsets.data();
+    const SpatialBoundingBox* cellBBoxes = m_cellBBoxes.data();
+
+    // Step 4: fill candidate array for each query box
+    for_all<ExecSpace>(
+      npts,
+      AXOM_LAMBDA(IndexType i) {
+        int startIdx = offsetsPtr[i];
+        countsPtr[i] = 0;
+        auto onCandidate = [&](int candidateIdx) {
+          // Check that point is in bounding box of candidate element
+          if(cellBBoxes[candidateIdx].contains(pts[i]))
+          {
+            candidatesPtr[startIdx] = candidateIdx;
+            countsPtr[i]++;
+            startIdx++;
+          }
+        };
+        gridQuery.visitCandidates(pts[i], onCandidate);
+      });
+
+    // Step 5: Check each candidate
+    for_all<SEQ_EXEC>(
+      npts,
+      AXOM_LAMBDA(IndexType i) {
+        outCellIds[i] = PointInCellTraits<mesh_tag>::NO_CELL;
+        SpacePoint pt = pts[i];
+        SpacePoint isopar;
+        for(int icell = 0; icell < countsPtr[i]; icell++)
+        {
+          int cellIdx = candidates[icell + offsetsPtr[i]];
+          // if isopar is in the proper range
+          if(m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data()))
+          {
+            // then we have found the cellID
+            outCellIds[i] = cellIdx;
+            break;
+          }
+        }
+        if(outIsoparametricCoords != nullptr)
+        {
+          outIsoparametricCoords[i] = isopar;
+        }
+      });
+#else
+    for(int i = 0; i < npts; i++)
+    {
+      SpacePoint pt = pts[i];
+      SpacePoint isopar;
+      gridQuery.visitCandidates(pt, [&](int candidateIdx) {
+        if(m_cellBBoxes[candidateIdx].contains(pts[i]))
+        {
+          if(m_meshWrapper->locatePointInCell(candidateIdx,
+                                              pt.data(),
+                                              isopar.data()))
+          {
+            outCellIds[i] = candidateIdx;
+          }
+        }
+      });
+      if(outIsoparametricCoords != nullptr)
+      {
+        outIsoparametricCoords[i] = isopar;
+      }
+    }
+#endif
   }
 
   /*! Returns a const reference to the given cells's bounding box */
