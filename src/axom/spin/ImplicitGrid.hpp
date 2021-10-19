@@ -534,6 +534,35 @@ public:
                                         FuncType&& candidatePredicate) const;
 
 private:
+  template <typename FuncType, typename ReturnType>
+  struct VisitDispatch;
+
+  template <typename FuncType>
+  struct VisitDispatch<FuncType, void>
+  {
+    AXOM_HOST_DEVICE static bool getResult(FuncType&& type, int arg)
+    {
+      type(arg);
+      return true;
+    }
+  };
+
+  template <typename FuncType>
+  struct VisitDispatch<FuncType, bool>
+  {
+    AXOM_HOST_DEVICE static bool getResult(FuncType&& type, int arg)
+    {
+      return type(arg);
+    }
+  };
+
+  template <typename FuncType>
+  AXOM_HOST_DEVICE bool getVisitResult(FuncType&& type, int arg) const
+  {
+    using ReturnType = typename std::result_of<FuncType(int)>::type;
+    return VisitDispatch<FuncType, ReturnType>::getResult(type, arg);
+  }
+
   //! The bounding box of the ImplicitGrid
   SpatialBoundingBox m_bb;
 
@@ -683,7 +712,12 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
       BitsetType::Word mask = BitsetType::Word {1} << ibit;
       if((currWord & mask) != BitsetType::Word {0})
       {
-        candidatePredicate(iword * BitsetType::BitsPerWord + ibit);
+        bool found = getVisitResult(candidatePredicate,
+                                    iword * BitsetType::BitsPerWord + ibit);
+        if(found)
+        {
+          return;
+        }
       }
     }
   }
@@ -734,7 +768,12 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
       BitsetType::Word mask = BitsetType::Word {1} << ibit;
       if((currWord & mask) != BitsetType::Word {0})
       {
-        candidatePredicate(iword * BitsetType::BitsPerWord + ibit);
+        bool found = getVisitResult(candidatePredicate,
+                                    iword * BitsetType::BitsPerWord + ibit);
+        if(found)
+        {
+          return;
+        }
       }
     }
   }

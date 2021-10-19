@@ -165,17 +165,19 @@ public:
       npts,
       AXOM_LAMBDA(IndexType i) {
         int startIdx = offsetsPtr[i];
-        countsPtr[i] = 0;
-        auto onCandidate = [&](int candidateIdx) {
+        int currCount = 0;
+        auto onCandidate = [&](int candidateIdx) -> bool {
           // Check that point is in bounding box of candidate element
           if(cellBBoxes[candidateIdx].contains(pts[i]))
           {
             candidatesPtr[startIdx] = candidateIdx;
-            countsPtr[i]++;
+            currCount++;
             startIdx++;
           }
+          return currCount >= countsPtr[i];
         };
         gridQuery.visitCandidates(pts[i], onCandidate);
+        countsPtr[i] = currCount;
       });
 
     // Step 5: Check each candidate
@@ -206,7 +208,7 @@ public:
     {
       SpacePoint pt = pts[i];
       SpacePoint isopar;
-      gridQuery.visitCandidates(pt, [&](int candidateIdx) {
+      gridQuery.visitCandidates(pt, [&](int candidateIdx) -> bool {
         if(m_cellBBoxes[candidateIdx].contains(pts[i]))
         {
           if(m_meshWrapper->locatePointInCell(candidateIdx,
@@ -214,8 +216,10 @@ public:
                                               isopar.data()))
           {
             outCellIds[i] = candidateIdx;
+            return true;
           }
         }
+        return false;
       });
       if(outIsoparametricCoords != nullptr)
       {
