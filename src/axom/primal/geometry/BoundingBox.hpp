@@ -97,6 +97,7 @@ public:
    * \pre pt must point to at least n valid point
    * \note If n <= 0, defaults to default constructor values
    */
+  AXOM_HOST_DEVICE
   BoundingBox(const PointType* pts, int n);
 
   /*!

@@ -23,7 +23,7 @@ void check_point_policy()
 
   axom::for_all<ExecSpace>(
     1,
-    AXOM_LAMBDA(int i) {
+    AXOM_LAMBDA(int /*i*/) {
       PointType ones = PointType::ones();
       ones.to_array(coords);
     });

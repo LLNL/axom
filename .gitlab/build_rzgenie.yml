@@ -1,0 +1,96 @@
+# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+
+####
+# This is the shared configuration of jobs for rzgenie
+.on_rzgenie:
+  tags:
+    - shell
+    - rzgenie
+  before_script:
+    - module load cmake/3.14.5
+
+
+####
+# Template
+.src_build_on_rzgenie:
+  stage: build
+  variables:
+    ALLOC_COMMAND: "salloc -p pdebug -t 30 -N 1 -n36 srun --interactive -n1"
+  extends: [.src_build_script, .on_rzgenie, .src_workflow]
+  needs: []
+
+.full_build_on_rzgenie:
+  stage: build
+  variables:
+    ALLOC_COMMAND: "srun -p pdebug -t 60 -N 1 -n 1"
+  extends: [.full_build_script, .on_rzgenie, .full_workflow]
+  needs: []
+
+####
+# PR Build jobs
+rzgenie-clang_10_0_0-src:
+  variables:
+    COMPILER: "clang@10.0.0"
+    HOST_CONFIG: "rzgenie-klee-clang@10.cmake"
+  extends: .src_build_on_rzgenie
+
+rzgenie-gcc_8_1_0-src:
+  variables:
+    COMPILER: "gcc@8.1.0"
+    HOST_CONFIG: "rzgenie-toss_3_x86_64_ib-${COMPILER}.cmake"
+  extends: .src_build_on_rzgenie
+
+# disabled due to time limit
+# rzgenie-intel_18_0_2-src:
+#   variables:
+#     COMPILER: "intel@18.0.2"
+#     HOST_CONFIG: "rzgenie-toss_3_x86_64_ib-${COMPILER}.cmake"
+#   extends: .src_build_on_rzgenie
+
+rzgenie-intel_19_0_4-src:
+  variables:
+    COMPILER: "intel@19.0.4"
+    HOST_CONFIG: "rzgenie-toss_3_x86_64_ib-${COMPILER}.cmake"
+  extends: .src_build_on_rzgenie
+
+
+####
+# Full Build jobs
+rzgenie-clang_10_0_0-full:
+  variables:
+    COMPILER: "clang@10.0.0"
+    SPEC: "%${COMPILER}+mfem"
+  extends: .full_build_on_rzgenie
+
+rzgenie-clang_9_0_0-full:
+  variables:
+    COMPILER: "clang@9.0.0"
+    SPEC: "%${COMPILER}+mfem"
+  extends: .full_build_on_rzgenie
+
+rzgenie-gcc_8_1_0-full:
+  variables:
+    COMPILER: "gcc@8.1.0"
+    SPEC: "%${COMPILER}+mfem"
+  extends: .full_build_on_rzgenie
+
+rzgenie-gcc_8_1_no_fortran-full:
+  variables:
+    COMPILER: "gcc@8.1_no_fortran"
+    SPEC: "%${COMPILER}~fortran+mfem"
+  extends: .full_build_on_rzgenie
+
+rzgenie-intel_18_0_2-full:
+  variables:
+    COMPILER: "intel@18.0.2"
+    SPEC: "%${COMPILER}+mfem~cpp14"
+  extends: .full_build_on_rzgenie
+
+rzgenie-intel_19_0_4-full:
+  variables:
+    COMPILER: "intel@19.0.4"
+    SPEC: "%${COMPILER}+mfem~cpp14"
+  extends: .full_build_on_rzgenie

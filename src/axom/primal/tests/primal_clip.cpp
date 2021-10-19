@@ -5,9 +5,16 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
+
+#include "axom/core/Types.hpp"
+#include "axom/core/execution/for_all.hpp"  // for for_all, execution policies
+#include "axom/core/memory_management.hpp"
+
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Plane.hpp"
 
 #include "axom/primal/operators/clip.hpp"
 
@@ -15,11 +22,16 @@
 
 namespace Primal3D
 {
-typedef axom::primal::Point<double, 3> PointType;
-typedef axom::primal::Vector<double, 3> VectorType;
-typedef axom::primal::BoundingBox<double, 3> BoundingBoxType;
-typedef axom::primal::Triangle<double, 3> TriangleType;
-typedef axom::primal::Polygon<double, 3> PolygonType;
+using PointType = axom::primal::Point<double, 3>;
+using VectorType = axom::primal::Vector<double, 3>;
+using BoundingBoxType = axom::primal::BoundingBox<double, 3>;
+using TriangleType = axom::primal::Triangle<double, 3>;
+using TetrahedronType = axom::primal::Tetrahedron<double, 3>;
+using OctahedronType = axom::primal::Octahedron<double, 3>;
+using PolyhedronType = axom::primal::Polyhedron<double, 3>;
+using PolygonType = axom::primal::Polygon<double, 3>;
+using PlaneType = axom::primal::Plane<double, 3>;
+using PolyhedronType = axom::primal::Polyhedron<double, 3>;
 }  // namespace Primal3D
 
 TEST(primal_clip, simple_clip)
@@ -231,6 +243,415 @@ TEST(primal_clip, experimentalData)
     }
     EXPECT_TRUE(box12.contains(centroid));
   }
+}
+
+template <typename ExecPolicy>
+void unit_check_poly_clip()
+{
+  using namespace Primal3D;
+
+  constexpr double EPS = 1.e-24;
+
+  // Create a square in 3D space as our "polyhedron", and a plane splitting it
+  // between the middle. The polyhedron after a call to poly_clip_vertices
+  // should have two new vertices where the plane crosses the 0-1 and 2-3 edges:
+  //      |
+  // 3 ---|--- 2        3 -- 2' -- 2
+  // |    |    |        |          |
+  // |    p->  |   -->  |          |
+  // |    |    |        |          |
+  // 0 ---|--- 1        0 -- 1' -- 1
+  //      |
+  // In addition, vertices 0 and 3 should be marked as clipped.
+
+  PolyhedronType square;
+  square.addVertex({0.0, 0.0, 0.0});
+  square.addVertex({1.0, 0.0, 0.0});
+  square.addVertex({1.0, 1.0, 0.0});
+  square.addVertex({0.0, 1.0, 0.0});
+
+  square.addNeighbors(0, {1, 3});
+  square.addNeighbors(1, {0, 2});
+  square.addNeighbors(2, {1, 3});
+  square.addNeighbors(3, {0, 2});
+
+  PlaneType plane(VectorType {1, 0, 0}, PointType {0.5, 0.0, 0.0});
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
+
+  PolyhedronType* out_square = axom::allocate<PolyhedronType>(1);
+  out_square[0] = square;
+
+  unsigned int* out_clipped = axom::allocate<unsigned int>(1);
+  out_clipped[0] = 0;
+
+  axom::for_all<ExecPolicy>(
+    0,
+    1,
+    AXOM_LAMBDA(int /* idx */) {
+      axom::primal::detail::poly_clip_vertices(out_square[0],
+                                               plane,
+                                               EPS,
+                                               out_clipped[0]);
+    });
+
+  const PolyhedronType& clippedSquare = out_square[0];
+
+  EXPECT_EQ(clippedSquare.numVertices(), 6);
+  // Check that existing vertices were not modified
+  EXPECT_EQ(clippedSquare[0], square[0]);
+  EXPECT_EQ(clippedSquare[1], square[1]);
+  EXPECT_EQ(clippedSquare[2], square[2]);
+  EXPECT_EQ(clippedSquare[3], square[3]);
+
+  int lo_idx = -1, hi_idx = -1;
+  for(int i = 4; i < 6; i++)
+  {
+    if(clippedSquare[i] == PointType {0.5, 0.0, 0.0})
+    {
+      lo_idx = i;
+    }
+    else if(clippedSquare[i] == PointType {0.5, 1.0, 0.0})
+    {
+      hi_idx = i;
+    }
+  }
+
+  // Check that plane-crossing vertices were generated
+  EXPECT_NE(lo_idx, -1);
+  EXPECT_NE(hi_idx, -1);
+
+  // Check that vertices outside the plane were marked as clipped
+  EXPECT_EQ(out_clipped[0], (1 | (1 << 3)));
+
+  // Generate sets of expected neighbors
+  std::vector<std::set<int>> expectedNbrs(6);
+  expectedNbrs[0] = {3, lo_idx};
+  expectedNbrs[1] = {2, lo_idx};
+  expectedNbrs[2] = {1, hi_idx};
+  expectedNbrs[3] = {0, hi_idx};
+  expectedNbrs[lo_idx] = {0, 1};
+  expectedNbrs[hi_idx] = {2, 3};
+
+  // Check connectivity
+  for(int iv = 0; iv < 6; iv++)
+  {
+    // Each vertex should only have two neighbors
+    EXPECT_EQ(clippedSquare.getNumNeighbors(iv), 2);
+    std::set<int> resultNbrs {clippedSquare.getNeighbors(iv)[0],
+                              clippedSquare.getNeighbors(iv)[1]};
+    // Check that neighbors match expected connectivity
+    EXPECT_EQ(expectedNbrs[iv], resultNbrs);
+  }
+
+  axom::deallocate(out_square);
+  axom::deallocate(out_clipped);
+  axom::setDefaultAllocator(current_allocator);
+}
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+template <typename ExecPolicy>
+void check_oct_tet_clip(double EPS)
+{
+  using namespace Primal3D;
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Determine new allocator (for CUDA policy, set to Unified)
+  umpire::Allocator allocator =
+    rm.getAllocator(axom::execution_space<ExecPolicy>::allocatorID());
+
+  // Set new default to device
+  axom::setDefaultAllocator(allocator.getId());
+
+  // Allocate memory for shapes
+  TetrahedronType* tet = axom::allocate<TetrahedronType>(1);
+  OctahedronType* oct = axom::allocate<OctahedronType>(1);
+
+  PolyhedronType* res = (axom::execution_space<ExecPolicy>::onDevice()
+                           ? axom::allocate<PolyhedronType>(
+                               1,
+                               rm.getAllocator(umpire::resource::Unified).getId())
+                           : axom::allocate<PolyhedronType>(1));
+
+  tet[0] = TetrahedronType(PointType({1, 0, 0}),
+                           PointType({1, 1, 0}),
+                           PointType({0, 1, 0}),
+                           PointType({1, 0, 1}));
+
+  oct[0] = OctahedronType(PointType({1, 0, 0}),
+                          PointType({1, 1, 0}),
+                          PointType({0, 1, 0}),
+                          PointType({0, 1, 1}),
+                          PointType({0, 0, 1}),
+                          PointType({1, 0, 1}));
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(oct[i], tet[i]); });
+
+  EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+
+  axom::deallocate(tet);
+  axom::deallocate(oct);
+  axom::deallocate(res);
+
+  axom::setDefaultAllocator(current_allocator);
+}
+
+TEST(primal_clip, unit_poly_clip_vertices_sequential)
+{
+  unit_check_poly_clip<axom::SEQ_EXEC>();
+}
+
+TEST(primal_clip, clip_oct_tet_sequential)
+{
+  const double EPS = 1e-4;
+  check_oct_tet_clip<axom::SEQ_EXEC>(EPS);
+}
+
+  #ifdef AXOM_USE_OPENMP
+TEST(primal_clip, unit_poly_clip_vertices_omp)
+{
+  unit_check_poly_clip<axom::OMP_EXEC>();
+}
+
+TEST(primal_clip, clip_oct_tet_omp)
+{
+  const double EPS = 1e-4;
+  check_oct_tet_clip<axom::OMP_EXEC>(EPS);
+}
+  #endif /* AXOM_USE_OPENMP */
+
+  #if defined(AXOM_USE_CUDA)
+AXOM_CUDA_TEST(primal_clip, unit_poly_clip_vertices_gpu)
+{
+  unit_check_poly_clip<axom::CUDA_EXEC<256>>();
+}
+
+AXOM_CUDA_TEST(primal_clip, clip_oct_tet_cuda)
+{
+  const double EPS = 1e-4;
+  check_oct_tet_clip<axom::CUDA_EXEC<256>>(EPS);
+}
+  #endif /* AXOM_USE_CUDA */
+#endif   /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
+
+// Tetrahedron does not clip octahedron.
+TEST(primal_clip, oct_tet_clip_nonintersect)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet(PointType({-1, -1, -1}),
+                      PointType({-1, 0, 0}),
+                      PointType({-1, -1, 0}),
+                      PointType({0, 0, 0}));
+  OctahedronType oct(PointType({1, 0, 0}),
+                     PointType({1, 1, 0}),
+                     PointType({0, 1, 0}),
+                     PointType({0, 1, 1}),
+                     PointType({0, 0, 1}),
+                     PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron is encapsulated by the octahedron
+TEST(primal_clip, oct_tet_clip_encapsulate)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({1, 0, 0}),
+                      PointType({1, 1, 0}),
+                      PointType({0, 1, 0}),
+                      PointType({1, 0, 1}));
+  OctahedronType oct(PointType({1, 0, 0}),
+                     PointType({1, 1, 0}),
+                     PointType({0, 1, 0}),
+                     PointType({0, 1, 1}),
+                     PointType({0, 0, 1}),
+                     PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
+  EXPECT_NEAR(0.1666, poly.volume(), EPS);
+}
+
+// Octahedron is encapsulated inside the tetrahedron
+TEST(primal_clip, oct_tet_clip_encapsulate_inv)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({0, 0, 0}),
+                      PointType({0, 2, 0}),
+                      PointType({0, 0, 2}),
+                      PointType({2, 0, 0}));
+  OctahedronType oct(PointType({1, 0, 0}),
+                     PointType({1, 1, 0}),
+                     PointType({0, 1, 0}),
+                     PointType({0, 1, 1}),
+                     PointType({0, 0, 1}),
+                     PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  // Expected result should be 0.6666, volume of oct.
+  EXPECT_NEAR(0.6666, poly.volume(), EPS);
+}
+
+// Half of the octahedron is clipped by the tetrahedron
+TEST(primal_clip, oct_tet_clip_half)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({0.5, 0.5, 2}),
+                      PointType({2, -1, 0}),
+                      PointType({-1, -1, 0}),
+                      PointType({-1, 2, 0}));
+  OctahedronType oct(PointType({1, 0, 0}),
+                     PointType({1, 1, 0}),
+                     PointType({0, 1, 0}),
+                     PointType({0, 1, 1}),
+                     PointType({0, 0, 1}),
+                     PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  // Expected result should be 0.3333, half the volume of oct.
+  EXPECT_NEAR(0.3333, poly.volume(), EPS);
+}
+
+// Octahedron is adjacent to tetrahedron
+TEST(primal_clip, oct_tet_clip_adjacent)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet(PointType({0, -1, 0}),
+                      PointType({0, 0, 1}),
+                      PointType({1, 0, 1}),
+                      PointType({1, 0, 0}));
+  OctahedronType oct(PointType({1, 0, 0}),
+                     PointType({1, 1, 0}),
+                     PointType({0, 1, 0}),
+                     PointType({0, 1, 1}),
+                     PointType({0, 0, 1}),
+                     PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron clips octahedron at a single vertex
+TEST(primal_clip, oct_tet_clip_point)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet(PointType({-1, -1, 0}),
+                      PointType({-0.5, 0.5, 0}),
+                      PointType({0, 0, 2}),
+                      PointType({0.5, -0.5, 0}));
+  OctahedronType oct(PointType({1, 0, 0}),
+                     PointType({1, 1, 0}),
+                     PointType({0, 1, 0}),
+                     PointType({0, 1, 1}),
+                     PointType({0, 0, 1}),
+                     PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+TEST(primal_clip, oct_tet_clip_special_case_1)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({0.5, 0.5, 0.5}),
+                      PointType({1, 1, 0}),
+                      PointType({1, 0, 0}),
+                      PointType({0.5, 0.5, 0}));
+
+  OctahedronType oct(PointType({0.5, 0.853553, 0.146447}),
+                     PointType({0.853553, 0.853553, 0.5}),
+                     PointType({0.853553, 0.5, 0.146447}),
+                     PointType({1, 0.5, 0.5}),
+                     PointType({0.5, 0.5, 0}),
+                     PointType({0.5, 1, 0.5}));
+
+  // NOTE: Order of vertices 1,2 and 4,5 are flipped due
+  // to winding being opposite of what volume() expects
+  PolyhedronType octPoly;
+  octPoly.addVertex(PointType({0.5, 0.853553, 0.146447}));
+  octPoly.addVertex(PointType({0.853553, 0.5, 0.146447}));
+  octPoly.addVertex(PointType({0.853553, 0.853553, 0.5}));
+  octPoly.addVertex(PointType({1, 0.5, 0.5}));
+  octPoly.addVertex(PointType({0.5, 1, 0.5}));
+  octPoly.addVertex(PointType({0.5, 0.5, 0}));
+
+  octPoly.addNeighbors(0, {1, 5, 4, 2});
+  octPoly.addNeighbors(1, {0, 2, 3, 5});
+  octPoly.addNeighbors(2, {0, 4, 3, 1});
+  octPoly.addNeighbors(3, {1, 2, 4, 5});
+  octPoly.addNeighbors(4, {0, 5, 3, 2});
+  octPoly.addNeighbors(5, {0, 1, 3, 4});
+
+  EXPECT_NEAR(0.0251, octPoly.volume(), EPS);
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  EXPECT_NEAR(0.0041, poly.volume(), EPS);
+}
+
+TEST(primal_clip, oct_tet_clip_special_case_2)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({0.5, 0.5, 0.5}),
+                      PointType({0, 1, 0}),
+                      PointType({1, 1, 0}),
+                      PointType({0.5, 0.5, 0}));
+
+  OctahedronType oct(PointType({0.5, 0.853553, 0.146447}),
+                     PointType({0.853553, 0.853553, 0.5}),
+                     PointType({0.853553, 0.5, 0.146447}),
+                     PointType({1, 0.5, 0.5}),
+                     PointType({0.5, 0.5, 0}),
+                     PointType({0.5, 1, 0.5}));
+
+  // NOTE: Order of vertices 1,2 and 4,5 are flipped due
+  // to winding being opposite of what volume() expects
+  PolyhedronType octPoly;
+  octPoly.addVertex(PointType({0.5, 0.853553, 0.146447}));
+  octPoly.addVertex(PointType({0.853553, 0.5, 0.146447}));
+  octPoly.addVertex(PointType({0.853553, 0.853553, 0.5}));
+  octPoly.addVertex(PointType({1, 0.5, 0.5}));
+  octPoly.addVertex(PointType({0.5, 1, 0.5}));
+  octPoly.addVertex(PointType({0.5, 0.5, 0}));
+
+  octPoly.addNeighbors(0, {1, 5, 4, 2});
+  octPoly.addNeighbors(1, {0, 2, 3, 5});
+  octPoly.addNeighbors(2, {0, 4, 3, 1});
+  octPoly.addNeighbors(3, {1, 2, 4, 5});
+  octPoly.addNeighbors(4, {0, 5, 3, 2});
+  octPoly.addNeighbors(5, {0, 1, 3, 4});
+
+  EXPECT_NEAR(0.0251, octPoly.volume(), EPS);
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  EXPECT_NEAR(0.0041, poly.volume(), EPS);
 }
 
 //------------------------------------------------------------------------------

@@ -233,7 +233,7 @@ void check_analytic_plane(bool use_shared = false)
     mesh.getNode(inode, pt);
     phi[inode] = quest::signed_distance_evaluate(pt[0], pt[1], pt[2]);
 
-    const double phi_expected = analytic_plane.computeSignedDistance(pt);
+    const double phi_expected = analytic_plane.signedDistance(pt);
     EXPECT_DOUBLE_EQ(phi[inode], phi_expected);
     err[inode] = utilities::abs(phi[inode] - phi_expected);
   }
@@ -454,9 +454,6 @@ TEST(quest_signed_distance_interface, analytic_sphere)
   constexpr int SPHERE_THETA_RES = 25;
   constexpr int SPHERE_PHI_RES = 25;
   const double SPHERE_CENTER[3] = {0.0, 0.0, 0.0};
-
-  constexpr int MAX_LEVELS = 10;
-  constexpr int MAX_OCCUPANCY = 5;
 
   // STEP 1: create analytic sphere object to compare results with
   primal::Sphere<double, 3> analytic_sphere(SPHERE_RADIUS);

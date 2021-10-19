@@ -1124,7 +1124,6 @@ void check_build_bvh_zip3d()
 
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using ZipIter = typename primal::ZipIndexable<BoxType>;
-  using PointType = typename primal::Point<FloatType, NDIMS>;
 
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
