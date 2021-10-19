@@ -28,7 +28,7 @@ def get_spec_path(spec, package_name, path_replacements={}, use_bin=False):
     return path
 
 
-class Axom(CachedCMakePackage, CudaPackage):
+class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     """Axom provides a robust, flexible software infrastructure for the development
        of multi-physics applications and computational tools."""
 
@@ -151,6 +151,13 @@ class Axom(CachedCMakePackage, CudaPackage):
     # Sidre requires conduit_blueprint_mpi.hpp
     conflicts("^conduit@:0.6.0", when="@0.5.0:")
 
+    conflicts('+openmp', when='+rocm')
+    conflicts('+cuda', when='+rocm')
+
+    for val in ROCmPackage.amdgpu_targets:
+        depends_on('raja amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
+        depends_on('umpire amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
+
     def flag_handler(self, name, flags):
         if self.spec.satisfies('%cce') and name == 'fflags':
             flags.append('-ef')
@@ -243,6 +250,34 @@ class Axom(CachedCMakePackage, CudaPackage):
                 "# nvcc does not like gtest's 'pthreads' flag\n")
             entries.append(
                 cmake_cache_option("gtest_disable_pthreads", True))
+
+        if "+rocm" in spec:
+            entries.append("#------------------{0}\n".format("-" * 60))
+            entries.append("# HIP\n")
+            entries.append("#------------------{0}\n\n".format("-" * 60))
+
+            entries.append(cmake_cache_option("ENABLE_HIP", True))
+
+            hip_root = spec['hip'].prefix
+            rocm_root = hip_root + "/.."
+            entries.append(cmake_cache_string("HIP_ROOT_DIR",
+                                        hip_root))
+            entries.append(cmake_cache_string("HIP_CLANG_PATH",
+                                        rocm_root + '/llvm/bin'))
+            entries.append(cmake_cache_string("HIP_HIPCC_FLAGS",
+                                        '--amdgpu-target=gfx906'))
+            entries.append(cmake_cache_string("HIP_RUNTIME_INCLUDE_DIRS",
+                                        "{0}/include;{0}/../hsa/include".format(hip_root)))
+            hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
+            entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
+            # Try gcc later
+            #if ('%gcc' in spec):
+            #    gcc_bin = os.path.dirname(self.compiler.cxx)
+            #    gcc_prefix = join_path(gcc_bin, '..')
+            #    entries.append(cmake_cache_string("HIP_CLANG_FLAGS",
+            #    "--gcc-toolchain={0}".format(gcc_prefix)))
+            #    entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS",
+            #    hip_link_flags + " -Wl,-rpath {}/lib64".format(gcc_prefix)))
 
         entries.append("#------------------{0}".format("-" * 30))
         entries.append("# Hardware Specifics")

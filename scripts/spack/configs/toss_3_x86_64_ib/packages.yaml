@@ -26,10 +26,47 @@ packages:
 
 # LLNL toss3 CUDA
   cuda:
+    version: [10.1.168]
+    buildable: false
+
+    externals:
+    - spec: cuda@10.1.168
+      prefix: /usr/tce/packages/cuda/cuda-10.1.168
+
+  hip:
+    version: [4.1.0]
     buildable: false
     externals:
-    - spec: cuda@10.2
-      prefix: /opt/cudatoolkit/10.2
+    - spec: hip@4.1.0
+      prefix: /opt/rocm-4.1.0/hip
+
+  llvm-amdgpu:
+    version: [4.1.0]
+    buildable: false
+    externals:
+    - spec: llvm-amdgpu@4.1.0
+      prefix: /opt/rocm-4.1.0/llvm
+
+  hsa-rocr-dev:
+    version: [4.1.0]
+    buildable: false
+    externals:
+    - spec: hsa-rocr-dev@4.1.0
+      prefix: /opt/rocm-4.1.0/
+
+  rocminfo:
+    version: [4.1.0]
+    buildable: false
+    externals:
+    - spec: rocminfo@4.1.0
+      prefix: /opt/rocm-4.1.0/
+
+  rocm-device-libs:
+    version: [4.1.0]
+    buildable: false
+    externals:
+    - spec: rocm-device-libs@4.1.0
+      prefix: /opt/rocm-4.1.0/
 
 # Lock down which MPI we are using
   mpi:
