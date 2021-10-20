@@ -32,14 +32,6 @@
 #include <sstream>
 #include <unordered_map>
 
-#define DEBUG_VERT_IDX -2  // 1160
-#define DEBUG_TRI_IDX -2   // 187820
-
-#define DEBUG_BLOCK_2 BlockIndex::invalid_index()
-//                     BlockIndex( {1346,1972,1691}, 12)
-#define DEBUG_BLOCK_1 BlockIndex::invalid_index()
-//                     BlockIndex( {336,493,423}, 10)
-
 #ifndef DUMP_VTK_MESH
 //  #define DUMP_VTK_MESH
 #endif
@@ -58,6 +50,16 @@
 #else
   #define QUEST_OCTREE_DEBUG_LOG_IF(_cond, _msg) ((void)0)
 #endif
+
+// The following four variables are used in the QUEST_OCTREE_DEBUG_LOG_IF macro
+// and are only active when DEBUG_OCTREE_ACTIVE is defined
+#define DEBUG_VERT_IDX -2  // 1160
+#define DEBUG_TRI_IDX -2   // 187820
+
+#define DEBUG_BLOCK_1 BlockIndex::invalid_index()
+//                     BlockIndex( {1346,1972,1691}, 12)
+#define DEBUG_BLOCK_2 BlockIndex::invalid_index()
+//                     BlockIndex( {336,493,423}, 10)
 
 namespace axom
 {
