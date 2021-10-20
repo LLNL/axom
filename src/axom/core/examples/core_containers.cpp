@@ -49,9 +49,10 @@ void showTupleArray(axom::MCArray<int>& a, const char* name)
             << numComponents << "-tuples = [" << std::endl;
   for(int i = 0; i < a.shape()[0]; ++i)
   {
-    // FIXME: Replace with ArrayView
-    axom::ArrayView<int> temp(a.data() + (i * numComponents), numComponents);
-    std::cout << "  " << temp << std::endl;
+    std::cout << "  "
+              << axom::ArrayView<int>(a.data() + (i * numComponents),
+                                      numComponents)
+              << std::endl;
   }
   std::cout << "]" << std::endl;
 }
@@ -63,9 +64,10 @@ void showTupleArrayView(axom::MCArrayView<int>& a, const char* name)
             << numComponents << "-tuples = [" << std::endl;
   for(int i = 0; i < a.shape()[0]; ++i)
   {
-    // FIXME: Replace with ArrayView
-    axom::ArrayView<int> temp(a.data() + (i * numComponents), numComponents);
-    std::cout << "  " << temp << std::endl;
+    std::cout << "  "
+              << axom::ArrayView<int>(a.data() + (i * numComponents),
+                                      numComponents)
+              << std::endl;
   }
   std::cout << "]" << std::endl;
 }
@@ -108,7 +110,7 @@ void demoArrayBasic()
   // second is the number of tuples in the buffer, and the third argument
   // is the first tuple to fill from the buffer.
   int ival[3] = {8, 0, -1};
-  b.set(ival, 1, 1);
+  b.set(ival, 3, 3);
 
   showTupleArray(b, "b");
 
@@ -134,8 +136,9 @@ void demoArrayBasic()
   a[0] = 1;
   c(1, 1) = 9;
 
-  std::cout << "MCArrays a and c use the same memory, a's internal buffer."
-            << std::endl;
+  std::cout
+    << "Array a and MCArrayView c use the same memory, a's internal buffer."
+    << std::endl;
   showArray(a, "a");
   showTupleArrayView(c, "c");
   // _extbuffer_end

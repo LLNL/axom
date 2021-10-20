@@ -22,20 +22,44 @@ namespace axom
 template <typename T, int DIM, typename ArrayType>
 class ArrayBase;
 
-/// \name Overloaded Array Operator(s)
+/// \name Overloaded ArrayBase Operator(s)
 /// @{
 
 /*! 
- * \brief Overloaded output stream operator. Outputs the Array to the
+ * \brief Overloaded output stream operator. Outputs the Array-like to the
  *  given output stream.
  *
  * \param [in,out] os output stream object.
- * \param [in] arr user-supplied Array instance.
+ * \param [in] arr user-supplied Array-like instance.
  * \return os the updated output stream object.
  */
 template <typename T, int DIM, typename ArrayType>
 std::ostream& operator<<(std::ostream& os,
                          const ArrayBase<T, DIM, ArrayType>& arr);
+
+/*!
+ * \brief Equality comparison operator for Array-likes
+ *
+ * \param [in] lhs left Array-like to compare
+ * \param [in] rhs right Array-like to compare
+ * \return true if the Arrays have the same allocator ID, are of equal shape,
+ * and have the same elements.
+ */
+template <typename T, int DIM, typename LArrayType, typename RArrayType>
+bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
+                const ArrayBase<T, DIM, RArrayType>& rhs);
+
+/*!
+ * \brief Inequality comparison operator for Arrays
+ *
+ * \param [in] lhs left Array to compare
+ * \param [in] rhs right Array to compare
+ * \return true if the Arrays do not have the same allocator ID, are not of
+ * equal shape, or do not have the same elements.
+ */
+template <typename T, int DIM, typename LArrayType, typename RArrayType>
+bool operator!=(const ArrayBase<T, DIM, LArrayType>& lhs,
+                const ArrayBase<T, DIM, RArrayType>& rhs);
 
 /// @}
 
@@ -334,6 +358,10 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
+/// Free functions implementing ArrayBase's operator(s)
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
 template <typename T, int DIM, typename ArrayType>
 inline std::ostream& print(std::ostream& os,
                            const ArrayBase<T, DIM, ArrayType>& array)
@@ -358,6 +386,49 @@ inline std::ostream& print(std::ostream& os,
   os << " ]";
 
   return os;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, typename ArrayType>
+std::ostream& operator<<(std::ostream& os, const ArrayBase<T, DIM, ArrayType>& arr)
+{
+  print(os, arr);
+  return os;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, typename LArrayType, typename RArrayType>
+bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
+                const ArrayBase<T, DIM, RArrayType>& rhs)
+{
+  if(static_cast<const LArrayType&>(lhs).getAllocatorID() !=
+     static_cast<const RArrayType&>(rhs).getAllocatorID())
+  {
+    return false;
+  }
+
+  if(lhs.shape() != rhs.shape())
+  {
+    return false;
+  }
+
+  for(int i = 0; i < static_cast<const LArrayType&>(lhs).size(); i++)
+  {
+    if(!(lhs[i] == rhs[i]))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, typename LArrayType, typename RArrayType>
+bool operator!=(const ArrayBase<T, DIM, LArrayType>& lhs,
+                const ArrayBase<T, DIM, RArrayType>& rhs)
+{
+  return !(lhs == rhs);
 }
 
 //------------------------------------------------------------------------------

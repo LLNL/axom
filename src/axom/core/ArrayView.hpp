@@ -16,31 +16,6 @@ namespace axom
 template <typename T, int DIM>
 class ArrayView;
 
-/// \name Overloaded ArrayView Operator(s)
-/// @{
-
-/*!
- * \brief Equality comparison operator for ArrayViews
- *
- * \param [in] lhs left ArrayView to compare
- * \param [in] rhs right ArrayView to compare
- * \return true if the ArrayViews are of equal length and have the same elements.
- */
-template <typename T, int DIM>
-bool operator==(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs);
-
-/*!
- * \brief Inequality comparison operator for ArrayViews
- *
- * \param [in] lhs left ArrayView to compare
- * \param [in] rhs right ArrayView to compare
- * \return true if the ArrayViews are not of equal length or do not have the same elements.
- */
-template <typename T, int DIM>
-bool operator!=(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs);
-
-/// @}
-
 /// \name ArrayView to wrap a pointer and provide indexing semantics
 /// @{
 
@@ -134,35 +109,6 @@ using MCArrayView = ArrayView<T, 2>;
 //------------------------------------------------------------------------------
 //                            ArrayView IMPLEMENTATION
 //------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-template <typename T, int DIM>
-bool operator==(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs)
-{
-  // FIXME: When GPU support is fully added, some means of comparing memory spaces will be needed
-
-  if(lhs.shape() != rhs.shape())
-  {
-    return false;
-  }
-
-  for(int i = 0; i < lhs.size(); i++)
-  {
-    if(!(lhs[i] == rhs[i]))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int DIM>
-bool operator!=(const ArrayView<T, DIM>& lhs, const ArrayView<T, DIM>& rhs)
-{
-  return !(lhs == rhs);
-}
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>

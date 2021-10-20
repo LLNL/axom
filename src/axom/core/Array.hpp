@@ -40,60 +40,24 @@ namespace axom
 template <typename T, int DIM>
 class Array;
 
-/// \name Overloaded Array Operator(s)
-/// @{
-
-/*! 
- * \brief Overloaded output stream operator. Outputs the Array to the
- *  given output stream.
- *
- * \param [in,out] os output stream object.
- * \param [in] arr user-supplied Array instance.
- * \return os the updated output stream object.
- */
-template <typename T, int DIM, typename ArrayType>
-std::ostream& operator<<(std::ostream& os,
-                         const ArrayBase<T, DIM, ArrayType>& arr);
-
-/*!
- * \brief Equality comparison operator for Arrays
- *
- * \param [in] lhs left Array to compare
- * \param [in] rhs right Array to compare
- * \return true if the Arrays have the same allocator ID, are of equal length,
- * and have the same elements.
- */
-template <typename T, int DIM>
-bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
-
-/*!
- * \brief Inequality comparison operator for Arrays
- *
- * \param [in] lhs left Array to compare
- * \param [in] rhs right Array to compare
- * \return true if the Arrays do not have the same allocator ID, are not of
- * equal length, or do not have the same elements.
- */
-template <typename T, int DIM>
-bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
-
-/// @}
-
 /*!
  * \class Array
  *
- * \brief Provides a generic array container.
+ * \brief Provides a generic multidimensional array container.
  *
- *  The Array class provides a generic array container with
- *  dynamic reallocation and insertion. Each element in the array is
- *  stored contiguously.
+ *  The Array class provides a generic multidimensional array 
+ *  container with dynamic reallocation and insertion.  The dimensionality
+ *  of the array must be known at compile time but the extents in each dimension
+ *  are dynamic and can be changed at runtime.  Array elements are stored
+ *  contiguously.
  *
  *  \note For a multi-component array container, where each element
- *  is a tuple of 1 or more components, Axom provides the MCArray class.
+ *  is a tuple of 1 or more components, Axom provides the MCArray alias, which
+ *  corresponds to Array<T, 2>.
  *
  *  The Array class mirrors std::vector, with future support for GPUs
- *  in-development.  This class is currently being modified to support
- *  multidimensional arrays that roughly resemble numpy's ndarray.
+ *  in-development.  The class's multidimensional array functionality roughly
+    mirrors the multidimensional array support provided by numpy's ndarray.
  * 
  *  \see https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html
  * 
@@ -103,31 +67,18 @@ bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
  *  its memory at allocation time and we use axom's memory_management
  *  and allocator ID abstractions rather than std::allocator.
  *
+ *  Array always retains exclusive ownership of its data and is responsible for
+ *  freeing its memory.
+ *
+ *  \see ArrayView for non-owning views of one- or multi-dimensional data
  *  Depending on which constructor is used, the Array object can have two
  *  different underlying storage types:
  *
- *  * <b> Native Storage </b> <br />
- *
- *     When using native storage, the Array object manages all memory.
- *     Typically, the Array object will allocate extra space to facilitate
- *     the insertion of new elements and minimize the number of reallocations.
- *     The actual capacity of the array (i.e., total number of elements that
- *     the Array can hold) can be queried by calling the capacity() function.
- *     When allocated memory is used up, inserting a new element triggers a
- *     reallocation.  At each reallocation, extra space is allocated
- *     according to the <em> resize_ratio </em> parameter, which is set to 2.0
- *     by default. To return all extra memory, an application can call
- *     `shrink()`.
- *
- *     \warning Reallocations tend to be costly operations in terms of performance.
- *      Use `reserve()` when the number of nodes is known a priori, or
- *      use a constructor that takes an actual size and capacity when possible.
- *
- *     \note The Array destructor deallocates and returns all memory associated
- *      with it to the system.
- *
  * \tparam T the type of the values to hold.
  * \tparam DIM The dimension of the array.
+ * 
+ * \pre T must be CopyAssignable and Erasable
+ * \see https://en.cppreference.com/w/cpp/named_req
  *
  */
 template <typename T, int DIM = 1>
@@ -211,6 +162,8 @@ public:
    *
    * \note The data will be allocated using the allocator ID of the
    *  copy-assigned Array, not the argument Array.
+   * 
+   * \pre T must be TriviallyCopyable
    */
   Array& operator=(const Array& other)
   {
@@ -448,6 +401,8 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by 1.
+   *
+   * \pre T must be MoveAssignable
    */
   template <typename... Args>
   void emplace(IndexType pos, Args&&... args);
@@ -460,6 +415,8 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by 1.
+   *
+   * \pre T must be MoveAssignable
    *
    * \return An ArrayIterator to the emplaced element.
    */
@@ -1041,46 +998,6 @@ inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
   m_capacity = new_capacity;
 
   assert(m_data != nullptr || m_capacity <= 0);
-}
-
-//------------------------------------------------------------------------------
-/// Free functions implementing Array's operator(s)
-//------------------------------------------------------------------------------
-template <typename T, int DIM, typename ArrayType>
-std::ostream& operator<<(std::ostream& os, const ArrayBase<T, DIM, ArrayType>& arr)
-{
-  print(os, arr);
-  return os;
-}
-
-template <typename T, int DIM>
-bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
-{
-  if(lhs.getAllocatorID() != rhs.getAllocatorID())
-  {
-    return false;
-  }
-
-  if(lhs.shape() != rhs.shape())
-  {
-    return false;
-  }
-
-  for(int i = 0; i < lhs.size(); i++)
-  {
-    if(!(lhs[i] == rhs[i]))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-template <typename T, int DIM>
-bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
-{
-  return !(lhs == rhs);
 }
 
 } /* namespace axom */

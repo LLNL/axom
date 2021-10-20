@@ -13,7 +13,7 @@ Core containers
    containers themselves. When changes are made to the Axom containers, the
    changes will be reflected here.
 
-Axom Core contains the ``Array``, ``MCArray``, and ``StackArray`` classes.  
+Axom Core contains the ``Array``, ``ArrayView``, and ``StackArray`` classes.  
 Among other things, these data containers facilitate porting code that uses 
 ``std::vector`` to GPUs.
 
@@ -21,16 +21,26 @@ Among other things, these data containers facilitate porting code that uses
 1-dimensional case, this class behaves similar to ``std::vector``. In higher 
 dimensions, some vector-like functionality, such as ``push_back``, are not
 available and multidimensional-specific operations will mirror the 
-``ndarray`` provided by ``numpy`` when possible. In the future, it will be 
-possible to take "views" of the underlying array data that allow for 
-flexible reinterpretation via different striding.
+``ndarray`` provided by ``numpy`` when possible. 
 
-``MCArray`` (or Multi-Component Array) is a container template for a contiguous
-array of tuples. In this sense, it can be thought of as a two-dimensional array.
-``MCArray`` will be removed in the future as ``Array`` will provide all the 
-multidimensional functionality of ``MCArray``..
+The ``Array`` object manages all memory. Typically, the ``Array`` object will
+allocate extra space to facilitate the insertion of new elements and minimize the number of reallocations.
+The actual capacity of the array (i.e., total number of elements that
+the ``Array`` can hold) can be queried via the ``capacity()`` method.
+When allocated memory is used up, inserting a new element triggers a
+reallocation.  At each reallocation, extra space is allocated
+according to the **resize_ratio** parameter, which is set to 2.0
+by default. To return all extra memory, an application can call
+`shrink()`.
 
-Here's an example showing how to use ``MCArray`` instead of ``std::vector``.
+.. warning:: Reallocations tend to be costly operations in terms of performance.
+  Use ``reserve()`` when the number of nodes is known a priori, or
+  use a constructor that takes an actual size and capacity when possible.
+  
+.. note:: The Array destructor deallocates and returns all memory associated
+  with it to the system.
+
+Here's an example showing how to use ``Array`` instead of ``std::vector``.
 
 .. literalinclude:: ../../examples/core_containers.cpp
    :start-after: _arraybasic_start
@@ -41,11 +51,19 @@ The output of this example is::
 
   Length of a = 3
   After appending a value, a's length = 4
-  MCArray a = [2, 5, 11, 4]
-  After inserting two values, MCArray a = [2, 5, 6, 11, 1, 4]
+  Array a = [2, 5, 11, 4]
+  After inserting two values, Array a = [2, 5, 6, 11, 1, 4]
+
+In the future, it will be 
+possible to take "views" of the underlying array data that allow for 
+flexible reinterpretation via different striding.
 
 Applications commonly store tuples of data in a flat array or a ``std::vector``.
-The ``MCArray`` class formalizes tuple storage, as shown in the next example.
+In this sense, it can be thought of as a two-dimensional array.  ``Array``
+supports arbitrary dimensionalities but an alias, ``MCArray``
+(or Multi-Component Array), is provided for this two-dimensional case.
+
+The ``MCArray`` (i.e., ``Array<T, 2>``) class formalizes tuple storage, as shown in the next example.
 
 .. literalinclude:: ../../examples/core_containers.cpp
    :start-after: _arraytuple_start
@@ -65,8 +83,11 @@ The output of this example is::
     [8, 0, -1]
   ]
 
-The ``MCArray`` class can use an external memory buffer, with the restriction 
-that operations that would cause the buffer to resize are not permitted.
+It is also often useful to wrap an external, user-supplied buffer without taking ownership
+of the data.  For this purpose Axom provides the ``ArrayView`` class, which is a lightweight
+wrapper over a buffer that provides one- or multi-dimensional indexing/reshaping semantics.
+For example, it might be useful to reinterpret a flat (one-dimensional) array as a two-dimensional array.
+This is accomplished via ``MCArrayView`` which, similar to the ``MCArray`` alias, is an alias for ``ArrayView<T, 2>``.
 
 .. literalinclude:: ../../examples/core_containers.cpp
    :start-after: _extbuffer_start
@@ -75,27 +96,22 @@ that operations that would cause the buffer to resize are not permitted.
 
 The output of this example is::
 
-  MCArray a = [2, 5, 6, 11, 1, 4]
-  MCArray c with 3 2-tuples = [
+  Array a = [2, 5, 6, 11, 1, 4]
+  MCArrayView c with 3 2-tuples = [
     [2, 5]
     [6, 11]
     [1, 4]
   ]
-  MCArrays a and c use the same memory, a's internal buffer.
-  MCArray a = [1, 5, 6, 9, 1, 4]
-  MCArray c with 3 2-tuples = [
+  Array a and MCArrayView c use the same memory, a's internal buffer.
+  Array a = [1, 5, 6, 9, 1, 4]
+  MCArrayView c with 3 2-tuples = [
     [1, 5]
     [6, 9]
     [1, 4]
   ]
 
-Similar to ``std::vector``, when using an internal array the ``Array`` and 
-``MCArray`` classes can reserve memory in anticipation of future growth as
-well as shrink to the memory in use. Please refer to the 
-`Array API Documentation <../../../../doxygen/html/classaxom_1_1Array.html>`_ 
-and 
-`MCArray API Documentation <../../../../doxygen/html/classaxom_1_1Array.html>`_ 
-for details.
+.. note:: The set of permissible operations on an ``ArrayView`` is somewhat limited,
+  as operations that would cause the buffer to resize are not permitted.
 
 The ``StackArray`` class is a work-around for a limitation in older versions
 of the nvcc compiler, which do not capture arrays on the stack in device 
