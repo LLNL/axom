@@ -224,7 +224,9 @@ public:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  template <typename... Args>
+  template <IndexType SFINAE = DIM,
+            typename std::enable_if<SFINAE != 1>::type* = nullptr,
+            typename... Args>
   Array(Args... args);
 
   /*!
@@ -781,7 +783,7 @@ Array<T, DIM>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
 { }
 
 template <typename T, int DIM>
-template <typename... Args>
+template <IndexType SFINAE, typename std::enable_if<SFINAE != 1>::type*, typename... Args>
 Array<T, DIM>::Array(Args... args)
   : ArrayBase<T, DIM>(args...)
   , m_allocator_id(axom::getDefaultAllocatorID())
