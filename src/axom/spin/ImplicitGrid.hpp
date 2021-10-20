@@ -543,7 +543,7 @@ private:
     AXOM_HOST_DEVICE static bool getResult(FuncType&& type, int arg)
     {
       type(arg);
-      return true;
+      return false;
     }
   };
 
