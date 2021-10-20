@@ -26,7 +26,7 @@ struct STLVectorStorage
   using ElementType = T;
   using StorageType = std::vector<T>;
 
-  static StorageType create(int nelems,
+  static StorageType create(IndexType nelems,
                             T defaultValue = {},
                             int allocatorID = axom::getDefaultAllocatorID())
   {
@@ -44,7 +44,7 @@ struct ArrayStorage
   using ElementType = T;
   using StorageType = axom::Array<T>;
 
-  static StorageType create(int nelems,
+  static StorageType create(IndexType nelems,
                             T defaultValue = {},
                             int allocatorID = axom::getDefaultAllocatorID())
   {
