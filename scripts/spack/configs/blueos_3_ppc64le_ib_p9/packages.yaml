@@ -116,6 +116,8 @@ packages:
     variants: ~shared~test
   hdf5:
     variants: ~shared~mpi
+  hypre:
+    version: [2.20.0]
   mfem:
     variants: ~mpi~metis~zlib
   raja:
