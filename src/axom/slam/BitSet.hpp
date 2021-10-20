@@ -142,9 +142,9 @@ public:
       "slam::BitSet must be initialized with a non-zero number of bits");
 
     m_numBits = axom::utilities::max(numBits, 0);
-    m_numWords = (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BitsPerWord;
+    IndexType numWords = (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BitsPerWord;
 
-    m_data = ArrayType(m_numWords, m_numWords, allocatorID);
+    m_data = ArrayType(numWords, numWords, allocatorID);
     m_data.fill(0);
   }
 
@@ -387,7 +387,6 @@ private:
   ArrayType m_data;
 
   int m_numBits;
-  int m_numWords;
 };
 
 }  // end namespace slam

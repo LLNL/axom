@@ -13,7 +13,7 @@ namespace slam
 {
 void BitSet::clear()
 {
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] = 0;
   }
@@ -27,13 +27,13 @@ void BitSet::set()
   }
 
   const Word ones = ~Word(0);
-  for(int i = 0; i < m_numWords - 1; ++i)
+  for(int i = 0; i < m_data.size() - 1; ++i)
   {
     m_data[i] = ones;
   }
 
   // Handle last word
-  m_data[m_numWords - 1] = isLastWordFull() ? ones : lastWordMask();
+  m_data[m_data.size() - 1] = isLastWordFull() ? ones : lastWordMask();
 }
 
 void BitSet::flip()
@@ -44,20 +44,20 @@ void BitSet::flip()
   }
 
   const Word ones = ~Word(0);
-  for(int i = 0; i < m_numWords - 1; ++i)
+  for(int i = 0; i < m_data.size() - 1; ++i)
   {
     m_data[i] ^= ones;
   }
 
   // Handle last word
-  m_data[m_numWords - 1] ^= isLastWordFull() ? ones : lastWordMask();
+  m_data[m_data.size() - 1] ^= isLastWordFull() ? ones : lastWordMask();
 }
 
 int BitSet::count() const
 {
   int ctr = 0;
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     ctr += axom::utilities::popCount(m_data[i]);
   }
@@ -68,14 +68,14 @@ bool BitSet::isValid() const
 {
   bool valid = true;
 
-  if(m_numBits < 0 || m_numWords < 0)
+  if(m_numBits < 0 || m_data.size() < 0)
   {
     valid = false;
   }
 
   if(m_numBits == 0)
   {
-    if(m_numWords != 1 || m_data[0] != Word(0))
+    if(m_data.size() != 1 || m_data[0] != Word(0))
     {
       valid = false;
     }
@@ -84,7 +84,7 @@ bool BitSet::isValid() const
   {
     // check num words vs. num bits
     int expWords = (m_numBits - 1) / BitsPerWord + 1;
-    if(expWords != m_numWords) valid = false;
+    if(expWords != m_data.size()) valid = false;
 
     // check that highest bits are not set
     if(!isLastWordFull())
@@ -134,7 +134,7 @@ BitSet::Index BitSet::find_next(Index idx) const
   }
 
   // If not in current word, check remaining words
-  for(int i = startWordIdx; i < m_numWords; ++i)
+  for(int i = startWordIdx; i < m_data.size(); ++i)
   {
     const Word& w = m_data[i];
     if(w != Word(0))
@@ -152,7 +152,7 @@ BitSet& BitSet::operator|=(const BitSet& other)
                     << " In operator|=(), BitSet has size " << size()
                     << " and other BitSet has size " << other.size() << ".");
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] |= other.m_data[i];
   }
@@ -167,7 +167,7 @@ BitSet& BitSet::operator&=(const BitSet& other)
                     << " In operator&=(), BitSet has size " << size()
                     << " and other BitSet has size " << other.size() << ".");
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] &= other.m_data[i];
   }
@@ -182,7 +182,7 @@ BitSet& BitSet::operator^=(const BitSet& other)
                     << " In operator^=(), BitSet has size " << size()
                     << " and other BitSet has size " << other.size() << ".");
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] ^= other.m_data[i];
   }
@@ -197,7 +197,7 @@ BitSet& BitSet::operator-=(const BitSet& other)
                     << " In operator-=(), BitSet has size " << size()
                     << " and other BitSet has size " << other.size() << ".");
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] &= ~other.m_data[i];
   }
