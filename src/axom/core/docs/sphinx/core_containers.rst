@@ -54,10 +54,6 @@ The output of this example is::
   Array a = [2, 5, 11, 4]
   After inserting two values, Array a = [2, 5, 6, 11, 1, 4]
 
-In the future, it will be 
-possible to take "views" of the underlying array data that allow for 
-flexible reinterpretation via different striding.
-
 Applications commonly store tuples of data in a flat array or a ``std::vector``.
 In this sense, it can be thought of as a two-dimensional array.  ``Array``
 supports arbitrary dimensionalities but an alias, ``MCArray``
@@ -112,6 +108,34 @@ The output of this example is::
 
 .. note:: The set of permissible operations on an ``ArrayView`` is somewhat limited,
   as operations that would cause the buffer to resize are not permitted.
+
+In the future, it will also be possible to restride an ``ArrayView``.
+
+Iteration is also identical between the ``Array`` and ``ArrayView`` classes.
+In particular:
+
+  * ``operator()`` indexes into multidimensional data. Currently, the number of indexes 
+    passed must match the dimensionality of the array.
+  * ``operator[]`` indexes into the full buffer, i.e., ``arr[i]`` is equivalent to ``arr.data()[i]``.
+  * ``begin()`` and ``end()`` refer to the full buffer.
+
+Consider the following example:
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _iteration_start
+   :end-before: _iteration_end
+   :language: C++
+
+The output of this example is::
+
+  In ArrayView c, index (0, 0) yields 1
+  In ArrayView c, index (0, 1) yields 5
+  In ArrayView c, index (1, 0) yields 6
+  In ArrayView c, index (1, 1) yields 9
+  In ArrayView c, index (2, 0) yields 1
+  In ArrayView c, index (2, 1) yields 4
+  Range-based for loop over ArrayView c yields: 1 5 6 9 1 4
+  Standard for loop over ArrayView c yields: 1 5 6 9 1 4
 
 The ``StackArray`` class is a work-around for a limitation in older versions
 of the nvcc compiler, which do not capture arrays on the stack in device 

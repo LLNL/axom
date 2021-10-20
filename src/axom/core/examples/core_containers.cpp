@@ -142,6 +142,38 @@ void demoArrayBasic()
   showArray(a, "a");
   showTupleArrayView(c, "c");
   // _extbuffer_end
+
+  // _iteration_start
+  // Iteration over multidimensional arrays uses the shape() method
+  // to retrieve the extents in each dimension.
+  for(int i = 0; i < c.shape()[0]; i++)
+  {
+    for(int j = 0; j < c.shape()[1]; j++)
+    {
+      // Note that c's operator() accepts two arguments because it is two-dimensional
+      std::cout << "In ArrayView c, index (" << i << ", " << j << ") yields "
+                << c(i, j) << std::endl;
+    }
+  }
+
+  // To iterate over the "flat" data in an Array, regardless of dimension,
+  // use a range-based for loop.
+  std::cout << "Range-based for loop over ArrayView c yields: ";
+  for(const int value : c)
+  {
+    std::cout << value << " ";
+  }
+  std::cout << std::endl;
+
+  // Alternatively, the "flat" data can be iterated over with operator[]
+  // from 0 -> size().
+  std::cout << "Standard for loop over ArrayView c yields: ";
+  for(int i = 0; i < c.size(); i++)
+  {
+    std::cout << c[i] << " ";
+  }
+  std::cout << std::endl;
+  // _iteration_end
 }
 
 int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
