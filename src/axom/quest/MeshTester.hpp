@@ -32,7 +32,6 @@
   #include "umpire/strategy/QuickPool.hpp"
 #endif
 
-
 // C/C++ includes
 #include <utility>
 #include <vector>
@@ -131,10 +130,9 @@ void findTriMeshIntersectionsBVH(
        : rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID()));
 
   umpire::Allocator pool_allocator =
-    rm.makeAllocator<umpire::strategy::QuickPool>(
-      allocator.getName() + "_POOL",
-      allocator,
-      POOL_SIZE);
+    rm.makeAllocator<umpire::strategy::QuickPool>(allocator.getName() + "_POOL",
+                                                  allocator,
+                                                  POOL_SIZE);
 
   const int poolID = pool_allocator.getId();
 
