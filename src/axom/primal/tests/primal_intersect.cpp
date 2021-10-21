@@ -367,9 +367,9 @@ TEST(primal_intersect, triangle_aabb_intersection)
   EXPECT_FALSE(primal::intersect(unitTri, negBB));
 
   // Test new triangle whose edge crosses the BB
-  double t2_0[3] = {10., 0., 0.};
-  double t2_1[3] = {-10., 0., 0.};
-  double t2_2[3] = {0., 100., 0};
+  PointType t2_0{10., 0., 0.};
+  PointType t2_1{-10., 0., 0.};
+  PointType t2_2{0., 100., 0};
 
   TriangleType xyTri(t2_0, t2_1, t2_2);
   BoundingBoxType bbOrigin(PointType::zero());
@@ -2195,27 +2195,28 @@ TEST(primal_intersect, plane_bb_test_intersection)
   using PointType = primal::Point<double, DIM>;
   using PlaneType = primal::Plane<double, DIM>;
   using BoundingBoxType = primal::BoundingBox<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
 
   // Bounding Box containing (0,0,0) and (1,1,1)
   BoundingBoxType unitBB(PointType::zero(), PointType::ones());
 
   // bottom face
-  double normal1[3] = {0.0, 1.0, 0.0};
+  VectorType normal1{0.0, 1.0, 0.0};
   double offset1 = 0.0;
   PlaneType p1(normal1, offset1);
 
   // top face
-  double normal2[3] = {0.0, -1.0, 0.0};
+  VectorType normal2{0.0, -1.0, 0.0};
   double offset2 = -1.0;
   PlaneType p2(normal2, offset2);
 
   // center
-  double normal3[3] = {1.0, 1.0, 1.0};
+  VectorType normal3{1.0, 1.0, 1.0};
   double offset3 = 0.5;
   PlaneType p3(normal3, offset3);
 
   // non-intersect
-  double normal4[3] = {1.0, 1.0, 1.0};
+  VectorType normal4{1.0, 1.0, 1.0};
   double offset4 = -0.5;
   PlaneType p4(normal4, offset4);
 
@@ -2244,6 +2245,7 @@ TEST(primal_intersect, plane_seg_test_intersection)
   using PointType = primal::Point<double, DIM>;
   using PlaneType = primal::Plane<double, DIM>;
   using SegmentType = primal::Segment<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
 
   // Line segment goes from (0,0,0) to (1,1,1)
   PointType A(0.0, 3);
@@ -2256,17 +2258,17 @@ TEST(primal_intersect, plane_seg_test_intersection)
   SegmentType s_p(A_p, B_p);
 
   // intersect A
-  double normal1[3] = {0.0, 1.0, 0.0};
+  VectorType normal1{0.0, 1.0, 0.0};
   double offset1 = 0.0;
   PlaneType p1(normal1, offset1);
 
   // intersect midpoint
-  double normal2[3] = {0.0, 1.0, 0.0};
+  VectorType normal2{0.0, 1.0, 0.0};
   double offset2 = 0.5;
   PlaneType p2(normal2, offset2);
 
   // intersect B
-  double normal3[3] = {0.0, 1.0, 0.0};
+  VectorType normal3{0.0, 1.0, 0.0};
   double offset3 = 1.0;
   PlaneType p3(normal3, offset3);
 
