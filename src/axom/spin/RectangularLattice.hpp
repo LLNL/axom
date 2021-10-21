@@ -176,9 +176,9 @@ public:
     // First let's make the upper bound.
 	primal::NumericArray<CellCoordType, NDIMS> offset = cell.array() + GridCell(1).array();
 	// Now let's try to make a Point out of it.  Should work, right?
-	SpacePoint offset2(offset);
+	GridCell offset2(offset);
 	// Now let's construct the return value.
-    SpatialBoundingBox foo(spacePoint(cell), SpacePoint(offset));
+    SpatialBoundingBox foo(spacePoint(cell), spacePoint(offset2));
 	// Finally, return it.
 	return foo;
   }

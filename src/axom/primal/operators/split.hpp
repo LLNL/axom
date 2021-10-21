@@ -67,14 +67,14 @@ void split(const Octahedron<Tp, NDIMS>& oct,
   enum OctVerts {P, Q, R, S, T, U};
   // clang-format on
 
-  out.push_back(Tet(oct[P], oct[R], oct[Q], c));
-  out.push_back(Tet(oct[Q], oct[R], oct[S], c));
-  out.push_back(Tet(oct[R], oct[T], oct[S], c));
-  out.push_back(Tet(oct[S], oct[T], oct[U], c));
-  out.push_back(Tet(oct[T], oct[P], oct[U], c));
-  out.push_back(Tet(oct[U], oct[P], oct[Q], c));
-  out.push_back(Tet(oct[P], oct[T], oct[R], c));
-  out.push_back(Tet(oct[Q], oct[S], oct[U], c));
+  out.push_back(Tet(oct[P], oct[R], oct[Q], Oct::PointType(c)));
+  out.push_back(Tet(oct[Q], oct[R], oct[S], Oct::PointType(c)));
+  out.push_back(Tet(oct[R], oct[T], oct[S], Oct::PointType(c)));
+  out.push_back(Tet(oct[S], oct[T], oct[U], Oct::PointType(c)));
+  out.push_back(Tet(oct[T], oct[P], oct[U], Oct::PointType(c)));
+  out.push_back(Tet(oct[U], oct[P], oct[Q], Oct::PointType(c)));
+  out.push_back(Tet(oct[P], oct[T], oct[R], Oct::PointType(c)));
+  out.push_back(Tet(oct[Q], oct[S], oct[U], Oct::PointType(c)));
 };
 
 }  // namespace primal

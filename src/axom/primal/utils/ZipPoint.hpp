@@ -36,7 +36,7 @@ struct ZipBase<Point<T, NDIMS>>
    * \pre Size >= NDIMS
    */
   template <size_t Size>
-  explicit ZipBase(const T* const (&arrays)[Size])
+  ZipBase(const T* const (&arrays)[Size])
   {
     AXOM_STATIC_ASSERT_MSG(Size >= NDIMS, "Must provide at least NDIMS arrays");
     for(int i = 0; i < NDIMS; i++)
