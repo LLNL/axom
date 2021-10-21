@@ -105,6 +105,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `utilities::string::split` now returns a vector instead of using an out-parameter,
   Inlet's string utilities were moved to Core, and `splitLastNTokens` was renamed to `rsplitN`
 - `axom::Array`-related classes have been moved into individual files.
+- Removed logic from ``axom::reallocate()`` relating to older versions of Umpire.
+  Axom requires Umpire v2.1.0+.
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
@@ -220,6 +222,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: Fixed a bug with InOutOctree for triangles that lie on faces of octree blocks
 - Updated to use newer Conduit config directory
 - Add support for legacy hdf5 cmake build system
+- Fixed user-reported in/out ambiguity within some InOutOctree cases with grazing triangles
 
 ## [Version 0.4.0] - Release date 2020-09-22
 
