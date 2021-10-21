@@ -173,14 +173,8 @@ public:
    */
   SpatialBoundingBox cellBounds(const GridCell& cell) const
   {
-    // First let's make the upper bound.
-	primal::NumericArray<CellCoordType, NDIMS> offset = cell.array() + GridCell(1).array();
-	// Now let's try to make a Point out of it.  Should work, right?
-	GridCell offset2(offset);
-	// Now let's construct the return value.
-    SpatialBoundingBox foo(spacePoint(cell), spacePoint(offset2));
-	// Finally, return it.
-	return foo;
+    return SpatialBoundingBox(spacePoint(cell),
+                              spacePoint(GridCell(cell.array() + GridCell(1).array())));
   }
 
   /*! Simple formatted print of a rectangular lattice */
