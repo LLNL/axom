@@ -9,8 +9,8 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG10_IMAGENAME: 'axom/tpls:clang-10_10-11-21_17h-49m'
-  GCC8_IMAGENAME: 'axom/tpls:gcc-8_10-11-21_17h-49m'
+  CLANG10_IMAGENAME: 'axom/tpls:clang-10_10-20-21_04h-13m'
+  GCC8_IMAGENAME: 'axom/tpls:gcc-8_10-20-21_04h-13m'
 
 jobs:
 - job: Build_and_Test
