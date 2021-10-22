@@ -231,8 +231,8 @@ void check_analytic_plane(bool use_shared = false)
   {
     double pt[NDIMS];
     mesh.getNode(inode, pt);
-	primal::Point<double, NDIMS> thepoint(pt);
-	phi[inode] = quest::signed_distance_evaluate(pt[0], pt[1], pt[2]);
+    primal::Point<double, NDIMS> thepoint(pt);
+    phi[inode] = quest::signed_distance_evaluate(pt[0], pt[1], pt[2]);
 
     const double phi_expected = analytic_plane.signedDistance(thepoint);
     EXPECT_DOUBLE_EQ(phi[inode], phi_expected);
