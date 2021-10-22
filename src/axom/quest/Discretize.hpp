@@ -8,6 +8,7 @@
 
 // Axom includes
 #include "axom/core/Macros.hpp"  // for axom macros
+#include "axom/core/execution/for_all.hpp"
 
 // Geometry
 #include "axom/primal/geometry/Sphere.hpp"

@@ -9,6 +9,7 @@
 set(quest_example_depends axom fmt cli11)
 
 blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
+blt_list_append(TO quest_example_depends ELEMENTS hip IF ENABLE_HIP)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
 blt_add_executable(

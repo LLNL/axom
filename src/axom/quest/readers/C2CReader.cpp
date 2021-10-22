@@ -9,7 +9,8 @@
   #error C2CReader should only be included when Axom is configured with C2C
 #endif
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 

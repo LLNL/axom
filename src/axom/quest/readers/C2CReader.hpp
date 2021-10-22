@@ -13,7 +13,7 @@
 #endif
 
 #include "axom/fmt.hpp"
-#include "axom/mint.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "c2c/C2C.hpp"
 
 #include <string>
