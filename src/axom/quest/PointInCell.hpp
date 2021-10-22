@@ -85,7 +85,7 @@ class PointInCellMeshWrapper;
  * for [mfem](http://mfem.org) meshes of arbitrary order.  It uses
  * the mesh_tag \a quest_point_in_cell_mfem_tag
  */
-template <typename mesh_tag>
+template <typename mesh_tag, typename ExecSpace = axom::SEQ_EXEC>
 class PointInCell
 {
 public:
@@ -93,12 +93,13 @@ public:
   using MeshType = typename MeshTraits::MeshType;
   using IndexType = typename MeshTraits::IndexType;
 
-  using ExecSpace = axom::SEQ_EXEC;
+  using Point2DType = primal::Point<double, 2>;
+  using Point3DType = primal::Point<double, 3>;
 
   using MeshWrapperType = detail::PointInCellMeshWrapper<mesh_tag>;
 
-  using PointFinder2D = detail::PointFinder<2, mesh_tag, axom::SEQ_EXEC>;
-  using PointFinder3D = detail::PointFinder<3, mesh_tag, axom::SEQ_EXEC>;
+  using PointFinder2D = detail::PointFinder<2, mesh_tag, ExecSpace>;
+  using PointFinder3D = detail::PointFinder<3, mesh_tag, ExecSpace>;
 
   /*!
    * Construct a point in cell query structure over a computational mesh
@@ -204,6 +205,32 @@ public:
     }
 
     return cellIndex;
+  }
+
+  void locatePoints(int npts,
+                    const Point2DType* pts,
+                    IndexType* outCellIds,
+                    Point2DType* outIsopar = nullptr)
+  {
+    SLIC_ASSERT(npts > 0);
+    SLIC_ASSERT(pts != nullptr);
+    SLIC_ASSERT(outCellIds != nullptr);
+    SLIC_ASSERT(m_pointFinder2D != nullptr);
+
+    m_pointFinder2D->locatePoints(npts, pts, outCellIds, outIsopar);
+  }
+
+  void locatePoints(int npts,
+                    const Point3DType* pts,
+                    IndexType* outCellIds,
+                    Point3DType* outIsopar = nullptr) const
+  {
+    SLIC_ASSERT(npts > 0);
+    SLIC_ASSERT(pts != nullptr);
+    SLIC_ASSERT(outCellIds != nullptr);
+    SLIC_ASSERT(m_pointFinder3D != nullptr);
+
+    m_pointFinder3D->locatePoints(npts, pts, outCellIds, outIsopar);
   }
 
   /*!
