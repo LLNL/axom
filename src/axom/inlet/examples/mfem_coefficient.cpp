@@ -6,6 +6,7 @@
 #include "axom/inlet.hpp"
 
 #include "axom/core.hpp"
+#include "axom/primal.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 #include "mfem.hpp"
 
@@ -99,7 +100,7 @@ struct BoundaryCondition
 
 inlet::InletVector toInletVector(const mfem::Vector& vec)
 {
-  return {vec.GetData(), vec.Size()};
+  return {primal::Vector3D{vec.GetData(), vec.Size()}, vec.Size()};
 }
 
 // Uses out-params to match MFEM semantics
