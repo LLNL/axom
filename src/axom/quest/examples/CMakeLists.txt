@@ -31,6 +31,16 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         )
 endif()
 
+if(MFEM_FOUND)
+    blt_add_executable(
+        NAME        quest_point_in_cell_benchmark_ex
+        SOURCES     point_in_cell_benchmark.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} mfem
+        FOLDER      axom/quest/examples
+        )
+endif()
+
 ## Quest interface examples
 
 blt_add_executable(
