@@ -112,7 +112,7 @@ packages:
 
 # Globally lock version of third party libraries
   conduit:
-    version: [develop]
+    version: [0.7.2axom]
     variants: ~shared~test
   hdf5:
     variants: ~shared~mpi
