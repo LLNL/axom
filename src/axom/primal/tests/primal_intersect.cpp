@@ -2293,6 +2293,7 @@ void check_plane_bb_intersect()
   const int DIM = 3;
   using PointType = primal::Point<double, DIM>;
   using PlaneType = primal::Plane<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
   using BoundingBoxType = primal::BoundingBox<double, DIM>;
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
@@ -2323,7 +2324,7 @@ void check_plane_bb_intersect()
     4,
     AXOM_LAMBDA(int i) {
       unitBB[0] = BoundingBoxType(PointType::zero(), PointType::ones());
-      double normal[3];
+      VectorType normal;
       double offset;
 
       // bottom face
@@ -2384,6 +2385,7 @@ void check_plane_seg_intersect()
   using PointType = primal::Point<double, DIM>;
   using PlaneType = primal::Plane<double, DIM>;
   using SegmentType = primal::Segment<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
@@ -2417,7 +2419,7 @@ void check_plane_seg_intersect()
   for_all<ExecSpace>(
     4,
     AXOM_LAMBDA(int i) {
-      double normal[3];
+      VectorType normal;
       double offset;
       PointType A(0.0, 3);
       PointType B(1.0, 3);

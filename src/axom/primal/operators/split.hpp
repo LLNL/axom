@@ -59,6 +59,7 @@ void split(const Octahedron<Tp, NDIMS>& oct,
     c += oct[i].array();
   }
   c = c / (double)Oct::NUM_OCT_VERTS;
+  typename Oct::PointType C(c);
 
   // Step 2: Now store the new tets.  The documentation for the Octahedron class
   // shows how the points are arranged to imply the faces.
@@ -67,14 +68,14 @@ void split(const Octahedron<Tp, NDIMS>& oct,
   enum OctVerts {P, Q, R, S, T, U};
   // clang-format on
 
-  out.push_back(Tet(oct[P], oct[R], oct[Q], Oct::PointType(c)));
-  out.push_back(Tet(oct[Q], oct[R], oct[S], Oct::PointType(c)));
-  out.push_back(Tet(oct[R], oct[T], oct[S], Oct::PointType(c)));
-  out.push_back(Tet(oct[S], oct[T], oct[U], Oct::PointType(c)));
-  out.push_back(Tet(oct[T], oct[P], oct[U], Oct::PointType(c)));
-  out.push_back(Tet(oct[U], oct[P], oct[Q], Oct::PointType(c)));
-  out.push_back(Tet(oct[P], oct[T], oct[R], Oct::PointType(c)));
-  out.push_back(Tet(oct[Q], oct[S], oct[U], Oct::PointType(c)));
+  out.push_back(Tet(oct[P], oct[R], oct[Q], C));
+  out.push_back(Tet(oct[Q], oct[R], oct[S], C));
+  out.push_back(Tet(oct[R], oct[T], oct[S], C));
+  out.push_back(Tet(oct[S], oct[T], oct[U], C));
+  out.push_back(Tet(oct[T], oct[P], oct[U], C));
+  out.push_back(Tet(oct[U], oct[P], oct[Q], C));
+  out.push_back(Tet(oct[P], oct[T], oct[R], C));
+  out.push_back(Tet(oct[Q], oct[S], oct[U], C));
 };
 
 }  // namespace primal
