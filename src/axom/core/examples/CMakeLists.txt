@@ -14,6 +14,9 @@ set(example_sources
     core_containers.cpp 
     core_acceleration.cpp)
 
+set( core_examples_depends axom )
+blt_list_append( TO core_examples_depends ELEMENTS hip IF ${ENABLE_HIP} )
+
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples
 #------------------------------------------------------------------------------
@@ -23,7 +26,7 @@ foreach(example_source ${example_sources})
         NAME        ${exe_name}_ex
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  axom
+        DEPENDS_ON  ${core_examples_depends}
         FOLDER      axom/core/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -38,7 +41,7 @@ if(ENABLE_CUDA)
           NAME        core_acceleration_cuda_on_ex
           SOURCES     core_acceleration.cpp
           OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-          DEPENDS_ON  axom cuda
+          DEPENDS_ON  ${core_examples_depends} cuda
           FOLDER      axom/core/examples )
 
     blt_add_executable(
@@ -53,7 +56,7 @@ blt_add_executable(
     NAME        core_utilities_ex
     SOURCES     core_utilities.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  axom
+    DEPENDS_ON  ${core_examples_depends}
     FOLDER      axom/core/examples )
 
 if(AXOM_ENABLE_TESTS)

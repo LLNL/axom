@@ -46,6 +46,7 @@ set( mint_tests
 set( mint_test_dependencies axom )
 
 blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO mint_test_dependencies ELEMENTS hip IF ${ENABLE_HIP} )
 
 foreach( test ${mint_tests} )
 

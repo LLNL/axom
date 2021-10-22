@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "axom/config.hpp"
-#include "axom/core.hpp"
+#include "axom/core/numerics/eigen_solve.hpp"
 
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
